@@ -29,6 +29,7 @@ import { Studio } from '../../../lib/collections/Studios'
 
 export interface IAdLibListItem extends PieceGeneric {
 	status: RundownAPI.PieceStatusCode
+	contentMetaData?: any
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	hotkey?: string

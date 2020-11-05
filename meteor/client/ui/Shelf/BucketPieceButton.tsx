@@ -21,7 +21,7 @@ import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
-import { IDashboardButtonProps, IDashboardButtonTrackedProps, DashboardPieceButtonBase } from './DashboardPieceButton'
+import { IDashboardButtonProps, DashboardPieceButtonBase } from './DashboardPieceButton'
 
 import {
 	DragSource,
@@ -37,8 +37,9 @@ import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { BucketId } from '../../../lib/collections/Buckets'
+import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 
-type IDashboardButtonPropsCombined = BucketPieceButtonBaseProps & IDashboardButtonProps & IDashboardButtonTrackedProps
+type IDashboardButtonPropsCombined = BucketPieceButtonBaseProps & IDashboardButtonProps
 
 const buttonSource = {
 	beginDrag(props: IDashboardButtonPropsCombined, monitor: DragSourceMonitor, component: any) {
@@ -125,20 +126,7 @@ export class BucketPieceButtonBase extends DashboardPieceButtonBase<
 	}
 }
 
-export const BucketPieceButton = translateWithTracker<
-	IDashboardButtonProps & BucketPieceButtonBaseProps,
-	{},
-	IDashboardButtonTrackedProps
->((props: IDashboardButtonProps) => {
-	const piece = (props.piece as any) as AdLibPieceUi
-
-	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
-
-	return {
-		status,
-		metadata,
-	}
-})(
+export const BucketPieceButton = withMediaObjectStatus<IDashboardButtonProps & BucketPieceButtonBaseProps, {}>()(
 	DropTarget(DragDropItemTypes.BUCKET_ADLIB_PIECE, buttonTarget, (connect) => ({
 		connectDropTarget: connect.dropTarget(),
 	}))(

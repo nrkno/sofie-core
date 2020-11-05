@@ -60,17 +60,17 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<Trans
 	}
 
 	getPreviewUrl = (): string | undefined => {
-		const { metadata } = this.props
-		if (this.props.mediaPreviewUrl && metadata) {
-			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
-				return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(metadata.mediaId)
+		const { piece } = this.props
+		if (this.props.mediaPreviewUrl && piece.contentMetaData) {
+			if (piece.contentMetaData && piece.contentMetaData.previewPath && this.props.mediaPreviewUrl) {
+				return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(piece.contentMetaData.mediaId)
 			}
 		}
 		return undefined
 	}
 
 	renderVTLiveSpeak(renderThumbnail?: boolean) {
-		if (this.props.metadata) {
+		if (this.props.piece.content) {
 			const previewUrl = this.getPreviewUrl()
 			const adLib = (this.props.piece as any) as AdLibPieceUi
 			const vtContent = adLib.content as VTContent | undefined
@@ -122,8 +122,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<Trans
 		const hasMediaInfo =
 			this.props.layer &&
 			this.props.layer.type === SourceLayerType.VT &&
-			this.props.piece.metadata &&
-			this.props.piece.metadata.mediainfo
+			this.props.piece.contentMetaData &&
+			this.props.piece.contentMetaData.mediainfo
 		return (
 			<div
 				className={ClassNames(
@@ -168,7 +168,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<Trans
 					? this.renderSplits(isList && this.props.showThumbnailsInList)
 					: null}
 				<span className="dashboard-panel__panel__button__label">
-					{isList && hasMediaInfo ? this.props.piece.metadata!.mediainfo!.name : this.props.piece.name}
+					{isList && hasMediaInfo ? this.props.piece.contentMetaData!.mediainfo!.name : this.props.piece.name}
 				</span>
 			</div>
 		)
