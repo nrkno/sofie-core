@@ -129,7 +129,7 @@ export class MidiPedalController extends ControllerAbstract {
 			// const rangePosition = (rangeNeutralMin - inputValue) / (rangeNeutralMin - rangeRevMin) // how far, 0.0-1.0, within the range are we?
 			// const rangeIndex = Math.ceil(rangePosition * this.reverseSpeedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
 			// this.lastSpeed = this.reverseSpeedMap[rangeIndex] * -1 // applies the speed as a negative value to reverse
-			this.lastSpeed = this.reverseSpeedFunction(inputValue)
+			this.lastSpeed = Math.round(this.reverseSpeedFunction(inputValue)) * -1
 		} else if (inputValue >= rangeNeutralMin && inputValue <= rangeNeutralMax) {
 			// 2) we're in the neutral zone
 			this.lastSpeed = 0
@@ -138,7 +138,7 @@ export class MidiPedalController extends ControllerAbstract {
 			// const rangePosition = (inputValue - rangeNeutralMax) / (rangeFwdMax - rangeNeutralMax) // how far, 0.0-1.0, within the range are we?
 			// const rangeIndex = Math.ceil(rangePosition * this.speedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
 			// this.lastSpeed = this.speedMap[rangeIndex] // applies the speed
-			this.lastSpeed = this.speedFunction(inputValue)
+			this.lastSpeed = Math.round(this.speedFunction(inputValue))
 		} else {
 			// 4) we should never be able to hit this due to validation above
 			console.error(`Illegal input value ${inputValue}`)
