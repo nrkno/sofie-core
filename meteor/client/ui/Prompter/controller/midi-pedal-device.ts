@@ -19,8 +19,8 @@ export class MidiPedalController extends ControllerAbstract {
 	private rangeFwdMax = 127 // pedal "all front" position where scrolling is maxed out
 	private speedMap = [1, 2, 3, 4, 5, 7, 9, 12, 17, 19, 30]
 	private reverseSpeedMap = [10, 30, 50]
-	private speedSpline
-	private reverseSpeedSpline
+	private speedSpline: Spline
+	private reverseSpeedSpline: Spline
 
 	private updateSpeedHandle: number | null = null
 	private lastSpeed = 0
@@ -52,6 +52,7 @@ export class MidiPedalController extends ControllerAbstract {
 			return
 		}
 
+		// create splines, using the input speedMaps, for both the forward range, and the reverse range
 		this.speedSpline = new Spline(
 			this.speedMap.map(
 				(y, index, array) =>
@@ -126,19 +127,14 @@ export class MidiPedalController extends ControllerAbstract {
 		inputValue = Math.min(Math.max(inputValue, rangeRevMin), rangeFwdMax) // clamps in between rangeRevMin and rangeFwdMax
 
 		if (inputValue >= rangeRevMin && inputValue <= rangeNeutralMin) {
-			// 1) find the position within the backwards range
-			// const rangePosition = (rangeNeutralMin - inputValue) / (rangeNeutralMin - rangeRevMin) // how far, 0.0-1.0, within the range are we?
-			// const rangeIndex = Math.ceil(rangePosition * this.reverseSpeedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
-			// this.lastSpeed = this.reverseSpeedMap[rangeIndex] * -1 // applies the speed as a negative value to reverse
+			// 1) Use the reverse speed spline for the expected speed. The reverse speed is specified using positive values,
+			//    so the result needs to be inversed
 			this.lastSpeed = Math.round(this.reverseSpeedSpline.at(inputValue)) * -1
 		} else if (inputValue >= rangeNeutralMin && inputValue <= rangeNeutralMax) {
 			// 2) we're in the neutral zone
 			this.lastSpeed = 0
 		} else if (inputValue >= rangeNeutralMax && inputValue <= rangeFwdMax) {
-			// 3) find the position within the forward range
-			// const rangePosition = (inputValue - rangeNeutralMax) / (rangeFwdMax - rangeNeutralMax) // how far, 0.0-1.0, within the range are we?
-			// const rangeIndex = Math.ceil(rangePosition * this.speedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
-			// this.lastSpeed = this.speedMap[rangeIndex] // applies the speed
+			// 3) Use the speed spline to find the expected speed at this point
 			this.lastSpeed = Math.round(this.speedSpline.at(inputValue))
 		} else {
 			// 4) we should never be able to hit this due to validation above
