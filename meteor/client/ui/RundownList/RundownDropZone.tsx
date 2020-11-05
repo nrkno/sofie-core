@@ -70,8 +70,14 @@ export const RundownDropZone = DropTarget(
 	withTranslation()(function RundownDropZone(
 		props: Translated<IRundownDropZoneProps> & IRundownDropZoneDropTargetProps
 	) {
-		const { activated, connectDropTarget } = props
+		const { t, activated, connectDropTarget } = props
 
-		return connectDropTarget(<div className={`rundown-dropzone ${activated ? 'open' : ''}`}></div>)
+		return connectDropTarget(
+			<div className={`rundown-dropzone ${activated ? 'open' : ''}`}>
+				<p>
+					<b>{t('Drop rundown here to move it out of its current playlist')}</b>
+				</p>
+			</div>
+		)
 	})
 )

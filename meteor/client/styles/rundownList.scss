@@ -212,10 +212,11 @@
 		display: none;
 
 		&.open {
-			display: block;
+			display: flex;
 			border: 4px dashed green;
 			height: 61px;
 			margin-top: 8px;
+			align-items: center;
 		}
 	}
 }
