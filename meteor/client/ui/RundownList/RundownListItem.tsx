@@ -59,7 +59,7 @@ const HTML_ID_PREFIX = 'rundown-'
 
 export interface IRundownListItemProps {
 	rundown: Rundown
-	playlistViewUrl: string
+	rundownViewUrl?: string
 	swapRundownOrder: (a: RundownId, b: RundownId) => void
 	playlistId: RundownPlaylistId
 	isOnlyRundownInPlaylist?: boolean
@@ -240,7 +240,7 @@ export const RundownListItem = withTranslation()(
 				}
 
 				render() {
-					const { t, rundown, connectDragSource, connectDropTarget, isDragging, playlistViewUrl } = this.props
+					const { t, rundown, connectDragSource, connectDropTarget, isDragging, rundownViewUrl } = this.props
 					const userCanConfigure = getAllowConfigure()
 
 					const classNames: string[] = []
@@ -257,7 +257,7 @@ export const RundownListItem = withTranslation()(
 							connectDropTarget={connectDropTarget}
 							htmlElementId={htmlElementId}
 							isDragLayer={false}
-							playlistViewUrl={playlistViewUrl}
+							rundownViewUrl={rundownViewUrl}
 							rundown={rundown}
 							showStyle={this.showStyle}
 							showStyleBaseURL={getShowStyleBaseLink(rundown.showStyleBaseId)}

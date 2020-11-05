@@ -317,7 +317,7 @@ export const RundownPlaylistUi = DropTarget(
 							<RundownListItem
 								key={unprotectString(playlist.rundowns[0]._id)}
 								rundown={playlist.rundowns[0]}
-								playlistViewUrl={playlistViewURL}
+								rundownViewUrl={playlistViewURL}
 								swapRundownOrder={handleRundownSwap}
 								playlistId={playlist._id}
 							/>
@@ -332,7 +332,6 @@ export const RundownPlaylistUi = DropTarget(
 						<RundownListItem
 							key={unprotectString(rundown._id)}
 							rundown={rundown}
-							playlistViewUrl={playlistViewURL}
 							swapRundownOrder={handleRundownSwap}
 							playlistId={playlist._id}
 						/>
@@ -349,7 +348,9 @@ export const RundownPlaylistUi = DropTarget(
 							<span className="rundown-list-item__name">
 								<h2 className="rundown-playlist__heading">
 									<FontAwesomeIcon icon={faFolderOpen} />
-									<span className="rundown-playlist__heading-text">{playlist.name}</span>
+									<span className="rundown-playlist__heading-text">
+										<Link to={playlistViewURL}>{playlist.name}</Link>
+									</span>
 								</h2>
 								<span>{`rundownRanksAreSetInSofie: ${playlist.rundownRanksAreSetInSofie === true}`}</span>
 							</span>

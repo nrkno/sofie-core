@@ -14,7 +14,7 @@ interface IRundownListItemViewProps {
 	classNames: string[]
 	htmlElementId: string
 	connectDragSource: (content: ReactElement) => ReactElement | null
-	playlistViewUrl: string
+	rundownViewUrl?: string
 	rundown: Rundown
 	showStyleBaseURL: string
 	showStyle: ShowStyleBase
@@ -30,7 +30,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		connectDragSource,
 		connectDropTarget,
 		htmlElementId,
-		playlistViewUrl,
+		rundownViewUrl,
 		showStyleBaseURL,
 		showStyle,
 		rundown,
@@ -44,6 +44,8 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		classNames.push('dragging')
 	}
 
+	const rundownNameContent = rundownViewUrl ? <Link to={rundownViewUrl}>{props.rundown.name}</Link> : props.rundown.name
+
 	return connectDropTarget(
 		<li id={htmlElementId} className={classNames.join(' ')}>
 			<span className="rundown-list-item__name rundown-list-item__text">
@@ -54,9 +56,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 						</Tooltip>
 					</span>
 				)}
-				<b>
-					<Link to={playlistViewUrl}>{props.rundown.name}</Link>
-				</b>
+				<b>{rundownNameContent}</b>
 			</span>
 			<span className="rundown-list-item__problems rundown-list-item__text">{rundown.status}</span>
 			<span className="rundown-list-item__showStyle rundown-list-item__text">
