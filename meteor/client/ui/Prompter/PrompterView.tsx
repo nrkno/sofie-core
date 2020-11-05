@@ -154,6 +154,12 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			}
 		})
 
+		const themeColor = document.head.querySelector('meta[name="theme-color"]')
+		if (themeColor) {
+			themeColor.setAttribute('data-content', themeColor.getAttribute('content') || '')
+			themeColor.setAttribute('content', '#000000')
+		}
+
 		document.body.classList.add(
 			'dark',
 			'xdark',
@@ -172,6 +178,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		super.componentWillUnmount()
 
 		documentTitle.set(null)
+
+		const themeColor = document.head.querySelector('meta[name="theme-color"]')
+		if (themeColor) {
+			themeColor.setAttribute('content', themeColor.getAttribute('data-content') || '#ffffff')
+		}
 
 		document.body.classList.remove(
 			'dark',
