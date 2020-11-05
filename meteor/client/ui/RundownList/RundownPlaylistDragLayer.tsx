@@ -41,7 +41,7 @@ function RundownPlaylistDragLayer(props) {
 			case RundownListDragDropTypes.RUNDOWN:
 				const rundown = Rundowns.findOne(item.id)
 				const showStyle = ShowStyleBases.findOne(rundown?.showStyleBaseId)
-				const classNames = ['rundown-list-item', 'drag-preview']
+				const classNames = ['drag-preview']
 				return (
 					<RundownListItemView
 						playlistViewUrl={''}
