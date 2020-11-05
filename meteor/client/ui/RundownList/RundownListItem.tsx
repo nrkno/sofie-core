@@ -259,8 +259,8 @@ export const RundownListItem = withTranslation()(
 							isDragLayer={false}
 							rundownViewUrl={rundownViewUrl}
 							rundown={rundown}
-							showStyle={this.showStyle}
-							showStyleBaseURL={getShowStyleBaseLink(rundown.showStyleBaseId)}
+							showStyleName={this.showStyle.name}
+							showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
 							confirmDeleteRundownHandler={
 								rundown.unsynced || userCanConfigure || getAllowService()
 									? () => confirmDeleteRundown(rundown, t)

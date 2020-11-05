@@ -44,15 +44,13 @@ function RundownPlaylistDragLayer(props) {
 				const classNames = ['drag-preview']
 				return (
 					<RundownListItemView
-						playlistViewUrl={''}
 						rundown={rundown!}
 						classNames={classNames}
 						connectDragSource={(props) => props}
 						connectDropTarget={(props) => props}
 						htmlElementId="drag-preview"
 						isDragLayer={true}
-						showStyle={showStyle!}
-						showStyleBaseURL={''}
+						showStyleName={showStyle?.name || ''}
 					/>
 				)
 		}

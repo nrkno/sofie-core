@@ -16,8 +16,8 @@ interface IRundownListItemViewProps {
 	connectDragSource: (content: ReactElement) => ReactElement | null
 	rundownViewUrl?: string
 	rundown: Rundown
-	showStyleBaseURL: string
-	showStyle: ShowStyleBase
+	showStyleBaseURL?: string
+	showStyleName: string
 	confirmReSyncRundownHandler?: () => void
 	confirmDeleteRundownHandler?: () => void
 	isDragLayer: boolean
@@ -32,7 +32,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		htmlElementId,
 		rundownViewUrl,
 		showStyleBaseURL,
-		showStyle,
+		showStyleName,
 		rundown,
 		confirmReSyncRundownHandler,
 		confirmDeleteRundownHandler,
@@ -60,7 +60,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			</span>
 			<span className="rundown-list-item__problems rundown-list-item__text">{rundown.status}</span>
 			<span className="rundown-list-item__showStyle rundown-list-item__text">
-				{showStyleBaseURL ? <Link to={showStyleBaseURL}>{showStyle.name}</Link> : showStyle.name}
+				{showStyleBaseURL ? <Link to={showStyleBaseURL}>{showStyleName}</Link> : showStyleName}
 			</span>
 			<span className="rundown-list-item__airTime rundown-list-item__text">
 				{rundown.expectedStart && (
