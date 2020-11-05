@@ -1,6 +1,6 @@
 import { ControllerAbstract } from './lib'
 import { PrompterViewInner } from '../PrompterView'
-import interpolatingPolynomial from 'interpolating-polynomial'
+import Spline from 'cubic-spline'
 
 import webmidi, { Input, InputEventControlchange, WebMidi } from 'webmidi'
 
@@ -19,8 +19,8 @@ export class MidiPedalController extends ControllerAbstract {
 	private rangeFwdMax = 127 // pedal "all front" position where scrolling is maxed out
 	private speedMap = [1, 2, 3, 4, 5, 7, 9, 12, 17, 19, 30]
 	private reverseSpeedMap = [10, 30, 50]
-	private speedFunction: (input: number) => number
-	private reverseSpeedFunction: (input: number) => number
+	private speedSpline
+	private reverseSpeedSpline
 
 	private updateSpeedHandle: number | null = null
 	private lastSpeed = 0
@@ -52,20 +52,21 @@ export class MidiPedalController extends ControllerAbstract {
 			return
 		}
 
-		this.speedFunction = interpolatingPolynomial(
-			// create the input data set for the polynomial - divide the forward range into speedMap.length number of points
-			this.speedMap.map((y, index, array) => [
-				((this.rangeFwdMax - this.rangeNeutralMax) / (array.length - 1)) * index + this.rangeNeutralMax,
-				y,
-			])
+		this.speedSpline = new Spline(
+			this.speedMap.map(
+				(y, index, array) =>
+					((this.rangeFwdMax - this.rangeNeutralMax) / (array.length - 1)) * index + this.rangeNeutralMax
+			),
+			this.speedMap
 		)
-		this.reverseSpeedFunction = interpolatingPolynomial(
+		this.reverseSpeedSpline = new Spline(
 			this.reverseSpeedMap
 				.reverse()
-				.map((y, index, array) => [
-					((this.rangeNeutralMin - this.rangeRevMin) / (array.length - 1)) * index + this.rangeRevMin,
-					y,
-				])
+				.map(
+					(y, index, array) =>
+						((this.rangeNeutralMin - this.rangeRevMin) / (array.length - 1)) * index + this.rangeRevMin
+				),
+			this.reverseSpeedMap
 		)
 
 		webmidi.enable(this.setupMidiListeners.bind(this))
@@ -129,7 +130,7 @@ export class MidiPedalController extends ControllerAbstract {
 			// const rangePosition = (rangeNeutralMin - inputValue) / (rangeNeutralMin - rangeRevMin) // how far, 0.0-1.0, within the range are we?
 			// const rangeIndex = Math.ceil(rangePosition * this.reverseSpeedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
 			// this.lastSpeed = this.reverseSpeedMap[rangeIndex] * -1 // applies the speed as a negative value to reverse
-			this.lastSpeed = Math.round(this.reverseSpeedFunction(inputValue)) * -1
+			this.lastSpeed = Math.round(this.reverseSpeedSpline.at(inputValue)) * -1
 		} else if (inputValue >= rangeNeutralMin && inputValue <= rangeNeutralMax) {
 			// 2) we're in the neutral zone
 			this.lastSpeed = 0
@@ -138,7 +139,7 @@ export class MidiPedalController extends ControllerAbstract {
 			// const rangePosition = (inputValue - rangeNeutralMax) / (rangeFwdMax - rangeNeutralMax) // how far, 0.0-1.0, within the range are we?
 			// const rangeIndex = Math.ceil(rangePosition * this.speedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
 			// this.lastSpeed = this.speedMap[rangeIndex] // applies the speed
-			this.lastSpeed = Math.round(this.speedFunction(inputValue))
+			this.lastSpeed = Math.round(this.speedSpline.at(inputValue))
 		} else {
 			// 4) we should never be able to hit this due to validation above
 			console.error(`Illegal input value ${inputValue}`)
