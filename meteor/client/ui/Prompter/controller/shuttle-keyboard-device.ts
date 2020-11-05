@@ -37,8 +37,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 			...speedMap.slice(),
 		]
 	}
-	public destroy() {
-	}
+	public destroy() {}
 	public onKeyDown(e: KeyboardEvent) {
 		let speed = -1
 		let newSpeedStep = this.lastSpeedMapPosition
@@ -168,7 +167,6 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 
 	private updateScrollPosition() {
 		if (this.updateSpeedHandle !== null) return
-		this.updateSpeedHandle = null
 
 		// update scroll position
 		window.scrollBy(0, this.lastSpeed)
