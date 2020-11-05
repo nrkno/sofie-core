@@ -25,13 +25,15 @@
 
 		.draghandle {
 			cursor: grab;
-			margin-right: var(--defaultSpacing);
 			width: var(--defaultSpacing);
 
 			button {
 				all: unset;
 				display: inline-flex;
 				align-self: center;
+				justify-content: center;
+				width: inherit;
+				overflow: hidden;
 
 				svg {
 					height: 1em;
@@ -40,6 +42,10 @@
 					position: relative;
 				}
 			}
+		}
+
+		.rundown-name {
+			margin-left: var(--defaultSpacing);
 		}
 	}
 	.rundown-list-item__showStyle {

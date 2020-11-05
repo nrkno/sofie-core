@@ -56,7 +56,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 						</Tooltip>
 					</span>
 				)}
-				<b>{rundownNameContent}</b>
+				<b className="rundown-name">{rundownNameContent}</b>
 			</span>
 			<span className="rundown-list-item__problems rundown-list-item__text">{rundown.status}</span>
 			<span className="rundown-list-item__showStyle rundown-list-item__text">
