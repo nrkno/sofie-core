@@ -159,8 +159,6 @@ export function allowedToMoveRundownOutOfPlaylist(playlist: RundownPlaylist, run
 	)
 }
 
-export function generatePlaylistIdFromExternalId(playlistExternalId: string) {}
-
 export interface RundownPlaylistAndOrder {
 	rundownPlaylist: DBRundownPlaylist
 	order: BlueprintResultOrderedRundowns
@@ -232,7 +230,7 @@ export function produceRundownPlaylistInfoFromRundown(
 	if (currentRundown.playlistIdIsSetInSofie) {
 		playlistId = currentRundown.playlistId
 	} else if (currentRundown.playlistExternalId) {
-		playlistId = getPlaylistIdFromExternalId(currentRundown.playlistExternalId)
+		playlistId = getPlaylistIdFromExternalId(studio._id, currentRundown.playlistExternalId)
 	}
 
 	if (playlistId) {
@@ -321,7 +319,7 @@ export function produceRundownPlaylistInfoFromRundown(
 		newPlaylistId = playlistId
 	} else {
 		playlistExternalId = unprotectString(currentRundown._id)
-		newPlaylistId = getPlaylistIdFromExternalId(playlistExternalId)
+		newPlaylistId = getPlaylistIdFromExternalId(studio._id, playlistExternalId)
 	}
 
 	const existingPlaylist = RundownPlaylists.findOne(newPlaylistId)
@@ -843,6 +841,13 @@ export namespace ServerRundownAPI {
 		const studio = Studios.findOne(rundown.studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio "${rundown.studioId}" of rundown "${rundown._id}" not found!`)
 
+		if (intoPlaylist && intoPlaylist.studioId !== rundown.studioId) {
+			throw new Meteor.Error(
+				404,
+				`Cannot move Rundown "${rundown._id}" into playlist "${intoPlaylist._id}" because they are in different studios ("${intoPlaylist.studioId}", "${rundown.studioId}")!`
+			)
+		}
+
 		// Do a check if we're allowed to move out of currently playing playlist:
 		if (oldPlaylist) {
 			if (!allowedToMoveRundownOutOfPlaylist(oldPlaylist, rundown)) {
@@ -871,6 +876,8 @@ export namespace ServerRundownAPI {
 
 				let newRank: number | undefined = getRank(rundownBefore, rundownAfter)
 
+				if (newRank === undefined) throw new Meteor.Error(500, `newRank is undefined`)
+
 				RundownPlaylists.update(intoPlaylist._id, {
 					$set: {
 						rundownRanksAreSetInSofie: true,
@@ -881,8 +888,6 @@ export namespace ServerRundownAPI {
 						_rank: newRank,
 					},
 				})
-
-				if (newRank === undefined) throw new Meteor.Error(500, `newRank is undefined`)
 			} else {
 				// Move into another playlist
 
@@ -892,9 +897,7 @@ export namespace ServerRundownAPI {
 					$set: {
 						playlistId: intoPlaylist._id,
 						playlistIdIsSetInSofie: true,
-					},
-					$unset: {
-						_rank: 1, // The rank will be set later, in updateRundownsInPlaylist
+						_rank: 99999, // The rank will be set later, in updateRundownsInPlaylist
 					},
 				})
 				rundown.playlistId = intoPlaylist._id
@@ -908,8 +911,7 @@ export namespace ServerRundownAPI {
 			// Move into a new playlist:
 
 			const playlist = defaultPlaylistForRundown(rundown, studio)
-
-			playlist._id = RundownPlaylists.insert(playlist)
+			RundownPlaylists.insert(playlist)
 
 			Rundowns.update(rundown._id, {
 				$set: {

@@ -28,7 +28,6 @@ export function removeEmptyPlaylists(studioId: StudioId) {
  * Convert the playlistExternalId into a playlistId.
  * When we've received an externalId for a playlist, that can directly be used to reference a playlistId
  */
-export function getPlaylistIdFromExternalId(playlistExternalId: string): RundownPlaylistId {
-	// TODO: should this use studioId to ensure uniqueness?
-	return protectString(getHash(playlistExternalId))
+export function getPlaylistIdFromExternalId(studioId: StudioId, playlistExternalId: string): RundownPlaylistId {
+	return protectString(getHash(`${studioId}_${playlistExternalId}`))
 }
