@@ -46,6 +46,7 @@ export class MidiPedalController extends ControllerAbstract {
 	}
 
 	public destroy() {
+		webmidi.disable()
 	}
 	public onKeyDown(e: KeyboardEvent) {
 		// Nothing
