@@ -374,7 +374,7 @@ export const RundownPlaylistUi = DropTarget(
 							<span className="rundown-list-item__actions"></span>
 						</header>
 						<ol className="rundown-playlist__rundowns">{rundownComponents}</ol>
-						<footer>{playbackProgressBar ? { playbackProgressBar } : null}</footer>
+						<footer>{playbackProgressBar ? playbackProgressBar : null}</footer>
 					</li>
 				)
 			}
