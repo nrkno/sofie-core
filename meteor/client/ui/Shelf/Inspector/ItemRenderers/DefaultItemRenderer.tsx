@@ -9,6 +9,7 @@ import { RundownAPI } from '../../../../../lib/api/rundown'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
 import { Studio } from '../../../../../lib/collections/Studios'
+import { MediaObject } from '../../../../../lib/collections/MediaObjects'
 
 export default function DefaultItemRenderer(props: {
 	piece: PieceUi | AdLibPieceUi
@@ -18,10 +19,12 @@ export default function DefaultItemRenderer(props: {
 	if (RundownUtils.isAdLibPiece(props.piece)) {
 		const piece = props.piece as AdLibPieceUi
 		// const layer = props.showStyleBase.sourceLayers.find((layer) => layer._id === piece.sourceLayerId)
+		const metadata = piece.contentMetaData as MediaObject
 
 		return (
 			<>
 				<InspectorTitle piece={props.piece} showStyleBase={props.showStyleBase} studio={props.studio} />
+				{metadata && metadata.mediaId ? metadata.mediaId : null}
 				<dl>
 					<dd>name</dd>
 					<dt>{piece.name}</dt>
@@ -40,10 +43,12 @@ export default function DefaultItemRenderer(props: {
 		)
 	} else {
 		const piece = props.piece.instance.piece as Piece
+		const metadata = props.piece.contentMetaData as MediaObject
 
 		return (
 			<>
 				<InspectorTitle piece={props.piece} showStyleBase={props.showStyleBase} studio={props.studio} />
+				{metadata && metadata.mediaId ? metadata.mediaId : null}
 				<dl>
 					<dd>name</dd>
 					<dt>{piece.name}</dt>

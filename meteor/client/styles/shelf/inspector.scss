@@ -29,9 +29,9 @@
 		width: 100%;
 	}
 
-	input[type='text'],
-	input[type='number'],
-	select {
+	input.text-input[type='text'],
+	input.text-input[type='number'],
+	select.text-input {
 		background: #2d2d2d;
 		border: 1px solid #424242;
 		box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) inset, 1px 1px 2px rgba(0, 0, 0, 0.2);
@@ -79,6 +79,7 @@
 		.shelf-inspector__action-editor__panel {
 			grid-area: body;
 			overflow: hidden auto;
+			margin: 10px;
 		}
 
 		.shelf-inspector__action-editor__actions {
