@@ -26,6 +26,7 @@ import { Bucket } from '../../../lib/collections/Buckets'
 import { RundownViewBuckets } from './RundownViewBuckets'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ShelfInspector } from './Inspector/ShelfInspector'
+import { Studio } from '../../../lib/collections/Studios'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -37,6 +38,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	isExpanded: boolean
 	buckets: Array<Bucket>
 	playlist: RundownPlaylist
+	studio: Studio
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	hotkeys: Array<{
@@ -497,7 +499,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					) : null}
 					{!this.props.fullViewport || this.props.shelfDisplayOptions.inspector ? (
 						<ErrorBoundary>
-							<ShelfInspector selected={this.state.selectedPiece} showStyleBase={this.props.showStyleBase} />
+							<ShelfInspector
+								selected={this.state.selectedPiece}
+								showStyleBase={this.props.showStyleBase}
+								studio={this.props.studio}
+							/>
 						</ErrorBoundary>
 					) : null}
 				</div>

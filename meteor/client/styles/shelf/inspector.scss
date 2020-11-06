@@ -98,6 +98,7 @@
 		padding: 0;
 
 		.shelf-inspector__title__icon {
+			position: relative;
 			display: inline-block;
 			vertical-align: top;
 
@@ -111,6 +112,8 @@
 			text-align: center;
 
 			@include item-type-colors();
+			@include missing-overlay();
+			@include floated-overlay();
 		}
 
 		.shelf-inspector__title__label {

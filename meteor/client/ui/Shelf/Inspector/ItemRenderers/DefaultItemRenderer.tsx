@@ -8,10 +8,12 @@ import * as classNames from 'classnames'
 import { RundownAPI } from '../../../../../lib/api/rundown'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
+import { Studio } from '../../../../../lib/collections/Studios'
 
 export default function DefaultItemRenderer(props: {
 	piece: PieceUi | AdLibPieceUi
 	showStyleBase: ShowStyleBase
+	studio: Studio
 }): JSX.Element {
 	if (RundownUtils.isAdLibPiece(props.piece)) {
 		const piece = props.piece as AdLibPieceUi
@@ -19,7 +21,7 @@ export default function DefaultItemRenderer(props: {
 
 		return (
 			<>
-				<InspectorTitle piece={props.piece} showStyleBase={props.showStyleBase} />
+				<InspectorTitle piece={props.piece} showStyleBase={props.showStyleBase} studio={props.studio} />
 				<dl>
 					<dd>name</dd>
 					<dt>{piece.name}</dt>
@@ -41,7 +43,7 @@ export default function DefaultItemRenderer(props: {
 
 		return (
 			<>
-				<InspectorTitle piece={props.piece} showStyleBase={props.showStyleBase} />
+				<InspectorTitle piece={props.piece} showStyleBase={props.showStyleBase} studio={props.studio} />
 				<dl>
 					<dd>name</dd>
 					<dt>{piece.name}</dt>

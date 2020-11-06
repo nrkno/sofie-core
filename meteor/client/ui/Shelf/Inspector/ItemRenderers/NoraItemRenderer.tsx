@@ -9,12 +9,14 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
+import { Studio } from '../../../../../lib/collections/Studios'
 
 export { isNoraItem }
 
 interface INoraSuperRendererProps {
 	piece: AdLibPieceUi | PieceUi
 	showStyleBase: ShowStyleBase
+	studio: Studio
 }
 
 interface INoraSuperRendererState {
@@ -50,7 +52,11 @@ export default withTranslation()(
 
 			return (
 				<ErrorBoundary>
-					<InspectorTitle piece={this.props.piece} showStyleBase={this.props.showStyleBase} />
+					<InspectorTitle
+						piece={this.props.piece}
+						showStyleBase={this.props.showStyleBase}
+						studio={this.props.studio}
+					/>
 					<div className="shelf-inspector__content">
 						<h2>{actualPiece.name}</h2>
 						<button

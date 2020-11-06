@@ -6,8 +6,16 @@ import { AdLibPieceUi } from '../../AdLibPanel'
 import { RundownUtils } from '../../../../lib/rundown'
 import { RundownAPI } from '../../../../../lib/api/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
+import { Studio } from '../../../../../lib/collections/Studios'
+import { withMediaObjectStatus } from '../../../SegmentTimeline/withMediaObjectStatus'
 
-export default function InspectorTitle(props: { piece: PieceUi | AdLibPieceUi; showStyleBase: ShowStyleBase }) {
+interface IProps {
+	piece: PieceUi | AdLibPieceUi
+	showStyleBase: ShowStyleBase
+	studio: Studio
+}
+
+const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTitle(props: IProps) {
 	const piece = RundownUtils.isAdLibPiece(props.piece)
 		? (props.piece as AdLibPieceUi)
 		: (props.piece.instance.piece as Piece)
@@ -31,4 +39,6 @@ export default function InspectorTitle(props: { piece: PieceUi | AdLibPieceUi; s
 			<span className="shelf-inspector__title__label">{piece.name}</span>
 		</h2>
 	)
-}
+})
+
+export default InspectorTitle

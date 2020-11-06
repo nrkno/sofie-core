@@ -19,12 +19,14 @@ import { RundownViewEvents } from '../../../RundownView'
 import { RundownBaselineAdLibAction } from '../../../../../lib/collections/RundownBaselineAdLibActions'
 import { ProtectedString } from '../../../../../lib/lib'
 import { PartId } from '../../../../../lib/collections/Parts'
+import { Studio } from '../../../../../lib/collections/Studios'
 
 export { isActionItem }
 
 export interface IProps {
 	piece: PieceUi | AdLibPieceUi
 	showStyleBase: ShowStyleBase
+	studio: Studio
 }
 
 export interface ITrackedProps {
@@ -170,7 +172,11 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 
 			return (
 				<>
-					<InspectorTitle piece={this.props.piece} showStyleBase={this.props.showStyleBase} />
+					<InspectorTitle
+						piece={this.props.piece}
+						showStyleBase={this.props.showStyleBase}
+						studio={this.props.studio}
+					/>
 					<div className="shelf-inspector__action-editor">
 						<div className="shelf-inspector__action-editor__panel">
 							{(action.userDataManifest && action.userDataManifest.editableFields && this.props.targetAction && (

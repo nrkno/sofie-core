@@ -2670,6 +2670,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										rundownLayout={this.state.rundownLayout}
 										shelfDisplayOptions={this.props.shelfDisplayOptions}
 										bucketDisplayFilter={this.props.bucketDisplayFilter}
+										studio={this.props.studio}
 									/>
 								</ErrorBoundary>
 								<ErrorBoundary>
@@ -2711,6 +2712,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								onChangeBottomMargin={this.onChangeBottomMargin}
 								onRegisterHotkeys={this.onRegisterHotkeys}
 								rundownLayout={this.state.rundownLayout}
+								studio={this.props.studio}
 								fullViewport={true}
 								shelfDisplayOptions={this.props.shelfDisplayOptions}
 								bucketDisplayFilter={this.props.bucketDisplayFilter}

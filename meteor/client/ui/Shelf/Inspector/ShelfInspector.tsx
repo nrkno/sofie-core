@@ -8,12 +8,14 @@ import { AdLibPieceUi } from '../AdLibPanel'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
+import { Studio } from '../../../../lib/collections/Studios'
 
 export { ShelfInspector }
 
 interface IShelfInspectorProps {
 	selected: AdLibPieceUi | PieceUi | undefined
 	showStyleBase: ShowStyleBase
+	studio: Studio
 }
 
 class ShelfInspector extends React.Component<IShelfInspectorProps> {
@@ -27,8 +29,8 @@ class ShelfInspector extends React.Component<IShelfInspectorProps> {
 	}
 
 	render() {
-		const { selected, showStyleBase } = this.props
-		const content = selected && renderItem(selected, showStyleBase)
+		const { selected, showStyleBase, studio } = this.props
+		const content = selected && renderItem(selected, showStyleBase, studio)
 
 		return (
 			<ContextMenuTrigger

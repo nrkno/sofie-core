@@ -45,6 +45,7 @@ import { ShelfTabs } from './Shelf'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { ReactiveMap } from '../../../lib/reactiveMap'
 import { Studio } from '../../../lib/collections/Studios'
+import { truncate } from 'fs'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -330,6 +331,7 @@ export const GlobalAdLibHotkeyUseMap = new ReactiveMap<number>()
 
 export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
+	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse: {
@@ -365,8 +367,12 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			}
 		).fetch()
 		rundownAdLibs = rundownAdLibItems.map((item) => {
-			const uiAdLib: AdLibPieceUi = { ...item }
-			uiAdLib.isGlobal = true
+			const uiAdLib: AdLibPieceUi = {
+				...item,
+				isGlobal: true,
+				outputLayer: outputLayerLookup[item.outputLayerId],
+				sourceLayer: sourceLayerLookup[item.sourceLayerId],
+			}
 
 			return uiAdLib
 		})
@@ -402,6 +408,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					lifespan: PieceLifespan.WithinPart,
 					externalId: unprotectString(action._id),
 					rundownId: action.rundownId,
+					sourceLayer: sourceLayerLookup[sourceLayerId],
+					outputLayer: outputLayerLookup[outputLayerId],
 					sourceLayerId,
 					outputLayerId,
 					_rank: action.display._rank || 0,
