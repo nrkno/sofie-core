@@ -324,9 +324,6 @@ export function deactivate(
 ): ClientAPI.ClientResponse<void> {
 	return ClientAPI.responseSuccess(ServerPlayoutAPI.deactivateRundownPlaylist(context, rundownPlaylistId))
 }
-export function reloadRundownPlaylistData(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.reloadRundownPlaylistData(context, rundownPlaylistId))
-}
 export function unsyncRundown(context: MethodContext, rundownId: RundownId) {
 	return ClientAPI.responseSuccess(ServerRundownAPI.unsyncRundown(context, rundownId))
 }
@@ -838,9 +835,6 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			rundownPlaylistId,
 			rehearsal
 		)
-	}
-	reloadData(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return traceAction('userAction.reloadRundownPlaylistData', reloadRundownPlaylistData, this, rundownPlaylistId)
 	}
 	unsyncRundown(_userEvent: string, rundownId: RundownId) {
 		return traceAction('userAction.unsyncRundown', unsyncRundown, this, rundownId)

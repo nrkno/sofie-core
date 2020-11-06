@@ -15,7 +15,6 @@ export interface NewPlayoutAPI {
 	rundownResetAndActivate(playlistId: RundownPlaylistId, rehearsal?: boolean): Promise<void>
 	rundownActivate(playlistId: RundownPlaylistId, rehearsal: boolean): Promise<void>
 	rundownDeactivate(playlistId: RundownPlaylistId): Promise<void>
-	reloadRundownPlaylistData(playlistId: RundownPlaylistId): Promise<ReloadRundownPlaylistResponse>
 	pieceTakeNow(
 		playlistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -67,7 +66,6 @@ export enum PlayoutAPIMethods {
 	'rundownResetAndActivate' = 'playout.rundownResetAndActivate',
 	'rundownActivate' = 'playout.rundownActivate',
 	'rundownDeactivate' = 'playout.rundownDeactivate',
-	'reloadRundownPlaylistData' = 'playout.reloadRundownPlaylistData',
 
 	'updateStudioBaseline' = 'playout.updateStudioBaseline',
 	'shouldUpdateStudioBaseline' = 'playout.shouldUpdateStudioBaseline',

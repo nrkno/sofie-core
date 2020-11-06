@@ -31,9 +31,6 @@ class ServerPlayoutAPIClass extends MethodContextAPI implements NewPlayoutAPI {
 	rundownDeactivate(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerPlayoutAPI.deactivateRundownPlaylist(this, playlistId))
 	}
-	reloadRundownPlaylistData(playlistId: RundownPlaylistId) {
-		return makePromise(() => ServerPlayoutAPI.reloadRundownPlaylistData(this, playlistId))
-	}
 	pieceTakeNow(
 		playlistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
