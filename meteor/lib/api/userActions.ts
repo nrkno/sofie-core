@@ -61,11 +61,6 @@ export interface NewUserActionAPI extends MethodContext {
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
-	reloadData(
-		userEvent: string,
-		rundownPlaylistId: RundownPlaylistId
-	): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
-	unsyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
 	disableNextPiece(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
@@ -148,6 +143,7 @@ export interface NewUserActionAPI extends MethodContext {
 	): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
 	removeRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
 	resyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
+	unsyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>> //
 	resyncSegment(
 		userEvent: string,
 		rundownId: RundownId,

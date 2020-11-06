@@ -32,7 +32,7 @@ export interface NewRundownAPI {
 		intoPlaylistId: RundownPlaylistId | null,
 		rundownsIdsInPlaylistInOrder: RundownId[]
 	): Promise<void>
-	restoreRundownOrder(playlistId: RundownPlaylistId): Promise<void>
+	restoreRundownsInPlaylistToDefaultOrder(playlistId: RundownPlaylistId): Promise<void>
 }
 
 export enum RundownAPIMethods {
@@ -47,7 +47,7 @@ export enum RundownAPIMethods {
 	'unsyncRundown' = 'rundown.unsyncRundown',
 	'unsyncSegment' = 'rundown.unsyncSegment',
 	'moveRundown' = 'rundown.moveRundown',
-	'restoreRundownOrder' = 'rundown.restoreRundownOrder',
+	'restoreRundownsInPlaylistToDefaultOrder' = 'rundown.restoreRundownsInPlaylistToDefaultOrder',
 }
 
 export namespace RundownAPI {
