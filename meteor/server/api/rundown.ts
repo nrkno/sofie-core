@@ -928,7 +928,7 @@ export namespace ServerRundownAPI {
 		}
 	}
 	/** Restore the order of rundowns in a playlist, giving control over the ordering back to the NRCS */
-	export function restoreRundownOrder(context: MethodContext, playlistId: RundownPlaylistId) {
+	export function restoreRundownsInPlaylistToDefaultOrder(context: MethodContext, playlistId: RundownPlaylistId) {
 		const access = RundownPlaylistContentWriteAccess.anyContent(context, playlistId)
 		if (!access.playlist) throw new Meteor.Error(404, `Playlist "${playlistId}" not found!`)
 
@@ -1115,8 +1115,8 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 			ServerRundownAPI.moveRundown(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 		)
 	}
-	restoreRundownOrder(playlistId: RundownPlaylistId) {
-		return makePromise(() => ServerRundownAPI.restoreRundownOrder(this, playlistId))
+	restoreRundownsInPlaylistToDefaultOrder(playlistId: RundownPlaylistId) {
+		return makePromise(() => ServerRundownAPI.restoreRundownsInPlaylistToDefaultOrder(this, playlistId))
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)

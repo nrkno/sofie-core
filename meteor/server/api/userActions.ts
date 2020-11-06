@@ -779,7 +779,7 @@ export function restoreRundownOrder(
 ): ClientAPI.ClientResponse<void> {
 	check(playlistId, String)
 
-	return ClientAPI.responseSuccess(ServerRundownAPI.restoreRundownOrder(context, playlistId))
+	return ClientAPI.responseSuccess(ServerRundownAPI.restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
 }
 
 export function traceAction<T>(description: string, fn: (...args: any[]) => T, ...args: any[]) {
