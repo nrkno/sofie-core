@@ -1,5 +1,6 @@
 import { ControllerAbstract } from './lib'
 import { PrompterViewInner } from '../PrompterView'
+import Spline from 'cubic-spline'
 
 const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
 
@@ -16,6 +17,7 @@ export class JoyConController extends ControllerAbstract {
 	private readonly rangeNeutralMax = 0.25 // pedal "front" position where scrolling starts, the 0 speed origin
 	private readonly rangeFwdMax = 1 // pedal "all front" position where scrolling is maxed out
 	private readonly speedMap = [1, 2, 3, 4, 5, 8, 12, 30]
+	private speedSpline: Spline
 
 	// private direction: 'backwards' | 'neutral' | 'forwards' = 'neutral'
 	private updateSpeedHandle: number | null = null
@@ -42,6 +44,15 @@ export class JoyConController extends ControllerAbstract {
 			console.error('rangeFwdMax must be larger to rangeNeutralMax. Pedal control will not initialize')
 			return
 		}
+
+		// create splines, using the input speedMaps
+		this.speedSpline = new Spline(
+			this.speedMap.map(
+				(y, index, array) =>
+					((this.rangeFwdMax - this.rangeNeutralMax) / (array.length - 1)) * index + this.rangeNeutralMax
+			),
+			this.speedMap
+		)
 
 		window.addEventListener('gamepadconnected', this.updateScrollPosition.bind(this))
 		window.addEventListener('gamepaddisconnected', this.updateScrollPosition.bind(this))
@@ -113,22 +124,18 @@ export class JoyConController extends ControllerAbstract {
 		inputValue = Math.min(Math.max(inputValue, rangeRevMin), rangeFwdMax) // clamps in between rangeRevMin and rangeFwdMax
 
 		if (inputValue >= rangeRevMin && inputValue <= rangeNeutralMin) {
-			// find the position within the backwards range
-			const rangePosition = (rangeNeutralMin - inputValue) / (rangeNeutralMin - rangeRevMin) // how far, 0.0-1.0, within the range are we?
-			const rangeIndex = Math.ceil(rangePosition * this.speedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
-			this.lastSpeed = this.speedMap[rangeIndex] * -1 // applies the speed as a negative value to reverse
+			// 1) Use the reverse speed spline for the expected speed. The reverse speed is specified using positive values,
+			//    so the result needs to be inversed
+			this.lastSpeed = Math.round(this.speedSpline.at(inputValue)) * -1
 		} else if (inputValue >= rangeNeutralMin && inputValue <= rangeNeutralMax) {
-			// we're in the neutral zone
+			// 2) we're in the neutral zone
 			this.lastSpeed = 0
 		} else if (inputValue >= rangeNeutralMax && inputValue <= rangeFwdMax) {
-			// find the position within the forward range
-			const rangePosition = (inputValue - rangeNeutralMax) / (rangeFwdMax - rangeNeutralMax) // how far, 0.0-1.0, within the range are we?
-			const rangeIndex = Math.ceil(rangePosition * this.speedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
-			this.lastSpeed = this.speedMap[rangeIndex] // applies the speed
+			// 3) Use the speed spline to find the expected speed at this point
+			this.lastSpeed = Math.round(this.speedSpline.at(inputValue))
 		} else {
-			// we should never be able to hit this due to validation above
+			// 4) we should never be able to hit this due to validation above
 			console.error(`Illegal input value ${inputValue}`)
-			// this.direction = 'neutral'
 			return
 		}
 	}
