@@ -33,7 +33,7 @@ export enum RundownAPIMethods { // Using our own method definition, to catch ext
 	'unsyncRundown' = 'rundown.unsyncRundown',
 	'unsyncSegment' = 'rundown.unsyncSegment',
 	'moveRundown' = 'rundown.moveRundown',
-	'restoreRundownOrder' = 'rundown.restoreRundownOrder',
+	'restoreRundownsInPlaylistToDefaultOrder' = 'rundown.restoreRundownsInPlaylistToDefaultOrder',
 }
 
 describe('Rundown', () => {
@@ -137,7 +137,7 @@ describe('Rundown', () => {
 		expect(RundownPlaylists.find().count()).toEqual(2) // A playlist was removed
 
 		// Restore the order:
-		Meteor.call(RundownAPIMethods.restoreRundownOrder, playlist0)
+		Meteor.call(RundownAPIMethods.restoreRundownsInPlaylistToDefaultOrder, playlist0)
 		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown00', 'rundown01', 'rundown02'])
 	})
 })
