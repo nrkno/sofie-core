@@ -7,12 +7,9 @@ import {
 	applyClassToDocument,
 	registerCollection,
 	normalizeArray,
-	makePromise,
 	getCurrentTime,
 	asyncCollectionFindFetch,
-	waitForPromise,
 	normalizeArrayFunc,
-	mongoWhere,
 	ProtectedString,
 	unprotectString,
 } from '../lib'
@@ -20,10 +17,8 @@ import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Run
 import { Studio, Studios, StudioId } from './Studios'
 import { Segments, Segment, DBSegment, SegmentId } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
-import { Pieces, Piece } from './Pieces'
 import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
-import { PieceInstance, PieceInstances } from './PieceInstances'
 import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { createMongoCollection } from './lib'
@@ -218,6 +213,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				name: 1,
 				_rank: 1,
 				playlistId: 1,
+				expectedStart: 1,
+				expectedDuration: 1,
 			},
 		})
 		const segments = Segments.find(

@@ -8,6 +8,7 @@ import { Time, ProtectedString, unprotectString, isProtectedString, protectStrin
 import { HTMLAttributes } from 'react'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { RundownId } from '../../../lib/collections/Rundowns'
 
 /**
  * Priority level for Notifications.
@@ -110,7 +111,7 @@ export class NotifierHandle {
 	}
 }
 
-type NotificationsSource = SegmentId | string | undefined
+type NotificationsSource = RundownId | SegmentId | string | undefined
 /**
  * Singleton handling all the notifications.
  *

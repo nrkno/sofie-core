@@ -1,6 +1,6 @@
 import { Omit } from '../lib'
 import { ClientAPI } from '../api/client'
-import { MeteorCall, MethodContext } from './methods'
+import { MethodContext } from './methods'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { PartId } from '../collections/Parts'
 import { RundownId } from '../collections/Rundowns'
@@ -16,7 +16,6 @@ import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
 import { BucketId, Bucket } from '../collections/Buckets'
 import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { BucketAdLib } from '../collections/BucketAdlibs'
-import { AdLibActionId } from '../collections/AdLibActions'
 import { ActionUserData } from 'tv-automation-sofie-blueprints-integration'
 
 export interface NewUserActionAPI extends MethodContext {

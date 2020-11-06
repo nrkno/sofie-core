@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Time, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'

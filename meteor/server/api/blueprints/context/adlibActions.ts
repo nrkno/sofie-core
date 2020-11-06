@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import { Random } from 'meteor/random'
 import {
 	unprotectString,
 	unprotectObject,
@@ -20,10 +19,8 @@ import {
 	IBlueprintPiece,
 	IBlueprintPart,
 	IBlueprintResolvedPieceInstance,
-	PieceLifespan,
 	OmitId,
 	IBlueprintMutatablePart,
-	PartHoldMode,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Rundown } from '../../../../lib/collections/Rundowns'
@@ -33,73 +30,23 @@ import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartIn
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getResolvedPieces } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { NotesContext, ShowStyleContext, EventContext } from './context'
+import { NotesContext, ShowStyleContext } from './context'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
+import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'
 
 export enum ActionPartChange {
 	NONE = 0,
 	SAFE_CHANGE = 1,
 }
 
-const IBlueprintPieceSample: Required<IBlueprintPiece> = {
-	externalId: '',
-	enable: { start: 0 },
-	virtual: false,
-	continuesRefId: '',
-	isTransition: false,
-	extendOnHold: false,
-	name: '',
-	metaData: {},
-	sourceLayerId: '',
-	outputLayerId: '',
-	content: {},
-	transitions: {},
-	lifespan: PieceLifespan.WithinPart,
-	adlibPreroll: 0,
-	toBeQueued: false,
-	expectedPlayoutItems: [],
-	adlibAutoNext: false,
-	adlibAutoNextOverlap: 0,
-	adlibDisableOutTransition: false,
-	tags: [],
-}
-// Compile a list of the keys which are allowed to be set
-const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof IBlueprintPiece>
-
-const IBlueprintMutatablePartSample: Required<IBlueprintMutatablePart> = {
-	title: '',
-	metaData: {},
-	autoNext: false,
-	autoNextOverlap: 0,
-	prerollDuration: 0,
-	transitionPrerollDuration: null,
-	transitionKeepaliveDuration: null,
-	transitionDuration: null,
-	disableOutTransition: false,
-	expectedDuration: 0,
-	holdMode: PartHoldMode.NONE,
-	shouldNotifyCurrentPlayingPart: false,
-	classes: [],
-	classesForNext: [],
-	displayDurationGroup: '',
-	displayDuration: 0,
-	identifier: '',
-}
-// Compile a list of the keys which are allowed to be set
-const IBlueprintMutatablePartSampleKeys = Object.keys(IBlueprintMutatablePartSample) as Array<
-	keyof IBlueprintMutatablePart
->
-
 /** Actions */
 export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
 	private readonly _cache: CacheForRundownPlaylist
 	private readonly rundownPlaylist: RundownPlaylist
 	private readonly rundown: Rundown
-
-	private queuedPartInstance: PartInstance | undefined
 
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
 	public currentPartState: ActionPartChange = ActionPartChange.NONE
@@ -283,8 +230,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				pieceInstance.piece._id,
 				this.getShowStyleBase().blueprintId,
 				piece.content.timelineObjects,
-				true,
-				{}
+				true
 			)
 		}
 

@@ -1,11 +1,17 @@
 import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection, ProtectedString, omit } from '../lib'
 import * as _ from 'underscore'
-import { IBlueprintConfig, BlueprintMappings, BlueprintMapping, TSR } from 'tv-automation-sofie-blueprints-integration'
+import {
+	IBlueprintConfig,
+	BlueprintMappings,
+	BlueprintMapping,
+	TSR,
+	LookaheadMode,
+} from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
-import { ShowStyleBase, ShowStyleBaseId } from './ShowStyleBases'
+import { ShowStyleBaseId } from './ShowStyleBases'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 
@@ -78,6 +84,14 @@ export interface DBStudio {
 	routeSets: {
 		[id: string]: StudioRouteSet
 	}
+
+	routeSetExclusivityGroups: {
+		[id: string]: StudioRouteSetExclusivityGroup
+	}
+}
+
+export interface StudioRouteSetExclusivityGroup {
+	name: string
 }
 
 export interface StudioRouteSet {
@@ -85,6 +99,8 @@ export interface StudioRouteSet {
 	name: string
 	/** Whether this group is active or not */
 	active: boolean
+	/** Default state of this group */
+	defaultActive?: boolean | undefined
 	/** Only one Route can be active at the same time in the exclusivity-group */
 	exclusivityGroup?: string
 	/** If true, should be displayed and toggleable by user */
@@ -98,18 +114,30 @@ export enum StudioRouteBehavior {
 	ACTIVATE_ONLY = 2,
 }
 export interface RouteMapping extends ResultingMappingRoute {
-	mappedLayer: string
+	/** Which original layer to route. If false, a "new" layer will be inserted during routing */
+	mappedLayer: string | undefined
 }
 export interface ResultingMappingRoutes {
-	[mappedLayer: string]: ResultingMappingRoute[]
+	/** Routes that route existing layers */
+	existing: {
+		[mappedLayer: string]: ResultingMappingRoute[]
+	}
+	/** Routes that create new layers, from nothing */
+	inserted: ResultingMappingRoute[]
 }
 export interface ResultingMappingRoute {
 	outputMappedLayer: string
+	deviceType?: TSR.DeviceType
 	remapping?: Partial<BlueprintMapping>
 }
 
 export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
-	const routes: ResultingMappingRoutes = {}
+	const routes: ResultingMappingRoutes = {
+		existing: {},
+		inserted: [],
+	}
+
+	let i = 0
 
 	const exclusivityGroups: { [groupId: string]: true } = {}
 	_.each(studio.routeSets, (routeSet) => {
@@ -124,11 +152,17 @@ export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
 			}
 			if (useRoute) {
 				_.each(routeSet.routes, (routeMapping) => {
-					if (routeMapping.mappedLayer && routeMapping.outputMappedLayer) {
-						if (!routes[routeMapping.mappedLayer]) {
-							routes[routeMapping.mappedLayer] = []
+					if (routeMapping.outputMappedLayer) {
+						if (routeMapping.mappedLayer) {
+							// Route an existing layer
+							if (!routes.existing[routeMapping.mappedLayer]) {
+								routes.existing[routeMapping.mappedLayer] = []
+							}
+							routes.existing[routeMapping.mappedLayer].push(omit(routeMapping, 'mappedLayer'))
+						} else {
+							// Insert a new routed layer
+							routes.inserted.push(omit(routeMapping, 'mappedLayer'))
 						}
-						routes[routeMapping.mappedLayer].push(omit(routeMapping, 'mappedLayer'))
 					}
 				})
 			}
@@ -139,21 +173,35 @@ export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
 }
 export function getRoutedMappings(inputMappings: MappingsExt, mappingRoutes: ResultingMappingRoutes): MappingsExt {
 	const outputMappings: MappingsExt = {}
-	_.each(inputMappings, (inputMapping, inputLayer) => {
-		const routes = mappingRoutes[inputLayer]
+	for (let inputLayer of Object.keys(inputMappings)) {
+		const inputMapping = inputMappings[inputLayer]
+
+		const routes = mappingRoutes.existing[inputLayer]
 		if (routes) {
-			_.each(routes, (route) => {
+			for (let route of routes) {
 				const routedMapping: MappingExt = {
 					...inputMapping,
 					...(route.remapping || {}),
 				}
 				outputMappings[route.outputMappedLayer] = routedMapping
-			})
+			}
 		} else {
 			// If no route is found at all, pass it through (backwards compatibility)
 			outputMappings[inputLayer] = inputMapping
 		}
-	})
+	}
+	// also insert new routed layers:
+	for (let route of mappingRoutes.inserted) {
+		if (route.remapping && route.deviceType && route.remapping.deviceId) {
+			const routedMapping: MappingExt = {
+				lookahead: route.remapping.lookahead || LookaheadMode.NONE,
+				device: route.deviceType,
+				deviceId: route.remapping.deviceId,
+				...route.remapping,
+			}
+			outputMappings[route.outputMappedLayer] = routedMapping
+		}
+	}
 	return outputMappings
 }
 
@@ -172,6 +220,10 @@ export class Studio implements DBStudio {
 
 	public routeSets: {
 		[id: string]: StudioRouteSet
+	}
+
+	public routeSetExclusivityGroups: {
+		[id: string]: StudioRouteSetExclusivityGroup
 	}
 
 	constructor(document: DBStudio) {

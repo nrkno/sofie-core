@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { TimelineObjGeneric, TimelineObjGroup } from './collections/Timeline'
 import { TimelineObject } from 'superfly-timeline'
-import { clone, unprotectString } from './lib'
+import { clone } from './lib'
 import { logger } from './logging'
 
 // This is a collection of functions that match what the playout-gateway / TSR does

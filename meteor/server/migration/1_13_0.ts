@@ -1,7 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
-import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { Studios } from '../../lib/collections/Studios'
-import { Timeline } from '../../lib/collections/Timeline'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import * as semver from 'semver'
 import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/X_X_X'
@@ -60,9 +58,8 @@ export const addSteps = addMigrationSteps('1.13.0', [
 		validate: () => {
 			let databaseSystem = getCoreSystem()
 
-			// Only run this if version is under 0.25.0, in order to not create the deprecated databases
-			if (databaseSystem && semver.satisfies(databaseSystem.version, '<1.12.0')) {
-				// =======================================================   ^^^^^ TODO: change this, to Release 25 version
+			// Only run this if version is under 1.13.0, in order to not create the deprecated databases
+			if (databaseSystem && semver.satisfies(databaseSystem.version, '<1.13.0')) {
 				const dbs = getDeprecatedDatabases()
 
 				if (dbs) {

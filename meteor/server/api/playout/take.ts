@@ -20,9 +20,8 @@ import { updateTimeline } from './timeline'
 import { logger } from '../../logging'
 import { PartEndState, VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { getResolvedPieces } from './pieces'
-import { Part } from '../../../lib/collections/Parts'
 import * as _ from 'underscore'
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
+import { PieceId } from '../../../lib/collections/Pieces'
 import { PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
@@ -32,7 +31,6 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartHasStarted } from '../asRunLog'
 import { MethodContext } from '../../../lib/api/methods'
 import { profiler } from '../profiler'
-import { ServerPlayoutAPI } from './playout'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
@@ -353,8 +351,6 @@ function startHold(
 				dynamicallyInserted: getCurrentTime(),
 				piece: {
 					...clone(instance.piece),
-					_id: protectString<PieceId>(instance.piece._id + '_hold'),
-					startPartId: holdToPartInstance.part._id,
 					enable: { start: 0 },
 					extendOnHold: false,
 				},
@@ -363,6 +359,9 @@ function startHold(
 					fromPreviousPart: true,
 					fromHold: true,
 				},
+				// Preserve the timings from the playing instance
+				startedPlayback: instance.startedPlayback,
+				stoppedPlayback: instance.stoppedPlayback,
 			})
 			const content = newInstance.piece.content as VTContent | undefined
 			if (content && content.fileName && content.sourceDuration && instance.startedPlayback) {

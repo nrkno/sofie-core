@@ -1,7 +1,6 @@
 import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection, Omit, ProtectedString, ProtectedStringProperties } from '../lib'
-import { Meteor } from 'meteor/meteor'
-import { IBlueprintAsRunLogEvent, IBlueprintAsRunLogEventContent } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintAsRunLogEvent } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { StudioId } from './Studios'

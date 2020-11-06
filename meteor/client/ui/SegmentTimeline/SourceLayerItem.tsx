@@ -95,7 +95,7 @@ export const SourceLayerItem = withTranslation()(
 			})
 		}
 
-		getItemLabelOffsetLeft = (): { [key: string]: string } => {
+		getItemLabelOffsetLeft = (): React.CSSProperties => {
 			if (this.props.relative) {
 				return {}
 			} else {
@@ -220,7 +220,7 @@ export const SourceLayerItem = withTranslation()(
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
+										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
 										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
@@ -245,7 +245,7 @@ export const SourceLayerItem = withTranslation()(
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
+										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
 										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
@@ -261,7 +261,7 @@ export const SourceLayerItem = withTranslation()(
 			}
 		}
 
-		getItemLabelOffsetRight = (): { [key: string]: string } => {
+		getItemLabelOffsetRight = (): React.CSSProperties => {
 			if (this.props.relative) {
 				return {}
 			} else {
@@ -462,6 +462,7 @@ export const SourceLayerItem = withTranslation()(
 			if (this.props.isLiveLine) {
 				this.mountResizeObserver()
 			}
+
 			window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
 		}
 
@@ -472,7 +473,7 @@ export const SourceLayerItem = withTranslation()(
 			clearTimeout(this.highlightTimeout)
 		}
 
-		componentDidUpdate(prevProps: ISourceLayerItemProps) {
+		componentDidUpdate(prevProps: ISourceLayerItemProps, prevState: ISourceLayerItemState) {
 			if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
 				const scrollLeftOffset = this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft)
 				const cursorTimePosition = this.state.cursorTimePosition + (this.props.scrollLeft - prevProps.scrollLeft)
@@ -496,45 +497,6 @@ export const SourceLayerItem = withTranslation()(
 			e.preventDefault()
 			e.stopPropagation()
 			this.props.onClick && this.props.onClick(this.props.piece, e)
-		}
-		tempDisplayInOutpoints = (e: React.MouseEvent<HTMLDivElement>) => {
-			// Note: This is a TEMPORARY way to set in & out points, will be replaced with a much nicer looking way at a later stage
-			doModalDialog({
-				title: 'Set in point & duration',
-				message: 'Please set the in-point & duration below',
-				yes: 'Save',
-				no: 'Discard',
-				// acceptOnly?: boolean
-				onAccept: (e: SomeEvent, inputResult: ModalInputResult) => {
-					const rundown = Rundowns.findOne(this.props.part.instance.rundownId)
-					if (!rundown) throw Error(`Rundown ${this.props.part.instance.rundownId} not found (in/out)`)
-
-					doUserAction(this.props.t, e, UserAction.SET_IN_OUT_POINTS, (e) =>
-						MeteorCall.userAction.setInOutPoints(
-							e,
-							rundown.playlistId,
-							this.props.part.instance.part._id,
-							this.props.piece.instance.piece._id,
-							inputResult.inPoint,
-							inputResult.outPoint
-						)
-					)
-				},
-				inputs: {
-					inPoint: {
-						label: 'In point',
-						text: 'In point',
-						type: 'float',
-						defaultValue: 0,
-					},
-					outPoint: {
-						label: 'Out point',
-						text: 'Out point',
-						type: 'float',
-						defaultValue: 0,
-					},
-				},
-			})
 		}
 
 		itemDblClick = (e: React.MouseEvent<HTMLDivElement>) => {

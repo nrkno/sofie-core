@@ -1,7 +1,6 @@
 import { AdLibPiece } from './AdLibPieces'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
-import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 

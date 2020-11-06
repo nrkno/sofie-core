@@ -1,6 +1,5 @@
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
-import { Meteor } from 'meteor/meteor'
 import { TimelineObjGeneric } from './Timeline'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'

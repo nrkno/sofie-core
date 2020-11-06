@@ -1,6 +1,6 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { withTracker } from '../lib/ReactMeteorData/ReactMeteorData'
+import { translateWithTracker } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -20,14 +20,14 @@ interface ITrackedProps {
 	}
 }
 
-export const SupportPopUp = withTracker<IProps, {}, ITrackedProps>((props: IProps) => {
+export const SupportPopUp = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 	const core = CoreSystem.findOne()
 	return {
 		support: core && core.support ? core.support : { message: '' },
 		systemInfo: core && core.systemInfo ? core.systemInfo : { message: '', enabled: false },
 	}
 })(
-	class SupportPopUp extends MeteorReactComponent<IProps & ITrackedProps> {
+	class SupportPopUp extends MeteorReactComponent<IProps & ITrackedProps & WithTranslation> {
 		constructor(props: IProps) {
 			super(props)
 		}
@@ -35,13 +35,15 @@ export const SupportPopUp = withTracker<IProps, {}, ITrackedProps>((props: IProp
 		// componentDidMount () {}
 
 		render() {
+			const { t } = this.props
 			return (
 				<div className="support-pop-up-panel">
+					<h2 className="mhn mvn">{t('Help & Support')}</h2>
+					{this.props.children && <div className="support-pop-up-panel__actions">{this.props.children}</div>}
+					{!this.props.support.message && <DocumentationLink></DocumentationLink>}
 					<div
 						dangerouslySetInnerHTML={this.props.support.message ? { __html: this.props.support.message } : undefined}
 					/>
-					{this.props.children && <div className="support-pop-up-panel__actions">{this.props.children}</div>}
-					{!this.props.support.message && <DocumentationLink></DocumentationLink>}
 				</div>
 			)
 		}

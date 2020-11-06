@@ -27,8 +27,8 @@ export interface ICustomLayerItemProps {
 	elementPosition: OffsetPosition
 	cursorPosition: OffsetPosition
 	cursorTimePosition: number
-	getItemLabelOffsetLeft?: () => { [key: string]: string }
-	getItemLabelOffsetRight?: () => { [key: string]: string }
+	getItemLabelOffsetLeft?: () => React.CSSProperties
+	getItemLabelOffsetRight?: () => React.CSSProperties
 	getItemDuration?: () => number
 	setAnchoredElsWidths?: (rightAnchoredWidth: number, leftAnchoredWidth: number) => void
 }
@@ -38,7 +38,7 @@ export class CustomLayerItemRenderer<
 	IProps extends ICustomLayerItemProps,
 	IState extends ISourceLayerItemState
 > extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
-	getItemLabelOffsetLeft(): { [key: string]: string } {
+	getItemLabelOffsetLeft(): React.CSSProperties {
 		if (this.props.getItemLabelOffsetLeft && typeof this.props.getItemLabelOffsetLeft === 'function') {
 			return this.props.getItemLabelOffsetLeft()
 		} else {
@@ -46,7 +46,7 @@ export class CustomLayerItemRenderer<
 		}
 	}
 
-	getItemLabelOffsetRight(): { [key: string]: string } {
+	getItemLabelOffsetRight(): React.CSSProperties {
 		if (this.props.getItemLabelOffsetRight && typeof this.props.getItemLabelOffsetRight === 'function') {
 			return this.props.getItemLabelOffsetRight()
 		} else {
@@ -96,7 +96,12 @@ export class CustomLayerItemRenderer<
 
 	renderOverflowTimeLabel() {
 		const overflowTime = this.doesOverflowTime()
-		if (overflowTime !== false) {
+		if (
+			overflowTime !== false &&
+			(!this.props.part.instance.part.autoNext ||
+				this.props.piece.instance.adLibSourceId !== undefined ||
+				this.props.piece.instance.dynamicallyInserted)
+		) {
 			return (
 				<div className="segment-timeline__piece__label label-overflow-time">
 					{RundownUtils.formatDiffToTimecode(overflowTime, true, false, true)}
@@ -113,15 +118,18 @@ export class CustomLayerItemRenderer<
 		const vtContent = innerPiece.content as VTContent | undefined
 		const seek = vtContent && vtContent.seek ? vtContent.seek : 0
 		if (
-			innerPiece.lifespan !== PieceLifespan.WithinPart &&
 			vtContent &&
-			vtContent.sourceDuration &&
+			vtContent.sourceDuration !== undefined &&
 			(this.props.piece.renderedInPoint || 0) + (vtContent.sourceDuration - seek) < (this.props.partDuration || 0)
 		) {
 			return (
 				<div
 					className="segment-timeline__piece__source-finished"
-					style={{ left: ((vtContent.sourceDuration - seek) * this.props.timeScale).toString() + 'px' }}></div>
+					style={{
+						left: this.props.relative
+							? (((vtContent.sourceDuration - seek) / (this.getItemDuration() || 1)) * 100).toString() + '%'
+							: ((vtContent.sourceDuration - seek) * this.props.timeScale).toString() + 'px',
+					}}></div>
 			)
 		}
 		return null

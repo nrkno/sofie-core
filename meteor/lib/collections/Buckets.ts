@@ -1,8 +1,5 @@
-import { PieceGeneric } from './Pieces'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
-import { Meteor } from 'meteor/meteor'
-import { IBlueprintAdLibPiece, BaseContent } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { registerIndex } from '../database'

@@ -21,13 +21,13 @@ import {
 	getUIZoom,
 } from '../lib/localStorage'
 import Status from './Status'
-import { Settings as SettingsComponent } from './Settings'
+import { Settings as SettingsView } from './Settings'
 import TestTools from './TestTools'
 import { RundownList } from './RundownList'
 import { RundownView } from './RundownView'
 import { ActiveRundownView } from './ActiveRundownView'
-import { ClockView } from './ClockView'
-import { ConnectionStatusNotification } from './ConnectionStatusNotification'
+import { ClockView } from './ClockView/ClockView'
+import { ConnectionStatusNotification } from '../lib/ConnectionStatusNotification'
 import { BrowserRouter as Router, Route, Switch, Redirect, RouteComponentProps } from 'react-router-dom'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './Prompter/PrompterView'
@@ -43,6 +43,7 @@ import { getUser, User } from '../../lib/collections/Users'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { DocumentTitleProvider } from '../lib/DocumentTitleProvider'
 
 const NullComponent = () => null
 
@@ -268,8 +269,11 @@ export const App = translateWithTracker(() => {
 								<this.protectedRoute path="/prompter/:studioId" component={PrompterView} />
 								<this.protectedRoute path="/countdowns/:studioId/presenter" component={ClockView} />
 								<this.protectedRoute path="/status" component={Status} />
-								<this.protectedRoute path="/settings" component={(props) => <SettingsComponent {...props} />} />
+								<this.protectedRoute path="/settings" component={SettingsView} />
 								<Route path="/testTools" component={TestTools} />
+								<Route>
+									<Redirect to="/" />
+								</Route>
 							</Switch>
 						</ErrorBoundary>
 						<ErrorBoundary>
@@ -280,6 +284,9 @@ export const App = translateWithTracker(() => {
 								<Route path="/prompter/:studioId" component={NullComponent} />
 								<Route path="/" component={ConnectionStatusNotification} />
 							</Switch>
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<DocumentTitleProvider />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<ModalDialogGlobalContainer />

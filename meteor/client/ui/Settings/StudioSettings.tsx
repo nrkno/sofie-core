@@ -12,6 +12,8 @@ import {
 	StudioRouteSet,
 	StudioRouteBehavior,
 	RouteMapping,
+	StudioRouteSetExclusivityGroup,
+	getActiveRoutes,
 } from '../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -203,9 +205,8 @@ const StudioDevices = withTranslation()(
 
 interface IDeviceMappingSettingsProps {
 	studio: Studio
-	layerId: string
 	mapping: BlueprintMapping
-	prefix?: string
+	attribute: string
 	showOptional?: boolean
 }
 
@@ -226,18 +227,17 @@ const DeviceMappingSettings = withTranslation()(
 			)
 		}
 
-		renderCasparCGMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderCasparCGMappingSettings(attribute: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('CasparCG Channel')}
-							{showOptional && this.renderOptionalInput(prefix + '.channel', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.channel', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.channel'}
+								attribute={attribute + '.channel'}
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}
@@ -248,10 +248,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('CasparCG Layer')}
-							{showOptional && this.renderOptionalInput(prefix + '.layer', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.layer', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.layer'}
+								attribute={attribute + '.layer'}
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}
@@ -262,10 +262,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Preview when not on air')}
-							{showOptional && this.renderOptionalInput(prefix + '.previewWhenNotOnAir', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.previewWhenNotOnAir', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.previewWhenNotOnAir'}
+								attribute={attribute + '.previewWhenNotOnAir'}
 								obj={this.props.studio}
 								type="checkbox"
 								collection={Studios}
@@ -277,18 +277,17 @@ const DeviceMappingSettings = withTranslation()(
 			)
 		}
 
-		renderAtemMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderAtemMappingSettings(attribute: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Mapping type')}
-							{showOptional && this.renderOptionalInput(prefix + '.mappingType', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.mappingType', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.mappingType'}
+								attribute={attribute + '.mappingType'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.MappingAtemType}
@@ -300,10 +299,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Index')}
-							{showOptional && this.renderOptionalInput(prefix + '.index', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.index', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.index'}
+								attribute={attribute + '.index'}
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}
@@ -313,18 +312,17 @@ const DeviceMappingSettings = withTranslation()(
 				</React.Fragment>
 			)
 		}
-		renderLawoMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderLawoMappingSettings(attribute: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Mapping type')}
-							{showOptional && this.renderOptionalInput(prefix + '.mappingType', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.mappingType', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.mappingType'}
+								attribute={attribute + '.mappingType'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.MappingLawoType}
@@ -336,10 +334,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Identifier')}
-							{showOptional && this.renderOptionalInput(prefix + '.identifier', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.identifier', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.identifier'}
+								attribute={attribute + '.identifier'}
 								obj={this.props.studio}
 								type="text"
 								collection={Studios}
@@ -349,10 +347,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Priority')}
-							{showOptional && this.renderOptionalInput(prefix + '.priority', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.priority', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.priority'}
+								attribute={attribute + '.priority'}
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}
@@ -362,18 +360,17 @@ const DeviceMappingSettings = withTranslation()(
 				</React.Fragment>
 			)
 		}
-		renderPanasonicPTZSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderPanasonicPTZSettings(attribute: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Mapping type')}
-							{showOptional && this.renderOptionalInput(prefix + '.mappingType', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.mappingType', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.mappingType'}
+								attribute={attribute + '.mappingType'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.MappingPanasonicPtzType}
@@ -385,23 +382,22 @@ const DeviceMappingSettings = withTranslation()(
 				</React.Fragment>
 			)
 		}
-		renderTCPSendSettings(layerId: string, prefix?: string, _showOptional?: boolean) {
+		renderTCPSendSettings(attribute: string, _showOptional?: boolean) {
 			const { t } = this.props
 			return <React.Fragment></React.Fragment>
 		}
 
-		renderHyperdeckMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderHyperdeckMappingSettings(attribute: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Mapping type')}
-							{showOptional && this.renderOptionalInput(prefix + '.mappingType', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.mappingType', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.mappingType'}
+								attribute={attribute + '.mappingType'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.MappingHyperdeckType}
@@ -413,12 +409,11 @@ const DeviceMappingSettings = withTranslation()(
 				</React.Fragment>
 			)
 		}
-		renderPharosMappingSettings(layerId: string, prefix?: string, _showOptional?: boolean) {
+		renderPharosMappingSettings(attribute: string, _showOptional?: boolean) {
 			return <React.Fragment></React.Fragment>
 		}
-		renderSisyfosMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderSisyfosMappingSettings(prefix: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
@@ -437,19 +432,18 @@ const DeviceMappingSettings = withTranslation()(
 				</React.Fragment>
 			)
 		}
-		renderQuantelMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderQuantelMappingSettings(attribute: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Quantel Port ID')}
-							{showOptional && this.renderOptionalInput(prefix + '.portId', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.portId', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.portId'}
+								attribute={attribute + '.portId'}
 								obj={this.props.studio}
 								type="text"
 								collection={Studios}
@@ -460,10 +454,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Quantel Channel ID')}
-							{showOptional && this.renderOptionalInput(prefix + '.channelId', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.channelId', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.channelId'}
+								attribute={attribute + '.channelId'}
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}
@@ -474,10 +468,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Mode')}
-							{showOptional && this.renderOptionalInput(prefix + '.mode', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.mode', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.mode'}
+								attribute={attribute + '.mode'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.QuantelControlMode}
@@ -490,26 +484,26 @@ const DeviceMappingSettings = withTranslation()(
 			)
 		}
 		render() {
-			const { layerId, mapping, prefix, showOptional } = this.props
+			const { mapping, attribute, showOptional } = this.props
 
 			return mappingIsCasparCG(mapping)
-				? this.renderCasparCGMappingSettings(layerId, prefix, showOptional)
+				? this.renderCasparCGMappingSettings(attribute, showOptional)
 				: mappingIsAtem(mapping)
-				? this.renderAtemMappingSettings(layerId, prefix, showOptional)
+				? this.renderAtemMappingSettings(attribute, showOptional)
 				: mappingIsLawo(mapping)
-				? this.renderLawoMappingSettings(layerId, prefix, showOptional)
+				? this.renderLawoMappingSettings(attribute, showOptional)
 				: mappingIsPanasonicPtz(mapping)
-				? this.renderPanasonicPTZSettings(layerId, prefix, showOptional)
+				? this.renderPanasonicPTZSettings(attribute, showOptional)
 				: mappingIsTCPSend(mapping)
-				? this.renderTCPSendSettings(layerId, prefix, showOptional)
+				? this.renderTCPSendSettings(attribute, showOptional)
 				: mappingIsHyperdeck(mapping)
-				? this.renderHyperdeckMappingSettings(layerId, prefix, showOptional)
+				? this.renderHyperdeckMappingSettings(attribute, showOptional)
 				: mappingIsPharos(mapping)
-				? this.renderPharosMappingSettings(layerId, prefix, showOptional)
+				? this.renderPharosMappingSettings(attribute, showOptional)
 				: mappingIsSisyfos(mapping)
-				? this.renderSisyfosMappingSettings(layerId, prefix, showOptional)
+				? this.renderSisyfosMappingSettings(attribute, showOptional)
 				: mappingIsQuantel(mapping)
-				? this.renderQuantelMappingSettings(layerId, prefix, showOptional)
+				? this.renderQuantelMappingSettings(attribute, showOptional)
 				: null
 		}
 	}
@@ -621,20 +615,8 @@ const StudioMappings = withTranslation()(
 
 		renderMappings() {
 			const { t } = this.props
-			const activeRouteSets = Object.entries(this.props.studio.routeSets).filter(([_id, routeSet]) => routeSet.active)
-			const layerOverrides: {
-				[id: string]: string[]
-			} = {}
-			for (let [routeSetId, routeSet] of activeRouteSets) {
-				for (let routeMap of routeSet.routes) {
-					if (layerOverrides[routeMap.mappedLayer] === undefined) {
-						layerOverrides[routeMap.mappedLayer] = []
-					}
-					if (!layerOverrides[routeMap.mappedLayer].includes(routeSetId)) {
-						layerOverrides[routeMap.mappedLayer].push(routeSetId)
-					}
-				}
-			}
+
+			const activeRoutes = getActiveRoutes(this.props.studio)
 
 			return _.map(this.props.studio.mappings, (mapping: MappingExt, layerId: string) => {
 				// If an internal mapping, then hide it
@@ -648,14 +630,14 @@ const StudioMappings = withTranslation()(
 							})}>
 							<th className="settings-studio-device__name c3 notifications-s notifications-text">
 								{layerId}
-								{layerOverrides[layerId] !== undefined ? (
+								{activeRoutes.existing[layerId] !== undefined ? (
 									<Tooltip
 										overlay={t('This layer is now rerouted by an active Route Set: {{routeSets}}', {
-											routeSets: layerOverrides[layerId].join(', '),
-											count: layerOverrides[layerId].length,
+											routeSets: activeRoutes.existing[layerId].join(', '),
+											count: activeRoutes.existing[layerId].length,
 										})}
 										placement="right">
-										<span className="notification">{layerOverrides[layerId].length}</span>
+										<span className="notification">{activeRoutes.existing[layerId].length}</span>
 									</Tooltip>
 								) : null}
 							</th>
@@ -805,7 +787,11 @@ const StudioMappings = withTranslation()(
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
-										<DeviceMappingSettings layerId={layerId} mapping={mapping} studio={this.props.studio} />
+										<DeviceMappingSettings
+											mapping={mapping}
+											studio={this.props.studio}
+											attribute={'mappings.' + layerId}
+										/>
 									</div>
 									<div className="mod alright">
 										<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(layerId)}>
@@ -877,6 +863,30 @@ const StudioRoutings = withTranslation()(
 				this.finishEditItem(routeSetId)
 			}
 		}
+		confirmRemoveEGroup = (eGroupId: string, exclusivityGroup: StudioRouteSetExclusivityGroup) => {
+			const { t } = this.props
+			doModalDialog({
+				title: t('Remove this Exclusivity Group?'),
+				yes: t('Remove'),
+				no: t('Cancel'),
+				onAccept: () => {
+					this.removeExclusivityGroup(eGroupId)
+				},
+				message: (
+					<React.Fragment>
+						<p>
+							{t(
+								'Are you sure you want to remove exclusivity group "{{eGroupName}}"?\nRoute Sets assigned to this group will be reset to no group.',
+								{
+									eGroupName: exclusivityGroup.name,
+								}
+							)}
+						</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
+					</React.Fragment>
+				),
+			})
+		}
 		confirmRemoveRoute = (routeSetId: string, route: RouteMapping, index: number) => {
 			const { t } = this.props
 			doModalDialog({
@@ -914,6 +924,18 @@ const StudioRoutings = withTranslation()(
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</React.Fragment>
 				),
+			})
+		}
+		removeExclusivityGroup = (eGroupId: string) => {
+			let unsetObject = {}
+			_.forEach(this.props.studio.routeSets, (routeSet, routeSetId) => {
+				if (routeSet.exclusivityGroup === eGroupId) {
+					unsetObject['routeSets.' + routeSetId + '.exclusivityGroup'] = 1
+				}
+			})
+			unsetObject['routeSetExclusivityGroups.' + eGroupId] = ''
+			Studios.update(this.props.studio._id, {
+				$unset: unsetObject,
 			})
 		}
 		removeRouteSetRoute = (routeId: string, index: number) => {
@@ -972,6 +994,23 @@ const StudioRoutings = withTranslation()(
 				$set: setObject,
 			})
 		}
+		addNewExclusivityGroup = () => {
+			let newEGroupKeyName = 'exclusivityGroup'
+			let iter: number = 0
+			while ((this.props.studio.routeSetExclusivityGroups || {})[newEGroupKeyName + iter]) {
+				iter++
+			}
+
+			let newGroup: StudioRouteSetExclusivityGroup = {
+				name: 'New Exclusivity Group',
+			}
+			let setObject: Partial<DBStudio> = {}
+			setObject['routeSetExclusivityGroups.' + newEGroupKeyName + iter] = newGroup
+
+			Studios.update(this.props.studio._id, {
+				$set: setObject,
+			})
+		}
 		updateRouteSetId = (edit: EditAttributeBase, newValue: string) => {
 			let oldRouteId = edit.props.overrideDisplayValue
 			let newRouteId = newValue + ''
@@ -985,6 +1024,30 @@ const StudioRoutings = withTranslation()(
 			let mUnset = {}
 			mSet['routeSets.' + newRouteId] = route
 			mUnset['routeSets.' + oldRouteId] = 1
+
+			if (edit.props.collection) {
+				edit.props.collection.update(this.props.studio._id, {
+					$set: mSet,
+					$unset: mUnset,
+				})
+			}
+
+			this.finishEditItem(oldRouteId)
+			this.editItem(newRouteId)
+		}
+		updateExclusivityGroupId = (edit: EditAttributeBase, newValue: string) => {
+			let oldRouteId = edit.props.overrideDisplayValue
+			let newRouteId = newValue + ''
+			let route = this.props.studio.routeSetExclusivityGroups[oldRouteId]
+
+			if (this.props.studio.routeSetExclusivityGroups[newRouteId]) {
+				throw new Meteor.Error(400, 'Exclusivity Group "' + newRouteId + '" already exists')
+			}
+
+			let mSet = {}
+			let mUnset = {}
+			mSet['routeSetExclusivityGroups.' + newRouteId] = route
+			mUnset['routeSetExclusivityGroups.' + oldRouteId] = 1
 
 			if (edit.props.collection) {
 				edit.props.collection.update(this.props.studio._id, {
@@ -1013,7 +1076,12 @@ const StudioRoutings = withTranslation()(
 						<p className="text-s dimmed mhs">{t('There are no routes set up yet')}</p>
 					) : null}
 					{routeSet.routes.map((route, index) => {
-						const sourceMapping = this.props.studio.mappings[route.mappedLayer]
+						const deviceTypeFromMappedLayer: TSR.DeviceType | undefined = route.mappedLayer
+							? this.props.studio.mappings[route.mappedLayer]?.device
+							: undefined
+						const routeDeviceType: TSR.DeviceType | undefined = route.mappedLayer
+							? deviceTypeFromMappedLayer
+							: route.deviceType
 						return (
 							<div className="route-sets-editor mod pan mas" key={index}>
 								<button
@@ -1024,20 +1092,21 @@ const StudioRoutings = withTranslation()(
 								<div>
 									<div className="mod mvs mhs">
 										<label className="field">
-											{t('Source Layer ID')}
+											{t('Original Layer')}
 											<EditAttribute
 												modifiedClassName="bghl"
 												attribute={`routeSets.${routeSetId}.routes.${index}.mappedLayer`}
 												obj={this.props.studio}
-												type="dropdown"
+												type="dropdowntext"
 												options={Object.keys(this.props.studio.mappings)}
+												label={t('None')}
 												collection={Studios}
 												className="input text-input input-l"></EditAttribute>
 										</label>
 									</div>
 									<div className="mod mvs mhs">
 										<label className="field">
-											{t('New Layer ID')}
+											{t('New Layer')}
 											<EditAttribute
 												modifiedClassName="bghl"
 												attribute={`routeSets.${routeSetId}.routes.${index}.outputMappedLayer`}
@@ -1049,13 +1118,25 @@ const StudioRoutings = withTranslation()(
 									</div>
 									<div className="mod mvs mhs">
 										{t('Device Type')}
-										{sourceMapping ? (
-											<span className="mls">{TSR.DeviceType[sourceMapping.device]}</span>
+										{route.mappedLayer ? (
+											deviceTypeFromMappedLayer ? (
+												<span className="mls">{TSR.DeviceType[deviceTypeFromMappedLayer]}</span>
+											) : (
+												<span className="mls dimmed">{t('Source Layer not found')}</span>
+											)
 										) : (
-											<span className="mls dimmed">{t('Source Layer not found')}</span>
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`routeSets.${routeSetId}.routes.${index}.deviceType`}
+												obj={this.props.studio}
+												type="dropdown"
+												options={TSR.DeviceType}
+												optionsAreNumbers={true}
+												collection={Studios}
+												className="input text-input input-l"></EditAttribute>
 										)}
 									</div>
-									{sourceMapping && route.remapping !== undefined && (
+									{routeDeviceType && route.remapping !== undefined && (
 										<>
 											<div className="mod mvs mhs">
 												<label className="field">
@@ -1080,15 +1161,14 @@ const StudioRoutings = withTranslation()(
 												</label>
 											</div>
 											<DeviceMappingSettings
-												layerId={route.mappedLayer}
 												mapping={
 													{
-														device: sourceMapping.device,
+														device: routeDeviceType,
 														...route.remapping,
 													} as BlueprintMapping
 												}
 												studio={this.props.studio}
-												prefix={`routeSets.${routeSetId}.routes.${index}.remapping`}
+												attribute={`routeSets.${routeSetId}.routes.${index}.remapping`}
 												showOptional={true}
 											/>
 										</>
@@ -1101,8 +1181,110 @@ const StudioRoutings = withTranslation()(
 			)
 		}
 
+		renderExclusivityGroups() {
+			const { t } = this.props
+
+			if (Object.keys(this.props.studio.routeSetExclusivityGroups).length === 0) {
+				return (
+					<tr>
+						<td className="mhn dimmed">{t('There are no exclusivity groups set up.')}</td>
+					</tr>
+				)
+			}
+
+			return _.map(
+				this.props.studio.routeSetExclusivityGroups,
+				(exclusivityGroup: StudioRouteSetExclusivityGroup, exclusivityGroupId: string) => {
+					return (
+						<React.Fragment key={exclusivityGroupId}>
+							<tr
+								className={ClassNames({
+									hl: this.isItemEdited(exclusivityGroupId),
+								})}>
+								<th className="settings-studio-device__name c3">{exclusivityGroupId}</th>
+								<td className="settings-studio-device__id c5">{exclusivityGroup.name}</td>
+								<td className="settings-studio-device__id c3">
+									{
+										_.filter(
+											this.props.studio.routeSets,
+											(routeSet, id) => routeSet.exclusivityGroup === exclusivityGroupId
+										).length
+									}
+								</td>
+
+								<td className="settings-studio-device__actions table-item-actions c3">
+									<button className="action-btn" onClick={(e) => this.editItem(exclusivityGroupId)}>
+										<FontAwesomeIcon icon={faPencilAlt} />
+									</button>
+									<button
+										className="action-btn"
+										onClick={(e) => this.confirmRemoveEGroup(exclusivityGroupId, exclusivityGroup)}>
+										<FontAwesomeIcon icon={faTrash} />
+									</button>
+								</td>
+							</tr>
+							{this.isItemEdited(exclusivityGroupId) && (
+								<tr className="expando-details hl">
+									<td colSpan={6}>
+										<div>
+											<div className="mod mvs mhs">
+												<label className="field">
+													{t('Exclusivity Group ID')}
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={'routeSetExclusivityGroups'}
+														overrideDisplayValue={exclusivityGroupId}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														updateFunction={this.updateExclusivityGroupId}
+														className="input text-input input-l"></EditAttribute>
+												</label>
+											</div>
+											<div className="mod mvs mhs">
+												<label className="field">
+													{t('Exclusivity Group Name')}
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={'routeSetExclusivityGroups.' + exclusivityGroupId + '.name'}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"></EditAttribute>
+													<span className="text-s dimmed">{t('Display name of the Exclusivity Group')}</span>
+												</label>
+											</div>
+										</div>
+										<div className="mod alright">
+											<button className="btn btn-primary" onClick={(e) => this.finishEditItem(exclusivityGroupId)}>
+												<FontAwesomeIcon icon={faCheck} />
+											</button>
+										</div>
+									</td>
+								</tr>
+							)}
+						</React.Fragment>
+					)
+				}
+			)
+		}
+
 		renderRouteSets() {
 			const { t } = this.props
+
+			const DEFAULT_ACTIVE_OPTIONS = {
+				[t('Active')]: true,
+				[t('Not Active')]: false,
+				[t('Not defined')]: undefined,
+			}
+
+			if (Object.keys(this.props.studio.routeSets).length === 0) {
+				return (
+					<tr>
+						<td className="mhn dimmed">{t('There are no Route Sets set up.')}</td>
+					</tr>
+				)
+			}
 
 			return _.map(this.props.studio.routeSets, (routeSet: StudioRouteSet, routeId: string) => {
 				return (
@@ -1111,9 +1293,9 @@ const StudioRoutings = withTranslation()(
 							className={ClassNames({
 								hl: this.isItemEdited(routeId),
 							})}>
-							<th className="settings-studio-device__name c3">{routeId}</th>
-							<td className="settings-studio-device__id c2">{routeSet.name}</td>
-							<td className="settings-studio-device__id c2">{routeSet.exclusivityGroup}</td>
+							<th className="settings-studio-device__name c2">{routeId}</th>
+							<td className="settings-studio-device__id c3">{routeSet.name}</td>
+							<td className="settings-studio-device__id c4">{routeSet.exclusivityGroup}</td>
 							<td className="settings-studio-device__id c2">{routeSet.routes.length}</td>
 							<td className="settings-studio-device__id c2">
 								{routeSet.active ? <span className="pill">{t('Active')}</span> : null}
@@ -1150,7 +1332,7 @@ const StudioRoutings = withTranslation()(
 											<label className="field">
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'routeSets.' + routeId + '.active'}
+													attribute={`routeSets.${routeId}.active`}
 													obj={this.props.studio}
 													type="checkbox"
 													collection={Studios}
@@ -1163,10 +1345,24 @@ const StudioRoutings = withTranslation()(
 										</div>
 										<div className="mod mvs mhs">
 											<label className="field">
+												{t('Default State')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`routeSets.${routeId}.defaultActive`}
+													obj={this.props.studio}
+													type="dropdown"
+													collection={Studios}
+													options={DEFAULT_ACTIVE_OPTIONS}
+													className="input text-input input-l"></EditAttribute>
+												<span className="mlm text-s dimmed">{t('The default state of this Route Set')}</span>
+											</label>
+										</div>
+										<div className="mod mvs mhs">
+											<label className="field">
 												{t('Route Set Name')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'routeSets.' + routeId + '.name'}
+													attribute={`routeSets.${routeId}.name`}
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
@@ -1179,9 +1375,21 @@ const StudioRoutings = withTranslation()(
 												{t('Exclusivity group')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'routeSets.' + routeId + '.exclusivityGroup'}
+													attribute={`routeSets.${routeId}.exclusivityGroup`}
 													obj={this.props.studio}
-													type="text"
+													type="checkbox"
+													collection={Studios}
+													className="mod mas"
+													mutateDisplayValue={(v) => (v === undefined ? false : true)}
+													mutateUpdateValue={(v) => undefined}
+												/>
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`routeSets.${routeId}.exclusivityGroup`}
+													obj={this.props.studio}
+													type="dropdown"
+													options={Object.keys(this.props.studio.routeSetExclusivityGroups)}
+													mutateDisplayValue={(v) => (v === undefined ? 'None' : v)}
 													collection={Studios}
 													className="input text-input input-l"></EditAttribute>
 												<span className="text-s dimmed">
@@ -1194,7 +1402,7 @@ const StudioRoutings = withTranslation()(
 												{t('Behavior')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'routeSets.' + routeId + '.behavior'}
+													attribute={`routeSets.${routeId}.behavior`}
 													obj={this.props.studio}
 													type="dropdown"
 													options={StudioRouteBehavior}
@@ -1228,7 +1436,22 @@ const StudioRoutings = withTranslation()(
 			const { t } = this.props
 			return (
 				<div>
-					<h2 className="mhn">{t('Route Sets')}</h2>
+					<h2 className="mhn mbs">{t('Route Sets')}</h2>
+					<p className="mhn mvs text-s dimmed">
+						{t(
+							'Controls for exposed Route Sets will be displayed to the producer within the Rundown View in the Switchboard.'
+						)}
+					</p>
+					<h3 className="mhn">{t('Exclusivity Groups')}</h3>
+					<table className="expando settings-studio-mappings-table">
+						<tbody>{this.renderExclusivityGroups()}</tbody>
+					</table>
+					<div className="mod mhs">
+						<button className="btn btn-primary" onClick={(e) => this.addNewExclusivityGroup()}>
+							<FontAwesomeIcon icon={faPlus} />
+						</button>
+					</div>
+					<h3 className="mhn">{t('Route Sets')}</h3>
 					<table className="expando settings-studio-mappings-table">
 						<tbody>{this.renderRouteSets()}</tbody>
 					</table>

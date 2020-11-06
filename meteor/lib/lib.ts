@@ -1395,6 +1395,14 @@ export function assertNever(_never: never): void {
 	// Do nothing. This is a type guard
 }
 
+/**
+ * This is a fast, shallow compare of two Sets.
+ *
+ * **Note**: This is a shallow compare, so it will return false if the objects in the arrays are identical, but not the same.
+ *
+ * @param a
+ * @param b
+ */
 export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
 	if (a === b) return true
 	if (a.size !== b.size) return false
@@ -1404,11 +1412,35 @@ export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
 	return true
 }
 
+/**
+ * This is a fast, shallow compare of two arrays that are used as unsorted lists. The ordering of the elements is ignored.
+ *
+ * **Note**: This is a shallow compare, so it will return false if the objects in the arrays are identical, but not the same.
+ *
+ * @param a
+ * @param b
+ */
 export function equivalentArrays<T>(a: T[], b: T[]): boolean {
 	if (a === b) return true
 	if (a.length !== b.length) return false
 	for (let i = 0; i < a.length; i++) {
 		if (!b.includes(a[i])) return false
+	}
+	return true
+}
+
+/**
+ * This is a fast, shallow compare of two arrays of the same type.
+ *
+ * **Note**: This is a shallow compare, so it will return false if the objects in the arrays are identical, but not the same.
+ * @param a
+ * @param b
+ */
+export function equalArrays<T>(a: T[], b: T[]): boolean {
+	if (a === b) return true
+	if (a.length !== b.length) return false
+	for (let i = 0; i < a.length; i++) {
+		if (b[i] !== a[i]) return false
 	}
 	return true
 }
