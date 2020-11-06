@@ -10,10 +10,10 @@ export class JoyConController extends ControllerAbstract {
 	private prompterView: PrompterViewInner
 	private joycons: Gamepad[] = []
 
-	private readonly deadBand = .25	// ignore all input within this range. Used to separate out the active joycon when both are connected
+	private readonly deadBand = 0.25 // ignore all input within this range. Used to separate out the active joycon when both are connected
 	private readonly rangeRevMin = -1 // pedal "all back" position, the max-reverse-position
-	private readonly rangeNeutralMin = -.25 // pedal "back" position where reverse-range transistions to the neutral range
-	private readonly rangeNeutralMax = .25 // pedal "front" position where scrolling starts, the 0 speed origin
+	private readonly rangeNeutralMin = -0.25 // pedal "back" position where reverse-range transistions to the neutral range
+	private readonly rangeNeutralMax = 0.25 // pedal "front" position where scrolling starts, the 0 speed origin
 	private readonly rangeFwdMax = 1 // pedal "all front" position where scrolling is maxed out
 	private readonly speedMap = [1, 2, 3, 4, 5, 8, 12, 30]
 
@@ -25,7 +25,7 @@ export class JoyConController extends ControllerAbstract {
 	constructor(view: PrompterViewInner) {
 		super(view)
 		const { rangeRevMin, rangeNeutralMin, rangeNeutralMax, rangeFwdMax } = this
-		
+
 		this.prompterView = view
 
 		// validate range settings
@@ -43,12 +43,11 @@ export class JoyConController extends ControllerAbstract {
 			return
 		}
 
-		window.addEventListener('gamepadconnected',  this.updateScrollPosition.bind(this))
+		window.addEventListener('gamepadconnected', this.updateScrollPosition.bind(this))
 		window.addEventListener('gamepaddisconnected', this.updateScrollPosition.bind(this))
 	}
 
-	public destroy() {
-	}
+	public destroy() {}
 	public onKeyDown(e: KeyboardEvent) {
 		// Nothing
 	}
@@ -67,7 +66,7 @@ export class JoyConController extends ControllerAbstract {
 
 	private checkIfWeHaveConnectedJoyCons() {
 		this.joycons = []
-		if(navigator.getGamepads) {
+		if (navigator.getGamepads) {
 			for (const o of navigator.getGamepads()) {
 				if (o !== null && o.connected && o.id && typeof o.id === 'string' && o.id.match('Joy-Con')) {
 					this.joycons.push(o)
@@ -78,21 +77,23 @@ export class JoyConController extends ControllerAbstract {
 
 	private getActiveAisOfJoycons() {
 		const pad = this.joycons[0]
-		
-		if (pad.axes.length === 2) { // L or R mode
+
+		if (pad.axes.length === 2) {
+			// L or R mode
 			if (Math.abs(pad.axes[0]) > this.deadBand) {
 				if (pad.id && typeof pad.id === 'string') {
-					if(pad.id.match('(L)')) {
+					if (pad.id.match('(L)')) {
 						return pad.axes[0] * -1 // in this mode, L is "negative"
-					} else if(pad.id.match('(R)')) {
+					} else if (pad.id.match('(R)')) {
 						return pad.axes[0] // in this mode, R is "positive"
 					}
 				}
 			}
-		} else if (pad.axes.length === 4) { // L + R mode
+		} else if (pad.axes.length === 4) {
+			// L + R mode
 			// get the first one that is moving outside of the deadband, priorotizing the L controller
 			if (Math.abs(pad.axes[1]) > this.deadBand) {
-				return pad.axes[1] * -1	 // in this mode, we are "negative" on both sticks....
+				return pad.axes[1] * -1 // in this mode, we are "negative" on both sticks....
 			}
 			if (Math.abs(pad.axes[3]) > this.deadBand) {
 				return pad.axes[3] * -1 // in this mode, we are "negative" on both sticks....
@@ -103,7 +104,7 @@ export class JoyConController extends ControllerAbstract {
 
 		return 0
 	}
-	
+
 	private getSpeedFromJoycons() {
 		const { rangeRevMin, rangeNeutralMin, rangeNeutralMax, rangeFwdMax } = this
 		let inputValue = this.getActiveAisOfJoycons()
