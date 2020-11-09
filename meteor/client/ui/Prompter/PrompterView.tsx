@@ -39,6 +39,7 @@ interface PrompterConfig {
 	marker?: 'center' | 'top' | 'bottom' | 'hide'
 	showMarker: boolean
 	showScroll: boolean
+	debug: boolean
 }
 
 export enum PrompterConfigMode {
@@ -47,6 +48,12 @@ export enum PrompterConfigMode {
 	SHUTTLEKEYBOARD = 'shuttlekeyboard',
 	JOYCON = 'joycon',
 	PEDAL = 'pedal',
+}
+
+export interface IPrompterControllerState {
+	source: PrompterConfigMode
+	lastEvent: string
+	lastSpeed: number
 }
 
 interface IProps {
@@ -116,9 +123,43 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			marker: (firstIfArray(queryParams['marker']) as any) || undefined,
 			showMarker: queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1',
 			showScroll: queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1',
+			debug: queryParams['debug'] === undefined ? false : queryParams['debug'] === '1',
 		}
 
 		this._controller = new PrompterControlManager(this)
+	}
+
+	DEBUG_controllerSpeed(speed: number) {
+		const speedEl = document.getElementById('prompter-debug-speed')
+		if (speedEl) {
+			speedEl.textContent = speed + ''
+		}
+	}
+
+	DEBUG_controllerState(state: IPrompterControllerState) {
+		const debug = document.getElementById('prompter-debug')
+		if (debug) {
+			debug.textContent = ''
+
+			const debugInfo = document.createElement('div')
+
+			const source = document.createElement('h2')
+			source.textContent = state.source
+
+			const lastEvent = document.createElement('div')
+			lastEvent.classList.add('lastEvent')
+			lastEvent.textContent = state.lastEvent
+
+			const lastSpeed = document.createElement('div')
+			lastSpeed.id = 'prompter-debug-speed'
+			lastSpeed.classList.add('lastSpeed')
+			lastSpeed.textContent = state.lastSpeed + ''
+
+			debugInfo.appendChild(source)
+			debugInfo.appendChild(lastEvent)
+			debugInfo.appendChild(lastSpeed)
+			debug.appendChild(debugInfo)
+		}
 	}
 
 	componentDidMount() {
@@ -419,7 +460,10 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 						<Spinner />
 					</div>
 				) : this.props.rundownPlaylist ? (
-					<Prompter rundownPlaylistId={this.props.rundownPlaylist._id} config={this.configOptions} />
+					<>
+						<Prompter rundownPlaylistId={this.props.rundownPlaylist._id} config={this.configOptions} />
+						{this.configOptions.debug ? <div id="prompter-debug"></div> : null}
+					</>
 				) : this.props.studio ? (
 					<StudioScreenSaver studioId={this.props.studio._id} />
 				) : this.props.studioId ? (

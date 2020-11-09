@@ -1,5 +1,5 @@
 import { ControllerAbstract } from './lib'
-import { PrompterViewInner } from '../PrompterView'
+import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 
 const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
 
@@ -151,6 +151,12 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		// update flag for comparison on next iteration
 		this.lastSpeed = speed
 		this.updateScrollPosition()
+
+		this.prompterView.DEBUG_controllerState({
+			source: PrompterConfigMode.SHUTTLEKEYBOARD,
+			lastSpeed: this.lastSpeed,
+			lastEvent: 'keyup: ' + e.code,
+		})
 	}
 	public onKeyUp(e: KeyboardEvent) {
 		// Nothing
