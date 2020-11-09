@@ -145,10 +145,6 @@ export async function getLookeaheadObjects(
 
 	const maxLookaheadDistance = findLargestLookaheadDistance(mappingsToConsider)
 	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(cache, playlist, maxLookaheadDistance)
-	if (orderedPartsFollowingPlayhead.length === 0) {
-		// Nothing to search through
-		return []
-	}
 
 	const piecesToSearchQuery: Mongo.Query<Piece> = {
 		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
@@ -251,12 +247,13 @@ export async function getLookeaheadObjects(
 		}
 	}
 
+	const futurePartCount = orderedPartsFollowingPlayhead.length + (partInstancesInfo0.next ? 1 : 0)
 	for (const [layerId, mapping] of mappingsToConsider) {
 		const lookaheadTargetObjects = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
 		const lookaheadMaxSearchDistance =
 			mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0
 				? mapping.lookaheadMaxSearchDistance
-				: orderedPartsFollowingPlayhead.length
+				: futurePartCount
 
 		const lookaheadObjs = findLookaheadForlayer(
 			playlist,
@@ -337,7 +334,7 @@ function findLookaheadForlayer(
 		future: [],
 	}
 
-	if (mode === undefined || mode === LookaheadMode.NONE || lookaheadMaxSearchDistance <= 0) {
+	if (mode === undefined || mode === LookaheadMode.NONE) {
 		return res
 	}
 
@@ -356,6 +353,9 @@ function findLookaheadForlayer(
 			part: partInstanceInfo.part.part,
 			pieces: partInstanceInfo.allPieces,
 		}
+
+		// Only consider parts on the timeline if we arent supposed to search
+		if (!partInstanceInfo.onTimeline && lookaheadMaxSearchDistance <= 0) break
 
 		const newObjs = findObjectsForPart(
 			playlist,
