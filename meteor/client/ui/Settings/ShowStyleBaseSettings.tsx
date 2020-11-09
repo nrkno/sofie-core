@@ -1063,7 +1063,7 @@ const HotkeyLegendSettings = withTranslation()(
 			if (mappedKeys) {
 				ahkCommands = ahkCommands.concat(
 					mappedKeys
-						.filter((key) => !!key.platformKey)
+						.filter((key) => !!key.platformKey && key.key.toLowerCase() !== key.platformKey.toLowerCase())
 						.map((key) => {
 							const platformKeyCombo = convertComboToAHK(key.platformKey!, true)
 							const browserKeyCombo = convertComboToAHK(key.key, false)
