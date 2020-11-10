@@ -282,7 +282,6 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 							objectType: TimelineObjType.RUNDOWN,
 						})
 					})
-					console.log(`AB Session result: ${JSON.stringify(context.knownSessions)}`)
 					cache.RundownPlaylists.update(playlist._id, {
 						$set: {
 							previousPersistentState: tlGenRes.persistentState,
