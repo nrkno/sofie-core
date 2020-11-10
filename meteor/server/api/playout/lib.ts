@@ -143,6 +143,7 @@ function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPla
 		$unset: {
 			startedPlayback: 1,
 			previousPersistentState: 1,
+			trackedAbSessions: 1,
 		},
 	})
 

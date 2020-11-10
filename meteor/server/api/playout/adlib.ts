@@ -560,6 +560,7 @@ export namespace ServerPlayoutAdLibAPI {
 							),
 							dynamicallyInserted: getCurrentTime(),
 							infinite: {
+								infiniteInstanceId: getRandomId(),
 								infinitePieceId: pieceId,
 								fromPreviousPart: false,
 							},
