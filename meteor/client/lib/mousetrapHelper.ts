@@ -149,7 +149,7 @@ export namespace mousetrapHelper {
 // Add mousetrap keycodes for special keys
 mousetrap.addKeycodes({
 	220: '½', // [TV 2]
-	222: '\\', // on 101 keyboards, this is the key with single quote
+	// 222: '\\', // on 101 keyboards, this is the key with single quote
 	223: '|', // this key is not present on 101 keyboards
 
 	// TODO: These keys have temporarly been prefixed by 9x so that thye don't actually register as hotkeys,
@@ -161,7 +161,7 @@ mousetrap.addKeycodes({
 	219: 'nbBackslash',
 	221: 'å',
 	186: '¨',
-	192: 'ø',
+	222: 'ø',
 	191: "'",
 	189: 'nbMinus',
 
