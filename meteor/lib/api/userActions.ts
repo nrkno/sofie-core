@@ -17,6 +17,7 @@ import { BucketId, Bucket } from '../collections/Buckets'
 import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { BucketAdLib } from '../collections/BucketAdlibs'
 import { ActionUserData } from 'tv-automation-sofie-blueprints-integration'
+import { AdLibAction, AdLibActionId } from '../collections/AdLibActions'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -177,10 +178,21 @@ export interface NewUserActionAPI extends MethodContext {
 		userId: string | null
 	): Promise<ClientAPI.ClientResponse<Bucket>>
 	bucketsRemoveBucketAdLib(userEvent: string, id: PieceId): Promise<ClientAPI.ClientResponse<void>>
+	bucketsRemoveBucketAdLibAction(userEvent: string, id: AdLibActionId): Promise<ClientAPI.ClientResponse<void>>
 	bucketsModifyBucketAdLib(
 		userEvent: string,
 		id: PieceId,
 		bucket: Partial<Omit<BucketAdLib, '_id'>>
+	): Promise<ClientAPI.ClientResponse<void>>
+	bucketsModifyBucketAdLibAction(
+		userEvent: string,
+		id: AdLibActionId,
+		action: Partial<Omit<AdLibAction, '_id'>>
+	): Promise<ClientAPI.ClientResponse<void>>
+	bucketsSaveActionIntoBucket(
+		userEvent: string,
+		action: AdLibAction,
+		bucketId: BucketId
 	): Promise<ClientAPI.ClientResponse<void>>
 	switchRouteSet(
 		userEvent: string,
@@ -218,7 +230,10 @@ export enum UserActionAPIMethods {
 	'bucketsEmptyBucket' = 'userAction.emptyBucket',
 	'bucketsModifyBucket' = 'userAction.modifyBucket',
 	'bucketsRemoveBucketAdLib' = 'userAction.removeBucketAdLib',
+	'bucketsRemoveBucketAdLibAction' = 'userAction.removeBucketAdLibAction',
 	'bucketsModifyBucketAdLib' = 'userAction.bucketsModifyBucketAdLib',
+	'bucketsModifyBucketAdLibAction' = 'userAction.bucketsModifyBucketAdLibAction',
+	'bucketsSaveActionIntoBucket' = 'userAction.bucketsSaveActionIntoBucket',
 
 	'segmentAdLibPieceStart' = 'userAction.segmentAdLibPieceStart',
 	'sourceLayerOnPartStop' = 'userAction.sourceLayerOnPartStop',

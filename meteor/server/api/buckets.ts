@@ -13,6 +13,8 @@ import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { check } from '../../lib/check'
+import { AdLibActionId } from '../../lib/collections/AdLibActions'
+import { BucketAdLibActions, BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 
@@ -27,6 +29,23 @@ export namespace BucketsAPI {
 			throw new Meteor.Error(403, `Not allowed to edit bucket: ${adlib.bucketId}`)
 
 		BucketAdLibs.remove({
+			_id: id,
+		})
+		ExpectedMediaItems.remove({
+			bucketAdLibPieceId: id,
+		})
+	}
+
+	export function removeBucketAdLibAction(context: MethodContext, id: AdLibActionId) {
+		BucketSecurity.allowWriteAccessAction({ _id: id }, context)
+
+		const adlib = BucketAdLibActions.findOne(id)
+		if (!adlib) throw new Meteor.Error(404, `Bucket Ad-Lib not found: ${id}`)
+
+		if (!BucketSecurity.allowWriteAccess({ _id: adlib.bucketId }, context))
+			throw new Meteor.Error(403, `Not allowed to edit bucket: ${adlib.bucketId}`)
+
+		BucketAdLibActions.remove({
 			_id: id,
 		})
 		ExpectedMediaItems.remove({
@@ -99,6 +118,43 @@ export namespace BucketsAPI {
 		Buckets.insert(newBucket)
 
 		return newBucket
+	}
+
+	export function modifyBucketAdLibAction(
+		context: MethodContext,
+		id: AdLibActionId,
+		action: Partial<Omit<BucketAdLibAction, '_id'>>
+	) {
+		if (!BucketSecurity.allowWriteAccessAction({ _id: id }, context))
+			throw new Meteor.Error(403, `Not allowed to edit bucket adlib: ${id}`)
+
+		const oldAdLib = BucketAdLibs.findOne(id)
+		if (!oldAdLib) {
+			throw new Meteor.Error(404, `Bucket AdLib not found: ${id}`)
+		}
+
+		if (!BucketSecurity.allowWriteAccess({ _id: oldAdLib.bucketId }, context)) {
+			throw new Meteor.Error(403, 'Access denied')
+		}
+		if (action.bucketId && !BucketSecurity.allowWriteAccess({ Id: action.bucketId }, context)) {
+			throw new Meteor.Error(403, 'Access denied')
+		}
+
+		if (action.bucketId && !Buckets.findOne(action.bucketId)) {
+			throw new Meteor.Error(`Could not find bucket: "${action.bucketId}"`)
+		}
+
+		if (action.showStyleVariantId && !ShowStyleVariants.findOne(action.showStyleVariantId)) {
+			throw new Meteor.Error(`Could not find show style variant: "${action.showStyleVariantId}"`)
+		}
+
+		if (action.studioId && !Studios.findOne(action.studioId)) {
+			throw new Meteor.Error(`Could not find studio: "${action.studioId}"`)
+		}
+
+		BucketAdLibs.update(id, {
+			$set: _.omit(action, ['_id']),
+		})
 	}
 
 	export function modifyBucketAdLib(context: MethodContext, id: PieceId, adlib: Partial<Omit<BucketAdLib, '_id'>>) {

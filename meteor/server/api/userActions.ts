@@ -47,6 +47,8 @@ import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { rundownContentAllowWrite } from '../security/rundown'
 import { profiler } from './profiler'
+import { AdLibActionId, AdLibAction } from '../../lib/collections/AdLibActions'
+import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -637,6 +639,11 @@ export function bucketsRemoveBucketAdLib(context: MethodContext, id: PieceId) {
 
 	return ClientAPI.responseSuccess(BucketsAPI.removeBucketAdLib(context, id))
 }
+export function bucketsRemoveBucketAdLibAction(context: MethodContext, id: AdLibActionId) {
+	check(id, String)
+
+	return ClientAPI.responseSuccess(BucketsAPI.removeBucketAdLibAction(context, id))
+}
 export function bucketsModifyBucketAdLib(
 	context: MethodContext,
 	id: PieceId,
@@ -646,6 +653,16 @@ export function bucketsModifyBucketAdLib(
 	check(adlib, Object)
 
 	return ClientAPI.responseSuccess(BucketsAPI.modifyBucketAdLib(context, id, adlib))
+}
+export function bucketsModifyBucketAdLibAction(
+	context: MethodContext,
+	id: AdLibActionId,
+	action: Partial<Omit<BucketAdLibAction, '_id'>>
+) {
+	check(id, String)
+	check(action, Object)
+
+	return ClientAPI.responseSuccess(BucketsAPI.modifyBucketAdLibAction(context, id, action))
 }
 export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
 	check(rundownPlaylistId, String)
@@ -687,6 +704,10 @@ export function bucketAdlibImport(
 	updateBucketAdlibFromIngestData(showStyleCompound, studio, bucketId, ingestItem)
 
 	return ClientAPI.responseSuccess(undefined)
+}
+
+export function bucketsSaveActionIntoBucket(context: MethodContext, action: AdLibAction, bucketId: BucketId) {
+	// TODO: WIP
 }
 
 export function bucketAdlibStart(
@@ -769,17 +790,17 @@ export function traceAction<T>(description: string, fn: (...args: any[]) => T, .
 
 class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	take(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return traceAction('userAction.take', take, this, rundownPlaylistId)
+		return traceAction(UserActionAPIMethods.take, take, this, rundownPlaylistId)
 	}
 	setNext(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number) {
-		return traceAction('userAction.setNext', setNext, this, rundownPlaylistId, partId, true, timeOffset)
+		return traceAction(UserActionAPIMethods.setNext, setNext, this, rundownPlaylistId, partId, true, timeOffset)
 	}
 	setNextSegment(_userEvent: string, rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId) {
-		return traceAction('userAction.setNextSegment', setNextSegment, this, rundownPlaylistId, segmentId)
+		return traceAction(UserActionAPIMethods.setNextSegment, setNextSegment, this, rundownPlaylistId, segmentId)
 	}
 	moveNext(_userEvent: string, rundownPlaylistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number) {
 		return traceAction(
-			'userAction.moveNext',
+			UserActionAPIMethods.moveNext,
 			moveNext,
 			this,
 			rundownPlaylistId,
@@ -789,23 +810,23 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	prepareForBroadcast(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return traceAction('userAction.prepareForBroadcast', prepareForBroadcast, this, rundownPlaylistId)
+		return traceAction(UserActionAPIMethods.prepareForBroadcast, prepareForBroadcast, this, rundownPlaylistId)
 	}
 	resetRundownPlaylist(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return traceAction('userAction.resetRundownPlaylist', resetRundownPlaylist, this, rundownPlaylistId)
+		return traceAction(UserActionAPIMethods.resetRundownPlaylist, resetRundownPlaylist, this, rundownPlaylistId)
 	}
 	resetAndActivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean) {
-		return traceAction('userAction.resetAndActivate', resetAndActivate, this, rundownPlaylistId, rehearsal)
+		return traceAction(UserActionAPIMethods.resetAndActivate, resetAndActivate, this, rundownPlaylistId, rehearsal)
 	}
 	activate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
-		return traceAction('userAction.activate', activate, this, rundownPlaylistId, rehearsal)
+		return traceAction(UserActionAPIMethods.activate, activate, this, rundownPlaylistId, rehearsal)
 	}
 	deactivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return traceAction('userAction.deactivate', deactivate, this, rundownPlaylistId)
+		return traceAction(UserActionAPIMethods.deactivate, deactivate, this, rundownPlaylistId)
 	}
 	forceResetAndActivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
 		return traceAction(
-			'userAction.forceResetAndActivate',
+			UserActionAPIMethods.forceResetAndActivate,
 			forceResetAndActivate,
 			this,
 			rundownPlaylistId,
@@ -813,13 +834,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	reloadData(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return traceAction('userAction.reloadRundownPlaylistData', reloadRundownPlaylistData, this, rundownPlaylistId)
+		return traceAction(UserActionAPIMethods.reloadData, reloadRundownPlaylistData, this, rundownPlaylistId)
 	}
 	unsyncRundown(_userEvent: string, rundownId: RundownId) {
-		return traceAction('userAction.unsyncRundown', unsyncRundown, this, rundownId)
+		return traceAction(UserActionAPIMethods.unsyncRundown, unsyncRundown, this, rundownId)
 	}
 	disableNextPiece(_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
-		return traceAction('userAction.disableNextPiece', disableNextPiece, this, rundownPlaylistId, undo)
+		return traceAction(UserActionAPIMethods.disableNextPiece, disableNextPiece, this, rundownPlaylistId, undo)
 	}
 	pieceTakeNow(
 		_userEvent: string,
@@ -828,7 +849,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
 	) {
 		return traceAction(
-			'userAction.pieceTakeNow',
+			UserActionAPIMethods.pieceTakeNow,
 			pieceTakeNow,
 			this,
 			rundownPlaylistId,
@@ -852,7 +873,14 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		actionId: string,
 		userData: ActionUserData
 	) {
-		return traceAction('userAction.executeAction', executeAction, this, rundownPlaylistId, actionId, userData)
+		return traceAction(
+			UserActionAPIMethods.executeAction,
+			executeAction,
+			this,
+			rundownPlaylistId,
+			actionId,
+			userData
+		)
 	}
 	segmentAdLibPieceStart(
 		_userEvent: string,
@@ -862,7 +890,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		queue: boolean
 	) {
 		return traceAction(
-			'userAction.segmentAdLibPieceStart',
+			UserActionAPIMethods.segmentAdLibPieceStart,
 			segmentAdLibPieceStart,
 			this,
 			rundownPlaylistId,
@@ -878,7 +906,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		sourceLayerIds: string[]
 	) {
 		return traceAction(
-			'userAction.sourceLayerOnPartStop',
+			UserActionAPIMethods.sourceLayerOnPartStop,
 			sourceLayerOnPartStop,
 			this,
 			rundownPlaylistId,
@@ -894,7 +922,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		queue: boolean
 	) {
 		return traceAction(
-			'userAction.			rundownBaselineAdLibPieceStart',
+			UserActionAPIMethods.baselineAdLibPieceStart,
 			rundownBaselineAdLibPieceStart,
 			this,
 			rundownPlaylistId,
@@ -905,7 +933,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	}
 	sourceLayerStickyPieceStart(_userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
 		return traceAction(
-			'userAction.sourceLayerStickyPieceStart',
+			UserActionAPIMethods.sourceLayerStickyPieceStart,
 			sourceLayerStickyPieceStart,
 			this,
 			rundownPlaylistId,
@@ -920,7 +948,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		ingestItem: IngestAdlib
 	) {
 		return traceAction(
-			'userAction.bucketAdlibImport',
+			UserActionAPIMethods.bucketAdlibImport,
 			bucketAdlibImport,
 			this,
 			studioId,
@@ -937,7 +965,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		queue?: boolean
 	) {
 		return traceAction(
-			'userAction.bucketAdlibStart',
+			UserActionAPIMethods.bucketAdlibStart,
 			bucketAdlibStart,
 			this,
 			rundownPlaylistId,
@@ -947,28 +975,34 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	activateHold(_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
-		return traceAction('userAction.activateHold', activateHold, this, rundownPlaylistId, undo)
+		return traceAction(UserActionAPIMethods.activateHold, activateHold, this, rundownPlaylistId, undo)
 	}
 	saveEvaluation(_userEvent: string, evaluation: EvaluationBase) {
 		return makePromise(() => userSaveEvaluation(this, evaluation))
 	}
 	storeRundownSnapshot(_userEvent: string, playlistId: RundownPlaylistId, reason: string) {
-		return traceAction('userAction.userStoreRundownSnapshot', userStoreRundownSnapshot, this, playlistId, reason)
+		return traceAction(
+			UserActionAPIMethods.storeRundownSnapshot,
+			userStoreRundownSnapshot,
+			this,
+			playlistId,
+			reason
+		)
 	}
 	removeRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
-		return traceAction('userAction.removeRundownPlaylist', removeRundownPlaylist, this, playlistId)
+		return traceAction(UserActionAPIMethods.removeRundownPlaylist, removeRundownPlaylist, this, playlistId)
 	}
 	resyncRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
-		return traceAction('userAction.resyncRundownPlaylist', resyncRundownPlaylist, this, playlistId)
+		return traceAction(UserActionAPIMethods.resyncRundownPlaylist, resyncRundownPlaylist, this, playlistId)
 	}
 	removeRundown(_userEvent: string, rundownId: RundownId) {
-		return traceAction('userAction.removeRundown', removeRundown, this, rundownId)
+		return traceAction(UserActionAPIMethods.removeRundown, removeRundown, this, rundownId)
 	}
 	resyncRundown(_userEvent: string, rundownId: RundownId) {
-		return traceAction('userAction.resyncRundown', resyncRundown, this, rundownId)
+		return traceAction(UserActionAPIMethods.resyncRundown, resyncRundown, this, rundownId)
 	}
 	resyncSegment(_userEvent: string, rundownId: RundownId, segmentId: SegmentId) {
-		return traceAction('userAction.resyncSegment', resyncSegment, this, rundownId, segmentId)
+		return traceAction(UserActionAPIMethods.resyncSegment, resyncSegment, this, rundownId, segmentId)
 	}
 	mediaRestartWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
 		return makePromise(() => mediaRestartWorkflow(this, workflowId))
@@ -986,7 +1020,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		return makePromise(() => mediaAbortAllWorkflows(this))
 	}
 	regenerateRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
-		return traceAction('userAction.regenerateRundownPlaylist', regenerateRundownPlaylist, this, playlistId)
+		return traceAction(UserActionAPIMethods.regenerateRundownPlaylist, regenerateRundownPlaylist, this, playlistId)
 	}
 	generateRestartToken(_userEvent: string) {
 		return makePromise(() => generateRestartToken(this))
@@ -1001,22 +1035,63 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		return traceAction('userAction.noop', noop, this)
 	}
 	bucketsRemoveBucket(_userEvent: string, id: BucketId) {
-		return traceAction('userAction.bucketsRemoveBucket', bucketsRemoveBucket, this, id)
+		return traceAction(UserActionAPIMethods.bucketsRemoveBucket, bucketsRemoveBucket, this, id)
 	}
 	bucketsModifyBucket(_userEvent: string, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
-		return traceAction('userAction.bucketsModifyBucket', bucketsModifyBucket, this, id, bucket)
+		return traceAction(UserActionAPIMethods.bucketsModifyBucket, bucketsModifyBucket, this, id, bucket)
 	}
 	bucketsEmptyBucket(_userEvent: string, id: BucketId) {
-		return traceAction('userAction.bucketsEmptyBucket', bucketsEmptyBucket, this, id)
+		return traceAction(UserActionAPIMethods.bucketsEmptyBucket, bucketsEmptyBucket, this, id)
 	}
 	bucketsCreateNewBucket(_userEvent: string, name: string, studioId: StudioId, userId: string | null) {
-		return traceAction('userAction.bucketsCreateNewBucket', bucketsCreateNewBucket, this, name, studioId, userId)
+		return traceAction(
+			UserActionAPIMethods.bucketsCreateNewBucket,
+			bucketsCreateNewBucket,
+			this,
+			name,
+			studioId,
+			userId
+		)
 	}
 	bucketsRemoveBucketAdLib(_userEvent: string, id: PieceId) {
-		return traceAction('userAction.bucketsRemoveBucketAdLib', bucketsRemoveBucketAdLib, this, id)
+		return traceAction(UserActionAPIMethods.bucketsRemoveBucketAdLib, bucketsRemoveBucketAdLib, this, id)
+	}
+	bucketsRemoveBucketAdLibAction(_userEvent: string, id: AdLibActionId) {
+		return traceAction(
+			UserActionAPIMethods.bucketsRemoveBucketAdLibAction,
+			bucketsRemoveBucketAdLibAction,
+			this,
+			id
+		)
 	}
 	bucketsModifyBucketAdLib(_userEvent: string, id: PieceId, bucketAdlib: Partial<Omit<BucketAdLib, '_id'>>) {
-		return traceAction('userAction.bucketsModifyBucketAdLib', bucketsModifyBucketAdLib, this, id, bucketAdlib)
+		return traceAction(
+			UserActionAPIMethods.bucketsModifyBucketAdLib,
+			bucketsModifyBucketAdLib,
+			this,
+			id,
+			bucketAdlib
+		)
+	}
+	bucketsModifyBucketAdLibAction(
+		_userEvent: string,
+		id: AdLibActionId,
+		bucketAdlibAction: Partial<Omit<AdLibAction, '_id'>>
+	) {
+		return traceAction(
+			UserActionAPIMethods.bucketsModifyBucketAdLibAction,
+			bucketsModifyBucketAdLibAction,
+			this,
+			id,
+			bucketAdlibAction
+		)
+	}
+	bucketsSaveActionIntoBucket(
+		_userEvent: string,
+		action: AdLibAction,
+		bucketId: BucketId
+	): Promise<ClientAPI.ClientResponse<void>> {
+		throw new Error('Method not implemented.')
 	}
 	switchRouteSet(
 		_userEvent: string,

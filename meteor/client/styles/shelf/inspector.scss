@@ -85,7 +85,8 @@
 		.shelf-inspector__action-editor__actions {
 			grid-area: footer;
 			display: flex;
-			justify-content: space-between;
+			justify-content: space-around;
+			flex-wrap: wrap;
 		}
 	}
 
@@ -125,6 +126,6 @@
 
 .rundown-view__shelf .rundown-view__shelf__contents > .rundown-view__shelf__contents__pane.shelf-inspector {
 	flex: 0.3 1;
-	min-width: 300px;
+	min-width: 335px;
 	max-width: 400px;
 }

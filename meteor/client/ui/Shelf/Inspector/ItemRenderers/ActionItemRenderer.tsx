@@ -162,6 +162,10 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			)
 		}
 
+		onCueAsNext = (e: any) => {}
+
+		onSaveToBucket = (e: any) => {}
+
 		render() {
 			const { t } = this.props
 			const action = this.getActionItem()
@@ -191,8 +195,12 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 								null}
 						</div>
 						<div className="shelf-inspector__action-editor__actions">
-							<button className="btn">{t('Cue as Next')}</button>
-							<button className="btn">{t('Save to Bucket')}</button>
+							<button className="btn" onClick={this.onCueAsNext}>
+								{t('Cue as Next')}
+							</button>
+							<button className="btn" onClick={this.onSaveToBucket}>
+								{t('Save to Bucket')}
+							</button>
 							<button className="btn" onClick={this.onRevealSelectedItem}>
 								{t('Reveal in Shelf')}
 							</button>
