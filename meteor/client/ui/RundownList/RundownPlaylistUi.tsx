@@ -368,8 +368,8 @@ export const RundownPlaylistUi = DropTarget(
 							<span className="rundown-list-item__airTime"></span>
 							<span className="rundown-list-item__problems"></span>
 							<span className="rundown-list-item__duration">{expectedDuration}</span>
-							<span className="rundown-list-item__created">
-								<MomentFromNow>{playlist.created}</MomentFromNow>
+							<span className="rundown-list-item__modified">
+								<MomentFromNow>{playlist.modified}</MomentFromNow>
 							</span>
 							<span className="rundown-list-item__actions"></span>
 						</header>

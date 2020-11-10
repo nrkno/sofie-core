@@ -55,7 +55,7 @@
 	.rundown-list-item__airTime,
 	.rundown-list-item__problems,
 	.rundown-list-item__duration,
-	.rundown-list-item__created {
+	.rundown-list-item__modified {
 		display: inline-block;
 		width: calc(var(--componentWidth) * 0.11);
 	}
@@ -164,7 +164,7 @@
 					.rundown-list-item__airTime,
 					.rundown-list-item__problems,
 					.rundown-list-item__duration,
-					.rundown-list-item__created {
+					.rundown-list-item__modified {
 						width: calc((var(--componentWidth) + var(--leftGutterWidth)) * 0.11);
 					}
 					.rundown-list-item__actions {

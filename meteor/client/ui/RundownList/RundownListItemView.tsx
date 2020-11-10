@@ -75,7 +75,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 					RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)}
 			</span>
 			<span className="rundown-list-item__created rundown-list-item__text">
-				<MomentFromNow>{rundown.created}</MomentFromNow>
+				<MomentFromNow>{rundown.modified}</MomentFromNow>
 			</span>
 			<span className="rundown-list-item__actions">
 				{confirmReSyncRundownHandler ? (
