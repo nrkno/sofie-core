@@ -1,6 +1,6 @@
 import { withTracker, translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import * as React from 'react'
-import { withTiming, WithTiming } from './RundownView/RundownTiming'
+import { withTiming, WithTiming } from './RundownView/RundownTiming/withTiming'
 import { withTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { Meteor } from 'meteor/meteor'

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import Moment from 'react-moment'
-import { withTiming, WithTiming } from './RundownTiming'
+import { withTiming, WithTiming } from './RundownTiming/withTiming'
 import { RundownUtils } from '../../lib/rundown'
 import { withTranslation } from 'react-i18next'
 

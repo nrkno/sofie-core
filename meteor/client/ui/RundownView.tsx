@@ -23,13 +23,10 @@ import { Part, Parts, PartId } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
-import {
-	RundownTimingProvider,
-	withTiming,
-	WithTiming,
-	CurrentPartRemaining,
-	AutoNextStatus,
-} from './RundownView/RundownTiming'
+import { RundownTimingProvider } from './RundownView/RundownTiming/RundownTimingProvider'
+import { withTiming, WithTiming } from './RundownView/RundownTiming/withTiming'
+import { CurrentPartRemaining } from './RundownView/RundownTiming/CurrentPartRemaining'
+import { AutoNextStatus } from './RundownView/RundownTiming/AutoNextStatus'
 import { SegmentTimelineContainer, PieceUi, PartUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
@@ -2005,15 +2002,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		// }
 
 		onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-			if (
-				!e.altKey &&
-				e.ctrlKey &&
-				!e.shiftKey &&
-				!e.metaKey &&
-				// @ts-ignore
-				!window.keyboardModifiers.altRight &&
-				e.deltaY !== 0
-			) {
+			if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey && e.deltaY !== 0) {
 				this.onTimeScaleChange(Math.min(500, this.state.timeScale * (1 + 0.001 * (e.deltaY * -1))))
 				e.preventDefault()
 			}

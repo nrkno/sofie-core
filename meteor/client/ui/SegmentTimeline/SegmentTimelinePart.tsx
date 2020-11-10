@@ -8,7 +8,8 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
-import { RundownTiming, WithTiming, withTiming } from '../RundownView/RundownTiming'
+import { WithTiming, withTiming } from '../RundownView/RundownTiming/withTiming'
+import { RundownTiming } from '../RundownView/RundownTiming/RundownTiming'
 
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
