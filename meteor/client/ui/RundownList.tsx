@@ -15,7 +15,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { doModalDialog } from '../lib/ModalDialog'
 import { StatusResponse } from '../../lib/api/systemStatus'
-import { getAllowConfigure, getAllowService, getHelpMode } from '../lib/localStorage'
+import { getAllowConfigure, getAllowService, getHelpMode, getAllowStudio } from '../lib/localStorage'
 import { doUserAction, UserAction } from '../lib/userAction'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from '../lib/notifications/notifications'
@@ -269,7 +269,9 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 					<td className="rundown-list-item__air-status">{this.props.rundownPlaylist.rundownAirStatus}</td>
 					<td className="rundown-list-item__views">{this.renderViewLinks()}</td>
 					<td className="rundown-list-item__actions">
-						{this.props.rundownPlaylist.unsyncedRundowns.length > 0 || getAllowConfigure() || getAllowService() ? (
+						{(getAllowStudio() && this.props.rundownPlaylist.unsyncedRundowns.length > 0) ||
+						getAllowConfigure() ||
+						getAllowService() ? (
 							<Tooltip overlay={t('Delete')} placement="top">
 								<button
 									className="action-btn"
@@ -278,7 +280,8 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 								</button>
 							</Tooltip>
 						) : null}
-						{this.props.rundownPlaylist.unsyncedRundowns.length > 0 ? (
+						{(getAllowConfigure() || getAllowService() || getAllowStudio()) &&
+						this.props.rundownPlaylist.unsyncedRundowns.length > 0 ? (
 							<Tooltip overlay={t('Re-sync all rundowns in playlist')} placement="top">
 								<button
 									className="action-btn"
