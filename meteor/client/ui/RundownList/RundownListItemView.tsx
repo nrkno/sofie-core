@@ -65,7 +65,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			<span className="rundown-list-item__airTime rundown-list-item__text">
 				{rundown.expectedStart && (
 					<>
-						<MomentFromNow>{rundown.expectedStart}</MomentFromNow>{' '}
+						<MomentFromNow>{rundown.expectedStart}</MomentFromNow>&nbsp;
 						<Moment format="HH:mm:ss">{rundown.expectedStart}</Moment>
 					</>
 				)}
@@ -74,7 +74,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				{rundown.expectedDuration &&
 					RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)}
 			</span>
-			<span className="rundown-list-item__created rundown-list-item__text">
+			<span className="rundown-list-item__modified rundown-list-item__text">
 				<MomentFromNow>{rundown.modified}</MomentFromNow>
 			</span>
 			<span className="rundown-list-item__actions">

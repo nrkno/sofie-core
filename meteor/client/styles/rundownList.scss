@@ -1,18 +1,28 @@
 // Root playlist/rundown list, see RundownList.tsx
 .rundown-list {
-	//  the width of the floating right status bar
-	--statusBarWidth: 2.1rem;
-	--componentWidth: calc(100% - var(--statusBarWidth));
 	--defaultSpacing: 20px;
 	--defaultItemBackgroundColor: #f6f6f6;
 	--descendantItemBackgroundColor: #e5e5e5;
 	--treeLinesColor: #dddddd;
+
+	/* "column" width calculations */
+	--statusBarWidth: 2.1rem; //  the width of the floating right status bar
+	--componentWidth: calc(100% - var(--statusBarWidth));
+	--standardColumnWidth: calc(var(--componentWidth) * 0.11);
+	--nameColumnWidth: calc(var(--componentWidth) * 0.3);
+	--showStyleColumnWidth: calc(var(--componentWidth) * 0.21);
+	--actionsColumnWidth: calc(var(--componentWidth) * 0.05);
 
 	background-color: transparent;
 	width: 100%;
 	padding-right: var(--statusBarWidth);
 
 	.rundown-list__header {
+		display: grid;
+		grid-template-columns:
+			var(--nameColumnWidth) var(--standardColumnWidth) var(--showStyleColumnWidth) var(--standardColumnWidth)
+			var(--standardColumnWidth) var(--standardColumnWidth) var(--actionsColumnWidth);
+
 		background-color: #898989;
 		color: #fff;
 		padding: 5px var(--defaultSpacing) 7px;
@@ -21,7 +31,6 @@
 
 	.rundown-list-item__name {
 		display: inline-block;
-		width: calc(var(--componentWidth) * 0.3);
 
 		.draghandle {
 			cursor: grab;
@@ -48,48 +57,42 @@
 			margin-left: var(--defaultSpacing);
 		}
 	}
-	.rundown-list-item__showStyle {
-		display: inline-block;
-		width: calc(var(--componentWidth) * 0.21);
-	}
+	.rundown-list-item__showStyle,
 	.rundown-list-item__airTime,
 	.rundown-list-item__problems,
 	.rundown-list-item__duration,
 	.rundown-list-item__modified {
-		display: inline-block;
-		width: calc(var(--componentWidth) * 0.11);
+		display: inline-flex;
+		align-self: center;
 	}
+
 	.rundown-list-item__actions {
 		display: inline-grid;
 		grid-template-columns: 1fr 1fr;
-		width: calc(var(--componentWidth) * 0.05);
+
+		.rundown-list-item__action {
+			all: unset; // unset button styles
+			cursor: pointer;
+
+			&:not(:last-child) {
+				margin-right: var(--defaultSpacing);
+			}
+
+			svg {
+				height: 1em;
+				width: 1em;
+				top: 0.125em;
+				position: relative;
+			}
+
+			.resync path {
+				fill: black;
+			}
+		}
 	}
 
 	&.droptarget {
 		border: 4px dashed green;
-	}
-
-	.rundown-list-item__action {
-		all: unset;
-		display: inline-flex;
-		align-self: center;
-		cursor: pointer;
-		height: 100%;
-
-		&:not(:last-child) {
-			margin-right: var(--defaultSpacing);
-		}
-
-		svg {
-			height: 1em;
-			width: 1em;
-			top: 0.125em;
-			position: relative;
-		}
-
-		.resync path {
-			fill: black;
-		}
 	}
 
 	// the actual playlists and rundowns
@@ -105,6 +108,11 @@
 			.rundown-playlist__header {
 				background-color: var(--defaultItemBackgroundColor);
 				padding: 0 var(--defaultSpacing);
+				display: grid;
+				// for the header, the first column spans the first four item columns
+				grid-template-columns:
+					calc(var(--nameColumnWidth) + var(--showStyleColumnWidth) + var(--standardColumnWidth) * 2)
+					var(--standardColumnWidth) var(--standardColumnWidth) var(--actionsColumnWidth);
 
 				.rundown-playlist__heading {
 					display: inline-block;
@@ -112,6 +120,22 @@
 
 					.rundown-playlist__heading-text {
 						margin-left: 0.5em;
+					}
+				}
+
+				.rundown-playlist__sorting-origin-toggle {
+					font-size: 0.875rem;
+					line-height: 1.1875rem;
+
+					.rundown-playlist__sorting-origin-toggle--label {
+						&.active {
+							font-weight: normal;
+						}
+					}
+
+					.switch-button {
+						margin: auto 6px;
+						transform: scale(0.8) translateY(-3px);
 					}
 				}
 			}
@@ -123,11 +147,25 @@
 
 				// overrides for rundowns inside of playlists
 				.rundown-list-item {
+					margin-left: var(--leftGutterWidth);
+
+					// recalc column widths to adjust for left gutter
+					--nameColumnWidthInner: calc(
+						(var(--componentWidth) - var(--leftGutterWidth)) * 0.3 - var(--leftGutterWidth) / 2
+					);
+					--standardColumnWidthInner: calc((var(--componentWidth) + var(--leftGutterWidth)) * 0.11);
+					--showStyleColumnWidthInner: calc((var(--componentWidth) + var(--leftGutterWidth)) * 0.21);
+					--actionsColumnWidthInner: calc((var(--componentWidth) + var(--leftGutterWidth)) * 0.05);
+					grid-template-columns:
+						var(--nameColumnWidthInner) var(--standardColumnWidthInner) var(--showStyleColumnWidthInner) var(
+							--standardColumnWidthInner
+						)
+						var(--standardColumnWidthInner) var(--standardColumnWidthInner) var(--actionsColumnWidthInner);
+
 					background-color: var(--descendantItemBackgroundColor);
 					border-top: 1px solid #c6c6c6;
 					margin-bottom: 0;
 					position: relative;
-					margin-left: var(--leftGutterWidth);
 
 					&::before,
 					&::after {
@@ -153,23 +191,6 @@
 					&:last-child::after {
 						height: 50%;
 					}
-
-					// recalc widths to line up with columns outside of playlists
-					.rundown-list-item__name {
-						width: calc((var(--componentWidth) - var(--leftGutterWidth)) * 0.3 - var(--leftGutterWidth) / 2);
-					}
-					.rundown-list-item__showStyle {
-						width: calc((var(--componentWidth) + var(--leftGutterWidth)) * 0.21);
-					}
-					.rundown-list-item__airTime,
-					.rundown-list-item__problems,
-					.rundown-list-item__duration,
-					.rundown-list-item__modified {
-						width: calc((var(--componentWidth) + var(--leftGutterWidth)) * 0.11);
-					}
-					.rundown-list-item__actions {
-						width: calc((var(--componentWidth) + var(--leftGutterWidth)) * 0.05);
-					}
 				}
 			}
 		}
@@ -184,6 +205,10 @@
 			padding: 0 var(--defaultSpacing);
 			list-style-type: none;
 			vertical-align: middle;
+			display: grid;
+			grid-template-columns:
+				var(--nameColumnWidth) var(--standardColumnWidth) var(--showStyleColumnWidth) var(--standardColumnWidth)
+				var(--standardColumnWidth) var(--standardColumnWidth) var(--actionsColumnWidth);
 
 			.rundown-list-item__text {
 				padding: 7px 0;

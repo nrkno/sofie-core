@@ -34,6 +34,7 @@ import {
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownUtils } from '../../lib/rundown'
 import { MomentFromNow } from '../../lib/Moment'
+import PlaylistRankMethodToggle from './PlaylistRankMethodToggle'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
@@ -352,21 +353,20 @@ export const RundownPlaylistUi = DropTarget(
 				return connectDropTarget(
 					<li className={`rundown-playlist ${isOver ? 'droptarget' : ''}`}>
 						<header className="rundown-playlist__header">
-							<span className="rundown-list-item__name">
+							<span>
 								<h2 className="rundown-playlist__heading">
 									<FontAwesomeIcon icon={faFolderOpen} />
 									<span className="rundown-playlist__heading-text">
 										<Link to={playlistViewURL}>{playlist.name}</Link>
 									</span>
 								</h2>
-								<span
-									onClick={() => {
+								<PlaylistRankMethodToggle
+									manualSortingActive={playlist.rundownRanksAreSetInSofie === true}
+									toggleCallbackHandler={() => {
 										this.handleResetRundownOrderClick()
-									}}>{`rundownRanksAreSetInSofie: ${playlist.rundownRanksAreSetInSofie === true}`}</span>
+									}}
+								/>
 							</span>
-							<span className="rundown-list-item__showStyle">{playlistViewLinks}</span>
-							<span className="rundown-list-item__airTime"></span>
-							<span className="rundown-list-item__problems"></span>
 							<span className="rundown-list-item__duration">{expectedDuration}</span>
 							<span className="rundown-list-item__modified">
 								<MomentFromNow>{playlist.modified}</MomentFromNow>
