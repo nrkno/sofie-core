@@ -20,7 +20,8 @@ export type TimelineHash = ProtectedString<'TimelineHash'>
 
 export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
 
-export interface OnGenerateTimelineObjExt extends OnGenerateTimelineObj {
+export interface OnGenerateTimelineObjExt<TMetadata = unknown, TKeyframeMetadata = unknown>
+	extends OnGenerateTimelineObj<TMetadata, TKeyframeMetadata> {
 	/** The id of the partInstance this object belongs to */
 	partInstanceId: PartInstanceId | null
 	/** If this is from an infinite piece, the id of the infinite instance */
