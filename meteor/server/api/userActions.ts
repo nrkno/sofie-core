@@ -47,6 +47,7 @@ import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { rundownContentAllowWrite } from '../security/rundown'
 import { profiler } from './profiler'
+import { checkAccessAndGetPlaylist, checkAccessAndGetRundown } from './lib'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -62,19 +63,6 @@ export function setMinimumTakeSpan(span: number) {
 	If it's not possible to perform an action due to something the user can easily fix
 		-> ClientAPI.responseError('Friendly message')
 */
-
-function checkAccessAndGetPlaylist(context: MethodContext, playlistId: RundownPlaylistId): RundownPlaylist {
-	const access = RundownPlaylistContentWriteAccess.playout(context, playlistId)
-	const playlist = access.playlist
-	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
-	return playlist
-}
-function checkAccessAndGetRundown(context: MethodContext, rundownId: RundownId): Rundown {
-	const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
-	const rundown = access.rundown
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-	return rundown
-}
 
 // TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
 export const take = syncFunction(function take(

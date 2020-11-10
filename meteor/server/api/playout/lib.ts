@@ -12,7 +12,7 @@ import {
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
 import { Segments, Segment } from '../../../lib/collections/Segments'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
@@ -24,11 +24,8 @@ import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 import { saveIntoCache } from '../../DatabaseCache'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
-import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
-import { MethodContext } from '../../../lib/api/methods'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { isAnySyncFunctionsRunning } from '../../codeControl'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { profiler } from '../profiler'
@@ -728,22 +725,22 @@ export function getAllPieceInstancesFromCache(
 	})
 }
 
-export function touchRundownPlaylistsInCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-	if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
-	if (getCurrentTime() - playlist.modified > 3600 * 1000) {
-		const m = getCurrentTime()
-		playlist.modified = m
-		cache.RundownPlaylists.update(playlist._id, { $set: { modified: m } })
-	}
-}
+// export function touchRundownPlaylistsInCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
+// 	if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
+// 	if (getCurrentTime() - playlist.modified > 3600 * 1000) {
+// 		const m = getCurrentTime()
+// 		playlist.modified = m
+// 		cache.RundownPlaylists.update(playlist._id, { $set: { modified: m } })
+// 	}
+// }
 
-export function getRundownPlaylistFromCache(cache: CacheForRundownPlaylist, rundown: Rundown) {
-	if (!rundown.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
-	let pls = cache.RundownPlaylists.findOne(rundown.playlistId)
-	if (pls) {
-		return pls
-	} else throw new Meteor.Error(404, `Rundown Playlist "${rundown.playlistId}" not found!`)
-}
+// export function getRundownPlaylistFromCache(cache: CacheForRundownPlaylist, rundown: Rundown) {
+// 	if (!rundown.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
+// 	let pls = cache.RundownPlaylists.findOne(rundown.playlistId)
+// 	if (pls) {
+// 		return pls
+// 	} else throw new Meteor.Error(404, `Rundown Playlist "${rundown.playlistId}" not found!`)
+// }
 
 export function getRundownsSegmentsAndPartsFromCache(
 	cache: CacheForRundownPlaylist,
@@ -789,27 +786,4 @@ export function getRundownsSegmentsAndPartsFromCache(
 		segments: segments,
 		parts: parts,
 	}
-}
-
-export function checkAccessAndGetPlaylist(context: MethodContext, playlistId: RundownPlaylistId): RundownPlaylist {
-	const access = RundownPlaylistContentWriteAccess.playout(context, playlistId)
-	const playlist = access.playlist
-	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${playlistId}" not found!`)
-	return playlist
-}
-export function triggerGarbageCollection() {
-	Meteor.setTimeout(() => {
-		// Trigger a manual garbage collection:
-		if (global.gc) {
-			// This is only avaialble of the flag --expose_gc
-			// This can be done in prod by: node --expose_gc main.js
-			// or when running Meteor in development, set set SERVER_NODE_OPTIONS=--expose_gc
-
-			if (!isAnySyncFunctionsRunning()) {
-				// by passing true, we're triggering the "full" collection
-				// @ts-ignore (typings not avaiable)
-				global.gc(true)
-			}
-		}
-	}, 500)
 }
