@@ -37,7 +37,7 @@ describe('Pieces', () => {
 			},
 			id: 'piece_group_randomId9000',
 			inGroup: undefined,
-			infinitePieceId: undefined,
+			infinitePieceInstanceId: undefined,
 			isGroup: true,
 			layer: 'some-layer',
 			metaData: {
@@ -45,6 +45,7 @@ describe('Pieces', () => {
 			},
 			objectType: 'rundown',
 			pieceInstanceId: 'randomId9000',
+			partInstanceId: 'randomId9002',
 			priority: 123,
 		}
 		const partGroup = ({ id: getRandomId() } as any) as TimelineObjRundown
@@ -149,10 +150,11 @@ describe('Pieces', () => {
 						content: { deviceType: 0, type: 'group' },
 						enable: { end: 800, start: 0 },
 						id: 'piece_group_randomId9000_cap',
-						inGroup: 'randomId9002',
+						inGroup: 'randomId9003',
 						isGroup: true,
 						layer: '',
 						objectType: 'rundown',
+						partInstanceId: 'randomId9002',
 					},
 				])
 				expect(res.pieceGroup).toStrictEqual({
@@ -198,6 +200,7 @@ describe('Pieces', () => {
 					id: 'piece_group_randomId9000_cap_now',
 					layer: '',
 					objectType: 'rundown',
+					partInstanceId: 'randomId9002',
 				},
 				{
 					children: [],
@@ -208,6 +211,7 @@ describe('Pieces', () => {
 					isGroup: true,
 					layer: '',
 					objectType: 'rundown',
+					partInstanceId: 'randomId9002',
 				},
 			])
 			expect(res.pieceGroup).toStrictEqual({
@@ -233,6 +237,7 @@ describe('Pieces', () => {
 					id: 'piece_group_randomId9000_cap_now',
 					layer: '',
 					objectType: 'rundown',
+					partInstanceId: 'randomId9002',
 				},
 			])
 			expect(res.pieceGroup).toStrictEqual({
@@ -261,6 +266,7 @@ describe('Pieces', () => {
 					id: 'piece_group_randomId9000_cap_now',
 					layer: '',
 					objectType: 'rundown',
+					partInstanceId: 'randomId9002',
 				},
 				{
 					children: [],
@@ -271,6 +277,7 @@ describe('Pieces', () => {
 					isGroup: true,
 					layer: '',
 					objectType: 'rundown',
+					partInstanceId: 'randomId9002',
 				},
 			])
 			expect(res.pieceGroup).toStrictEqual({
@@ -299,6 +306,7 @@ describe('Pieces', () => {
 					isGroup: true,
 					layer: '',
 					objectType: 'rundown',
+					partInstanceId: 'randomId9002',
 				},
 			])
 			expect(res.pieceGroup).toStrictEqual({
