@@ -40,8 +40,6 @@ export interface ISettings {
 	showKeyboardMap: boolean
 	// Keyboard map layout (what physical layout to use for the keyboard)
 	keyboardMapLayout: KeyboardLayouts.Names
-	/** NRCS name displayed in various places */
-	nrcsName: string
 }
 
 export let Settings: ISettings
@@ -63,7 +61,6 @@ const DEFAULT_SETTINGS: ISettings = {
 	allowRundownResetOnAir: false,
 	showKeyboardMap: true,
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
-	nrcsName: 'ENPS',
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)
