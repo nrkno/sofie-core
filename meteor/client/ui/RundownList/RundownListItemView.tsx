@@ -58,21 +58,26 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				)}
 				<b className="rundown-name">{rundownNameContent}</b>
 			</span>
-			<span className="rundown-list-item__problems rundown-list-item__text">{rundown.status}</span>
+			<span className="rundown-list-item__problems rundown-list-item__text">{rundown.status || null}</span>
 			<span className="rundown-list-item__showStyle rundown-list-item__text">
 				{showStyleBaseURL ? <Link to={showStyleBaseURL}>{showStyleName}</Link> : showStyleName}
 			</span>
 			<span className="rundown-list-item__airTime rundown-list-item__text">
-				{rundown.expectedStart && (
+				{rundown.expectedStart ? (
 					<>
 						<MomentFromNow>{rundown.expectedStart}</MomentFromNow>&nbsp;
 						<Moment format="HH:mm:ss">{rundown.expectedStart}</Moment>
 					</>
+				) : (
+					<span className="dimmed">{t('Not set')}</span>
 				)}
 			</span>
 			<span className="rundown-list-item__duration rundown-list-item__text">
-				{rundown.expectedDuration &&
-					RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)}
+				{rundown.expectedDuration ? (
+					RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)
+				) : (
+					<span className="dimmed">{t('Not set')}</span>
+				)}
 			</span>
 			<span className="rundown-list-item__modified rundown-list-item__text">
 				<MomentFromNow>{rundown.modified}</MomentFromNow>

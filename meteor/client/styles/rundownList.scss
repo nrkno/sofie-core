@@ -64,6 +64,7 @@
 	.rundown-list-item__modified {
 		display: inline-flex;
 		align-self: center;
+		align-items: center;
 	}
 
 	.rundown-list-item__actions {
@@ -111,8 +112,8 @@
 				display: grid;
 				// for the header, the first column spans the first four item columns
 				grid-template-columns:
-					calc(var(--nameColumnWidth) + var(--showStyleColumnWidth) + var(--standardColumnWidth) * 2)
-					var(--standardColumnWidth) var(--standardColumnWidth) var(--actionsColumnWidth);
+					calc(var(--nameColumnWidth) + var(--showStyleColumnWidth) + var(--standardColumnWidth))
+					var(--standardColumnWidth) var(--standardColumnWidth) var(--standardColumnWidth) var(--actionsColumnWidth);
 
 				.rundown-playlist__heading {
 					display: inline-block;
@@ -234,6 +235,10 @@
 				background: red;
 				border: 1px solid red;
 			}
+		}
+
+		.subtle {
+			font-style: italic;
 		}
 	}
 

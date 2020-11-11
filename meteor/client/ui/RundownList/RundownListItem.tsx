@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Studio } from '../../../lib/collections/Studios'
-import { getAllowConfigure, getAllowService } from '../../lib/localStorage'
+import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { MomentFromNow } from '../../lib/Moment'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
@@ -262,11 +262,13 @@ export const RundownListItem = withTranslation()(
 							showStyleName={this.showStyle.name}
 							showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
 							confirmDeleteRundownHandler={
-								rundown.unsynced || userCanConfigure || getAllowService()
+								(rundown.unsynced && getAllowStudio()) || userCanConfigure || getAllowService()
 									? () => confirmDeleteRundown(rundown, t)
 									: undefined
 							}
-							confirmReSyncRundownHandler={rundown.unsynced ? () => confirmReSyncRundown(rundown, t) : undefined}
+							confirmReSyncRundownHandler={
+								rundown.unsynced && getAllowStudio() ? () => confirmReSyncRundown(rundown, t) : undefined
+							}
 						/>
 					)
 				}

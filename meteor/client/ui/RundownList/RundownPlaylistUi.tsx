@@ -33,6 +33,7 @@ import {
 } from './DragAndDropTypes'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownUtils } from '../../lib/rundown'
+import Moment from 'react-moment'
 import { MomentFromNow } from '../../lib/Moment'
 import PlaylistRankMethodToggle from './PlaylistRankMethodToggle'
 
@@ -299,7 +300,7 @@ export const RundownPlaylistUi = DropTarget(
 			}
 
 			render() {
-				const { playlist, connectDropTarget, isOver } = this.props
+				const { playlist, connectDropTarget, isOver, t } = this.props
 
 				if (playlist.rundowns.length === 0) {
 					console.log(`Playlist ${playlist._id} has no rundowns, aborting render`)
@@ -367,7 +368,19 @@ export const RundownPlaylistUi = DropTarget(
 									}}
 								/>
 							</span>
-							<span className="rundown-list-item__duration">{expectedDuration}</span>
+							<span className="rundown-list-item__airTime rundown-list-item__text">
+								{playlist.expectedStart ? (
+									<>
+										<MomentFromNow>{playlist.expectedStart}</MomentFromNow>&nbsp;
+										<Moment format="HH:mm:ss">{playlist.expectedStart}</Moment>
+									</>
+								) : (
+									<span className="dimmed">{t('Not set')}</span>
+								)}
+							</span>
+							<span className="rundown-list-item__duration">
+								{expectedDuration ? expectedDuration : <span className="dimmed">{t('Not set')}</span>}
+							</span>
 							<span className="rundown-list-item__modified">
 								<MomentFromNow>{playlist.modified}</MomentFromNow>
 							</span>
