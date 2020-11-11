@@ -19,15 +19,15 @@ export interface PieceGroupMetadata {
 export function createPieceGroupAndCap(
 	pieceInstance: Pick<
 		DeepReadonly<PieceInstanceWithTimings>,
-		'_id' | 'rundownId' | 'piece' | 'infinite' | 'resolvedEndCap' | 'priority' | 'userDuration' | 'partInstanceId'
+		'_id' | 'rundownId' | 'piece' | 'infinite' | 'resolvedEndCap' | 'priority' | 'partInstanceId'
 	>,
 	partGroup?: TimelineObjRundown,
 	pieceEnable?: TSR.Timeline.TimelineEnable
 ): {
-	pieceGroup: TimelineObjGroupRundown & OnGenerateTimelineObjExt
+	pieceGroup: TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceGroupMetadata>
 	capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt>
 } {
-	const pieceGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt>({
+	const pieceGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceGroupMetadata>>({
 		id: getPieceGroupId(unprotectString(pieceInstance._id)),
 		content: {
 			deviceType: TSR.DeviceType.ABSTRACT,
@@ -82,6 +82,7 @@ export function createPieceGroupAndCap(
 					pieceInstance.resolvedEndCap
 				)
 				delete pieceGroup.enable.duration
+				updatedPieceGroup = true
 			}
 		}
 

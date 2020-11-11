@@ -20,9 +20,6 @@ import {
 	objectPathGet,
 	objectPathSet,
 	stringifyObjects,
-	// rateLimit,
-	// rateLimitAndDoItLater,
-	// rateLimitIgnore,
 	// getRank,
 	partial,
 	partialExceptId,
@@ -373,35 +370,6 @@ describe('lib/lib', () => {
 		}
 		expect(stringifyObjects(o)).toEqual(stringifyObjects(o))
 	})
-	// testInFiber('rateLimit', () => {
-	// 	const f0 = jest.fn()
-	// 	const f1 = jest.fn()
-	// 	rateLimit('test', f0, f1, 500)
-	// 	rateLimit('test', f0, f1, 500)
-	// 	rateLimit('test', f0, f1, 500)
-	// 	expect(f0).toHaveBeenCalledTimes(1)
-	// 	expect(f1).toHaveBeenCalledTimes(2)
-	// })
-	// testInFiber('rateLimitAndDoItLater', () => {
-	// 	const f0 = jest.fn()
-	// 	rateLimitAndDoItLater('test', f0, 10)
-	// 	rateLimitAndDoItLater('test', f0, 10)
-	// 	rateLimitAndDoItLater('test', f0, 10)
-	// 	rateLimitAndDoItLater('test', f0, 10)
-	// 	expect(f0).toHaveBeenCalledTimes(1)
-	// 	waitForPromise(new Promise((resolve) => setTimeout(resolve, 100)))
-	// 	expect(f0).toHaveBeenCalledTimes(4)
-	// })
-	// testInFiber('rateLimitIgnore', () => {
-	// 	const f0 = jest.fn()
-	// 	rateLimitIgnore('test', f0, 10)
-	// 	rateLimitIgnore('test', f0, 10)
-	// 	rateLimitIgnore('test', f0, 10)
-	// 	rateLimitIgnore('test', f0, 10)
-	// 	expect(f0).toHaveBeenCalledTimes(1)
-	// 	waitForPromise(new Promise((resolve) => setTimeout(resolve, 100)))
-	// 	expect(f0).toHaveBeenCalledTimes(2)
-	// })
 	testInFiber('mongowhere', () => {
 		setLoggerLevel('debug')
 

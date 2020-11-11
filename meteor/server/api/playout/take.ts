@@ -18,8 +18,6 @@ import {
 	isTooCloseToAutonext,
 	getSegmentsAndPartsFromCache,
 	selectNextPart,
-	checkAccessAndGetPlaylist,
-	triggerGarbageCollection,
 	getAllPieceInstancesFromCache,
 } from './lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
@@ -29,7 +27,6 @@ import { logger } from '../../logging'
 import { PartEndState, VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { getResolvedPieces } from './pieces'
 import * as _ from 'underscore'
-import { PieceId } from '../../../lib/collections/Pieces'
 import { PieceInstance, PieceInstanceId, PieceInstanceInfiniteId } from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
@@ -41,6 +38,8 @@ import { MethodContext } from '../../../lib/api/methods'
 import { profiler } from '../profiler'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { isAnySyncFunctionsRunning } from '../../codeControl'
+import { checkAccessAndGetPlaylist } from '../lib'
 
 export function takeNextPartInner(
 	context: MethodContext,
@@ -412,4 +411,21 @@ function completeHold(
 	}
 
 	updateTimeline(cache, playlist.studioId)
+}
+
+export function triggerGarbageCollection() {
+	Meteor.setTimeout(() => {
+		// Trigger a manual garbage collection:
+		if (global.gc) {
+			// This is only avaialble of the flag --expose_gc
+			// This can be done in prod by: node --expose_gc main.js
+			// or when running Meteor in development, set set SERVER_NODE_OPTIONS=--expose_gc
+
+			if (!isAnySyncFunctionsRunning()) {
+				// by passing true, we're triggering the "full" collection
+				// @ts-ignore (typings not avaiable)
+				global.gc(true)
+			}
+		}
+	}, 500)
 }

@@ -172,7 +172,7 @@ export interface SelectedPartInstanceTimelineInfo {
 	pieceInstances: PieceInstanceWithTimings[]
 }
 
-function getPartInstanceTimelineInfo(
+export function getPartInstanceTimelineInfo(
 	cache: CacheForRundownPlaylist,
 	currentTime: Time,
 	showStyle: ShowStyleBase,
