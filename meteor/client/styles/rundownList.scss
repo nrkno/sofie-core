@@ -59,12 +59,32 @@
 	}
 	.rundown-list-item__showStyle,
 	.rundown-list-item__airTime,
-	.rundown-list-item__problems,
 	.rundown-list-item__duration,
 	.rundown-list-item__modified {
 		display: inline-flex;
 		align-self: center;
 		align-items: center;
+	}
+
+	.rundown-list-item__problems {
+		display: inline-grid;
+		grid-template-columns: 1fr 1fr;
+		align-self: center;
+		align-items: center;
+
+		.rundown-list-item__problem {
+			&:not(:last-child) {
+				margin-right: var(--defaultSpacing);
+			}
+
+			svg {
+				height: 1em;
+				width: 1em;
+				top: 0.125em;
+				position: relative;
+				margin-right: 4px;
+			}
+		}
 	}
 
 	.rundown-list-item__actions {

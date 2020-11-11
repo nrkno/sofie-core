@@ -3,12 +3,13 @@ import React, { ReactElement } from 'react'
 import { withTranslation } from 'react-i18next'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
+import { INoteBase, NoteType, PartNote, RundownNote, SegmentNote } from '../../../lib/api/notes'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { MomentFromNow } from '../../lib/Moment'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
+import RundownListItemProblems from './RundownListItemProblems'
 
 interface IRundownListItemViewProps {
 	classNames: string[]
@@ -46,6 +47,8 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 
 	const rundownNameContent = rundownViewUrl ? <Link to={rundownViewUrl}>{props.rundown.name}</Link> : props.rundown.name
 
+	const [warnings, errors] = getAllNotes(rundown)
+
 	return connectDropTarget(
 		<li id={htmlElementId} className={classNames.join(' ')}>
 			<span className="rundown-list-item__name rundown-list-item__text">
@@ -58,7 +61,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				)}
 				<b className="rundown-name">{rundownNameContent}</b>
 			</span>
-			<span className="rundown-list-item__problems rundown-list-item__text">{rundown.status || null}</span>
+			<RundownListItemProblems warnings={warnings} errors={errors} />
 			<span className="rundown-list-item__showStyle rundown-list-item__text">
 				{showStyleBaseURL ? <Link to={showStyleBaseURL}>{showStyleName}</Link> : showStyleName}
 			</span>
@@ -103,3 +106,41 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		</li>
 	)
 })
+
+function getAllNotes(rundown: Rundown): [INoteBase[], INoteBase[]] {
+	const allNotes: INoteBase[] = []
+
+	if (rundown.notes) {
+		allNotes.push(...rundown.notes)
+	}
+
+	for (const segment of rundown.getSegments()) {
+		if (segment.notes) {
+			allNotes.push(...segment.notes)
+		}
+
+		for (const part of segment.getParts()) {
+			if (part.notes) {
+				allNotes.push(...part.notes)
+			}
+		}
+	}
+
+	const warnings: INoteBase[] = []
+	const errors: INoteBase[] = []
+
+	for (const note of allNotes) {
+		if (!note) continue
+
+		switch (note.type) {
+			case NoteType.ERROR:
+				errors.push(note)
+				break
+			case NoteType.WARNING:
+				warnings.push(note)
+				break
+		}
+	}
+
+	return [warnings, errors]
+}
