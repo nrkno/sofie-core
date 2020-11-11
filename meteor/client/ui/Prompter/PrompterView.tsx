@@ -462,7 +462,16 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				) : this.props.rundownPlaylist ? (
 					<>
 						<Prompter rundownPlaylistId={this.props.rundownPlaylist._id} config={this.configOptions} />
-						{this.configOptions.debug ? <div id="prompter-debug"></div> : null}
+						{this.configOptions.debug ? (
+							<div
+								id="prompter-debug"
+								style={{
+									marginTop: this.configOptions.margin ? this.configOptions.margin + 'vh' : undefined,
+									marginBottom: this.configOptions.margin ? this.configOptions.margin + 'vh' : undefined,
+									marginLeft: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
+									marginRight: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
+								}}></div>
+						) : null}
 					</>
 				) : this.props.studio ? (
 					<StudioScreenSaver studioId={this.props.studio._id} />
