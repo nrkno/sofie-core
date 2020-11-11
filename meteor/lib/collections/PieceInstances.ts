@@ -35,8 +35,19 @@ export function protectPieceInstance(pieceInstance: IBlueprintPieceInstance): De
 
 export type PieceInstancePiece = Omit<Piece, 'startRundownId' | 'startSegmentId'>
 
+export interface PieceInstanceInfinite
+	extends ProtectedStringProperties<Required<IBlueprintPieceInstance>['infinite'], 'infinitePieceId'> {
+	/** A random id for this instance of this infinite */
+	infiniteInstanceId: PieceInstanceInfiniteId
+
+	// /** The first partInstance this existed in */
+	// firstPartInsanceId: PartInstanceId
+	/** The last partInstance this should exist in */
+	// lastPartInstanceId?: PartInstanceId
+}
+
 export interface PieceInstance
-	extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece'>, '_id' | 'adLibSourceId'> {
+	extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece' | 'infinite'>, '_id' | 'adLibSourceId'> {
 	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
 	readonly isTemporary?: boolean
 
@@ -62,25 +73,7 @@ export interface PieceInstance
 	dynamicallyInserted?: Time
 
 	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
-	infinite?: {
-		/** A random id for this instance of this infinite */
-		infiniteInstanceId: PieceInstanceInfiniteId
-		/** The piece that this instance is a continuation of */
-		infinitePieceId: PieceId
-		// TODO - more properties?
-		/** When the instance was a copy made from hold */
-		fromHold?: boolean
-
-		/** Whether this was 'copied' from the previous PartInstance or Part */
-		fromPreviousPart: boolean
-		/** Whether this was 'copied' from the previous PartInstance via the playhead, rather than from a Part */
-		fromPreviousPlayhead?: boolean
-
-		// /** The first partInstance this existed in */
-		// firstPartInsanceId: PartInstanceId
-		/** The last partInstance this should exist in */
-		lastPartInstanceId?: PartInstanceId
-	}
+	infinite?: PieceInstanceInfinite
 
 	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
 	startedPlayback?: Time

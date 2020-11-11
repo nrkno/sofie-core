@@ -291,6 +291,17 @@ export interface IBlueprintPieceInstance {
 	dynamicallyInserted?: Time
 
 	piece: IBlueprintPieceDB
+
+	infinite?: {
+		infinitePieceId: string
+		/** When the instance was a copy made from hold */
+		fromHold?: boolean
+
+		/** Whether this was 'copied' from the previous PartInstance or Part */
+		fromPreviousPart: boolean
+		/** Whether this was 'copied' from the previous PartInstance via the playhead, rather than from a Part */
+		fromPreviousPlayhead?: boolean
+	}
 }
 export interface IBlueprintResolvedPieceInstance extends IBlueprintPieceInstance {
 	resolvedStart: number
