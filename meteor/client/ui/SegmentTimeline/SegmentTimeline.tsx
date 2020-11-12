@@ -263,6 +263,11 @@ class SegmentTimelineZoomButtons extends React.Component<
 		return (
 			<div className="segment-timeline__timeline-zoom-buttons">
 				<button
+					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
+					onClick={this.zoomOut}>
+					<ZoomOutIcon />
+				</button>
+				<button
 					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--in"
 					onClick={this.zoomIn}>
 					<ZoomInIcon />
@@ -270,12 +275,7 @@ class SegmentTimelineZoomButtons extends React.Component<
 				<button
 					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--all"
 					onClick={this.zoomNormalize}>
-					{t('Show All')}
-				</button>
-				<button
-					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
-					onClick={this.zoomOut}>
-					<ZoomOutIcon />
+					{t('Vis alt')}
 				</button>
 			</div>
 		)
