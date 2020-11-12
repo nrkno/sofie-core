@@ -4,6 +4,11 @@ import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { BucketPanel } from './BucketPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { ISourceLayer, IOutputLayer } from 'tv-automation-sofie-blueprints-integration'
+import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
+import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
+import { StudioId } from '../../../lib/collections/Studios'
 
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { ClientAPI } from '../../../lib/api/client'
@@ -24,6 +29,45 @@ import { MeteorCall } from '../../../lib/api/methods'
 import update from 'immutability-helper'
 
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { RundownAPI } from '../../../lib/api/rundown'
+
+export interface BucketAdLibUi extends BucketAdLib {
+	sourceLayer?: ISourceLayer
+	outputLayer?: IOutputLayer
+	status: RundownAPI.PieceStatusCode
+}
+
+export interface BucketAdLibActionUi extends AdLibPiece {
+	bucketId: BucketId
+	sourceLayer?: ISourceLayer
+	outputLayer?: IOutputLayer
+	isGlobal?: boolean
+	isHidden?: boolean
+	isSticky?: boolean
+	isAction: true
+	isClearSourceLayer?: boolean
+	adlibAction: BucketAdLibAction
+	contentMetaData?: any
+	message?: string | null
+	showStyleVariantId: ShowStyleVariantId
+	studioId: StudioId
+}
+
+export type BucketAdLibItem = BucketAdLibUi | BucketAdLibActionUi
+
+export function isAdLibAction(item: BucketAdLibItem): item is BucketAdLibActionUi {
+	if (item['adlibAction']) {
+		return true
+	}
+	return false
+}
+
+export function isAdLib(item: BucketAdLibItem): item is BucketAdLibUi {
+	if (!item['adlibAction']) {
+		return true
+	}
+	return false
+}
 
 interface IBucketsProps {
 	buckets: Bucket[] | undefined
@@ -32,12 +76,14 @@ interface IBucketsProps {
 	shouldQueue: boolean
 	fullViewport: boolean
 	displayBuckets?: number[]
+
+	onSelectPiece?: (piece: BucketAdLibItem) => void
 }
 
 interface IState {
 	panelWidths: number[]
 	contextBucket: Bucket | undefined
-	contextBucketAdLib: BucketAdLib | undefined
+	contextBucketAdLib: BucketAdLibItem | undefined
 	editedNameId: BucketId | undefined
 	localBuckets: Bucket[]
 }
@@ -254,7 +300,15 @@ export const RundownViewBuckets = withTranslation()(
 			)
 		}
 
-		deleteBucketAdLib = (e: any, bucketAdLib: BucketAdLib) => {
+		inspectBucketAdLib = (e: any, bucketAdLib: BucketAdLibItem) => {
+			const { t } = this.props
+
+			if (e.persist) e.persist()
+
+			this.props.onSelectPiece && this.props.onSelectPiece(bucketAdLib)
+		}
+
+		deleteBucketAdLib = (e: any, bucketAdLib: BucketAdLibItem) => {
 			const { t } = this.props
 
 			if (e.persist) e.persist()
@@ -264,9 +318,15 @@ export const RundownViewBuckets = withTranslation()(
 					message: t('Are you sure you want to delete this AdLib?'),
 					title: bucketAdLib.name,
 					onAccept: () => {
-						doUserAction(t, e, UserAction.REMOVE_BUCKET_ADLIB, (e) =>
-							MeteorCall.userAction.bucketsRemoveBucketAdLib(e, bucketAdLib._id)
-						)
+						if (isAdLibAction(bucketAdLib)) {
+							doUserAction(t, e, UserAction.REMOVE_BUCKET_ADLIB, (e) =>
+								MeteorCall.userAction.bucketsRemoveBucketAdLibAction(e, bucketAdLib.adlibAction._id)
+							)
+						} else {
+							doUserAction(t, e, UserAction.REMOVE_BUCKET_ADLIB, (e) =>
+								MeteorCall.userAction.bucketsRemoveBucketAdLib(e, bucketAdLib._id)
+							)
+						}
 					},
 				})
 			)
@@ -396,7 +456,7 @@ export const RundownViewBuckets = withTranslation()(
 		}
 
 		private onAdLibContext = (
-			{ contextBucketAdLib, contextBucket }: { contextBucketAdLib: BucketAdLib; contextBucket: Bucket },
+			{ contextBucketAdLib, contextBucket }: { contextBucketAdLib: BucketAdLibItem; contextBucket: Bucket },
 			callback: () => void
 		) => {
 			this.setState(
@@ -427,6 +487,12 @@ export const RundownViewBuckets = withTranslation()(
 							{this.state.contextBucketAdLib && (
 								<>
 									<div className="react-contextmenu-label">{this.state.contextBucketAdLib.name}</div>
+									<MenuItem
+										onClick={(e) =>
+											this.state.contextBucketAdLib && this.inspectBucketAdLib(e, this.state.contextBucketAdLib)
+										}>
+										{t('Inspect this AdLib')}
+									</MenuItem>
 									<MenuItem
 										onClick={(e) =>
 											this.state.contextBucketAdLib && this.deleteBucketAdLib(e, this.state.contextBucketAdLib)

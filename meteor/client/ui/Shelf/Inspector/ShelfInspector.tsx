@@ -9,11 +9,12 @@ import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
 import { Studio } from '../../../../lib/collections/Studios'
+import { BucketAdLibItem } from '../RundownViewBuckets'
 
 export { ShelfInspector }
 
 interface IShelfInspectorProps {
-	selected: AdLibPieceUi | PieceUi | undefined
+	selected: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined
 	showStyleBase: ShowStyleBase
 	studio: Studio
 }

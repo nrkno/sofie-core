@@ -3,6 +3,7 @@ import { NotificationCenter, Notification, NoticeLevel } from './notifications/n
 import { ClientAPI } from '../../lib/api/client'
 import { Meteor } from 'meteor/meteor'
 import { eventContextForLog } from './clientAPI'
+import { assertNever } from '../../lib/lib'
 
 export enum UserAction {
 	SAVE_EVALUATION,
@@ -49,6 +50,7 @@ export enum UserAction {
 	REMOVE_BUCKET_ADLIB,
 	MODIFY_BUCKET_ADLIB,
 	SWITCH_ROUTE_SET,
+	SAVE_TO_BUCKET,
 }
 
 function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
@@ -139,9 +141,12 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Starting Bucket AdLib')
 		case UserAction.SWITCH_ROUTE_SET:
 			return t('Switching routing')
+		case UserAction.SAVE_TO_BUCKET:
+			return t('Saving AdLib to Bucket')
 		case UserAction.UNKNOWN_ACTION:
-		default:
 			return t('Unknown action')
+		default:
+			assertNever(userAction)
 	}
 }
 

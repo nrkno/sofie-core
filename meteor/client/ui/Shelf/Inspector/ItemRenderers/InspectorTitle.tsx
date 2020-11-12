@@ -3,6 +3,7 @@ import ClassNames from 'classnames'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from '../../AdLibPanel'
+import { BucketAdLibUi, BucketAdLibActionUi } from '../../RundownViewBuckets'
 import { RundownUtils } from '../../../../lib/rundown'
 import { RundownAPI } from '../../../../../lib/api/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
@@ -10,15 +11,15 @@ import { Studio } from '../../../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../../../SegmentTimeline/withMediaObjectStatus'
 
 interface IProps {
-	piece: PieceUi | AdLibPieceUi
+	piece: PieceUi | AdLibPieceUi | BucketAdLibUi | BucketAdLibActionUi
 	showStyleBase: ShowStyleBase
 	studio: Studio
 }
 
 const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTitle(props: IProps) {
-	const piece = RundownUtils.isAdLibPiece(props.piece)
-		? (props.piece as AdLibPieceUi)
-		: (props.piece.instance.piece as Piece)
+	const piece = RundownUtils.isPieceInstance(props.piece)
+		? (props.piece.instance.piece as Piece)
+		: (props.piece as AdLibPieceUi)
 
 	const layer = props.showStyleBase.sourceLayers.find((layer) => layer._id === piece.sourceLayerId)
 

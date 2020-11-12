@@ -20,17 +20,23 @@ import { RundownBaselineAdLibAction } from '../../../../../lib/collections/Rundo
 import { ProtectedString } from '../../../../../lib/lib'
 import { PartId } from '../../../../../lib/collections/Parts'
 import { Studio } from '../../../../../lib/collections/Studios'
+import { doUserAction, UserAction } from '../../../../lib/userAction'
+import { MeteorCall } from '../../../../../lib/api/methods'
+import { BucketId, Buckets } from '../../../../../lib/collections/Buckets'
+import { BucketAdLibItem, BucketAdLibActionUi } from '../../RundownViewBuckets'
+import { BucketAdLib } from '../../../../../lib/collections/BucketAdlibs'
 
 export { isActionItem }
 
 export interface IProps {
-	piece: PieceUi | AdLibPieceUi
+	piece: PieceUi | AdLibPieceUi | BucketAdLibActionUi
 	showStyleBase: ShowStyleBase
 	studio: Studio
 }
 
 export interface ITrackedProps {
 	targetAction: TransformedAdLibAction | undefined
+	bucketIds: BucketId[]
 }
 
 export interface TransformedAdLibAction extends AdLibActionCommon {
@@ -41,20 +47,43 @@ export interface TransformedAdLibAction extends AdLibActionCommon {
 	}
 }
 
+function transformedAdLibActionToAction(transformed: TransformedAdLibAction): AdLibActionCommon {
+	return {
+		...(_.omit(transformed, ['transformedUserData']) as Omit<TransformedAdLibAction, 'transformedUserData'>),
+		userData: transformed.transformedUserData,
+	}
+}
+
 // create a temporary collection to store changes to the AdLib Actions
 const LocalActionItems: TransformedCollection<TransformedAdLibAction, TransformedAdLibAction> = createMongoCollection<
 	TransformedAdLibAction
 >(null as any)
 
 export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
-	let piece = RundownUtils.isAdLibPiece(props.piece)
-		? (props.piece as AdLibPieceUi)
-		: (props.piece.instance.piece as Piece)
+	let piece = RundownUtils.isPieceInstance(props.piece)
+		? (props.piece.instance.piece as Piece)
+		: (props.piece as AdLibPieceUi)
 
 	let action = (piece as AdLibPieceUi).adlibAction
 
 	return {
 		targetAction: action ? LocalActionItems.findOne(action._id) : undefined,
+		bucketIds: Buckets.find(
+			{
+				studioId: props.studio._id,
+			},
+			{
+				sort: {
+					_rank: 1,
+				},
+				fields: {
+					_id: 1,
+					_rank: 1,
+				},
+			}
+		)
+			.fetch()
+			.map((bucket) => bucket._id),
 	}
 })(
 	class ActionItemRenderer extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
@@ -113,9 +142,9 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		}
 
 		getActionItem() {
-			let piece = RundownUtils.isAdLibPiece(this.props.piece)
-				? (this.props.piece as AdLibPieceUi)
-				: (this.props.piece.instance.piece as Piece)
+			let piece = RundownUtils.isPieceInstance(this.props.piece)
+				? (this.props.piece.instance.piece as Piece)
+				: (this.props.piece as AdLibPieceUi)
 
 			let action = (piece as AdLibPieceUi).adlibAction
 
@@ -149,9 +178,9 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		}
 
 		onRevealSelectedItem = () => {
-			let piece = RundownUtils.isAdLibPiece(this.props.piece)
-				? (this.props.piece as AdLibPieceUi)
-				: (this.props.piece.instance.piece as Piece)
+			let piece = RundownUtils.isPieceInstance(this.props.piece)
+				? (this.props.piece.instance.piece as Piece)
+				: (this.props.piece as AdLibPieceUi)
 
 			window.dispatchEvent(
 				new CustomEvent(RundownViewEvents.revealInShelf, {
@@ -164,7 +193,21 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 
 		onCueAsNext = (e: any) => {}
 
-		onSaveToBucket = (e: any) => {}
+		onSaveToBucket = (e: any) => {
+			const { t } = this.props
+
+			if (this.props.bucketIds[0] && this.props.targetAction) {
+				const { targetAction } = this.props
+				doUserAction(t, e, UserAction.SAVE_TO_BUCKET, (e) =>
+					MeteorCall.userAction.bucketsSaveActionIntoBucket(
+						e,
+						this.props.studio._id,
+						transformedAdLibActionToAction(targetAction),
+						this.props.bucketIds[0]
+					)
+				)
+			}
+		}
 
 		render() {
 			const { t } = this.props
@@ -212,8 +255,12 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 	}
 )
 
-function isActionItem(item: AdLibPieceUi | PieceUi): boolean {
-	const content = RundownUtils.isAdLibPiece(item) ? (item as AdLibPieceUi) : (item.instance.piece as Piece)
+function isActionItem(item: BucketAdLibItem | AdLibPieceUi | PieceUi): item is BucketAdLibActionUi | AdLibPieceUi {
+	const content = RundownUtils.isAdLibPieceOrAdLibListItem(item)
+		? (item as AdLibPieceUi)
+		: RundownUtils.isPieceInstance(item)
+		? (item.instance.piece as Piece)
+		: (item as AdLibPieceUi)
 
 	if (content && (content as AdLibPieceUi).isAction) {
 		return true

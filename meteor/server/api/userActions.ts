@@ -47,8 +47,9 @@ import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { rundownContentAllowWrite } from '../security/rundown'
 import { profiler } from './profiler'
-import { AdLibActionId, AdLibAction } from '../../lib/collections/AdLibActions'
+import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
+import { UserAPIMethods } from '../../lib/api/user'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -709,7 +710,7 @@ export function bucketAdlibImport(
 export function bucketsSaveActionIntoBucket(
 	context: MethodContext,
 	studioId: StudioId,
-	action: AdLibAction,
+	action: AdLibActionCommon,
 	bucketId: BucketId
 ) {
 	check(studioId, String)
@@ -731,6 +732,8 @@ export function bucketsSaveActionIntoBucket(
 			`ShowStyle Variant "${rundown.showStyleVariantId}" not supported by studio "${studioId}"`
 		)
 	}
+
+	return ClientAPI.responseSuccess(BucketsAPI.saveAdLibActionIntoBucket(context, studioId, action, bucketId))
 }
 
 export function bucketAdlibStart(
@@ -802,7 +805,11 @@ export function switchRouteSet(
 	return ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
 }
 
-export function traceAction<T>(description: string, fn: (...args: any[]) => T, ...args: any[]) {
+export function traceAction<T extends (...args: any[]) => any>(
+	description: string,
+	fn: T,
+	...args: Parameters<T>
+): Promise<ReturnType<T>> {
 	const transaction = profiler.startTransaction(description, 'userAction')
 	return makePromise(() => {
 		const res = fn(...args)
@@ -1112,10 +1119,17 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	bucketsSaveActionIntoBucket(
 		_userEvent: string,
 		studioId: StudioId,
-		action: AdLibAction,
+		action: AdLibActionCommon,
 		bucketId: BucketId
 	): Promise<ClientAPI.ClientResponse<void>> {
-		throw new Error('Method not implemented.')
+		return traceAction(
+			UserActionAPIMethods.bucketsSaveActionIntoBucket,
+			bucketsSaveActionIntoBucket,
+			this,
+			studioId,
+			action,
+			bucketId
+		)
 	}
 	switchRouteSet(
 		_userEvent: string,
@@ -1123,7 +1137,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		routeSetId: string,
 		state: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
-		return makePromise(() => switchRouteSet(this, studioId, routeSetId, state))
+		return traceAction(UserActionAPIMethods.switchRouteSet, switchRouteSet, this, studioId, routeSetId, state)
 	}
 }
 registerClassToMeteorMethods(

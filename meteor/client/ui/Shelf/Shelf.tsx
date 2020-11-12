@@ -23,7 +23,7 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { ShelfRundownLayout } from './ShelfRundownLayout'
 import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 import { Bucket } from '../../../lib/collections/Buckets'
-import { RundownViewBuckets } from './RundownViewBuckets'
+import { RundownViewBuckets, BucketAdLibItem } from './RundownViewBuckets'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ShelfInspector } from './Inspector/ShelfInspector'
 import { Studio } from '../../../lib/collections/Studios'
@@ -70,7 +70,7 @@ interface IState {
 	moving: boolean
 	selectedTab: string | undefined
 	shouldQueue: boolean
-	selectedPiece: AdLibPieceUi | PieceUi | undefined
+	selectedPiece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined
 }
 
 const CLOSE_MARGIN = 45
@@ -398,11 +398,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, 'shelfTab', tab)
 	}
 
-	private onSelectPiece = (e: CustomEvent<{ piece: AdLibPieceUi | PieceUi | undefined }>) => {
+	private onSelectPiece = (e: CustomEvent<{ piece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined }>) => {
 		this.selectPiece(e.detail.piece)
 	}
 
-	selectPiece = (piece: AdLibPieceUi | PieceUi | undefined) => {
+	selectPiece = (piece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined) => {
 		this.setState({
 			selectedPiece: piece,
 		})
@@ -494,6 +494,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 									this.props.shelfDisplayOptions.layout === false
 								}
 								displayBuckets={this.props.bucketDisplayFilter}
+								onSelectPiece={this.selectPiece}
 							/>
 						</ErrorBoundary>
 					) : null}

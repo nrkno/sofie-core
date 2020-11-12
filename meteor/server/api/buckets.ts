@@ -13,7 +13,7 @@ import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { check } from '../../lib/check'
-import { AdLibActionId, AdLibAction } from '../../lib/collections/AdLibActions'
+import { AdLibActionId, AdLibAction, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibActions, BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
@@ -49,9 +49,6 @@ export namespace BucketsAPI {
 
 		BucketAdLibActions.remove({
 			_id: id,
-		})
-		ExpectedMediaItems.remove({
-			bucketAdLibPieceId: id,
 		})
 	}
 
@@ -130,7 +127,7 @@ export namespace BucketsAPI {
 		if (!BucketSecurity.allowWriteAccessAction({ _id: id }, context))
 			throw new Meteor.Error(403, `Not allowed to edit bucket adlib: ${id}`)
 
-		const oldAdLib = BucketAdLibs.findOne(id)
+		const oldAdLib = BucketAdLibActions.findOne(id)
 		if (!oldAdLib) {
 			throw new Meteor.Error(404, `Bucket AdLib not found: ${id}`)
 		}
@@ -154,15 +151,15 @@ export namespace BucketsAPI {
 			throw new Meteor.Error(`Could not find studio: "${action.studioId}"`)
 		}
 
-		BucketAdLibs.update(id, {
+		BucketAdLibActions.update(id, {
 			$set: _.omit(action, ['_id']),
 		})
 	}
 
-	export function importAdLibActionIntoBucket(
+	export function saveAdLibActionIntoBucket(
 		context: MethodContext,
 		studioId: StudioId,
-		action: AdLibAction,
+		action: AdLibActionCommon,
 		bucketId: BucketId
 	) {
 		if (bucketId && !BucketSecurity.allowWriteAccess({ _id: bucketId }, context)) {
@@ -190,7 +187,8 @@ export namespace BucketsAPI {
 		}
 
 		BucketAdLibActions.insert({
-			...(_.omit(action, ['partId']) as Omit<AdLibAction, 'partId'>),
+			...(_.omit(action, ['partId', 'rundownId']) as Omit<AdLibAction, 'partId' | 'rundownId'>),
+			_id: protectString(Random.id()),
 			bucketId: bucketId,
 			studioId: studioId,
 			showStyleVariantId: rundown.showStyleVariantId,

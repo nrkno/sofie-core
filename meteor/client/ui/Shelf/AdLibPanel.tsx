@@ -56,12 +56,13 @@ import {
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
 import { Studio } from '../../../lib/collections/Studios'
+import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
 	onSelectAdLib: (piece: IAdLibListItem) => void
 	onToggleAdLib: (piece: IAdLibListItem, queue: boolean, e: mousetrap.ExtendedKeyboardEvent) => void
-	selectedPiece: AdLibPieceUi | PieceUi | undefined
+	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | AdLibPieceUi | PieceUi | undefined
 	selectedSegment: AdlibSegmentUi | undefined
 	searchFilter: string | undefined
 	showStyleBase: ShowStyleBase
@@ -450,7 +451,7 @@ export interface IAdLibPanelProps {
 	includeGlobalAdLibs?: boolean
 	registerHotkeys?: boolean
 	hotkeyGroup: string
-	selectedPiece: AdLibPieceUi | PieceUi | undefined
+	selectedPiece: BucketAdLibUi | BucketAdLibActionUi | AdLibPieceUi | PieceUi | undefined
 
 	onSelectPiece?: (piece: AdLibPieceUi | PieceUi) => void
 }

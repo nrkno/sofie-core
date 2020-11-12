@@ -10,6 +10,7 @@ import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
 import { Studio } from '../../../../../lib/collections/Studios'
+import { BucketAdLibItem } from '../../RundownViewBuckets'
 
 export { isNoraItem }
 

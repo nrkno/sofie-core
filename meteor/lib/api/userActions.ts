@@ -17,7 +17,7 @@ import { BucketId, Bucket } from '../collections/Buckets'
 import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { BucketAdLib } from '../collections/BucketAdlibs'
 import { ActionUserData } from 'tv-automation-sofie-blueprints-integration'
-import { AdLibAction, AdLibActionId } from '../collections/AdLibActions'
+import { AdLibActionId, AdLibActionCommon } from '../collections/AdLibActions'
 import { BucketAdLibAction } from '../collections/BucketAdlibActions'
 
 export interface NewUserActionAPI extends MethodContext {
@@ -193,7 +193,7 @@ export interface NewUserActionAPI extends MethodContext {
 	bucketsSaveActionIntoBucket(
 		userEvent: string,
 		studioId: StudioId,
-		action: AdLibAction,
+		action: AdLibActionCommon,
 		bucketId: BucketId
 	): Promise<ClientAPI.ClientResponse<void>>
 	switchRouteSet(

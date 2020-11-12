@@ -40,18 +40,17 @@ import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
-import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { ShelfTabs } from './Shelf'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { ReactiveMap } from '../../../lib/reactiveMap'
 import { Studio } from '../../../lib/collections/Studios'
-import { truncate } from 'fs'
+import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
 	onToggleAdLib: (piece: IAdLibListItem, queue: boolean, e: mousetrap.ExtendedKeyboardEvent) => void
 	onToggleSticky: (item: IAdLibListItem, e: any) => void
-	selectedPiece: AdLibPieceUi | PieceUi | undefined
+	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | AdLibPieceUi | PieceUi | undefined
 	searchFilter: string | undefined
 	showStyleBase: ShowStyleBase
 	rundownAdLibs: Array<AdLibPieceUi>
@@ -310,7 +309,7 @@ interface IProps {
 	visible: boolean
 	studioMode: boolean
 	hotkeyGroup: string
-	selectedPiece: AdLibPieceUi | PieceUi | undefined
+	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | AdLibPieceUi | PieceUi | undefined
 
 	onSelectPiece?: (piece: AdLibPieceUi | PieceUi) => void
 }

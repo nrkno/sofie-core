@@ -10,9 +10,10 @@ import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
 import { Studio } from '../../../../../lib/collections/Studios'
 import { MediaObject } from '../../../../../lib/collections/MediaObjects'
+import { BucketAdLibUi } from '../../RundownViewBuckets'
 
 export default function DefaultItemRenderer(props: {
-	piece: PieceUi | AdLibPieceUi
+	piece: PieceUi | AdLibPieceUi | BucketAdLibUi
 	showStyleBase: ShowStyleBase
 	studio: Studio
 }): JSX.Element {
