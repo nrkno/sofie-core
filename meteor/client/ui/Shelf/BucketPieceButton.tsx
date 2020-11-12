@@ -38,6 +38,7 @@ import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { BucketId } from '../../../lib/collections/Buckets'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
+import { BucketAdLibPieceUi } from './BucketPanel'
 
 type IDashboardButtonPropsCombined = BucketPieceButtonBaseProps & IDashboardButtonProps
 
@@ -96,7 +97,7 @@ const buttonTarget = {
 
 export interface BucketPieceButtonBaseProps {
 	moveAdLib: (id: PieceId, atIndex: number) => void
-	findAdLib: (id: PieceId) => { piece: BucketAdLib | undefined; index: number }
+	findAdLib: (id: PieceId) => { piece: BucketAdLib | BucketAdLibPieceUi | undefined; index: number }
 	onAdLibReorder: (draggedId: PieceId, newIndex: number, oldIndex: number) => void
 	onAdLibMove: (id: PieceId, newBucketId: BucketId) => void
 	bucketId: BucketId

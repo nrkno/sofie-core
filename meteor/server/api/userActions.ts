@@ -706,8 +706,31 @@ export function bucketAdlibImport(
 	return ClientAPI.responseSuccess(undefined)
 }
 
-export function bucketsSaveActionIntoBucket(context: MethodContext, action: AdLibAction, bucketId: BucketId) {
-	// TODO: WIP
+export function bucketsSaveActionIntoBucket(
+	context: MethodContext,
+	studioId: StudioId,
+	action: AdLibAction,
+	bucketId: BucketId
+) {
+	check(studioId, String)
+	check(bucketId, String)
+	check(action, Object)
+
+	const { studio } = OrganizationContentWriteAccess.studio(context, studioId)
+
+	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
+
+	const rundown = Rundowns.findOne(action.rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${action.rundownId}" not found`)
+	const showStyleCompound = getShowStyleCompound(rundown.showStyleVariantId)
+	if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${rundown.showStyleVariantId}" not found`)
+
+	if (studio.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
+		throw new Meteor.Error(
+			500,
+			`ShowStyle Variant "${rundown.showStyleVariantId}" not supported by studio "${studioId}"`
+		)
+	}
 }
 
 export function bucketAdlibStart(
@@ -1076,7 +1099,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	bucketsModifyBucketAdLibAction(
 		_userEvent: string,
 		id: AdLibActionId,
-		bucketAdlibAction: Partial<Omit<AdLibAction, '_id'>>
+		bucketAdlibAction: Partial<Omit<BucketAdLibAction, '_id'>>
 	) {
 		return traceAction(
 			UserActionAPIMethods.bucketsModifyBucketAdLibAction,
@@ -1088,6 +1111,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	}
 	bucketsSaveActionIntoBucket(
 		_userEvent: string,
+		studioId: StudioId,
 		action: AdLibAction,
 		bucketId: BucketId
 	): Promise<ClientAPI.ClientResponse<void>> {

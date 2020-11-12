@@ -18,6 +18,7 @@ import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { BucketAdLib } from '../collections/BucketAdlibs'
 import { ActionUserData } from 'tv-automation-sofie-blueprints-integration'
 import { AdLibAction, AdLibActionId } from '../collections/AdLibActions'
+import { BucketAdLibAction } from '../collections/BucketAdlibActions'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -187,10 +188,11 @@ export interface NewUserActionAPI extends MethodContext {
 	bucketsModifyBucketAdLibAction(
 		userEvent: string,
 		id: AdLibActionId,
-		action: Partial<Omit<AdLibAction, '_id'>>
+		action: Partial<Omit<BucketAdLibAction, '_id'>>
 	): Promise<ClientAPI.ClientResponse<void>>
 	bucketsSaveActionIntoBucket(
 		userEvent: string,
+		studioId: StudioId,
 		action: AdLibAction,
 		bucketId: BucketId
 	): Promise<ClientAPI.ClientResponse<void>>

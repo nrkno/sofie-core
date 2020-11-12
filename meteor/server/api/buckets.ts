@@ -13,8 +13,10 @@ import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { check } from '../../lib/check'
-import { AdLibActionId } from '../../lib/collections/AdLibActions'
+import { AdLibActionId, AdLibAction } from '../../lib/collections/AdLibActions'
 import { BucketAdLibActions, BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
+import { Rundowns } from '../../lib/collections/Rundowns'
+import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 
@@ -136,7 +138,7 @@ export namespace BucketsAPI {
 		if (!BucketSecurity.allowWriteAccess({ _id: oldAdLib.bucketId }, context)) {
 			throw new Meteor.Error(403, 'Access denied')
 		}
-		if (action.bucketId && !BucketSecurity.allowWriteAccess({ Id: action.bucketId }, context)) {
+		if (action.bucketId && !BucketSecurity.allowWriteAccess({ _id: action.bucketId }, context)) {
 			throw new Meteor.Error(403, 'Access denied')
 		}
 
@@ -157,6 +159,45 @@ export namespace BucketsAPI {
 		})
 	}
 
+	export function importAdLibActionIntoBucket(
+		context: MethodContext,
+		studioId: StudioId,
+		action: AdLibAction,
+		bucketId: BucketId
+	) {
+		if (bucketId && !BucketSecurity.allowWriteAccess({ _id: bucketId }, context)) {
+			throw new Meteor.Error(403, 'Access denied')
+		}
+
+		const rundown = Rundowns.findOne(action.rundownId)
+		if (!rundown) {
+			throw new Meteor.Error(`Could not find rundown: "${action.rundownId}"`)
+		}
+
+		if (rundown.showStyleVariantId && !ShowStyleVariants.findOne(rundown.showStyleVariantId)) {
+			throw new Meteor.Error(`Could not find show style variant: "${rundown.showStyleVariantId}"`)
+		}
+
+		const studio = Studios.findOne(studioId)
+		if (!studio) {
+			throw new Meteor.Error(`Could not find studio: "${studioId}"`)
+		}
+
+		if (studio._id !== rundown.studioId) {
+			throw new Meteor.Error(
+				`studioId is different than Rundown's studioId: "${studioId}" - "${rundown.studioId}"`
+			)
+		}
+
+		BucketAdLibActions.insert({
+			...(_.omit(action, ['partId']) as Omit<AdLibAction, 'partId'>),
+			bucketId: bucketId,
+			studioId: studioId,
+			showStyleVariantId: rundown.showStyleVariantId,
+			importVersions: rundown.importVersions,
+		})
+	}
+
 	export function modifyBucketAdLib(context: MethodContext, id: PieceId, adlib: Partial<Omit<BucketAdLib, '_id'>>) {
 		if (!BucketSecurity.allowWriteAccessPiece({ _id: id }, context))
 			throw new Meteor.Error(403, `Not allowed to edit bucket adlib: ${id}`)
@@ -169,7 +210,7 @@ export namespace BucketsAPI {
 		if (!BucketSecurity.allowWriteAccess({ _id: oldAdLib.bucketId }, context)) {
 			throw new Meteor.Error(403, 'Access denied')
 		}
-		if (adlib.bucketId && !BucketSecurity.allowWriteAccess({ Id: adlib.bucketId }, context)) {
+		if (adlib.bucketId && !BucketSecurity.allowWriteAccess({ _id: adlib.bucketId }, context)) {
 			throw new Meteor.Error(403, 'Access denied')
 		}
 
