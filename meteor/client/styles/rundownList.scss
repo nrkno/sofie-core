@@ -126,6 +126,10 @@
 			margin: 0;
 			width: 100%;
 
+			&.droptarget {
+				border: 1px dashed green;
+			}
+
 			.rundown-playlist__header {
 				background-color: var(--defaultItemBackgroundColor);
 				padding: 0 var(--defaultSpacing);
@@ -266,13 +270,13 @@
 	// be dropped to move it to a new playlist. See RundownDropZone.tsx
 	.rundown-dropzone {
 		display: none;
+		border: 4px dashed green;
+		height: 61px;
+		margin-top: 8px;
+		align-items: center;
 
 		&.open {
 			display: flex;
-			border: 4px dashed green;
-			height: 61px;
-			margin-top: 8px;
-			align-items: center;
 		}
 	}
 }

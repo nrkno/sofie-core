@@ -62,6 +62,7 @@ interface IRundownPlaylistDropTargetProps {
 	isOver: boolean
 	itemType: string | symbol | null
 	action: IRundownPlaylistUiAction | undefined
+	isActiveDropZone: boolean
 }
 
 const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
@@ -94,6 +95,9 @@ const collect: DropTargetCollector<IRundownPlaylistDropTargetProps, IRundownPlay
 	props: IRundownPlaylistUiProps
 ): IRundownPlaylistDropTargetProps {
 	let action: IRundownPlaylistUiAction | undefined = undefined
+	const draggingId = monitor.getItem()?.id
+	const outsideRundownIsDragging =
+		draggingId !== undefined && !props.playlist.rundowns.some(({ _id }) => draggingId === _id)
 
 	const dropResult = monitor.getDropResult()
 	if (isRundownPlaylistUiAction(dropResult)) {
@@ -105,6 +109,7 @@ const collect: DropTargetCollector<IRundownPlaylistDropTargetProps, IRundownPlay
 		isOver: monitor.isOver(),
 		itemType: monitor.getItemType(),
 		action,
+		isActiveDropZone: outsideRundownIsDragging,
 	}
 }
 
@@ -300,7 +305,7 @@ export const RundownPlaylistUi = DropTarget(
 			}
 
 			render() {
-				const { playlist, connectDropTarget, isOver, t } = this.props
+				const { playlist, connectDropTarget, isOver, t, isActiveDropZone } = this.props
 
 				if (playlist.rundowns.length === 0) {
 					console.log(`Playlist ${playlist._id} has no rundowns, aborting render`)
@@ -308,7 +313,6 @@ export const RundownPlaylistUi = DropTarget(
 				}
 
 				const playbackProgressBar = createProgressBarRow(playlist)
-				const playlistViewLinks = this.createPlaylistViewLinks()
 				const playlistViewURL = getRundownPlaylistLink(playlist._id)
 				const handleRundownSwap = (a: RundownId, b: RundownId) => {
 					this.swapRundownOrder(a, b)
@@ -351,8 +355,10 @@ export const RundownPlaylistUi = DropTarget(
 					playlist.expectedDuration &&
 					RundownUtils.formatDiffToTimecode(playlist.expectedDuration, false, true, true, false, true)
 
+				const classNames = ClassNames(['rundown-playlist', { droptarget: isActiveDropZone }])
+
 				return connectDropTarget(
-					<li className={`rundown-playlist ${isOver ? 'droptarget' : ''}`}>
+					<li className={classNames}>
 						<header className="rundown-playlist__header">
 							<span>
 								<h2 className="rundown-playlist__heading">
