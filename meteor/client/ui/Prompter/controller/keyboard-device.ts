@@ -1,5 +1,5 @@
 import { ControllerAbstract, LONGPRESS_TIME } from './lib'
-import { PrompterViewInner } from '../PrompterView'
+import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 
 const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
 
@@ -71,6 +71,12 @@ export class KeyboardController extends ControllerAbstract {
 				}
 			}
 		}
+
+		this._prompterView.DEBUG_controllerState({
+			source: PrompterConfigMode.KEYBOARD,
+			lastSpeed: this._currentSpeed,
+			lastEvent: 'keyDown: ' + e.code,
+		})
 	}
 	public onKeyUp(e: KeyboardEvent) {
 		const timeSincePress = Date.now() - this._keyDown[e.code]
@@ -109,6 +115,12 @@ export class KeyboardController extends ControllerAbstract {
 		}
 
 		this._keyDown[e.code] = 0
+
+		this._prompterView.DEBUG_controllerState({
+			source: PrompterConfigMode.KEYBOARD,
+			lastSpeed: this._currentSpeed,
+			lastEvent: 'keyUp: ' + e.code,
+		})
 	}
 	public onMouseKeyDown(e: MouseEvent) {
 		// Nothing
@@ -205,6 +217,7 @@ export class KeyboardController extends ControllerAbstract {
 					}
 					this._currentPosition = scrollPosition
 				}
+				this._prompterView.DEBUG_controllerSpeed(speed)
 				if (speed !== 0) {
 					this._updateSpeedHandle = window.requestAnimationFrame(() => {
 						this._updateSpeedHandle = null
