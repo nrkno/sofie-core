@@ -1,11 +1,11 @@
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Omit, ProtectedString, Time } from '../lib'
-import { TimelineObjectCoreExt, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { TimelineObjectCoreExt, TSR, OnGenerateTimelineObj } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
 import { createMongoCollection } from './lib'
 import { StudioId, ResultingMappingRoutes } from './Studios'
 import { PartInstanceId } from './PartInstances'
-import { PieceInstanceId } from './PieceInstances'
+import { PieceInstanceId, PieceInstanceInfiniteId } from './PieceInstances'
 import { RundownPlaylistId } from './RundownPlaylists'
 import { BlueprintId } from './Blueprints'
 
@@ -19,6 +19,14 @@ export type TimelineObjId = ProtectedString<'TimelineObjId'>
 export type TimelineHash = ProtectedString<'TimelineHash'>
 
 export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
+
+export interface OnGenerateTimelineObjExt<TMetadata = unknown, TKeyframeMetadata = unknown>
+	extends OnGenerateTimelineObj<TMetadata, TKeyframeMetadata> {
+	/** The id of the partInstance this object belongs to */
+	partInstanceId: PartInstanceId | null
+	/** If this is from an infinite piece, the id of the infinite instance */
+	infinitePieceInstanceId?: PieceInstanceInfiniteId
+}
 
 export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	/** Unique within a timeline (ie within a studio) */

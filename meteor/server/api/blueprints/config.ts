@@ -323,9 +323,11 @@ Meteor.startup(() => {
 		).observeChanges({
 			changed: (id: BlueprintId) => {
 				studioBlueprintConfigCache.delete(id)
+				showStyleBlueprintConfigCache.delete(id)
 			},
 			removed: (id: BlueprintId) => {
 				studioBlueprintConfigCache.delete(id)
+				showStyleBlueprintConfigCache.delete(id)
 			},
 		})
 	}

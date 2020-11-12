@@ -23,11 +23,14 @@ interface IState {
 	scenes?: Array<number>
 	blacks?: Array<Anomaly>
 	freezes?: Array<Anomaly>
+
+	rightLabelIsAppendage?: boolean
 }
 export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithTranslation, IState> {
 	vPreview: HTMLVideoElement
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
+	itemElement: HTMLDivElement | null
 	begin: string
 	end: string
 
@@ -73,7 +76,20 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
+	getItemLabelOffsetRight(): React.CSSProperties {
+		return {
+			...super.getItemLabelOffsetRight(),
+			top: this.state.rightLabelIsAppendage
+				? `calc(${this.props.layerIndex} * var(--segment-layer-height))`
+				: undefined,
+		}
+	}
+
 	componentDidMount() {
+		if (super.componentDidMount && typeof super.componentDidMount === 'function') {
+			super.componentDidMount()
+		}
+
 		this.updateAnchoredElsWidths()
 		const metadata = this.props.piece.contentMetaData as MediaObject
 		if (metadata && metadata._rev) {
@@ -87,8 +103,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	}
 
 	updateAnchoredElsWidths = () => {
-		const leftLabelWidth = getElementWidth(this.leftLabel)
-		const rightLabelWidth = getElementWidth(this.rightLabel)
+		const leftLabelWidth = this.leftLabel ? getElementWidth(this.leftLabel) : 0
+		const rightLabelWidth = this.rightLabel ? getElementWidth(this.rightLabel) : 0
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
@@ -119,6 +135,64 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				blacks: undefined,
 			})
 		}
+
+		if (this.rightLabel) {
+			const itemDuration = this.getItemDuration(true)
+			if (this.itemElement !== this.props.itemElement) {
+				if (itemDuration === Number.POSITIVE_INFINITY) {
+					this.moveLabelOutsidePiece(this.props.itemElement, this.rightLabel)
+				} else {
+					this.moveLabelInsidePiece(this.props.itemElement, this.rightLabel)
+				}
+			} else if (prevProps.partDuration !== this.props.partDuration) {
+				if (itemDuration === Number.POSITIVE_INFINITY) {
+					this.moveLabelOutsidePiece(this.props.itemElement, this.rightLabel)
+				} else {
+					this.moveLabelInsidePiece(this.props.itemElement, this.rightLabel)
+				}
+			}
+		}
+	}
+
+	private moveLabelOutsidePiece(newPieceEl: HTMLDivElement | null, labelEl: HTMLSpanElement) {
+		if (labelEl.parentNode !== this.itemElement?.parentNode?.parentNode?.parentNode) {
+			if (this.itemElement) {
+				labelEl.remove()
+			}
+			this.itemElement = newPieceEl
+			if (this.itemElement) {
+				this.itemElement.parentNode &&
+					this.itemElement.parentNode.parentNode &&
+					this.itemElement.parentNode.parentNode.parentNode &&
+					this.itemElement.parentNode.parentNode.parentNode.appendChild(labelEl)
+				this.setState({
+					rightLabelIsAppendage: true,
+				})
+			}
+		}
+	}
+
+	private moveLabelInsidePiece(newPieceEl: HTMLDivElement | null, labelEl: HTMLSpanElement) {
+		if (labelEl.parentNode !== this.itemElement) {
+			if (this.itemElement) {
+				labelEl.remove()
+			}
+			this.itemElement = newPieceEl
+			if (this.itemElement) {
+				this.itemElement.appendChild(labelEl)
+				this.setState({
+					rightLabelIsAppendage: false,
+				})
+			}
+		}
+	}
+
+	componentWillUnmount() {
+		if (super.componentWillUnmount && typeof super.componentWillUnmount === 'function') {
+			super.componentWillUnmount()
+		}
+
+		this.rightLabel && this.rightLabel.remove()
 	}
 
 	getPreviewUrl = (): string | undefined => {
@@ -334,47 +408,54 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 									}}></span>
 							)
 					)}
-				<span
-					className="segment-timeline__piece__label"
-					ref={this.setLeftLabelRef}
-					style={this.getItemLabelOffsetLeft()}>
-					{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
+				{!this.props.relative && (
 					<span
-						className={ClassNames('segment-timeline__piece__label', {
-							'overflow-label': this.end !== '',
-						})}>
-						{this.begin}
+						className="segment-timeline__piece__label"
+						ref={this.setLeftLabelRef}
+						style={this.getItemLabelOffsetLeft()}>
+						{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
+						<span
+							className={ClassNames('segment-timeline__piece__label', {
+								'overflow-label': this.end !== '',
+							})}>
+							{this.begin}
+						</span>
+						{this.begin && this.end === '' && vtContent && vtContent.loop && (
+							<div className="segment-timeline__piece__label label-icon label-loop-icon">
+								<Lottie
+									config={defaultOptions}
+									width="24px"
+									height="24px"
+									playingState={this.props.showMiniInspector ? 'playing' : 'stopped'}
+								/>
+							</div>
+						)}
+						{this.renderContentTrimmed()}
 					</span>
-					{this.begin && this.end === '' && vtContent && vtContent.loop && (
-						<div className="segment-timeline__piece__label label-icon label-loop-icon">
-							<Lottie
-								config={defaultOptions}
-								width="24px"
-								height="24px"
-								playingState={this.props.showMiniInspector ? 'playing' : 'stopped'}
-							/>
-						</div>
-					)}
-					{this.renderContentTrimmed()}
-				</span>
-				<span
-					className="segment-timeline__piece__label right-side"
-					ref={this.setRightLabelRef}
-					style={this.getItemLabelOffsetRight()}>
-					{this.end && vtContent && vtContent.loop && (
-						<div className="segment-timeline__piece__label label-icon label-loop-icon">
-							<Lottie
-								config={defaultOptions}
-								width="24px"
-								height="24px"
-								playingState={this.props.showMiniInspector ? 'playing' : 'stopped'}
-							/>
-						</div>
-					)}
-					<span className="segment-timeline__piece__label last-words">{this.end}</span>
-					{this.renderInfiniteIcon()}
-					{this.renderOverflowTimeLabel()}
-				</span>
+				)}
+				{!this.props.relative && (
+					<span
+						className={ClassNames('segment-timeline__piece__label right-side', {
+							'segment-timeline__piece-appendage': this.state.rightLabelIsAppendage,
+							hidden: this.props.outputGroupCollapsed,
+						})}
+						ref={this.setRightLabelRef}
+						style={this.getItemLabelOffsetRight()}>
+						{this.end && vtContent && vtContent.loop && (
+							<div className="segment-timeline__piece__label label-icon label-loop-icon">
+								<Lottie
+									config={defaultOptions}
+									width="24px"
+									height="24px"
+									playingState={this.props.showMiniInspector ? 'playing' : 'stopped'}
+								/>
+							</div>
+						)}
+						<span className="segment-timeline__piece__label last-words">{this.end}</span>
+						{this.renderInfiniteIcon()}
+						{this.renderOverflowTimeLabel()}
+					</span>
+				)}
 				<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 					{this.getPreviewUrl() ? (
 						<div
