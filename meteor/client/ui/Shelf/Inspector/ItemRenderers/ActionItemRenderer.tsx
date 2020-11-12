@@ -226,7 +226,9 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 					/>
 					<div className="shelf-inspector__action-editor">
 						<div className="shelf-inspector__action-editor__panel">
-							{(action.userDataManifest && action.userDataManifest.editableFields && this.props.targetAction && (
+							{action.userDataManifest && action.userDataManifest.editableFields && !this.props.targetAction ? (
+								<Spinner />
+							) : action.userDataManifest && action.userDataManifest.editableFields && this.props.targetAction ? (
 								<>
 									{this.renderConfigFields(
 										action.userDataManifest.editableFields,
@@ -234,8 +236,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 										'transformedUserData.'
 									)}
 								</>
-							)) ||
-								null}
+							) : null}
 						</div>
 						<div className="shelf-inspector__action-editor__actions">
 							<button className="btn" onClick={this.onCueAsNext}>

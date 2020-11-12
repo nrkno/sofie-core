@@ -29,7 +29,7 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
 import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
-import { Studio, StudioId } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 import {
 	IDashboardPanelTrackedProps,
 	getUnfinishedPieceInstancesGrouped,
@@ -53,7 +53,8 @@ import { BucketAdLibActions, BucketAdLibAction } from '../../../lib/collections/
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { BucketAdLibItem, BucketAdLibActionUi, isAdLibAction, isAdLib } from './RundownViewBuckets'
+import { BucketAdLibItem, BucketAdLibActionUi, isAdLibAction, isAdLib, BucketAdLibUi } from './RundownViewBuckets'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
@@ -198,6 +199,7 @@ export interface IBucketPanelProps {
 	shouldQueue: boolean
 	hotkeyGroup: string
 	editableName?: boolean
+	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | AdLibPieceUi | PieceUi | undefined
 	onNameChanged: (e: any, newName: string) => void
 	moveBucket: (id: BucketId, atIndex: number) => void
 	findBucket: (id: BucketId) => { bucket: Bucket | undefined; index: number }
@@ -714,7 +716,12 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 													findAdLib={this.findAdLib}
 													moveAdLib={this.moveAdLib}
 													onAdLibReorder={this.onAdLibReorder}
-													onAdLibMove={this.onAdLibMove}>
+													onAdLibMove={this.onAdLibMove}
+													isSelected={
+														this.props.selectedPiece &&
+														RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+														adlib._id === this.props.selectedPiece._id
+													}>
 													{adlib.name}
 												</BucketPieceButton>
 											</ContextMenuTrigger>

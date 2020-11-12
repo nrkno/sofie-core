@@ -494,6 +494,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 									this.props.shelfDisplayOptions.layout === false
 								}
 								displayBuckets={this.props.bucketDisplayFilter}
+								selectedPiece={this.state.selectedPiece}
 								onSelectPiece={this.selectPiece}
 							/>
 						</ErrorBoundary>

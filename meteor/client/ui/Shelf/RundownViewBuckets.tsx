@@ -30,6 +30,8 @@ import update from 'immutability-helper'
 
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { AdLibPieceUi } from './AdLibPanel'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 
 export interface BucketAdLibUi extends BucketAdLib {
 	sourceLayer?: ISourceLayer
@@ -76,6 +78,7 @@ interface IBucketsProps {
 	shouldQueue: boolean
 	fullViewport: boolean
 	displayBuckets?: number[]
+	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | AdLibPieceUi | PieceUi | undefined
 
 	onSelectPiece?: (piece: BucketAdLibItem) => void
 }
@@ -567,6 +570,7 @@ export const RundownViewBuckets = withTranslation()(
 												findBucket={this.findBucket}
 												onBucketReorder={this.onBucketReorder}
 												onAdLibContext={this.onAdLibContext}
+												selectedPiece={this.props.selectedPiece}
 												hotkeyGroup={bucket.name.replace(/\W/, '_') + 'BucketPanel'}
 											/>
 										)}
