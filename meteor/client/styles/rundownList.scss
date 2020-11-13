@@ -5,13 +5,25 @@
 	--descendantItemBackgroundColor: #e5e5e5;
 	--treeLinesColor: #dddddd;
 
+	/* Column width percentage definitions
+	 *
+	 * Note that the standard size is used for several columns, which is why these
+	 * percentages do not add up to a perfect 100% (ie. 1.0)
+	 */
+	--nameColumnSize: 0.4;
+	--showStyleColumnSize: 0.22;
+	--standardColumnSize: 0.11;
+	--actionsColumnSize: 0.05;
+
 	/* "column" width calculations */
 	--statusBarWidth: 2.1rem; //  the width of the floating right status bar
 	--componentWidth: calc(100% - var(--statusBarWidth));
-	--standardColumnWidth: calc(var(--componentWidth) * 0.11);
-	--nameColumnWidth: calc(var(--componentWidth) * 0.3);
-	--showStyleColumnWidth: calc(var(--componentWidth) * 0.21);
-	--actionsColumnWidth: calc(var(--componentWidth) * 0.05);
+	--nameColumnWidth: calc(var(--componentWidth) * var(--nameColumnSize));
+	--showStyleColumnWidth: calc(var(--componentWidth) * var(--showStyleColumnSize));
+	--airTimeColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
+	--durationColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
+	--lastModifiedColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
+	--actionsColumnWidth: calc(var(--componentWidth) * var(--actionsColumnSize));
 
 	background-color: transparent;
 	width: 100%;
@@ -20,8 +32,8 @@
 	.rundown-list__header {
 		display: grid;
 		grid-template-columns:
-			var(--nameColumnWidth) var(--standardColumnWidth) var(--showStyleColumnWidth) var(--standardColumnWidth)
-			var(--standardColumnWidth) var(--standardColumnWidth) var(--actionsColumnWidth);
+			var(--nameColumnWidth) var(--showStyleColumnWidth) var(--airTimeColumnWidth)
+			var(--durationColumnWidth) var(--lastModifiedColumnWidth) var(--actionsColumnWidth);
 
 		background-color: #898989;
 		color: #fff;
@@ -31,6 +43,8 @@
 
 	.rundown-list-item__name {
 		display: inline-block;
+		align-self: center;
+		align-items: center;
 
 		.draghandle {
 			cursor: grab;
@@ -57,15 +71,16 @@
 			margin-left: var(--defaultSpacing);
 		}
 	}
-	.rundown-list-item__showStyle,
-	.rundown-list-item__airTime,
-	.rundown-list-item__duration,
-	.rundown-list-item__modified {
+	.rundown-list-item__text {
 		display: inline-flex;
 		align-self: center;
 		align-items: center;
 	}
 
+	/* currently not in use, because we don't have a performant way of getting all
+	 * problems associated with a rundown (fetch all parts and segments to read their
+	 * notes and keeping it updated is too expensive)
+	 */
 	.rundown-list-item__problems {
 		display: inline-grid;
 		grid-template-columns: 1fr 1fr;
@@ -136,8 +151,8 @@
 				display: grid;
 				// for the header, the first column spans the first four item columns
 				grid-template-columns:
-					calc(var(--nameColumnWidth) + var(--showStyleColumnWidth) + var(--standardColumnWidth))
-					var(--standardColumnWidth) var(--standardColumnWidth) var(--standardColumnWidth) var(--actionsColumnWidth);
+					calc(var(--nameColumnWidth) + var(--showStyleColumnWidth)) var(--airTimeColumnWidth)
+					var(--durationColumnWidth) var(--lastModifiedColumnWidth) var(--actionsColumnWidth);
 
 				.rundown-playlist__heading {
 					display: inline-block;
@@ -175,17 +190,14 @@
 					margin-left: var(--leftGutterWidth);
 
 					// recalc column widths to adjust for left gutter
-					--nameColumnWidthInner: calc(
-						(var(--componentWidth) - var(--leftGutterWidth)) * 0.3 - var(--leftGutterWidth) / 2
+					--nameColumnWidth: calc(
+						(var(--componentWidth) + var(--leftGutterWidth)) * var(--nameColumnSize) - var(--leftGutterWidth)
 					);
-					--standardColumnWidthInner: calc((var(--componentWidth) + var(--leftGutterWidth)) * 0.11);
-					--showStyleColumnWidthInner: calc((var(--componentWidth) + var(--leftGutterWidth)) * 0.21);
-					--actionsColumnWidthInner: calc((var(--componentWidth) + var(--leftGutterWidth)) * 0.05);
-					grid-template-columns:
-						var(--nameColumnWidthInner) var(--standardColumnWidthInner) var(--showStyleColumnWidthInner) var(
-							--standardColumnWidthInner
-						)
-						var(--standardColumnWidthInner) var(--standardColumnWidthInner) var(--actionsColumnWidthInner);
+					--showStyleColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--showStyleColumnSize));
+					--airTimeColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--standardColumnSize));
+					--durationColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--standardColumnSize));
+					--lastModifiedColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--standardColumnSize));
+					--actionsColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--actionsColumnSize));
 
 					background-color: var(--descendantItemBackgroundColor);
 					border-top: 1px solid #c6c6c6;
@@ -219,50 +231,55 @@
 				}
 			}
 		}
+	}
 
-		// a single rundown representation, see RundownListItem.tsx
-		// some of these rules might be overridden when a rundown is included in a
-		// playlist, see the .rundown-playlist section
-		.rundown-list-item {
-			background-color: var(--defaultItemBackgroundColor);
-			box-shadow: 0px 8px 10px -10px rgba(0, 0, 0, 0.15);
-			margin: 0 0 6px;
-			padding: 0 var(--defaultSpacing);
-			list-style-type: none;
-			vertical-align: middle;
-			display: grid;
-			grid-template-columns:
-				var(--nameColumnWidth) var(--standardColumnWidth) var(--showStyleColumnWidth) var(--standardColumnWidth)
-				var(--standardColumnWidth) var(--standardColumnWidth) var(--actionsColumnWidth);
+	.subtle {
+		font-style: italic;
+	}
 
-			.rundown-list-item__text {
-				padding: 7px 0;
-			}
-			.rundown-list-item__actions {
-				padding: 0 0 3px; // cater for icons being larger than the font
-			}
+	// a single rundown representation, see RundownListItem.tsx
+	// some of these rules might be overridden when a rundown is included in a
+	// playlist, see the .rundown-playlist section
+	.rundown-list-item {
+		background-color: var(--defaultItemBackgroundColor);
+		box-shadow: 0px 8px 10px -10px rgba(0, 0, 0, 0.15);
+		margin: 0 0 6px;
+		padding: 0 var(--defaultSpacing);
+		list-style-type: none;
+		vertical-align: middle;
+		display: grid;
+		grid-template-columns:
+			var(--nameColumnWidth) var(--showStyleColumnWidth) var(--airTimeColumnWidth)
+			var(--durationColumnWidth) var(--lastModifiedColumnWidth) var(--actionsColumnWidth);
 
-			&.unsynced {
-				background-image: repeating-linear-gradient(
-					45deg,
-					transparent,
-					transparent 10px,
-					rgba(255, 255, 0, 0.3) 10px,
-					rgba(255, 255, 0, 0.3) 16px
-				);
-			}
-
-			&.drag-preview {
-				transform: translate3d(1.1, 1.1, 1.1);
-				z-index: 99;
-
-				background: red;
-				border: 1px solid red;
-			}
+		.rundown-list-item__text {
+			padding: 7px 0;
+		}
+		.rundown-list-item__actions {
+			padding: 0 0 3px; // cater for icons being larger than the font
 		}
 
-		.subtle {
-			font-style: italic;
+		&.unsynced {
+			background-image: repeating-linear-gradient(
+				45deg,
+				transparent,
+				transparent 10px,
+				rgba(255, 255, 0, 0.3) 10px,
+				rgba(255, 255, 0, 0.3) 16px
+			);
+		}
+
+		&.dragging {
+			opacity: 0.25;
+		}
+
+		&.drag-preview {
+			transform: scale(1.03);
+			z-index: 99;
+
+			list-style-type: none;
+			opacity: 1;
+			box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
 		}
 	}
 

@@ -1,30 +1,16 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTh, faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
-import Tooltip from 'rc-tooltip'
 import React from 'react'
 import { withTranslation } from 'react-i18next'
-import Moment from 'react-moment'
-import { Link } from 'react-router-dom'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Studio } from '../../../lib/collections/Studios'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
-import { MomentFromNow } from '../../lib/Moment'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { RundownUtils } from '../../lib/rundown'
-import {
-	confirmDeleteRundown,
-	confirmReSyncRundown,
-	getRundownPlaylistLink,
-	getRundownWithLayoutLink,
-	getShowStyleBaseLink,
-} from './util'
+import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import {
 	ConnectDragSource,
 	ConnectDropTarget,
 	DragElementWrapper,
-	DragLayer,
 	DragLayerCollector,
 	DragPreviewOptions,
 	DragSource,
@@ -48,14 +34,12 @@ import {
 } from './DragAndDropTypes'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { unprotectString } from '../../../lib/lib'
-import { iconDragHandle, iconRemove, iconResync } from './icons'
-import { spawn } from 'child_process'
 import RundownListItemView from './RundownListItemView'
 import { Settings } from '../../../lib/Settings'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 
-const HTML_ID_PREFIX = 'rundown-'
+export const HTML_ID_PREFIX = 'rundown-'
 
 export interface IRundownListItemProps {
 	rundown: Rundown
@@ -179,15 +163,6 @@ const dragLayerCollect: DragLayerCollector<
 }
 
 export const RundownListItem = withTranslation()(
-	// DragLayer(dragLayerCollect, {
-	// 	arePropsEqual: (props, newProps) => {
-	// 		if (props.rundown._id !== newProps.rundown._id) {
-	// 			return false
-	// 		}
-
-	// 		return true
-	// 	},
-	// })(
 	DragSource(
 		RundownListDragDropTypes.RUNDOWN,
 		dragSpec,
@@ -257,6 +232,7 @@ export const RundownListItem = withTranslation()(
 							connectDropTarget={connectDropTarget}
 							htmlElementId={htmlElementId}
 							isDragLayer={false}
+							renderTooltips={isDragging !== true}
 							rundownViewUrl={rundownViewUrl}
 							rundown={rundown}
 							showStyleName={this.showStyle.name}

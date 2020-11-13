@@ -378,17 +378,17 @@ export const RundownPlaylistUi = DropTarget(
 									}}
 								/>
 							</span>
-							<span className="rundown-list-item__airTime rundown-list-item__text">
+							<span className="rundown-list-item__text">
 								{playlist.expectedStart ? (
 									<JonasFormattedTime timestamp={playlist.expectedStart} t={t} />
 								) : (
 									<span className="dimmed">{t('Not set')}</span>
 								)}
 							</span>
-							<span className="rundown-list-item__duration">
+							<span className="rundown-list-item__text">
 								{expectedDuration ? expectedDuration : <span className="dimmed">{t('Not set')}</span>}
 							</span>
-							<span className="rundown-list-item__modified">
+							<span className="rundown-list-item__text">
 								<JonasFormattedTime timestamp={playlist.modified} t={t} />
 							</span>
 							<span className="rundown-list-item__actions"></span>

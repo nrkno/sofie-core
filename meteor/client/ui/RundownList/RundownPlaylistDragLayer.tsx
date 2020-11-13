@@ -4,6 +4,8 @@ import { IRundownDragObject, RundownListDragDropTypes } from './DragAndDropTypes
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import RundownListItemView from './RundownListItemView'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { getElementWidth } from '../../utils/dimensions'
+import { HTML_ID_PREFIX } from './RundownListItem'
 
 const layerStyles: React.CSSProperties = {
 	position: 'fixed',
@@ -16,7 +18,7 @@ const layerStyles: React.CSSProperties = {
 }
 
 function getItemStyles(props) {
-	const { currentOffset } = props
+	const { currentOffset, draggedWidth } = props
 	if (!currentOffset) {
 		return {
 			display: 'none',
@@ -24,10 +26,11 @@ function getItemStyles(props) {
 	}
 
 	const { x, y } = currentOffset
-	const transform = `translate(${x}px, ${y}px)`
+	const transform = `translate3d(${x}px, ${y}px, 1px)`
 	return {
 		transform: transform,
 		WebkitTransform: transform,
+		width: draggedWidth ? `${draggedWidth}px` : undefined,
 	}
 }
 
@@ -41,9 +44,10 @@ function RundownPlaylistDragLayer(props) {
 			case RundownListDragDropTypes.RUNDOWN:
 				const rundown = Rundowns.findOne(item.id)
 				const showStyle = ShowStyleBases.findOne(rundown?.showStyleBaseId)
-				const classNames = ['drag-preview']
+				const classNames = ['drag-preview'].concat(props.draggedClassNames || [])
 				return (
 					<RundownListItemView
+						renderTooltips={false}
 						rundown={rundown!}
 						classNames={classNames}
 						connectDragSource={(props) => props}
@@ -57,18 +61,34 @@ function RundownPlaylistDragLayer(props) {
 	}
 
 	return (
-		<div style={layerStyles}>
+		<div style={layerStyles} className="rundown-list">
 			<div style={getItemStyles(props)}>{renderItem(props.itemType, props.item)}</div>
 		</div>
 	)
 }
 
 function collect(monitor: DragLayerMonitor) {
+	let draggedWidth: number | undefined
+	let draggedClassNames: string[] | undefined
+
+	const dragging = monitor.getItem()
+	if (dragging) {
+		const { id } = dragging
+		const htmlElementId = `${HTML_ID_PREFIX}${id}`
+		const el = document.querySelector(`#${htmlElementId}`)
+		if (el instanceof HTMLElement) {
+			draggedWidth = getElementWidth(el)
+			draggedClassNames = Array.from(el.classList)
+		}
+	}
+
 	return {
 		item: monitor.getItem(),
 		itemType: monitor.getItemType(),
 		currentOffset: monitor.getSourceClientOffset(),
 		isDragging: monitor.isDragging(),
+		draggedWidth,
+		draggedClassNames,
 	}
 }
 

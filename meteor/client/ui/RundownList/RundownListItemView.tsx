@@ -23,6 +23,7 @@ interface IRundownListItemViewProps {
 	confirmDeleteRundownHandler?: () => void
 	isDragLayer: boolean
 	connectDropTarget: (content: ReactElement) => ReactElement | null
+	renderTooltips: boolean
 }
 
 export default withTranslation()(function RundownListItemView(props: Translated<IRundownListItemViewProps>) {
@@ -47,39 +48,42 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 
 	const rundownNameContent = rundownViewUrl ? <Link to={rundownViewUrl}>{props.rundown.name}</Link> : props.rundown.name
 
-	const [warnings, errors] = getAllNotes(rundown)
+	// const [warnings, errors] = getAllNotes(rundown)
 
 	return connectDropTarget(
 		<li id={htmlElementId} className={classNames.join(' ')}>
-			<span className="rundown-list-item__name rundown-list-item__text">
+			<span className="rundown-list-item__name">
 				{connectDragSource(
 					<span className="draghandle">
-						<Tooltip overlay={t('Drag to reorder or move out of playlist')} placement="top">
+						<Tooltip
+							overlay={t('Drag to reorder or move out of playlist')}
+							placement="top"
+							overlayStyle={{ display: props.renderTooltips ? undefined : 'none' }}>
 							<button className="rundown-list-item__action">{iconDragHandle()}</button>
 						</Tooltip>
 					</span>
 				)}
 				<b className="rundown-name">{rundownNameContent}</b>
 			</span>
-			<RundownListItemProblems warnings={warnings} errors={errors} />
-			<span className="rundown-list-item__showStyle rundown-list-item__text">
+			{/* <RundownListItemProblems warnings={warnings} errors={errors} /> */}
+			<span className="rundown-list-item__text">
 				{showStyleBaseURL ? <Link to={showStyleBaseURL}>{showStyleName}</Link> : showStyleName}
 			</span>
-			<span className="rundown-list-item__airTime rundown-list-item__text">
+			<span className="rundown-list-item__text">
 				{rundown.expectedStart ? (
 					<JonasFormattedTime timestamp={rundown.expectedStart} t={t} />
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
 			</span>
-			<span className="rundown-list-item__duration rundown-list-item__text">
+			<span className="rundown-list-item__text">
 				{rundown.expectedDuration ? (
 					RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
 			</span>
-			<span className="rundown-list-item__modified rundown-list-item__text">
+			<span className="rundown-list-item__text">
 				<MomentFromNow>{rundown.modified}</MomentFromNow>
 			</span>
 			<span className="rundown-list-item__actions">
@@ -104,6 +108,16 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 	)
 })
 
+/**
+ * Gets all notes associated with a rundown and returns two separate arrays of
+ * notes for warnings and errors.
+ * NOTE: fetching notes for parts and segments this way does not work, which is
+ * the reason problems aren't currently displayed in the lobby. This function is
+ * left for later reference, and can not be considered reliable.
+ *
+ * @param rundown the rundown to get notes for
+ * @returns [warnings, errors]
+ */
 function getAllNotes(rundown: Rundown): [INoteBase[], INoteBase[]] {
 	const allNotes: INoteBase[] = []
 
