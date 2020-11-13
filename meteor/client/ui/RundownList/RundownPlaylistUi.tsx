@@ -36,6 +36,7 @@ import { RundownUtils } from '../../lib/rundown'
 import Moment from 'react-moment'
 import { MomentFromNow } from '../../lib/Moment'
 import PlaylistRankMethodToggle from './PlaylistRankMethodToggle'
+import JonasFormattedTime from './JonasFormattedTime'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
@@ -124,9 +125,12 @@ export const RundownPlaylistUi = DropTarget(
 			IRundownPlaylistUiState
 		> {
 			rundowns: Map<RundownId, Rundown> = new Map<RundownId, Rundown>()
+			momentCalendarOptions: { [index: string]: string }
 
 			constructor(props: Translated<IRundownPlaylistUiProps> & IRundownPlaylistDropTargetProps) {
 				super(props)
+
+				const { t } = this.props
 
 				this.state = {
 					rundownOrder: props.playlist.rundowns.map((rundown) => rundown._id),
@@ -376,10 +380,7 @@ export const RundownPlaylistUi = DropTarget(
 							</span>
 							<span className="rundown-list-item__airTime rundown-list-item__text">
 								{playlist.expectedStart ? (
-									<>
-										<MomentFromNow>{playlist.expectedStart}</MomentFromNow>&nbsp;
-										<Moment format="HH:mm:ss">{playlist.expectedStart}</Moment>
-									</>
+									<JonasFormattedTime timestamp={playlist.expectedStart} t={t} />
 								) : (
 									<span className="dimmed">{t('Not set')}</span>
 								)}
@@ -388,7 +389,7 @@ export const RundownPlaylistUi = DropTarget(
 								{expectedDuration ? expectedDuration : <span className="dimmed">{t('Not set')}</span>}
 							</span>
 							<span className="rundown-list-item__modified">
-								<MomentFromNow>{playlist.modified}</MomentFromNow>
+								<JonasFormattedTime timestamp={playlist.modified} t={t} />
 							</span>
 							<span className="rundown-list-item__actions"></span>
 						</header>

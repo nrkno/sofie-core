@@ -1,14 +1,14 @@
 import Tooltip from 'rc-tooltip'
 import React, { ReactElement } from 'react'
 import { withTranslation } from 'react-i18next'
-import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
-import { INoteBase, NoteType, PartNote, RundownNote, SegmentNote } from '../../../lib/api/notes'
+import { INoteBase, NoteType } from '../../../lib/api/notes'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { MomentFromNow } from '../../lib/Moment'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
+import JonasFormattedTime from './JonasFormattedTime'
 import RundownListItemProblems from './RundownListItemProblems'
 
 interface IRundownListItemViewProps {
@@ -67,10 +67,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			</span>
 			<span className="rundown-list-item__airTime rundown-list-item__text">
 				{rundown.expectedStart ? (
-					<>
-						<MomentFromNow>{rundown.expectedStart}</MomentFromNow>&nbsp;
-						<Moment format="HH:mm:ss">{rundown.expectedStart}</Moment>
-					</>
+					<JonasFormattedTime timestamp={rundown.expectedStart} t={t} />
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
