@@ -49,7 +49,6 @@ import { rundownContentAllowWrite } from '../security/rundown'
 import { profiler } from './profiler'
 import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
-import { UserAPIMethods } from '../../lib/api/user'
 import { checkAccessAndGetPlaylist, checkAccessAndGetRundown } from './lib'
 
 let MINIMUM_TAKE_SPAN = 1000
@@ -698,7 +697,7 @@ export function bucketAdlibImport(
 export function bucketsSaveActionIntoBucket(
 	context: MethodContext,
 	studioId: StudioId,
-	action: AdLibActionCommon,
+	action: AdLibActionCommon | BucketAdLibAction,
 	bucketId: BucketId
 ) {
 	check(studioId, String)
@@ -708,18 +707,6 @@ export function bucketsSaveActionIntoBucket(
 	const { studio } = OrganizationContentWriteAccess.studio(context, studioId)
 
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
-
-	const rundown = Rundowns.findOne(action.rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${action.rundownId}" not found`)
-	const showStyleCompound = getShowStyleCompound(rundown.showStyleVariantId)
-	if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${rundown.showStyleVariantId}" not found`)
-
-	if (studio.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
-		throw new Meteor.Error(
-			500,
-			`ShowStyle Variant "${rundown.showStyleVariantId}" not supported by studio "${studioId}"`
-		)
-	}
 
 	return ClientAPI.responseSuccess(BucketsAPI.saveAdLibActionIntoBucket(context, studioId, action, bucketId))
 }
@@ -1107,7 +1094,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	bucketsSaveActionIntoBucket(
 		_userEvent: string,
 		studioId: StudioId,
-		action: AdLibActionCommon,
+		action: AdLibActionCommon | BucketAdLibAction,
 		bucketId: BucketId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return traceAction(

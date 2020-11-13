@@ -193,7 +193,7 @@ export interface NewUserActionAPI extends MethodContext {
 	bucketsSaveActionIntoBucket(
 		userEvent: string,
 		studioId: StudioId,
-		action: AdLibActionCommon,
+		action: AdLibActionCommon | BucketAdLibAction,
 		bucketId: BucketId
 	): Promise<ClientAPI.ClientResponse<void>>
 	switchRouteSet(
