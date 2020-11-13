@@ -612,8 +612,8 @@ export namespace ServerRundownAPI {
 		segmentId: SegmentId
 	): TriggerReloadDataResponse {
 		check(segmentId, String)
-		logger.info('resyncSegment ' + segmentId)
 		rundownContentAllowWrite(context.userId, { rundownId })
+		logger.info('resyncSegment ' + segmentId)
 		const segment = Segments.findOne(segmentId)
 		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
 
