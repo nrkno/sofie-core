@@ -9,8 +9,6 @@ import {
 	unprotectString,
 	getRandomId,
 	waitForPromise,
-	unprotectStringArray,
-	sleep,
 	assertNever,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
@@ -20,13 +18,7 @@ import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
 import { Part } from '../../../lib/collections/Parts'
-import {
-	prefixAllObjectIds,
-	setNextPart,
-	getRundownIDsFromCache,
-	getAllPieceInstancesFromCache,
-	getSelectedPartInstancesFromCache,
-} from './lib'
+import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache, getSelectedPartInstancesFromCache } from './lib'
 import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
 import { updateTimeline } from './timeline'
 import { updatePartRanks, afterRemoveParts } from '../rundown'
@@ -42,13 +34,9 @@ import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collec
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { MongoQuery } from '../../../lib/typings/meteor'
-import {
-	syncPlayheadInfinitesForNextPartInstance,
-	DEFINITELY_ENDED_FUTURE_DURATION,
-	fetchPiecesThatMayBeActiveForPart,
-} from './infinites'
+import { syncPlayheadInfinitesForNextPartInstance, fetchPiecesThatMayBeActiveForPart } from './infinites'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { getPieceInstancesForPart } from './infinites'
 
@@ -560,6 +548,7 @@ export namespace ServerPlayoutAdLibAPI {
 							),
 							dynamicallyInserted: getCurrentTime(),
 							infinite: {
+								infiniteInstanceId: getRandomId(),
 								infinitePieceId: pieceId,
 								fromPreviousPart: false,
 							},

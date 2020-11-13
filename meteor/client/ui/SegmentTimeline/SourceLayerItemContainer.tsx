@@ -31,6 +31,7 @@ interface IPropsHeader {
 	scrollLeft: number
 	scrollWidth: number
 	studio: Studio
+	layerIndex: number
 }
 
 export const SourceLayerItemContainer = withMediaObjectStatus<IPropsHeader, {}>()((props: IPropsHeader) => (

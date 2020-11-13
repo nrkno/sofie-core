@@ -18,12 +18,18 @@ import { Piece, PieceId } from './Pieces'
 import { PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
 import { registerIndex } from '../database'
+import { DeepPartial } from 'utility-types'
 
 /** A string, identifying a PieceInstance */
 export type PieceInstanceId = ProtectedString<'PieceInstanceId'>
+export type PieceInstanceInfiniteId = ProtectedString<'PieceInstanceInfiniteId'>
+
 export function unprotectPieceInstance(pieceInstance: PieceInstance): IBlueprintPieceInstance
 export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined): IBlueprintPieceInstance | undefined
 export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined): IBlueprintPieceInstance | undefined {
+	return pieceInstance as any
+}
+export function protectPieceInstance(pieceInstance: IBlueprintPieceInstance): DeepPartial<PieceInstance> {
 	return pieceInstance as any
 }
 
@@ -57,6 +63,9 @@ export interface PieceInstance
 
 	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
 	infinite?: {
+		/** A random id for this instance of this infinite */
+		infiniteInstanceId: PieceInstanceInfiniteId
+		/** The piece that this instance is a continuation of */
 		infinitePieceId: PieceId
 		// TODO - more properties?
 		/** When the instance was a copy made from hold */

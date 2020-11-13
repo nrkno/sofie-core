@@ -253,7 +253,7 @@ export function reportPieceHasStarted(playlistId: RundownPlaylistId, pieceInstan
 					PieceInstances,
 					{
 						partInstanceId: playlist.nextPartInstanceId,
-						'infinite.infinitePieceId': pieceInstance.infinite.infinitePieceId,
+						'infinite.infiniteInstanceId': pieceInstance.infinite.infiniteInstanceId,
 					},
 					{
 						$set: {

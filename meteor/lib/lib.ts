@@ -15,8 +15,9 @@ import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
 import * as crypto from 'crypto'
-import { DeepReadonly } from 'utility-types'
+import { DeepReadonly, DeepPartial } from 'utility-types'
 import { BulkWriteOperation } from 'mongodb'
+import { _DeepPartialObject } from 'utility-types/dist/mapped-types'
 
 const cloneOrg = require('fast-clone')
 
@@ -537,48 +538,6 @@ export const getCollectionStats: (collection: TransformedCollection<any, any>) =
 		raw.stats(cb)
 	}
 )
-// export function fetchBefore<T>(
-// 	collection: TransformedCollection<T, any>,
-// 	selector: MongoQuery<T> = {},
-// 	rank: number = Number.POSITIVE_INFINITY
-// ): T {
-// 	return collection
-// 		.find(
-// 			_.extend(selector, {
-// 				_rank: { $lt: rank },
-// 			}),
-// 			{
-// 				sort: {
-// 					_rank: -1,
-// 					_id: -1,
-// 				},
-// 				limit: 1,
-// 			}
-// 		)
-// 		.fetch()[0]
-// }
-// export function fetchNext<T extends { _id: ProtectedString<any> }>(
-// 	values: Array<T>,
-// 	currentValue: T | undefined
-// ): T | undefined {
-// 	if (!currentValue) return values[0]
-
-// 	let nextValue: T | undefined
-// 	let found: boolean = false
-// 	return _.find(values, (value) => {
-// 		if (found) {
-// 			nextValue = value
-// 			return true
-// 		}
-
-// 		if (currentValue._id) {
-// 			found = currentValue._id === value._id
-// 		} else {
-// 			found = currentValue === value
-// 		}
-// 		return false
-// 	})
-// }
 // /**
 //  * Returns a rank number, to be used to insert new objects in a ranked list
 //  * @param before	Object before, null/undefined if inserted first
@@ -617,6 +576,19 @@ export const getCollectionStats: (collection: TransformedCollection<any, any>) =
 // 	}
 // 	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
 // }
+export function normalizeArrayFuncFilter<T>(
+	array: Array<T>,
+	getKey: (o: T) => string | undefined
+): { [indexKey: string]: T } {
+	const normalizedObject: any = {}
+	for (let i = 0; i < array.length; i++) {
+		const key = getKey(array[i])
+		if (key !== undefined) {
+			normalizedObject[key] = array[i]
+		}
+	}
+	return normalizedObject as { [key: string]: T }
+}
 export function normalizeArrayFunc<T>(array: Array<T>, getKey: (o: T) => string): { [indexKey: string]: T } {
 	const normalizedObject: any = {}
 	for (let i = 0; i < array.length; i++) {
@@ -1385,6 +1357,16 @@ export function unprotectObjectArray<T extends object>(obj: T[]): UnprotectedStr
 }
 export function isStringOrProtectedString<T extends ProtectedString<any>>(val: any): val is string | T {
 	return _.isString(val)
+}
+
+export function unpartialString<T extends ProtectedString<any>>(obj: T | _DeepPartialObject<T>): T
+export function unpartialString<T extends ProtectedString<any>>(
+	str: T | _DeepPartialObject<T> | undefined
+): T | undefined
+export function unpartialString<T extends ProtectedString<any>>(
+	str: T | _DeepPartialObject<T> | undefined
+): T | undefined {
+	return str as any
 }
 
 export function isPromise<T extends any>(val: any): val is Promise<T> {

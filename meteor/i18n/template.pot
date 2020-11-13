@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2020-09-30T12:24:48.297Z\n"
-"PO-Revision-Date: 2020-09-30T12:24:48.297Z\n"
+"POT-Creation-Date: 2020-10-16T08:03:19.236Z\n"
+"PO-Revision-Date: 2020-10-16T08:03:19.236Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -192,27 +192,6 @@ msgstr ""
 msgid "Out"
 msgstr ""
 
-msgid "Sofie Automation Server"
-msgstr ""
-
-msgid "Connecting to the {{platformName}}"
-msgstr ""
-
-msgid "Cannot connect to the {{platformName}}: {{reason}}"
-msgstr ""
-
-msgid "Reconnecting to the {{platformName}}"
-msgstr ""
-
-msgid "Your machine is offline and cannot connect to the {{platformName}}."
-msgstr ""
-
-msgid "Connected to the {{platformName}}."
-msgstr ""
-
-msgid "Reconnect now"
-msgstr ""
-
 msgid "Could not get system status. Please consult system administrator."
 msgstr ""
 
@@ -256,6 +235,9 @@ msgid "Operating Mode"
 msgstr ""
 
 msgid "Switching operating mode to {{mode}}"
+msgstr ""
+
+msgid "Prompter"
 msgstr ""
 
 msgid "End of script"
@@ -529,15 +511,6 @@ msgstr ""
 msgid "This rundown is now active. Are you sure you want to exit this screen?"
 msgstr ""
 
-msgid "Switching route"
-msgstr ""
-
-msgid "Are you sure you want to enable this route: \"{{routeName}}\"?"
-msgstr ""
-
-msgid "Are you sure you want to disable this route: \"{{routeName}}\"?"
-msgstr ""
-
 msgid ""
 "There are no Playout Gateways connected and attached to this studio. Please "
 "contact the system administrator to start the Playout Gateway."
@@ -619,6 +592,12 @@ msgstr ""
 msgid ""
 "Do you really want to remove the rundownPlaylist \"{{rundownName}}\"? This "
 "cannot be undone!"
+msgstr ""
+
+msgid "Route Sets"
+msgstr ""
+
+msgid "Off"
 msgstr ""
 
 msgid ""
@@ -1688,6 +1667,14 @@ msgstr ""
 msgid "Layer Mappings"
 msgstr ""
 
+msgid "Remove this Exclusivity Group?"
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove exclusivity group \"{{eGroupName}}\"?\n"
+"Route Sets assigned to this group will be reset to no group."
+msgstr ""
+
 msgid "Remove this Route from this Route Set?"
 msgstr ""
 
@@ -1708,13 +1695,31 @@ msgstr ""
 msgid "There are no routes set up yet"
 msgstr ""
 
-msgid "Source Layer ID"
+msgid "Original Layer"
 msgstr ""
 
-msgid "New Layer ID"
+msgid "None"
+msgstr ""
+
+msgid "New Layer"
 msgstr ""
 
 msgid "Source Layer not found"
+msgstr ""
+
+msgid "There are no exclusivity groups set up."
+msgstr ""
+
+msgid "Exclusivity Group ID"
+msgstr ""
+
+msgid "Exclusivity Group Name"
+msgstr ""
+
+msgid "Display name of the Exclusivity Group"
+msgstr ""
+
+msgid "There are no Route Sets set up."
 msgstr ""
 
 msgid "Active"
@@ -1741,7 +1746,7 @@ msgstr ""
 msgid "The way this Route Set should behave towards the user"
 msgstr ""
 
-msgid "Route Sets"
+msgid "Exclusivity Groups"
 msgstr ""
 
 msgid "Studio Baseline needs update: "
@@ -1751,9 +1756,6 @@ msgid "Baseline needs reload, this studio may not work until reloaded"
 msgstr ""
 
 msgid "Reload Baseline"
-msgstr ""
-
-msgid "None"
 msgstr ""
 
 msgid "Studio Name"
@@ -2148,6 +2150,9 @@ msgid "Parameters"
 msgstr ""
 
 msgid "User Activity Log"
+msgstr ""
+
+msgid "Help & Support"
 msgstr ""
 
 msgid "Disable hints by adding this to the URL:"

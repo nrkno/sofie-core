@@ -54,11 +54,15 @@ export const SegmentContextMenu = withTranslation()(
 								)}
 								{startsAt !== null && part && this.props.enablePlayFromAnywhere ? (
 									<React.Fragment>
-										<MenuItem onClick={(e) => this.onSetAsNextFromHere(part.instance.part, e)} disabled={isCurrentPart}>
+										<MenuItem
+											onClick={(e) => this.onSetAsNextFromHere(part.instance.part, e)}
+											disabled={isCurrentPart || !!part.instance.part.dynamicallyInsertedAfterPartId}>
 											<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> (
 											{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 										</MenuItem>
-										<MenuItem onClick={(e) => this.onPlayFromHere(part.instance.part, e)} disabled={isCurrentPart}>
+										<MenuItem
+											onClick={(e) => this.onPlayFromHere(part.instance.part, e)}
+											disabled={isCurrentPart || !!part.instance.part.dynamicallyInsertedAfterPartId}>
 											<span dangerouslySetInnerHTML={{ __html: t('Play from Here') }}></span> (
 											{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 										</MenuItem>

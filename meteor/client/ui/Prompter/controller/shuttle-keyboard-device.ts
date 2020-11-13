@@ -1,46 +1,46 @@
-import { ControllerAbstract, LONGPRESS_TIME } from './lib'
-import { PrompterViewInner } from '../PrompterView'
+import { ControllerAbstract } from './lib'
+import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 
-const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
+const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
 
 /**
- * This class handles control of the prompter using Keyboard keys sent from a contour shuttle
- * Up: shift + control + alt + [1-7]
- * Down: shift + control + alt + [1-7]
- * Supports Up / Down arrow keys
- * Supports Left / Right arrow keys
- * Supports Page-up / Page-down keys
+ * This class handles control of the prompter using Keyboard keys sent from an xkeys
+ * Up: control + alt + [1-7]
+ * Down: control + alt + [1-7]
+ * Supports Page-up / Page-down keys for previous/next story
  */
 export class ShuttleKeyboardController extends ControllerAbstract {
-	private _destroyed: boolean = false
-	private _prompterView: PrompterViewInner
+	private prompterView: PrompterViewInner
 
-	private static readonly _speedMap = [0, 1, 2, 3, 5, 7, 9, 30]
-	private static readonly _speedStepMap = [
-		...ShuttleKeyboardController._speedMap
-			.slice(1)
-			.reverse()
-			.map((i) => i * -1),
-		...ShuttleKeyboardController._speedMap.slice(),
-	]
-	private static readonly SPEEDMAP_NEUTRAL_POSITION = 7
+	private speedMap = [0, 1, 2, 3, 5, 7, 9, 30]
+	private speedStepMap = ShuttleKeyboardController.makeSpeedStepMap(this.speedMap)
+	private static readonly SPEEDMAPNEUTRALPOSITION = 7
 
-	private _updateSpeedHandle: number | null = null
-	private _lastSpeed = 0
-	private _lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAP_NEUTRAL_POSITION
-	private _currentPosition = 0
+	private updateSpeedHandle: number | null = null
+	private lastSpeed = 0
+	private lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAPNEUTRALPOSITION
+	private currentPosition = 0
 
 	constructor(view: PrompterViewInner) {
 		super(view)
 
-		this._prompterView = view
+		this.prompterView = view
+		this.speedMap = view.configOptions.speedMap || this.speedMap
+		this.speedStepMap = ShuttleKeyboardController.makeSpeedStepMap(this.speedMap)
 	}
-	public destroy() {
-		this._destroyed = true
+	private static makeSpeedStepMap(speedMap): number[] {
+		return [
+			...speedMap
+				.slice(1)
+				.reverse()
+				.map((i) => i * -1),
+			...speedMap.slice(),
+		]
 	}
+	public destroy() {}
 	public onKeyDown(e: KeyboardEvent) {
 		let speed = -1
-		let newSpeedStep = this._lastSpeedMapPosition
+		let newSpeedStep = this.lastSpeedMapPosition
 		let inverse = false
 
 		// contour mode needs ctrl + alt + number to work
@@ -52,36 +52,33 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 			}
 			switch (e.code) {
 				case 'F1':
-					speed = ShuttleKeyboardController._speedMap[1]
+					speed = this.speedMap[1]
 					break
 				case 'F2':
-					speed = ShuttleKeyboardController._speedMap[2]
+					speed = this.speedMap[2]
 					break
 				case 'F3':
-					speed = ShuttleKeyboardController._speedMap[3]
+					speed = this.speedMap[3]
 					break
 				case 'F4':
-					speed = ShuttleKeyboardController._speedMap[4]
+					speed = this.speedMap[4]
 					break
 				case 'F5':
-					speed = ShuttleKeyboardController._speedMap[5]
+					speed = this.speedMap[5]
 					break
 				case 'F6':
-					speed = ShuttleKeyboardController._speedMap[6]
+					speed = this.speedMap[6]
 					break
 				case 'F7':
-					speed = ShuttleKeyboardController._speedMap[7]
+					speed = this.speedMap[7]
 					break
 			}
 			switch (e.key) {
 				case '-':
 					newSpeedStep--
-					newSpeedStep = Math.max(
-						0,
-						Math.min(newSpeedStep, ShuttleKeyboardController._speedStepMap.length - 1)
-					)
-					this._lastSpeedMapPosition = newSpeedStep
-					speed = ShuttleKeyboardController._speedStepMap[this._lastSpeedMapPosition]
+					newSpeedStep = Math.max(0, Math.min(newSpeedStep, this.speedStepMap.length - 1))
+					this.lastSpeedMapPosition = newSpeedStep
+					speed = this.speedStepMap[this.lastSpeedMapPosition]
 					if (speed < 0) {
 						inverse = true
 					}
@@ -89,12 +86,9 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 					break
 				case '+':
 					newSpeedStep++
-					newSpeedStep = Math.max(
-						0,
-						Math.min(newSpeedStep, ShuttleKeyboardController._speedStepMap.length - 1)
-					)
-					this._lastSpeedMapPosition = newSpeedStep
-					speed = ShuttleKeyboardController._speedStepMap[this._lastSpeedMapPosition]
+					newSpeedStep = Math.max(0, Math.min(newSpeedStep, this.speedStepMap.length - 1))
+					this.lastSpeedMapPosition = newSpeedStep
+					speed = this.speedStepMap[this.lastSpeedMapPosition]
 					if (speed < 0) {
 						inverse = true
 					}
@@ -108,34 +102,34 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 					case 'PageDown':
 					case 'F8':
 						// jump to next segment
-						this._lastSpeed = 0
-						this._lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAP_NEUTRAL_POSITION
-						this._prompterView.scrollToFollowing()
+						this.lastSpeed = 0
+						this.lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAPNEUTRALPOSITION
+						this.prompterView.scrollToFollowing()
 						return
 					case 'PageUp':
 					case 'F9':
 						// jump to previous segment
-						this._lastSpeed = 0
-						this._lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAP_NEUTRAL_POSITION
-						this._prompterView.scrollToPrevious()
+						this.lastSpeed = 0
+						this.lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAPNEUTRALPOSITION
+						this.prompterView.scrollToPrevious()
 						return
 					case 'F10':
 						// jump to top
-						this._lastSpeed = 0
-						this._lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAP_NEUTRAL_POSITION
+						this.lastSpeed = 0
+						this.lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAPNEUTRALPOSITION
 						window.scrollTo(0, 0)
 						return
 					case 'F11':
 						// jump to live
-						this._lastSpeed = 0
-						this._lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAP_NEUTRAL_POSITION
-						this._prompterView.scrollToLive()
+						this.lastSpeed = 0
+						this.lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAPNEUTRALPOSITION
+						this.prompterView.scrollToLive()
 						return
 					case 'F12':
 						// jump to next
-						this._lastSpeed = 0
-						this._lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAP_NEUTRAL_POSITION
-						this._prompterView.scrollToNext()
+						this.lastSpeed = 0
+						this.lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAPNEUTRALPOSITION
+						this.prompterView.scrollToNext()
 						return
 				}
 			}
@@ -155,8 +149,14 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		}
 
 		// update flag for comparison on next iteration
-		this._lastSpeed = speed
-		this._updateScrollPosition()
+		this.lastSpeed = speed
+		this.updateScrollPosition()
+
+		this.prompterView.DEBUG_controllerState({
+			source: PrompterConfigMode.SHUTTLEKEYBOARD,
+			lastSpeed: this.lastSpeed,
+			lastEvent: 'keyup: ' + e.code,
+		})
 	}
 	public onKeyUp(e: KeyboardEvent) {
 		// Nothing
@@ -171,29 +171,28 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		// Nothing
 	}
 
-	private _updateScrollPosition() {
-		if (this._updateSpeedHandle !== null) return
-		this._updateSpeedHandle = null
+	private updateScrollPosition() {
+		if (this.updateSpeedHandle !== null) return
 
 		// update scroll position
-		window.scrollBy(0, this._lastSpeed)
+		window.scrollBy(0, this.lastSpeed)
 
 		let scrollPosition = window.scrollY
 		// check for reached end-of-scroll:
-		if (this._currentPosition !== undefined && scrollPosition !== undefined) {
-			if (this._currentPosition === scrollPosition) {
+		if (this.currentPosition !== undefined && scrollPosition !== undefined) {
+			if (this.currentPosition === scrollPosition) {
 				// We tried to move, but haven't
-				this._lastSpeed = 0
-				this._lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAP_NEUTRAL_POSITION
+				this.lastSpeed = 0
+				this.lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAPNEUTRALPOSITION
 			}
-			this._currentPosition = scrollPosition
+			this.currentPosition = scrollPosition
 		}
 
 		// create recursive loop
-		if (this._lastSpeed !== 0) {
-			this._updateSpeedHandle = window.requestAnimationFrame(() => {
-				this._updateSpeedHandle = null
-				this._updateScrollPosition()
+		if (this.lastSpeed !== 0) {
+			this.updateSpeedHandle = window.requestAnimationFrame(() => {
+				this.updateSpeedHandle = null
+				this.updateScrollPosition()
 			})
 		}
 	}

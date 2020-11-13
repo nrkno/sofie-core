@@ -24,6 +24,7 @@ import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { IContextMenuContext, RundownViewEvents } from '../RundownView'
 import { CSSProperties } from '../../styles/_cssVariables'
+import { ISourceLayerExtended } from '../../../lib/Rundown'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -46,7 +47,6 @@ interface ISourceLayerPropsBase {
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	relative: boolean
-	totalSegmentDuration?: number
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
@@ -54,6 +54,7 @@ interface ISourceLayerPropsBase {
 	scrollWidth: number
 	liveLinePadding: number
 	autoNextPart: boolean
+	layerIndex: number
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 }
 interface ISourceLayerProps extends ISourceLayerPropsBase {
@@ -130,6 +131,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 							livePosition={this.props.livePosition}
 							outputGroupCollapsed={this.props.outputGroupCollapsed}
 							onFollowLiveLine={this.props.onFollowLiveLine}
+							layerIndex={this.props.layerIndex}
 						/>
 					)
 				})
@@ -199,6 +201,7 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 								liveLinePadding={this.props.liveLinePadding}
 								scrollLeft={this.props.scrollLeft}
 								scrollWidth={this.props.scrollWidth}
+								layerIndex={this.props.layerIndex}
 							/>
 						)
 					})
@@ -224,6 +227,7 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
+	sourceLayers: ISourceLayerExtended[]
 	playlist: RundownPlaylist
 	studio: Studio
 	segment: SegmentUi
@@ -249,6 +253,7 @@ interface IOutputGroupProps {
 	autoNextPart: boolean
 	relative: boolean
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
+	indexOffset: number
 }
 class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 	static whyDidYouRender = true
@@ -256,60 +261,45 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 	renderInside(isOutputGroupCollapsed) {
 		if (this.props.layer.sourceLayers !== undefined) {
 			if (!this.props.layer.isFlattened) {
-				return this.props.layer.sourceLayers
-					.filter((i) => !i.isHidden)
-					.sort((a, b) => a._rank - b._rank)
-					.map((sourceLayer) => {
-						return (
-							<SourceLayer
-								key={sourceLayer._id}
-								followLiveLine={this.props.followLiveLine}
-								isLiveLine={this.props.isLiveLine}
-								isNextLine={this.props.isNextLine}
-								liveLineHistorySize={this.props.liveLineHistorySize}
-								livePosition={this.props.livePosition}
-								mediaPreviewUrl={this.props.mediaPreviewUrl}
-								relative={this.props.relative}
-								scrollLeft={this.props.scrollLeft}
-								scrollWidth={this.props.scrollWidth}
-								studio={this.props.studio}
-								onContextMenu={this.props.onContextMenu}
-								onFollowLiveLine={this.props.onFollowLiveLine}
-								onPieceClick={this.props.onPieceClick}
-								onPieceDoubleClick={this.props.onPieceDoubleClick}
-								layer={sourceLayer}
-								playlist={this.props.playlist}
-								outputLayer={this.props.layer}
-								outputGroupCollapsed={isOutputGroupCollapsed}
-								segment={this.props.segment}
-								part={this.props.part}
-								startsAt={this.props.startsAt}
-								duration={this.props.duration}
-								timeScale={this.props.timeScale}
-								autoNextPart={this.props.autoNextPart}
-								liveLinePadding={this.props.liveLinePadding}
-							/>
-						)
-					})
+				return this.props.sourceLayers.map((sourceLayer, index) => {
+					return (
+						<SourceLayer
+							key={sourceLayer._id}
+							studio={this.props.studio}
+							layer={sourceLayer}
+							playlist={this.props.playlist}
+							outputLayer={this.props.layer}
+							outputGroupCollapsed={isOutputGroupCollapsed}
+							segment={this.props.segment}
+							part={this.props.part}
+							startsAt={this.props.startsAt}
+							duration={this.props.duration}
+							timeScale={this.props.timeScale}
+							autoNextPart={this.props.autoNextPart}
+							liveLinePadding={this.props.liveLinePadding}
+							layerIndex={index}
+							mediaPreviewUrl={this.props.mediaPreviewUrl}
+							followLiveLine={this.props.followLiveLine}
+							isLiveLine={this.props.isLiveLine}
+							isNextLine={this.props.isLiveLine}
+							liveLineHistorySize={this.props.liveLineHistorySize}
+							livePosition={this.props.livePosition}
+							relative={this.props.relative}
+							scrollLeft={this.props.scrollLeft}
+							scrollWidth={this.props.scrollWidth}
+							onContextMenu={this.props.onContextMenu}
+							onFollowLiveLine={this.props.onFollowLiveLine}
+							onPieceClick={this.props.onPieceClick}
+							onPieceDoubleClick={this.props.onPieceDoubleClick}
+						/>
+					)
+				})
 			} else {
 				return (
 					<FlattenedSourceLayers
 						key={this.props.layer._id + '_flattened'}
-						followLiveLine={this.props.followLiveLine}
-						isLiveLine={this.props.isLiveLine}
-						isNextLine={this.props.isNextLine}
-						liveLineHistorySize={this.props.liveLineHistorySize}
-						livePosition={this.props.livePosition}
-						mediaPreviewUrl={this.props.mediaPreviewUrl}
-						relative={this.props.relative}
-						scrollLeft={this.props.scrollLeft}
-						scrollWidth={this.props.scrollWidth}
 						studio={this.props.studio}
-						onContextMenu={this.props.onContextMenu}
-						onFollowLiveLine={this.props.onFollowLiveLine}
-						onPieceClick={this.props.onPieceClick}
-						onPieceDoubleClick={this.props.onPieceDoubleClick}
-						layers={this.props.layer.sourceLayers.filter((i) => !i.isHidden).sort((a, b) => a._rank - b._rank)}
+						layers={this.props.sourceLayers}
 						playlist={this.props.playlist}
 						outputLayer={this.props.layer}
 						outputGroupCollapsed={isOutputGroupCollapsed}
@@ -320,6 +310,20 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 						timeScale={this.props.timeScale}
 						autoNextPart={this.props.autoNextPart}
 						liveLinePadding={this.props.liveLinePadding}
+						layerIndex={1}
+						mediaPreviewUrl={this.props.mediaPreviewUrl}
+						followLiveLine={this.props.followLiveLine}
+						isLiveLine={this.props.isLiveLine}
+						isNextLine={this.props.isLiveLine}
+						liveLineHistorySize={this.props.liveLineHistorySize}
+						livePosition={this.props.livePosition}
+						relative={this.props.relative}
+						scrollLeft={this.props.scrollLeft}
+						scrollWidth={this.props.scrollWidth}
+						onContextMenu={this.props.onContextMenu}
+						onFollowLiveLine={this.props.onFollowLiveLine}
+						onPieceClick={this.props.onPieceClick}
+						onPieceDoubleClick={this.props.onPieceDoubleClick}
 					/>
 				)
 			}
@@ -677,6 +681,7 @@ export const SegmentTimelinePart = withTranslation()(
 
 			renderTimelineOutputGroups(part: PartUi) {
 				if (this.props.segment.outputLayers !== undefined) {
+					let indexAccumulator = 0
 					return Object.values(this.props.segment.outputLayers)
 						.filter((layer) => {
 							return layer.used ? true : false
@@ -687,6 +692,9 @@ export const SegmentTimelinePart = withTranslation()(
 						.map((layer) => {
 							// Only render output layers used by the segment
 							if (layer.used) {
+								const sourceLayers = layer.sourceLayers.filter((i) => !i.isHidden).sort((a, b) => a._rank - b._rank)
+								const currentIndex = indexAccumulator
+								indexAccumulator += this.props.collapsedOutputs[layer._id] === true ? 1 : sourceLayers.length
 								return (
 									<OutputGroup
 										key={layer._id}
@@ -705,6 +713,7 @@ export const SegmentTimelinePart = withTranslation()(
 											ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
 										}
 										layer={layer}
+										sourceLayers={sourceLayers}
 										segment={this.props.segment}
 										part={part}
 										playlist={this.props.playlist}
@@ -716,6 +725,7 @@ export const SegmentTimelinePart = withTranslation()(
 										timeScale={this.props.timeScale}
 										autoNextPart={this.props.autoNextPart}
 										liveLinePadding={SegmentTimelinePart0.getLiveLineTimePadding(this.props.timeScale)}
+										indexOffset={currentIndex}
 									/>
 								)
 							}

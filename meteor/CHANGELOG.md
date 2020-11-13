@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.14.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.14.0...v1.14.1) (2020-11-11)
+
+## [1.14.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.13.1...v1.14.0) (2020-11-10)
+
+
+### Features
+
+* add defaultActive property to RouteSets, improved Switchboard icon ([5271617](https://github.com/nrkno/tv-automation-server-core/commit/5271617ce355d2ca5d71dfdf9109985c42ff8b25))
+* improved rundown divider ([#359](https://github.com/nrkno/tv-automation-server-core/issues/359)) ([70f5bc6](https://github.com/nrkno/tv-automation-server-core/commit/70f5bc68e3f790a6f1997d3a3303a86ad839dd17))
+
+
+### Bug Fixes
+
+* not clearing show-style blueprint config cache when updating showstyle blueprint ([b3be720](https://github.com/nrkno/tv-automation-server-core/commit/b3be720b910dcddb73d8528edc55703f7b96f3f2))
+* script-end line - minimize the amount of repositioning ([c891712](https://github.com/nrkno/tv-automation-server-core/commit/c8917120d2acaeea38d4715d02a9bf5c4f76432c))
+* show script line after playback causes it to be "unstuck" the next line ([b5e9ef3](https://github.com/nrkno/tv-automation-server-core/commit/b5e9ef307ffc950d91a028782dbfc64076868375))
+
+## [1.14.0-in-testing-R26.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.13.0...v1.14.0-in-testing-R26.0) (2020-10-19)
+
+
+### Features
+
+* add new GUI editAttribute: dropdowntext, which allows for either selection from dropdown, or input as text ([f2685e4](https://github.com/nrkno/tv-automation-server-core/commit/f2685e46faba416c0dd9226828f6990e7af36134))
+* allow for routeSets to route "no layer" into "some layer" ([7fd38ee](https://github.com/nrkno/tv-automation-server-core/commit/7fd38ee8f6f6343134183994e03031c130411ee5))
+* let blueprint update pieceInstance in ingest data update ([#355](https://github.com/nrkno/tv-automation-server-core/issues/355)) ([53c0520](https://github.com/nrkno/tv-automation-server-core/commit/53c0520cc339e47f70940baa07920ab570299a08))
+* prompter maintain focus with an AHK script and title refactoring ([#352](https://github.com/nrkno/tv-automation-server-core/issues/352)) ([7e05cc2](https://github.com/nrkno/tv-automation-server-core/commit/7e05cc2b430e006fe40ee5d96cbca54cce6fb7ba))
+* Route Set UI 2 ([#344](https://github.com/nrkno/tv-automation-server-core/issues/344)) ([f8058a0](https://github.com/nrkno/tv-automation-server-core/commit/f8058a06910571c1874cb532e473e59b281655d6))
+* show message after manual snapshot ([#350](https://github.com/nrkno/tv-automation-server-core/issues/350)) ([1154955](https://github.com/nrkno/tv-automation-server-core/commit/1154955180df736ecb792c9c5a99592e97ff1b06))
+* show the state of infinites in all segments depending on playback ([#357](https://github.com/nrkno/tv-automation-server-core/issues/357)) ([ad5952e](https://github.com/nrkno/tv-automation-server-core/commit/ad5952eda2c946fc3f208d5dc21d48abd050b088))
+* system benchmark ([5f4cfad](https://github.com/nrkno/tv-automation-server-core/commit/5f4cfad0d71775da1dc74d81b3fd35829df037a2))
+
+
+### Bug Fixes
+
+* GUI support for settings routeSets: routing "no layer" into "some layer" ([a519fc6](https://github.com/nrkno/tv-automation-server-core/commit/a519fc6c648bd6912370b4a917625751f6c006ec))
+* mini inspector header decor has no fill ([8df574b](https://github.com/nrkno/tv-automation-server-core/commit/8df574b693e5850563dea62d742ca2617c841180))
+* multi-nrcs unsynced labels in RundownList ([40b003d](https://github.com/nrkno/tv-automation-server-core/commit/40b003d7e9608bee7b447ef82e92ce4e8c43bccf))
+* redirect to Lobby when route path not matched ([9f0cf6c](https://github.com/nrkno/tv-automation-server-core/commit/9f0cf6c709ce65fafe05efcc969b7a008363e7fe))
+* script read time isn't affected by rescaling ([c66c6ec](https://github.com/nrkno/tv-automation-server-core/commit/c66c6ecbe7a519a04fde89956139b9d023d2ac68))
+* show autoNext status not shown in some cases ([45481ec](https://github.com/nrkno/tv-automation-server-core/commit/45481ec8f7e59eefa46ba3758d14100847d17987)), closes [#72d85006](https://github.com/nrkno/tv-automation-server-core/issues/72d85006)
+* use a input[list]/datalist instead of a input/select combo ([5eea060](https://github.com/nrkno/tv-automation-server-core/commit/5eea060dc63c674102a4c61729f6ad6cd0ce99a3))
+
 ## [1.14.0-in-testing-R26.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.13.0...v1.14.0-in-testing-R26.0) (2020-10-19)
 
 
