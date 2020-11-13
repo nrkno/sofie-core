@@ -28,9 +28,9 @@ import {
 	IngestPart,
 	BlueprintResultSegment,
 	BlueprintResultOrderedRundowns,
-	BlueprintResultPartInstance,
+	BlueprintSyncIngestPartInstance,
 	ShowStyleBlueprintManifest,
-	BlueprintResultPartDB,
+	BlueprintSyncIngestNewData,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, Studios } from '../../../lib/collections/Studios'
@@ -1358,15 +1358,17 @@ function syncChangesToPartInstances(
 				const newPart = parts.find((p) => p._id === existingPartInstance.part._id)
 
 				if (newPart) {
-					const existingResultPartInstance: BlueprintResultPartInstance = {
+					const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
 						partInstance: unprotectObject(existingPartInstance),
 						pieceInstances: unprotectObjectArray(pieceInstancesInPart),
 					}
-					const newResultPart: BlueprintResultPartDB | undefined = {
+					const newResultData: BlueprintSyncIngestNewData = {
 						part: unprotectObject(newPart),
 						pieces: unprotectObjectArray(segmentPieces.filter((p) => p.startPartId === newPart._id)),
 						adLibPieces: unprotectObjectArray(adlibPieces.filter((p) => p.partId === newPart._id)),
 						actions: unprotectObjectArray(adlibActions.filter((p) => p.partId === newPart._id)),
+						infinites: [], // TODO
+						referencedAdlibs: [], // TODO
 					}
 
 					const syncContext = new SyncIngestUpdateToPartInstanceContext(
@@ -1386,7 +1388,7 @@ function syncChangesToPartInstances(
 						blueprint.syncIngestUpdateToPartInstance(
 							syncContext,
 							existingResultPartInstance,
-							newResultPart,
+							newResultData,
 							playStatus
 						)
 

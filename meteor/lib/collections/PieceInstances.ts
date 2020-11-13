@@ -90,7 +90,7 @@ export interface PieceInstance
 
 export interface ResolvedPieceInstance
 	extends PieceInstance,
-		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'piece'> {
+		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'piece' | 'infinite'> {
 	piece: PieceInstancePiece
 }
 

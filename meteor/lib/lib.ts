@@ -1381,12 +1381,14 @@ export function isProtectedString(str: any): str is ProtectedString<any> {
 	return typeof str === 'string'
 }
 export type ProtectId<T extends { _id: string }> = Omit<T, '_id'> & { _id: ProtectedString<any> }
-export type UnprotectedStringProperties<T extends object> = {
+export type UnprotectedStringProperties<T extends object | undefined> = {
 	[P in keyof T]: T[P] extends ProtectedString<any>
 		? string
 		: T[P] extends ProtectedString<any> | undefined
 		? string | undefined
-		: T[P] extends UnprotectedStringProperties<any>
+		: T[P] extends object
+		? UnprotectedStringProperties<T[P]>
+		: T[P] extends object | undefined
 		? UnprotectedStringProperties<T[P]>
 		: T[P]
 }
