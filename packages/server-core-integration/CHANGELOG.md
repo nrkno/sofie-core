@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.1.0](https://github.com/nrkno/tv-automation-server-core-integration/compare/2.0.0...2.1.0) (2020-11-10)
+
+
+### Features
+
+* merge in and update/upgrade DDP client and id generation ([#34](https://github.com/nrkno/tv-automation-server-core-integration/issues/34)) ([9602fc2](https://github.com/nrkno/tv-automation-server-core-integration/commit/9602fc2a8acee6eb0139f47e9d698afd81b48385))
+
 ## [2.0.0](https://github.com/nrkno/tv-automation-server-core-integration/compare/1.5.1...2.0.0) (2020-09-02)
 
 

@@ -127,9 +127,12 @@ export enum methods {
 	'mosRoReadyToAir' 	= 'peripheralDevice.mos.roReadyToAir',
 	'mosRoFullStory' 	= 'peripheralDevice.mos.roFullStory',
 
+	'dataRundownList'	= 'peripheralDevice.rundown.rundownList',
+	'dataRundownGet'	= 'peripheralDevice.rundown.rundownGet',
 	'dataRundownDelete'	= 'peripheralDevice.rundown.rundownDelete',
 	'dataRundownCreate'	= 'peripheralDevice.rundown.rundownCreate',
 	'dataRundownUpdate'	= 'peripheralDevice.rundown.rundownUpdate',
+	'dataSegmentGet'	= 'peripheralDevice.rundown.segmentGet',
 	'dataSegmentDelete'	= 'peripheralDevice.rundown.segmentDelete',
 	'dataSegmentCreate'	= 'peripheralDevice.rundown.segmentCreate',
 	'dataSegmentUpdate'	= 'peripheralDevice.rundown.segmentUpdate',
@@ -139,8 +142,9 @@ export enum methods {
 
 	'resyncRundown'				= 'peripheralDevice.mos.roResync',
 
-	'getMediaObjectRevisions' 	= 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
-	'updateMediaObject' 		= 'peripheralDevice.mediaScanner.updateMediaObject',
+	'getMediaObjectRevisions'		= 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
+	'updateMediaObject' 			= 'peripheralDevice.mediaScanner.updateMediaObject',
+	'clearMediaObjectCollection' 	= 'peripheralDevice.mediaScanner.clearMediaObjectCollection',
 
 	'getMediaWorkFlowRevisions' 	= 'peripheralDevice.mediaManager.getMediaWorkFlowRevisions',
 	'updateMediaWorkFlow' 			= 'peripheralDevice.mediaManager.updateMediaWorkFlow',

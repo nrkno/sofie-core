@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.4.0](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/compare/2.3.1...2.4.0) (2020-11-10)
+
+
+### Features
+
+* add property description to Rundown ([1c5c81e](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/commit/1c5c81e638e6ad3dafe74900b4b8d266c6c7ece5))
+* update policies ([#80](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/issues/80)) ([5f600de](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/commit/5f600dea6cd4b286b06d49d541ba802cd0abd78c))
+
 ### [2.3.1](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/compare/2.3.0...2.3.1) (2020-09-30)
 
 ## [2.3.0](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/compare/2.2.1...2.3.0) (2020-09-30)

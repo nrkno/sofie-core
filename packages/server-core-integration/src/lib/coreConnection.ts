@@ -132,14 +132,6 @@ export class CoreConnection extends EventEmitter {
 			this._ddp.on('info', (message: any) => {
 				this.emit('info', message)
 			})
-			this._ddp.on('connectionChanged', (connected: boolean) => {
-				this._setConnected(connected)
-
-				this._maybeSendInit()
-				.catch((err) => {
-					this._emitError('_maybesendInit ' + JSON.stringify(err))
-				})
-			})
 			this._ddp.on('connected', () => {
 				// this.emit('connected')
 				if (this._watchDog) this._watchDog.addCheck(() => this._watchDogCheck())
@@ -154,6 +146,17 @@ export class CoreConnection extends EventEmitter {
 			await this._ddp.createClient()
 			await this._ddp.connect()
 			this._setConnected(this._ddp.connected) // ensure that connection status is synced
+
+			// set up the connectionChanged event handler after we've connected, so that it doesn't trigger on the await this._ddp.connect()
+			this._ddp.on('connectionChanged', (connected: boolean) => {
+				this._setConnected(connected)
+
+				this._maybeSendInit()
+				.catch((err) => {
+					this._emitError('_maybesendInit ' + JSON.stringify(err))
+				})
+			})
+
 			let deviceId = await this._sendInit()
 			this._timeSync = new TimeSync({
 				serverDelayTime: 0
