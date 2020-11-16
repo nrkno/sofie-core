@@ -538,44 +538,88 @@ export const getCollectionStats: (collection: TransformedCollection<any, any>) =
 		raw.stats(cb)
 	}
 )
-// /**
-//  * Returns a rank number, to be used to insert new objects in a ranked list
-//  * @param before	Object before, null/undefined if inserted first
-//  * @param after			Object after, null/undefined if inserted last
-//  * @param i				If inserting multiple objects, this is the number of this object
-//  * @param count			If inserting multiple objects, this is total count of objects
-//  */
-// export function getRank<T extends { _rank: number }>(
-// 	before: T | null | undefined,
-// 	after: T | null | undefined,
-// 	i: number = 0,
-// 	count: number = 1
-// ): number {
-// 	let newRankMax
-// 	let newRankMin
-
-// 	if (after) {
-// 		if (before) {
-// 			newRankMin = before._rank
-// 			newRankMax = after._rank
-// 		} else {
-// 			// First
-// 			newRankMin = after._rank - 1
-// 			newRankMax = after._rank
-// 		}
-// 	} else {
-// 		if (before) {
-// 			// Last
-// 			newRankMin = before._rank
-// 			newRankMax = before._rank + 1
-// 		} else {
-// 			// Empty list
-// 			newRankMin = 0
-// 			newRankMax = 1
-// 		}
-// 	}
-// 	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
+// export function fetchBefore<T>(
+// 	collection: TransformedCollection<T, any>,
+// 	selector: MongoQuery<T> = {},
+// 	rank: number = Number.POSITIVE_INFINITY
+// ): T {
+// 	return collection
+// 		.find(
+// 			_.extend(selector, {
+// 				_rank: { $lt: rank },
+// 			}),
+// 			{
+// 				sort: {
+// 					_rank: -1,
+// 					_id: -1,
+// 				},
+// 				limit: 1,
+// 			}
+// 		)
+// 		.fetch()[0]
 // }
+// export function fetchNext<T extends { _id: ProtectedString<any> }>(
+// 	values: Array<T>,
+// 	currentValue: T | undefined
+// ): T | undefined {
+// 	if (!currentValue) return values[0]
+
+// 	let nextValue: T | undefined
+// 	let found: boolean = false
+// 	return _.find(values, (value) => {
+// 		if (found) {
+// 			nextValue = value
+// 			return true
+// 		}
+
+// 		if (currentValue._id) {
+// 			found = currentValue._id === value._id
+// 		} else {
+// 			found = currentValue === value
+// 		}
+// 		return false
+// 	})
+// }
+
+/**
+ * Returns a rank number, to be used to insert new objects in a ranked list
+ * @param before   The element before the one-to-be-inserted, null/undefined if inserted first
+ * @param after	   The element after the one-to-be-inserted, null/undefined if inserted last
+ * @param i        If inserting multiple elements; the internal rank of the to-be-inserted element
+ * @param count    If inserting multiple elements, this is total count of inserted elements
+ */
+export function getRank<T extends { _rank: number }>(
+	before: T | null | undefined,
+	after: T | null | undefined,
+	i: number = 0,
+	count: number = 1
+): number {
+	let newRankMax
+	let newRankMin
+
+	if (after) {
+		if (before) {
+			newRankMin = before._rank
+			newRankMax = after._rank
+		} else {
+			// First
+			newRankMin = after._rank - 1
+			newRankMax = after._rank
+		}
+	} else {
+		if (before) {
+			// Last
+			newRankMin = before._rank
+			newRankMax = before._rank + 1
+		} else {
+			// Empty list
+			newRankMin = 0
+			newRankMax = 1
+		}
+	}
+	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
+}
+
 export function normalizeArrayFuncFilter<T>(
 	array: Array<T>,
 	getKey: (o: T) => string | undefined
