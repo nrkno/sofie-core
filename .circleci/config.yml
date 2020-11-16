@@ -70,6 +70,9 @@ jobs:
         type: string
     docker:
       - image: circleci/node:12
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     steps:
       - checkout
       - run: cd packages && yarn install
@@ -86,6 +89,9 @@ jobs:
         type: string
     docker:
       - image: circleci/node:<< parameters.node-version >>
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     steps:
       - checkout
       - run: cd packages && yarn install
@@ -105,6 +111,9 @@ jobs:
         type: string
     docker:
       - image: circleci/node:12
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     working_directory: ~/project
     steps:
       - checkout
@@ -152,6 +161,9 @@ jobs:
         type: string
     docker:
       - image: circleci/node:12
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     working_directory: ~/project
     steps:
       - checkout
@@ -200,6 +212,9 @@ jobs:
   typedoc-libs:
     docker:
       - image: circleci/node:12
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     working_directory: ~/project
     steps:
       - checkout
