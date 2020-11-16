@@ -48,15 +48,37 @@ export interface IDashboardButtonProps {
 	isSelected?: boolean
 	queueAllAdlibs?: boolean
 	showThumbnailsInList?: boolean
+	editableName?: boolean
+	onNameChanged?: (e: any, value: string) => void
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
 
-export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<Translated<IDashboardButtonProps> & T> {
+interface IState {
+	label: string
+}
+
+export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
+	Translated<IDashboardButtonProps> & T,
+	IState
+> {
 	private objId: string
+	private _labelEl: HTMLTextAreaElement
 
 	constructor(props: IDashboardButtonProps) {
 		super(props)
+
+		this.state = {
+			label: this.props.piece.name,
+		}
+	}
+
+	componentDidUpdate(prevProps) {
+		if (prevProps.piece.name !== this.props.piece.name) {
+			this.setState({
+				label: this.props.piece.name,
+			})
+		}
 	}
 
 	getPreviewUrl = (): string | undefined => {
@@ -116,6 +138,62 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<Trans
 		}
 	}
 
+	private onNameChanged = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		this.setState({
+			label: e.currentTarget.value || '',
+		})
+	}
+
+	private onRenameTextBoxKeyUp = (e: KeyboardEvent) => {
+		if (e.key === 'Escape') {
+			this.setState(
+				{
+					label: this.props.piece.name,
+				},
+				() => {
+					this._labelEl && this._labelEl.blur()
+				}
+			)
+			e.preventDefault()
+			e.stopPropagation()
+			e.stopImmediatePropagation()
+		} else if (e.key === 'Enter') {
+			this._labelEl && this._labelEl.blur()
+			e.preventDefault()
+			e.stopPropagation()
+			e.stopImmediatePropagation()
+		}
+	}
+
+	private onRenameTextBoxBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+		if (!this.state.label.trim()) {
+			e.persist()
+			this.setState(
+				{
+					label: this.props.piece.name,
+				},
+				() => {
+					this.props.onNameChanged && this.props.onNameChanged(e, this.state.label)
+				}
+			)
+		} else {
+			this.props.onNameChanged && this.props.onNameChanged(e, this.state.label)
+		}
+	}
+
+	private renameTextBoxFocus = (input: HTMLTextAreaElement) => {
+		input.focus()
+		input.setSelectionRange(0, input.value.length)
+	}
+
+	private onRenameTextBoxShow = (ref: HTMLTextAreaElement) => {
+		if (ref && !this._labelEl) {
+			ref.addEventListener('keyup', this.onRenameTextBoxKeyUp)
+			this.renameTextBoxFocus(ref)
+		}
+		this._labelEl = ref
+	}
+
 	render() {
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
@@ -167,9 +245,21 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<Trans
 					: this.props.layer.type === SourceLayerType.SPLITS
 					? this.renderSplits(isList && this.props.showThumbnailsInList)
 					: null}
-				<span className="dashboard-panel__panel__button__label">
-					{isList && hasMediaInfo ? this.props.piece.contentMetaData!.mediainfo!.name : this.props.piece.name}
-				</span>
+
+				{isList && hasMediaInfo ? (
+					<span className="dashboard-panel__panel__button__label">
+						{this.props.piece.contentMetaData!.mediainfo!.name}
+					</span>
+				) : this.props.editableName ? (
+					<textarea
+						className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
+						value={this.state.label}
+						onChange={this.onNameChanged}
+						onBlur={this.onRenameTextBoxBlur}
+						ref={this.onRenameTextBoxShow}></textarea>
+				) : (
+					<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
+				)}
 			</div>
 		)
 	}

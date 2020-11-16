@@ -191,7 +191,7 @@ export interface NewUserActionAPI extends MethodContext {
 		studioId: StudioId,
 		action: AdLibActionCommon | BucketAdLibAction,
 		bucketId: BucketId
-	): Promise<ClientAPI.ClientResponse<void>>
+	): Promise<ClientAPI.ClientResponse<BucketAdLibAction>>
 	switchRouteSet(
 		userEvent: string,
 		studioId: StudioId,

@@ -204,9 +204,6 @@ export function moveNext(
 		ServerPlayoutAPI.moveNextPart(context, rundownPlaylistId, horisontalDelta, verticalDelta, setManually)
 	)
 }
-export function reloadRundownPlaylistData(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.reloadRundownPlaylistData(context, rundownPlaylistId))
-}
 export function prepareForBroadcast(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId
@@ -311,6 +308,9 @@ export function deactivate(
 	rundownPlaylistId: RundownPlaylistId
 ): ClientAPI.ClientResponse<void> {
 	return ClientAPI.responseSuccess(ServerPlayoutAPI.deactivateRundownPlaylist(context, rundownPlaylistId))
+}
+export function reloadRundownPlaylistData(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
+	return ClientAPI.responseSuccess(ServerPlayoutAPI.reloadRundownPlaylistData(context, rundownPlaylistId))
 }
 export function unsyncRundown(context: MethodContext, rundownId: RundownId) {
 	return ClientAPI.responseSuccess(ServerRundownAPI.unsyncRundown(context, rundownId))
@@ -1118,7 +1118,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		studioId: StudioId,
 		action: AdLibActionCommon | BucketAdLibAction,
 		bucketId: BucketId
-	): Promise<ClientAPI.ClientResponse<void>> {
+	): Promise<ClientAPI.ClientResponse<BucketAdLibAction>> {
 		return traceAction(
 			UserActionAPIMethods.bucketsSaveActionIntoBucket,
 			bucketsSaveActionIntoBucket,

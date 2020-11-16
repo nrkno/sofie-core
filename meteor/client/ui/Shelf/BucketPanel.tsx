@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -51,6 +52,7 @@ import { PartInstances, PartInstance } from '../../../lib/collections/PartInstan
 import { AdLibPieceUi } from './AdLibPanel'
 import { BucketAdLibActions, BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
+import { RundownViewEvents } from '../RundownView'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLibItem, BucketAdLibActionUi, isAdLibAction, isAdLib, BucketAdLibUi } from './RundownViewBuckets'
@@ -152,7 +154,7 @@ interface IState {
 	adLibPieces: BucketAdLibItem[]
 }
 
-function actionToAdLibPieceUi(
+export function actionToAdLibPieceUi(
 	action: BucketAdLibAction,
 	sourceLayers: _.Dictionary<ISourceLayer>,
 	outputLayers: _.Dictionary<IOutputLayer>
@@ -200,11 +202,13 @@ export interface IBucketPanelProps {
 	hotkeyGroup: string
 	editableName?: boolean
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | AdLibPieceUi | PieceUi | undefined
+	editedPiece: PieceId | undefined
 	onNameChanged: (e: any, newName: string) => void
 	moveBucket: (id: BucketId, atIndex: number) => void
 	findBucket: (id: BucketId) => { bucket: Bucket | undefined; index: number }
 	onBucketReorder: (draggedId: BucketId, newIndex: number, oldIndex: number) => void
 	onAdLibContext: (args: { contextBucket: Bucket; contextBucketAdLib: BucketAdLibItem }, callback: () => void) => void
+	onPieceNameRename: () => void
 }
 
 export interface IBucketPanelTrackedProps extends IDashboardPanelTrackedProps {
@@ -371,6 +375,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 					window.addEventListener(MOSEvents.dragenter, this.onDragEnter)
 					window.addEventListener(MOSEvents.dragleave, this.onDragLeave)
+
+					window.addEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
 				}
 
 				componentDidUpdate(prevProps: IBucketPanelProps & IBucketPanelTrackedProps) {
@@ -379,6 +385,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							adLibPieces: ([] as BucketAdLibItem[]).concat(this.props.adLibPieces || []),
 						})
 					}
+
+					window.removeEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
 				}
 
 				componentWillUnmount() {
@@ -386,6 +394,28 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 					window.removeEventListener(MOSEvents.dragenter, this.onDragEnter)
 					window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
+				}
+
+				onRevealInShelf = (e: CustomEvent) => {
+					const pieceId = e.detail && e.detail.pieceId
+					if (pieceId) {
+						let found = false
+						const index = this.state.adLibPieces.findIndex((piece) => piece._id === pieceId)
+						if (index >= 0) {
+							found = true
+						}
+
+						if (found) {
+							Meteor.setTimeout(() => {
+								const el = document.querySelector(`.dashboard-panel__panel__button[data-obj-id="${pieceId}"]`)
+								if (el) {
+									el.scrollIntoView({
+										behavior: 'smooth',
+									})
+								}
+							}, 100)
+						}
+					}
 				}
 
 				isAdLibOnAir(adLibPiece: AdLibPieceUi) {
@@ -559,6 +589,34 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					}
 				}
 
+				private onAdLibNameChanged = (e: any, piece: BucketAdLibItem, newName: string) => {
+					const { t } = this.props
+					if (isAdLib(piece)) {
+						doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET, (e) =>
+							MeteorCall.userAction.bucketsModifyBucketAdLib(
+								e,
+								piece._id,
+								partial<BucketAdLib>({
+									name: newName,
+								})
+							)
+						)
+					} else if (isAdLibAction(piece)) {
+						doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET, (e) =>
+							MeteorCall.userAction.bucketsModifyBucketAdLibAction(
+								e,
+								piece.adlibAction._id,
+								partial<BucketAdLibAction>({
+									//@ts-ignore deep property
+									'display.label': newName,
+								})
+							)
+						)
+					}
+
+					this.props.onPieceNameRename()
+				}
+
 				private onAdLibReorder = (draggedId: PieceId, newIndex: number, oldIndex: number) => {
 					const { t } = this.props
 					if (this.props.adLibPieces) {
@@ -601,8 +659,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 									MeteorCall.userAction.bucketsModifyBucketAdLibAction(
 										e,
 										draggedB.adlibAction._id,
-										partial<BucketAdLib>({
-											_rank: newRank,
+										partial<BucketAdLibAction>({
+											//@ts-ignore deep property
+											'display._rank': newRank,
 										})
 									)
 								)
@@ -715,15 +774,16 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 													disabled={adlib.showStyleVariantId !== this.props.showStyleVariantId}
 													findAdLib={this.findAdLib}
 													moveAdLib={this.moveAdLib}
+													editableName={this.props.editedPiece === adlib._id}
+													onNameChanged={(e, name) => this.onAdLibNameChanged(e, adlib, name)}
 													onAdLibReorder={this.onAdLibReorder}
 													onAdLibMove={this.onAdLibMove}
 													isSelected={
 														this.props.selectedPiece &&
 														RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
 														adlib._id === this.props.selectedPiece._id
-													}>
-													{adlib.name}
-												</BucketPieceButton>
+													}
+												/>
 											</ContextMenuTrigger>
 										))}
 									</div>

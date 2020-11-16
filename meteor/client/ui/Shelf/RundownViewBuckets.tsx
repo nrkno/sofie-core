@@ -17,7 +17,7 @@ import { withTranslation } from 'react-i18next'
 import Escape from 'react-escape'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { unprotectString, partial, literal } from '../../../lib/lib'
+import { unprotectString, partial, literal, ProtectedString } from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -80,7 +80,7 @@ interface IBucketsProps {
 	displayBuckets?: number[]
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | AdLibPieceUi | PieceUi | undefined
 
-	onSelectPiece?: (piece: BucketAdLibItem) => void
+	onSelectPiece?: (piece: BucketAdLibItem | undefined) => void
 }
 
 interface IState {
@@ -88,6 +88,12 @@ interface IState {
 	contextBucket: Bucket | undefined
 	contextBucketAdLib: BucketAdLibItem | undefined
 	editedNameId: BucketId | undefined
+	editedPieceName:
+		| {
+				bucketId: BucketId
+				pieceId: ProtectedString<any>
+		  }
+		| undefined
 	localBuckets: Bucket[]
 }
 
@@ -118,6 +124,7 @@ export const RundownViewBuckets = withTranslation()(
 				contextBucket: undefined,
 				contextBucketAdLib: undefined,
 				editedNameId: undefined,
+				editedPieceName: undefined,
 				localBuckets: ([] as Bucket[]).concat(props.buckets || []),
 			}
 		}
@@ -305,11 +312,24 @@ export const RundownViewBuckets = withTranslation()(
 		}
 
 		inspectBucketAdLib = (e: any, bucketAdLib: BucketAdLibItem) => {
-			const { t } = this.props
-
 			if (e.persist) e.persist()
 
 			this.props.onSelectPiece && this.props.onSelectPiece(bucketAdLib)
+		}
+
+		beginRenameBucketAdLib = (bucketAdLib: BucketAdLibItem | undefined) => {
+			if (bucketAdLib) {
+				this.setState({
+					editedPieceName: {
+						bucketId: bucketAdLib.bucketId,
+						pieceId: bucketAdLib._id,
+					},
+				})
+			} else {
+				this.setState({
+					editedPieceName: undefined,
+				})
+			}
 		}
 
 		deleteBucketAdLib = (e: any, bucketAdLib: BucketAdLibItem) => {
@@ -322,13 +342,33 @@ export const RundownViewBuckets = withTranslation()(
 					message: t('Are you sure you want to delete this AdLib?'),
 					title: bucketAdLib.name,
 					onAccept: () => {
+						const clb = (err) => {
+							if (err) return
+
+							if (
+								this.props.onSelectPiece &&
+								this.props.selectedPiece &&
+								bucketAdLib._id === (this.props.selectedPiece as AdLibPieceUi)._id
+							) {
+								this.props.onSelectPiece(undefined)
+							}
+						}
+
 						if (isAdLibAction(bucketAdLib)) {
-							doUserAction(t, e, UserAction.REMOVE_BUCKET_ADLIB, (e) =>
-								MeteorCall.userAction.bucketsRemoveBucketAdLibAction(e, bucketAdLib.adlibAction._id)
+							doUserAction(
+								t,
+								e,
+								UserAction.REMOVE_BUCKET_ADLIB,
+								(e) => MeteorCall.userAction.bucketsRemoveBucketAdLibAction(e, bucketAdLib.adlibAction._id),
+								clb
 							)
 						} else {
-							doUserAction(t, e, UserAction.REMOVE_BUCKET_ADLIB, (e) =>
-								MeteorCall.userAction.bucketsRemoveBucketAdLib(e, bucketAdLib._id)
+							doUserAction(
+								t,
+								e,
+								UserAction.REMOVE_BUCKET_ADLIB,
+								(e) => MeteorCall.userAction.bucketsRemoveBucketAdLib(e, bucketAdLib._id),
+								clb
 							)
 						}
 					},
@@ -499,6 +539,12 @@ export const RundownViewBuckets = withTranslation()(
 									</MenuItem>
 									<MenuItem
 										onClick={(e) =>
+											this.state.contextBucketAdLib && this.beginRenameBucketAdLib(this.state.contextBucketAdLib)
+										}>
+										{t('Rename this AdLib')}
+									</MenuItem>
+									<MenuItem
+										onClick={(e) =>
 											this.state.contextBucketAdLib && this.deleteBucketAdLib(e, this.state.contextBucketAdLib)
 										}>
 										{t('Delete this AdLib')}
@@ -566,6 +612,12 @@ export const RundownViewBuckets = withTranslation()(
 												shouldQueue={shouldQueue}
 												bucket={bucket}
 												editableName={this.state.editedNameId === bucket._id}
+												editedPiece={
+													this.state.editedPieceName && this.state.editedPieceName.bucketId === bucket._id
+														? this.state.editedPieceName.pieceId
+														: undefined
+												}
+												onPieceNameRename={() => this.beginRenameBucketAdLib(undefined)}
 												onNameChanged={(e, name) => this.finishRenameBucket(e, bucket, name)}
 												moveBucket={this.moveBucket}
 												findBucket={this.findBucket}

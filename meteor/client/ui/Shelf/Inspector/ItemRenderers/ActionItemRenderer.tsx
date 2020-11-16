@@ -24,7 +24,8 @@ import { doUserAction, UserAction } from '../../../../lib/userAction'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { BucketId, Buckets } from '../../../../../lib/collections/Buckets'
 import { BucketAdLibItem, BucketAdLibActionUi } from '../../RundownViewBuckets'
-import { BucketAdLib } from '../../../../../lib/collections/BucketAdlibs'
+import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
+import { actionToAdLibPieceUi } from '../../BucketPanel'
 
 export { isActionItem }
 
@@ -32,6 +33,8 @@ export interface IProps {
 	piece: PieceUi | AdLibPieceUi | BucketAdLibActionUi
 	showStyleBase: ShowStyleBase
 	studio: Studio
+	rundownPlaylist: RundownPlaylist
+	onSelectPiece: (piece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined) => void
 }
 
 export interface ITrackedProps {
@@ -191,20 +194,50 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			)
 		}
 
-		onCueAsNext = (e: any) => {}
+		onCueAsNext = (e: any) => {
+			const { t, targetAction } = this.props
+
+			if (targetAction) {
+				doUserAction(t, e, UserAction.START_ADLIB, (e) =>
+					MeteorCall.userAction.executeAction(
+						e,
+						this.props.rundownPlaylist._id,
+						targetAction.actionId,
+						targetAction.transformedUserData
+					)
+				)
+			}
+		}
 
 		onSaveToBucket = (e: any) => {
-			const { t } = this.props
+			const { t, onSelectPiece } = this.props
 
 			if (this.props.bucketIds[0] && this.props.targetAction) {
 				const { targetAction } = this.props
-				doUserAction(t, e, UserAction.SAVE_TO_BUCKET, (e) =>
-					MeteorCall.userAction.bucketsSaveActionIntoBucket(
-						e,
-						this.props.studio._id,
-						transformedAdLibActionToAction(targetAction),
-						this.props.bucketIds[0]
-					)
+				doUserAction(
+					t,
+					e,
+					UserAction.SAVE_TO_BUCKET,
+					(e) =>
+						MeteorCall.userAction.bucketsSaveActionIntoBucket(
+							e,
+							this.props.studio._id,
+							transformedAdLibActionToAction(targetAction),
+							this.props.bucketIds[0]
+						),
+					(err, res) => {
+						if (err) return
+
+						if (res) {
+							onSelectPiece(
+								actionToAdLibPieceUi(
+									res,
+									_.indexBy(this.props.showStyleBase.sourceLayers, '_id'),
+									_.indexBy(this.props.showStyleBase.outputLayers, '_id')
+								)
+							)
+						}
+					}
 				)
 			}
 		}

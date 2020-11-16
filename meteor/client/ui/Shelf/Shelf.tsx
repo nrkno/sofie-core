@@ -505,6 +505,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 								selected={this.state.selectedPiece}
 								showStyleBase={this.props.showStyleBase}
 								studio={this.props.studio}
+								rundownPlaylist={this.props.playlist}
+								onSelectPiece={this.selectPiece}
 							/>
 						</ErrorBoundary>
 					) : null}

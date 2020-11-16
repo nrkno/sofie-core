@@ -153,6 +153,26 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 	}
 }
 
+/**
+ * Handle a the experience arround a back-end method call - display a "Waiting for action" message, when the call takes
+ * long to return a result/error and show an error message when the call fails.
+ *
+ * @export
+ * @template Result
+ * @param {i18next.TFunction} t A translation function
+ * @param {*} userEvent An `Event` which has triggered the method call. This will be transformed into a string and
+ * 		fed into the `fcn` function.
+ * @param {UserAction} action This is the "user-facing" action type, which is used to display the "label" for the method
+ * 		call in the UI (what is being done).
+ * @param {(event: any) => Promise<ClientAPI.ClientResponse<Result>>} fcn The function that is being wrapped/handled,
+ *		generally a call to `MeteorCall` API.
+ * @param {((err: any, res?: Result) => void | boolean)} [callback] An optional function that can handle the result
+ * 		returned by the method. If this function returns `false`, the default handling for the method result will be
+ * 		disabled (showing a "success" or "error message")
+ * @param {string} [okMessage] An optional "success" message to be shown in the notification, once the method call
+ * 		returns. If not provided, a default, generic message will be shown instead. The message will not be shown if
+ * 		the method returns quickly.
+ */
 export function doUserAction<Result>(
 	t: i18next.TFunction,
 	userEvent: any,

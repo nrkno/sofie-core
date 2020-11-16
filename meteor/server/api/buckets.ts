@@ -165,7 +165,7 @@ export namespace BucketsAPI {
 		studioId: StudioId,
 		action: AdLibActionCommon | BucketAdLibAction,
 		bucketId: BucketId
-	) {
+	): BucketAdLibAction {
 		if (bucketId && !BucketSecurity.allowWriteAccess({ _id: bucketId }, context)) {
 			throw new Meteor.Error(403, 'Access denied')
 		}
@@ -235,6 +235,8 @@ export namespace BucketsAPI {
 		}
 
 		BucketAdLibActions.insert(adLibAction)
+
+		return adLibAction
 	}
 
 	export function modifyBucketAdLib(context: MethodContext, id: PieceId, adlib: Partial<Omit<BucketAdLib, '_id'>>) {
