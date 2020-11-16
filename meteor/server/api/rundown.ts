@@ -267,11 +267,6 @@ export function removeSegments(cache: CacheForRundownPlaylist, rundownId: Rundow
 		_id: { $in: segmentIds },
 		rundownId: rundownId,
 	})
-	IngestDataCache.remove({
-		segmentId: { $in: segmentIds },
-		rundownId: rundownId,
-	})
-
 	if (count > 0) {
 		afterRemoveSegments(cache, rundownId, segmentIds)
 	}
