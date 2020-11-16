@@ -132,6 +132,7 @@ import {
 import { removeEmptyPlaylists } from '../rundownPlaylist'
 import { profiler } from '../profiler'
 import { syncPlayheadInfinitesForNextPartInstance } from '../playout/infinites'
+import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -1090,6 +1091,13 @@ function handleRemovedSegment(
 						`handleRemovedSegment: removeSegments: Segment ${segmentExternalId} not found`
 					)
 				}
+
+				cache.defer(() => {
+					IngestDataCache.remove({
+						segmentId: segmentId,
+						rundownId: rundownId,
+					})
+				})
 			}
 		}
 
