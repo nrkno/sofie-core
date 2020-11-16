@@ -280,6 +280,7 @@ export const RundownViewBuckets = withTranslation()(
 		clearContextBucket = () => {
 			this.setState({
 				contextBucket: undefined,
+				contextBucketAdLib: undefined,
 			})
 		}
 
