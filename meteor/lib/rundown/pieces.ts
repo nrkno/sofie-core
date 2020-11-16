@@ -7,7 +7,7 @@ import {
 	TimelineObjGroupRundown,
 	OnGenerateTimelineObjExt,
 } from '../collections/Timeline'
-import { TSR, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
+import { TSR, getPieceGroupId } from '@sofie-automation/blueprints-integration'
 import { literal, unprotectString, protectString } from '../lib'
 import { clone } from 'underscore'
 import { PieceInstanceId } from '../collections/PieceInstances'

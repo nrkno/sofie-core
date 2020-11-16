@@ -5,7 +5,7 @@ import { ISourceLayerUi, IOutputLayerUi, PartUi, PieceUi } from '../SegmentTimel
 import { RundownUtils } from '../../../lib/rundown'
 import { faCut } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { PieceLifespan, VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { PieceLifespan, VTContent } from '@sofie-automation/blueprints-integration'
 import { OffsetPosition } from '../../../utils/positions'
 
 export interface ICustomLayerItemProps {

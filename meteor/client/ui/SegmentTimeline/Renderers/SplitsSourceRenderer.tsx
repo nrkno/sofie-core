@@ -6,7 +6,7 @@ import { FloatingInspector } from '../../FloatingInspector'
 import ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 
-import { SourceLayerType, SplitsContent } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, SplitsContent } from '@sofie-automation/blueprints-integration'
 import { literal } from '../../../../lib/lib'
 import * as _ from 'underscore'
 import { RundownUtils } from '../../../lib/rundown'

@@ -1,6 +1,6 @@
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedStringProperties, ProtectedString } from '../lib'
-import { IBlueprintActionManifest } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintActionManifest } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { PartId } from './Parts'
 import { RundownId } from './Rundowns'

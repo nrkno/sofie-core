@@ -10,7 +10,7 @@ This is a part of the [**Sofie** TV News Studio Automation System](https://githu
 
 ## Typescript
 ```typescript
-import { CoreConnection, PeripheralDeviceAPI } from 'tv-automation-server-core-integration'
+import { CoreConnection, PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 
 // Set up our basic credentials:
 let core = new CoreConnection({

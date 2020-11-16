@@ -13,7 +13,7 @@ import { Lottie } from '@crello/react-lottie'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { VTContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PieceStatusIcon } from '../PieceStatusIcon'
 import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { CriticalIconSmall, WarningIconSmall } from '../../../lib/notificationIcons'

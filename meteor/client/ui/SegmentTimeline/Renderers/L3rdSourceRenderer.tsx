@@ -5,7 +5,7 @@ import { Time } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import Moment from 'react-moment'
 
-import { PieceLifespan, NoraContent } from 'tv-automation-sofie-blueprints-integration'
+import { PieceLifespan, NoraContent } from '@sofie-automation/blueprints-integration'
 
 import { FloatingInspector } from '../../FloatingInspector'
 

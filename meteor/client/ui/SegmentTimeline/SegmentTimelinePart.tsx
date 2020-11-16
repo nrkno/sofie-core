@@ -19,7 +19,7 @@ import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigItemValue } from '@sofie-automation/blueprints-integration'
 
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { IContextMenuContext, RundownViewEvents } from '../RundownView'

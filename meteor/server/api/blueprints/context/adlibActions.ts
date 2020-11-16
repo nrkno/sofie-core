@@ -21,7 +21,7 @@ import {
 	IBlueprintResolvedPieceInstance,
 	OmitId,
 	IBlueprintMutatablePart,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { IAdLibListItem } from '../AdLibListItem'
-import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 
 interface IPropsHeader {
 	adLibListItem: IAdLibListItem

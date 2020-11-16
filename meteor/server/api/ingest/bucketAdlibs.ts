@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
+import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../lib/collections/Studios'
 import { loadShowStyleBlueprint } from '../blueprints/cache'

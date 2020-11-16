@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { ClipTrimPanel } from './ClipTrimPanel'
-import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent, VTEditableParameters } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece } from '../../../lib/collections/Pieces'
 import { ModalDialog } from '../../lib/ModalDialog'

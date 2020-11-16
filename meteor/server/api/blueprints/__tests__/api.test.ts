@@ -3,7 +3,7 @@ import { setupDefaultStudioEnvironment, packageBlueprint } from '../../../../__m
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { literal, Omit, getRandomId, protectString } from '../../../../lib/lib'
 import { Blueprints, Blueprint } from '../../../../lib/collections/Blueprints'
-import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { CoreSystem, SYSTEM_ID, ICoreSystem } from '../../../../lib/collections/CoreSystem'
 import { BlueprintAPIMethods } from '../../../../lib/api/blueprint'
 import { Meteor } from 'meteor/meteor'

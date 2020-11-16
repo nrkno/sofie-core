@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
-import { SourceLayerType, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import {
 	getCurrentTime,
 	literal,

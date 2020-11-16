@@ -28,7 +28,7 @@ const PackageInfo = require('../package.json')
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 import { profiler } from './api/profiler'
 import * as path from 'path'
-import { TMP_TSR_VERSION } from 'tv-automation-sofie-blueprints-integration'
+import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
 
 export { PackageInfo }
 
@@ -286,10 +286,10 @@ function checkBlueprintCompability(blueprint: Blueprint) {
 
 	const integrationStatus = checkDatabaseVersion(
 		parseVersion(blueprint.integrationVersion || '0.0.0'),
-		parseRange('~' + systemVersions['tv-automation-sofie-blueprints-integration']),
+		parseRange('~' + systemVersions['@sofie-automation/blueprints-integration']),
 		'Blueprint has to be updated',
 		'blueprint.integrationVersion',
-		'core.tv-automation-sofie-blueprints-integration'
+		'core.@sofie-automation/blueprints-integration'
 	)
 	const tsrStatus = checkDatabaseVersion(
 		parseVersion(blueprint.TSRVersion || '0.0.0'),
@@ -410,7 +410,7 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 
 	let dependencies: any = PackageInfo.dependencies
 	if (dependencies) {
-		const libNames: string[] = ['mos-connection', 'tv-automation-sofie-blueprints-integration', 'superfly-timeline']
+		const libNames: string[] = ['mos-connection', '@sofie-automation/blueprints-integration', 'superfly-timeline']
 
 		const sanitizeVersion = (v: string) => {
 			if (v.match(/git/i) || v.match(/file:../i)) {

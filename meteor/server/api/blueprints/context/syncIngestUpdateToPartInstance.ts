@@ -8,7 +8,7 @@ import {
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
 	SyncIngestUpdateToPartInstanceContext as ISyncIngestUpdateToPartInstanceContext,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { PartInstance, DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import _ from 'underscore'
 import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'

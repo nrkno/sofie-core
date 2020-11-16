@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "yarn workspaces run build",
-    "watch": "concurrently --prefix \"[{name}]\" --names \"BI,SCI\" -c \"bgBlue.bold,bgGreen.bold\" \"yarn workspace tv-automation-sofie-blueprints-integration build:main --watch\" \"yarn workspace tv-automation-server-core-integration build:main --watch\"",
+    "watch": "concurrently --prefix \"[{name}]\" --names \"BI,SCI\" -c \"bgBlue.bold,bgGreen.bold\" \"yarn workspace @sofie-automation/blueprints-integration build:main --watch\" \"yarn workspace @sofie-automation/server-core-integration build:main --watch\"",
     "docs": "yarn typedoc ."
   },
   "devDependencies": {

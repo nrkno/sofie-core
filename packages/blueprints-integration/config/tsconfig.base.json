@@ -10,7 +10,7 @@
 		"baseUrl": "../",
 		"paths": {
 			"*": ["../node_modules/*"],
-			"tv-automation-sofie-blueprints-integration": ["../src/index.ts"]
+			"@sofie-automation/blueprints-integration": ["../src/index.ts"]
 		},
 		"declaration": true,
 		"importHelpers": true,

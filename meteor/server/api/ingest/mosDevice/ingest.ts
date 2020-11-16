@@ -20,7 +20,7 @@ import {
 	getCurrentTime,
 	normalizeArray,
 } from '../../../../lib/lib'
-import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
+import { IngestPart, IngestSegment, IngestRundown } from '@sofie-automation/blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
 	rundownPlaylistSyncFunction,

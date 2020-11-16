@@ -1,4 +1,4 @@
-import { TSR } from 'tv-automation-sofie-blueprints-integration'
+import { TSR } from '@sofie-automation/blueprints-integration'
 
 /**
  * The basic PlayoutDevice settings structure.

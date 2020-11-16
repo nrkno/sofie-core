@@ -1,4 +1,4 @@
-import { TSR } from 'tv-automation-sofie-blueprints-integration'
+import { TSR } from '@sofie-automation/blueprints-integration'
 import { StudioId } from '../collections/Studios'
 
 export interface NewStudiosAPI {

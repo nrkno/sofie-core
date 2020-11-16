@@ -12,7 +12,7 @@ import {
 	IBlueprintPieceInstance,
 	Time,
 	IBlueprintResolvedPieceInstance,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { Piece, PieceId } from './Pieces'
 import { PartInstanceId } from './PartInstances'

@@ -8,7 +8,7 @@ import { faClipboardCheck, faDatabase, faCoffee, faEye, faEyeSlash } from '@fort
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../../lib/logging'
 import { GetMigrationStatusResult, RunMigrationResult, MigrationChunk } from '../../../lib/api/migration'
-import { MigrationStepInput, MigrationStepInputResult } from 'tv-automation-sofie-blueprints-integration'
+import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { MeteorCall } from '../../../lib/api/methods'

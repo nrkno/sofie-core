@@ -3,7 +3,7 @@ import {
 	PartHoldMode,
 	IBlueprintMutatablePart,
 	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 
 const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	externalId: '',

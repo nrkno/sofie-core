@@ -4,7 +4,7 @@ import {
 	LookaheadMode,
 	Timeline as TimelineTypes,
 	OnGenerateTimelineObj,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { OnGenerateTimelineObjExt, TimelineObjRundown } from '../../../../lib/collections/Timeline'
 import { PartId } from '../../../../lib/collections/Parts'

@@ -7,7 +7,7 @@ import {
 	TimelineObjHoldMode,
 	TSR,
 	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { DeepReadonly } from 'utility-types'
 import { logger } from '../../../lib/logging'
 import {

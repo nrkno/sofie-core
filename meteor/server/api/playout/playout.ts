@@ -17,7 +17,7 @@ import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections/Studios'
-import { PartHoldMode } from 'tv-automation-sofie-blueprints-integration'
+import { PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportRundownHasStarted,
