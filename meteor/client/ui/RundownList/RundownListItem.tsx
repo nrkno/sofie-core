@@ -4,7 +4,7 @@ import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Studio } from '../../../lib/collections/Studios'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
-import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import {
@@ -48,6 +48,11 @@ export interface IRundownListItemProps {
 	playlistId: RundownPlaylistId
 	isOnlyRundownInPlaylist?: boolean
 	action?: IRundownPlaylistUiAction
+}
+
+interface IRundownListItemTrackedProps {
+	studio: Studio | undefined
+	showStyle: ShowStyleBase | undefined
 }
 
 interface IRundownDragSourceProps {
@@ -162,7 +167,28 @@ const dragLayerCollect: DragLayerCollector<
 	}
 }
 
-export const RundownListItem = withTranslation()(
+export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, IRundownListItemTrackedProps>(
+	(props: Translated<IRundownListItemProps>) => {
+		let studio: Studio | undefined = undefined
+		let showStyle: ShowStyleBase | undefined = undefined
+
+		try {
+			studio = props.rundown.getStudio()
+		} catch (e) {
+			// this is fine, we'll probably have it eventually and the component can render without it
+		}
+		try {
+			showStyle = props.rundown.getShowStyleBase()
+		} catch (e) {
+			// this is fine, we'll probably have it eventually and the component can render without it
+		}
+
+		return {
+			studio,
+			showStyle,
+		}
+	}
+)(
 	DragSource(
 		RundownListDragDropTypes.RUNDOWN,
 		dragSpec,
@@ -174,19 +200,21 @@ export const RundownListItem = withTranslation()(
 			dropCollect
 		)(
 			class RundownListItem extends React.Component<
-				Translated<IRundownListItemProps> & IRundownDragSourceProps & IRundownDropTargetProps
+				Translated<IRundownListItemProps> &
+					IRundownDragSourceProps &
+					IRundownDropTargetProps &
+					IRundownListItemTrackedProps
 			> {
-				studio: Studio
-				showStyle: ShowStyleBase
-
-				constructor(props: Translated<IRundownListItemProps> & IRundownDragSourceProps & IRundownDropTargetProps) {
+				constructor(
+					props: Translated<IRundownListItemProps> &
+						IRundownDragSourceProps &
+						IRundownDropTargetProps &
+						IRundownListItemTrackedProps
+				) {
 					super(props)
 
-					this.studio = this.props.rundown.getStudio()
-					this.showStyle = this.props.rundown.getShowStyleBase()
-
 					this.state = {
-						selectedView: UIStateStorage.getItemString(`rundownList.${this.studio._id}`, 'defaultView', 'default'),
+						selectedView: UIStateStorage.getItemString(`rundownList.${props.studio?._id}`, 'defaultView', 'default'),
 					}
 
 					this.props.dragPreview(getEmptyImage()) // override default dom node screenshot behavior
@@ -200,7 +228,7 @@ export const RundownListItem = withTranslation()(
 					])
 				}
 
-				componentDidUpdate() {
+				componentDidUpdate(prevProps) {
 					const { action } = this.props
 					if (action && action.targetPlaylistId === this.props.playlistId) {
 						const { type, rundownId } = action
@@ -211,6 +239,16 @@ export const RundownListItem = withTranslation()(
 							default:
 								console.debug(`Unknown action type ${type}`, this.props.action)
 						}
+					}
+
+					if (prevProps.studio !== this.props.studio) {
+						this.setState({
+							selectedView: UIStateStorage.getItemString(
+								`rundownList.${this.props.studio?._id}`,
+								'defaultView',
+								'default'
+							),
+						})
 					}
 				}
 
@@ -235,7 +273,7 @@ export const RundownListItem = withTranslation()(
 							renderTooltips={isDragging !== true}
 							rundownViewUrl={rundownViewUrl}
 							rundown={rundown}
-							showStyleName={this.showStyle.name}
+							showStyleName={this.props.showStyle?.name || ''}
 							showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
 							confirmDeleteRundownHandler={
 								(rundown.unsynced && getAllowStudio()) || userCanConfigure || getAllowService()

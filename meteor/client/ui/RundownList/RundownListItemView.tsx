@@ -18,7 +18,7 @@ interface IRundownListItemViewProps {
 	rundownViewUrl?: string
 	rundown: Rundown
 	showStyleBaseURL?: string
-	showStyleName: string
+	showStyleName: string | undefined
 	confirmReSyncRundownHandler?: () => void
 	confirmDeleteRundownHandler?: () => void
 	isDragLayer: boolean
@@ -67,7 +67,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			</span>
 			{/* <RundownListItemProblems warnings={warnings} errors={errors} /> */}
 			<span className="rundown-list-item__text">
-				{showStyleBaseURL ? <Link to={showStyleBaseURL}>{showStyleName}</Link> : showStyleName}
+				{showStyleBaseURL ? <Link to={showStyleBaseURL}>{showStyleName}</Link> : showStyleName || ''}
 			</span>
 			<span className="rundown-list-item__text">
 				{rundown.expectedStart ? (
