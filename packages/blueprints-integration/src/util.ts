@@ -1,4 +1,9 @@
 import * as _ from 'underscore'
+// tslint:disable-next-line:no-submodule-imports
+import * as tsrPkgInfo from 'timeline-state-resolver-types/package.json'
+
+/** @deprecated This is temporary and should be removed ASAP. Can we do it better? */
+export const TMP_TSR_VERSION: string = tsrPkgInfo.version
 
 export enum iterateDeeplyEnum {
 	CONTINUE = '$continue',

@@ -23,13 +23,14 @@
     "traceResolution": false,
     "pretty": true,
     "lib": [
-      "es6"
+      "es2018"
     ],
     "types": [
       "node",
-      "jest"
+      // "jest"
     ],
     "typeRoots": [
+      "../../node_modules/@types/",
       "../node_modules/@types/",
       "../src/types/"
     ]

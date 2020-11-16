@@ -16,6 +16,7 @@
 		"importHelpers": true,
 		"listFiles": false,
 		"traceResolution": false,
+		"resolveJsonModule": true,
 		"pretty": true,
 		"lib": ["es2018"],
 		"types": [

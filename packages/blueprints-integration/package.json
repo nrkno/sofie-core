@@ -1,97 +1,97 @@
 {
-  "name": "tv-automation-sofie-blueprints-integration",
-  "version": "2.3.1",
-  "description": "Library to define the interaction between core and the blueprints.",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nrkno/tv-automation-sofie-blueprints-integration.git"
-  },
-  "bugs": {
-    "url": "https://github.com/nrkno/tv-automation-sofie-blueprints-integration/issues"
-  },
-  "homepage": "https://github.com/nrkno/tv-automation-sofie-blueprints-integration#readme",
-  "scripts": {
-    "build": "trash dist && yarn build:main",
-    "build:main": "tsc -p tsconfig.build.json",
-    "lint": "tslint --project tsconfig.json --config tslint.json",
-    "unit": "jest",
-    "test": "yarn lint && yarn unit",
-    "watch": "jest --watch",
-    "cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
-    "cov-open": "open-cli coverage/lcov-report/index.html",
-    "send-coverage": "codecov",
-    "docs": "yarn docs:html && open-cli docs/index.html",
-    "docs:test": "yarn docs:html",
-    "docs:html": "typedoc src/index.ts --excludePrivate --mode file --theme minimal --out docs",
-    "docs:json": "typedoc --mode file --json docs/typedoc.json src/index.ts",
-    "docs:publish": "yarn docs:html && gh-pages -d docs",
-    "changelog": "standard-version",
-    "release": "yarn reset && yarn test && yarn docs:publish && yarn changelog",
-    "reset": "git clean -dfx && git reset --hard && yarn",
-    "validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
-    "validate:dev-dependencies": "yarn audit --groups devDependencies",
-    "license-validate": "node-license-validator -p -d --allow-licenses MIT BSD BSD-3-Clause 0BSD ISC Apache Unlicense"
-  },
-  "engines": {
-    "node": ">=10.10"
-  },
-  "files": [
-    "/dist",
-    "/CHANGELOG.md",
-    "/README.md",
-    "/LICENSE"
-  ],
-  "devDependencies": {
-    "@types/jest": "^26.0.14",
-    "@types/node": "^12.11.7",
-    "@types/underscore": "^1.8.13",
-    "codecov": "^3.0.2",
-    "gh-pages": "^3.0.0",
-    "husky": "^4.2.5",
-    "jest": "^26.0.1",
-    "jest-haste-map": "^26.0.1",
-    "jest-resolve": "^26.0.1",
-    "lint-staged": "^10.2.7",
-    "node-license-validator": "^1.3.0",
-    "open-cli": "^6.0.1",
-    "prettier": "^2.0.5",
-    "sleep-ms": "^2.0.1",
-    "standard-version": "^9.0.0",
-    "trash-cli": "^3.0.0",
-    "ts-jest": "^26.1.0",
-    "tslint": "^6.1.2",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-plugin-prettier": "^2.0.1",
-    "typedoc": "^0.19.2",
-    "typescript": "~4.0"
-  },
-  "dependencies": {
-    "moment": "2.29.1",
-    "timeline-state-resolver-types": "5.1.1",
-    "tslib": "^2.0.3",
-    "underscore": "1.11.0"
-  },
-  "resolutions": {
-    "node-license-validator/**/minimist": "^1.2.3"
-  },
-  "standard-version": {
-    "message": "chore(release): %s [skip ci]",
-    "tagPrefix": ""
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.{js,css,json,md,scss}": [
-      "prettier --write"
-    ],
-    "*.{ts,tsx}": [
-      "npm run lint --fix"
-    ]
-  }
+	"name": "tv-automation-sofie-blueprints-integration",
+	"version": "2.3.1",
+	"description": "Library to define the interaction between core and the blueprints.",
+	"main": "dist/index.js",
+	"typings": "dist/index.d.ts",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nrkno/tv-automation-sofie-blueprints-integration.git"
+	},
+	"bugs": {
+		"url": "https://github.com/nrkno/tv-automation-sofie-blueprints-integration/issues"
+	},
+	"homepage": "https://github.com/nrkno/tv-automation-sofie-blueprints-integration#readme",
+	"scripts": {
+		"build": "trash dist && yarn build:main",
+		"build:main": "tsc -p tsconfig.build.json",
+		"lint": "tslint --project tsconfig.json --config tslint.json",
+		"unit": "jest",
+		"test": "yarn lint && yarn unit",
+		"watch": "jest --watch",
+		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
+		"cov-open": "open-cli coverage/lcov-report/index.html",
+		"send-coverage": "codecov -p ../..",
+		"docs": "yarn docs:html && open-cli docs/index.html",
+		"docs:test": "yarn docs:html",
+		"docs:html": "typedoc src/index.ts --excludePrivate --mode file --theme minimal --out docs",
+		"docs:json": "typedoc --mode file --json docs/typedoc.json src/index.ts",
+		"docs:publish": "yarn docs:html && gh-pages -d docs",
+		"changelog": "standard-version",
+		"release": "yarn reset && yarn test && yarn docs:publish && yarn changelog",
+		"reset": "git clean -dfx && git reset --hard && yarn",
+		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
+		"validate:dev-dependencies": "yarn audit --groups devDependencies",
+		"license-validate": "node-license-validator -p -d --allow-licenses MIT BSD BSD-3-Clause 0BSD ISC Apache Unlicense"
+	},
+	"engines": {
+		"node": ">=10.10"
+	},
+	"files": [
+		"/dist",
+		"/CHANGELOG.md",
+		"/README.md",
+		"/LICENSE"
+	],
+	"devDependencies": {
+		"@types/jest": "^26.0.14",
+		"@types/node": "^12.11.7",
+		"@types/underscore": "^1.8.13",
+		"codecov": "^3.0.2",
+		"gh-pages": "^3.0.0",
+		"husky": "^4.2.5",
+		"jest": "^26.0.1",
+		"jest-haste-map": "^26.0.1",
+		"jest-resolve": "^26.0.1",
+		"lint-staged": "^10.2.7",
+		"node-license-validator": "^1.3.0",
+		"open-cli": "^6.0.1",
+		"prettier": "^2.0.5",
+		"sleep-ms": "^2.0.1",
+		"standard-version": "^9.0.0",
+		"trash-cli": "^3.0.0",
+		"ts-jest": "^26.1.0",
+		"tslint": "^6.1.2",
+		"tslint-config-prettier": "^1.18.0",
+		"tslint-plugin-prettier": "^2.0.1",
+		"typedoc": "^0.19.2",
+		"typescript": "~4.0"
+	},
+	"dependencies": {
+		"moment": "2.29.1",
+		"timeline-state-resolver-types": "5.1.1",
+		"tslib": "^2.0.3",
+		"underscore": "1.11.0"
+	},
+	"resolutions": {
+		"node-license-validator/**/minimist": "^1.2.3"
+	},
+	"standard-version": {
+		"message": "chore(release): %s [skip ci]",
+		"tagPrefix": ""
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "lint-staged"
+		}
+	},
+	"lint-staged": {
+		"*.{js,css,json,md,scss}": [
+			"prettier --write"
+		],
+		"*.{ts,tsx}": [
+			"npm run lint --fix"
+		]
+	}
 }

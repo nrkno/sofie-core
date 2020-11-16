@@ -42,7 +42,7 @@
     "copytypes": "copyfiles -u 1 src/types/* dist",
     "cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
     "cov-open": "open-cli coverage/lcov-report/index.html",
-    "send-coverage": "codecov",
+    "send-coverage": "codecov -p ../..",
     "docs": "yarn docs:html && open-cli docs/index.html",
     "docs:test": "yarn docs:html",
     "docs:html": "typedoc src/index.ts --excludePrivate --mode file --theme minimal --out docs",

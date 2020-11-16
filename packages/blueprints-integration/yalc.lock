@@ -1,8 +1,0 @@
-{
-  "version": "v1",
-  "packages": {
-    "timeline-state-resolver-types": {
-      "signature": "032b46f655b146dcdabbb5f1f0ac914c"
-    }
-  }
-}
