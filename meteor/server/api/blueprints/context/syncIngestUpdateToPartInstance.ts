@@ -82,9 +82,9 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		if (pieceInstance.partInstanceId !== this.partInstance._id) {
 			throw new Error('PieceInstance is not in the right partInstance')
 		}
-		if (pieceInstance.infinite?.fromPreviousPart) {
-			throw new Error('Cannot update an infinite piece that is continued from a previous part')
-		}
+		// if (pieceInstance.infinite?.fromPreviousPart) {
+		// 	throw new Error('Cannot update an infinite piece that is continued from a previous part')
+		// }
 
 		if (updatedPiece.content && updatedPiece.content.timelineObjects) {
 			updatedPiece.content.timelineObjects = postProcessTimelineObjects(
