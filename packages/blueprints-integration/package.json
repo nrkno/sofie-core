@@ -1,18 +1,19 @@
 {
-	"name": "tv-automation-sofie-blueprints-integration",
-	"version": "2.4.0",
+	"name": "@sofie-automation/blueprints-integration",
+	"version": "1.16.0-in-development-R28",
 	"description": "Library to define the interaction between core and the blueprints.",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-sofie-blueprints-integration.git"
+		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"directory": "packages/blueprints-integration"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-sofie-blueprints-integration/issues"
+		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-sofie-blueprints-integration#readme",
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/blueprints-integration#readme",
 	"scripts": {
 		"build": "trash dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
@@ -23,13 +24,8 @@
 		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
 		"send-coverage": "codecov -p ../..",
-		"docs": "yarn docs:html && open-cli docs/index.html",
-		"docs:test": "yarn docs:html",
-		"docs:html": "typedoc src/index.ts --excludePrivate --mode file --theme minimal --out docs",
-		"docs:json": "typedoc --mode file --json docs/typedoc.json src/index.ts",
-		"docs:publish": "yarn docs:html && gh-pages -d docs",
 		"changelog": "standard-version",
-		"release": "yarn reset && yarn test && yarn docs:publish && yarn changelog",
+		"release": "yarn reset && yarn test && yarn changelog",
 		"reset": "git clean -dfx && git reset --hard && yarn",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
@@ -65,7 +61,6 @@
 		"tslint": "^6.1.2",
 		"tslint-config-prettier": "^1.18.0",
 		"tslint-plugin-prettier": "^2.0.1",
-		"typedoc": "^0.19.2",
 		"typescript": "~4.0"
 	},
 	"dependencies": {
