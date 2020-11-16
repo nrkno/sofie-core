@@ -286,7 +286,7 @@ function checkBlueprintCompability(blueprint: Blueprint) {
 
 	const integrationStatus = checkDatabaseVersion(
 		parseVersion(blueprint.integrationVersion || '0.0.0'),
-		parseRange('~' + systemVersions['@sofie-automation/blueprints-integration']),
+		parseRange('~' + PackageInfo.version),
 		'Blueprint has to be updated',
 		'blueprint.integrationVersion',
 		'core.@sofie-automation/blueprints-integration'
@@ -410,7 +410,7 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 
 	let dependencies: any = PackageInfo.dependencies
 	if (dependencies) {
-		const libNames: string[] = ['mos-connection', '@sofie-automation/blueprints-integration', 'superfly-timeline']
+		const libNames: string[] = ['mos-connection', 'superfly-timeline']
 
 		const sanitizeVersion = (v: string) => {
 			if (v.match(/git/i) || v.match(/file:../i)) {

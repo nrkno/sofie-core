@@ -10,7 +10,6 @@ describe('coreSystem', () => {
 			'mos-connection': expect.stringMatching(/^(\d+)\.(\d+)\.(\d+)/),
 			'superfly-timeline': expect.stringMatching(/^(\d+)\.(\d+)\.(\d+)/),
 			'timeline-state-resolver-types': expect.stringMatching(/^(\d+)\.(\d+)\.(\d+)/),
-			'@sofie-automation/blueprints-integration': expect.stringMatching(/^(\d+)\.(\d+)\.(\d+)/),
 		})
 	})
 })
