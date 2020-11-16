@@ -1,4 +1,3 @@
-
 export interface DeviceConfigManifest {
 	deviceConfig: ConfigManifestEntry[]
 	deviceOAuthFlow?: DeviceOAuthFlow
@@ -25,10 +24,14 @@ export enum ConfigManifestEntryType {
 	INT = 'int',
 	TABLE = 'table',
 	OBJECT = 'object',
-	ENUM = 'enum' // @todo: implement
+	ENUM = 'enum', // @todo: implement
 }
 
-export type ConfigManifestEntry = ConfigManifestEntryBase | TableConfigManifestEntry | ConfigManifestEnumEntry | SubDeviceConfigManifestEntry
+export type ConfigManifestEntry =
+	| ConfigManifestEntryBase
+	| TableConfigManifestEntry
+	| ConfigManifestEnumEntry
+	| SubDeviceConfigManifestEntry
 export interface ConfigManifestEntryBase {
 	id: string
 	name: string

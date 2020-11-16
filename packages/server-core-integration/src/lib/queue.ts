@@ -1,17 +1,18 @@
 // Make sure not to run next function until previous function has resolved (or rejected)
-type Fcn = {
-	reject: Function
-	resolve: Function
-	fcn: () => Promise<any>
+type Fcn<T = any> = {
+	reject: (err: Error) => void
+	resolve: (res: T) => void
+	fcn: () => Promise<T>
 }
 export class Queue {
-	private _isRunning: boolean = false
+	private _isRunning = false
 	private _queue: Fcn[] = []
-	putOnQueue<T> (fcn: () => Promise<T>): Promise<T> {
-
+	putOnQueue<T>(fcn: () => Promise<T>): Promise<T> {
 		const p = new Promise<T>((resolve, reject) => {
 			this._queue.push({
-				fcn, resolve, reject
+				fcn,
+				resolve,
+				reject,
 			})
 			setTimeout(() => {
 				this.checkQueue()
@@ -20,31 +21,30 @@ export class Queue {
 
 		return p
 	}
-	private checkQueue () {
+	private checkQueue() {
 		if (!this._isRunning) {
-
 			const nextOnQueue = this._queue.shift()
 			if (nextOnQueue) {
-
 				this._isRunning = true
 
 				try {
-					nextOnQueue.fcn()
-					.then((result) => {
-						nextOnQueue.resolve(result)
-						this._isRunning = false
-						this.checkQueue()
-					}, (error) => {
-						nextOnQueue.reject(error)
-						this._isRunning = false
-						this.checkQueue()
-					})
+					nextOnQueue.fcn().then(
+						(result) => {
+							nextOnQueue.resolve(result)
+							this._isRunning = false
+							this.checkQueue()
+						},
+						(error) => {
+							nextOnQueue.reject(error)
+							this._isRunning = false
+							this.checkQueue()
+						}
+					)
 				} catch (error) {
 					nextOnQueue.reject(error)
 					this._isRunning = false
 					this.checkQueue()
 				}
-
 			}
 		}
 	}

@@ -1,6 +1,5 @@
 import { CoreConnection } from '../index'
 import { PeripheralDeviceAPI as P, PeripheralDeviceAPI } from '../lib/corePeripherals'
-import * as _ from 'underscore'
 import { DDPConnectorOptions } from '../lib/ddpClient'
 jest.mock('faye-websocket')
 jest.mock('got')
@@ -12,11 +11,10 @@ process.on('unhandledRejection', (reason) => {
 const orgSetTimeout = setTimeout
 
 describe('coreConnection', () => {
-
 	const coreHost = '127.0.0.1'
 	const corePort = 3000
 
-	function wait (time: number): Promise<void> {
+	function wait(time: number): Promise<void> {
 		return new Promise((resolve) => {
 			orgSetTimeout(() => {
 				resolve()
@@ -25,19 +23,18 @@ describe('coreConnection', () => {
 	}
 
 	test('Just setup CoreConnection', async () => {
-
-		let core = new CoreConnection({
+		const core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
 			deviceCategory: P.DeviceCategory.PLAYOUT,
 			deviceType: P.DeviceType.PLAYOUT,
 			deviceSubType: P.SUBTYPE_PROCESS,
-			deviceName: 'Jest test framework'
+			deviceName: 'Jest test framework',
 		})
 
-		let onConnectionChanged = jest.fn()
-		let onConnected = jest.fn()
-		let onDisconnected = jest.fn()
+		const onConnectionChanged = jest.fn()
+		const onConnected = jest.fn()
+		const onDisconnected = jest.fn()
 		core.onConnectionChanged(onConnectionChanged)
 		core.onConnected(onConnected)
 		core.onDisconnected(onDisconnected)
@@ -46,20 +43,19 @@ describe('coreConnection', () => {
 	})
 
 	test('Test connection and basic Core functionality', async () => {
-
-		let core = new CoreConnection({
+		const core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
 			deviceCategory: P.DeviceCategory.PLAYOUT,
 			deviceType: P.DeviceType.PLAYOUT,
 			deviceSubType: P.SUBTYPE_PROCESS,
-			deviceName: 'Jest test framework'
+			deviceName: 'Jest test framework',
 		})
 
-		let onConnectionChanged = jest.fn()
-		let onConnected = jest.fn()
-		let onDisconnected = jest.fn()
-		let onError = jest.fn()
+		const onConnectionChanged = jest.fn()
+		const onConnected = jest.fn()
+		const onDisconnected = jest.fn()
+		const onError = jest.fn()
 		core.onConnectionChanged(onConnectionChanged)
 		core.onConnected(onConnected)
 		core.onDisconnected(onDisconnected)
@@ -71,7 +67,7 @@ describe('coreConnection', () => {
 
 		let id = await core.init({
 			host: coreHost,
-			port: corePort
+			port: corePort,
 		})
 
 		expect(core.connected).toEqual(true)
@@ -86,36 +82,36 @@ describe('coreConnection', () => {
 
 		let statusResponse = await core.setStatus({
 			statusCode: P.StatusCode.WARNING_MAJOR,
-			messages: ['testing testing']
+			messages: ['testing testing'],
 		})
 
 		expect(statusResponse).toMatchObject({
-			statusCode: P.StatusCode.WARNING_MAJOR
+			statusCode: P.StatusCode.WARNING_MAJOR,
 		})
 
 		statusResponse = await core.setStatus({
-			statusCode: P.StatusCode.GOOD
+			statusCode: P.StatusCode.GOOD,
 		})
 
 		expect(statusResponse).toMatchObject({
-			statusCode: P.StatusCode.GOOD
+			statusCode: P.StatusCode.GOOD,
 		})
 
 		// Observe data:
-		let observer = core.observe('peripheralDevices')
+		const observer = core.observe('peripheralDevices')
 		observer.added = jest.fn()
 		observer.changed = jest.fn()
 		observer.removed = jest.fn()
 
 		// Subscribe to data:
-		let coll0 = core.getCollection('peripheralDevices')
+		const coll0 = core.getCollection('peripheralDevices')
 		expect(coll0.findOne({ _id: id })).toBeFalsy()
-		let subId = await core.subscribe('peripheralDevices', {
-			_id: id
+		const subId = await core.subscribe('peripheralDevices', {
+			_id: id,
 		})
-		let coll1 = core.getCollection('peripheralDevices')
+		const coll1 = core.getCollection('peripheralDevices')
 		expect(coll1.findOne({ _id: id })).toMatchObject({
-			_id: id
+			_id: id,
 		})
 		expect(observer.added).toHaveBeenCalledTimes(1)
 
@@ -124,12 +120,12 @@ describe('coreConnection', () => {
 		// Call a method which will throw error:
 		await expect(core.callMethod('peripheralDevice.testMethod', ['abcd', true])).rejects.toMatchObject({
 			error: 418,
-			reason: /error/
+			reason: /error/,
 		})
 		// Call an unknown method
 		await expect(core.callMethod('myunknownMethod123', ['a', 'b'])).rejects.toMatchObject({
 			error: 404,
-			reason: /error/
+			reason: /error/,
 		})
 
 		// Unsubscribe:
@@ -146,10 +142,12 @@ describe('coreConnection', () => {
 		expect(id).toEqual(core.deviceId)
 
 		// Set the status now (should cause an error)
-		await expect(core.setStatus({
-			statusCode: P.StatusCode.GOOD
-		})).rejects.toMatchObject({
-			error: 404
+		await expect(
+			core.setStatus({
+				statusCode: P.StatusCode.GOOD,
+			})
+		).rejects.toMatchObject({
+			error: 404,
 		})
 
 		expect(onConnectionChanged).toHaveBeenCalledTimes(1)
@@ -166,21 +164,20 @@ describe('coreConnection', () => {
 	})
 
 	test('Connection timeout', async () => {
-
-		let core = new CoreConnection({
+		const core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
 			deviceCategory: P.DeviceCategory.PLAYOUT,
 			deviceType: P.DeviceType.PLAYOUT,
 			deviceSubType: P.SUBTYPE_PROCESS,
-			deviceName: 'Jest test framework'
+			deviceName: 'Jest test framework',
 		})
 
-		let onConnectionChanged = jest.fn()
-		let onConnected = jest.fn()
-		let onDisconnected = jest.fn()
-		let onFailed = jest.fn()
-		let onError = jest.fn()
+		const onConnectionChanged = jest.fn()
+		const onConnected = jest.fn()
+		const onDisconnected = jest.fn()
+		const onFailed = jest.fn()
+		const onError = jest.fn()
 		core.onConnectionChanged(onConnectionChanged)
 		core.onConnected(onConnected)
 		core.onDisconnected(onDisconnected)
@@ -194,7 +191,7 @@ describe('coreConnection', () => {
 		try {
 			await core.init({
 				host: '127.0.0.999',
-				port: corePort
+				port: corePort,
 			})
 		} catch (e) {
 			err = e
@@ -207,21 +204,20 @@ describe('coreConnection', () => {
 	})
 
 	test('Connection recover from close', async () => {
-
-		let core = new CoreConnection({
+		const core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
 			deviceCategory: P.DeviceCategory.PLAYOUT,
 			deviceType: P.DeviceType.PLAYOUT,
 			deviceSubType: P.SUBTYPE_PROCESS,
-			deviceName: 'Jest test framework'
+			deviceName: 'Jest test framework',
 		})
 
-		let onConnectionChanged = jest.fn()
-		let onConnected = jest.fn()
-		let onDisconnected = jest.fn()
-		let onFailed = jest.fn()
-		let onError = jest.fn()
+		const onConnectionChanged = jest.fn()
+		const onConnected = jest.fn()
+		const onDisconnected = jest.fn()
+		const onFailed = jest.fn()
+		const onError = jest.fn()
 		core.onConnectionChanged(onConnectionChanged)
 		core.onConnected(onConnected)
 		core.onDisconnected(onDisconnected)
@@ -233,12 +229,12 @@ describe('coreConnection', () => {
 
 		await core.init({
 			host: coreHost,
-			port: corePort
+			port: corePort,
 		})
 		expect(core.connected).toEqual(true)
 
 		// Force-close the socket:
-		core.ddp.ddpClient && core.ddp.ddpClient.socket.close()
+		core.ddp.ddpClient?.socket?.close()
 
 		await wait(10)
 		expect(core.connected).toEqual(false)
@@ -252,21 +248,20 @@ describe('coreConnection', () => {
 	})
 
 	test('autoSubscription', async () => {
-
-		let core = new CoreConnection({
+		const core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
 			deviceCategory: P.DeviceCategory.PLAYOUT,
 			deviceType: P.DeviceType.PLAYOUT,
 			deviceSubType: P.SUBTYPE_PROCESS,
-			deviceName: 'Jest test framework'
+			deviceName: 'Jest test framework',
 		})
 
-		let onConnectionChanged = jest.fn()
-		let onConnected = jest.fn()
-		let onDisconnected = jest.fn()
-		let onFailed = jest.fn()
-		let onError = jest.fn()
+		const onConnectionChanged = jest.fn()
+		const onConnected = jest.fn()
+		const onDisconnected = jest.fn()
+		const onFailed = jest.fn()
+		const onError = jest.fn()
 		core.onConnectionChanged(onConnectionChanged)
 		core.onConnected(onConnected)
 		core.onDisconnected(onDisconnected)
@@ -278,14 +273,14 @@ describe('coreConnection', () => {
 
 		await core.init({
 			host: coreHost,
-			port: corePort
+			port: corePort,
 		})
 		expect(core.connected).toEqual(true)
 
-		let observerAdded = jest.fn()
-		let observerChanged = jest.fn()
-		let observerRemoved = jest.fn()
-		let observer = core.observe('peripheralDevices')
+		const observerAdded = jest.fn()
+		const observerChanged = jest.fn()
+		const observerRemoved = jest.fn()
+		const observer = core.observe('peripheralDevices')
 		observer.added = observerAdded
 		observer.changed = observerChanged
 		observer.removed = observerRemoved
@@ -296,13 +291,13 @@ describe('coreConnection', () => {
 
 		await core.setStatus({
 			statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
-			messages: ['Jest A ' + Date.now()]
+			messages: ['Jest A ' + Date.now()],
 		})
 		await wait(300)
 		expect(observerChanged).toHaveBeenCalledTimes(1)
 
 		// Force-close the socket:
-		core.ddp.ddpClient && core.ddp.ddpClient.socket.close()
+		core.ddp.ddpClient?.socket?.close()
 
 		await wait(10)
 		expect(core.connected).toEqual(false)
@@ -314,7 +309,7 @@ describe('coreConnection', () => {
 		observerChanged.mockClear()
 		await core.setStatus({
 			statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
-			messages: ['Jest B' + Date.now()]
+			messages: ['Jest B' + Date.now()],
 		})
 		await wait(300)
 		expect(observerChanged).toHaveBeenCalledTimes(1)
@@ -323,21 +318,20 @@ describe('coreConnection', () => {
 	})
 
 	test('Connection recover from a close that lasts some time', async () => {
-
-		let core = new CoreConnection({
+		const core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
 			deviceCategory: P.DeviceCategory.PLAYOUT,
 			deviceType: P.DeviceType.PLAYOUT,
 			deviceSubType: P.SUBTYPE_PROCESS,
-			deviceName: 'Jest test framework'
+			deviceName: 'Jest test framework',
 		})
 
-		let onConnectionChanged = jest.fn()
-		let onConnected = jest.fn()
-		let onDisconnected = jest.fn()
-		let onFailed = jest.fn()
-		let onError = jest.fn()
+		const onConnectionChanged = jest.fn()
+		const onConnected = jest.fn()
+		const onDisconnected = jest.fn()
+		const onFailed = jest.fn()
+		const onError = jest.fn()
 		core.onConnectionChanged(onConnectionChanged)
 		core.onConnected(onConnected)
 		core.onDisconnected(onDisconnected)
@@ -347,11 +341,11 @@ describe('coreConnection', () => {
 		expect(core.connected).toEqual(false)
 		// Initiate connection to Core:
 
-		let options: DDPConnectorOptions = {
+		const options: DDPConnectorOptions = {
 			host: coreHost,
 			port: corePort,
 			autoReconnect: true,
-			autoReconnectTimer: 100
+			autoReconnectTimer: 100,
 		}
 		await core.init(options)
 		expect(core.connected).toEqual(true)
@@ -360,7 +354,7 @@ describe('coreConnection', () => {
 		options.host = '127.0.0.9'
 		core.ddp.ddpClient && core.ddp.ddpClient.resetOptions(options)
 		// Force-close the socket:
-		core.ddp.ddpClient && core.ddp.ddpClient.socket.close()
+		core.ddp.ddpClient?.socket?.close()
 
 		await wait(10)
 		expect(core.connected).toEqual(false)
@@ -379,46 +373,46 @@ describe('coreConnection', () => {
 	})
 
 	test('Parent connections', async () => {
-		let coreParent = new CoreConnection({
+		const coreParent = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
 			deviceCategory: P.DeviceCategory.PLAYOUT,
 			deviceType: P.DeviceType.PLAYOUT,
 			deviceSubType: P.SUBTYPE_PROCESS,
-			deviceName: 'Jest test framework'
+			deviceName: 'Jest test framework',
 		})
-		let onError = jest.fn()
+		const onError = jest.fn()
 		coreParent.onError(onError)
 
-		let parentOnConnectionChanged = jest.fn()
+		const parentOnConnectionChanged = jest.fn()
 		coreParent.onConnectionChanged(parentOnConnectionChanged)
 
 		let id = await coreParent.init({
 			host: coreHost,
-			port: corePort
+			port: corePort,
 		})
 		expect(coreParent.connected).toEqual(true)
 
 		// Set child connection:
-		let coreChild = new CoreConnection({
+		const coreChild = new CoreConnection({
 			deviceId: 'JestTestChild',
 			deviceToken: 'abcd2',
 			deviceCategory: P.DeviceCategory.PLAYOUT,
 			deviceType: P.DeviceType.PLAYOUT,
 			deviceSubType: P.SUBTYPE_PROCESS,
-			deviceName: 'Jest test framework child'
+			deviceName: 'Jest test framework child',
 		})
 
-		let onChildConnectionChanged = jest.fn()
-		let onChildConnected = jest.fn()
-		let onChildDisconnected = jest.fn()
-		let onChildError = jest.fn()
+		const onChildConnectionChanged = jest.fn()
+		const onChildConnected = jest.fn()
+		const onChildDisconnected = jest.fn()
+		const onChildError = jest.fn()
 		coreChild.onConnectionChanged(onChildConnectionChanged)
 		coreChild.onConnected(onChildConnected)
 		coreChild.onDisconnected(onChildDisconnected)
 		coreChild.onError(onChildError)
 
-		let idChild = await coreChild.init(coreParent)
+		const idChild = await coreChild.init(coreParent)
 
 		expect(idChild).toEqual(coreChild.deviceId)
 		expect(coreChild.connected).toEqual(true)
@@ -431,19 +425,19 @@ describe('coreConnection', () => {
 		// Set some statuses:
 		let statusResponse = await coreChild.setStatus({
 			statusCode: P.StatusCode.WARNING_MAJOR,
-			messages: ['testing testing']
+			messages: ['testing testing'],
 		})
 
 		expect(statusResponse).toMatchObject({
-			statusCode: P.StatusCode.WARNING_MAJOR
+			statusCode: P.StatusCode.WARNING_MAJOR,
 		})
 
 		statusResponse = await coreChild.setStatus({
-			statusCode: P.StatusCode.GOOD
+			statusCode: P.StatusCode.GOOD,
 		})
 
 		expect(statusResponse).toMatchObject({
-			statusCode: P.StatusCode.GOOD
+			statusCode: P.StatusCode.GOOD,
 		})
 
 		// Uninitialize:
@@ -453,10 +447,12 @@ describe('coreConnection', () => {
 		expect(id).toEqual(coreChild.deviceId)
 
 		// Set the status now (should cause an error)
-		await expect(coreChild.setStatus({
-			statusCode: P.StatusCode.GOOD
-		})).rejects.toMatchObject({
-			error: 404
+		await expect(
+			coreChild.setStatus({
+				statusCode: P.StatusCode.GOOD,
+			})
+		).rejects.toMatchObject({
+			error: 404,
 		})
 
 		await coreParent.destroy()
@@ -467,34 +463,34 @@ describe('coreConnection', () => {
 	})
 
 	test('Parent destroy', async () => {
-		let coreParent = new CoreConnection({
+		const coreParent = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
 			deviceCategory: P.DeviceCategory.PLAYOUT,
 			deviceType: P.DeviceType.PLAYOUT,
 			deviceSubType: P.SUBTYPE_PROCESS,
-			deviceName: 'Jest test framework'
+			deviceName: 'Jest test framework',
 		})
-		let onParentError = jest.fn()
+		const onParentError = jest.fn()
 		coreParent.onError(onParentError)
 
 		await coreParent.init({
 			host: coreHost,
-			port: corePort
+			port: corePort,
 		})
 		// Set child connection:
-		let coreChild = new CoreConnection({
+		const coreChild = new CoreConnection({
 			deviceId: 'JestTestChild',
 			deviceToken: 'abcd2',
 			deviceCategory: P.DeviceCategory.PLAYOUT,
 			deviceType: P.DeviceType.PLAYOUT,
 			deviceSubType: 'mos_connection',
-			deviceName: 'Jest test framework child'
+			deviceName: 'Jest test framework child',
 		})
-		let onChildConnectionChanged = jest.fn()
-		let onChildConnected = jest.fn()
-		let onChildDisconnected = jest.fn()
-		let onChildError = jest.fn()
+		const onChildConnectionChanged = jest.fn()
+		const onChildConnected = jest.fn()
+		const onChildDisconnected = jest.fn()
+		const onChildError = jest.fn()
 		coreChild.onConnectionChanged(onChildConnectionChanged)
 		coreChild.onConnected(onChildConnected)
 		coreChild.onDisconnected(onChildDisconnected)
@@ -525,7 +521,7 @@ describe('coreConnection', () => {
 
 		await coreParent.init({
 			host: coreHost,
-			port: corePort
+			port: corePort,
 		})
 
 		await coreChild.init(coreParent)
@@ -545,34 +541,33 @@ describe('coreConnection', () => {
 	})
 
 	test('Child destroy', async () => {
-
-		let coreParent = new CoreConnection({
+		const coreParent = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
 			deviceCategory: P.DeviceCategory.PLAYOUT,
 			deviceType: P.DeviceType.PLAYOUT,
 			deviceSubType: P.SUBTYPE_PROCESS,
-			deviceName: 'Jest test framework'
+			deviceName: 'Jest test framework',
 		})
-		let onParentError = jest.fn()
+		const onParentError = jest.fn()
 		coreParent.onError(onParentError)
 		await coreParent.init({
 			host: coreHost,
-			port: corePort
+			port: corePort,
 		})
 		// Set child connection:
-		let coreChild = new CoreConnection({
+		const coreChild = new CoreConnection({
 			deviceId: 'JestTestChild',
 			deviceToken: 'abcd2',
 			deviceCategory: P.DeviceCategory.PLAYOUT,
 			deviceType: P.DeviceType.PLAYOUT,
 			deviceSubType: 'mos_connection',
-			deviceName: 'Jest test framework child'
+			deviceName: 'Jest test framework child',
 		})
-		let onChildConnectionChanged = jest.fn()
-		let onChildConnected = jest.fn()
-		let onChildDisconnected = jest.fn()
-		let onChildError = jest.fn()
+		const onChildConnectionChanged = jest.fn()
+		const onChildConnected = jest.fn()
+		const onChildDisconnected = jest.fn()
+		const onChildError = jest.fn()
 		coreChild.onConnectionChanged(onChildConnectionChanged)
 		coreChild.onConnected(onChildConnected)
 		coreChild.onDisconnected(onChildDisconnected)
@@ -599,22 +594,21 @@ describe('coreConnection', () => {
 	})
 
 	test('Test callMethodLowPrio', async () => {
-
-		let core = new CoreConnection({
+		const core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
 			deviceCategory: P.DeviceCategory.PLAYOUT,
 			deviceType: P.DeviceType.PLAYOUT,
 			deviceSubType: P.SUBTYPE_PROCESS,
-			deviceName: 'Jest test framework'
+			deviceName: 'Jest test framework',
 		})
 
-		let onError = jest.fn()
+		const onError = jest.fn()
 		core.onError(onError)
 
 		await core.init({
 			host: coreHost,
-			port: corePort
+			port: corePort,
 		})
 
 		expect(core.connected).toEqual(true)
@@ -624,27 +618,30 @@ describe('coreConnection', () => {
 		// Call a low-prio method
 		await expect(core.callMethodLowPrio('peripheralDevice.testMethod', ['low123'])).resolves.toEqual('low123')
 
-		let ps: Promise<any>[] = []
+		const ps: Promise<any>[] = []
 
 		// method should be called before low-prio:
 		let i = 0
-		ps.push(core.callMethodLowPrio('peripheralDevice.testMethod', ['low1'])
-			.then((res) => {
+		ps.push(
+			core.callMethodLowPrio('peripheralDevice.testMethod', ['low1']).then((res) => {
 				expect(res).toEqual('low1')
 				return i++
-			}))
-		ps.push(core.callMethodLowPrio('peripheralDevice.testMethod', ['low2'])
-			.then((res) => {
+			})
+		)
+		ps.push(
+			core.callMethodLowPrio('peripheralDevice.testMethod', ['low2']).then((res) => {
 				expect(res).toEqual('low2')
 				return i++
-			}))
-		ps.push(core.callMethod('peripheralDevice.testMethod', ['normal1'])
-			.then((res) => {
+			})
+		)
+		ps.push(
+			core.callMethod('peripheralDevice.testMethod', ['normal1']).then((res) => {
 				expect(res).toEqual('normal1')
 				return i++
-			}))
+			})
+		)
 
-		let r = await Promise.all(ps)
+		const r = await Promise.all(ps)
 
 		expect(r[0]).toBeGreaterThan(r[2]) // because callMethod should have run before callMethodLowPrio
 		expect(r[1]).toBeGreaterThan(r[2]) // because callMethod should have run before callMethodLowPrio

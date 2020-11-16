@@ -1,28 +1,23 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { EventEmitter } from 'events'
-import {
-	AnyMessage
-} from '../lib/ddpClient'
+import { AnyMessage } from '../lib/ddpClient'
 import * as EJSON from 'ejson'
 // import * as util from 'util'
 
 const literal = <T>(t: T) => t
 
 export class Client extends EventEmitter {
-	private cachedId: string = ''
+	private cachedId = ''
 	private initialized = true
 
-	constructor (
-		_url: string,
-		_protcols?: Array<string> | null,
-		_options?: { [name: string]: unknown }
-	) {
+	constructor(_url: string, _protcols?: Array<string> | null, _options?: { [name: string]: unknown }) {
 		super()
 		setTimeout(() => {
 			this.emit('open')
 		}, 1)
 	}
 
-	send (data: string): void {
+	send(data: string): void {
 		const message = EJSON.parse(data) as AnyMessage
 		// console.log(util.inspect(message, { depth: 10 }))
 		if (message.msg === 'connect') {
@@ -30,9 +25,9 @@ export class Client extends EventEmitter {
 				data: EJSON.stringify(
 					literal<AnyMessage>({
 						msg: 'connected',
-						session: 'wibble'
+						session: 'wibble',
 					})
-				)
+				),
 			})
 			return
 		}
@@ -44,9 +39,9 @@ export class Client extends EventEmitter {
 						literal<AnyMessage>({
 							msg: 'result',
 							id: message.id,
-							result: message.params![0]
+							result: message.params![0],
 						})
-					)
+					),
 				})
 				return
 			}
@@ -56,9 +51,9 @@ export class Client extends EventEmitter {
 						literal<AnyMessage>({
 							msg: 'result',
 							id: message.id,
-							result: { currentTime: Date.now() }
+							result: { currentTime: Date.now() },
 						})
-					)
+					),
 				})
 				return
 			}
@@ -70,25 +65,20 @@ export class Client extends EventEmitter {
 								msg: 'result',
 								id: message.id,
 								result: {
-									statusCode: (message.params![2] as any)
-										.statusCode
-								}
+									statusCode: (message.params![2] as any).statusCode,
+								},
 							})
-						)
+						),
 					})
-					if (
-						(message.params![2] as any).messages[0].indexOf(
-							'Jest '
-						) >= 0
-					) {
+					if ((message.params![2] as any).messages[0].indexOf('Jest ') >= 0) {
 						this.emit('message', {
 							data: EJSON.stringify(
 								literal<AnyMessage>({
 									msg: 'changed',
 									collection: 'peripheralDevices',
-									id: 'JestTest'
+									id: 'JestTest',
 								})
-							)
+							),
 						})
 					}
 				} else {
@@ -99,10 +89,10 @@ export class Client extends EventEmitter {
 								id: message.id,
 								error: {
 									error: 404,
-									errorType: 'Meteor.Error'
-								}
+									errorType: 'Meteor.Error',
+								},
 							})
-						)
+						),
 					})
 				}
 				return
@@ -113,18 +103,16 @@ export class Client extends EventEmitter {
 						literal<AnyMessage>({
 							msg: 'result',
 							id: message.id,
-							result: message.params![3]
-								? undefined
-								: message.params![2],
+							result: message.params![3] ? undefined : message.params![2],
 							error: message.params![3]
 								? {
-									error: 418,
-									reason: 'Bad Wolf error',
-									errorType: 'Meteor.Error'
+										error: 418,
+										reason: 'Bad Wolf error',
+										errorType: 'Meteor.Error',
 								  }
-								: undefined
+								: undefined,
 						})
-					)
+					),
 				})
 				return
 			}
@@ -135,9 +123,9 @@ export class Client extends EventEmitter {
 						literal<AnyMessage>({
 							msg: 'result',
 							id: message.id,
-							result: message.params![0]
+							result: message.params![0],
 						})
-					)
+					),
 				})
 				return
 			}
@@ -149,10 +137,10 @@ export class Client extends EventEmitter {
 						error: {
 							error: 404,
 							reason: 'Where have you gone error',
-							errorType: 'Meteor.Error'
-						}
+							errorType: 'Meteor.Error',
+						},
 					})
-				)
+				),
 			})
 			return
 		}
@@ -164,9 +152,9 @@ export class Client extends EventEmitter {
 						literal<AnyMessage>({
 							msg: 'added',
 							collection: message.name,
-							id: this.cachedId
+							id: this.cachedId,
 						})
-					)
+					),
 				})
 			}, 1)
 			setTimeout(() => {
@@ -174,9 +162,9 @@ export class Client extends EventEmitter {
 					data: EJSON.stringify(
 						literal<AnyMessage>({
 							msg: 'ready',
-							subs: [message.id]
+							subs: [message.id],
 						})
-					)
+					),
 				})
 			}, 100)
 			return
@@ -187,25 +175,25 @@ export class Client extends EventEmitter {
 					literal<AnyMessage>({
 						msg: 'removed',
 						collection: 'peripheralDevices',
-						id: this.cachedId
+						id: this.cachedId,
 					})
-				)
+				),
 			})
 			this.emit('message', {
 				data: JSON.stringify(
 					literal<AnyMessage>({
 						msg: 'nosub',
-						id: message.id
+						id: message.id,
 					})
-				)
+				),
 			})
 		}
 	}
-	close (): void {
+	close(): void {
 		this.emit('close', {
 			code: 200,
 			reason: 'I had a great time!',
-			wasClean: true
+			wasClean: true,
 		})
 	}
 }

@@ -1,4 +1,3 @@
-
 jest.dontMock('ddp')
 import { CoreConnection } from '../index'
 import { PeripheralDeviceAPI as P, PeripheralDeviceAPI } from '../lib/corePeripherals'
@@ -7,7 +6,7 @@ process.on('unhandledRejection', (reason) => {
 	console.log('Unhandled Promise rejection!', reason)
 })
 
-function wait (time: number): Promise<void> {
+function wait(time: number): Promise<void> {
 	return new Promise((resolve) => {
 		setTimeout(() => {
 			resolve()
@@ -18,20 +17,19 @@ const coreHost = '127.0.0.1'
 const corePort = 3000
 
 test('Integration: Test connection and basic Core functionality', async () => {
-
 	// Note: This is an integration test, that require a Core to connect to
 
-	let core = new CoreConnection({
+	const core = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
-		deviceName: 'Jest test framework'
+		deviceName: 'Jest test framework',
 	})
 
-	let onConnectionChanged = jest.fn()
-	let onConnected = jest.fn()
-	let onDisconnected = jest.fn()
-	let onError = jest.fn()
+	const onConnectionChanged = jest.fn()
+	const onConnected = jest.fn()
+	const onDisconnected = jest.fn()
+	const onError = jest.fn()
 	core.onConnectionChanged(onConnectionChanged)
 	core.onConnected(onConnected)
 	core.onDisconnected(onDisconnected)
@@ -43,7 +41,7 @@ test('Integration: Test connection and basic Core functionality', async () => {
 
 	let id = await core.init({
 		host: coreHost,
-		port: corePort
+		port: corePort,
 	})
 
 	expect(core.connected).toEqual(true)
@@ -58,36 +56,36 @@ test('Integration: Test connection and basic Core functionality', async () => {
 
 	let statusResponse = await core.setStatus({
 		statusCode: P.StatusCode.WARNING_MAJOR,
-		messages: ['testing testing']
+		messages: ['testing testing'],
 	})
 
 	expect(statusResponse).toMatchObject({
-		statusCode: P.StatusCode.WARNING_MAJOR
+		statusCode: P.StatusCode.WARNING_MAJOR,
 	})
 
 	statusResponse = await core.setStatus({
-		statusCode: P.StatusCode.GOOD
+		statusCode: P.StatusCode.GOOD,
 	})
 
 	expect(statusResponse).toMatchObject({
-		statusCode: P.StatusCode.GOOD
+		statusCode: P.StatusCode.GOOD,
 	})
 
 	// Observe data:
-	let observer = core.observe('peripheralDevices')
+	const observer = core.observe('peripheralDevices')
 	observer.added = jest.fn()
 	observer.changed = jest.fn()
 	observer.removed = jest.fn()
 
 	// Subscribe to data:
-	let coll0 = core.getCollection('peripheralDevices')
+	const coll0 = core.getCollection('peripheralDevices')
 	expect(coll0.findOne({ _id: id })).toBeFalsy()
-	let subId = await core.subscribe('peripheralDevices', {
-		_id: id
+	const subId = await core.subscribe('peripheralDevices', {
+		_id: id,
 	})
-	let coll1 = core.getCollection('peripheralDevices')
+	const coll1 = core.getCollection('peripheralDevices')
 	expect(coll1.findOne({ _id: id })).toMatchObject({
-		_id: id
+		_id: id,
 	})
 	expect(observer.added).toHaveBeenCalledTimes(1)
 
@@ -96,12 +94,12 @@ test('Integration: Test connection and basic Core functionality', async () => {
 	// Call a method which will throw error:
 	await expect(core.callMethod('peripheralDevice.testMethod', ['abcd', true])).rejects.toMatchObject({
 		error: 418,
-		reason: /error/
+		reason: /error/,
 	})
 	// Call an unknown method
 	await expect(core.callMethod('myunknownMethod123', ['a', 'b'])).rejects.toMatchObject({
 		error: 404,
-		reason: /error/
+		reason: /error/,
 	})
 
 	// Unsubscribe:
@@ -118,10 +116,12 @@ test('Integration: Test connection and basic Core functionality', async () => {
 	expect(id).toEqual(core.deviceId)
 
 	// Set the status now (should cause an error)
-	await expect(core.setStatus({
-		statusCode: P.StatusCode.GOOD
-	})).rejects.toMatchObject({
-		error: 404
+	await expect(
+		core.setStatus({
+			statusCode: P.StatusCode.GOOD,
+		})
+	).rejects.toMatchObject({
+		error: 404,
 	})
 
 	expect(onConnectionChanged).toHaveBeenCalledTimes(1)
@@ -137,21 +137,20 @@ test('Integration: Test connection and basic Core functionality', async () => {
 	expect(onError).toHaveBeenCalledTimes(0)
 })
 test('Integration: Connection timeout', async () => {
-
 	// Note: This is an integration test, that require a Core to connect to
 
-	let core = new CoreConnection({
+	const core = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
-		deviceName: 'Jest test framework'
+		deviceName: 'Jest test framework',
 	})
 
-	let onConnectionChanged = jest.fn()
-	let onConnected = jest.fn()
-	let onDisconnected = jest.fn()
-	let onFailed = jest.fn()
-	let onError = jest.fn()
+	const onConnectionChanged = jest.fn()
+	const onConnected = jest.fn()
+	const onDisconnected = jest.fn()
+	const onFailed = jest.fn()
+	const onError = jest.fn()
 	core.onConnectionChanged(onConnectionChanged)
 	core.onConnected(onConnected)
 	core.onDisconnected(onDisconnected)
@@ -165,7 +164,7 @@ test('Integration: Connection timeout', async () => {
 	try {
 		await core.init({
 			host: '127.0.0.999',
-			port: corePort
+			port: corePort,
 		})
 	} catch (e) {
 		err = e
@@ -177,21 +176,20 @@ test('Integration: Connection timeout', async () => {
 	await core.destroy()
 })
 test('Integration: Connection recover from close', async () => {
-
 	// Note: This is an integration test, that require a Core to connect to
 
-	let core = new CoreConnection({
+	const core = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
-		deviceName: 'Jest test framework'
+		deviceName: 'Jest test framework',
 	})
 
-	let onConnectionChanged = jest.fn()
-	let onConnected = jest.fn()
-	let onDisconnected = jest.fn()
-	let onFailed = jest.fn()
-	let onError = jest.fn()
+	const onConnectionChanged = jest.fn()
+	const onConnected = jest.fn()
+	const onDisconnected = jest.fn()
+	const onFailed = jest.fn()
+	const onError = jest.fn()
 	core.onConnectionChanged(onConnectionChanged)
 	core.onConnected(onConnected)
 	core.onDisconnected(onDisconnected)
@@ -203,7 +201,7 @@ test('Integration: Connection recover from close', async () => {
 
 	await core.init({
 		host: coreHost,
-		port: corePort
+		port: corePort,
 	})
 	expect(core.connected).toEqual(true)
 
@@ -221,21 +219,20 @@ test('Integration: Connection recover from close', async () => {
 	await core.destroy()
 })
 test('Integration: autoSubscription', async () => {
-
 	// Note: This is an integration test, that require a Core to connect to
 
-	let core = new CoreConnection({
+	const core = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
-		deviceName: 'Jest test framework'
+		deviceName: 'Jest test framework',
 	})
 
-	let onConnectionChanged = jest.fn()
-	let onConnected = jest.fn()
-	let onDisconnected = jest.fn()
-	let onFailed = jest.fn()
-	let onError = jest.fn()
+	const onConnectionChanged = jest.fn()
+	const onConnected = jest.fn()
+	const onDisconnected = jest.fn()
+	const onFailed = jest.fn()
+	const onError = jest.fn()
 	core.onConnectionChanged(onConnectionChanged)
 	core.onConnected(onConnected)
 	core.onDisconnected(onDisconnected)
@@ -247,14 +244,14 @@ test('Integration: autoSubscription', async () => {
 
 	await core.init({
 		host: coreHost,
-		port: corePort
+		port: corePort,
 	})
 	expect(core.connected).toEqual(true)
 
-	let observerAdded = jest.fn()
-	let observerChanged = jest.fn()
-	let observerRemoved = jest.fn()
-	let observer = core.observe('peripheralDevices')
+	const observerAdded = jest.fn()
+	const observerChanged = jest.fn()
+	const observerRemoved = jest.fn()
+	const observer = core.observe('peripheralDevices')
 	observer.added = observerAdded
 	observer.changed = observerChanged
 	observer.removed = observerRemoved
@@ -265,7 +262,7 @@ test('Integration: autoSubscription', async () => {
 
 	await core.setStatus({
 		statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
-		messages: ['Jest A ' + Date.now()]
+		messages: ['Jest A ' + Date.now()],
 	})
 	await wait(300)
 	expect(observerChanged).toHaveBeenCalledTimes(1)
@@ -283,7 +280,7 @@ test('Integration: autoSubscription', async () => {
 	observerChanged.mockClear()
 	await core.setStatus({
 		statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
-		messages: ['Jest B' + Date.now()]
+		messages: ['Jest B' + Date.now()],
 	})
 	await wait(300)
 	expect(observerChanged).toHaveBeenCalledTimes(1)
@@ -291,21 +288,20 @@ test('Integration: autoSubscription', async () => {
 	await core.destroy()
 })
 test('Integration: Connection recover from a close that lasts some time', async () => {
-
 	// Note: This is an integration test, that require a Core to connect to
 
-	let core = new CoreConnection({
+	const core = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
-		deviceName: 'Jest test framework'
+		deviceName: 'Jest test framework',
 	})
 
-	let onConnectionChanged = jest.fn()
-	let onConnected = jest.fn()
-	let onDisconnected = jest.fn()
-	let onFailed = jest.fn()
-	let onError = jest.fn()
+	const onConnectionChanged = jest.fn()
+	const onConnected = jest.fn()
+	const onDisconnected = jest.fn()
+	const onFailed = jest.fn()
+	const onError = jest.fn()
 	core.onConnectionChanged(onConnectionChanged)
 	core.onConnected(onConnected)
 	core.onDisconnected(onDisconnected)
@@ -319,7 +315,7 @@ test('Integration: Connection recover from a close that lasts some time', async 
 		host: coreHost,
 		port: corePort,
 		autoReconnect: true,
-		autoReconnectTimer: 100
+		autoReconnectTimer: 100,
 	})
 	expect(core.connected).toEqual(true)
 
@@ -343,44 +339,43 @@ test('Integration: Connection recover from a close that lasts some time', async 
 	await core.destroy()
 })
 test('Integration: Parent connections', async () => {
-
 	// Note: This is an integration test, that require a Core to connect to
-	let coreParent = new CoreConnection({
+	const coreParent = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
-		deviceName: 'Jest test framework'
+		deviceName: 'Jest test framework',
 	})
-	let onError = jest.fn()
+	const onError = jest.fn()
 	coreParent.onError(onError)
 
-	let parentOnConnectionChanged = jest.fn()
+	const parentOnConnectionChanged = jest.fn()
 	coreParent.onConnectionChanged(parentOnConnectionChanged)
 
 	let id = await coreParent.init({
 		host: coreHost,
-		port: corePort
+		port: corePort,
 	})
 	expect(coreParent.connected).toEqual(true)
 
 	// Set child connection:
-	let coreChild = new CoreConnection({
+	const coreChild = new CoreConnection({
 		deviceId: 'JestTestChild',
 		deviceToken: 'abcd2',
 		deviceType: P.DeviceType.PLAYOUT,
-		deviceName: 'Jest test framework child'
+		deviceName: 'Jest test framework child',
 	})
 
-	let onChildConnectionChanged = jest.fn()
-	let onChildConnected = jest.fn()
-	let onChildDisconnected = jest.fn()
-	let onChildError = jest.fn()
+	const onChildConnectionChanged = jest.fn()
+	const onChildConnected = jest.fn()
+	const onChildDisconnected = jest.fn()
+	const onChildError = jest.fn()
 	coreChild.onConnectionChanged(onChildConnectionChanged)
 	coreChild.onConnected(onChildConnected)
 	coreChild.onDisconnected(onChildDisconnected)
 	coreChild.onError(onChildError)
 
-	let idChild = await coreChild.init(coreParent)
+	const idChild = await coreChild.init(coreParent)
 
 	expect(idChild).toEqual(coreChild.deviceId)
 	expect(coreChild.connected).toEqual(true)
@@ -393,19 +388,19 @@ test('Integration: Parent connections', async () => {
 	// Set some statuses:
 	let statusResponse = await coreChild.setStatus({
 		statusCode: P.StatusCode.WARNING_MAJOR,
-		messages: ['testing testing']
+		messages: ['testing testing'],
 	})
 
 	expect(statusResponse).toMatchObject({
-		statusCode: P.StatusCode.WARNING_MAJOR
+		statusCode: P.StatusCode.WARNING_MAJOR,
 	})
 
 	statusResponse = await coreChild.setStatus({
-		statusCode: P.StatusCode.GOOD
+		statusCode: P.StatusCode.GOOD,
 	})
 
 	expect(statusResponse).toMatchObject({
-		statusCode: P.StatusCode.GOOD
+		statusCode: P.StatusCode.GOOD,
 	})
 
 	// Uninitialize:
@@ -415,10 +410,12 @@ test('Integration: Parent connections', async () => {
 	expect(id).toEqual(coreChild.deviceId)
 
 	// Set the status now (should cause an error)
-	await expect(coreChild.setStatus({
-		statusCode: P.StatusCode.GOOD
-	})).rejects.toMatchObject({
-		error: 404
+	await expect(
+		coreChild.setStatus({
+			statusCode: P.StatusCode.GOOD,
+		})
+	).rejects.toMatchObject({
+		error: 404,
 	})
 
 	await coreParent.destroy()
@@ -429,32 +426,31 @@ test('Integration: Parent connections', async () => {
 })
 
 test('Integration: Parent destroy', async () => {
-
 	// Note: This is an integration test, that require a Core to connect to
-	let coreParent = new CoreConnection({
+	const coreParent = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
-		deviceName: 'Jest test framework'
+		deviceName: 'Jest test framework',
 	})
-	let onParentError = jest.fn()
+	const onParentError = jest.fn()
 	coreParent.onError(onParentError)
 
 	await coreParent.init({
 		host: coreHost,
-		port: corePort
+		port: corePort,
 	})
 	// Set child connection:
-	let coreChild = new CoreConnection({
+	const coreChild = new CoreConnection({
 		deviceId: 'JestTestChild',
 		deviceToken: 'abcd2',
 		deviceType: P.DeviceType.PLAYOUT,
-		deviceName: 'Jest test framework child'
+		deviceName: 'Jest test framework child',
 	})
-	let onChildConnectionChanged = jest.fn()
-	let onChildConnected = jest.fn()
-	let onChildDisconnected = jest.fn()
-	let onChildError = jest.fn()
+	const onChildConnectionChanged = jest.fn()
+	const onChildConnected = jest.fn()
+	const onChildDisconnected = jest.fn()
+	const onChildError = jest.fn()
 	coreChild.onConnectionChanged(onChildConnectionChanged)
 	coreChild.onConnected(onChildConnected)
 	coreChild.onDisconnected(onChildDisconnected)
@@ -485,7 +481,7 @@ test('Integration: Parent destroy', async () => {
 
 	await coreParent.init({
 		host: coreHost,
-		port: corePort
+		port: corePort,
 	})
 
 	await coreChild.init(coreParent)
@@ -504,31 +500,30 @@ test('Integration: Parent destroy', async () => {
 	expect(onParentError).toHaveBeenCalledTimes(0)
 })
 test('Integration: Child destroy', async () => {
-
 	// Note: This is an integration test, that require a Core to connect to
-	let coreParent = new CoreConnection({
+	const coreParent = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
-		deviceName: 'Jest test framework'
+		deviceName: 'Jest test framework',
 	})
-	let onParentError = jest.fn()
+	const onParentError = jest.fn()
 	coreParent.onError(onParentError)
 	await coreParent.init({
 		host: coreHost,
-		port: corePort
+		port: corePort,
 	})
 	// Set child connection:
-	let coreChild = new CoreConnection({
+	const coreChild = new CoreConnection({
 		deviceId: 'JestTestChild',
 		deviceToken: 'abcd2',
 		deviceType: P.DeviceType.PLAYOUT,
-		deviceName: 'Jest test framework child'
+		deviceName: 'Jest test framework child',
 	})
-	let onChildConnectionChanged = jest.fn()
-	let onChildConnected = jest.fn()
-	let onChildDisconnected = jest.fn()
-	let onChildError = jest.fn()
+	const onChildConnectionChanged = jest.fn()
+	const onChildConnected = jest.fn()
+	const onChildDisconnected = jest.fn()
+	const onChildError = jest.fn()
 	coreChild.onConnectionChanged(onChildConnectionChanged)
 	coreChild.onConnected(onChildConnected)
 	coreChild.onDisconnected(onChildDisconnected)
@@ -554,22 +549,21 @@ test('Integration: Child destroy', async () => {
 	expect(onChildError).toHaveBeenCalledTimes(0)
 })
 test('Integration: Test callMethodLowPrio', async () => {
-
 	// Note: This is an integration test, that require a Core to connect to
 
-	let core = new CoreConnection({
+	const core = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
-		deviceName: 'Jest test framework'
+		deviceName: 'Jest test framework',
 	})
 
-	let onError = jest.fn()
+	const onError = jest.fn()
 	core.onError(onError)
 
 	await core.init({
 		host: coreHost,
-		port: corePort
+		port: corePort,
 	})
 
 	expect(core.connected).toEqual(true)
@@ -579,20 +573,22 @@ test('Integration: Test callMethodLowPrio', async () => {
 	// Call a low-prio method
 	await expect(core.callMethodLowPrio('peripheralDevice.testMethod', ['low123'])).resolves.toEqual('low123')
 
-	let ps: Promise<any>[] = []
+	const ps: Promise<any>[] = []
 
 	// method should be called before low-prio:
 	let i = 0
-	ps.push(core.callMethodLowPrio('peripheralDevice.testMethod', ['return123'])
-		.then(() => {
+	ps.push(
+		core.callMethodLowPrio('peripheralDevice.testMethod', ['return123']).then(() => {
 			return i++
-		}))
-	ps.push(core.callMethod('peripheralDevice.testMethod', ['low123'])
-		.then(() => {
+		})
+	)
+	ps.push(
+		core.callMethod('peripheralDevice.testMethod', ['low123']).then(() => {
 			return i++
-		}))
+		})
+	)
 
-	let r = await Promise.all(ps)
+	const r = await Promise.all(ps)
 
 	expect(r[0]).toBeGreaterThan(r[1]) // because callMethod should have run before callMethodLowPrio
 

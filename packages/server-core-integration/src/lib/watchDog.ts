@@ -12,46 +12,46 @@ export class WatchDog extends EventEmitter {
 	public timeout: number
 	private _checkTimeout: NodeJS.Timer | null = null
 	private _dieTimeout: NodeJS.Timer | null = null
-	private _watching: boolean = false
+	private _watching = false
 	private _checkFunctions: Array<() => Promise<any>> = []
 	private _runningChecks = false
 
-	constructor (_timeout?: number) {
+	constructor(_timeout?: number) {
 		super()
 		this.timeout = _timeout || 60 * 1000
 	}
-	public startWatching () {
+	public startWatching(): void {
 		if (!this._watching) {
 			this._watch()
 		}
 		this._watching = true
 	}
-	public stopWatching () {
+	public stopWatching(): void {
 		if (this._watching) {
 			if (this._dieTimeout) clearTimeout(this._dieTimeout)
 			if (this._checkTimeout) clearTimeout(this._checkTimeout)
 		}
 		this._watching = false
 	}
-	public addCheck (fcn: () => Promise<any>) {
+	public addCheck(fcn: () => Promise<any>): void {
 		this._checkFunctions.push(fcn)
 	}
-	public removeCheck (fcn: () => Promise<any>) {
-		let i = this._checkFunctions.indexOf(fcn)
+	public removeCheck(fcn: () => Promise<any>): void {
+		const i = this._checkFunctions.indexOf(fcn)
 		if (i !== -1) this._checkFunctions.splice(i, 1)
 	}
-	public receivedData () {
+	public receivedData(): void {
 		if (this._watching && !this._runningChecks) {
 			this._watch()
 		}
 	}
 
-	private _everythingIsOk () {
+	private _everythingIsOk() {
 		if (this._watching) {
 			this._watch()
 		}
 	}
-	private _watch () {
+	private _watch() {
 		if (this._dieTimeout) clearTimeout(this._dieTimeout)
 		if (this._checkTimeout) clearTimeout(this._checkTimeout)
 
@@ -62,15 +62,15 @@ export class WatchDog extends EventEmitter {
 					return fcn()
 				})
 			)
-			.then(() => {
-				// console.log('all promises have resolved')
-				// all promises have resolved
-				this._everythingIsOk()
-				this._runningChecks = false
-			})
-			.catch(() => {
-				// do nothing, the die-timeout will trigger soon
-			})
+				.then(() => {
+					// console.log('all promises have resolved')
+					// all promises have resolved
+					this._everythingIsOk()
+					this._runningChecks = false
+				})
+				.catch(() => {
+					// do nothing, the die-timeout will trigger soon
+				})
 			this._dieTimeout = setTimeout(() => {
 				// This timeout SHOULD have been aborted by .everythingIsOk
 				// but since it's not, it is our job to quit gracefully, triggering a reset
@@ -82,6 +82,7 @@ export class WatchDog extends EventEmitter {
 				if (this.listenerCount('exit') > 0) {
 					this.emit('exit')
 				} else {
+					// eslint-disable-next-line no-process-exit
 					process.exit(42)
 				}
 			}, 5000)
