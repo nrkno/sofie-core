@@ -31,10 +31,17 @@ interface PrompterConfig {
 	followTake?: boolean
 	fontSize?: number
 	margin?: number
+	speedMap?: number[]
+	reverseSpeedMap?: number[]
+	rangeRevMin?: number
+	rangeNeutralMin?: number
+	rangeNeutralMax?: number
+	rangeFwdMax?: number
 
 	marker?: 'center' | 'top' | 'bottom' | 'hide'
 	showMarker: boolean
 	showScroll: boolean
+	debug: boolean
 	showOverUnder: boolean
 }
 
@@ -43,6 +50,13 @@ export enum PrompterConfigMode {
 	KEYBOARD = 'keyboard',
 	SHUTTLEKEYBOARD = 'shuttlekeyboard',
 	JOYCON = 'joycon',
+	PEDAL = 'pedal',
+}
+
+export interface IPrompterControllerState {
+	source: PrompterConfigMode
+	lastEvent: string
+	lastSpeed: number
 }
 
 interface IProps {
@@ -85,7 +99,9 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			e.preventDefault()
 		})
 
-		const queryParams = queryStringParse(location.search)
+		const queryParams = queryStringParse(location.search, {
+			arrayFormat: 'comma',
+		})
 
 		this.configOptions = {
 			mirror: firstIfArray(queryParams['mirror']) === '1',
@@ -95,14 +111,59 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			followTake: queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1',
 			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
 			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
-
+			speedMap:
+				queryParams['speedMap'] === undefined
+					? undefined
+					: new Array().concat(queryParams['speedMap']).map((value) => parseInt(value, 10)),
+			reverseSpeedMap:
+				queryParams['reverseSpeedMap'] === undefined
+					? undefined
+					: new Array().concat(queryParams['reverseSpeedMap']).map((value) => parseInt(value, 10)),
+			rangeRevMin: parseInt(firstIfArray(queryParams['rangeRevMin']) as string, 10) || undefined,
+			rangeNeutralMin: parseInt(firstIfArray(queryParams['rangeNeutralMin']) as string, 10) || undefined,
+			rangeNeutralMax: parseInt(firstIfArray(queryParams['rangeNeutralMax']) as string, 10) || undefined,
+			rangeFwdMax: parseInt(firstIfArray(queryParams['rangeFwdMax']) as string, 10) || undefined,
 			marker: (firstIfArray(queryParams['marker']) as any) || undefined,
 			showMarker: queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1',
 			showScroll: queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1',
+			debug: queryParams['debug'] === undefined ? false : queryParams['debug'] === '1',
 			showOverUnder: queryParams['showoverunder'] === undefined ? true : queryParams['showoverunder'] === '1',
 		}
 
 		this._controller = new PrompterControlManager(this)
+	}
+
+	DEBUG_controllerSpeed(speed: number) {
+		const speedEl = document.getElementById('prompter-debug-speed')
+		if (speedEl) {
+			speedEl.textContent = speed + ''
+		}
+	}
+
+	DEBUG_controllerState(state: IPrompterControllerState) {
+		const debug = document.getElementById('prompter-debug')
+		if (debug) {
+			debug.textContent = ''
+
+			const debugInfo = document.createElement('div')
+
+			const source = document.createElement('h2')
+			source.textContent = state.source
+
+			const lastEvent = document.createElement('div')
+			lastEvent.classList.add('lastEvent')
+			lastEvent.textContent = state.lastEvent
+
+			const lastSpeed = document.createElement('div')
+			lastSpeed.id = 'prompter-debug-speed'
+			lastSpeed.classList.add('lastSpeed')
+			lastSpeed.textContent = state.lastSpeed + ''
+
+			debugInfo.appendChild(source)
+			debugInfo.appendChild(lastEvent)
+			debugInfo.appendChild(lastSpeed)
+			debug.appendChild(debugInfo)
+		}
 	}
 
 	componentDidMount() {
@@ -145,6 +206,12 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			}
 		})
 
+		const themeColor = document.head.querySelector('meta[name="theme-color"]')
+		if (themeColor) {
+			themeColor.setAttribute('data-content', themeColor.getAttribute('content') || '')
+			themeColor.setAttribute('content', '#000000')
+		}
+
 		document.body.classList.add(
 			'dark',
 			'xdark',
@@ -163,6 +230,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		super.componentWillUnmount()
 
 		documentTitle.set(null)
+
+		const themeColor = document.head.querySelector('meta[name="theme-color"]')
+		if (themeColor) {
+			themeColor.setAttribute('content', themeColor.getAttribute('data-content') || '#ffffff')
+		}
 
 		document.body.classList.remove(
 			'dark',
@@ -412,6 +484,16 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 								)}
 							</Prompter>
 						</RundownTimingProvider>
+						{this.configOptions.debug ? (
+							<div
+								id="prompter-debug"
+								style={{
+									marginTop: this.configOptions.margin ? this.configOptions.margin + 'vh' : undefined,
+									marginBottom: this.configOptions.margin ? this.configOptions.margin + 'vh' : undefined,
+									marginLeft: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
+									marginRight: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
+								}}></div>
+						) : null}
 					</>
 				) : this.props.studio ? (
 					<StudioScreenSaver studioId={this.props.studio._id} />

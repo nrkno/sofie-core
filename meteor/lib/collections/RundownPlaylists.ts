@@ -16,7 +16,7 @@ import {
 import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Rundowns'
 import { Studio, Studios, StudioId } from './Studios'
 import { Segments, Segment, DBSegment, SegmentId } from './Segments'
-import { Parts, Part, DBPart } from './Parts'
+import { Parts, Part, DBPart, PartId } from './Parts'
 import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
 import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
@@ -24,11 +24,26 @@ import { PeripheralDeviceId } from './PeripheralDevices'
 import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
+import { PieceInstanceInfiniteId } from './PieceInstances'
 
 /** A string, identifying a RundownPlaylist */
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
 /** A string, identifying an activation of a playlist */
 export type ActiveInstanceId = ProtectedString<'ActiveInstanceId'>
+
+/** Details of an ab-session requested by the blueprints in onTimelineGenerate */
+export interface ABSessionInfo {
+	/** The unique id of the session. */
+	id: string
+	/** The name of the session from the blueprints */
+	name: string
+	/** Set if the session is being by lookahead for a future part */
+	lookaheadForPartId?: PartId
+	/** Set if the session is being used by an infinite PieceInstance */
+	infiniteInstanceId?: PieceInstanceInfiniteId
+	/** Set to the PartInstances this session is used by, if not just used for lookahead */
+	partInstanceIds?: Array<PartInstanceId>
+}
 
 export interface DBRundownPlaylist {
 	_id: RundownPlaylistId
@@ -90,6 +105,8 @@ export interface DBRundownPlaylist {
 
 	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
 	previousPersistentState?: TimelinePersistentState
+	/** AB playback sessions calculated in the last call to ShowStyleBlueprint.onTimelineGenerate */
+	trackedAbSessions?: ABSessionInfo[]
 }
 
 export class RundownPlaylist implements DBRundownPlaylist {
@@ -121,6 +138,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public rundownRanksAreSetInSofie?: boolean
 
 	public previousPersistentState?: TimelinePersistentState
+	public trackedAbSessions?: ABSessionInfo[]
 
 	constructor(document: DBRundownPlaylist) {
 		for (let [key, value] of Object.entries(document)) {

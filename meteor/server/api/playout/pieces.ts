@@ -13,18 +13,19 @@ import {
 	unprotectString,
 	flatten,
 	applyToArray,
+	getRandomId,
 } from '../../../lib/lib'
 import {
 	TimelineObjPieceAbstract,
 	TimelineObjType,
 	TimelineObjRundown,
 	TimelineObjGeneric,
+	OnGenerateTimelineObjExt,
 } from '../../../lib/collections/Timeline'
 import { logger } from '../../logging'
 import {
 	getPieceFirstObjectId,
 	TimelineObjectCoreExt,
-	OnGenerateTimelineObj,
 	TSR,
 	PieceLifespan,
 } from 'tv-automation-sofie-blueprints-integration'
@@ -79,13 +80,14 @@ export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[
 export function createPieceGroupFirstObject(
 	playlistId: RundownPlaylistId,
 	pieceInstance: DeepReadonly<PieceInstance>,
-	pieceGroup: TimelineObjRundown,
+	pieceGroup: TimelineObjRundown & OnGenerateTimelineObjExt,
 	firstObjClasses?: string[]
-): TimelineObjPieceAbstract & OnGenerateTimelineObj {
-	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObj>({
+): TimelineObjPieceAbstract & OnGenerateTimelineObjExt {
+	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObjExt>({
 		id: getPieceFirstObjectId(unprotectString(pieceInstance._id)),
 		pieceInstanceId: unprotectString(pieceInstance._id),
-		infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
+		infinitePieceInstanceId: pieceInstance.infinite?.infiniteInstanceId,
+		partInstanceId: pieceGroup.partInstanceId,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
 		layer: pieceInstance.piece.sourceLayerId + '_firstobject',
@@ -362,6 +364,7 @@ export function convertAdLibToPieceInstance(
 	if (newPieceInstance.piece.lifespan !== PieceLifespan.WithinPart) {
 		// Set it up as an infinite
 		newPieceInstance.infinite = {
+			infiniteInstanceId: getRandomId(),
 			infinitePieceId: newPieceInstance.piece._id,
 			fromPreviousPart: false,
 		}

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2020-09-30T12:24:48.297Z\n"
-"PO-Revision-Date: 2020-09-30 14:40+0200\n"
+"POT-Creation-Date: 2020-10-16T08:03:19.236Z\n"
+"PO-Revision-Date: 2020-10-16 10:30+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -205,27 +205,6 @@ msgstr "Nullstill utpunkt"
 msgid "Out"
 msgstr "Ut"
 
-msgid "Sofie Automation Server"
-msgstr "Sofie"
-
-msgid "Connecting to the {{platformName}}"
-msgstr "Kobler til {{platformName}}"
-
-msgid "Cannot connect to the {{platformName}}: {{reason}}"
-msgstr "Kan ikke koble til Sofie-serveren: {{reason}}"
-
-msgid "Reconnecting to the {{platformName}}"
-msgstr "Kobler til {{platformName}} på nytt"
-
-msgid "Your machine is offline and cannot connect to the {{platformName}}."
-msgstr "Din maskin er frakoblet og kan ikke koble til {{platformName}}."
-
-msgid "Connected to the {{platformName}}."
-msgstr "Tilkoblet til {{platformName}}."
-
-msgid "Reconnect now"
-msgstr "Koble til på nytt"
-
 msgid "Could not get system status. Please consult system administrator."
 msgstr "Kan ikke innhente status for systemet. Kontakt systemadministrator."
 
@@ -271,6 +250,9 @@ msgstr "Styringsmodus"
 msgid "Switching operating mode to {{mode}}"
 msgstr "Bytt til {{mode}}"
 
+msgid "Prompter"
+msgstr "Prompter"
+
 msgid "End of script"
 msgstr "Slutt på manus"
 
@@ -302,9 +284,8 @@ msgid "Standalone Shelf"
 msgstr "Selvstendig skuff"
 
 #, fuzzy
-#| msgid "Timeline"
 msgid "Timeline views"
-msgstr "Tidslinje"
+msgstr "Tidslinjevisninger"
 
 msgid "Default"
 msgstr "Standard"
@@ -377,9 +358,8 @@ msgid "Air Status"
 msgstr "Sendingsstatus"
 
 #, fuzzy
-#| msgid "Unsynced from MOS"
 msgid "Unsynced from {{nrcsNames}}"
-msgstr "Ikke synkronisert med MOS"
+msgstr "Ikke synkronisert med MOS/{{nrcsNames}}"
 
 msgid "Sofie Automation"
 msgstr "Sofie"
@@ -562,20 +542,6 @@ msgstr "Fullskjermmodus"
 msgid "This rundown is now active. Are you sure you want to exit this screen?"
 msgstr "Denne kjøreplanen er aktiv. Er du sikker på at du vil avslutte?"
 
-#, fuzzy
-msgid "Switching route"
-msgstr "Omkoblinger"
-
-#, fuzzy
-msgid "Are you sure you want to enable this route: \"{{routeName}}\"?"
-msgstr ""
-"Er du sikker på at du vil aktivere denne omkoblingen: \"{{routeName}}\"?"
-
-#, fuzzy
-msgid "Are you sure you want to disable this route: \"{{routeName}}\"?"
-msgstr ""
-"Er du sikker på at du vil deaktivere denne omkoblingen: \"{{routeName}}\"?"
-
 msgid ""
 "There are no Playout Gateways connected and attached to this studio. Please "
 "contact the system administrator to start the Playout Gateway."
@@ -667,6 +633,12 @@ msgid ""
 msgstr ""
 "Er du sikker på at du bare vil slette kjøreplanen {{rundownName}} i listen "
 "{{playlistName}} fra Sofie? Dette kan ikke angres!"
+
+msgid "Route Sets"
+msgstr "Omkoblingsgrupper"
+
+msgid "Off"
+msgstr "Av"
 
 #, fuzzy
 msgid ""
@@ -1787,6 +1759,18 @@ msgstr "Lookahead maksimum søkelengde (standard = ubegrenset / -1)"
 msgid "Layer Mappings"
 msgstr "Lagmappinger"
 
+#, fuzzy
+msgid "Remove this Exclusivity Group?"
+msgstr "Fjern fra denne eksklusivitetsgruppen?"
+
+#, fuzzy
+msgid ""
+"Are you sure you want to remove exclusivity group \"{{eGroupName}}\"?\n"
+"Route Sets assigned to this group will be reset to no group."
+msgstr ""
+"Er du sikker på at du vil fjerne eksklusivitetsgruppen \"{{eGroupName}}\"?\n"
+"Omkoblinger satt til denne gruppen vil bli resatt til ingen gruppe."
+
 msgid "Remove this Route from this Route Set?"
 msgstr "Fjern denne omkoblingen fra omkoblingsgruppen?"
 
@@ -1809,14 +1793,36 @@ msgstr "Omkoblinger"
 msgid "There are no routes set up yet"
 msgstr "Det er ikke satt opp omkoblinger ennå"
 
-msgid "Source Layer ID"
-msgstr "Opprinnelig lag-id"
+msgid "Original Layer"
+msgstr "Opprinnelig lag"
 
-msgid "New Layer ID"
-msgstr "Ny lag-id"
+msgid "None"
+msgstr "Ingen"
+
+msgid "New Layer"
+msgstr "Nytt lag"
 
 msgid "Source Layer not found"
 msgstr "Kildelag ikke funnet"
+
+#, fuzzy
+msgid "There are no exclusivity groups set up."
+msgstr "Ingen eksklusivitetsgrupper er satt opp."
+
+#, fuzzy
+msgid "Exclusivity Group ID"
+msgstr "Eksklusivitetsgruppe-id"
+
+#, fuzzy
+msgid "Exclusivity Group Name"
+msgstr "Eksklusivitetsgruppenavn"
+
+#, fuzzy
+msgid "Display name of the Exclusivity Group"
+msgstr "Eksklusivitetsgruppens navn som vises i oversikten"
+
+msgid "There are no Route Sets set up."
+msgstr "Det er ikke satt opp omkoblinger ennå."
 
 msgid "Active"
 msgstr "Aktiv"
@@ -1844,8 +1850,9 @@ msgstr "Oppførsel"
 msgid "The way this Route Set should behave towards the user"
 msgstr "Måten denne omkoblingsgruppen skal oppføre seg på overfor brukeren"
 
-msgid "Route Sets"
-msgstr "Omkoblingsgrupper"
+#, fuzzy
+msgid "Exclusivity Groups"
+msgstr "Eksklusivitetsgrupper"
 
 msgid "Studio Baseline needs update: "
 msgstr "Studio baseline må oppdateres: "
@@ -1857,9 +1864,6 @@ msgstr ""
 
 msgid "Reload Baseline"
 msgstr "Last inn baseline på nytt"
-
-msgid "None"
-msgstr "Ingen"
 
 msgid "Studio Name"
 msgstr "Studionavn"
@@ -2265,6 +2269,9 @@ msgstr "Parametre"
 msgid "User Activity Log"
 msgstr "Aktivitetslogg"
 
+msgid "Help & Support"
+msgstr "Hjelp og brukerstøtte"
+
 msgid "Disable hints by adding this to the URL:"
 msgstr "Deaktiver hint ved å legge dette til på url-en:"
 
@@ -2363,6 +2370,44 @@ msgstr "{{frames}} {{type}} frames oppdaget inne i klippet°°°°°°"
 msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
+
+#~ msgid "Sofie Automation Server"
+#~ msgstr "Sofie"
+
+#~ msgid "Connecting to the {{platformName}}"
+#~ msgstr "Kobler til {{platformName}}"
+
+#~ msgid "Cannot connect to the {{platformName}}: {{reason}}"
+#~ msgstr "Kan ikke koble til Sofie-serveren: {{reason}}"
+
+#~ msgid "Reconnecting to the {{platformName}}"
+#~ msgstr "Kobler til {{platformName}} på nytt"
+
+#~ msgid "Your machine is offline and cannot connect to the {{platformName}}."
+#~ msgstr "Din maskin er frakoblet og kan ikke koble til {{platformName}}."
+
+#~ msgid "Connected to the {{platformName}}."
+#~ msgstr "Tilkoblet til {{platformName}}."
+
+#~ msgid "Reconnect now"
+#~ msgstr "Koble til på nytt"
+
+#, fuzzy
+#~ msgid "Switching route"
+#~ msgstr "Omkoblinger"
+
+#, fuzzy
+#~ msgid "Are you sure you want to enable this route: \"{{routeName}}\"?"
+#~ msgstr ""
+#~ "Er du sikker på at du vil aktivere denne omkoblingen: \"{{routeName}}\"?"
+
+#, fuzzy
+#~ msgid "Are you sure you want to disable this route: \"{{routeName}}\"?"
+#~ msgstr ""
+#~ "Er du sikker på at du vil deaktivere denne omkoblingen: \"{{routeName}}\"?"
+
+#~ msgid "Source Layer ID"
+#~ msgstr "Opprinnelig lag-id"
 
 #~ msgid "Test Tools – Recordings"
 #~ msgstr "Testverktøy - Opptak"

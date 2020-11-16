@@ -46,7 +46,6 @@ import {
 	getStudioFromCache,
 	getAllOrderedPartsFromCache,
 	getAllPieceInstancesFromCache,
-	checkAccessAndGetPlaylist,
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -78,6 +77,7 @@ import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { checkAccessAndGetPlaylist } from '../lib'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"

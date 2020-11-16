@@ -661,7 +661,9 @@ async function doSystemBenchmarkInner() {
 
 	return result
 }
-async function doSystemBenchmark(runCount: number = 1): Promise<SystemBenchmarkResults> {
+async function doSystemBenchmark(context: MethodContext, runCount: number = 1): Promise<SystemBenchmarkResults> {
+	SystemWriteAccess.coreSystem(context)
+
 	if (runCount < 1) throw new Error(`runCount must be >= 1`)
 
 	const results: BenchmarkResult[] = []
@@ -736,7 +738,7 @@ class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 		return makePromise(() => cleanupOldData(this, actuallyRemoveOldData))
 	}
 	async doSystemBenchmark(runCount: number = 1) {
-		return doSystemBenchmark(runCount)
+		return doSystemBenchmark(this, runCount)
 	}
 }
 registerClassToMeteorMethods(SystemAPIMethods, SystemAPIClass, false)

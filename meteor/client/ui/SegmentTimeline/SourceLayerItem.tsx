@@ -50,6 +50,8 @@ export interface ISourceLayerItemProps {
 	scrollLeft: number
 	scrollWidth: number
 	liveLinePadding: number
+	renderToTimeline: (render: JSX.Element | null) => void
+	layerIndex: number
 }
 interface ISourceLayerItemState {
 	showMiniInspector: boolean
@@ -314,16 +316,26 @@ export const SourceLayerItem = withTranslation()(
 			}
 		}
 
-		getItemDuration = (): number => {
+		getItemDuration = (returnInfinite?: boolean): number => {
 			const piece = this.props.piece
 			const innerPiece = piece.instance.piece
 
 			const expectedDurationNumber =
 				typeof innerPiece.enable.duration === 'number' ? innerPiece.enable.duration || 0 : 0
-			let itemDuration = Math.min(
-				piece.renderedDuration || expectedDurationNumber || 0,
-				this.props.partDuration - (piece.renderedInPoint || 0)
-			)
+
+			let itemDuration: number
+			if (!returnInfinite) {
+				itemDuration = Math.min(
+					piece.renderedDuration || expectedDurationNumber || 0,
+					this.props.partDuration - (piece.renderedInPoint || 0)
+				)
+			} else {
+				itemDuration =
+					this.props.partDuration - (piece.renderedInPoint || 0) <
+					(piece.renderedDuration || expectedDurationNumber || 0)
+						? Number.POSITIVE_INFINITY
+						: piece.renderedDuration || expectedDurationNumber || 0
+			}
 
 			if (
 				(innerPiece.lifespan !== PieceLifespan.WithinPart ||
@@ -332,7 +344,11 @@ export const SourceLayerItem = withTranslation()(
 				piece.renderedDuration === null &&
 				piece.instance.userDuration === undefined
 			) {
-				itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
+				if (!returnInfinite) {
+					itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
+				} else {
+					itemDuration = Number.POSITIVE_INFINITY
+				}
 			}
 
 			return itemDuration

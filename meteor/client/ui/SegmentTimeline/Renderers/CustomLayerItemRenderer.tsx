@@ -13,6 +13,7 @@ export interface ICustomLayerItemProps {
 	typeClass?: string
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
+	outputGroupCollapsed: boolean
 	part: PartUi
 	partDuration: number // 0 if unknown
 	piece: PieceUi
@@ -27,9 +28,10 @@ export interface ICustomLayerItemProps {
 	elementPosition: OffsetPosition
 	cursorPosition: OffsetPosition
 	cursorTimePosition: number
+	layerIndex: number
 	getItemLabelOffsetLeft?: () => React.CSSProperties
 	getItemLabelOffsetRight?: () => React.CSSProperties
-	getItemDuration?: () => number
+	getItemDuration?: (returnInfinite?: boolean) => number
 	setAnchoredElsWidths?: (rightAnchoredWidth: number, leftAnchoredWidth: number) => void
 }
 export interface ISourceLayerItemState {}
@@ -63,9 +65,9 @@ export class CustomLayerItemRenderer<
 		}
 	}
 
-	getItemDuration(): number {
+	getItemDuration(returnInfinite?: boolean): number {
 		if (typeof this.props.getItemDuration === 'function') {
-			return this.props.getItemDuration()
+			return this.props.getItemDuration(returnInfinite)
 		}
 		return this.props.partDuration
 	}

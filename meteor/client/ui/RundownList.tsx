@@ -13,13 +13,12 @@ import { PubSub } from '../../lib/api/pubsub'
 import { StatusResponse } from '../../lib/api/systemStatus'
 import { GENESIS_SYSTEM_VERSION, getCoreSystem, ICoreSystem } from '../../lib/collections/CoreSystem'
 import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
-import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { RundownId, Rundowns } from '../../lib/collections/Rundowns'
-import { getAllowConfigure, getAllowService, getHelpMode } from '../lib/localStorage'
-import { doUserAction, UserAction } from '../lib/userAction'
-import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from '../lib/notifications/notifications'
-import { Studios, StudioId } from '../../lib/collections/Studios'
-import { ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
+import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
+import { Studios } from '../../lib/collections/Studios'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { unprotectString } from '../../lib/lib'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
@@ -32,16 +31,6 @@ import { RundownDropZone } from './RundownList/RundownDropZone'
 import { RundownListFooter } from './RundownList/RundownListFooter'
 import RundownPlaylistDragLayer from './RundownList/RundownPlaylistDragLayer'
 import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
-
-interface IRundownListItemProps {
-	key: string
-	rundownPlaylist: RundownPlaylistUi
-	rundownLayouts: Array<RundownLayoutBase>
-}
-
-interface IRundownListItemState {
-	selectedView: string
-}
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',

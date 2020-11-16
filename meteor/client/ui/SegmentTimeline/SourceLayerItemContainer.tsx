@@ -35,6 +35,7 @@ interface IPropsHeader {
 	liveLinePadding: number
 	scrollLeft: number
 	scrollWidth: number
+	layerIndex: number
 }
 /** This is a container component that allows ractivity with the Timeline collection */
 export const SourceLayerItemContainer = class SourceLayerItemContainer extends MeteorReactComponent<IPropsHeader> {
