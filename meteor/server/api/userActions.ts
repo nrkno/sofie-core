@@ -204,6 +204,9 @@ export function moveNext(
 		ServerPlayoutAPI.moveNextPart(context, rundownPlaylistId, horisontalDelta, verticalDelta, setManually)
 	)
 }
+export function reloadRundownPlaylistData(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
+	return ClientAPI.responseSuccess(ServerPlayoutAPI.reloadRundownPlaylistData(context, rundownPlaylistId))
+}
 export function prepareForBroadcast(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId
@@ -308,9 +311,6 @@ export function deactivate(
 	rundownPlaylistId: RundownPlaylistId
 ): ClientAPI.ClientResponse<void> {
 	return ClientAPI.responseSuccess(ServerPlayoutAPI.deactivateRundownPlaylist(context, rundownPlaylistId))
-}
-export function reloadRundownPlaylistData(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.reloadRundownPlaylistData(context, rundownPlaylistId))
 }
 export function unsyncRundown(context: MethodContext, rundownId: RundownId) {
 	return ClientAPI.responseSuccess(ServerRundownAPI.unsyncRundown(context, rundownId))
@@ -780,6 +780,28 @@ export function switchRouteSet(
 	return ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
 }
 
+export function moveRundown(
+	context: MethodContext,
+	rundownId: RundownId,
+	intoPlaylistId: RundownPlaylistId | null,
+	rundownsIdsInPlaylistInOrder: RundownId[]
+): ClientAPI.ClientResponse<void> {
+	check(rundownId, String)
+	if (intoPlaylistId) check(intoPlaylistId, String)
+
+	return ClientAPI.responseSuccess(
+		ServerRundownAPI.moveRundown(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
+	)
+}
+export function restoreRundownOrder(
+	context: MethodContext,
+	playlistId: RundownPlaylistId
+): ClientAPI.ClientResponse<void> {
+	check(playlistId, String)
+
+	return ClientAPI.responseSuccess(ServerRundownAPI.restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
+}
+
 export function traceAction<T extends (...args: any[]) => any>(
 	description: string,
 	fn: T,
@@ -1113,6 +1135,17 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		state: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return traceAction(UserActionAPIMethods.switchRouteSet, switchRouteSet, this, studioId, routeSetId, state)
+	}
+	moveRundown(
+		_userEvent: string,
+		rundownId: RundownId,
+		intoPlaylistId: RundownPlaylistId | null,
+		rundownsIdsInPlaylistInOrder: RundownId[]
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return makePromise(() => moveRundown(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder))
+	}
+	restoreRundownOrder(_userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>> {
+		return makePromise(() => restoreRundownOrder(this, playlistId))
 	}
 }
 registerClassToMeteorMethods(

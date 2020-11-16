@@ -1052,7 +1052,7 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.RELOAD_RUNDOWN_DATA,
-					(e) => MeteorCall.userAction.reloadData(e, this.props.playlist._id),
+					(e) => MeteorCall.userAction.resyncRundownPlaylist(e, this.props.playlist._id),
 					(err, reloadResponse) => {
 						if (!err && reloadResponse) {
 							if (!handleRundownPlaylistReloadResponse(t, this.props.playlist, reloadResponse)) {

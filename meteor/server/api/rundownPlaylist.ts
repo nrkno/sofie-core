@@ -1,14 +1,14 @@
-import { Studio } from '../../lib/collections/Studios'
-import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { StudioId } from '../../lib/collections/Studios'
+import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { removeRundownPlaylistFromCache } from './playout/lib'
-import { waitForPromise } from '../../lib/lib'
-import { initCacheForRundownPlaylistFromStudio, initCacheForRundownPlaylist } from '../DatabaseCaches'
+import { waitForPromise, getHash, protectString } from '../../lib/lib'
+import { initCacheForRundownPlaylist } from '../DatabaseCaches'
 import * as _ from 'underscore'
 
-export function removeEmptyPlaylists(studio: Studio) {
+export function removeEmptyPlaylists(studioId: StudioId) {
 	const playlistsInStudio = RundownPlaylists.find({
-		studioId: studio._id,
+		studioId: studioId,
 	}).fetch()
 	const rundowns = Rundowns.find({
 		playlistId: { $in: playlistsInStudio.map((p) => p._id) },
@@ -23,4 +23,11 @@ export function removeEmptyPlaylists(studio: Studio) {
 			waitForPromise(cache.saveAllToDatabase())
 		}
 	})
+}
+/**
+ * Convert the playlistExternalId into a playlistId.
+ * When we've received an externalId for a playlist, that can directly be used to reference a playlistId
+ */
+export function getPlaylistIdFromExternalId(studioId: StudioId, playlistExternalId: string): RundownPlaylistId {
+	return protectString(getHash(`${studioId}_${playlistExternalId}`))
 }
