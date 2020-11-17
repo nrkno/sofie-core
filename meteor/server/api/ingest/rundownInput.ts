@@ -602,6 +602,10 @@ function updateRundownFromIngestData(
 						name: 'Data update',
 					},
 				})
+
+				logger.warn(
+					`Blocking moving rundown "${existingDbRundown._id}" out of playlist "${existingDbRundown.playlistId}"`
+				)
 			}
 		} else {
 			logger.warn(`Existing playlist "${existingDbRundown.playlistId}" not found`)
