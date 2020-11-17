@@ -19,7 +19,6 @@ import {
 	Omit,
 	getRandomId,
 	PreparedChanges,
-	asyncCollectionUpsert,
 } from '../../../lib/lib'
 import {
 	IngestRundown,
@@ -1190,16 +1189,6 @@ function updateSegmentFromIngestData(
 
 	// Update segment info:
 	cache.Segments.upsert(
-		{
-			_id: segmentId,
-			rundownId: rundown._id,
-		},
-		newSegment
-	)
-
-	// Update segment info:
-	const p = asyncCollectionUpsert(
-		Segments,
 		{
 			_id: segmentId,
 			rundownId: rundown._id,
