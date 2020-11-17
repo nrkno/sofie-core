@@ -3,6 +3,7 @@ import * as _ from 'underscore'
 import { logger } from './logging'
 import { extractFunctionSignature } from './lib'
 import { MethodContext, MethodContextAPI } from '../lib/api/methods'
+import { isPromise } from '../lib/lib'
 
 type MeteorMethod = (this: MethodContext, ...args: any[]) => any
 
@@ -24,7 +25,7 @@ let runningMethods: {
 		i: number
 	}
 } = {}
-let runningMethodstudio: number = 0
+let runningMethodsId: number = 0
 
 function getAllClassMethods(myClass: any): string[] {
 	const objectProtProps = Object.getOwnPropertyNames(Object.prototype)
@@ -77,8 +78,8 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 		let method = m.wrapped
 		if (method) {
 			methods[methodName] = function(...args: any[]) {
-				let i = runningMethodstudio++
-				let methodId = 'm' + i
+				const i = runningMethodsId++
+				const methodId = 'm' + i
 
 				runningMethods[methodId] = {
 					method: methodName,
@@ -86,14 +87,20 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 					i: i,
 				}
 				try {
-					let result = method.apply(this, args)
+					const result = method.apply(this, args)
 
-					if (typeof result === 'object' && result.then) {
+					if (isPromise(result)) {
 						// The method result is a promise
-						return Promise.resolve(result).then((result) => {
-							delete runningMethods[methodId]
-							return result
-						})
+						return Promise.resolve(result)
+							.finally(() => {
+								delete runningMethods[methodId]
+							})
+							.catch((e) => {
+								if (!_suppressExtraErrorLogging) {
+									logger.error(e.message || e.reason || (e.toString ? e.toString() : null) || e)
+								}
+								return Promise.reject(e)
+							})
 					} else {
 						delete runningMethods[methodId]
 						return result
@@ -122,7 +129,7 @@ export function getRunningMethods() {
 export function resetRunningMethods() {
 	runningMethods = {}
 }
-let _suppressExtraErrorLogging: boolean = true
+let _suppressExtraErrorLogging: boolean = false
 export function suppressExtraErrorLogging(value: boolean) {
 	_suppressExtraErrorLogging = value
 }
