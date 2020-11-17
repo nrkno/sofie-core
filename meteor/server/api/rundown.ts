@@ -233,6 +233,19 @@ export function produceRundownPlaylistInfoFromRundown(
 		playlistId = getPlaylistIdFromExternalId(studio._id, currentRundown.playlistExternalId)
 	}
 
+	const getAllRundownsInPlaylist2 = (playlistId: RundownPlaylistId, playlistExternalId: string | null) => {
+		const { rundowns } = getAllRundownsInPlaylist(playlistId, playlistExternalId)
+
+		const currentIndex = rundowns.findIndex((rd) => rd._id === currentRundown._id)
+		if (currentIndex !== -1) {
+			rundowns[currentIndex] = currentRundown
+		} else {
+			rundowns.push(currentRundown)
+		}
+
+		return rundowns
+	}
+
 	if (playlistId) {
 		// The rundown is going to be (or already is) inserted into a new (or existing) playlist.
 
@@ -241,13 +254,8 @@ export function produceRundownPlaylistInfoFromRundown(
 		const playlistExternalId: string | undefined = existingPlaylist?.externalId || currentRundown.playlistExternalId
 
 		if (playlistExternalId) {
-			const { rundowns } = getAllRundownsInPlaylist(playlistId, playlistExternalId)
+			const rundowns = getAllRundownsInPlaylist2(playlistId, playlistExternalId)
 
-			if (!_.find(rundowns, (rd) => rd._id === currentRundown._id))
-				throw new Meteor.Error(
-					500,
-					`produceRundownPlaylistInfo: currentRundown ("${currentRundown._id}") not found in rundowns!`
-				)
 			const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
 				? studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(rundowns))
 				: null
@@ -324,10 +332,7 @@ export function produceRundownPlaylistInfoFromRundown(
 
 	const existingPlaylist = RundownPlaylists.findOne(newPlaylistId)
 
-	const { rundowns } = getAllRundownsInPlaylist(newPlaylistId, playlistExternalId)
-	if (!rundowns.find((rundown) => rundown._id === currentRundown._id)) {
-		rundowns.push(currentRundown)
-	}
+	const rundowns = getAllRundownsInPlaylist2(newPlaylistId, playlistExternalId)
 
 	const defaultPlaylist: DBRundownPlaylist = defaultPlaylistForRundown(currentRundown, studio, existingPlaylist)
 
