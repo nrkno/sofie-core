@@ -1000,7 +1000,7 @@ function handleUpdatedRundownPlaylist(
 	saveIntoDb(Rundowns, selector, updated)
 }
 
-function handleRemovedSegment(
+export function handleRemovedSegment(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
 	segmentExternalId: string

@@ -7,7 +7,7 @@ import { logger } from '../../../logging'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import * as _ from 'underscore'
 import { IngestRundown, IngestSegment } from 'tv-automation-sofie-blueprints-integration'
-import { handleUpdatedSegment, handleUpdatedRundown } from '../rundownInput'
+import { handleRemovedSegment, handleUpdatedSegment, handleUpdatedRundown } from '../rundownInput'
 import { Segment } from '../../../../lib/collections/Segments'
 
 export namespace GenericDeviceActions {
@@ -88,6 +88,7 @@ export namespace GenericDeviceActions {
 			(err: Error, ingestSegment: IngestSegment | null) => {
 				if (err) {
 					if (_.isString(err) && err.match(/segment does not exist/i)) {
+						handleRemovedSegment(peripheralDevice, rundown.externalId, segment.externalId)
 						// Don't throw an error, instead return MISSING value
 						cb(null, TriggerReloadDataResponse.MISSING)
 					} else {
