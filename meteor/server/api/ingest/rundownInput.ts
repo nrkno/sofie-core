@@ -749,16 +749,7 @@ function updateRundownFromIngestData(
 	)
 
 	if (Settings.allowUnsyncedSegments) {
-		if (
-			!isUpdateAllowed(
-				cache,
-				dbPlaylist,
-				dbRundown,
-				{ changed: [dbRundown] },
-				prepareSaveSegments,
-				prepareSaveParts
-			)
-		) {
+		if (!isUpdateAllowed(cache, dbPlaylist, dbRundown, { changed: [dbRundown] })) {
 			ServerRundownAPI.unsyncRundownInner(cache, dbRundown._id)
 			waitForPromise(cache.saveAllToDatabase())
 			return false
@@ -1029,7 +1020,11 @@ function handleRemovedSegment(
 
 		if (canBeUpdated(rundown, segment)) {
 			if (!isUpdateAllowed(cache, playlist, rundown, {}, { removed: [segment] }, {})) {
-				ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+				if (Settings.allowUnsyncedSegments) {
+					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
+				} else {
+					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+				}
 			} else {
 				if (removeSegments(cache, rundownId, [segmentId]) === 0) {
 					throw new Meteor.Error(
@@ -1183,7 +1178,11 @@ function updateSegmentFromIngestData(
 
 	// determine if update is allowed here
 	if (!isUpdateAllowed(cache, playlist, rundown, {}, { changed: [newSegment] }, prepareSaveParts)) {
-		ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+		if (Settings.allowUnsyncedSegments) {
+			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
+		} else {
+			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+		}
 		return null
 	}
 
@@ -1297,7 +1296,11 @@ export function handleRemovedPart(
 			if (!part) throw new Meteor.Error(404, 'Part not found')
 
 			if (!isUpdateAllowed(cache, playlist, rundown, {}, {}, { removed: [part] })) {
-				ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+				if (Settings.allowUnsyncedSegments) {
+					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
+				} else {
+					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+				}
 			} else {
 				// Blueprints will handle the deletion of the Part
 				const ingestSegment = loadCachedIngestSegment(
@@ -1365,7 +1368,11 @@ export function handleUpdatedPartInner(
 	})
 
 	if (part && !isUpdateAllowed(cache, playlist, rundown, {}, {}, { changed: [part] })) {
-		ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+		if (Settings.allowUnsyncedSegments) {
+			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
+		} else {
+			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+		}
 	} else {
 		// Blueprints will handle the creation of the Part
 		const ingestSegment: LocalIngestSegment = loadCachedIngestSegment(
