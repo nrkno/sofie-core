@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
-import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'

@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { Pieces, Piece } from './collections/Pieces'
-import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { DBSegment, SegmentId } from './collections/Segments'
 import { PartId, DBPart } from './collections/Parts'
 import { PartInstance } from './collections/PartInstances'

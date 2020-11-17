@@ -1,0 +1,11 @@
+{
+  "name": "Sofie Integration Libraries",
+  "mode": "modules",
+  "out": "docs",
+  "theme": "default",
+  "ignoreCompilerErrors": "false",
+  "preserveConstEnums": "true",
+  "exclude": ["*.spec.ts", "node_modules", "docs"],
+  "external-modulemap": ".*packages\/([^\/]+)\/.*",
+  "stripInternal": "false"
+}

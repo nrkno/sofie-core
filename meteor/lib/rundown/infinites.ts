@@ -9,7 +9,7 @@ import {
 import { DBPart, PartId } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
-import { PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
+import { PieceLifespan, getPieceGroupId } from '@sofie-automation/blueprints-integration'
 import {
 	assertNever,
 	max,

@@ -24,7 +24,7 @@ import {
 	SourceLayerType,
 	IBlueprintPieceGeneric,
 	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { IStudioSettings } from '../collections/Studios'
 import { RundownAPI } from '../api/rundown'
 

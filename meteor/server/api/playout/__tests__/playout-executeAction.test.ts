@@ -14,7 +14,7 @@ import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Blueprints, BlueprintId } from '../../../../lib/collections/Blueprints'
 import { BLUEPRINT_CACHE_CONTROL } from '../../blueprints/cache'
-import { ShowStyleBlueprintManifest, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import { ShowStyleBlueprintManifest, BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 
 jest.mock('../../playout/infinites')
 import {

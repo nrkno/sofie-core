@@ -16,7 +16,7 @@ import { PartId } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
 import { Credentials } from '../../security/lib/credentials'
-import { IngestRundown, ExtendedIngestRundown } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 

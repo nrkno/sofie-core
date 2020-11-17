@@ -18,7 +18,7 @@ import { logger } from '../../lib/logging'
 import {
 	IBlueprintExternalMessageQueueObj,
 	IBlueprintAsRunLogEventContent,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { queueExternalMessages } from './ExternalMessageQueue'
 import { loadShowStyleBlueprint } from './blueprints/cache'
 import { AsRunEventContext } from './blueprints/context'

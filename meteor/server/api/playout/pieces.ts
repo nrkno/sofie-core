@@ -28,7 +28,7 @@ import {
 	TimelineObjectCoreExt,
 	TSR,
 	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'

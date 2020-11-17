@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { IBlueprintPieceGeneric, NoraContent } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintPieceGeneric, NoraContent } from '@sofie-automation/blueprints-integration'
 import { IModalAttributes, Modal } from '../../../../lib/ui/containers/modals/Modal'
 import { NoraItemEditor } from './NoraItemEditor'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'

@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { Timeline as TimelineTypes, TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
+import { Timeline as TimelineTypes, TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { OnGenerateTimelineObjExt, TimelineObjRundown, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { Part } from '../../../../lib/collections/Parts'
 import { Piece } from '../../../../lib/collections/Pieces'

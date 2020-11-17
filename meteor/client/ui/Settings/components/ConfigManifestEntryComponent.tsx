@@ -5,7 +5,7 @@ import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { ConfigManifestEntry, ConfigManifestEntryType } from '../../../../lib/api/deviceConfig'
-import { ConfigManifestEntry as BlueprintConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestEntry as BlueprintConfigManifestEntry } from '@sofie-automation/blueprints-integration'
 import { TransformedCollection } from '../../../../lib/typings/meteor'
 
 export interface IConfigManifestEntryComponentProps {

@@ -1,7 +1,7 @@
 import { PieceId } from './Pieces'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
-import { IBlueprintActionManifest } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintActionManifest } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { RundownImportVersions } from './Rundowns'
 import { StudioId } from './Studios'

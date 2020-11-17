@@ -24,7 +24,7 @@ import {
 	SomeContent,
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'

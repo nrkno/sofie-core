@@ -9,7 +9,7 @@ import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../.
 import { getCurrentTime, protectString } from '../../../../../lib/lib'
 import { SegmentId, Segments } from '../../../../../lib/collections/Segments'
 import { DBPart, Part, PartId, Parts } from '../../../../../lib/collections/Parts'
-import { LookaheadMode, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { MappingsExt, Studios } from '../../../../../lib/collections/Studios'
 import { PartInstances, wrapPartToTemporaryInstance } from '../../../../../lib/collections/PartInstances'
 import _ from 'underscore'

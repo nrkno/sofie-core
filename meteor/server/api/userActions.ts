@@ -11,7 +11,7 @@ import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { StudioId } from '../../lib/collections/Studios'
 import { Pieces, PieceId } from '../../lib/collections/Pieces'
-import { SourceLayerType, IngestPart, IngestAdlib, ActionUserData } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'

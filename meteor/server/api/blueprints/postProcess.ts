@@ -12,7 +12,7 @@ import {
 	TSR,
 	IBlueprintActionManifest,
 	NotesContext as INotesContext,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { ShowStyleContext, NotesContext } from './context'

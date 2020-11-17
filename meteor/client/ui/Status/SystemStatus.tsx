@@ -18,7 +18,7 @@ import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notific
 import { getAllowConfigure, getAllowDeveloper, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
 import ClassNames from 'classnames'
-import { TSR } from 'tv-automation-sofie-blueprints-integration'
+import { TSR } from '@sofie-automation/blueprints-integration'
 import { CoreSystem, ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction, UserAction } from '../../lib/userAction'

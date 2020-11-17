@@ -16,6 +16,7 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 
 * Install [Meteor](https://www.meteor.com/install)
 * Install [Node.js](https://nodejs.org)
+* Install [Yarn](https://yarnpkg.com)
 * `npm install --global windows-build-tools`
 
 ### Quick-start:
@@ -48,6 +49,11 @@ npm start
 
     `meteor npm run dev`
 
+If you make any changes to the libraries inside packages, you will need to run the typescript compiler in another terminal.
+```
+cd packages
+yarn build # or yarn watch to watch for changes
+```
 
 If you run into any issues while installing the dependencies, clone any offending packages from Git and link them using `npm link`. For example, for `tv-automation-mos-connection` library:
 

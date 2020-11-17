@@ -12,7 +12,7 @@ import {
 	MigrationStep,
 	MigrationContextStudio,
 	MigrationContextShowStyle,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Blueprints } from '../../../lib/collections/Blueprints'

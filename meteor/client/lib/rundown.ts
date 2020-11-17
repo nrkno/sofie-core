@@ -9,7 +9,7 @@ import {
 	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
 	TimelineObjectCoreExt,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import {
 	SegmentExtended,
 	PartExtended,

@@ -1,6 +1,6 @@
-version: 2
+version: 2.1
 jobs:
-  build:
+  build-core:
     docker:
       - image: sofietv/tv-automation-meteor-base:1.11.1
         auth:
@@ -39,7 +39,7 @@ jobs:
           paths:
             - .
 
-  tests:
+  test-core:
     docker:
       - image: sofietv/tv-automation-meteor-base:1.11.1
         auth:
@@ -49,9 +49,9 @@ jobs:
       - checkout
       - run:
           name: Run tests and send coverage
-          command: cd meteor && meteor npm install && meteor npm run prepareForTest && meteor npm run ci
+          command: cd meteor && meteor npm install && meteor npm run ci
           no_output_timeout: 60m
-  lint:
+  lint-core:
     docker:
       - image: sofietv/tv-automation-meteor-base:1.11.1
         auth:
@@ -64,7 +64,219 @@ jobs:
           command: cd meteor && meteor npm install && meteor npm run ci:lint
           no_output_timeout: 15m
 
-  validate-prod-dependencies:
+  lint-libs:
+    parameters:
+      lib-name:
+        type: string
+    docker:
+      - image: circleci/node:12
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    steps:
+      - checkout
+      - run: cd packages && yarn install
+      - run:
+          name: Run linter
+          command: cd packages/<< parameters.lib-name >> && yarn lint
+          no_output_timeout: 60m
+
+  test-libs:
+    parameters:
+      lib-name:
+        type: string
+      node-version:
+        type: string
+    docker:
+      - image: circleci/node:<< parameters.node-version >>
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    steps:
+      - checkout
+      - run: cd packages && yarn install
+      - run:
+          name: Run tests
+          command: cd packages/<< parameters.lib-name >> && yarn test
+          no_output_timeout: 60m
+      - when: 
+          condition: << parameters.node-version >> == 12 # run for the 'main' version
+          steps:
+            - run:
+                name: Send coverage
+                command: cd packages/<< parameters.lib-name >> && yarn send-coverage
+  prerelease-libs:
+    parameters:
+      lib-name:
+        type: string
+    docker:
+      - image: circleci/node:12
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    working_directory: ~/project
+    steps:
+      - checkout
+      - run:
+          name: Check release is desired
+          # TODO - or if something changed? perhaps always on the releaseX branches?
+          command: |
+            if [ -z "$NPM_TOKEN" ]; then
+              echo "No Token"
+              circleci-agent step halt
+            fi
+            if ! git log --format=oneline -n 1 | grep -q "\[publish\]"; then
+              echo "Skip"
+              circleci-agent step halt
+            else
+              echo "Publish prerelease"
+            fi
+      - run: 
+          name: yarn install
+          command: cd packages && yarn
+      # Locally bump the version
+      - run: 
+          name: yarn release
+          command: |
+            cd packages/<< parameters.lib-name >>
+            COMMIT_TIMESTAMP=$(git log -1 --pretty=format:%ct HEAD)
+            COMMIT_DATE=$(date -d @$COMMIT_TIMESTAMP +%Y%m%d-%H%M%S)
+            GIT_HASH=$(git rev-parse --short HEAD)
+            PRERELEASE_TAG=nightly-$(echo $CIRCLE_BRANCH | sed -r 's/[^a-z0-9]+/-/gi')
+            yarn release --prerelease $PRERELEASE_TAG-$COMMIT_DATE-$GIT_HASH --skip.changelog --skip.tag --skip.commit
+      # Build and deploy
+      - run: 
+          name: yarn build
+          command: cd packages/<< parameters.lib-name >> && yarn build
+      - run:
+          name: Publish to NPM with yarn
+          command: |
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            cd packages/<< parameters.lib-name >>
+            NEW_VERSION=$(node -p "require('./package.json').version")
+            yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag nightly
+  release-libs:
+    parameters:
+      lib-name:
+        type: string
+    docker:
+      - image: circleci/node:12
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    working_directory: ~/project
+    steps:
+      - checkout
+      - run: 
+          name: yarn install
+          command: cd packages && yarn
+      - run:
+          name: Determine release type
+          command: |
+            if [ -z "$NPM_TOKEN" ]; then
+              echo "No Token"
+              circleci-agent step halt
+            fi
+
+            cd packages/<< parameters.lib-name >>
+            PACKAGE_NAME=$(yarn info -s . name)
+            PUBLISHED_VERSION=$(yarn info -s $PACKAGE_NAME version)
+            THIS_VERSION=$(node -p "require('./package.json').version")
+            # Simple bash helper to comapre version numbers
+            verlte() {
+              [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
+            }
+            verlt() {
+              [ "$1" = "$2" ] && return 1 || verlte $1 $2
+            }
+            if verlt $PUBLISHED_VERSION $THIS_VERSION
+            then
+              echo 'export PUBLISH_ARGS="--tag latest"' >> $BASH_ENV
+              echo "Publishing latest"
+            else
+              echo 'export PUBLISH_ARGS="--tag hotfix"' >> $BASH_ENV
+              echo "Publishing hotfix"
+            fi
+            source $BASH_ENV
+      - run: 
+          name: yarn build
+          command: cd packages/<< parameters.lib-name >> && yarn build
+      - run:
+          name: Publish to NPM with yarn
+          command: |
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            cd packages/<< parameters.lib-name >>
+            NEW_VERSION=$(node -p "require('./package.json').version")
+            yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 $PUBLISH_ARGS
+            
+  typedoc-libs:
+    docker:
+      - image: circleci/node:12
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    working_directory: ~/project
+    steps:
+      - checkout
+      - run: 
+          name: yarn install
+          command: cd packages && yarn
+      - run: 
+          # TODO - we should only do this if the latest release
+          name: publish typedoc
+          command: |
+            cd packages
+            yarn docs
+            gh-pages -d docs
+
+  validate-prod-dependencies-libs:
+    parameters:
+      lib-name:
+        type: string
+    docker:
+      - image: circleci/node:12
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    working_directory: ~/project
+    steps:
+      - checkout
+      - run: 
+          name: yarn install
+          command: cd packages && yarn
+      - run:
+          name: Validate production dependencies
+          command: |
+            cd packages/<< parameters.lib-name >>
+            if ! git log --format=oneline -n 1 | grep -q "\[ignore-audit\]"; then
+              yarn validate:dependencies
+            else
+              echo "Skipping audit"
+            fi
+
+  validate-all-dependencies-libs:
+    parameters:
+      lib-name:
+        type: string
+    docker:
+      - image: circleci/node:12
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    working_directory: ~/project
+    steps:
+      - checkout
+      - run: 
+          name: yarn install
+          command: cd packages && yarn
+      - run:
+          name: Validate production dependencies
+          command: cd packages/<< parameters.lib-name >> && yarn validate:dependencies
+      - run:
+          name: Validate dev dependencies
+          command: cd packages/<< parameters.lib-name >> && yarn validate:dev-dependencies
+
+  validate-prod-dependencies-core:
     docker:
       - image: sofietv/tv-automation-meteor-base:1.11.1
         auth:
@@ -74,9 +286,9 @@ jobs:
       - checkout
       - run:
           name: Validate production dependencies for vulnerabilities and compatible licenses
-          command: cd meteor && meteor npm install && meteor npm run validate:prod-dependencies
+          command: cd meteor && meteor npm install && meteor npm run postinstall && meteor npm run validate:prod-dependencies
           no_output_timeout: 15m
-  validate-all-dependencies:
+  validate-all-dependencies-core:
     docker:
       - image: sofietv/tv-automation-meteor-base:1.11.1
         auth:
@@ -86,7 +298,7 @@ jobs:
       - checkout
       - run:
           name: Validate all dependencies for vulnerabilities
-          command: cd meteor && meteor npm install && meteor npm run validate:all-dependencies
+          command: cd meteor && meteor npm install && meteor npm run postinstall && meteor npm run validate:all-dependencies
           no_output_timeout: 15m
 
   publish-tag:
@@ -162,41 +374,94 @@ workflows:
   version: 2
   build-test-publish:
     jobs:
-      - validate-all-dependencies:
+      - validate-all-dependencies-core:
           filters:
             tags:
               only: /v.*/
             branches:
               only: /.*/
-      - validate-prod-dependencies:
+      - validate-prod-dependencies-core:
           filters:
             tags:
               only: /v.*/
             branches:
               only: /.*/
-      - build:
+      - validate-all-dependencies-libs:
+          matrix:
+            parameters:
+              lib-name:
+                - blueprints-integration
+                - server-core-integration
           filters:
             tags:
               only: /v.*/
             branches:
               only: /.*/
-      - lint:
+      - validate-prod-dependencies-libs:
+          matrix:
+            parameters:
+              lib-name:
+                - blueprints-integration
+                - server-core-integration
           filters:
             tags:
               only: /v.*/
             branches:
               only: /.*/
-      - tests:
+      - build-core:
           filters:
             tags:
               only: /v.*/
             branches:
               only: /.*/
+      - lint-core:
+          filters:
+            tags:
+              only: /v.*/
+            branches:
+              only: /.*/
+      - test-core:
+          filters:
+            tags:
+              only: /v.*/
+            branches:
+              only: /.*/
+
+      - test-libs:
+          matrix:
+            parameters:
+              lib-name:
+                - blueprints-integration
+                - server-core-integration
+              node-version:
+                - '10'
+                - '12'
+                - '14'
+                # - latest # currently 15
+          filters:
+            tags:
+              only: /v.*/
+            branches:
+              only: /.*/
+      - lint-libs:
+          matrix:
+            parameters:
+              lib-name:
+                - blueprints-integration
+                - server-core-integration
+          filters:
+            tags:
+              only: /v.*/
+            branches:
+              only: /.*/
+
       - publish-tag:
           requires:
-            - tests
-            - validate-prod-dependencies
-            - build
+            - test-core
+            - test-libs
+            - validate-prod-dependencies-core
+            - validate-prod-dependencies-libs
+            - build-core
           filters:
             tags:
               only: /v.*/
@@ -204,7 +469,7 @@ workflows:
               ignore: /.*/
       - publish-branch:
           requires:
-            - build
+            - build-core
           filters:
             tags:
               ignore: /.*/
@@ -214,3 +479,40 @@ workflows:
                 - develop
                 - stage
                 - /release\d+/
+
+      - prerelease-libs:
+          matrix:
+            parameters:
+              lib-name:
+                - blueprints-integration
+                - server-core-integration
+          requires:
+            - test-libs
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              only: /.*/
+      - release-libs:
+          matrix:
+            parameters:
+              lib-name:
+                - blueprints-integration
+                - server-core-integration
+          requires:
+            - publish-tag
+            - test-libs
+          filters:
+            tags:
+              only: /^[0-9]+\.[0-9]+\.[0-9]+.*/
+            branches:
+              ignore: /.*/
+      - typedoc-libs:
+          requires:
+            - release-libs
+          filters:
+            tags:
+              only: /^[0-9]+\.[0-9]+\.[0-9]+.*/
+            branches:
+              ignore: /.*/
+        

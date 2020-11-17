@@ -31,7 +31,7 @@ import {
 	BlueprintResultPartInstance,
 	ShowStyleBlueprintManifest,
 	BlueprintResultPartDB,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import {

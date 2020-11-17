@@ -28,7 +28,7 @@ import {
 	IOutputLayer,
 	BlueprintManifestType,
 	ConfigManifestEntry,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Studios, Studio, MappingsExt } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'

@@ -1,4 +1,4 @@
-import { BlueprintManifestType, SomeBlueprintManifest } from 'tv-automation-sofie-blueprints-integration'
+import { BlueprintManifestType, SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { literal, protectString } from '../../../../lib/lib'
 import { Blueprint } from '../../../../lib/collections/Blueprints'
 

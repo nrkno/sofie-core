@@ -16,7 +16,7 @@ import {
 	BlueprintManifestType,
 	BlueprintResultRundown,
 	BlueprintResultSegment,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { Studios, Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { generateFakeBlueprint } from './lib'

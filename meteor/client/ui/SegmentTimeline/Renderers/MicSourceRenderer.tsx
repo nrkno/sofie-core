@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
+import { ScriptContent } from '@sofie-automation/blueprints-integration'
 
 import { FloatingInspector } from '../../FloatingInspector'
 import Moment from 'react-moment'

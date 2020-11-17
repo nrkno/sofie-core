@@ -3,7 +3,7 @@ import { Time, registerCollection, ProtectedString, ProtectedStringProperties } 
 import {
 	IBlueprintExternalMessageQueueObj,
 	IBlueprintExternalMessageQueueType,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { RundownId } from './Rundowns'

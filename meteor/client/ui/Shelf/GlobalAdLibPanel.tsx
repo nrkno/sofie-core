@@ -31,7 +31,7 @@ import {
 	SomeContent,
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
