@@ -196,7 +196,7 @@ export async function getLookeaheadObjects(
 	}
 
 	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
-		if (info.partInstance.part.startedPlayback) {
+		if (!info.partInstance.part.startedPlayback) {
 			return info.pieceInstances
 		} else {
 			return info.pieceInstances.filter((p) => !hasPieceInstanceDefinitelyEnded(p, info.nowInPart))
