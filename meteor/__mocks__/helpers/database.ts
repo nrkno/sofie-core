@@ -30,6 +30,7 @@ import {
 	IBlueprintPart,
 	IBlueprintPiece,
 	TSR,
+	IBlueprintRundownDB,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -286,6 +287,20 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 				): string | null => {
 					return SHOW_STYLE_ID
 				},
+				getRundownPlaylistInfo: (rundowns: IBlueprintRundownDB[]) => {
+					if (rundowns.length > 0) {
+						return {
+							order: null,
+							playlist: {
+								name: rundowns[0].name,
+								expectedStart: rundowns[0].expectedStart,
+								expectedDuration: rundowns[0].expectedDuration,
+								externalId: rundowns[0].externalId,
+							},
+						}
+					}
+					return null
+				},
 			}
 		}
 	)
@@ -335,6 +350,7 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 						// expectedStart?:
 						// expectedDuration?: number;
 						metaData: ingestRundown.payload,
+						playlistExternalId: 'readySteadyGo',
 					}
 					return {
 						rundown,

@@ -211,6 +211,31 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
+	/* testInFiber('mosRoReadyToAir: ro not ready', () => {
+		const newStatus = MOS.IMOSObjectAirStatus.NOT_READY
+
+		let rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+		console.log(rundown)
+		expect(rundown.status).not.toEqual(newStatus.toString())
+
+		const payload = literal<MOS.IMOSROReadyToAir>({
+			ID: new MOS.MosString128(rundown.externalId),
+			Status: newStatus,
+		})
+
+		waitForPromise(MeteorCall.peripheralDevice.mosRoReadyToAir(device._id, device.token, payload))
+
+		rundown = Rundowns.findOne({ _id: rundown._id }) as Rundown
+		expect(rundown).toBeTruthy()
+		expect(rundown.airStatus).toEqual(newStatus.toString())
+
+		expect(fixSnapshot(RundownPlaylists.findOne(rundown.playlistId), true)).toMatchSnapshot()
+		expect(fixSnapshot(Rundowns.findOne(rundown._id), true)).toMatchSnapshot()
+		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+	}) */
+
 	testInFiber('mosRoReadyToAir: Missing ro', () => {
 		const newStatus = MOS.IMOSObjectAirStatus.READY
 
