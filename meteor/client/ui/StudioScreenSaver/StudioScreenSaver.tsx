@@ -120,8 +120,6 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				studioId: this.props.studioId,
 			})
 
-			this.measureElement()
-
 			window.addEventListener('resize', this.measureElement)
 
 			this.autorun(() => {
@@ -299,9 +297,14 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 		}
 
 		private setInfoElement = (el: HTMLDivElement) => {
-			this.setState({
-				infoElement: el,
-			})
+			this.setState(
+				{
+					infoElement: el,
+				},
+				() => {
+					this.measureElement()
+				}
+			)
 		}
 
 		render() {
