@@ -5,9 +5,11 @@ import Moment from 'react-moment'
 import { withTiming, WithTiming } from './RundownTiming/withTiming'
 import { RundownUtils } from '../../lib/rundown'
 import { withTranslation } from 'react-i18next'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 
 interface IProps {
 	rundown: Rundown
+	playlist: RundownPlaylist
 }
 
 interface ITrackedProps {
@@ -77,11 +79,12 @@ const RundownCountdown = withTranslation()(
 export const RundownDividerHeader = withTranslation()(
 	class RundownDividerHeader extends React.Component<Translated<IProps>> {
 		render() {
-			const { t } = this.props
+			const { t, rundown, playlist } = this.props
 			return (
 				<div className="rundown-divider-timeline">
-					<h2 className="rundown-divider-timeline__title">{this.props.rundown.name}</h2>
-					{this.props.rundown.expectedStart && (
+					<h2 className="rundown-divider-timeline__title">{rundown.name}</h2>
+					<h3 className="rundown-divider-timeline__playlist-name">{playlist.name}</h3>
+					{rundown.expectedStart && (
 						<div className="rundown-divider-timeline__expected-start">
 							<span>{t('Planned Start')}</span>&nbsp;
 							<Moment
@@ -89,19 +92,19 @@ export const RundownDividerHeader = withTranslation()(
 								calendar={{
 									sameElse: 'lll',
 								}}>
-								{this.props.rundown.expectedStart}
+								{rundown.expectedStart}
 							</Moment>
 							&nbsp;
 							<RundownCountdown
 								className="rundown-divider-timeline__expected-start__countdown"
-								expectedStart={this.props.rundown.expectedStart}
+								expectedStart={rundown.expectedStart}
 							/>
 						</div>
 					)}
-					{this.props.rundown.expectedDuration && (
+					{rundown.expectedDuration && (
 						<div className="rundown-divider-timeline__expected-duration">
 							<span>{t('Planned Duration')}</span>&nbsp;
-							<Moment interval={0} format="HH:mm:ss" date={this.props.rundown.expectedDuration} />
+							<Moment interval={0} format="HH:mm:ss" date={rundown.expectedDuration} />
 						</div>
 					)}
 				</div>
