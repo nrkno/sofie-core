@@ -132,6 +132,7 @@ import {
 import { removeEmptyPlaylists } from '../rundownPlaylist'
 import { profiler } from '../profiler'
 import { syncPlayheadInfinitesForNextPartInstance } from '../playout/infinites'
+import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -585,7 +586,7 @@ function updateRundownFromIngestData(
 		// The rundown is going to change playlist
 		const existingPlaylist = RundownPlaylists.findOne(existingDbRundown.playlistId)
 		if (existingPlaylist) {
-			if (allowedToMoveRundownOutOfPlaylist(existingPlaylist, existingDbRundown)) {
+			if (!allowedToMoveRundownOutOfPlaylist(existingPlaylist, existingDbRundown)) {
 				// The rundown contains a PartInstance that is currently on air.
 				// We're trying for a "soft approach" here, instead of rejecting the change altogether,
 				// and will just revert the playlist change:
@@ -601,6 +602,10 @@ function updateRundownFromIngestData(
 						name: 'Data update',
 					},
 				})
+
+				logger.warn(
+					`Blocking moving rundown "${existingDbRundown._id}" out of playlist "${existingDbRundown.playlistId}"`
+				)
 			}
 		} else {
 			logger.warn(`Existing playlist "${existingDbRundown.playlistId}" not found`)
@@ -1090,6 +1095,13 @@ function handleRemovedSegment(
 						`handleRemovedSegment: removeSegments: Segment ${segmentExternalId} not found`
 					)
 				}
+
+				cache.defer(() => {
+					IngestDataCache.remove({
+						segmentId: segmentId,
+						rundownId: rundownId,
+					})
+				})
 			}
 		}
 
