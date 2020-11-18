@@ -17,11 +17,11 @@ import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/med
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Parts, PartId } from '../../../lib/collections/Parts'
+import { Parts, PartId, Part } from '../../../lib/collections/Parts'
 import { getCurrentTime, unprotectString } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { Segments, SegmentId } from '../../../lib/collections/Segments'
+import { Segments, SegmentId, Segment } from '../../../lib/collections/Segments'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { Rundowns, RundownId, Rundown } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -29,7 +29,7 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
 import { PartNote, NoteType, TrackedNote } from '../../../lib/api/notes'
-import { Pieces, PieceId } from '../../../lib/collections/Pieces'
+import { Pieces, PieceId, Piece } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownPlaylistReloadResponse } from '../RundownView'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
@@ -268,7 +268,9 @@ class RundownViewNotifier extends WithManagedTracker {
 		const t = i18nTranslator
 
 		let oldDevItemIds: PeripheralDeviceId[] = []
-		let reactivePeripheralDevices: ReactiveVar<PeripheralDevice[]> | undefined
+		let reactivePeripheralDevices:
+			| ReactiveVar<Pick<PeripheralDevice, '_id' | 'name' | 'ignore' | 'status' | 'connected' | 'parentDeviceId'>[]>
+			| undefined
 		if (studioId) {
 			meteorSubscribe(PubSub.peripheralDevicesAndSubDevices, { studioId: studioId })
 			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioId, {
@@ -279,7 +281,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					connected: 1,
 					parentDeviceId: 1,
 				},
-			})
+			}) as ReactiveVar<Pick<PeripheralDevice, '_id' | 'name' | 'ignore' | 'status' | 'connected' | 'parentDeviceId'>[]>
 		}
 		this.autorun(() => {
 			const devices = reactivePeripheralDevices ? reactivePeripheralDevices.get() : []
@@ -380,7 +382,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			fields: {
 				_id: 1,
 			},
-		})
+		}) as ReactiveVar<Pick<Rundown, '_id'>[]>
 
 		const fullNotes: ReactiveVar<RankedNote[]> = new ReactiveVar([], _.isEqual)
 		const localNotes: ReactiveVar<RankedNote[]> = new ReactiveVar([], _.isEqual)
@@ -491,9 +493,10 @@ class RundownViewNotifier extends WithManagedTracker {
 				name: 1,
 				content: 1,
 			},
-		})
+		}) as ReactiveVar<Pick<Piece, '_id' | 'sourceLayerId' | 'outputLayerId' | 'name' | 'content'>[]>
+
 		this.autorun(() => {
-			const rundownIds = reactiveData
+			const rundownIds: RundownId[] = reactiveData
 				.getRRundowns(playlistId, {
 					fields: {
 						_id: 1,
@@ -525,14 +528,14 @@ class RundownViewNotifier extends WithManagedTracker {
 					fields: {
 						_rank: 1,
 					},
-				})
+				}) as Pick<Part, '_id' | '_rank'> | undefined
 				const segment = part
-					? Segments.findOne(part.segmentId, {
+					? (Segments.findOne(part.segmentId, {
 							fields: {
 								_rank: 1,
 								name: 1,
 							},
-					  })
+					  }) as Pick<Segment, '_id' | '_rank' | 'name'> | undefined)
 					: undefined
 				if (segment && sourceLayer && part) {
 					// we don't want this to be in a non-reactive context, so we manage this computation manually
@@ -855,7 +858,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		this._mediaStatusDep.changed()
 	}
 
-	private convertDeviceStatus(device: PeripheralDevice): NoticeLevel {
+	private convertDeviceStatus(device: Pick<PeripheralDevice, '_id' | 'connected' | 'status'>): NoticeLevel {
 		if (!device.connected) {
 			return NoticeLevel.CRITICAL
 		}
@@ -877,7 +880,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		}
 	}
 
-	private makeDeviceMessage(device: PeripheralDevice): string {
+	private makeDeviceMessage(device: Pick<PeripheralDevice, '_id' | 'connected' | 'name' | 'status'>): string {
 		const t = i18nTranslator
 
 		if (!device.connected) {

@@ -1350,14 +1350,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundowns = memoizedIsolatedAutorun((_playlistId) => playlist.getRundowns(), 'playlist.getRundowns', playlistId)
 		allParts = memoizedIsolatedAutorun(
 			(_playlistId) =>
-				playlist
-					.getAllOrderedParts(undefined, {
-						fields: {
-							segmentId: 1,
-							_rank: 1,
-						},
-					})
-					.map((part) => part._id),
+				(playlist.getAllOrderedParts(undefined, {
+					fields: {
+						segmentId: 1,
+						_rank: 1,
+					},
+				}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]).map((part) => part._id),
 			'playlist.getAllOrderedParts',
 			playlistId
 		)
@@ -1573,14 +1571,14 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					fields: {
 						_id: 1,
 					},
-				})
+				}) as Pick<RundownPlaylist, '_id' | 'getRundowns'> | undefined
 				if (playlist) {
 					const rundowns = playlist.getRundowns(undefined, {
 						fields: {
 							_id: 1,
 							showStyleBaseId: 1,
 						},
-					})
+					}) as Pick<Rundown, '_id' | 'showStyleBaseId'>[]
 					this.subscribe(PubSub.showStyleBases, {
 						_id: {
 							$in: rundowns.map((i) => i.showStyleBaseId),
@@ -1644,7 +1642,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							nextPartInstanceId: 1,
 							previousPartInstanceId: 1,
 						},
-					})
+					}) as
+						| Pick<RundownPlaylist, '_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId'>
+						| undefined
 					if (playlist) {
 						this.subscribe(PubSub.pieceInstances, {
 							partInstanceId: {
@@ -1666,7 +1666,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					fields: {
 						_id: 1,
 					},
-				})
+				}) as Pick<RundownPlaylist, '_id'> | undefined
 				if (playlist) {
 					const rundownIds = playlist.getRundownUnorderedIDs()
 					const segmentIds = Segments.find({
@@ -1702,7 +1702,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						currentPartInstanceId: 1,
 						nextPartInstanceId: 1,
 					},
-				})
+				}) as
+					| Pick<
+							RundownPlaylist,
+							| '_id'
+							| 'currentPartInstanceId'
+							| 'nextPartInstanceId'
+							| 'previousPartInstanceId'
+							| 'getRundownUnorderedIDs'
+					  >
+					| undefined
 				if (playlist) {
 					const rundownIds = playlist.getRundownUnorderedIDs()
 					const partInstanceIds: PartInstanceId[] = []
