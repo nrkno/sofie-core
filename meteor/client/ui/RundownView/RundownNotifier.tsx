@@ -163,8 +163,10 @@ class RundownViewNotifier extends WithManagedTracker {
 				_id: 1,
 				unsynced: 1,
 				notes: 1,
+				name: 1,
+				externalNRCSName: 1,
 			},
-		})
+		}) as ReactiveVar<Pick<Rundown, '_id' | 'unsynced' | 'notes' | 'name' | 'externalNRCSName'>[]>
 		this.autorun(() => {
 			const newNoteIds: Array<string> = []
 
@@ -180,9 +182,13 @@ class RundownViewNotifier extends WithManagedTracker {
 						newNotification = new Notification(
 							unsyncedId,
 							NoticeLevel.CRITICAL,
-							t('The Rundown has been UNSYNCED from {{nrcsName}}! No data updates will currently come through.', {
-								nrcsName: rundown.externalNRCSName || 'NRCS',
-							}),
+							t(
+								'The Rundown "{{rundownName}}" has been UNSYNCED from {{nrcsName}}! No data updates will currently come through.',
+								{
+									rundownName: rundown.name,
+									nrcsName: rundown.externalNRCSName || 'NRCS',
+								}
+							),
 							rundown._id,
 							getCurrentTime(),
 							true,
