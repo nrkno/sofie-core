@@ -47,6 +47,7 @@ function RundownPlaylistDragLayer(props) {
 				const classNames = ['drag-preview'].concat(props.draggedClassNames || [])
 				return (
 					<RundownListItemView
+						isActive={false}
 						renderTooltips={false}
 						rundown={rundown!}
 						classNames={classNames}

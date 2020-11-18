@@ -12,6 +12,7 @@ import JonasFormattedTime from './JonasFormattedTime'
 import RundownListItemProblems from './RundownListItemProblems'
 
 interface IRundownListItemViewProps {
+	isActive: boolean
 	classNames: string[]
 	htmlElementId: string
 	connectDragSource: (content: ReactElement) => ReactElement | null
@@ -28,6 +29,7 @@ interface IRundownListItemViewProps {
 
 export default withTranslation()(function RundownListItemView(props: Translated<IRundownListItemViewProps>) {
 	const {
+		isActive,
 		t,
 		connectDragSource,
 		connectDropTarget,
@@ -64,6 +66,16 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 					</span>
 				)}
 				<b className="rundown-name">{rundownNameContent}</b>
+				{isActive === true ? (
+					<Tooltip overlay={t('This rundown is currently active')} placement="bottom">
+						<div className="origo-pulse small right mrs">
+							<div className="pulse-marker">
+								<div className="pulse-rays"></div>
+								<div className="pulse-rays delay"></div>
+							</div>
+						</div>
+					</Tooltip>
+				) : null}
 			</span>
 			{/* <RundownListItemProblems warnings={warnings} errors={errors} /> */}
 			<span className="rundown-list-item__text">

@@ -42,6 +42,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 export const HTML_ID_PREFIX = 'rundown-'
 
 export interface IRundownListItemProps {
+	isActive: boolean
 	rundown: Rundown
 	rundownViewUrl?: string
 	swapRundownOrder: (a: RundownId, b: RundownId) => void
@@ -253,7 +254,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 				}
 
 				render() {
-					const { t, rundown, connectDragSource, connectDropTarget, isDragging, rundownViewUrl } = this.props
+					const { isActive, t, rundown, connectDragSource, connectDropTarget, isDragging, rundownViewUrl } = this.props
 					const userCanConfigure = getAllowConfigure()
 
 					const classNames: string[] = []
@@ -265,6 +266,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 
 					return (
 						<RundownListItemView
+							isActive={isActive}
 							classNames={classNames}
 							connectDragSource={connectDragSource}
 							connectDropTarget={connectDropTarget}
