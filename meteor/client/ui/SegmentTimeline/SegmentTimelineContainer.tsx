@@ -149,7 +149,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.playlist,
 			segment,
 			props.segmentsIdsBefore,
-			props.orderedAllPartIds
+			props.orderedAllPartIds,
+			true
 		)
 		let notes: Array<SegmentNote> = []
 		o.parts.forEach((part) => {
