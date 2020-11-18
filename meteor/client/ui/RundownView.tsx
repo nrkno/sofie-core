@@ -199,6 +199,7 @@ const WarningDisplay = withTranslation()(
 interface ITimingDisplayProps {
 	rundownPlaylist: RundownPlaylist
 	currentRundown: Rundown | undefined
+	rundownCount: number
 }
 
 export enum RundownViewKbdShortcuts {
@@ -231,8 +232,8 @@ const TimingDisplay = withTranslation()(
 	withTiming<ITimingDisplayProps & WithTranslation, {}>()(
 		class TimingDisplay extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 			private renderRundownName() {
-				const { rundownPlaylist, currentRundown } = this.props
-				return currentRundown ? (
+				const { rundownPlaylist, currentRundown, rundownCount } = this.props
+				return currentRundown && (rundownPlaylist.name !== currentRundown.name || rundownCount > 1) ? (
 					<span
 						className="timing-clock-label left hide-overflow rundown-name"
 						title={`${currentRundown.name} - ${rundownPlaylist.name}`}>
@@ -1207,7 +1208,11 @@ const RundownHeader = withTranslation()(
 										</NavLink>
 									</div>
 								</div>
-								<TimingDisplay rundownPlaylist={this.props.playlist} currentRundown={this.props.currentRundown} />
+								<TimingDisplay
+									rundownPlaylist={this.props.playlist}
+									currentRundown={this.props.currentRundown}
+									rundownCount={this.props.rundownIds.length}
+								/>
 								<RundownSystemStatus
 									studio={this.props.studio}
 									playlist={this.props.playlist}
