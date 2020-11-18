@@ -492,8 +492,9 @@ class RundownViewNotifier extends WithManagedTracker {
 				outputLayerId: 1,
 				name: 1,
 				content: 1,
+				startPartId: 1,
 			},
-		}) as ReactiveVar<Pick<Piece, '_id' | 'sourceLayerId' | 'outputLayerId' | 'name' | 'content'>[]>
+		}) as ReactiveVar<Pick<Piece, '_id' | 'sourceLayerId' | 'outputLayerId' | 'name' | 'content' | 'startPartId'>[]>
 
 		this.autorun(() => {
 			const rundownIds: RundownId[] = reactiveData
@@ -527,8 +528,10 @@ class RundownViewNotifier extends WithManagedTracker {
 				const part = Parts.findOne(piece.startPartId, {
 					fields: {
 						_rank: 1,
+						segmentId: 1,
+						rundownId: 1,
 					},
-				}) as Pick<Part, '_id' | '_rank'> | undefined
+				}) as Pick<Part, '_id' | '_rank' | 'segmentId' | 'rundownId'> | undefined
 				const segment = part
 					? (Segments.findOne(part.segmentId, {
 							fields: {
