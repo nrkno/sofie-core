@@ -32,6 +32,14 @@
 		font-size: 4.5vmin;
 		font-weight: 200;
 
+		&.studio-screen-saver__info--no-rundown {
+			width: auto;
+
+			.studio-screen-saver__info__rundown {
+				text-align: center;
+			}
+		}
+
 		@media (max-aspect-ratio: 4/3) {
 			font-size: 3.5vmin;
 		}

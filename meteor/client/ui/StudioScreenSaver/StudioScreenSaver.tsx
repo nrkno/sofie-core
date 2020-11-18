@@ -309,6 +309,7 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 
 		render() {
 			const { t, rundownPlaylist } = this.props
+			const hasRundown = rundownPlaylist && rundownPlaylist.expectedStart
 			return (
 				<div
 					className={classNames('studio-screen-saver', {
@@ -318,9 +319,13 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 						className="studio-screen-saver__bkg"
 						data="/images/screen-saver-bkg.svg"
 						type="image/svg+xml"></object>
-					<div className="studio-screen-saver__info" ref={this.setInfoElement}>
+					<div
+						className={classNames('studio-screen-saver__info', {
+							'studio-screen-saver__info--no-rundown': !hasRundown,
+						})}
+						ref={this.setInfoElement}>
 						<Clock className="studio-screen-saver__clock" />
-						{rundownPlaylist && rundownPlaylist.expectedStart ? (
+						{hasRundown && rundownPlaylist && rundownPlaylist.expectedStart ? (
 							<>
 								<div className="studio-screen-saver__info__label">{t('Next scheduled show')}</div>
 								<div className="studio-screen-saver__info__rundown">{rundownPlaylist.name}</div>
