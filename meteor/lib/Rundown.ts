@@ -11,6 +11,8 @@ import {
 	buildPastInfinitePiecesForThisPartQuery,
 } from './rundown/infinites'
 import { FindOptions } from './typings/meteor'
+import { invalidateAfter } from '../client/lib/invalidatingTime'
+import { getCurrentTime } from './lib'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -85,6 +87,8 @@ export function fetchPiecesThatMayBeActiveForPart(
 	return [...piecesStartingInPart, ...infinitePieces]
 }
 
+const SIMULATION_INVALIDATION = 3000
+
 export function getPieceInstancesForPartInstance(
 	partInstance: PartInstanceLimited,
 	partsBeforeThisInSegmentSet: Set<PartId>,
@@ -93,7 +97,8 @@ export function getPieceInstancesForPartInstance(
 	nextPartIsAfterCurrentPart: boolean,
 	currentPartInstance: PartInstance | undefined,
 	currentPartInstancePieceInstances: PieceInstance[] | undefined,
-	options?: FindOptions<PieceInstance>
+	options?: FindOptions<PieceInstance>,
+	pieceInstanceSimulation?: boolean
 ) {
 	if (partInstance.isTemporary) {
 		return getPieceInstancesForPart(
@@ -113,7 +118,37 @@ export function getPieceInstancesForPartInstance(
 			partInstance.isTemporary
 		)
 	} else {
-		return PieceInstances.find({ partInstanceId: partInstance._id }, options).fetch()
+		const results = PieceInstances.find({ partInstanceId: partInstance._id }, options).fetch()
+		if (results.length > 0 || !pieceInstanceSimulation) return results
+
+		const now = getCurrentTime()
+		if (
+			pieceInstanceSimulation &&
+			results.length === 0 &&
+			(!partInstance.timings ||
+				(partInstance.timings.next || 0) > now - SIMULATION_INVALIDATION ||
+				(partInstance.timings.take || 0) > now - SIMULATION_INVALIDATION)
+		) {
+			invalidateAfter(SIMULATION_INVALIDATION)
+			return getPieceInstancesForPart(
+				currentPartInstance,
+				currentPartInstancePieceInstances,
+				partInstance.part,
+				partsBeforeThisInSegmentSet,
+				segmentsBeforeThisInRundownSet,
+				fetchPiecesThatMayBeActiveForPart(
+					partInstance.part,
+					partsBeforeThisInSegmentSet,
+					segmentsBeforeThisInRundownSet
+				),
+				orderedAllParts,
+				partInstance._id,
+				nextPartIsAfterCurrentPart,
+				true
+			)
+		} else {
+			return results
+		}
 	}
 }
 
