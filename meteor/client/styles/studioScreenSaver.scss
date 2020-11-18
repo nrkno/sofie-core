@@ -36,7 +36,10 @@
 			width: auto;
 
 			.studio-screen-saver__info__rundown {
-				text-align: center;
+				text-align: right;
+				margin-top: -1.8em;
+				font-weight: 800;
+				margin-right: 0.1em;
 			}
 		}
 
@@ -46,7 +49,7 @@
 
 		.studio-screen-saver__clock {
 			font-size: 4em;
-			letter-spacing: -0.04em;
+			letter-spacing: -0.02em;
 			text-align: right;
 			margin-bottom: 0.7em;
 		}
@@ -64,6 +67,7 @@
 
 		.studio-screen-saver__info__countdown {
 			font-size: 2em;
+			letter-spacing: -0.03em;
 		}
 	}
 }
