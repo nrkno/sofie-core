@@ -1051,11 +1051,11 @@ const RundownHeader = withTranslation()(
 				doUserAction(
 					t,
 					e,
-					UserAction.RELOAD_RUNDOWN_DATA,
+					UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA,
 					(e) => MeteorCall.userAction.resyncRundownPlaylist(e, this.props.playlist._id),
 					(err, reloadResponse) => {
 						if (!err && reloadResponse) {
-							if (!handleRundownPlaylistReloadResponse(t, this.props.playlist, reloadResponse)) {
+							if (!handleRundownPlaylistReloadResponse(t, reloadResponse)) {
 								if (this.props.playlist && this.props.playlist.nextPartInstanceId) {
 									scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
 										if (!error.toString().match(/another scroll/)) console.error(error)
@@ -2762,44 +2762,58 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 export function handleRundownPlaylistReloadResponse(
 	t: i18next.TFunction,
-	rundownPlaylist: RundownPlaylist,
 	result: ReloadRundownPlaylistResponse
+): boolean {
+	let possiblyBadResponse = _.first(result.rundownsResponses)
+
+	result.rundownsResponses.forEach((r) => {
+		if (r.response === TriggerReloadDataResponse.MISSING) {
+			possiblyBadResponse = r
+		}
+	})
+	// TODO: This is a hack, since it only handles the first error
+	return possiblyBadResponse
+		? handleRundownReloadResponse(t, possiblyBadResponse.rundownId, possiblyBadResponse.response)
+		: false
+}
+export function handleRundownReloadResponse(
+	t: i18next.TFunction,
+	rundownId: RundownId,
+	result: TriggerReloadDataResponse
 ): boolean {
 	let hasDoneSomething = false
 
-	let maybeMissingRundownId: RundownId | null = null
-	result.rundownsResponses.forEach((r) => {
-		if (r.response === TriggerReloadDataResponse.MISSING) {
-			maybeMissingRundownId = r.rundownId
-		}
-	})
-	if (maybeMissingRundownId) {
-		const missingRundownId: RundownId = maybeMissingRundownId
-		const missingRundown = Rundowns.findOne(missingRundownId)
-		const missingRundownName = missingRundown ? missingRundown.name : 'N/A'
+	if (result === TriggerReloadDataResponse.MISSING) {
+		const rundown = Rundowns.findOne(rundownId)
+		const playlist = RundownPlaylists.findOne(rundown?.playlistId)
+
 		hasDoneSomething = true
 		const notification = NotificationCenter.push(
 			new Notification(
 				undefined,
 				NoticeLevel.CRITICAL,
-				t('Rundown {{rundownName}} in Playlist {{playlistName}} is missing, what do you want to do?', {
-					rundownName: missingRundownName,
-					playlistName: rundownPlaylist.name,
-				}),
+				t(
+					'Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data from {{nrcsName}}, what do you want to do?',
+					{
+						nrcsName: rundown?.externalNRCSName || 'NRCS',
+						rundownName: rundown?.name || 'N/A',
+						playlistName: playlist?.name || 'N/A',
+					}
+				),
 				'userAction',
 				undefined,
 				true,
 				[
 					// actions:
 					{
-						label: t('Mark the rundown as unsynced'),
+						label: t('Leave it in Sofie (mark the rundown as unsynced)'),
 						type: 'default',
 						action: () => {
 							doUserAction(
 								t,
 								'Missing rundown action',
 								UserAction.UNSYNC_RUNDOWN,
-								(e) => MeteorCall.userAction.unsyncRundown(e, missingRundownId),
+								(e) => MeteorCall.userAction.unsyncRundown(e, rundownId),
 								(err) => {
 									if (!err) {
 										notification.stop()
@@ -2809,16 +2823,16 @@ export function handleRundownPlaylistReloadResponse(
 						},
 					},
 					{
-						label: t('Remove just the rundown'),
+						label: t('Remove just the rundown from Sofie'),
 						type: 'default',
 						action: () => {
 							doModalDialog({
-								title: rundownPlaylist.name,
+								title: t('Remove rundown'),
 								message: t(
-									'Do you really want to remove just the rundown "{{rundownName}}" in the playlist {{playlistName}}? This cannot be undone!',
+									'Do you really want to remove just the rundown "{{rundownName}}" in the playlist {{playlistName}} from Sofie? This cannot be undone!',
 									{
-										rundownName: missingRundownName,
-										playlistName: rundownPlaylist.name,
+										rundownName: rundown?.name || 'N/A',
+										playlistName: playlist?.name || 'N/A',
 									}
 								),
 								onAccept: () => {
@@ -2827,35 +2841,7 @@ export function handleRundownPlaylistReloadResponse(
 										t,
 										'Missing rundown action',
 										UserAction.REMOVE_RUNDOWN,
-										(e) => MeteorCall.userAction.removeRundown(e, missingRundownId),
-										(err) => {
-											if (!err) {
-												notification.stop()
-												window.location.assign(`/`)
-											}
-										}
-									)
-								},
-							})
-						},
-					},
-					{
-						label: t('Remove rundown playlist'),
-						type: 'default',
-						action: () => {
-							doModalDialog({
-								title: rundownPlaylist.name,
-								message: t(
-									'Do you really want to remove the rundownPlaylist "{{rundownName}}"? This cannot be undone!',
-									{ rundownName: missingRundownName }
-								),
-								onAccept: () => {
-									// nothing
-									doUserAction(
-										t,
-										'Missing rundown action',
-										UserAction.REMOVE_RUNDOWN_PLAYLIST,
-										(e) => MeteorCall.userAction.removeRundownPlaylist(e, rundownPlaylist._id),
+										(e) => MeteorCall.userAction.removeRundown(e, rundownId),
 										(err) => {
 											if (!err) {
 												notification.stop()
