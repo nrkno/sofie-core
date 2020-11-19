@@ -362,6 +362,7 @@ describe('Test blueprint post-process', () => {
 					externalId: 'eid0',
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
+					content: undefined as any,
 					lifespan: PieceLifespan.WithinPart,
 				},
 				{
@@ -370,7 +371,7 @@ describe('Test blueprint post-process', () => {
 					externalId: 'eid1',
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {},
+					content: {} as any,
 					lifespan: PieceLifespan.WithinPart,
 				},
 				{
@@ -416,6 +417,9 @@ describe('Test blueprint post-process', () => {
 				outputLayerId: '',
 				rundownId: protectString(''),
 				status: 0,
+				content: {
+					timelineObjects: [],
+				},
 				lifespan: PieceLifespan.WithinPart,
 			})
 			ensureAllKeysDefined(tmpObj, res)
@@ -490,6 +494,7 @@ describe('Test blueprint post-process', () => {
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
+					content: undefined as any,
 					lifespan: PieceLifespan.OutOnSegmentChange,
 				},
 				{
@@ -498,7 +503,7 @@ describe('Test blueprint post-process', () => {
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {},
+					content: {} as any,
 					lifespan: PieceLifespan.OutOnSegmentEnd,
 				},
 				{
@@ -542,6 +547,9 @@ describe('Test blueprint post-process', () => {
 				startRundownId: protectString(''),
 				status: 0,
 				lifespan: PieceLifespan.WithinPart,
+				content: {
+					timelineObjects: [],
+				},
 				invalid: false,
 			})
 			ensureAllKeysDefined(tmpObj, res)

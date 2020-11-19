@@ -550,6 +550,9 @@ export namespace ServerPlayoutAdLibAPI {
 									startPartId: currentPartInstance.part._id,
 									status: RundownAPI.PieceStatusCode.UNKNOWN,
 									virtual: true,
+									content: {
+										timelineObjects: [],
+									},
 								},
 								currentPartInstance.rundownId,
 								currentPartInstance._id

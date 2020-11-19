@@ -37,7 +37,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
-import { literal, normalizeArray, unprotectString, protectString, Omit } from '../../../lib/lib'
+import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import {
@@ -501,12 +501,15 @@ function actionToAdLibPieceUi(
 ): AdLibPieceUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
-	let content: Omit<SomeContent, 'timelineObjects'> | undefined = undefined
+	let content: SomeContent = { timelineObjects: [] }
 	const isContent = RundownUtils.isAdlibActionContent(action.display)
 	if (isContent) {
 		sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
 		outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-		content = (action.display as IBlueprintActionManifestDisplayContent).content
+		content = {
+			timelineObjects: [],
+			...(action.display as IBlueprintActionManifestDisplayContent).content,
+		}
 	}
 
 	return literal<AdLibPieceUi>({
@@ -778,6 +781,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 									sourceLayerId: layer._id,
 									outputLayerId: '',
 									_rank: 0,
+									content: { timelineObjects: [] },
 								})
 							)
 					)
@@ -866,6 +870,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 								sourceLayerId: layer._id,
 								outputLayerId: '',
 								_rank: 0,
+								content: { timelineObjects: [] },
 							})
 						)
 				},

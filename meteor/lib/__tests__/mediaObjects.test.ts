@@ -109,6 +109,7 @@ describe('lib/mediaObjects', () => {
 				content: literal<VTContent>({
 					fileName: 'test',
 					path: '',
+					timelineObjects: [],
 				}),
 				lifespan: PieceLifespan.WithinPart,
 			}),
@@ -130,6 +131,7 @@ describe('lib/mediaObjects', () => {
 				content: literal<VTContent>({
 					fileName: 'TEST',
 					path: '',
+					timelineObjects: [],
 				}),
 				lifespan: PieceLifespan.WithinPart,
 			}),
@@ -148,7 +150,9 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: {},
+				content: {
+					timelineObjects: [],
+				},
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -244,6 +248,7 @@ describe('lib/mediaObjects', () => {
 			content: literal<VTContent>({
 				fileName: 'test_file',
 				path: '',
+				timelineObjects: [],
 			}),
 		})
 
@@ -329,6 +334,7 @@ describe('lib/mediaObjects', () => {
 			content: literal<VTContent>({
 				fileName: 'test_file_2',
 				path: '',
+				timelineObjects: [],
 			}),
 		})
 
@@ -343,6 +349,7 @@ describe('lib/mediaObjects', () => {
 			content: literal<VTContent>({
 				fileName: 'test_file_3',
 				path: '',
+				timelineObjects: [],
 			}),
 		})
 

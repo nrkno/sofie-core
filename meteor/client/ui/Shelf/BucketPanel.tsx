@@ -165,12 +165,15 @@ export function actionToAdLibPieceUi(
 ): BucketAdLibActionUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
-	let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
+	let content: SomeContent = { timelineObjects: [] }
 	const isContent = RundownUtils.isAdlibActionContent(action.display)
 	if (isContent) {
 		sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
 		outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-		content = (action.display as IBlueprintActionManifestDisplayContent).content
+		content = {
+			timelineObjects: [],
+			...(action.display as IBlueprintActionManifestDisplayContent).content,
+		}
 	}
 
 	return literal<BucketAdLibActionUi>({

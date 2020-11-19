@@ -15,7 +15,6 @@ import {
 	unprotectString,
 	protectString,
 	ProtectedString,
-	Omit,
 	getRandomId,
 	PreparedChanges,
 	unprotectObject,

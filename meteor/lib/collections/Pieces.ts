@@ -1,7 +1,7 @@
 import { RundownAPI } from '../api/rundown'
 import { TransformedCollection } from '../typings/meteor'
 import { PartId } from './Parts'
-import { registerCollection, ProtectedString, Omit } from '../lib'
+import { registerCollection, ProtectedString } from '../lib'
 import { IBlueprintPieceGeneric, IBlueprintPieceDB } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'

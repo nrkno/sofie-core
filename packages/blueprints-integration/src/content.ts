@@ -10,7 +10,7 @@ export enum SourceLayerType {
 	SCRIPT = 4,
 	GRAPHICS = 5,
 	SPLITS = 6,
-	// AUDIO = 7,
+	AUDIO = 7,
 	// CAMERA_MOVEMENT = 8,
 	// METADATA = 9,
 	LOWER_THIRD = 10,
@@ -28,7 +28,7 @@ export enum SourceLayerType {
 // }
 
 export interface BaseContent {
-	timelineObjects?: TimelineObjectCoreExt[]
+	timelineObjects: TimelineObjectCoreExt[]
 	editable?: BaseEditableParameters
 
 	sourceDuration?: number
@@ -148,14 +148,14 @@ export interface SplitsContent extends BaseContent {
 	boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]
 }
 
-// export interface AudioContent extends BaseContent {
-// 	fileName: string
-// 	path: string
-// 	// proxyPath?: string
-// 	loop?: boolean
-// 	sourceDuration: number
-// 	metadata?: MetadataElement[]
-// }
+export interface AudioContent extends BaseContent {
+	fileName: string
+	path: string
+	// proxyPath?: string
+	loop?: boolean
+	// sourceDuration: number
+	// metadata?: MetadataElement[]
+}
 
 // export interface CameraMovementContent extends BaseContent {
 // 	cameraConfiguration: any

@@ -224,7 +224,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** Layer output this piece belongs to */
 	outputLayerId: string
 	/** The object describing the item in detail */
-	content?: SomeContent
+	content: SomeContent
 
 	/** The transition used by this piece to transition to and from the piece */
 	transitions?: {

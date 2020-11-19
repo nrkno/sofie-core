@@ -37,7 +37,7 @@ export interface IBlueprintActionManifestDisplayContent extends IBlueprintAction
 	/** Layer output this piece belongs to */
 	outputLayerId: string
 	/** Description used to produce the thumbnail, sourceDuration, etc. information for the adlib */
-	content?: Omit<SomeContent, 'timelineObjects'>
+	content: Omit<SomeContent, 'timelineObjects'>
 }
 
 export interface IBlueprintActionTriggerMode {

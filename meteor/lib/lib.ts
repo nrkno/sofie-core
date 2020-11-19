@@ -401,7 +401,6 @@ export type Partial<T> = {
 export function partial<T>(o: Partial<T>) {
 	return o
 }
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 export interface IDObj {
 	_id: ProtectedString<any>
 }

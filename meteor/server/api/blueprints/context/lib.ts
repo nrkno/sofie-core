@@ -16,7 +16,7 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	metaData: {},
 	sourceLayerId: '',
 	outputLayerId: '',
-	content: {},
+	content: { timelineObjects: [] },
 	transitions: {},
 	lifespan: PieceLifespan.WithinPart,
 	adlibPreroll: 0,

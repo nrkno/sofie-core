@@ -1,5 +1,5 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Omit, ProtectedString, Time } from '../lib'
+import { registerCollection, ProtectedString, Time } from '../lib'
 import { TimelineObjectCoreExt, TSR, OnGenerateTimelineObj } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
 import { createMongoCollection } from './lib'

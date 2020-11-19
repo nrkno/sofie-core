@@ -317,6 +317,8 @@ const SourceLayerSettings = withTranslation()(
 					return t('Live Speak')
 				case SourceLayerType.LOWER_THIRD:
 					return t('Lower Third')
+				// case SourceLayerType.MIC:
+				// 	return t('Studio Microphone')
 				case SourceLayerType.REMOTE:
 					return t('Remote Source')
 				case SourceLayerType.SCRIPT:
@@ -331,8 +333,8 @@ const SourceLayerSettings = withTranslation()(
 				// 	return t('Camera Movement')
 				case SourceLayerType.UNKNOWN:
 					return t('Unknown Layer')
-				// case SourceLayerType.AUDIO:
-				// 	return t('Audio Mixing')
+				case SourceLayerType.AUDIO:
+					return t('Audio Mixing')
 				case SourceLayerType.TRANSITION:
 					return t('Transition')
 				// case SourceLayerType.LIGHTS:
