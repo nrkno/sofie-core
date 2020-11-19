@@ -42,7 +42,7 @@ import {
 import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
 import { Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { Segments, Segment } from '../../../../lib/collections/Segments'
+import { Segments, Segment, SegmentUnsyncedReason } from '../../../../lib/collections/Segments'
 import { loadShowStyleBlueprint } from '../../blueprints/cache'
 import { removeSegments, ServerRundownAPI } from '../../rundown'
 import { UpdateNext } from '../updateNext'
@@ -577,7 +577,12 @@ function diffAndApplyChanges(
 				`Currently playing part "${currentPartInstance.part._id}" was removed during ingestData. Unsyncing the rundown!`
 			)
 			if (Settings.allowUnsyncedSegments) {
-				ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, currentPartInstance.part.segmentId)
+				ServerRundownAPI.unsyncSegmentInner(
+					cache,
+					rundown._id,
+					currentPartInstance.part.segmentId,
+					SegmentUnsyncedReason.CHANGED
+				)
 			} else {
 				ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 			}

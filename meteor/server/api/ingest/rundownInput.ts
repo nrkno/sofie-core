@@ -58,7 +58,7 @@ import {
 	RundownBaselineAdLibItem,
 	RundownBaselineAdLibPieces,
 } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
+import { DBSegment, Segments, SegmentId, SegmentUnsyncedReason } from '../../../lib/collections/Segments'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import {
 	saveRundownCache,
@@ -775,7 +775,11 @@ function updateRundownFromIngestData(
 				) {
 					approvedSegmentChanges.push(segmentChange)
 				} else {
-					ServerRundownAPI.unsyncSegmentInner(cache, rundownId, segmentChange.segmentId)
+					const reason =
+						segmentChange.segment.removed.length > 0
+							? SegmentUnsyncedReason.REMOVED
+							: SegmentUnsyncedReason.CHANGED
+					ServerRundownAPI.unsyncSegmentInner(cache, rundownId, segmentChange.segmentId, reason)
 				}
 			})
 
@@ -1022,7 +1026,7 @@ export function handleRemovedSegment(
 		if (canBeUpdated(rundown, segment)) {
 			if (!isUpdateAllowed(cache, playlist, rundown, {}, { removed: [segment] }, {})) {
 				if (Settings.allowUnsyncedSegments) {
-					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
+					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId, SegmentUnsyncedReason.REMOVED)
 				} else {
 					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 				}
@@ -1133,6 +1137,52 @@ function updateSegmentFromIngestData(
 		res
 	)
 
+	if (Settings.allowUnsyncedSegments && rundown.hasUnsyncedSegment) {
+		const removedSegment = cache.Segments.findOne((s) => s.unsynced === SegmentUnsyncedReason.REMOVED)
+		if (removedSegment) {
+			const allSegmentsByRank = cache.Segments.findFetch(
+				{
+					rundownId: rundown._id,
+				},
+				{
+					sort: {
+						_rank: -1,
+					},
+				}
+			)
+			const removedInd = allSegmentsByRank.findIndex((s) => s.unsynced === SegmentUnsyncedReason.REMOVED)
+			let eps = 0.0001
+			let newRank = Number.MIN_SAFE_INTEGER
+			let previousSegment = allSegmentsByRank[removedInd + 1]
+			let nextSegment = allSegmentsByRank[removedInd - 1]
+			if (previousSegment) {
+				newRank = previousSegment._rank + eps
+				if (previousSegment._id === segmentId) {
+					if (previousSegment._rank > newSegment._rank) {
+						// moved previous segment up: follow it
+						newRank = newSegment._rank + eps
+					} else if (previousSegment._rank < newSegment._rank && allSegmentsByRank[removedInd + 2]) {
+						// moved previous segment down: stay behind more previous
+						newRank = allSegmentsByRank[removedInd + 2]._rank + eps
+					}
+				} else if (nextSegment && nextSegment._id === segmentId && nextSegment._rank > newSegment._rank) {
+					// next segment was moved up
+					if (allSegmentsByRank[removedInd + 2]) {
+						if (allSegmentsByRank[removedInd + 2]._rank < newSegment._rank) {
+							// swapped segments directly before and after
+							// will always result in both going below the unsynced
+							// will also affect multiple segments moved directly above the previous
+							newRank = allSegmentsByRank[removedInd + 2]._rank + eps
+						}
+					} else {
+						newRank = Number.MIN_SAFE_INTEGER
+					}
+				}
+			}
+			cache.Segments.update(allSegmentsByRank[removedInd]._id, { $set: { _rank: newRank } })
+		}
+	}
+
 	const prepareSaveParts = prepareSaveIntoCache<Part, DBPart>(
 		cache.Parts,
 		{
@@ -1180,7 +1230,7 @@ function updateSegmentFromIngestData(
 	// determine if update is allowed here
 	if (!isUpdateAllowed(cache, playlist, rundown, {}, { changed: [newSegment] }, prepareSaveParts)) {
 		if (Settings.allowUnsyncedSegments) {
-			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
+			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId, SegmentUnsyncedReason.CHANGED)
 		} else {
 			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 		}
@@ -1308,7 +1358,7 @@ export function handleRemovedPart(
 
 			if (!isUpdateAllowed(cache, playlist, rundown, {}, {}, { removed: [part] })) {
 				if (Settings.allowUnsyncedSegments) {
-					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
+					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId, SegmentUnsyncedReason.CHANGED)
 				} else {
 					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 				}
@@ -1380,7 +1430,7 @@ export function handleUpdatedPartInner(
 
 	if (part && !isUpdateAllowed(cache, playlist, rundown, {}, {}, { changed: [part] })) {
 		if (Settings.allowUnsyncedSegments) {
-			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
+			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId, SegmentUnsyncedReason.CHANGED)
 		} else {
 			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 		}
