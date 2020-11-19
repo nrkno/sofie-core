@@ -30,7 +30,6 @@ export default function JonasFormattedTime(props: IJonasFormattedTimeProps) {
 
 	const diff = now.diff(timeToFormat, 'days')
 
-	console.debug('diff', diff)
 	let formattedDateString: string
 	if (Math.abs(diff) < 6) {
 		formattedDateString = timeToFormat.calendar(now, momentCalendarOptions)
