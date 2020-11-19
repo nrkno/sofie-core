@@ -8,6 +8,9 @@ interface IJonasFormattedTimeProps {
 	timestamp: number
 }
 
+const browserLanguage = window.navigator.language
+moment.locale(browserLanguage === 'no' ? 'nb' : browserLanguage)
+
 export default function JonasFormattedTime(props: IJonasFormattedTimeProps) {
 	const { timestamp, t } = props
 
