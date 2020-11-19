@@ -4,7 +4,6 @@ import { withTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { INoteBase, NoteType } from '../../../lib/api/notes'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { MomentFromNow } from '../../lib/Moment'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
@@ -96,7 +95,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				)}
 			</span>
 			<span className="rundown-list-item__text">
-				<MomentFromNow>{rundown.modified}</MomentFromNow>
+				<JonasFormattedTime timestamp={rundown.modified} t={t} />
 			</span>
 			<span className="rundown-list-item__actions">
 				{confirmReSyncRundownHandler ? (
