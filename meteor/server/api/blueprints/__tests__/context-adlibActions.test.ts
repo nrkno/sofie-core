@@ -80,7 +80,7 @@ describe('Test blueprint api context', () => {
 						startPartId: part._id,
 						content: {
 							index: i,
-						},
+						} as any,
 						lifespan: PieceLifespan.WithinPart,
 						invalid: false,
 					},

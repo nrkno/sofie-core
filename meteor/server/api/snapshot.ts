@@ -51,7 +51,7 @@ import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { AudioContent } from '@sofie-automation/blueprints-integration'
+import { VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
@@ -192,15 +192,9 @@ function createRundownPlaylistSnapshot(
 	const adLibActions = AdLibActions.find({ rundownId: { $in: rundownIds } }).fetch()
 	const baselineAdLibActions = RundownBaselineAdLibActions.find({ rundownId: { $in: rundownIds } }).fetch()
 	const mediaObjectIds: Array<string> = [
-		...pieces
-			.filter((piece) => piece.content && piece.content.fileName)
-			.map((piece) => (piece.content as AudioContent).fileName),
-		...adLibPieces
-			.filter((adLibPiece) => adLibPiece.content && adLibPiece.content.fileName)
-			.map((adLibPiece) => (adLibPiece.content as AudioContent).fileName),
-		...baselineAdlibs
-			.filter((adLibPiece) => adLibPiece.content && adLibPiece.content.fileName)
-			.map((adLibPiece) => (adLibPiece.content as AudioContent).fileName),
+		..._.compact(pieces.map((piece) => (piece.content as VTContent | undefined)?.fileName)),
+		..._.compact(adLibPieces.map((adLibPiece) => (adLibPiece.content as VTContent | undefined)?.fileName)),
+		..._.compact(baselineAdlibs.map((adLibPiece) => (adLibPiece.content as VTContent | undefined)?.fileName)),
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
 	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map((i) => i._id) } }).fetch()

@@ -501,7 +501,7 @@ function actionToAdLibPieceUi(
 ): AdLibPieceUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
-	let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
+	let content: Omit<SomeContent, 'timelineObjects'> | undefined = undefined
 	const isContent = RundownUtils.isAdlibActionContent(action.display)
 	if (isContent) {
 		sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId

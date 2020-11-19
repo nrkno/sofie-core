@@ -1,5 +1,3 @@
-/* TODO - remove this eslint rule */
-/* eslint-disable @typescript-eslint/ban-types */
 import { Time } from './common'
 import { TimelineObjectCoreExt } from './timeline'
 
@@ -12,34 +10,34 @@ export enum SourceLayerType {
 	SCRIPT = 4,
 	GRAPHICS = 5,
 	SPLITS = 6,
-	AUDIO = 7,
-	CAMERA_MOVEMENT = 8,
-	METADATA = 9,
+	// AUDIO = 7,
+	// CAMERA_MOVEMENT = 8,
+	// METADATA = 9,
 	LOWER_THIRD = 10,
 	LIVE_SPEAK = 11,
-	MIC = 12,
 	TRANSITION = 13,
-	LIGHTS = 14,
+	// LIGHTS = 14,
 	LOCAL = 15,
 }
 
-export interface MetadataElement {
-	_id: string
-	key: string
-	value: string
-	source: string
-}
+// export interface MetadataElement {
+// 	_id: string
+// 	key: string
+// 	value: string
+// 	source: string
+// }
 
 export interface BaseContent {
-	[key: string]: TimelineObjectCoreExt[] | number | string | boolean | object | undefined | null
 	timelineObjects?: TimelineObjectCoreExt[]
-	// We leave it up to the blueprints to ensure that each all of their types implement this interface but more strongly typed
-	// If we were to enforce it here then this lib and core would need to be aware of every type
 	editable?: BaseEditableParameters
+
+	sourceDuration?: number
+	ignoreMediaObjectStatus?: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface BaseEditableParameters {
-	[key: string]: number | string | boolean | object | undefined | null
+	// [key: string]: number | string | boolean | object | undefined | null
 }
 
 export interface VTEditableParameters extends BaseEditableParameters {
@@ -52,67 +50,59 @@ export type SomeContent =
 	| CameraContent
 	| RemoteContent
 	| ScriptContent
-	| GraphicsContent
+	// | GraphicsContent
 	| NoraContent
 	| SplitsContent
-	| AudioContent
-	| CameraMovementContent
-	| LowerThirdContent
+	// | AudioContent
+	// | LowerThirdContent
 	| LiveSpeakContent
-	| MicContent
 	| TransitionContent
 
 export interface VTContent extends BaseContent {
 	fileName: string
 	path: string
-	firstWords: string
-	lastWords: string
-	proxyPath?: string
-	thumbnail?: string
+	// proxyPath?: string
+	// thumbnail?: string
 	loop?: boolean
-	sourceDuration?: number
-	objectDuration?: number
-	metadata?: MetadataElement[]
-	timelineObjects: TimelineObjectCoreExt[]
+	// sourceDuration?: number
+	// objectDuration?: number
+	// metadata?: MetadataElement[]
 	mediaFlowIds?: string[]
 	seek?: number
 	editable?: VTEditableParameters
-	ignoreMediaObjectStatus?: boolean
+	// ignoreMediaObjectStatus?: boolean
 }
 
 export interface CameraContent extends BaseContent {
 	studioLabel: string
 	switcherInput: number | string
-	thumbnail?: string
-	timelineObjects: TimelineObjectCoreExt[]
+	// thumbnail?: string
 }
 
 export interface RemoteContent extends BaseContent {
 	studioLabel: string
 	switcherInput: number | string
-	thumbnail?: string
-	timelineObjects: TimelineObjectCoreExt[]
+	// thumbnail?: string
 }
 
 export interface ScriptContent extends BaseContent {
 	firstWords: string
 	lastWords: string
 	fullScript?: string
-	sourceDuration?: number
+	// sourceDuration?: number
 	lastModified?: Time | null
 }
 
-export interface GraphicsContent extends BaseContent {
-	fileName: string
-	path: string
-	thumbnail?: string
-	templateData?: object
-	metadata?: MetadataElement[]
-	timelineObjects: TimelineObjectCoreExt[]
-}
+// export interface GraphicsContent extends BaseContent {
+// 	fileName: string
+// 	path: string
+// 	thumbnail?: string
+// 	templateData?: object
+// 	metadata?: MetadataElement[]
+// }
 
 export interface NoraPayload {
-	content: { [key: string]: string | number | object }
+	content: { [key: string]: unknown }
 	manifest: string
 	template: {
 		event: string
@@ -130,7 +120,6 @@ export interface NoraContent extends BaseContent {
 	payload: NoraPayload
 	externalPayload: any
 	previewRenderer: string
-	timelineObjects: TimelineObjectCoreExt[]
 }
 
 export interface SplitsContentBoxProperties {
@@ -151,37 +140,29 @@ export interface SplitsContentBoxProperties {
 	}
 }
 export type SplitsContentBoxContent = Omit<
-	VTContent | CameraContent | RemoteContent | GraphicsContent,
+	VTContent | CameraContent | RemoteContent | NoraContent, // | GraphicsContent,
 	'timelineObjects'
 >
 export interface SplitsContent extends BaseContent {
 	/** Array of contents, 0 is towards the rear */
 	boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]
-	timelineObjects: TimelineObjectCoreExt[]
 }
 
-export interface AudioContent extends BaseContent {
-	fileName: string
-	path: string
-	proxyPath?: string
-	loop?: boolean
-	sourceDuration: number
-	metadata?: MetadataElement[]
-	timelineObjects: TimelineObjectCoreExt[]
-}
+// export interface AudioContent extends BaseContent {
+// 	fileName: string
+// 	path: string
+// 	// proxyPath?: string
+// 	loop?: boolean
+// 	sourceDuration: number
+// 	metadata?: MetadataElement[]
+// }
 
-export interface CameraMovementContent extends BaseContent {
-	cameraConfiguration: any
-	timelineObjects: TimelineObjectCoreExt[]
-}
+// export interface CameraMovementContent extends BaseContent {
+// 	cameraConfiguration: any
+// }
 
-export type LowerThirdContent = GraphicsContent
+// export type LowerThirdContent = GraphicsContent
 export type LiveSpeakContent = VTContent
-
-export interface MicContent extends ScriptContent {
-	mixConfiguration: any
-	timelineObjects: any
-}
 
 export interface TransitionContent extends BaseContent {
 	icon?: string

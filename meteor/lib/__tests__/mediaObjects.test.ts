@@ -24,6 +24,7 @@ import {
 	SourceLayerType,
 	IBlueprintPieceGeneric,
 	PieceLifespan,
+	VTContent,
 } from '@sofie-automation/blueprints-integration'
 import { IStudioSettings } from '../collections/Studios'
 import { RundownAPI } from '../api/rundown'
@@ -105,9 +106,10 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: {
+				content: literal<VTContent>({
 					fileName: 'test',
-				},
+					path: '',
+				}),
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -125,9 +127,10 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: {
+				content: literal<VTContent>({
 					fileName: 'TEST',
-				},
+					path: '',
+				}),
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -238,9 +241,10 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: {
+			content: literal<VTContent>({
 				fileName: 'test_file',
-			},
+				path: '',
+			}),
 		})
 
 		const sourcelayer1 = literal<ISourceLayer>({
@@ -322,9 +326,10 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: {
+			content: literal<VTContent>({
 				fileName: 'test_file_2',
-			},
+				path: '',
+			}),
 		})
 
 		const piece3 = literal<IBlueprintPieceGeneric>({
@@ -335,9 +340,10 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: {
+			content: literal<VTContent>({
 				fileName: 'test_file_3',
-			},
+				path: '',
+			}),
 		})
 
 		const status1 = checkPieceContentStatus(piece1, sourcelayer1, mockStudioSettings)
