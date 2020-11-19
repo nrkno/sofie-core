@@ -6,7 +6,7 @@
 
 export namespace TrackerMock {
 	type ComputationCallback = (computation: Computation) => void
-	type AutorunCallback<T> = (computation: Computation) => T
+	type AutorunCallback = (computation: Computation) => void
 	export let currentComputation: Computation | null = null
 	export let active: boolean = false
 
@@ -34,11 +34,28 @@ export namespace TrackerMock {
 	export class Computation {
 		private onInvalidateClbs: Array<ComputationCallback> = []
 		private onStopClbs: Array<ComputationCallback> = []
+		private func: AutorunCallback
+		private parentComputation: Computation | null = null
 		stopped: boolean = false
 		invalidated: boolean = false
 		firstRun: boolean = true
-		parentComputation: Computation | null = null
 
+		constructor(runFunc: AutorunCallback, parentComputation: Computation | null, onError?: (e: any) => void) {
+			this.parentComputation = parentComputation
+			this.firstRun = true
+			this.func = runFunc
+			this.func(this)
+			this.firstRun = false
+		}
+
+		private runFunc = () => {
+			const trackBuf = TrackerMock.currentComputation
+			TrackerMock.currentComputation = this
+			TrackerMock.active = !!TrackerMock.currentComputation
+			this.func(this)
+			TrackerMock.currentComputation = trackBuf
+			TrackerMock.active = !!TrackerMock.currentComputation
+		}
 		private runAll = (clbs: Array<ComputationCallback>) => {
 			clbs.forEach((clb) => clb(this))
 		}
@@ -53,6 +70,11 @@ export namespace TrackerMock {
 		public invalidate = () => {
 			this.invalidated = true
 			this.runAll(this.onInvalidateClbs)
+			if (!this.parentComputation) {
+				this.runFunc()
+			} else {
+				this.parentComputation.invalidate()
+			}
 			this.invalidated = false
 			return
 		}
@@ -64,21 +86,12 @@ export namespace TrackerMock {
 		}
 	}
 
-	export function autorun<T>(runFunc: AutorunCallback<T>, options = {}): T {
-		const comp = new TrackerMock.Computation()
-		comp.parentComputation = TrackerMock.currentComputation
+	export function autorun<T>(runFunc: AutorunCallback, options = {}): TrackerMock.Computation {
+		if (Object.keys(options).length > 0) {
+			throw new Error(`Tracker.autorun using unimplemented options: ${Object.keys(options).join(', ')}`)
+		}
 
-		TrackerMock.currentComputation = comp
-		TrackerMock.active = !!TrackerMock.currentComputation
-		const result = runFunc(comp)
-		comp.firstRun = false
-		comp.onInvalidate(() => {
-			runFunc(comp)
-		})
-		TrackerMock.currentComputation = comp.parentComputation
-		TrackerMock.active = !!TrackerMock.currentComputation
-
-		return result
+		return new TrackerMock.Computation(runFunc, TrackerMock.currentComputation)
 	}
 	export function flush() {
 		throw new Error(`Tracker.flush() is not implemented in the mock Tracker`)
@@ -96,9 +109,11 @@ export namespace TrackerMock {
 		throw new Error(`Tracker.inFlush() is not implemented in the mock Tracker`)
 	}
 	export function onInvalidate(clb: ComputationCallback) {
-		if (TrackerMock.currentComputation) {
-			TrackerMock.currentComputation.onInvalidate(clb)
+		if (!TrackerMock.currentComputation) {
+			throw new Error('Tracker.onInvalidate requires a currentComputation')
 		}
+
+		TrackerMock.currentComputation.onInvalidate(clb)
 		return
 	}
 	export function afterFlush(clb: Function) {
