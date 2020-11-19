@@ -1,44 +1,8 @@
-import { IBlueprintPartInstance, IBlueprintPieceInstance } from './rundown'
-
 import * as TSR from 'timeline-state-resolver-types'
 import { CombineArrayType } from './lib'
 export { TSR }
 
 export { Timeline } from 'timeline-state-resolver-types'
-
-export enum PlayoutTimelinePrefixes {
-	PART_GROUP_PREFIX = 'part_group_',
-	PART_GROUP_FIRST_ITEM_PREFIX = 'part_group_firstobject_',
-	PIECE_GROUP_PREFIX = 'piece_group_',
-	PIECE_GROUP_FIRST_ITEM_PREFIX = 'piece_group_firstobject_',
-}
-
-export function getPartGroupId(part: IBlueprintPartInstance | string) {
-	if (typeof part === 'string') {
-		return PlayoutTimelinePrefixes.PART_GROUP_PREFIX + part
-	}
-	return PlayoutTimelinePrefixes.PART_GROUP_PREFIX + part._id
-}
-export function getPieceGroupId(piece: IBlueprintPieceInstance | string) {
-	if (typeof piece === 'string') {
-		return PlayoutTimelinePrefixes.PIECE_GROUP_PREFIX + piece
-	}
-
-	return PlayoutTimelinePrefixes.PIECE_GROUP_PREFIX + piece._id
-}
-export function getPartFirstObjectId(part: IBlueprintPartInstance | string) {
-	if (typeof part === 'string') {
-		return PlayoutTimelinePrefixes.PART_GROUP_FIRST_ITEM_PREFIX + part
-	}
-	return PlayoutTimelinePrefixes.PART_GROUP_FIRST_ITEM_PREFIX + part._id
-}
-export function getPieceFirstObjectId(piece: IBlueprintPieceInstance | string) {
-	if (typeof piece === 'string') {
-		return PlayoutTimelinePrefixes.PIECE_GROUP_FIRST_ITEM_PREFIX + piece
-	}
-
-	return PlayoutTimelinePrefixes.PIECE_GROUP_FIRST_ITEM_PREFIX + piece._id
-}
 
 export enum TimelineObjHoldMode {
 	NORMAL = 0,

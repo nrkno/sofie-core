@@ -23,12 +23,7 @@ import {
 	OnGenerateTimelineObjExt,
 } from '../../../lib/collections/Timeline'
 import { logger } from '../../logging'
-import {
-	getPieceFirstObjectId,
-	TimelineObjectCoreExt,
-	TSR,
-	PieceLifespan,
-} from '@sofie-automation/blueprints-integration'
+import { TimelineObjectCoreExt, TSR, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
@@ -42,6 +37,7 @@ import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infini
 import { createPieceGroupAndCap, PieceGroupMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
+import { getPieceFirstObjectId } from '../../../lib/rundown/timeline'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	const aStart = a.enable.start === 'now' ? nowInPart : a.enable.start
@@ -84,7 +80,7 @@ export function createPieceGroupFirstObject(
 	firstObjClasses?: string[]
 ): TimelineObjPieceAbstract & OnGenerateTimelineObjExt {
 	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObjExt>({
-		id: getPieceFirstObjectId(unprotectString(pieceInstance._id)),
+		id: getPieceFirstObjectId(pieceInstance),
 		pieceInstanceId: unprotectString(pieceInstance._id),
 		infinitePieceInstanceId: pieceInstance.infinite?.infiniteInstanceId,
 		partInstanceId: pieceGroup.partInstanceId,
