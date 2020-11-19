@@ -14,8 +14,7 @@ import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconName } from '@fortawesome/fontawesome-svg-core'
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons'
-import { getRundownPlaylistLink, getRundownWithLayoutLink, getShelfLink } from './util'
-import { SplitDropdown } from '../../lib/SplitDropdown'
+import { getRundownPlaylistLink } from './util'
 import {
 	DragElementWrapper,
 	DropTarget,
@@ -33,8 +32,6 @@ import {
 } from './DragAndDropTypes'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownUtils } from '../../lib/rundown'
-import Moment from 'react-moment'
-import { MomentFromNow } from '../../lib/Moment'
 import PlaylistRankMethodToggle from './PlaylistRankMethodToggle'
 import JonasFormattedTime from './JonasFormattedTime'
 
@@ -77,8 +74,6 @@ const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
 		}
 
 		const dropped = monitor.getItem()
-
-		console.debug(`Drop on playlist ${props.playlist._id}:`, dropped)
 
 		if (isRundownDragObject(dropped)) {
 			return {
@@ -124,13 +119,10 @@ export const RundownPlaylistUi = DropTarget(
 			Translated<IRundownPlaylistUiProps> & IRundownPlaylistDropTargetProps,
 			IRundownPlaylistUiState
 		> {
-			rundowns: Map<RundownId, Rundown> = new Map<RundownId, Rundown>()
-			momentCalendarOptions: { [index: string]: string }
+			// rundowns: Map<RundownId, Rundown> = new Map<RundownId, Rundown>()
 
 			constructor(props: Translated<IRundownPlaylistUiProps> & IRundownPlaylistDropTargetProps) {
 				super(props)
-
-				const { t } = this.props
 
 				this.state = {
 					rundownOrder: props.playlist.rundowns.map((rundown) => rundown._id),
@@ -140,20 +132,18 @@ export const RundownPlaylistUi = DropTarget(
 						'default'
 					),
 				}
-
-				for (const rundown of props.playlist.rundowns) {
-					this.rundowns.set(rundown._id, rundown)
-				}
 			}
 
 			private handleRundownDrop(rundownId: RundownId): void {
+				const { playlist } = this.props
 				const playlistId = this.props.playlist._id
 				const rundownOrder = this.state.rundownOrder.slice()
 
-				console.debug(`${this.props.playlist._id} drop handler`, rundownId)
-
-				if (this.rundowns.has(rundownId)) {
-					console.debug(`Found ${rundownId} in ${Array.from(this.rundowns.keys())}, finalizing order in local state`)
+				if (
+					playlist.rundowns.findIndex((rundown) => {
+						rundownId === rundown._id
+					}) > -1
+				) {
 					// finalize order from component state
 					MeteorCall.userAction.moveRundown(
 						'Drag and drop rundown playlist reorder',
@@ -162,10 +152,8 @@ export const RundownPlaylistUi = DropTarget(
 						rundownOrder
 					)
 				} else {
-					console.debug(`${rundownId} not found in ${Array.from(this.rundowns.keys())}, adding to playlist`)
 					// add rundown to playlist
 					rundownOrder.push(rundownId)
-					console.debug(`Rundown ${rundownId} added to end of playlist ${playlistId}`, rundownOrder)
 
 					MeteorCall.userAction.moveRundown(
 						'Drag and drop add rundown to playlist',
@@ -197,15 +185,9 @@ export const RundownPlaylistUi = DropTarget(
 				return false
 			}
 
-			private resetLocalRundownState(): void {
+			private resetLocalRundownOrder(): void {
 				const rundownOrder = this.props.playlist.rundowns.map((rundown) => rundown._id)
 
-				const currentRundowns = new Map<RundownId, Rundown>()
-				for (const rundown of this.props.playlist.rundowns) {
-					currentRundowns.set(rundown._id, rundown)
-				}
-
-				this.rundowns = currentRundowns
 				this.setState({ rundownOrder })
 			}
 
@@ -223,8 +205,7 @@ export const RundownPlaylistUi = DropTarget(
 				}
 
 				if (this.rundownsHaveChanged(prevProps)) {
-					console.debug(`componentDidUpdate ${this.props.playlist._id}: rundowns have changed, resetting local state`)
-					this.resetLocalRundownState()
+					this.resetLocalRundownOrder()
 				}
 			}
 
@@ -247,54 +228,6 @@ export const RundownPlaylistUi = DropTarget(
 				)
 			}
 
-			private createPlaylistViewLinks(): ReactElement | null {
-				const { t, playlist } = this.props
-
-				const standaloneLayouts: JSX.Element[] = []
-				const shelfLayouts: JSX.Element[] = []
-
-				for (const layout of this.props.rundownLayouts) {
-					if (!playlist.showStyles.some((s) => s.id === layout.showStyleBaseId)) {
-						continue
-					}
-
-					if (layout.exposeAsStandalone) {
-						standaloneLayouts.push(
-							this.renderViewLinkItem(layout, getShelfLink(playlist._id, layout._id), `standalone${layout._id}`)
-						)
-					}
-
-					if (layout.exposeAsShelf) {
-						shelfLayouts.push(
-							this.renderViewLinkItem(layout, getRundownWithLayoutLink(playlist._id, layout._id), `shelf${layout._id}`)
-						)
-					}
-				}
-
-				const allElements = [
-					<div className="expco-header" key={`${playlist._id}layoutsheader2`}>
-						{t('Standalone Shelf')}
-					</div>,
-					...standaloneLayouts,
-					<div className="expco-header" key={`${playlist._id}layoutsheader1`}>
-						{t('Timeline views')}
-					</div>,
-					...shelfLayouts,
-					<Link
-						to={getRundownPlaylistLink(playlist._id)}
-						onClick={() => this.saveViewChoice('default')}
-						key={'default'}>
-						<div className="action-btn expco-item">{t('Default')}</div>
-					</Link>,
-				]
-
-				return shelfLayouts.length > 0 || standaloneLayouts.length > 0 ? (
-					<React.Fragment>
-						<SplitDropdown selectedKey={this.state.selectedView}>{allElements}</SplitDropdown>
-					</React.Fragment>
-				) : null
-			}
-
 			private swapRundownOrder(a: RundownId, b: RundownId): void {
 				const aPos = this.state.rundownOrder.indexOf(a)
 				const bPos = this.state.rundownOrder.indexOf(b)
@@ -304,15 +237,14 @@ export const RundownPlaylistUi = DropTarget(
 					newOrder[aPos] = b
 					newOrder[bPos] = a
 					this.setState({ rundownOrder: newOrder })
-					console.debug(`Swapped [${aPos}:${a}] with [${bPos}:${b}]`)
 				}
 			}
 
 			render() {
-				const { playlist, connectDropTarget, isOver, t, isActiveDropZone } = this.props
+				const { playlist, connectDropTarget, t, isActiveDropZone } = this.props
 
 				if (playlist.rundowns.length === 0) {
-					console.log(`Playlist ${playlist._id} has no rundowns, aborting render`)
+					console.debug(`Playlist ${playlist._id} has no rundowns, aborting render`)
 					return null
 				}
 
@@ -332,6 +264,7 @@ export const RundownPlaylistUi = DropTarget(
 					return (
 						<>
 							<RundownListItem
+								isActive={playlist.active === true}
 								key={unprotectString(playlist.rundowns[0]._id)}
 								rundown={playlist.rundowns[0]}
 								rundownViewUrl={playlistViewURL}
@@ -344,9 +277,11 @@ export const RundownPlaylistUi = DropTarget(
 				}
 
 				const rundownComponents = this.state.rundownOrder.map((rundownId) => {
-					const rundown = this.rundowns.get(rundownId)
+					const rundown = playlist.rundowns.find((r) => r._id === rundownId)
+
 					return rundown ? (
 						<RundownListItem
+							isActive={playlist.active === true}
 							key={unprotectString(rundown._id)}
 							rundown={rundown}
 							swapRundownOrder={handleRundownSwap}

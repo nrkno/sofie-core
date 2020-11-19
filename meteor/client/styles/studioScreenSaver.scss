@@ -32,13 +32,24 @@
 		font-size: 4.5vmin;
 		font-weight: 200;
 
+		&.studio-screen-saver__info--no-rundown {
+			width: auto;
+
+			.studio-screen-saver__info__rundown {
+				text-align: right;
+				margin-top: -1.8em;
+				font-weight: 800;
+				margin-right: 0.1em;
+			}
+		}
+
 		@media (max-aspect-ratio: 4/3) {
 			font-size: 3.5vmin;
 		}
 
 		.studio-screen-saver__clock {
 			font-size: 4em;
-			letter-spacing: -0.04em;
+			letter-spacing: -0.02em;
 			text-align: right;
 			margin-bottom: 0.7em;
 		}
@@ -56,6 +67,7 @@
 
 		.studio-screen-saver__info__countdown {
 			font-size: 2em;
+			letter-spacing: -0.03em;
 		}
 	}
 }
