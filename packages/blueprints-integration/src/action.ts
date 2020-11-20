@@ -5,19 +5,6 @@ export interface ActionUserData {
 	[key: string]: any
 }
 
-export enum ActionWorksOn {
-	/** AdLib action operates on the current part */
-	currentPart = 'currentPart',
-	/** AdLib action operates on the next part */
-	nextPart = 'nextPart',
-	/** AdLib action may operate on the current or next part, depending on current part's contents */
-	currentOrNextPart = 'currentOrNextPart',
-	/** AdLib action queues a new part and sets it as next */
-	queuesPart = 'queuesNewPart',
-	/** AdLib action may queue a new part or operate on the next part, depending on next part's contents */
-	queuesOrNextPart = 'queuesOrNextPart',
-}
-
 export enum ActionExecuteAfterChanged {
 	/** Do not execute the action after userData has changed, unless specifically triggered by the user */
 	none = 'none',
@@ -34,8 +21,8 @@ export interface IBlueprintActionManifestDisplay {
 	description?: string
 	_rank?: number
 
-	/** A flag, indicating if the action operates on the On Air/Current Part or if it operates on the Next Part/Queues a new Part. If not present, ActionWorksOn.currentPart is assumed. */
-	worksOn?: ActionWorksOn
+	/** This is the label to be shown in the inspector for "Execute Action" */
+	triggerLabel?: string
 
 	tags?: string[]
 	/** Piece tags to use to determine if action is currently active */
