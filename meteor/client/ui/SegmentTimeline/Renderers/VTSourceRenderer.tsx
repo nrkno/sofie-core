@@ -193,6 +193,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 
 		this.rightLabel && this.rightLabel.remove()
+		// put the element back where it's supposed to be, so that React can unmount it safely
+		this.itemElement?.appendChild(this.rightLabel)
 	}
 
 	getPreviewUrl = (): string | undefined => {
