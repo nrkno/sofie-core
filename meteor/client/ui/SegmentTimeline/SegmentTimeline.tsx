@@ -44,7 +44,7 @@ import { literal, unprotectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
-import { WarningIconSmall, CriticalIconSmall } from '../../lib/notificationIcons'
+import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
 
 interface IProps {
 	id: string

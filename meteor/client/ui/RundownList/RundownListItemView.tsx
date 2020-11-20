@@ -8,7 +8,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
 import JonasFormattedTime from './JonasFormattedTime'
-import { EyeIcon } from '../../lib/icons'
+import { EyeIcon } from '../../lib/ui/icons/rundownList'
 
 interface IRundownListItemViewProps {
 	isActive: boolean

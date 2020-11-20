@@ -24,7 +24,7 @@ import * as On_Air_MouseOver from './On_Air_MouseOver.json'
 import { SupportPopUpToggle } from '../SupportPopUp'
 import classNames from 'classnames'
 import { NoticeLevel } from '../../lib/notifications/notifications'
-import { SwitchboardIcon, RouteSetOverrideIcon } from '../../lib/switchboardIcons'
+import { SwitchboardIcon, RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard'
 import { SwitchboardPopUp } from './SwitchboardPopUp'
 
 interface IProps {
