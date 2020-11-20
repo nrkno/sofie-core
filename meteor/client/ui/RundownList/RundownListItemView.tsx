@@ -4,7 +4,6 @@ import { withTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { INoteBase, NoteType } from '../../../lib/api/notes'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { MomentFromNow } from '../../lib/Moment'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
@@ -12,6 +11,7 @@ import JonasFormattedTime from './JonasFormattedTime'
 import { EyeIcon } from '../../lib/icons'
 
 interface IRundownListItemViewProps {
+	isActive: boolean
 	classNames: string[]
 	htmlElementId: string
 	connectDragSource: (content: ReactElement) => ReactElement | null
@@ -28,6 +28,7 @@ interface IRundownListItemViewProps {
 
 export default withTranslation()(function RundownListItemView(props: Translated<IRundownListItemViewProps>) {
 	const {
+		isActive,
 		t,
 		connectDragSource,
 		connectDropTarget,
@@ -71,6 +72,17 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 						</span>
 					</Tooltip>
 				) : null}
+
+				{isActive === true ? (
+					<Tooltip overlay={t('This rundown is currently active')} placement="bottom">
+						<div className="origo-pulse small right mrs">
+							<div className="pulse-marker">
+								<div className="pulse-rays"></div>
+								<div className="pulse-rays delay"></div>
+							</div>
+						</div>
+					</Tooltip>
+				) : null}
 			</span>
 			{/* <RundownListItemProblems warnings={warnings} errors={errors} /> */}
 			<span className="rundown-list-item__text">
@@ -91,7 +103,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				)}
 			</span>
 			<span className="rundown-list-item__text">
-				<MomentFromNow>{rundown.modified}</MomentFromNow>
+				<JonasFormattedTime timestamp={rundown.modified} t={t} />
 			</span>
 			<span className="rundown-list-item__actions">
 				{confirmReSyncRundownHandler ? (

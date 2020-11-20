@@ -15,10 +15,11 @@ export enum iterateDeeplyEnum {
  * @param iteratee function to apply on every attribute
  */
 export function iterateDeeply(
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	obj: any,
 	iteratee: (val: any, key?: string | number) => any | iterateDeeplyEnum,
 	key?: string | number
-) {
+): any {
 	const newValue = iteratee(obj, key)
 	if (newValue === iterateDeeplyEnum.CONTINUE) {
 		// Continue iterate deeper if possible
@@ -41,10 +42,11 @@ export function iterateDeeply(
  * @param iteratee function to apply on every attribute
  */
 export async function iterateDeeplyAsync(
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	obj: any,
 	iteratee: (val: any, key?: string | number) => Promise<any | iterateDeeplyEnum>,
 	key?: string | number
-) {
+): Promise<any> {
 	const newValue = await iteratee(obj, key)
 	if (newValue === iterateDeeplyEnum.CONTINUE) {
 		// Continue iterate deeper if possible

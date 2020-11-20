@@ -1,3 +1,5 @@
+/* TODO - remove this eslint rule */
+/* eslint-disable @typescript-eslint/ban-types */
 import { Time } from './common'
 import { TimelineObjectCoreExt } from './timeline'
 
@@ -172,11 +174,8 @@ export interface CameraMovementContent extends BaseContent {
 	timelineObjects: TimelineObjectCoreExt[]
 }
 
-// tslint:disable-next-line: no-empty-interface
-export interface LowerThirdContent extends GraphicsContent {}
-
-// tslint:disable-next-line: no-empty-interface
-export interface LiveSpeakContent extends VTContent {}
+export type LowerThirdContent = GraphicsContent
+export type LiveSpeakContent = VTContent
 
 export interface MicContent extends ScriptContent {
 	mixConfiguration: any
