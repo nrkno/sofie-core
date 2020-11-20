@@ -68,6 +68,8 @@ console.error = (...args: any[]) => {
 
 const originalOnError = window.onerror
 window.onerror = (event, source, line, col, error) => {
+	if (event && event.toString().match(/ResizeObserver loop limit exceeded/i)) return // This error is benign. https://stackoverflow.com/questions/49384120/resizeobserver-loop-limit-exceeded
+
 	try {
 		uncaughtErrorHandler({
 			event,
