@@ -21,6 +21,7 @@ import {
 	PreparedChanges,
 	unprotectObject,
 	unprotectObjectArray,
+	clone,
 } from '../../../lib/lib'
 import {
 	IngestRundown,
@@ -1373,7 +1374,7 @@ function syncChangesToPartInstances(
 					const adlibPieces = cache.AdLibPieces.findFetch({ partId: partId })
 					const adlibActions = cache.AdLibActions.findFetch({ partId: partId })
 
-					const pieceInstances = getPieceInstancesForPart(
+					const proposedPieceInstances = getPieceInstancesForPart(
 						cache,
 						playlist,
 						previousPartInstance,
@@ -1385,7 +1386,7 @@ function syncChangesToPartInstances(
 
 					const newResultData: BlueprintSyncIngestNewData = {
 						part: unprotectObject(newPart),
-						pieces: unprotectObjectArray(pieceInstances),
+						pieces: unprotectObjectArray(proposedPieceInstances),
 						adLibPieces: unprotectObjectArray(adlibPieces),
 						actions: unprotectObjectArray(adlibActions),
 						referencedAdlibs: unprotectObjectArray(referencedAdlibs),
@@ -1401,6 +1402,7 @@ function syncChangesToPartInstances(
 						),
 						existingPartInstance,
 						pieceInstancesInPart,
+						proposedPieceInstances,
 						playStatus
 					)
 					// TODO - how can we limit the frequency we run this? (ie, how do we know nothing affecting this has changed)
@@ -1409,7 +1411,7 @@ function syncChangesToPartInstances(
 						blueprint.syncIngestUpdateToPartInstance(
 							syncContext,
 							existingResultPartInstance,
-							newResultData,
+							clone(newResultData),
 							playStatus
 						)
 

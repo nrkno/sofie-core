@@ -96,7 +96,7 @@ export interface ActionExecutionContext extends ShowStyleContext {
 	/** Insert a pieceInstance. Returns id of new PieceInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
 	insertPiece(part: 'current' | 'next', piece: IBlueprintPiece): IBlueprintPieceInstance
 	/** Update a piecesInstance */
-	updatePieceInstance(pieceInstanceId: string, piece: Partial<OmitId<IBlueprintPiece>>): IBlueprintPieceInstance
+	updatePieceInstance(pieceInstanceId: string, piece: Partial<IBlueprintPiece>): IBlueprintPieceInstance
 	/** Insert a queued part to follow the current part */
 	queuePart(part: IBlueprintPart, pieces: IBlueprintPiece[]): IBlueprintPartInstance
 	/** Update a partInstance */
@@ -121,10 +121,16 @@ export interface ActionExecutionContext extends ShowStyleContext {
 
 /** Actions */
 export interface SyncIngestUpdateToPartInstanceContext extends RundownContext {
+	/** Sync a pieceInstance. Inserts the pieceInstance if new, updates if existing. Optionally pass in a mutated Piece, to change the content of the instance */
+	syncPieceInstance(
+		pieceInstanceId: string,
+		mutatedPiece?: Omit<IBlueprintPiece, 'lifespan'>
+	): IBlueprintPieceInstance
+
 	/** Insert a pieceInstance. Returns id of new PieceInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
 	insertPieceInstance(piece: IBlueprintPiece): IBlueprintPieceInstance
 	/** Update a piecesInstance */
-	updatePieceInstance(pieceInstanceId: string, piece: Partial<OmitId<IBlueprintPiece>>): IBlueprintPieceInstance
+	updatePieceInstance(pieceInstanceId: string, piece: Partial<IBlueprintPiece>): IBlueprintPieceInstance
 	/** Remove a pieceInstance */
 	removePieceInstances(...pieceInstanceIds: string[]): string[]
 

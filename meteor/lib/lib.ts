@@ -649,6 +649,15 @@ export function normalizeArray<T>(array: Array<T>, indexKey: keyof T): { [indexK
 	}
 	return normalizedObject as { [key: string]: T }
 }
+export function normalizeArrayToMap<T, K extends keyof T>(array: T[], indexKey: K): Map<T[K], T> {
+	const normalizedObject = new Map<T[K], T>()
+	for (const item of array) {
+		const key = item[indexKey]
+		normalizedObject.set(key, item)
+	}
+	return normalizedObject
+}
+
 /** Convenience function, to be used when length of array has previously been verified */
 export function last<T>(values: T[]): T {
 	return _.last(values) as T
