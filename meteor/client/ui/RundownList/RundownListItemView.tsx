@@ -9,9 +9,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
 import JonasFormattedTime from './JonasFormattedTime'
-import RundownListItemProblems from './RundownListItemProblems'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEye } from '@fortawesome/free-solid-svg-icons'
+import { EyeIcon } from '../../lib/icons'
 
 interface IRundownListItemViewProps {
 	classNames: string[]
@@ -68,8 +66,8 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				<b className="rundown-name">{rundownNameContent}</b>
 				{props.rundown.description ? (
 					<Tooltip overlay={props.rundown.description} trigger={['hover']} placement="right">
-						<span>
-							<FontAwesomeIcon icon={faEye} className="rundown-list-description__icon" />
+						<span className="rundown-list-description__icon">
+							<EyeIcon />
 						</span>
 					</Tooltip>
 				) : null}
