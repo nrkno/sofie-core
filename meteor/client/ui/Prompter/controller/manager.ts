@@ -4,8 +4,6 @@ import { MidiPedalController } from './midi-pedal-device'
 import { ControllerAbstract } from './lib'
 import { JoyConController } from './joycon-device'
 import { KeyboardController } from './keyboard-device'
-import { MidiPedalController } from './midi-pedal-device'
-import { MouseIshController } from './mouse-ish-device'
 import { ShuttleKeyboardController } from './shuttle-keyboard-device'
 import * as _ from 'underscore'
 
