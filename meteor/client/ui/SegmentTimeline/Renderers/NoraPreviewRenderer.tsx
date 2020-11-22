@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { NoraContent } from 'tv-automation-sofie-blueprints-integration'
+import { NoraContent } from '@sofie-automation/blueprints-integration'
 import Escape from 'react-escape'
 
 interface IPropsHeader {

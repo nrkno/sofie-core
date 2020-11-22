@@ -12,7 +12,7 @@ import {
 	IBlueprintExternalMessageQueueObj,
 	IBlueprintExternalMessageQueueType,
 	ExternalMessageQueueObjRabbitMQ,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { getCurrentTime, removeNullyProperties, getRandomId, makePromise, protectString, omit } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'

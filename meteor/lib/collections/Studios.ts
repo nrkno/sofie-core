@@ -7,7 +7,7 @@ import {
 	BlueprintMapping,
 	TSR,
 	LookaheadMode,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
@@ -18,10 +18,7 @@ import { registerIndex } from '../database'
 export interface MappingsExt extends BlueprintMappings {
 	[layerName: string]: MappingExt
 }
-export interface MappingExt extends BlueprintMapping {
-	/** Internal mappings are hidden in the UI */
-	internal?: boolean
-}
+export interface MappingExt extends BlueprintMapping {}
 
 export interface IStudioSettings {
 	/** URL to endpoint where media preview are exposed */

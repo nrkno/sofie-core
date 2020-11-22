@@ -12,7 +12,7 @@ import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
 import { StudioId } from '../../../lib/collections/Studios'
-import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
+import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 
 interface ITimelineViewProps {
 	match?: {

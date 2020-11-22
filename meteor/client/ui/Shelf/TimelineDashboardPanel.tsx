@@ -4,7 +4,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
-import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import {
 	IAdLibPanelProps,

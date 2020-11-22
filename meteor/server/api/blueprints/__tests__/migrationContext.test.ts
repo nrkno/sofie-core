@@ -12,7 +12,7 @@ import {
 	TSR,
 	IBlueprintShowStyleVariant,
 	IBlueprintConfig,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle } from '../migrationContext'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'

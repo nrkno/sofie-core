@@ -14,9 +14,9 @@ import { SnapshotId } from '../collections/Snapshots'
 import { SegmentId } from '../collections/Segments'
 import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
 import { BucketId, Bucket } from '../collections/Buckets'
-import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
+import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { BucketAdLib } from '../collections/BucketAdlibs'
-import { ActionUserData } from 'tv-automation-sofie-blueprints-integration'
+import { ActionUserData } from '@sofie-automation/blueprints-integration'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -61,11 +61,6 @@ export interface NewUserActionAPI extends MethodContext {
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
-	reloadData(
-		userEvent: string,
-		rundownPlaylistId: RundownPlaylistId
-	): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
-	unsyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
 	disableNextPiece(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
@@ -148,6 +143,7 @@ export interface NewUserActionAPI extends MethodContext {
 	): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
 	removeRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
 	resyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
+	unsyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>> //
 	resyncSegment(
 		userEvent: string,
 		rundownId: RundownId,
@@ -188,6 +184,13 @@ export interface NewUserActionAPI extends MethodContext {
 		routeSetId: string,
 		state: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
+	moveRundown(
+		userEvent: string,
+		rundownId: RundownId,
+		intoPlaylistId: RundownPlaylistId | null,
+		rundownsIdsInPlaylistInOrder: RundownId[]
+	): Promise<ClientAPI.ClientResponse<void>>
+	restoreRundownOrder(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -254,6 +257,8 @@ export enum UserActionAPIMethods {
 	'guiBlurred' = 'userAction.blurred',
 
 	'switchRouteSet' = 'userAction.switchRouteSet',
+	'moveRundown' = 'userAction.moveRundown',
+	'restoreRundownOrder' = 'userAction.restoreRundownOrder',
 }
 
 export interface ReloadRundownPlaylistResponse {

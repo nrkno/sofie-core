@@ -15,7 +15,7 @@ import {
 	SourceLayerType,
 	VTContent,
 	LiveSpeakContent,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'

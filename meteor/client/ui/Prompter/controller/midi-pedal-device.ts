@@ -1,5 +1,5 @@
 import { ControllerAbstract } from './lib'
-import { PrompterViewInner } from '../PrompterView'
+import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 import Spline from 'cubic-spline'
 
 import webmidi, { Input, InputEventControlchange, WebMidi } from 'webmidi'
@@ -143,6 +143,12 @@ export class MidiPedalController extends ControllerAbstract {
 		}
 
 		this.updateScrollPosition()
+
+		this.prompterView.DEBUG_controllerState({
+			source: PrompterConfigMode.PEDAL,
+			lastSpeed: this.lastSpeed,
+			lastEvent: 'ControlChange: ' + e.value,
+		})
 	}
 
 	private updateScrollPosition() {

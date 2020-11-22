@@ -22,7 +22,7 @@ import {
 	ConfigManifestEntryLayerMappings,
 	SourceLayerType,
 	ConfigManifestEntrySelectFromOptions,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { literal, DBObj, KeysByType, ProtectedString, objectPathGet } from '../../../lib/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'

@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
-import { IBlueprintConfig, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintConfig, IBlueprintShowStyleVariant } from '@sofie-automation/blueprints-integration'
 import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { ObserveChangesForHash, createMongoCollection } from './lib'

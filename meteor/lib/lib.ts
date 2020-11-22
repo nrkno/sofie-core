@@ -13,10 +13,11 @@ import { logger } from './logging'
 import { Timecode } from 'timecode'
 import { Settings } from './Settings'
 import * as objectPath from 'object-path'
-import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
+import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-integration'
 import * as crypto from 'crypto'
-import { DeepReadonly } from 'utility-types'
+import { DeepReadonly, DeepPartial } from 'utility-types'
 import { BulkWriteOperation } from 'mongodb'
+import { _DeepPartialObject } from 'utility-types/dist/mapped-types'
 
 const cloneOrg = require('fast-clone')
 
@@ -579,44 +580,59 @@ export const getCollectionStats: (collection: TransformedCollection<any, any>) =
 // 		return false
 // 	})
 // }
-// /**
-//  * Returns a rank number, to be used to insert new objects in a ranked list
-//  * @param before	Object before, null/undefined if inserted first
-//  * @param after			Object after, null/undefined if inserted last
-//  * @param i				If inserting multiple objects, this is the number of this object
-//  * @param count			If inserting multiple objects, this is total count of objects
-//  */
-// export function getRank<T extends { _rank: number }>(
-// 	before: T | null | undefined,
-// 	after: T | null | undefined,
-// 	i: number = 0,
-// 	count: number = 1
-// ): number {
-// 	let newRankMax
-// 	let newRankMin
 
-// 	if (after) {
-// 		if (before) {
-// 			newRankMin = before._rank
-// 			newRankMax = after._rank
-// 		} else {
-// 			// First
-// 			newRankMin = after._rank - 1
-// 			newRankMax = after._rank
-// 		}
-// 	} else {
-// 		if (before) {
-// 			// Last
-// 			newRankMin = before._rank
-// 			newRankMax = before._rank + 1
-// 		} else {
-// 			// Empty list
-// 			newRankMin = 0
-// 			newRankMax = 1
-// 		}
-// 	}
-// 	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
-// }
+/**
+ * Returns a rank number, to be used to insert new objects in a ranked list
+ * @param before   The element before the one-to-be-inserted, null/undefined if inserted first
+ * @param after	   The element after the one-to-be-inserted, null/undefined if inserted last
+ * @param i        If inserting multiple elements; the internal rank of the to-be-inserted element
+ * @param count    If inserting multiple elements, this is total count of inserted elements
+ */
+export function getRank<T extends { _rank: number }>(
+	before: T | null | undefined,
+	after: T | null | undefined,
+	i: number = 0,
+	count: number = 1
+): number {
+	let newRankMax
+	let newRankMin
+
+	if (after) {
+		if (before) {
+			newRankMin = before._rank
+			newRankMax = after._rank
+		} else {
+			// First
+			newRankMin = after._rank - 1
+			newRankMax = after._rank
+		}
+	} else {
+		if (before) {
+			// Last
+			newRankMin = before._rank
+			newRankMax = before._rank + 1
+		} else {
+			// Empty list
+			newRankMin = 0
+			newRankMax = 1
+		}
+	}
+	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
+}
+
+export function normalizeArrayFuncFilter<T>(
+	array: Array<T>,
+	getKey: (o: T) => string | undefined
+): { [indexKey: string]: T } {
+	const normalizedObject: any = {}
+	for (let i = 0; i < array.length; i++) {
+		const key = getKey(array[i])
+		if (key !== undefined) {
+			normalizedObject[key] = array[i]
+		}
+	}
+	return normalizedObject as { [key: string]: T }
+}
 export function normalizeArrayFunc<T>(array: Array<T>, getKey: (o: T) => string): { [indexKey: string]: T } {
 	const normalizedObject: any = {}
 	for (let i = 0; i < array.length; i++) {
@@ -1385,6 +1401,16 @@ export function unprotectObjectArray<T extends object>(obj: T[]): UnprotectedStr
 }
 export function isStringOrProtectedString<T extends ProtectedString<any>>(val: any): val is string | T {
 	return _.isString(val)
+}
+
+export function unpartialString<T extends ProtectedString<any>>(obj: T | _DeepPartialObject<T>): T
+export function unpartialString<T extends ProtectedString<any>>(
+	str: T | _DeepPartialObject<T> | undefined
+): T | undefined
+export function unpartialString<T extends ProtectedString<any>>(
+	str: T | _DeepPartialObject<T> | undefined
+): T | undefined {
+	return str as any
 }
 
 export function isPromise<T extends any>(val: any): val is Promise<T> {

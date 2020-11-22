@@ -4,7 +4,7 @@ import { check } from '../../lib/check'
 import * as _ from 'underscore'
 import { Rundowns } from '../collections/Rundowns'
 import { Part, PartId } from '../collections/Parts'
-import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
+import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
 import { normalizeArray, protectString, unprotectString, getRandomId } from '../lib'
 import { SegmentId } from '../collections/Segments'
@@ -62,7 +62,7 @@ export namespace PrompterAPI {
 
 		const piecesIncluded: PieceId[] = []
 
-		_.each(groupedParts, (parts, segmentId) => {
+		Object.entries(groupedParts).forEach(([segmentId, parts]) => {
 			const segment = segmentsMap[segmentId]
 			if (segment && segment.isHidden) {
 				// Skip if is hidden
@@ -75,14 +75,16 @@ export namespace PrompterAPI {
 				parts: [],
 			}
 
-			_.each(parts, (part) => {
+			for (const part of parts) {
 				const partData: PrompterDataPart = {
 					id: part._id,
 					title: part.title,
 					pieces: [],
 				}
 
-				_.each(part.getAllPieces(), (piece) => {
+				const allPieces = part.getAllPieces()
+
+				for (const piece of allPieces) {
 					if (piece.content) {
 						const content = piece.content as ScriptContent
 						if (content.fullScript) {
@@ -96,7 +98,8 @@ export namespace PrompterAPI {
 							})
 						}
 					}
-				})
+				}
+
 				if (partData.pieces.length === 0) {
 					// insert an empty line
 					partData.pieces.push({
@@ -106,7 +109,7 @@ export namespace PrompterAPI {
 				}
 
 				segmentData.parts.push(partData)
-			})
+			}
 
 			data.segments.push(segmentData)
 		})

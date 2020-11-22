@@ -1,14 +1,10 @@
 import {
 	Time,
-	getPartGroupId,
-	getPartFirstObjectId,
 	TimelineObjectCoreExt,
-	getPieceGroupId,
 	TimelineObjHoldMode,
-	OnGenerateTimelineObj,
 	TSR,
 	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { DeepReadonly } from 'utility-types'
 import { logger } from '../../../lib/logging'
 import {
@@ -19,23 +15,23 @@ import {
 	TimelineObjGroupPart,
 	TimelineObjPartAbstract,
 	StatObjectMetadata,
+	OnGenerateTimelineObjExt,
 } from '../../../lib/collections/Timeline'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
 	waitForPromise,
 	getCurrentTime,
-	extendMandadory,
 	literal,
 	omit,
 	unprotectString,
 	unprotectObjectArray,
-	unprotectObject,
 	normalizeArrayFunc,
 	clone,
 	normalizeArray,
 	getRandomId,
 	applyToArray,
+	protectString,
 } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -49,7 +45,7 @@ import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache } from './lib'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
-import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, CacheForStudioBase } from '../../DatabaseCaches'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -59,6 +55,7 @@ import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
+import { getPartFirstObjectId, getPartGroupId, getPieceGroupId } from '../../../lib/rundown/timeline'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -173,7 +170,7 @@ export interface SelectedPartInstanceTimelineInfo {
 	pieceInstances: PieceInstanceWithTimings[]
 }
 
-function getPartInstanceTimelineInfo(
+export function getPartInstanceTimelineInfo(
 	cache: CacheForRundownPlaylist,
 	currentTime: Time,
 	showStyle: ShowStyleBase,
@@ -201,7 +198,7 @@ function getPartInstanceTimelineInfo(
 function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): TimelineObjRundown[] {
 	const span = profiler.startSpan('getTimelineRundown')
 	try {
-		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObj> = []
+		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObjExt> = []
 
 		const playlist = getActiveRundownPlaylist(cache, studio._id) // todo: is this correct?
 		let activeRundown: Rundown | undefined
@@ -259,7 +256,13 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 			const showStyleBlueprintManifest = showStyleBlueprint0.blueprint
 
 			if (showStyleBlueprintManifest.onTimelineGenerate) {
-				const context = new TimelineEventContext(activeRundown, cache, currentPartInstance, nextPartInstance)
+				const context = new TimelineEventContext(
+					activeRundown,
+					cache,
+					previousPartInstance,
+					currentPartInstance,
+					nextPartInstance
+				)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(cache, playlist, timelineObjs)
 				try {
 					const tlGenRes = waitForPromise(
@@ -271,19 +274,18 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 							unprotectObjectArray(resolvedPieces.pieces)
 						)
 					)
-					timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObj) => {
-						return literal<TimelineObjGeneric & OnGenerateTimelineObj>({
+					timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObjExt) => {
+						return literal<TimelineObjGeneric & OnGenerateTimelineObjExt>({
 							...object,
 							objectType: TimelineObjType.RUNDOWN,
 						})
 					})
-					if (tlGenRes.persistentState) {
-						cache.RundownPlaylists.update(playlist._id, {
-							$set: {
-								previousPersistentState: tlGenRes.persistentState,
-							},
-						})
-					}
+					cache.RundownPlaylists.update(playlist._id, {
+						$set: {
+							previousPersistentState: tlGenRes.persistentState,
+							trackedAbSessions: context.knownSessions,
+						},
+					})
 				} catch (e) {
 					logger.error(`Error in onTimelineGenerate during getTimelineRundown`, e)
 				}
@@ -292,7 +294,7 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 			if (span) span.end()
 			return timelineObjs.map<TimelineObjRundown>((timelineObj) => {
 				return {
-					...omit(timelineObj, 'pieceInstanceId', 'infinitePieceId'), // temporary fields from OnGenerateTimelineObj
+					...omit(timelineObj, 'pieceInstanceId', 'infinitePieceInstanceId', 'partInstanceId'), // temporary fields from OnGenerateTimelineObj
 					objectType: TimelineObjType.RUNDOWN,
 				}
 			})
@@ -393,11 +395,11 @@ function buildTimelineObjsForRundown(
 	baselineItems: RundownBaselineObj[],
 	activePlaylist: RundownPlaylist,
 	partInstancesInfo: SelectedPartInstancesTimelineInfo
-): (TimelineObjRundown & OnGenerateTimelineObj)[] {
+): (TimelineObjRundown & OnGenerateTimelineObjExt)[] {
 	const span = profiler.startSpan('buildTimelineObjsForRundown')
-	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
-	let currentPartGroup: TimelineObjGroupPart | undefined
-	let previousPartGroup: TimelineObjGroupPart | undefined
+	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
+	let currentPartGroup: (TimelineObjGroupPart & OnGenerateTimelineObjExt) | undefined
+	let previousPartGroup: (TimelineObjGroupPart & OnGenerateTimelineObjExt) | undefined
 
 	// const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
 	// 	cache,
@@ -409,7 +411,7 @@ function buildTimelineObjsForRundown(
 	// let currentPieces: Array<Piece> = []
 
 	timelineObjs.push(
-		literal<TimelineObjRundown>({
+		literal<TimelineObjRundown & OnGenerateTimelineObjExt>({
 			id: activePlaylist._id + '_status',
 			objectType: TimelineObjType.RUNDOWN,
 			enable: { while: 1 },
@@ -418,6 +420,7 @@ function buildTimelineObjsForRundown(
 				deviceType: TSR.DeviceType.ABSTRACT,
 			},
 			classes: [activePlaylist.rehearsal ? 'rundown_rehersal' : 'rundown_active'],
+			partInstanceId: null,
 		})
 	)
 
@@ -463,7 +466,7 @@ function buildTimelineObjsForRundown(
 					true
 				)
 
-				const currentPartGroupId = getPartGroupId(unprotectObject(partInstancesInfo.current.partInstance))
+				const currentPartGroupId = getPartGroupId(partInstancesInfo.current.partInstance)
 
 				const previousPartGroupEnable = {
 					start: previousPartLastStarted,
@@ -486,7 +489,7 @@ function buildTimelineObjsForRundown(
 				)
 
 				const groupClasses: string[] = ['previous_part']
-				let prevObjs: TimelineObjRundown[] = [previousPartGroup]
+				let prevObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = [previousPartGroup]
 				prevObjs = prevObjs.concat(
 					transformPartIntoTimeline(
 						activePlaylist._id,
@@ -546,7 +549,7 @@ function buildTimelineObjsForRundown(
 				start: `#${currentPartGroup.id}.start`, // This gets overriden with a concrete time if the original piece is known to have already started
 				duration: piece.piece.enable.duration || undefined,
 			})
-			infiniteGroup.id = getPartGroupId(unprotectString(piece._id)) + '_infinite' // This doesnt want to belong to a part, so force the ids
+			infiniteGroup.id = getPartGroupId(protectString<PartInstanceId>(unprotectString(piece._id))) + '_infinite' // This doesnt want to belong to a part, so force the ids
 			infiniteGroup.priority = 1
 
 			const groupClasses: string[] = ['current_part']
@@ -705,13 +708,16 @@ function buildTimelineObjsForRundown(
 	if (span) span.end()
 	return timelineObjs
 }
-function createPartGroup(partInstance: PartInstance, enable: TSR.Timeline.TimelineEnable): TimelineObjGroupPart {
+function createPartGroup(
+	partInstance: PartInstance,
+	enable: TSR.Timeline.TimelineEnable
+): TimelineObjGroupPart & OnGenerateTimelineObjExt {
 	if (!enable.start) {
 		// TODO - is this loose enough?
 		enable.start = 'now'
 	}
-	let partGrp = literal<TimelineObjGroupPart>({
-		id: getPartGroupId(unprotectObject(partInstance)),
+	let partGrp = literal<TimelineObjGroupPart & OnGenerateTimelineObjExt>({
+		id: getPartGroupId(partInstance),
 		objectType: TimelineObjType.RUNDOWN,
 		enable: enable,
 		priority: 5,
@@ -723,6 +729,7 @@ function createPartGroup(partInstance: PartInstance, enable: TSR.Timeline.Timeli
 		children: [],
 		isGroup: true,
 		isPartGroup: true,
+		partInstanceId: partInstance._id,
 	})
 
 	return partGrp
@@ -730,11 +737,11 @@ function createPartGroup(partInstance: PartInstance, enable: TSR.Timeline.Timeli
 function createPartGroupFirstObject(
 	playlistId: RundownPlaylistId,
 	partInstance: PartInstance,
-	partGroup: TimelineObjRundown,
+	partGroup: TimelineObjRundown & OnGenerateTimelineObjExt,
 	previousPart?: PartInstance
-): TimelineObjPartAbstract {
-	return literal<TimelineObjPartAbstract>({
-		id: getPartFirstObjectId(unprotectObject(partInstance)),
+): TimelineObjPartAbstract & OnGenerateTimelineObjExt {
+	return literal<TimelineObjPartAbstract & OnGenerateTimelineObjExt>({
+		id: getPartFirstObjectId(partInstance),
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
 		layer: 'group_first_object',
@@ -750,20 +757,23 @@ function createPartGroupFirstObject(
 			callBackStopped: 'partPlaybackStopped', // Will cause a callback to be called, when the object stops playing:
 		},
 		inGroup: partGroup.id,
+		partInstanceId: partGroup.partInstanceId,
 		classes: (partInstance.part.classes || []).concat(previousPart ? previousPart.part.classesForNext || [] : []),
 	})
 }
 
-function transformBaselineItemsIntoTimeline(objs: RundownBaselineObj[]): Array<TimelineObjRundown> {
-	let timelineObjs: Array<TimelineObjRundown> = []
+function transformBaselineItemsIntoTimeline(
+	objs: RundownBaselineObj[]
+): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
+	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 	_.each(objs, (obj: RundownBaselineObj) => {
 		// the baseline objects are layed out without any grouping
 		_.each(obj.objects, (o: TimelineObjGeneric) => {
-			timelineObjs.push(
-				extendMandadory<TimelineObjGeneric, TimelineObjRundown>(o, {
-					objectType: TimelineObjType.RUNDOWN,
-				})
-			)
+			timelineObjs.push({
+				...o,
+				objectType: TimelineObjType.RUNDOWN,
+				partInstanceId: null,
+			})
 		})
 	})
 	return timelineObjs
@@ -805,15 +815,15 @@ function transformPartIntoTimeline(
 	partId: PartId,
 	pieceInstances: DeepReadonly<PieceInstanceWithTimings>[],
 	firstObjClasses: string[],
-	partGroup: TimelineObjGroupPart,
+	partGroup: TimelineObjGroupPart & OnGenerateTimelineObjExt,
 	nowInPart: number,
 	isAbsoluteInfinitePartGroup: boolean,
 	transitionProps?: TransformTransitionProps,
 	holdState?: RundownHoldState,
 	showHoldExcept?: boolean
-): Array<TimelineObjRundown & OnGenerateTimelineObj> {
+): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const span = profiler.startSpan('transformPartIntoTimeline')
-	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
+	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
 	const isHold = holdState === RundownHoldState.ACTIVE
 	const allowTransition =
@@ -869,9 +879,7 @@ function transformPartIntoTimeline(
 				) {
 					const transitionContentsDelayStr =
 						transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`
-					pieceEnable.start = `#${getPieceGroupId(
-						unprotectString(transition._id)
-					)}.start ${transitionContentsDelayStr}`
+					pieceEnable.start = `#${getPieceGroupId(transition)}.start ${transitionContentsDelayStr}`
 				} else if (pieceInstance.piece.isTransition && transitionPieceDelay) {
 					pieceEnable.start = Math.max(0, transitionPieceDelay)
 				}
@@ -890,7 +898,7 @@ function transformPartIntoTimeline(
 		if (!pieceInstance.piece.virtual && pieceInstance.piece.content?.timelineObjects && !hasDefinitelyEnded) {
 			timelineObjs.push(createPieceGroupFirstObject(playlistId, pieceInstance, pieceGroup, firstObjClasses))
 
-			const pieceObjects: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
+			const pieceObjects: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
 			for (const o of pieceInstance.piece.content.timelineObjects) {
 				if (o.holdMode) {
@@ -907,7 +915,8 @@ function transformPartIntoTimeline(
 					inGroup: pieceGroup.id,
 					objectType: TimelineObjType.RUNDOWN,
 					pieceInstanceId: unprotectString(pieceInstance._id),
-					infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
+					infinitePieceInstanceId: pieceInstance.infinite?.infiniteInstanceId,
+					partInstanceId: partGroup.partInstanceId,
 				})
 			}
 

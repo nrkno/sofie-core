@@ -14,12 +14,18 @@ import { loadCachedIngestSegment } from './ingestCache'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { handleUpdatedSegment } from './rundownInput'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { logger } from '../../logging'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
 		debug_playlistRunBlueprints: (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) => {
-			check(rundownPlaylistId, String)
-			IngestActions.regenerateRundownPlaylist(rundownPlaylistId, purgeExisting)
+			try {
+				check(rundownPlaylistId, String)
+				IngestActions.regenerateRundownPlaylist(rundownPlaylistId, purgeExisting)
+			} catch (e) {
+				logger.error(e)
+				throw e
+			}
 		},
 		debug_segmentRunBlueprints: (segmentId: SegmentId) => {
 			check(segmentId, String)
@@ -39,18 +45,23 @@ if (!Settings.enableUserAccounts) {
 			handleUpdatedSegment({ studioId: rundown.studioId } as PeripheralDevice, rundown.externalId, ingestSegment)
 		},
 		debug_updateTimeline: (studioId: StudioId) => {
-			check(studioId, String)
+			try {
+				check(studioId, String)
 
-			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
+				const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
 
-			const activePlaylist = getActiveRundownPlaylist(cache, studioId)
-			if (activePlaylist) {
-				const cacheForPlaylist = waitForPromise(initCacheForRundownPlaylist(activePlaylist, cache))
-				updateTimeline(cacheForPlaylist, studioId)
-				waitForPromise(cacheForPlaylist.saveAllToDatabase())
-			} else {
-				updateTimeline(cache, studioId)
-				waitForPromise(cache.saveAllToDatabase())
+				const activePlaylist = getActiveRundownPlaylist(cache, studioId)
+				if (activePlaylist) {
+					const cacheForPlaylist = waitForPromise(initCacheForRundownPlaylist(activePlaylist, cache))
+					updateTimeline(cacheForPlaylist, studioId)
+					waitForPromise(cacheForPlaylist.saveAllToDatabase())
+				} else {
+					updateTimeline(cache, studioId)
+					waitForPromise(cache.saveAllToDatabase())
+				}
+			} catch (e) {
+				logger.error(e)
+				throw e
 			}
 		},
 	})

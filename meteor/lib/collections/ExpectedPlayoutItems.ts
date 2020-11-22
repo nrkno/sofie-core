@@ -1,7 +1,7 @@
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
-import { ExpectedPlayoutItemGeneric } from 'tv-automation-sofie-blueprints-integration'
+import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integration'
 import { StudioId } from './Studios'
 import { RundownId } from './Rundowns'
 import { PartId } from './Parts'

@@ -14,7 +14,7 @@ import { IncomingMessage, ServerResponse } from 'http'
 import { parse as parseUrl } from 'url'
 import { syncFunction } from '../codeControl'
 import { RundownInput, rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from './ingest/rundownInput'
-import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
 import { MediaObject } from '../../lib/collections/MediaObjects'
@@ -818,6 +818,16 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	}
 	dataRundownUpdate(deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
 		return makePromise(() => RundownInput.dataRundownUpdate(this, deviceId, deviceToken, ingestRundown))
+	}
+	dataSegmentGet(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		rundownExternalId: string,
+		segmentExternalId: string
+	) {
+		return makePromise(() =>
+			RundownInput.dataSegmentGet(this, deviceId, deviceToken, rundownExternalId, segmentExternalId)
+		)
 	}
 	dataSegmentDelete(
 		deviceId: PeripheralDeviceId,

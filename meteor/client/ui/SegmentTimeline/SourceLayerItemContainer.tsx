@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { SourceLayerItem } from './SourceLayerItem'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { SourceLayerType, VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, VTContent, LiveSpeakContent } from '@sofie-automation/blueprints-integration'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Meteor } from 'meteor/meteor'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
@@ -35,6 +35,7 @@ interface IPropsHeader {
 	liveLinePadding: number
 	scrollLeft: number
 	scrollWidth: number
+	layerIndex: number
 }
 /** This is a container component that allows ractivity with the Timeline collection */
 export const SourceLayerItemContainer = class SourceLayerItemContainer extends MeteorReactComponent<IPropsHeader> {

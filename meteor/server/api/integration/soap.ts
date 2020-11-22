@@ -8,7 +8,7 @@ import {
 	iterateDeeplyEnum,
 	iterateDeeplyAsync,
 	iterateDeeply,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { throwFatalError } from '../ExternalMessageQueue'
 import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { logger } from '../../logging'

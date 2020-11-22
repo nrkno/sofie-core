@@ -14,7 +14,7 @@ import {
 	PartEndState,
 	Time,
 	IBlueprintPartInstanceTimings,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { DBPart, Part } from './Parts'
 import { RundownId } from './Rundowns'

@@ -9,7 +9,7 @@ import {
 	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
 	TimelineObjectCoreExt,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import {
 	SegmentExtended,
 	PartExtended,
@@ -28,10 +28,10 @@ import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
-import { createPieceGroupAndCap } from '../../lib/rundown/pieces'
+import { createPieceGroupAndCap, PieceGroupMetadata } from '../../lib/rundown/pieces'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 
-interface PieceGroupMetadata {
+interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
 }
 
@@ -416,8 +416,9 @@ export namespace RundownUtils {
 					}
 
 					const { pieceGroup, capObjs } = createPieceGroupAndCap(piece)
-					pieceGroup.metaData = literal<PieceGroupMetadata>({
+					pieceGroup.metaData = literal<PieceGroupMetadataExt>({
 						id: piece.piece._id,
+						pieceId: piece._id,
 					})
 					partTimeline.push(pieceGroup)
 					partTimeline.push(...capObjs)
@@ -497,7 +498,7 @@ export namespace RundownUtils {
 				const objs = Object.values(tlResolved.objects)
 				for (let i = 0; i < objs.length; i++) {
 					const obj = objs[i]
-					const obj0 = (obj as unknown) as TimelineObjectCoreExt<PieceGroupMetadata>
+					const obj0 = (obj as unknown) as TimelineObjectCoreExt<PieceGroupMetadataExt>
 					if (obj.resolved.resolved && obj0.metaData) {
 						// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
 						const piece = piecesLookup.get(obj0.metaData.id)

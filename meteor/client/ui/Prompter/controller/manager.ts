@@ -1,4 +1,6 @@
 import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
+import { MouseIshController } from './mouse-ish-device'
+import { MidiPedalController } from './midi-pedal-device'
 import { ControllerAbstract } from './lib'
 import { JoyConController } from './joycon-device'
 import { KeyboardController } from './keyboard-device'

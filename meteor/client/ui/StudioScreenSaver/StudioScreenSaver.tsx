@@ -120,8 +120,6 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				studioId: this.props.studioId,
 			})
 
-			this.measureElement()
-
 			window.addEventListener('resize', this.measureElement)
 
 			this.autorun(() => {
@@ -145,8 +143,16 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 		}
 
 		componentWillUnmount() {
+			super.componentWillUnmount()
 			this._nextAnimationFrameRequest && window.cancelAnimationFrame(this._nextAnimationFrameRequest)
 			window.removeEventListener('resize', this.measureElement)
+		}
+
+		private static defaultPosition = (size: { width?: number; height?: number }) => {
+			return {
+				x: (window.innerWidth - (size.width || 0)) / 2,
+				y: (window.innerHeight - (size.height || 0)) / 2,
+			}
 		}
 
 		/**
@@ -163,10 +169,7 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 
 				// this is a first measure, place the info-box in the center of the screen
 				if (this.state.infoElementSize.height === undefined || this.state.infoElementSize.width === undefined) {
-					this.position = {
-						x: (window.innerWidth - infoElementSize.width) / 2,
-						y: (window.innerHeight - infoElementSize.height) / 2,
-					}
+					this.position = StudioScreenSaver.defaultPosition(infoElementSize)
 
 					infoElement.style.transform = `translate3d(${this.position.x}px, ${this.position.y}px, 0.1px)`
 				}
@@ -200,20 +203,22 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 			let { targetSpeedVector } = this.state
 			let { x, y } = this.position
 			let speedVector = this.speedVector
+			const windowWidth = window.innerWidth
+			const windowHeight = window.innerHeight
 			if (infoElement && infoElementSize.width && infoElementSize.height) {
 				// If the info element is within the frame margin, and the target vector is pointing outwards,
 				// calculate a new target vector and calculate the step that should happen per 1ms to transition
 				// the speedVector to the target in VECTOR_TRANSITION_DURATION time.
 				if (
 					(x < this.FRAME_PIXEL_MARGIN[3] && targetSpeedVector[0] < 0) ||
-					(x + infoElementSize.width > window.innerWidth - this.FRAME_PIXEL_MARGIN[1] && targetSpeedVector[0] > 0)
+					(x + infoElementSize.width > windowWidth - this.FRAME_PIXEL_MARGIN[1] && targetSpeedVector[0] > 0)
 				) {
 					targetSpeedVector = [targetSpeedVector[0] * -1, targetSpeedVector[1]]
 					this.vectorTransitionFrameStepX = (targetSpeedVector[0] - speedVector[0]) / this.VECTOR_TRANSITION_DURATION
 				}
 				if (
 					(y < this.FRAME_PIXEL_MARGIN[0] && targetSpeedVector[1] < 0) ||
-					(y + infoElementSize.height > window.innerHeight - this.FRAME_PIXEL_MARGIN[2] && targetSpeedVector[1] > 0)
+					(y + infoElementSize.height > windowHeight - this.FRAME_PIXEL_MARGIN[2] && targetSpeedVector[1] > 0)
 				) {
 					targetSpeedVector = [targetSpeedVector[0], targetSpeedVector[1] * -1]
 					this.vectorTransitionFrameStepY = (targetSpeedVector[1] - speedVector[1]) / this.VECTOR_TRANSITION_DURATION
@@ -233,13 +238,24 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				}
 
 				// guard against the simulation resulting in a fast-flying, horizontal or vertical text
-				if (Math.abs(speedVector[1]) >= 1 || Math.abs(speedVector[1]) >= 1) {
+				if (Math.abs(speedVector[0]) >= 1 || Math.abs(speedVector[1]) >= 1) {
 					const normalizer = Math.max(Math.abs(speedVector[0]), Math.abs(speedVector[1]))
 					speedVector = [speedVector[0] / normalizer, speedVector[1] / normalizer]
 				}
+
 				this.position = {
 					x: x + speedVector[0] * this.PIXEL_SPEED * (frameTime / 17),
 					y: y + speedVector[1] * this.PIXEL_SPEED * (frameTime / 17),
+				}
+
+				// if by any chance the infoElement ends up beyond the screen area, reposition it to the center
+				if (
+					this.position.x < 0 ||
+					this.position.y < 0 ||
+					this.position.x + infoElementSize.width > windowWidth ||
+					this.position.y + infoElementSize.height > windowHeight
+				) {
+					this.position = StudioScreenSaver.defaultPosition(infoElementSize)
 				}
 
 				infoElement.style.transform = `translate3d(${this.position.x}px, ${this.position.y}px, 0.1px)`
@@ -281,13 +297,19 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 		}
 
 		private setInfoElement = (el: HTMLDivElement) => {
-			this.setState({
-				infoElement: el,
-			})
+			this.setState(
+				{
+					infoElement: el,
+				},
+				() => {
+					this.measureElement()
+				}
+			)
 		}
 
 		render() {
 			const { t, rundownPlaylist } = this.props
+			const hasRundown = rundownPlaylist && rundownPlaylist.expectedStart
 			return (
 				<div
 					className={classNames('studio-screen-saver', {
@@ -297,9 +319,13 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 						className="studio-screen-saver__bkg"
 						data="/images/screen-saver-bkg.svg"
 						type="image/svg+xml"></object>
-					<div className="studio-screen-saver__info" ref={this.setInfoElement}>
+					<div
+						className={classNames('studio-screen-saver__info', {
+							'studio-screen-saver__info--no-rundown': !hasRundown,
+						})}
+						ref={this.setInfoElement}>
 						<Clock className="studio-screen-saver__clock" />
-						{rundownPlaylist && rundownPlaylist.expectedStart ? (
+						{hasRundown && rundownPlaylist && rundownPlaylist.expectedStart ? (
 							<>
 								<div className="studio-screen-saver__info__label">{t('Next scheduled show')}</div>
 								<div className="studio-screen-saver__info__rundown">{rundownPlaylist.name}</div>

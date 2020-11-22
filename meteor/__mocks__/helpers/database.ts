@@ -30,7 +30,7 @@ import {
 	IBlueprintPart,
 	IBlueprintPiece,
 	TSR,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
 	ShowStyleVariant,
@@ -74,14 +74,14 @@ export enum LAYER_IDS {
 }
 
 function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VERSION: string } {
-	const INTEGRATION_VERSION = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
+	const INTEGRATION_VERSION = require('../../node_modules/@sofie-automation/blueprints-integration/package.json')
 		.version
 
 	let TSR_VERSION = ''
 	try {
 		TSR_VERSION = require('../../node_modules/timeline-state-resolver-types/package.json').version
 	} catch (e) {
-		TSR_VERSION = require('../../node_modules/tv-automation-sofie-blueprints-integration/node_modules/timeline-state-resolver-types/package.json')
+		TSR_VERSION = require('../../node_modules/@sofie-automation/blueprints-integration/node_modules/timeline-state-resolver-types/package.json')
 			.version
 	}
 

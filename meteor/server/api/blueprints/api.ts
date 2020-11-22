@@ -3,7 +3,7 @@ import { getCurrentTime, protectString, unprotectString, getRandomId, makePromis
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
-import { BlueprintManifestType, SomeBlueprintManifest } from 'tv-automation-sofie-blueprints-integration'
+import { BlueprintManifestType, SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods } from '../../methods'

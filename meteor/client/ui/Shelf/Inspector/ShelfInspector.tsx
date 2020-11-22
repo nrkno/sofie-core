@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { IBlueprintPieceGeneric } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintPieceGeneric } from '@sofie-automation/blueprints-integration'
 import { IModalAttributes, Modal } from '../../../lib/ui/containers/modals/Modal'
 import renderItem from './ItemRenderers/ItemRendererFactory'
 import { PieceUi } from '../../SegmentTimeline/SegmentTimelineContainer'
