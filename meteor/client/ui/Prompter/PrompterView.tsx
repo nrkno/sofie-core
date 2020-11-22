@@ -53,6 +53,12 @@ export enum PrompterConfigMode {
 	PEDAL = 'pedal',
 }
 
+export interface IPrompterControllerState {
+	source: PrompterConfigMode
+	lastEvent: string
+	lastSpeed: number
+}
+
 interface IProps {
 	match?: {
 		params?: {
