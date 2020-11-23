@@ -1036,6 +1036,8 @@ export function handleRemovedSegment(
 						404,
 						`handleRemovedSegment: removeSegments: Segment ${segmentExternalId} not found`
 					)
+				} else {
+					afterIngestChangedData(cache, rundown, [])
 				}
 			}
 		}
@@ -1065,9 +1067,15 @@ export function handleUpdatedSegment(
 			saveSegmentCache(rundown._id, segmentId, makeNewIngestSegment(ingestSegment))
 		})
 
-		const updatedSegmentId = updateSegmentFromIngestData(cache, studio, playlist, rundown, ingestSegment)
+		const { segmentId: updatedSegmentId, newPartIds } = updateSegmentFromIngestData(
+			cache,
+			studio,
+			playlist,
+			rundown,
+			ingestSegment
+		)
 		if (updatedSegmentId) {
-			afterIngestChangedData(cache, rundown, [updatedSegmentId])
+			afterIngestChangedData(cache, rundown, [updatedSegmentId], false, newPartIds)
 		}
 
 		waitForPromise(cache.saveAllToDatabase())
@@ -1078,17 +1086,22 @@ export function updateSegmentsFromIngestData(
 	studio: Studio,
 	playlist: RundownPlaylist,
 	rundown: Rundown,
-	ingestSegments: IngestSegment[]
+	ingestSegments: IngestSegment[],
+	removedPreviousParts?: boolean
 ) {
 	const changedSegmentIds: SegmentId[] = []
+	const allNewPartIds: string[] = []
 	for (let ingestSegment of ingestSegments) {
-		const segmentId = updateSegmentFromIngestData(cache, studio, playlist, rundown, ingestSegment)
+		const { segmentId, newPartIds } = updateSegmentFromIngestData(cache, studio, playlist, rundown, ingestSegment)
 		if (segmentId !== null) {
 			changedSegmentIds.push(segmentId)
 		}
+		if (newPartIds) {
+			allNewPartIds.push(...newPartIds)
+		}
 	}
 	if (changedSegmentIds.length > 0) {
-		afterIngestChangedData(cache, rundown, changedSegmentIds)
+		afterIngestChangedData(cache, rundown, changedSegmentIds, removedPreviousParts, allNewPartIds)
 	}
 }
 /**
@@ -1105,7 +1118,7 @@ function updateSegmentFromIngestData(
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	ingestSegment: IngestSegment
-): SegmentId | null {
+): { segmentId: SegmentId | null; newPartIds: string[] } {
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 	const { blueprint, blueprintId } = loadShowStyleBlueprint(
 		waitForPromise(cache.activationCache.getShowStyleBase(rundown))
@@ -1234,7 +1247,7 @@ function updateSegmentFromIngestData(
 		} else {
 			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 		}
-		return null
+		return { segmentId: null, newPartIds: [] }
 	}
 
 	// Update segment info:
@@ -1311,9 +1324,17 @@ function updateSegmentFromIngestData(
 		})
 	)
 
-	return anythingChanged(changes) ? segmentId : null
+	const insertedPartsIds = prepareSaveParts.inserted.map((part) => part.externalId)
+
+	return { segmentId: anythingChanged(changes) ? segmentId : null, newPartIds: insertedPartsIds }
 }
-function afterIngestChangedData(cache: CacheForRundownPlaylist, rundown: Rundown, changedSegmentIds: SegmentId[]) {
+function afterIngestChangedData(
+	cache: CacheForRundownPlaylist,
+	rundown: Rundown,
+	changedSegmentIds: SegmentId[],
+	removedPreviousParts?: boolean,
+	newPartIds?: string[]
+) {
 	const playlist = cache.RundownPlaylists.findOne({ _id: rundown.playlistId })
 	if (!playlist) {
 		throw new Meteor.Error(404, `Orphaned rundown ${rundown._id}`)
@@ -1324,7 +1345,11 @@ function afterIngestChangedData(cache: CacheForRundownPlaylist, rundown: Rundown
 	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
 	updatePartRanks(cache, playlist, changedSegmentIds)
 
-	UpdateNext.ensureNextPartIsValid(cache, playlist)
+	if (newPartIds) {
+		UpdateNext.afterInsertParts(cache, playlist, newPartIds, !!removedPreviousParts)
+	} else {
+		UpdateNext.ensureNextPartIsValid(cache, playlist)
+	}
 
 	triggerUpdateTimelineAfterIngestData(rundown.playlistId)
 }
@@ -1376,7 +1401,13 @@ export function handleRemovedPart(
 				cache.defer(() => {
 					saveSegmentCache(rundown._id, segmentId, ingestSegment)
 				})
-				const updatedSegmentId = updateSegmentFromIngestData(cache, studio, playlist, rundown, ingestSegment)
+				const { segmentId: updatedSegmentId } = updateSegmentFromIngestData(
+					cache,
+					studio,
+					playlist,
+					rundown,
+					ingestSegment
+				)
 				if (updatedSegmentId) {
 					afterIngestChangedData(cache, rundown, [updatedSegmentId])
 				}
@@ -1449,7 +1480,13 @@ export function handleUpdatedPartInner(
 		cache.defer(() => {
 			saveSegmentCache(rundown._id, segmentId, ingestSegment)
 		})
-		const updatedSegmentId = updateSegmentFromIngestData(cache, studio, playlist, rundown, ingestSegment)
+		const { segmentId: updatedSegmentId } = updateSegmentFromIngestData(
+			cache,
+			studio,
+			playlist,
+			rundown,
+			ingestSegment
+		)
 		if (updatedSegmentId) {
 			afterIngestChangedData(cache, rundown, [updatedSegmentId])
 		}

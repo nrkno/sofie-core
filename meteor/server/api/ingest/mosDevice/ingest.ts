@@ -383,8 +383,7 @@ export function handleInsertParts(
 		})
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
-		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
-		UpdateNext.afterInsertParts(cache, playlist, newPartIds, removePrevious)
+		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments, removePrevious)
 		waitForPromise(cache.saveAllToDatabase())
 	})
 }
@@ -550,7 +549,8 @@ function diffAndApplyChanges(
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	oldIngestRundown: LocalIngestRundown,
-	newIngestSegments: LocalIngestSegment[]
+	newIngestSegments: LocalIngestSegment[],
+	removePreviousParts?: boolean
 	// newIngestParts: AnnotatedIngestPart[]
 ) {
 	// Fetch all existing segments:
@@ -656,7 +656,8 @@ function diffAndApplyChanges(
 		studio,
 		playlist,
 		rundown,
-		_.sortBy([..._.values(segmentDiff.added), ..._.values(segmentDiff.changed)], (se) => se.rank)
+		_.sortBy([..._.values(segmentDiff.added), ..._.values(segmentDiff.changed)], (se) => se.rank),
+		removePreviousParts
 	)
 }
 
