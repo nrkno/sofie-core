@@ -8,7 +8,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
 import JonasFormattedTime from './JonasFormattedTime'
-import RundownListItemProblems from './RundownListItemProblems'
+import { EyeIcon } from '../../lib/ui/icons/rundownList'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
@@ -65,6 +65,14 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 					</span>
 				)}
 				<b className="rundown-name">{rundownNameContent}</b>
+				{props.rundown.description ? (
+					<Tooltip overlay={props.rundown.description} trigger={['hover']} placement="right">
+						<span className="rundown-list-description__icon">
+							<EyeIcon />
+						</span>
+					</Tooltip>
+				) : null}
+
 				{isActive === true ? (
 					<Tooltip overlay={t('This rundown is currently active')} placement="bottom">
 						<div className="origo-pulse small right mrs">

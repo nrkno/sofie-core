@@ -16,7 +16,7 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import { VTContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PieceStatusIcon } from '../PieceStatusIcon'
 import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
-import { CriticalIconSmall, WarningIconSmall } from '../../../lib/notificationIcons'
+import { CriticalIconSmall, WarningIconSmall } from '../../../lib/ui/icons/notifications'
 
 interface IProps extends ICustomLayerItemProps {}
 interface IState {
