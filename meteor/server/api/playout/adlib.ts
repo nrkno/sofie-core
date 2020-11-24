@@ -617,8 +617,7 @@ export namespace ServerPlayoutAdLibAPI {
 					)
 				}
 
-				const newPieceInstance = convertAdLibToPieceInstance(bucketAdlib, currentPartInstance, queue)
-				innerStartAdLibPiece(cache, rundownPlaylist, rundown, currentPartInstance, newPieceInstance)
+				innerStartOrQueueAdLibPiece(cache, rundownPlaylist, rundown, queue, currentPartInstance, bucketAdlib)
 
 				waitForPromise(cache.saveAllToDatabase())
 			}
