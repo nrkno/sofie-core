@@ -338,7 +338,7 @@ export const RundownPlaylistUi = DropTarget(
 )
 
 function createProgressBarRow(playlist: RundownPlaylistUi): React.ReactElement | null {
-	if (playlist.startedPlayback !== undefined && playlist.expectedDuration !== undefined && playlist.startedPlayback) {
+	if (playlist.active && playlist.expectedDuration !== undefined && playlist.startedPlayback) {
 		return <ActiveProgressBar rundownPlaylist={playlist} />
 	}
 
