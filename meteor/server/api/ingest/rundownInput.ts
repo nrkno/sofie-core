@@ -1743,14 +1743,6 @@ export function isUpdateAllowed(
 						allowed = false
 					}
 				})
-				if (!allowed) {
-					// For troubleshooting; also log which parts was inserted:
-					if (partChanges.inserted) {
-						_.each(partChanges.inserted, (part) => {
-							logger.debug(`Part "${part._id}" ("${part.externalId}") was inserted`)
-						})
-					}
-				}
 			}
 			if (allowed && segmentChanges && segmentChanges.removed && segmentChanges.removed.length) {
 				_.each(segmentChanges.removed, (segment) => {
