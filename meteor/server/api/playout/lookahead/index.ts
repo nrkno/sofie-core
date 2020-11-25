@@ -6,7 +6,11 @@ import {
 	OnGenerateTimelineObj,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, MappingExt } from '../../../../lib/collections/Studios'
-import { OnGenerateTimelineObjExt, TimelineObjRundown } from '../../../../lib/collections/Timeline'
+import {
+	OnGenerateTimelineObjExt,
+	TimelineObjRundown,
+	updateLookaheadLayer,
+} from '../../../../lib/collections/Timeline'
 import { PartId } from '../../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../../lib/collections/Pieces'
 import { clone, asyncCollectionFindFetch } from '../../../../lib/lib'
@@ -167,8 +171,8 @@ function mutateLookaheadObject(
 	delete obj.inGroup // force it to be cleared
 
 	if (mode === LookaheadMode.PRELOAD) {
-		obj.lookaheadForLayer = obj.layer
-		obj.layer += '_lookahead'
+		// Set lookaheadForLayer to reference the original layer:
+		updateLookaheadLayer(obj)
 	}
 	return obj
 }

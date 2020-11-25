@@ -106,7 +106,11 @@ export function getRoutedTimeline(
 	const outputTimelineObjs: TimelineObjGeneric[] = []
 
 	for (let obj of inputTimelineObjs) {
-		const inputLayer = obj.layer + ''
+		let inputLayer = obj.layer + ''
+		if (obj.isLookahead && obj.lookaheadForLayer) {
+			// For lookahead objects, .layer doesn't point to any real layer
+			inputLayer = obj.lookaheadForLayer + ''
+		}
 		const routes = mappingRoutes.existing[inputLayer]
 		if (routes) {
 			for (let i = 0; i < routes.length; i++) {
@@ -114,6 +118,10 @@ export function getRoutedTimeline(
 				const routedObj: TimelineObjGeneric = {
 					...obj,
 					layer: route.outputMappedLayer,
+				}
+				if (routedObj.isLookahead && routedObj.lookaheadForLayer) {
+					// Update lookaheadForLayer to reference the original routed layer:
+					updateLookaheadLayer(routedObj)
 				}
 				if (i > 0) {
 					// If there are multiple routes we must rename the ids, so that they stay unique.
@@ -127,6 +135,11 @@ export function getRoutedTimeline(
 		}
 	}
 	return outputTimelineObjs
+}
+export function updateLookaheadLayer(obj: TimelineObjRundown): void {
+	// Set lookaheadForLayer to reference the original layer:
+	obj.lookaheadForLayer = obj.layer
+	obj.layer += '_lookahead'
 }
 export interface TimelineComplete {
 	/** The id of the timeline. Since there is one (1) timeline in a studio, we can use that id here. */
