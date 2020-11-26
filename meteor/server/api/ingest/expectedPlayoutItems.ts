@@ -77,8 +77,10 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForRundownPlayli
 	const adlibPiecesGrouped = _.groupBy(adlibPiecesInThisRundown, 'partId')
 
 	for (const part of cache.Parts.findFetch({ rundownId: rundown._id })) {
-		intermediaryItems.push(...extractExpectedPlayoutItems(part, piecesGrouped[unprotectString(part._id)]))
-		intermediaryItems.push(...extractExpectedPlayoutItems(part, adlibPiecesGrouped[unprotectString(part._id)]))
+		intermediaryItems.push(...extractExpectedPlayoutItems(part, piecesGrouped[unprotectString(part._id)] || []))
+		intermediaryItems.push(
+			...extractExpectedPlayoutItems(part, adlibPiecesGrouped[unprotectString(part._id)] || [])
+		)
 	}
 
 	cache.deferAfterSave(() => {
