@@ -1,26 +1,6 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import ClassNames from 'classnames'
-import { Meteor } from 'meteor/meteor'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RundownAPI } from '../../../lib/api/rundown'
-
-import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import { RundownUtils } from '../../lib/rundown'
-import {
-	ISourceLayer,
-	IOutputLayer,
-	SourceLayerType,
-	VTContent,
-	LiveSpeakContent,
-} from '@sofie-automation/blueprints-integration'
+import { translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { AdLibPieceUi } from './AdLibPanel'
-import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { PubSub } from '../../../lib/api/pubsub'
 import { IDashboardButtonProps, IDashboardButtonTrackedProps, DashboardPieceButtonBase } from './DashboardPieceButton'
 
 import {

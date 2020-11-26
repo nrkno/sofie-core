@@ -185,8 +185,9 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 			}
 
 			.adlib-panel__list-view__list__table__cell--icon {
-				width: 3.47em;
-				max-width: 3.47em;
+				min-width: 4.5em;
+				width: 4.5em;
+				max-width: 4.5em;
 				text-align: center;
 				padding: 0 !important;
 
@@ -232,8 +233,9 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 				max-width: 4%;
 			}
 			.adlib-panel__list-view__list__table__cell--duration {
-				width: 7%;
+				width: 7em;
 				max-width: 7%;
+				min-width: 7em;
 			}
 			.adlib-panel__list-view__list__table__cell--tc-start {
 				width: 7%;
