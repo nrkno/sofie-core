@@ -1078,11 +1078,7 @@ function handleRemovedSegment(
 
 		if (canBeUpdated(rundown, segment)) {
 			if (!isUpdateAllowed(cache, playlist, rundown, {}, { removed: [segment] }, {})) {
-				if (Settings.allowUnsyncedSegments) {
-					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
-				} else {
-					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
-				}
+				unsyncSegmentOrRundown(cache, rundown._id, segmentId)
 			} else {
 				if (removeSegments(cache, rundownId, [segmentId]) === 0) {
 					throw new Meteor.Error(
@@ -1247,11 +1243,7 @@ function updateSegmentFromIngestData(
 
 	// determine if update is allowed here
 	if (!isUpdateAllowed(cache, playlist, rundown, {}, { changed: [newSegment] }, prepareSaveParts)) {
-		if (Settings.allowUnsyncedSegments) {
-			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
-		} else {
-			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
-		}
+		unsyncSegmentOrRundown(cache, rundown._id, segmentId)
 		return null
 	}
 
@@ -1474,11 +1466,7 @@ export function handleRemovedPart(
 			if (!part) throw new Meteor.Error(404, 'Part not found')
 
 			if (!isUpdateAllowed(cache, playlist, rundown, {}, {}, { removed: [part] })) {
-				if (Settings.allowUnsyncedSegments) {
-					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
-				} else {
-					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
-				}
+				unsyncSegmentOrRundown(cache, rundown._id, segmentId)
 			} else {
 				// Blueprints will handle the deletion of the Part
 				const ingestSegment = loadCachedIngestSegment(
@@ -1548,11 +1536,7 @@ export function handleUpdatedPartInner(
 	})
 
 	if (part && !isUpdateAllowed(cache, playlist, rundown, {}, {}, { changed: [part] })) {
-		if (Settings.allowUnsyncedSegments) {
-			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
-		} else {
-			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
-		}
+		unsyncSegmentOrRundown(cache, rundown._id, segmentId)
 	} else {
 		// Blueprints will handle the creation of the Part
 		const ingestSegment: LocalIngestSegment = loadCachedIngestSegment(
@@ -1997,5 +1981,13 @@ function makeChangeObj(segmentId: SegmentId): SegmentChanges {
 			removed: [],
 			unchanged: [],
 		},
+	}
+}
+
+function unsyncSegmentOrRundown(cache: CacheForRundownPlaylist, rundownId: RundownId, segmentId: SegmentId) {
+	if (Settings.allowUnsyncedSegments) {
+		ServerRundownAPI.unsyncSegmentInner(cache, rundownId, segmentId)
+	} else {
+		ServerRundownAPI.unsyncRundownInner(cache, rundownId)
 	}
 }
