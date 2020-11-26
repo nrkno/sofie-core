@@ -81,7 +81,7 @@ import {
 } from '../../lib/collections/RundownLayouts'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
-import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
+import { NoraPreviewRenderer } from './FloatingInspectors/NoraFloatingInspector'
 import { Buckets, Bucket } from '../../lib/collections/Buckets'
 import { contextMenuHoldToDisplayTime } from '../lib/lib'
 import { OffsetPosition } from '../utils/positions'
