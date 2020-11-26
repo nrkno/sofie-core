@@ -374,6 +374,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 		if (canBeUpdated(rundown)) {
 			let okToRemove: boolean = true
 			if (!isUpdateAllowed(cache, playlist, rundown, { removed: [rundown] }, {}, {})) {
+				// FIXME will always be false, so if (true) ...
 				const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
 
 				if (
@@ -671,7 +672,7 @@ function updateRundownFromIngestData(
 	// Save the baseline
 	const rundownNotesContext = new NotesContext(dbRundown.name, `rundownId=${dbRundown._id}`, true)
 	const blueprintRundownContext = new RundownContext(dbRundown, cache, rundownNotesContext)
-	logger.info(`Building baseline objects for ${dbRundown._id}...`)
+	logger.info(`line objects for ${dbRundown._id}...`)
 	logger.info(`... got ${rundownRes.baseline.length} objects from baseline.`)
 
 	const baselineObj: RundownBaselineObj = {
@@ -795,7 +796,7 @@ function updateRundownFromIngestData(
 				{ changed: [dbRundown] },
 				prepareSaveSegments,
 				prepareSaveParts
-			)
+			) // TODO will always be false
 		) {
 			ServerRundownAPI.unsyncRundownInner(cache, dbRundown._id)
 			waitForPromise(cache.saveAllToDatabase())
@@ -874,7 +875,7 @@ function updateRundownFromIngestData(
 				{ changed: [dbRundown] },
 				prepareSaveSegments,
 				prepareSaveParts
-			)
+			) // TODO will always be false
 		) {
 			ServerRundownAPI.unsyncRundownInner(cache, dbRundown._id)
 			waitForPromise(cache.saveAllToDatabase())
@@ -1713,6 +1714,7 @@ export function isUpdateAllowed(
 		if (allowed && rundownChanges && rundownChanges.removed && rundownChanges.removed.length) {
 			_.each(rundownChanges.removed, (rd) => {
 				if (rundown._id === rd._id) {
+					// TODO should be the
 					// Don't allow removing an active rundown
 					logger.warn(
 						`Not allowing removal of current active rundown "${rd._id}", making rundown unsynced instead`
