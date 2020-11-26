@@ -1,8 +1,9 @@
 import * as React from 'react'
 import { IAdLibListItem } from '../AdLibListItem'
-import { ISourceLayer, IOutputLayer } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, IOutputLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { DefaultListItemRenderer } from './DefaultListItemRenderer'
+import { VTSTKListItemRenderer } from './VTSTKListItemRenderer'
 
 export interface ILayerItemRendererProps {
 	adLibListItem: IAdLibListItem
@@ -14,11 +15,9 @@ export interface ILayerItemRendererProps {
 
 export default function renderItem(props: ILayerItemRendererProps): JSX.Element {
 	const { adLibListItem, layer } = props
-	/* if (layer) {
-		return React.createElement(NoraItemRenderer, { piece, showStyleBase })
-	} else if (isActionItem(piece)) {
-		return React.createElement(ActionItemRenderer, { piece, showStyleBase })
-	} */
+	if (layer?.type === SourceLayerType.LIVE_SPEAK || layer?.type === SourceLayerType.VT) {
+		return React.createElement(VTSTKListItemRenderer, props)
+	}
 
 	return React.createElement(DefaultListItemRenderer, props)
 }

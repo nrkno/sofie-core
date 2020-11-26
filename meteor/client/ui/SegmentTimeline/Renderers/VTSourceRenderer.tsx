@@ -1,9 +1,7 @@
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 import * as _ from 'underscore'
-import { RundownUtils } from '../../../lib/rundown'
 
-import { FloatingInspector } from '../../FloatingInspector'
 import { getElementWidth } from '../../../utils/dimensions'
 
 import ClassNames from 'classnames'
@@ -14,10 +12,10 @@ import { Lottie } from '@crello/react-lottie'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { VTContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { VTContent } from '@sofie-automation/blueprints-integration'
 import { PieceStatusIcon } from '../PieceStatusIcon'
 import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
-import { CriticalIconSmall, WarningIconSmall } from '../../../lib/ui/icons/notifications'
+import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
 
 interface IProps extends ICustomLayerItemProps {}
 interface IState {
@@ -75,28 +73,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 	setRightLabelRef = (e: HTMLSpanElement) => {
 		this.rightLabel = e
-	}
-
-	updateTime = () => {
-		if (this.vPreview) {
-			const innerPiece = this.props.piece.instance.piece
-			const vtContent = innerPiece.content as VTContent | undefined
-
-			const itemDuration = (vtContent ? vtContent.sourceDuration : undefined) || this.props.piece.renderedDuration || 0
-			let targetTime = this.props.cursorTimePosition
-			let seek = (vtContent ? vtContent.seek : undefined) || 0
-			if (vtContent && vtContent.loop && this.vPreview.duration > 0) {
-				targetTime =
-					targetTime %
-					((itemDuration > 0 ? Math.min(this.vPreview.duration, itemDuration) : this.vPreview.duration) * 1000)
-			} else if (itemDuration === 0 && innerPiece.lifespan !== PieceLifespan.WithinPart) {
-				// noop
-			} else {
-				targetTime = Math.min(targetTime, itemDuration)
-			}
-			targetTime += seek
-			this.vPreview.currentTime = targetTime / 1000
-		}
 	}
 
 	getItemLabelOffsetRight(): React.CSSProperties {
@@ -159,7 +135,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
-		this.updateTime()
 
 		const { itemElement } = this.props
 		const innerPiece = this.props.piece.instance.piece
@@ -241,17 +216,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			this.rightLabelContainer.remove()
 			this.rightLabelContainer = undefined
 		}
-	}
-
-	getPreviewUrl = (): string | undefined => {
-		if (this.props.piece) {
-			const item = this.props.piece
-			const metadata = item.contentMetaData as MediaObject
-			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
-				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.mediaId)
-			}
-		}
-		return undefined
 	}
 
 	getScenes = (): Array<number> | undefined => {
@@ -371,21 +335,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
-	renderNotice(noticeLevel: NoticeLevel) {
-		return (
-			<>
-				<div className="segment-timeline__mini-inspector__notice-header">
-					{noticeLevel === NoticeLevel.CRITICAL ? (
-						<CriticalIconSmall />
-					) : noticeLevel === NoticeLevel.WARNING ? (
-						<WarningIconSmall />
-					) : null}
-				</div>
-				<div className="segment-timeline__mini-inspector__notice">{this.props.piece.message}</div>
-			</>
-		)
-	}
-
 	renderLeftLabel() {
 		const { noticeLevel, begin, end } = this.state
 
@@ -445,10 +394,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		)
 	}
 
-	render() {
-		const { t } = this.props
-		const { noticeLevel } = this.state
+	private localGetFloatingInspectorStyle = () => this.getFloatingInspectorStyle()
 
+	render() {
 		const itemDuration = this.getItemDuration()
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
 		const seek = vtContent && vtContent.seek ? vtContent.seek : 0
@@ -505,67 +453,17 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 							)
 					)}
 				{this.leftLabelNodes}
-				<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
-					{this.getPreviewUrl() ? (
-						<div
-							className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
-							style={this.getFloatingInspectorStyle()}>
-							<video
-								src={this.getPreviewUrl()}
-								ref={this.setVideoRef}
-								crossOrigin="anonymous"
-								playsInline={true}
-								muted={true}
-							/>
-							<span className="segment-timeline__mini-inspector__timecode">
-								{RundownUtils.formatDiffToTimecode(
-									realCursorTimePosition,
-									false,
-									false,
-									false,
-									false,
-									true,
-									undefined,
-									true
-								)}
-							</span>
-							{noticeLevel !== null ? (
-								<div
-									className={
-										'segment-timeline__mini-inspector segment-timeline__mini-inspector--sub-inspector ' +
-										this.props.typeClass +
-										' ' +
-										(noticeLevel === NoticeLevel.CRITICAL
-											? 'segment-timeline__mini-inspector--notice notice-critical'
-											: noticeLevel === NoticeLevel.WARNING
-											? 'segment-timeline__mini-inspector--notice notice-warning'
-											: '')
-									}>
-									{this.renderNotice(noticeLevel)}
-								</div>
-							) : null}
-						</div>
-					) : (
-						<div
-							className={
-								'segment-timeline__mini-inspector ' +
-								this.props.typeClass +
-								' ' +
-								(noticeLevel === NoticeLevel.CRITICAL
-									? 'segment-timeline__mini-inspector--notice notice-critical'
-									: noticeLevel === NoticeLevel.WARNING
-									? 'segment-timeline__mini-inspector--notice notice-warning'
-									: '')
-							}
-							style={this.getFloatingInspectorStyle()}>
-							{noticeLevel !== null ? this.renderNotice(noticeLevel) : null}
-							<div className="segment-timeline__mini-inspector__properties">
-								<span className="mini-inspector__label">{t('File name')}</span>
-								<span className="mini-inspector__value">{vtContent && vtContent.fileName}</span>
-							</div>
-						</div>
-					)}
-				</FloatingInspector>
+				<VTFloatingInspector
+					getFloatingInspectorStyle={this.localGetFloatingInspectorStyle}
+					content={vtContent}
+					itemElement={this.props.itemElement}
+					noticeLevel={this.state.noticeLevel}
+					piece={this.props.piece}
+					showMiniInspector={this.props.showMiniInspector}
+					timePosition={realCursorTimePosition}
+					mediaPreviewUrl={this.props.mediaPreviewUrl}
+					typeClass={this.props.typeClass}
+				/>
 			</React.Fragment>
 		)
 	}
