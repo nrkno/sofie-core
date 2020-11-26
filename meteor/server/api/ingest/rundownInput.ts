@@ -1451,7 +1451,7 @@ function afterIngestChangedData(
 	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
 	updatePartRanks(cache, playlist, changedSegmentIds)
 
-	if (newPartIds) {
+	if (newPartIds && newPartIds.length > 0) {
 		UpdateNext.afterInsertParts(cache, playlist, newPartIds, !!removedPreviousParts)
 	} else {
 		UpdateNext.ensureNextPartIsValid(cache, playlist)
