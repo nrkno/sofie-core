@@ -1086,7 +1086,7 @@ export function handleRemovedSegment(
 						`handleRemovedSegment: removeSegments: Segment ${segmentExternalId} not found`
 					)
 				} else {
-					afterIngestChangedData(cache, rundown, [])
+					UpdateNext.ensureNextPartIsValid(cache, playlist)
 				}
 
 				cache.defer(() => {
