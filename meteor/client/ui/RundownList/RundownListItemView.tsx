@@ -107,7 +107,9 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			</span>
 			<span className="rundown-list-item__actions">
 				{confirmReSyncRundownHandler ? (
-					<Tooltip overlay={t('Re-sync all rundowns in playlist')} placement="top">
+					<Tooltip
+						overlay={t('Re-sync rundown data with {{nrcsName}}', { nrcsName: rundown.externalNRCSName || 'NRCS' })}
+						placement="top">
 						<button className="rundown-list-item__action" onClick={() => confirmReSyncRundownHandler()}>
 							{iconResync()}
 						</button>

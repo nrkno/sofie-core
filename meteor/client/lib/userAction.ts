@@ -22,7 +22,7 @@ export enum UserAction {
 	RESET_AND_ACTIVATE_RUNDOWN_PLAYLIST,
 	PREPARE_FOR_BROADCAST,
 	RESET_RUNDOWN_PLAYLIST,
-	RELOAD_RUNDOWN_DATA,
+	RELOAD_RUNDOWN_PLAYLIST_DATA,
 	TOGGLE_PART_ARGUMENT,
 	SET_NEXT,
 	SET_NEXT_SEGMENT,
@@ -86,7 +86,7 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Preparing for broadcast')
 		case UserAction.RESET_RUNDOWN_PLAYLIST:
 			return t('Resetting Rundown Playlist')
-		case UserAction.RELOAD_RUNDOWN_DATA:
+		case UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA:
 			return t('Reloading Rundown Playlist Data')
 		case UserAction.TOGGLE_PART_ARGUMENT:
 			return t('Toggling Part Argument')

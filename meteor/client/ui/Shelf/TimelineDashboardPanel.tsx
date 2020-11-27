@@ -5,7 +5,7 @@ import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
 import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import {
 	IAdLibPanelProps,
 	IAdLibPanelTrackedProps,
@@ -126,6 +126,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 													}
 													widthScale={filter.buttonWidthScale}
 													heightScale={filter.buttonHeightScale}
+													displayStyle={PieceDisplayStyle.BUTTONS}
 													showThumbnailsInList={filter.showThumbnailsInList}>
 													{adLibListItem.name}
 												</DashboardPieceButton>
@@ -173,6 +174,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 																? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
 																: ''
 														}
+														displayStyle={PieceDisplayStyle.BUTTONS}
 														widthScale={filter.buttonWidthScale}
 														heightScale={filter.buttonHeightScale}
 														showThumbnailsInList={filter.showThumbnailsInList}>

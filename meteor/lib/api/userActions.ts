@@ -205,7 +205,6 @@ export enum UserActionAPIMethods {
 	'forceResetAndActivate' = 'userAction.forceResetAndActivate',
 	'activate' = 'userAction.activate',
 	'deactivate' = 'userAction.deactivate',
-	'reloadData' = 'userAction.reloadData',
 	'unsyncRundown' = 'userAction.unsyncRundown',
 
 	'disableNextPiece' = 'userAction.disableNextPiece',
