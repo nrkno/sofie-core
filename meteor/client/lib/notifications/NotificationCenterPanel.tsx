@@ -80,6 +80,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 							{defaultAction ? (
 								<div className="notification-pop-up__actions--default">
 									<button
+										disabled={defaultAction.disabled}
 										className="btn btn-default notification-pop-up__actions--button"
 										onClick={(e) => this.triggerEvent(defaultAction, e)}>
 										<CoreIcon.NrkArrowLeft
@@ -96,6 +97,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 									{_.map(allActions, (action: NotificationAction, i: number) => {
 										return (
 											<button
+												disabled={action.disabled}
 												key={i}
 												className={ClassNames(
 													'btn',
