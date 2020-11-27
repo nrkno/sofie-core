@@ -58,7 +58,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
-})(
+)(
 	class TimelineDashboardPanel extends DashboardPanelInner {
 		liveLine: HTMLDivElement
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
