@@ -56,8 +56,35 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 		}
 	})
 
+	const handleOnMouseOver = (e: React.MouseEvent) => {
+		if (itemIconPosition) {
+			const left = e.pageX - itemIconPosition.left
+			const unprocessedPercentage = left / itemIconPosition.width
+			if (unprocessedPercentage >= 0 && unprocessedPercentage <= 1 && !showMiniInspector) {
+				setShowMiniInspector(true)
+			}
+		}
+	}
+
+	const handleOnMouseLeave = () => setShowMiniInspector(false)
+
+	const handleOnMouseMove = (e: React.MouseEvent) => {
+		if (itemIconPosition) {
+			const left = e.pageX - itemIconPosition.left
+			const unprocessedPercentage = left / itemIconPosition.width
+			if ((unprocessedPercentage > 1 || unprocessedPercentage < 0) && showMiniInspector) {
+				setShowMiniInspector(false)
+				return false
+			} else if (unprocessedPercentage >= 0 && unprocessedPercentage <= 1 && !showMiniInspector) {
+				setShowMiniInspector(true)
+			}
+			const percentage = Math.max(0, Math.min(1, unprocessedPercentage))
+			setHoverScrubTimePosition(percentage * (sourceDuration || 0))
+		}
+	}
+
 	return (
-		<React.Fragment>
+		<>
 			<td
 				className={ClassNames(
 					'adlib-panel__list-view__list__table__cell--icon',
@@ -69,30 +96,9 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					}
 				)}
 				ref={itemIcon}
-				onMouseOver={(e) => {
-					if (itemIconPosition) {
-						const left = e.pageX - itemIconPosition.left
-						const unprocessedPercentage = left / itemIconPosition.width
-						if (unprocessedPercentage >= 0 && unprocessedPercentage <= 1 && !showMiniInspector) {
-							setShowMiniInspector(true)
-						}
-					}
-				}}
-				onMouseLeave={() => setShowMiniInspector(false)}
-				onMouseMove={(e) => {
-					if (itemIconPosition) {
-						const left = e.pageX - itemIconPosition.left
-						const unprocessedPercentage = left / itemIconPosition.width
-						if ((unprocessedPercentage > 1 || unprocessedPercentage < 0) && showMiniInspector) {
-							setShowMiniInspector(false)
-							return false
-						} else if (unprocessedPercentage >= 0 && unprocessedPercentage <= 1 && !showMiniInspector) {
-							setShowMiniInspector(true)
-						}
-						const percentage = Math.max(0, Math.min(1, unprocessedPercentage))
-						setHoverScrubTimePosition(percentage * (sourceDuration || 0))
-					}
-				}}>
+				onMouseOver={handleOnMouseOver}
+				onMouseLeave={handleOnMouseLeave}
+				onMouseMove={handleOnMouseMove}>
 				{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--shortcut">
@@ -136,6 +142,6 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 		<td className='adlib-panel__list-view__list__table__cell--tc-start'>
 			&nbsp;
 		</td> */}
-		</React.Fragment>
+		</>
 	)
 }
