@@ -187,6 +187,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 							this.props.panel.thumbnailSourceLayerIds && this.props.panel.thumbnailSourceLayerIds.length > 0,
 					})}>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>
+						{this.renderPreview()}
 						{
 							<span
 								className={ClassNames('adlib-region-panel__label', {
