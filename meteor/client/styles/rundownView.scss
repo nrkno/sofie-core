@@ -1685,6 +1685,12 @@ body.no-overflow {
 								}
 							}
 						}
+
+						&.layer-count-1 {
+							.segment-timeline__layer {
+								max-height: $segment-layer-height / 2;
+							}
+						}
 					}
 				}
 			}
