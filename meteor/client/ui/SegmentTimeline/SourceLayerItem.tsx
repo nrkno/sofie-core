@@ -533,6 +533,9 @@ export const SourceLayerItem = withTranslation()(
 			return
 		}
 
+		toggleMiniInspectorOn = (e: React.MouseEvent) => this.toggleMiniInspector(e, true)
+		toggleMiniInspectorOff = (e: React.MouseEvent) => this.toggleMiniInspector(e, false)
+
 		toggleMiniInspector = (e: MouseEvent | any, v: boolean) => {
 			this.setState({
 				showMiniInspector: v,
@@ -736,9 +739,9 @@ export const SourceLayerItem = withTranslation()(
 						onClick={this.itemClick}
 						onDoubleClick={this.itemDblClick}
 						onMouseUp={this.itemMouseUp}
-						onMouseMove={(e) => this.moveMiniInspector(e)}
-						onMouseOver={(e) => !this.props.outputGroupCollapsed && this.toggleMiniInspector(e, true)}
-						onMouseLeave={(e) => this.toggleMiniInspector(e, false)}
+						onMouseMove={this.moveMiniInspector}
+						onMouseOver={this.toggleMiniInspectorOn}
+						onMouseLeave={this.toggleMiniInspectorOff}
 						style={this.getItemStyle()}>
 						{this.renderInsideItem(typeClass)}
 						{DEBUG_MODE && (
