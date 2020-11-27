@@ -219,16 +219,10 @@ export function handleMosRundownMetadata(
 			ingestRundown.modified = getCurrentTime()
 			// TODO - verify this doesn't lose data, it was doing more work before
 
-<<<<<<< HEAD
-		// TODO - make this more lightweight?
-		handleUpdatedRundownInner(studio, rundownId, ingestRundown, 'mosRoMetadata', peripheralDevice)
-	})
-=======
 			// TODO - make this more lightweight?
 			handleUpdatedRundownInner(studio, rundownId, ingestRundown, 'mosRoMetadata', peripheralDevice)
 		}
 	)
->>>>>>> chore: improve context logging for rundownPlaylistSyncFunction
 }
 
 export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MOS.IMOSROFullStory) {
