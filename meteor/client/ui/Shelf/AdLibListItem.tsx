@@ -20,6 +20,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { PieceGeneric } from '../../../lib/collections/Pieces'
 import { unprotectString } from '../../../lib/lib'
 import renderItem from './Renderers/ItemRendererFactory'
+import { MediaObject } from '../../../lib/collections/MediaObjects'
 
 export interface IAdLibListItem extends PieceGeneric {
 	status: RundownAPI.PieceStatusCode
@@ -41,16 +42,24 @@ interface IListViewItemProps {
 
 interface IAdLibListItemTrackedProps {
 	status: RundownAPI.PieceStatusCode | undefined
+	message: string | null
+	metadata: MediaObject | null
 }
 
 export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLibListItemTrackedProps>(
 	(props: IListViewItemProps) => {
 		const piece = (props.adLibListItem as any) as AdLibPieceUi
 
-		const { status } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
+		const { status, message, metadata } = checkPieceContentStatus(
+			piece,
+			props.layer,
+			props.playlist.getStudio().settings
+		)
 
 		return {
 			status,
+			message,
+			metadata,
 		}
 	}
 )(
@@ -117,6 +126,8 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 						outputLayer: this.props.outputLayer,
 						selected: this.props.selected,
 						status: this.props.status,
+						message: this.props.message,
+						metadata: this.props.metadata,
 					})}
 				</tr>
 			)

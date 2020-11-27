@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import ClassNames from 'classnames'
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { RundownUtils } from '../../../lib/rundown'

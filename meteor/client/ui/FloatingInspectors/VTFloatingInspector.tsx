@@ -13,17 +13,18 @@ interface IProps {
 	mediaPreviewUrl?: string
 	typeClass?: string
 	showMiniInspector: boolean
-	piece: PieceUi
 	itemElement: HTMLDivElement | null
 	floatingInspectorStyle: React.CSSProperties
 	timePosition: number
-	noticeLevel: NoticeLevel | null
 	content: VTContent | undefined
+	noticeLevel: NoticeLevel | null
+	noticeMessage: string | null
+	contentMetaData: MediaObject | null
+	renderedDuration?: number | undefined
 }
 
-function getPreviewUrl(piece: PieceUi, mediaPreviewUrl: string | undefined): string | undefined {
-	const item = piece
-	const metadata = item.contentMetaData as MediaObject
+function getPreviewUrl(contentMetaData: MediaObject | null, mediaPreviewUrl: string | undefined): string | undefined {
+	const metadata = contentMetaData
 	if (metadata && metadata.previewPath && mediaPreviewUrl) {
 		return mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.mediaId)
 	}
@@ -46,7 +47,7 @@ function setVideoElementPosition(
 	vEl.currentTime = targetTime / 1000
 }
 
-function renderNotice(noticeLevel: NoticeLevel, piece: PieceUi): JSX.Element {
+function renderNotice(noticeLevel: NoticeLevel, noticeMessage: string | null): JSX.Element {
 	return (
 		<>
 			<div className="segment-timeline__mini-inspector__notice-header">
@@ -56,7 +57,7 @@ function renderNotice(noticeLevel: NoticeLevel, piece: PieceUi): JSX.Element {
 					<WarningIconSmall />
 				) : null}
 			</div>
-			<div className="segment-timeline__mini-inspector__notice">{piece.message}</div>
+			<div className="segment-timeline__mini-inspector__notice">{noticeMessage}</div>
 		</>
 	)
 }
@@ -68,8 +69,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 
 	useEffect(() => {
 		if (videoElement.current) {
-			const itemDuration =
-				(props.content ? props.content.sourceDuration : undefined) || props.piece.renderedDuration || 0
+			const itemDuration = (props.content ? props.content.sourceDuration : undefined) || props.renderedDuration || 0
 			const seek = (props.content ? props.content.seek : 0) || 0
 			const loop = (props.content ? props.content.loop : false) || false
 			setVideoElementPosition(videoElement.current, props.timePosition, itemDuration, seek, loop)
@@ -80,12 +80,12 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined}>
-			{getPreviewUrl(props.piece, props.mediaPreviewUrl) ? (
+			{getPreviewUrl(props.contentMetaData, props.mediaPreviewUrl) ? (
 				<div
 					className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
 					style={props.floatingInspectorStyle}>
 					<video
-						src={getPreviewUrl(props.piece, props.mediaPreviewUrl)}
+						src={getPreviewUrl(props.contentMetaData, props.mediaPreviewUrl)}
 						ref={videoElement}
 						crossOrigin="anonymous"
 						playsInline={true}
@@ -106,7 +106,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 									? 'segment-timeline__mini-inspector--notice notice-warning'
 									: '')
 							}>
-							{renderNotice(props.noticeLevel, props.piece)}
+							{renderNotice(props.noticeLevel, props.noticeMessage)}
 						</div>
 					) : null}
 				</div>
@@ -123,7 +123,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 							: '')
 					}
 					style={props.floatingInspectorStyle}>
-					{props.noticeLevel !== null ? renderNotice(props.noticeLevel, props.piece) : null}
+					{props.noticeLevel !== null ? renderNotice(props.noticeLevel, props.noticeMessage) : null}
 					<div className="segment-timeline__mini-inspector__properties">
 						<span className="mini-inspector__label">{t('File name')}</span>
 						<span className="mini-inspector__value">{props.content && props.content.fileName}</span>
