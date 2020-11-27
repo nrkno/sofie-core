@@ -265,7 +265,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 							timeScale={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
 							liveLinePadding={this.props.liveLinePadding}
-							layerIndex={index}
+							layerIndex={this.props.indexOffset + index}
 							mediaPreviewUrl={this.props.mediaPreviewUrl}
 							followLiveLine={this.props.followLiveLine}
 							isLiveLine={this.props.isLiveLine}
@@ -297,7 +297,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 						timeScale={this.props.timeScale}
 						autoNextPart={this.props.autoNextPart}
 						liveLinePadding={this.props.liveLinePadding}
-						layerIndex={1}
+						layerIndex={this.props.indexOffset}
 						mediaPreviewUrl={this.props.mediaPreviewUrl}
 						followLiveLine={this.props.followLiveLine}
 						isLiveLine={this.props.isLiveLine}
