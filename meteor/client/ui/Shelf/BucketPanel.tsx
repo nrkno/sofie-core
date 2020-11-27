@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import {
@@ -38,10 +38,10 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { BucketPieceButton } from './BucketPieceButton'
-import { ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { AdLibPieceUi } from './AdLibPanel'
 
 const bucketSource = {
@@ -182,16 +182,18 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		const selectedPart = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
 		if (selectedPart) {
 			const part = PartInstances.findOne(selectedPart, {
+				//@ts-ignore
 				fields: {
 					rundownId: 1,
+					'part._id': 1,
 				},
-			})
+			}) as Pick<PartInstance, 'rundownId'> | undefined
 			if (part) {
 				const rundown = Rundowns.findOne(part.rundownId, {
 					fields: {
 						showStyleVariantId: 1,
 					},
-				})
+				}) as Pick<Rundown, 'showStyleVariantId'> | undefined
 				if (rundown) {
 					showStyleVariantId = rundown.showStyleVariantId
 				}
@@ -205,7 +207,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						showStyleVariantId: 1,
 					},
 				}
-			)[0]
+			)[0] as Pick<Rundown, 'showStyleVariantId'> | undefined
 			if (rundown) {
 				showStyleVariantId = rundown.showStyleVariantId
 			}

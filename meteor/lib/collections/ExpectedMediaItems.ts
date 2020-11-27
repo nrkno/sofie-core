@@ -7,6 +7,7 @@ import { PartId } from './Parts'
 import { StudioId } from './Studios'
 import { BucketId } from './Buckets'
 import { PieceId } from './Pieces'
+import { registerIndex } from '../database'
 
 /** A string, identifying a ExpectedMediaItem */
 export type ExpectedMediaItemId = ProtectedString<'ExpectedMediaItemId'>
@@ -61,17 +62,14 @@ export const ExpectedMediaItems: TransformedCollection<ExpectedMediaItem, Expect
 	ExpectedMediaItem
 >('expectedMediaItems')
 registerCollection('ExpectedMediaItems', ExpectedMediaItems)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		ExpectedMediaItems._ensureIndex({
-			path: 1,
-		})
-		ExpectedMediaItems._ensureIndex({
-			mediaFlowId: 1,
-			studioId: 1,
-		})
-		ExpectedMediaItems._ensureIndex({
-			rundownId: 1,
-		})
-	}
+
+registerIndex(ExpectedMediaItems, {
+	path: 1,
+})
+registerIndex(ExpectedMediaItems, {
+	mediaFlowId: 1,
+	studioId: 1,
+})
+registerIndex(ExpectedMediaItems, {
+	rundownId: 1,
 })

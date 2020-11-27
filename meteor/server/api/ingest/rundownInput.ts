@@ -117,6 +117,7 @@ import {
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { removeEmptyPlaylists } from '../rundownPlaylist'
+import { profiler } from '../profiler'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -132,9 +133,10 @@ export enum RundownSyncFunctionPriority {
 export function rundownPlaylistSyncFunction<T extends Function>(
 	rundownPlaylistId: RundownPlaylistId,
 	priority: RundownSyncFunctionPriority,
+	context: string,
 	fcn: T
 ): ReturnType<T> {
-	return syncFunction(fcn, `ingest_rundown_${rundownPlaylistId}`, undefined, priority)()
+	return syncFunction(fcn, context, `ingest_rundown_${rundownPlaylistId}`, undefined, priority)()
 }
 
 interface SegmentChanges {
@@ -342,11 +344,13 @@ function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
 }
 
 export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string) {
+	const span = profiler.startSpan('rundownInput.handleRemovedRundown')
+
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const rundownPlaylistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.INGEST, () => {
+	rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.INGEST, 'handleRemovedRundown', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const playlist = getRundownPlaylist(rundown)
 
@@ -390,6 +394,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 		}
 
 		waitForPromise(cache.saveAllToDatabase())
+		span?.end()
 	})
 }
 /** Handle an updated (or inserted) Rundown */
@@ -415,7 +420,7 @@ export function handleUpdatedRundown(
 	// Lock behind a playlist if it exists
 	const existingRundown = Rundowns.findOne(rundownId)
 	const playlistId = existingRundown ? existingRundown.playlistId : protectString('newPlaylist')
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () =>
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleUpdatedRundown', () =>
 		handleUpdatedRundownInner(studio, rundownId, makeNewIngestRundown(ingestRundown), dataSource, peripheralDevice)
 	)
 }
@@ -448,6 +453,8 @@ export function updateRundownAndSaveCache(
 	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
 }
 export function regenerateRundown(rundownId: RundownId) {
+	const span = profiler.startSpan('ingest.rundownInput.regenerateRundown')
+
 	logger.info(`Regenerating rundown ${rundownId}`)
 	const existingDbRundown = Rundowns.findOne(rundownId)
 	if (!existingDbRundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
@@ -460,6 +467,8 @@ export function regenerateRundown(rundownId: RundownId) {
 	const dataSource = 'regenerate'
 
 	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, undefined)
+
+	span?.end()
 }
 function updateRundownFromIngestData(
 	studio: Studio,
@@ -468,6 +477,8 @@ function updateRundownFromIngestData(
 	dataSource?: string,
 	peripheralDevice?: PeripheralDevice
 ): boolean {
+	const span = profiler.startSpan('ingest.rundownInput.updateRundownFromIngestData')
+
 	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, existingDbRundown)
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 
@@ -560,12 +571,12 @@ function updateRundownFromIngestData(
 		// The rundown is going to change playlist
 		const existingPlaylist = RundownPlaylists.findOne(existingDbRundown.playlistId)
 		if (existingPlaylist) {
-			const { currentPartInstance } = existingPlaylist.getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = existingPlaylist.getSelectedPartInstances()
 
 			if (
 				existingPlaylist.active &&
-				currentPartInstance &&
-				currentPartInstance.rundownId === existingDbRundown._id
+				((currentPartInstance && currentPartInstance.rundownId === existingDbRundown._id) ||
+					(nextPartInstance && nextPartInstance.rundownId === existingDbRundown._id))
 			) {
 				// The rundown contains a PartInstance that is currently on air.
 				// We're trying for a "soft approach" here, instead of rejecting the change altogether,
@@ -753,6 +764,8 @@ function updateRundownFromIngestData(
 		if (!isUpdateAllowed(cache, dbPlaylist, dbRundown, { changed: [dbRundown] })) {
 			ServerRundownAPI.unsyncRundownInner(cache, dbRundown._id)
 			waitForPromise(cache.saveAllToDatabase())
+
+			span?.end()
 			return false
 		} else {
 			const segmentChanges: SegmentChanges[] = splitIntoSegments(
@@ -830,6 +843,8 @@ function updateRundownFromIngestData(
 		) {
 			ServerRundownAPI.unsyncRundownInner(cache, dbRundown._id)
 			waitForPromise(cache.saveAllToDatabase())
+
+			span?.end()
 			return false
 		}
 	}
@@ -960,6 +975,8 @@ function updateRundownFromIngestData(
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)
 	waitForPromise(cache.saveAllToDatabase())
+
+	span?.end()
 	return didChange
 }
 
@@ -988,11 +1005,19 @@ function handleUpdatedRundownPlaylist(
 
 	const updated = rundowns.map((r) => {
 		const rundownOrder = order[unprotectString(r._id)]
+		r.playlistId = playlist._id
 		if (rundownOrder !== undefined) {
-			r.playlistId = playlist._id
 			r._rank = rundownOrder
 		} else {
 			// an unranked Rundown is essentially "floated" - it is a part of the playlist, but it shouldn't be visible in the UI
+			r._rank = -1
+			// TODO - this should do something to make it be floated
+		}
+
+		if (r._id === currentRundown._id) {
+			// Apply to in-memory copy
+			currentRundown.playlistId = r.playlistId
+			currentRundown._rank = r._rank
 		}
 		return r
 	})
@@ -1009,7 +1034,7 @@ export function handleRemovedSegment(
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleRemovedSegment', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const playlist = getRundownPlaylist(rundown)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
@@ -1048,7 +1073,7 @@ export function handleUpdatedSegment(
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleUpdatedSegment', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const playlist = getRundownPlaylist(rundown)
 		const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
@@ -1102,6 +1127,8 @@ function updateSegmentFromIngestData(
 	rundown: Rundown,
 	ingestSegment: IngestSegment
 ): SegmentId | null {
+	const span = profiler.startSpan('ingest.rundownInput.updateSegmentFromIngestData')
+
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 	const { blueprint, blueprintId } = loadShowStyleBlueprint(
 		waitForPromise(cache.activationCache.getShowStyleBase(rundown))
@@ -1261,7 +1288,9 @@ function updateSegmentFromIngestData(
 		})
 	)
 
-	return anythingChanged(changes) ? segmentId : null
+	const hasChanged = anythingChanged(changes) ? segmentId : null
+	span?.end()
+	return hasChanged
 }
 function afterIngestChangedData(cache: CacheForRundownPlaylist, rundown: Rundown, changedSegmentIds: SegmentId[]) {
 	const playlist = cache.RundownPlaylists.findOne({ _id: rundown.playlistId })
@@ -1289,7 +1318,7 @@ export function handleRemovedPart(
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleRemovedPart', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const playlist = getRundownPlaylist(rundown)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
@@ -1346,7 +1375,7 @@ export function handleUpdatedPart(
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleUpdatedPart', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const playlist = getRundownPlaylist(rundown)
 
@@ -1364,6 +1393,8 @@ export function handleUpdatedPartInner(
 	segmentExternalId: string,
 	ingestPart: IngestPart
 ) {
+	const span = profiler.startSpan('ingest.rundownInput.handleUpdatedPartInner')
+
 	// Updated OR created part
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
 	const partId = getPartId(rundown._id, ingestPart.externalId)
@@ -1404,6 +1435,8 @@ export function handleUpdatedPartInner(
 			afterIngestChangedData(cache, rundown, [updatedSegmentId])
 		}
 	}
+
+	span?.end()
 }
 
 function generateSegmentContents(
@@ -1414,6 +1447,8 @@ function generateSegmentContents(
 	existingParts: DBPart[],
 	blueprintRes: BlueprintResultSegment
 ) {
+	const span = profiler.startSpan('ingest.rundownInput.generateSegmentContents')
+
 	const rundownId = context._rundown._id
 	const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
 	const rawNotes = context.notesContext.getNotes()
@@ -1421,19 +1456,20 @@ function generateSegmentContents(
 	// Ensure all parts have a valid externalId set on them
 	const knownPartIds = blueprintRes.parts.map((p) => p.part.externalId)
 
-	const rawSegmentNotes = _.filter(
-		rawNotes,
-		(note) => !note.trackingId || knownPartIds.indexOf(note.trackingId) === -1
-	)
-	const segmentNotes = _.map(rawSegmentNotes, (note) =>
-		literal<SegmentNote>({
-			type: note.type,
-			message: note.message,
-			origin: {
-				name: '', // TODO
-			},
-		})
-	)
+	const segmentNotes: SegmentNote[] = []
+	for (const note of rawNotes) {
+		if (!note.trackingId || knownPartIds.indexOf(note.trackingId) === -1) {
+			segmentNotes.push(
+				literal<SegmentNote>({
+					type: note.type,
+					message: note.message,
+					origin: {
+						name: '', // TODO
+					},
+				})
+			)
+		}
+	}
 
 	const newSegment = literal<DBSegment>({
 		..._.omit(existingSegment || {}, 'isHidden'),
@@ -1454,16 +1490,21 @@ function generateSegmentContents(
 	blueprintRes.parts.forEach((blueprintPart, i) => {
 		const partId = getPartId(rundownId, blueprintPart.part.externalId)
 
-		const partRawNotes = _.filter(rawNotes, (note) => note.trackingId === blueprintPart.part.externalId)
-		const notes = _.map(partRawNotes, (note) =>
-			literal<PartNote>({
-				type: note.type,
-				message: note.message,
-				origin: {
-					name: '', // TODO
-				},
-			})
-		)
+		const notes: PartNote[] = []
+
+		for (const note of rawNotes) {
+			if (note.trackingId === blueprintPart.part.externalId) {
+				notes.push(
+					literal<PartNote>({
+						type: note.type,
+						message: note.message,
+						origin: {
+							name: '', // TODO
+						},
+					})
+				)
+			}
+		}
 
 		const existingPart = _.find(existingParts, (p) => p._id === partId)
 		const part = literal<DBPart>({
@@ -1500,6 +1541,12 @@ function generateSegmentContents(
 		adlibActions.push(...postProcessAdLibActions(context, blueprintPart.actions || [], blueprintId, part._id))
 	})
 
+	// If the segment has no parts, then hide it
+	if (parts.length === 0) {
+		newSegment.isHidden = true
+	}
+
+	span?.end()
 	return {
 		newSegment,
 		parts,
@@ -1517,6 +1564,8 @@ export function isUpdateAllowed(
 	segmentChanges?: Partial<PreparedChanges<DBSegment>>,
 	partChanges?: Partial<PreparedChanges<DBPart>>
 ): boolean {
+	const span = profiler.startSpan('rundownInput.isUpdateAllowed')
+
 	let allowed: boolean = true
 
 	if (!rundown) return false
@@ -1611,6 +1660,8 @@ export function isUpdateAllowed(
 		if (segmentChanges) logger.debug(`segmentChanges: ${printChanges(segmentChanges)}`)
 		if (partChanges) logger.debug(`partChanges: ${printChanges(partChanges)}`)
 	}
+
+	span?.end()
 	return allowed
 }
 function printChanges(changes: Partial<PreparedChanges<{ _id: ProtectedString<any> }>>): string {

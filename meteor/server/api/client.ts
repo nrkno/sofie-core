@@ -117,6 +117,7 @@ export namespace ServerClientAPI {
 		methodContext: MethodContext,
 		context: string,
 		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
 		functionName: string,
 		...args: any[]
 	): Promise<any> {
@@ -133,12 +134,13 @@ export namespace ServerClientAPI {
 				// Just run and return right away:
 				try {
 					triggerWriteAccessBecauseNoCheckNecessary()
-					PeripheralDeviceAPI.executeFunction(
+					PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 						deviceId,
 						(err, result) => {
 							if (err) reject(err)
 							else resolve(result)
 						},
+						timeoutTime,
 						functionName,
 						...args
 					)
@@ -166,7 +168,7 @@ export namespace ServerClientAPI {
 				})
 			)
 			try {
-				PeripheralDeviceAPI.executeFunction(
+				PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 					deviceId,
 					(err, result) => {
 						if (err) {
@@ -196,6 +198,7 @@ export namespace ServerClientAPI {
 						resolve(result)
 						return
 					},
+					timeoutTime,
 					functionName,
 					...args
 				)
@@ -237,7 +240,13 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 	clientErrorReport(timestamp: Time, errorObject: any, location: string) {
 		return makePromise(() => ServerClientAPI.clientErrorReport(this, timestamp, errorObject, location))
 	}
-	callPeripheralDeviceFunction(context: string, deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) {
+	callPeripheralDeviceFunction(
+		context: string,
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		functionName: string,
+		...args: any[]
+	) {
 		return makePromise(() => {
 			const methodContext: MethodContext = this
 			if (!Settings.enableUserAccounts) {
@@ -249,7 +258,14 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 					methodContext.token = device.token
 				}
 			}
-			return ServerClientAPI.callPeripheralDeviceFunction(methodContext, context, deviceId, functionName, ...args)
+			return ServerClientAPI.callPeripheralDeviceFunction(
+				methodContext,
+				context,
+				deviceId,
+				timeoutTime,
+				functionName,
+				...args
+			)
 		})
 	}
 }

@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types'
 import { withTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
-import { ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -17,7 +17,7 @@ import { SegmentDuration, PartCountdown, RundownTiming, CurrentPartRemaining } f
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { scrollToSegment, scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
+import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
 // @ts-ignore Not recognized by Typescript
 import * as Zoom_In_MouseOut from './Zoom_In_MouseOut.json'
@@ -142,7 +142,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 			this.props.parts.forEach((item) => {
 				// total += durations.partDurations ? durations.partDurations[item._id] : (item.duration || item.renderedDuration || 1)
 				const duration = Math.max(
-					item.instance.part.duration || item.renderedDuration || 0,
+					item.instance.timings?.duration || item.renderedDuration || 0,
 					(durations.partDisplayDurations && durations.partDisplayDurations[unprotectString(item.instance.part._id)]) ||
 						Settings.defaultDisplayDuration
 				)
@@ -178,10 +178,8 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 					autoNextPart={this.props.autoNextPart}
 					liveLineHistorySize={this.props.liveLineHistorySize}
 					livePosition={
-						part.instance._id === this.props.playlist.currentPartInstanceId &&
-						part.instance.part.startedPlayback &&
-						part.instance.part.getLastStartedPlayback()
-							? this.props.livePosition - (part.instance.part.getLastStartedPlayback() || 0)
+						part.instance._id === this.props.playlist.currentPartInstanceId && part.instance.timings?.startedPlayback
+							? this.props.livePosition - part.instance.timings.startedPlayback
 							: null
 					}
 					isLastInSegment={false}
@@ -555,7 +553,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	onClickSegmentIdent = (partId: PartId) => {
-		scrollToPart(partId)
+		scrollToPart(partId, false, true).catch((error) => {
+			if (!error.toString().match(/another scroll/)) console.error(error)
+		})
 	}
 
 	getSegmentContext = (props) => {
@@ -718,28 +718,29 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 									}>
 									{outputLayer.name}
 								</div>
-								{outputLayer.sourceLayers !== undefined && !outputLayer.isFlattened ? (
-									outputLayer.sourceLayers
-										.filter((i) => !i.isHidden)
-										.sort((a, b) => a._rank - b._rank)
-										.map((sourceLayer, index, array) => {
-											return (
-												<div
-													key={sourceLayer._id}
-													className="segment-timeline__output-layer-control__layer"
-													data-source-id={sourceLayer._id}>
-													{array.length === 1 || sourceLayer.name === outputLayer.name ? ' ' : sourceLayer.name}
-												</div>
-											)
-										})
-								) : (
-									<div
-										key={outputLayer._id + '_flattened'}
-										className="segment-timeline__output-layer-control__layer"
-										data-source-id={outputLayer.sourceLayers.map((i) => i._id).join(',')}>
-										&nbsp;
-									</div>
-								)}
+								{outputLayer.sourceLayers !== undefined &&
+									(!outputLayer.isFlattened ? (
+										outputLayer.sourceLayers
+											.filter((i) => !i.isHidden)
+											.sort((a, b) => a._rank - b._rank)
+											.map((sourceLayer, index, array) => {
+												return (
+													<div
+														key={sourceLayer._id}
+														className="segment-timeline__output-layer-control__layer"
+														data-source-id={sourceLayer._id}>
+														{array.length === 1 || sourceLayer.name === outputLayer.name ? '\xa0' : sourceLayer.name}
+													</div>
+												)
+											})
+									) : (
+										<div
+											key={outputLayer._id + '_flattened'}
+											className="segment-timeline__output-layer-control__layer"
+											data-source-id={outputLayer.sourceLayers.map((i) => i._id).join(',')}>
+											&nbsp;
+										</div>
+									))}
 							</div>
 						)
 					}
@@ -761,9 +762,16 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			return prev
 		}, 0)
 
-		const identifiers: Array<{ partId: PartId; ident?: string }> = this.props.parts.map((p) => {
-			return { partId: p.partId, ident: p.instance.part.identifier }
-		})
+		const identifiers: Array<{ partId: PartId; ident?: string }> = this.props.parts
+			.map((p) =>
+				p.instance.part.identifier
+					? {
+							partId: p.partId,
+							ident: p.instance.part.identifier,
+					  }
+					: null
+			)
+			.filter((entry) => entry !== null) as Array<{ partId: PartId; ident?: string }>
 
 		let countdownToPartId: PartId | undefined = undefined
 		if (!this.props.isLiveSegment) {
@@ -795,6 +803,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 					'has-guest-items': this.props.hasGuestItems,
 					'has-remote-items': this.props.hasRemoteItems,
+					'has-identifiers': identifiers.length > 0,
 					'invert-flash': this.state.highlight,
 				})}
 				data-obj-id={this.props.segment._id}
@@ -832,16 +841,18 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							)}
 						</div>
 					)}
-					<div className="segment-timeline__part-identifiers">
-						{identifiers.map((ident) => (
-							<div
-								className="segment-timeline__part-identifiers__identifier"
-								key={ident.partId + ''}
-								onClick={() => this.onClickSegmentIdent(ident.partId)}>
-								{ident.ident}
-							</div>
-						))}
-					</div>
+					{identifiers.length > 0 && (
+						<div className="segment-timeline__part-identifiers">
+							{identifiers.map((ident) => (
+								<div
+									className="segment-timeline__part-identifiers__identifier"
+									key={ident.partId + ''}
+									onClick={() => this.onClickSegmentIdent(ident.partId)}>
+									{ident.ident}
+								</div>
+							))}
+						</div>
+					)}
 				</ContextMenuTrigger>
 				<div
 					className="segment-timeline__duration"
@@ -853,7 +864,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
 							<SegmentDuration
 								partIds={this.props.parts
-									.filter((item) => item.instance.part.duration === undefined)
+									.filter((item) => item.instance.timings?.duration === undefined)
 									.map((item) => item.instance.part._id)}
 							/>
 						)}

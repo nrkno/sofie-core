@@ -32,7 +32,8 @@
 	}
 }
 
-.support-pop-up-panel {
+.support-pop-up-panel,
+.route-set-pop-up-panel {
 	position: fixed;
 	bottom: rem(13px);
 	right: 0;
@@ -56,10 +57,39 @@
 	}
 }
 
+.route-set-pop-up-panel {
+	bottom: auto;
+	top: auto;
+	margin-top: calc(#{$fullscreen-controls__button--radius * -1} - 0.5rem);
+	z-index: -1;
+	white-space: nowrap;
+	overflow: hidden;
+	text-align: center;
+}
+
+.route-set-pop-up-panel .route-set-pop-up-panel__group {
+	> .status-bar__controls__button {
+		white-space: normal;
+		vertical-align: top;
+		&:first-child {
+			margin-left: 0;
+		}
+	}
+}
+
 .rundown-view {
 	.support-pop-up-panel {
 		color: #000;
 		background: #eee;
 		z-index: 1900;
+	}
+	.route-set-pop-up-panel {
+		color: #000;
+		background: #eee;
+		z-index: -1;
+
+		.status-bar__controls__button {
+			color: #fff;
+		}
 	}
 }

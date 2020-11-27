@@ -1,8 +1,12 @@
-import * as _ from 'underscore'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { protectString, unprotectString, Omit, literal } from '../../../lib/lib'
-import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
+import {
+	TimelineObjGeneric,
+	TimelineObjRundown,
+	TimelineObjType,
+	TimelineEnableExt,
+} from '../../../lib/collections/Timeline'
 import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -26,6 +30,7 @@ import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBase
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { prefixAllObjectIds } from '../playout/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
+import { profiler } from '../profiler'
 
 export function postProcessPieces(
 	innerContext: ShowStyleContext,
@@ -38,9 +43,11 @@ export function postProcessPieces(
 	prefixAllTimelineObjects?: boolean,
 	setInvalid?: boolean
 ): Piece[] {
+	const span = profiler.startSpan('blueprints.postProcess.postProcessPieces')
+
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
-	return _.map(_.compact(pieces), (itemOrig: IBlueprintPiece) => {
+	const processedPieces = pieces.map((itemOrig: IBlueprintPiece) => {
 		let piece: Piece = {
 			...(itemOrig as Omit<IBlueprintPiece, 'continuesRefId'>),
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${i++}`)),
@@ -67,7 +74,7 @@ export function postProcessPieces(
 				)}")`
 			)
 
-		if (piece.content && piece.content.timelineObjects) {
+		if (piece.content?.timelineObjects) {
 			piece.content.timelineObjects = postProcessTimelineObjects(
 				innerContext,
 				piece._id,
@@ -80,6 +87,17 @@ export function postProcessPieces(
 
 		return piece
 	})
+
+	span?.end()
+	return processedPieces
+}
+
+function isNow(enable: TSR.TSRTimelineObjBase['enable']): boolean {
+	if (Array.isArray(enable)) {
+		return !!enable.find((e) => e.start === 'now')
+	} else {
+		return enable.start === 'now'
+	}
 }
 
 export function postProcessTimelineObjects(
@@ -90,17 +108,15 @@ export function postProcessTimelineObjects(
 	prefixAllTimelineObjects: boolean,
 	timelineUniqueIds: { [key: string]: boolean }
 ) {
-	let newObjs = _.map(_.compact(timelineObjects), (o: TimelineObjectCoreExt, i) => {
+	let newObjs = timelineObjects.map((o: TimelineObjectCoreExt, i) => {
 		const obj: TimelineObjRundown = {
 			...o,
 			id: o.id,
-			_id: protectString(''), // set later
-			studioId: protectString(''), // set later
 			objectType: TimelineObjType.RUNDOWN,
 		}
 
 		if (!obj.id) obj.id = innerContext.getHashId(pieceId + '_' + i++)
-		if (obj.enable.start === 'now')
+		if (isNow(obj.enable))
 			throw new Meteor.Error(
 				400,
 				`Error in blueprint "${blueprintId}" timelineObjs cannot have a start of 'now'! ("${innerContext.unhashId(
@@ -133,10 +149,13 @@ export function postProcessAdLibPieces(
 	blueprintId: BlueprintId,
 	partId?: PartId
 ): AdLibPiece[] {
+	const span = profiler.startSpan('blueprints.postProcess.postProcessAdLibPieces')
+
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
-	return _.map(_.compact(adLibPieces), (itemOrig: IBlueprintAdLibPiece) => {
-		let piece: AdLibPiece = {
+
+	const processedPieces = adLibPieces.map((itemOrig) => {
+		const piece: AdLibPiece = {
 			...itemOrig,
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${i++}`)),
 			rundownId: protectString(innerContext.rundown._id),
@@ -165,6 +184,9 @@ export function postProcessAdLibPieces(
 
 		return piece
 	})
+
+	span?.end()
+	return processedPieces
 }
 
 export function postProcessGlobalAdLibActions(
@@ -172,7 +194,7 @@ export function postProcessGlobalAdLibActions(
 	adlibActions: IBlueprintActionManifest[],
 	blueprintId: BlueprintId
 ): RundownBaselineAdLibAction[] {
-	return _.map(adlibActions, (action, i) =>
+	return adlibActions.map((action, i) =>
 		literal<RundownBaselineAdLibAction>({
 			...action,
 			actionId: action.actionId,
@@ -189,7 +211,7 @@ export function postProcessAdLibActions(
 	blueprintId: BlueprintId,
 	partId: PartId
 ): AdLibAction[] {
-	return _.map(adlibActions, (action, i) =>
+	return adlibActions.map((action, i) =>
 		literal<AdLibAction>({
 			...action,
 			actionId: action.actionId,

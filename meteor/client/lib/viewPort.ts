@@ -124,7 +124,7 @@ export function scrollToSegment(
 	if (!secondStage) {
 		currentScrollingElement = elementToScrollTo
 	} else if (secondStage && elementToScrollTo !== currentScrollingElement) {
-		return Promise.reject('Scroll overriden by a new scroll')
+		return Promise.reject('Scroll overriden by another scroll')
 	}
 
 	let { top, bottom } = elementToScrollTo.getBoundingClientRect()

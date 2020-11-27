@@ -5,8 +5,107 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2020-07-23T12:05:07.470Z\n"
-"PO-Revision-Date: 2020-07-23T12:05:07.471Z\n"
+"POT-Creation-Date: 2020-09-30T12:24:48.297Z\n"
+"PO-Revision-Date: 2020-09-30T12:24:48.297Z\n"
+
+msgid "Account Page"
+msgstr ""
+
+msgid "Name:"
+msgstr ""
+
+msgid "Email:"
+msgstr ""
+
+msgid "Old Password"
+msgstr ""
+
+msgid "New Password"
+msgstr ""
+
+msgid "Save Changes"
+msgstr ""
+
+msgid "Edit Account"
+msgstr ""
+
+msgid "Organization"
+msgstr ""
+
+msgid "User roles in organization"
+msgstr ""
+
+msgid "Studio"
+msgstr ""
+
+msgid "Configurator"
+msgstr ""
+
+msgid "Developer"
+msgstr ""
+
+msgid "Admin"
+msgstr ""
+
+msgid "Remove Self"
+msgstr ""
+
+msgid "Email Address"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Sign in"
+msgstr ""
+
+msgid "Create New Account"
+msgstr ""
+
+msgid "Lost password?"
+msgstr ""
+
+msgid "Send reset email"
+msgstr ""
+
+msgid "Go back"
+msgstr ""
+
+msgid "Password must be atleast 5 characters long"
+msgstr ""
+
+msgid "Enter your new password"
+msgstr ""
+
+msgid "Set new password"
+msgstr ""
+
+msgid "Your Account"
+msgstr ""
+
+msgid "About Your Organization"
+msgstr ""
+
+msgid "We are mainly"
+msgstr ""
+
+msgid "Areas"
+msgstr ""
+
+msgid "Invite User"
+msgstr ""
+
+msgid "New User's Email"
+msgstr ""
+
+msgid "New User's Name"
+msgstr ""
+
+msgid "Create New User & Send Enrollment Email"
+msgstr ""
+
+msgid "Users in organization"
+msgstr ""
 
 msgid "Return to list"
 msgstr ""
@@ -144,6 +243,12 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
+msgid "Account"
+msgstr ""
+
+msgid "Logout"
+msgstr ""
+
 msgid "My name is {{name}}"
 msgstr ""
 
@@ -175,6 +280,15 @@ msgid "Re-Sync"
 msgstr ""
 
 msgid "Are you sure you want to re-sync all rundowns in playlist \"{{name}}\"?"
+msgstr ""
+
+msgid "Standalone Shelf"
+msgstr ""
+
+msgid "Timeline views"
+msgstr ""
+
+msgid "Default"
 msgstr ""
 
 msgid "This rundown is currently active"
@@ -230,9 +344,6 @@ msgstr ""
 msgid "Rundown"
 msgstr ""
 
-msgid "Studio"
-msgstr ""
-
 msgid "Show style"
 msgstr ""
 
@@ -245,7 +356,7 @@ msgstr ""
 msgid "Air Status"
 msgstr ""
 
-msgid "Unsynced from {{nrcsName}}"
+msgid "Unsynced from {{nrcsNames}}"
 msgstr ""
 
 msgid "Sofie Automation"
@@ -418,6 +529,15 @@ msgstr ""
 msgid "This rundown is now active. Are you sure you want to exit this screen?"
 msgstr ""
 
+msgid "Switching route"
+msgstr ""
+
+msgid "Are you sure you want to enable this route: \"{{routeName}}\"?"
+msgstr ""
+
+msgid "Are you sure you want to disable this route: \"{{routeName}}\"?"
+msgstr ""
+
 msgid ""
 "There are no Playout Gateways connected and attached to this studio. Please "
 "contact the system administrator to start the Playout Gateway."
@@ -451,6 +571,15 @@ msgid "Restart Playout"
 msgstr ""
 
 msgid "Restart {{device}}"
+msgstr ""
+
+msgid "Rundown not found"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Rundown for piece \"{{pieceLabel}}\" could not be found."
 msgstr ""
 
 msgid "This rundown has been unpublished from Sofie."
@@ -523,7 +652,13 @@ msgstr ""
 msgid "Failed to restart device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 
+msgid "There is an unknown problem with the part."
+msgstr ""
+
 msgid "Show issue"
+msgstr ""
+
+msgid "There is an unspecified problem with the source."
 msgstr ""
 
 msgid "External message queue has unsent messages."
@@ -606,13 +741,16 @@ msgstr ""
 msgid "Until next segment"
 msgstr ""
 
-msgid "Infinite"
+msgid "Until end of segment"
+msgstr ""
+
+msgid "Until next rundown"
+msgstr ""
+
+msgid "Until end of rundown"
 msgstr ""
 
 msgid "Script is empty"
-msgstr ""
-
-msgid "File Name"
 msgstr ""
 
 msgid "File name"
@@ -640,12 +778,6 @@ msgid "Resync Segment"
 msgstr ""
 
 msgid "On Air"
-msgstr ""
-
-msgid "Critical Errors"
-msgstr ""
-
-msgid "Warnings"
 msgstr ""
 
 msgid "Unsynced"
@@ -764,7 +896,7 @@ msgstr ""
 msgid "Tools"
 msgstr ""
 
-msgid "System Messages"
+msgid "Core System settings"
 msgstr ""
 
 msgid "Upgrade Database"
@@ -1152,10 +1284,25 @@ msgstr ""
 msgid "Place label below panel"
 msgstr ""
 
+msgid "Expose layout as a standalone page"
+msgstr ""
+
+msgid "Expose as a layout for the shelf"
+msgstr ""
+
+msgid "Icon"
+msgstr ""
+
+msgid "Icon color"
+msgstr ""
+
 msgid "Tabs"
 msgstr ""
 
 msgid "Panels"
+msgstr ""
+
+msgid "There are no filters set up yet"
 msgstr ""
 
 msgid "Default Layout"
@@ -1165,6 +1312,9 @@ msgid "Add tab"
 msgstr ""
 
 msgid "Add panel"
+msgstr ""
+
+msgid "Add button"
 msgstr ""
 
 msgid "Upload Layout?"
@@ -1200,20 +1350,6 @@ msgid "Compatible Studios:"
 msgstr ""
 
 msgid "This Show Style is not compatible with any Studio"
-msgstr ""
-
-msgid ""
-"Are you sure you want to delete this runtime argument \"{{property}}: "
-"{{value}}\"?"
-msgstr ""
-
-msgid "Hotkeys"
-msgstr ""
-
-msgid "Property"
-msgstr ""
-
-msgid "Runtime Arguments for Blueprints"
 msgstr ""
 
 msgid "Camera"
@@ -1318,9 +1454,7 @@ msgstr ""
 msgid "Exclusivity group"
 msgstr ""
 
-msgid ""
-"Add some source layers (e.g. Graphics) for your {{nrcsName}} data to appear "
-"in rundowns"
+msgid "Add some source layers (e.g. Graphics) for your data to appear in rundowns"
 msgstr ""
 
 msgid "No source layers set"
@@ -1447,12 +1581,6 @@ msgstr ""
 msgid "Playout gateway not connected"
 msgstr ""
 
-msgid "Remove this mapping?"
-msgstr ""
-
-msgid "Are you sure you want to remove mapping for layer \"{{mappingId}}\"?"
-msgstr ""
-
 msgid "CasparCG Channel"
 msgstr ""
 
@@ -1483,7 +1611,7 @@ msgstr ""
 msgid "Priority"
 msgstr ""
 
-msgid "QuanSisyfos Channel"
+msgid "Sisyfos Channel"
 msgstr ""
 
 msgid "Quantel Port ID"
@@ -1499,6 +1627,15 @@ msgid "The channel to use for output (0 is the first one)"
 msgstr ""
 
 msgid "Mode"
+msgstr ""
+
+msgid "Remove this mapping?"
+msgstr ""
+
+msgid "Are you sure you want to remove mapping for layer \"{{mappingId}}\"?"
+msgstr ""
+
+msgid "This layer is now rerouted by an active Route Set: {{routeSets}}"
 msgstr ""
 
 msgid "Preset"
@@ -1545,25 +1682,66 @@ msgstr ""
 msgid "Lookahead Target Objects (Default = 1)"
 msgstr ""
 
-msgid "Lookahead Maximum Search Distance (Default = unlimited/-1"
+msgid "Lookahead Maximum Search Distance (Default = unlimited/-1)"
 msgstr ""
 
 msgid "Layer Mappings"
 msgstr ""
 
-msgid "Test Tools – Recordings"
+msgid "Remove this Route from this Route Set?"
 msgstr ""
 
-msgid "Path Prefix"
+msgid ""
+"Are you sure you want to remove the Route from \"{{sourceLayerId}}\" to "
+"\"{{newLayerId}}\"?"
 msgstr ""
 
-msgid "URL Prefix"
+msgid "Remove this Route Set?"
 msgstr ""
 
-msgid "Decklink Input Index"
+msgid "Are you sure you want to remove the Route Set \"{{routeId}}\"?"
 msgstr ""
 
-msgid "Decklink Input Format"
+msgid "Routes"
+msgstr ""
+
+msgid "There are no routes set up yet"
+msgstr ""
+
+msgid "Source Layer ID"
+msgstr ""
+
+msgid "New Layer ID"
+msgstr ""
+
+msgid "Source Layer not found"
+msgstr ""
+
+msgid "Active"
+msgstr ""
+
+msgid "Route Set ID"
+msgstr ""
+
+msgid "Is this Route Set currently active"
+msgstr ""
+
+msgid "Route Set Name"
+msgstr ""
+
+msgid "Display name of the Route Set"
+msgstr ""
+
+msgid "If set, only one Route Set will be active per exclusivity group"
+msgstr ""
+
+msgid "Behavior"
+msgstr ""
+
+msgid "The way this Route Set should behave towards the user"
+msgstr ""
+
+msgid "Route Sets"
 msgstr ""
 
 msgid "Studio Baseline needs update: "
@@ -1608,6 +1786,32 @@ msgstr ""
 msgid "Supported Audio Formats"
 msgstr ""
 
+msgid "Force the Multi-gateway-mode"
+msgstr ""
+
+msgid "Multi-gateway-mode delay time"
+msgstr ""
+
+msgid "Remove indexes"
+msgstr ""
+
+msgid "This will remove {{indexCount}} old indexes, do you want to continue?"
+msgstr ""
+
+msgid "{{indexCount}} indexes was removed."
+msgstr ""
+
+msgid "Remove old data"
+msgstr ""
+
+msgid ""
+"There are {{count}} documents in {{collections}} that can be removed, do "
+"you want to continue?"
+msgstr ""
+
+msgid "The old data was removed."
+msgstr ""
+
 msgid "Installation name"
 msgstr ""
 
@@ -1627,6 +1831,43 @@ msgid "Edit Support Panel"
 msgstr ""
 
 msgid "HTML that will be shown in the Support Panel"
+msgstr ""
+
+msgid "Application Performance Monitoring"
+msgstr ""
+
+msgid "APM Enabled"
+msgstr ""
+
+msgid "APM Transaction Sample Rate"
+msgstr ""
+
+msgid ""
+"How many of the transactions to monitor. Set to -1 to log nothing (max "
+"performance), 0.5 to log 50% of the transactions, 1 to log all transactions"
+msgstr ""
+
+msgid "Note: Core needs to be restarted to apply these settings"
+msgstr ""
+
+msgid "Monitor blocked thread"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid ""
+"Enables internal monitoring of blocked main thread. Logs when there is an "
+"issue, but (unverified) might cause issues in itself."
+msgstr ""
+
+msgid "Cleanup"
+msgstr ""
+
+msgid "Cleanup old database indexes"
+msgstr ""
+
+msgid "Cleanup old data"
 msgstr ""
 
 msgid "Search..."
@@ -1918,40 +2159,10 @@ msgstr ""
 msgid "More documentation available at:"
 msgstr ""
 
-msgid "Recordings"
-msgstr ""
-
 msgid "Timeline"
 msgstr ""
 
 msgid "User Log Player"
-msgstr ""
-
-msgid "A required setting is not configured"
-msgstr ""
-
-msgid "Active"
-msgstr ""
-
-msgid "Ready"
-msgstr ""
-
-msgid "Stop"
-msgstr ""
-
-msgid "Start"
-msgstr ""
-
-msgid "Are you sure you want to delete recording \"{{name}}\"?"
-msgstr ""
-
-msgid "Stopped"
-msgstr ""
-
-msgid "Your browser does not support video playback"
-msgstr ""
-
-msgid "Recording still in progress"
 msgstr ""
 
 msgid "Play from here"
@@ -1966,34 +2177,37 @@ msgstr ""
 msgid "Run in"
 msgstr ""
 
-msgid "Source is not set"
+msgid "Stop"
 msgstr ""
 
-msgid "Source is missing"
+msgid "Clip can't be played because the filename is missing"
 msgstr ""
 
-msgid "Source doesn't have audio & video"
+msgid "Clip can't be played because it isn't present on the playout system"
 msgstr ""
 
-msgid "Source format ({{format}}) is not in accepted formats"
+msgid "Clip doesn't have audio & video"
 msgstr ""
 
-msgid "Source has {{audioStreams}} audio streams"
+msgid "Clip format ({{format}}) is not in one of the accepted formats"
+msgstr ""
+
+msgid "Clip has {{audioStreams}} audio streams"
 msgstr ""
 
 msgid "Clip starts with {{frames}} {{type}} frame"
 msgstr ""
 
-msgid "Clip ends with {{frames}} {{type}} frame"
+msgid "This clip ends with {{type}} frames after {{count}} second"
 msgstr ""
 
-msgid "{{frames}} {{type}} frame detected in clip."
+msgid "{{frames}} {{type}} frame detected within the clip"
+msgstr ""
+
+msgid "{{frames}} {{type}} frame detected in clip"
 msgstr ""
 
 msgid "Clip is being ingested"
-msgstr ""
-
-msgid "{{displayName}}: {{messages}}"
 msgstr ""
 
 msgctxt "°°°°°°plural"
@@ -2001,13 +2215,31 @@ msgid "Multiple ({{count}})°°°°°°"
 msgstr ""
 
 msgctxt "°°°°°°plural"
+msgid "{{count}} rows°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "This layer is now rerouted by an active Route Set: {{routeSets}}°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid ""
+"There are {{count}} documents in {{collections}} that can be removed, do "
+"you want to continue?°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
 msgid "Clip starts with {{frames}} {{type}} frame°°°°°°"
 msgstr ""
 
 msgctxt "°°°°°°plural"
-msgid "Clip ends with {{frames}} {{type}} frame°°°°°°"
+msgid "This clip ends with {{type}} frames after {{count}} second°°°°°°"
 msgstr ""
 
 msgctxt "°°°°°°plural"
-msgid "{{frames}} {{type}} frame detected in clip.°°°°°°"
+msgid "{{frames}} {{type}} frame detected within the clip°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr ""

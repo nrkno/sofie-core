@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import '../../__mocks__/_extendJest'
-import { testInFiber, runAllTimers, testInFiberOnly } from '../../__mocks__/helpers/jest'
+import { testInFiber, runAllTimers, testInFiberOnly, beforeAllInFiber } from '../../__mocks__/helpers/jest'
 import { MeteorMock, useControllableDefer } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { IngestDataCache, IngestCacheType, IngestDataCacheObjId } from '../../lib/collections/IngestDataCache'
@@ -24,7 +24,7 @@ jest.mock('../logging')
 import '../cronjobs'
 
 describe('cronjobs', () => {
-	beforeAll(() => {
+	beforeAllInFiber(() => {
 		jest.useFakeTimers()
 		// set time to 2020/07/19 00:00 Local Time
 		mockCurrentTime = new Date(2020, 6, 19, 0, 0, 0).getTime()

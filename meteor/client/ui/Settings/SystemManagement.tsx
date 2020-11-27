@@ -4,6 +4,10 @@ import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { EditAttribute } from '../../lib/EditAttribute'
+import { doModalDialog } from '../../lib/ModalDialog'
+import { MeteorCall } from '../../../lib/api/methods'
+import * as _ from 'underscore'
+import { languageAnd } from '../../lib/language'
 
 interface IProps {}
 
@@ -19,6 +23,108 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 	class SystemManagement extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
 		componentDidMount() {
 			meteorSubscribe(PubSub.coreSystem, null)
+		}
+		cleanUpOldDatabaseIndexes(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+			const { t } = this.props
+			MeteorCall.system
+				.cleanupIndexes(false)
+				.then((indexesToRemove) => {
+					console.log(indexesToRemove)
+					doModalDialog({
+						title: t('Remove indexes'),
+						message: t('This will remove {{indexCount}} old indexes, do you want to continue?', {
+							indexCount: indexesToRemove.length,
+						}),
+						yes: t('Yes'),
+						no: t('No'),
+						onAccept: () => {
+							MeteorCall.system
+								.cleanupIndexes(true)
+								.then((indexesRemoved) => {
+									doModalDialog({
+										title: t('Remove indexes'),
+										message: t('{{indexCount}} indexes was removed.', {
+											indexCount: indexesRemoved.length,
+										}),
+										acceptOnly: true,
+										onAccept: () => {
+											// nothing
+										},
+									})
+								})
+								.catch(console.error)
+						},
+					})
+				})
+				.catch(console.error)
+		}
+		cleanUpOldData(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+			const { t } = this.props
+			MeteorCall.system
+				.cleanupOldData(false)
+				.then((results) => {
+					console.log(results)
+					if (_.isString(results)) {
+						doModalDialog({
+							title: t('Error'),
+							message: results,
+							acceptOnly: true,
+							onAccept: () => {
+								// nothing
+							},
+						})
+					} else {
+						let count = 0
+						let affectedCollections: string[] = []
+						_.each(results, (result) => {
+							count += result.docsToRemove
+							if (result.docsToRemove > 0) {
+								affectedCollections.push(result.collectionName)
+							}
+						})
+						doModalDialog({
+							title: t('Remove old data'),
+							message: t(
+								'There are {{count}} documents in {{collections}} that can be removed, do you want to continue?',
+								{
+									count: count,
+									collections: languageAnd(t, affectedCollections),
+								}
+							),
+							yes: t('Yes'),
+							no: t('No'),
+							onAccept: () => {
+								MeteorCall.system
+									.cleanupOldData(true)
+									.then((results) => {
+										console.log(results)
+
+										if (_.isString(results)) {
+											doModalDialog({
+												title: t('Error'),
+												message: results,
+												acceptOnly: true,
+												onAccept: () => {
+													// nothing
+												},
+											})
+										} else {
+											doModalDialog({
+												title: t('Remove old data'),
+												message: t('The old data was removed.'),
+												acceptOnly: true,
+												onAccept: () => {
+													// nothing
+												},
+											})
+										}
+									})
+									.catch(console.error)
+							},
+						})
+					}
+				})
+				.catch(console.error)
 		}
 		render() {
 			const { t } = this.props
@@ -86,7 +192,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 
 						<h2 className="mhn">{t('Application Performance Monitoring')}</h2>
 						<div className="field">
-							{t('Enabled')}
+							{t('APM Enabled')}
 							<div className="mdi">
 								<EditAttribute
 									attribute="apm.enabled"
@@ -96,7 +202,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 							</div>
 						</div>
 						<label className="field">
-							{t('Transaction Sample Rate')}
+							{t('APM Transaction Sample Rate')}
 							<div className="mdi">
 								<EditAttribute
 									modifiedClassName="bghl"
@@ -117,6 +223,44 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 							</div>
 							<div>{t('Note: Core needs to be restarted to apply these settings')}</div>
 						</label>
+
+						<h2 className="mhn">{t('Monitor blocked thread')}</h2>
+
+						<label className="field">
+							{t('Enable')}
+							<div className="mdi">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="enableMonitorBlockedThread"
+									obj={this.props.coreSystem}
+									type="checkbox"
+									collection={CoreSystem}
+									className="mdinput"
+								/>
+								<span className="mdfx"></span>
+							</div>
+							<div>
+								(
+								{t(
+									'Enables internal monitoring of blocked main thread. Logs when there is an issue, but (unverified) might cause issues in itself.'
+								)}
+								)
+							</div>
+						</label>
+
+						<div>{t('Note: Core needs to be restarted to apply these settings')}</div>
+
+						<h2 className="mhn">{t('Cleanup')}</h2>
+						<div>
+							<button className="btn btn-default" onClick={(e) => this.cleanUpOldDatabaseIndexes(e)}>
+								{t('Cleanup old database indexes')}
+							</button>
+						</div>
+						<div>
+							<button className="btn btn-default" onClick={(e) => this.cleanUpOldData(e)}>
+								{t('Cleanup old data')}
+							</button>
+						</div>
 					</div>
 				</div>
 			) : null

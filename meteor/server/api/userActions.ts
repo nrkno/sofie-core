@@ -15,8 +15,6 @@ import { SourceLayerType, IngestPart, IngestAdlib, ActionUserData } from 'tv-aut
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
-import { ServerTestToolsAPI, getStudioConfig } from './testTools'
-import { RecordedFiles, RecordedFileId } from '../../lib/collections/RecordedFiles'
 import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
@@ -101,9 +99,9 @@ export const take = syncFunction(function take(
 	}
 	if (playlist.currentPartInstanceId) {
 		const currentPartInstance = PartInstances.findOne(playlist.currentPartInstanceId)
-		if (currentPartInstance && currentPartInstance.part.timings) {
-			const lastStartedPlayback = _.last(currentPartInstance.part.timings.startedPlayback || []) || 0
-			const lastTake = _.last(currentPartInstance.part.timings.take || []) || 0
+		if (currentPartInstance && currentPartInstance.timings) {
+			const lastStartedPlayback = currentPartInstance.timings.startedPlayback || 0
+			const lastTake = currentPartInstance.timings.take || 0
 			const lastChange = Math.max(lastTake, lastStartedPlayback)
 			if (now - lastChange < MINIMUM_TAKE_SPAN) {
 				logger.debug(
@@ -595,47 +593,6 @@ export function resyncSegment(context: MethodContext, rundownId: RundownId, segm
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncSegment(context, segment.rundownId, segmentId))
 }
-export function recordStop(context: MethodContext, studioId: StudioId) {
-	check(studioId, String)
-	StudioContentWriteAccess.recordedFiles(context, studioId)
-
-	const record = RecordedFiles.findOne({
-		studioId: studioId,
-		stoppedAt: { $exists: false },
-	})
-	if (!record) return ClientAPI.responseError(`No active recording for "${studioId}" was found!`)
-	return ClientAPI.responseSuccess(ServerTestToolsAPI.recordStop(context, studioId))
-}
-
-export function recordStart(context: MethodContext, studioId: StudioId, fileName: string) {
-	check(studioId, String)
-	check(fileName, String)
-
-	const access = StudioContentWriteAccess.recordedFiles(context, studioId)
-	const studio = access.studio
-	if (!studio) return ClientAPI.responseError(`Studio "${studioId}" not found!`)
-
-	const active = RecordedFiles.findOne({
-		studioId: studioId,
-		stoppedAt: { $exists: false },
-	})
-	if (active) return ClientAPI.responseError(`There is already an active recording in studio "${studioId}"!`)
-
-	const config = getStudioConfig(studio)
-	if (!config.recordings.channelIndex)
-		return ClientAPI.responseError(`Cannot start recording due to a missing setting: "channel".`)
-	if (!config.recordings.deviceId)
-		return ClientAPI.responseError(`Cannot start recording due to a missing setting: "device".`)
-	if (!config.recordings.decklinkDevice)
-		return ClientAPI.responseError(`Cannot start recording due to a missing setting: "decklink".`)
-	if (!config.recordings.channelIndex)
-		return ClientAPI.responseError(`Cannot start recording due to a missing setting: "channel".`)
-
-	return ClientAPI.responseSuccess(ServerTestToolsAPI.recordStart(context, studioId, fileName))
-}
-export function recordDelete(context: MethodContext, fileId: RecordedFileId) {
-	return ClientAPI.responseSuccess(ServerTestToolsAPI.recordDelete(context, fileId))
-}
 export function mediaRestartWorkflow(context: MethodContext, workflowId: MediaWorkFlowId) {
 	return ClientAPI.responseSuccess(MediaManagerAPI.restartWorkflow(context, workflowId))
 }
@@ -791,6 +748,19 @@ export function restartCore(
 export function noop(context: MethodContext) {
 	triggerWriteAccessBecauseNoCheckNecessary()
 	return ClientAPI.responseSuccess(undefined)
+}
+
+export function switchRouteSet(
+	context: MethodContext,
+	studioId: StudioId,
+	routeSetId: string,
+	state: boolean
+): ClientAPI.ClientResponse<void> {
+	check(studioId, String)
+	check(routeSetId, String)
+	check(state, Boolean)
+
+	return ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
 }
 
 export function traceAction<T>(description: string, fn: (...args: any[]) => T, ...args: any[]) {
@@ -1005,15 +975,6 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	resyncSegment(_userEvent: string, rundownId: RundownId, segmentId: SegmentId) {
 		return traceAction('userAction.resyncSegment', resyncSegment, this, rundownId, segmentId)
 	}
-	recordStop(_userEvent: string, studioId: StudioId) {
-		return makePromise(() => recordStop(this, studioId))
-	}
-	recordStart(_userEvent: string, studioId: StudioId, name: string) {
-		return makePromise(() => recordStart(this, studioId, name))
-	}
-	recordDelete(_userEvent: string, id: RecordedFileId) {
-		return makePromise(() => recordDelete(this, id))
-	}
 	mediaRestartWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
 		return makePromise(() => mediaRestartWorkflow(this, workflowId))
 	}
@@ -1061,6 +1022,14 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	}
 	bucketsModifyBucketAdLib(_userEvent: string, id: PieceId, bucketAdlib: Partial<Omit<BucketAdLib, '_id'>>) {
 		return traceAction('userAction.bucketsModifyBucketAdLib', bucketsModifyBucketAdLib, this, id, bucketAdlib)
+	}
+	switchRouteSet(
+		_userEvent: string,
+		studioId: StudioId,
+		routeSetId: string,
+		state: boolean
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return makePromise(() => switchRouteSet(this, studioId, routeSetId, state))
 	}
 }
 registerClassToMeteorMethods(

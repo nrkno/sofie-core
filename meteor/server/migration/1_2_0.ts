@@ -4,7 +4,7 @@ import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/Cor
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // 1.2.0 (Release 14)
-addMigrationSteps('1.2.0', [
+export const addSteps = addMigrationSteps('1.2.0', [
 	{
 		id: 'CoreSystem.storePath fix',
 		// Fix a bug where CoreSystemPath is the string "undefined", ref (https://github.com/nrkno/tv-automation-server-core/pull/91)

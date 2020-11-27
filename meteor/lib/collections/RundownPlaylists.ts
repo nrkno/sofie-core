@@ -28,6 +28,7 @@ import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
+import { registerIndex } from '../database'
 
 /** A string, identifying a RundownPlaylist */
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
@@ -165,6 +166,13 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				options
 			)
 		).map((i) => i._id)
+	}
+	getRundownUnorderedIDs(selector?: MongoQuery<DBRundown>): RundownId[] {
+		return this.getRundowns(selector, {
+			fields: {
+				_id: 1,
+			},
+		}).map((i) => i._id)
 	}
 	getRundownsMap(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): { [key: string]: Rundown } {
 		return normalizeArray(this.getRundowns(selector, options), '_id')
@@ -591,11 +599,8 @@ export const RundownPlaylists: TransformedCollection<RundownPlaylist, DBRundownP
 	RundownPlaylist
 >('rundownPlaylists', { transform: (doc) => applyClassToDocument(RundownPlaylist, doc) })
 registerCollection('RundownPlaylists', RundownPlaylists)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		RundownPlaylists._ensureIndex({
-			studioId: 1,
-			active: 1,
-		})
-	}
+
+registerIndex(RundownPlaylists, {
+	studioId: 1,
+	active: 1,
 })

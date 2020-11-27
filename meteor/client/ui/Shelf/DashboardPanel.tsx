@@ -164,47 +164,9 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 
 	componentDidMount() {
-		this.subscribe(PubSub.rundowns, {
-			playlistId: this.props.playlist._id,
-		})
-		this.subscribe(PubSub.studios, {
-			_id: this.props.playlist.studioId,
-		})
 		this.autorun(() => {
-			const rundowns = this.props.playlist.getRundowns()
-			const rundownIds = rundowns.map((i) => i._id)
-			if (rundowns.length > 0) {
-				this.subscribe(PubSub.segments, {
-					rundownId: {
-						$in: rundownIds,
-					},
-				})
-				this.subscribe(PubSub.parts, {
-					rundownId: {
-						$in: rundownIds,
-					},
-				})
-				this.subscribe(PubSub.partInstances, {
-					rundownId: {
-						$in: rundownIds,
-					},
-					reset: {
-						$ne: true,
-					},
-				})
-				this.subscribe(PubSub.adLibPieces, {
-					rundownId: {
-						$in: rundownIds,
-					},
-				})
-				this.subscribe(PubSub.rundownBaselineAdLibPieces, {
-					rundownId: {
-						$in: rundownIds,
-					},
-				})
-				this.subscribe(PubSub.showStyleBases, {
-					_id: rundowns[0].showStyleBaseId,
-				})
+			const rundownIds = this.props.playlist.getRundownIDs()
+			if (rundownIds.length > 0) {
 				this.subscribe(PubSub.pieceInstances, {
 					rundownId: {
 						$in: rundownIds,
@@ -212,19 +174,34 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					startedPlayback: {
 						$exists: true,
 					},
-					adLibSourceId: {
-						$exists: true,
-					},
-					$or: [
+					$and: [
 						{
-							stoppedPlayback: {
-								$eq: 0,
-							},
+							$or: [
+								{
+									adLibSourceId: {
+										$exists: true,
+									},
+								},
+								{
+									'piece.tags': {
+										$exists: true,
+									},
+								},
+							],
 						},
 						{
-							stoppedPlayback: {
-								$exists: false,
-							},
+							$or: [
+								{
+									stoppedPlayback: {
+										$eq: 0,
+									},
+								},
+								{
+									stoppedPlayback: {
+										$exists: false,
+									},
+								},
+							],
 						},
 					],
 				})
@@ -664,19 +641,19 @@ export function getUnfinishedPieceInstancesReactive(
 	const now = getCurrentTime()
 	if (currentPartInstanceId) {
 		prospectivePieces = PieceInstances.find({
-			'piece.startedPlayback': {
+			startedPlayback: {
 				$exists: true,
 			},
 			$and: [
 				{
 					$or: [
 						{
-							'piece.stoppedPlayback': {
+							stoppedPlayback: {
 								$eq: 0,
 							},
 						},
 						{
-							'piece.stoppedPlayback': {
+							stoppedPlayback: {
 								$exists: false,
 							},
 						},
@@ -720,7 +697,7 @@ export function getUnfinishedPieceInstancesReactive(
 				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
 					? pieceInstance.userDuration.end
 					: typeof piece.enable.duration === 'number'
-					? piece.enable.duration + piece.startedPlayback!
+					? piece.enable.duration + pieceInstance.startedPlayback!
 					: undefined
 
 			if (end !== undefined) {

@@ -13,7 +13,7 @@ import { protectString } from '../../lib/lib'
  */
 
 // 0.1.0: These are the "default" migration steps
-addMigrationSteps('0.1.0', [
+export const addSteps = addMigrationSteps('0.1.0', [
 	{
 		id: 'studio exists',
 		canBeRunAutomatically: true,
@@ -36,6 +36,7 @@ addMigrationSteps('0.1.0', [
 				mappings: {},
 				blueprintConfig: {},
 				_rundownVersionHash: '',
+				routeSets: {},
 			})
 		},
 	},

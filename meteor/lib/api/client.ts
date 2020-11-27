@@ -7,6 +7,7 @@ export interface NewClientAPI {
 	callPeripheralDeviceFunction(
 		context: string,
 		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
 		functionName: string,
 		...args: any[]
 	): Promise<any>

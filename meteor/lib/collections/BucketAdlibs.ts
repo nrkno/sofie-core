@@ -8,6 +8,7 @@ import { RundownImportVersions } from './Rundowns'
 import { StudioId } from './Studios'
 import { ShowStyleVariantId } from './ShowStyleVariants'
 import { BucketId } from './Buckets'
+import { registerIndex } from '../database'
 
 export interface BucketAdLib extends IBlueprintAdLibPiece {
 	_id: PieceId
@@ -26,11 +27,8 @@ export const BucketAdLibs: TransformedCollection<BucketAdLib, BucketAdLib> = cre
 	'bucketAdlibs'
 )
 registerCollection('BucketAdLibs', BucketAdLibs)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		BucketAdLibs._ensureIndex({
-			bucketId: 1,
-			studioId: 1,
-		})
-	}
+
+registerIndex(BucketAdLibs, {
+	bucketId: 1,
+	studioId: 1,
 })

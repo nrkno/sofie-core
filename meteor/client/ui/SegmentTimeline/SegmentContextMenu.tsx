@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Escape from 'react-escape'
 import { withTranslation } from 'react-i18next'
-import { ContextMenu, MenuItem } from 'react-contextmenu'
+import { ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
 import { Part } from '../../../lib/collections/Parts'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'

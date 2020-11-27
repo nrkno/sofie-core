@@ -23,7 +23,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { unprotectString } from '../../../lib/lib'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import {
@@ -259,25 +259,6 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 			</div>
 		)
 	}
-}
-
-export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): { [adlib: string]: PieceInstance[] } {
-	let prospectivePieceInstances: PieceInstance[] = []
-	if (nextPartInstanceId) {
-		prospectivePieceInstances = PieceInstances.find({
-			partInstanceId: nextPartInstanceId,
-			adLibSourceId: {
-				$exists: true,
-			},
-		}).fetch()
-	}
-
-	const nextPieces: { [adlib: string]: PieceInstance[] } = {}
-	_.each(
-		_.groupBy(prospectivePieceInstances, (piece) => piece.adLibSourceId),
-		(grp, id) => (nextPieces[id] = _.map(grp, (instance) => instance))
-	)
-	return nextPieces
 }
 
 export const AdLibRegionPanel = translateWithTracker<

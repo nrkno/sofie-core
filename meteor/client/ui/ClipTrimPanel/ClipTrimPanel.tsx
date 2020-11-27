@@ -15,7 +15,7 @@ import { PartId } from '../../../lib/collections/Parts'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { faUndo } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-const Tooltip = require('rc-tooltip')
+import Tooltip from 'rc-tooltip'
 
 export interface IProps {
 	pieceId: PieceId

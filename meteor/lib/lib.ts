@@ -17,6 +17,7 @@ import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints
 import * as crypto from 'crypto'
 import { DeepReadonly } from 'utility-types'
 import { BulkWriteOperation } from 'mongodb'
+
 const cloneOrg = require('fast-clone')
 
 export function clone<T>(o: DeepReadonly<T> | Readonly<T> | T): T {
@@ -51,6 +52,16 @@ export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
 	return Random.id(numberOfChars) as any
 }
 
+export function applyToArray<T>(arr: T | T[], func: (val: T) => void) {
+	if (Array.isArray(arr)) {
+		for (const val of arr) {
+			func(val)
+		}
+	} else {
+		func(arr)
+	}
+}
+
 /**
  * Convenience method to convert a Meteor.call() into a Promise
  * @param  {string} Method name
@@ -66,8 +77,10 @@ export function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any
 }
 
 export type Time = number
+export type TimeDuration = number
 
 const systemTime = {
+	hasBeenSet: false,
 	diff: 0,
 	stdDev: 9999,
 }
@@ -118,7 +131,9 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 ): Changes {
 	const preparedChanges = prepareSaveIntoDb(collection, filter, newData, options)
 
-	return savePreparedChanges(preparedChanges, collection, options)
+	const changes = savePreparedChanges(preparedChanges, collection, options)
+
+	return changes
 }
 export interface PreparedChanges<T> {
 	inserted: T[]
@@ -653,6 +668,19 @@ function cleanOldCacheResult() {
 	_.each(cacheResultCache, (cache, name) => {
 		if (cache.ttl < Date.now()) clearCacheResult(name)
 	})
+}
+const lazyIgnoreCache: { [name: string]: number } = {}
+export function lazyIgnore(name: string, f1: () => void, t: number): void {
+	// Don't execute the function f1 until the time t has passed.
+	// Subsequent calls will extend the lazyness and ignore the previous call
+
+	if (lazyIgnoreCache[name]) {
+		Meteor.clearTimeout(lazyIgnoreCache[name])
+	}
+	lazyIgnoreCache[name] = Meteor.setTimeout(() => {
+		delete lazyIgnoreCache[name]
+		f1()
+	}, t)
 }
 
 export function escapeHtml(text: string): string {
@@ -1372,6 +1400,15 @@ export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
 	if (a.size !== b.size) return false
 	for (let val of a.values()) {
 		if (!b.has(val)) return false
+	}
+	return true
+}
+
+export function equivalentArrays<T>(a: T[], b: T[]): boolean {
+	if (a === b) return true
+	if (a.length !== b.length) return false
+	for (let i = 0; i < a.length; i++) {
+		if (!b.includes(a[i])) return false
 	}
 	return true
 }

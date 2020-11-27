@@ -6,6 +6,7 @@ import { StudioId } from './Studios'
 import { RundownId } from './Rundowns'
 import { RundownPlaylistId } from './RundownPlaylists'
 import { OrganizationId } from './Organization'
+import { registerIndex } from '../database'
 
 export enum SnapshotType {
 	RUNDOWN = 'rundown', // to be deprecated?
@@ -61,13 +62,9 @@ export const Snapshots: TransformedCollection<SnapshotItem, SnapshotItem> = crea
 )
 registerCollection('Snapshots', Snapshots)
 
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Snapshots._ensureIndex({
-			organizationId: 1,
-		})
-		Snapshots._ensureIndex({
-			created: 1,
-		})
-	}
+registerIndex(Snapshots, {
+	organizationId: 1,
+})
+registerIndex(Snapshots, {
+	created: 1,
 })

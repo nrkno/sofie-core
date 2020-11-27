@@ -3,6 +3,7 @@ import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
+import { registerIndex } from '../database'
 
 /** A string, identifying an RundownBaselineAdLibActionId */
 export type RundownBaselineAdLibActionId = ProtectedString<'RundownBaselineAdLibActionId'>
@@ -16,10 +17,6 @@ export const RundownBaselineAdLibActions: TransformedCollection<
 	RundownBaselineAdLibAction
 > = createMongoCollection<RundownBaselineAdLibAction>('rundownBaselineAdLibActions')
 registerCollection('RundownBaselineAdLibActions', RundownBaselineAdLibActions)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		RundownBaselineAdLibActions._ensureIndex({
-			rundownId: 1,
-		})
-	}
+registerIndex(RundownBaselineAdLibActions, {
+	rundownId: 1,
 })

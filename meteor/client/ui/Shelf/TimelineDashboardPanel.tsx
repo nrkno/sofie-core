@@ -40,20 +40,25 @@ export const TimelineDashboardPanel = translateWithTracker<
 	IAdLibPanelProps & IDashboardPanelProps,
 	IState,
 	IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
->((props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
-	const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-		props.playlist.currentPartInstanceId
-	)
-	const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
-	return {
-		...fetchAndFilter(props),
-		studio: props.playlist.getStudio(),
-		unfinishedAdLibIds,
-		unfinishedTags,
-		nextAdLibIds,
-		nextTags,
+>(
+	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
+			props.playlist.currentPartInstanceId
+		)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
+		return {
+			...fetchAndFilter(props),
+			studio: props.playlist.getStudio(),
+			unfinishedAdLibIds,
+			unfinishedTags,
+			nextAdLibIds,
+			nextTags,
+		}
+	},
+	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+		return !_.isEqual(props, nextProps)
 	}
-})(
+)(
 	class TimelineDashboardPanel extends DashboardPanelInner {
 		liveLine: HTMLDivElement
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
