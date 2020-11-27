@@ -248,7 +248,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 	static whyDidYouRender = true
 
 	renderInside(isOutputGroupCollapsed) {
-		if (this.props.layer.sourceLayers !== undefined) {
+		if (this.props.sourceLayers !== undefined) {
 			if (!this.props.layer.isFlattened) {
 				return this.props.sourceLayers.map((sourceLayer, index) => {
 					return (
@@ -324,12 +324,18 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 				: this.props.layer.isDefaultCollapsed
 		return (
 			<div
-				className={ClassNames('segment-timeline__output-group', {
-					collapsable:
-						this.props.layer.sourceLayers && this.props.layer.sourceLayers.length > 1 && !this.props.layer.isFlattened,
-					collapsed: isCollapsed,
-					flattened: this.props.layer.isFlattened,
-				})}>
+				className={ClassNames(
+					'segment-timeline__output-group',
+					{
+						collapsable:
+							this.props.layer.sourceLayers &&
+							this.props.layer.sourceLayers.length > 1 &&
+							!this.props.layer.isFlattened,
+						collapsed: isCollapsed,
+						flattened: this.props.layer.isFlattened,
+					},
+					`layer-count-${this.props.sourceLayers?.length || 0}`
+				)}>
 				{DEBUG_MODE && (
 					<div className="segment-timeline__debug-info red">
 						{RundownUtils.formatTimeToTimecode(this.props.startsAt)}
