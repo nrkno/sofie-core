@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import Moment from 'react-moment'
 
 import { FloatingInspector } from '../FloatingInspector'
@@ -8,7 +9,7 @@ interface IProps {
 	typeClass?: string
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
-	getFloatingInspectorStyle(): React.CSSProperties
+	floatingInspectorStyle: React.CSSProperties
 	content: ScriptContent
 }
 
@@ -16,6 +17,8 @@ const BREAK_SCRIPT_BREAKPOINT = 620
 const SCRIPT_PART_LENGTH = 250
 
 export function MicFloatingInspector(props: IProps) {
+	const { t } = useTranslation()
+
 	let startOfScript = (props.content && props.content.fullScript) || ''
 	let cutLength = startOfScript.length
 	if (startOfScript.length > SCRIPT_PART_LENGTH) {
@@ -42,7 +45,7 @@ export function MicFloatingInspector(props: IProps) {
 				className={
 					'segment-timeline__mini-inspector ' + props.typeClass + ' segment-timeline__mini-inspector--pop-down'
 				}
-				style={props.getFloatingInspectorStyle()}>
+				style={props.floatingInspectorStyle}>
 				<div>
 					{props.content && props.content.fullScript ? (
 						breakScript ? (

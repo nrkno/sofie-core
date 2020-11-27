@@ -394,8 +394,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		)
 	}
 
-	private localGetFloatingInspectorStyle = () => this.getFloatingInspectorStyle()
-
 	render() {
 		const itemDuration = this.getItemDuration()
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
@@ -454,7 +452,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					)}
 				{this.leftLabelNodes}
 				<VTFloatingInspector
-					getFloatingInspectorStyle={this.localGetFloatingInspectorStyle}
+					floatingInspectorStyle={this.getFloatingInspectorStyle()}
 					content={vtContent}
 					itemElement={this.props.itemElement}
 					noticeLevel={this.state.noticeLevel}

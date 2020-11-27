@@ -10,7 +10,7 @@ interface IProps {
 	typeClass?: string
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
-	getFloatingInspectorStyle(): React.CSSProperties
+	floatingInspectorStyle: React.CSSProperties
 	content: SplitsContent
 }
 
@@ -60,7 +60,7 @@ export const SplitsFloatingInspector: React.FunctionComponent<IProps> = (props) 
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined}>
 			<div
 				className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
-				style={props.getFloatingInspectorStyle()}>
+				style={props.floatingInspectorStyle}>
 				<RenderSplitPreview subItems={splitItems} />
 			</div>
 		</FloatingInspector>

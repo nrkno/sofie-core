@@ -15,7 +15,7 @@ interface IProps {
 	showMiniInspector: boolean
 	piece: PieceUi
 	itemElement: HTMLDivElement | null
-	getFloatingInspectorStyle(): React.CSSProperties
+	floatingInspectorStyle: React.CSSProperties
 	timePosition: number
 	noticeLevel: NoticeLevel | null
 	content: VTContent | undefined
@@ -83,7 +83,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 			{getPreviewUrl(props.piece, props.mediaPreviewUrl) ? (
 				<div
 					className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
-					style={props.getFloatingInspectorStyle()}>
+					style={props.floatingInspectorStyle}>
 					<video
 						src={getPreviewUrl(props.piece, props.mediaPreviewUrl)}
 						ref={videoElement}
@@ -122,7 +122,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 							? 'segment-timeline__mini-inspector--notice notice-warning'
 							: '')
 					}
-					style={props.getFloatingInspectorStyle()}>
+					style={props.floatingInspectorStyle}>
 					{props.noticeLevel !== null ? renderNotice(props.noticeLevel, props.piece) : null}
 					<div className="segment-timeline__mini-inspector__properties">
 						<span className="mini-inspector__label">{t('File name')}</span>

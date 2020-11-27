@@ -167,8 +167,6 @@ export const MicSourceRenderer = withTranslation()(
 			this.lineItem.remove()
 		}
 
-		private localGetFloatingInspectorStyle = () => this.getFloatingInspectorStyle()
-
 		render() {
 			const { t } = this.props
 			let labelItems = (this.props.piece.instance.piece.name || '').split('||')
@@ -201,7 +199,7 @@ export const MicSourceRenderer = withTranslation()(
 					{content && (
 						<MicFloatingInspector
 							content={content}
-							getFloatingInspectorStyle={this.localGetFloatingInspectorStyle}
+							floatingInspectorStyle={this.getFloatingInspectorStyle()}
 							itemElement={this.props.itemElement}
 							showMiniInspector={this.props.showMiniInspector}
 							typeClass={this.props.typeClass}

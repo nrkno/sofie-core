@@ -132,8 +132,6 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 			})
 	}
 
-	private localGetFloatingInspectorStyle = () => this.getFloatingInspectorStyle()
-
 	render() {
 		let labelItems = this.props.piece.instance.piece.name.split('||')
 		let begin = labelItems[0] || ''
@@ -158,7 +156,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 				</span>
 				{this.props.piece.instance.piece.content ? (
 					<SplitsFloatingInspector
-						getFloatingInspectorStyle={this.localGetFloatingInspectorStyle}
+						floatingInspectorStyle={this.getFloatingInspectorStyle()}
 						content={this.props.piece.instance.piece.content as SplitsContent}
 						itemElement={this.props.itemElement}
 						showMiniInspector={this.props.showMiniInspector}

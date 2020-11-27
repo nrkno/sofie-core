@@ -47,8 +47,6 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 		}
 	}
 
-	private localGetFloatingInspectorStyle = () => this.getFloatingInspectorStyle()
-
 	render() {
 		const innerPiece = this.props.piece.instance.piece
 		const noraContent = innerPiece.content as NoraContent | undefined
@@ -73,7 +71,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 					itemElement={this.props.itemElement}
 					piece={this.props.piece}
 					showMiniInspector={this.props.showMiniInspector}
-					getFloatingInspectorStyle={this.localGetFloatingInspectorStyle}
+					floatingInspectorStyle={this.getFloatingInspectorStyle()}
 				/>
 			</React.Fragment>
 		)
