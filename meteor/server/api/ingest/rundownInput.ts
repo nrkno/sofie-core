@@ -1799,12 +1799,16 @@ export function isUpdateAllowed(
 	span?.end()
 	return allowed
 }
-function printChanges(changes: Partial<PreparedChanges<{ _id: ProtectedString<any> }>>): string {
+function printChanges(changes: Partial<PreparedChanges<{ _id: ProtectedString<any>; externalId: string }>>): string {
 	let str = ''
 
-	if (changes.changed) str += _.map(changes.changed, (doc) => 'change:' + doc._id).join(',')
-	if (changes.inserted) str += _.map(changes.inserted, (doc) => 'insert:' + doc._id).join(',')
-	if (changes.removed) str += _.map(changes.removed, (doc) => 'remove:' + doc._id).join(',')
+	const compileDocs = (docs: { _id: ProtectedString<any>; externalId: string }[], keyword: string) => {
+		return _.map(docs, (doc) => `${keyword}: "${doc._id}" ("${doc.externalId}")`).join(', ')
+	}
+
+	if (changes.changed) str += compileDocs(changes.changed, 'change')
+	if (changes.inserted) str += compileDocs(changes.inserted, 'insert')
+	if (changes.removed) str += compileDocs(changes.removed, 'remove')
 
 	return str
 }
