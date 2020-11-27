@@ -1,19 +1,12 @@
 import * as React from 'react'
 
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
-
-import { FloatingInspector } from '../../FloatingInspector'
-import Moment from 'react-moment'
-
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
 
 import { getElementWidth } from '../../../utils/dimensions'
-import { protectString, unprotectString } from '../../../../lib/lib'
-
-const BREAK_SCRIPT_BREAKPOINT = 620
-const SCRIPT_PART_LENGTH = 250
+import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
 interface IProps extends ICustomLayerItemProps {}
 interface IState {}
 
@@ -174,6 +167,8 @@ export const MicSourceRenderer = withTranslation()(
 			this.lineItem.remove()
 		}
 
+		private localGetFloatingInspectorStyle = () => this.getFloatingInspectorStyle()
+
 		render() {
 			const { t } = this.props
 			let labelItems = (this.props.piece.instance.piece.name || '').split('||')
@@ -186,21 +181,6 @@ export const MicSourceRenderer = withTranslation()(
 			// }
 
 			const content = this.props.piece.instance.piece.content as ScriptContent | undefined
-			let startOfScript = (content && content.fullScript) || ''
-			let cutLength = startOfScript.length
-			if (startOfScript.length > SCRIPT_PART_LENGTH) {
-				startOfScript = startOfScript.substring(0, startOfScript.substr(0, SCRIPT_PART_LENGTH).lastIndexOf(' '))
-				cutLength = startOfScript.length
-			}
-			let endOfScript = (content && content.fullScript) || ''
-			if (endOfScript.length > SCRIPT_PART_LENGTH) {
-				endOfScript = endOfScript.substring(
-					endOfScript.indexOf(' ', Math.max(cutLength, endOfScript.length - SCRIPT_PART_LENGTH)),
-					endOfScript.length
-				)
-			}
-
-			const breakScript = !!(content && content.fullScript && content.fullScript.length > BREAK_SCRIPT_BREAKPOINT)
 
 			return (
 				<React.Fragment>
@@ -218,37 +198,15 @@ export const MicSourceRenderer = withTranslation()(
 						{this.renderInfiniteIcon()}
 						{this.renderOverflowTimeLabel()}
 					</span>
-					<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
-						<div
-							className={
-								'segment-timeline__mini-inspector ' +
-								this.props.typeClass +
-								' segment-timeline__mini-inspector--pop-down'
-							}
-							style={this.getFloatingInspectorStyle()}>
-							<div>
-								{content && content.fullScript ? (
-									breakScript ? (
-										<React.Fragment>
-											<span className="mini-inspector__full-text text-broken">{startOfScript + '\u2026'}</span>
-											<span className="mini-inspector__full-text text-broken text-end">{'\u2026' + endOfScript}</span>
-										</React.Fragment>
-									) : (
-										<span className="mini-inspector__full-text">{content.fullScript}</span>
-									)
-								) : (
-									<span className="mini-inspector__system">{t('Script is empty')}</span>
-								)}
-							</div>
-							{content && content.lastModified ? (
-								<div className="mini-inspector__footer">
-									<span className="mini-inspector__changed">
-										<Moment date={content.lastModified} calendar={true} />
-									</span>
-								</div>
-							) : null}
-						</div>
-					</FloatingInspector>
+					{content && (
+						<MicFloatingInspector
+							content={content}
+							getFloatingInspectorStyle={this.localGetFloatingInspectorStyle}
+							itemElement={this.props.itemElement}
+							showMiniInspector={this.props.showMiniInspector}
+							typeClass={this.props.typeClass}
+						/>
+					)}
 				</React.Fragment>
 			)
 		}
