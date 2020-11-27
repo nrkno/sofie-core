@@ -1,4 +1,5 @@
-import { getRundown, getPeripheralDeviceFromRundown } from './lib'
+import * as _ from 'underscore'
+import { getPeripheralDeviceFromRundown } from './lib'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { MOSDeviceActions } from './mosDevice/actions'
 import { Meteor } from 'meteor/meteor'
@@ -19,7 +20,7 @@ import { Segment } from '../../../lib/collections/Segments'
 import { GenericDeviceActions } from './genericDevice/actions'
 
 /*
-This file contains actions that can be performed on an ingest-device (MOS-device)
+This file contains actions that can be performed on an ingest-device
 */
 export namespace IngestActions {
 	/**

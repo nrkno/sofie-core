@@ -24,7 +24,10 @@ import { ShelfRundownLayout } from './ShelfRundownLayout'
 import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { RundownViewBuckets } from './RundownViewBuckets'
-import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
+import { ContextMenuTrigger } from 'react-contextmenu'
+import { AdLibRegionPanel } from './AdLibRegionPanel'
+import { Settings } from '../../../lib/Settings'
+import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
 import { ShelfInspector } from './Inspector/ShelfInspector'
 
 export enum ShelfTabs {
@@ -32,6 +35,7 @@ export enum ShelfTabs {
 	ADLIB_LAYOUT_FILTER = 'adlib_layout_filter',
 	GLOBAL_ADLIB = 'global_adlib',
 	SYSTEM_HOTKEYS = 'system_hotkeys',
+	KEYBOARD = 'keyboard_preview',
 }
 export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	isExpanded: boolean
@@ -133,8 +137,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	componentDidMount() {
 		let preventDefault = (e) => {
 			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
 		}
 		this.bindKeys.forEach((k) => {
 			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind

@@ -266,6 +266,11 @@ export function removeSegments(cache: CacheForRundownPlaylist, rundownId: Rundow
 		_id: { $in: segmentIds },
 		rundownId: rundownId,
 	})
+	IngestDataCache.remove({
+		segmentId: { $in: segmentIds },
+		rundownId: rundownId,
+	})
+
 	if (count > 0) {
 		afterRemoveSegments(cache, rundownId, segmentIds)
 	}
@@ -299,8 +304,9 @@ export function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: R
 /**
  * After Parts have been removed, handle the contents.
  * This will NOT trigger an update of the timeline
- * @param rundownId Id of the Rundown
+ * @param rundown the Rundown
  * @param removedParts The parts that have been removed
+ * @param skipEnsure For when caller is handling state changes themselves.
  */
 export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: RundownId, removedParts: DBPart[]) {
 	saveIntoCache(

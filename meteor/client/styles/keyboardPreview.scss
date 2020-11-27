@@ -1,0 +1,149 @@
+@import '_itemTypeColors';
+
+.keyboard-preview {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+
+	user-select: none;
+	cursor: default;
+
+	--keyboard-preview-height: calc(100vw / 23);
+	--keyboard-preview-key-margin: 5px;
+	--keyboard-preview-section-margin: 10px;
+
+	font-size: calc(var(--keyboard-preview-height) / 3);
+
+	.keyboard-preview__key-row {
+		display: flex;
+		margin-bottom: var(--keyboard-preview-key-margin);
+
+		.keyboard-preview__blank-space {
+			min-width: 1em;
+			max-width: 1em;
+			height: var(--keyboard-preview-height);
+
+			font-size: 3em;
+			margin-right: var(--keyboard-preview-key-margin);
+
+			&.keyboard-preview__blank-space--spring {
+				flex: 1 1;
+				min-width: auto;
+				max-width: none;
+			}
+		}
+
+		.keyboard-preview__key {
+			position: relative;
+			min-width: 1em;
+			max-width: 1em;
+
+			height: var(--keyboard-preview-height);
+
+			font-size: 3em;
+			margin-right: var(--keyboard-preview-key-margin);
+
+			background: #333;
+			border-radius: 3px;
+			overflow: hidden;
+
+			color: #fff;
+
+			@include item-type-colors();
+
+			&.keyboard-preview__key--fill {
+				max-width: none;
+				flex-grow: 1;
+			}
+
+			&.keyboard-preview__key--down,
+			&:active {
+				&::after {
+					content: ' ';
+					display: block;
+					position: absolute;
+					top: 0;
+					left: 0;
+					right: 0;
+					bottom: 0;
+					background-color: rgba(255, 255, 255, 0.3);
+				}
+			}
+
+			> .keyboard-preview__key__label {
+				font-size: 16px;
+				font-weight: bold;
+				text-align: right;
+				padding: 3px;
+				color: #999;
+
+				text-transform: capitalize;
+				mix-blend-mode: screen;
+			}
+
+			> .keyboard-preview__key__function-label {
+				font-size: 16px;
+				font-weight: bold;
+				text-align: left;
+				padding: 3px;
+				color: #fff;
+				position: absolute;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				top: auto;
+				max-height: 80%;
+			}
+		}
+	}
+
+	.keyboard-preview__alphanumeric {
+		max-width: 50em;
+	}
+
+	.keyboard-preview__function {
+		max-width: 50em;
+		margin-bottom: var(--keyboard-preview-section-margin);
+	}
+
+	.keyboard-preview__control-pad {
+		position: absolute;
+		top: calc(
+			var(--keyboard-preview-height) + var(--keyboard-preview-key-margin) + var(--keyboard-preview-section-margin)
+		);
+		left: 52em;
+	}
+
+	.keyboard-preview__arrow-pad {
+		position: absolute;
+		top: calc(
+			var(--keyboard-preview-height) + var(--keyboard-preview-key-margin) + var(--keyboard-preview-section-margin) +
+				(3 * (var(--keyboard-preview-height) + var(--keyboard-preview-key-margin)))
+		);
+		left: 52em;
+	}
+
+	.keyboard-preview__num-pad {
+		position: absolute;
+		top: calc(
+			var(--keyboard-preview-height) + var(--keyboard-preview-key-margin) + var(--keyboard-preview-section-margin)
+		);
+		left: 65em;
+	}
+}
+
+.dashboard > .adlib-panel--keyboard-preview {
+	--dashboard-panel-scale: 1;
+
+	> .keyboard-preview {
+		--keyboard-preview-height: calc(100vw / 23 * var(--dashboard-panel-scale));
+
+		.keyboard-preview__key-row .keyboard-preview__key > .keyboard-preview__key__function-label {
+			font-size: calc(var(--dashboard-panel-scale) * 16px);
+		}
+		.keyboard-preview__key-row .keyboard-preview__key > .keyboard-preview__key__label {
+			font-size: calc(var(--dashboard-panel-scale) * 16px);
+		}
+	}
+}

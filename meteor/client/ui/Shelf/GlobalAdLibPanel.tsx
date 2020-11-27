@@ -39,6 +39,7 @@ import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
+import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { ShelfTabs } from './Shelf'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
@@ -485,6 +486,9 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 
+			RegisteredHotkeys.remove({
+				tag: this.props.hotkeyGroup,
+			})
 			this.usedHotkeys.length = 0
 
 			window.removeEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
@@ -492,6 +496,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 		refreshKeyboardHotkeys() {
 			if (!this.props.studioMode) return
+
+			const { t } = this.props
 
 			let preventDefault = (e) => {
 				e.preventDefault()
@@ -512,6 +518,19 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 						)
 						this.usedHotkeys.push(item.hotkey)
 
+						if (this.props.sourceLayerLookup[item.sourceLayerId]) {
+							registerHotkey(
+								item.hotkey,
+								item.name,
+								HotkeyAssignmentType.GLOBAL_ADLIB,
+								this.props.sourceLayerLookup[item.sourceLayerId],
+								item.toBeQueued || false,
+								this.onToggleAdLib,
+								[item, false],
+								this.props.hotkeyGroup
+							)
+						}
+
 						const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 						if (sourceLayer && sourceLayer.isQueueable) {
 							const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
@@ -526,6 +545,19 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 								this.props.hotkeyGroup
 							)
 							this.usedHotkeys.push(queueHotkey)
+
+							if (this.props.sourceLayerLookup[item.sourceLayerId]) {
+								registerHotkey(
+									item.hotkey,
+									item.name,
+									HotkeyAssignmentType.GLOBAL_ADLIB,
+									this.props.sourceLayerLookup[item.sourceLayerId],
+									item.toBeQueued || false,
+									this.onToggleAdLib,
+									[item, true],
+									this.props.hotkeyGroup
+								)
+							}
 						}
 					}
 				})
@@ -571,6 +603,19 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 						this.props.hotkeyGroup
 					)
 					this.usedHotkeys.push(hotkey)
+
+					_.each(sourceLayers, (sourceLayer) => {
+						registerHotkey(
+							hotkey,
+							t('Last {{layerName}}', { layerName: sourceLayer.name }),
+							HotkeyAssignmentType.GLOBAL_ADLIB,
+							sourceLayer,
+							false,
+							this.onToggleSticky,
+							[sourceLayer._id],
+							this.props.hotkeyGroup
+						)
+					})
 				})
 			}
 		}

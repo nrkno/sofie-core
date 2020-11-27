@@ -179,6 +179,7 @@ export const App = translateWithTracker(() => {
 			document.documentElement.lang = i18n.language
 			setInterval(this.cronJob, CRON_INTERVAL)
 
+			document.body.classList.add('tv2')
 			const uiZoom = getUIZoom()
 			if (uiZoom !== 1) {
 				document.documentElement.style.fontSize = uiZoom * 16 + 'px'

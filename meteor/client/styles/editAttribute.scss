@@ -6,6 +6,13 @@
 	}
 }
 
+textarea {
+	&.medium {
+		height: 6em;
+		vertical-align: middle;
+	}
+}
+
 .warn:focus {
 	color: #ffffff;
 }

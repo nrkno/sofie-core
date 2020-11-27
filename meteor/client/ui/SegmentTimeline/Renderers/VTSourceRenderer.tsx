@@ -371,9 +371,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 							/>
 						</div>
 					)}
+					<span className="segment-timeline__piece__label last-words">{this.end}</span>
 					{this.renderInfiniteIcon()}
 					{this.renderOverflowTimeLabel()}
-					<span className="segment-timeline__piece__label last-words">{this.end}</span>
 				</span>
 				<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 					{this.getPreviewUrl() ? (

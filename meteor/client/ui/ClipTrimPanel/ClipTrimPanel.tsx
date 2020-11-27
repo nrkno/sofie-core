@@ -58,7 +58,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 		piece: piece,
 		mediaObject: piece
 			? MediaObjects.findOne({
-					mediaId: (piece.content as VTContent).fileName.toUpperCase(),
+					mediaId: (piece.content as VTContent).fileName?.toUpperCase(),
 			  })
 			: undefined,
 		studio: studio,
@@ -95,7 +95,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 				if (this.props.piece && this.props.piece.content && this.props.piece.content.fileName) {
 					const piece = this.props.piece
 					let objId: string | undefined = undefined
-					objId = (piece.content as VTContent).fileName.toUpperCase()
+					objId = (piece.content as VTContent).fileName?.toUpperCase()
 
 					if (objId) {
 						// if (this.mediaObjectSub) this.mediaObjectSub.stop()

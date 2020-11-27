@@ -88,14 +88,16 @@ import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRend
 import { Buckets, Bucket } from '../../lib/collections/Buckets'
 import { contextMenuHoldToDisplayTime } from '../lib/lib'
 import { OffsetPosition } from '../utils/positions'
-import { Settings } from '../../lib/Settings'
 import { MeteorCall } from '../../lib/api/methods'
+import { AdlibSegmentUi } from './Shelf/AdLibPanel'
+import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/documentTitle'
 import { PartInstanceId, PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
+import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../lib/hotkeyRegistry'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -203,28 +205,32 @@ interface ITimingDisplayProps {
 }
 
 export enum RundownViewKbdShortcuts {
-	RUNDOWN_TAKE = 'f12',
-	RUNDOWN_TAKE2 = 'enter', // is only going to use the rightmost enter key for take
-	RUNDOWN_HOLD = 'h',
+	RUNDOWN_TAKE = 'enter',
+	// RUNDOWN_HOLD = 'h',
 	RUNDOWN_UNDO_HOLD = 'shift+h',
 	RUNDOWN_ACTIVATE = '§',
 	RUNDOWN_ACTIVATE2 = '\\',
 	RUNDOWN_ACTIVATE3 = '|',
+	RUNDOWN_ACTIVATE4 = '½',
 	RUNDOWN_ACTIVATE_REHEARSAL = 'mod+§',
 	RUNDOWN_DEACTIVATE = 'mod+shift+§',
-	RUNDOWN_GO_TO_LIVE = 'mod+home',
-	RUNDOWN_REWIND_SEGMENTS = 'shift+home',
-	RUNDOWN_RESET_RUNDOWN = 'mod+shift+f12',
-	RUNDOWN_RESET_RUNDOWN2 = 'mod+shift+enter',
+	RUNDOWN_DEACTIVATE2 = 'mod+shift+½',
+	RUNDOWN_GO_TO_LIVE = 'shift+home',
+	RUNDOWN_REWIND_SEGMENTS = 'mod+home',
+	RUNDOWN_RESET_RUNDOWN = 'shift+escape',
 	RUNDOWN_TOGGLE_SHELF = 'tab',
 	ADLIB_QUEUE_MODIFIER = 'shift',
-	RUNDOWN_NEXT_FORWARD = 'f9',
-	RUNDOWN_NEXT_DOWN = 'f10',
-	RUNDOWN_NEXT_BACK = 'shift+f9',
-	RUNDOWN_NEXT_UP = 'shift+f10',
-	RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
-	RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
-	RUNDOWN_LOG_ERROR = 'backspace',
+	RUNDOWN_NEXT_FORWARD = 'shift+right',
+	RUNDOWN_NEXT_DOWN = 'shift+down',
+	RUNDOWN_NEXT_BACK = 'shift+left',
+	RUNDOWN_NEXT_UP = 'shift+up',
+	RUNDOWN_NEXT_FORWARD2 = 'shift+ArrowRight',
+	RUNDOWN_NEXT_DOWN2 = 'shift+ArrowDown',
+	RUNDOWN_NEXT_BACK2 = 'shift+ArrowLeft',
+	RUNDOWN_NEXT_UP2 = 'shift+ArrowUp',
+	// RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
+	// RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
+	RUNDOWN_LOG_ERROR = 'shift+backspace',
 	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = '',
 }
 
@@ -421,6 +427,8 @@ const TimingDisplay = withTranslation()(
 interface HotkeyDefinition {
 	key: string
 	label: string
+	up?: (e: any) => void
+	down?: (e: any) => void
 }
 
 interface IRundownHeaderProps {
@@ -461,17 +469,11 @@ const RundownHeader = withTranslation()(
 						label: t('Take'),
 						global: true,
 					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_TAKE2,
-						up: this.keyTake,
-						label: t('Take'),
-						global: true,
-					},
-					{
+					/*{
 						key: RundownViewKbdShortcuts.RUNDOWN_HOLD,
 						up: this.keyHold,
 						label: t('Hold'),
-					},
+					},*/
 					{
 						key: RundownViewKbdShortcuts.RUNDOWN_UNDO_HOLD,
 						up: this.keyHoldUndo,
@@ -496,7 +498,19 @@ const RundownHeader = withTranslation()(
 						global: true,
 					},
 					{
+						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE4,
+						up: this.keyActivate,
+						label: t('Activate'),
+						global: true,
+					},
+					{
 						key: RundownViewKbdShortcuts.RUNDOWN_DEACTIVATE,
+						up: this.keyDeactivate,
+						label: t('Deactivate'),
+						global: true,
+					},
+					{
+						key: RundownViewKbdShortcuts.RUNDOWN_DEACTIVATE2,
 						up: this.keyDeactivate,
 						label: t('Deactivate'),
 						global: true,
@@ -509,12 +523,6 @@ const RundownHeader = withTranslation()(
 					},
 					{
 						key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN,
-						up: this.keyResetRundown,
-						label: t('Reset Rundown'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN2,
 						up: this.keyResetRundown,
 						label: t('Reset Rundown'),
 						global: true,
@@ -544,15 +552,39 @@ const RundownHeader = withTranslation()(
 						global: true,
 					},
 					{
-						key: RundownViewKbdShortcuts.RUNDOWN_DISABLE_NEXT_ELEMENT,
-						up: this.keyDisableNextPiece,
-						label: t('Disable the next element'),
+						key: RundownViewKbdShortcuts.RUNDOWN_NEXT_FORWARD2,
+						up: this.keyMoveNextForward,
+						label: t('Move Next forwards'),
+						global: true,
 					},
 					{
-						key: RundownViewKbdShortcuts.RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT,
-						up: this.keyDisableNextPieceUndo,
-						label: t('Undo Disable the next element'),
+						key: RundownViewKbdShortcuts.RUNDOWN_NEXT_DOWN2,
+						up: this.keyMoveNextDown,
+						label: t('Move Next to the following segment'),
+						global: true,
 					},
+					{
+						key: RundownViewKbdShortcuts.RUNDOWN_NEXT_UP2,
+						up: this.keyMoveNextUp,
+						label: t('Move Next to the previous segment'),
+						global: true,
+					},
+					{
+						key: RundownViewKbdShortcuts.RUNDOWN_NEXT_BACK2,
+						up: this.keyMoveNextBack,
+						label: t('Move Next backwards'),
+						global: true,
+					},
+					// {
+					// 	key: RundownViewKbdShortcuts.RUNDOWN_DISABLE_NEXT_ELEMENT,
+					// 	up: this.keyDisableNextPiece,
+					// 	label: t('Disable the next element'),
+					// },
+					// {
+					// 	key: RundownViewKbdShortcuts.RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT,
+					// 	up: this.keyDisableNextPieceUndo,
+					// 	label: t('Undo Disable the next element'),
+					// },
 					{
 						key: RundownViewKbdShortcuts.RUNDOWN_LOG_ERROR,
 						up: this.keyLogError,
@@ -631,10 +663,7 @@ const RundownHeader = withTranslation()(
 			})
 		}
 		keyTake = (e: ExtendedKeyboardEvent) => {
-			if (e.key !== 'Enter' || e.location === 3) {
-				// only allow the rightmost enter key
-				if (!isModalShowing()) this.take(e)
-			}
+			if (!isModalShowing()) this.take(e)
 		}
 		keyHold = (e: ExtendedKeyboardEvent) => {
 			this.hold(e)
@@ -1073,13 +1102,29 @@ const RundownHeader = withTranslation()(
 		takeRundownSnapshot = (e) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
+				const doneMessage = t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
 				doUserAction(
 					t,
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 					(e) => MeteorCall.userAction.storeRundownSnapshot(e, this.props.playlist._id, 'Taken by user'),
-					undefined,
-					t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
+					() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								doneMessage,
+								'userAction',
+								undefined,
+								false,
+								undefined,
+								undefined,
+								5000
+							)
+						)
+						return false
+					},
+					doneMessage
 				)
 			}
 		}
@@ -1416,6 +1461,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			label: string
 			global?: boolean
 		}> = []
+		private usedArgumentKeys: Array<{
+			key: string
+			up?: (e: KeyboardEvent) => any
+			down?: (e: KeyboardEvent) => any
+			label: string
+			global?: boolean
+		}> = []
 		private _segmentZoomOn: boolean = false
 		private _hideNotificationsAfterMount: number | undefined
 
@@ -1462,10 +1514,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					{
 						key: 'Esc',
 						label: t('Cancel currently pressed hotkey'),
-					},
-					{
-						key: 'F11',
-						label: t('Change to fullscreen mode'),
 					},
 				]),
 				isNotificationsCenterOpen: undefined,
@@ -1855,6 +1903,35 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			if (Settings.enableUserAccounts && getAllowStudio() !== this.state.studioMode) {
 				this.setState({ studioMode: getAllowStudio() })
 			}
+		}
+
+		refreshHotkeys = () => {
+			const { t } = this.props
+			let preventDefault = (e) => {
+				e.preventDefault()
+				e.stopImmediatePropagation()
+				e.stopPropagation()
+			}
+			const noOp = (e) => {
+				preventDefault(e)
+			}
+			this.usedArgumentKeys = []
+
+			const HOTKEY_GROUP = 'RuntimeArguments'
+
+			RegisteredHotkeys.remove({
+				tag: HOTKEY_GROUP,
+			})
+			this.usedArgumentKeys.forEach((k) => {
+				if (k.up) {
+					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
+					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+				}
+				if (k.down) {
+					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+				}
+			})
+			this.usedArgumentKeys = []
 		}
 
 		onSelectPiece = (piece: PieceUi) => {
@@ -2293,6 +2370,27 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.setState({
 				usedHotkeys: this.state.usedHotkeys,
 			})
+
+			const HOTKEY_TAG = 'RundownView'
+
+			RegisteredHotkeys.remove({
+				tag: HOTKEY_TAG,
+			})
+
+			function noop() {}
+
+			this.state.usedHotkeys.forEach((hotkey) => {
+				registerHotkey(
+					hotkey.key,
+					hotkey.label,
+					HotkeyAssignmentType.SYSTEM,
+					undefined,
+					false,
+					hotkey.up || hotkey.down || noop,
+					undefined,
+					HOTKEY_TAG
+				)
+			})
 		}
 
 		onContextMenuTop = (e: React.MouseEvent<HTMLDivElement>): boolean => {
@@ -2421,13 +2519,29 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const { t } = this.props
 			if (this.props.playlist) {
 				const playlistId = this.props.playlist._id
+				const doneMessage = t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
 				doUserAction(
 					t,
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 					(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, 'User requested log at' + getCurrentTime()),
-					undefined,
-					t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
+					() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								doneMessage,
+								'userAction',
+								undefined,
+								false,
+								undefined,
+								undefined,
+								5000
+							)
+						)
+						return false
+					},
+					doneMessage
 				)
 			}
 		}

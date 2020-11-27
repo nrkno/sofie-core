@@ -345,4 +345,10 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 			}
 		}
 	}
+
+	&.adlib-panel--keyboard-preview {
+		display: block;
+		position: absolute;
+		padding: 20px;
+	}
 }

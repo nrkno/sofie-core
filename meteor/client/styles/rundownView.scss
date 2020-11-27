@@ -683,6 +683,11 @@ body.no-overflow {
 		display: none;
 	}
 
+	// the identifier is an installation-specific feature that needs to be supported by the blueprints. It's disabled in the UI by default.
+	.segment-timeline__identifier {
+		display: none;
+	}
+
 	// This is the display in the top-left corner of the segment
 	.segment-timeline__duration {
 		position: relative;
@@ -1653,6 +1658,8 @@ body.no-overflow {
 								right: 0;
 								transform: translate3d(0, 0, 15px);
 								text-align: right;
+								margin: 0;
+								padding: 0 0.3em;
 								max-width: calc(100% - 10px);
 								overflow: hidden;
 								text-overflow: clip;
@@ -1675,10 +1682,6 @@ body.no-overflow {
 								> .label-icon.label-infinite-icon {
 									margin: 0 0 0 0;
 								}
-
-								> .last-words {
-									float: right;
-								}
 							}
 
 							&.last-words {
@@ -1697,8 +1700,15 @@ body.no-overflow {
 							}
 
 							&.label-overflow-time {
-								font-weight: 300;
-								padding-right: 10px;
+								text-shadow: 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px 1px 1px black,
+									1px 1px 3px black, 1px 1px 8px black, 1px 1px 8px black, 1px 1px 8px black;
+								top: -7px;
+								right: -5px;
+								color: white;
+								font-weight: 600;
+								padding: 0;
+								font-size: 0.8em;
+								margin: 0;
 							}
 
 							> .segment-timeline__piece__label {

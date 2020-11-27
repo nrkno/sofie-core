@@ -9,6 +9,7 @@ import {
 	unprotectStringArray,
 	getRandomId,
 	protectStringArray,
+	waitTime,
 } from '../../../../lib/lib'
 import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
@@ -38,6 +39,8 @@ import { isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
+import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -64,6 +67,7 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	adlibAutoNext: false,
 	adlibAutoNextOverlap: 0,
 	adlibDisableOutTransition: false,
+	adlibTransitionKeepAlive: 0,
 	tags: [],
 }
 // Compile a list of the keys which are allowed to be set
@@ -230,6 +234,15 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			part === 'current',
 			true
 		)[0]
+		piece.timings = {
+			take: [getCurrentTime()],
+			startedPlayback: [],
+			next: [],
+			stoppedPlayback: [],
+			playOffset: [],
+			takeDone: [],
+			takeOut: [],
+		}
 		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
 
 		// Do the work
@@ -463,12 +476,6 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		return unprotectStringArray(pieceInstances.map((p) => p._id))
 	}
 
-	takeAfterExecuteAction(take: boolean): boolean {
-		this.takeAfterExecute = take
-
-		return this.takeAfterExecute
-	}
-
 	private _stopPiecesByRule(filter: (pieceInstance: PieceInstance) => boolean, timeOffset: number | undefined) {
 		if (!this.rundownPlaylist.currentPartInstanceId) {
 			return []
@@ -491,5 +498,24 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		}
 
 		return unprotectStringArray(stoppedIds)
+	}
+	takeAfterExecuteAction(take: boolean): boolean {
+		this.takeAfterExecute = take
+
+		return this.takeAfterExecute
+	}
+	/** Temporary hack: to allow adlib actions to call a function on PeripheralDevices */
+	hackCallPeripheralDeviceFunction(selector: any, functionName, args: any[]) {
+		PeripheralDevices.find(selector).forEach((device) => {
+			PeripheralDeviceAPI.executeFunction(
+				device._id,
+				(err, _result) => {
+					if (err) logger.error(err)
+				},
+				functionName,
+				...args
+			)
+			waitTime(10)
+		})
 	}
 }

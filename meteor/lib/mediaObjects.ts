@@ -4,6 +4,7 @@ import {
 	SourceLayerType,
 	ISourceLayer,
 	IBlueprintPieceGeneric,
+	GraphicsContent,
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
@@ -102,8 +103,14 @@ export function getMediaObjectMediaId(piece: IBlueprintPieceGeneric, sourceLayer
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
+			// case SourceLayerType.TRANSITION:
 			if (piece.content && piece.content.fileName) {
-				return (piece.content as VTContent).fileName.toUpperCase()
+				return (piece.content as VTContent).fileName?.toUpperCase()
+			}
+			return undefined
+		case SourceLayerType.GRAPHICS:
+			if (piece.content && piece.content.fileName) {
+				return (piece.content as GraphicsContent).fileName?.toUpperCase()
 			}
 			return undefined
 	}
@@ -126,12 +133,13 @@ export function checkPieceContentStatus(
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
 	if (!ignoreMediaStatus && sourceLayer) {
+		const messages: Array<string> = []
+		const displayName = piece.name
+		const fileName = getMediaObjectMediaId(piece, sourceLayer)
 		switch (sourceLayer.type) {
 			case SourceLayerType.VT:
 			case SourceLayerType.LIVE_SPEAK:
-				const fileName = getMediaObjectMediaId(piece, sourceLayer)
-				const displayName = piece.name
-				const messages: Array<string> = []
+				// case SourceLayerType.TRANSITION:
 				// If the fileName is not set...
 				if (!fileName) {
 					newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
@@ -180,6 +188,11 @@ export function checkPieceContentStatus(
 												(1000 * Number(formattedTimebase[1])) / Number(formattedTimebase[2])
 										}
 
+										// found the video stream, get it's duration convert to milliseconds and send it upwards
+										if (stream.duration) {
+											contentDuration = (parseFloat(stream.duration) || 0) * 1000
+										}
+
 										const format = buildFormatString(mediaObject.mediainfo, stream)
 										if (!acceptFormat(format, formats)) {
 											messages.push(
@@ -196,6 +209,7 @@ export function checkPieceContentStatus(
 										audioStreams++
 									}
 								}
+
 								if (timebase) {
 									mediaObject.mediainfo.timebase = timebase
 								}
@@ -258,12 +272,15 @@ export function checkPieceContentStatus(
 										}
 									}
 									if (mediaObject.mediainfo.blacks) {
-										addFrameWarning(mediaObject.mediainfo.blacks, 'black', t)
+										addFrameWarning(mediaObject.mediainfo!.blacks, 'black', t)
 									}
 									if (mediaObject.mediainfo.freezes) {
-										addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
+										addFrameWarning(mediaObject.mediainfo!.freezes, 'freeze', t)
 									}
 								}
+							} else {
+								messages.push(t('Clip is being ingested', { fileName: displayName }))
+								newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 							}
 						} else {
 							messages.push(t('Clip is being ingested', { fileName: displayName }))
@@ -271,16 +288,38 @@ export function checkPieceContentStatus(
 						}
 
 						metadata = mediaObject
+						message = t('{{displayName}}: {{messages}}', {
+							displayName: displayName,
+							messages: messages.join(', '),
+						})
 					}
+					break
 				}
-
-				if (messages.length) {
-					if (newStatus === RundownAPI.PieceStatusCode.OK) {
-						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+				break
+			case SourceLayerType.GRAPHICS:
+				if (fileName) {
+					const mediaObject = MediaObjects.findOne({
+						mediaId: fileName,
+					})
+					if (!mediaObject) {
+						newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+						messages.push(t('Source is missing', { fileName: displayName }))
+					} else {
+						newStatus = RundownAPI.PieceStatusCode.OK
+						metadata = mediaObject
 					}
 					message = messages.join('; ') + '.'
 				}
-				break
+		}
+
+		if (messages.length) {
+			if (newStatus === RundownAPI.PieceStatusCode.OK) {
+				newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+			}
+			message = t('{{displayName}}: {{messages}}', {
+				displayName: displayName,
+				messages: messages.join(', '),
+			})
 		}
 	}
 

@@ -54,7 +54,7 @@ export const AfterBroadcastForm = withTranslation()(
 				})
 			}
 
-			if (answers.q0 !== 'nothing') {
+			if (answers.q0 !== 'nothing' || answers.q1.trim() !== '') {
 				doUserAction(
 					t,
 					e,

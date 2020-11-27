@@ -145,10 +145,6 @@ export async function getLookeaheadObjects(
 
 	const maxLookaheadDistance = findLargestLookaheadDistance(mappingsToConsider)
 	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(cache, playlist, maxLookaheadDistance)
-	if (orderedPartsFollowingPlayhead.length === 0) {
-		// Nothing to search through
-		return []
-	}
 
 	const piecesToSearchQuery: Mongo.Query<Piece> = {
 		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
@@ -292,7 +288,7 @@ export async function getLookeaheadObjects(
 			if (!entry.obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
 			// WHEN_CLEAR mode can't take multiple futures, as they are always flattened into the single layer. so give it some real timings, and only output one
-			const singleFutureObj = mapping.lookahead !== LookaheadMode.WHEN_CLEAR
+			const singleFutureObj = mapping.lookahead === LookaheadMode.WHEN_CLEAR
 			if (singleFutureObj && i !== 0) {
 				return
 			}
@@ -340,7 +336,7 @@ function findLookaheadForlayer(
 		future: [],
 	}
 
-	if (mode === undefined || mode === LookaheadMode.NONE || lookaheadMaxSearchDistance <= 0) {
+	if (mode === undefined || mode === LookaheadMode.NONE) {
 		return res
 	}
 
@@ -359,6 +355,8 @@ function findLookaheadForlayer(
 			part: partInstanceInfo.part.part,
 			pieces: partInstanceInfo.allPieces,
 		}
+
+		if (!partInstanceInfo.onTimeline && lookaheadMaxSearchDistance <= 0) break
 
 		findObjectsForPart(playlist, layer, previousPartInfo, partInfo, partInstanceInfo.part._id).forEach((o) => {
 			if (partInstanceInfo.onTimeline) {
@@ -459,7 +457,7 @@ function findObjectsForPart(
 		for (const obj of piece.content?.timelineObjects ?? []) {
 			if (obj && obj.layer === layer) {
 				allObjs.push(
-					literal<TimelineObjRundown & OnGenerateTimelineObj>({
+					literal<TimelineObjRundown>({
 						...obj,
 						objectType: TimelineObjType.RUNDOWN,
 						pieceInstanceId: tmpPieceInstanceId,
@@ -468,6 +466,16 @@ function findObjectsForPart(
 			}
 		}
 	}
+
+	let allowTransition = !partInstanceId
+	let classesFromPreviousPart: string[] = []
+	if (previousPartInfo && playlist.currentPartInstanceId && partInstanceId) {
+		// If we have a previous and not at the start of the rundown
+		allowTransition = !previousPartInfo.part.disableOutTransition
+		classesFromPreviousPart = previousPartInfo.part.classesForNext || []
+	}
+
+	const transitionPiece = partInfo.pieces.find((i) => !!i.isTransition)
 
 	if (allObjs.length === 0) {
 		if (span) span.end()

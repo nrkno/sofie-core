@@ -34,69 +34,71 @@ import Mousetrap from 'mousetrap'
 
 	Mousetrap.init()
 })(Mousetrap)
-;(function(Mousetrap) {
-	var _originalStopCallback = Mousetrap.prototype.stopCallback
-	var _originalHandleKey = Mousetrap.prototype.handleKey
 
-	let _shouldAbortNextCombo = false
-	let _isEscapePressed = false
+// Disabled ESC key as get out of jail feature
+// (function (Mousetrap) {
+// 	var _originalStopCallback = Mousetrap.prototype.stopCallback;
+// 	var _originalHandleKey = Mousetrap.prototype.handleKey;
 
-	const _downKeys = []
+// 	let _shouldAbortNextCombo = false;
+// 	let _isEscapePressed = false;
 
-	Mousetrap.prototype.handleKey = function(character, modifiers, e) {
-		var self = this
+// 	const _downKeys = [];
 
-		if (e.type === 'keydown' && !_downKeys.includes(character)) _downKeys.push(character)
-		if (e.type === 'keyup') {
-			const index = _downKeys.indexOf(character)
-			if (index >= 0) {
-				_downKeys.splice(_downKeys.indexOf(character), 1)
-			}
-		}
+// 	Mousetrap.prototype.handleKey = function (character, modifiers, e) {
+// 		var self = this;
 
-		return _originalHandleKey.apply(self, arguments)
-	}
+// 		if (e.type === 'keydown' && !_downKeys.includes(character)) _downKeys.push(character);
+// 		if (e.type === 'keyup') {
+// 			const index = _downKeys.indexOf(character)
+// 			if (index >= 0) {
+// 				_downKeys.splice(_downKeys.indexOf(character), 1);
+// 			}
+// 		}
 
-	Mousetrap.prototype.stopCallback = function(e, element, combo, sequence) {
-		var self = this
+// 		return _originalHandleKey.apply(self, arguments);
+// 	};
 
-		if (self.paused) {
-			return true
-		}
+// 	Mousetrap.prototype.stopCallback = function (e, element, combo, sequence) {
+// 		var self = this;
 
-		if (_shouldAbortNextCombo && combo !== 'esc' && e.type === 'keyup') {
-			_shouldAbortNextCombo = false
-			return true
-		}
+// 		if (self.paused) {
+// 			return true;
+// 		}
 
-		return _originalStopCallback.call(self, e, element, combo)
-	}
+// 		if ((_shouldAbortNextCombo) && combo !== 'esc' && e.type === 'keyup') {
+// 			_shouldAbortNextCombo = false;
+// 			return true;
+// 		}
 
-	const escDown = function(e) {
-		_isEscapePressed = true
+// 		return _originalStopCallback.call(self, e, element, combo);
+// 	};
 
-		if (!e.repeat) {
-			_shouldAbortNextCombo = _downKeys.length > 1
-			_comboTriggered = false
-		}
+// 	const escDown = function (e) {
+// 		_isEscapePressed = true;
 
-		e.preventDefault()
-		e.stopPropagation()
-	}
+// 		if (!e.repeat) {
+// 			_shouldAbortNextCombo = (_downKeys.length > 1);
+// 			_comboTriggered = false;
+// 		}
 
-	const escUp = function(e) {
-		_isEscapePressed = false
+// 		e.preventDefault();
+// 		e.stopPropagation();
+// 	};
 
-		if (_downKeys.length === 0) {
-			_shouldAbortNextCombo = false
-		}
-	}
+// 	const escUp = function (e) {
+// 		_isEscapePressed = false;
 
-	Mousetrap.init()
+// 		if (_downKeys.length === 0) {
+// 			_shouldAbortNextCombo = false;
+// 		}
+// 	};
 
-	// 	mousetrapHelper.bind('esc', escDown, 'keydown', undefined, true);
-	// 	mousetrapHelper.bind('esc', escUp, 'keyup', undefined, true);
-})(Mousetrap)
+// 	Mousetrap.init();
+
+// 	mousetrapHelper.bind('esc', escDown, 'keydown', undefined, true);
+// 	mousetrapHelper.bind('esc', escUp, 'keyup', undefined, true);
+// })(Mousetrap);
 
 // Disable default browser action for alt keys - focus window menu
 ;(function() {

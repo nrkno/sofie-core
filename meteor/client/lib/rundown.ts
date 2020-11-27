@@ -255,8 +255,6 @@ export namespace RundownUtils {
 		let hasRemoteItems = false
 		let hasGuestItems = false
 
-		let autoNextPart = false
-
 		let segmentExtended = literal<SegmentExtended>({
 			...segment,
 			/** Create maps for outputLayers and sourceLayers */
@@ -267,7 +265,6 @@ export namespace RundownUtils {
 		// fetch all the parts for the segment
 		let partsE: Array<PartExtended> = []
 
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 		const segmentsAndParts = playlist.getSegmentsAndPartsSync(
 			{
 				_id: segment._id,

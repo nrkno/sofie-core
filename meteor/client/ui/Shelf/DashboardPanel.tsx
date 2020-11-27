@@ -15,11 +15,11 @@ import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { IOutputLayer, ISourceLayer, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { RundownLayoutFilter, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutFilter, DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
 import { literal, unprotectString, getCurrentTime } from '../../../lib/lib'
@@ -41,6 +41,7 @@ import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/col
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { registerHotkey, RegisteredHotkeys, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 import { pieceSetInOutPoints } from '../../../server/api/userActions'
 
 interface IState {
@@ -58,6 +59,8 @@ const BUTTON_GRID_WIDTH = 1
 const BUTTON_GRID_HEIGHT = 0.61803
 
 export interface IDashboardPanelProps {
+	searchFilter?: string | undefined
+	mediaPreviewUrl?: string
 	shouldQueue: boolean
 	hotkeyGroup: string
 }
@@ -75,9 +78,12 @@ interface DashboardPositionableElement {
 	y: number
 	width: number
 	height: number
+	scale?: number
 }
 
-export function dashboardElementPosition(el: DashboardPositionableElement): React.CSSProperties {
+export function dashboardElementPosition(
+	el: DashboardPositionableElement
+): React.CSSProperties & { '--dashboard-panel-scale': number | undefined } {
 	return {
 		width:
 			el.width >= 0
@@ -111,6 +117,7 @@ export function dashboardElementPosition(el: DashboardPositionableElement): Reac
 				: el.height < 0
 				? `calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))`
 				: undefined,
+		'--dashboard-panel-scale': el.scale || undefined,
 	}
 }
 
@@ -120,7 +127,9 @@ export class DashboardPanelInner extends MeteorReactComponent<
 > {
 	usedHotkeys: Array<string> = []
 
-	constructor(props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
+	constructor(
+		props: Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>
+	) {
 		super(props)
 
 		this.state = {
@@ -202,9 +211,19 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentDidUpdate(prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
+	componentDidUpdate(
+		prevProps: IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
+	) {
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 		this.usedHotkeys.length = 0
+
+		// Unregister hotkeys if group name has changed
+		if (prevProps.hotkeyGroup !== this.props.hotkeyGroup) {
+			RegisteredHotkeys.remove({
+				tag: prevProps.hotkeyGroup,
+			})
+		}
 
 		this.refreshKeyboardHotkeys()
 	}
@@ -213,6 +232,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		this._cleanUp()
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
+
+		RegisteredHotkeys.remove({
+			tag: this.props.hotkeyGroup,
+		})
 
 		this.usedHotkeys.length = 0
 	}
@@ -227,7 +250,15 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	refreshKeyboardHotkeys() {
 		if (!this.props.studioMode) return
+
+		// Unregister even when "registerHotkeys" is false, in the case that it has just been toggled off.
+		RegisteredHotkeys.remove({
+			tag: this.props.hotkeyGroup,
+		})
+
 		if (!this.props.registerHotkeys) return
+
+		const { t } = this.props
 
 		let preventDefault = (e) => {
 			e.preventDefault()
@@ -247,6 +278,17 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						this.props.hotkeyGroup
 					)
 					this.usedHotkeys.push(item.hotkey)
+
+					registerHotkey(
+						item.hotkey,
+						item.name,
+						HotkeyAssignmentType.ADLIB,
+						this.props.sourceLayerLookup[item.sourceLayerId],
+						item.toBeQueued || false,
+						this.onToggleAdLib,
+						[item, false],
+						this.props.hotkeyGroup
+					)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
@@ -281,6 +323,17 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						this.props.hotkeyGroup
 					)
 					this.usedHotkeys.push(item.hotkey)
+
+					registerHotkey(
+						item.hotkey,
+						item.name,
+						HotkeyAssignmentType.ADLIB,
+						this.props.sourceLayerLookup[item.sourceLayerId],
+						item.toBeQueued || false,
+						this.onToggleAdLib,
+						[item, false],
+						this.props.hotkeyGroup
+					)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
@@ -325,6 +378,19 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					this.props.hotkeyGroup
 				)
 				this.usedHotkeys.push(hotkey)
+
+				registerHotkey(
+					hotkey,
+					t('Clear {{layerNames}}', {
+						layerNames: _.unique(sourceLayers.map((sourceLayer) => sourceLayer.name)).join(', '),
+					}),
+					HotkeyAssignmentType.GLOBAL_ADLIB,
+					undefined,
+					false,
+					this.onClearAllSourceLayers,
+					[sourceLayers],
+					this.props.hotkeyGroup
+				)
 			})
 		}
 	}
@@ -567,7 +633,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 }
 
-export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartInstanceId | null) {
+export function getUnfinishedPieceInstancesReactive(
+	currentPartInstanceId: PartInstanceId | null,
+	adlib: boolean = true
+) {
 	let prospectivePieces: PieceInstance[] = []
 	const now = getCurrentTime()
 	if (currentPartInstanceId) {
@@ -681,9 +750,12 @@ export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null)
 }
 
 export function getUnfinishedPieceInstancesGrouped(
-	currentPartInstanceId: PartInstanceId | null
-): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)
+	currentPartInstanceId: PartInstanceId | null,
+	adlib: boolean = true
+): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> & {
+	unfinishedPieceInstances: PieceInstance[]
+} {
+	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId, adlib)
 
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
@@ -696,6 +768,7 @@ export function getUnfinishedPieceInstancesGrouped(
 	return {
 		unfinishedAdLibIds,
 		unfinishedTags,
+		unfinishedPieceInstances,
 	}
 }
 
@@ -722,7 +795,7 @@ export function isAdLibOnAir(
 ) {
 	if (
 		unfinishedAdLibIds.includes(adLib._id) ||
-		(adLib.currentPieceTags && adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
+		(adLib.onAirTags && adLib.onAirTags.every((tag) => unfinishedTags.includes(tag)))
 	) {
 		return true
 	}
@@ -737,8 +810,8 @@ export function isAdLibNext(
 ) {
 	if (
 		nextAdLibIds.includes(adLib._id) ||
-		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => unfinishedTags.includes(tag))) ||
-		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
+		(adLib.setNextTags && adLib.setNextTags.every((tag) => unfinishedTags.includes(tag))) ||
+		(adLib.setNextTags && adLib.setNextTags.every((tag) => nextTags.includes(tag)))
 	) {
 		return true
 	}

@@ -1,0 +1,359 @@
+body.tv2 {
+	--general-live-color: #c40000;
+	//--general-next-color: #FF0000;
+	--general-next-color: #00ac17;
+
+	//--general-live-remote-color: #8d008d;
+	--general-live-remote-color: #ac29a5;
+	--general-live-guest-color: #00a97f;
+
+	--segment-layer-background-camera: #005919;
+	--segment-layer-background-camera--second: lighten(#005919, 20%);
+	--segment-layer-background-lower-third: #af4900;
+	--segment-layer-background-lower-third--second: darken(#af4900, 20%);
+	--segment-layer-background-graphics: #ca9d00;
+	--segment-layer-background-graphics--second: darken(#ca9d00, 20%);
+	--segment-layer-background-live-speak: #370020;
+	--segment-layer-background-remote: #ac29a5;
+	--segment-layer-background-remote--second: darken(#ac29a5, 20%);
+	--segment-layer-background-vt: #1769ff;
+	--segment-layer-background-vt--second: darken(#1769ff, 20%);
+	--segment-layer-background-script: #370020;
+	--segment-layer-background-mic: #00a97f;
+	--segment-layer-background-guest: #00a97f;
+
+	.rundown-view {
+		padding-top: 60px;
+
+		.badge.mod {
+			margin: 20px 20px 0px 20px;
+		}
+
+		.header.rundown .close {
+			margin: 17px 20px 9px;
+		}
+	}
+	.col.rundown-overview {
+		display: none;
+	}
+	.segment-timeline-placeholder {
+		margin: 0.25em 1.5em;
+		&::before {
+			width: 16.875em;
+			top: 1.8em;
+		}
+	}
+	.segment-timeline {
+		margin: 0.25em 1.5em;
+		grid-template-columns: [segment-name] 16.875em [segment-group-controls] 10em [timeline] auto [end];
+		grid-template-rows: [header] 1.8em [main-view] auto [zoom-area] auto [end];
+
+		.segment-timeline__title__label.identifier::before {
+			display: none;
+		}
+
+		.segment-timeline__liveline {
+			bottom: 0;
+
+			.segment-timeline__liveline__label {
+				z-index: 3;
+			}
+
+			.segment-timeline__liveline__timecode {
+				bottom: auto;
+				top: -0.9em;
+				left: 3em;
+				z-index: 2;
+				background: #000;
+				line-height: 0.95em;
+				padding-left: 0.7em;
+				padding-right: 0.5em;
+				border-top-right-radius: 1em;
+				border-bottom-right-radius: 1em;
+			}
+		}
+
+		.segment-timeline__identifier {
+			display: block;
+			grid-column: segment-name / segment-group-controls;
+			grid-row: header / main-view;
+			font-size: 1.4em;
+			font-weight: 400;
+			margin-left: 0.3em;
+			line-height: 1.4em;
+		}
+
+		.segment-timeline__duration {
+			padding-left: 2em;
+			margin-left: 4em;
+			line-height: 1.8em;
+		}
+
+		.segment-timeline__zoom-area-container {
+			display: none;
+		}
+
+		.segment-timeline__timeline-grid {
+			margin-bottom: 0;
+
+			font-size: 15px;
+			--timeline-grid-label-top: 15px;
+			--timeline-grid-long-line-top: 18px;
+			--timeline-grid-long-line-height: 0;
+			--timeline-grid-short-line-top: 26px;
+			--timeline-grid-short-line-height: 3px;
+		}
+
+		.segment-timeline__timeline {
+			.segment-timeline__part .segment-timeline__part__nextline {
+				bottom: 0;
+			}
+		}
+
+		.segment-timeline__timeline-background {
+			margin-bottom: 0;
+		}
+
+		.segment-timeline__timeline-zoom-buttons {
+			grid-column: segment-group-controls / timeline;
+			grid-row: header / zoom-area;
+			align-items: flex-start;
+			padding-top: 0.2em;
+		}
+
+		.segment-timeline__output-layers,
+		.segment-timeline__timeline {
+			padding: 1.8em 0 0em;
+		}
+
+		.segment-timeline__timeUntil {
+			color: #555;
+			transition: 0.3s color;
+			line-height: 1.5em;
+
+			&:hover {
+				transition: 0s color;
+				color: #fff;
+			}
+		}
+
+		.segment-timeline__liveline-shade {
+			top: 1.8em;
+		}
+
+		.segment-timeline__liveline {
+			top: 1.8em;
+		}
+
+		&.collapsed {
+			.segment-timeline__title__notes {
+				display: none;
+			}
+
+			.segment-timeline__liveline {
+				top: 1.8em;
+
+				.segment-timeline__liveline__timecode {
+					opacity: 1;
+					visibility: visible;
+				}
+			}
+		}
+
+		&.has-guest-items {
+			.segment-timeline__title {
+				background: var(--segment-layer-background-guest);
+
+				> h2 {
+					background: unset;
+					border: unset;
+				}
+			}
+
+			&.live {
+				.segment-timeline__title {
+					> h2 {
+						background: linear-gradient(
+							to top,
+							var(--segment-layer-background-guest) 5px,
+							var(--general-live-color) 5px
+						);
+					}
+				}
+			}
+			&.next {
+				.segment-timeline__title {
+					> h2 {
+						background: linear-gradient(
+							to top,
+							var(--segment-layer-background-guest) 5px,
+							var(--general-next-color) 5px
+						);
+					}
+				}
+			}
+		}
+
+		// the live and next states are the states of the entire segment component
+		&.has-remote-items {
+			.segment-timeline__title {
+				background: var(--segment-layer-background-remote);
+
+				> h2 {
+					background: unset;
+					border: unset;
+				}
+			}
+
+			&.live {
+				.segment-timeline__title {
+					> h2 {
+						background: linear-gradient(
+							to top,
+							var(--segment-layer-background-remote) 5px,
+							var(--general-live-color) 5px
+						);
+					}
+				}
+			}
+			&.next {
+				.segment-timeline__title {
+					> h2 {
+						background: linear-gradient(
+							to top,
+							var(--segment-layer-background-remote) 5px,
+							var(--general-next-color) 5px
+						);
+					}
+				}
+			}
+		}
+
+		.segment-timeline__piece-appendage {
+			&.script-line {
+				&.at-end {
+					opacity: 0;
+				}
+			}
+		}
+	}
+	.segment-timeline.next,
+	.segment-timeline.live {
+		.segment-timeline__timeUntil {
+			transition: 0s color;
+			color: #fff;
+		}
+	}
+	.rundown-system-status {
+		left: calc(50% + 118px);
+		top: 16px;
+	}
+	.header.rundown.not-active .first-row {
+		background-color: #1f2021;
+
+		.timing .timing-clock .timing-clock-label {
+		}
+	}
+	.header.rundown .timing {
+		.timing-clock.current-remaining {
+			left: calc(50% + 7em);
+		}
+	}
+	@media screen and (max-width: 1110px) {
+		.timing {
+			.timing-clock.plan-end:not(.countdown) {
+				display: none;
+			}
+
+			.timing-clock.countdown.plan-end {
+				margin-right: 0;
+			}
+		}
+	}
+	.header.rundown.active.rehearsal .first-row {
+		background-color: #cbcccd;
+
+		.links > a {
+			color: #333;
+		}
+
+		.badge .sofie-logo {
+			filter: grayscale(1) brightness(0.3);
+		}
+
+		.timing .timing-clock {
+			color: #333;
+			font-weight: 400;
+
+			.timing-clock-label {
+				font-weight: 400;
+				color: #000;
+			}
+
+			&.heavy-light {
+				font-weight: 600;
+
+				&.light {
+					color: var(--general-fast-color);
+				}
+				&.heavy {
+					color: #ffe900;
+				}
+			}
+		}
+	}
+	.header.rundown.active:not(.rehearsal) .first-row {
+		background-color: #761912;
+
+		.timing .timing-clock {
+			color: #fff;
+
+			.timing-clock-label {
+				color: #ccc;
+			}
+		}
+
+		.badge .sofie-logo {
+			filter: grayscale(1) brightness(2);
+		}
+	}
+	.dashboard-panel__panel__button {
+		&.source-broken,
+		&.source-missing {
+			&::after {
+				border-radius: 3px;
+				top: 4px;
+				left: 4px;
+				right: 4px;
+				bottom: 4px;
+			}
+		}
+
+		&.list {
+			&.selected {
+				border: 4px solid;
+				border-color: var(--general-next-color);
+			}
+
+			&.live {
+				border: 4px solid;
+				border-color: var(--general-live-color) !important;
+			}
+		}
+	}
+	.rundown-view {
+		.status-bar {
+			top: 3.375rem;
+		}
+		.notification-center-panel {
+			top: 3.375rem;
+		}
+	}
+	.rundown-view + .notification-pop-ups {
+		top: 3.375rem;
+	}
+
+	.rundown-view__shelf__contents__pane.shelf-inspector {
+		display: none;
+	}
+}

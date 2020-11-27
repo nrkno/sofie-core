@@ -680,13 +680,12 @@ export function removeRundownPlaylistFromCache(cache: CacheForRundownPlaylist, p
 export function removeRundownFromCache(cache: CacheForRundownPlaylist, rundown: Rundown) {
 	cache.Rundowns.remove(rundown._id)
 	if (rundown.playlistId) {
-		// Check if any other rundowns in the playlist are left
+		// Check if any other members of the playlist are left
 		if (
 			cache.Rundowns.findFetch({
 				playlistId: rundown.playlistId,
 			}).length === 0
 		) {
-			// No other rundowns left, remove the playlist as well then:
 			cache.RundownPlaylists.remove(rundown.playlistId)
 		}
 	}

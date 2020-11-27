@@ -27,8 +27,8 @@ export interface ICustomLayerItemProps {
 	elementPosition: OffsetPosition
 	cursorPosition: OffsetPosition
 	cursorTimePosition: number
-	getItemLabelOffsetLeft?: () => { [key: string]: string }
-	getItemLabelOffsetRight?: () => { [key: string]: string }
+	getItemLabelOffsetLeft?: () => React.CSSProperties
+	getItemLabelOffsetRight?: () => React.CSSProperties
 	getItemDuration?: () => number
 	setAnchoredElsWidths?: (rightAnchoredWidth: number, leftAnchoredWidth: number) => void
 }
@@ -46,7 +46,7 @@ export class CustomLayerItemRenderer<
 		}
 	}
 
-	getItemLabelOffsetRight(): { [key: string]: string } {
+	getItemLabelOffsetRight(): React.CSSProperties {
 		if (this.props.getItemLabelOffsetRight && typeof this.props.getItemLabelOffsetRight === 'function') {
 			return this.props.getItemLabelOffsetRight()
 		} else {

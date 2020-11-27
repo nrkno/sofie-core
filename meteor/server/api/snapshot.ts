@@ -105,6 +105,7 @@ interface DeprecatedRundownSnapshot {
 	adLibPieces: Array<AdLibPiece>
 	mediaObjects: Array<MediaObject>
 	expectedMediaItems: Array<ExpectedMediaItem>
+	expectedPlayoutItems: Array<ExpectedPlayoutItem>
 }
 
 interface RundownPlaylistSnapshot {

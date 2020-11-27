@@ -75,6 +75,9 @@ export interface DBRundown
 	status?: string
 	// There should be something like a Owner user here somewhere?
 
+	/** The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment. */
+	nextSegmentId?: string
+
 	/** Actual time of playback starting */
 	startedPlayback?: Time
 

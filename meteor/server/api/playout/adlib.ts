@@ -10,7 +10,6 @@ import {
 	getRandomId,
 	waitForPromise,
 	unprotectStringArray,
-	sleep,
 	assertNever,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
@@ -288,6 +287,10 @@ export namespace ServerPlayoutAdLibAPI {
 						currentPartInstance.part.dynamicallyInsertedAfterPartId ?? currentPartInstance.part._id,
 					prerollDuration: adLibPiece.adlibPreroll,
 					expectedDuration: adLibPiece.expectedDuration,
+					autoNext: adLibPiece.adlibAutoNext,
+					autoNextOverlap: adLibPiece.adlibAutoNextOverlap,
+					disableOutTransition: adLibPiece.adlibDisableOutTransition,
+					transitionKeepaliveDuration: adLibPiece.adlibTransitionKeepAlive,
 				}),
 			})
 			const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, newPartInstance, queue)

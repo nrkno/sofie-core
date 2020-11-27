@@ -37,6 +37,8 @@ export enum RundownLayoutElementType {
 	FILTER = 'filter',
 	EXTERNAL_FRAME = 'external_frame',
 	ADLIB_REGION = 'adlib_region',
+	KEYBOARD_PREVIEW = 'keyboard_preview',
+	PART_COUNTDOWN = 'part_countdown',
 }
 
 export interface RundownLayoutElementBase {
@@ -64,6 +66,12 @@ export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
 	role: RundownLayoutAdLibRegionRole
 	adlibRank: number
 	labelBelowPanel: boolean
+	thumbnailSourceLayerIds: string[] | undefined
+}
+
+export interface RundownLayoutPartCountdown extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PART_COUNTDOWN
+	sourceLayerIds: string[] | undefined
 }
 
 /**
@@ -95,6 +103,10 @@ export interface RundownLayoutFilter extends RundownLayoutFilterBase {
 	default: boolean
 }
 
+export interface RundownLayoutKeyboardPreview extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.KEYBOARD_PREVIEW
+}
+
 export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame {
 	x: number
 	y: number
@@ -103,6 +115,13 @@ export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame
 }
 
 export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
+	x: number
+	y: number
+	width: number
+	height: number
+}
+
+export interface DashboardLayoutPartCountdown extends RundownLayoutPartCountdown {
 	x: number
 	y: number
 	width: number
@@ -131,6 +150,13 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 /** A string, identifying a RundownLayout */
 export type RundownLayoutId = ProtectedString<'RundownLayoutId'>
 
+export interface DashboardLayoutKeyboardPreview extends RundownLayoutKeyboardPreview {
+	x: number
+	y: number
+	width: number
+	height: number
+}
+
 export interface RundownLayoutBase {
 	_id: RundownLayoutId
 	showStyleBaseId: ShowStyleBaseId
@@ -143,6 +169,7 @@ export interface RundownLayoutBase {
 	exposeAsShelf: boolean
 	icon: string
 	iconColor: string
+	showBuckets: boolean
 }
 
 export interface RundownLayout extends RundownLayoutBase {
@@ -163,6 +190,7 @@ export enum ActionButtonType {
 	// RESET_RUNDOWN = 'reset_rundown',
 	QUEUE_ADLIB = 'queue_adlib', // The idea for it is that you would be able to press and hold this button
 	// and then click on whatever adlib you would like
+	KLAR_ON_AIR = 'klar_on_air',
 }
 
 export interface DashboardLayoutActionButton {
@@ -173,6 +201,7 @@ export interface DashboardLayoutActionButton {
 	width: number
 	height: number
 	label: string
+	labelToggled: string // different label for when the button is toggled on
 }
 
 export interface DashboardLayout extends RundownLayoutBase {
