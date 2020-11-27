@@ -43,6 +43,7 @@ import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { registerHotkey, RegisteredHotkeys, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 import { pieceSetInOutPoints } from '../../../server/api/userActions'
+import { ExtendedKeyboardEvent } from 'mousetrap'
 
 interface IState {
 	outputLayers: {
