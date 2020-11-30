@@ -14,6 +14,7 @@ export interface ILayerItemRendererProps {
 	status?: RundownAPI.PieceStatusCode | null
 	message?: string | null
 	metadata?: MediaObject | null
+	mediaPreviewUrl: string | undefined
 }
 
 export default function renderItem(props: ILayerItemRendererProps): JSX.Element {

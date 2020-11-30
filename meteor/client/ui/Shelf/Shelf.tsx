@@ -26,6 +26,7 @@ import { Bucket } from '../../../lib/collections/Buckets'
 import { RundownViewBuckets } from './RundownViewBuckets'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ShelfInspector } from './Inspector/ShelfInspector'
+import { Studio } from '../../../lib/collections/Studios'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -38,6 +39,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	buckets: Array<Bucket>
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
+	studio: Studio
 	studioMode: boolean
 	hotkeys: Array<{
 		key: string
@@ -450,6 +452,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 										selectedPiece={this.state.selectedPiece}
 										onSelectPiece={this.selectPiece}
 										onSwitchTab={this.switchTab}
+										studio={this.props.studio}
 									/>
 								) : this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout) ? (
 									<ShelfDashboardLayout
@@ -460,6 +463,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 										rundownLayout={this.props.rundownLayout}
 										shouldQueue={this.state.shouldQueue}
 										onChangeQueueAdLib={this.changeQueueAdLib}
+										studio={this.props.studio}
 									/>
 								) : (
 									// ultimate fallback if not found
@@ -473,6 +477,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 										selectedPiece={this.state.selectedPiece}
 										onSelectPiece={this.selectPiece}
 										onSwitchTab={this.switchTab}
+										studio={this.props.studio}
 									/>
 								)}
 							</ErrorBoundary>

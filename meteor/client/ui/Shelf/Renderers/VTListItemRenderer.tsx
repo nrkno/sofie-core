@@ -71,13 +71,14 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 	const handleOnMouseMove = (e: React.MouseEvent) => {
 		if (itemIconPosition) {
 			const left = e.pageX - itemIconPosition.left
-			const unprocessedPercentage = left / itemIconPosition.width
+			let unprocessedPercentage = left / itemIconPosition.width
 			if ((unprocessedPercentage > 1 || unprocessedPercentage < 0) && showMiniInspector) {
 				setShowMiniInspector(false)
 				return false
 			} else if (unprocessedPercentage >= 0 && unprocessedPercentage <= 1 && !showMiniInspector) {
 				setShowMiniInspector(true)
 			}
+			unprocessedPercentage = (left - 5) / (itemIconPosition.width - 15)
 			const percentage = Math.max(0, Math.min(1, unprocessedPercentage))
 			setHoverScrubTimePosition(percentage * (sourceDuration || 0))
 		}
@@ -125,6 +126,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					noticeLevel={
 						props.status !== null && props.status !== undefined ? getNoticeLevelForPieceStatus(props.status) : null
 					}
+					mediaPreviewUrl={props.mediaPreviewUrl}
 				/>
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--duration">

@@ -44,6 +44,7 @@ import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { ShelfTabs } from './Shelf'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { ReactiveMap } from '../../../lib/reactiveMap'
+import { Studio } from '../../../lib/collections/Studios'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -54,6 +55,7 @@ interface IListViewPropsHeader {
 	showStyleBase: ShowStyleBase
 	rundownAdLibs: Array<AdLibPieceUi>
 	playlist: RundownPlaylist
+	studio: Studio
 }
 
 interface IListViewStateHeader {
@@ -159,6 +161,7 @@ const AdLibListView = withTranslation()(
 											onToggleAdLib={this.props.onToggleSticky}
 											onSelectAdLib={this.props.onSelectAdLib}
 											playlist={this.props.playlist}
+											studio={this.props.studio}
 										/>
 									)
 								} else if (
@@ -182,6 +185,7 @@ const AdLibListView = withTranslation()(
 											onToggleAdLib={this.props.onToggleAdLib}
 											onSelectAdLib={this.props.onSelectAdLib}
 											playlist={this.props.playlist}
+											studio={this.props.studio}
 										/>
 									)
 								} else if (
@@ -203,6 +207,7 @@ const AdLibListView = withTranslation()(
 											onToggleAdLib={this.props.onToggleAdLib}
 											onSelectAdLib={this.props.onSelectAdLib}
 											playlist={this.props.playlist}
+											studio={this.props.studio}
 										/>
 									)
 								} else {
@@ -307,6 +312,7 @@ const AdLibPanelToolbar = withTranslation()(
 interface IProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
+	studio: Studio
 	visible: boolean
 	studioMode: boolean
 	hotkeyGroup: string
@@ -715,6 +721,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 						rundownAdLibs={this.props.rundownAdLibs}
 						searchFilter={this.state.filter}
 						playlist={this.props.playlist}
+						studio={this.props.studio}
 					/>
 				</React.Fragment>
 			)

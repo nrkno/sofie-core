@@ -55,6 +55,7 @@ import {
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
+import { Studio } from '../../../lib/collections/Studios'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -68,6 +69,7 @@ interface IListViewPropsHeader {
 	filter: RundownLayoutFilter | undefined
 	rundownAdLibs?: Array<AdLibPieceUi>
 	playlist: RundownPlaylist
+	studio: Studio
 }
 
 interface IListViewStateHeader {
@@ -256,6 +258,7 @@ const AdLibListView = withTranslation()(
 									onToggleAdLib={this.props.onToggleAdLib}
 									onSelectAdLib={this.props.onSelectAdLib}
 									playlist={this.props.playlist}
+									studio={this.props.studio}
 								/>
 							))}
 				</tbody>
@@ -310,6 +313,7 @@ const AdLibListView = withTranslation()(
 											onToggleAdLib={this.props.onToggleAdLib}
 											onSelectAdLib={this.props.onSelectAdLib}
 											playlist={this.props.playlist}
+											studio={this.props.studio}
 										/>
 									))}
 						</tbody>
@@ -440,6 +444,7 @@ export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
 	playlist: RundownPlaylist
+	studio: Studio
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	filter?: RundownLayoutFilterBase
@@ -1119,6 +1124,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 						filter={this.props.filter as RundownLayoutFilter}
 						playlist={this.props.playlist}
 						noSegments={!withSegments}
+						studio={this.props.studio}
 					/>
 				</React.Fragment>
 			)

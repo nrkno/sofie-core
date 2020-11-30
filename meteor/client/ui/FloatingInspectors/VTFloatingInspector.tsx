@@ -64,19 +64,21 @@ function renderNotice(noticeLevel: NoticeLevel, noticeMessage: string | null): J
 
 export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IProps) => {
 	const { t } = useTranslation()
+	const { timePosition } = props
 
 	const videoElement = useRef<HTMLVideoElement>(null)
 
+	const itemDuration = (props.content ? props.content.sourceDuration : undefined) || props.renderedDuration || 0
+	const seek = (props.content ? props.content.seek : 0) || 0
+	const loop = (props.content ? props.content.loop : false) || false
+
 	useEffect(() => {
 		if (videoElement.current) {
-			const itemDuration = (props.content ? props.content.sourceDuration : undefined) || props.renderedDuration || 0
-			const seek = (props.content ? props.content.seek : 0) || 0
-			const loop = (props.content ? props.content.loop : false) || false
-			setVideoElementPosition(videoElement.current, props.timePosition, itemDuration, seek, loop)
+			setVideoElementPosition(videoElement.current, timePosition, itemDuration, seek, loop)
 		}
 	})
 
-	const offsetTimePosition = props.timePosition + (props.content ? props.content.seek || 0 : 0)
+	const offsetTimePosition = timePosition + seek
 
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined}>

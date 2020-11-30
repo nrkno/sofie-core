@@ -13,12 +13,14 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { withTranslation } from 'react-i18next'
+import { Studio } from '../../../lib/collections/Studios'
 
 export interface IShelfRundownLayoutProps {
 	rundownLayout: RundownLayout | undefined
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
+	studio: Studio
 	selectedTab: string | undefined
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
 
@@ -89,6 +91,7 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 					playlist={props.playlist}
 					showStyleBase={props.showStyleBase}
 					studioMode={props.studioMode}
+					studio={props.studio}
 					hotkeyGroup={props.playlist.name.replace(/\W/, '') + 'AdLibPanel'}></AdLibPanel>
 				{rundownLayout &&
 					rundownLayout.filters.map((panel) =>
@@ -103,6 +106,7 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 								playlist={props.playlist}
 								showStyleBase={props.showStyleBase}
 								studioMode={props.studioMode}
+								studio={props.studio}
 								hotkeyGroup={panel.name.replace(/\W/, '_')}
 							/>
 						) : RundownLayoutsAPI.isExternalFrame(panel) ? (
@@ -124,7 +128,8 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 					playlist={props.playlist}
 					showStyleBase={props.showStyleBase}
 					studioMode={props.studioMode}
-					hotkeyGroup={props.playlist.name.replace(/\W/, '_') + 'GlobalAdLibPanel'}></GlobalAdLibPanel>
+					hotkeyGroup={props.playlist.name.replace(/\W/, '_') + 'GlobalAdLibPanel'}
+					studio={props.studio}></GlobalAdLibPanel>
 				<HotkeyHelpPanel
 					visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS}
 					showStyleBase={props.showStyleBase}

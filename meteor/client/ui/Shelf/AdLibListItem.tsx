@@ -21,6 +21,7 @@ import { PieceGeneric } from '../../../lib/collections/Pieces'
 import { unprotectString } from '../../../lib/lib'
 import renderItem from './Renderers/ItemRendererFactory'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
+import { Studio } from '../../../lib/collections/Studios'
 
 export interface IAdLibListItem extends PieceGeneric {
 	status: RundownAPI.PieceStatusCode
@@ -38,6 +39,7 @@ interface IListViewItemProps {
 	onSelectAdLib: (aSLine: PieceGeneric) => void
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
 	playlist: RundownPlaylist
+	studio: Studio
 }
 
 interface IAdLibListItemTrackedProps {
@@ -128,6 +130,7 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 						status: this.props.status,
 						message: this.props.message,
 						metadata: this.props.metadata,
+						mediaPreviewUrl: this.props.studio.settings.mediaPreviewsUrl,
 					})}
 				</tr>
 			)
