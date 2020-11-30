@@ -1345,14 +1345,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundowns = memoizedIsolatedAutorun((_playlistId) => playlist.getRundowns(), 'playlist.getRundowns', playlistId)
 		allParts = memoizedIsolatedAutorun(
 			(_playlistId) =>
-				playlist
-					.getAllOrderedParts(undefined, {
-						fields: {
-							segmentId: 1,
-							_rank: 1,
-						},
-					})
-					.map((part) => part._id),
+				(playlist.getAllOrderedParts(undefined, {
+					fields: {
+						segmentId: 1,
+						_rank: 1,
+					},
+				}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]).map((part) => part._id),
 			'playlist.getAllOrderedParts',
 			playlistId
 		)
@@ -1578,14 +1576,14 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					fields: {
 						_id: 1,
 					},
-				})
+				}) as Pick<RundownPlaylist, '_id' | 'getRundowns'> | undefined
 				if (playlist) {
 					const rundowns = playlist.getRundowns(undefined, {
 						fields: {
 							_id: 1,
 							showStyleBaseId: 1,
 						},
-					})
+					}) as Pick<Rundown, '_id' | 'showStyleBaseId'>[]
 					this.subscribe(PubSub.showStyleBases, {
 						_id: {
 							$in: rundowns.map((i) => i.showStyleBaseId),
@@ -1622,77 +1620,14 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							$in: rundownIDs,
 						},
 					})
-					if (this.props.onlyShelf) {
-						this.subscribe(PubSub.pieceInstances, {
-							rundownId: {
-								$in: rundownIDs,
-							},
-							partInstanceId: {
-								$in: [
-									playlist.currentPartInstanceId,
-									playlist.nextPartInstanceId,
-									playlist.previousPartInstanceId,
-								].filter((p) => p !== null),
-							},
-							reset: {
-								$ne: true,
-							},
-						})
-					}
-				}
-			})
-			this.autorun(() => {
-				if (this.props.onlyShelf) {
-					let playlist = RundownPlaylists.findOne(playlistId, {
-						fields: {
-							currentPartInstanceId: 1,
-							nextPartInstanceId: 1,
-							previousPartInstanceId: 1,
-						},
-					})
-					if (playlist) {
-						this.subscribe(PubSub.pieceInstances, {
-							partInstanceId: {
-								$in: [
-									playlist.currentPartInstanceId,
-									playlist.nextPartInstanceId,
-									playlist.previousPartInstanceId,
-								].filter((p) => p !== null),
-							},
-							reset: {
-								$ne: true,
-							},
-						})
-					}
-				}
-			})
-			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId, {
-					fields: {
-						_id: 1,
-					},
-				})
-				if (playlist) {
-					const rundownIds = playlist.getRundownUnorderedIDs()
-					const segmentIds = Segments.find({
-						rundownId: {
-							$in: rundownIds,
-						},
-					}).map((s) => s._id)
 					this.subscribe(PubSub.parts, {
 						rundownId: {
-							$in: rundownIds,
-						},
-						segmentId: {
-							$in: segmentIds,
+							$in: rundownIDs,
 						},
 					})
 					this.subscribe(PubSub.partInstances, {
 						rundownId: {
-							$in: rundownIds,
-						},
-						segmentId: {
-							$in: segmentIds,
+							$in: rundownIDs,
 						},
 						reset: {
 							$ne: true,
@@ -1701,34 +1636,37 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			})
 			this.autorun(() => {
-				const playlist = RundownPlaylists.findOne(playlistId, {
+				let playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
-						previousPartInstanceId: 1,
 						currentPartInstanceId: 1,
 						nextPartInstanceId: 1,
+						previousPartInstanceId: 1,
 					},
-				})
+				}) as
+					| Pick<
+							RundownPlaylist,
+							| '_id'
+							| 'currentPartInstanceId'
+							| 'nextPartInstanceId'
+							| 'previousPartInstanceId'
+							| 'getRundownUnorderedIDs'
+					  >
+					| undefined
 				if (playlist) {
 					const rundownIds = playlist.getRundownUnorderedIDs()
-					const partInstanceIds: PartInstanceId[] = []
-					if (playlist.previousPartInstanceId) {
-						partInstanceIds.push(playlist.previousPartInstanceId)
-					}
-					if (playlist.currentPartInstanceId) {
-						partInstanceIds.push(playlist.currentPartInstanceId)
-					}
-					if (playlist.nextPartInstanceId) {
-						partInstanceIds.push(playlist.nextPartInstanceId)
-					}
-					// run this subscription manually, so that it doesn't affect subscriptionsReady()
-					// it's in a MeteorReactComponent.autorun, so the component lifecycle will
-					// cause it to be unsubscribed when the view is unloaded
+					// Use Meteor.subscribe so that this subscription doesn't mess with this.subscriptionsReady()
+					// it's run in this.autorun, so the subscription will be stopped along with the autorun,
+					// so we don't have to manually clean up after ourselves.
 					Meteor.subscribe(PubSub.pieceInstances, {
 						rundownId: {
 							$in: rundownIds,
 						},
 						partInstanceId: {
-							$in: partInstanceIds,
+							$in: [
+								playlist.currentPartInstanceId,
+								playlist.nextPartInstanceId,
+								playlist.previousPartInstanceId,
+							].filter((p) => p !== null),
 						},
 						reset: {
 							$ne: true,
