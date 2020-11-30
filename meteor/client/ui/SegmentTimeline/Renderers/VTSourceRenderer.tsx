@@ -40,7 +40,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	private leftLabelNodes: JSX.Element
 	private rightLabelNodes: JSX.Element
 
-	private rightLabelContainer: HTMLSpanElement | undefined
+	private rightLabelContainer: HTMLSpanElement | null
 
 	private static readonly defaultLottieOptions = {
 		loop: true,
@@ -63,6 +63,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			begin: labelItems[0] || '',
 			end: labelItems[1] || '',
 		}
+
+		this.rightLabelContainer = document.createElement('span')
 	}
 
 	setVideoRef = (e: HTMLVideoElement) => {
@@ -127,9 +129,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			})
 		}
 
-		this.rightLabelContainer = document.createElement('span')
-
-		if (itemElement) {
+		if (this.rightLabelContainer && itemElement) {
 			const itemDuration = this.getItemDuration(true)
 			if (itemDuration === Number.POSITIVE_INFINITY) {
 				itemElement.parentNode &&
@@ -144,7 +144,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				itemElement.appendChild(this.rightLabelContainer)
 			}
 
-			ReactDOM.render(this.rightLabelNodes, this.rightLabelContainer)
+			// ReactDOM.render(this.rightLabelNodes, this.rightLabelContainer)
 		}
 	}
 
@@ -228,7 +228,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			this.setState(newState as IState)
 		}
 
-		ReactDOM.render(this.rightLabelNodes, this.rightLabelContainer!)
+		// ReactDOM.render(this.rightLabelNodes, this.rightLabelContainer!)
 	}
 
 	componentWillUnmount() {
@@ -237,9 +237,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 
 		if (this.rightLabelContainer) {
-			ReactDOM.unmountComponentAtNode(this.rightLabelContainer)
+			// ReactDOM.unmountComponentAtNode(this.rightLabelContainer)
 			this.rightLabelContainer.remove()
-			this.rightLabelContainer = undefined
+			this.rightLabelContainer = null
 		}
 	}
 
@@ -505,6 +505,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 							)
 					)}
 				{this.leftLabelNodes}
+				{this.rightLabelContainer && ReactDOM.createPortal(this.rightLabelNodes, this.rightLabelContainer)}
 				<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 					{this.getPreviewUrl() ? (
 						<div
