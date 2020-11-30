@@ -409,7 +409,13 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 
 							doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
-								MeteorCall.userAction.bucketAdlibStart(e, this.props.playlist._id, currentPartInstanceId, piece._id)
+								MeteorCall.userAction.bucketAdlibStart(
+									e,
+									this.props.playlist._id,
+									currentPartInstanceId,
+									piece._id,
+									queue
+								)
 							)
 						} else {
 							if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
