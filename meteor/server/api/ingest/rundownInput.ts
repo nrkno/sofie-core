@@ -761,6 +761,7 @@ function updateRundownFromIngestData(
 		cache.Parts,
 		{
 			rundownId: rundownId,
+			dynamicallyInsertedAfterPartId: { $exists: false },
 		},
 		parts
 	)
