@@ -410,7 +410,7 @@ export function partialExceptId<T>(o: Partial<T> & IDObj) {
 export interface ObjId {
 	_id: ProtectedString<any>
 }
-export type OmitId<T> = Omit<T & ObjId, '_id'>
+// export type OmitId<T> = Omit<T & ObjId, '_id'>
 
 export function omit<T, P extends keyof T>(obj: T, ...props: P[]): Omit<T, P> {
 	return _.omit(obj, ...(props as string[]))

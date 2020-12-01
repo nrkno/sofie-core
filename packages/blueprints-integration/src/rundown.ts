@@ -37,7 +37,9 @@ export interface IBlueprintRundown<TMetadata = unknown> {
 	playlistExternalId?: string
 }
 /** The Rundown sent from Core */
-export interface IBlueprintRundownDB<TMetadata = unknown> extends IBlueprintRundown<TMetadata>, IBlueprintRundownDBData {}
+export interface IBlueprintRundownDB<TMetadata = unknown>
+	extends IBlueprintRundown<TMetadata>,
+		IBlueprintRundownDBData {}
 /** Properties added to a rundown in Core */
 export interface IBlueprintRundownDBData {
 	_id: string
@@ -276,7 +278,7 @@ export interface IBlueprintPiece<TMetadata = unknown> extends IBlueprintPieceGen
 export interface IBlueprintPieceDB<TMetadata = unknown> extends IBlueprintPiece<TMetadata> {
 	_id: string
 }
-export interface IBlueprintPieceInstance<TMetadata = unknown>  {
+export interface IBlueprintPieceInstance<TMetadata = unknown> {
 	_id: string
 
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */

@@ -1,7 +1,6 @@
 import { IBlueprintAsRunLogEvent } from './asRunLog'
 import { IngestPart, ExtendedIngestRundown } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
-import { OmitId } from './lib'
 import {
 	IBlueprintPart,
 	IBlueprintPartDB,
