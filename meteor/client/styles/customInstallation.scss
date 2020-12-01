@@ -330,14 +330,12 @@ body.tv2 {
 		}
 
 		&.list {
-			&.selected {
-				border: 4px solid;
-				border-color: var(--general-next-color);
+			&.selected > .dashboard-panel__panel__button__content {
+				box-shadow: inset 0 0 0 4px var(--general-next-color);
 			}
 
-			&.live {
-				border: 4px solid;
-				border-color: var(--general-live-color) !important;
+			&.live > .dashboard-panel__panel__button__content {
+				box-shadow: inset 0 0 0 4px var(--general-live-color);
 			}
 		}
 	}
