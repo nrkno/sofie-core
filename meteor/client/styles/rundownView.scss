@@ -2407,6 +2407,22 @@ body.no-overflow {
 			border-bottom-left-radius: 3px;
 		}
 
+		> .segment-timeline__mini-inspector__frame-marker {
+			display: block;
+			position: absolute;
+			bottom: 1px;
+
+			&.segment-timeline__mini-inspector__frame-marker--first-frame {
+				left: 6px;
+			}
+
+			&.segment-timeline__mini-inspector__frame-marker--last-frame {
+				left: auto;
+				right: 6px;
+				transform: scaleX(-1);
+			}
+		}
+
 		> .segment-timeline__mini-inspector__warnings {
 			display: block;
 			position: absolute;

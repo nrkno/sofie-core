@@ -1,11 +1,11 @@
 import React, { useRef, useEffect } from 'react'
+import classNames from 'classnames'
 import { useTranslation } from 'react-i18next'
 
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { FloatingInspector } from '../FloatingInspector'
 import { NoticeLevel } from '../../lib/notifications/notifications'
 import { VTContent } from '@sofie-automation/blueprints-integration'
-import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { StyledTimecode } from '../../lib/StyledTimecode'
 
@@ -79,6 +79,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 	})
 
 	const offsetTimePosition = timePosition + seek
+	const showFrameMarker = offsetTimePosition === 0 || offsetTimePosition >= itemDuration
 
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined}>
@@ -93,6 +94,23 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 						playsInline={true}
 						muted={true}
 					/>
+					{showFrameMarker && (
+						<div
+							className={classNames('segment-timeline__mini-inspector__frame-marker', {
+								'segment-timeline__mini-inspector__frame-marker--first-frame': offsetTimePosition === 0,
+								'segment-timeline__mini-inspector__frame-marker--last-frame': offsetTimePosition >= itemDuration,
+							})}>
+							<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<path d="M6 14.5L18.5 14.5V18.5H6H1.5V14V1.5H5.5V14V14.5H6Z" fill="#FFD600" stroke="black" />
+								<path
+									fillRule="evenodd"
+									clipRule="evenodd"
+									d="M0 0H7V13L20 13V20H0V0ZM6 14V1H1V19H19V14L6 14Z"
+									fill="white"
+								/>
+							</svg>
+						</div>
+					)}
 					<span className="segment-timeline__mini-inspector__timecode">
 						<StyledTimecode time={offsetTimePosition} />
 					</span>
