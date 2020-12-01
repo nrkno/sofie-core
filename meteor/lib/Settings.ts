@@ -42,6 +42,8 @@ export interface ISettings {
 	keyboardMapLayout: KeyboardLayouts.Names
 	/** NRCS name displayed in various places */
 	nrcsName: string
+	/** How many segments of history to show when scrolling back in time (0 = show current segment only) */
+	followOnAirSegmentsHistory: number
 }
 
 export let Settings: ISettings
@@ -64,6 +66,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	showKeyboardMap: true,
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
 	nrcsName: 'ENPS',
+	followOnAirSegmentsHistory: 0,
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)
