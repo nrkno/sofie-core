@@ -69,6 +69,7 @@ interface IState {
 	selectedTab: string | undefined
 	shouldQueue: boolean
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
+	localStorageName: string
 }
 
 const CLOSE_MARGIN = 45
@@ -107,15 +108,18 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			? `${100 - Math.min(props.rundownLayout.startingHeight, MAX_HEIGHT)}vh`
 			: '50vh'
 
+		const localStorageName = props.rundownLayout ? `rundownView.shelf_${props.rundownLayout._id}` : `rundownView.shelf`
+
 		this.state = {
 			moving: false,
-			shelfHeight: localStorage.getItem('rundownView.shelf.shelfHeight') ?? defaultHeight,
+			shelfHeight: localStorage.getItem(`${localStorageName}.shelfHeight`) ?? defaultHeight,
 			overrideHeight: undefined,
 			selectedTab: UIStateStorage.getItem(`rundownView.${props.playlist._id}`, 'shelfTab', undefined) as
 				| string
 				| undefined,
 			shouldQueue: false,
 			selectedPiece: undefined,
+			localStorageName,
 		}
 
 		const { t } = props
@@ -363,7 +367,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.props.onChangeExpanded(shouldBeExpanded)
 		this.blurActiveElement()
 
-		localStorage.setItem('rundownView.shelf.shelfHeight', this.state.shelfHeight)
+		localStorage.setItem(`${this.state.localStorageName}.shelfHeight`, this.state.shelfHeight)
 	}
 
 	beginResize = (x: number, y: number, targetElement: HTMLElement) => {
