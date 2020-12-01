@@ -72,6 +72,7 @@ interface IState {
 }
 
 const CLOSE_MARGIN = 45
+const MAX_HEIGHT = 95
 export const DEFAULT_TAB = ShelfTabs.ADLIB
 
 export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> {
@@ -102,9 +103,13 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	constructor(props: Translated<IShelfProps>) {
 		super(props)
 
+		const defaultHeight = props.rundownLayout?.startingHeight
+			? `${100 - Math.min(props.rundownLayout.startingHeight, MAX_HEIGHT)}vh`
+			: '50vh'
+
 		this.state = {
 			moving: false,
-			shelfHeight: localStorage.getItem('rundownView.shelf.shelfHeight') || '50vh',
+			shelfHeight: localStorage.getItem('rundownView.shelf.shelfHeight') ?? defaultHeight,
 			overrideHeight: undefined,
 			selectedTab: UIStateStorage.getItem(`rundownView.${props.playlist._id}`, 'shelfTab', undefined) as
 				| string
