@@ -5,11 +5,11 @@ import { RundownUtils } from '../../../lib/rundown'
 import { mousetrapHelper } from '../../../lib/mousetrapHelper'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
 import { VTContent, LiveSpeakContent } from '@sofie-automation/blueprints-integration'
-import { formatDurationAsTimecode } from '../../../../lib/lib'
 import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
 import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
+import { StyledTimecode } from '../../../lib/StyledTimecode'
 
 const _isMacLike = !!navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i)
 
@@ -130,7 +130,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 				/>
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--duration">
-				{sourceDuration ? formatDurationAsTimecode(sourceDuration) : null}
+				{sourceDuration ? <StyledTimecode time={sourceDuration} /> : null}
 			</td>
 			{/*<td className='adlib-panel__list-view__list__table__cell--data'>
 			&nbsp;

@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next'
 
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { FloatingInspector } from '../FloatingInspector'
-import { formatDurationAsTimecode } from '../../../lib/lib'
 import { NoticeLevel } from '../../lib/notifications/notifications'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
+import { StyledTimecode } from '../../lib/StyledTimecode'
 
 interface IProps {
 	mediaPreviewUrl?: string
@@ -94,7 +94,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 						muted={true}
 					/>
 					<span className="segment-timeline__mini-inspector__timecode">
-						{formatDurationAsTimecode(offsetTimePosition)}
+						<StyledTimecode time={offsetTimePosition} />
 					</span>
 					{props.noticeLevel !== null ? (
 						<div
