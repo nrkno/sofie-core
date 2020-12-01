@@ -96,7 +96,7 @@
 		"react-router-dom": "^5.2.0",
 		"react-timer-hoc": "^2.3.0",
 		"semver": "^7.3.2",
-		"soap": "^0.31.0",
+		"soap": "^0.35.0",
 		"superfly-timeline": "^8.1.2",
 		"timecode": "0.0.4",
 		"@sofie-automation/blueprints-integration": "file:../packages/blueprints-integration",
