@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { RundownTiming } from './RundownTiming'
+import { JsxEmit } from 'typescript'
 
 export type TimingFilterFunction = (durations: RundownTiming.RundownTimingContext) => any
 
@@ -10,10 +11,9 @@ export interface WithTimingOptions {
 	filter?: TimingFilterFunction | string | (string | number)[]
 }
 export type WithTiming<T> = T & RundownTiming.InjectedROTimingProps & { children?: React.ReactNode }
-type IWrappedComponent<IProps, IState> = new (props: WithTiming<IProps>, state: IState) => React.Component<
-	WithTiming<IProps>,
-	IState
->
+type IWrappedComponent<IProps, IState> =
+	| (new (props: WithTiming<IProps>, state: IState) => React.Component<WithTiming<IProps>, IState>)
+	| ((props: WithTiming<IProps>) => JSX.Element | null)
 
 /**
  * Wrap a component in a HOC that will inject a the timing context as a prop. Takes an optional options object that
