@@ -397,7 +397,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 					let sourceLayer = this.state.sourceLayers && this.state.sourceLayers[piece.sourceLayerId]
 
-					if (queue && sourceLayer && sourceLayer.isQueueable) {
+					if (queue && sourceLayer && !sourceLayer.isQueueable) {
 						console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
 						return
 					}
