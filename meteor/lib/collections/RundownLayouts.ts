@@ -169,6 +169,8 @@ export interface RundownLayoutBase {
 	icon: string
 	iconColor: string
 	showBuckets: boolean
+	openByDefualt: boolean
+	startingHeight?: number
 }
 
 export interface RundownLayout extends RundownLayoutBase {
