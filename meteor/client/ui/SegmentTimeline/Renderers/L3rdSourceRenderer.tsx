@@ -69,9 +69,11 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 				<L3rdFloatingInspector
 					content={noraContent}
 					itemElement={this.props.itemElement}
-					piece={this.props.piece}
+					piece={this.props.piece.instance.piece}
 					showMiniInspector={this.props.showMiniInspector}
 					floatingInspectorStyle={this.getFloatingInspectorStyle()}
+					pieceRenderedDuration={this.props.piece.renderedDuration}
+					pieceRenderedIn={this.props.piece.renderedInPoint}
 				/>
 			</React.Fragment>
 		)

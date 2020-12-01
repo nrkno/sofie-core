@@ -222,7 +222,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 			}
 			.adlib-panel__list-view__list__table__cell--name {
 				width: auto;
-				max-width: none;
+				max-width: 1px; // TODO: This is a hack that forces the browsers (Firefox, Chrome) to overflow the cell
 			}
 			.adlib-panel__list-view__list__table__cell--resolution {
 				width: 9%;

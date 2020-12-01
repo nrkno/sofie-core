@@ -9,11 +9,13 @@ import { PieceLifespan, NoraContent } from '@sofie-automation/blueprints-integra
 
 import { NoraFloatingInspector } from './NoraFloatingInspector'
 import { FloatingInspector } from '../FloatingInspector'
-import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { Time } from '../../../lib/lib'
+import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 
 interface IProps {
-	piece: PieceUi
+	piece: PieceInstancePiece
+	pieceRenderedDuration: number | null
+	pieceRenderedIn: number | null
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
 	content: NoraContent | undefined
@@ -29,10 +31,12 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 	showMiniInspector,
 	itemElement,
 	piece,
+	pieceRenderedIn,
+	pieceRenderedDuration,
 	typeClass,
 }) => {
 	const { t } = useTranslation()
-	const innerPiece = piece.instance.piece
+	const innerPiece = piece
 
 	let properties: Array<KeyValue> = []
 	if (noraContent && noraContent.payload && noraContent.payload.content) {
@@ -108,7 +112,7 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 							<td className="mini-inspector__row--timing"></td>
 							<td className="mini-inspector__row--timing">
 								<span className="mini-inspector__in-point">
-									{RundownUtils.formatTimeToShortTime(piece.renderedInPoint || 0)}
+									{RundownUtils.formatTimeToShortTime(pieceRenderedIn || 0)}
 								</span>
 								{innerPiece.lifespan ? (
 									(innerPiece.lifespan === PieceLifespan.WithinPart && (
@@ -129,7 +133,7 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 								) : (
 									<span className="mini-inspector__duration">
 										{RundownUtils.formatTimeToShortTime(
-											piece.renderedDuration ||
+											pieceRenderedDuration ||
 												(_.isNumber(innerPiece.enable.duration)
 													? parseFloat((innerPiece.enable.duration as any) as string)
 													: 0)
