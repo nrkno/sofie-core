@@ -1007,7 +1007,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
 
 		dynamicPart = Parts.findOne(dynamicPartId) as Part
-		expect(dynamicPart).toBeFalsy() // TODO - is this the desired behaviour
+		expect(dynamicPart).toBeTruthy() // TODO - is this the desired behaviour
+
+		// Tidy up
+		Parts.remove(dynamicPartId)
+		dynamicPart = Parts.findOne(dynamicPartId) as Part
+		expect(dynamicPart).toBeFalsy()
 	})
 	testInFiber('dataSegmentUpdate update dynamicInserted Part', () => {
 		Rundowns.remove({})
