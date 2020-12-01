@@ -1,11 +1,13 @@
 import * as React from 'react'
-import { PartId } from '../../../../lib/collections/Parts'
 import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
+import { SegmentId } from '../../../../lib/collections/Segments'
+import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
+import { processAndPrunePieceInstanceTimings } from '../../../../lib/rundown/infinites'
 
 interface ISegmentDurationProps {
-	partIds: PartId[]
+	parts: PartUi[]
 }
 
 /**
@@ -14,32 +16,27 @@ interface ISegmentDurationProps {
  * @class SegmentDuration
  * @extends React.Component<WithTiming<ISegmentDurationProps>>
  */
-export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(
-	class SegmentDuration extends React.Component<WithTiming<ISegmentDurationProps>> {
-		render() {
-			if (
-				this.props.partIds &&
-				this.props.timingDurations.partExpectedDurations &&
-				this.props.timingDurations.partPlayed
-			) {
-				let partExpectedDurations = this.props.timingDurations.partExpectedDurations
-				let partPlayed = this.props.timingDurations.partPlayed
+export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function SegmentDuration(
+	props: WithTiming<ISegmentDurationProps>
+) {
+	if (props.parts && props.timingDurations.partPlayed) {
+		const { partPlayed } = props.timingDurations
 
-				const duration = this.props.partIds.reduce((memo, partId) => {
-					const pId = unprotectString(partId)
-					return partExpectedDurations[pId] !== undefined
-						? memo + partExpectedDurations[pId] - (partPlayed[pId] || 0)
-						: memo
-				}, 0)
+		let budget = 0
+		let playedOut = 0
+		props.parts.forEach((part) => {
+			budget += part.instance.part.expectedDuration || 0
+			playedOut += partPlayed[unprotectString(part.instance.part._id)] || 0
+		})
 
-				return (
-					<span className={duration < 0 ? 'negative' : undefined}>
-						{RundownUtils.formatDiffToTimecode(duration, false, false, true, false, true, '+')}
-					</span>
-				)
-			}
+		const duration = budget - playedOut
 
-			return null
-		}
+		return (
+			<span className={duration < 0 ? 'negative' : undefined}>
+				{RundownUtils.formatDiffToTimecode(duration, false, false, true, false, true, '+')}
+			</span>
+		)
 	}
-)
+
+	return null
+})
