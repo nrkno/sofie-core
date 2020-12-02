@@ -4,7 +4,7 @@ import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { Segment, Segments } from '../../../../lib/collections/Segments'
+import { Segment, Segments, SegmentUnsyncedReason } from '../../../../lib/collections/Segments'
 import { Part, Parts, PartId } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { updatePartRanks, ServerRundownAPI } from '../../rundown'
@@ -18,6 +18,7 @@ import { getSegmentId } from '../lib'
 import { wrapWithCacheForRundownPlaylistFromRundown, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { removeRundownPlaylistFromCache } from '../../playout/lib'
 import { MethodContext } from '../../../../lib/api/methods'
+import { Settings } from '../../../../lib/Settings'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -51,6 +52,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 			PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			env.studio
 		)
+	})
+
+	afterEach(() => {
+		Settings.allowUnsyncedSegments = false
 	})
 
 	testInFiber('dataRundownCreate', () => {
@@ -1268,5 +1273,251 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		resyncRundown()
 		expect(getRundown().unsynced).toEqual(false)
+	})
+
+	testInFiber('segment unsynced because of removing sticks, has its rank updated correctly', () => {
+		// Cleanup any rundowns / playlists
+		RundownPlaylists.find()
+			.fetch()
+			.forEach((playlist) =>
+				wrapWithCacheForRundownPlaylist(playlist, (cache) => removeRundownPlaylistFromCache(cache, playlist))
+			)
+
+		Settings.allowUnsyncedSegments = true
+		const rundownData: IngestRundown = {
+			externalId: externalId,
+			name: 'MyMockRundown',
+			type: 'mock',
+			segments: [
+				{
+					externalId: 'segment0',
+					name: 'Segment 0',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part0',
+							name: 'Part 0',
+							rank: 0,
+						},
+					],
+				},
+				{
+					externalId: 'segment1',
+					name: 'Segment 1',
+					rank: 1,
+					parts: [
+						{
+							externalId: 'part1',
+							name: 'Part 1',
+							rank: 0,
+						},
+					],
+				},
+				{
+					externalId: 'segment2',
+					name: 'Segment 2',
+					rank: 2,
+					parts: [
+						{
+							externalId: 'part2',
+							name: 'Part 2',
+							rank: 0,
+						},
+					],
+				},
+				{
+					externalId: 'segment3',
+					name: 'Segment 3',
+					rank: 3,
+					parts: [
+						{
+							externalId: 'part3',
+							name: 'Part 3',
+							rank: 0,
+						},
+					],
+				},
+			],
+		}
+
+		// Preparation: set up rundown
+		expect(Rundowns.findOne()).toBeFalsy()
+		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device2._id, device2.token, rundownData)
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toMatchObject({
+			externalId: rundownData.externalId,
+		})
+		const playlist = rundown.getRundownPlaylist()
+		expect(playlist).toBeTruthy()
+
+		const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
+		const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
+
+		ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, playlist._id, true)
+
+		let segments = getRundown().getSegments()
+		let parts = getRundown().getParts()
+
+		expect(segments).toHaveLength(4)
+		expect(parts).toHaveLength(4)
+
+		ServerPlayoutAPI.setNextPart(DEFAULT_CONTEXT, playlist._id, parts[3]._id)
+
+		ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlist._id)
+
+		RundownInput.dataSegmentDelete(
+			DEFAULT_CONTEXT,
+			device2._id,
+			device2.token,
+			rundownData.externalId,
+			segments[2].externalId
+		)
+		RundownInput.dataSegmentDelete(
+			DEFAULT_CONTEXT,
+			device2._id,
+			device2.token,
+			rundownData.externalId,
+			segments[3].externalId
+		)
+
+		segments = getRundown().getSegments()
+		expect(segments).toHaveLength(3)
+		expect(segments[2].unsynced).toEqual(SegmentUnsyncedReason.REMOVED)
+		expect(getRundown().hasUnsyncedSegment).toEqual(true)
+
+		RundownInput.dataSegmentCreate(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId, {
+			externalId: 'segment4',
+			name: 'Segment 4',
+			rank: 2,
+			parts: [
+				{
+					externalId: 'part4',
+					name: 'Part 4',
+					rank: 0,
+				},
+			],
+		})
+		RundownInput.dataSegmentCreate(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId, {
+			externalId: 'segment5',
+			name: 'Segment 5',
+			rank: 3,
+			parts: [
+				{
+					externalId: 'part5',
+					name: 'Part 5',
+					rank: 0,
+				},
+			],
+		})
+
+		segments = getRundown().getSegments()
+		expect(segments).toHaveLength(5)
+		const unsyncedSegmentId = 'segment3'
+		let unsyncedSegment = segments.find((s) => s.externalId === unsyncedSegmentId)
+		expect(unsyncedSegment).toBeDefined()
+		expect(unsyncedSegment!._rank).toBeGreaterThan(1)
+		expect(unsyncedSegment!._rank).toBeLessThan(2)
+
+		RundownInput.dataSegmentUpdate(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId, {
+			externalId: 'segment1',
+			name: 'Segment 1',
+			rank: 2.5,
+			parts: [
+				{
+					externalId: 'part1',
+					name: 'Part 1',
+					rank: 0,
+				},
+			],
+		})
+
+		segments = getRundown().getSegments()
+		expect(segments).toHaveLength(5)
+		unsyncedSegment = segments.find((s) => s.externalId === unsyncedSegmentId)
+		expect(unsyncedSegment).toBeDefined()
+		expect(unsyncedSegment!._rank).toBeGreaterThan(0)
+		expect(unsyncedSegment!._rank).toBeLessThan(1)
+
+		RundownInput.dataSegmentCreate(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId, {
+			externalId: 'segment6',
+			name: 'Segment 6',
+			rank: 0.5,
+			parts: [
+				{
+					externalId: 'part6',
+					name: 'Part 6',
+					rank: 0,
+				},
+			],
+		})
+
+		segments = getRundown().getSegments()
+		expect(segments).toHaveLength(6)
+		unsyncedSegment = segments.find((s) => s.externalId === unsyncedSegmentId)
+		expect(unsyncedSegment).toBeDefined()
+		expect(unsyncedSegment!._rank).toBeGreaterThan(0)
+		expect(unsyncedSegment!._rank).toBeLessThan(1)
+
+		RundownInput.dataSegmentDelete(
+			DEFAULT_CONTEXT,
+			device2._id,
+			device2.token,
+			rundownData.externalId,
+			segments[0].externalId
+		)
+		RundownInput.dataSegmentDelete(
+			DEFAULT_CONTEXT,
+			device2._id,
+			device2.token,
+			rundownData.externalId,
+			segments[1].externalId
+		)
+		RundownInput.dataSegmentDelete(
+			DEFAULT_CONTEXT,
+			device2._id,
+			device2.token,
+			rundownData.externalId,
+			segments[2].externalId
+		)
+		RundownInput.dataSegmentDelete(
+			DEFAULT_CONTEXT,
+			device2._id,
+			device2.token,
+			rundownData.externalId,
+			segments[3].externalId
+		)
+		RundownInput.dataSegmentDelete(
+			DEFAULT_CONTEXT,
+			device2._id,
+			device2.token,
+			rundownData.externalId,
+			segments[4].externalId
+		)
+		RundownInput.dataSegmentDelete(
+			DEFAULT_CONTEXT,
+			device2._id,
+			device2.token,
+			rundownData.externalId,
+			segments[5].externalId
+		)
+
+		RundownInput.dataSegmentCreate(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId, {
+			externalId: 'segment7',
+			name: 'Segment 7',
+			rank: 0,
+			parts: [
+				{
+					externalId: 'part7',
+					name: 'Part 7',
+					rank: 0,
+				},
+			],
+		})
+
+		segments = getRundown().getSegments()
+		expect(segments).toHaveLength(2)
+		unsyncedSegment = segments.find((s) => s.externalId === unsyncedSegmentId)
+		expect(unsyncedSegment).toBeDefined()
+		expect(unsyncedSegment!._rank).toEqual(Number.MIN_SAFE_INTEGER)
 	})
 })

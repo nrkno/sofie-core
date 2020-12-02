@@ -7,6 +7,7 @@ import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstanc
 import { SegmentId } from '../../lib/collections/Segments'
 import { isProtectedString } from '../../lib/lib'
 import { RundownViewEvents, IGoToPartEvent, IGoToPartInstanceEvent } from '../ui/RundownView'
+import { Settings } from '../../lib/Settings'
 
 let focusInterval: NodeJS.Timer | undefined
 let _dontClearInterval: boolean = false
@@ -110,17 +111,57 @@ let currentScrollingElement: HTMLElement | undefined
 export function scrollToSegment(
 	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
 	forceScroll?: boolean,
-	noAnimation?: boolean,
-	secondStage?: boolean
+	noAnimation?: boolean
 ): Promise<boolean> {
-	let elementToScrollTo: HTMLElement | null = isProtectedString(elementToScrollToOrSegmentId)
-		? document.querySelector('#' + SEGMENT_TIMELINE_ELEMENT_ID + elementToScrollToOrSegmentId)
-		: elementToScrollToOrSegmentId
+	const getElementToScrollTo = (showHistory: boolean): HTMLElement | null => {
+		if (isProtectedString(elementToScrollToOrSegmentId)) {
+			let targetElement = document.querySelector<HTMLElement>(
+				`#${SEGMENT_TIMELINE_ELEMENT_ID}${elementToScrollToOrSegmentId}`
+			)
 
-	if (!elementToScrollTo) {
+			if (showHistory && Settings.followOnAirSegmentsHistory && targetElement) {
+				let i = Settings.followOnAirSegmentsHistory
+				while (i > 0) {
+					// Segment timeline is wrapped by <div><div>...</div></div> when rendered
+					const next = targetElement?.parentElement?.parentElement?.previousElementSibling?.children
+						.item(0)
+						?.children.item(0)
+					if (next) {
+						targetElement = next
+						i--
+					} else {
+						i = 0
+					}
+				}
+			}
+
+			return targetElement
+		}
+
+		return elementToScrollToOrSegmentId
+	}
+
+	let elementToScrollTo: HTMLElement | null = getElementToScrollTo(false)
+	let historyTarget: HTMLElement | null = getElementToScrollTo(true)
+
+	// historyTarget will be === to elementToScrollTo if history is not used / not found
+	if (!elementToScrollTo || !historyTarget) {
 		return Promise.reject('Could not find segment element')
 	}
 
+	return innerScrollToSegment(
+		historyTarget,
+		forceScroll || !regionInViewport(historyTarget, elementToScrollTo),
+		noAnimation
+	)
+}
+
+function innerScrollToSegment(
+	elementToScrollTo: HTMLElement,
+	forceScroll?: boolean,
+	noAnimation?: boolean,
+	secondStage?: boolean
+): Promise<boolean> {
 	if (!secondStage) {
 		currentScrollingElement = elementToScrollTo
 	} else if (secondStage && elementToScrollTo !== currentScrollingElement) {
@@ -156,7 +197,7 @@ export function scrollToSegment(
 								bottom = Math.floor(bottom)
 
 								if (bottom > Math.floor(window.innerHeight) || top < headerHeight) {
-									return scrollToSegment(elementToScrollToOrSegmentId, forceScroll, true, true).then(
+									return innerScrollToSegment(elementToScrollTo, forceScroll, true, true).then(
 										resolve,
 										reject
 									)
@@ -180,6 +221,23 @@ export function scrollToSegment(
 	}
 
 	return Promise.resolve(false)
+}
+
+function regionInViewport(topElement: HTMLElement, bottomElement: HTMLElement) {
+	let { top, bottom } = getRegionPosition(topElement, bottomElement)
+
+	const headerHeight = Math.floor(getHeaderHeight())
+
+	return !(bottom > Math.floor(window.innerHeight) || top < headerHeight)
+}
+
+function getRegionPosition(topElement: HTMLElement, bottomElement: HTMLElement): { top: number; bottom: number } {
+	let top = topElement.getBoundingClientRect().top
+	let bottom = bottomElement.getBoundingClientRect().bottom
+	top = Math.floor(top)
+	bottom = Math.floor(bottom)
+
+	return { top, bottom }
 }
 
 let scrollToPositionRequest: number | undefined

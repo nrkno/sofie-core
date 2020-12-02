@@ -3,7 +3,7 @@ import { NoteType } from './notes'
 import * as _ from 'underscore'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from './userActions'
-import { SegmentId } from '../collections/Segments'
+import { SegmentId, SegmentUnsyncedReason } from '../collections/Segments'
 
 export interface RundownPlaylistValidateBlueprintConfigResult {
 	studio: string[]
@@ -26,7 +26,7 @@ export interface NewRundownAPI {
 	resyncRundown(rundownId: RundownId): Promise<TriggerReloadDataResponse>
 	resyncSegment(rundownId: RundownId, segmentId: SegmentId): Promise<TriggerReloadDataResponse>
 	unsyncRundown(rundownId: RundownId): Promise<void>
-	unsyncSegment(rundownId: RundownId, segmentId: SegmentId): Promise<void>
+	unsyncSegment(rundownId: RundownId, segmentId: SegmentId, reason: SegmentUnsyncedReason): Promise<void>
 }
 
 export enum RundownAPIMethods {
