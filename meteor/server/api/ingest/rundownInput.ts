@@ -1168,24 +1168,25 @@ function updateSegmentFromIngestData(
 			let newRank = Number.MIN_SAFE_INTEGER
 			let previousSegment = allSegmentsByRank[removedInd + 1]
 			let nextSegment = allSegmentsByRank[removedInd - 1]
+			let previousPreviousSegment = allSegmentsByRank[removedInd + 2]
 			if (previousSegment) {
 				newRank = previousSegment._rank + eps
 				if (previousSegment._id === segmentId) {
 					if (previousSegment._rank > newSegment._rank) {
 						// moved previous segment up: follow it
 						newRank = newSegment._rank + eps
-					} else if (previousSegment._rank < newSegment._rank && allSegmentsByRank[removedInd + 2]) {
+					} else if (previousSegment._rank < newSegment._rank && previousPreviousSegment) {
 						// moved previous segment down: stay behind more previous
-						newRank = allSegmentsByRank[removedInd + 2]._rank + eps
+						newRank = previousPreviousSegment._rank + eps
 					}
 				} else if (nextSegment && nextSegment._id === segmentId && nextSegment._rank > newSegment._rank) {
 					// next segment was moved up
-					if (allSegmentsByRank[removedInd + 2]) {
-						if (allSegmentsByRank[removedInd + 2]._rank < newSegment._rank) {
+					if (previousPreviousSegment) {
+						if (previousPreviousSegment._rank < newSegment._rank) {
 							// swapped segments directly before and after
 							// will always result in both going below the unsynced
 							// will also affect multiple segments moved directly above the previous
-							newRank = allSegmentsByRank[removedInd + 2]._rank + eps
+							newRank = previousPreviousSegment._rank + eps
 						}
 					} else {
 						newRank = Number.MIN_SAFE_INTEGER
