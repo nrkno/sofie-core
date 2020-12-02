@@ -85,6 +85,8 @@ export interface DBRundown
 	unsynced?: boolean
 	/** Timestamp of when rundown was unsynced */
 	unsyncedTime?: Time
+	/** Does the rundown contain an unsynced segment? */
+	hasUnsyncedSegment?: boolean
 
 	/** Last sent storyStatus to ingestDevice (MOS) */
 	notifiedCurrentPlayingPartExternalId?: string
@@ -130,6 +132,7 @@ export class Rundown implements DBRundown {
 	public status?: string
 	public airStatus?: string
 	public unsynced?: boolean
+	public hasUnsyncedSegment?: boolean
 	public unsyncedTime?: Time
 	public startedPlayback?: Time
 	public notifiedCurrentPlayingPartExternalId?: string

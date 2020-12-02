@@ -1405,6 +1405,32 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className="mod mas"></EditAttribute>
 						</label>
 					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Open shelf by default')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'openByDefualt'}
+								obj={item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Default shelf height')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`startingHeight`}
+								obj={item}
+								type="int"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
 					<h4 className="mod mhs">{isRundownLayout ? t('Tabs') : isDashboardLayout ? t('Panels') : null}</h4>
 					{item.filters.length === 0 ? (
 						<p className="text-s dimmed mhs">{t('There are no filters set up yet')}</p>
