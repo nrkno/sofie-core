@@ -34,6 +34,9 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 		switch (props.adLibListItem.lifespan) {
 			case PieceLifespan.WithinPart:
 				sourceDuration = t('Until next take') as string
+				if (itemAsPieceUi.expectedDuration) {
+					sourceDuration = itemAsPieceUi.expectedDuration!
+				}
 				break
 			case PieceLifespan.OutOnSegmentChange:
 				sourceDuration = t('Until next segment') as string
@@ -46,11 +49,6 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 				break
 			case PieceLifespan.OutOnRundownEnd:
 				sourceDuration = t('Until end of rundown') as string
-				break
-			case PieceLifespan.WithinPart:
-				if (itemAsPieceUi.expectedDuration) {
-					sourceDuration = itemAsPieceUi.expectedDuration!
-				}
 				break
 			default:
 				assertNever(props.adLibListItem.lifespan)
