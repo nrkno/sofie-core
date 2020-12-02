@@ -111,8 +111,7 @@ let currentScrollingElement: HTMLElement | undefined
 export function scrollToSegment(
 	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
 	forceScroll?: boolean,
-	noAnimation?: boolean,
-	secondStage?: boolean
+	noAnimation?: boolean
 ): Promise<boolean> {
 	const getElementToScrollTo = (showHistory: boolean): HTMLElement | null => {
 		if (isProtectedString(elementToScrollToOrSegmentId)) {
