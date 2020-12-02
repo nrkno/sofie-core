@@ -489,7 +489,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							</ErrorBoundary>
 						</ContextMenuTrigger>
 					) : null}
-					{!this.props.fullViewport || this.props.shelfDisplayOptions.buckets ? (
+					{(!this.props.fullViewport || this.props.shelfDisplayOptions.buckets) &&
+					(!this.props.rundownLayout || this.props.rundownLayout.showBuckets) ? (
 						<ErrorBoundary>
 							<RundownViewBuckets
 								buckets={this.props.buckets}
