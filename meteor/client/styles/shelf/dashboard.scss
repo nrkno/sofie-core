@@ -355,6 +355,7 @@ $dashboard-button-height: 5.625em;
 				right: 0;
 				bottom: 0;
 				padding: 3px 4px;
+				z-index: 2;
 
 				> .dashboard-panel__panel__button__label {
 					text-align: left;
@@ -369,7 +370,6 @@ $dashboard-button-height: 5.625em;
 					font-weight: 400;
 					text-shadow: -1px -1px 0px rgba(0, 0, 0, 0.5), 1px 1px 0px rgba(0, 0, 0, 0.5), 1px -1px 0px rgba(0, 0, 0, 0.5),
 						1px -1px 0px rgba(0, 0, 0, 0.5), 0.5px 0.5px 2px rgba(0, 0, 0, 1);
-					z-index: 2;
 				}
 			}
 
