@@ -196,14 +196,13 @@ export interface BlueprintResultPart {
 
 export interface BlueprintSyncIngestNewData {
 	// source: BlueprintSyncIngestDataSource
+	/** The new part */
 	part: IBlueprintPartDB
 	/** A list of pieces (including infinites) that would be present in a fresh copy of this partInstance */
-	pieces: IBlueprintPieceInstance[]
-	// /** A list of pieces that start in the specified partInstance */
-	// pieces: IBlueprintPieceDB[]
-	// /** A list of inherited infinite pieces that can synced across */
-	// infinites: IBlueprintPieceInstance[]
+	pieceInstances: IBlueprintPieceInstance[]
+	/** The adlib pieces belonging to this part */
 	adLibPieces: IBlueprintAdLibPieceDB[]
+	/** The adlib actions belonging to this part */
 	actions: IBlueprintActionManifest[]
 	/** A list of adlibs that have pieceInstances in the partInstance in question */
 	referencedAdlibs: IBlueprintAdLibPieceDB[]

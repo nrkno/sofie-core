@@ -1386,7 +1386,7 @@ function syncChangesToPartInstances(
 
 					const newResultData: BlueprintSyncIngestNewData = {
 						part: unprotectObject(newPart),
-						pieces: unprotectObjectArray(proposedPieceInstances),
+						pieceInstances: unprotectObjectArray(proposedPieceInstances),
 						adLibPieces: unprotectObjectArray(adlibPieces),
 						actions: unprotectObjectArray(adlibActions),
 						referencedAdlibs: unprotectObjectArray(referencedAdlibs),
