@@ -30,6 +30,7 @@ import {
 } from '../../../../lib/lib'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { DbCacheWriteCollection } from '../../../DatabaseCache'
+import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 
 export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 	implements ISyncIngestUpdateToPartInstanceContext {
@@ -65,7 +66,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 
 	syncPieceInstance(
 		pieceInstanceId: string,
-		modifiedPiece: Omit<IBlueprintPiece, 'lifespan'>
+		modifiedPiece?: Omit<IBlueprintPiece, 'lifespan'>
 	): IBlueprintPieceInstance {
 		const proposedPieceInstance = this._proposedPieceInstances.get(protectString(pieceInstanceId))
 		if (!proposedPieceInstance) {
@@ -73,22 +74,24 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		}
 
 		// filter the submission to the allowed ones
-		const piece = postProcessPieces(
-			this,
-			[
-				{
-					...modifiedPiece,
-					// Some properties arent allowed to be changed
-					lifespan: proposedPieceInstance.piece.lifespan,
-				},
-			],
-			this.getShowStyleBase().blueprintId,
-			this.partInstance.rundownId,
-			this.partInstance.segmentId,
-			this.partInstance.part._id,
-			this.playStatus === 'current',
-			true
-		)[0]
+		const piece = modifiedPiece
+			? postProcessPieces(
+					this,
+					[
+						{
+							...modifiedPiece,
+							// Some properties arent allowed to be changed
+							lifespan: proposedPieceInstance.piece.lifespan,
+						},
+					],
+					this.getShowStyleBase().blueprintId,
+					this.partInstance.rundownId,
+					this.partInstance.segmentId,
+					this.partInstance.part._id,
+					this.playStatus === 'current',
+					true
+			  )[0]
+			: proposedPieceInstance.piece
 
 		const existingPieceInstance = this._pieceInstanceCache.findOne(proposedPieceInstance._id)
 		const newPieceInstance: PieceInstance = {
@@ -103,10 +106,6 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 	insertPieceInstance(piece0: IBlueprintPiece): IBlueprintPieceInstance {
 		const trimmedPiece: IBlueprintPiece = _.pick(piece0, IBlueprintPieceSampleKeys)
 
-		// TODO - this wont work because infinite properties...
-		// What about a method called 'syncInfinitePieceInstance(id: PieceInstanceId)'? Infinites should then be put back into their own array, as they have different update mechanics. (except infinites starting in this part?)
-		// Perhaps it will want a second parameter of the piece properties? so that they can be mutated? but changes to the infinitemode should be rejected
-
 		const piece = postProcessPieces(
 			this,
 			[trimmedPiece],
@@ -118,6 +117,9 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 			true
 		)[0]
 		const newPieceInstance = wrapPieceToInstance(piece, this.partInstance._id)
+
+		// Ensure the infinite-ness is setup correctly. We assume any piece inserted starts in the current part
+		setupPieceInstanceInfiniteProperties(newPieceInstance)
 
 		this._pieceInstanceCache.insert(newPieceInstance)
 
@@ -137,10 +139,6 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		if (pieceInstance.partInstanceId !== this.partInstance._id) {
 			throw new Error('PieceInstance is not in the right partInstance')
 		}
-		// TODO - is this safe?
-		// if (pieceInstance.infinite?.fromPreviousPart) {
-		// 	throw new Error('Cannot update an infinite piece that is continued from a previous part')
-		// }
 
 		if (updatedPiece.content && updatedPiece.content.timelineObjects) {
 			updatedPiece.content.timelineObjects = postProcessTimelineObjects(

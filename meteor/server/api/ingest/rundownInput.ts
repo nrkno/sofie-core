@@ -1356,7 +1356,7 @@ function syncChangesToPartInstances(
 
 			for (const { existingPartInstance, previousPartInstance, playStatus } of instances) {
 				const pieceInstancesInPart = cache.PieceInstances.findFetch({
-					partInstanceId: existingPartInstance?._id,
+					partInstanceId: existingPartInstance._id,
 				})
 
 				const partId = existingPartInstance.part._id
