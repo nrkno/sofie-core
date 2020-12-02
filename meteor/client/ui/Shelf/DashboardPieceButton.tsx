@@ -210,17 +210,21 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					this.props.onToggleAdLib(this.props.adLibListItem, e.shiftKey || !!this.props.queueAllAdlibs, e)
 				}
 				data-obj-id={this.props.adLibListItem._id}>
-				{!this.props.layer
-					? null
-					: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
-					? // VT should have thumbnails in "Button" layout.
-					  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
-					: this.props.layer.type === SourceLayerType.SPLITS
-					? this.renderSplits(isList && this.props.showThumbnailsInList)
-					: null}
-				<span className="dashboard-panel__panel__button__label">
-					{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.adLibListItem.name}
-				</span>
+				<div className="dashboard-panel__panel__button__content">
+					{!this.props.layer
+						? null
+						: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
+						? // VT should have thumbnails in "Button" layout.
+						  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
+						: this.props.layer.type === SourceLayerType.SPLITS
+						? this.renderSplits(isList && this.props.showThumbnailsInList)
+						: null}
+					<div className="dashboard-panel__panel__button__label-container">
+						<span className="dashboard-panel__panel__button__label">
+							{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.adLibListItem.name}
+						</span>
+					</div>
+				</div>
 			</div>
 		)
 	}
