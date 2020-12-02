@@ -195,6 +195,11 @@ export function takeNextPartInnerSync(
 			isTaken: true,
 			'timings.take': now,
 			'timings.playOffset': timeOffset || 0,
+			// set transition properties to what will be used to generate timeline later:
+			'transProps.allowed': currentPartInstance ? !currentPartInstance.part.disableOutTransition : false,
+			'transProps.preroll': partInstance.part.prerollDuration,
+			'transProps.transitionPreroll': partInstance.part.transitionPrerollDuration,
+			'transProps.transitionKeepalive': partInstance.part.transitionKeepaliveDuration,
 		},
 		$unset: {} as { string: 0 | 1 },
 	}

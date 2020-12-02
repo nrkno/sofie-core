@@ -45,7 +45,7 @@ import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache } from './lib'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
-import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId, TransformTransitionProps } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, CacheForStudioBase } from '../../DatabaseCaches'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -490,6 +490,10 @@ function buildTimelineObjsForRundown(
 
 				const groupClasses: string[] = ['previous_part']
 				let prevObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = [previousPartGroup]
+				let previousTransProps: TransformTransitionProps | undefined = undefined
+				if (partInstancesInfo.previous.partInstance.transProps) {
+					previousTransProps = partInstancesInfo.previous.partInstance.transProps
+				}
 				prevObjs = prevObjs.concat(
 					transformPartIntoTimeline(
 						activePlaylist._id,
@@ -499,7 +503,7 @@ function buildTimelineObjsForRundown(
 						previousPartGroup,
 						partInstancesInfo.previous.nowInPart,
 						false,
-						undefined,
+						previousTransProps,
 						activePlaylist.holdState
 					)
 				)
@@ -777,13 +781,6 @@ function transformBaselineItemsIntoTimeline(
 		})
 	})
 	return timelineObjs
-}
-
-interface TransformTransitionProps {
-	allowed: boolean
-	preroll?: number
-	transitionPreroll?: number | null
-	transitionKeepalive?: number | null
 }
 
 export function hasPieceInstanceDefinitelyEnded(
