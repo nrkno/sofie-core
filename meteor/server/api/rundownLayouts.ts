@@ -26,7 +26,8 @@ export function createRundownLayout(
 	userId?: UserId | undefined,
 	exposeAsStandalone?: boolean,
 	exposeAsShelf?: boolean,
-	showBuckets?: boolean
+	showBuckets?: boolean,
+	openByDefualt?: boolean
 ) {
 	const id: RundownLayoutId = getRandomId()
 	RundownLayouts.insert(
@@ -43,6 +44,7 @@ export function createRundownLayout(
 			icon: '',
 			iconColor: '#ffffff',
 			showBuckets: showBuckets === undefined ? true : showBuckets,
+			openByDefualt: openByDefualt ?? false,
 		})
 	)
 	return id
