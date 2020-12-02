@@ -1555,6 +1555,7 @@ function generateSegmentContents(
 		externalId: ingestSegment.externalId,
 		_rank: ingestSegment.rank,
 		notes: segmentNotes,
+		externalModified: getCurrentTime(),
 	})
 
 	const parts: DBPart[] = []
