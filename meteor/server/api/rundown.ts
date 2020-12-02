@@ -64,6 +64,7 @@ import { rundownContentAllowWrite } from '../security/rundown'
 import { modifyPlaylistExternalId } from './ingest/lib'
 import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
 import { profiler } from './profiler'
+import { IngestDataCache } from '../../lib/collections/IngestDataCache'
 
 export function selectShowStyleVariant(
 	studio: Studio,
