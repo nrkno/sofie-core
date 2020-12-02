@@ -57,7 +57,7 @@ import {
 	RundownBaselineAdLibItem,
 	RundownBaselineAdLibPieces,
 } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
+import { DBSegment, Segments, SegmentId, SegmentUnsyncedReason } from '../../../lib/collections/Segments'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import {
 	saveRundownCache,
@@ -778,7 +778,11 @@ function updateRundownFromIngestData(
 				) {
 					approvedSegmentChanges.push(segmentChange)
 				} else {
-					ServerRundownAPI.unsyncSegmentInner(cache, rundownId, segmentChange.segmentId)
+					const reason =
+						segmentChange.segment.removed.length > 0
+							? SegmentUnsyncedReason.REMOVED
+							: SegmentUnsyncedReason.CHANGED
+					ServerRundownAPI.unsyncSegmentInner(cache, rundownId, segmentChange.segmentId, reason)
 				}
 			})
 
@@ -1025,7 +1029,7 @@ export function handleRemovedSegment(
 		if (canBeUpdated(rundown, segment)) {
 			if (!isUpdateAllowed(cache, playlist, rundown, {}, { removed: [segment] }, {})) {
 				if (Settings.allowUnsyncedSegments) {
-					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
+					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId, SegmentUnsyncedReason.REMOVED)
 				} else {
 					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 				}
@@ -1035,6 +1039,8 @@ export function handleRemovedSegment(
 						404,
 						`handleRemovedSegment: removeSegments: Segment ${segmentExternalId} not found`
 					)
+				} else {
+					UpdateNext.ensureNextPartIsValid(cache, playlist)
 				}
 			}
 		}
@@ -1064,9 +1070,15 @@ export function handleUpdatedSegment(
 			saveSegmentCache(rundown._id, segmentId, makeNewIngestSegment(ingestSegment))
 		})
 
-		const updatedSegmentId = updateSegmentFromIngestData(cache, studio, playlist, rundown, ingestSegment)
+		const { segmentId: updatedSegmentId, newPartIds } = updateSegmentFromIngestData(
+			cache,
+			studio,
+			playlist,
+			rundown,
+			ingestSegment
+		)
 		if (updatedSegmentId) {
-			afterIngestChangedData(cache, rundown, [updatedSegmentId])
+			afterIngestChangedData(cache, rundown, [updatedSegmentId], false, newPartIds)
 		}
 
 		waitForPromise(cache.saveAllToDatabase())
@@ -1077,17 +1089,22 @@ export function updateSegmentsFromIngestData(
 	studio: Studio,
 	playlist: RundownPlaylist,
 	rundown: Rundown,
-	ingestSegments: IngestSegment[]
+	ingestSegments: IngestSegment[],
+	removedPreviousParts?: boolean
 ) {
 	const changedSegmentIds: SegmentId[] = []
+	const allNewPartIds: string[] = []
 	for (let ingestSegment of ingestSegments) {
-		const segmentId = updateSegmentFromIngestData(cache, studio, playlist, rundown, ingestSegment)
+		const { segmentId, newPartIds } = updateSegmentFromIngestData(cache, studio, playlist, rundown, ingestSegment)
 		if (segmentId !== null) {
 			changedSegmentIds.push(segmentId)
 		}
+		if (newPartIds) {
+			allNewPartIds.push(...newPartIds)
+		}
 	}
 	if (changedSegmentIds.length > 0) {
-		afterIngestChangedData(cache, rundown, changedSegmentIds)
+		afterIngestChangedData(cache, rundown, changedSegmentIds, removedPreviousParts, allNewPartIds)
 	}
 }
 /**
@@ -1104,7 +1121,7 @@ function updateSegmentFromIngestData(
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	ingestSegment: IngestSegment
-): SegmentId | null {
+): { segmentId: SegmentId | null; newPartIds: string[] } {
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 	const { blueprint, blueprintId } = loadShowStyleBlueprint(
 		waitForPromise(cache.activationCache.getShowStyleBase(rundown))
@@ -1135,6 +1152,53 @@ function updateSegmentFromIngestData(
 		existingParts,
 		res
 	)
+
+	if (Settings.allowUnsyncedSegments && rundown.hasUnsyncedSegment) {
+		const removedSegment = cache.Segments.findOne((s) => s.unsynced === SegmentUnsyncedReason.REMOVED)
+		if (removedSegment) {
+			const allSegmentsByRank = cache.Segments.findFetch(
+				{
+					rundownId: rundown._id,
+				},
+				{
+					sort: {
+						_rank: -1,
+					},
+				}
+			)
+			const removedInd = allSegmentsByRank.findIndex((s) => s.unsynced === SegmentUnsyncedReason.REMOVED)
+			let eps = 0.0001
+			let newRank = Number.MIN_SAFE_INTEGER
+			let previousSegment = allSegmentsByRank[removedInd + 1]
+			let nextSegment = allSegmentsByRank[removedInd - 1]
+			let previousPreviousSegment = allSegmentsByRank[removedInd + 2]
+			if (previousSegment) {
+				newRank = previousSegment._rank + eps
+				if (previousSegment._id === segmentId) {
+					if (previousSegment._rank > newSegment._rank) {
+						// moved previous segment up: follow it
+						newRank = newSegment._rank + eps
+					} else if (previousSegment._rank < newSegment._rank && previousPreviousSegment) {
+						// moved previous segment down: stay behind more previous
+						newRank = previousPreviousSegment._rank + eps
+					}
+				} else if (nextSegment && nextSegment._id === segmentId && nextSegment._rank > newSegment._rank) {
+					// next segment was moved up
+					if (previousPreviousSegment) {
+						if (previousPreviousSegment._rank < newSegment._rank) {
+							// swapped segments directly before and after
+							// will always result in both going below the unsynced
+							// will also affect multiple segments moved directly above the previous
+							newRank = previousPreviousSegment._rank + eps
+						}
+					} else {
+						newRank = Number.MIN_SAFE_INTEGER
+					}
+				}
+			}
+			cache.Segments.update(allSegmentsByRank[removedInd]._id, { $set: { _rank: newRank } })
+		}
+	}
 
 	const prepareSaveParts = prepareSaveIntoCache<Part, DBPart>(
 		cache.Parts,
@@ -1183,11 +1247,11 @@ function updateSegmentFromIngestData(
 	// determine if update is allowed here
 	if (!isUpdateAllowed(cache, playlist, rundown, {}, { changed: [newSegment] }, prepareSaveParts)) {
 		if (Settings.allowUnsyncedSegments) {
-			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
+			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId, SegmentUnsyncedReason.CHANGED)
 		} else {
 			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 		}
-		return null
+		return { segmentId: null, newPartIds: [] }
 	}
 
 	// Update segment info:
@@ -1254,9 +1318,17 @@ function updateSegmentFromIngestData(
 		})
 	)
 
-	return anythingChanged(changes) ? segmentId : null
+	const insertedPartsIds = prepareSaveParts.inserted.map((part) => part.externalId)
+
+	return { segmentId: anythingChanged(changes) ? segmentId : null, newPartIds: insertedPartsIds }
 }
-function afterIngestChangedData(cache: CacheForRundownPlaylist, rundown: Rundown, changedSegmentIds: SegmentId[]) {
+function afterIngestChangedData(
+	cache: CacheForRundownPlaylist,
+	rundown: Rundown,
+	changedSegmentIds: SegmentId[],
+	removedPreviousParts?: boolean,
+	newPartIds?: string[]
+) {
 	const playlist = cache.RundownPlaylists.findOne({ _id: rundown.playlistId })
 	if (!playlist) {
 		throw new Meteor.Error(404, `Orphaned rundown ${rundown._id}`)
@@ -1267,7 +1339,11 @@ function afterIngestChangedData(cache: CacheForRundownPlaylist, rundown: Rundown
 	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
 	updatePartRanks(cache, playlist, changedSegmentIds)
 
-	UpdateNext.ensureNextPartIsValid(cache, playlist)
+	if (newPartIds?.length) {
+		UpdateNext.afterInsertParts(cache, playlist, newPartIds, !!removedPreviousParts)
+	} else {
+		UpdateNext.ensureNextPartIsValid(cache, playlist)
+	}
 
 	triggerUpdateTimelineAfterIngestData(rundown.playlistId)
 }
@@ -1301,7 +1377,7 @@ export function handleRemovedPart(
 
 			if (!isUpdateAllowed(cache, playlist, rundown, {}, {}, { removed: [part] })) {
 				if (Settings.allowUnsyncedSegments) {
-					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
+					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId, SegmentUnsyncedReason.CHANGED)
 				} else {
 					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 				}
@@ -1319,7 +1395,13 @@ export function handleRemovedPart(
 				cache.defer(() => {
 					saveSegmentCache(rundown._id, segmentId, ingestSegment)
 				})
-				const updatedSegmentId = updateSegmentFromIngestData(cache, studio, playlist, rundown, ingestSegment)
+				const { segmentId: updatedSegmentId } = updateSegmentFromIngestData(
+					cache,
+					studio,
+					playlist,
+					rundown,
+					ingestSegment
+				)
 				if (updatedSegmentId) {
 					afterIngestChangedData(cache, rundown, [updatedSegmentId])
 				}
@@ -1373,7 +1455,7 @@ export function handleUpdatedPartInner(
 
 	if (part && !isUpdateAllowed(cache, playlist, rundown, {}, {}, { changed: [part] })) {
 		if (Settings.allowUnsyncedSegments) {
-			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
+			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId, SegmentUnsyncedReason.CHANGED)
 		} else {
 			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 		}
@@ -1392,7 +1474,13 @@ export function handleUpdatedPartInner(
 		cache.defer(() => {
 			saveSegmentCache(rundown._id, segmentId, ingestSegment)
 		})
-		const updatedSegmentId = updateSegmentFromIngestData(cache, studio, playlist, rundown, ingestSegment)
+		const { segmentId: updatedSegmentId } = updateSegmentFromIngestData(
+			cache,
+			studio,
+			playlist,
+			rundown,
+			ingestSegment
+		)
 		if (updatedSegmentId) {
 			afterIngestChangedData(cache, rundown, [updatedSegmentId])
 		}

@@ -11,6 +11,12 @@ import { createMongoCollection } from './lib'
 /** A string, identifying a Segment */
 export type SegmentId = ProtectedString<'SegmentId'>
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
+
+export enum SegmentUnsyncedReason {
+	REMOVED = 1,
+	CHANGED,
+}
+
 export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB, '_id'> {
 	_id: SegmentId
 	/** Position inside rundown */
@@ -26,7 +32,7 @@ export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB
 	expanded?: boolean
 
 	/** Is the segment in an unsynced state? */
-	unsynced?: boolean
+	unsynced?: SegmentUnsyncedReason
 	/** Timestamp of when segment was unsynced */
 	unsyncedTime?: Time
 
@@ -45,7 +51,7 @@ export class Segment implements DBSegment {
 	public expanded?: boolean
 	public notes?: Array<SegmentNote>
 	public isHidden?: boolean
-	public unsynced?: boolean
+	public unsynced?: SegmentUnsyncedReason
 	public unsyncedTime?: Time
 	public identifier?: string
 

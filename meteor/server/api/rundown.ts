@@ -5,7 +5,7 @@ import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/R
 import { Part, DBPart } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
 import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
-import { Segments, SegmentId } from '../../lib/collections/Segments'
+import { Segments, SegmentId, SegmentUnsyncedReason } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
 	getCurrentTime,
@@ -620,8 +620,8 @@ export namespace ServerRundownAPI {
 		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
 
 		Segments.update(segment._id, {
-			$set: {
-				unsynced: false,
+			$unset: {
+				unsynced: 1,
 			},
 		})
 
@@ -629,12 +629,24 @@ export namespace ServerRundownAPI {
 
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${segment.rundownId}" not found!`)
 
+		if (Segments.find({ rundownId: segment.rundownId, unsynced: { $exists: true } }).count() <= 0) {
+			Rundowns.update(segment.rundownId, {
+				$unset: {
+					hasUnsyncedSegment: 1,
+				},
+			})
+		}
 		return IngestActions.reloadSegment(rundown, segment)
 	}
-	export function unsyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId): void {
+	export function unsyncSegment(
+		context: MethodContext,
+		rundownId: RundownId,
+		segmentId: SegmentId,
+		reason: SegmentUnsyncedReason
+	): void {
 		rundownContentAllowWrite(context.userId, { rundownId })
 		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
-		const result = unsyncSegmentInner(cache, rundownId, segmentId)
+		const result = unsyncSegmentInner(cache, rundownId, segmentId, reason)
 		waitForPromise(cache.saveAllToDatabase())
 		return result
 	}
@@ -656,10 +668,11 @@ export namespace ServerRundownAPI {
 	export function unsyncSegmentInner(
 		cache: CacheForRundownPlaylist,
 		rundownId: RundownId,
-		segmentId: SegmentId
+		segmentId: SegmentId,
+		reason: SegmentUnsyncedReason
 	): void {
 		check(segmentId, String)
-		logger.info('unsyncSegment' + segmentId)
+		logger.info(`unsyncSegment ${segmentId} reason: ${reason}`)
 		let segment = cache.Segments.findOne({
 			rundownId: rundownId,
 			_id: segmentId,
@@ -674,8 +687,13 @@ export namespace ServerRundownAPI {
 		if (!segment.unsynced) {
 			cache.Segments.update(segmentId, {
 				$set: {
-					unsynced: true,
+					unsynced: reason,
 					unsyncedTime: getCurrentTime(),
+				},
+			})
+			cache.Rundowns.update(rundownId, {
+				$set: {
+					hasUnsyncedSegment: true,
 				},
 			})
 		} else {
@@ -834,8 +852,8 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	unsyncRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.unsyncRundown(this, rundownId))
 	}
-	unsyncSegment(rundownId: RundownId, segmentId: SegmentId) {
-		return makePromise(() => ServerRundownAPI.unsyncSegment(this, rundownId, segmentId))
+	unsyncSegment(rundownId: RundownId, segmentId: SegmentId, reason: SegmentUnsyncedReason) {
+		return makePromise(() => ServerRundownAPI.unsyncSegment(this, rundownId, segmentId, reason))
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)
