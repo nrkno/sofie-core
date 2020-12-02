@@ -311,7 +311,7 @@ export function unsyncRundown(context: MethodContext, rundownId: RundownId) {
 	return ClientAPI.responseSuccess(ServerRundownAPI.unsyncRundown(context, rundownId))
 }
 export function disableNextPiece(context: MethodContext, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.disableNextPiece(context, rundownPlaylistId, undo))
+	return ServerPlayoutAPI.disableNextPiece(context, rundownPlaylistId, undo)
 }
 export function pieceTakeNow(
 	context: MethodContext,
