@@ -125,7 +125,7 @@ export const ClockComponent = withTranslation()(
 							fields: {
 								_id: 1,
 							},
-						})
+						}) as Pick<RundownPlaylist, '_id' | 'getRundownIDs'> | undefined
 						if (playlist) {
 							this.subscribe(PubSub.rundowns, {
 								playlistId: playlist._id,
@@ -153,7 +153,16 @@ export const ClockComponent = withTranslation()(
 											nextPartInstanceId: 1,
 											previousPartInstanceId: 1,
 										},
-									})
+									}) as
+										| Pick<
+												RundownPlaylist,
+												| '_id'
+												| 'currentPartInstanceId'
+												| 'nextPartInstanceId'
+												| 'previousPartInstanceId'
+												| 'getSelectedPartInstances'
+										  >
+										| undefined
 									const { nextPartInstance, currentPartInstance } = playlist!.getSelectedPartInstances()
 									this.subscribe(PubSub.pieceInstances, {
 										partInstanceId: {

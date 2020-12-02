@@ -1,6 +1,6 @@
 import React from 'react'
 import { INoteBase } from '../../../lib/api/notes'
-import { CriticalIconSmall, WarningIconSmall } from '../../lib/notificationIcons'
+import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 
 interface IRundownListItemProblemsProps {
 	warnings: INoteBase[]

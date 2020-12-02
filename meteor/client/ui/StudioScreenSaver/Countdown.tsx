@@ -38,13 +38,33 @@ export const Countdown = translateWithTracker<
 						: seconds > 0
 						? t('in {{seconds}} s', { days, hours, minutes, seconds })
 						: days < 0
-						? t('{{days}} days, {{hours}} h {{minutes}} min {{seconds}} s ago', { days, hours, minutes, seconds })
+						? t('{{days}} days, {{hours}} h {{minutes}} min {{seconds}} s ago', {
+								days: days * -1,
+								hours: hours * -1,
+								minutes: minutes * -1,
+								seconds: seconds * -1,
+						  })
 						: hours < 0
-						? t('{{hours}} h {{minutes}} min {{seconds}} s ago', { days, hours, minutes, seconds })
+						? t('{{hours}} h {{minutes}} min {{seconds}} s ago', {
+								days: days * -1,
+								hours: hours * -1,
+								minutes: minutes * -1,
+								seconds: seconds * -1,
+						  })
 						: minutes < 0
-						? t('{{minutes}} min {{seconds}} s ago', { days, hours, minutes, seconds })
+						? t('{{minutes}} min {{seconds}} s ago', {
+								days: days * -1,
+								hours: hours * -1,
+								minutes: minutes * -1,
+								seconds: seconds * -1,
+						  })
 						: seconds <= 0
-						? t('{{seconds}} s ago', { days, hours, minutes, seconds })
+						? t('{{seconds}} s ago', {
+								days: days * -1,
+								hours: hours * -1,
+								minutes: minutes * -1,
+								seconds: seconds * -1,
+						  })
 						: null}
 				</div>
 			)

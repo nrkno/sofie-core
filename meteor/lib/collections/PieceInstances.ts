@@ -105,16 +105,6 @@ export function omitPiecePropertiesForInstance(piece: Piece): PieceInstancePiece
 	return omit(piece, 'startRundownId', 'startSegmentId')
 }
 
-export function wrapPieceToTemporaryInstance(piece: Piece, partInstanceId: PartInstanceId): PieceInstance {
-	return literal<PieceInstance>({
-		isTemporary: true,
-		_id: protectString(`${piece._id}_tmp_instance`),
-		rundownId: piece.startRundownId,
-		partInstanceId: partInstanceId,
-		piece: omitPiecePropertiesForInstance(piece),
-	})
-}
-
 export function rewrapPieceToInstance(
 	piece: PieceInstancePiece,
 	rundownId: RundownId,
@@ -130,13 +120,17 @@ export function rewrapPieceToInstance(
 	}
 }
 
-export function wrapPieceToInstance(piece: Piece, partInstanceId: PartInstanceId): PieceInstance {
-	return {
-		_id: protectString(`${partInstanceId}_${piece._id}`),
-		rundownId: piece.startRundownId,
-		partInstanceId: partInstanceId,
-		piece: omitPiecePropertiesForInstance(piece),
-	}
+export function wrapPieceToInstance(
+	piece: Piece,
+	partInstanceId: PartInstanceId,
+	isTemporary?: boolean
+): PieceInstance {
+	return rewrapPieceToInstance(
+		omitPiecePropertiesForInstance(piece),
+		piece.startRundownId,
+		partInstanceId,
+		partInstanceId === protectString('') || isTemporary
+	)
 }
 
 export const PieceInstances: TransformedCollection<PieceInstance, PieceInstance> = createMongoCollection<PieceInstance>(

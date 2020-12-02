@@ -44,7 +44,7 @@ import { literal, unprotectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
-import { WarningIconSmall, CriticalIconSmall } from '../../lib/notificationIcons'
+import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
 
 interface IProps {
 	id: string
@@ -863,11 +863,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						this.props.parts &&
 						this.props.parts.length > 0 &&
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
-							<SegmentDuration
-								partIds={this.props.parts
-									.filter((item) => item.instance.timings?.duration === undefined)
-									.map((item) => item.instance.part._id)}
-							/>
+							<SegmentDuration parts={this.props.parts} />
 						)}
 				</div>
 				<div

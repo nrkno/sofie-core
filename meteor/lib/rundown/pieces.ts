@@ -7,10 +7,11 @@ import {
 	TimelineObjGroupRundown,
 	OnGenerateTimelineObjExt,
 } from '../collections/Timeline'
-import { TSR, getPieceGroupId } from '@sofie-automation/blueprints-integration'
-import { literal, unprotectString, protectString } from '../lib'
+import { TSR } from '@sofie-automation/blueprints-integration'
+import { literal, unprotectString } from '../lib'
 import { clone } from 'underscore'
 import { PieceInstanceId } from '../collections/PieceInstances'
+import { getPieceGroupId } from './timeline'
 
 export interface PieceGroupMetadata {
 	pieceId: PieceInstanceId
@@ -28,7 +29,7 @@ export function createPieceGroupAndCap(
 	capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt>
 } {
 	const pieceGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceGroupMetadata>>({
-		id: getPieceGroupId(unprotectString(pieceInstance._id)),
+		id: getPieceGroupId(pieceInstance),
 		content: {
 			deviceType: TSR.DeviceType.ABSTRACT,
 			type: TimelineContentTypeOther.GROUP,

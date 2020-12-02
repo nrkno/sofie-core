@@ -57,6 +57,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLibItem, BucketAdLibActionUi, isAdLibAction, isAdLib, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
@@ -476,7 +477,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 					let sourceLayer = this.props.sourceLayers && this.props.sourceLayers[piece.sourceLayerId]
 
-					if (queue && sourceLayer && sourceLayer.isQueueable) {
+					if (queue && sourceLayer && !sourceLayer.isQueueable) {
 						console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
 						return
 					}
@@ -499,7 +500,13 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 
 								doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
-									MeteorCall.userAction.bucketAdlibStart(e, this.props.playlist._id, currentPartInstanceId, piece._id)
+									MeteorCall.userAction.bucketAdlibStart(
+										e,
+										this.props.playlist._id,
+										currentPartInstanceId,
+										piece._id,
+										queue
+									)
 								)
 							} else {
 								if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
@@ -783,7 +790,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 														RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
 														adlib._id === this.props.selectedPiece._id
 													}
-												/>
+													displayStyle={PieceDisplayStyle.BUTTONS}>
+													{adlib.name}
+												</BucketPieceButton>
 											</ContextMenuTrigger>
 										))}
 									</div>

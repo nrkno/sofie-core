@@ -44,7 +44,7 @@ export interface IDashboardButtonProps {
 	widthScale?: number
 	heightScale?: number
 	disabled?: boolean
-	displayStyle?: PieceDisplayStyle
+	displayStyle: PieceDisplayStyle
 	isSelected?: boolean
 	queueAllAdlibs?: boolean
 	showThumbnailsInList?: boolean

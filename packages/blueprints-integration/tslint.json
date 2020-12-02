@@ -1,9 +1,0 @@
-{
-	"extends": ["tslint-plugin-prettier", "tslint:latest", "tslint-config-prettier"],
-	"rules": {
-		"prettier": true,
-		"interface-name": false,
-		"object-literal-sort-keys": false,
-		"variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore", "require-const-for-all-caps"]
-	}
-}

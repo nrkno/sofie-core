@@ -17,6 +17,10 @@ jobs:
           command: cd meteor && meteor npm install
           no_output_timeout: 60m
       - run:
+          name: Build packages
+          command: cd packages && yarn install && yarn build
+          no_output_timeout: 60m
+      - run:
           name: Meteor Build
           command: cd meteor && NODE_OPTIONS="--max-old-space-size=4096" METEOR_DEBUG_BUILD=1 meteor build --allow-superuser --directory .
           no_output_timeout: 60m

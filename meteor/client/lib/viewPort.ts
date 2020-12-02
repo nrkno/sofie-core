@@ -197,17 +197,20 @@ export function scrollToPosition(scrollPosition: number, noAnimation?: boolean):
 				scrollToPositionRequestReject('Prevented by another scroll')
 
 			scrollToPositionRequestReject = reject
+			const currentTop = window.scrollY
+			const targetTop = Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN)
 			scrollToPositionRequest = window.requestIdleCallback(
 				() => {
 					window.scroll({
-						top: Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN),
+						top: targetTop,
 						left: 0,
 						behavior: 'smooth',
 					})
 					setTimeout(() => {
 						resolve()
 						scrollToPositionRequestReject = undefined
-					}, 3000)
+						// this formula was experimentally created from Chrome 86 behavior
+					}, 3000 * Math.log(Math.abs(currentTop - targetTop) / 2000 + 1))
 				},
 				{ timeout: 250 }
 			)

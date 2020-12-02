@@ -8,7 +8,7 @@ import { Random } from 'meteor/random'
 
 jest.mock('../findObjects')
 import { findLookaheadObjectsForPart } from '../findObjects'
-import { wrapPieceToTemporaryInstance } from '../../../../../lib/collections/PieceInstances'
+import { wrapPieceToInstance } from '../../../../../lib/collections/PieceInstances'
 import { protectString } from '../../../../../lib/lib'
 type TfindLookaheadObjectsForPart = jest.MockedFunction<typeof findLookaheadObjectsForPart>
 const findLookaheadObjectsForPartMock = findLookaheadObjectsForPart as TfindLookaheadObjectsForPart
@@ -146,7 +146,7 @@ describe('findLookaheadForLayer', () => {
 			const part = orderedParts[i]
 			return {
 				part,
-				pieces: piecesMap.get(part._id)?.map((p) => wrapPieceToTemporaryInstance(p, protectString(''))),
+				pieces: piecesMap.get(part._id)?.map((p) => wrapPieceToInstance(p, protectString(''), true)),
 			} as any
 		}
 

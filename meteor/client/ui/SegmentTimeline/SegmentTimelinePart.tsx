@@ -259,7 +259,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 	static whyDidYouRender = true
 
 	renderInside(isOutputGroupCollapsed) {
-		if (this.props.layer.sourceLayers !== undefined) {
+		if (this.props.sourceLayers !== undefined) {
 			if (!this.props.layer.isFlattened) {
 				return this.props.sourceLayers.map((sourceLayer, index) => {
 					return (
@@ -277,7 +277,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 							timeScale={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
 							liveLinePadding={this.props.liveLinePadding}
-							layerIndex={index}
+							layerIndex={this.props.indexOffset + index}
 							mediaPreviewUrl={this.props.mediaPreviewUrl}
 							followLiveLine={this.props.followLiveLine}
 							isLiveLine={this.props.isLiveLine}
@@ -310,7 +310,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 						timeScale={this.props.timeScale}
 						autoNextPart={this.props.autoNextPart}
 						liveLinePadding={this.props.liveLinePadding}
-						layerIndex={1}
+						layerIndex={this.props.indexOffset}
 						mediaPreviewUrl={this.props.mediaPreviewUrl}
 						followLiveLine={this.props.followLiveLine}
 						isLiveLine={this.props.isLiveLine}
@@ -337,12 +337,18 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 				: this.props.layer.isDefaultCollapsed
 		return (
 			<div
-				className={ClassNames('segment-timeline__output-group', {
-					collapsable:
-						this.props.layer.sourceLayers && this.props.layer.sourceLayers.length > 1 && !this.props.layer.isFlattened,
-					collapsed: isCollapsed,
-					flattened: this.props.layer.isFlattened,
-				})}>
+				className={ClassNames(
+					'segment-timeline__output-group',
+					{
+						collapsable:
+							this.props.layer.sourceLayers &&
+							this.props.layer.sourceLayers.length > 1 &&
+							!this.props.layer.isFlattened,
+						collapsed: isCollapsed,
+						flattened: this.props.layer.isFlattened,
+					},
+					`layer-count-${this.props.sourceLayers?.length || 0}`
+				)}>
 				{DEBUG_MODE && (
 					<div className="segment-timeline__debug-info red">
 						{RundownUtils.formatTimeToTimecode(this.props.startsAt)}
@@ -429,8 +435,6 @@ export const SegmentTimelinePart = withTranslation()(
 		}
 	})(
 		class SegmentTimelinePart0 extends React.Component<Translated<WithTiming<IProps>>, IState> {
-			private delayedInstanceUpdate: NodeJS.Timer | undefined
-
 			constructor(props: Translated<WithTiming<IProps>>) {
 				super(props)
 
@@ -588,38 +592,10 @@ export const SegmentTimelinePart = withTranslation()(
 				super.componentWillUnmount && super.componentWillUnmount()
 				window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
 				this.highlightTimeout && clearTimeout(this.highlightTimeout)
-				this.delayedInstanceUpdate && clearTimeout(this.delayedInstanceUpdate)
-			}
-
-			queueDelayedUpdate() {
-				this.delayedInstanceUpdate = setTimeout(() => {
-					this.delayedInstanceUpdate = undefined
-					this.forceUpdate()
-				}, 5000)
 			}
 
 			shouldComponentUpdate(nextProps: WithTiming<IProps>, nextState: IState) {
 				if (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)) {
-					if (this.delayedInstanceUpdate) clearTimeout(this.delayedInstanceUpdate)
-					if (
-						this.props.part.instance.isTemporary === true &&
-						nextProps.part.instance.isTemporary === false &&
-						this.props.part.pieces.length > 0 &&
-						nextProps.part.pieces.length === 0 &&
-						!nextProps.part.instance.part.invalid
-					) {
-						this.queueDelayedUpdate()
-						return false
-					} else if (
-						this.props.part.instance.isTemporary === false &&
-						nextProps.part.instance.isTemporary === false &&
-						this.props.part.pieces.length === 0 &&
-						nextProps.part.pieces.length === 0 &&
-						!nextProps.part.instance.part.invalid
-					) {
-						this.queueDelayedUpdate()
-						return false
-					}
 					return true
 				} else {
 					return false

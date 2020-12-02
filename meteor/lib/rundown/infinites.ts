@@ -9,7 +9,7 @@ import {
 import { DBPart, PartId } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
-import { PieceLifespan, getPieceGroupId } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import {
 	assertNever,
 	max,
@@ -22,6 +22,7 @@ import {
 } from '../lib'
 import { Mongo } from 'meteor/mongo'
 import { ShowStyleBase } from '../collections/ShowStyleBases'
+import { getPieceGroupId } from './timeline'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
 	return { startPartId: part._id }
@@ -386,9 +387,7 @@ function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number
 	const offset = newPiece.piece.adlibPreroll
 	if (!offset) return start
 
-	return typeof start === 'number'
-		? start + offset
-		: `#${getPieceGroupId(unprotectPieceInstance(newPiece))}.start + ${offset}`
+	return typeof start === 'number' ? start + offset : `#${getPieceGroupId(newPiece)}.start + ${offset}`
 }
 
 /**

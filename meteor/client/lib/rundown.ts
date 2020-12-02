@@ -229,14 +229,21 @@ export namespace RundownUtils {
 	 * @export
 	 * @param {ShowStyleBase} showStyleBase
 	 * @param {RundownPlaylist} playlist
-	 * @param {Segment} segment
+	 * @param {DBSegment} segment
+	 * @param {Set<SegmentId>} segmentsBeforeThisInRundownSet
+	 * @param {PartId[]} orderedAllPartIds
+	 * @param {boolean} [pieceInstanceSimulation=false] Can be used client-side to simulate the contents of a
+	 * 		PartInstance, whose contents are being streamed in. When ran in a reactive context, the computation will
+	 * 		be eventually invalidated so that the actual data can be streamed in (to show that the part is actually empty)
+	 * @return {*}  {({
 	 */
 	export function getResolvedSegment(
 		showStyleBase: ShowStyleBase,
 		playlist: RundownPlaylist,
 		segment: DBSegment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
-		orderedAllPartIds: PartId[]
+		orderedAllPartIds: PartId[],
+		pieceInstanceSimulation: boolean = false
 	): {
 		/** A Segment with some additional information */
 		segmentExtended: SegmentExtended
@@ -397,7 +404,8 @@ export namespace RundownUtils {
 							'piece.startedPlayback': 0,
 							'piece.timings': 0,
 						},
-					}
+					},
+					pieceInstanceSimulation
 				)
 
 				const partStarted = partE.instance.timings?.startedPlayback

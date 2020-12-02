@@ -349,8 +349,12 @@ body.no-overflow {
 
 				&.rundown-name {
 					width: auto;
-					max-width: calc(30vw - 138px);
+					max-width: calc(40vw - 138px);
 					min-width: 100%;
+
+					> strong {
+						margin-right: 0.4em;
+					}
 				}
 			}
 
@@ -1685,6 +1689,12 @@ body.no-overflow {
 								}
 							}
 						}
+
+						&.layer-count-1 {
+							.segment-timeline__layer {
+								max-height: $segment-layer-height / 2;
+							}
+						}
 					}
 				}
 			}
@@ -1790,7 +1800,7 @@ body.no-overflow {
 					text-shadow: 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px 1px 1px black, 1px 1px 3px black,
 						1px 1px 8px black, 1px 1px 8px black, 1px 1px 8px black;
 					top: -7px;
-					right: -5px;
+					right: -4px;
 					color: white;
 					font-weight: 600;
 					padding: 0;
@@ -2131,6 +2141,11 @@ body.no-overflow {
 }
 
 .rundown-divider-timeline {
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+	align-items: stretch;
+	align-content: space-between;
 	overflow: hidden;
 	user-select: none;
 	-moz-user-select: none;
@@ -2159,8 +2174,18 @@ body.no-overflow {
 		display: inline-block;
 	}
 
+	> .rundown-divider-timeline__playlist-name {
+		margin: 0.7em 1em 0.4em 0; // center vertically
+		line-height: 1.2em;
+		font-size: 1.17em;
+		letter-spacing: 0px;
+		font-weight: 200;
+		hyphens: auto;
+		-webkit-hyphens: auto;
+		-ms-hyphens: auto;
+	}
+
 	> .rundown-divider-timeline__notifications-group {
-		display: inline-block;
 		vertical-align: bottom;
 		white-space: nowrap;
 		margin-bottom: 0.6em;
@@ -2168,7 +2193,6 @@ body.no-overflow {
 	}
 
 	.rundown-divider-timeline__notifications {
-		display: inline-block;
 		font-size: 0.8em;
 		font-weight: 400;
 		> svg {
@@ -2185,9 +2209,8 @@ body.no-overflow {
 
 	> .rundown-divider-timeline__expected-start,
 	> .rundown-divider-timeline__expected-duration {
-		display: inline-block;
-		vertical-align: top;
-		margin: 0.72em 0.5em 0.5em;
+		vertical-align: bottom;
+		margin: 1em 0.5em 0.5em;
 
 		> time {
 			font-weight: 600;
@@ -2200,7 +2223,7 @@ body.no-overflow {
 	}
 
 	> .rundown-divider-timeline__expected-duration {
-		float: right;
+		margin-left: auto;
 	}
 }
 

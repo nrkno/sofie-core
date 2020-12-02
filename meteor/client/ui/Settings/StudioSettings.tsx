@@ -1116,7 +1116,7 @@ const StudioRoutings = withTranslation()(
 									<div className="mod mvs mhs">
 										{t('Device Type')}
 										{route.mappedLayer ? (
-											deviceTypeFromMappedLayer ? (
+											deviceTypeFromMappedLayer !== undefined ? (
 												<span className="mls">{TSR.DeviceType[deviceTypeFromMappedLayer]}</span>
 											) : (
 												<span className="mls dimmed">{t('Source Layer not found')}</span>
@@ -1133,7 +1133,7 @@ const StudioRoutings = withTranslation()(
 												className="input text-input input-l"></EditAttribute>
 										)}
 									</div>
-									{routeDeviceType && route.remapping !== undefined && (
+									{routeDeviceType !== undefined && route.remapping !== undefined ? (
 										<>
 											<div className="mod mvs mhs">
 												<label className="field">
@@ -1169,7 +1169,7 @@ const StudioRoutings = withTranslation()(
 												showOptional={true}
 											/>
 										</>
-									)}
+									) : null}
 								</div>
 							</div>
 						)
