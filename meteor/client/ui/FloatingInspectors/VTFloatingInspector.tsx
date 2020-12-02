@@ -102,12 +102,12 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 							})}>
 							<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 								<path d="M6 14.5L18.5 14.5V18.5H6H1.5V14V1.5H5.5V14V14.5H6Z" fill="#FFD600" stroke="black" />
-								<path
+								{/* <path
 									fillRule="evenodd"
 									clipRule="evenodd"
 									d="M0 0H7V13L20 13V20H0V0ZM6 14V1H1V19H19V14L6 14Z"
 									fill="white"
-								/>
+								/> */}
 							</svg>
 						</div>
 					)}
