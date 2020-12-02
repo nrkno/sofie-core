@@ -116,14 +116,9 @@ export function scrollToSegment(
 ): Promise<boolean> {
 	const getElementToScrollTo = (showHistory: boolean): HTMLElement | null => {
 		if (isProtectedString(elementToScrollToOrSegmentId)) {
-			console.log(elementToScrollToOrSegmentId)
 			let targetElement = document.querySelector<HTMLElement>(
 				`#${SEGMENT_TIMELINE_ELEMENT_ID}${elementToScrollToOrSegmentId}`
 			)
-
-			console.log(targetElement)
-			console.log(Settings.followOnAirSegmentsHistory)
-			console.log(targetElement?.parentElement?.parentElement?.previousElementSibling)
 
 			if (showHistory && Settings.followOnAirSegmentsHistory && targetElement) {
 				let i = Settings.followOnAirSegmentsHistory
