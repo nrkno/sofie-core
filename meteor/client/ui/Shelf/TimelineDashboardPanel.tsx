@@ -121,7 +121,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 													}
 													widthScale={filter.buttonWidthScale}
 													heightScale={filter.buttonHeightScale}
-													showThumbnailsInList={filter.showThumbnailsInList}>
+													showThumbnailsInList={filter.showThumbnailsInList}
+													displayStyle={filter.displayStyle}>
 													{adLibListItem.name}
 												</DashboardPieceButton>
 											)
@@ -170,7 +171,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 														}
 														widthScale={filter.buttonWidthScale}
 														heightScale={filter.buttonHeightScale}
-														showThumbnailsInList={filter.showThumbnailsInList}>
+														showThumbnailsInList={filter.showThumbnailsInList}
+														displayStyle={filter.displayStyle}>
 														{adLibListItem.name}
 													</DashboardPieceButton>
 												)
