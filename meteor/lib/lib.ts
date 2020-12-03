@@ -416,8 +416,6 @@ export function omit<T, P extends keyof T>(obj: T, ...props: P[]): Omit<T, P> {
 	return _.omit(obj, ...(props as string[]))
 }
 
-export type ReturnType<T extends Function> = T extends (...args: any[]) => infer R ? R : never
-
 export function applyClassToDocument(docClass, document) {
 	return new docClass(document)
 }
@@ -771,7 +769,7 @@ export function asyncCollectionFindOne<DocClass extends DBInterface, DBInterface
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoQuery<DBInterface> | string
 ): Promise<DocClass | undefined> {
-	return asyncCollectionFindFetch(collection, selector).then((arr) => {
+	return asyncCollectionFindFetch(collection, selector, { limit: 1 }).then((arr) => {
 		return arr[0]
 	})
 }

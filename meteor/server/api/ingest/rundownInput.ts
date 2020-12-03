@@ -11,7 +11,6 @@ import {
 	literal,
 	sumChanges,
 	anythingChanged,
-	ReturnType,
 	waitForPromise,
 	unprotectString,
 	protectString,
@@ -145,7 +144,7 @@ export enum RundownSyncFunctionPriority {
 	/** Events initiated from playout-gateway callbacks */
 	CALLBACK_PLAYOUT = 20,
 }
-export function rundownPlaylistSyncFunction<T extends Function>(
+export function rundownPlaylistSyncFunction<T extends () => any>(
 	rundownPlaylistId: RundownPlaylistId,
 	priority: RundownSyncFunctionPriority,
 	context: string,
