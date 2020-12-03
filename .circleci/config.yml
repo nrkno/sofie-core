@@ -173,6 +173,8 @@ workflows:
               only: /.*/
       - tests:
           # Run against everything
+          requires:
+            - lint
           filters:
             tags:
               only: /.*/
