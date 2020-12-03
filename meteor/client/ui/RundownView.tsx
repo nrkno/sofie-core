@@ -1499,7 +1499,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				]),
 				isNotificationsCenterOpen: undefined,
 				isSupportPanelOpen: false,
-				isInspectorShelfExpanded: rundownLayout?.openByDefualt ?? false,
+				isInspectorShelfExpanded: rundownLayout?.openByDefault ?? false,
 				isClipTrimmerOpen: false,
 				selectedPiece: undefined,
 				rundownLayout: undefined,
@@ -2615,7 +2615,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										buckets={this.props.buckets}
 										isExpanded={
 											this.state.isInspectorShelfExpanded ||
-											(!this.state.shelfResizedByUser && this.state.rundownLayout?.openByDefualt)
+											(!this.state.shelfResizedByUser && this.state.rundownLayout?.openByDefault)
 										}
 										onChangeExpanded={this.onShelfChangeExpanded}
 										hotkeys={this.state.usedHotkeys}

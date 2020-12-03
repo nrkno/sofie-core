@@ -142,7 +142,7 @@ export interface RundownLayoutBase {
 	exposeAsShelf: boolean
 	icon: string
 	iconColor: string
-	openByDefualt: boolean
+	openByDefault: boolean
 	startingHeight?: number
 }
 
