@@ -288,10 +288,6 @@ export function checkPieceContentStatus(
 						}
 
 						metadata = mediaObject
-						message = t('{{displayName}}: {{messages}}', {
-							displayName: displayName,
-							messages: messages.join(', '),
-						})
 					}
 					break
 				}
@@ -308,7 +304,6 @@ export function checkPieceContentStatus(
 						newStatus = RundownAPI.PieceStatusCode.OK
 						metadata = mediaObject
 					}
-					message = messages.join('; ') + '.'
 				}
 		}
 
