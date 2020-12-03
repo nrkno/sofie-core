@@ -44,6 +44,7 @@ import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { ShelfTabs } from './Shelf'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { ReactiveMap } from '../../../lib/reactiveMap'
+import { ExtendedKeyboardEvent } from 'mousetrap'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
