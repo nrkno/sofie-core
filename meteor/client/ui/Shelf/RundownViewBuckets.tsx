@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
@@ -14,7 +13,6 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { ClientAPI } from '../../../lib/api/client'
 
 import { withTranslation } from 'react-i18next'
-import Escape from 'react-escape'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { unprotectString, partial, literal, ProtectedString } from '../../../lib/lib'
@@ -22,7 +20,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { doModalDialog, ModalDialogQueueItem } from '../../lib/ModalDialog'
-import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 import { MeteorCall } from '../../../lib/api/methods'
@@ -32,6 +30,7 @@ import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { AdLibPieceUi } from './AdLibPanel'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { IAdLibListItem } from './AdLibListItem'
 
 export interface BucketAdLibUi extends BucketAdLib {
 	sourceLayer?: ISourceLayer
@@ -78,7 +77,7 @@ interface IBucketsProps {
 	shouldQueue: boolean
 	fullViewport: boolean
 	displayBuckets?: number[]
-	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | AdLibPieceUi | PieceUi | undefined
+	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 
 	onSelectPiece?: (piece: BucketAdLibItem | undefined) => void
 }
@@ -523,54 +522,6 @@ export const RundownViewBuckets = withTranslation()(
 			const { localBuckets: buckets } = this.state
 			return (
 				<>
-					<Escape to="document">
-						<ContextMenu id="bucket-context-menu" onHide={this.clearContextBucket}>
-							{!this.state.contextBucketAdLib && this.state.contextBucket && (
-								<div className="react-contextmenu-label">{this.state.contextBucket.name}</div>
-							)}
-							{this.state.contextBucketAdLib && (
-								<>
-									<div className="react-contextmenu-label">{this.state.contextBucketAdLib.name}</div>
-									<MenuItem
-										onClick={(e) =>
-											this.state.contextBucketAdLib && this.inspectBucketAdLib(e, this.state.contextBucketAdLib)
-										}>
-										{t('Inspect this AdLib')}
-									</MenuItem>
-									<MenuItem
-										onClick={(e) =>
-											this.state.contextBucketAdLib && this.beginRenameBucketAdLib(this.state.contextBucketAdLib)
-										}>
-										{t('Rename this AdLib')}
-									</MenuItem>
-									<MenuItem
-										onClick={(e) =>
-											this.state.contextBucketAdLib && this.deleteBucketAdLib(e, this.state.contextBucketAdLib)
-										}>
-										{t('Delete this AdLib')}
-									</MenuItem>
-									<hr />
-								</>
-							)}
-							<MenuItem
-								onClick={(e) => this.state.contextBucket && this.emptyBucket(e, this.state.contextBucket)}
-								disabled={!this.state.contextBucket}>
-								{t('Empty this Bucket')}
-							</MenuItem>
-							<MenuItem
-								onClick={(e) => this.state.contextBucket && this.renameBucket(this.state.contextBucket)}
-								disabled={!this.state.contextBucket}>
-								{t('Rename this Bucket')}
-							</MenuItem>
-							<MenuItem
-								onClick={(e) => this.state.contextBucket && this.deleteBucket(e, this.state.contextBucket)}
-								disabled={!this.state.contextBucket}>
-								{t('Delete this Bucket')}
-							</MenuItem>
-							<hr />
-							<MenuItem onClick={this.createNewBucket}>{t('Create new Bucket')}</MenuItem>
-						</ContextMenu>
-					</Escape>
 					{buckets &&
 						buckets.map((bucket, index) =>
 							!this.props.displayBuckets || this.props.displayBuckets.includes(index) ? (

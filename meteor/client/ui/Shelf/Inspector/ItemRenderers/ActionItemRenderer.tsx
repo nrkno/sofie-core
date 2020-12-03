@@ -7,7 +7,7 @@ import { Piece } from '../../../../../lib/collections/Pieces'
 import { ConfigManifestEntry as BlueprintConfigManifestEntry } from '@sofie-automation/blueprints-integration'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
-import { AdLibAction, AdLibActionCommon } from '../../../../../lib/collections/AdLibActions'
+import { AdLibActionCommon } from '../../../../../lib/collections/AdLibActions'
 import { createMongoCollection } from '../../../../../lib/collections/lib'
 import { TransformedCollection } from '../../../../../lib/typings/meteor'
 import { ConfigManifestEntryComponent } from '../../../Settings/components/ConfigManifestEntryComponent'
@@ -15,8 +15,6 @@ import { ConfigManifestEntry, ConfigManifestEntryType } from '../../../../../lib
 import { Spinner } from '../../../../lib/Spinner'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
-import { RundownViewEvents } from '../../../RundownView'
-import { RundownBaselineAdLibAction } from '../../../../../lib/collections/RundownBaselineAdLibActions'
 import { ProtectedString } from '../../../../../lib/lib'
 import { PartId } from '../../../../../lib/collections/Parts'
 import { Studio } from '../../../../../lib/collections/Studios'
@@ -26,11 +24,13 @@ import { BucketId, Buckets } from '../../../../../lib/collections/Buckets'
 import { BucketAdLibItem, BucketAdLibActionUi } from '../../RundownViewBuckets'
 import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
 import { actionToAdLibPieceUi } from '../../BucketPanel'
+import RundownViewEventBus, { RundownViewEvents } from '../../../RundownView/RundownViewEventBus'
+import { IAdLibListItem } from '../../AdLibListItem'
 
 export { isActionItem }
 
 export interface IProps {
-	piece: PieceUi | AdLibPieceUi | BucketAdLibActionUi
+	piece: PieceUi | IAdLibListItem | BucketAdLibActionUi
 	showStyleBase: ShowStyleBase
 	studio: Studio
 	rundownPlaylist: RundownPlaylist
@@ -185,13 +185,9 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 				? (this.props.piece.instance.piece as Piece)
 				: (this.props.piece as AdLibPieceUi)
 
-			window.dispatchEvent(
-				new CustomEvent(RundownViewEvents.revealInShelf, {
-					detail: {
-						pieceId: piece._id,
-					},
-				})
-			)
+			RundownViewEventBus.emit(RundownViewEvents.REVEAL_IN_SHELF, {
+				pieceId: piece._id,
+			})
 		}
 
 		onCueAsNext = (e: any) => {
@@ -289,7 +285,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 	}
 )
 
-function isActionItem(item: BucketAdLibItem | AdLibPieceUi | PieceUi): item is BucketAdLibActionUi | AdLibPieceUi {
+function isActionItem(item: BucketAdLibItem | IAdLibListItem | PieceUi): item is BucketAdLibActionUi | IAdLibListItem {
 	const content = RundownUtils.isAdLibPieceOrAdLibListItem(item)
 		? (item as AdLibPieceUi)
 		: RundownUtils.isPieceInstance(item)

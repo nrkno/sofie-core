@@ -13,12 +13,12 @@ import { MediaObject } from '../../../../../lib/collections/MediaObjects'
 import { BucketAdLibUi } from '../../RundownViewBuckets'
 
 export default function DefaultItemRenderer(props: {
-	piece: PieceUi | AdLibPieceUi | BucketAdLibUi
+	piece: PieceUi | IAdLibListItem | BucketAdLibUi
 	showStyleBase: ShowStyleBase
 	studio: Studio
 }): JSX.Element {
 	if (RundownUtils.isAdLibPiece(props.piece)) {
-		const piece = props.piece as AdLibPieceUi
+		const piece = props.piece as IAdLibListItem
 		// const layer = props.showStyleBase.sourceLayers.find((layer) => layer._id === piece.sourceLayerId)
 		const metadata = piece.contentMetaData as MediaObject
 
@@ -31,8 +31,12 @@ export default function DefaultItemRenderer(props: {
 					<dt>{piece.name}</dt>
 					<dd>externalId</dd>
 					<dt>{piece.externalId}</dt>
-					<dd>partId</dd>
-					<dt>{piece.partId}</dt>
+					{(piece as AdLibPieceUi).partId ? (
+						<>
+							<dd>partId</dd>
+							<dt>{(piece as AdLibPieceUi).partId}</dt>
+						</>
+					) : null}
 					<dd>sourceLayerId</dd>
 					<dt>{piece.sourceLayerId}</dt>
 					<dd>outputLayerId</dd>

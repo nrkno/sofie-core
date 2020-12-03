@@ -14,6 +14,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { withTranslation } from 'react-i18next'
 import { BucketAdLibItem } from './RundownViewBuckets'
+import { IAdLibListItem } from './AdLibListItem'
 
 export interface IShelfRundownLayoutProps {
 	rundownLayout: RundownLayout | undefined
@@ -21,7 +22,7 @@ export interface IShelfRundownLayoutProps {
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	selectedTab: string | undefined
-	selectedPiece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined
+	selectedPiece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
 
 	onSwitchTab: (tab: string) => void
 	onSelectPiece: (piece: AdLibPieceUi | PieceUi) => void

@@ -1,21 +1,20 @@
 import * as React from 'react'
-import { IBlueprintPieceGeneric, NoraContent } from '@sofie-automation/blueprints-integration'
+import { NoraContent } from '@sofie-automation/blueprints-integration'
 import { IModalAttributes, Modal } from '../../../../lib/ui/containers/modals/Modal'
 import { NoraItemEditor } from './NoraItemEditor'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibPieceUi } from '../../AdLibPanel'
 import { RundownUtils } from '../../../../lib/rundown'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
 import { Studio } from '../../../../../lib/collections/Studios'
-import { BucketAdLibItem } from '../../RundownViewBuckets'
+import { IAdLibListItem } from '../../AdLibListItem'
 
 export { isNoraItem }
 
 interface INoraSuperRendererProps {
-	piece: AdLibPieceUi | PieceUi
+	piece: IAdLibListItem | PieceUi
 	showStyleBase: ShowStyleBase
 	studio: Studio
 }
@@ -78,7 +77,7 @@ export default withTranslation()(
 	}
 )
 
-function isNoraItem(item: AdLibPieceUi | PieceUi): boolean {
+function isNoraItem(item: IAdLibListItem | PieceUi): boolean {
 	const content = RundownUtils.isAdLibPiece(item)
 		? (item.content as NoraContent)
 		: (item.instance.piece.content as NoraContent)

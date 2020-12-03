@@ -9,9 +9,10 @@ import { RundownAPI } from '../../../../../lib/api/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
 import { Studio } from '../../../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../../../SegmentTimeline/withMediaObjectStatus'
+import { IAdLibListItem } from '../../AdLibListItem'
 
 interface IProps {
-	piece: PieceUi | AdLibPieceUi | BucketAdLibUi | BucketAdLibActionUi
+	piece: PieceUi | IAdLibListItem | BucketAdLibUi | BucketAdLibActionUi
 	showStyleBase: ShowStyleBase
 	studio: Studio
 }

@@ -90,10 +90,11 @@ import { MeteorCall } from '../../lib/api/methods'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/DocumentTitleProvider'
-import { PartInstanceId, PartInstance } from '../../lib/collections/PartInstances'
+import { PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
+import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownViewEventBus'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1110,7 +1111,7 @@ const RundownHeader = withTranslation()(
 		}
 
 		rewindSegments() {
-			window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+			RundownViewEventBus.emit(RundownViewEvents.REWIND_SEGMENTS)
 		}
 		deferFlushAndRewindSegments() {
 			// Do a rewind later, when the UI has updated
@@ -1118,7 +1119,7 @@ const RundownHeader = withTranslation()(
 				Tracker.flush()
 				Meteor.setTimeout(() => {
 					this.rewindSegments()
-					window.dispatchEvent(new Event(RundownViewEvents.goToTop))
+					RundownViewEventBus.emit(RundownViewEvents.GO_TO_TOP)
 				}, 500)
 			})
 		}
@@ -1273,29 +1274,6 @@ interface IState {
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
 	rundownLayout: RundownLayout | undefined
 	currentRundown: Rundown | undefined
-}
-
-export enum RundownViewEvents {
-	'rewindsegments' = 'sofie:rundownRewindSegments',
-	'goToLiveSegment' = 'sofie:goToLiveSegment',
-	'goToTop' = 'sofie:goToTop',
-	'segmentZoomOn' = 'sofie:segmentZoomOn',
-	'segmentZoomOff' = 'sofie:segmentZoomOff',
-	'revealInShelf' = 'sofie:revealInShelf',
-	'switchShelfTab' = 'sofie:switchShelfTab',
-	'goToPart' = 'sofie:goToPart',
-	'goToPartInstance' = 'sofie:goToPartInstance',
-	'selectPiece' = 'sofie:selectPiece',
-	'highlight' = 'sofie:highlight',
-}
-
-export interface IGoToPartEvent {
-	segmentId: SegmentId
-	partId: PartId
-}
-export interface IGoToPartInstanceEvent {
-	segmentId: SegmentId
-	partInstanceId: PartInstanceId
 }
 
 type MatchedSegment = {
@@ -1721,8 +1699,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			rundownNotificationHandler.set(this.onRONotificationClick)
 
-			window.addEventListener(RundownViewEvents.goToLiveSegment, this.onGoToLiveSegment)
-			window.addEventListener(RundownViewEvents.goToTop, this.onGoToTop)
+			RundownViewEventBus.on(RundownViewEvents.GO_TO_LIVE_SEGMENT, this.onGoToLiveSegment)
+			RundownViewEventBus.on(RundownViewEvents.GO_TO_TOP, this.onGoToTop)
 
 			if (this.props.playlist) {
 				documentTitle.set(this.props.playlist.name)
@@ -1846,15 +1824,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						selectedPiece: piece,
 					})
 				} else {
-					window.dispatchEvent(
-						new CustomEvent<{
-							piece: PieceUi | AdLibPieceUi | undefined
-						}>(RundownViewEvents.selectPiece, {
-							detail: {
-								piece: piece,
-							},
-						})
-					)
+					RundownViewEventBus.emit(RundownViewEvents.SELECT_PIECE, {
+						piece,
+					})
 				}
 			}
 		}
@@ -1887,8 +1859,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 			NotificationCenter.isConcentrationMode = false
 
-			window.removeEventListener(RundownViewEvents.goToLiveSegment, this.onGoToLiveSegment)
-			window.removeEventListener(RundownViewEvents.goToTop, this.onGoToTop)
+			RundownViewEventBus.off(RundownViewEvents.GO_TO_LIVE_SEGMENT, this.onGoToLiveSegment)
+			RundownViewEventBus.off(RundownViewEvents.GO_TO_TOP, this.onGoToTop)
 		}
 
 		onBeforeUnload = (e: any) => {
@@ -1901,20 +1873,20 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onRewindSegments = () => {
-			window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+			RundownViewEventBus.emit(RundownViewEvents.REWIND_SEGMENTS)
 		}
 
 		onShowCurrentSegmentFullOn = () => {
 			if (this._segmentZoomOn === false) {
-				console.log(`Dispatching event: ${RundownViewEvents.segmentZoomOn}`)
-				window.dispatchEvent(new Event(RundownViewEvents.segmentZoomOn))
+				console.log(`Dispatching event: ${RundownViewEvents.SEGMENT_ZOOM_ON}`)
+				RundownViewEventBus.emit(RundownViewEvents.SEGMENT_ZOOM_ON)
 				this._segmentZoomOn = true
 			}
 		}
 
 		onShowCurrentSegmentFullOff = () => {
-			console.log(`Dispatching event: ${RundownViewEvents.segmentZoomOff}`)
-			window.dispatchEvent(new Event(RundownViewEvents.segmentZoomOff))
+			console.log(`Dispatching event: ${RundownViewEvents.SEGMENT_ZOOM_OFF}`)
+			RundownViewEventBus.emit(RundownViewEvents.SEGMENT_ZOOM_OFF)
 			this._segmentZoomOn = false
 		}
 
@@ -1982,7 +1954,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.setState({
 						followLiveSegments: true,
 					})
-					window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+					RundownViewEventBus.emit(RundownViewEvents.REWIND_SEGMENTS)
 				}, 2000)
 			} else if (this.props.playlist && this.props.playlist.active && this.props.playlist.currentPartInstanceId) {
 				this.setState({
@@ -1995,7 +1967,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.setState({
 						followLiveSegments: true,
 					})
-					window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
+					RundownViewEventBus.emit(RundownViewEvents.REWIND_SEGMENTS)
 				}, 2000)
 			} else {
 				this.setState({
@@ -2096,11 +2068,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				if (segmentId) {
 					scrollToSegment(segmentId)
 						.then(() => {
-							window.dispatchEvent(
-								new CustomEvent(RundownViewEvents.highlight, {
-									detail: e.sourceLocator,
-								})
-							)
+							RundownViewEventBus.emit(RundownViewEvents.HIGHLIGHT, e.sourceLocator)
 						})
 						.catch((error) => {
 							if (!error.toString().match(/another scroll/)) console.error(error)
@@ -2271,13 +2239,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.setState({
 					isInspectorShelfExpanded: true,
 				})
-				window.dispatchEvent(
-					new CustomEvent(RundownViewEvents.switchShelfTab, {
-						detail: {
-							tab: ShelfTabs.SYSTEM_HOTKEYS,
-						},
-					})
-				)
+				RundownViewEventBus.emit(RundownViewEvents.SWITCH_SHELF_TAB, {
+					tab: ShelfTabs.SYSTEM_HOTKEYS,
+				})
 			} else {
 				this.setState({
 					isInspectorShelfExpanded: false,

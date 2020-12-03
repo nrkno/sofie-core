@@ -12,7 +12,7 @@ import { AdLibPieceUi } from './AdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { RundownViewKbdShortcuts, RundownViewEvents } from '../RundownView'
+import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { RundownLayoutBase, RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
@@ -27,6 +27,8 @@ import { RundownViewBuckets, BucketAdLibItem } from './RundownViewBuckets'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ShelfInspector } from './Inspector/ShelfInspector'
 import { Studio } from '../../../lib/collections/Studios'
+import RundownViewEventBus, { RundownViewEvents, SelectPieceEvent } from '../RundownView/RundownViewEventBus'
+import { IAdLibListItem } from './AdLibListItem'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -70,7 +72,7 @@ interface IState {
 	moving: boolean
 	selectedTab: string | undefined
 	shouldQueue: boolean
-	selectedPiece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined
+	selectedPiece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
 }
 
 const CLOSE_MARGIN = 45
@@ -172,8 +174,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.props.onRegisterHotkeys(this.bindKeys)
 		this.restoreDefaultTab()
 
-		window.addEventListener(RundownViewEvents.switchShelfTab, this.onSwitchShelfTab)
-		window.addEventListener(RundownViewEvents.selectPiece, this.onSelectPiece)
+		RundownViewEventBus.on(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
+		RundownViewEventBus.on(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
 	}
 
 	componentWillUnmount() {
@@ -187,8 +189,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			}
 		})
 
-		window.removeEventListener(RundownViewEvents.switchShelfTab, this.onSwitchShelfTab)
-		window.removeEventListener(RundownViewEvents.selectPiece, this.onSelectPiece)
+		RundownViewEventBus.off(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
+		RundownViewEventBus.off(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
 	}
 
 	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
@@ -398,11 +400,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, 'shelfTab', tab)
 	}
 
-	private onSelectPiece = (e: CustomEvent<{ piece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined }>) => {
-		this.selectPiece(e.detail.piece)
+	private onSelectPiece = (e: SelectPieceEvent) => {
+		this.selectPiece(e.piece)
 	}
 
-	selectPiece = (piece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined) => {
+	selectPiece = (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => {
 		this.setState({
 			selectedPiece: piece,
 		})
