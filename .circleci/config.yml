@@ -138,40 +138,52 @@ workflows:
   build-test-publish:
     jobs:
       - validate-all-dependencies:
+          # Run against tagged versions and develop/master
           filters:
             tags:
               only: /v.*/
             branches:
-              only: /.*/
+              only:
+                - master
+                - develop
       - validate-prod-dependencies:
+          # Run against tagged versions and develop/master
           filters:
             tags:
               only: /v.*/
             branches:
-              only: /.*/
+              only:
+                - master
+                - develop
       - build:
+          # Run against tagged versions and develop/master
           filters:
             tags:
               only: /v.*/
             branches:
-              only: /.*/
+              only:
+                - master
+                - develop
       - lint:
+          # Run against everything
           filters:
             tags:
-              only: /v.*/
+              only: /.*/
             branches:
               only: /.*/
       - tests:
+          # Run against everything
           filters:
             tags:
-              only: /v.*/
+              only: /.*/
             branches:
               only: /.*/
       - publish-tag:
           requires:
-            # - tests
+            - tests
             # - validate-prod-dependencies
             - build
+          # Run against tagged versions only
           filters:
             tags:
               only: /v.*/
@@ -179,7 +191,10 @@ workflows:
               ignore: /.*/
       - publish-branch:
           requires:
+            - tests
+            # - validate-prod-dependencies
             - build
+          # Run against develop/master only
           filters:
             tags:
               ignore: /.*/
@@ -187,6 +202,3 @@ workflows:
               only:
                 - master
                 - develop
-                - stage
-                - stable
-                - /release\d+/
