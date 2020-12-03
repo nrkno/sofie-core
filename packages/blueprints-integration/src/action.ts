@@ -40,7 +40,7 @@ export interface IBlueprintActionManifestDisplayContent extends IBlueprintAction
 	content?: Omit<SomeContent, 'timelineObjects'>
 }
 
-export interface IBlueprintActionTriggerOption {
+export interface IBlueprintActionTriggerMode {
 	/** Data sent to action when executing */
 	data: string
 
@@ -74,5 +74,5 @@ export interface IBlueprintActionManifest {
 	display: IBlueprintActionManifestDisplay | IBlueprintActionManifestDisplayContent
 
 	/** Optional ways of executing this action. The default option is computed from the display properties */
-	triggerOptions?: IBlueprintActionTriggerOption[]
+	triggerModes?: IBlueprintActionTriggerMode[]
 }
