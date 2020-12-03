@@ -623,7 +623,11 @@ export namespace ServerPlayoutAPI {
 			}
 		)
 	}
-	export function disableNextPiece(context: MethodContext, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+	export function disableNextPiece(
+		context: MethodContext,
+		rundownPlaylistId: RundownPlaylistId,
+		undo?: boolean
+	): ClientAPI.ClientResponse<void> {
 		// @TODO Check for a better solution to validate security methods
 		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 		check(rundownPlaylistId, String)
@@ -728,8 +732,10 @@ export namespace ServerPlayoutAPI {
 					updateTimeline(cache, playlist.studioId)
 
 					waitForPromise(cache.saveAllToDatabase())
+
+					return ClientAPI.responseSuccess(undefined)
 				} else {
-					throw new Meteor.Error(500, 'Found no future pieces')
+					return ClientAPI.responseError(404, 'Found no future pieces')
 				}
 			}
 		)
