@@ -44,6 +44,7 @@ import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { ShelfTabs } from './Shelf'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { ReactiveMap } from '../../../lib/reactiveMap'
+import { ExtendedKeyboardEvent } from 'mousetrap'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -675,7 +676,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				!this.props.sourceLayerLookup[adlibPiece.sourceLayerId].isQueueable
 			) {
 				console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
-				return
+				queue = false
 			}
 
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId && adlibPiece.isGlobal) {

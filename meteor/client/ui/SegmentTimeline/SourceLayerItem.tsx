@@ -95,7 +95,7 @@ export const SourceLayerItem = withTranslation()(
 			})
 		}
 
-		getItemLabelOffsetLeft = (): React.CSSProperties => {
+		getItemLabelOffsetLeft = (): { [key: string]: string } => {
 			if (this.props.relative) {
 				return {}
 			} else {
@@ -261,7 +261,7 @@ export const SourceLayerItem = withTranslation()(
 			}
 		}
 
-		getItemLabelOffsetRight = (): React.CSSProperties => {
+		getItemLabelOffsetRight = (): { [key: string]: string } => {
 			if (this.props.relative) {
 				return {}
 			} else {
