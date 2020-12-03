@@ -1303,6 +1303,7 @@ interface IState {
 	isClipTrimmerOpen: boolean
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
 	rundownLayout: RundownLayout | undefined
+	shelfResizedByUser: boolean
 }
 
 export enum RundownViewEvents {
@@ -1495,7 +1496,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				})
 			}
 
-			const rundownLayout = this.props.rundownLayouts?.find(layout => layout._id === this.props.rundownLayoutId)
+			const rundownLayout = this.props.rundownLayouts?.find((layout) => layout._id === this.props.rundownLayoutId)
 
 			this.state = {
 				timeScale: MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale,
@@ -1518,6 +1519,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				isClipTrimmerOpen: false,
 				selectedPiece: undefined,
 				rundownLayout: undefined,
+				shelfResizedByUser: false,
 			}
 		}
 
@@ -2273,6 +2275,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					isInspectorShelfExpanded: false,
 				})
 			}
+
+			this.setState({
+				shelfResizedByUser: true,
+			})
 		}
 
 		onRestartPlayout = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -2392,6 +2398,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		onShelfChangeExpanded = (value: boolean) => {
 			this.setState({
 				isInspectorShelfExpanded: value,
+				shelfResizedByUser: true,
 			})
 		}
 
@@ -2584,7 +2591,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								<ErrorBoundary>
 									<Shelf
 										buckets={this.props.buckets}
-										isExpanded={this.state.isInspectorShelfExpanded}
+										isExpanded={
+											this.state.isInspectorShelfExpanded ||
+											(!this.state.shelfResizedByUser && this.state.rundownLayout?.openByDefualt)
+										}
 										onChangeExpanded={this.onShelfChangeExpanded}
 										hotkeys={this.state.usedHotkeys}
 										playlist={this.props.playlist}
