@@ -1104,11 +1104,13 @@ export namespace ServerPlayoutAPI {
 		context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
-		userData: any
+		userData: any,
+		triggerMode?: string
 	) {
 		check(rundownPlaylistId, String)
 		check(actionId, String)
 		check(userData, Match.Any)
+		check(triggerMode, Match.Maybe(String))
 
 		return executeActionInner(context, rundownPlaylistId, (actionContext, cache, rundown) => {
 			const showStyleBase = waitForPromise(cache.activationCache.getShowStyleBase(rundown))
@@ -1122,7 +1124,7 @@ export namespace ServerPlayoutAPI {
 
 			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
 
-			blueprint.blueprint.executeAction(actionContext, actionId, userData)
+			blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
 		})
 	}
 

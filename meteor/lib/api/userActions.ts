@@ -85,7 +85,8 @@ export interface NewUserActionAPI extends MethodContext {
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
-		userData: ActionUserData
+		userData: ActionUserData,
+		triggerMode?: string
 	): Promise<ClientAPI.ClientResponse<void>>
 	segmentAdLibPieceStart(
 		userEvent: string,

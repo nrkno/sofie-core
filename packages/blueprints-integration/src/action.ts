@@ -40,6 +40,19 @@ export interface IBlueprintActionManifestDisplayContent extends IBlueprintAction
 	content?: Omit<SomeContent, 'timelineObjects'>
 }
 
+export interface IBlueprintActionTriggerOption {
+	/** Data sent to action when executing */
+	data: string
+
+	display: {
+		_rank: number
+		/** A label to be displayed to the user */
+		label: string
+		/** An optional, longer description that will not be immediately visible to the user */
+		description?: string
+	}
+}
+
 export interface IBlueprintActionManifest {
 	/** Id of the action */
 	actionId: string
@@ -59,4 +72,7 @@ export interface IBlueprintActionManifest {
 	}
 
 	display: IBlueprintActionManifestDisplay | IBlueprintActionManifestDisplayContent
+
+	/** Optional ways of executing this action. The default option is computed from the display properties */
+	triggerOptions?: IBlueprintActionTriggerOption[]
 }

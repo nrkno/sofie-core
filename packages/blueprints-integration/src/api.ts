@@ -129,7 +129,12 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	) => void
 
 	/** Execute an action defined by an IBlueprintActionManifest */
-	executeAction?: (context: EventContext & ActionExecutionContext, actionId: string, userData: ActionUserData) => void // Promise<void> | void
+	executeAction?: (
+		context: EventContext & ActionExecutionContext,
+		actionId: string,
+		userData: ActionUserData,
+		triggerMode?: string
+	) => void // Promise<void> | void
 
 	/** Generate adlib piece from ingest data */
 	getAdlibItem?: (

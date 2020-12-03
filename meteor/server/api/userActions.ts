@@ -416,11 +416,13 @@ export function executeAction(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	actionId: string,
-	userData: any
+	userData: any,
+	triggerMode?: string
 ) {
 	check(rundownPlaylistId, String)
 	check(actionId, String)
 	check(userData, Match.Any)
+	check(triggerMode, Match.Maybe(String))
 
 	const playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
@@ -429,7 +431,9 @@ export function executeAction(
 	if (!playlist.currentPartInstanceId)
 		return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
 
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.executeAction(context, rundownPlaylistId, actionId, userData))
+	return ClientAPI.responseSuccess(
+		ServerPlayoutAPI.executeAction(context, rundownPlaylistId, actionId, userData, triggerMode)
+	)
 }
 export function segmentAdLibPieceStart(
 	context: MethodContext,
@@ -892,7 +896,8 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		_userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
-		userData: ActionUserData
+		userData: ActionUserData,
+		triggerMode?: string
 	) {
 		return traceAction(
 			UserActionAPIMethods.executeAction,
@@ -900,7 +905,8 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			this,
 			rundownPlaylistId,
 			actionId,
-			userData
+			userData,
+			triggerMode
 		)
 	}
 	segmentAdLibPieceStart(
