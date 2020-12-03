@@ -358,7 +358,7 @@ export function pieceTakeNow(
 	let showStyleBase = rundown.getShowStyleBase()
 	const sourceLayerId = pieceToCopy.sourceLayerId
 	const sourceL = showStyleBase.sourceLayers.find((i) => i._id === sourceLayerId)
-	if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS)
+	if (sourceL && (sourceL.type !== SourceLayerType.GRAPHICS || sourceL.exclusiveGroup))
 		return ClientAPI.responseError(
 			`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS piece!`
 		)
