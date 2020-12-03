@@ -43,6 +43,7 @@ import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { registerHotkey, RegisteredHotkeys, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 import { pieceSetInOutPoints } from '../../../server/api/userActions'
+import { ExtendedKeyboardEvent } from 'mousetrap'
 
 interface IState {
 	outputLayers: {
@@ -795,7 +796,7 @@ export function isAdLibOnAir(
 ) {
 	if (
 		unfinishedAdLibIds.includes(adLib._id) ||
-		(adLib.onAirTags && adLib.onAirTags.every((tag) => unfinishedTags.includes(tag)))
+		(adLib.currentPieceTags && adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
 	) {
 		return true
 	}
@@ -810,8 +811,8 @@ export function isAdLibNext(
 ) {
 	if (
 		nextAdLibIds.includes(adLib._id) ||
-		(adLib.setNextTags && adLib.setNextTags.every((tag) => unfinishedTags.includes(tag))) ||
-		(adLib.setNextTags && adLib.setNextTags.every((tag) => nextTags.includes(tag)))
+		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => unfinishedTags.includes(tag))) ||
+		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
 	) {
 		return true
 	}

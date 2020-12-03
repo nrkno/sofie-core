@@ -204,7 +204,11 @@ function checkDatabaseVersion(
 
 	if (expectVersion) {
 		if (currentVersion) {
-			if (semver.satisfies(currentVersion, expectVersion)) {
+			if (
+				semver.satisfies(currentVersion, expectVersion) ||
+				!!currentVersion.match(/^\^0.0.0$/) ||
+				!!expectVersion.match(/^\^0.0.0$/)
+			) {
 				return {
 					statusCode: StatusCode.GOOD,
 					messages: [`${meName} version: ${currentVersion}`],

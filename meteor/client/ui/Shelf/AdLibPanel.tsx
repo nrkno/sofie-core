@@ -60,6 +60,7 @@ import {
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
+import { ExtendedKeyboardEvent } from 'mousetrap'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
