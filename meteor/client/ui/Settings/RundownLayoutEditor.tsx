@@ -1410,7 +1410,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							{t('Open shelf by default')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={'openByDefualt'}
+								attribute={'openByDefault'}
 								obj={item}
 								options={RundownLayoutType}
 								type="checkbox"
