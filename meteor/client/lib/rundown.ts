@@ -388,14 +388,7 @@ export namespace RundownUtils {
 						? PieceInstances.find({
 								partInstanceId: currentPartInstance._id,
 						  }).fetch()
-						: undefined,
-					{
-						fields: {
-							//@ts-ignore deep property
-							'piece.startedPlayback': 0,
-							'piece.timings': 0,
-						},
-					}
+						: undefined
 				)
 
 				const partStarted = partE.instance.timings?.startedPlayback
