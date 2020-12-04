@@ -504,8 +504,6 @@ export namespace ServerPlayoutAdLibAPI {
 							},
 						}
 						if (pieceInstance.infinite) {
-							// Mark where this ends
-							// up['infinite.lastPartInstanceId'] = currentPartInstance._id
 							stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
 						}
 

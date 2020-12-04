@@ -39,11 +39,6 @@ export interface PieceInstanceInfinite
 	extends ProtectedStringProperties<Required<IBlueprintPieceInstance>['infinite'], 'infinitePieceId'> {
 	/** A random id for this instance of this infinite */
 	infiniteInstanceId: PieceInstanceInfiniteId
-
-	// /** The first partInstance this existed in */
-	// firstPartInsanceId: PartInstanceId
-	/** The last partInstance this should exist in */
-	// lastPartInstanceId?: PartInstanceId
 }
 
 export interface PieceInstance

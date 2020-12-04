@@ -697,10 +697,6 @@ export function restoreFromRundownPlaylistSnapshot(
 		pieceInstance.piece._id = pieceIdMap[unprotectString(pieceInstance.piece._id)] || getRandomId()
 		if (pieceInstance.infinite) {
 			pieceInstance.infinite.infinitePieceId = pieceIdMap[unprotectString(pieceInstance.infinite.infinitePieceId)]
-			// if (pieceInstance.infinite.lastPartInstanceId) {
-			// 	pieceInstance.infinite.lastPartInstanceId =
-			// 		partInstanceIdMap[unprotectString(pieceInstance.infinite.lastPartInstanceId)]
-			// }
 		}
 	})
 

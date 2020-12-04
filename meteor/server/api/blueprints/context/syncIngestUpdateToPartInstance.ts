@@ -8,7 +8,6 @@ import {
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
 	SyncIngestUpdateToPartInstanceContext as ISyncIngestUpdateToPartInstanceContext,
-	BlueprintSyncIngestNewData,
 } from '@sofie-automation/blueprints-integration'
 import { PartInstance, DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import _ from 'underscore'
@@ -31,6 +30,7 @@ import {
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { DbCacheWriteCollection } from '../../../DatabaseCache'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
+import { Meteor } from 'meteor/meteor'
 
 export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 	implements ISyncIngestUpdateToPartInstanceContext {
@@ -70,7 +70,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 	): IBlueprintPieceInstance {
 		const proposedPieceInstance = this._proposedPieceInstances.get(protectString(pieceInstanceId))
 		if (!proposedPieceInstance) {
-			throw new Error('PieceInstance could not be found')
+			throw new Meteor.Error(404, `PieceInstance "${pieceInstanceId}" could not be found`)
 		}
 
 		// filter the submission to the allowed ones
@@ -129,15 +129,21 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		// filter the submission to the allowed ones
 		const trimmedPiece: Partial<OmitId<IBlueprintPiece>> = _.pick(updatedPiece, IBlueprintPieceSampleKeys)
 		if (Object.keys(trimmedPiece).length === 0) {
-			throw new Error('Some valid properties must be defined')
+			throw new Meteor.Error(
+				404,
+				`Cannot update PieceInstance "${pieceInstanceId}". Some valid properties must be defined`
+			)
 		}
 
 		const pieceInstance = this._pieceInstanceCache.findOne(protectString(pieceInstanceId))
 		if (!pieceInstance) {
-			throw new Error('PieceInstance could not be found')
+			throw new Meteor.Error(404, `PieceInstance "${pieceInstanceId}" could not be found`)
 		}
 		if (pieceInstance.partInstanceId !== this.partInstance._id) {
-			throw new Error('PieceInstance is not in the right partInstance')
+			throw new Meteor.Error(
+				404,
+				`PieceInstance "${pieceInstanceId}" does not belong to the current PartInstance`
+			)
 		}
 
 		if (updatedPiece.content && updatedPiece.content.timelineObjects) {
@@ -171,7 +177,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		// filter the submission to the allowed ones
 		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(updatePart, IBlueprintMutatablePartSampleKeys)
 		if (Object.keys(trimmedProps).length === 0) {
-			throw new Error('Some valid properties must be defined')
+			throw new Meteor.Error(404, `Cannot update PartInstance. Some valid properties must be defined`)
 		}
 
 		const update = {
