@@ -91,7 +91,7 @@ jobs:
       - run: cd packages && yarn install
       - run:
           name: Run tests
-          command: cd packages/<< parameters.lib-name >> && yarn test
+          command: cd packages/<< parameters.lib-name >> && yarn unit
           no_output_timeout: 60m
       - when: 
           condition: << parameters.node-version >> == 12 # run for the 'main' version
