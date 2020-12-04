@@ -323,9 +323,8 @@ export function getPieceInstancesForPart(
 
 	// Compile the resulting list
 
-	const playingPieceInstancesMap = normalizeArrayFuncFilter(
-		playingPieceInstances ?? [],
-		(p) => unprotectString(p.infinite?.infinitePieceId) // TODO - is this 'unique' enough? what about replaying the source if the infinites started there?
+	const playingPieceInstancesMap = normalizeArrayFuncFilter(playingPieceInstances ?? [], (p) =>
+		unprotectString(p.infinite?.infiniteInstanceId)
 	)
 
 	const wrapPiece = (p: PieceInstancePiece) => {

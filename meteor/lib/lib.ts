@@ -410,7 +410,6 @@ export function partialExceptId<T>(o: Partial<T> & IDObj) {
 export interface ObjId {
 	_id: ProtectedString<any>
 }
-export type OmitId<T> = Omit<T & ObjId, '_id'>
 
 export function omit<T, P extends keyof T>(obj: T, ...props: P[]): Omit<T, P> {
 	return _.omit(obj, ...(props as string[]))
@@ -649,6 +648,15 @@ export function normalizeArray<T>(array: Array<T>, indexKey: keyof T): { [indexK
 	}
 	return normalizedObject as { [key: string]: T }
 }
+export function normalizeArrayToMap<T, K extends keyof T>(array: T[], indexKey: K): Map<T[K], T> {
+	const normalizedObject = new Map<T[K], T>()
+	for (const item of array) {
+		const key = item[indexKey]
+		normalizedObject.set(key, item)
+	}
+	return normalizedObject
+}
+
 /** Convenience function, to be used when length of array has previously been verified */
 export function last<T>(values: T[]): T {
 	return _.last(values) as T
@@ -1381,12 +1389,14 @@ export function isProtectedString(str: any): str is ProtectedString<any> {
 	return typeof str === 'string'
 }
 export type ProtectId<T extends { _id: string }> = Omit<T, '_id'> & { _id: ProtectedString<any> }
-export type UnprotectedStringProperties<T extends object> = {
+export type UnprotectedStringProperties<T extends object | undefined> = {
 	[P in keyof T]: T[P] extends ProtectedString<any>
 		? string
 		: T[P] extends ProtectedString<any> | undefined
 		? string | undefined
-		: T[P] extends UnprotectedStringProperties<any>
+		: T[P] extends object
+		? UnprotectedStringProperties<T[P]>
+		: T[P] extends object | undefined
 		? UnprotectedStringProperties<T[P]>
 		: T[P]
 }
