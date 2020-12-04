@@ -31,7 +31,6 @@ import {
 	IBlueprintPartInstance,
 	IBlueprintAdLibPieceDB,
 	IBlueprintPartDB,
-	IBlueprintPieceDB,
 } from './rundown'
 import { IBlueprintShowStyleBase, IBlueprintShowStyleVariant } from './showStyle'
 import { OnGenerateTimelineObj } from './timeline'
@@ -123,8 +122,8 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	 */
 	syncIngestUpdateToPartInstance?: (
 		context: SyncIngestUpdateToPartInstanceContext,
-		existingPartInstance: BlueprintResultPartInstance,
-		newPart: BlueprintResultPartDB,
+		existingPartInstance: BlueprintSyncIngestPartInstance,
+		newData: BlueprintSyncIngestNewData,
 		playoutStatus: 'current' | 'next'
 	) => void
 
@@ -203,18 +202,36 @@ export interface BlueprintResultPart {
 	actions?: IBlueprintActionManifest[]
 }
 
-export interface BlueprintResultPartDB {
+export interface BlueprintSyncIngestNewData {
+	// source: BlueprintSyncIngestDataSource
+	/** The new part */
 	part: IBlueprintPartDB
-	pieces: IBlueprintPieceDB[]
+	/** A list of pieces (including infinites) that would be present in a fresh copy of this partInstance */
+	pieceInstances: IBlueprintPieceInstance[]
+	/** The adlib pieces belonging to this part */
 	adLibPieces: IBlueprintAdLibPieceDB[]
+	/** The adlib actions belonging to this part */
 	actions: IBlueprintActionManifest[]
+	/** A list of adlibs that have pieceInstances in the partInstance in question */
+	referencedAdlibs: IBlueprintAdLibPieceDB[]
 }
 
-export interface BlueprintResultPartInstance {
+// TODO: add something like this later?
+// export enum BlueprintSyncIngestDataSource {
+// 	/** The data update came from the same segment */
+// 	SEGMENT = 'segment',
+// 	/** The data update came from another infinite being updated */
+// 	INFINITE = 'infinite',
+// 	ADLIB = 'adlib',
+// 	UNKNOWN = 'unknown'
+// }
+
+export interface BlueprintSyncIngestPartInstance {
 	partInstance: IBlueprintPartInstance
 	pieceInstances: IBlueprintPieceInstance[]
-	// Possibly in the future:
-	// adLibPieces
+	// Upcoming interface:
+	// adLibPieceInstances: IBlueprintAdlibPieceInstance[]
+	// adLibActionInstances: IBlueprintAdlibActionInstance[]
 }
 
 /** Key is the ID of the external ID of the Rundown, Value is the rank to be assigned */

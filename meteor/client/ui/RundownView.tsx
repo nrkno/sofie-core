@@ -672,12 +672,34 @@ const RundownHeader = withTranslation()(
 			this.takeRundownSnapshot(e)
 		}
 
+		handleDisableNextPiece = (err: ClientAPI.ClientResponse<undefined>) => {
+			if (ClientAPI.isClientResponseError(err)) {
+				const { t } = this.props
+
+				if (err.error === 404) {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.WARNING,
+							t('Could not find a Piece that can be disabled.'),
+							'userAction'
+						)
+					)
+					return false
+				}
+			}
+		}
+
 		disableNextPiece = (e: any) => {
 			const { t } = this.props
 
 			if (this.props.studioMode) {
-				doUserAction(t, e, UserAction.DISABLE_NEXT_PIECE, (e) =>
-					MeteorCall.userAction.disableNextPiece(e, this.props.playlist._id, false)
+				doUserAction(
+					t,
+					e,
+					UserAction.DISABLE_NEXT_PIECE,
+					(e) => MeteorCall.userAction.disableNextPiece(e, this.props.playlist._id, false),
+					this.handleDisableNextPiece
 				)
 			}
 		}
@@ -686,8 +708,12 @@ const RundownHeader = withTranslation()(
 			const { t } = this.props
 
 			if (this.props.studioMode) {
-				doUserAction(t, e, UserAction.DISABLE_NEXT_PIECE, (e) =>
-					MeteorCall.userAction.disableNextPiece(e, this.props.playlist._id, true)
+				doUserAction(
+					t,
+					e,
+					UserAction.DISABLE_NEXT_PIECE,
+					(e) => MeteorCall.userAction.disableNextPiece(e, this.props.playlist._id, true),
+					this.handleDisableNextPiece
 				)
 			}
 		}

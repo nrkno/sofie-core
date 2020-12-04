@@ -1,7 +1,6 @@
 import { IBlueprintAsRunLogEvent } from './asRunLog'
 import { IngestPart, ExtendedIngestRundown } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
-import { OmitId } from './lib'
 import {
 	IBlueprintPart,
 	IBlueprintPartDB,
@@ -93,10 +92,10 @@ export interface ActionExecutionContext extends ShowStyleContext {
 	// getNextShowStyleConfig(): Readonly<{ [key: string]: ConfigItemValue }>
 
 	/** Creative actions */
-	/** Insert a piece. Returns id of new PieceInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
+	/** Insert a pieceInstance. Returns id of new PieceInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
 	insertPiece(part: 'current' | 'next', piece: IBlueprintPiece): IBlueprintPieceInstance
 	/** Update a piecesInstance */
-	updatePieceInstance(pieceInstanceId: string, piece: Partial<OmitId<IBlueprintPiece>>): IBlueprintPieceInstance
+	updatePieceInstance(pieceInstanceId: string, piece: Partial<IBlueprintPiece>): IBlueprintPieceInstance
 	/** Insert a queued part to follow the current part */
 	queuePart(part: IBlueprintPart, pieces: IBlueprintPiece[]): IBlueprintPartInstance
 	/** Update a partInstance */
@@ -121,14 +120,37 @@ export interface ActionExecutionContext extends ShowStyleContext {
 
 /** Actions */
 export interface SyncIngestUpdateToPartInstanceContext extends RundownContext {
-	/** Insert a piece. Returns id of new PieceInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
+	/** Sync a pieceInstance. Inserts the pieceInstance if new, updates if existing. Optionally pass in a mutated Piece, to change the content of the instance */
+	syncPieceInstance(
+		pieceInstanceId: string,
+		mutatedPiece?: Omit<IBlueprintPiece, 'lifespan'>
+	): IBlueprintPieceInstance
+
+	/** Insert a pieceInstance. Returns id of new PieceInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
 	insertPieceInstance(piece: IBlueprintPiece): IBlueprintPieceInstance
 	/** Update a piecesInstance */
-	updatePieceInstance(pieceInstanceId: string, piece: Partial<OmitId<IBlueprintPiece>>): IBlueprintPieceInstance
+	updatePieceInstance(pieceInstanceId: string, piece: Partial<IBlueprintPiece>): IBlueprintPieceInstance
+	/** Remove a pieceInstance */
+	removePieceInstances(...pieceInstanceIds: string[]): string[]
+
+	// Upcoming interface:
+	// /** Insert a AdlibInstance. Returns id of new AdlibInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
+	// insertAdlibInstance(adlibPiece: IBlueprintAdLibPiece): IBlueprintAdlibPieceInstance
+	// /** Update a AdlibInstance */
+	// updateAdlibInstance(adlibInstanceId: string, adlibPiece: Partial<OmitId<IBlueprintAdLibPiece>>): IBlueprintAdlibPieceInstance
+	// /** Remove a AdlibInstance */
+	// removeAdlibInstances(...adlibInstanceId: string[]): string[]
+
+	// Upcoming interface:
+	// /** Insert a ActionInstance. Returns id of new ActionInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
+	// insertActionInstance(action: IBlueprintAdlibAction): IBlueprintAdlibActionInstance
+	// /** Update a ActionInstance */
+	// updateActionInstance(actionInstanceId: string, action: Partial<OmitId<IBlueprintAdlibAction>>): IBlueprintAdlibActionInstance
+	// /** Remove a ActionInstance */
+	// removeActionInstances(...actionInstanceIds: string[]): string[]
+
 	/** Update a partInstance */
 	updatePartInstance(props: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance
-
-	removePieceInstances(...pieceInstanceIds: string[]): string[]
 }
 
 /** Events */
