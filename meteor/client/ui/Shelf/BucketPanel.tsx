@@ -24,6 +24,7 @@ import {
 	SomeContent,
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
+	IBlueprintActionTriggerMode,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -52,12 +53,13 @@ import { PartInstances, PartInstance } from '../../../lib/collections/PartInstan
 import { AdLibPieceUi } from './AdLibPanel'
 import { BucketAdLibActions, BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
-import { RundownViewEvents } from '../RundownView'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLibItem, BucketAdLibActionUi, isAdLibAction, isAdLib, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
+import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
+import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
@@ -202,7 +204,7 @@ export interface IBucketPanelProps {
 	shouldQueue: boolean
 	hotkeyGroup: string
 	editableName?: boolean
-	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | AdLibPieceUi | PieceUi | undefined
+	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 	editedPiece: PieceId | undefined
 	onNameChanged: (e: any, newName: string) => void
 	moveBucket: (id: BucketId, atIndex: number) => void
@@ -377,7 +379,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					window.addEventListener(MOSEvents.dragenter, this.onDragEnter)
 					window.addEventListener(MOSEvents.dragleave, this.onDragLeave)
 
-					window.addEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
+					RundownViewEventBus.on(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
 				}
 
 				componentDidUpdate(prevProps: IBucketPanelProps & IBucketPanelTrackedProps) {
@@ -387,7 +389,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						})
 					}
 
-					window.removeEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
+					RundownViewEventBus.off(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
 				}
 
 				componentWillUnmount() {
@@ -397,8 +399,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
 				}
 
-				onRevealInShelf = (e: CustomEvent) => {
-					const pieceId = e.detail && e.detail.pieceId
+				onRevealInShelf = (e: RevealInShelfEvent) => {
+					const { pieceId } = e
 					if (pieceId) {
 						let found = false
 						const index = this.state.adLibPieces.findIndex((piece) => piece._id === pieceId)
@@ -447,7 +449,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					}
 				}
 
-				onToggleAdLib = (piece: IAdLibListItem, queue: boolean, e: any) => {
+				onToggleAdLib = (piece: IAdLibListItem, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 					const { t } = this.props
 
 					queue = queue || this.props.shouldQueue
@@ -489,7 +491,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 									e,
 									this.props.playlist._id,
 									bucketAction.adlibAction.actionId,
-									bucketAction.adlibAction.userData
+									bucketAction.adlibAction.userData,
+									mode?.data
 								)
 							)
 						} else {
@@ -749,16 +752,15 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 									<div className="dashboard-panel__panel">
 										{this.state.adLibPieces.map((adlib: BucketAdLibItem) => (
 											<ContextMenuTrigger
-												id="bucket-context-menu"
+												id="shelf-context-menu"
 												collect={() =>
-													new Promise((resolve) => {
-														this.props.onAdLibContext(
-															{
-																contextBucketAdLib: adlib,
-																contextBucket: this.props.bucket,
-															},
-															resolve
-														)
+													setShelfContextMenuContext({
+														type: ContextType.BUCKET_ADLIB,
+														details: {
+															adLib: adlib,
+															bucket: this.props.bucket,
+															onToggle: this.onToggleAdLib,
+														},
 													})
 												}
 												renderTag="span"

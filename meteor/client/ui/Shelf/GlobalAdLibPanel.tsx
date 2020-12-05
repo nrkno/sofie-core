@@ -17,7 +17,7 @@ import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { faTh, faList, faTimes } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { RundownViewKbdShortcuts, RundownViewEvents } from '../RundownView'
+import { RundownViewKbdShortcuts } from '../RundownView'
 
 import { Spinner } from '../../lib/Spinner'
 import { literal, normalizeArray, unprotectString, protectString, Omit } from '../../../lib/lib'
@@ -31,6 +31,7 @@ import {
 	SomeContent,
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
+	IBlueprintActionTriggerMode,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -45,12 +46,18 @@ import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBas
 import { ReactiveMap } from '../../../lib/reactiveMap'
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
+import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
-	onToggleAdLib: (piece: IAdLibListItem, queue: boolean, e: mousetrap.ExtendedKeyboardEvent) => void
+	onToggleAdLib: (
+		piece: IAdLibListItem,
+		queue: boolean,
+		e: mousetrap.ExtendedKeyboardEvent,
+		mode?: IBlueprintActionTriggerMode
+	) => void
 	onToggleSticky: (item: IAdLibListItem, e: any) => void
-	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | AdLibPieceUi | PieceUi | undefined
+	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 	searchFilter: string | undefined
 	showStyleBase: ShowStyleBase
 	rundownAdLibs: Array<AdLibPieceUi>
@@ -309,7 +316,7 @@ interface IProps {
 	visible: boolean
 	studioMode: boolean
 	hotkeyGroup: string
-	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | AdLibPieceUi | PieceUi | undefined
+	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 
 	onSelectPiece?: (piece: AdLibPieceUi | PieceUi) => void
 }
@@ -478,7 +485,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				}
 			})
 
-			window.addEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
+			RundownViewEventBus.on(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps) {
@@ -496,7 +503,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 			this.usedHotkeys.length = 0
 
-			window.removeEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
+			RundownViewEventBus.off(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
 		}
 
 		refreshKeyboardHotkeys() {
@@ -607,7 +614,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			this.props.onSelectPiece && this.props.onSelectPiece(piece)
 		}
 
-		onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any) => {
+		onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 			const { t } = this.props
 
 			if (adlibPiece.invalid) {
@@ -648,7 +655,13 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
 					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
-						MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
+						MeteorCall.userAction.executeAction(
+							e,
+							this.props.playlist._id,
+							action.actionId,
+							action.userData,
+							mode?.data
+						)
 					)
 				} else {
 					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
@@ -680,8 +693,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			}
 		}
 
-		onRevealInShelf = (e: CustomEvent) => {
-			const pieceId = e.detail && e.detail.pieceId
+		onRevealInShelf = (e: RevealInShelfEvent) => {
+			const { pieceId } = e
 			if (pieceId) {
 				let found = false
 				const index = this.props.rundownAdLibs.findIndex((piece) => piece._id === pieceId)
@@ -690,13 +703,9 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				}
 
 				if (found) {
-					window.dispatchEvent(
-						new CustomEvent(RundownViewEvents.switchShelfTab, {
-							detail: {
-								tab: ShelfTabs.GLOBAL_ADLIB,
-							},
-						})
-					)
+					RundownViewEventBus.emit(RundownViewEvents.SWITCH_SHELF_TAB, {
+						tab: ShelfTabs.GLOBAL_ADLIB,
+					})
 
 					Meteor.setTimeout(() => {
 						const el = document.querySelector(`.adlib-panel__list-view__list__segment__item[data-obj-id="${pieceId}"]`)

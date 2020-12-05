@@ -22,9 +22,10 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigItemValue } from '@sofie-automation/blueprints-integration'
 
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
-import { IContextMenuContext, RundownViewEvents } from '../RundownView'
+import { IContextMenuContext } from '../RundownView'
 import { CSSProperties } from '../../styles/_cssVariables'
 import { ISourceLayerExtended } from '../../../lib/Rundown'
+import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -569,8 +570,8 @@ export const SegmentTimelinePart = withTranslation()(
 
 			private highlightTimeout: NodeJS.Timer
 
-			private onHighlight = (e: any) => {
-				if (e.detail && e.detail.partId === this.props.part.partId && !e.detail.pieceId) {
+			private onHighlight = (e: HighlightEvent) => {
+				if (e && e.partId === this.props.part.partId && !e.pieceId) {
 					this.setState({
 						highlight: true,
 					})
@@ -585,12 +586,12 @@ export const SegmentTimelinePart = withTranslation()(
 
 			componentDidMount() {
 				super.componentDidMount && super.componentDidMount()
-				window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
+				RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 			}
 
 			componentWillUnmount() {
 				super.componentWillUnmount && super.componentWillUnmount()
-				window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
+				RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 				this.highlightTimeout && clearTimeout(this.highlightTimeout)
 			}
 

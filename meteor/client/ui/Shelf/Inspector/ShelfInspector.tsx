@@ -11,15 +11,16 @@ import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
 import { Studio } from '../../../../lib/collections/Studios'
 import { BucketAdLibItem } from '../RundownViewBuckets'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { IAdLibListItem } from '../AdLibListItem'
 
 export { ShelfInspector }
 
 interface IShelfInspectorProps {
-	selected: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined
+	selected: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
 	showStyleBase: ShowStyleBase
 	studio: Studio
 	rundownPlaylist: RundownPlaylist
-	onSelectPiece: (piece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined) => void
+	onSelectPiece: (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => void
 }
 
 class ShelfInspector extends React.Component<IShelfInspectorProps> {
@@ -38,7 +39,7 @@ class ShelfInspector extends React.Component<IShelfInspectorProps> {
 
 		return (
 			<ContextMenuTrigger
-				id="bucket-context-menu"
+				id="shelf-context-menu"
 				attributes={{
 					className: 'rundown-view__shelf__contents__pane shelf-inspector',
 				}}

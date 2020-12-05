@@ -683,8 +683,8 @@ export namespace RundownUtils {
 	}
 
 	export function isAdLibPiece(
-		piece: PieceUi | AdLibPieceUi | BucketAdLibItem
-	): piece is AdLibPieceUi | BucketAdLibUi {
+		piece: PieceUi | IAdLibListItem | BucketAdLibItem
+	): piece is IAdLibListItem | BucketAdLibUi {
 		if (piece['instance'] || piece['name'] === undefined) {
 			return false
 		}
