@@ -4,7 +4,10 @@ import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from '../../AdLibPanel'
 import { RundownUtils } from '../../../../lib/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
-import { ConfigManifestEntry as BlueprintConfigManifestEntry } from '@sofie-automation/blueprints-integration'
+import {
+	ConfigManifestEntry as BlueprintConfigManifestEntry,
+	IBlueprintActionTriggerMode,
+} from '@sofie-automation/blueprints-integration'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { AdLibActionCommon } from '../../../../../lib/collections/AdLibActions'
@@ -190,7 +193,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			})
 		}
 
-		onCueAsNext = (e: any) => {
+		onTrigger = (e: any, mode?: IBlueprintActionTriggerMode) => {
 			const { t, targetAction } = this.props
 
 			if (targetAction) {
@@ -199,7 +202,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 						e,
 						this.props.rundownPlaylist._id,
 						targetAction.actionId,
-						targetAction.transformedUserData
+						targetAction.transformedUserData,
+						mode?.data
 					)
 				)
 			}
@@ -242,6 +246,10 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			const { t } = this.props
 			const action = this.getActionItem()
 
+			const modes = this.props.targetAction?.triggerModes?.sort(
+				(a, b) => a.display._rank - b.display._rank || a.display.label.localeCompare(b.display.label)
+			)
+
 			if (!action) {
 				return <Spinner />
 			}
@@ -268,9 +276,15 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 							) : null}
 						</div>
 						<div className="shelf-inspector__action-editor__actions">
-							<button className="btn" onClick={this.onCueAsNext}>
-								{t('Cue as Next')}
-							</button>
+							{modes ? (
+								<button className="btn" onClick={(e) => this.onTrigger(e, modes[0])}>
+									{modes[0].display.label}
+								</button>
+							) : (
+								<button className="btn" onClick={this.onTrigger}>
+									{t('Execute')}
+								</button>
+							)}
 							<button className="btn" onClick={this.onSaveToBucket}>
 								{t('Save to Bucket')}
 							</button>
