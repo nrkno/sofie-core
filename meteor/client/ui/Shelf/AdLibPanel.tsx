@@ -26,6 +26,7 @@ import {
 	IBlueprintActionManifestDisplayContent,
 	SomeContent,
 	PieceLifespan,
+	IBlueprintActionTriggerMode,
 } from '@sofie-automation/blueprints-integration'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
@@ -62,7 +63,12 @@ import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../R
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
 	onSelectAdLib: (piece: IAdLibListItem) => void
-	onToggleAdLib: (piece: IAdLibListItem, queue: boolean, e: mousetrap.ExtendedKeyboardEvent) => void
+	onToggleAdLib: (
+		piece: IAdLibListItem,
+		queue: boolean,
+		e: mousetrap.ExtendedKeyboardEvent,
+		mode?: IBlueprintActionTriggerMode
+	) => void
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 	selectedSegment: AdlibSegmentUi | undefined
 	searchFilter: string | undefined
@@ -1014,7 +1020,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			this.props.onSelectPiece && this.props.onSelectPiece(piece as AdLibPieceUi)
 		}
 
-		onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any) => {
+		onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 			const { t } = this.props
 
 			if (adlibPiece.invalid) {
@@ -1054,7 +1060,13 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
 					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-						MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
+						MeteorCall.userAction.executeAction(
+							e,
+							this.props.playlist._id,
+							action.actionId,
+							action.userData,
+							mode?.data
+						)
 					)
 				} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
 					doUserAction(t, e, UserAction.START_ADLIB, (e) =>

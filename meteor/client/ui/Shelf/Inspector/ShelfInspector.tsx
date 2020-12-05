@@ -39,7 +39,7 @@ class ShelfInspector extends React.Component<IShelfInspectorProps> {
 
 		return (
 			<ContextMenuTrigger
-				id="bucket-context-menu"
+				id="shelf-context-menu"
 				attributes={{
 					className: 'rundown-view__shelf__contents__pane shelf-inspector',
 				}}

@@ -24,6 +24,7 @@ import {
 	SomeContent,
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
+	IBlueprintActionTriggerMode,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -58,6 +59,7 @@ import { BucketAdLibItem, BucketAdLibActionUi, isAdLibAction, isAdLib, BucketAdL
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
+import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
@@ -447,7 +449,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					}
 				}
 
-				onToggleAdLib = (piece: IAdLibListItem, queue: boolean, e: any) => {
+				onToggleAdLib = (piece: IAdLibListItem, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 					const { t } = this.props
 
 					queue = queue || this.props.shouldQueue
@@ -489,7 +491,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 									e,
 									this.props.playlist._id,
 									bucketAction.adlibAction.actionId,
-									bucketAction.adlibAction.userData
+									bucketAction.adlibAction.userData,
+									mode?.data
 								)
 							)
 						} else {
@@ -749,16 +752,15 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 									<div className="dashboard-panel__panel">
 										{this.state.adLibPieces.map((adlib: BucketAdLibItem) => (
 											<ContextMenuTrigger
-												id="bucket-context-menu"
+												id="shelf-context-menu"
 												collect={() =>
-													new Promise((resolve) => {
-														this.props.onAdLibContext(
-															{
-																contextBucketAdLib: adlib,
-																contextBucket: this.props.bucket,
-															},
-															resolve
-														)
+													setShelfContextMenuContext({
+														type: ContextType.BUCKET_ADLIB,
+														details: {
+															adLib: adlib,
+															bucket: this.props.bucket,
+															onToggle: this.onToggleAdLib,
+														},
 													})
 												}
 												renderTag="span"

@@ -29,6 +29,7 @@ import { ShelfInspector } from './Inspector/ShelfInspector'
 import { Studio } from '../../../lib/collections/Studios'
 import RundownViewEventBus, { RundownViewEvents, SelectPieceEvent } from '../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
+import ShelfContextMenu from './ShelfContextMenu'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -425,6 +426,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					moving: this.state.moving,
 				})}
 				style={fullViewport ? undefined : this.getStyle()}>
+				<ShelfContextMenu />
 				{!fullViewport && (
 					<div
 						className="rundown-view__shelf__handle dark"
@@ -437,7 +439,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 				<div className="rundown-view__shelf__contents">
 					{!this.props.fullViewport || this.props.shelfDisplayOptions.layout ? (
 						<ContextMenuTrigger
-							id="bucket-context-menu"
+							id="shelf-context-menu"
 							attributes={{
 								className: 'rundown-view__shelf__contents__pane fill',
 							}}

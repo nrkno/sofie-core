@@ -6,7 +6,11 @@ import { ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { BucketAdLibItem } from './RundownViewBuckets'
+import RundownViewEventBus, { RundownViewEvents } from '../RundownView/RundownViewEventBus'
+import { IAdLibListItem } from './AdLibListItem'
+import { isActionItem } from './Inspector/ItemRenderers/ActionItemRenderer'
 import { AdLibPieceUi } from './AdLibPanel'
+import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 
 export enum ContextType {
 	BUCKET = 'bucket',
@@ -31,13 +35,17 @@ export interface ShelfContextMenuContextBucketAdLib extends ShelfContextMenuCont
 	details: {
 		bucket: Bucket
 		adLib: BucketAdLibItem
+		canQueue?: boolean
+		onToggle: (aSLine: BucketAdLibItem, queue: boolean, context: any, mode: IBlueprintActionTriggerMode) => void
 	}
 }
 
 export interface ShelfContextMenuContextAdLib extends ShelfContextMenuContextBase {
 	type: ContextType.ADLIB
 	details: {
-		adLib: AdLibPieceUi
+		adLib: IAdLibListItem
+		canQueue?: boolean
+		onToggle: (aSLine: IAdLibListItem, queue: boolean, context: any, mode: IBlueprintActionTriggerMode) => void
 	}
 }
 
@@ -63,35 +71,158 @@ export default function ShelfContextMenu() {
 		shelfContextMenuContext.set(undefined)
 	}
 
+	const getActionItem = (piece: IAdLibListItem) => {
+		return (piece as AdLibPieceUi).adlibAction
+	}
+
+	const renderStartExecuteAdLib = function renderStartExecuteAdLib<T extends IAdLibListItem | BucketAdLibItem>(item: {
+		adLib: T
+		onToggle: (adLib: T, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => void
+	}) {
+		return isActionItem(item.adLib) ? (
+			getActionItem(item.adLib)
+				?.triggerModes?.sort(
+					(a, b) => a.display._rank - b.display._rank || a.display.label.localeCompare(b.display.label)
+				)
+				.map((mode) => (
+					<MenuItem
+						key={mode.data}
+						onClick={(e) => {
+							e.persist()
+							item.onToggle(item.adLib, false, e, mode)
+						}}>
+						{mode.display.label}
+					</MenuItem>
+				)) || (
+				<MenuItem
+					onClick={(e) => {
+						e.persist()
+						item.onToggle(item.adLib, false, e)
+					}}>
+					{t('Execute')}
+				</MenuItem>
+			)
+		) : (
+			<>
+				<MenuItem
+					onClick={(e) => {
+						e.persist()
+						item.onToggle(item.adLib, false, e)
+					}}>
+					{t('Start this AdLib')}
+				</MenuItem>
+				{item.adLib.sourceLayer && item.adLib.sourceLayer?.isQueueable && (
+					<MenuItem
+						onClick={(e) => {
+							e.persist()
+							item.onToggle(item.adLib, true, e)
+						}}>
+						{t('Queue this AdLib')}
+					</MenuItem>
+				)}
+			</>
+		)
+	}
+
 	return (
-		<ContextMenu id="shelf-context-menu" onHide={clearContext}>
-			{context && context.type === ContextType.BUCKET && (
-				<div className="react-contextmenu-label">{context.details.bucket.name}</div>
-			)}
-			{context && context.type === ContextType.BUCKET_ADLIB && (
-				<>
-					<div className="react-contextmenu-label">{context.details.adLib.name}</div>
-					<MenuItem onClick={(e) => this.inspectBucketAdLib(e, context.details.adLib)}>
-						{t('Inspect this AdLib')}
-					</MenuItem>
-					<MenuItem onClick={(e) => this.beginRenameBucketAdLib(context.details.adLib)}>
-						{t('Rename this AdLib')}
-					</MenuItem>
-					<MenuItem onClick={(e) => this.deleteBucketAdLib(e, context.details.adLib)}>
-						{t('Delete this AdLib')}
-					</MenuItem>
-					<hr />
-				</>
-			)}
-			{context && (context.type === ContextType.BUCKET || context.type === ContextType.BUCKET_ADLIB) && (
-				<>
-					<MenuItem onClick={(e) => this.emptyBucket(e, context.details.bucket)}>{t('Empty this Bucket')}</MenuItem>
-					<MenuItem onClick={(e) => this.renameBucket(context.details.bucket)}>{t('Rename this Bucket')}</MenuItem>
-					<MenuItem onClick={(e) => this.deleteBucket(e, context.details.bucket)}>{t('Delete this Bucket')}</MenuItem>
-					<hr />
-				</>
-			)}
-			<MenuItem onClick={this.createNewBucket}>{t('Create new Bucket')}</MenuItem>
-		</ContextMenu>
+		<Escape to="viewport">
+			<ContextMenu id="shelf-context-menu" onHide={clearContext}>
+				{context && context.type === ContextType.BUCKET && (
+					<div className="react-contextmenu-label">{context.details.bucket.name}</div>
+				)}
+				{context && (context.type === ContextType.BUCKET_ADLIB || context.type === ContextType.ADLIB) && (
+					<>
+						<div className="react-contextmenu-label">{context.details.adLib.name}</div>
+						{context.type === ContextType.ADLIB
+							? renderStartExecuteAdLib(context.details)
+							: context.type === ContextType.BUCKET_ADLIB
+							? renderStartExecuteAdLib(context.details)
+							: null}
+						<hr />
+						<MenuItem
+							onClick={(e) => {
+								e.persist()
+								RundownViewEventBus.emit(RundownViewEvents.SELECT_PIECE, {
+									piece: context.details.adLib,
+									context: e,
+								})
+							}}>
+							{t('Inspect this AdLib')}
+						</MenuItem>
+					</>
+				)}
+				{context && context.type === ContextType.BUCKET_ADLIB && (
+					<>
+						<MenuItem
+							onClick={(e) => {
+								e.persist()
+								RundownViewEventBus.emit(RundownViewEvents.RENAME_BUCKET_ADLIB, {
+									piece: context.details.adLib,
+									bucket: context.details.bucket,
+									context: e,
+								})
+							}}>
+							{t('Rename this AdLib')}
+						</MenuItem>
+						<MenuItem
+							onClick={(e) => {
+								e.persist()
+								RundownViewEventBus.emit(RundownViewEvents.DELETE_BUCKET_ADLIB, {
+									piece: context.details.adLib,
+									bucket: context.details.bucket,
+									context: e,
+								})
+							}}>
+							{t('Delete this AdLib')}
+						</MenuItem>
+						<hr />
+					</>
+				)}
+				{context && (context.type === ContextType.BUCKET || context.type === ContextType.BUCKET_ADLIB) && (
+					<>
+						<MenuItem
+							onClick={(e) => {
+								e.persist()
+								RundownViewEventBus.emit(RundownViewEvents.EMPTY_BUCKET, {
+									bucket: context.details.bucket,
+									context: e,
+								})
+							}}>
+							{t('Empty this Bucket')}
+						</MenuItem>
+						<MenuItem
+							onClick={(e) => {
+								e.persist()
+								RundownViewEventBus.emit(RundownViewEvents.RENAME_BUCKET, {
+									bucket: context.details.bucket,
+									context: e,
+								})
+							}}>
+							{t('Rename this Bucket')}
+						</MenuItem>
+						<MenuItem
+							onClick={(e) => {
+								e.persist()
+								RundownViewEventBus.emit(RundownViewEvents.DELETE_BUCKET, {
+									bucket: context.details.bucket,
+									context: e,
+								})
+							}}>
+							{t('Delete this Bucket')}
+						</MenuItem>
+						<hr />
+					</>
+				)}
+				<MenuItem
+					onClick={(e) => {
+						e.persist()
+						RundownViewEventBus.emit(RundownViewEvents.CREATE_BUCKET, {
+							context: e,
+						})
+					}}>
+					{t('Create new Bucket')}
+				</MenuItem>
+			</ContextMenu>
+		</Escape>
 	)
 }

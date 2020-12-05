@@ -4,7 +4,7 @@ import { Tracker } from 'meteor/tracker'
 import { PieceUi } from './SegmentTimelineContainer'
 import { AdLibPieceUi } from '../Shelf/AdLibPanel'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { SourceLayerType, VTContent, LiveSpeakContent } from '@sofie-automation/blueprints-integration'
+import { SourceLayerType, VTContent, LiveSpeakContent, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { RundownUtils } from '../../lib/rundown'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
@@ -14,6 +14,7 @@ import { BucketAdLibUi } from '../Shelf/RundownViewBuckets'
 
 type AnyPiece = {
 	piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | undefined
+	layer?: ISourceLayer | undefined
 	isLiveLine?: boolean
 	studio: Studio | undefined
 }
@@ -37,11 +38,13 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 			private updateMediaObjectSubscription() {
 				if (this.destroyed) return
 
-				if (this.props.piece && this.props.piece.sourceLayer) {
+				const layer = this.props.piece?.sourceLayer || this.props.layer
+
+				if (this.props.piece && layer) {
 					const piece = WithMediaObjectStatusHOCComponent.unwrapPieceInstance(this.props.piece!)
 					let objId: string | undefined = undefined
 
-					switch (this.props.piece.sourceLayer.type) {
+					switch (layer.type) {
 						case SourceLayerType.VT:
 							objId = piece.content ? (piece.content as VTContent).fileName?.toUpperCase() : undefined
 							break
@@ -81,15 +84,15 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 				if (this.destroyed) return
 
 				this.statusComp = this.autorun(() => {
-					const { piece, studio } = this.props
+					const { piece, studio, layer } = this.props
 					this.overrides = {}
 					const overrides = this.overrides
 
 					// Check item status
-					if (piece && piece.sourceLayer && studio) {
+					if (piece && (piece.sourceLayer || layer) && studio) {
 						const { metadata, status, contentDuration, message } = checkPieceContentStatus(
 							WithMediaObjectStatusHOCComponent.unwrapPieceInstance(piece!),
-							piece.sourceLayer,
+							piece.sourceLayer || layer,
 							studio.settings
 						)
 						if (RundownUtils.isAdLibPieceOrAdLibListItem(piece!)) {

@@ -15,6 +15,7 @@ import {
 	SourceLayerType,
 	VTContent,
 	LiveSpeakContent,
+	IBlueprintActionTriggerMode,
 } from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
@@ -26,6 +27,9 @@ import { unprotectString } from '../../../lib/lib'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { Studio } from '../../../lib/collections/Studios'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
+import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
 
 export interface IAdLibListItem extends PieceGeneric {
 	status: RundownAPI.PieceStatusCode
@@ -43,7 +47,7 @@ interface IListViewItemProps {
 	studio: Studio
 	selected: boolean
 	onSelectAdLib: (aSLine: PieceGeneric) => void
-	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
+	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
 	playlist: RundownPlaylist
 }
 
@@ -59,16 +63,32 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 
 		render() {
 			return (
-				<tr
-					className={ClassNames('adlib-panel__list-view__list__segment__item', {
-						selected: this.props.selected,
-						invalid: this.props.piece.invalid,
-						floated: this.props.piece.floated,
-					})}
-					key={unprotectString(this.props.piece._id)}
-					onClick={(e) => this.props.onSelectAdLib(this.props.piece)}
-					onDoubleClick={(e) => this.props.onToggleAdLib(this.props.piece, e.shiftKey, e)}
-					data-obj-id={this.props.piece._id}>
+				<ContextMenuTrigger
+					id="shelf-context-menu"
+					attributes={{
+						className: ClassNames('adlib-panel__list-view__list__segment__item', {
+							selected: this.props.selected,
+							invalid: this.props.piece.invalid,
+							floated: this.props.piece.floated,
+						}),
+						//@ts-ignore React.HTMLAttributes does not list data attributes, but that's fine
+						'data-obj-id': this.props.piece._id,
+						onClick: (e) => this.props.onSelectAdLib(this.props.piece),
+						onContextMenu: (e) => this.props.onSelectAdLib(this.props.piece),
+						onDoubleClick: (e) => this.props.onToggleAdLib(this.props.piece, e.shiftKey, e),
+					}}
+					collect={() =>
+						setShelfContextMenuContext({
+							type: MenuContextType.ADLIB,
+							details: {
+								adLib: this.props.piece,
+								onToggle: this.props.onToggleAdLib,
+							},
+						})
+					}
+					holdToDisplay={contextMenuHoldToDisplayTime()}
+					renderTag="tr"
+					key={unprotectString(this.props.piece._id)}>
 					<td
 						className={ClassNames(
 							'adlib-panel__list-view__list__table__cell--icon',
@@ -89,7 +109,7 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						{this.props.piece.outputLayer && this.props.piece.outputLayer.name}
 					</td>
 					<DefaultListItemRenderer {...this.props} />
-				</tr>
+				</ContextMenuTrigger>
 			)
 		}
 	}

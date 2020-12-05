@@ -31,6 +31,13 @@ import { RundownAPI } from '../../../lib/api/rundown'
 import { AdLibPieceUi } from './AdLibPanel'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { IAdLibListItem } from './AdLibListItem'
+import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	BucketAdLibEvent,
+	BucketEvent,
+	IEventContext,
+} from '../RundownView/RundownViewEventBus'
 
 export interface BucketAdLibUi extends BucketAdLib {
 	sourceLayer?: ISourceLayer
@@ -142,6 +149,30 @@ export const RundownViewBuckets = withTranslation()(
 					  )
 					: [],
 			}
+		}
+
+		componentDidMount() {
+			super.componentDidMount && super.componentDidMount()
+
+			RundownViewEventBus.on(RundownViewEvents.CREATE_BUCKET, this.createNewBucket)
+			RundownViewEventBus.on(RundownViewEvents.DELETE_BUCKET, this.deleteBucket)
+			RundownViewEventBus.on(RundownViewEvents.RENAME_BUCKET, this.renameBucket)
+			RundownViewEventBus.on(RundownViewEvents.EMPTY_BUCKET, this.emptyBucket)
+
+			RundownViewEventBus.on(RundownViewEvents.DELETE_BUCKET_ADLIB, this.deleteBucketAdLib)
+			RundownViewEventBus.on(RundownViewEvents.RENAME_BUCKET_ADLIB, this.beginRenameBucketAdLib)
+		}
+
+		componentWillUnmount() {
+			super.componentWillUnmount && super.componentWillUnmount()
+
+			RundownViewEventBus.off(RundownViewEvents.CREATE_BUCKET, this.createNewBucket)
+			RundownViewEventBus.off(RundownViewEvents.DELETE_BUCKET, this.deleteBucket)
+			RundownViewEventBus.off(RundownViewEvents.RENAME_BUCKET, this.renameBucket)
+			RundownViewEventBus.off(RundownViewEvents.EMPTY_BUCKET, this.emptyBucket)
+
+			RundownViewEventBus.off(RundownViewEvents.DELETE_BUCKET_ADLIB, this.deleteBucketAdLib)
+			RundownViewEventBus.off(RundownViewEvents.RENAME_BUCKET_ADLIB, this.beginRenameBucketAdLib)
 		}
 
 		componentDidUpdate(prevProps: IBucketsProps) {
@@ -290,14 +321,12 @@ export const RundownViewBuckets = withTranslation()(
 			})
 		}
 
-		createNewBucket = (e: any) => {
+		createNewBucket = (e: IEventContext) => {
 			const { t } = this.props
-
-			if (e.persist) e.persist()
 
 			doUserAction(
 				t,
-				e,
+				e.context,
 				UserAction.CREATE_BUCKET,
 				(e) => MeteorCall.userAction.bucketsCreateNewBucket(e, t('New Bucket'), this.props.playlist.studioId, null),
 				(_err, res) => {
@@ -310,18 +339,13 @@ export const RundownViewBuckets = withTranslation()(
 			)
 		}
 
-		inspectBucketAdLib = (e: any, bucketAdLib: BucketAdLibItem) => {
-			if (e.persist) e.persist()
-
-			this.props.onSelectPiece && this.props.onSelectPiece(bucketAdLib)
-		}
-
-		beginRenameBucketAdLib = (bucketAdLib: BucketAdLibItem | undefined) => {
-			if (bucketAdLib) {
+		beginRenameBucketAdLib = (e: BucketAdLibEvent | undefined) => {
+			if (e) {
+				const { piece } = e
 				this.setState({
 					editedPieceName: {
-						bucketId: bucketAdLib.bucketId,
-						pieceId: bucketAdLib._id,
+						bucketId: piece.bucketId,
+						pieceId: piece._id,
 					},
 				})
 			} else {
@@ -331,10 +355,9 @@ export const RundownViewBuckets = withTranslation()(
 			}
 		}
 
-		deleteBucketAdLib = (e: any, bucketAdLib: BucketAdLibItem) => {
+		deleteBucketAdLib = (e: BucketAdLibEvent) => {
 			const { t } = this.props
-
-			if (e.persist) e.persist()
+			const { piece: bucketAdLib } = e
 
 			doModalDialog(
 				literal<ModalDialogQueueItem>({
@@ -356,7 +379,7 @@ export const RundownViewBuckets = withTranslation()(
 						if (isAdLibAction(bucketAdLib)) {
 							doUserAction(
 								t,
-								e,
+								e.context,
 								UserAction.REMOVE_BUCKET_ADLIB,
 								(e) => MeteorCall.userAction.bucketsRemoveBucketAdLibAction(e, bucketAdLib.adlibAction._id),
 								clb
@@ -364,7 +387,7 @@ export const RundownViewBuckets = withTranslation()(
 						} else {
 							doUserAction(
 								t,
-								e,
+								e.context,
 								UserAction.REMOVE_BUCKET_ADLIB,
 								(e) => MeteorCall.userAction.bucketsRemoveBucketAdLib(e, bucketAdLib._id),
 								clb
@@ -375,17 +398,16 @@ export const RundownViewBuckets = withTranslation()(
 			)
 		}
 
-		deleteBucket = (e: any, bucket: Bucket) => {
+		deleteBucket = (e: BucketEvent) => {
 			const { t } = this.props
-
-			if (e.persist) e.persist()
+			const { bucket } = e
 
 			doModalDialog(
 				literal<ModalDialogQueueItem>({
 					message: t('Are you sure you want to delete this Bucket?'),
 					title: bucket.name,
 					onAccept: () => {
-						doUserAction(t, e, UserAction.REMOVE_BUCKET, (e) =>
+						doUserAction(t, e.context, UserAction.REMOVE_BUCKET, (e) =>
 							MeteorCall.userAction.bucketsRemoveBucket(e, bucket._id)
 						)
 					},
@@ -393,23 +415,26 @@ export const RundownViewBuckets = withTranslation()(
 			)
 		}
 
-		renameBucket = (bucket: Bucket) => {
+		renameBucket = (e: BucketEvent) => {
+			const { bucket } = e
+
 			this.setState({
 				editedNameId: bucket._id,
 			})
 		}
 
-		emptyBucket = (e: any, bucket: Bucket) => {
+		emptyBucket = (e: BucketEvent) => {
 			const { t } = this.props
-
-			if (e.persist) e.persist()
+			const { bucket } = e
 
 			doModalDialog(
 				literal<ModalDialogQueueItem>({
 					message: t('Are you sure you want to empty (remove all adlibs inside) this Bucket?'),
 					title: bucket.name,
 					onAccept: () => {
-						doUserAction(t, e, UserAction.EMPTY_BUCKET, (e) => MeteorCall.userAction.bucketsEmptyBucket(e, bucket._id))
+						doUserAction(t, e.context, UserAction.EMPTY_BUCKET, (e) =>
+							MeteorCall.userAction.bucketsEmptyBucket(e, bucket._id)
+						)
 					},
 				})
 			)
@@ -540,19 +565,19 @@ export const RundownViewBuckets = withTranslation()(
 										</div>
 									) : null}
 									<ContextMenuTrigger
-										id="bucket-context-menu"
+										id="shelf-context-menu"
 										attributes={{
 											className: 'buckets',
 										}}
 										collect={() =>
 											new Promise((resolve) => {
-												this.setState(
-													{
-														contextBucket: bucket,
-														contextBucketAdLib: undefined,
+												setShelfContextMenuContext({
+													type: MenuContextType.BUCKET,
+													details: {
+														bucket,
 													},
-													resolve
-												)
+												})
+												resolve()
 											})
 										}
 										holdToDisplay={contextMenuHoldToDisplayTime()}>

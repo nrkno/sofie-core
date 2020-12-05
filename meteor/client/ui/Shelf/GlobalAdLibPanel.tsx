@@ -31,6 +31,7 @@ import {
 	SomeContent,
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
+	IBlueprintActionTriggerMode,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -49,7 +50,12 @@ import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../R
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
-	onToggleAdLib: (piece: IAdLibListItem, queue: boolean, e: mousetrap.ExtendedKeyboardEvent) => void
+	onToggleAdLib: (
+		piece: IAdLibListItem,
+		queue: boolean,
+		e: mousetrap.ExtendedKeyboardEvent,
+		mode?: IBlueprintActionTriggerMode
+	) => void
 	onToggleSticky: (item: IAdLibListItem, e: any) => void
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 	searchFilter: string | undefined
@@ -608,7 +614,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			this.props.onSelectPiece && this.props.onSelectPiece(piece)
 		}
 
-		onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any) => {
+		onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 			const { t } = this.props
 
 			if (adlibPiece.invalid) {
@@ -649,7 +655,13 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
 					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
-						MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
+						MeteorCall.userAction.executeAction(
+							e,
+							this.props.playlist._id,
+							action.actionId,
+							action.userData,
+							mode?.data
+						)
 					)
 				} else {
 					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
