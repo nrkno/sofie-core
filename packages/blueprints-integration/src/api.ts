@@ -59,8 +59,6 @@ export interface BlueprintManifestBase {
 	integrationVersion: string
 	/** Version of the TSR-types that the blueprint depend on */
 	TSRVersion: string
-	/** Minimum expected version of the Sofie Core */
-	minimumCoreVersion: string
 }
 
 export interface SystemBlueprintManifest extends BlueprintManifestBase {
