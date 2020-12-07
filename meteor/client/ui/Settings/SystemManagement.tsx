@@ -250,6 +250,18 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 
 						<div>{t('Note: Core needs to be restarted to apply these settings')}</div>
 
+						<h2 className="mhn">{t('Cron jobs')}</h2>
+						<div className="field">
+							{t('Disable CasparCG restart job')}
+							<div className="mdi">
+								<EditAttribute
+									attribute="cron.casparCG.disabled"
+									obj={this.props.coreSystem}
+									type="checkbox"
+									collection={CoreSystem}></EditAttribute>
+							</div>
+						</div>
+
 						<h2 className="mhn">{t('Cleanup')}</h2>
 						<div>
 							<button className="btn btn-default" onClick={(e) => this.cleanUpOldDatabaseIndexes(e)}>
