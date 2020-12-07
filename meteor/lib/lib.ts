@@ -852,11 +852,11 @@ export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface 
 export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoQuery<DBInterface> | DBInterface['_id']
-): Promise<void> {
+): Promise<number> {
 	return new Promise((resolve, reject) => {
-		collection.remove(selector, (err: any) => {
+		collection.remove(selector, (err: any, count: number) => {
 			if (err) reject(err)
-			else resolve()
+			else resolve(count)
 		})
 	})
 }
