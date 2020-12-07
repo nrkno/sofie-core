@@ -231,8 +231,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
 						: this.props.layer.type === SourceLayerType.SPLITS
 						? this.renderSplits(isList && this.props.showThumbnailsInList)
-                        : this.props.layer.type === SourceLayerType.GRAPHICS
-                        ? this.renderGraphic(isList && this.props.showThumbnailsInList)
+						: this.props.layer.type === SourceLayerType.GRAPHICS
+						? this.renderGraphic(isList && this.props.showThumbnailsInList)
 						: null}
 					<div className="dashboard-panel__panel__button__label-container">
 						<span className="dashboard-panel__panel__button__label">

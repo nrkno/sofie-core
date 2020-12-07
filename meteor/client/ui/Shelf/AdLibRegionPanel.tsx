@@ -242,8 +242,7 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 					className={ClassNames('adlib-region-panel__image-container', {
 						next: piece && this.isAdLibNext(piece),
 						'on-air': piece && this.isAdLibOnAir(piece),
-						'has-preview':
-							!!this.props.thumbnailPiece,
+						'has-preview': !!this.props.thumbnailPiece,
 					})}>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>
 						{this.renderPreview()}
@@ -277,10 +276,13 @@ export const AdLibRegionPanel = translateWithTracker<
 		)
 		const thumbnailPiece =
 			props.panel.thumbnailSourceLayerIds && props.panel.thumbnailSourceLayerIds.length
-				? [...unfinishedPieceInstances, ...nextPieceInstances].find(p => props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId))
+				? [...unfinishedPieceInstances, ...nextPieceInstances].find((p) =>
+						props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId)
+				  )
 				: undefined
 		const layer =
-			thumbnailPiece && props.showStyleBase.sourceLayers.find((layer) => thumbnailPiece.piece.sourceLayerId === layer._id)
+			thumbnailPiece &&
+			props.showStyleBase.sourceLayers.find((layer) => thumbnailPiece.piece.sourceLayerId === layer._id)
 		const { metadata } = thumbnailPiece
 			? checkPieceContentStatus(
 					thumbnailPiece.piece,
