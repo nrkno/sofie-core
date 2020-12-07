@@ -13,6 +13,7 @@ import {
 	VTContent,
 	LiveSpeakContent,
 	SplitsContent,
+	NoraContent,
 } from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
@@ -24,6 +25,10 @@ import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
 import { StyledTimecode } from '../../lib/StyledTimecode'
+import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
+import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
+import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
+import { protectString } from '../../../lib/lib'
 
 export interface IDashboardButtonProps {
 	adLibListItem: IAdLibListItem
@@ -48,15 +53,34 @@ export const DEFAULT_BUTTON_HEIGHT = 5.625
 export interface IDashboardButtonTrackedProps {
 	status: RundownAPI.PieceStatusCode | undefined
 	metadata: MediaObject | null
+	message: string | null
+}
+
+interface IState {
+	isHovered: boolean
+	timePosition: number
 }
 
 export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
-	Translated<IDashboardButtonProps & IDashboardButtonTrackedProps> & T
+	Translated<IDashboardButtonProps & IDashboardButtonTrackedProps> & T,
+	IState
 > {
 	private objId: string
+	private element: HTMLDivElement | null = null
+	private positionAndSize: {
+		top: number
+		left: number
+		width: number
+		height: number
+	} | null = null
 
 	constructor(props: IDashboardButtonProps) {
 		super(props)
+
+		this.state = {
+			isHovered: false,
+			timePosition: 0,
+		}
 	}
 
 	componentDidMount() {
@@ -107,24 +131,70 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		return undefined
 	}
 
+	renderGraphics(renderThumbnail?: boolean) {
+		const adLib = (this.props.adLibListItem as any) as AdLibPieceUi
+		const noraContent = adLib.content as NoraContent | undefined
+		return (
+			<>
+				<L3rdFloatingInspector
+					showMiniInspector={this.state.isHovered}
+					content={noraContent}
+					floatingInspectorStyle={{
+						top: this.positionAndSize?.top + 'px',
+						left: this.positionAndSize?.left + 'px',
+						transform: 'translate(0, -100%)',
+					}}
+					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
+					itemElement={this.element}
+					piece={{ ...adLib, enable: { start: 0 }, startPartId: protectString(''), invalid: false }}
+					pieceRenderedDuration={adLib.expectedDuration || null}
+					pieceRenderedIn={null}
+				/>
+			</>
+		)
+	}
+
 	renderVTLiveSpeak(renderThumbnail?: boolean) {
+		let thumbnailUrl: string | undefined
+		let sourceDuration: number | undefined
+		const adLib = (this.props.adLibListItem as any) as AdLibPieceUi
 		if (this.props.metadata) {
-			const previewUrl = this.getThumbnailUrl()
-			const adLib = (this.props.adLibListItem as any) as AdLibPieceUi
+			thumbnailUrl = this.getThumbnailUrl()
 			const vtContent = adLib.content as VTContent | undefined
-			return (
-				<React.Fragment>
-					{previewUrl && renderThumbnail && (
-						<img src={previewUrl} className="dashboard-panel__panel__button__thumbnail" />
-					)}
-					{vtContent && (
-						<span className="dashboard-panel__panel__button__sub-label">
-							{vtContent.sourceDuration ? <StyledTimecode time={vtContent.sourceDuration || 0} /> : null}
-						</span>
-					)}
-				</React.Fragment>
-			)
+			sourceDuration = vtContent?.sourceDuration
 		}
+		return (
+			<>
+				{thumbnailUrl && renderThumbnail && (
+					<img src={thumbnailUrl} className="dashboard-panel__panel__button__thumbnail" />
+				)}
+				{sourceDuration && (
+					<span className="dashboard-panel__panel__button__sub-label">
+						{sourceDuration ? <StyledTimecode time={sourceDuration || 0} /> : null}
+					</span>
+				)}
+				<VTFloatingInspector
+					showMiniInspector={this.state.isHovered}
+					timePosition={this.state.timePosition}
+					content={adLib.content as VTContent | undefined}
+					floatingInspectorStyle={{
+						top: this.positionAndSize?.top + 'px',
+						left: this.positionAndSize?.left + 'px',
+						transform: 'translate(0, -100%)',
+					}}
+					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
+					itemElement={null}
+					contentMetaData={this.props.metadata || null}
+					noticeMessage={this.props.message || null}
+					noticeLevel={
+						this.props.status !== null && this.props.status !== undefined
+							? getNoticeLevelForPieceStatus(this.props.status as any)
+							: null
+					}
+					mediaPreviewUrl={this.props.mediaPreviewUrl}
+				/>
+			</>
+		)
 	}
 
 	renderSplits(renderThumbnail: boolean = false) {
@@ -132,7 +202,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		if (splitAdLib && splitAdLib.content) {
 			const splitContent = splitAdLib.content as SplitsContent
 			return (
-				<React.Fragment>
+				<>
 					{renderThumbnail ? (
 						<DashboardPieceButtonSplitPreview piece={splitAdLib} />
 					) : (
@@ -142,9 +212,42 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							hideLabel={true}
 						/>
 					)}
-				</React.Fragment>
+				</>
 			)
 		}
+	}
+
+	setRef = (el: HTMLDivElement | null) => {
+		this.element = el
+	}
+
+	handleOnMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (this.element) {
+			const { top, left, width, height } = this.element.getBoundingClientRect()
+			this.positionAndSize = {
+				top,
+				left,
+				width,
+				height,
+			}
+		}
+		this.setState({ isHovered: true })
+	}
+
+	handleOnMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.setState({ isHovered: false })
+		this.positionAndSize = null
+	}
+
+	handleOnMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+		const timePercentage = Math.max(
+			0,
+			Math.min((e.clientX - (this.positionAndSize?.left || 0) - 5) / ((this.positionAndSize?.width || 1) - 10), 1)
+		)
+		const sourceDuration = (this.props.adLibListItem.content as VTContent | undefined)?.sourceDuration || 0
+		this.setState({
+			timePosition: timePercentage * sourceDuration,
+		})
 	}
 
 	render() {
@@ -191,6 +294,10 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				onClick={(e) =>
 					this.props.onToggleAdLib(this.props.adLibListItem, e.shiftKey || !!this.props.queueAllAdlibs, e)
 				}
+				ref={this.setRef}
+				onMouseEnter={this.handleOnMouseEnter}
+				onMouseLeave={this.handleOnMouseLeave}
+				onMouseMove={this.handleOnMouseMove}
 				data-obj-id={this.props.adLibListItem._id}>
 				{!this.props.layer
 					? null
@@ -199,6 +306,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
 					: this.props.layer.type === SourceLayerType.SPLITS
 					? this.renderSplits(isList && this.props.showThumbnailsInList)
+					: this.props.layer.type === SourceLayerType.GRAPHICS || this.props.layer.type === SourceLayerType.LOWER_THIRD
+					? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
 					: null}
 				<span className="dashboard-panel__panel__button__label">
 					{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.adLibListItem.name}
@@ -212,11 +321,16 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 	(props: IDashboardButtonProps) => {
 		const piece = (props.adLibListItem as any) as AdLibPieceUi
 
-		const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
+		const { status, metadata, message } = checkPieceContentStatus(
+			piece,
+			props.layer,
+			props.playlist.getStudio().settings
+		)
 
 		return {
 			status,
 			metadata,
+			message,
 		}
 	}
 )(DashboardPieceButtonBase)

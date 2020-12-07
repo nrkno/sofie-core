@@ -56,7 +56,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 		}
 	})
 
-	const handleOnMouseOver = (e: React.MouseEvent) => {
+	const handleOnMouseEnter = (e: React.MouseEvent) => {
 		if (itemIconPosition) {
 			const left = e.pageX - itemIconPosition.left
 			const unprocessedPercentage = left / itemIconPosition.width
@@ -72,12 +72,12 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 		if (itemIconPosition) {
 			const left = e.pageX - itemIconPosition.left
 			let unprocessedPercentage = left / itemIconPosition.width
-			if ((unprocessedPercentage > 1 || unprocessedPercentage < 0) && showMiniInspector) {
-				setShowMiniInspector(false)
-				return false
-			} else if (unprocessedPercentage >= 0 && unprocessedPercentage <= 1 && !showMiniInspector) {
-				setShowMiniInspector(true)
-			}
+			// if ((unprocessedPercentage > 1 || unprocessedPercentage < 0) && showMiniInspector) {
+			// 	setShowMiniInspector(false)
+			// 	return false
+			// } else if (unprocessedPercentage >= 0 && unprocessedPercentage <= 1 && !showMiniInspector) {
+			// 	setShowMiniInspector(true)
+			// }
 			unprocessedPercentage = (left - 5) / (itemIconPosition.width - 15)
 			const percentage = Math.max(0, Math.min(1, unprocessedPercentage))
 			setHoverScrubTimePosition(percentage * (sourceDuration || 0))
@@ -97,7 +97,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					}
 				)}
 				ref={itemIcon}
-				onMouseOver={handleOnMouseOver}
+				onMouseEnter={handleOnMouseEnter}
 				onMouseLeave={handleOnMouseLeave}
 				onMouseMove={handleOnMouseMove}>
 				{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
