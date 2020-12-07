@@ -1681,9 +1681,10 @@ function generateSegmentContents(
 			}
 		}
 
-		const existingPart = _.find(existingParts, (p) => p._id === partId)
+		const existingPart = existingParts.find((p) => p._id === partId)
+		const existingPartProps = existingPart ? _.pick(existingPart, 'status') : {} // This property is 'owned' by core and updated via its own flow
 		const part = literal<DBPart>({
-			..._.omit(existingPart || {}, 'invalid'),
+			...existingPartProps,
 			...blueprintPart.part,
 			_id: partId,
 			rundownId: rundownId,
