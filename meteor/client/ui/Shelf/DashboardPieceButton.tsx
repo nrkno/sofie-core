@@ -23,6 +23,7 @@ import { IAdLibListItem } from './AdLibListItem'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
+import { StyledTimecode } from '../../lib/StyledTimecode'
 
 export interface IDashboardButtonProps {
 	adLibListItem: IAdLibListItem
@@ -96,7 +97,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	getPreviewUrl = (): string | undefined => {
+	getThumbnailUrl = (): string | undefined => {
 		const { metadata } = this.props
 		if (this.props.mediaPreviewUrl && metadata) {
 			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
@@ -108,7 +109,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	renderVTLiveSpeak(renderThumbnail?: boolean) {
 		if (this.props.metadata) {
-			const previewUrl = this.getPreviewUrl()
+			const previewUrl = this.getThumbnailUrl()
 			const adLib = (this.props.adLibListItem as any) as AdLibPieceUi
 			const vtContent = adLib.content as VTContent | undefined
 			return (
@@ -118,14 +119,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					)}
 					{vtContent && (
 						<span className="dashboard-panel__panel__button__sub-label">
-							{RundownUtils.formatDiffToTimecode(
-								vtContent.sourceDuration || 0,
-								false,
-								undefined,
-								undefined,
-								undefined,
-								true
-							)}
+							{vtContent.sourceDuration ? <StyledTimecode time={vtContent.sourceDuration || 0} /> : null}
 						</span>
 					)}
 				</React.Fragment>
