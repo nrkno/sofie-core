@@ -66,26 +66,10 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 		) as Array<KeyValue>
 	}
 
-	let changed: Time | undefined = undefined
-	if (noraContent && noraContent.payload && noraContent.payload.changed) {
-		changed = noraContent.payload.changed
-	}
+	let changed: Time | undefined = noraContent?.payload?.changed ?? undefined
 
-	let templateName
-	let templateVariant
-
-	if (noraContent && noraContent.payload && noraContent.payload.metadata && noraContent.payload.metadata.templateName) {
-		templateName = noraContent.payload.metadata.templateName
-	}
-
-	if (
-		noraContent &&
-		noraContent.payload &&
-		noraContent.payload.metadata &&
-		noraContent.payload.metadata.templateVariant
-	) {
-		templateVariant = noraContent.payload.metadata.templateVariant
-	}
+	let templateName = noraContent?.payload?.metadata?.templateName
+	let templateVariant = noraContent?.payload?.metadata?.templateVariant
 
 	return noraContent && noraContent.payload && noraContent.previewRenderer ? (
 		showMiniInspector && !!itemElement ? (

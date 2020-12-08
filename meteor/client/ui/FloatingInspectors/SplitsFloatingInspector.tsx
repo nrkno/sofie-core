@@ -33,10 +33,10 @@ const RenderSplitPreview = memo(function RenderSplitPreview({ subItems }: { subI
 						)}
 						key={item._id + '-preview'}
 						style={{
-							left: ((item.content && item.content.x) * 100).toString() + '%',
-							top: ((item.content && item.content.y) * 100).toString() + '%',
-							width: ((item.content && item.content.scale) * 100).toString() + '%',
-							height: ((item.content && item.content.scale) * 100).toString() + '%',
+							left: ((item.content?.x ?? 0) * 100).toString() + '%',
+							top: ((item.content?.y ?? 0) * 100).toString() + '%',
+							width: ((item.content?.scale ?? 1) * 100).toString() + '%',
+							height: ((item.content?.scale ?? 1) * 100).toString() + '%',
 							clipPath:
 								item.content && item.content.crop
 									? `inset(${item.content.crop.top * 100}% ${item.content.crop.right * 100}% ${item.content.crop

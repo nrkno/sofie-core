@@ -25,7 +25,7 @@ export interface SplitSubItem {
 	label: string
 	// TODO: To be replaced with the structure used by the Core
 	role: SplitRole
-	content?: any
+	content?: SplitsContentBoxProperties['geometry']
 }
 
 interface IProps extends ICustomLayerItemProps {}
