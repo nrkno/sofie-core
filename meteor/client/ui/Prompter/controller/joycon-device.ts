@@ -9,7 +9,7 @@ const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
  */
 export class JoyConController extends ControllerAbstract {
 	private prompterView: PrompterViewInner
-	private joycons: Gamepad[] = []
+	private lastUsedJoycon: Gamepad | null = null
 
 	private readonly deadBand = 0.25 // ignore all input within this range. Used to separate out the active joycon when both are connected
 	private rangeRevMin = -1 // pedal "all back" position, the max-reverse-position
@@ -25,6 +25,7 @@ export class JoyConController extends ControllerAbstract {
 	private lastSpeed = 0
 	private currentPosition = 0
 	private lastInputValue = ''
+
 
 	constructor(view: PrompterViewInner) {
 		super(view)
@@ -92,20 +93,30 @@ export class JoyConController extends ControllerAbstract {
 		// Nothing
 	}
 
-	private checkIfWeHaveConnectedJoyCons() {
-		this.joycons = []
+	private getJoycon() {
+		// try to re-use last used joycon if that is still present
+		if (this.lastUsedJoycon && this.lastUsedJoycon.connected) return this.lastUsedJoycon
+		
 		if (navigator.getGamepads) {
-			for (const o of navigator.getGamepads()) {
-				if (o !== null && o.connected && o.id && typeof o.id === 'string' && o.id.match('Joy-Con')) {
-					this.joycons.push(o)
+			let gamepads = navigator.getGamepads()
+			if (!(gamepads && typeof gamepads === 'object' && gamepads.length)) return
+
+			for (const o of gamepads) {
+				if (o && o.connected && o.id && typeof o.id === 'string' && o.id.match('Joy-Con')) {
+					return this.lastUsedJoycon = o // @todo: do we ever need to deal with more devices? What happens when pairing up?
 				}
 			}
 		}
+
+		return this.lastUsedJoycon = null
 	}
 
-	private getActiveAisOfJoycons() {
-		const pad = this.joycons[0]
-
+	private getActiveAxesOfJoycons() {
+		if(!(this.lastUsedJoycon && this.lastUsedJoycon.connected && this.lastUsedJoycon.index !== undefined)) return 0 // this makes sense since the connected property updates on the object
+		
+		const pad = navigator.getGamepads()[this.lastUsedJoycon.index] // this is needed since the axes and buttons don't update
+		if(!(pad && pad.connected)) return 0
+		
 		if (pad.axes.length === 2) {
 			// L or R mode
 			if (Math.abs(pad.axes[0]) > this.deadBand) {
@@ -135,7 +146,7 @@ export class JoyConController extends ControllerAbstract {
 
 	private getSpeedFromJoycons() {
 		const { rangeRevMin, rangeNeutralMin, rangeNeutralMax, rangeFwdMax } = this
-		let inputValue = this.getActiveAisOfJoycons()
+		let inputValue = this.getActiveAxesOfJoycons()
 
 		// start by clamping value to the leagal range
 		inputValue = Math.min(Math.max(inputValue, rangeRevMin), rangeFwdMax) // clamps in between rangeRevMin and rangeFwdMax
@@ -160,11 +171,9 @@ export class JoyConController extends ControllerAbstract {
 	}
 
 	private updateScrollPosition() {
-		this.checkIfWeHaveConnectedJoyCons()
 		if (this.updateSpeedHandle !== null) return
-		if (!this.joycons.length) return
-		this.updateSpeedHandle = null
-
+		if (!this.getJoycon()) return
+		
 		this.getSpeedFromJoycons()
 
 		// update scroll position
