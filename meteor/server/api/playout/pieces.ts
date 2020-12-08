@@ -357,14 +357,7 @@ export function convertAdLibToPieceInstance(
 		}),
 	})
 
-	if (newPieceInstance.piece.lifespan !== PieceLifespan.WithinPart) {
-		// Set it up as an infinite
-		newPieceInstance.infinite = {
-			infiniteInstanceId: getRandomId(),
-			infinitePieceId: newPieceInstance.piece._id,
-			fromPreviousPart: false,
-		}
-	}
+	setupPieceInstanceInfiniteProperties(newPieceInstance)
 
 	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
 		let contentObjects = newPieceInstance.piece.content.timelineObjects
@@ -383,4 +376,15 @@ export function convertAdLibToPieceInstance(
 
 	if (span) span.end()
 	return newPieceInstance
+}
+
+export function setupPieceInstanceInfiniteProperties(pieceInstance: PieceInstance): void {
+	if (pieceInstance.piece.lifespan !== PieceLifespan.WithinPart) {
+		// Set it up as an infinite
+		pieceInstance.infinite = {
+			infiniteInstanceId: getRandomId(),
+			infinitePieceId: pieceInstance.piece._id,
+			fromPreviousPart: false,
+		}
+	}
 }

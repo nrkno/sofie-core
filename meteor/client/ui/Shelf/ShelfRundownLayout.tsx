@@ -11,9 +11,11 @@ import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Studio } from '../../../lib/collections/Studios'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { withTranslation } from 'react-i18next'
-import { Studio } from '../../../lib/collections/Studios'
+import { BucketAdLibItem } from './RundownViewBuckets'
+import { IAdLibListItem } from './AdLibListItem'
 
 export interface IShelfRundownLayoutProps {
 	rundownLayout: RundownLayout | undefined
@@ -22,7 +24,7 @@ export interface IShelfRundownLayoutProps {
 	studioMode: boolean
 	studio: Studio
 	selectedTab: string | undefined
-	selectedPiece: AdLibPieceUi | PieceUi | undefined
+	selectedPiece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
 
 	onSwitchTab: (tab: string) => void
 	onSelectPiece: (piece: AdLibPieceUi | PieceUi) => void

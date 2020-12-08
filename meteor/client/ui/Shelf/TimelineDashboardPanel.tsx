@@ -8,7 +8,7 @@ import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integra
 import { DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import {
 	IAdLibPanelProps,
-	IAdLibPanelTrackedProps,
+	AdLibFetchAndFilterProps,
 	fetchAndFilter,
 	AdLibPieceUi,
 	matchFilter,
@@ -39,7 +39,7 @@ interface IState {
 export const TimelineDashboardPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IDashboardPanelProps>,
 	IState,
-	IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
+	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
@@ -113,7 +113,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 											return (
 												<DashboardPieceButton
 													key={unprotectString(adLibListItem._id)}
-													adLibListItem={adLibListItem}
+													piece={adLibListItem}
+													studio={this.props.studio}
 													layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
 													outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
 													onToggleAdLib={this.onToggleAdLib}
@@ -163,11 +164,12 @@ export const TimelineDashboardPanel = translateWithTracker<
 												return (
 													<DashboardPieceButton
 														key={unprotectString(adLibListItem._id)}
-														adLibListItem={adLibListItem}
+														piece={adLibListItem}
 														layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
 														outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
 														onToggleAdLib={this.onToggleAdLib}
 														playlist={this.props.playlist}
+														studio={this.props.studio}
 														isOnAir={this.isAdLibOnAir(adLibListItem)}
 														mediaPreviewUrl={
 															this.props.studio

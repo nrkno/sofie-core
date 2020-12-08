@@ -81,7 +81,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 				const showStyleBase = rundown.getShowStyleBase() // todo: database
 				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
-				if (sourceLayer && sourceLayer.type !== SourceLayerType.GRAPHICS)
+				if (sourceLayer && (sourceLayer.type !== SourceLayerType.GRAPHICS || sourceLayer.exclusiveGroup))
 					throw new Meteor.Error(
 						403,
 						`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS item!`
@@ -504,8 +504,6 @@ export namespace ServerPlayoutAdLibAPI {
 							},
 						}
 						if (pieceInstance.infinite) {
-							// Mark where this ends
-							up['infinite.lastPartInstanceId'] = currentPartInstance._id
 							stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
 						}
 

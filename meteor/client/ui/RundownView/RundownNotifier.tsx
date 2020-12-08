@@ -37,6 +37,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 import { RankedNote, IMediaObjectIssue } from '../../../lib/api/rundownNotifications'
 import { Settings } from '../../../lib/Settings'
+import { getAllowStudio } from '../../lib/localStorage'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -196,6 +197,7 @@ class RundownViewNotifier extends WithManagedTracker {
 								{
 									label: t('Re-sync'),
 									type: 'primary',
+									disabled: !getAllowStudio(),
 									action: () => {
 										doModalDialog({
 											title: t('Re-sync Rundown'),
@@ -313,6 +315,7 @@ class RundownViewNotifier extends WithManagedTracker {
 										{
 											label: t('Restart'),
 											type: 'primary',
+											disabled: !getAllowStudio(),
 											action: () => {
 												doModalDialog({
 													title: t('Restart {{device}}', { device: parent.name }),
@@ -707,12 +710,14 @@ class RundownViewNotifier extends WithManagedTracker {
 						`rundownPlaylist_${playlistId}`,
 						getCurrentTime(),
 						true,
+
 						[
 							{
 								label: t('Reload {{nrcsName}} Data', {
 									nrcsName: (firstRundown && firstRundown.externalNRCSName) || 'NRCS',
 								}),
 								type: 'primary',
+								disabled: !getAllowStudio(),
 								action: (e) => {
 									const reloadFunc = reloadRundownPlaylistClick.get()
 									if (reloadFunc) {

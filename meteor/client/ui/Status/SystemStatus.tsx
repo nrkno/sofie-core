@@ -15,7 +15,7 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
-import { getAllowConfigure, getAllowDeveloper, getHelpMode } from '../../lib/localStorage'
+import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
 import ClassNames from 'classnames'
 import { TSR } from '@sofie-automation/blueprints-integration'
@@ -239,7 +239,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 
 					<div className="actions-container">
 						<div className="device-item__actions">
-							{this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							{getAllowStudio() &&
+							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
 							this.props.device.subType === TSR.DeviceType.CASPARCG ? (
 								<React.Fragment>
 									<button
@@ -254,7 +255,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 									</button>
 								</React.Fragment>
 							) : null}
-							{this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							{getAllowStudio() &&
+							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
 							this.props.device.subType === TSR.DeviceType.HYPERDECK ? (
 								<React.Fragment>
 									<button
@@ -268,7 +270,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 									</button>
 								</React.Fragment>
 							) : null}
-							{this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							{getAllowStudio() &&
+							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
 							this.props.device.subType === TSR.DeviceType.QUANTEL ? (
 								<React.Fragment>
 									<button
@@ -282,7 +285,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 									</button>
 								</React.Fragment>
 							) : null}
-							{getAllowDeveloper() && (
+							{getAllowDeveloper() ? (
 								<button
 									key="button-ignore"
 									className={ClassNames('btn btn-secondary', {
@@ -295,8 +298,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 									}}>
 									<FontAwesomeIcon icon={faEye} />
 								</button>
-							)}
-							{this.props.showRemoveButtons && (
+							) : null}
+							{this.props.showRemoveButtons ? (
 								<button
 									key="button-device"
 									className="btn btn-primary"
@@ -320,8 +323,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 									}}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
-							)}
-							{this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS ? (
+							) : null}
+							{getAllowStudio() && this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS ? (
 								<React.Fragment>
 									<button
 										className="btn btn-secondary"
@@ -340,7 +343,9 @@ export const DeviceItem = reacti18next.withTranslation()(
 																new Notification(
 																	undefined,
 																	NoticeLevel.NOTIFICATION,
-																	t('Device "{{deviceName}}" restarting...', { deviceName: this.props.device.name }),
+																	t('Device "{{deviceName}}" restarting...', {
+																		deviceName: this.props.device.name,
+																	}),
 																	'SystemStatus'
 																)
 															)

@@ -35,7 +35,6 @@ export interface Blueprint {
 	blueprintVersion: string
 	integrationVersion: string
 	TSRVersion: string
-	minimumCoreVersion: string
 }
 
 export const Blueprints: TransformedCollection<Blueprint, Blueprint> = createMongoCollection<Blueprint>('blueprints')
