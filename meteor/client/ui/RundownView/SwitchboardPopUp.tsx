@@ -3,7 +3,7 @@ import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { StudioRouteSet, StudioRouteSetExclusivityGroup, StudioRouteBehavior } from '../../../lib/collections/Studios'
 import classNames from 'classnames'
-import { RouteSetOverrideIcon } from '../../lib/switchboardIcons'
+import { RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard'
 import Tooltip from 'rc-tooltip'
 
 interface IProps {

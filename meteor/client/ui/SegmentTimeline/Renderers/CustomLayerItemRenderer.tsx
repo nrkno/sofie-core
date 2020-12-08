@@ -56,9 +56,7 @@ export class CustomLayerItemRenderer<
 		}
 	}
 
-	getFloatingInspectorStyle(): {
-		[key: string]: string
-	} {
+	getFloatingInspectorStyle(): React.CSSProperties {
 		return {
 			left: (this.props.elementPosition.left + this.props.cursorPosition.left).toString() + 'px',
 			top: this.props.elementPosition.top + 'px',
@@ -86,9 +84,16 @@ export class CustomLayerItemRenderer<
 		if (
 			vtContent &&
 			vtContent.sourceDuration &&
-			(uiPiece.renderedInPoint || 0) + vtContent.sourceDuration > (this.props.partDuration || 0)
+			(uiPiece.renderedDuration === Number.POSITIVE_INFINITY ||
+				uiPiece.renderedDuration === null ||
+				vtContent.sourceDuration > (uiPiece.renderedDuration || 0))
 		) {
-			let time = (uiPiece.renderedInPoint || 0) + vtContent.sourceDuration - ((this.props.partDuration || 0) as number)
+			let time = 0
+			if (uiPiece.renderedDuration === Number.POSITIVE_INFINITY || uiPiece.renderedDuration === null) {
+				time = (uiPiece.renderedInPoint || 0) + vtContent.sourceDuration - ((this.props.partDuration || 0) as number)
+			} else {
+				time = vtContent.sourceDuration - (uiPiece.renderedDuration || 0)
+			}
 
 			// only display differences greater than 1 second
 			return time > 0 ? time : false

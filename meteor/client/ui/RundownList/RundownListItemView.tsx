@@ -4,11 +4,12 @@ import { withTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { INoteBase, NoteType } from '../../../lib/api/notes'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { getAllowStudio } from '../../lib/localStorage'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
 import JonasFormattedTime from './JonasFormattedTime'
-import RundownListItemProblems from './RundownListItemProblems'
+import { EyeIcon } from '../../lib/ui/icons/rundownList'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
@@ -54,17 +55,27 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 	return connectDropTarget(
 		<li id={htmlElementId} className={classNames.join(' ')}>
 			<span className="rundown-list-item__name">
-				{connectDragSource(
-					<span className="draghandle">
-						<Tooltip
-							overlay={t('Drag to reorder or move out of playlist')}
-							placement="top"
-							overlayStyle={{ display: props.renderTooltips ? undefined : 'none' }}>
-							<button className="rundown-list-item__action">{iconDragHandle()}</button>
-						</Tooltip>
-					</span>
-				)}
+				{getAllowStudio()
+					? connectDragSource(
+							<span className="draghandle">
+								<Tooltip
+									overlay={t('Drag to reorder or move out of playlist')}
+									placement="top"
+									overlayStyle={{ display: props.renderTooltips ? undefined : 'none' }}>
+									<button className="rundown-list-item__action">{iconDragHandle()}</button>
+								</Tooltip>
+							</span>
+					  )
+					: null}
 				<b className="rundown-name">{rundownNameContent}</b>
+				{props.rundown.description ? (
+					<Tooltip overlay={props.rundown.description} trigger={['hover']} placement="right">
+						<span className="rundown-list-description__icon">
+							<EyeIcon />
+						</span>
+					</Tooltip>
+				) : null}
+
 				{isActive === true ? (
 					<Tooltip overlay={t('This rundown is currently active')} placement="bottom">
 						<div className="origo-pulse small right mrs">
@@ -99,7 +110,9 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			</span>
 			<span className="rundown-list-item__actions">
 				{confirmReSyncRundownHandler ? (
-					<Tooltip overlay={t('Re-sync all rundowns in playlist')} placement="top">
+					<Tooltip
+						overlay={t('Re-sync rundown data with {{nrcsName}}', { nrcsName: rundown.externalNRCSName || 'NRCS' })}
+						placement="top">
 						<button className="rundown-list-item__action" onClick={() => confirmReSyncRundownHandler()}>
 							{iconResync()}
 						</button>

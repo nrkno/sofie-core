@@ -2,11 +2,14 @@
 # BUILD IMAGE
 FROM node:12.18.4
 RUN curl "https://install.meteor.com/?release=1.11.1" | sh
-COPY meteor /opt/core/meteor
-WORKDIR /opt/core/meteor
 # Temporary change the NODE_ENV env variable, so that all libraries are installed:
 ENV NODE_ENV_TMP $NODE_ENV
 ENV NODE_ENV anythingButProduction
+COPY packages /opt/core/packages
+WORKDIR /opt/core/packages
+RUN yarn install && yarn build
+COPY meteor /opt/core/meteor
+WORKDIR /opt/core/meteor
 # Force meteor to setup the runtime
 RUN meteor --version --allow-superuser
 RUN meteor npm install

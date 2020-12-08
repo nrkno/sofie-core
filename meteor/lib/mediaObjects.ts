@@ -98,7 +98,7 @@ export function getAcceptedFormats(settings: IStudioSettings | undefined): Array
 	)
 }
 
-export function getMediaObjectMediaId(piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer) {
+export function getMediaObjectMediaId(piece: Pick<IBlueprintPieceGeneric, 'content'>, sourceLayer: ISourceLayer) {
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
@@ -111,7 +111,7 @@ export function getMediaObjectMediaId(piece: IBlueprintPieceGeneric, sourceLayer
 }
 
 export function checkPieceContentStatus(
-	piece: IBlueprintPieceGeneric,
+	piece: Pick<IBlueprintPieceGeneric, 'name' | 'content'>,
 	sourceLayer: ISourceLayer | undefined,
 	settings: IStudioSettings | undefined,
 	t?: i18next.TFunction

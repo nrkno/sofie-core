@@ -4,10 +4,7 @@ import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
-
-import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { RundownUtils } from '../../lib/rundown'
 import {
 	ISourceLayer,
@@ -16,21 +13,28 @@ import {
 	VTContent,
 	LiveSpeakContent,
 	SplitsContent,
+	NoraContent,
 } from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
 import { IAdLibListItem } from './AdLibListItem'
-import { PieceId, PieceGeneric } from '../../../lib/collections/Pieces'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
+import { StyledTimecode } from '../../lib/StyledTimecode'
+import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
+import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
+import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
+import { protectString } from '../../../lib/lib'
+import { Studio } from '../../../lib/collections/Studios'
+import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 
 export interface IDashboardButtonProps {
-	adLibListItem: IAdLibListItem
+	piece: IAdLibListItem
+	studio: Studio | undefined
 	layer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
@@ -41,109 +45,136 @@ export interface IDashboardButtonProps {
 	widthScale?: number
 	heightScale?: number
 	disabled?: boolean
-	displayStyle?: PieceDisplayStyle
+	displayStyle: PieceDisplayStyle
 	isSelected?: boolean
 	queueAllAdlibs?: boolean
 	showThumbnailsInList?: boolean
+	editableName?: boolean
+	onNameChanged?: (e: any, value: string) => void
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
 
-export interface IDashboardButtonTrackedProps {
-	status: RundownAPI.PieceStatusCode | undefined
-	metadata: MediaObject | null
+interface IState {
+	label: string
+	isHovered: boolean
+	timePosition: number
 }
 
 export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
-	Translated<IDashboardButtonProps & IDashboardButtonTrackedProps> & T
+	Translated<IDashboardButtonProps> & T,
+	IState
 > {
 	private objId: string
+	private element: HTMLDivElement | null = null
+	private positionAndSize: {
+		top: number
+		left: number
+		width: number
+		height: number
+	} | null = null
+	private _labelEl: HTMLTextAreaElement
 
 	constructor(props: IDashboardButtonProps) {
 		super(props)
-	}
 
-	componentDidMount() {
-		Meteor.defer(() => {
-			this.updateMediaObjectSubscription()
-		})
-	}
-
-	componentDidUpdate() {
-		Meteor.defer(() => {
-			this.updateMediaObjectSubscription()
-		})
-	}
-
-	updateMediaObjectSubscription() {
-		if (this.props.adLibListItem && this.props.layer) {
-			const piece = (this.props.adLibListItem as any) as AdLibPieceUi
-			let objId: string | undefined = undefined
-
-			if (piece.content && piece.content.fileName) {
-				switch (this.props.layer.type) {
-					case SourceLayerType.VT:
-						objId = (piece.content as VTContent).fileName.toUpperCase()
-						break
-					case SourceLayerType.LIVE_SPEAK:
-						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
-						break
-				}
-			}
-
-			if (objId && objId !== this.objId) {
-				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
-				this.objId = objId
-				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
-					mediaId: this.objId,
-				})
-			}
+		this.state = {
+			isHovered: false,
+			timePosition: 0,
+			label: this.props.piece.name,
 		}
 	}
 
-	getPreviewUrl = (): string | undefined => {
-		const { metadata } = this.props
-		if (this.props.mediaPreviewUrl && metadata) {
-			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
-				return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(metadata.mediaId)
+	componentDidUpdate(prevProps) {
+		if (prevProps.piece.name !== this.props.piece.name) {
+			this.setState({
+				label: this.props.piece.name,
+			})
+		}
+	}
+
+	getThumbnailUrl = (): string | undefined => {
+		const { piece } = this.props
+		if (this.props.mediaPreviewUrl && piece.contentMetaData) {
+			if (piece.contentMetaData && piece.contentMetaData.previewPath && this.props.mediaPreviewUrl) {
+				return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(piece.contentMetaData.mediaId)
 			}
 		}
 		return undefined
 	}
 
+	renderGraphics(renderThumbnail?: boolean) {
+		const adLib = (this.props.piece as any) as AdLibPieceUi
+		const noraContent = adLib.content as NoraContent | undefined
+		return (
+			<>
+				<L3rdFloatingInspector
+					showMiniInspector={this.state.isHovered}
+					content={noraContent}
+					floatingInspectorStyle={{
+						top: this.positionAndSize?.top + 'px',
+						left: this.positionAndSize?.left + 'px',
+						transform: 'translate(0, -100%)',
+					}}
+					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
+					itemElement={this.element}
+					piece={{ ...adLib, enable: { start: 0 }, startPartId: protectString(''), invalid: false }}
+					pieceRenderedDuration={adLib.expectedDuration || null}
+					pieceRenderedIn={null}
+				/>
+			</>
+		)
+	}
+
 	renderVTLiveSpeak(renderThumbnail?: boolean) {
-		if (this.props.metadata) {
-			const previewUrl = this.getPreviewUrl()
-			const adLib = (this.props.adLibListItem as any) as AdLibPieceUi
+		let thumbnailUrl: string | undefined
+		let sourceDuration: number | undefined
+		const adLib = (this.props.piece as any) as AdLibPieceUi
+		if (this.props.piece.content) {
+			thumbnailUrl = this.getThumbnailUrl()
 			const vtContent = adLib.content as VTContent | undefined
-			return (
-				<React.Fragment>
-					{previewUrl && renderThumbnail && (
-						<img src={previewUrl} className="dashboard-panel__panel__button__thumbnail" />
-					)}
-					{vtContent && (
-						<span className="dashboard-panel__panel__button__sub-label">
-							{RundownUtils.formatDiffToTimecode(
-								vtContent.sourceDuration || 0,
-								false,
-								undefined,
-								undefined,
-								undefined,
-								true
-							)}
-						</span>
-					)}
-				</React.Fragment>
-			)
+			sourceDuration = vtContent?.sourceDuration
 		}
+		return (
+			<>
+				{thumbnailUrl && renderThumbnail && (
+					<img src={thumbnailUrl} className="dashboard-panel__panel__button__thumbnail" />
+				)}
+				{sourceDuration && (
+					<span className="dashboard-panel__panel__button__sub-label">
+						{sourceDuration ? <StyledTimecode time={sourceDuration || 0} /> : null}
+					</span>
+				)}
+				<VTFloatingInspector
+					showMiniInspector={this.state.isHovered}
+					timePosition={this.state.timePosition}
+					content={adLib.content as VTContent | undefined}
+					floatingInspectorStyle={{
+						top: this.positionAndSize?.top + 'px',
+						left: this.positionAndSize?.left + 'px',
+						transform: 'translate(0, -100%)',
+					}}
+					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
+					itemElement={null}
+					contentMetaData={this.props.piece.contentMetaData || null}
+					noticeMessage={this.props.piece.message || null}
+					noticeLevel={
+						this.props.piece.status !== null && this.props.piece.status !== undefined
+							? getNoticeLevelForPieceStatus(this.props.piece.status)
+							: null
+					}
+					mediaPreviewUrl={this.props.mediaPreviewUrl}
+				/>
+			</>
+		)
 	}
 
 	renderSplits(renderThumbnail: boolean = false) {
-		const splitAdLib = this.props.adLibListItem
+		const splitAdLib = this.props.piece
 		if (splitAdLib && splitAdLib.content) {
 			const splitContent = splitAdLib.content as SplitsContent
 			return (
-				<React.Fragment>
+				<>
 					{renderThumbnail ? (
 						<DashboardPieceButtonSplitPreview piece={splitAdLib} />
 					) : (
@@ -153,9 +184,98 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							hideLabel={true}
 						/>
 					)}
-				</React.Fragment>
+				</>
 			)
 		}
+	}
+
+	private setRef = (el: HTMLDivElement | null) => {
+		this.element = el
+	}
+
+	private handleOnMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (this.element) {
+			const { top, left, width, height } = this.element.getBoundingClientRect()
+			this.positionAndSize = {
+				top,
+				left,
+				width,
+				height,
+			}
+		}
+		this.setState({ isHovered: true })
+	}
+
+	private handleOnMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.setState({ isHovered: false })
+		this.positionAndSize = null
+	}
+
+	private handleOnMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+		const timePercentage = Math.max(
+			0,
+			Math.min((e.clientX - (this.positionAndSize?.left || 0) - 5) / ((this.positionAndSize?.width || 1) - 10), 1)
+		)
+		const sourceDuration = (this.props.piece.content as VTContent | undefined)?.sourceDuration || 0
+		this.setState({
+			timePosition: timePercentage * sourceDuration,
+		})
+	}
+
+	private onNameChanged = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		this.setState({
+			label: e.currentTarget.value || '',
+		})
+	}
+
+	private onRenameTextBoxKeyUp = (e: KeyboardEvent) => {
+		if (e.key === 'Escape') {
+			this.setState(
+				{
+					label: this.props.piece.name,
+				},
+				() => {
+					this._labelEl && this._labelEl.blur()
+				}
+			)
+			e.preventDefault()
+			e.stopPropagation()
+			e.stopImmediatePropagation()
+		} else if (e.key === 'Enter') {
+			this._labelEl && this._labelEl.blur()
+			e.preventDefault()
+			e.stopPropagation()
+			e.stopImmediatePropagation()
+		}
+	}
+
+	private onRenameTextBoxBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+		if (!this.state.label.trim()) {
+			e.persist()
+			this.setState(
+				{
+					label: this.props.piece.name,
+				},
+				() => {
+					this.props.onNameChanged && this.props.onNameChanged(e, this.state.label)
+				}
+			)
+		} else {
+			this.props.onNameChanged && this.props.onNameChanged(e, this.state.label)
+		}
+	}
+
+	private renameTextBoxFocus = (input: HTMLTextAreaElement) => {
+		input.focus()
+		input.setSelectionRange(0, input.value.length)
+	}
+
+	private onRenameTextBoxShow = (ref: HTMLTextAreaElement) => {
+		if (ref && !this._labelEl) {
+			ref.addEventListener('keyup', this.onRenameTextBoxKeyUp)
+			this.renameTextBoxFocus(ref)
+		}
+		this._labelEl = ref
 	}
 
 	render() {
@@ -164,19 +284,19 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		const hasMediaInfo =
 			this.props.layer &&
 			this.props.layer.type === SourceLayerType.VT &&
-			this.props.metadata &&
-			this.props.metadata.mediainfo
+			this.props.piece.contentMetaData &&
+			this.props.piece.contentMetaData.mediainfo
 		return (
 			<div
 				className={ClassNames(
 					'dashboard-panel__panel__button',
 					{
-						invalid: this.props.adLibListItem.invalid,
-						floated: this.props.adLibListItem.floated,
+						invalid: this.props.piece.invalid,
+						floated: this.props.piece.floated,
 
-						'source-missing': this.props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
-						'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
+						'source-missing': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
+						'source-broken': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+						'unknown-state': this.props.piece.status === RundownAPI.PieceStatusCode.UNKNOWN,
 
 						live: this.props.isOnAir,
 						disabled: this.props.disabled,
@@ -199,10 +319,12 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							  (this.props.heightScale as number) * DEFAULT_BUTTON_HEIGHT + 'em'
 							: undefined,
 				}}
-				onClick={(e) =>
-					this.props.onToggleAdLib(this.props.adLibListItem, e.shiftKey || !!this.props.queueAllAdlibs, e)
-				}
-				data-obj-id={this.props.adLibListItem._id}>
+				onClick={(e) => this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)}
+				ref={this.setRef}
+				onMouseEnter={this.handleOnMouseEnter}
+				onMouseLeave={this.handleOnMouseLeave}
+				onMouseMove={this.handleOnMouseMove}
+				data-obj-id={this.props.piece._id}>
 				{!this.props.layer
 					? null
 					: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
@@ -210,24 +332,27 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
 					: this.props.layer.type === SourceLayerType.SPLITS
 					? this.renderSplits(isList && this.props.showThumbnailsInList)
+					: this.props.layer.type === SourceLayerType.GRAPHICS || this.props.layer.type === SourceLayerType.LOWER_THIRD
+					? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
 					: null}
-				<span className="dashboard-panel__panel__button__label">
-					{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.adLibListItem.name}
-				</span>
+
+				{isList && hasMediaInfo ? (
+					<span className="dashboard-panel__panel__button__label">
+						{this.props.piece.contentMetaData!.mediainfo!.name}
+					</span>
+				) : this.props.editableName ? (
+					<textarea
+						className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
+						value={this.state.label}
+						onChange={this.onNameChanged}
+						onBlur={this.onRenameTextBoxBlur}
+						ref={this.onRenameTextBoxShow}></textarea>
+				) : (
+					<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
+				)}
 			</div>
 		)
 	}
 }
 
-export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, {}, IDashboardButtonTrackedProps>(
-	(props: IDashboardButtonProps) => {
-		const piece = (props.adLibListItem as any) as AdLibPieceUi
-
-		const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
-
-		return {
-			status,
-			metadata,
-		}
-	}
-)(DashboardPieceButtonBase)
+export const DashboardPieceButton = withMediaObjectStatus<IDashboardButtonProps, {}>()(DashboardPieceButtonBase)
