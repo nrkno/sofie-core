@@ -2745,6 +2745,7 @@ export function handleRundownReloadResponse(
 					{
 						label: t('Leave it in Sofie (mark the rundown as unsynced)'),
 						type: 'default',
+						disabled: !getAllowStudio(),
 						action: () => {
 							doUserAction(
 								t,

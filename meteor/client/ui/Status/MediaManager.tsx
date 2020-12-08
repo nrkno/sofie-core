@@ -20,6 +20,7 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import Tooltip from 'rc-tooltip'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
+import { getAllowConfigure, getAllowStudio } from '../../lib/localStorage'
 
 interface IMediaManagerStatusProps {}
 
@@ -434,12 +435,16 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 						<h1>{t('Media Transfer Status')}</h1>
 					</header>
 					<div className="mod mvl alright">
-						<button className="btn btn-secondary mls" onClick={this.actionAbortAll}>
-							{t('Abort All')}
-						</button>
-						<button className="btn btn-secondary mls" onClick={this.actionRestartAll}>
-							{t('Restart All')}
-						</button>
+						{getAllowStudio() || getAllowConfigure() ? (
+							<React.Fragment>
+								<button className="btn btn-secondary mls" onClick={this.actionAbortAll}>
+									{t('Abort All')}
+								</button>
+								<button className="btn btn-secondary mls" onClick={this.actionRestartAll}>
+									{t('Restart All')}
+								</button>
+							</React.Fragment>
+						) : null}
 					</div>
 					<div className="mod mvl">{this.renderWorkFlows()}</div>
 				</div>
