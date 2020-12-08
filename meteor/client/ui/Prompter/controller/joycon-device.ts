@@ -11,7 +11,6 @@ export class JoyConController extends ControllerAbstract {
 	private prompterView: PrompterViewInner
 	private lastUsedJoycon: Gamepad | null = null
 
-	private readonly deadBand = 0.25 // ignore all input within this range. Used to separate out the active joycon when both are connected
 	private rangeRevMin = -1 // pedal "all back" position, the max-reverse-position
 	private rangeNeutralMin = -0.25 // pedal "back" position where reverse-range transistions to the neutral range
 	private rangeNeutralMax = 0.25 // pedal "front" position where scrolling starts, the 0 speed origin
@@ -22,6 +21,7 @@ export class JoyConController extends ControllerAbstract {
 	private reverseSpeedSpline: Spline
 
 	private updateSpeedHandle: number | null = null
+	private deadBand = 0.25
 	private lastSpeed = 0
 	private currentPosition = 0
 	private lastInputValue = ''
@@ -37,6 +37,7 @@ export class JoyConController extends ControllerAbstract {
 		this.rangeNeutralMin = view.configOptions.rangeNeutralMin || this.rangeNeutralMin
 		this.rangeNeutralMax = view.configOptions.rangeNeutralMax || this.rangeNeutralMax
 		this.rangeFwdMax = view.configOptions.rangeFwdMax || this.rangeFwdMax
+		this.deadBand = Math.min(Math.abs(this.rangeNeutralMin), Math.abs(this.rangeNeutralMax))
 
 		// validate range settings, they need to be in sequence, or the logic will break
 		if (this.rangeNeutralMin <= this.rangeRevMin) {
