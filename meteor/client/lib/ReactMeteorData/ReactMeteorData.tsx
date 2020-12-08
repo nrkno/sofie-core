@@ -1,13 +1,14 @@
 /* global Package */
 /* eslint-disable react/prefer-stateless-function */
 
-import * as React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
 import * as _ from 'underscore'
+import { auto } from '@popperjs/core'
 
 const globalTrackerQueue: Array<Function> = []
 let globalTrackerTimestamp: number | undefined = undefined
@@ -303,3 +304,20 @@ export type Translated<T> = T & WithTranslation
 // 			state: IState
 // 		) => React.Component<TrackedProps, IState, never>
 // 	) => any
+
+export function useTracker<T>(autorun: () => T, deps?: React.DependencyList | undefined): T | undefined {
+	const [meteorData, setMeteorData] = useState<T | undefined>(undefined)
+
+	useEffect(() => {
+		const computation = Tracker.nonreactive(() =>
+			Tracker.autorun(() => {
+				setMeteorData(autorun())
+			})
+		)
+		return () => {
+			computation.stop()
+		}
+	}, deps)
+
+	return meteorData
+}

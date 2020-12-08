@@ -3,15 +3,13 @@ import { IAdLibListItem } from '../AdLibListItem'
 import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 
 interface IPropsHeader {
-	adLibListItem: IAdLibListItem
+	piece: IAdLibListItem
 	selected: boolean
-	layer: ISourceLayer | undefined
-	outputLayer: IOutputLayer | undefined
 }
 
 export const DefaultListItemRenderer: React.FunctionComponent<IPropsHeader> = (props: IPropsHeader) => (
 	<React.Fragment>
-		<td className="adlib-panel__list-view__list__table__cell--name">{props.adLibListItem.name}</td>
+		<td className="adlib-panel__list-view__list__table__cell--name">{props.piece.name}</td>
 		{/*<td className='adlib-panel__list-view__list__table__cell--data'>
 			&nbsp;
 		</td>

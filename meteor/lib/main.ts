@@ -3,6 +3,9 @@
  */
 
 import './collections/AdLibPieces'
+import './collections/BucketAdlibs'
+import './collections/BucketAdlibActions'
+import './collections/Buckets'
 import './collections/AsRunLog'
 import './collections/Blueprints'
 import './collections/Evaluations'

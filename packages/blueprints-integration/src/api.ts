@@ -128,10 +128,18 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	) => void
 
 	/** Execute an action defined by an IBlueprintActionManifest */
-	executeAction?: (context: EventContext & ActionExecutionContext, actionId: string, userData: ActionUserData) => void // Promise<void> | void
+	executeAction?: (
+		context: EventContext & ActionExecutionContext,
+		actionId: string,
+		userData: ActionUserData,
+		triggerMode?: string
+	) => void // Promise<void> | void
 
 	/** Generate adlib piece from ingest data */
-	getAdlibItem?: (context: ShowStyleContext, ingestItem: IngestAdlib) => IBlueprintAdLibPiece | null
+	getAdlibItem?: (
+		context: ShowStyleContext,
+		ingestItem: IngestAdlib
+	) => IBlueprintAdLibPiece | IBlueprintActionManifest | null
 
 	/** Preprocess config before storing it by core to later be returned by context's getShowStyleConfig. If not provided, getShowStyleConfig will return unprocessed blueprint config */
 	preprocessConfig?: (config: IBlueprintConfig) => unknown

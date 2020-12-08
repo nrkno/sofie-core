@@ -39,12 +39,13 @@ import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getAllowSpeaking } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
-import { RundownViewEvents, IContextMenuContext } from '../RundownView'
+import { IContextMenuContext } from '../RundownView'
 import { literal, unprotectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
+import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
 interface IProps {
 	id: string
@@ -309,25 +310,25 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	componentDidMount() {
 		super.componentDidMount && super.componentDidMount()
-		window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
 
-		window.addEventListener(RundownViewEvents.segmentZoomOn, this.onRundownEventSegmentZoomOn)
-		window.addEventListener(RundownViewEvents.segmentZoomOff, this.onRundownEventSegmentZoomOff)
+		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
+		RundownViewEventBus.on(RundownViewEvents.SEGMENT_ZOOM_ON, this.onRundownEventSegmentZoomOn)
+		RundownViewEventBus.on(RundownViewEvents.SEGMENT_ZOOM_OFF, this.onRundownEventSegmentZoomOff)
 	}
 
 	componentWillUnmount() {
 		super.componentWillUnmount && super.componentWillUnmount()
-		window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
 		clearTimeout(this.highlightTimeout)
 
-		window.removeEventListener(RundownViewEvents.segmentZoomOn, this.onRundownEventSegmentZoomOn)
-		window.removeEventListener(RundownViewEvents.segmentZoomOff, this.onRundownEventSegmentZoomOff)
+		RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
+		RundownViewEventBus.off(RundownViewEvents.SEGMENT_ZOOM_ON, this.onRundownEventSegmentZoomOn)
+		RundownViewEventBus.off(RundownViewEvents.SEGMENT_ZOOM_OFF, this.onRundownEventSegmentZoomOff)
 	}
 
 	private highlightTimeout: NodeJS.Timer
 
-	private onHighlight = (e: any) => {
-		if (e.detail && e.detail.segmentId === this.props.segment._id && !e.detail.partId && !e.detail.pieceId) {
+	private onHighlight = (e: HighlightEvent) => {
+		if (e.segmentId === this.props.segment._id && !e.partId && !e.pieceId) {
 			this.setState({
 				highlight: true,
 			})
@@ -487,29 +488,29 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		document.removeEventListener('pointerlockerror', this.onTimelinePointerError)
 	}
 
-	onRundownEventSegmentZoomOn = (e: any) => {
+	onRundownEventSegmentZoomOn = () => {
 		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.playlist.currentPartInstanceId === null)) {
-			this.onTimelineZoomOn(e)
+			this.onTimelineZoomOn()
 		}
 	}
 
-	onRundownEventSegmentZoomOff = (e: any) => {
+	onRundownEventSegmentZoomOff = () => {
 		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.playlist.currentPartInstanceId === null)) {
-			this.onTimelineZoomOff(e)
+			this.onTimelineZoomOff()
 		}
 	}
 
-	onTimelineZoomOn = (e: any) => {
+	onTimelineZoomOn = () => {
 		if (SegmentTimelineClass._zoomOutLatch === undefined) {
 			SegmentTimelineClass._zoomOutLatch = this.props.timeScale
 		}
 		SegmentTimelineClass._zoomOutLatchId = this.props.id
-		if (this.props.onShowEntireSegment) this.props.onShowEntireSegment(e)
+		if (this.props.onShowEntireSegment) this.props.onShowEntireSegment(undefined)
 	}
 
-	onTimelineZoomOff = (e: any) => {
+	onTimelineZoomOff = () => {
 		if (SegmentTimelineClass._zoomOutLatch !== undefined) {
-			this.props.onZoomChange(SegmentTimelineClass._zoomOutLatch, e)
+			this.props.onZoomChange(SegmentTimelineClass._zoomOutLatch, undefined)
 		}
 		SegmentTimelineClass._zoomOutLatch = undefined
 		SegmentTimelineClass._zoomOutLatchId = undefined
@@ -518,9 +519,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	// doubleclick is simulated by onTimelineMouseUp, because we use pointer lock and that prevents dblclick events
 	onTimelineDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (SegmentTimelineClass._zoomOutLatch === undefined || SegmentTimelineClass._zoomOutLatchId !== this.props.id) {
-			this.onTimelineZoomOn(e)
+			this.onTimelineZoomOn()
 		} else {
-			this.onTimelineZoomOff(e)
+			this.onTimelineZoomOff()
 		}
 	}
 

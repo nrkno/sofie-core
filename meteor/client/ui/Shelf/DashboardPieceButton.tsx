@@ -28,9 +28,12 @@ import { PieceId, PieceGeneric } from '../../../lib/collections/Pieces'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
+import { Studio } from '../../../lib/collections/Studios'
+import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 
 export interface IDashboardButtonProps {
-	adLibListItem: IAdLibListItem
+	piece: IAdLibListItem
+	studio: Studio | undefined
 	layer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
@@ -45,76 +48,53 @@ export interface IDashboardButtonProps {
 	isSelected?: boolean
 	queueAllAdlibs?: boolean
 	showThumbnailsInList?: boolean
+	editableName?: boolean
+	onNameChanged?: (e: any, value: string) => void
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
 
-export interface IDashboardButtonTrackedProps {
-	status: RundownAPI.PieceStatusCode | undefined
-	metadata: MediaObject | null
+interface IState {
+	label: string
 }
 
 export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
-	Translated<IDashboardButtonProps & IDashboardButtonTrackedProps> & T
+	Translated<IDashboardButtonProps> & T,
+	IState
 > {
 	private objId: string
+	private _labelEl: HTMLTextAreaElement
 
 	constructor(props: IDashboardButtonProps) {
 		super(props)
+
+		this.state = {
+			label: this.props.piece.name,
+		}
 	}
 
-	componentDidMount() {
-		Meteor.defer(() => {
-			this.updateMediaObjectSubscription()
-		})
-	}
-
-	componentDidUpdate() {
-		Meteor.defer(() => {
-			this.updateMediaObjectSubscription()
-		})
-	}
-
-	updateMediaObjectSubscription() {
-		if (this.props.adLibListItem && this.props.layer) {
-			const piece = (this.props.adLibListItem as any) as AdLibPieceUi
-			let objId: string | undefined = undefined
-
-			if (piece.content && piece.content.fileName) {
-				switch (this.props.layer.type) {
-					case SourceLayerType.VT:
-						objId = (piece.content as VTContent).fileName.toUpperCase()
-						break
-					case SourceLayerType.LIVE_SPEAK:
-						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
-						break
-				}
-			}
-
-			if (objId && objId !== this.objId) {
-				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
-				this.objId = objId
-				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
-					mediaId: this.objId,
-				})
-			}
+	componentDidUpdate(prevProps) {
+		if (prevProps.piece.name !== this.props.piece.name) {
+			this.setState({
+				label: this.props.piece.name,
+			})
 		}
 	}
 
 	getPreviewUrl = (): string | undefined => {
-		const { metadata } = this.props
-		if (this.props.mediaPreviewUrl && metadata) {
-			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
-				return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(metadata.mediaId)
+		const { piece } = this.props
+		if (this.props.mediaPreviewUrl && piece.contentMetaData) {
+			if (piece.contentMetaData && piece.contentMetaData.previewPath && this.props.mediaPreviewUrl) {
+				return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(piece.contentMetaData.mediaId)
 			}
 		}
 		return undefined
 	}
 
 	renderVTLiveSpeak(renderThumbnail?: boolean) {
-		if (this.props.metadata) {
+		if (this.props.piece.content) {
 			const previewUrl = this.getPreviewUrl()
-			const adLib = (this.props.adLibListItem as any) as AdLibPieceUi
+			const adLib = (this.props.piece as any) as AdLibPieceUi
 			const vtContent = adLib.content as VTContent | undefined
 			return (
 				<React.Fragment>
@@ -139,7 +119,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	renderSplits(renderThumbnail: boolean = false) {
-		const splitAdLib = this.props.adLibListItem
+		const splitAdLib = this.props.piece
 		if (splitAdLib && splitAdLib.content) {
 			const splitContent = splitAdLib.content as SplitsContent
 			return (
@@ -158,25 +138,81 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
+	private onNameChanged = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		this.setState({
+			label: e.currentTarget.value || '',
+		})
+	}
+
+	private onRenameTextBoxKeyUp = (e: KeyboardEvent) => {
+		if (e.key === 'Escape') {
+			this.setState(
+				{
+					label: this.props.piece.name,
+				},
+				() => {
+					this._labelEl && this._labelEl.blur()
+				}
+			)
+			e.preventDefault()
+			e.stopPropagation()
+			e.stopImmediatePropagation()
+		} else if (e.key === 'Enter') {
+			this._labelEl && this._labelEl.blur()
+			e.preventDefault()
+			e.stopPropagation()
+			e.stopImmediatePropagation()
+		}
+	}
+
+	private onRenameTextBoxBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+		if (!this.state.label.trim()) {
+			e.persist()
+			this.setState(
+				{
+					label: this.props.piece.name,
+				},
+				() => {
+					this.props.onNameChanged && this.props.onNameChanged(e, this.state.label)
+				}
+			)
+		} else {
+			this.props.onNameChanged && this.props.onNameChanged(e, this.state.label)
+		}
+	}
+
+	private renameTextBoxFocus = (input: HTMLTextAreaElement) => {
+		input.focus()
+		input.setSelectionRange(0, input.value.length)
+	}
+
+	private onRenameTextBoxShow = (ref: HTMLTextAreaElement) => {
+		if (ref && !this._labelEl) {
+			ref.addEventListener('keyup', this.onRenameTextBoxKeyUp)
+			this.renameTextBoxFocus(ref)
+		}
+		this._labelEl = ref
+	}
+
 	render() {
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
 		const hasMediaInfo =
 			this.props.layer &&
 			this.props.layer.type === SourceLayerType.VT &&
-			this.props.metadata &&
-			this.props.metadata.mediainfo
+			this.props.piece.contentMetaData &&
+			this.props.piece.contentMetaData.mediainfo
 		return (
 			<div
 				className={ClassNames(
 					'dashboard-panel__panel__button',
 					{
-						invalid: this.props.adLibListItem.invalid,
-						floated: this.props.adLibListItem.floated,
+						invalid: this.props.piece.invalid,
+						floated: this.props.piece.floated,
 
-						'source-missing': this.props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
-						'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
+						'source-missing': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
+						'source-broken': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+						'unknown-state': this.props.piece.status === RundownAPI.PieceStatusCode.UNKNOWN,
 
 						live: this.props.isOnAir,
 						disabled: this.props.disabled,
@@ -199,10 +235,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							  (this.props.heightScale as number) * DEFAULT_BUTTON_HEIGHT + 'em'
 							: undefined,
 				}}
-				onClick={(e) =>
-					this.props.onToggleAdLib(this.props.adLibListItem, e.shiftKey || !!this.props.queueAllAdlibs, e)
-				}
-				data-obj-id={this.props.adLibListItem._id}>
+				onClick={(e) => this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)}
+				data-obj-id={this.props.piece._id}>
 				{!this.props.layer
 					? null
 					: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
@@ -211,23 +245,24 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					: this.props.layer.type === SourceLayerType.SPLITS
 					? this.renderSplits(isList && this.props.showThumbnailsInList)
 					: null}
-				<span className="dashboard-panel__panel__button__label">
-					{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.adLibListItem.name}
-				</span>
+
+				{isList && hasMediaInfo ? (
+					<span className="dashboard-panel__panel__button__label">
+						{this.props.piece.contentMetaData!.mediainfo!.name}
+					</span>
+				) : this.props.editableName ? (
+					<textarea
+						className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
+						value={this.state.label}
+						onChange={this.onNameChanged}
+						onBlur={this.onRenameTextBoxBlur}
+						ref={this.onRenameTextBoxShow}></textarea>
+				) : (
+					<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
+				)}
 			</div>
 		)
 	}
 }
 
-export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, {}, IDashboardButtonTrackedProps>(
-	(props: IDashboardButtonProps) => {
-		const piece = (props.adLibListItem as any) as AdLibPieceUi
-
-		const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
-
-		return {
-			status,
-			metadata,
-		}
-	}
-)(DashboardPieceButtonBase)
+export const DashboardPieceButton = withMediaObjectStatus<IDashboardButtonProps, {}>()(DashboardPieceButtonBase)

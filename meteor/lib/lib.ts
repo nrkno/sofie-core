@@ -415,8 +415,6 @@ export function omit<T, P extends keyof T>(obj: T, ...props: P[]): Omit<T, P> {
 	return _.omit(obj, ...(props as string[]))
 }
 
-export type ReturnType<T extends Function> = T extends (...args: any[]) => infer R ? R : never
-
 export function applyClassToDocument(docClass, document) {
 	return new docClass(document)
 }
@@ -779,7 +777,7 @@ export function asyncCollectionFindOne<DocClass extends DBInterface, DBInterface
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoQuery<DBInterface> | string
 ): Promise<DocClass | undefined> {
-	return asyncCollectionFindFetch(collection, selector).then((arr) => {
+	return asyncCollectionFindFetch(collection, selector, { limit: 1 }).then((arr) => {
 		return arr[0]
 	})
 }
@@ -854,11 +852,11 @@ export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface 
 export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoQuery<DBInterface> | DBInterface['_id']
-): Promise<void> {
+): Promise<number> {
 	return new Promise((resolve, reject) => {
-		collection.remove(selector, (err: any) => {
+		collection.remove(selector, (err: any, count: number) => {
 			if (err) reject(err)
-			else resolve()
+			else resolve(count)
 		})
 	})
 }
