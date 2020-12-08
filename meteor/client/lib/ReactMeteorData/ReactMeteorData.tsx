@@ -229,10 +229,9 @@ export interface WithTrackerOptions<IProps, IState, TrackedProps> {
 	// pure?: boolean
 }
 // @todo: add withTrackerPure()
-type IWrappedComponent<IProps, IState, TrackedProps> = new (
-	props: IProps & TrackedProps,
-	state: IState
-) => React.Component<IProps & TrackedProps, IState>
+type IWrappedComponent<IProps, IState, TrackedProps> =
+	| (new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>)
+	| ((props: IProps & TrackedProps) => JSX.Element)
 export function withTracker<IProps, IState, TrackedProps>(
 	autorunFunction: (props: IProps) => TrackedProps,
 	checkUpdate?:
