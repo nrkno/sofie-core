@@ -38,6 +38,7 @@ import RundownListItemView from './RundownListItemView'
 import { Settings } from '../../../lib/Settings'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
+import { ShowStyleCompound, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 
 export const HTML_ID_PREFIX = 'rundown-'
 
@@ -53,7 +54,8 @@ export interface IRundownListItemProps {
 
 interface IRundownListItemTrackedProps {
 	studio: Studio | undefined
-	showStyle: ShowStyleBase | undefined
+	showStyleBase: ShowStyleBase | undefined
+	showStyleVariant: ShowStyleVariant | undefined
 }
 
 interface IRundownDragSourceProps {
@@ -172,6 +174,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 	(props: Translated<IRundownListItemProps>) => {
 		let studio: Studio | undefined = undefined
 		let showStyle: ShowStyleBase | undefined = undefined
+		let showStyleVariant: ShowStyleVariant | undefined = undefined
 
 		try {
 			studio = props.rundown.getStudio()
@@ -183,10 +186,16 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 		} catch (e) {
 			// this is fine, we'll probably have it eventually and the component can render without it
 		}
+		try {
+			showStyleVariant = props.rundown.getShowStyleVariant()
+		} catch (e) {
+			// this is fine, we'll probably have it eventually and the component can render without it
+		}
 
 		return {
 			studio,
-			showStyle,
+			showStyleBase: showStyle,
+			showStyleVariant,
 		}
 	}
 )(
@@ -264,6 +273,16 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 					// rundown ids can start with digits, which is illegal for HTML id attributes
 					const htmlElementId = `${HTML_ID_PREFIX}${unprotectString(rundown._id)}`
 
+					const showStyleLabel =
+						this.props.showStyleVariant &&
+						this.props.showStyleBase &&
+						this.props.showStyleVariant.name !== this.props.showStyleBase.name
+							? t('{{showStyleVariant}} - {{showStyleBase}}', {
+									showStyleVariant: this.props.showStyleVariant.name,
+									showStyleBase: this.props.showStyleBase.name,
+							  })
+							: this.props.showStyleBase?.name || ''
+
 					return (
 						<RundownListItemView
 							isActive={isActive}
@@ -275,7 +294,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 							renderTooltips={isDragging !== true}
 							rundownViewUrl={rundownViewUrl}
 							rundown={rundown}
-							showStyleName={this.props.showStyle?.name || ''}
+							showStyleName={showStyleLabel}
 							showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
 							confirmDeleteRundownHandler={
 								(rundown.unsynced && getAllowStudio()) || userCanConfigure || getAllowService()
