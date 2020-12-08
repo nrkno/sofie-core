@@ -732,7 +732,7 @@ export const SourceLayerItem = withTranslation()(
 						onDoubleClick={this.itemDblClick}
 						onMouseUp={this.itemMouseUp}
 						onMouseMove={this.moveMiniInspector}
-						onMouseOver={this.toggleMiniInspectorOn}
+						onMouseEnter={this.toggleMiniInspectorOn}
 						onMouseLeave={this.toggleMiniInspectorOff}
 						style={this.getItemStyle()}>
 						{this.renderInsideItem(typeClass)}

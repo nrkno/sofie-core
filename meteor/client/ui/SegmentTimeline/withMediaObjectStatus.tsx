@@ -10,10 +10,10 @@ import { RundownUtils } from '../../lib/rundown'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { Studio } from '../../../lib/collections/Studios'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
-import { BucketAdLibUi } from '../Shelf/RundownViewBuckets'
+import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
 
 type AnyPiece = {
-	piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | undefined
+	piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
 	layer?: ISourceLayer | undefined
 	isLiveLine?: boolean
 	studio: Studio | undefined
@@ -72,7 +72,9 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 				return false
 			}
 
-			private static unwrapPieceInstance(piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi) {
+			private static unwrapPieceInstance(
+				piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi
+			) {
 				if (RundownUtils.isPieceInstance(piece)) {
 					return piece.instance.piece
 				} else {

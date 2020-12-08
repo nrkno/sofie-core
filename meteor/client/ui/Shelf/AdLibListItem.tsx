@@ -5,10 +5,7 @@ import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
 
-import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import { RundownUtils } from '../../lib/rundown'
 import {
 	ISourceLayer,
 	IOutputLayer,
@@ -20,10 +17,10 @@ import {
 import { AdLibPieceUi } from './AdLibPanel'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
-import { PieceId, PieceGeneric } from '../../../lib/collections/Pieces'
+import { PieceGeneric } from '../../../lib/collections/Pieces'
 import { unprotectString } from '../../../lib/lib'
+import renderItem from './Renderers/ItemRendererFactory'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { Studio } from '../../../lib/collections/Studios'
@@ -31,7 +28,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
 
-export interface IAdLibListItem extends PieceGeneric {
+export interface IAdLibListItem extends AdLibPieceUi {
 	status: RundownAPI.PieceStatusCode
 	contentMetaData?: any
 	sourceLayer?: ISourceLayer
@@ -45,6 +42,7 @@ export interface IAdLibListItem extends PieceGeneric {
 interface IListViewItemProps {
 	piece: IAdLibListItem
 	studio: Studio
+	layer: ISourceLayer | undefined
 	selected: boolean
 	onSelectAdLib: (aSLine: PieceGeneric) => void
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
@@ -89,26 +87,16 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 					holdToDisplay={contextMenuHoldToDisplayTime()}
 					renderTag="tr"
 					key={unprotectString(this.props.piece._id)}>
-					<td
-						className={ClassNames(
-							'adlib-panel__list-view__list__table__cell--icon',
-							this.props.piece.sourceLayer && RundownUtils.getSourceLayerClassName(this.props.piece.sourceLayer.type),
-							{
-								'source-missing': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
-								'source-broken': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-								'unknown-state': this.props.piece.status === RundownAPI.PieceStatusCode.UNKNOWN,
-							}
-						)}>
-						{this.props.piece.sourceLayer &&
-							(this.props.piece.sourceLayer.abbreviation || this.props.piece.sourceLayer.name)}
-					</td>
-					<td className="adlib-panel__list-view__list__table__cell--shortcut">
-						{this.props.piece.hotkey && mousetrapHelper.shortcutLabel(this.props.piece.hotkey, _isMacLike)}
-					</td>
-					<td className="adlib-panel__list-view__list__table__cell--output">
-						{this.props.piece.outputLayer && this.props.piece.outputLayer.name}
-					</td>
-					<DefaultListItemRenderer {...this.props} />
+					{renderItem({
+						adLibListItem: this.props.piece,
+						layer: this.props.layer,
+						outputLayer: this.props.piece.outputLayer,
+						selected: this.props.selected,
+						status: this.props.piece.status,
+						message: this.props.piece.message,
+						metadata: this.props.piece.contentMetaData,
+						mediaPreviewUrl: this.props.studio.settings.mediaPreviewsUrl,
+					})}
 				</ContextMenuTrigger>
 			)
 		}

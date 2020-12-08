@@ -255,6 +255,7 @@ const AdLibListView = withTranslation()(
 								<AdLibListItem
 									key={unprotectString(adLibPiece._id)}
 									piece={adLibPiece}
+									layer={adLibPiece.sourceLayer!}
 									studio={this.props.studio}
 									selected={
 										(this.props.selectedPiece &&
@@ -308,6 +309,7 @@ const AdLibListView = withTranslation()(
 										<AdLibListItem
 											key={unprotectString(adLibPiece._id)}
 											piece={adLibPiece}
+											layer={adLibPiece.sourceLayer!}
 											studio={this.props.studio}
 											selected={
 												(this.props.selectedPiece &&
@@ -452,6 +454,7 @@ export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
 	playlist: RundownPlaylist
+	studio: Studio
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	filter?: RundownLayoutFilterBase

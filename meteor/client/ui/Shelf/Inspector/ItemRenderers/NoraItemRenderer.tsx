@@ -58,15 +58,17 @@ export default withTranslation()(
 						studio={this.props.studio}
 					/>
 					<div className="shelf-inspector__content">
-						<h2>{actualPiece.name}</h2>
-						<button
-							className="btn btn-primary"
-							disabled={this.state.editMode}
-							onClick={() => {
-								this.setEditMode(true)
-							}}>
-							{t('Edit')}
-						</button>
+						<h2 className="mod mas">{actualPiece.name}</h2>
+						<div className="mod mas">
+							<button
+								className="btn btn-primary"
+								disabled={this.state.editMode}
+								onClick={() => {
+									this.setEditMode(true)
+								}}>
+								{t('Edit in Nora')}
+							</button>
+						</div>
 						<Modal {...modalProps}>
 							<NoraItemEditor piece={actualPiece} />
 						</Modal>

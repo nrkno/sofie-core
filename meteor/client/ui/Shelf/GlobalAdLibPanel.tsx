@@ -142,6 +142,8 @@ const AdLibListView = withTranslation()(
 										sourceLayerId: layer._id,
 										externalId: '',
 										outputLayerId: '',
+										rundownId: protectString(''),
+										_rank: layer._rank,
 									})
 								)
 						)
@@ -157,6 +159,7 @@ const AdLibListView = withTranslation()(
 										<AdLibListItem
 											key={unprotectString(item._id)}
 											piece={item}
+											layer={item.sourceLayer}
 											studio={this.props.studio}
 											selected={
 												(this.props.selectedPiece &&
@@ -179,6 +182,7 @@ const AdLibListView = withTranslation()(
 										<AdLibListItem
 											key={unprotectString(item._id)}
 											piece={item}
+											layer={item.sourceLayer}
 											studio={this.props.studio}
 											selected={
 												(this.props.selectedPiece &&
@@ -199,6 +203,7 @@ const AdLibListView = withTranslation()(
 										<AdLibListItem
 											key={unprotectString(item._id)}
 											piece={item}
+											layer={item.sourceLayer}
 											studio={this.props.studio}
 											selected={
 												(this.props.selectedPiece &&
@@ -313,6 +318,7 @@ const AdLibPanelToolbar = withTranslation()(
 interface IProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
+	studio: Studio
 	visible: boolean
 	studioMode: boolean
 	hotkeyGroup: string

@@ -5,7 +5,7 @@ import Escape from 'react-escape'
 import { ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Bucket } from '../../../lib/collections/Buckets'
-import { BucketAdLibItem } from './RundownViewBuckets'
+import { BucketAdLibItem, BucketAdLibActionUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents } from '../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
 import { isActionItem } from './Inspector/ItemRenderers/ActionItemRenderer'
@@ -71,7 +71,7 @@ export default function ShelfContextMenu() {
 		shelfContextMenuContext.set(undefined)
 	}
 
-	const getActionItem = (piece: IAdLibListItem) => {
+	const getActionItem = (piece: IAdLibListItem | BucketAdLibActionUi) => {
 		return (piece as AdLibPieceUi).adlibAction
 	}
 

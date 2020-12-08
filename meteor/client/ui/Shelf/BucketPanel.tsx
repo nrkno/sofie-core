@@ -449,7 +449,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					}
 				}
 
-				onToggleAdLib = (piece: IAdLibListItem, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
+				onToggleAdLib = (piece: BucketAdLibItem, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 					const { t } = this.props
 
 					queue = queue || this.props.shouldQueue
@@ -772,7 +772,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 													bucketId={adlib.bucketId}
 													layer={this.props.sourceLayers[adlib.sourceLayerId]}
 													outputLayer={this.props.outputLayers[adlib.outputLayerId]}
-													onToggleAdLib={this.onToggleAdLib}
+													onToggleAdLib={this.onToggleAdLib as any}
 													playlist={this.props.playlist}
 													isOnAir={this.isAdLibOnAir((adlib as any) as AdLibPieceUi)}
 													mediaPreviewUrl={

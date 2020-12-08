@@ -1,26 +1,3 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import ClassNames from 'classnames'
-import { Meteor } from 'meteor/meteor'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RundownAPI } from '../../../lib/api/rundown'
-
-import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import { RundownUtils } from '../../lib/rundown'
-import {
-	ISourceLayer,
-	IOutputLayer,
-	SourceLayerType,
-	VTContent,
-	LiveSpeakContent,
-} from '@sofie-automation/blueprints-integration'
-import { AdLibPieceUi } from './AdLibPanel'
-import { MediaObject } from '../../../lib/collections/MediaObjects'
-import { checkPieceContentStatus } from '../../../lib/mediaObjects'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { PubSub } from '../../../lib/api/pubsub'
 import { IDashboardButtonProps, DashboardPieceButtonBase } from './DashboardPieceButton'
 
 import {
@@ -31,6 +8,7 @@ import {
 	DragSourceMonitor,
 	DropTargetMonitor,
 	ConnectDragPreview,
+	ConnectableElement,
 } from 'react-dnd'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
@@ -38,7 +16,8 @@ import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { BucketId } from '../../../lib/collections/Buckets'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
-import { BucketAdLibActionUi } from './RundownViewBuckets'
+import { BucketAdLibActionUi, BucketAdLibItem } from './RundownViewBuckets'
+import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 
 type IDashboardButtonPropsCombined = BucketPieceButtonBaseProps & IDashboardButtonProps
 
@@ -101,6 +80,7 @@ export interface BucketPieceButtonBaseProps {
 	onAdLibReorder: (draggedId: PieceId, newIndex: number, oldIndex: number) => void
 	onAdLibMove: (id: PieceId, newBucketId: BucketId) => void
 	bucketId: BucketId
+	onToggleAdLib: (piece: BucketAdLibItem, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => void
 }
 
 interface ButtonSourceCollectedProps {
@@ -123,7 +103,7 @@ export class BucketPieceButtonBase extends DashboardPieceButtonBase<
 	render() {
 		const { isDragging, connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
-		return connectDropTarget(connectDragSource(super.render())) as JSX.Element
+		return connectDropTarget(connectDragSource(super.render() as ConnectableElement)) as JSX.Element
 	}
 }
 
