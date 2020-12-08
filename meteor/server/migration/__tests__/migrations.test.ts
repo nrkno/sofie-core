@@ -243,7 +243,6 @@ describe('Migrations', () => {
 			blueprintVersion: '1.0.0',
 			integrationVersion: '0.0.0',
 			TSRVersion: '0.0.0',
-			minimumCoreVersion: '0.0.0',
 
 			studioConfigManifest: [],
 			studioMigrations: [
@@ -299,7 +298,6 @@ describe('Migrations', () => {
 			blueprintVersion: '1.0.0',
 			integrationVersion: '0.0.0',
 			TSRVersion: '0.0.0',
-			minimumCoreVersion: '0.0.0',
 
 			showStyleConfigManifest: [],
 			showStyleMigrations: [
