@@ -1,5 +1,5 @@
 import { ControllerAbstract } from './lib'
-import { PrompterViewInner } from '../PrompterView'
+import { PrompterConfigMode, PrompterViewInner } from '../PrompterView'
 import Spline from 'cubic-spline'
 
 const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
@@ -12,46 +12,63 @@ export class JoyConController extends ControllerAbstract {
 	private joycons: Gamepad[] = []
 
 	private readonly deadBand = 0.25 // ignore all input within this range. Used to separate out the active joycon when both are connected
-	private readonly rangeRevMin = -1 // pedal "all back" position, the max-reverse-position
-	private readonly rangeNeutralMin = -0.25 // pedal "back" position where reverse-range transistions to the neutral range
-	private readonly rangeNeutralMax = 0.25 // pedal "front" position where scrolling starts, the 0 speed origin
-	private readonly rangeFwdMax = 1 // pedal "all front" position where scrolling is maxed out
-	private readonly speedMap = [1, 2, 3, 4, 5, 8, 12, 30]
+	private rangeRevMin = -1 // pedal "all back" position, the max-reverse-position
+	private rangeNeutralMin = -0.25 // pedal "back" position where reverse-range transistions to the neutral range
+	private rangeNeutralMax = 0.25 // pedal "front" position where scrolling starts, the 0 speed origin
+	private rangeFwdMax = 1 // pedal "all front" position where scrolling is maxed out
+	private speedMap = [1, 2, 3, 4, 5, 8, 12, 30]
+	private reverseSpeedMap = [1, 2, 3, 4, 5, 8, 12, 30]
 	private speedSpline: Spline
+	private reverseSpeedSpline: Spline
 
-	// private direction: 'backwards' | 'neutral' | 'forwards' = 'neutral'
 	private updateSpeedHandle: number | null = null
 	private lastSpeed = 0
 	private currentPosition = 0
+	private lastInputValue = ''
 
 	constructor(view: PrompterViewInner) {
 		super(view)
-		const { rangeRevMin, rangeNeutralMin, rangeNeutralMax, rangeFwdMax } = this
-
 		this.prompterView = view
 
-		// validate range settings
-		// they need to be in sequence, or the logic will break
-		if (rangeNeutralMin <= rangeRevMin) {
+		// assigns params from URL or falls back to the default
+		this.speedMap = view.configOptions.speedMap || this.speedMap
+		this.reverseSpeedMap = view.configOptions.reverseSpeedMap || this.reverseSpeedMap
+		this.rangeRevMin = view.configOptions.rangeRevMin || this.rangeRevMin
+		this.rangeNeutralMin = view.configOptions.rangeNeutralMin || this.rangeNeutralMin
+		this.rangeNeutralMax = view.configOptions.rangeNeutralMax || this.rangeNeutralMax
+		this.rangeFwdMax = view.configOptions.rangeFwdMax || this.rangeFwdMax
+
+
+		// validate range settings, they need to be in sequence, or the logic will break
+		if (this.rangeNeutralMin <= this.rangeRevMin) {
 			console.error('rangeNeutralMin must be larger to rangeRevMin. Pedal control will not initialize.')
 			return
 		}
-		if (rangeNeutralMax <= rangeNeutralMin) {
+		if (this.rangeNeutralMax <= this.rangeNeutralMin) {
 			console.error('rangeNeutralMax must be larger to rangeNeutralMin. Pedal control will not initialize')
 			return
 		}
-		if (rangeFwdMax <= rangeNeutralMax) {
+		if (this.rangeFwdMax <= this.rangeNeutralMax) {
 			console.error('rangeFwdMax must be larger to rangeNeutralMax. Pedal control will not initialize')
 			return
 		}
 
-		// create splines, using the input speedMaps
+		// create splines, using the input speedMaps, for both the forward range, and the reverse range
 		this.speedSpline = new Spline(
 			this.speedMap.map(
 				(y, index, array) =>
 					((this.rangeFwdMax - this.rangeNeutralMax) / (array.length - 1)) * index + this.rangeNeutralMax
 			),
 			this.speedMap
+		)
+		this.reverseSpeedSpline = new Spline(
+			this.reverseSpeedMap
+				.reverse()
+				.map(
+					(y, index, array) =>
+						((this.rangeNeutralMin - this.rangeRevMin) / (array.length - 1)) * index + this.rangeRevMin
+				),
+			this.reverseSpeedMap
 		)
 
 		window.addEventListener('gamepadconnected', this.updateScrollPosition.bind(this))
@@ -122,11 +139,13 @@ export class JoyConController extends ControllerAbstract {
 
 		// start by clamping value to the leagal range
 		inputValue = Math.min(Math.max(inputValue, rangeRevMin), rangeFwdMax) // clamps in between rangeRevMin and rangeFwdMax
+		// stores only for debugging
+		this.lastInputValue = inputValue.toFixed(2)
 
 		if (inputValue >= rangeRevMin && inputValue <= rangeNeutralMin) {
 			// 1) Use the reverse speed spline for the expected speed. The reverse speed is specified using positive values,
 			//    so the result needs to be inversed
-			this.lastSpeed = Math.round(this.speedSpline.at(inputValue)) * -1
+			this.lastSpeed = Math.round(this.reverseSpeedSpline.at(inputValue)) * -1
 		} else if (inputValue >= rangeNeutralMin && inputValue <= rangeNeutralMax) {
 			// 2) we're in the neutral zone
 			this.lastSpeed = 0
@@ -162,6 +181,13 @@ export class JoyConController extends ControllerAbstract {
 			}
 		}
 		this.currentPosition = scrollPosition
+
+		// debug
+		this.prompterView.DEBUG_controllerState({
+			source: PrompterConfigMode.JOYCON,
+			lastSpeed: this.lastSpeed,
+			lastEvent: 'ControlChange: ' + this.lastInputValue,
+		})
 
 		// @todo strategy to clock down the rate once we have idled for some time
 		this.updateSpeedHandle = window.requestAnimationFrame(() => {
