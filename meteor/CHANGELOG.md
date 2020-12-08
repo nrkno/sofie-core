@@ -142,6 +142,13 @@ All notable changes to this project will be documented in this file. See [standa
 * **screeen saver:** check both vector components ([96dc780](https://github.com/nrkno/tv-automation-server-core/commit/96dc7800fae2eee64854ebb192e2841a5f494c2d))
 * use updated icons for RundownListItem ([d38b94d](https://github.com/nrkno/tv-automation-server-core/commit/d38b94d66c33bcf54c9253fd6b170c3e8edb0222))
 
+### [1.14.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.14.1...v1.14.2) (2020-11-16)
+
+
+### Bug Fixes
+
+* Lookaheads with no nextNextPart ([6f1966a](https://github.com/nrkno/tv-automation-server-core/commit/6f1966acfc9c7ae6e73b17db055b6a9aedd4ff0f))
+
 ### [1.14.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.14.0...v1.14.1) (2020-11-11)
 
 ## [1.14.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.13.1...v1.14.0) (2020-11-10)
