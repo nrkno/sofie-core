@@ -45,7 +45,7 @@ import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache } from './lib'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
-import { PartInstance, PartInstanceId, TransformTransitionProps } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, CacheForStudioBase } from '../../DatabaseCaches'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -453,11 +453,7 @@ function buildTimelineObjsForRundown(
 		)
 		const currentInfinitePieceIds = _.compact(currentInfinitePieces.map((l) => l.infinite?.infinitePieceId))
 
-		let allowTransition = false
-
 		if (partInstancesInfo.previous) {
-			allowTransition = !partInstancesInfo.previous.partInstance.part.disableOutTransition
-
 			const previousPartLastStarted = partInstancesInfo.previous.partInstance.timings?.startedPlayback
 			if (previousPartLastStarted) {
 				const prevPartOverlapDuration = calcPartKeepaliveDuration(
@@ -490,10 +486,7 @@ function buildTimelineObjsForRundown(
 
 				const groupClasses: string[] = ['previous_part']
 				let prevObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = [previousPartGroup]
-				let previousTransProps: TransformTransitionProps | undefined = undefined
-				if (partInstancesInfo.previous.partInstance.transProps) {
-					previousTransProps = partInstancesInfo.previous.partInstance.transProps
-				}
+				const transProps = getTransformTransitionProps(partInstancesInfo.previous.partInstance)
 				prevObjs = prevObjs.concat(
 					transformPartIntoTimeline(
 						activePlaylist._id,
@@ -503,7 +496,7 @@ function buildTimelineObjsForRundown(
 						previousPartGroup,
 						partInstancesInfo.previous.nowInPart,
 						false,
-						previousTransProps,
+						transProps,
 						activePlaylist.holdState
 					)
 				)
@@ -627,12 +620,7 @@ function buildTimelineObjsForRundown(
 		}
 
 		const groupClasses: string[] = ['current_part']
-		const transProps: TransformTransitionProps = {
-			allowed: allowTransition,
-			preroll: partInstancesInfo.current.partInstance.part.prerollDuration,
-			transitionPreroll: partInstancesInfo.current.partInstance.part.transitionPrerollDuration,
-			transitionKeepalive: partInstancesInfo.current.partInstance.part.transitionKeepaliveDuration,
-		}
+		const transProps = getTransformTransitionProps(partInstancesInfo.current.partInstance)
 		timelineObjs.push(
 			currentPartGroup,
 			createPartGroupFirstObject(
@@ -674,14 +662,10 @@ function buildTimelineObjsForRundown(
 			)
 
 			const groupClasses: string[] = ['next_part']
-			const transProps: TransformTransitionProps = {
-				allowed:
-					partInstancesInfo.current.partInstance &&
-					!partInstancesInfo.current.partInstance.part.disableOutTransition,
-				preroll: partInstancesInfo.next.partInstance.part.prerollDuration,
-				transitionPreroll: partInstancesInfo.next.partInstance.part.transitionPrerollDuration,
-				transitionKeepalive: partInstancesInfo.next.partInstance.part.transitionKeepaliveDuration,
-			}
+			const transProps = getTransformTransitionProps(
+				partInstancesInfo.next.partInstance,
+				!partInstancesInfo.current.partInstance.part.disableOutTransition
+			)
 			timelineObjs.push(
 				nextPartGroup,
 				createPartGroupFirstObject(
@@ -783,6 +767,13 @@ function transformBaselineItemsIntoTimeline(
 	return timelineObjs
 }
 
+interface TransformTransitionProps {
+	allowed: boolean
+	preroll: number | undefined
+	transitionPreroll: number | null | undefined
+	transitionKeepalive: number | null | undefined
+}
+
 export function hasPieceInstanceDefinitelyEnded(
 	pieceInstance: DeepReadonly<PieceInstanceWithTimings>,
 	nowInPart: number
@@ -805,6 +796,15 @@ export function hasPieceInstanceDefinitelyEnded(
 	}
 
 	return relativeEnd !== undefined && relativeEnd + DEFINITELY_ENDED_FUTURE_DURATION < nowInPart
+}
+
+function getTransformTransitionProps(partInstance: PartInstance, allowTransition?: boolean): TransformTransitionProps {
+	return {
+		allowed: allowTransition ?? !!partInstance.allowedToUseTransition,
+		preroll: partInstance.part.prerollDuration,
+		transitionPreroll: partInstance.part.transitionPrerollDuration,
+		transitionKeepalive: partInstance.part.transitionKeepaliveDuration,
+	}
 }
 
 function transformPartIntoTimeline(

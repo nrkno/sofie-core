@@ -34,12 +34,6 @@ export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPar
 	return partInstance as any
 }
 
-export interface TransformTransitionProps {
-	allowed: boolean
-	preroll?: number
-	transitionPreroll?: number | null
-	transitionKeepalive?: number | null
-}
 export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	_id: PartInstanceId
 	rundownId: RundownId
@@ -65,7 +59,7 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	previousPartEndState?: PartEndState
 
 	/** The transition props as used when entering this PartInstance */
-	transProps?: TransformTransitionProps
+	allowedToUseTransition?: boolean
 }
 
 export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {
@@ -99,7 +93,7 @@ export class PartInstance implements DBPartInstance {
 	public segmentId: SegmentId
 	public rundownId: RundownId
 
-	public transProps?: TransformTransitionProps
+	public allowedToUseTransition?: boolean
 
 	constructor(document: DBPartInstance, isTemporary?: boolean) {
 		_.each(_.keys(document), (key) => {
