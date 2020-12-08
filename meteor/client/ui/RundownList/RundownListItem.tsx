@@ -277,7 +277,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 						this.props.showStyleVariant &&
 						this.props.showStyleBase &&
 						this.props.showStyleVariant.name !== this.props.showStyleBase.name
-							? t('{{showStyleVariant}} - {{showStyleBase}}', {
+							? t('{{showStyleVariant}} – {{showStyleBase}}', {
 									showStyleVariant: this.props.showStyleVariant.name,
 									showStyleBase: this.props.showStyleBase.name,
 							  })
