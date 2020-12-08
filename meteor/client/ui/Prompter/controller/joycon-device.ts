@@ -26,7 +26,6 @@ export class JoyConController extends ControllerAbstract {
 	private currentPosition = 0
 	private lastInputValue = ''
 
-
 	constructor(view: PrompterViewInner) {
 		super(view)
 		this.prompterView = view
@@ -38,7 +37,6 @@ export class JoyConController extends ControllerAbstract {
 		this.rangeNeutralMin = view.configOptions.rangeNeutralMin || this.rangeNeutralMin
 		this.rangeNeutralMax = view.configOptions.rangeNeutralMax || this.rangeNeutralMax
 		this.rangeFwdMax = view.configOptions.rangeFwdMax || this.rangeFwdMax
-
 
 		// validate range settings, they need to be in sequence, or the logic will break
 		if (this.rangeNeutralMin <= this.rangeRevMin) {
@@ -96,27 +94,27 @@ export class JoyConController extends ControllerAbstract {
 	private getJoycon() {
 		// try to re-use last used joycon if that is still present
 		if (this.lastUsedJoycon && this.lastUsedJoycon.connected) return this.lastUsedJoycon
-		
+
 		if (navigator.getGamepads) {
 			let gamepads = navigator.getGamepads()
 			if (!(gamepads && typeof gamepads === 'object' && gamepads.length)) return
 
 			for (const o of gamepads) {
 				if (o && o.connected && o.id && typeof o.id === 'string' && o.id.match('Joy-Con')) {
-					return this.lastUsedJoycon = o // @todo: do we ever need to deal with more devices? What happens when pairing up?
+					return (this.lastUsedJoycon = o) // @todo: do we ever need to deal with more devices? What happens when pairing up?
 				}
 			}
 		}
 
-		return this.lastUsedJoycon = null
+		return (this.lastUsedJoycon = null)
 	}
 
 	private getActiveAxesOfJoycons() {
-		if(!(this.lastUsedJoycon && this.lastUsedJoycon.connected && this.lastUsedJoycon.index !== undefined)) return 0 // this makes sense since the connected property updates on the object
-		
+		if (!(this.lastUsedJoycon && this.lastUsedJoycon.connected && this.lastUsedJoycon.index !== undefined)) return 0 // this makes sense since the connected property updates on the object
+
 		const pad = navigator.getGamepads()[this.lastUsedJoycon.index] // this is needed since the axes and buttons don't update
-		if(!(pad && pad.connected)) return 0
-		
+		if (!(pad && pad.connected)) return 0
+
 		if (pad.axes.length === 2) {
 			// L or R mode
 			if (Math.abs(pad.axes[0]) > this.deadBand) {
@@ -173,7 +171,7 @@ export class JoyConController extends ControllerAbstract {
 	private updateScrollPosition() {
 		if (this.updateSpeedHandle !== null) return
 		if (!this.getJoycon()) return
-		
+
 		this.getSpeedFromJoycons()
 
 		// update scroll position
