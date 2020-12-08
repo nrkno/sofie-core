@@ -50,6 +50,8 @@ export interface ISourceLayerItemProps {
 	scrollLeft: number
 	scrollWidth: number
 	liveLinePadding: number
+	renderToTimeline: (render: JSX.Element | null) => void
+	layerIndex: number
 }
 interface ISourceLayerItemState {
 	showMiniInspector: boolean
@@ -95,7 +97,7 @@ export const SourceLayerItem = withTranslation()(
 			})
 		}
 
-		getItemLabelOffsetLeft = (): { [key: string]: string } => {
+		getItemLabelOffsetLeft = (): React.CSSProperties => {
 			if (this.props.relative) {
 				return {}
 			} else {
@@ -220,7 +222,7 @@ export const SourceLayerItem = withTranslation()(
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
+										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
 										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
@@ -245,7 +247,7 @@ export const SourceLayerItem = withTranslation()(
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
+										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
 										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
@@ -261,7 +263,7 @@ export const SourceLayerItem = withTranslation()(
 			}
 		}
 
-		getItemLabelOffsetRight = (): { [key: string]: string } => {
+		getItemLabelOffsetRight = (): React.CSSProperties => {
 			if (this.props.relative) {
 				return {}
 			} else {
@@ -314,16 +316,26 @@ export const SourceLayerItem = withTranslation()(
 			}
 		}
 
-		getItemDuration = (): number => {
+		getItemDuration = (returnInfinite?: boolean): number => {
 			const piece = this.props.piece
 			const innerPiece = piece.instance.piece
 
 			const expectedDurationNumber =
 				typeof innerPiece.enable.duration === 'number' ? innerPiece.enable.duration || 0 : 0
-			let itemDuration = Math.min(
-				piece.renderedDuration || expectedDurationNumber || 0,
-				this.props.partDuration - (piece.renderedInPoint || 0)
-			)
+
+			let itemDuration: number
+			if (!returnInfinite) {
+				itemDuration = Math.min(
+					piece.renderedDuration || expectedDurationNumber || 0,
+					this.props.partDuration - (piece.renderedInPoint || 0)
+				)
+			} else {
+				itemDuration =
+					this.props.partDuration - (piece.renderedInPoint || 0) <
+					(piece.renderedDuration || expectedDurationNumber || 0)
+						? Number.POSITIVE_INFINITY
+						: piece.renderedDuration || expectedDurationNumber || 0
+			}
 
 			if (
 				(innerPiece.lifespan !== PieceLifespan.WithinPart ||
@@ -332,7 +344,11 @@ export const SourceLayerItem = withTranslation()(
 				piece.renderedDuration === null &&
 				piece.instance.userDuration === undefined
 			) {
-				itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
+				if (!returnInfinite) {
+					itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
+				} else {
+					itemDuration = Number.POSITIVE_INFINITY
+				}
 			}
 
 			return itemDuration
@@ -462,6 +478,7 @@ export const SourceLayerItem = withTranslation()(
 			if (this.props.isLiveLine) {
 				this.mountResizeObserver()
 			}
+
 			window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
 		}
 
@@ -472,7 +489,7 @@ export const SourceLayerItem = withTranslation()(
 			clearTimeout(this.highlightTimeout)
 		}
 
-		componentDidUpdate(prevProps: ISourceLayerItemProps) {
+		componentDidUpdate(prevProps: ISourceLayerItemProps, prevState: ISourceLayerItemState) {
 			if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
 				const scrollLeftOffset = this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft)
 				const cursorTimePosition = this.state.cursorTimePosition + (this.props.scrollLeft - prevProps.scrollLeft)
@@ -515,6 +532,9 @@ export const SourceLayerItem = withTranslation()(
 			}
 			return
 		}
+
+		toggleMiniInspectorOn = (e: React.MouseEvent) => this.toggleMiniInspector(e, true)
+		toggleMiniInspectorOff = (e: React.MouseEvent) => this.toggleMiniInspector(e, false)
 
 		toggleMiniInspector = (e: MouseEvent | any, v: boolean) => {
 			this.setState({
@@ -719,9 +739,9 @@ export const SourceLayerItem = withTranslation()(
 						onClick={this.itemClick}
 						onDoubleClick={this.itemDblClick}
 						onMouseUp={this.itemMouseUp}
-						onMouseMove={(e) => this.moveMiniInspector(e)}
-						onMouseOver={(e) => !this.props.outputGroupCollapsed && this.toggleMiniInspector(e, true)}
-						onMouseLeave={(e) => this.toggleMiniInspector(e, false)}
+						onMouseMove={this.moveMiniInspector}
+						onMouseOver={this.toggleMiniInspectorOn}
+						onMouseLeave={this.toggleMiniInspectorOff}
 						style={this.getItemStyle()}>
 						{this.renderInsideItem(typeClass)}
 						{DEBUG_MODE && (

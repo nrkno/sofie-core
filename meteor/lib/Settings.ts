@@ -35,6 +35,8 @@ export interface ISettings {
 	allowRundownResetOnAir: boolean
 	/** Default duration to use to render parts when no duration is provided */
 	defaultDisplayDuration: number
+	/** If true, allows creation of new playlists in the Lobby Gui (rundown list). If false; only pre-existing playlists are allowed. */
+	allowMultiplePlaylistsInGUI: boolean
 }
 
 export let Settings: ISettings
@@ -54,6 +56,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	allowUnsyncedSegments: false,
 	allowRundownResetOnAir: false,
 	defaultDisplayDuration: 3000,
+	allowMultiplePlaylistsInGUI: false,
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)

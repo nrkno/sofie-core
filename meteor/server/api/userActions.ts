@@ -47,6 +47,7 @@ import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { rundownContentAllowWrite } from '../security/rundown'
 import { profiler } from './profiler'
+import { checkAccessAndGetPlaylist, checkAccessAndGetRundown } from './lib'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -62,19 +63,6 @@ export function setMinimumTakeSpan(span: number) {
 	If it's not possible to perform an action due to something the user can easily fix
 		-> ClientAPI.responseError('Friendly message')
 */
-
-function checkAccessAndGetPlaylist(context: MethodContext, playlistId: RundownPlaylistId): RundownPlaylist {
-	const access = RundownPlaylistContentWriteAccess.playout(context, playlistId)
-	const playlist = access.playlist
-	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
-	return playlist
-}
-function checkAccessAndGetRundown(context: MethodContext, rundownId: RundownId): Rundown {
-	const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
-	const rundown = access.rundown
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-	return rundown
-}
 
 // TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
 export const take = syncFunction(function take(
@@ -318,9 +306,6 @@ export function deactivate(
 	rundownPlaylistId: RundownPlaylistId
 ): ClientAPI.ClientResponse<void> {
 	return ClientAPI.responseSuccess(ServerPlayoutAPI.deactivateRundownPlaylist(context, rundownPlaylistId))
-}
-export function reloadRundownPlaylistData(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.reloadRundownPlaylistData(context, rundownPlaylistId))
 }
 export function unsyncRundown(context: MethodContext, rundownId: RundownId) {
 	return ClientAPI.responseSuccess(ServerRundownAPI.unsyncRundown(context, rundownId))
@@ -758,6 +743,28 @@ export function switchRouteSet(
 	return ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
 }
 
+export function moveRundown(
+	context: MethodContext,
+	rundownId: RundownId,
+	intoPlaylistId: RundownPlaylistId | null,
+	rundownsIdsInPlaylistInOrder: RundownId[]
+): ClientAPI.ClientResponse<void> {
+	check(rundownId, String)
+	if (intoPlaylistId) check(intoPlaylistId, String)
+
+	return ClientAPI.responseSuccess(
+		ServerRundownAPI.moveRundown(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
+	)
+}
+export function restoreRundownOrder(
+	context: MethodContext,
+	playlistId: RundownPlaylistId
+): ClientAPI.ClientResponse<void> {
+	check(playlistId, String)
+
+	return ClientAPI.responseSuccess(ServerRundownAPI.restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
+}
+
 export function traceAction<T>(description: string, fn: (...args: any[]) => T, ...args: any[]) {
 	const transaction = profiler.startTransaction(description, 'userAction')
 	return makePromise(() => {
@@ -811,9 +818,6 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			rundownPlaylistId,
 			rehearsal
 		)
-	}
-	reloadData(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return traceAction('userAction.reloadRundownPlaylistData', reloadRundownPlaylistData, this, rundownPlaylistId)
 	}
 	unsyncRundown(_userEvent: string, rundownId: RundownId) {
 		return traceAction('userAction.unsyncRundown', unsyncRundown, this, rundownId)
@@ -1025,6 +1029,17 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		state: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return makePromise(() => switchRouteSet(this, studioId, routeSetId, state))
+	}
+	moveRundown(
+		_userEvent: string,
+		rundownId: RundownId,
+		intoPlaylistId: RundownPlaylistId | null,
+		rundownsIdsInPlaylistInOrder: RundownId[]
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return makePromise(() => moveRundown(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder))
+	}
+	restoreRundownOrder(_userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>> {
+		return makePromise(() => restoreRundownOrder(this, playlistId))
 	}
 }
 registerClassToMeteorMethods(

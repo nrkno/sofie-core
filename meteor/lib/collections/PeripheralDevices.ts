@@ -19,7 +19,11 @@ export interface PeripheralDevice {
 	/** If set, this device is owned by that organization */
 	organizationId: OrganizationId | null
 
+	/** Name of the device (set by the device, modifiable by user) */
 	name: string
+
+	/** Name of the device (set by the device) */
+	deviceName?: string
 
 	category: PeripheralDeviceAPI.DeviceCategory
 	type: PeripheralDeviceAPI.DeviceType

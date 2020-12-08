@@ -23,13 +23,10 @@ import { Part, Parts, PartId } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
-import {
-	RundownTimingProvider,
-	withTiming,
-	WithTiming,
-	CurrentPartRemaining,
-	AutoNextStatus,
-} from './RundownView/RundownTiming'
+import { RundownTimingProvider } from './RundownView/RundownTiming/RundownTimingProvider'
+import { withTiming, WithTiming } from './RundownView/RundownTiming/withTiming'
+import { CurrentPartRemaining } from './RundownView/RundownTiming/CurrentPartRemaining'
+import { AutoNextStatus } from './RundownView/RundownTiming/AutoNextStatus'
 import { SegmentTimelineContainer, PieceUi, PartUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
@@ -631,57 +628,57 @@ const RundownHeader = withTranslation()(
 				}
 			})
 		}
-		keyTake = (e: ExtendedKeyboardEvent) => {
+		keyTake = (e: mousetrap.ExtendedKeyboardEvent) => {
 			if (e.key !== 'Enter' || e.location === 3) {
 				// only allow the rightmost enter key
 				if (!isModalShowing()) this.take(e)
 			}
 		}
-		keyHold = (e: ExtendedKeyboardEvent) => {
+		keyHold = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.hold(e)
 		}
-		keyHoldUndo = (e: ExtendedKeyboardEvent) => {
+		keyHoldUndo = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.holdUndo(e)
 		}
-		keyActivate = (e: ExtendedKeyboardEvent) => {
+		keyActivate = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.activate(e)
 		}
-		keyActivateRehearsal = (e: ExtendedKeyboardEvent) => {
+		keyActivateRehearsal = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.activateRehearsal(e)
 		}
 
-		keyDeactivate = (e: ExtendedKeyboardEvent) => {
+		keyDeactivate = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.deactivate(e)
 		}
-		keyResetRundown = (e: ExtendedKeyboardEvent) => {
+		keyResetRundown = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.resetRundown(e)
 		}
-		keyReloadRundown = (e: ExtendedKeyboardEvent) => {
+		keyReloadRundown = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.reloadRundownPlaylist(e)
 		}
-		keyMoveNextForward = (e: ExtendedKeyboardEvent) => {
+		keyMoveNextForward = (e: mousetrap.ExtendedKeyboardEvent) => {
 			// "forward" = to next Part
 			this.moveNext(e, 1, 0)
 		}
-		keyMoveNextBack = (e: ExtendedKeyboardEvent) => {
+		keyMoveNextBack = (e: mousetrap.ExtendedKeyboardEvent) => {
 			// "down" = to next Segment
 			this.moveNext(e, -1, 0)
 		}
-		keyMoveNextDown = (e: ExtendedKeyboardEvent) => {
+		keyMoveNextDown = (e: mousetrap.ExtendedKeyboardEvent) => {
 			// "down" = to next Segment
 			this.moveNext(e, 0, 1)
 		}
-		keyMoveNextUp = (e: ExtendedKeyboardEvent) => {
+		keyMoveNextUp = (e: mousetrap.ExtendedKeyboardEvent) => {
 			// "down" = to next Segment
 			this.moveNext(e, 0, -1)
 		}
-		keyDisableNextPiece = (e: ExtendedKeyboardEvent) => {
+		keyDisableNextPiece = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.disableNextPiece(e)
 		}
-		keyDisableNextPieceUndo = (e: ExtendedKeyboardEvent) => {
+		keyDisableNextPieceUndo = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.disableNextPieceUndo(e)
 		}
-		keyLogError = (e: ExtendedKeyboardEvent) => {
+		keyLogError = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.takeRundownSnapshot(e)
 		}
 
@@ -1054,11 +1051,11 @@ const RundownHeader = withTranslation()(
 				doUserAction(
 					t,
 					e,
-					UserAction.RELOAD_RUNDOWN_DATA,
-					(e) => MeteorCall.userAction.reloadData(e, this.props.playlist._id),
+					UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA,
+					(e) => MeteorCall.userAction.resyncRundownPlaylist(e, this.props.playlist._id),
 					(err, reloadResponse) => {
 						if (!err && reloadResponse) {
-							if (!handleRundownPlaylistReloadResponse(t, this.props.playlist, reloadResponse)) {
+							if (!handleRundownPlaylistReloadResponse(t, reloadResponse)) {
 								if (this.props.playlist && this.props.playlist.nextPartInstanceId) {
 									scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
 										if (!error.toString().match(/another scroll/)) console.error(error)
@@ -2005,15 +2002,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		// }
 
 		onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-			if (
-				!e.altKey &&
-				e.ctrlKey &&
-				!e.shiftKey &&
-				!e.metaKey &&
-				// @ts-ignore
-				!window.keyboardModifiers.altRight &&
-				e.deltaY !== 0
-			) {
+			if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey && e.deltaY !== 0) {
 				this.onTimeScaleChange(Math.min(500, this.state.timeScale * (1 + 0.001 * (e.deltaY * -1))))
 				e.preventDefault()
 			}
@@ -2773,44 +2762,58 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 export function handleRundownPlaylistReloadResponse(
 	t: i18next.TFunction,
-	rundownPlaylist: RundownPlaylist,
 	result: ReloadRundownPlaylistResponse
+): boolean {
+	let possiblyBadResponse = _.first(result.rundownsResponses)
+
+	result.rundownsResponses.forEach((r) => {
+		if (r.response === TriggerReloadDataResponse.MISSING) {
+			possiblyBadResponse = r
+		}
+	})
+	// TODO: This is a hack, since it only handles the first error
+	return possiblyBadResponse
+		? handleRundownReloadResponse(t, possiblyBadResponse.rundownId, possiblyBadResponse.response)
+		: false
+}
+export function handleRundownReloadResponse(
+	t: i18next.TFunction,
+	rundownId: RundownId,
+	result: TriggerReloadDataResponse
 ): boolean {
 	let hasDoneSomething = false
 
-	let maybeMissingRundownId: RundownId | null = null
-	result.rundownsResponses.forEach((r) => {
-		if (r.response === TriggerReloadDataResponse.MISSING) {
-			maybeMissingRundownId = r.rundownId
-		}
-	})
-	if (maybeMissingRundownId) {
-		const missingRundownId: RundownId = maybeMissingRundownId
-		const missingRundown = Rundowns.findOne(missingRundownId)
-		const missingRundownName = missingRundown ? missingRundown.name : 'N/A'
+	if (result === TriggerReloadDataResponse.MISSING) {
+		const rundown = Rundowns.findOne(rundownId)
+		const playlist = RundownPlaylists.findOne(rundown?.playlistId)
+
 		hasDoneSomething = true
 		const notification = NotificationCenter.push(
 			new Notification(
 				undefined,
 				NoticeLevel.CRITICAL,
-				t('Rundown {{rundownName}} in Playlist {{playlistName}} is missing, what do you want to do?', {
-					rundownName: missingRundownName,
-					playlistName: rundownPlaylist.name,
-				}),
+				t(
+					'Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data from {{nrcsName}}, what do you want to do?',
+					{
+						nrcsName: rundown?.externalNRCSName || 'NRCS',
+						rundownName: rundown?.name || 'N/A',
+						playlistName: playlist?.name || 'N/A',
+					}
+				),
 				'userAction',
 				undefined,
 				true,
 				[
 					// actions:
 					{
-						label: t('Mark the rundown as unsynced'),
+						label: t('Leave it in Sofie (mark the rundown as unsynced)'),
 						type: 'default',
 						action: () => {
 							doUserAction(
 								t,
 								'Missing rundown action',
 								UserAction.UNSYNC_RUNDOWN,
-								(e) => MeteorCall.userAction.unsyncRundown(e, missingRundownId),
+								(e) => MeteorCall.userAction.unsyncRundown(e, rundownId),
 								(err) => {
 									if (!err) {
 										notification.stop()
@@ -2820,16 +2823,16 @@ export function handleRundownPlaylistReloadResponse(
 						},
 					},
 					{
-						label: t('Remove just the rundown'),
+						label: t('Remove just the rundown from Sofie'),
 						type: 'default',
 						action: () => {
 							doModalDialog({
-								title: rundownPlaylist.name,
+								title: t('Remove rundown'),
 								message: t(
-									'Do you really want to remove just the rundown "{{rundownName}}" in the playlist {{playlistName}}? This cannot be undone!',
+									'Do you really want to remove just the rundown "{{rundownName}}" in the playlist {{playlistName}} from Sofie? This cannot be undone!',
 									{
-										rundownName: missingRundownName,
-										playlistName: rundownPlaylist.name,
+										rundownName: rundown?.name || 'N/A',
+										playlistName: playlist?.name || 'N/A',
 									}
 								),
 								onAccept: () => {
@@ -2838,35 +2841,7 @@ export function handleRundownPlaylistReloadResponse(
 										t,
 										'Missing rundown action',
 										UserAction.REMOVE_RUNDOWN,
-										(e) => MeteorCall.userAction.removeRundown(e, missingRundownId),
-										(err) => {
-											if (!err) {
-												notification.stop()
-												window.location.assign(`/`)
-											}
-										}
-									)
-								},
-							})
-						},
-					},
-					{
-						label: t('Remove rundown playlist'),
-						type: 'default',
-						action: () => {
-							doModalDialog({
-								title: rundownPlaylist.name,
-								message: t(
-									'Do you really want to remove the rundownPlaylist "{{rundownName}}"? This cannot be undone!',
-									{ rundownName: missingRundownName }
-								),
-								onAccept: () => {
-									// nothing
-									doUserAction(
-										t,
-										'Missing rundown action',
-										UserAction.REMOVE_RUNDOWN_PLAYLIST,
-										(e) => MeteorCall.userAction.removeRundownPlaylist(e, rundownPlaylist._id),
+										(e) => MeteorCall.userAction.removeRundown(e, rundownId),
 										(err) => {
 											if (!err) {
 												notification.stop()

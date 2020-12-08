@@ -27,7 +27,7 @@ import {
 	IngestSegment,
 	IngestPart,
 	BlueprintResultSegment,
-	BlueprintResultPart,
+	BlueprintResultOrderedRundowns,
 	BlueprintResultPartInstance,
 	ShowStyleBlueprintManifest,
 	BlueprintResultPartDB,
@@ -41,7 +41,10 @@ import {
 	ServerRundownAPI,
 	removeSegments,
 	updatePartRanks,
-	produceRundownPlaylistInfo,
+	produceRundownPlaylistInfoFromRundown,
+	allowedToMoveRundownOutOfPlaylist,
+	getAllRundownsInPlaylist,
+	sortDefaultRundownInPlaylistOrder,
 } from '../rundown'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import {
@@ -109,28 +112,27 @@ import {
 	RundownPlaylist,
 	RundownPlaylistId,
 } from '../../../lib/collections/RundownPlaylists'
-import { Mongo } from 'meteor/mongo'
 import {
 	isTooCloseToAutonext,
 	getSelectedPartInstancesFromCache,
 	getRundownsSegmentsAndPartsFromCache,
 	removeRundownFromCache,
 } from '../playout/lib'
-import { PartInstances, PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../lib/api/methods'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache } from '../../DatabaseCache'
 import { reportRundownDataHasChanged } from '../asRunLog'
 import { Settings } from '../../../lib/Settings'
-import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions'
+import { AdLibAction } from '../../../lib/collections/AdLibActions'
 import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { removeEmptyPlaylists } from '../rundownPlaylist'
 import { profiler } from '../profiler'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { syncPlayheadInfinitesForNextPartInstance } from '../playout/infinites'
+import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -211,6 +213,19 @@ export namespace RundownInput {
 		logger.info('dataRundownUpdate', ingestRundown)
 		check(ingestRundown, Object)
 		handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, 'dataRundownUpdate')
+	}
+	export function dataSegmentGet(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		rundownExternalId: string,
+		segmentExternalId: string
+	) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		logger.info('dataSegmentGet', rundownExternalId, segmentExternalId)
+		check(rundownExternalId, String)
+		check(segmentExternalId, String)
+		return getIngestSegment(peripheralDevice, rundownExternalId, segmentExternalId)
 	}
 	// Delete, Create & Update Segment (and it's contents):
 	export function dataSegmentDelete(
@@ -310,6 +325,30 @@ function getIngestRundown(peripheralDevice: PeripheralDevice, rundownExternalId:
 	}
 
 	return loadCachedRundownData(rundown._id, rundown.externalId)
+}
+function getIngestSegment(
+	peripheralDevice: PeripheralDevice,
+	rundownExternalId: string,
+	segmentExternalId: string
+): IngestSegment {
+	const rundown = Rundowns.findOne({
+		peripheralDeviceId: peripheralDevice._id,
+		externalId: rundownExternalId,
+	})
+	if (!rundown) {
+		throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`)
+	}
+
+	const segment = Segments.findOne({
+		externalId: segmentExternalId,
+		rundownId: rundown._id,
+	})
+
+	if (!segment) {
+		throw new Meteor.Error(404, `Segment ${segmentExternalId} does not exist in rundown ${rundownExternalId}`)
+	}
+
+	return loadCachedIngestSegment(rundown._id, rundown.externalId, segment._id, segment.externalId)
 }
 function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
 	const rundowns = Rundowns.find({
@@ -547,13 +586,7 @@ function updateRundownFromIngestData(
 		// The rundown is going to change playlist
 		const existingPlaylist = RundownPlaylists.findOne(existingDbRundown.playlistId)
 		if (existingPlaylist) {
-			const { currentPartInstance, nextPartInstance } = existingPlaylist.getSelectedPartInstances()
-
-			if (
-				existingPlaylist.active &&
-				((currentPartInstance && currentPartInstance.rundownId === existingDbRundown._id) ||
-					(nextPartInstance && nextPartInstance.rundownId === existingDbRundown._id))
-			) {
+			if (!allowedToMoveRundownOutOfPlaylist(existingPlaylist, existingDbRundown)) {
 				// The rundown contains a PartInstance that is currently on air.
 				// We're trying for a "soft approach" here, instead of rejecting the change altogether,
 				// and will just revert the playlist change:
@@ -569,11 +602,18 @@ function updateRundownFromIngestData(
 						name: 'Data update',
 					},
 				})
+
+				logger.warn(
+					`Blocking moving rundown "${existingDbRundown._id}" out of playlist "${existingDbRundown.playlistId}"`
+				)
 			}
 		} else {
 			logger.warn(`Existing playlist "${existingDbRundown.playlistId}" not found`)
 		}
 	}
+
+	const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(studio, dbRundownData, peripheralDevice)
+	dbRundownData.playlistId = rundownPlaylistInfo.rundownPlaylist._id
 
 	// Save rundown into database:
 	const rundownChanges = saveIntoDb(
@@ -594,8 +634,6 @@ function updateRundownFromIngestData(
 			},
 		}
 	)
-
-	const rundownPlaylistInfo = produceRundownPlaylistInfo(studio, dbRundownData, peripheralDevice)
 
 	const playlistChanges = saveIntoDb(
 		RundownPlaylists,
@@ -622,8 +660,8 @@ function updateRundownFromIngestData(
 	const dbRundown = Rundowns.findOne(dbRundownData._id)
 	if (!dbRundown) throw new Meteor.Error(500, 'Rundown not found (it should have been)')
 
-	handleUpdatedRundownPlaylist(dbRundown, rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order)
-	removeEmptyPlaylists(studio)
+	updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, dbRundown)
+	removeEmptyPlaylists(studio._id)
 
 	const dbPlaylist = dbRundown.getRundownPlaylist()
 	if (!dbPlaylist) throw new Meteor.Error(500, 'RundownPlaylist not found (it should have been)')
@@ -723,6 +761,7 @@ function updateRundownFromIngestData(
 		cache.Parts,
 		{
 			rundownId: rundownId,
+			dynamicallyInsertedAfterPartId: { $exists: false },
 		},
 		parts
 	)
@@ -977,49 +1016,55 @@ function updateRundownFromIngestData(
 	return didChange
 }
 
-/** Set order and playlistID of rundowns in a playlist */
-function handleUpdatedRundownPlaylist(
-	currentRundown: DBRundown,
+/** Set _rank and playlistId of rundowns in a playlist */
+export function updateRundownsInPlaylist(
 	playlist: DBRundownPlaylist,
-	order: _.Dictionary<number>
+	rundownRanks: BlueprintResultOrderedRundowns,
+	currentRundown?: DBRundown
 ) {
-	let rundowns: DBRundown[] = []
-	let selector: Mongo.Selector<DBRundown> = {}
-	if (currentRundown.playlistExternalId && playlist.externalId === currentRundown.playlistExternalId) {
-		selector = { playlistExternalId: currentRundown.playlistExternalId }
-		rundowns = Rundowns.find({ playlistExternalId: currentRundown.playlistExternalId }).fetch()
-	} else if (!currentRundown.playlistExternalId) {
-		selector = { _id: currentRundown._id }
-		rundowns = [currentRundown]
-	} else if (currentRundown.playlistExternalId && playlist.externalId !== currentRundown.playlistExternalId) {
+	const { rundowns, selector } = getAllRundownsInPlaylist(playlist._id, playlist.externalId)
+
+	let maxRank: number = Number.NEGATIVE_INFINITY
+	let currentRundownUpdated: DBRundown | undefined
+	rundowns.forEach((rundown) => {
+		rundown.playlistId = playlist._id
+
+		if (!playlist.rundownRanksAreSetInSofie) {
+			const rundownRank = rundownRanks[unprotectString(rundown._id)]
+			if (rundownRank !== undefined) {
+				rundown._rank = rundownRank
+			}
+		}
+		if (!_.isNaN(Number(rundown._rank))) {
+			maxRank = Math.max(maxRank, rundown._rank)
+		}
+		if (currentRundown && rundown._id === currentRundown._id) currentRundownUpdated = rundown
+		return rundown
+	})
+	if (playlist.rundownRanksAreSetInSofie) {
+		// Place new rundowns at the end:
+
+		const unrankedRundowns = sortDefaultRundownInPlaylistOrder(rundowns.filter((r) => r._rank === undefined))
+
+		unrankedRundowns.forEach((rundown) => {
+			if (rundown._rank === undefined) {
+				rundown._rank = ++maxRank
+			}
+		})
+	}
+	if (currentRundown && !currentRundownUpdated) {
 		throw new Meteor.Error(
-			501,
-			`Rundown "${currentRundown._id}" is assigned to a playlist "${currentRundown.playlistExternalId}", but the produced playlist has external ID: "${playlist.externalId}".`
+			500,
+			`updateRundownsInPlaylist: Rundown "${currentRundown._id}" is not a part of rundowns`
 		)
-	} else {
-		throw new Meteor.Error(501, `Unknown error when handling rundown playlist.`)
+	}
+	if (currentRundown && currentRundownUpdated) {
+		// Apply to in-memory copy:
+		currentRundown.playlistId = currentRundownUpdated.playlistId
+		currentRundown._rank = currentRundownUpdated._rank
 	}
 
-	const updated = rundowns.map((r) => {
-		const rundownOrder = order[unprotectString(r._id)]
-		r.playlistId = playlist._id
-		if (rundownOrder !== undefined) {
-			r._rank = rundownOrder
-		} else {
-			// an unranked Rundown is essentially "floated" - it is a part of the playlist, but it shouldn't be visible in the UI
-			r._rank = -1
-			// TODO - this should do something to make it be floated
-		}
-
-		if (r._id === currentRundown._id) {
-			// Apply to in-memory copy
-			currentRundown.playlistId = r.playlistId
-			currentRundown._rank = r._rank
-		}
-		return r
-	})
-
-	saveIntoDb(Rundowns, selector, updated)
+	saveIntoDb(Rundowns, selector, rundowns)
 }
 
 function handleRemovedSegment(
@@ -1051,6 +1096,13 @@ function handleRemovedSegment(
 						`handleRemovedSegment: removeSegments: Segment ${segmentExternalId} not found`
 					)
 				}
+
+				cache.defer(() => {
+					IngestDataCache.remove({
+						segmentId: segmentId,
+						rundownId: rundownId,
+					})
+				})
 			}
 		}
 
@@ -1677,7 +1729,7 @@ export function isUpdateAllowed(
 					if (currentPartInstance.part._id === part._id) {
 						// Don't allow removing currently playing part
 						logger.warn(
-							`Not allowing removal of currently playing part "${part._id}", making rundown unsynced instead`
+							`Not allowing removal of currently playing part "${part._id}" ("${part.externalId}"), making rundown unsynced instead`
 						)
 						allowed = false
 					} else if (
@@ -1687,7 +1739,7 @@ export function isUpdateAllowed(
 					) {
 						// Don't allow removing next part, when autonext is about to happen
 						logger.warn(
-							`Not allowing removal of nexted part "${part._id}", making rundown unsynced instead`
+							`Not allowing removal of nexted part "${part._id}" ("${part.externalId}"), making rundown unsynced instead`
 						)
 						allowed = false
 					}
@@ -1698,7 +1750,7 @@ export function isUpdateAllowed(
 					if (currentPartInstance.segmentId === segment._id) {
 						// Don't allow removing segment with currently playing part
 						logger.warn(
-							`Not allowing removal of segment "${segment._id}", containing currently playing part "${currentPartInstance.part._id}", making rundown unsynced instead`
+							`Not allowing removal of segment "${segment._id}" ("${segment.externalId}"), containing currently playing part "${currentPartInstance.part._id}", making rundown unsynced instead`
 						)
 					}
 				})
@@ -1712,7 +1764,7 @@ export function isUpdateAllowed(
 						if (currentPart && currentPart.segmentId === segment._id) {
 							// Don't allow removing segment with currently playing part
 							logger.warn(
-								`Not allowing removal of segment "${segment._id}", containing currently playing part "${currentPart._id}"`
+								`Not allowing removal of segment "${segment._id}" ("${segment.externalId}"), containing currently playing part "${currentPart._id}" ("${currentPart.part.externalId}")`
 							)
 							allowed = false
 						}
@@ -1731,7 +1783,7 @@ export function isUpdateAllowed(
 					if (removedPartIds.includes(currentPart.part.dynamicallyInsertedAfterPartId)) {
 						// Don't allow removal of a part that has a currently playing queued Part
 						logger.warn(
-							`Not allowing removal of part "${currentPart.part.dynamicallyInsertedAfterPartId}", because currently playing (queued) part "${currentPart._id}" is after it`
+							`Not allowing removal of part "${currentPart.part.dynamicallyInsertedAfterPartId}" ("${currentPart.part.externalId}"), because currently playing (queued) part "${currentPart._id}" ("${currentPart.part.externalId}") is after it`
 						)
 						allowed = false
 					}
@@ -1748,12 +1800,16 @@ export function isUpdateAllowed(
 	span?.end()
 	return allowed
 }
-function printChanges(changes: Partial<PreparedChanges<{ _id: ProtectedString<any> }>>): string {
+function printChanges(changes: Partial<PreparedChanges<{ _id: ProtectedString<any>; externalId: string }>>): string {
 	let str = ''
 
-	if (changes.changed) str += _.map(changes.changed, (doc) => 'change:' + doc._id).join(',')
-	if (changes.inserted) str += _.map(changes.inserted, (doc) => 'insert:' + doc._id).join(',')
-	if (changes.removed) str += _.map(changes.removed, (doc) => 'remove:' + doc._id).join(',')
+	const compileDocs = (docs: { _id: ProtectedString<any>; externalId: string }[], keyword: string) => {
+		return _.map(docs, (doc) => `${keyword}: "${doc._id}" ("${doc.externalId}")`).join(', ')
+	}
+
+	if (changes.changed) str += compileDocs(changes.changed, 'change')
+	if (changes.inserted) str += compileDocs(changes.inserted, 'insert')
+	if (changes.removed) str += compileDocs(changes.removed, 'remove')
 
 	return str
 }

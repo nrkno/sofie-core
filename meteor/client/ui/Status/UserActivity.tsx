@@ -21,11 +21,15 @@ export const UserActionsList = withTranslation()(
 	class UserActionsList extends React.Component<Translated<IUserActionsListProps>> {
 		renderMessageHead() {
 			const { t } = this.props
+			const executionTimeExplanation =
+				'formatted as "a + b, (c)" where a is the time it took for Core to execute the command, b is the time it took for the Gateway to execute the timeline and c is the duration it took in TSR to resolve the timeline'
 			return (
 				<thead>
 					<tr>
 						<th className="c3 user-action-log__timestamp">{t('Timestamp')}</th>
-						<th className="c3 user-action-log__executionTime">{t('Execution time')}</th>
+						<th className="c3 user-action-log__executionTime" title={t(executionTimeExplanation)}>
+							{t('Execution time*')}
+						</th>
 						<th className="c1 user-action-log__userId">{t('User ID')}</th>
 						<th className="c2 user-action-log__clientAddress">{t('Client IP')}</th>
 						<th className="c3 user-action-log__context">{t('Action')}</th>

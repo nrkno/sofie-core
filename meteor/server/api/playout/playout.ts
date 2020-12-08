@@ -46,7 +46,6 @@ import {
 	getStudioFromCache,
 	getAllOrderedPartsFromCache,
 	getAllPieceInstancesFromCache,
-	checkAccessAndGetPlaylist,
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -78,6 +77,7 @@ import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { checkAccessAndGetPlaylist } from '../lib'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -287,41 +287,6 @@ export namespace ServerPlayoutAPI {
 				libDeactivateRundownPlaylist(cache, playlist)
 
 				waitForPromise(cache.saveAllToDatabase())
-			}
-		)
-	}
-	/**
-	 * Trigger a reload of data of the rundown
-	 */
-	export function reloadRundownPlaylistData(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
-		// Reload and reset the Rundown
-		// @TODO Check for a better solution to validate security methods
-		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-		check(rundownPlaylistId, String)
-		return rundownPlaylistSyncFunction(
-			rundownPlaylistId,
-			RundownSyncFunctionPriority.USER_INGEST,
-			'reloadRundownPlaylistData',
-			() => {
-				const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist))
-
-				const playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
-				if (!playlist)
-					throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
-
-				const rundowns = getRundownsFromCache(cache, playlist)
-				const response: ReloadRundownPlaylistResponse = {
-					rundownsResponses: rundowns.map((rundown) => {
-						return {
-							rundownId: rundown._id,
-							response: IngestActions.reloadRundown(rundown),
-						}
-					}),
-				}
-
-				waitForPromise(cache.saveAllToDatabase())
-
-				return response
 			}
 		)
 	}

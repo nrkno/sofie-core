@@ -619,9 +619,6 @@ const StudioMappings = withTranslation()(
 			const activeRoutes = getActiveRoutes(this.props.studio)
 
 			return _.map(this.props.studio.mappings, (mapping: MappingExt, layerId: string) => {
-				// If an internal mapping, then hide it
-				if (mapping.internal) return <React.Fragment key={layerId}></React.Fragment>
-
 				return (
 					<React.Fragment key={layerId}>
 						<tr
@@ -1119,7 +1116,7 @@ const StudioRoutings = withTranslation()(
 									<div className="mod mvs mhs">
 										{t('Device Type')}
 										{route.mappedLayer ? (
-											deviceTypeFromMappedLayer ? (
+											deviceTypeFromMappedLayer !== undefined ? (
 												<span className="mls">{TSR.DeviceType[deviceTypeFromMappedLayer]}</span>
 											) : (
 												<span className="mls dimmed">{t('Source Layer not found')}</span>
@@ -1136,7 +1133,7 @@ const StudioRoutings = withTranslation()(
 												className="input text-input input-l"></EditAttribute>
 										)}
 									</div>
-									{routeDeviceType && route.remapping !== undefined && (
+									{routeDeviceType !== undefined && route.remapping !== undefined ? (
 										<>
 											<div className="mod mvs mhs">
 												<label className="field">
@@ -1172,7 +1169,7 @@ const StudioRoutings = withTranslation()(
 												showOptional={true}
 											/>
 										</>
-									)}
+									) : null}
 								</div>
 							</div>
 						)
