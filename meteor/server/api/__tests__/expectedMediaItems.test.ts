@@ -6,7 +6,7 @@ import { VTContent, PieceLifespan } from '@sofie-automation/blueprints-integrati
 import { Segments, DBSegment } from '../../../lib/collections/Segments'
 import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { updateExpectedMediaItemsOnRundown, updateExpectedMediaItemsOnPart } from '../expectedMediaItems'
+import { updateExpectedMediaItemsOnPart, updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'

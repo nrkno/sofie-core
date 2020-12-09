@@ -15,6 +15,7 @@ import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { Credentials } from '../security/lib/credentials'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { Random } from 'meteor/random'
+import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 
 export function insertStudio(context: MethodContext | Credentials, newId?: StudioId): StudioId {
 	if (newId) check(newId, String)
@@ -73,6 +74,7 @@ export function removeStudio(context: MethodContext, studioId: StudioId): void {
 	ExternalMessageQueue.remove({ studioId: studio._id })
 	MediaObjects.remove({ studioId: studio._id })
 	Timeline.remove({ studioId: studio._id })
+	ExpectedPackages.remove({ studioId: studio._id })
 }
 
 class ServerStudiosAPI extends MethodContextAPI implements NewStudiosAPI {

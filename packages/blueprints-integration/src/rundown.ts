@@ -1,6 +1,7 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContentVizMSE } from 'timeline-state-resolver-types'
 import { Time } from './common'
 import { SomeContent } from './content'
+import { ExpectedPackage } from './package'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -253,8 +254,18 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	adlibDisableOutTransition?: boolean
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
+
+	/**
+	 * An array of which Packages this Piece uses. This is used by a Package Manager to ensure that the Package is in place for playout.
+	 * @todo
+	 */
+	expectedPackages?: ExpectedPackage.Any[]
+
+	/** @todo: to be defined */
+	listenToPackageInfoUpdates?: any[]
 }
 
+/** @deprecated */
 export interface ExpectedPlayoutItemGeneric {
 	/** What type of playout device this item should be handled by */
 	deviceSubType: TSR_DeviceType // subset of PeripheralDeviceAPI.DeviceSubType

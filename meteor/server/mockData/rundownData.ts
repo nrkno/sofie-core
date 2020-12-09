@@ -6,12 +6,15 @@ import * as _ from 'underscore'
 import { logger } from '../logging'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { getCurrentTime, waitForPromise } from '../../lib/lib'
-import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
 import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Settings } from '../../lib/Settings'
 import { initCacheForRundownPlaylistFromRundown, initCacheForRundownPlaylist } from '../DatabaseCaches'
 import { removeRundownPlaylistFromCache, setNextPart, getSelectedPartInstancesFromCache } from '../api/playout/lib'
-import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
+import {
+	rundownPlaylistSyncFunction,
+	RundownSyncFunctionPriority,
+	updateExpectedPackagesOnRundown,
+} from '../api/ingest/rundownInput'
 import { syncPlayheadInfinitesForNextPartInstance } from '../api/playout/infinites'
 import { forceClearAllActivationCaches } from '../ActivationCache'
 import { PartInstances } from '../../lib/collections/PartInstances'
@@ -82,7 +85,7 @@ if (!Settings.enableUserAccounts) {
 
 			rundowns.map((i) => {
 				const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(i._id)) // todo: is this correct? - what if rundown has no playlist?
-				updateExpectedMediaItemsOnRundown(cache, i._id)
+				updateExpectedPackagesOnRundown(cache, i._id)
 				waitForPromise(cache.saveAllToDatabase())
 			})
 		},
