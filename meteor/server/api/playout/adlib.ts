@@ -19,7 +19,12 @@ import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../l
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
 import { Part } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache, getSelectedPartInstancesFromCache } from './lib'
-import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
+import {
+	convertAdLibToPieceInstance,
+	getResolvedPieces,
+	convertPieceToAdLibPiece,
+	setupPieceInstanceInfiniteProperties,
+} from './pieces'
 import { updateTimeline } from './timeline'
 import { updatePartRanks, afterRemoveParts } from '../rundown'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
@@ -416,15 +421,16 @@ export namespace ServerPlayoutAdLibAPI {
 
 		newPieceInstances.forEach((pieceInstance) => {
 			// Ensure it is labelled as dynamic
+			pieceInstance.dynamicallyInserted = getCurrentTime()
 			pieceInstance.partInstanceId = newPartInstance._id
 			pieceInstance.piece.startPartId = newPartInstance.part._id
+
+			setupPieceInstanceInfiniteProperties(pieceInstance)
 
 			cache.PieceInstances.insert(pieceInstance)
 		})
 
 		updatePartRanks(cache, rundownPlaylist, [newPartInstance.part.segmentId])
-
-		setNextPart(cache, rundownPlaylist, newPartInstance)
 
 		// Find and insert any rundown defined infinites that we should inherit
 		const part = cache.Parts.findOne(newPartInstance.part._id)
@@ -442,6 +448,8 @@ export namespace ServerPlayoutAdLibAPI {
 			cache.PieceInstances.insert(pieceInstance)
 		}
 
+		setNextPart(cache, rundownPlaylist, newPartInstance)
+
 		if (span) span.end()
 	}
 
@@ -457,6 +465,8 @@ export namespace ServerPlayoutAdLibAPI {
 		newPieceInstance.partInstanceId = existingPartInstance._id
 		newPieceInstance.piece.startPartId = existingPartInstance.part._id
 		newPieceInstance.dynamicallyInserted = getCurrentTime()
+
+		setupPieceInstanceInfiniteProperties(newPieceInstance)
 
 		// exclusiveGroup is handled at runtime by processAndPrunePieceInstanceTimings
 
