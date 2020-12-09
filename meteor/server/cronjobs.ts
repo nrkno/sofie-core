@@ -131,7 +131,7 @@ Meteor.startup(() => {
 												resolve()
 											}
 										},
-								    	CASPARCG_RESTART_TIME,
+										CASPARCG_RESTART_TIME,
 										'restartCasparCG'
 									)
 								})
