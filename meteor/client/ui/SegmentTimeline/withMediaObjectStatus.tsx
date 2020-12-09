@@ -53,10 +53,8 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 							break
 					}
 
-					if (this.subscription) this.subscription.stop()
-
 					if (objId && objId !== this.objId && this.props.studio) {
-						// if (this.mediaObjectSub) this.mediaObjectSub.stop()
+						if (this.subscription) this.subscription.stop()
 						this.objId = objId
 						this.subscription = this.subscribe(PubSub.mediaObjects, this.props.studio._id, {
 							mediaId: this.objId,
@@ -102,7 +100,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 								// Deep clone the required bits
 								const origPiece = (overrides.piece || this.props.piece) as AdLibPieceUi
 								const pieceCopy: AdLibPieceUi = {
-									...((overrides.piece || this.props.piece) as AdLibPieceUi),
+									...(origPiece as AdLibPieceUi),
 									status: status,
 									contentMetaData: metadata,
 									message,
