@@ -49,7 +49,7 @@ import { BucketPieceButton } from './BucketPieceButton'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstances, PartInstance, DBPartInstance } from '../../../lib/collections/PartInstances'
 import { AdLibPieceUi } from './AdLibPanel'
 import { BucketAdLibActions, BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
@@ -60,6 +60,7 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
+import type { MongoFieldSpecifierOnes } from '../../../lib/typings/meteor'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
@@ -238,11 +239,12 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		const selectedPart = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
 		if (selectedPart) {
 			const part = PartInstances.findOne(selectedPart, {
-				//@ts-ignore
-				fields: {
-					rundownId: 1,
-					'part._id': 1,
-				},
+				fields:
+					literal<MongoFieldSpecifierOnes<DBPartInstance>>({
+						rundownId: 1,
+						//@ts-ignore
+						'part._id': 1,
+					}),
 			}) as Pick<PartInstance, 'rundownId'> | undefined
 			if (part) {
 				const rundown = Rundowns.findOne(part.rundownId, {

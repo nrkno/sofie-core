@@ -34,7 +34,7 @@ export namespace MediaManagerAPI {
 		waitForPromise(
 			Promise.all(
 				deviceIds.map((deviceId) => {
-					return new Promise((resolve, reject) => {
+					return new Promise<void>((resolve, reject) => {
 						PeripheralDeviceAPI.executeFunction(
 							deviceId,
 							(err, res) => {
@@ -70,7 +70,7 @@ export namespace MediaManagerAPI {
 		waitForPromise(
 			Promise.all(
 				deviceIds.map((deviceId) => {
-					return new Promise((resolve, reject) => {
+					return new Promise<void>((resolve, reject) => {
 						PeripheralDeviceAPI.executeFunction(
 							deviceId,
 							(err, res) => {
@@ -93,7 +93,7 @@ export namespace MediaManagerAPI {
 		if (!workflow) throw new Meteor.Error(404, `MediaWorkFlow "${workflowId}" not found`)
 
 		waitForPromise(
-			new Promise((resolve, reject) => {
+			new Promise<void>((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(
 					workflow.deviceId,
 					(err, res) => {
@@ -114,7 +114,7 @@ export namespace MediaManagerAPI {
 		if (!workflow) throw new Meteor.Error(404, `MediaWorkFlow "${workflowId}" not found`)
 
 		waitForPromise(
-			new Promise((resolve, reject) => {
+			new Promise<void>((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(
 					workflow.deviceId,
 					(err, res) => {
@@ -135,7 +135,7 @@ export namespace MediaManagerAPI {
 		if (!workflow) throw new Meteor.Error(404, `MediaWorkFlow "${workflowId}" not found`)
 
 		waitForPromise(
-			new Promise((resolve, reject) => {
+			new Promise<void>((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(
 					workflow.deviceId,
 					(err, res) => {

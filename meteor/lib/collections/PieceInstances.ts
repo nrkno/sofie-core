@@ -18,7 +18,7 @@ import { Piece, PieceId } from './Pieces'
 import { PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
 import { registerIndex } from '../database'
-import { DeepPartial } from 'utility-types'
+import { DeepPartial } from 'ts-essentials'
 
 /** A string, identifying a PieceInstance */
 export type PieceInstanceId = ProtectedString<'PieceInstanceId'>

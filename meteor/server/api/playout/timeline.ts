@@ -5,7 +5,7 @@ import {
 	TSR,
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
-import { DeepReadonly } from 'utility-types'
+import { DeepReadonly } from 'ts-essentials'
 import { logger } from '../../../lib/logging'
 import {
 	TimelineObjGeneric,
@@ -32,6 +32,7 @@ import {
 	getRandomId,
 	applyToArray,
 	protectString,
+	makeDeepReadonly,
 } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -491,7 +492,7 @@ function buildTimelineObjsForRundown(
 					transformPartIntoTimeline(
 						activePlaylist._id,
 						partInstancesInfo.previous.partInstance.part._id,
-						previousContinuedPieces,
+						makeDeepReadonly(previousContinuedPieces),
 						groupClasses,
 						previousPartGroup,
 						partInstancesInfo.previous.nowInPart,
@@ -607,7 +608,7 @@ function buildTimelineObjsForRundown(
 				transformPartIntoTimeline(
 					activePlaylist._id,
 					partInstancesInfo.current.partInstance.part._id,
-					[piece],
+					makeDeepReadonly([piece]),
 					groupClasses,
 					infiniteGroup,
 					nowInParent,
@@ -632,7 +633,7 @@ function buildTimelineObjsForRundown(
 			...transformPartIntoTimeline(
 				activePlaylist._id,
 				partInstancesInfo.current.partInstance.part._id,
-				currentNormalItems,
+				makeDeepReadonly(currentNormalItems),
 				groupClasses,
 				currentPartGroup,
 				partInstancesInfo.current.nowInPart,
@@ -677,7 +678,7 @@ function buildTimelineObjsForRundown(
 				...transformPartIntoTimeline(
 					activePlaylist._id,
 					partInstancesInfo.next.partInstance.part._id,
-					nextPieceInstances,
+					makeDeepReadonly(nextPieceInstances),
 					groupClasses,
 					nextPartGroup,
 					0,
@@ -810,7 +811,7 @@ function getTransformTransitionProps(partInstance: PartInstance, allowTransition
 function transformPartIntoTimeline(
 	playlistId: RundownPlaylistId,
 	partId: PartId,
-	pieceInstances: DeepReadonly<PieceInstanceWithTimings>[],
+	pieceInstances: DeepReadonly<Array<PieceInstanceWithTimings>>,
 	firstObjClasses: string[],
 	partGroup: TimelineObjGroupPart & OnGenerateTimelineObjExt,
 	nowInPart: number,

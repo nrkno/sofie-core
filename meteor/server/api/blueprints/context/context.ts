@@ -16,6 +16,7 @@ import {
 	getRandomId,
 	unpartialString,
 	unprotectStringArray,
+	makeDeepReadonly,
 } from '../../../../lib/lib'
 import { PartId } from '../../../../lib/collections/Parts'
 import { check, Match } from '../../../../lib/check'
@@ -68,7 +69,7 @@ import { unprotectPartInstance, PartInstance } from '../../../../lib/collections
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
 import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { DeepReadonly } from 'utility-types'
+import { DeepReadonly } from 'ts-essentials'
 import { Random } from 'meteor/random'
 import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
 
@@ -362,7 +363,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 		this.currentPartInstance = currentPartInstance ? unprotectPartInstance(currentPartInstance) : undefined
 		this.nextPartInstance = nextPartInstance ? unprotectPartInstance(nextPartInstance) : undefined
 
-		this.partInstances = _.compact([previousPartInstance, currentPartInstance, nextPartInstance])
+		this.partInstances = makeDeepReadonly(_.compact([previousPartInstance, currentPartInstance, nextPartInstance]))
 
 		this._knownSessions =
 			clone(cache.RundownPlaylists.findOne(cache.containsDataFromPlaylist)?.trackedAbSessions) ?? []

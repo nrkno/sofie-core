@@ -215,7 +215,7 @@ meteorPublish(PubSub.expectedPlayoutItems, function(selector: MongoQuery<Expecte
 	return null
 })
 // Note: this publication is for dev purposes only:
-meteorPublish(PubSub.ingestDataCache, function(selector: MongoQuery<IngestDataCacheObjBase>, token?: string) {
+meteorPublish(PubSub.ingestDataCache, function(selector: MongoQuery<IngestDataCacheObj>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<IngestDataCacheObj> = {
 		fields: {},

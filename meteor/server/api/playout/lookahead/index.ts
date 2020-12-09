@@ -13,7 +13,7 @@ import {
 } from '../../../../lib/collections/Timeline'
 import { PartId } from '../../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../../lib/collections/Pieces'
-import { clone, asyncCollectionFindFetch } from '../../../../lib/lib'
+import { clone, asyncCollectionFindFetch, makeDeepReadonly } from '../../../../lib/lib'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { getRundownIDsFromCache } from '../lib'
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
@@ -66,7 +66,9 @@ export async function getLookeaheadObjects(
 		if (!info.partInstance.timings?.startedPlayback) {
 			return info.pieceInstances
 		} else {
-			return info.pieceInstances.filter((p) => !hasPieceInstanceDefinitelyEnded(p, info.nowInPart))
+			return info.pieceInstances.filter(
+				(p) => !hasPieceInstanceDefinitelyEnded(makeDeepReadonly(p), info.nowInPart)
+			)
 		}
 	}
 	const partInstancesInfo: PartInstanceAndPieceInstances[] = _.compact([

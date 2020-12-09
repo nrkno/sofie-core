@@ -1,4 +1,4 @@
-import { DeepReadonly } from 'utility-types'
+import { DeepReadonly } from 'ts-essentials'
 import { PieceInstanceWithTimings } from './infinites'
 import {
 	TimelineObjRundown,
