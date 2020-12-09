@@ -37,6 +37,8 @@ export default class SplitInputIcon extends React.Component<{
 				return 'remote'
 			case SourceLayerType.VT:
 				return 'vt'
+			case SourceLayerType.LOCAL:
+				return 'local'
 		}
 		return ''
 	}

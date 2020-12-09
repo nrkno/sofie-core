@@ -353,6 +353,8 @@ const SourceLayerSettings = withTranslation()(
 					return t('Transition')
 				case SourceLayerType.LIGHTS:
 					return t('Lights')
+				case SourceLayerType.LOCAL:
+					return t('Local')
 				default:
 					return SourceLayerType[type]
 			}
