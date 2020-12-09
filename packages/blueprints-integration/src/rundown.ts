@@ -223,7 +223,10 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	sourceLayerId: string
 	/** Layer output this piece belongs to */
 	outputLayerId: string
-	/** The object describing the item in detail */
+	/** The object describing the item in detail
+	 * @todo should this be deprecated altogether?
+	 * @deprecated
+	 */
 	content?: SomeContent
 
 	/** The transition used by this piece to transition to and from the piece */
@@ -238,7 +241,9 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	adlibPreroll?: number
 	/** Whether the adlib should always be inserted queued */
 	toBeQueued?: boolean
-	/** Array of items expected to be played out. This is used by playout-devices to preload stuff. */
+	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
+	 * @deprecated replaced by .expectedPackages
+	 */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	/** When queued, should the adlib autonext */
 	adlibAutoNext?: boolean
