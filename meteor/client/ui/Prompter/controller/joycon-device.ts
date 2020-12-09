@@ -4,14 +4,14 @@ import Spline from 'cubic-spline'
 
 const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
 
-type JoyconMode = 'L' | 'R' | 'LR'
+type JoyconMode = 'L' | 'R' | 'LR'
 
 /**
  * This class handles control of the prompter using
  */
 export class JoyConController extends ControllerAbstract {
 	private prompterView: PrompterViewInner
-	
+
 	private rangeRevMin = -1 // pedal "all back" position, the max-reverse-position
 	private rangeNeutralMin = -0.25 // pedal "back" position where reverse-range transistions to the neutral range
 	private rangeNeutralMax = 0.25 // pedal "front" position where scrolling starts, the 0 speed origin
@@ -20,14 +20,14 @@ export class JoyConController extends ControllerAbstract {
 	private reverseSpeedMap = [1, 2, 3, 4, 5, 8, 12, 30]
 	private speedSpline: Spline
 	private reverseSpeedSpline: Spline
-	
+
 	private updateSpeedHandle: number | null = null
 	private deadBand = 0.25
 	private currentPosition = 0
 	private lastInputValue = ''
 	private lastUsedJoyconIndex: number = -1
 	private lastUsedJoyconId: string | null = null
-	private lastUsedJoyconMode : JoyconMode | null
+	private lastUsedJoyconMode: JoyconMode | null
 	private lastButtonArray: number[] = []
 
 	constructor(view: PrompterViewInner) {
@@ -96,82 +96,68 @@ export class JoyConController extends ControllerAbstract {
 		// Nothing
 	}
 
-	private onButtonPressed(button: string, mode?: JoyconMode | null) {
-
-	}
-	private onButtonRelease(button: string, mode?: JoyconMode | null) {
+	private onButtonPressed(button: string, mode?: JoyconMode | null) {}
+	private onButtonRelease(button: string, mode?: JoyconMode | null) {
 		if (mode === 'L') {
 			switch (button) {
-				case '0': 
+				case '0':
 					// // go to previous
-					// console.log('Go to previous')
 					this.prompterView.scrollToPrevious()
 					break
-				case '1': 
+				case '1':
 					// go to top
-					// console.log('Go to top')
 					window.scrollTo(0, 0)
 					break
-				case '2': 
+				case '2':
 					// go to air
-					// console.log('Go to live')
 					this.prompterView.scrollToLive()
 					break
-				case '3': 
+				case '3':
 					// go to next
-					// console.log('Go to following')
 					this.prompterView.scrollToFollowing()
 					break
 			}
 		} else if (mode === 'R') {
 			switch (button) {
-			case '0': 
-				// go to next
-				// console.log('Go to following')
-				this.prompterView.scrollToFollowing()
-				break
-			case '1': 
-				// // go to air
-				// console.log('Go to live')
-				this.prompterView.scrollToLive()
-				break
-			case '2': 
-				// go to top
-				// console.log('Go to top')
-				window.scrollTo(0, 0)
-				break
-			case '3': 
-				// go to previous
-				// console.log('Go to previous')
-				this.prompterView.scrollToPrevious()
-				break
+				case '0':
+					// go to next
+					this.prompterView.scrollToFollowing()
+					break
+				case '1':
+					// // go to air
+					this.prompterView.scrollToLive()
+					break
+				case '2':
+					// go to top
+					window.scrollTo(0, 0)
+					break
+				case '3':
+					// go to previous
+					this.prompterView.scrollToPrevious()
+					break
 			}
 		} else if (mode === 'LR') {
 			switch (button) {
-				case '14': 
-				case '2': 
+				case '14':
+				case '2':
 					// go to previous
-					// console.log('Go to previous')
 					this.prompterView.scrollToPrevious()
-				break
-				case '13': 
-				case '0': 
+					break
+				case '13':
+				case '0':
 					// go to top
-					// console.log('Go to top')
 					window.scrollTo(0, 0)
-				break
-				case '12': 
-				case '3': 
+					break
+				case '12':
+				case '3':
 					// go to air
-					// console.log('Go to live')
 					this.prompterView.scrollToLive()
-				break
-				case '15': 
-				case '1': 
+					break
+				case '15':
+				case '1':
 					// go to next
-					// console.log('Go to following')
 					this.prompterView.scrollToFollowing()
-				break
+					break
 			}
 		}
 	}
@@ -184,7 +170,7 @@ export class JoyConController extends ControllerAbstract {
 			// try to re-use old index, if the id mathces
 			const lastpad = gamepads[this.lastUsedJoyconIndex]
 			if (lastpad && lastpad.connected && lastpad.id == this.lastUsedJoyconId) {
-				return {axes: lastpad.axes, buttons: lastpad.buttons}
+				return { axes: lastpad.axes, buttons: lastpad.buttons }
 			}
 
 			// falls back to searching for compatible gamepad
@@ -192,8 +178,9 @@ export class JoyConController extends ControllerAbstract {
 				if (o && o.connected && o.id && typeof o.id === 'string' && o.id.match('Joy-Con')) {
 					this.lastUsedJoyconIndex = o.index
 					this.lastUsedJoyconId = o.id
-					this.lastUsedJoyconMode = o.axes.length === 4 ? 'LR' : o.id.match('(L)') ? 'L' : o.id.match('(R)') ? 'R' : null // we are setting this as a member as opposed to returning it functional-style, to avoid doing this calculation pr. tick
-					return {axes: o.axes, buttons: o.buttons }
+					this.lastUsedJoyconMode =
+						o.axes.length === 4 ? 'LR' : o.id.match('(L)') ? 'L' : o.id.match('(R)') ? 'R' : null // we are setting this as a member as opposed to returning it functional-style, to avoid doing this calculation pr. tick
+					return { axes: o.axes, buttons: o.buttons }
 				}
 			}
 		}
@@ -203,7 +190,7 @@ export class JoyConController extends ControllerAbstract {
 	private getActiveInputsOfJoycons(input) {
 		// handle buttons
 		// @todo: should this be throttled??
-		const newButtons = input.buttons.map(i => i.value)
+		const newButtons = input.buttons.map((i) => i.value)
 
 		if (this.lastButtonArray.length) {
 			for (let i in newButtons) {
@@ -211,9 +198,11 @@ export class JoyConController extends ControllerAbstract {
 				const newBtn = newButtons[i]
 				if (oldBtn === newBtn) continue
 
-				if (!oldBtn && newBtn) { // press
+				if (!oldBtn && newBtn) {
+					// press
 					this.onButtonPressed(i, this.lastUsedJoyconMode)
-				} else if (oldBtn && !newBtn) { // release 
+				} else if (oldBtn && !newBtn) {
+					// release
 					this.onButtonRelease(i, this.lastUsedJoyconMode)
 				}
 			}
