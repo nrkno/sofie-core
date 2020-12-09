@@ -66,6 +66,7 @@ export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
 	thumbnailSourceLayerIds: string[] | undefined
 	thumbnailPriorityNextPieces: boolean
 	hideThumbnailsForActivePieces: boolean
+	showBlackIfNoThumbnailPiece: boolean
 }
 
 /**
