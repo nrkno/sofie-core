@@ -168,22 +168,27 @@ export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
 
 	return routes
 }
-export function getRoutedMappings(inputMappings: MappingsExt, mappingRoutes: ResultingMappingRoutes): MappingsExt {
-	const outputMappings: MappingsExt = {}
+export function getRoutedMappings<M extends MappingExt>(
+	inputMappings: { [layerName: string]: M },
+	mappingRoutes: ResultingMappingRoutes
+): { [layerName: string]: M } {
+	const outputMappings: { [layerName: string]: M } = {}
+
+	// Re-route existing layers:
 	for (let inputLayer of Object.keys(inputMappings)) {
-		const inputMapping = inputMappings[inputLayer]
+		const inputMapping: M = inputMappings[inputLayer]
 
 		const routes = mappingRoutes.existing[inputLayer]
 		if (routes) {
 			for (let route of routes) {
-				const routedMapping: MappingExt = {
+				const routedMapping: M = {
 					...inputMapping,
 					...(route.remapping || {}),
 				}
 				outputMappings[route.outputMappedLayer] = routedMapping
 			}
 		} else {
-			// If no route is found at all, pass it through (backwards compatibility)
+			// If no route is found at all for a mapping, pass the mapping through un-modified for backwards compatibility.
 			outputMappings[inputLayer] = inputMapping
 		}
 	}
@@ -196,7 +201,7 @@ export function getRoutedMappings(inputMappings: MappingsExt, mappingRoutes: Res
 				deviceId: route.remapping.deviceId,
 				...route.remapping,
 			}
-			outputMappings[route.outputMappedLayer] = routedMapping
+			outputMappings[route.outputMappedLayer] = routedMapping as M
 		}
 	}
 	return outputMappings
