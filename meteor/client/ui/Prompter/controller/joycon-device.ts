@@ -9,8 +9,7 @@ const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
  */
 export class JoyConController extends ControllerAbstract {
 	private prompterView: PrompterViewInner
-	private lastUsedJoycon: Gamepad | null = null
-
+	
 	private rangeRevMin = -1 // pedal "all back" position, the max-reverse-position
 	private rangeNeutralMin = -0.25 // pedal "back" position where reverse-range transistions to the neutral range
 	private rangeNeutralMax = 0.25 // pedal "front" position where scrolling starts, the 0 speed origin
@@ -19,12 +18,14 @@ export class JoyConController extends ControllerAbstract {
 	private reverseSpeedMap = [1, 2, 3, 4, 5, 8, 12, 30]
 	private speedSpline: Spline
 	private reverseSpeedSpline: Spline
-
+	
 	private updateSpeedHandle: number | null = null
 	private deadBand = 0.25
 	private lastSpeed = 0
 	private currentPosition = 0
 	private lastInputValue = ''
+	private lastUsedJoycon: Gamepad | null = null
+	private lastButtonArray: number[] = []
 
 	constructor(view: PrompterViewInner) {
 		super(view)
@@ -96,12 +97,16 @@ export class JoyConController extends ControllerAbstract {
 		// try to re-use last used joycon if that is still present
 		if (this.lastUsedJoycon && this.lastUsedJoycon.connected) return this.lastUsedJoycon
 
+		//reset
+		this.lastButtonArray = []
+
 		if (navigator.getGamepads) {
 			let gamepads = navigator.getGamepads()
 			if (!(gamepads && typeof gamepads === 'object' && gamepads.length)) return
 
 			for (const o of gamepads) {
 				if (o && o.connected && o.id && typeof o.id === 'string' && o.id.match('Joy-Con')) {
+					console.log('New gamepad: ', o)
 					return (this.lastUsedJoycon = o) // @todo: do we ever need to deal with more devices? What happens when pairing up?
 				}
 			}
@@ -138,7 +143,24 @@ export class JoyConController extends ControllerAbstract {
 			}
 		}
 
-		// @todo: map out button presses
+		const newButtons = pad.buttons.map(i => i.value)
+
+		if (this.lastButtonArray.length) {
+			for (let i in newButtons) {
+				const oldBtn = this.lastButtonArray[i]
+				const newBtn = newButtons[i]
+				if (oldBtn === newBtn) continue
+
+				// if () { // press
+
+				// } else if () { // release 
+
+				// }
+			}
+		}
+		console.log('')
+
+		this.lastButtonArray = newButtons
 
 		return 0
 	}
