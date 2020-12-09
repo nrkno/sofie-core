@@ -274,12 +274,18 @@ export const AdLibRegionPanel = translateWithTracker<
 		const { nextAdLibIds, nextTags, nextPieceInstances } = getNextPieceInstancesGrouped(
 			props.playlist.nextPartInstanceId
 		)
-		const thumbnailPiece =
-			props.panel.thumbnailSourceLayerIds && props.panel.thumbnailSourceLayerIds.length
-				? [...unfinishedPieceInstances, ...nextPieceInstances].find((p) =>
-						props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId)
-				  )
-				: undefined
+
+		// Pick thumbnails to display
+		const nextThumbnail = nextPieceInstances.find((p) =>
+			props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId)
+		)
+		const currentThumbnail = !props.panel.hideThumbnailsForActivePieces
+			? unfinishedPieceInstances.find((p) => props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId))
+			: undefined
+		const thumbnailPiece = props.panel.thumbnailPriorityNextPieces
+			? nextThumbnail ?? currentThumbnail
+			: currentThumbnail ?? nextThumbnail
+
 		const layer =
 			thumbnailPiece &&
 			props.showStyleBase.sourceLayers.find((layer) => thumbnailPiece.piece.sourceLayerId === layer._id)
