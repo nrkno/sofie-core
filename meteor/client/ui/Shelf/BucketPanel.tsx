@@ -60,7 +60,7 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
-import type { MongoFieldSpecifierOnes } from '../../../lib/typings/meteor'
+import { MongoFieldSpecifierOnes } from '../../../lib/typings/meteor'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
@@ -239,12 +239,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		const selectedPart = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
 		if (selectedPart) {
 			const part = PartInstances.findOne(selectedPart, {
-				fields:
-					literal<MongoFieldSpecifierOnes<DBPartInstance>>({
-						rundownId: 1,
-						//@ts-ignore
-						'part._id': 1,
-					}),
+				fields: literal<MongoFieldSpecifierOnes<DBPartInstance>>({
+					rundownId: 1,
+					//@ts-ignore
+					'part._id': 1,
+				}),
 			}) as Pick<PartInstance, 'rundownId'> | undefined
 			if (part) {
 				const rundown = Rundowns.findOne(part.rundownId, {
