@@ -242,7 +242,8 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 					className={ClassNames('adlib-region-panel__image-container', {
 						next: piece && this.isAdLibNext(piece),
 						'on-air': piece && this.isAdLibOnAir(piece),
-						'has-preview': !!this.props.thumbnailPiece,
+						blackout:
+							!!this.props.thumbnailPiece || (this.props.panel.showBlackIfNoThumbnailPiece && !this.getPreviewUrl()),
 					})}>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>
 						{this.renderPreview()}

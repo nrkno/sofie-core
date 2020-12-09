@@ -1244,6 +1244,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									/>
 								</label>
 							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Show black if no thumbnail is found')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.showBlackIfNoThumbnailPiece`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
 						</React.Fragment>
 					)}
 				</React.Fragment>
