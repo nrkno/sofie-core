@@ -4,6 +4,8 @@ import Spline from 'cubic-spline'
 
 const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
 
+type JoyconMode = 'L' | 'R' | 'LR'
+
 /**
  * This class handles control of the prompter using
  */
@@ -25,7 +27,7 @@ export class JoyConController extends ControllerAbstract {
 	private lastInputValue = ''
 	private lastUsedJoyconIndex: number = -1
 	private lastUsedJoyconId: string | null = null
-	private lastUsedJoyconMode : 'L' | 'R' | 'LR' | null
+	private lastUsedJoyconMode : JoyconMode | null
 	private lastButtonArray: number[] = []
 
 	constructor(view: PrompterViewInner) {
@@ -94,6 +96,86 @@ export class JoyConController extends ControllerAbstract {
 		// Nothing
 	}
 
+	private onButtonPressed(button: string, mode?: JoyconMode | null) {
+
+	}
+	private onButtonRelease(button: string, mode?: JoyconMode | null) {
+		if (mode === 'L') {
+			switch (button) {
+				case '0': 
+					// // go to previous
+					// console.log('Go to previous')
+					this.prompterView.scrollToPrevious()
+					break
+				case '1': 
+					// go to top
+					// console.log('Go to top')
+					window.scrollTo(0, 0)
+					break
+				case '2': 
+					// go to air
+					// console.log('Go to live')
+					this.prompterView.scrollToLive()
+					break
+				case '3': 
+					// go to next
+					// console.log('Go to following')
+					this.prompterView.scrollToFollowing()
+					break
+			}
+		} else if (mode === 'R') {
+			switch (button) {
+			case '0': 
+				// go to next
+				// console.log('Go to following')
+				this.prompterView.scrollToFollowing()
+				break
+			case '1': 
+				// // go to air
+				// console.log('Go to live')
+				this.prompterView.scrollToLive()
+				break
+			case '2': 
+				// go to top
+				// console.log('Go to top')
+				window.scrollTo(0, 0)
+				break
+			case '3': 
+				// go to previous
+				// console.log('Go to previous')
+				this.prompterView.scrollToPrevious()
+				break
+			}
+		} else if (mode === 'LR') {
+			switch (button) {
+				case '14': 
+				case '2': 
+					// go to previous
+					// console.log('Go to previous')
+					this.prompterView.scrollToPrevious()
+				break
+				case '13': 
+				case '0': 
+					// go to top
+					// console.log('Go to top')
+					window.scrollTo(0, 0)
+				break
+				case '12': 
+				case '3': 
+					// go to air
+					// console.log('Go to live')
+					this.prompterView.scrollToLive()
+				break
+				case '15': 
+				case '1': 
+					// go to next
+					// console.log('Go to following')
+					this.prompterView.scrollToFollowing()
+				break
+			}
+		}
+	}
+
 	private getDataFromJoycons() {
 		if (navigator.getGamepads) {
 			let gamepads = navigator.getGamepads()
@@ -130,9 +212,9 @@ export class JoyConController extends ControllerAbstract {
 				if (oldBtn === newBtn) continue
 
 				if (!oldBtn && newBtn) { // press
-					console.log(`Button ${i} pressed`)
+					this.onButtonPressed(i, this.lastUsedJoyconMode)
 				} else if (oldBtn && !newBtn) { // release 
-					console.log(`Button ${i} released`)
+					this.onButtonRelease(i, this.lastUsedJoyconMode)
 				}
 			}
 		}
