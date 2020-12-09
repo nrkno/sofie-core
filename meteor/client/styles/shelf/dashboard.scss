@@ -479,6 +479,7 @@ $dashboard-button-height: 5.625em;
 			&.vt,
 			&.live-speak,
 			&.transition,
+            &.graphics,
 			&.splits {
 				> .dashboard-panel__panel__button__content > .dashboard-panel__panel__button__label-container {
 					margin-left: 75px;

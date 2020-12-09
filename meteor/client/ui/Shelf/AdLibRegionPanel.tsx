@@ -51,7 +51,7 @@ interface IAdLibRegionPanelProps {
 
 interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {
 	metadata: MediaObject | null
-	thumbnailPiece: PieceInstance
+	thumbnailPiece: PieceInstance | undefined
 	layer?: ISourceLayer
 }
 
@@ -190,20 +190,20 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 
 	updateMediaObjectSubscription() {
 		if (this.props.thumbnailPiece) {
-			const piece = (this.props.thumbnailPiece as any) as AdLibPieceUi
+			const piece = this.props.thumbnailPiece
 			let objId: string | undefined = undefined
 
-			if (piece.content && piece.content.fileName && this.props.layer) {
+			if (piece.piece.content && piece.piece.content.fileName && this.props.layer) {
 				switch (this.props.layer.type) {
 					case SourceLayerType.VT:
-						objId = (piece.content as VTContent).fileName?.toUpperCase()
+						objId = (piece.piece.content as VTContent).fileName?.toUpperCase()
 						break
 					case SourceLayerType.LIVE_SPEAK:
-						objId = (piece.content as LiveSpeakContent).fileName?.toUpperCase()
+						objId = (piece.piece.content as LiveSpeakContent).fileName?.toUpperCase()
 						break
 					case SourceLayerType.GRAPHICS:
-						if (piece.content.fileName) {
-							objId = (piece.content as GraphicsContent).fileName?.toUpperCase()
+						if (piece.piece.content.fileName) {
+							objId = (piece.piece.content as GraphicsContent).fileName?.toUpperCase()
 						}
 						break
 				}
@@ -242,10 +242,10 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 					className={ClassNames('adlib-region-panel__image-container', {
 						next: piece && this.isAdLibNext(piece),
 						'on-air': piece && this.isAdLibOnAir(piece),
-						'has-preview':
-							this.props.panel.thumbnailSourceLayerIds && this.props.panel.thumbnailSourceLayerIds.length > 0,
+						'has-preview': !!this.props.thumbnailPiece,
 					})}>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>
+						{this.renderPreview()}
 						{
 							<span
 								className={ClassNames('adlib-region-panel__label', {
@@ -276,19 +276,17 @@ export const AdLibRegionPanel = translateWithTracker<
 		)
 		const thumbnailPiece =
 			props.panel.thumbnailSourceLayerIds && props.panel.thumbnailSourceLayerIds.length
-				? _.find(
-						[..._.flatten(_.values(unfinishedPieceInstances)), ..._.flatten(_.values(nextPieceInstances))],
-						(piece) => {
-							return (props.panel.thumbnailSourceLayerIds || []).indexOf(piece.sourceLayerId) !== -1
-						}
+				? [...unfinishedPieceInstances, ...nextPieceInstances].find((p) =>
+						props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId)
 				  )
 				: undefined
 		const layer =
-			thumbnailPiece && props.showStyleBase.sourceLayers.find((layer) => thumbnailPiece.sourceLayerId === layer._id)
+			thumbnailPiece &&
+			props.showStyleBase.sourceLayers.find((layer) => thumbnailPiece.piece.sourceLayerId === layer._id)
 		const { metadata } = thumbnailPiece
 			? checkPieceContentStatus(
-					thumbnailPiece,
-					props.showStyleBase.sourceLayers.find((layer) => thumbnailPiece.sourceLayerId === layer._id),
+					thumbnailPiece.piece,
+					props.showStyleBase.sourceLayers.find((layer) => thumbnailPiece.piece.sourceLayerId === layer._id),
 					studio.settings
 			  )
 			: { metadata: null }
