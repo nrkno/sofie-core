@@ -392,6 +392,9 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		const globalAdLibActions = RundownBaselineAdLibActions.find(
 			{
 				rundownId: currentRundown._id,
+				partId: {
+					$exists: false,
+				},
 			},
 			{
 				// @ts-ignore deep-property
