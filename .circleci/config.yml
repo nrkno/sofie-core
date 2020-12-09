@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   build-core:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11.1
+      - image: sofietv/tv-automation-meteor-base:1.12
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
@@ -27,7 +27,7 @@ jobs:
 
   test-core:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11.1
+      - image: sofietv/tv-automation-meteor-base:1.12
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
@@ -43,7 +43,7 @@ jobs:
           no_output_timeout: 60m
   lint-core:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11.1
+      - image: sofietv/tv-automation-meteor-base:1.12
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
@@ -272,7 +272,7 @@ jobs:
 
   validate-prod-dependencies-core:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11.1
+      - image: sofietv/tv-automation-meteor-base:1.12
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
@@ -288,7 +288,7 @@ jobs:
           no_output_timeout: 15m
   validate-all-dependencies-core:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11.1
+      - image: sofietv/tv-automation-meteor-base:1.12
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS

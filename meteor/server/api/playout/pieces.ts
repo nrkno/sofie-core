@@ -1,7 +1,7 @@
 /* tslint:disable:no-use-before-declare */
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import * as _ from 'underscore'
-import { DeepReadonly } from 'utility-types'
+import { DeepReadonly } from 'ts-essentials'
 import { Piece } from '../../../lib/collections/Pieces'
 import {
 	literal,
@@ -14,6 +14,7 @@ import {
 	flatten,
 	applyToArray,
 	getRandomId,
+	makeDeepReadonly,
 } from '../../../lib/lib'
 import {
 	TimelineObjPieceAbstract,
@@ -205,7 +206,9 @@ export function getResolvedPieces(
 	const partStarted = partInstance.timings?.startedPlayback
 	const nowInPart = now - (partStarted ?? 0)
 
-	const preprocessedPieces = processAndPrunePieceInstanceTimings(showStyleBase, pieceInstances, nowInPart)
+	const preprocessedPieces = makeDeepReadonly(
+		processAndPrunePieceInstanceTimings(showStyleBase, pieceInstances, nowInPart)
+	)
 
 	const objs = flatten(
 		preprocessedPieces.map((piece) => {

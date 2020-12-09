@@ -22,7 +22,7 @@ import {
 import { DBSegment, SegmentId } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { literal, normalizeArray, getCurrentTime, applyToArray } from '../../lib/lib'
+import { literal, normalizeArray, getCurrentTime, applyToArray, makeDeepReadonly } from '../../lib/lib'
 import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
@@ -435,7 +435,7 @@ export namespace RundownUtils {
 						renderedInPoint: 0,
 					}
 
-					const { pieceGroup, capObjs } = createPieceGroupAndCap(piece)
+					const { pieceGroup, capObjs } = createPieceGroupAndCap(makeDeepReadonly(piece))
 					pieceGroup.metaData = literal<PieceGroupMetadataExt>({
 						id: piece.piece._id,
 						pieceId: piece._id,

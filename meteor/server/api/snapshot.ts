@@ -643,11 +643,12 @@ export function restoreFromRundownPlaylistSnapshot(
 		partSegmentIds[unprotectString(part._id)] = part.segmentId
 	})
 	_.each(snapshot.pieces, (piece) => {
-		const pieceOld = (piece as any) as Piece_1_11_0
+		const pieceOld = (piece as any) as Partial<Piece_1_11_0>
 		if (pieceOld.rundownId) {
 			piece.startRundownId = pieceOld.rundownId
 			delete pieceOld.rundownId
-
+		}
+		if (pieceOld.partId) {
 			piece.startPartId = pieceOld.partId
 			delete pieceOld.partId
 			piece.startSegmentId = partSegmentIds[unprotectString(piece.startPartId)]

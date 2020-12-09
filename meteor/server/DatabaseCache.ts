@@ -197,12 +197,14 @@ export class DbCacheWriteCollection<
 			const oldDoc = this.documents[unprotectString(selector)]
 			if (oldDoc && !oldDoc.removed) {
 				oldDoc.removed = true
+				// @ts-ignore TODO - resolve this
 				delete oldDoc.document
 			}
 		} else {
 			const idsToRemove = this.findFetch(selector).map((doc) => unprotectString(doc._id))
 			_.each(idsToRemove, (id) => {
 				this.documents[id].removed = true
+				// @ts-ignore TODO - resolve this
 				delete this.documents[id].document
 			})
 			removed += idsToRemove.length

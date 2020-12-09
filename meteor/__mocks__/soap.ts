@@ -16,7 +16,7 @@ export function throwFatalError(msg: ExternalMessageQueueObj, e: Meteor.Error) {
 }
 
 export async function sendSOAPMessage(msg: ExternalMessageQueueObjSOAP & ExternalMessageQueueObj) {
-	return new Promise((resolve, reject) => {
+	return new Promise<void>((resolve, reject) => {
 		process.nextTick(() => {
 			if (msg.message.fcn.match(/fatal/)) {
 				try {
