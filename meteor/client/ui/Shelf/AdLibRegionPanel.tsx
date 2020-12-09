@@ -14,8 +14,6 @@ import {
 	getNextPieceInstancesGrouped,
 	isAdLibOnAir,
 	isAdLibNext,
-	getUnfinishedPieceInstancesReactive,
-	getNextPiecesReactive,
 } from './DashboardPanel'
 import ClassNames from 'classnames'
 import { AdLibPieceUi, IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, matchFilter } from './AdLibPanel'
@@ -215,28 +213,36 @@ export const AdLibRegionPanel = translateWithTracker<
 >(
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
 		const studio = props.playlist.getStudio()
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
+		const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
 			props.playlist.currentPartInstanceId
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
-		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
-		const nextPieces = getNextPiecesReactive(props.playlist.nextPartInstanceId)
-		const thumbnailPieceInstance: PieceInstance | undefined =
-			props.panel.thumbnailSourceLayerIds && props.panel.thumbnailSourceLayerIds.length
-				? _.find([..._.flatten(_.values(nextPieces)), ..._.flatten(_.values(unfinishedPieces))], (piece) => {
-						return (props.panel.thumbnailSourceLayerIds || []).indexOf(piece.sourceLayerId) !== -1
-				  })
-				: undefined
-		const sourceLayer =
-			thumbnailPieceInstance &&
-			props.showStyleBase.sourceLayers.find((layer) => thumbnailPieceInstance.piece.sourceLayerId === layer._id)
-		const pieceExtended: PieceExtended | undefined = thumbnailPieceInstance
+		const { nextAdLibIds, nextTags, nextPieceInstances } = getNextPieceInstancesGrouped(
+			props.playlist.nextPartInstanceId
+		)
+
+		// Pick thumbnails to display
+		const nextThumbnail: PieceInstance | undefined = nextPieceInstances.find((p) =>
+			props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId)
+		)
+		const currentThumbnail: PieceInstance | undefined = !props.panel.hideThumbnailsForActivePieces
+			? unfinishedPieceInstances.find((p) => props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId))
+			: undefined
+		const thumbnailPiece: PieceInstance | undefined = props.panel.thumbnailPriorityNextPieces
+			? nextThumbnail ?? currentThumbnail
+			: currentThumbnail ?? nextThumbnail
+
+		const pieceExtended: PieceExtended | undefined = thumbnailPiece
 			? {
-					instance: thumbnailPieceInstance,
+					instance: thumbnailPiece,
 					renderedInPoint: null,
 					renderedDuration: null,
 			  }
 			: undefined
+
+		const sourceLayer =
+			thumbnailPiece &&
+			props.showStyleBase.sourceLayers.find((layer) => thumbnailPiece.piece.sourceLayerId === layer._id)
+
 		return Object.assign({}, fetchAndFilter(props), {
 			studio,
 			piece: pieceExtended,

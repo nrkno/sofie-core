@@ -1093,6 +1093,32 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
 								/>
 							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Give priority to thumbnails for next pieces')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.thumbnailPriorityNextPieces`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Hide thumbnails for active pieces')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.hideThumbnailsForActivePieces`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
 						</React.Fragment>
 					)}
 				</React.Fragment>

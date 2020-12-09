@@ -64,6 +64,8 @@ export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
 	adlibRank: number
 	labelBelowPanel: boolean
 	thumbnailSourceLayerIds: string[] | undefined
+	thumbnailPriorityNextPieces: boolean
+	hideThumbnailsForActivePieces: boolean
 }
 
 /**

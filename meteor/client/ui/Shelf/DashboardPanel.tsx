@@ -698,7 +698,9 @@ export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null)
 
 export function getUnfinishedPieceInstancesGrouped(
 	currentPartInstanceId: PartInstanceId | null
-): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> {
+): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> & {
+	unfinishedPieceInstances: PieceInstance[]
+} {
 	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)
 
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
@@ -712,6 +714,7 @@ export function getUnfinishedPieceInstancesGrouped(
 	return {
 		unfinishedAdLibIds,
 		unfinishedTags,
+		unfinishedPieceInstances,
 	}
 }
 
