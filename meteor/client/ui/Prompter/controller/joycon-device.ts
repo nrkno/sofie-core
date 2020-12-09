@@ -21,10 +21,11 @@ export class JoyConController extends ControllerAbstract {
 	
 	private updateSpeedHandle: number | null = null
 	private deadBand = 0.25
-	private lastSpeed = 0
 	private currentPosition = 0
 	private lastInputValue = ''
-	private lastUsedJoycon: Gamepad | null = null
+	private lastUsedJoyconIndex: number = -1
+	private lastUsedJoyconId: string | null = null
+	private lastUsedJoyconMode : 'L' | 'R' | 'LR' | null
 	private lastButtonArray: number[] = []
 
 	constructor(view: PrompterViewInner) {
@@ -93,57 +94,34 @@ export class JoyConController extends ControllerAbstract {
 		// Nothing
 	}
 
-	private getJoycon() {
-		// try to re-use last used joycon if that is still present
-		if (this.lastUsedJoycon && this.lastUsedJoycon.connected) return this.lastUsedJoycon
-
-		//reset
-		this.lastButtonArray = []
-
+	private getDataFromJoycons() {
 		if (navigator.getGamepads) {
 			let gamepads = navigator.getGamepads()
 			if (!(gamepads && typeof gamepads === 'object' && gamepads.length)) return
 
+			// try to re-use old index, if the id mathces
+			const lastpad = gamepads[this.lastUsedJoyconIndex]
+			if (lastpad && lastpad.connected && lastpad.id == this.lastUsedJoyconId) {
+				return {axes: lastpad.axes, buttons: lastpad.buttons}
+			}
+
+			// falls back to searching for compatible gamepad
 			for (const o of gamepads) {
 				if (o && o.connected && o.id && typeof o.id === 'string' && o.id.match('Joy-Con')) {
-					console.log('New gamepad: ', o)
-					return (this.lastUsedJoycon = o) // @todo: do we ever need to deal with more devices? What happens when pairing up?
+					this.lastUsedJoyconIndex = o.index
+					this.lastUsedJoyconId = o.id
+					this.lastUsedJoyconMode = o.axes.length === 4 ? 'LR' : o.id.match('(L)') ? 'L' : o.id.match('(R)') ? 'R' : null // we are setting this as a member as opposed to returning it functional-style, to avoid doing this calculation pr. tick
+					return {axes: o.axes, buttons: o.buttons }
 				}
 			}
 		}
-
-		return (this.lastUsedJoycon = null)
+		return false
 	}
 
-	private getActiveAxesOfJoycons() {
-		if (!(this.lastUsedJoycon && this.lastUsedJoycon.connected && this.lastUsedJoycon.index !== undefined)) return 0 // this makes sense since the connected property updates on the object
-
-		const pad = navigator.getGamepads()[this.lastUsedJoycon.index] // this is needed since the axes and buttons don't update
-		if (!(pad && pad.connected)) return 0
-
-		if (pad.axes.length === 2) {
-			// L or R mode
-			if (Math.abs(pad.axes[0]) > this.deadBand) {
-				if (pad.id && typeof pad.id === 'string') {
-					if (pad.id.match('(L)')) {
-						return pad.axes[0] * -1 // in this mode, L is "negative"
-					} else if (pad.id.match('(R)')) {
-						return pad.axes[0] // in this mode, R is "positive"
-					}
-				}
-			}
-		} else if (pad.axes.length === 4) {
-			// L + R mode
-			// get the first one that is moving outside of the deadband, priorotizing the L controller
-			if (Math.abs(pad.axes[1]) > this.deadBand) {
-				return pad.axes[1] * -1 // in this mode, we are "negative" on both sticks....
-			}
-			if (Math.abs(pad.axes[3]) > this.deadBand) {
-				return pad.axes[3] * -1 // in this mode, we are "negative" on both sticks....
-			}
-		}
-
-		const newButtons = pad.buttons.map(i => i.value)
+	private getActiveInputsOfJoycons(input) {
+		// handle buttons
+		// @todo: should this be throttled??
+		const newButtons = input.buttons.map(i => i.value)
 
 		if (this.lastButtonArray.length) {
 			for (let i in newButtons) {
@@ -151,23 +129,42 @@ export class JoyConController extends ControllerAbstract {
 				const newBtn = newButtons[i]
 				if (oldBtn === newBtn) continue
 
-				// if () { // press
-
-				// } else if () { // release 
-
-				// }
+				if (!oldBtn && newBtn) { // press
+					console.log(`Button ${i} pressed`)
+				} else if (oldBtn && !newBtn) { // release 
+					console.log(`Button ${i} released`)
+				}
 			}
 		}
-		console.log('')
-
 		this.lastButtonArray = newButtons
+
+		// hadle speed input
+		if (this.lastUsedJoyconMode === 'L' || this.lastUsedJoyconMode === 'R') {
+			// L or R mode
+			if (Math.abs(input.axes[0]) > this.deadBand) {
+				if (this.lastUsedJoyconMode === 'L') {
+					return input.axes[0] * -1 // in this mode, L is "negative"
+				} else if (this.lastUsedJoyconMode === 'R') {
+					return input.axes[0] // in this mode, R is "positive"
+				}
+			}
+		} else if (this.lastUsedJoyconMode === 'LR') {
+			// L + R mode
+			// get the first one that is moving outside of the deadband, priorotizing the L controller
+			if (Math.abs(input.axes[1]) > this.deadBand) {
+				return input.axes[1] * -1 // in this mode, we are "negative" on both sticks....
+			}
+			if (Math.abs(input.axes[3]) > this.deadBand) {
+				return input.axes[3] * -1 // in this mode, we are "negative" on both sticks....
+			}
+		}
 
 		return 0
 	}
 
-	private getSpeedFromJoycons() {
+	private calculateSpeed(input) {
 		const { rangeRevMin, rangeNeutralMin, rangeNeutralMax, rangeFwdMax } = this
-		let inputValue = this.getActiveAxesOfJoycons()
+		let inputValue = this.getActiveInputsOfJoycons(input)
 
 		// start by clamping value to the leagal range
 		inputValue = Math.min(Math.max(inputValue, rangeRevMin), rangeFwdMax) // clamps in between rangeRevMin and rangeFwdMax
@@ -177,49 +174,48 @@ export class JoyConController extends ControllerAbstract {
 		if (inputValue >= rangeRevMin && inputValue <= rangeNeutralMin) {
 			// 1) Use the reverse speed spline for the expected speed. The reverse speed is specified using positive values,
 			//    so the result needs to be inversed
-			this.lastSpeed = Math.round(this.reverseSpeedSpline.at(inputValue)) * -1
+			return Math.round(this.reverseSpeedSpline.at(inputValue)) * -1
 		} else if (inputValue >= rangeNeutralMin && inputValue <= rangeNeutralMax) {
 			// 2) we're in the neutral zone
-			this.lastSpeed = 0
+			return 0
 		} else if (inputValue >= rangeNeutralMax && inputValue <= rangeFwdMax) {
 			// 3) Use the speed spline to find the expected speed at this point
-			this.lastSpeed = Math.round(this.speedSpline.at(inputValue))
+			return Math.round(this.speedSpline.at(inputValue))
 		} else {
 			// 4) we should never be able to hit this due to validation above
 			console.error(`Illegal input value ${inputValue}`)
-			return
+			return 0
 		}
 	}
 
 	private updateScrollPosition() {
 		if (this.updateSpeedHandle !== null) return
-		if (!this.getJoycon()) return
+		const input = this.getDataFromJoycons()
+		if (!input) return
 
-		this.getSpeedFromJoycons()
+		const speed = this.calculateSpeed(input)
 
 		// update scroll position
-		window.scrollBy(0, this.lastSpeed)
+		window.scrollBy(0, speed)
 
 		const scrollPosition = window.scrollY
 		// check for reached end-of-scroll:
 		if (this.currentPosition !== undefined && scrollPosition !== undefined) {
 			if (this.currentPosition === scrollPosition) {
 				// We tried to move, but haven't
-				this.lastSpeed = 0
-
 				// @todo: haptic feedback
 			}
 		}
 		this.currentPosition = scrollPosition
 
 		// debug
+		// @todo: can this be throttled?
 		this.prompterView.DEBUG_controllerState({
 			source: PrompterConfigMode.JOYCON,
-			lastSpeed: this.lastSpeed,
+			lastSpeed: speed,
 			lastEvent: 'ControlChange: ' + this.lastInputValue,
 		})
 
-		// @todo strategy to clock down the rate once we have idled for some time
 		this.updateSpeedHandle = window.requestAnimationFrame(() => {
 			this.updateSpeedHandle = null
 			this.updateScrollPosition()
