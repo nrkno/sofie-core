@@ -1,5 +1,5 @@
 import { TransformedCollection } from '../typings/meteor'
-import { applyClassToDocument, registerCollection, ProtectedString, omit } from '../lib'
+import { applyClassToDocument, registerCollection, ProtectedString, omit, ProtectedStringProperties } from '../lib'
 import * as _ from 'underscore'
 import {
 	IBlueprintConfig,
@@ -15,10 +15,10 @@ import { ShowStyleBaseId } from './ShowStyleBases'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 
-export interface MappingsExt extends BlueprintMappings {
+export interface MappingsExt {
 	[layerName: string]: MappingExt
 }
-export interface MappingExt extends BlueprintMapping {}
+export interface MappingExt extends ProtectedStringProperties<BlueprintMapping, 'deviceId'> {}
 
 export interface IStudioSettings {
 	/** URL to endpoint where media preview are exposed */
@@ -125,7 +125,7 @@ export interface ResultingMappingRoutes {
 export interface ResultingMappingRoute {
 	outputMappedLayer: string
 	deviceType?: TSR.DeviceType
-	remapping?: Partial<BlueprintMapping>
+	remapping?: Partial<MappingExt>
 }
 
 export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {

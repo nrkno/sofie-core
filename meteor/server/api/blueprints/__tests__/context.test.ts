@@ -232,7 +232,7 @@ describe('Test blueprint api context', () => {
 			return setupMockStudio({
 				mappings: {
 					abc: {
-						deviceId: 'abc',
+						deviceId: protectString('abc'),
 						device: TSR.DeviceType.ABSTRACT,
 						lookahead: LookaheadMode.PRELOAD,
 					},
@@ -259,7 +259,7 @@ describe('Test blueprint api context', () => {
 			return setupMockStudio({
 				mappings: {
 					abc: {
-						deviceId: 'abc',
+						deviceId: protectString('abc'),
 						device: TSR.DeviceType.ABSTRACT,
 						lookahead: LookaheadMode.PRELOAD,
 					},

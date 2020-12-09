@@ -34,7 +34,6 @@ import {
 	BlueprintManifestType,
 	TSR,
 	ConfigManifestEntry,
-	BlueprintMapping,
 } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
@@ -205,7 +204,7 @@ const StudioDevices = withTranslation()(
 
 interface IDeviceMappingSettingsProps {
 	studio: Studio
-	mapping: BlueprintMapping
+	mapping: MappingExt
 	attribute: string
 	showOptional?: boolean
 }
@@ -1162,7 +1161,7 @@ const StudioRoutings = withTranslation()(
 													{
 														device: routeDeviceType,
 														...route.remapping,
-													} as BlueprintMapping
+													} as MappingExt
 												}
 												studio={this.props.studio}
 												attribute={`routeSets.${routeSetId}.routes.${index}.remapping`}

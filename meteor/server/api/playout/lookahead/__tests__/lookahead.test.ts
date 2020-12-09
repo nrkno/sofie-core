@@ -60,7 +60,7 @@ describe('Lookahead', () => {
 			if (isNaN(parseInt(k))) {
 				mappings[k] = {
 					device: TSR.DeviceType.ABSTRACT,
-					deviceId: 'fake0',
+					deviceId: protectString('fake0'),
 					lookahead: LookaheadMode[k],
 					// lookaheadDepth: 0,
 					// lookaheadMaxSearchDistance: 0,

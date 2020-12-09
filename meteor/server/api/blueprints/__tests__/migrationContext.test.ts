@@ -58,7 +58,7 @@ describe('Test blueprint migrationContext', () => {
 				const studio = getStudio(ctx)
 				const rawMapping = {
 					device: TSR.DeviceType.ABSTRACT,
-					deviceId: 'dev1',
+					deviceId: protectString('dev1'),
 					lookahead: LookaheadMode.NONE,
 				}
 				studio.mappings['mapping1'] = rawMapping

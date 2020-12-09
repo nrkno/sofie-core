@@ -190,6 +190,7 @@ export class StudioConfigContext implements IStudioConfigContext {
 
 export class StudioContext extends StudioConfigContext implements IStudioContext {
 	getStudioMappings(): Readonly<BlueprintMappings> {
+		// @ts-ignore ProtectedString deviceId not compatible with string
 		return this.studio.mappings
 	}
 }
