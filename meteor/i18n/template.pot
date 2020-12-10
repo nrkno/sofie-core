@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2020-09-30T12:24:48.297Z\n"
-"PO-Revision-Date: 2020-09-30T12:24:48.297Z\n"
+"POT-Creation-Date: 2020-11-17T11:30:06.090Z\n"
+"PO-Revision-Date: 2020-11-17T11:30:06.090Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -192,27 +192,6 @@ msgstr ""
 msgid "Out"
 msgstr ""
 
-msgid "Sofie Automation Server"
-msgstr ""
-
-msgid "Connecting to the {{platformName}}"
-msgstr ""
-
-msgid "Cannot connect to the {{platformName}}: {{reason}}"
-msgstr ""
-
-msgid "Reconnecting to the {{platformName}}"
-msgstr ""
-
-msgid "Your machine is offline and cannot connect to the {{platformName}}."
-msgstr ""
-
-msgid "Connected to the {{platformName}}."
-msgstr ""
-
-msgid "Reconnect now"
-msgstr ""
-
 msgid "Could not get system status. Please consult system administrator."
 msgstr ""
 
@@ -258,7 +237,66 @@ msgstr ""
 msgid "Switching operating mode to {{mode}}"
 msgstr ""
 
+msgid "Prompter"
+msgstr ""
+
 msgid "End of script"
+msgstr ""
+
+msgid "There are no rundowns ingested into Sofie."
+msgstr ""
+
+msgid "Click on a rundown to control your studio"
+msgstr ""
+
+msgid "Rundown"
+msgstr ""
+
+msgid "Problems"
+msgstr ""
+
+msgid "Show style"
+msgstr ""
+
+msgid "On Air Start Time"
+msgstr ""
+
+msgid "Last updated"
+msgstr ""
+
+msgid "Getting Started"
+msgstr ""
+
+msgid ""
+"Start with giving this browser configuration permissions by adding this to "
+"the URL: "
+msgstr ""
+
+msgid "Start Here!"
+msgstr ""
+
+msgid "Then, run the migrations script:"
+msgstr ""
+
+msgid "Run Migrations to get set up"
+msgstr ""
+
+msgid "Migrations"
+msgstr ""
+
+msgid "Documentation is available at"
+msgstr ""
+
+msgid "Today"
+msgstr ""
+
+msgid "Tomorrow"
+msgstr ""
+
+msgid "Yesterday"
+msgstr ""
+
+msgid "Last"
 msgstr ""
 
 msgid "Delete this RundownPlaylist?"
@@ -300,63 +338,25 @@ msgstr ""
 msgid "Re-sync all rundowns in playlist"
 msgstr ""
 
+msgid "Use ENPS order"
+msgstr ""
+
+msgid "Using ENPS order"
+msgstr ""
+
+msgid "Using local Sofie order"
+msgstr ""
+
+msgid "Change order in playlist to override"
+msgstr ""
+
 msgid "Enable configuration mode by adding ?configure=1 to the address bar."
 msgstr ""
 
 msgid "You need to run migrations to set the system up for operation."
 msgstr ""
 
-msgid "Add rundowns by connecting a gateway."
-msgstr ""
-
-msgid "Check system status messages."
-msgstr ""
-
-msgid "There are no rundowns ingested into Sofie."
-msgstr ""
-
-msgid "Getting Started"
-msgstr ""
-
-msgid ""
-"Start with giving this browser configuration permissions by adding this to "
-"the URL: "
-msgstr ""
-
-msgid "Start Here!"
-msgstr ""
-
-msgid "Then, run the migrations script:"
-msgstr ""
-
-msgid "Run Migrations to get set up"
-msgstr ""
-
-msgid "Migrations"
-msgstr ""
-
-msgid "Documentation is available at"
-msgstr ""
-
-msgid "Click on a rundown to control your studio"
-msgstr ""
-
-msgid "Rundown"
-msgstr ""
-
-msgid "Show style"
-msgstr ""
-
-msgid "Created"
-msgstr ""
-
-msgid "On Air Start Time"
-msgstr ""
-
-msgid "Air Status"
-msgstr ""
-
-msgid "Unsynced from {{nrcsNames}}"
+msgid "Drop rundown here to move it out of its current playlist"
 msgstr ""
 
 msgid "Sofie Automation"
@@ -372,6 +372,24 @@ msgid "System has issues which need to be resolved"
 msgstr ""
 
 msgid "Status Messages:"
+msgstr ""
+
+msgid "Drag to reorder or move out of playlist"
+msgstr ""
+
+msgid "Not set"
+msgstr ""
+
+msgid "Delete rundown?"
+msgstr ""
+
+msgid "Are you sure you want to delete the \"{{name}}\" rundown?"
+msgstr ""
+
+msgid "Re-Sync rundown?"
+msgstr ""
+
+msgid "Are you sure you want to re-sync the \"{{name}}\" rundown?"
 msgstr ""
 
 msgid "Start time is close"
@@ -529,15 +547,6 @@ msgstr ""
 msgid "This rundown is now active. Are you sure you want to exit this screen?"
 msgstr ""
 
-msgid "Switching route"
-msgstr ""
-
-msgid "Are you sure you want to enable this route: \"{{routeName}}\"?"
-msgstr ""
-
-msgid "Are you sure you want to disable this route: \"{{routeName}}\"?"
-msgstr ""
-
 msgid ""
 "There are no Playout Gateways connected and attached to this studio. Please "
 "contact the system administrator to start the Playout Gateway."
@@ -619,6 +628,15 @@ msgstr ""
 msgid ""
 "Do you really want to remove the rundownPlaylist \"{{rundownName}}\"? This "
 "cannot be undone!"
+msgstr ""
+
+msgid "(in: {{time}})"
+msgstr ""
+
+msgid "({{time}} ago)"
+msgstr ""
+
+msgid "Planned Duration"
 msgstr ""
 
 msgid ""
@@ -733,6 +751,15 @@ msgid "Play-out"
 msgstr ""
 
 msgid "All devices working correctly"
+msgstr ""
+
+msgid "Switchboard"
+msgstr ""
+
+msgid "This is not in it's normal setting"
+msgstr ""
+
+msgid "Off"
 msgstr ""
 
 msgid "Until next take"
@@ -1688,6 +1715,14 @@ msgstr ""
 msgid "Layer Mappings"
 msgstr ""
 
+msgid "Remove this Exclusivity Group?"
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove exclusivity group \"{{eGroupName}}\"?\n"
+"Route Sets assigned to this group will be reset to no group."
+msgstr ""
+
 msgid "Remove this Route from this Route Set?"
 msgstr ""
 
@@ -1708,22 +1743,52 @@ msgstr ""
 msgid "There are no routes set up yet"
 msgstr ""
 
-msgid "Source Layer ID"
+msgid "Original Layer"
 msgstr ""
 
-msgid "New Layer ID"
+msgid "None"
+msgstr ""
+
+msgid "New Layer"
 msgstr ""
 
 msgid "Source Layer not found"
 msgstr ""
 
+msgid "There are no exclusivity groups set up."
+msgstr ""
+
+msgid "Exclusivity Group ID"
+msgstr ""
+
+msgid "Exclusivity Group Name"
+msgstr ""
+
+msgid "Display name of the Exclusivity Group"
+msgstr ""
+
 msgid "Active"
+msgstr ""
+
+msgid "Not Active"
+msgstr ""
+
+msgid "Not defined"
+msgstr ""
+
+msgid "There are no Route Sets set up."
 msgstr ""
 
 msgid "Route Set ID"
 msgstr ""
 
 msgid "Is this Route Set currently active"
+msgstr ""
+
+msgid "Default State"
+msgstr ""
+
+msgid "The default state of this Route Set"
 msgstr ""
 
 msgid "Route Set Name"
@@ -1744,6 +1809,14 @@ msgstr ""
 msgid "Route Sets"
 msgstr ""
 
+msgid ""
+"Controls for exposed Route Sets will be displayed to the producer within "
+"the Rundown View in the Switchboard."
+msgstr ""
+
+msgid "Exclusivity Groups"
+msgstr ""
+
 msgid "Studio Baseline needs update: "
 msgstr ""
 
@@ -1751,9 +1824,6 @@ msgid "Baseline needs reload, this studio may not work until reloaded"
 msgstr ""
 
 msgid "Reload Baseline"
-msgstr ""
-
-msgid "None"
 msgstr ""
 
 msgid "Studio Name"
@@ -2129,7 +2199,7 @@ msgstr ""
 msgid "Not Connected"
 msgstr ""
 
-msgid "Execution time"
+msgid "Execution time*"
 msgstr ""
 
 msgid "User ID"
@@ -2148,6 +2218,36 @@ msgid "Parameters"
 msgstr ""
 
 msgid "User Activity Log"
+msgstr ""
+
+msgid "in {{days}} days, {{hours}} h {{minutes}} min {{seconds}} s"
+msgstr ""
+
+msgid "in {{hours}} h {{minutes}} min {{seconds}} s"
+msgstr ""
+
+msgid "in {{minutes}} min {{seconds}} s"
+msgstr ""
+
+msgid "in {{seconds}} s"
+msgstr ""
+
+msgid "{{days}} days, {{hours}} h {{minutes}} min {{seconds}} s ago"
+msgstr ""
+
+msgid "{{hours}} h {{minutes}} min {{seconds}} s ago"
+msgstr ""
+
+msgid "{{minutes}} min {{seconds}} s ago"
+msgstr ""
+
+msgid "{{seconds}} s ago"
+msgstr ""
+
+msgid "Next scheduled show"
+msgstr ""
+
+msgid "Help & Support"
 msgstr ""
 
 msgid "Disable hints by adding this to the URL:"

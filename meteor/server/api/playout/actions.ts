@@ -2,8 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Rundowns'
-import { Parts } from '../../../lib/collections/Parts'
-import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime, getRandomId, waitForPromise } from '../../../lib/lib'
@@ -14,14 +13,12 @@ import {
 	onPartHasStoppedPlaying,
 	selectNextPart,
 	getSelectedPartInstancesFromCache,
-	getStudioFromCache,
 	getAllOrderedPartsFromCache,
 } from './lib'
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
 import { getActiveRundownPlaylistsInStudio } from './studio'
-import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartInstances } from '../../../lib/collections/PartInstances'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { profiler } from '../profiler'
 

@@ -1,3 +1,4 @@
+import moment from 'moment'
 import i18n, { TFunction } from 'i18next'
 import Backend from 'i18next-xhr-backend'
 import LanguageDetector from 'i18next-browser-languagedetector'
@@ -43,6 +44,7 @@ const i18nInstancePromise = i18n
 				console.error('Error initializing i18Next', err)
 			} else {
 				i18nTranslator = t
+				moment.locale(i18n.language)
 			}
 		}
 	)

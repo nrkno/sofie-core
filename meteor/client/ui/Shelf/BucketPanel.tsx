@@ -43,6 +43,7 @@ import update from 'immutability-helper'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { AdLibPieceUi } from './AdLibPanel'
+import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
@@ -396,7 +397,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 					let sourceLayer = this.state.sourceLayers && this.state.sourceLayers[piece.sourceLayerId]
 
-					if (queue && sourceLayer && sourceLayer.isQueueable) {
+					if (queue && sourceLayer && !sourceLayer.isQueueable) {
 						console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
 						return
 					}
@@ -621,6 +622,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 														onToggleAdLib={this.onToggleAdLib}
 														playlist={this.props.playlist}
 														isOnAir={this.isAdLibOnAir((adlib as any) as AdLibPieceUi)}
+														displayStyle={PieceDisplayStyle.BUTTONS}
 														mediaPreviewUrl={
 															this.props.studio
 																? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''

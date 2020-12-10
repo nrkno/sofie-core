@@ -32,10 +32,12 @@ export interface ISettings {
 	enableUserAccounts: boolean
 	/** Allow Segments to become unsynced, rather than the entire rundown */
 	allowUnsyncedSegments: boolean
-	/** Default duration to use to render parts when no duration is provided */
-	defaultDisplayDuration: number
 	/** Allow resets while a rundown is on-air */
 	allowRundownResetOnAir: boolean
+	/** Default duration to use to render parts when no duration is provided */
+	defaultDisplayDuration: number
+	/** If true, allows creation of new playlists in the Lobby Gui (rundown list). If false; only pre-existing playlists are allowed. */
+	allowMultiplePlaylistsInGUI: boolean
 	// Show keyboard map in AdLib Shelf
 	showKeyboardMap: boolean
 	// Keyboard map layout (what physical layout to use for the keyboard)
@@ -59,8 +61,9 @@ const DEFAULT_SETTINGS: ISettings = {
 	allowGrabbingTimeline: true,
 	enableUserAccounts: false,
 	allowUnsyncedSegments: false,
-	defaultDisplayDuration: 3000,
 	allowRundownResetOnAir: false,
+	defaultDisplayDuration: 3000,
+	allowMultiplePlaylistsInGUI: false,
 	showKeyboardMap: true,
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
 	followOnAirSegmentsHistory: 0,

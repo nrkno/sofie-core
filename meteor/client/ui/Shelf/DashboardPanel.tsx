@@ -1,29 +1,19 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as Velocity from 'velocity-animate'
+import * as mousetrap from 'mousetrap'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { withTranslation } from 'react-i18next'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
-import { Segment } from '../../../lib/collections/Segments'
-import { Part, PartId } from '../../../lib/collections/Parts'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { AdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownViewKbdShortcuts } from '../RundownView'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { IOutputLayer, ISourceLayer, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { RundownLayoutFilter, DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
-import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { Random } from 'meteor/random'
-import { literal, unprotectString, getCurrentTime } from '../../../lib/lib'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { unprotectString, getCurrentTime } from '../../../lib/lib'
 import {
 	IAdLibPanelProps,
 	IAdLibPanelTrackedProps,
@@ -35,14 +25,12 @@ import {
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
-import { Piece, Pieces, PieceId } from '../../../lib/collections/Pieces'
+import { PieceId } from '../../../lib/collections/Pieces'
 import { invalidateAt } from '../../lib/invalidatingTime'
-import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
-import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { registerHotkey, RegisteredHotkeys, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
-import { pieceSetInOutPoints } from '../../../server/api/userActions'
 import { ExtendedKeyboardEvent } from 'mousetrap'
 
 interface IState {
@@ -271,7 +259,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 					mousetrapHelper.bind(
 						item.hotkey,
-						(e: ExtendedKeyboardEvent) => {
+						(e: mousetrap.ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, false, e)
 						},
@@ -297,7 +285,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							queueHotkey,
-							(e: ExtendedKeyboardEvent) => {
+							(e: mousetrap.ExtendedKeyboardEvent) => {
 								preventDefault(e)
 								this.onToggleAdLib(item, true, e)
 							},
@@ -316,7 +304,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 					mousetrapHelper.bind(
 						item.hotkey,
-						(e: ExtendedKeyboardEvent) => {
+						(e: mousetrap.ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, false, e)
 						},
@@ -342,7 +330,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							queueHotkey,
-							(e: ExtendedKeyboardEvent) => {
+							(e: mousetrap.ExtendedKeyboardEvent) => {
 								preventDefault(e)
 								this.onToggleAdLib(item, true, e)
 							},
@@ -371,7 +359,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 				mousetrapHelper.bind(hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 				mousetrapHelper.bind(
 					hotkey,
-					(e: ExtendedKeyboardEvent) => {
+					(e: mousetrap.ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onClearAllSourceLayers(sourceLayers, e)
 					},

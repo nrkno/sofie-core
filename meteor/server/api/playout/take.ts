@@ -1,6 +1,14 @@
 import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { ClientAPI } from '../../../lib/api/client'
-import { getCurrentTime, waitForPromise, unprotectObjectArray, protectString, literal, clone } from '../../../lib/lib'
+import {
+	getCurrentTime,
+	waitForPromise,
+	unprotectObjectArray,
+	protectString,
+	literal,
+	clone,
+	getRandomId,
+} from '../../../lib/lib'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { Meteor } from 'meteor/meteor'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
@@ -10,8 +18,6 @@ import {
 	isTooCloseToAutonext,
 	getSegmentsAndPartsFromCache,
 	selectNextPart,
-	checkAccessAndGetPlaylist,
-	triggerGarbageCollection,
 	getAllPieceInstancesFromCache,
 } from './lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
@@ -20,10 +26,8 @@ import { updateTimeline } from './timeline'
 import { logger } from '../../logging'
 import { PartEndState, VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { getResolvedPieces } from './pieces'
-import { Part } from '../../../lib/collections/Parts'
 import * as _ from 'underscore'
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, PieceInstanceId, PieceInstanceInfiniteId } from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
@@ -32,9 +36,10 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartHasStarted } from '../asRunLog'
 import { MethodContext } from '../../../lib/api/methods'
 import { profiler } from '../profiler'
-import { ServerPlayoutAPI } from './playout'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { isAnySyncFunctionsRunning } from '../../codeControl'
+import { checkAccessAndGetPlaylist } from '../lib'
 
 export function takeNextPartInner(
 	context: MethodContext,
@@ -335,10 +340,12 @@ function startHold(
 	const itemsToCopy = getAllPieceInstancesFromCache(cache, holdFromPartInstance).filter((pi) => pi.piece.extendOnHold)
 	itemsToCopy.forEach((instance) => {
 		if (!instance.infinite) {
+			const infiniteInstanceId: PieceInstanceInfiniteId = getRandomId()
 			// mark current one as infinite
 			cache.PieceInstances.update(instance._id, {
 				$set: {
 					infinite: {
+						infiniteInstanceId: infiniteInstanceId,
 						infinitePieceId: instance.piece._id,
 						fromPreviousPart: false,
 					},
@@ -357,6 +364,7 @@ function startHold(
 					extendOnHold: false,
 				},
 				infinite: {
+					infiniteInstanceId: infiniteInstanceId,
 					infinitePieceId: instance.piece._id,
 					fromPreviousPart: true,
 					fromHold: true,
@@ -403,4 +411,21 @@ function completeHold(
 	}
 
 	updateTimeline(cache, playlist.studioId)
+}
+
+export function triggerGarbageCollection() {
+	Meteor.setTimeout(() => {
+		// Trigger a manual garbage collection:
+		if (global.gc) {
+			// This is only avaialble of the flag --expose_gc
+			// This can be done in prod by: node --expose_gc main.js
+			// or when running Meteor in development, set set SERVER_NODE_OPTIONS=--expose_gc
+
+			if (!isAnySyncFunctionsRunning()) {
+				// by passing true, we're triggering the "full" collection
+				// @ts-ignore (typings not avaiable)
+				global.gc(true)
+			}
+		}
+	}, 500)
 }

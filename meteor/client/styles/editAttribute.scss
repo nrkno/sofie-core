@@ -16,3 +16,16 @@ textarea {
 .warn:focus {
 	color: #ffffff;
 }
+
+.input-dropdowntext {
+	display: inline-block;
+
+	input.input {
+		margin-right: 0;
+	}
+	select.input {
+		margin-left: 0;
+		width: 1em;
+		appearance: menulist;
+	}
+}

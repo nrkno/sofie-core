@@ -11,8 +11,13 @@ import {
 	protectString,
 	getCurrentTime,
 	waitForPromise,
+	clone,
+	omit,
+	getRandomId,
+	unpartialString,
+	unprotectStringArray,
 } from '../../../../lib/lib'
-import { DBPart, PartId } from '../../../../lib/collections/Parts'
+import { PartId } from '../../../../lib/collections/Parts'
 import { check, Match } from '../../../../lib/check'
 import { logger } from '../../../../lib/logging'
 import {
@@ -26,11 +31,9 @@ import {
 	PartEventContext as IPartEventContext,
 	TimelineEventContext as ITimelineEventContext,
 	IStudioConfigContext,
-	ConfigItemValue,
 	IStudioContext,
 	BlueprintMappings,
 	IBlueprintSegmentDB,
-	IngestRundown,
 	IngestPart,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
@@ -39,6 +42,7 @@ import {
 	IBlueprintAsRunLogEvent,
 	IBlueprintExternalMessageQueueObj,
 	ExtendedIngestRundown,
+	OnGenerateTimelineObj,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
@@ -54,13 +58,19 @@ import { ShowStyleVariantId, ShowStyleVariants, ShowStyleVariant } from '../../.
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { NoteType, INoteBase } from '../../../../lib/api/notes'
 import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
-import { RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { PieceInstances, unprotectPieceInstance } from '../../../../lib/collections/PieceInstances'
+import { RundownPlaylistId, ABSessionInfo } from '../../../../lib/collections/RundownPlaylists'
+import {
+	PieceInstances,
+	unprotectPieceInstance,
+	protectPieceInstance,
+} from '../../../../lib/collections/PieceInstances'
 import { unprotectPartInstance, PartInstance } from '../../../../lib/collections/PartInstances'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
 import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { getSelectedPartInstancesFromCache } from '../../playout/lib'
+import { DeepReadonly } from 'utility-types'
+import { Random } from 'meteor/random'
+import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
 
 /** Common */
 
@@ -316,13 +326,26 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 	}
 }
 
+interface ABSessionInfoExt extends ABSessionInfo {
+	/** Whether to store this session on the playlist (ie, whether it is still valid) */
+	keep?: boolean
+}
+
 export class TimelineEventContext extends RundownContext implements ITimelineEventContext {
+	private readonly partInstances: DeepReadonly<Array<PartInstance>>
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
 	readonly nextPartInstance: Readonly<IBlueprintPartInstance> | undefined
+
+	private readonly _knownSessions: ABSessionInfoExt[]
+
+	public get knownSessions() {
+		return this._knownSessions.filter((s) => s.keep).map((s) => omit(s, 'keep'))
+	}
 
 	constructor(
 		rundown: Rundown,
 		cache: CacheForRundownPlaylist,
+		previousPartInstance: PartInstance | undefined,
 		currentPartInstance: PartInstance | undefined,
 		nextPartInstance: PartInstance | undefined
 	) {
@@ -331,17 +354,159 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 			cache,
 			new NotesContext(
 				rundown.name,
-				`rundownId=${rundown._id},currentPartInstance=${currentPartInstance?._id},nextPartInstance=${nextPartInstance?._id}`,
+				`rundownId=${rundown._id},previousPartInstance=${previousPartInstance?._id},currentPartInstance=${currentPartInstance?._id},nextPartInstance=${nextPartInstance?._id}`,
 				false
 			)
 		)
 
 		this.currentPartInstance = currentPartInstance ? unprotectPartInstance(currentPartInstance) : undefined
 		this.nextPartInstance = nextPartInstance ? unprotectPartInstance(nextPartInstance) : undefined
+
+		this.partInstances = _.compact([previousPartInstance, currentPartInstance, nextPartInstance])
+
+		this._knownSessions =
+			clone(cache.RundownPlaylists.findOne(cache.containsDataFromPlaylist)?.trackedAbSessions) ?? []
 	}
 
 	getCurrentTime(): number {
 		return getCurrentTime()
+	}
+
+	/** Internal, for overriding in tests */
+	getNewSessionId(): string {
+		return Random.id()
+	}
+
+	getPieceABSessionId(pieceInstance0: IBlueprintPieceInstance, sessionName: string): string {
+		const pieceInstance = protectPieceInstance(pieceInstance0)
+		const partInstanceId = pieceInstance.partInstanceId
+		if (!partInstanceId) throw new Error('Missing partInstanceId in call to getPieceABSessionId')
+
+		const partInstanceIndex = this.partInstances.findIndex((p) => p._id === partInstanceId)
+		const partInstance = partInstanceIndex >= 0 ? this.partInstances[partInstanceIndex] : undefined
+		if (!partInstance) throw new Error('Unknown partInstanceId in call to getPieceABSessionId')
+
+		const infiniteId = pieceInstance.infinite?.infiniteInstanceId
+		const preserveSession = (session: ABSessionInfoExt): string => {
+			session.keep = true
+			session.infiniteInstanceId = unpartialString(infiniteId)
+			delete session.lookaheadForPartId
+			return session.id
+		}
+
+		// If this is an infinite continuation, then reuse that
+		if (infiniteId) {
+			const infiniteSession = this._knownSessions.find(
+				(s) => s.infiniteInstanceId === infiniteId && s.name === sessionName
+			)
+			if (infiniteSession) {
+				return preserveSession(infiniteSession)
+			}
+		}
+
+		// We only want to consider sessions already tagged to this partInstance
+		const existingSession = this._knownSessions.find(
+			(s) => s.partInstanceIds?.includes(unpartialString(partInstanceId)) && s.name === sessionName
+		)
+		if (existingSession) {
+			return preserveSession(existingSession)
+		}
+
+		// Check if we can continue sessions from the part before, or if we should create new ones
+		const canReuseFromPartInstanceBefore =
+			partInstanceIndex > 0 && this.partInstances[partInstanceIndex - 1].part._rank < partInstance.part._rank
+
+		if (canReuseFromPartInstanceBefore) {
+			// Try and find a session from the part before that we can use
+			const previousPartInstanceId = this.partInstances[partInstanceIndex - 1]._id
+			const continuedSession = this._knownSessions.find(
+				(s) => s.partInstanceIds?.includes(previousPartInstanceId) && s.name === sessionName
+			)
+			if (continuedSession) {
+				continuedSession.partInstanceIds = [
+					...(continuedSession.partInstanceIds || []),
+					unpartialString(partInstanceId),
+				]
+				return preserveSession(continuedSession)
+			}
+		}
+
+		// Find an existing lookahead session to convert
+		const partId = partInstance.part._id
+		const lookaheadSession = this._knownSessions.find(
+			(s) => s.name === sessionName && s.lookaheadForPartId === partId
+		)
+		if (lookaheadSession) {
+			lookaheadSession.partInstanceIds = [unpartialString(partInstanceId)]
+			return preserveSession(lookaheadSession)
+		}
+
+		// Otherwise define a new session
+		const sessionId = this.getNewSessionId()
+		const newSession: ABSessionInfoExt = {
+			id: sessionId,
+			name: sessionName,
+			infiniteInstanceId: unpartialString(infiniteId),
+			partInstanceIds: _.compact([!infiniteId ? unpartialString(partInstanceId) : undefined]),
+			keep: true,
+		}
+		this._knownSessions.push(newSession)
+		return sessionId
+	}
+
+	getTimelineObjectAbSessionId(tlObj: OnGenerateTimelineObjExt, sessionName: string): string | undefined {
+		// Find an infinite
+		const searchId = tlObj.infinitePieceInstanceId
+		if (searchId) {
+			const infiniteSession = this._knownSessions.find(
+				(s) => s.infiniteInstanceId === searchId && s.name === sessionName
+			)
+			if (infiniteSession) {
+				infiniteSession.keep = true
+				return infiniteSession.id
+			}
+		}
+
+		// Find an normal partInstance
+		const partInstanceId = tlObj.partInstanceId
+		if (partInstanceId) {
+			const partInstanceSession = this._knownSessions.find(
+				(s) => s.partInstanceIds?.includes(partInstanceId) && s.name === sessionName
+			)
+			if (partInstanceSession) {
+				partInstanceSession.keep = true
+				return partInstanceSession.id
+			}
+		}
+
+		// If it is lookahead, then we run differently
+		let partId = protectString<PartId>(unprotectString(partInstanceId))
+		if (tlObj.isLookahead && partInstanceId && partId) {
+			// If partId is a known partInstanceId, then convert it to a partId
+			const partInstance = this.partInstances.find((p) => p._id === partInstanceId)
+			if (partInstance) partId = partInstance.part._id
+
+			const lookaheadSession = this._knownSessions.find((s) => s.lookaheadForPartId === partId)
+			if (lookaheadSession) {
+				lookaheadSession.keep = true
+				if (partInstance) {
+					lookaheadSession.partInstanceIds = [partInstanceId]
+				}
+				return lookaheadSession.id
+			} else {
+				const sessionId = this.getNewSessionId()
+				this._knownSessions.push({
+					id: sessionId,
+					name: sessionName,
+					lookaheadForPartId: partId,
+					partInstanceIds: partInstance ? [partInstanceId] : undefined,
+					keep: true,
+				})
+				return sessionId
+			}
+		}
+
+		return undefined
 	}
 }
 

@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { Timeline, TimelineObjGeneric, getRoutedTimeline, TimelineComplete } from '../../lib/collections/Timeline'
+import { Timeline, getRoutedTimeline, TimelineComplete } from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/typings/meteor'

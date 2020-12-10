@@ -4,7 +4,6 @@ import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collecti
 import { PubSub, meteorSubscribe } from './pubsub'
 import { DeviceConfigManifest } from './deviceConfig'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
-import { RundownId } from '../collections/Rundowns'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PeripheralDeviceId, PeripheralDevice } from '../collections/PeripheralDevices'
 import { PieceInstanceId } from '../collections/PieceInstances'

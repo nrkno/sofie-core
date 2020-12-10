@@ -17,25 +17,13 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 
 	/** Playback availability status */
 	status: RundownAPI.PieceStatusCode
-	// /** A flag to signal a given Piece has been deactivated manually */
-	// disabled?: boolean
-	// /** A flag to signal that a given Piece should be hidden from the UI */
-	// hidden?: boolean
 	/** A flag to signal that a given Piece has no content, and exists only as a marker on the timeline */
 	virtual?: boolean
 	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
 	continuesRefId?: PieceId
 }
 
-/** A Single item in a Part: script, VT, cameras */
-export interface RundownPieceGeneric extends PieceGeneric {
-	// /** The rundown this piece belongs to */
-	// rundownId: RundownId
-	// /** The Part this piece belongs to */
-	// partId?: PartId
-}
-
-export interface Piece extends RundownPieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId'> {
+export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId'> {
 	/**
 	 * This is the id of the rundown this piece starts playing in.
 	 * Currently this is the only rundown the piece could be playing in

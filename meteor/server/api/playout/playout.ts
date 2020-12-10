@@ -1,19 +1,18 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
-import { Rundown, RundownHoldState, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
+import { PieceId } from '../../../lib/collections/Pieces'
 import {
 	getCurrentTime,
 	Time,
 	waitForPromise,
 	normalizeArray,
 	unprotectString,
-	protectString,
 	isStringOrProtectedString,
 	getRandomId,
 } from '../../../lib/lib'
-import { TimelineObjGeneric, TimelineObjId, StatObjectMetadata } from '../../../lib/collections/Timeline'
+import { StatObjectMetadata } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
@@ -47,7 +46,6 @@ import {
 	getStudioFromCache,
 	getAllOrderedPartsFromCache,
 	getAllPieceInstancesFromCache,
-	checkAccessAndGetPlaylist,
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -63,9 +61,8 @@ import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ing
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { ReloadRundownPlaylistResponse, UserActionAPIMethods } from '../../../lib/api/userActions'
+import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
 import { MethodContext } from '../../../lib/api/methods'
-import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
 import { StudioContentWriteAccess } from '../../security/studio'
 import {
@@ -76,12 +73,11 @@ import {
 	CacheForStudio,
 } from '../../DatabaseCaches'
 import { takeNextPartInner, afterTake, takeNextPartInnerSync } from './take'
-import { syncPlayheadInfinitesForNextPartInstance, getPieceInstancesForPart } from './infinites'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { UserAction } from '../../../client/lib/userAction'
+import { checkAccessAndGetPlaylist } from '../lib'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -291,41 +287,6 @@ export namespace ServerPlayoutAPI {
 				libDeactivateRundownPlaylist(cache, playlist)
 
 				waitForPromise(cache.saveAllToDatabase())
-			}
-		)
-	}
-	/**
-	 * Trigger a reload of data of the rundown
-	 */
-	export function reloadRundownPlaylistData(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
-		// Reload and reset the Rundown
-		// @TODO Check for a better solution to validate security methods
-		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-		check(rundownPlaylistId, String)
-		return rundownPlaylistSyncFunction(
-			rundownPlaylistId,
-			RundownSyncFunctionPriority.USER_INGEST,
-			'reloadRundownPlaylistData',
-			() => {
-				const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist))
-
-				const playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
-				if (!playlist)
-					throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
-
-				const rundowns = getRundownsFromCache(cache, playlist)
-				const response: ReloadRundownPlaylistResponse = {
-					rundownsResponses: rundowns.map((rundown) => {
-						return {
-							rundownId: rundown._id,
-							response: IngestActions.reloadRundown(rundown),
-						}
-					}),
-				}
-
-				waitForPromise(cache.saveAllToDatabase())
-
-				return response
 			}
 		)
 	}

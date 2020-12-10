@@ -1008,11 +1008,17 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(dynamicPart).toBeTruthy()
 		expect(dynamicPart._rank).toEqual(1.5) // TODO - this value is bad
 
-		// Update the rundown and it should have been removed
+		// Update the rundown and it used to be removed - but this caused unsync issues when the dynamic part was on air.
+		//   For now, rely on other mechanisms to tidy up parts.
 		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
 
 		dynamicPart = Parts.findOne(dynamicPartId) as Part
-		expect(dynamicPart).toBeFalsy() // TODO - is this the desired behaviour
+		expect(dynamicPart).toBeTruthy() // TODO - is this the desired behaviour
+
+		// Tidy up
+		Parts.remove(dynamicPartId)
+		dynamicPart = Parts.findOne(dynamicPartId) as Part
+		expect(dynamicPart).toBeFalsy()
 	})
 	testInFiber('dataSegmentUpdate update dynamicInserted Part', () => {
 		Rundowns.remove({})

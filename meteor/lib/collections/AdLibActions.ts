@@ -1,7 +1,5 @@
-import { PieceGeneric } from './Pieces'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedStringProperties, Omit, ProtectedString } from '../lib'
-import { Meteor } from 'meteor/meteor'
+import { registerCollection, ProtectedStringProperties, ProtectedString } from '../lib'
 import { IBlueprintActionManifest } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { PartId } from './Parts'

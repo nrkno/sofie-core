@@ -7,7 +7,6 @@ import { MediaWorkFlows, MediaWorkFlow, MediaWorkFlowId } from '../../lib/collec
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { allowAccessToPeripheralDevice, allowAccessToPeripheralDeviceContent } from './lib/security'
-import { MethodContext } from '../../lib/api/methods'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
