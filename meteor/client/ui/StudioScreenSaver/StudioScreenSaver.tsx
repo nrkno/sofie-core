@@ -240,13 +240,12 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				// guard against the simulation resulting in a fast-flying, horizontal or vertical text
 				if (Math.abs(speedVector[0]) >= 1 || Math.abs(speedVector[1]) >= 1) {
 					const normalizer = Math.max(Math.abs(speedVector[0]), Math.abs(speedVector[1]))
-					speedVector = [speedVector[0] / normalizer, speedVector[1] / normalizer]
+					speedVector[0] = speedVector[0] / normalizer
+					speedVector[1] = speedVector[1] / normalizer
 				}
 
-				this.position = {
-					x: x + speedVector[0] * this.PIXEL_SPEED * (frameTime / 17),
-					y: y + speedVector[1] * this.PIXEL_SPEED * (frameTime / 17),
-				}
+				this.position.x = x + speedVector[0] * this.PIXEL_SPEED * (frameTime / 17)
+				this.position.y = y + speedVector[1] * this.PIXEL_SPEED * (frameTime / 17)
 
 				// if by any chance the infoElement ends up beyond the screen area, reposition it to the center
 				if (

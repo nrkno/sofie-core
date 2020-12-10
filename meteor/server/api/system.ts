@@ -22,6 +22,7 @@ import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { AsRunLog } from '../../lib/collections/AsRunLog'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
 import { Buckets } from '../../lib/collections/Buckets'
 import { Evaluations } from '../../lib/collections/Evaluations'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
@@ -241,6 +242,10 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 	// BucketAdLibs
 	{
 		results.push(ownedByStudioId('BucketAdLibs', BucketAdLibs))
+	}
+	// BucketAdLibActions
+	{
+		results.push(ownedByStudioId('BucketAdLibActions', BucketAdLibActions))
 	}
 	// Buckets
 	{

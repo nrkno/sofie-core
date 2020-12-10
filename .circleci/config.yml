@@ -8,17 +8,9 @@ jobs:
           password: $DOCKERHUB_PASS
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - v3-node-cache-{{ .Branch }}-{{ checksum "meteor/package-lock.json" }}
-            - v3-node-cache-{{ .Branch }}
       - run:
-          name: Meteor NPM install
-          command: cd meteor && meteor npm install
-          no_output_timeout: 60m
-      - run:
-          name: Build packages
-          command: cd packages && yarn install && yarn build
+          name: Npm install & build libs
+          command: cd meteor && meteor npm install && meteor npm run ci:prepare
           no_output_timeout: 60m
       - run:
           name: Meteor Build
@@ -28,16 +20,6 @@ jobs:
           name: Meteor Bundle NPM Build
           command: cd meteor/bundle/programs/server && npm install
           no_output_timeout: 60m
-      - save_cache:
-          key: v3-node-cache-{{ .Branch }}-{{ checksum "meteor/package-lock.json" }}
-          paths:
-            - meteor/node_modules
-            - ~/.meteor
-      - save_cache:
-          key: v3-node-cache-{{ .Branch }}
-          paths:
-            - meteor/node_modules
-            - ~/.meteor
       - persist_to_workspace:
           root: .
           paths:
@@ -52,8 +34,12 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Npm install & build libs
+          command: cd meteor && meteor npm install && meteor npm run ci:prepare
+          no_output_timeout: 60m
+      - run:
           name: Run tests and send coverage
-          command: cd meteor && meteor npm install && meteor npm run ci
+          command: cd meteor && meteor npm run ci
           no_output_timeout: 60m
   lint-core:
     docker:
@@ -63,6 +49,10 @@ jobs:
           password: $DOCKERHUB_PASS
     steps:
       - checkout
+      - run:
+          name: Npm install & build libs
+          command: cd meteor && meteor npm install && meteor npm run ci:prepare
+          no_output_timeout: 60m
       - run:
           name: Typecheck and lint code
           command: cd meteor && meteor npm install && meteor npm run ci:lint
@@ -101,7 +91,7 @@ jobs:
       - run: cd packages && yarn install
       - run:
           name: Run tests
-          command: cd packages/<< parameters.lib-name >> && yarn test
+          command: cd packages/<< parameters.lib-name >> && yarn unit
           no_output_timeout: 60m
       - when: 
           condition: << parameters.node-version >> == 12 # run for the 'main' version
@@ -289,8 +279,12 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Npm install
+          command: cd meteor && meteor npm install && meteor npm run postinstall
+          no_output_timeout: 60m
+      - run:
           name: Validate production dependencies for vulnerabilities and compatible licenses
-          command: cd meteor && meteor npm install && meteor npm run postinstall && meteor npm run validate:prod-dependencies
+          command: cd meteor && meteor npm run validate:prod-dependencies
           no_output_timeout: 15m
   validate-all-dependencies-core:
     docker:
@@ -301,8 +295,12 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Npm install
+          command: cd meteor && meteor npm install && meteor npm run postinstall
+          no_output_timeout: 60m
+      - run:
           name: Validate all dependencies for vulnerabilities
-          command: cd meteor && meteor npm install && meteor npm run postinstall && meteor npm run validate:all-dependencies
+          command: cd meteor && meteor npm run validate:all-dependencies
           no_output_timeout: 15m
 
   publish-tag:

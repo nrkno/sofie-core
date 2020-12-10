@@ -35,7 +35,10 @@ export interface NewPlayoutAPI {
 		verticalDelta: number
 	): Promise<PartId | null>
 	rundownActivateHold(playlistId: RundownPlaylistId): Promise<void>
-	rundownDisableNextPiece(rundownPlaylistId: RundownPlaylistId, undo?: boolean): Promise<void>
+	rundownDisableNextPiece(
+		rundownPlaylistId: RundownPlaylistId,
+		undo?: boolean
+	): Promise<ClientAPI.ClientResponse<void>>
 	segmentAdLibPieceStart(
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,

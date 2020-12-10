@@ -56,9 +56,7 @@ export class CustomLayerItemRenderer<
 		}
 	}
 
-	getFloatingInspectorStyle(): {
-		[key: string]: string
-	} {
+	getFloatingInspectorStyle(): React.CSSProperties {
 		return {
 			left: (this.props.elementPosition.left + this.props.cursorPosition.left).toString() + 'px',
 			top: this.props.elementPosition.top + 'px',
