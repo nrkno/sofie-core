@@ -84,7 +84,7 @@ export const RundownDividerHeader = withTranslation()(
 				<div className="rundown-divider-timeline">
 					<h2 className="rundown-divider-timeline__title">{rundown.name}</h2>
 					<h3 className="rundown-divider-timeline__playlist-name">{playlist.name}</h3>
-					{rundown.expectedStart && (
+					{rundown.expectedStart ? (
 						<div className="rundown-divider-timeline__expected-start">
 							<span>{t('Planned Start')}</span>&nbsp;
 							<Moment
@@ -100,13 +100,13 @@ export const RundownDividerHeader = withTranslation()(
 								expectedStart={rundown.expectedStart}
 							/>
 						</div>
-					)}
-					{rundown.expectedDuration && (
+					) : null}
+					{rundown.expectedDuration ? (
 						<div className="rundown-divider-timeline__expected-duration">
 							<span>{t('Planned Duration')}</span>&nbsp;
 							<Moment interval={0} format="HH:mm:ss" date={rundown.expectedDuration} />
 						</div>
-					)}
+					) : null}
 				</div>
 			)
 		}

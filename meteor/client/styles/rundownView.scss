@@ -2352,6 +2352,7 @@ body.no-overflow {
 		transform: translate(-100%, -100%);
 		width: 480px;
 		height: 270px;
+		max-width: none;
 
 		> .preview {
 			width: 1920px;
@@ -2404,6 +2405,22 @@ body.no-overflow {
 			padding: 0.2em 0.3em;
 			background: rgba(0, 0, 0, 0.25);
 			border-bottom-left-radius: 3px;
+		}
+
+		> .segment-timeline__mini-inspector__frame-marker {
+			display: block;
+			position: absolute;
+			bottom: 1px;
+
+			&.segment-timeline__mini-inspector__frame-marker--first-frame {
+				left: 6px;
+			}
+
+			&.segment-timeline__mini-inspector__frame-marker--last-frame {
+				left: auto;
+				right: 6px;
+				transform: scaleX(-1);
+			}
 		}
 
 		> .segment-timeline__mini-inspector__warnings {

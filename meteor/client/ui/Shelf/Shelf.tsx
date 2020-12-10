@@ -8,11 +8,10 @@ import * as mousetrap from 'mousetrap'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { AdLibPieceUi } from './AdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { RundownViewKbdShortcuts, RundownViewEvents } from '../RundownView'
+import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { RundownLayoutBase, RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
@@ -23,9 +22,13 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { ShelfRundownLayout } from './ShelfRundownLayout'
 import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 import { Bucket } from '../../../lib/collections/Buckets'
-import { RundownViewBuckets } from './RundownViewBuckets'
+import { RundownViewBuckets, BucketAdLibItem } from './RundownViewBuckets'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ShelfInspector } from './Inspector/ShelfInspector'
+import { Studio } from '../../../lib/collections/Studios'
+import RundownViewEventBus, { RundownViewEvents, SelectPieceEvent } from '../RundownView/RundownViewEventBus'
+import { IAdLibListItem } from './AdLibListItem'
+import ShelfContextMenu from './ShelfContextMenu'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -37,6 +40,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	isExpanded: boolean
 	buckets: Array<Bucket>
 	playlist: RundownPlaylist
+	studio: Studio
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	hotkeys: Array<{
@@ -68,7 +72,7 @@ interface IState {
 	moving: boolean
 	selectedTab: string | undefined
 	shouldQueue: boolean
-	selectedPiece: AdLibPieceUi | PieceUi | undefined
+	selectedPiece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
 	localStorageName: string
 }
 
@@ -179,8 +183,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.props.onRegisterHotkeys(this.bindKeys)
 		this.restoreDefaultTab()
 
-		window.addEventListener(RundownViewEvents.switchShelfTab, this.onSwitchShelfTab)
-		window.addEventListener(RundownViewEvents.selectPiece, this.onSelectPiece)
+		RundownViewEventBus.on(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
+		RundownViewEventBus.on(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
 	}
 
 	componentWillUnmount() {
@@ -194,8 +198,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			}
 		})
 
-		window.removeEventListener(RundownViewEvents.switchShelfTab, this.onSwitchShelfTab)
-		window.removeEventListener(RundownViewEvents.selectPiece, this.onSelectPiece)
+		RundownViewEventBus.off(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
+		RundownViewEventBus.off(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
 	}
 
 	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
@@ -405,11 +409,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, 'shelfTab', tab)
 	}
 
-	private onSelectPiece = (e: CustomEvent<{ piece: AdLibPieceUi | PieceUi | undefined }>) => {
-		this.selectPiece(e.detail.piece)
+	private onSelectPiece = (e: SelectPieceEvent) => {
+		this.selectPiece(e.piece)
 	}
 
-	selectPiece = (piece: AdLibPieceUi | PieceUi | undefined) => {
+	selectPiece = (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => {
 		this.setState({
 			selectedPiece: piece,
 		})
@@ -430,6 +434,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					moving: this.state.moving,
 				})}
 				style={fullViewport ? undefined : this.getStyle()}>
+				<ShelfContextMenu />
 				{!fullViewport && (
 					<div
 						className="rundown-view__shelf__handle dark"
@@ -442,7 +447,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 				<div className="rundown-view__shelf__contents">
 					{!this.props.fullViewport || this.props.shelfDisplayOptions.layout ? (
 						<ContextMenuTrigger
-							id="bucket-context-menu"
+							id="shelf-context-menu"
 							attributes={{
 								className: 'rundown-view__shelf__contents__pane fill',
 							}}
@@ -459,6 +464,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 										selectedPiece={this.state.selectedPiece}
 										onSelectPiece={this.selectPiece}
 										onSwitchTab={this.switchTab}
+										studio={this.props.studio}
 									/>
 								) : this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout) ? (
 									<ShelfDashboardLayout
@@ -469,6 +475,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 										rundownLayout={this.props.rundownLayout}
 										shouldQueue={this.state.shouldQueue}
 										onChangeQueueAdLib={this.changeQueueAdLib}
+										studio={this.props.studio}
 									/>
 								) : (
 									// ultimate fallback if not found
@@ -482,6 +489,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 										selectedPiece={this.state.selectedPiece}
 										onSelectPiece={this.selectPiece}
 										onSwitchTab={this.switchTab}
+										studio={this.props.studio}
 									/>
 								)}
 							</ErrorBoundary>
@@ -501,12 +509,20 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 									this.props.shelfDisplayOptions.layout === false
 								}
 								displayBuckets={this.props.bucketDisplayFilter}
+								selectedPiece={this.state.selectedPiece}
+								onSelectPiece={this.selectPiece}
 							/>
 						</ErrorBoundary>
 					) : null}
 					{!this.props.fullViewport || this.props.shelfDisplayOptions.inspector ? (
 						<ErrorBoundary>
-							<ShelfInspector selected={this.state.selectedPiece} showStyleBase={this.props.showStyleBase} />
+							<ShelfInspector
+								selected={this.state.selectedPiece}
+								showStyleBase={this.props.showStyleBase}
+								studio={this.props.studio}
+								rundownPlaylist={this.props.playlist}
+								onSelectPiece={this.selectPiece}
+							/>
 						</ErrorBoundary>
 					) : null}
 				</div>

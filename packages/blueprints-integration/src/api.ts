@@ -31,7 +31,6 @@ import {
 	IBlueprintPartInstance,
 	IBlueprintAdLibPieceDB,
 	IBlueprintPartDB,
-	IBlueprintPieceDB,
 } from './rundown'
 import { IBlueprintShowStyleBase, IBlueprintShowStyleVariant } from './showStyle'
 import { OnGenerateTimelineObj } from './timeline'
@@ -60,8 +59,6 @@ export interface BlueprintManifestBase {
 	integrationVersion: string
 	/** Version of the TSR-types that the blueprint depend on */
 	TSRVersion: string
-	/** Minimum expected version of the Sofie Core */
-	minimumCoreVersion: string
 }
 
 export interface SystemBlueprintManifest extends BlueprintManifestBase {
@@ -123,16 +120,24 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	 */
 	syncIngestUpdateToPartInstance?: (
 		context: SyncIngestUpdateToPartInstanceContext,
-		existingPartInstance: BlueprintResultPartInstance,
-		newPart: BlueprintResultPartDB,
+		existingPartInstance: BlueprintSyncIngestPartInstance,
+		newData: BlueprintSyncIngestNewData,
 		playoutStatus: 'current' | 'next'
 	) => void
 
 	/** Execute an action defined by an IBlueprintActionManifest */
-	executeAction?: (context: EventContext & ActionExecutionContext, actionId: string, userData: ActionUserData) => void // Promise<void> | void
+	executeAction?: (
+		context: EventContext & ActionExecutionContext,
+		actionId: string,
+		userData: ActionUserData,
+		triggerMode?: string
+	) => void // Promise<void> | void
 
 	/** Generate adlib piece from ingest data */
-	getAdlibItem?: (context: ShowStyleContext, ingestItem: IngestAdlib) => IBlueprintAdLibPiece | null
+	getAdlibItem?: (
+		context: ShowStyleContext,
+		ingestItem: IngestAdlib
+	) => IBlueprintAdLibPiece | IBlueprintActionManifest | null
 
 	/** Preprocess config before storing it by core to later be returned by context's getShowStyleConfig. If not provided, getShowStyleConfig will return unprocessed blueprint config */
 	preprocessConfig?: (config: IBlueprintConfig) => unknown
@@ -195,18 +200,36 @@ export interface BlueprintResultPart {
 	actions?: IBlueprintActionManifest[]
 }
 
-export interface BlueprintResultPartDB {
+export interface BlueprintSyncIngestNewData {
+	// source: BlueprintSyncIngestDataSource
+	/** The new part */
 	part: IBlueprintPartDB
-	pieces: IBlueprintPieceDB[]
+	/** A list of pieces (including infinites) that would be present in a fresh copy of this partInstance */
+	pieceInstances: IBlueprintPieceInstance[]
+	/** The adlib pieces belonging to this part */
 	adLibPieces: IBlueprintAdLibPieceDB[]
+	/** The adlib actions belonging to this part */
 	actions: IBlueprintActionManifest[]
+	/** A list of adlibs that have pieceInstances in the partInstance in question */
+	referencedAdlibs: IBlueprintAdLibPieceDB[]
 }
 
-export interface BlueprintResultPartInstance {
+// TODO: add something like this later?
+// export enum BlueprintSyncIngestDataSource {
+// 	/** The data update came from the same segment */
+// 	SEGMENT = 'segment',
+// 	/** The data update came from another infinite being updated */
+// 	INFINITE = 'infinite',
+// 	ADLIB = 'adlib',
+// 	UNKNOWN = 'unknown'
+// }
+
+export interface BlueprintSyncIngestPartInstance {
 	partInstance: IBlueprintPartInstance
 	pieceInstances: IBlueprintPieceInstance[]
-	// Possibly in the future:
-	// adLibPieces
+	// Upcoming interface:
+	// adLibPieceInstances: IBlueprintAdlibPieceInstance[]
+	// adLibActionInstances: IBlueprintAdlibActionInstance[]
 }
 
 /** Key is the ID of the external ID of the Rundown, Value is the rank to be assigned */

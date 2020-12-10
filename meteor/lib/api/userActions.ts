@@ -14,9 +14,10 @@ import { SnapshotId } from '../collections/Snapshots'
 import { SegmentId } from '../collections/Segments'
 import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
 import { BucketId, Bucket } from '../collections/Buckets'
-import { IngestAdlib } from '@sofie-automation/blueprints-integration'
+import { IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { BucketAdLib } from '../collections/BucketAdlibs'
-import { ActionUserData } from '@sofie-automation/blueprints-integration'
+import { AdLibActionId, AdLibActionCommon } from '../collections/AdLibActions'
+import { BucketAdLibAction } from '../collections/BucketAdlibActions'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -84,7 +85,8 @@ export interface NewUserActionAPI extends MethodContext {
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
-		userData: ActionUserData
+		userData: ActionUserData,
+		triggerMode?: string
 	): Promise<ClientAPI.ClientResponse<void>>
 	segmentAdLibPieceStart(
 		userEvent: string,
@@ -173,11 +175,23 @@ export interface NewUserActionAPI extends MethodContext {
 		userId: string | null
 	): Promise<ClientAPI.ClientResponse<Bucket>>
 	bucketsRemoveBucketAdLib(userEvent: string, id: PieceId): Promise<ClientAPI.ClientResponse<void>>
+	bucketsRemoveBucketAdLibAction(userEvent: string, id: AdLibActionId): Promise<ClientAPI.ClientResponse<void>>
 	bucketsModifyBucketAdLib(
 		userEvent: string,
 		id: PieceId,
 		bucket: Partial<Omit<BucketAdLib, '_id'>>
 	): Promise<ClientAPI.ClientResponse<void>>
+	bucketsModifyBucketAdLibAction(
+		userEvent: string,
+		id: AdLibActionId,
+		action: Partial<Omit<BucketAdLibAction, '_id'>>
+	): Promise<ClientAPI.ClientResponse<void>>
+	bucketsSaveActionIntoBucket(
+		userEvent: string,
+		studioId: StudioId,
+		action: AdLibActionCommon | BucketAdLibAction,
+		bucketId: BucketId
+	): Promise<ClientAPI.ClientResponse<BucketAdLibAction>>
 	switchRouteSet(
 		userEvent: string,
 		studioId: StudioId,
@@ -220,7 +234,10 @@ export enum UserActionAPIMethods {
 	'bucketsEmptyBucket' = 'userAction.emptyBucket',
 	'bucketsModifyBucket' = 'userAction.modifyBucket',
 	'bucketsRemoveBucketAdLib' = 'userAction.removeBucketAdLib',
+	'bucketsRemoveBucketAdLibAction' = 'userAction.removeBucketAdLibAction',
 	'bucketsModifyBucketAdLib' = 'userAction.bucketsModifyBucketAdLib',
+	'bucketsModifyBucketAdLibAction' = 'userAction.bucketsModifyBucketAdLibAction',
+	'bucketsSaveActionIntoBucket' = 'userAction.bucketsSaveActionIntoBucket',
 
 	'segmentAdLibPieceStart' = 'userAction.segmentAdLibPieceStart',
 	'sourceLayerOnPartStop' = 'userAction.sourceLayerOnPartStop',

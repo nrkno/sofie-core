@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.5.0](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/compare/2.4.0...2.5.0) (2020-12-08)
+
+
+### Features
+
+* api for blueprints to manage ab player sessions with partInstance awareness ([#82](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/issues/82)) [publish] ([666b18c](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/commit/666b18c52d250ff4f6af8f51a5d8ce2f48e117e6))
+
 ## [2.4.0](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/compare/2.3.1...2.4.0) (2020-11-10)
 
 

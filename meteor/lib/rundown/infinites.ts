@@ -121,7 +121,7 @@ export function getPlayheadTrackingInfinitesForPart(
 			for (const mode0 of [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnSegmentEnd]) {
 				const mode = mode0 as PieceLifespan.OutOnRundownEnd | PieceLifespan.OutOnSegmentEnd
 				const pieces = (piecesByInfiniteMode[mode] || []).filter(
-					(p) => p.infinite?.fromPreviousPlayhead || p.dynamicallyInserted
+					(p) => p.infinite && (p.infinite.fromPreviousPlayhead || p.dynamicallyInserted)
 				)
 				// This is the piece we may copy across
 				const candidatePiece =
@@ -153,33 +153,35 @@ export function getPlayheadTrackingInfinitesForPart(
 		}
 	}
 
-	const rewrapInstance = (p: PieceInstance) => {
-		const instance = rewrapPieceToInstance(p.piece, part.rundownId, newInstanceId, isTemporary)
-		instance._id = protectString(`${instance._id}_continue`)
+	const rewrapInstance = (p: PieceInstance | undefined): PieceInstance | undefined => {
+		if (p) {
+			const instance = rewrapPieceToInstance(p.piece, part.rundownId, newInstanceId, isTemporary)
+			instance._id = protectString(`${instance._id}_continue`)
 
-		// instance.infinite = p.infinite
-		if (p.infinite) {
-			// This was copied from before, so we know we can force the time to 0
-			instance.piece = {
-				...instance.piece,
-				enable: {
-					start: 0,
-				},
+			if (p.infinite) {
+				// This was copied from before, so we know we can force the time to 0
+				instance.piece = {
+					...instance.piece,
+					enable: {
+						start: 0,
+					},
+				}
+				instance.infinite = {
+					...p.infinite,
+					fromPreviousPart: true,
+					fromPreviousPlayhead: true,
+				}
+				instance.adLibSourceId = p.adLibSourceId
+
+				return instance
 			}
-			instance.infinite = {
-				...p.infinite,
-				fromPreviousPart: true,
-				fromPreviousPlayhead: true,
-			}
-			instance.adLibSourceId = p.adLibSourceId
 		}
-
-		return instance
+		return undefined
 	}
 
 	return flatten(
 		Array.from(piecesOnSourceLayers.values()).map((ps) => {
-			return _.compact(Object.values(ps)).map(rewrapInstance)
+			return _.compact(Object.values(ps).map(rewrapInstance))
 		})
 	)
 }
@@ -323,9 +325,8 @@ export function getPieceInstancesForPart(
 
 	// Compile the resulting list
 
-	const playingPieceInstancesMap = normalizeArrayFuncFilter(
-		playingPieceInstances ?? [],
-		(p) => unprotectString(p.infinite?.infinitePieceId) // TODO - is this 'unique' enough? what about replaying the source if the infinites started there?
+	const playingPieceInstancesMap = normalizeArrayFuncFilter(playingPieceInstances ?? [], (p) =>
+		unprotectString(p.infinite?.infiniteInstanceId)
 	)
 
 	const wrapPiece = (p: PieceInstancePiece) => {

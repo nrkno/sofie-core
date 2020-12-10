@@ -1,7 +1,7 @@
 import { Settings } from '../../lib/Settings'
 import { getUserRoles } from '../../lib/collections/Users'
 
-enum UiAllowAccess {
+enum LocalStorageProperty {
 	STUDIO = 'studioMode',
 	CONFIGURE = 'configureMode',
 	DEVELOPER = 'developerMode',
@@ -11,57 +11,59 @@ enum UiAllowAccess {
 }
 
 export function setAllowStudio(studioMode: boolean) {
-	localStorage.setItem(UiAllowAccess.STUDIO, studioMode ? '1' : '0')
+	localStorage.setItem(LocalStorageProperty.STUDIO, studioMode ? '1' : '0')
 }
 export function getAllowStudio(): boolean {
 	if (Settings.enableUserAccounts) {
 		return !!getUserRoles().studio
 	}
-	return localStorage.getItem(UiAllowAccess.STUDIO) === '1'
+	return localStorage.getItem(LocalStorageProperty.STUDIO) === '1'
 }
 
 export function setAllowConfigure(configureMode: boolean) {
-	localStorage.setItem(UiAllowAccess.CONFIGURE, configureMode ? '1' : '0')
+	localStorage.setItem(LocalStorageProperty.CONFIGURE, configureMode ? '1' : '0')
 }
 export function getAllowConfigure(): boolean {
 	if (Settings.enableUserAccounts) {
 		return !!getUserRoles().configurator
 	}
-	return localStorage.getItem(UiAllowAccess.CONFIGURE) === '1'
+	return localStorage.getItem(LocalStorageProperty.CONFIGURE) === '1'
 }
 
 export function setAllowService(serviceMode: boolean) {
-	localStorage.setItem(UiAllowAccess.SERVICE, serviceMode ? '1' : '0')
+	localStorage.setItem(LocalStorageProperty.SERVICE, serviceMode ? '1' : '0')
 }
 export function getAllowService(): boolean {
-	return localStorage.getItem(UiAllowAccess.SERVICE) === '1'
+	return localStorage.getItem(LocalStorageProperty.SERVICE) === '1'
 }
 
 export function setAllowDeveloper(developerMode: boolean) {
-	localStorage.setItem(UiAllowAccess.DEVELOPER, developerMode ? '1' : '0')
+	localStorage.setItem(LocalStorageProperty.DEVELOPER, developerMode ? '1' : '0')
 }
 export function getAllowDeveloper(): boolean {
 	if (Settings.enableUserAccounts) {
 		return !!getUserRoles().developer
 	}
-	return localStorage.getItem(UiAllowAccess.DEVELOPER) === '1'
+	return localStorage.getItem(LocalStorageProperty.DEVELOPER) === '1'
 }
 
 export function setAllowTesting(testingMode: boolean) {
-	localStorage.setItem(UiAllowAccess.TESTING, testingMode ? '1' : '0')
+	localStorage.setItem(LocalStorageProperty.TESTING, testingMode ? '1' : '0')
 }
 export function getAllowTesting(): boolean {
 	if (Settings.enableUserAccounts) {
 		return !!getUserRoles().developer
 	}
-	return localStorage.getItem(UiAllowAccess.TESTING) === '1'
+	return localStorage.getItem(LocalStorageProperty.TESTING) === '1'
 }
 
+// GUI features: ----------------------------------
+
 export function setAllowSpeaking(speakingMode: boolean) {
-	localStorage.setItem(UiAllowAccess.SPEAKING, speakingMode ? '1' : '0')
+	localStorage.setItem(LocalStorageProperty.SPEAKING, speakingMode ? '1' : '0')
 }
 export function getAllowSpeaking(): boolean {
-	return localStorage.getItem(UiAllowAccess.SPEAKING) === '1'
+	return localStorage.getItem(LocalStorageProperty.SPEAKING) === '1'
 }
 
 export function setHelpMode(helpMode: boolean) {

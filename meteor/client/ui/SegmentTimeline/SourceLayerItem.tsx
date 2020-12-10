@@ -14,15 +14,11 @@ import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
-import { doModalDialog, SomeEvent, ModalInputResult } from '../../lib/ModalDialog'
-import { doUserAction, UserAction } from '../../lib/userAction'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
-import { MeteorCall } from '../../../lib/api/methods'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { RundownViewEvents } from '../RundownView'
+import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -456,12 +452,8 @@ export const SourceLayerItem = withTranslation()(
 
 		private highlightTimeout: NodeJS.Timer
 
-		private onHighlight = (e: any) => {
-			if (
-				e.detail &&
-				e.detail.partId === this.props.part.partId &&
-				e.detail.pieceId === this.props.piece.instance.piece._id
-			) {
+		private onHighlight = (e: HighlightEvent) => {
+			if (e.partId === this.props.part.partId && e.pieceId === this.props.piece.instance.piece._id) {
 				this.setState({
 					highlight: true,
 				})
@@ -479,12 +471,12 @@ export const SourceLayerItem = withTranslation()(
 				this.mountResizeObserver()
 			}
 
-			window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
+			RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		}
 
 		componentWillUnmount() {
 			super.componentWillUnmount && super.componentWillUnmount()
-			window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
+			RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 			this.unmountResizeObserver()
 			clearTimeout(this.highlightTimeout)
 		}
@@ -740,7 +732,7 @@ export const SourceLayerItem = withTranslation()(
 						onDoubleClick={this.itemDblClick}
 						onMouseUp={this.itemMouseUp}
 						onMouseMove={this.moveMiniInspector}
-						onMouseOver={this.toggleMiniInspectorOn}
+						onMouseEnter={this.toggleMiniInspectorOn}
 						onMouseLeave={this.toggleMiniInspectorOff}
 						style={this.getItemStyle()}>
 						{this.renderInsideItem(typeClass)}

@@ -1,20 +1,22 @@
 import * as React from 'react'
-import { IBlueprintPieceGeneric, NoraContent } from '@sofie-automation/blueprints-integration'
+import { NoraContent } from '@sofie-automation/blueprints-integration'
 import { IModalAttributes, Modal } from '../../../../lib/ui/containers/modals/Modal'
 import { NoraItemEditor } from './NoraItemEditor'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibPieceUi } from '../../AdLibPanel'
 import { RundownUtils } from '../../../../lib/rundown'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
+import { Studio } from '../../../../../lib/collections/Studios'
+import { IAdLibListItem } from '../../AdLibListItem'
 
 export { isNoraItem }
 
 interface INoraSuperRendererProps {
-	piece: AdLibPieceUi | PieceUi
+	piece: IAdLibListItem | PieceUi
 	showStyleBase: ShowStyleBase
+	studio: Studio
 }
 
 interface INoraSuperRendererState {
@@ -50,17 +52,23 @@ export default withTranslation()(
 
 			return (
 				<ErrorBoundary>
-					<InspectorTitle piece={this.props.piece} showStyleBase={this.props.showStyleBase} />
+					<InspectorTitle
+						piece={this.props.piece}
+						showStyleBase={this.props.showStyleBase}
+						studio={this.props.studio}
+					/>
 					<div className="shelf-inspector__content">
-						<h2>{actualPiece.name}</h2>
-						<button
-							className="btn btn-primary"
-							disabled={this.state.editMode}
-							onClick={() => {
-								this.setEditMode(true)
-							}}>
-							{t('Edit')}
-						</button>
+						<h2 className="mod mas">{actualPiece.name}</h2>
+						<div className="mod mas">
+							<button
+								className="btn btn-primary"
+								disabled={this.state.editMode}
+								onClick={() => {
+									this.setEditMode(true)
+								}}>
+								{t('Edit in Nora')}
+							</button>
+						</div>
 						<Modal {...modalProps}>
 							<NoraItemEditor piece={actualPiece} />
 						</Modal>
@@ -71,7 +79,7 @@ export default withTranslation()(
 	}
 )
 
-function isNoraItem(item: AdLibPieceUi | PieceUi): boolean {
+function isNoraItem(item: IAdLibListItem | PieceUi): boolean {
 	const content = RundownUtils.isAdLibPiece(item)
 		? (item.content as NoraContent)
 		: (item.instance.piece.content as NoraContent)
