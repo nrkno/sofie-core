@@ -383,6 +383,7 @@ $dashboard-button-height: 5.625em;
 			}
 
 			> .dashboard-panel__panel__button__sub-label {
+				position: relative;
 				float: right;
 				margin: 3px 3px 0 3px;
 				padding: 0 0 0 2px;
