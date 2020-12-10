@@ -1300,7 +1300,8 @@ interface IState {
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
 	rundownLayout: RundownLayout | undefined
 	currentRundown: Rundown | undefined
-	shelfResizedByUser: boolean
+	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
+	wasShelfResizedByUser: boolean
 }
 
 type MatchedSegment = {
@@ -1508,7 +1509,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				selectedPiece: undefined,
 				rundownLayout: undefined,
 				currentRundown: undefined,
-				shelfResizedByUser: false,
+				wasShelfResizedByUser: false,
 			}
 		}
 
@@ -2279,7 +2280,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 
 			this.setState({
-				shelfResizedByUser: true,
+				wasShelfResizedByUser: true,
 			})
 		}
 
@@ -2400,7 +2401,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		onShelfChangeExpanded = (value: boolean) => {
 			this.setState({
 				isInspectorShelfExpanded: value,
-				shelfResizedByUser: true,
+				wasShelfResizedByUser: true,
 			})
 		}
 
@@ -2605,7 +2606,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										buckets={this.props.buckets}
 										isExpanded={
 											this.state.isInspectorShelfExpanded ||
-											(!this.state.shelfResizedByUser && this.state.rundownLayout?.openByDefault)
+											(!this.state.wasShelfResizedByUser && this.state.rundownLayout?.openByDefault)
 										}
 										onChangeExpanded={this.onShelfChangeExpanded}
 										hotkeys={this.state.usedHotkeys}
