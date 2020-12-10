@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.2.0](https://github.com/nrkno/tv-automation-server-core-integration/compare/2.1.0...2.2.0) (2020-12-08)
+
+
+### Features
+
+* Add dataRundownGet and dataSegmentGet methods ([9be7a5b](https://github.com/nrkno/tv-automation-server-core-integration/commit/9be7a5bda75e577f8f04d72516b5077cc2a29a5e))
+
+
+### Bug Fixes
+
+* Add clearMediaObjectCollection method ([#32](https://github.com/nrkno/tv-automation-server-core-integration/issues/32)) ([ad947f4](https://github.com/nrkno/tv-automation-server-core-integration/commit/ad947f46597f02a5fe3415c84e05cfa457c38c44))
+* change when the connectionChanged event handler is attached so that it doesn't trip on the first ddp.connect() ([#36](https://github.com/nrkno/tv-automation-server-core-integration/issues/36)) ([5ff6b8a](https://github.com/nrkno/tv-automation-server-core-integration/commit/5ff6b8a0e280ea0ca2982c19fa7bcc93eedddcc3))
+
 ## [2.1.0](https://github.com/nrkno/tv-automation-server-core-integration/compare/2.0.0...2.1.0) (2020-11-10)
 
 
