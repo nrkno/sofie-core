@@ -375,11 +375,11 @@ $dashboard-button-height: 5.625em;
 
 			> .dashboard-panel__panel__button__thumbnail {
 				position: absolute;
-				top: 0;
 				left: 0;
 				right: 0;
 				height: auto;
 				z-index: 1;
+				bottom: 0;
 			}
 
 			> .dashboard-panel__panel__button__sub-label {
