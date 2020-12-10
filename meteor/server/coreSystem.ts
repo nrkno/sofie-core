@@ -50,6 +50,11 @@ function initializeCoreSystem() {
 				enabled: false,
 				transactionSampleRate: -1,
 			},
+			cron: {
+				casparCGRestart: {
+					enabled: true,
+				},
+			},
 		})
 
 		// Check what migration has to provide:

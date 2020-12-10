@@ -252,10 +252,10 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 
 						<h2 className="mhn">{t('Cron jobs')}</h2>
 						<div className="field">
-							{t('Disable CasparCG restart job')}
+							{t('Enable CasparCG restart job')}
 							<div className="mdi">
 								<EditAttribute
-									attribute="cron.casparCG.disabled"
+									attribute="cron.casparCGRestart.enabled"
 									obj={this.props.coreSystem}
 									type="checkbox"
 									collection={CoreSystem}></EditAttribute>

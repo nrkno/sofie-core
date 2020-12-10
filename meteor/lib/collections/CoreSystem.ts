@@ -92,8 +92,8 @@ export interface ICoreSystem {
 
 	/** Cron jobs running nightly */
 	cron?: {
-		casparCG?: {
-			disabled: boolean
+		casparCGRestart?: {
+			enabled: boolean
 		}
 	}
 }

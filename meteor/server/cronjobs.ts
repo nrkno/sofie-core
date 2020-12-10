@@ -93,7 +93,7 @@ Meteor.startup(() => {
 
 			let ps: Array<Promise<any>> = []
 			// restart casparcg
-			if (!system?.cron?.casparCG?.disabled) {
+			if (system?.cron?.casparCGRestart?.enabled) {
 				PeripheralDevices.find({
 					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 				}).forEach((device) => {
