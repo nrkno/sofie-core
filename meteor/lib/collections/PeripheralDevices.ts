@@ -9,6 +9,7 @@ import { createMongoCollection } from './lib'
 import { DeviceConfigManifest } from '../api/deviceConfig'
 import { StudioId } from './Studios'
 import { OrganizationId } from './Organization'
+import { registerIndex } from '../database'
 
 /** A string, identifying a PeripheralDevice */
 export type PeripheralDeviceId = ProtectedString<'PeripheralDeviceId'>
@@ -42,6 +43,9 @@ export interface PeripheralDevice {
 	lastSeen: Time // Updated continously while connected
 	lastConnected: Time // Updated upon connection, not continously
 
+	/** A list of last reported latencies */
+	latencies?: number[]
+
 	connected: boolean
 	connectionId: string | null // Id of the current ddp-Connection
 
@@ -67,19 +71,16 @@ export const PeripheralDevices: TransformedCollection<PeripheralDevice, Peripher
 	PeripheralDevice
 >('peripheralDevices')
 registerCollection('PeripheralDevices', PeripheralDevices)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		PeripheralDevices._ensureIndex({
-			organizationId: 1,
-			studioId: 1,
-		})
-		PeripheralDevices._ensureIndex({
-			studioId: 1,
-		})
-		PeripheralDevices._ensureIndex({
-			token: 1,
-		})
-	}
+
+registerIndex(PeripheralDevices, {
+	organizationId: 1,
+	studioId: 1,
+})
+registerIndex(PeripheralDevices, {
+	studioId: 1,
+})
+registerIndex(PeripheralDevices, {
+	token: 1,
 })
 
 export function getStudioIdFromDevice(peripheralDevice: PeripheralDevice): StudioId | undefined {
@@ -94,6 +95,40 @@ export function getStudioIdFromDevice(peripheralDevice: PeripheralDevice): Studi
 		}
 	}
 	return undefined
+}
+/**
+ * Calculate what the expected latency is going to be for a device.
+ * The returned latency represents the amount of time we expect the device will need to receive, process and execute a timeline
+ */
+export function getExpectedLatency(
+	peripheralDevice: PeripheralDevice
+): { average: number; safe: number; fastest: number } {
+	if (peripheralDevice.latencies && peripheralDevice.latencies.length) {
+		const latencies = peripheralDevice.latencies.sort((a, b) => {
+			if (a > b) return 1
+			if (a < b) return -1
+			return 0
+		})
+		var total = 0
+		for (let latency of latencies) {
+			total += latency
+		}
+		const average = total / latencies.length
+
+		// The 95th slowest percentil
+		const i95 = Math.floor(latencies.length * 0.95)
+
+		return {
+			average: average,
+			safe: latencies[i95],
+			fastest: latencies[0],
+		}
+	}
+	return {
+		average: 0,
+		safe: 0,
+		fastest: 0,
+	}
 }
 export function getExternalNRCSName(device: PeripheralDevice | undefined): string {
 	if (device) {

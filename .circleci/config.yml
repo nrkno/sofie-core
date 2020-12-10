@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.10.2
+      - image: sofietv/tv-automation-meteor-base:1.11
     steps:
       - checkout
       - run:
@@ -34,7 +34,7 @@ jobs:
 
   tests:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.10.2
+      - image: sofietv/tv-automation-meteor-base:1.11
     steps:
       - checkout
       - run:
@@ -43,7 +43,7 @@ jobs:
           no_output_timeout: 60m
   lint:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.10.2
+      - image: sofietv/tv-automation-meteor-base:1.11
     steps:
       - checkout
       - run:
@@ -53,7 +53,7 @@ jobs:
 
   validate-prod-dependencies:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.10.2
+      - image: sofietv/tv-automation-meteor-base:1.11
     steps:
       - checkout
       - run:
@@ -62,7 +62,7 @@ jobs:
           no_output_timeout: 15m
   validate-all-dependencies:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.10.2
+      - image: sofietv/tv-automation-meteor-base:1.11
     steps:
       - checkout
       - run:
@@ -138,40 +138,54 @@ workflows:
   build-test-publish:
     jobs:
       - validate-all-dependencies:
+          # Run against tagged versions and develop/master
           filters:
             tags:
               only: /v.*/
             branches:
-              only: /.*/
+              only:
+                - master
+                - develop
       - validate-prod-dependencies:
+          # Run against tagged versions and develop/master
           filters:
             tags:
               only: /v.*/
             branches:
-              only: /.*/
+              only:
+                - master
+                - develop
       - build:
+          # Run against tagged versions and develop/master
           filters:
             tags:
               only: /v.*/
             branches:
-              only: /.*/
+              only:
+                - master
+                - develop
       - lint:
+          # Run against everything
           filters:
             tags:
-              only: /v.*/
+              only: /.*/
             branches:
               only: /.*/
       - tests:
+          # Run against everything
+          requires:
+            - lint
           filters:
             tags:
-              only: /v.*/
+              only: /.*/
             branches:
               only: /.*/
       - publish-tag:
           requires:
-            # - tests
+            - tests
             # - validate-prod-dependencies
             - build
+          # Run against tagged versions only
           filters:
             tags:
               only: /v.*/
@@ -179,7 +193,10 @@ workflows:
               ignore: /.*/
       - publish-branch:
           requires:
+            - tests
+            # - validate-prod-dependencies
             - build
+          # Run against develop/master only
           filters:
             tags:
               ignore: /.*/
@@ -187,6 +204,3 @@ workflows:
               only:
                 - master
                 - develop
-                - stage
-                - stable
-                - /release\d+/

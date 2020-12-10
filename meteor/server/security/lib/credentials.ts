@@ -3,6 +3,7 @@ import { Organization, Organizations } from '../../../lib/collections/Organizati
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { cacheResult, isProtectedString, clearCacheResult } from '../../../lib/lib'
 import { LIMIT_CACHE_TIME } from './security'
+import { profiler } from '../../api/profiler'
 
 export interface Credentials {
 	userId: UserId | null
@@ -19,9 +20,14 @@ export interface ResolvedCredentialsWithUserAndOrganization {
 	device?: PeripheralDevice
 }
 export function resolveCredentials(cred: Credentials | ResolvedCredentials): ResolvedCredentials {
-	if (isResolvedCredentials(cred)) return cred
+	const span = profiler.startSpan('security.lib.credentials')
 
-	return cacheResult(
+	if (isResolvedCredentials(cred)) {
+		span?.end()
+		return cred
+	}
+
+	const resolved = cacheResult(
 		credCacheName(cred),
 		() => {
 			const resolved: ResolvedCredentials = {}
@@ -62,6 +68,9 @@ export function resolveCredentials(cred: Credentials | ResolvedCredentials): Res
 		},
 		LIMIT_CACHE_TIME
 	)
+
+	span?.end()
+	return resolved
 }
 /** To be called whenever a user is changed */
 export function resetCredentials(cred: Credentials): void {

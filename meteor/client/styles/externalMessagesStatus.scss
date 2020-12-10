@@ -1,6 +1,8 @@
 @import '_colorScheme';
 
 .external-message-status {
+	padding-bottom: 70vh;
+
 	.message-row {
 		&.sent {
 			background-color: #a1ffa1;

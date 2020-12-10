@@ -3,7 +3,7 @@ import { check } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '../../lib/api/studios'
 import { Studios, DBStudio, StudioId } from '../../lib/collections/Studios'
-import { literal, getRandomId, makePromise } from '../../lib/lib'
+import { literal, getRandomId, makePromise, lazyIgnore } from '../../lib/lib'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
@@ -11,10 +11,10 @@ import { OrganizationContentWriteAccess } from '../security/organization'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Timeline } from '../../lib/collections/Timeline'
 import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
-import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { Credentials } from '../security/lib/credentials'
 import { OrganizationId } from '../../lib/collections/Organization'
+import { Random } from 'meteor/random'
 
 export function insertStudio(context: MethodContext | Credentials, newId?: StudioId): StudioId {
 	if (newId) check(newId, String)
@@ -38,6 +38,7 @@ export function insertStudioInner(organizationId: OrganizationId | null, newId?:
 				sofieUrl: '',
 			},
 			_rundownVersionHash: '',
+			routeSets: {},
 		})
 	)
 }
@@ -69,7 +70,6 @@ export function removeStudio(context: MethodContext, studioId: StudioId): void {
 	Studios.remove(studio._id)
 	Studios.remove({ studioId: studio._id })
 	ExternalMessageQueue.remove({ studioId: studio._id })
-	RecordedFiles.remove({ studioId: studio._id })
 	MediaObjects.remove({ studioId: studio._id })
 	Timeline.remove({ studioId: studio._id })
 }
@@ -83,3 +83,31 @@ class ServerStudiosAPI extends MethodContextAPI implements NewStudiosAPI {
 	}
 }
 registerClassToMeteorMethods(StudiosAPIMethods, ServerStudiosAPI, false)
+
+// Set up a watcher for updating the mappingsHash whenever a mapping or route is changed:
+function triggerUpdateStudioMappingsHash(studioId: StudioId) {
+	lazyIgnore(
+		`triggerUpdateStudio_${studioId}`,
+		() => {
+			Studios.update(studioId, {
+				$set: {
+					mappingsHash: getRandomId(),
+				},
+			})
+		},
+		10
+	)
+}
+Studios.find(
+	{},
+	{
+		fields: {
+			mappings: 1,
+			routeSets: 1,
+		},
+	}
+).observeChanges({
+	added: triggerUpdateStudioMappingsHash,
+	changed: triggerUpdateStudioMappingsHash,
+	removed: triggerUpdateStudioMappingsHash,
+})

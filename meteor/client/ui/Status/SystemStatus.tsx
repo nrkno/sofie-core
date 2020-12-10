@@ -24,6 +24,7 @@ import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RESTART_SALT } from '../../../lib/api/userActions'
+import { CASPARCG_RESTART_TIME } from '../../../lib/constants'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -95,7 +96,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 				title: t('Restart CasparCG Server'),
 				message: t('Do you want to restart CasparCG Server?'),
 				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, 'restartCasparCG')
+					callPeripheralDeviceFunction(event, device._id, CASPARCG_RESTART_TIME, 'restartCasparCG')
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(
@@ -130,7 +131,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 				title: t('Restart Quantel Gateway'),
 				message: t('Do you want to restart Quantel Gateway?'),
 				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, 'restartQuantel')
+					callPeripheralDeviceFunction(event, device._id, undefined, 'restartQuantel')
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(
@@ -162,7 +163,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 				title: t('Format HyperDeck disks'),
 				message: t('Do you want to format the HyperDeck disks? This is a destructive action and cannot be undone.'),
 				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, 'formatHyperdeck')
+					callPeripheralDeviceFunction(event, device._id, undefined, 'formatHyperdeck')
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(
@@ -725,7 +726,7 @@ export const PeripheralDeviceStatus = reacti18next.withTranslation()(
 						<span className="pill device-status__label">{this.statusCodeString()}</span>
 					</div>
 					<div className="device-item__device-status-message">
-						<i>{this.statusMessages()}</i>
+						<span className="text-s dimmed">{this.statusMessages()}</span>
 					</div>
 				</div>
 			)

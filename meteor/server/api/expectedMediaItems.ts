@@ -67,7 +67,8 @@ export const cleanUpExpectedMediaItemForBucketAdLibPiece: (adLibIds: PieceId[]) 
 		})
 
 		logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib items`)
-	}
+	},
+	'cleanUpExpectedMediaItemForBucketAdLibPiece'
 )
 
 export const updateExpectedMediaItemForBucketAdLibPiece: (
@@ -105,7 +106,8 @@ export const updateExpectedMediaItemForBucketAdLibPiece: (
 			[piece.content.fileName, piece.content.path]
 		)
 	}
-})
+},
+'updateExpectedMediaItemForBucketAdLibPiecey')
 
 export function updateExpectedMediaItemsOnRundown(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
 	check(rundownId, String)

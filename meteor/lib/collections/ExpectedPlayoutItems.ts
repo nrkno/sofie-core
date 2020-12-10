@@ -7,6 +7,7 @@ import { StudioId } from './Studios'
 import { RundownId } from './Rundowns'
 import { PartId } from './Parts'
 import { PieceId } from './Pieces'
+import { registerIndex } from '../database'
 import { RundownPlaylistId } from './RundownPlaylists'
 
 /** A string, identifying a Rundown */
@@ -32,13 +33,10 @@ export const ExpectedPlayoutItems: TransformedCollection<
 	ExpectedPlayoutItem
 > = createMongoCollection<ExpectedPlayoutItem>('expectedPlayoutItems')
 registerCollection('ExpectedPlayoutItems', ExpectedPlayoutItems)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		ExpectedPlayoutItems._ensureIndex({
-			studioId: 1,
-		})
-		ExpectedPlayoutItems._ensureIndex({
-			rundownId: 1,
-		})
-	}
+
+registerIndex(ExpectedPlayoutItems, {
+	studioId: 1,
+})
+registerIndex(ExpectedPlayoutItems, {
+	rundownId: 1,
 })

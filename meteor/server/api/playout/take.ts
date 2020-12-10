@@ -1,18 +1,6 @@
-import { RundownPlaylistId, RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { ClientAPI } from '../../../lib/api/client'
-import {
-	getCurrentTime,
-	waitForPromise,
-	makePromise,
-	unprotectObjectArray,
-	protectString,
-	literal,
-	clone,
-	getRandomId,
-	omit,
-	asyncCollectionFindOne,
-	waitTime,
-} from '../../../lib/lib'
+import { getCurrentTime, waitForPromise, unprotectObjectArray, protectString, literal, clone } from '../../../lib/lib'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { Meteor } from 'meteor/meteor'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
@@ -24,26 +12,29 @@ import {
 	selectNextPart,
 	checkAccessAndGetPlaylist,
 	triggerGarbageCollection,
+	getAllPieceInstancesFromCache,
 } from './lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { updateTimeline } from './timeline'
 import { logger } from '../../logging'
-import { PartEndState, PieceLifespan, VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { PartEndState, VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { getResolvedPieces } from './pieces'
 import { Part } from '../../../lib/collections/Parts'
 import * as _ from 'underscore'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { PieceInstance, PieceInstanceId, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
 import { StudioId } from '../../../lib/collections/Studios'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartHasStarted } from '../asRunLog'
 import { MethodContext } from '../../../lib/api/methods'
 import { profiler } from '../profiler'
+import { ServerPlayoutAPI } from './playout'
+import { ServerPlayoutAdLibAPI } from './adlib'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 export function takeNextPartInner(
 	context: MethodContext,
@@ -101,7 +92,7 @@ export function takeNextPartInnerSync(
 	const currentPart = currentPartInstance
 	if (currentPart) {
 		const allowTransition = previousPartInstance && !previousPartInstance.part.disableOutTransition
-		const start = currentPart.part.getLastStartedPlayback()
+		const start = currentPart.timings?.startedPlayback
 
 		// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
 		if (
@@ -126,7 +117,7 @@ export function takeNextPartInnerSync(
 		})
 		// If hold is active, then this take is to clear it
 	} else if (playlist.holdState === RundownHoldState.ACTIVE) {
-		completeHold(cache, playlist, currentPartInstance)
+		completeHold(cache, playlist, waitForPromise(pShowStyle), currentPartInstance)
 
 		waitForPromise(cache.saveAllToDatabase())
 
@@ -144,7 +135,6 @@ export function takeNextPartInnerSync(
 	const nextPart = selectNextPart(playlist, takePartInstance, partsInOrder)
 
 	// beforeTake(rundown, previousPart || null, takePart)
-	copyOverflowingPieces(cache, partsInOrder, previousPartInstance || null, takePartInstance)
 
 	const { blueprint } = waitForPromise(pBlueprint)
 	if (blueprint.onPreTake) {
@@ -198,52 +188,27 @@ export function takeNextPartInnerSync(
 	let partInstanceM: any = {
 		$set: {
 			isTaken: true,
-			'part.taken': true,
-		},
-		$unset: {} as { string: 0 | 1 },
-		$push: {
-			'part.timings.take': now,
-			'part.timings.playOffset': timeOffset || 0,
-		},
-	}
-	let partM = {
-		$set: {
-			taken: true,
-		} as Partial<Part>,
-		$unset: {} as { [key in keyof Part]: 0 | 1 },
-		$push: {
 			'timings.take': now,
 			'timings.playOffset': timeOffset || 0,
 		},
+		$unset: {} as { string: 0 | 1 },
 	}
 	if (previousPartEndState) {
 		partInstanceM.$set.previousPartEndState = previousPartEndState
 	} else {
 		partInstanceM.$unset.previousPartEndState = 1
 	}
-	if (Object.keys(partM.$set).length === 0) delete partM.$set
-	if (Object.keys(partM.$unset).length === 0) delete partM.$unset
 	if (Object.keys(partInstanceM.$set).length === 0) delete partInstanceM.$set
 	if (Object.keys(partInstanceM.$unset).length === 0) delete partInstanceM.$unset
 
 	cache.PartInstances.update(takePartInstance._id, partInstanceM)
-	// TODO-PartInstance - pending new data flow
-	cache.Parts.update(takePartInstance.part._id, partM)
 
 	if (m.previousPartInstanceId) {
 		cache.PartInstances.update(m.previousPartInstanceId, {
-			$push: {
-				'part.timings.takeOut': now,
+			$set: {
+				'timings.takeOut': now,
 			},
 		})
-		// TODO-PartInstance - pending new data flow
-		if (currentPartInstance) {
-			cache.Parts.update(currentPartInstance.part._id, {
-				$push: {
-					'timings.takeOut': now,
-				},
-			})
-		}
 	}
 	playlist = _.extend(playlist, m) as RundownPlaylist
 
@@ -270,12 +235,7 @@ export function takeNextPartInnerSync(
 		// todo: should this be changed back to Meteor.defer, at least for the blueprint stuff?
 		if (takePartInstance) {
 			cache.PartInstances.update(takePartInstance._id, {
-				$push: {
-					'part.timings.takeDone': takeDoneTime,
-				},
-			})
-			cache.Parts.update(takePartInstance.part._id, {
-				$push: {
+				$set: {
 					'timings.takeDone': takeDoneTime,
 				},
 			})
@@ -325,67 +285,6 @@ export function takeNextPartInnerSync(
 	return ClientAPI.responseSuccess(undefined)
 }
 
-function copyOverflowingPieces(
-	cache: CacheForRundownPlaylist,
-	partsInOrder: Part[],
-	currentPartInstance: PartInstance | null,
-	nextPartInstance: PartInstance
-) {
-	// TODO-PartInstance - is this going to work? It needs some work to handle part data changes
-	if (currentPartInstance) {
-		const adjacentPart = partsInOrder.find((part) => {
-			return part.segmentId === currentPartInstance.segmentId && part._rank > currentPartInstance.part._rank
-		})
-		if (!adjacentPart || adjacentPart._id !== nextPartInstance.part._id) {
-			// adjacent Part isn't the next part, do not overflow
-			return
-		}
-		const currentPieces = cache.PieceInstances.findFetch({ partInstanceId: currentPartInstance._id })
-		currentPieces.forEach((instance) => {
-			if (
-				instance.piece.overflows &&
-				typeof instance.piece.enable.duration === 'number' &&
-				instance.piece.enable.duration > 0 &&
-				instance.userDuration === undefined
-			) {
-				// Subtract the amount played from the duration
-				const remainingDuration = Math.max(
-					0,
-					instance.piece.enable.duration -
-						((instance.piece.startedPlayback ||
-							currentPartInstance.part.getLastStartedPlayback() ||
-							getCurrentTime()) -
-							getCurrentTime())
-				)
-
-				// TODO - won't this need some help seeking if a clip?
-
-				if (remainingDuration > 0) {
-					// Clone an overflowing piece
-					let overflowedItem = literal<PieceInstance>({
-						_id: getRandomId(),
-						rundownId: instance.rundownId,
-						partInstanceId: nextPartInstance._id,
-						dynamicallyInserted: getCurrentTime(),
-						piece: {
-							...omit(instance.piece, 'startedPlayback', 'overflows'),
-							_id: getRandomId(),
-							startPartId: nextPartInstance.part._id,
-							enable: {
-								start: 0,
-								duration: remainingDuration,
-							},
-							continuesRefId: instance.piece._id,
-						},
-					})
-
-					cache.PieceInstances.insert(overflowedItem)
-				}
-			}
-		})
-	}
-}
-
 export function afterTake(
 	cache: CacheForRundownPlaylist,
 	studioId: StudioId,
@@ -420,6 +319,9 @@ export function afterTake(
 	if (span) span.end()
 }
 
+/**
+ * A Hold starts by extending the "extendOnHold"-able pieces in the previous Part.
+ */
 function startHold(
 	cache: CacheForRundownPlaylist,
 	holdFromPartInstance: PartInstance | undefined,
@@ -430,51 +332,47 @@ function startHold(
 	const span = profiler.startSpan('startHold')
 
 	// Make a copy of any item which is flagged as an 'infinite' extension
-	const itemsToCopy = cache.PieceInstances.findFetch({ partInstanceId: holdFromPartInstance._id }).filter(
-		(i) => i.piece.extendOnHold
-	)
+	const itemsToCopy = getAllPieceInstancesFromCache(cache, holdFromPartInstance).filter((pi) => pi.piece.extendOnHold)
 	itemsToCopy.forEach((instance) => {
-		// mark current one as infinite
-		instance.infinite = {
-			infinitePieceId: instance.piece._id,
-			fromPreviousPart: false,
-			fromHold: true,
-		}
-		cache.PieceInstances.update(instance._id, {
-			$set: {
+		if (!instance.infinite) {
+			// mark current one as infinite
+			cache.PieceInstances.update(instance._id, {
+				$set: {
+					infinite: {
+						infinitePieceId: instance.piece._id,
+						fromPreviousPart: false,
+					},
+				},
+			})
+
+			// make the extension
+			const newInstance = literal<PieceInstance>({
+				_id: protectString<PieceInstanceId>(instance._id + '_hold'),
+				rundownId: instance.rundownId,
+				partInstanceId: holdToPartInstance._id,
+				dynamicallyInserted: getCurrentTime(),
+				piece: {
+					...clone(instance.piece),
+					enable: { start: 0 },
+					extendOnHold: false,
+				},
 				infinite: {
 					infinitePieceId: instance.piece._id,
-					fromPreviousPart: false,
+					fromPreviousPart: true,
 					fromHold: true,
 				},
-			},
-		})
+				// Preserve the timings from the playing instance
+				startedPlayback: instance.startedPlayback,
+				stoppedPlayback: instance.stoppedPlayback,
+			})
+			const content = newInstance.piece.content as VTContent | undefined
+			if (content && content.fileName && content.sourceDuration && instance.startedPlayback) {
+				content.seek = Math.min(content.sourceDuration, getCurrentTime() - instance.startedPlayback)
+			}
 
-		// make the extension
-		const newInstance = literal<PieceInstance>({
-			_id: protectString<PieceInstanceId>(instance._id + '_hold'),
-			rundownId: instance.rundownId,
-			partInstanceId: holdToPartInstance._id,
-			dynamicallyInserted: getCurrentTime(),
-			piece: {
-				...clone(instance.piece),
-				_id: protectString<PieceId>(instance.piece._id + '_hold'),
-				startPartId: holdToPartInstance.part._id,
-				enable: { start: 0 },
-			},
-			infinite: {
-				infinitePieceId: instance.piece._id,
-				fromPreviousPart: true,
-				fromHold: true,
-			},
-		})
-		const content = newInstance.piece.content as VTContent | undefined
-		if (content && content.fileName && content.sourceDuration && instance.piece.startedPlayback) {
-			content.seek = Math.min(content.sourceDuration, getCurrentTime() - instance.piece.startedPlayback)
+			// This gets deleted once the nextpart is activated, so it doesnt linger for long
+			cache.PieceInstances.upsert(newInstance._id, newInstance)
 		}
-
-		// This gets deleted once the nextpart is activated, so it doesnt linger for long
-		cache.PieceInstances.upsert(newInstance._id, newInstance)
 	})
 	if (span) span.end()
 }
@@ -482,6 +380,7 @@ function startHold(
 function completeHold(
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
+	showStyleBase: ShowStyleBase,
 	currentPartInstance: PartInstance | undefined
 ) {
 	cache.RundownPlaylists.update(playlist._id, {
@@ -494,24 +393,13 @@ function completeHold(
 		if (!currentPartInstance) throw new Meteor.Error(404, 'currentPart not found!')
 
 		// Clear the current extension line
-		const extendedPieceInstances = cache.PieceInstances.findFetch({
-			partInstanceId: currentPartInstance._id,
-			'piece.extendOnHold': true,
-			infinite: { $exists: true },
-		})
-
-		for (const pieceInstance of extendedPieceInstances) {
-			if (pieceInstance.infinite && pieceInstance.piece.startPartId !== currentPartInstance.part._id) {
-				// This is a continuation, so give it an end
-				cache.PieceInstances.update(pieceInstance._id, {
-					$set: {
-						userDuration: {
-							end: getCurrentTime(),
-						},
-					},
-				})
-			}
-		}
+		ServerPlayoutAdLibAPI.innerStopPieces(
+			cache,
+			showStyleBase,
+			currentPartInstance,
+			(p) => !!p.infinite?.fromHold,
+			undefined
+		)
 	}
 
 	updateTimeline(cache, playlist.studioId)

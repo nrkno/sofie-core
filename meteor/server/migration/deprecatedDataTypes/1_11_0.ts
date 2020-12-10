@@ -1,10 +1,35 @@
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { PartNote } from '../../../lib/api/notes'
-import { PartEndState, Timeline, PieceLifespan, BaseContent } from 'tv-automation-sofie-blueprints-integration'
-import { PartId, PartTimings } from '../../../lib/collections/Parts'
+import {
+	PartEndState,
+	Timeline as BPTimeline,
+	PieceLifespan,
+	BaseContent,
+	Time,
+} from 'tv-automation-sofie-blueprints-integration'
+import { PartId } from '../../../lib/collections/Parts'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
+
+export interface IBlueprintPartDBTimings {
+	/** Point in time the Part was taken, (ie the time of the user action) */
+	take: Time[]
+	/** Point in time the "take" action has finished executing */
+	takeDone: Time[]
+	/** Point in time the Part started playing (ie the time of the playout) */
+	startedPlayback: Time[]
+	/** Point in time the Part stopped playing (ie the time of the user action) */
+	takeOut: Time[]
+	/** Point in time the Part stopped playing (ie the time of the playout) */
+	stoppedPlayback: Time[]
+	/** Point in time the Part was set as Next (ie the time of the user action) */
+	next: Time[]
+}
+export interface PartTimings extends IBlueprintPartDBTimings {
+	/** The playback offset that was set for the last take */
+	playOffset: Array<Time>
+}
 
 export interface Part {
 	// extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
@@ -59,7 +84,7 @@ export interface Piece extends RundownPieceGeneric {
 	// ProtectedStringProperties<Omit<IBlueprintPieceDB, '_id' | 'partId' | 'continuesRefId'>, 'infiniteId'> {
 
 	partId: PartId
-	userDuration?: Pick<Timeline.TimelineEnable, 'duration' | 'end'>
+	userDuration?: Pick<BPTimeline.TimelineEnable, 'duration' | 'end'>
 	infiniteMode?: PieceLifespan
 	definitelyEnded?: number
 	originalInfiniteMode?: PieceLifespan
@@ -69,3 +94,4 @@ export interface Piece extends RundownPieceGeneric {
 	stoppedPlayback?: number
 	overflows?: boolean
 }
+// export const Timeline: TransformedCollection<TimelineObjGeneric , TimelineObjGeneric> = Timeline120

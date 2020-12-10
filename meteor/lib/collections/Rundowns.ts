@@ -33,6 +33,7 @@ import { PeripheralDeviceId } from './PeripheralDevices'
 import { OrganizationId } from './Organization'
 import { AdLibActions } from './AdLibActions'
 import { RundownBaselineAdLibActions } from './RundownBaselineAdLibActions'
+import { registerIndex } from '../database'
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -333,13 +334,10 @@ export const Rundowns: TransformedCollection<Rundown, DBRundown> = createMongoCo
 	transform: (doc) => applyClassToDocument(Rundown, doc),
 })
 registerCollection('Rundowns', Rundowns)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Rundowns._ensureIndex({
-			playlistId: 1,
-		})
-		Rundowns._ensureIndex({
-			playlistExternalId: 1,
-		})
-	}
+
+registerIndex(Rundowns, {
+	playlistId: 1,
+})
+registerIndex(Rundowns, {
+	playlistExternalId: 1,
 })

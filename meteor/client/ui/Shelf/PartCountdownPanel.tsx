@@ -1,4 +1,6 @@
-import * as React from 'react'
+// [TV 2]: Needs a revisit!
+
+/*import * as React from 'react'
 import * as _ from 'underscore'
 import ClassNames from 'classnames'
 import {
@@ -140,4 +142,4 @@ export const PartCountdownPanel = withTracker<IPartCountdownPanelProps, IState, 
 	(_data, props: IPartCountdownPanelProps, nextProps: IPartCountdownPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
-)(PartCountdownPanelInner)
+)(PartCountdownPanelInner)*/

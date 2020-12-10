@@ -18,6 +18,7 @@ import { PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { updateTimeline } from '../api/playout/timeline'
 import { getActiveRundownPlaylistsInStudio } from '../api/playout/studio'
+import { forceClearAllBlueprintConfigCaches } from '../api/blueprints/config'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -104,10 +105,11 @@ if (!Settings.enableUserAccounts) {
 			)
 		},
 
-		debug_forceClearAllActivationCaches() {
-			logger.info('forceClearAllActivationCaches')
+		debug_forceClearAllCaches() {
+			logger.info('forceClearAllCaches')
 
 			forceClearAllActivationCaches()
+			forceClearAllBlueprintConfigCaches()
 		},
 
 		debug_clearAllResetInstances() {
@@ -120,26 +122,31 @@ if (!Settings.enableUserAccounts) {
 		debug_regenerateNextPartInstance(id: RundownPlaylistId) {
 			logger.info('regenerateNextPartInstance')
 
-			rundownPlaylistSyncFunction(id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-				const playlist = RundownPlaylists.findOne(id)
-				if (!playlist) throw new Meteor.Error(404, 'not found')
+			rundownPlaylistSyncFunction(
+				id,
+				RundownSyncFunctionPriority.USER_PLAYOUT,
+				'debug_regenerateNextPartInstance',
+				() => {
+					const playlist = RundownPlaylists.findOne(id)
+					if (!playlist) throw new Meteor.Error(404, 'not found')
 
-				if (playlist.nextPartInstanceId && playlist.active) {
-					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+					if (playlist.nextPartInstanceId && playlist.active) {
+						const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
-					const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
-					const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
-					if (part) {
-						setNextPart(cache, playlist, null)
-						const playlist2 = cache.RundownPlaylists.findOne(playlist._id) as RundownPlaylist
-						setNextPart(cache, playlist2, part)
+						const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+						const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
+						if (part) {
+							setNextPart(cache, playlist, null)
+							const playlist2 = cache.RundownPlaylists.findOne(playlist._id) as RundownPlaylist
+							setNextPart(cache, playlist2, part)
 
-						updateTimeline(cache, playlist.studioId)
+							updateTimeline(cache, playlist.studioId)
+						}
+
+						waitForPromise(cache.saveAllToDatabase())
 					}
-
-					waitForPromise(cache.saveAllToDatabase())
 				}
-			})
+			)
 		},
 	})
 }

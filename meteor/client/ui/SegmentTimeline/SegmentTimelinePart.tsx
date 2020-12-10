@@ -10,7 +10,7 @@ import { SegmentUi, PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './Se
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { RundownTiming, WithTiming, withTiming } from '../RundownView/RundownTiming'
 
-import { ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime, literal, unprotectString } from '../../../lib/lib'
@@ -397,7 +397,7 @@ export const SegmentTimelinePart = withTranslation()(
 
 				const isLive = this.props.playlist.currentPartInstanceId === partInstance._id
 				const isNext = this.props.playlist.nextPartInstanceId === partInstance._id
-				const startedPlayback = partInstance.part.startedPlayback
+				const startedPlayback = partInstance.timings?.startedPlayback
 
 				this.state = {
 					isLive,
@@ -433,10 +433,14 @@ export const SegmentTimelinePart = withTranslation()(
 
 				const nextPartInner = nextProps.part.instance.part
 
-				const startedPlayback = nextPartInner.startedPlayback
+				const startedPlayback = nextProps.part.instance.timings?.startedPlayback
 
 				const isDurationSettling =
-					!!nextProps.playlist.active && isPrevious && !isLive && !!startedPlayback && !nextPartInner.duration
+					!!nextProps.playlist.active &&
+					isPrevious &&
+					!isLive &&
+					!!startedPlayback &&
+					!nextProps.part.instance.timings?.duration
 
 				let liveDuration = 0
 				if (!isDurationSettling) {
@@ -507,11 +511,11 @@ export const SegmentTimelinePart = withTranslation()(
 			}
 
 			static getCurrentLiveLinePosition(part: PartUi, currentTime: number): number {
-				if (part.instance.part.startedPlayback && part.instance.part.getLastStartedPlayback()) {
-					if (part.instance.part.duration) {
-						return part.instance.part.duration
+				if (part.instance.timings?.startedPlayback) {
+					if (part.instance.timings?.duration) {
+						return part.instance.timings.duration
 					} else {
-						return currentTime - (part.instance.part.getLastStartedPlayback() || 0)
+						return currentTime - part.instance.timings.startedPlayback
 					}
 				} else {
 					return 0
@@ -542,7 +546,8 @@ export const SegmentTimelinePart = withTranslation()(
 			componentWillUnmount() {
 				super.componentWillUnmount && super.componentWillUnmount()
 				window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
-				clearTimeout(this.highlightTimeout)
+				this.highlightTimeout && clearTimeout(this.highlightTimeout)
+				this.delayedInstanceUpdate && clearTimeout(this.delayedInstanceUpdate)
 			}
 
 			queueDelayedUpdate() {
@@ -607,11 +612,10 @@ export const SegmentTimelinePart = withTranslation()(
 
 			static getPartDuration(props: WithTiming<IProps>, liveDuration: number): number {
 				// const part = this.props.part
-				const innerPart = props.part.instance.part
 
 				return Math.max(
 					liveDuration,
-					innerPart.duration ||
+					props.part.instance.timings?.duration ||
 						(props.timingDurations.partDisplayDurations &&
 							props.timingDurations.partDisplayDurations[unprotectString(props.part.instance.part._id)]) ||
 						props.part.renderedDuration ||

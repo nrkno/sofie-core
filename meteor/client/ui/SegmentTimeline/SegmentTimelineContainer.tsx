@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
@@ -24,7 +24,7 @@ import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
-import { unprotectString, equalSets } from '../../../lib/lib'
+import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { RundownId } from '../../../lib/collections/Rundowns'
@@ -33,6 +33,7 @@ import { Parts, PartId } from '../../../lib/collections/Parts'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Tracker } from 'meteor/tracker'
+import { Meteor } from 'meteor/meteor'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -266,28 +267,17 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		componentDidMount() {
-			this.subscribe(PubSub.segments, {
-				rundownId: this.props.rundownId,
-				_id: this.props.segmentId,
-			})
-			this.subscribe(PubSub.parts, {
-				rundownId: this.props.rundownId,
-				segmentId: this.props.segmentId,
-			})
-			this.subscribe(PubSub.partInstances, {
-				rundownId: this.props.rundownId,
-				segmentId: this.props.segmentId,
-				reset: {
-					$ne: true,
-				},
-			})
 			this.autorun(() => {
-				const partIds = Parts.find({
-					segmentId: this.props.segmentId,
-				}).map((part) => part._id)
-				const partInstanceIds = PartInstances.find({
-					segmentId: this.props.segmentId,
-				}).map((instance) => instance._id)
+				const partIds = Parts.find(
+					{
+						segmentId: this.props.segmentId,
+					},
+					{
+						fields: {
+							_id: 1,
+						},
+					}
+				).map((part) => part._id)
 
 				this.subscribe(PubSub.pieces, {
 					startRundownId: this.props.rundownId,
@@ -295,28 +285,41 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						$in: partIds,
 					},
 				})
-				this.subscribe(PubSub.pieceInstances, {
-					rundownId: this.props.rundownId,
-					partInstanceId: {
-						$in: partInstanceIds,
+			})
+			this.autorun(() => {
+				const partInstanceIds = PartInstances.find(
+					{
+						segmentId: this.props.segmentId,
+						reset: {
+							$ne: true,
+						},
 					},
-					reset: {
-						$ne: true,
-					},
-				})
+					{
+						fields: {
+							_id: 1,
+							part: 1,
+						},
+					}
+				).map((instance) => instance._id)
+				this.subscribeToPieceInstances(partInstanceIds)
 			})
 			// past inifnites subscription
 			this.pastInfinitesComp = this.autorun(() => {
-				const segment = Segments.findOne(this.props.segmentId)
+				const segment = Segments.findOne(this.props.segmentId, {
+					fields: {
+						rundownId: 1,
+						_rank: 1,
+					},
+				})
 				segment &&
-					this.subscribe(PubSub.piecesSimple, {
+					this.subscribe(PubSub.pieces, {
+						startRundownId: segment.rundownId,
+						startSegmentId: { $in: Array.from(this.props.segmentsIdsBefore.values()) },
 						invalid: {
 							$ne: true,
 						},
 						// same rundown, and previous segment
 						lifespan: { $in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange] },
-						startRundownId: segment.rundownId,
-						startSegmentId: { $in: Array.from(this.props.segmentsIdsBefore.values()) },
 					})
 			})
 			SpeechSynthesiser.init()
@@ -338,7 +341,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			window.requestAnimationFrame(() => {
 				this.mountedTime = Date.now()
 				if (this.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
-					scrollToSegment(this.props.segmentId, true).catch(console.error)
+					scrollToSegment(this.props.segmentId, true).catch((error) => {
+						if (!error.toString().match(/another scroll/)) console.error(error)
+					})
 				}
 			})
 		}
@@ -351,7 +356,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 			let autoNextPart = false
 
-			if (this.props.ownCurrentPartInstance) {
+			if (this.props.ownCurrentPartInstance && this.props.ownCurrentPartInstance.segmentId === this.props.segmentId) {
 				isLiveSegment = true
 				currentLivePart = this.props.parts.find((part) => part.instance._id === this.props.ownCurrentPartInstance?._id)
 			}
@@ -501,8 +506,56 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			if (this.intersectionObserver && this.state.isLiveSegment && this.props.followLiveSegments) {
 				if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 			}
+			if (this.partInstanceSub !== undefined) {
+				const sub = this.partInstanceSub
+				setTimeout(() => {
+					sub.stop()
+				}, 500)
+			}
 			this.stopLive()
 			window.removeEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
+		}
+
+		private partInstanceSub: Meteor.SubscriptionHandle | undefined
+		private partInstanceSubPartInstanceIds: PartInstanceId[] | undefined
+		private subscribeToPieceInstancesInner = (partInstanceIds: PartInstanceId[]) => {
+			this.partInstanceSubDebounce = undefined
+			if (
+				this.partInstanceSubPartInstanceIds &&
+				equivalentArrays(this.partInstanceSubPartInstanceIds, partInstanceIds)
+			) {
+				// old subscription is equivalent to the new one, don't do anything
+				return
+			}
+			// avoid having the subscription automatically scrapped by a re-run of the autorun
+			Tracker.nonreactive(() => {
+				if (this.partInstanceSub !== undefined) {
+					this.partInstanceSub.stop()
+				}
+				// we handle this subscription manually
+				this.partInstanceSub = Meteor.subscribe(PubSub.pieceInstances, {
+					rundownId: this.props.rundownId,
+					partInstanceId: {
+						$in: partInstanceIds,
+					},
+					reset: {
+						$ne: true,
+					},
+				})
+				this.partInstanceSubPartInstanceIds = partInstanceIds
+			})
+		}
+		private partInstanceSubDebounce: NodeJS.Timeout | undefined
+		private subscribeToPieceInstances(partInstanceIds: PartInstanceId[]) {
+			// run the first subscribe immediately, to avoid unneccessary wait time during bootup
+			if (this.partInstanceSub === undefined) {
+				this.subscribeToPieceInstancesInner(partInstanceIds)
+			} else {
+				if (this.partInstanceSubDebounce !== undefined) {
+					clearTimeout(this.partInstanceSubDebounce)
+				}
+				this.partInstanceSubDebounce = setTimeout(this.subscribeToPieceInstancesInner, 40, partInstanceIds)
+			}
 		}
 
 		onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
@@ -569,7 +622,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		onAirLineRefresh = (e: TimingEvent) => {
 			if (this.state.isLiveSegment && this.state.currentLivePart) {
-				const currentLivePart = this.state.currentLivePart.instance.part
+				const currentLivePartInstance = this.state.currentLivePart.instance
+				const currentLivePart = currentLivePartInstance.part
 
 				let simulationPercentage = this.playbackSimulationPercentage
 				const partOffset =
@@ -579,17 +633,17 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 							this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)]) ||
 					0
 
-				let isExpectedToPlay: boolean = currentLivePart.startedPlayback || false
-				const lastTake = currentLivePart.getLastTake()
-				const lastStartedPlayback = currentLivePart.getLastStartedPlayback()
-				const lastTakeOffset = currentLivePart.getLastPlayOffset() || 0
+				let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
+				const lastTake = currentLivePartInstance.timings?.take
+				const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
+				const lastTakeOffset = currentLivePartInstance.timings?.playOffset || 0
 				let virtualStartedPlayback =
 					(lastTake || 0) > (lastStartedPlayback || -1)
 						? lastTake
 						: lastStartedPlayback
 						? lastStartedPlayback - lastTakeOffset
 						: undefined
-				if (currentLivePart.taken && lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
+				if (lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
 					isExpectedToPlay = true
 
 					// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through

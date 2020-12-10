@@ -17,7 +17,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { doModalDialog, ModalDialogQueueItem } from '../../lib/ModalDialog'
-import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 import { MeteorCall } from '../../../lib/api/methods'

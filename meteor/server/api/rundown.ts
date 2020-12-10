@@ -63,6 +63,7 @@ import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
 import { modifyPlaylistExternalId } from './ingest/lib'
 import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
+import { profiler } from './profiler'
 import { IngestDataCache } from '../../lib/collections/IngestDataCache'
 
 export function selectShowStyleVariant(
@@ -541,6 +542,8 @@ export namespace ServerRundownAPI {
 	}
 
 	export function unsyncRundownInner(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
+		const span = profiler.startSpan('api.rundown.unsyncRundownInner')
+
 		check(rundownId, String)
 		logger.info('unsyncRundown ' + rundownId)
 
@@ -557,6 +560,8 @@ export namespace ServerRundownAPI {
 		} else {
 			logger.info(`Rundown "${rundownId}" was already unsynced`)
 		}
+
+		span?.end()
 	}
 	/** Remove a RundownPlaylist and all its contents */
 	export function removeRundownPlaylistInner(cache: CacheForRundownPlaylist, playlistId: RundownPlaylistId) {

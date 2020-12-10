@@ -4,19 +4,27 @@ import { ClientAPI } from '../../lib/api/client'
 import { logger } from '../../lib/logging'
 import { PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MeteorCall } from '../../lib/api/methods'
+import { ExtendedKeyboardEvent } from 'mousetrap'
 
 export function callPeripheralDeviceFunction(
 	e: any,
 	deviceId: PeripheralDeviceId,
+	timeoutTime: number | undefined,
 	functionName: string,
 	...params: any[]
 ): Promise<any> {
-	return MeteorCall.client.callPeripheralDeviceFunction(eventContextForLog(e), deviceId, functionName, ...params)
+	return MeteorCall.client.callPeripheralDeviceFunction(
+		eventContextForLog(e),
+		deviceId,
+		timeoutTime,
+		functionName,
+		...params
+	)
 }
 
 export namespace PeripheralDevicesAPI {
 	export function restartDevice(dev: PeripheralDevice, e: Event | React.SyntheticEvent<object>): Promise<any> {
-		return callPeripheralDeviceFunction(e, dev._id, 'killProcess', 1)
+		return callPeripheralDeviceFunction(e, dev._id, undefined, 'killProcess', 1)
 	}
 }
 

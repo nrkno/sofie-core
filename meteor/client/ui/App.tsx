@@ -234,31 +234,28 @@ export const App = translateWithTracker(() => {
 						<ErrorBoundary>
 							<Switch>
 								{Settings.enableUserAccounts ? (
-									[
+									<>
 										<Route
-											key="0"
 											exact
 											path="/"
 											component={(props) => <LoginPage {...props} requestedRoute={this.state.requestedRoute} />}
-										/>,
-										<Route key="1" exact path="/login" component={() => <Redirect to="/" />} />,
+										/>
+										<Route exact path="/login" component={() => <Redirect to="/" />} />
 										<Route
-											key="2"
 											exact
 											path="/login/verify-email/:token"
 											component={(props) => <LoginPage {...props} requestedRoute={this.state.requestedRoute} />}
-										/>,
-										<Route key="3" exact path="/signup" component={SignupPage} />,
-										<Route key="4" exact path="/reset" component={LostPasswordPage} />,
-										<Route key="5" exact path="/reset/:token" component={ResetPasswordPage} />,
-										<this.protectedRoute key="5" exact path="/account" component={AccountPage} />,
+										/>
+										<Route exact path="/signup" component={SignupPage} />
+										<Route exact path="/reset" component={LostPasswordPage} />
+										<Route exact path="/reset/:token" component={ResetPasswordPage} />
+										<this.protectedRoute exact path="/account" component={AccountPage} />
 										<this.protectedRoute
-											key="6"
 											exact
 											path="/organization"
 											component={(props) => <OrganizationPage {...props} />}
-										/>,
-									]
+										/>
+									</>
 								) : (
 									<Route exact path="/" component={RundownList} />
 								)}

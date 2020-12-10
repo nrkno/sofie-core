@@ -38,7 +38,7 @@ import {
 	ShowStyleVariants,
 	ShowStyleVariantId,
 } from '../../lib/collections/ShowStyleVariants'
-import { CURRENT_SYSTEM_VERSION } from '../../server/migration/databaseMigration'
+import { CURRENT_SYSTEM_VERSION } from '../../server/migration/currentSystemVersion'
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
@@ -58,6 +58,14 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { restartRandomId } from '../random'
 import { MongoMock } from '../mongo'
+import {
+	defaultRundownPlaylist,
+	defaultRundown,
+	defaultSegment,
+	defaultPart,
+	defaultPiece,
+	defaultAdLibPiece,
+} from '../defaultCollectionObjects'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -159,6 +167,7 @@ export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 			sofieUrl: '',
 		},
 		_rundownVersionHash: 'asdf',
+		routeSets: {},
 	}
 	const studio = _.extend(defaultStudio, doc)
 	Studios.insert(studio)
@@ -443,24 +452,12 @@ export function setupDefaultRundownPlaylist(
 ): { rundownId: RundownId; playlistId: RundownPlaylistId } {
 	const rundownId: RundownId = rundownId0 || getRandomId()
 
-	const playlist: DBRundownPlaylist = {
-		_id: protectString('playlist_' + rundownId),
+	const playlist: DBRundownPlaylist = defaultRundownPlaylist(
+		protectString('playlist_' + rundownId),
+		env.studio._id,
+		env.ingestDevice._id
+	)
 
-		externalId: 'MOCK_RUNDOWNPLAYLIST',
-		peripheralDeviceId: env.ingestDevice._id,
-		organizationId: null,
-		studioId: env.studio._id,
-
-		name: 'Default RundownPlaylist',
-		created: getCurrentTime(),
-		modified: getCurrentTime(),
-
-		active: false,
-		rehearsal: false,
-		currentPartInstanceId: null,
-		nextPartInstanceId: null,
-		previousPartInstanceId: null,
-	}
 	const playlistId = RundownPlaylists.insert(playlist)
 
 	return {
@@ -527,8 +524,6 @@ export function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
-
-		duration: 20,
 	}
 	Parts.insert(part00)
 
@@ -696,52 +691,27 @@ export function setupRundownWithAutoplayPart0(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const rundown: DBRundown = {
-		peripheralDeviceId: env.ingestDevice._id,
-		studioId: env.studio._id,
-		showStyleBaseId: env.showStyleBase._id,
-		showStyleVariantId: env.showStyleVariant._id,
-
-		organizationId: null,
-
-		playlistId: playlistId,
-		_rank: 0,
-
-		_id: rundownId,
-		externalId: 'MOCK_RUNDOWN',
-		name: 'Default Rundown',
-
-		created: getCurrentTime(),
-		modified: getCurrentTime(),
-		importVersions: {
-			studio: '',
-			showStyleBase: '',
-			showStyleVariant: '',
-			blueprint: '',
-			core: '',
-		},
-
-		dataSource: 'mock',
-		externalNRCSName: 'mock',
-	}
+	const rundown: DBRundown = defaultRundown(
+		rundownId,
+		env.studio._id,
+		env.ingestDevice._id,
+		playlistId,
+		env.showStyleBase._id,
+		env.showStyleVariant._id
+	)
 	Rundowns.insert(rundown)
 
 	const segment0: DBSegment = {
-		_id: protectString(rundownId + '_segment0'),
+		...defaultSegment(protectString(rundownId + '_segment0'), rundown._id),
 		_rank: 0,
 		externalId: 'MOCK_SEGMENT_0',
-		rundownId: rundown._id,
 		name: 'Segment 0',
-		externalModified: 1,
 	}
 	Segments.insert(segment0)
 	/* tslint:disable:ter-indent*/
 	//
 	const part00: DBPart = {
-		_id: protectString(rundownId + '_part0_0'),
-		segmentId: segment0._id,
-		rundownId: rundown._id,
-		_rank: 0,
+		...defaultPart(protectString(rundownId + '_part0_0'), rundown._id, segment0._id),
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
 
@@ -751,49 +721,27 @@ export function setupRundownWithAutoplayPart0(
 	Parts.insert(part00)
 
 	const piece000: Piece = {
-		_id: protectString(rundownId + '_piece000'),
+		...defaultPiece(protectString(rundownId + '_piece000'), rundown._id, part00.segmentId, part00._id),
 		externalId: 'MOCK_PIECE_000',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
 		name: 'Piece 000',
-		status: RundownAPI.PieceStatusCode.OK,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		enable: {
-			start: 0,
-		},
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 	}
 	Pieces.insert(piece000)
 
 	const piece001: Piece = {
-		_id: protectString(rundownId + '_piece001'),
+		...defaultPiece(protectString(rundownId + '_piece001'), rundown._id, part00.segmentId, part00._id),
 		externalId: 'MOCK_PIECE_001',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
 		name: 'Piece 001',
-		status: RundownAPI.PieceStatusCode.OK,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		enable: {
-			start: 0,
-		},
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 	}
 	Pieces.insert(piece001)
 
 	const adLibPiece000: AdLibPiece = {
-		_id: protectString(rundownId + '_adLib000'),
-		_rank: 0,
+		...defaultAdLibPiece(protectString(rundownId + '_adLib000'), segment0.rundownId, part00._id),
 		expectedDuration: 1000,
-		lifespan: PieceLifespan.WithinPart,
 		externalId: 'MOCK_ADLIB_000',
-		partId: part00._id,
-		rundownId: segment0.rundownId,
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
@@ -803,9 +751,7 @@ export function setupRundownWithAutoplayPart0(
 	AdLibPieces.insert(adLibPiece000)
 
 	const part01: DBPart = {
-		_id: protectString(rundownId + '_part0_1'),
-		segmentId: segment0._id,
-		rundownId: segment0.rundownId,
+		...defaultPart(protectString(rundownId + '_part0_1'), rundown._id, segment0._id),
 		_rank: 1,
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
@@ -813,37 +759,24 @@ export function setupRundownWithAutoplayPart0(
 	Parts.insert(part01)
 
 	const piece010: Piece = {
-		_id: protectString(rundownId + '_piece010'),
+		...defaultPiece(protectString(rundownId + '_piece010'), rundown._id, part01.segmentId, part01._id),
 		externalId: 'MOCK_PIECE_010',
-		startRundownId: rundown._id,
-		startSegmentId: part01.segmentId,
-		startPartId: part01._id,
 		name: 'Piece 010',
-		status: RundownAPI.PieceStatusCode.OK,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		enable: {
-			start: 0,
-		},
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 	}
 	Pieces.insert(piece010)
 
 	const segment1: DBSegment = {
-		_id: protectString(rundownId + '_segment1'),
+		...defaultSegment(protectString(rundownId + '_segment1'), rundown._id),
 		_rank: 1,
 		externalId: 'MOCK_SEGMENT_2',
-		rundownId: rundown._id,
 		name: 'Segment 1',
-		externalModified: 1,
 	}
 	Segments.insert(segment1)
 
 	const part10: DBPart = {
-		_id: protectString(rundownId + '_part1_0'),
-		segmentId: segment1._id,
-		rundownId: segment1.rundownId,
+		...defaultPart(protectString(rundownId + '_part1_0'), rundown._id, segment1._id),
 		_rank: 0,
 		externalId: 'MOCK_PART_1_0',
 		title: 'Part 1 0',
@@ -851,9 +784,7 @@ export function setupRundownWithAutoplayPart0(
 	Parts.insert(part10)
 
 	const part11: DBPart = {
-		_id: protectString(rundownId + '_part1_1'),
-		segmentId: segment1._id,
-		rundownId: segment1.rundownId,
+		...defaultPart(protectString(rundownId + '_part1_1'), rundown._id, segment1._id),
 		_rank: 1,
 		externalId: 'MOCK_PART_1_1',
 		title: 'Part 1 1',
@@ -861,9 +792,7 @@ export function setupRundownWithAutoplayPart0(
 	Parts.insert(part11)
 
 	const part12: DBPart = {
-		_id: protectString(rundownId + '_part1_2'),
-		segmentId: segment1._id,
-		rundownId: segment1.rundownId,
+		...defaultPart(protectString(rundownId + '_part1_2'), rundown._id, segment1._id),
 		_rank: 2,
 		externalId: 'MOCK_PART_1_2',
 		title: 'Part 1 2',
@@ -871,12 +800,10 @@ export function setupRundownWithAutoplayPart0(
 	Parts.insert(part12)
 
 	const segment2: DBSegment = {
-		_id: protectString(rundownId + '_segment2'),
+		...defaultSegment(protectString(rundownId + '_segment2'), rundown._id),
 		_rank: 2,
 		externalId: 'MOCK_SEGMENT_2',
-		rundownId: rundown._id,
 		name: 'Segment 2',
-		externalModified: 1,
 	}
 	Segments.insert(segment2)
 

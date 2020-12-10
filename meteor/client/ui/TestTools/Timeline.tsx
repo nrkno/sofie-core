@@ -3,15 +3,16 @@ import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMe
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { TimelineObjGeneric, Timeline } from '../../../lib/collections/Timeline'
-import { getCurrentTime, Time } from '../../../lib/lib'
+import { getCurrentTime, Time, applyToArray, clone } from '../../../lib/lib'
 import { loadScript } from '../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
-import { TimelineState, Resolver } from 'superfly-timeline'
+import { TimelineState, Resolver, ResolvedStates } from 'superfly-timeline'
 import { transformTimeline } from '../../../lib/timeline'
 import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
 import { StudioId } from '../../../lib/collections/Studios'
+import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 
 interface ITimelineViewProps {
 	match?: {
@@ -68,10 +69,11 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 	ITimelineVisualizerInStudioState,
 	ITimelineVisualizerInStudioTrackedProps
 >((props: ITimelineVisualizerInStudioProps) => {
+	const findMeATimeline = Timeline.findOne({
+		_id: props.studioId,
+	})
 	return {
-		timeline: Timeline.find({
-			studioId: props.studioId,
-		}).fetch(),
+		timeline: (findMeATimeline && findMeATimeline.timeline) || [],
 	}
 })(
 	class TimelineVisualizerInStudio extends MeteorReactComponent<
@@ -92,7 +94,7 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 		}
 		componentDidMount() {
 			this.subscribe(PubSub.timeline, {
-				studioId: this.props.studioId,
+				_id: this.props.studioId,
 			})
 
 			this.triggerLoadScript()
@@ -163,16 +165,15 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 		renderTimeline() {
 			this.startVisualizer = true
 
-			let timeline = _.compact(
-				_.map(this.props.timeline, (obj) => {
-					let o = _.clone(obj)
-					delete o._id
-
-					if (o.enable.start === 'now') o.enable.start = getCurrentTime() // tmp
-
-					return o
+			const timeline = this.props.timeline.map((o) => {
+				const obj = clone(o)
+				applyToArray(o.enable, (enable) => {
+					if (enable.start === 'now') {
+						enable.start = getCurrentTime()
+					}
 				})
-			)
+				return obj
+			})
 
 			this.newTimeline = timeline
 
@@ -215,68 +216,125 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 interface ITimelineSimulateProps {
 	studioId: StudioId
 }
-interface ITimelineSimulateState {
+interface ITimelineSimulateTrackedProps {
 	errorMsg?: string
-	state?: TimelineState
+	allStates?: ResolvedStates
 	now: Time
 }
-export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {}, ITimelineSimulateState>(
-	(props: ITimelineSimulateProps) => {
-		let now = getCurrentTimeReactive()
+interface ITimelineSimulateState {
+	time: Time | null
+}
+export const ComponentTimelineSimulate = withTracker<
+	ITimelineSimulateProps,
+	ITimelineSimulateState,
+	ITimelineSimulateTrackedProps
+>((props: ITimelineSimulateProps) => {
+	let now = getCurrentTimeReactive()
 
-		try {
-			// These properties will be exposed under this.props
-			// Note that these properties are reactively recalculated
-			let timeline = transformTimeline(
-				Timeline.find(
-					{
-						studioId: props.studioId,
-					},
-					{ sort: { _id: 1 } }
-				).fetch()
-			)
+	try {
+		// These properties will be exposed under this.props
+		// Note that these properties are reactively recalculated
+		const tlComplete = Timeline.findOne(props.studioId)
+		const timeline =
+			(tlComplete &&
+				tlComplete.timeline
+					.map((o) => {
+						const obj = clone(o)
+						applyToArray(o.enable, (enable) => {
+							if (enable.start === 'now') {
+								enable.start = getCurrentTime()
+							}
+						})
+						return obj
+					})
+					.sort((a, b) => {
+						if (a.id > b.id) {
+							return 1
+						}
+						if (a.id < b.id) {
+							return -1
+						}
+						return 0
+					})) ||
+			[]
+		const transformed = transformTimeline(timeline)
 
-			// TODO - dont repeat unless changed
-			let tl = Resolver.resolveTimeline(timeline, { time: now })
-			let allStates = Resolver.resolveAllStates(tl)
+		// TODO - dont repeat unless changed
+		let tl = Resolver.resolveTimeline(transformed, { time: tlComplete?.generated || now })
+		let allStates = Resolver.resolveAllStates(tl)
 
-			let state = Resolver.getState(allStates, now)
-
-			return {
-				now: now,
-				state: state,
-			}
-		} catch (e) {
-			return {
-				now: now,
-				errorMsg: `Failed to update timeline:\n${e}`,
-			}
+		return {
+			now: now,
+			allStates: allStates,
+			timelineUpdated: tlComplete?.generated || null,
+		}
+	} catch (e) {
+		return {
+			now: now,
+			errorMsg: `Failed to update timeline:\n${e}`,
+			timelineUpdated: null,
 		}
 	}
-)(
-	class ComponentTimelineSimulate extends MeteorReactComponent<ITimelineSimulateProps & ITimelineSimulateState> {
+})(
+	class ComponentTimelineSimulate extends MeteorReactComponent<
+		ITimelineSimulateProps & ITimelineSimulateTrackedProps,
+		ITimelineSimulateState
+	> {
+		constructor(props: ITimelineSimulateProps & ITimelineSimulateTrackedProps) {
+			super(props)
+
+			this.state = {
+				time: null,
+			}
+		}
 		renderTimelineState(state: TimelineState) {
 			return _.map(
 				_.sortBy(_.values(state.layers), (o) => o.layer),
 				(o) => (
 					<tr key={o.layer}>
 						<td>{o.layer}</td>
-						<td>{o.id}</td>
+						<td style={{ maxWidth: '25vw', minWidth: '10vw', overflowWrap: 'anywhere' }}>{o.id}</td>
 						<td>{makeTableOfObject(o.enable)}</td>
-						<td>{o.instance.end ? o.instance.end - o.instance.start : ''}</td>
+						<td>
+							Start: {o.instance.start}
+							<br />
+							End: {o.instance.end}
+						</td>
 						<td>{o.content.type}</td>
-						<td>{makeTableOfObject(o.classes || [])}</td>
-						<td>{makeTableOfObject(o.content)}</td>
+						<td>{(o.classes || []).join('<br />')}</td>
+						<td style={{ whiteSpace: 'pre' }}>{JSON.stringify(o.content, undefined, '\t')}</td>
 					</tr>
 				)
 			)
 		}
 		render() {
+			const state = this.props.allStates
+				? Resolver.getState(this.props.allStates, this.state.time ?? this.props.now)
+				: undefined
+
+			const times = _.uniq((this.props.allStates?.nextEvents ?? []).map((e) => e.time))
+
 			return (
 				<div>
 					<h2>Timeline state</h2>
+					<p>
+						Time:{' '}
+						<select
+							onChange={(e) => {
+								const val = Number(e.target.value)
+								this.setState({ time: isNaN(val) ? null : val })
+							}}
+							value={this.state.time ?? 'now'}>
+							<option id="now">Now: {this.props.now}</option>
+							{times.map((e) => (
+								<option id={e + ''} key={e}>
+									{e}
+								</option>
+							))}
+						</select>
+					</p>
+
 					<div>
-						Time: {this.props.now}
 						{this.props.errorMsg ? (
 							<p>{this.props.errorMsg}</p>
 						) : (
@@ -287,12 +345,12 @@ export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {},
 											<th>Layer</th>
 											<th>id</th>
 											<th>Enable</th>
-											<th>Duration</th>
+											<th>Instance Times</th>
 											<th>type</th>
 											<th>classes</th>
 											<th>content</th>
 										</tr>
-										{this.props.state ? this.renderTimelineState(this.props.state) : ''}
+										{state ? this.renderTimelineState(state) : ''}
 									</tbody>
 								</table>
 							</div>

@@ -11,12 +11,11 @@ import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from './rundownLayouts
 import { NewShowStylesAPI, ShowStylesAPIMethods } from './showStyles'
 import { NewSnapshotAPI, SnapshotAPIMethods } from './shapshot'
 import { NewSystemStatusAPI, SystemStatusAPIMethods } from './systemStatus'
-import { NewTestToolsAPI, TestToolsAPIMethods } from './testTools'
 import { NewUserActionAPI, UserActionAPIMethods } from './userActions'
 import { StudiosAPIMethods, NewStudiosAPI } from './studios'
-import { NewManualPlayoutAPI, ManualPlayoutAPIMethods } from './manualPlayout'
 import { NewOrganizationAPI, OrganizationAPIMethods } from './organization'
 import { NewUserAPI, UserAPIMethods } from './user'
+import { SystemAPIMethods, NewSystemAPI } from './system'
 import { UserId } from '../typings/meteor'
 import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundownNotifications'
 import { Meteor } from 'meteor/meteor'
@@ -29,7 +28,6 @@ interface IMeteorCall {
 	blueprint: NewBlueprintAPI
 	client: NewClientAPI
 	externalMessages: NewExternalMessageQueueAPI
-	manualPlayout: NewManualPlayoutAPI
 	migration: NewMigrationAPI
 	peripheralDevice: NewPeripheralDeviceAPI
 	playout: NewPlayoutAPI
@@ -39,17 +37,16 @@ interface IMeteorCall {
 	showstyles: NewShowStylesAPI
 	studio: NewStudiosAPI
 	systemStatus: NewSystemStatusAPI
-	testTools: NewTestToolsAPI
 	user: NewUserAPI
 	userAction: NewUserActionAPI
 	organization: NewOrganizationAPI
 	rundownNotifications: RundownNotificationsAPI
+	system: NewSystemAPI
 }
 export const MeteorCall: IMeteorCall = {
 	blueprint: makeMethods(BlueprintAPIMethods),
 	client: makeMethods(ClientAPIMethods),
 	externalMessages: makeMethods(ExternalMessageQueueAPIMethods),
-	manualPlayout: makeMethods(ManualPlayoutAPIMethods),
 	migration: makeMethods(MigrationAPIMethods),
 	peripheralDevice: makeMethods(PeripheralDeviceAPIMethods),
 	playout: makeMethods(PlayoutAPIMethods),
@@ -59,11 +56,11 @@ export const MeteorCall: IMeteorCall = {
 	showstyles: makeMethods(ShowStylesAPIMethods),
 	studio: makeMethods(StudiosAPIMethods),
 	systemStatus: makeMethods(SystemStatusAPIMethods),
-	testTools: makeMethods(TestToolsAPIMethods),
 	user: makeMethods(UserAPIMethods),
 	userAction: makeMethods(UserActionAPIMethods),
 	organization: makeMethods(OrganizationAPIMethods),
 	rundownNotifications: makeMethods(RundownNotificationsAPIMethods),
+	system: makeMethods(SystemAPIMethods),
 }
 function makeMethods(methods: object): any {
 	const o = {}

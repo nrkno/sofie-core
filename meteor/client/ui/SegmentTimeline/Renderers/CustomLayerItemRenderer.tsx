@@ -27,8 +27,8 @@ export interface ICustomLayerItemProps {
 	elementPosition: OffsetPosition
 	cursorPosition: OffsetPosition
 	cursorTimePosition: number
-	getItemLabelOffsetLeft?: () => React.CSSProperties
-	getItemLabelOffsetRight?: () => React.CSSProperties
+	getItemLabelOffsetLeft?: () => { [key: string]: string }
+	getItemLabelOffsetRight?: () => { [key: string]: string }
 	getItemDuration?: () => number
 	setAnchoredElsWidths?: (rightAnchoredWidth: number, leftAnchoredWidth: number) => void
 }
@@ -38,7 +38,7 @@ export class CustomLayerItemRenderer<
 	IProps extends ICustomLayerItemProps,
 	IState extends ISourceLayerItemState
 > extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
-	getItemLabelOffsetLeft(): React.CSSProperties {
+	getItemLabelOffsetLeft(): { [key: string]: string } {
 		if (this.props.getItemLabelOffsetLeft && typeof this.props.getItemLabelOffsetLeft === 'function') {
 			return this.props.getItemLabelOffsetLeft()
 		} else {
@@ -46,7 +46,7 @@ export class CustomLayerItemRenderer<
 		}
 	}
 
-	getItemLabelOffsetRight(): React.CSSProperties {
+	getItemLabelOffsetRight(): { [key: string]: string } {
 		if (this.props.getItemLabelOffsetRight && typeof this.props.getItemLabelOffsetRight === 'function') {
 			return this.props.getItemLabelOffsetRight()
 		} else {
@@ -120,7 +120,11 @@ export class CustomLayerItemRenderer<
 			return (
 				<div
 					className="segment-timeline__piece__source-finished"
-					style={{ left: ((vtContent.sourceDuration - seek) * this.props.timeScale).toString() + 'px' }}></div>
+					style={{
+						left: this.props.relative
+							? (((vtContent.sourceDuration - seek) / (this.getItemDuration() || 1)) * 100).toString() + '%'
+							: ((vtContent.sourceDuration - seek) * this.props.timeScale).toString() + 'px',
+					}}></div>
 			)
 		}
 		return null

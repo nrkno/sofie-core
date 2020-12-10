@@ -44,11 +44,9 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 	}
 
 	postPayload(target: Window | null) {
-		console.log('Posting payload', target)
 		if (target) {
 			const payloadXmlString = createMosObjectXmlStringNoraBluePrintPiece(this.props.piece)
 			target.postMessage(payloadXmlString, MODULE_BROWSER_ORIGIN)
-			console.log('Sent message', payloadXmlString, target)
 		}
 	}
 
@@ -60,19 +58,17 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 
 	handleMessage(event: MessageEvent) {
 		if (event.origin !== MODULE_BROWSER_ORIGIN) {
-			console.log(`Origin rejected (wanted ${MODULE_BROWSER_ORIGIN}, got ${event.origin})`)
+			console.warn(`Origin rejected (wanted ${MODULE_BROWSER_ORIGIN}, got ${event.origin})`)
 			return
 		}
 
-		console.log('Received message', event)
 		const data = event.data && parseMosPluginMessageXml(event.data)
-		console.log('Message data', data)
 
 		if (data) {
 			return this.handleMosMessage(data)
 		}
 
-		console.log('Unknown message', data)
+		console.error('Unknown message', data)
 	}
 
 	handleMosMessage(mos: MosPluginMessage) {
@@ -87,7 +83,6 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 	}
 
 	sendAppInfo(target: Window | null) {
-		console.log('sendAppInfo')
 		if (target) {
 			let uiMetrics: MOSUIMetric[] | undefined = undefined
 			if (this.iframe) {
@@ -108,12 +103,10 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 
 			const payloadXmlString = createMosAppInfoXmlString()
 			target.postMessage(payloadXmlString, MODULE_BROWSER_ORIGIN)
-			console.log('sent app info', payloadXmlString)
 		}
 	}
 
 	render() {
-		console.log('Item editor render')
 		return React.createElement('iframe', {
 			ref: (element) => {
 				this.iframe = element as HTMLIFrameElement
