@@ -96,67 +96,80 @@ export class JoyConController extends ControllerAbstract {
 		// Nothing
 	}
 
-	private onButtonPressed(button: string, mode?: JoyconMode | null) {}
-	private onButtonRelease(button: string, mode?: JoyconMode | null) {
+	private onButtonRelease(button: string, mode?: JoyconMode | null) {}
+	private onButtonPressed(button: string, mode?: JoyconMode | null) {
 		if (mode === 'L') {
 			switch (button) {
+				case '6':
+					// go to air
+					this.prompterView.scrollToLive()
+					break
+				// go to next
+				case '8':
+					this.prompterView.scrollToNext()
+					break
+				case '2':
+					// go to top
+					window.scrollTo(0, 0)
+					break
+				case '3':
+					// go to following
+					this.prompterView.scrollToFollowing()
+					break
 				case '0':
 					// // go to previous
 					this.prompterView.scrollToPrevious()
 					break
-				case '1':
-					// go to top
-					window.scrollTo(0, 0)
-					break
-				case '2':
-					// go to air
-					this.prompterView.scrollToLive()
-					break
-				case '3':
-					// go to next
-					this.prompterView.scrollToFollowing()
-					break
 			}
 		} else if (mode === 'R') {
 			switch (button) {
-				case '0':
-					// go to next
-					this.prompterView.scrollToFollowing()
-					break
-				case '1':
-					// // go to air
+				case '7':
+					// go to air
 					this.prompterView.scrollToLive()
 					break
-				case '2':
+				// go to next
+				case '8':
+					this.prompterView.scrollToNext()
+					break
+				case '1':
 					// go to top
 					window.scrollTo(0, 0)
 					break
+				case '0':
+					// go to following
+					this.prompterView.scrollToFollowing()
+					break
 				case '3':
-					// go to previous
+					// // go to previous
 					this.prompterView.scrollToPrevious()
 					break
 			}
 		} else if (mode === 'LR') {
 			switch (button) {
-				case '14':
-				case '2':
-					// go to previous
-					this.prompterView.scrollToPrevious()
-					break
-				case '13':
-				case '0':
-					// go to top
-					window.scrollTo(0, 0)
-					break
-				case '12':
-				case '3':
+				case '6':
+				case '7':
 					// go to air
 					this.prompterView.scrollToLive()
 					break
+				// go to next
+				case '4':
+				case '5':
+					this.prompterView.scrollToNext()
+					break
+				case '12':
+				case '3':
+					// go to top
+					window.scrollTo(0, 0)
+					break
 				case '15':
 				case '1':
-					// go to next
+					// go to following
 					this.prompterView.scrollToFollowing()
+					break
+				case '14':
+				case '2':
+					// // go to previous
+					this.prompterView.scrollToPrevious()
 					break
 			}
 		}
