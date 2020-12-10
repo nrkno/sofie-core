@@ -11,6 +11,7 @@ import RundownViewEventBus, {
 	GoToPartEvent,
 	GoToPartInstanceEvent,
 } from '../ui/RundownView/RundownViewEventBus'
+import { Settings } from '../../lib/Settings'
 
 let focusInterval: NodeJS.Timer | undefined
 let _dontClearInterval: boolean = false
