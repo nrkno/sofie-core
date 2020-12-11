@@ -21,6 +21,7 @@ import {
 	unprotectObject,
 	unprotectObjectArray,
 	clone,
+	normalizeArrayToMap,
 } from '../../../lib/lib'
 import {
 	IngestRundown,
@@ -704,8 +705,8 @@ function updateRundownFromIngestData(
 	// TODO - store notes from rundownNotesContext
 
 	const segmentsAndParts = getRundownsSegmentsAndPartsFromCache(cache, [dbRundown])
-	const existingRundownParts = _.filter(segmentsAndParts.parts, (part) => !part.dynamicallyInsertedAfterPartId)
-	const existingSegments = segmentsAndParts.segments
+	const existingRundownParts = _.groupBy(segmentsAndParts.parts, (part) => part.segmentId)
+	const existingSegments = normalizeArrayToMap(segmentsAndParts.segments, '_id')
 
 	const segments: DBSegment[] = []
 	const parts: DBPart[] = []
@@ -717,8 +718,8 @@ function updateRundownFromIngestData(
 
 	_.each(ingestRundown.segments, (ingestSegment: IngestSegment) => {
 		const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
-		const existingSegment = _.find(existingSegments, (s) => s._id === segmentId)
-		const existingParts = existingRundownParts.filter((p) => p.segmentId === segmentId)
+		const existingSegment = existingSegments.get(segmentId)
+		const existingParts = existingRundownParts[unprotectString(segmentId)] || []
 
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, (part) => part.rank)
 
@@ -754,7 +755,6 @@ function updateRundownFromIngestData(
 		cache.Parts,
 		{
 			rundownId: rundownId,
-			dynamicallyInsertedAfterPartId: { $exists: false },
 		},
 		parts
 	)
@@ -988,7 +988,10 @@ function updateRundownFromIngestData(
 			cache,
 			blueprint,
 			dbRundown,
-			_.map(segments, (s) => s._id)
+			segments.map((s) => ({
+				segmentId: s._id,
+				oldPartIds: (existingRundownParts[unprotectString(s._id)] || []).map((p) => p._id),
+			}))
 		)
 
 		reportRundownDataHasChanged(cache, dbPlaylist, dbRundown)
@@ -1120,7 +1123,7 @@ export function handleUpdatedSegment(
 
 		const blueprint = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
 
-		const { segmentId: updatedSegmentId, insertedPartExternalIds } = updateSegmentFromIngestData(
+		const { segmentId: updatedSegmentId, insertedPartExternalIds, oldPartIds } = updateSegmentFromIngestData(
 			cache,
 			blueprint,
 			playlist,
@@ -1132,7 +1135,7 @@ export function handleUpdatedSegment(
 				cache,
 				blueprint.blueprint,
 				rundown,
-				[updatedSegmentId],
+				[{ segmentId: updatedSegmentId, oldPartIds: oldPartIds }],
 				false,
 				insertedPartExternalIds
 			)
@@ -1152,10 +1155,10 @@ export function updateSegmentsFromIngestData(
 	if (ingestSegments.length > 0) {
 		const blueprint = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
 
-		const changedSegmentIds: SegmentId[] = []
+		const changedSegments: Array<{ segmentId: SegmentId; oldPartIds: PartId[] }> = []
 		const allInsertedPartExternalIds: string[] = []
 		for (let ingestSegment of ingestSegments) {
-			const { segmentId, insertedPartExternalIds } = updateSegmentFromIngestData(
+			const { segmentId, insertedPartExternalIds, oldPartIds } = updateSegmentFromIngestData(
 				cache,
 				blueprint,
 				playlist,
@@ -1163,18 +1166,18 @@ export function updateSegmentsFromIngestData(
 				ingestSegment
 			)
 			if (segmentId !== null) {
-				changedSegmentIds.push(segmentId)
+				changedSegments.push({ segmentId, oldPartIds })
 			}
 			if (insertedPartExternalIds) {
 				allInsertedPartExternalIds.push(...insertedPartExternalIds)
 			}
 		}
-		if (changedSegmentIds.length > 0) {
+		if (changedSegments.length > 0) {
 			afterIngestChangedData(
 				cache,
 				blueprint.blueprint,
 				rundown,
-				changedSegmentIds,
+				changedSegments,
 				removedPartsBeforeInserted,
 				allInsertedPartExternalIds
 			)
@@ -1195,7 +1198,7 @@ function updateSegmentFromIngestData(
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	ingestSegment: IngestSegment
-): { segmentId: SegmentId | null; insertedPartExternalIds: string[] } {
+): { segmentId: SegmentId | null; insertedPartExternalIds: string[]; oldPartIds: PartId[] } {
 	const span = profiler.startSpan('ingest.rundownInput.updateSegmentFromIngestData')
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 
@@ -1207,7 +1210,6 @@ function updateSegmentFromIngestData(
 	const existingParts = cache.Parts.findFetch({
 		rundownId: rundown._id,
 		segmentId: segmentId,
-		dynamicallyInsertedAfterPartId: { $exists: false },
 	})
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
@@ -1239,7 +1241,6 @@ function updateSegmentFromIngestData(
 					_id: { $in: _.pluck(parts, '_id') },
 				},
 			],
-			dynamicallyInsertedAfterPartId: { $exists: false }, // do not affect dynamically inserted parts (such as adLib parts)
 		},
 		parts
 	)
@@ -1272,7 +1273,7 @@ function updateSegmentFromIngestData(
 	// determine if update is allowed here
 	if (!isUpdateAllowed(cache, playlist, rundown, {}, { changed: [newSegment] }, prepareSaveParts)) {
 		unsyncSegmentOrRundown(cache, rundown._id, segmentId)
-		return { segmentId: null, insertedPartExternalIds: [] }
+		return { segmentId: null, insertedPartExternalIds: [], oldPartIds: [] }
 	}
 
 	// Update segment info:
@@ -1340,8 +1341,9 @@ function updateSegmentFromIngestData(
 	)
 
 	const insertedPartExternalIds = prepareSaveParts.inserted.map((part) => part.externalId)
+	const oldPartIds = existingParts.map((p) => p._id)
 	span?.end()
-	return { segmentId: anythingChanged(changes) ? segmentId : null, insertedPartExternalIds }
+	return { segmentId: anythingChanged(changes) ? segmentId : null, insertedPartExternalIds, oldPartIds }
 }
 function syncChangesToPartInstances(
 	cache: CacheForRundownPlaylist,
@@ -1483,7 +1485,7 @@ function afterIngestChangedData(
 	cache: CacheForRundownPlaylist,
 	blueprint: ShowStyleBlueprintManifest,
 	rundown: Rundown,
-	changedSegmentIds: SegmentId[],
+	changedSegments: Array<{ segmentId: SegmentId; oldPartIds: PartId[] }>,
 	removedPartsBeforeInserted?: boolean,
 	insertedPartExternalIds?: string[]
 ) {
@@ -1495,7 +1497,7 @@ function afterIngestChangedData(
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(cache, rundown._id)
 	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
-	updatePartRanks(cache, playlist, changedSegmentIds)
+	updatePartRanks(cache, playlist, changedSegments)
 
 	if (insertedPartExternalIds?.length) {
 		UpdateNext.afterInsertParts(cache, playlist, insertedPartExternalIds, !!removedPartsBeforeInserted)
@@ -1556,7 +1558,7 @@ export function handleRemovedPart(
 					waitForPromise(cache.activationCache.getShowStyleBase(rundown))
 				)
 
-				const { segmentId: updatedSegmentId } = updateSegmentFromIngestData(
+				const { segmentId: updatedSegmentId, oldPartIds } = updateSegmentFromIngestData(
 					cache,
 					blueprint,
 					playlist,
@@ -1564,7 +1566,9 @@ export function handleRemovedPart(
 					ingestSegment
 				)
 				if (updatedSegmentId) {
-					afterIngestChangedData(cache, blueprint.blueprint, rundown, [updatedSegmentId])
+					afterIngestChangedData(cache, blueprint.blueprint, rundown, [
+						{ segmentId: updatedSegmentId, oldPartIds },
+					])
 				}
 			}
 
@@ -1636,7 +1640,7 @@ export function handleUpdatedPartInner(
 
 		const blueprint = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
 
-		const { segmentId: updatedSegmentId } = updateSegmentFromIngestData(
+		const { segmentId: updatedSegmentId, oldPartIds } = updateSegmentFromIngestData(
 			cache,
 			blueprint,
 			playlist,
@@ -1644,7 +1648,7 @@ export function handleUpdatedPartInner(
 			ingestSegment
 		)
 		if (updatedSegmentId) {
-			afterIngestChangedData(cache, blueprint.blueprint, rundown, [updatedSegmentId])
+			afterIngestChangedData(cache, blueprint.blueprint, rundown, [{ segmentId: updatedSegmentId, oldPartIds }])
 		}
 	}
 
@@ -1846,24 +1850,6 @@ export function isUpdateAllowed(
 							allowed = false
 						}
 					})
-				}
-				if (
-					allowed &&
-					partChanges &&
-					partChanges.removed &&
-					partChanges.removed.length &&
-					currentPart &&
-					currentPart.part.dynamicallyInsertedAfterPartId
-				) {
-					// If the currently playing part is a queued part and depending on any of the parts that are to be removed:
-					const removedPartIds = partChanges.removed.map((part) => part._id)
-					if (removedPartIds.includes(currentPart.part.dynamicallyInsertedAfterPartId)) {
-						// Don't allow removal of a part that has a currently playing queued Part
-						logger.warn(
-							`Not allowing removal of part "${currentPart.part.dynamicallyInsertedAfterPartId}" ("${currentPart.part.externalId}"), because currently playing (queued) part "${currentPart._id}" ("${currentPart.part.externalId}") is after it`
-						)
-						allowed = false
-					}
 				}
 			}
 		}

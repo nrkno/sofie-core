@@ -60,6 +60,9 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 
 	/** The transition props as used when entering this PartInstance */
 	allowedToUseTransition?: boolean
+
+	/** Whether the PartInstance is an orphan. Indicates the reason it is orphaned */
+	orphaned?: 'adlib-part' // Future scope: | 'deleted'
 }
 
 export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {
@@ -94,6 +97,8 @@ export class PartInstance implements DBPartInstance {
 	public rundownId: RundownId
 
 	public allowedToUseTransition?: boolean
+
+	public orphaned?: 'adlib-part' // Future scope: | 'deleted'
 
 	constructor(document: DBPartInstance, isTemporary?: boolean) {
 		_.each(_.keys(document), (key) => {

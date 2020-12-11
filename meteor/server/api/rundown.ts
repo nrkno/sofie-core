@@ -437,21 +437,6 @@ export function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: R
  * @param removedParts The parts that have been removed
  */
 export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: RundownId, removedParts: DBPart[]) {
-	saveIntoCache(
-		cache.Parts,
-		{
-			rundownId: rundownId,
-			dynamicallyInsertedAfterPartId: { $in: _.map(removedParts, (p) => p._id) },
-		},
-		[],
-		{
-			afterRemoveAll(parts) {
-				// Do the same for any affected dynamicallyInserted Parts
-				afterRemoveParts(cache, rundownId, parts)
-			},
-		}
-	)
-
 	// Clean up all the db items that belong to the removed Parts
 	const removedPartIds = removedParts.map((p) => p._id)
 	cache.Pieces.remove({
@@ -485,7 +470,11 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
  * Update the ranks of all dynamic parts in the given segments.
  * Adlib/dynamic parts get assigned ranks based on the rank of what they are told to be after
  */
-export function updatePartRanks(cache: CacheForRundownPlaylist, playlist: RundownPlaylist, segmentIds: SegmentId[]) {
+export function updatePartRanks(
+	cache: CacheForRundownPlaylist,
+	playlist: RundownPlaylist,
+	changedSegments: Array<{ segmentId: SegmentId; oldPartIds: PartId[] }>
+) {
 	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point
 	// It should be a simple toggle to work on instances instead though. As it only changes the dynamic inserted ones it should be nice and safe
 	// Make sure to rethink the sorting, especially with regards to reset vs non-reset (as reset may have outdated ranks etc)

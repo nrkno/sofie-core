@@ -816,7 +816,7 @@ describe('Test blueprint api context', () => {
 					expect(newPartInstance).toBeTruthy()
 					expect(newPartInstance.part._rank).toBeLessThan(9000)
 					expect(newPartInstance.part._rank).toBeGreaterThan(partInstance.part._rank)
-					expect(newPartInstance.part.dynamicallyInsertedAfterPartId).toBeTruthy()
+					expect(newPartInstance.orphaned).toEqual('adlib-part')
 
 					const newNextPartInstances = context.getPieceInstances('next')
 					expect(newNextPartInstances).toHaveLength(1)

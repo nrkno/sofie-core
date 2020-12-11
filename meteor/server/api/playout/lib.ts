@@ -43,11 +43,6 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 	// Note: After the RundownPlaylist (R19) update, the playhead is no longer affected in this operation,
 	// since that isn't tied to the rundown anymore.
 
-	cache.Parts.remove({
-		rundownId: rundown._id,
-		dynamicallyInsertedAfterPartId: { $exists: true },
-	})
-
 	// Mask all instances as reset
 	cache.PartInstances.update(
 		{
@@ -117,13 +112,6 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 			},
 		}
 	)
-
-	cache.Parts.remove({
-		rundownId: {
-			$in: rundownIDs,
-		},
-		dynamicallyInsertedAfterPartId: { $exists: true },
-	})
 
 	resetRundownPlaylistPlayhead(cache, rundownPlaylist)
 }
@@ -207,10 +195,7 @@ export function selectNextPart(
 		// No previous part, or segment has changed
 		if (!previousPartInstance || (nextPart && previousPartInstance.segmentId !== nextPart.part.segmentId)) {
 			// Find first in segment
-			const nextPart2 = findFirstPlayablePart(
-				0,
-				(part) => part.segmentId === rundownPlaylist.nextSegmentId && !part.dynamicallyInsertedAfterPartId
-			)
+			const nextPart2 = findFirstPlayablePart(0, (part) => part.segmentId === rundownPlaylist.nextSegmentId)
 			if (nextPart2) {
 				// If matched matched, otherwise leave on auto
 				nextPart = {
@@ -268,16 +253,6 @@ export function setNextPart(
 				409,
 				`PartInstance "${newNextPartInstance._id}" of rundown "${newNextPartInstance.rundownId}" not part of RundownPlaylist "${rundownPlaylist._id}"`
 			)
-		}
-
-		if (newNextPart) {
-			// TODO-PartInstances - pending new data flow
-			removeFollowingDynamicallyInsertedParts(cache, newNextPart)
-			const partId = newNextPart._id
-			newNextPart = cache.Parts.findOne(partId) as Part
-			if (!newNextPart) {
-				throw new Meteor.Error(409, `Part "${partId}" is missing after the reset`)
-			}
 		}
 
 		const nextPart = newNextPartInstance ? newNextPartInstance.part : newNextPart!
@@ -385,22 +360,6 @@ export function setNextPart(
 		partInstanceId: { $in: instancesIdsToRemove },
 	})
 
-	const dynamicallyInsertedPartsToRemove = nonTakenPartInstances
-		.filter(
-			(p) =>
-				p.part.dynamicallyInsertedAfterPartId &&
-				p._id !== rundownPlaylist.nextPartInstanceId &&
-				p._id !== rundownPlaylist.currentPartInstanceId
-		)
-		.map((p) => p.part._id)
-	if (dynamicallyInsertedPartsToRemove.length > 0) {
-		// TODO-PartInstances - pending new data flow
-		cache.Parts.remove({
-			rundownId: { $in: rundownIds },
-			_id: { $in: dynamicallyInsertedPartsToRemove },
-		})
-	}
-
 	if (movingToNewSegment && rundownPlaylist.nextSegmentId) {
 		// TODO - shouldnt this be done on take? this will have a bug where once the segment is set as next, another call to ensure the next is correct will change it
 		cache.RundownPlaylists.update(rundownPlaylist._id, {
@@ -449,24 +408,6 @@ export function setNextSegment(
 	if (span) span.end()
 }
 
-function removeFollowingDynamicallyInsertedParts(cache: CacheForRundownPlaylist, part: DBPart): void {
-	// remove parts that have been dynamically queued for after this part (queued adLibs)
-	saveIntoCache(
-		cache.Parts,
-		{
-			rundownId: part.rundownId,
-			dynamicallyInsertedAfterPartId: part._id,
-		},
-		[],
-		{
-			afterRemoveAll(removedParts) {
-				for (const removedPart of removedParts) {
-					removeFollowingDynamicallyInsertedParts(cache, removedPart)
-				}
-			},
-		}
-	)
-}
 export function onPartHasStoppedPlaying(
 	cache: CacheForRundownPlaylist,
 	partInstance: PartInstance,

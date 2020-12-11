@@ -270,6 +270,7 @@ export namespace ServerPlayoutAdLibAPI {
 				segmentId: currentPartInstance.segmentId,
 				takeCount: currentPartInstance.takeCount + 1,
 				rehearsal: !!rundownPlaylist.rehearsal,
+				orphaned: 'adlib-part',
 				part: new Part({
 					_id: getRandomId(),
 					_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
@@ -277,8 +278,6 @@ export namespace ServerPlayoutAdLibAPI {
 					segmentId: currentPartInstance.segmentId,
 					rundownId: rundown._id,
 					title: adLibPiece.name,
-					dynamicallyInsertedAfterPartId:
-						currentPartInstance.part.dynamicallyInsertedAfterPartId ?? currentPartInstance.part._id,
 					prerollDuration: adLibPiece.adlibPreroll,
 					expectedDuration: adLibPiece.expectedDuration,
 				}),
@@ -402,18 +401,8 @@ export namespace ServerPlayoutAdLibAPI {
 		const span = profiler.startSpan('innerStartQueuedAdLib')
 		logger.info('adlibQueueInsertPartInstance')
 
-		// check if there's already a queued part after this:
-		const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
-		if (nextPartInstance && nextPartInstance.part.dynamicallyInsertedAfterPartId) {
-			// TODO-PartInstance - pending new data flow - the call to setNextPart will prune the partInstance, so this will not be needed
-			cache.Parts.remove(nextPartInstance.part._id)
-			cache.PartInstances.remove(nextPartInstance._id)
-			cache.PieceInstances.remove({ partInstanceId: nextPartInstance._id })
-			afterRemoveParts(cache, currentPartInstance.rundownId, [nextPartInstance.part])
-		}
-
 		// Ensure it is labelled as dynamic
-		newPartInstance.part.dynamicallyInsertedAfterPartId = currentPartInstance.part._id
+		newPartInstance.orphaned = 'adlib-part'
 
 		cache.PartInstances.insert(newPartInstance)
 		// TODO-PartInstance - pending new data flow
