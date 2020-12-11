@@ -17,7 +17,7 @@ import {
 	PartExtended,
 	SegmentExtended,
 } from '../../../lib/Rundown'
-import { RundownViewEvents, IContextMenuContext, IGoToPartEvent, IGoToPartInstanceEvent } from '../RundownView'
+import { IContextMenuContext } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
@@ -35,6 +35,11 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	GoToPartEvent,
+	GoToPartInstanceEvent,
+} from '../RundownView/RundownViewEventBus'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -149,7 +154,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.playlist,
 			segment,
 			props.segmentsIdsBefore,
-			props.orderedAllPartIds
+			props.orderedAllPartIds,
+			true
 		)
 		let notes: Array<SegmentNote> = []
 		o.parts.forEach((part) => {
@@ -354,9 +360,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					})
 				}
 			}
-			window.addEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
-			window.addEventListener(RundownViewEvents.goToPart, this.onGoToPart)
-			window.addEventListener(RundownViewEvents.goToPartInstance, this.onGoToPart)
+			RundownViewEventBus.on(RundownViewEvents.REWIND_SEGMENTS, this.onRewindSegment)
+			RundownViewEventBus.on(RundownViewEvents.GO_TO_PART, this.onGoToPart)
+			RundownViewEventBus.on(RundownViewEvents.GO_TO_PART_INSTANCE, this.onGoToPartInstance)
 			window.requestAnimationFrame(() => {
 				this.mountedTime = Date.now()
 				if (this.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
@@ -532,7 +538,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				}, 500)
 			}
 			this.stopLive()
-			window.removeEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
+			RundownViewEventBus.off(RundownViewEvents.REWIND_SEGMENTS, this.onRewindSegment)
+			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART, this.onGoToPart)
+			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART_INSTANCE, this.onGoToPartInstance)
 		}
 
 		private partInstanceSub: Meteor.SubscriptionHandle | undefined
@@ -616,9 +624,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
-		onGoToPart = (e: CustomEvent<IGoToPartEvent>) => {
-			if (this.props.segmentId === e.detail.segmentId) {
-				const part = this.props.parts.find((part) => part.partId === e.detail.partId)
+		onGoToPart = (e: GoToPartEvent) => {
+			if (this.props.segmentId === e.segmentId) {
+				const part = this.props.parts.find((part) => part.partId === e.partId)
 				if (part) {
 					this.setState({
 						scrollLeft: part.startsAt,
@@ -627,10 +635,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
-		onGoToPartInstance = (e: CustomEvent<IGoToPartInstanceEvent>) => {
-			if (this.props.segmentId === e.detail.segmentId) {
+		onGoToPartInstance = (e: GoToPartInstanceEvent) => {
+			if (this.props.segmentId === e.segmentId) {
 				for (const part of this.props.parts) {
-					if (part.instance._id === e.detail.partInstanceId) {
+					if (part.instance._id === e.partInstanceId) {
 						this.setState({
 							scrollLeft: part.startsAt,
 						})
@@ -739,7 +747,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			this.timelineDiv = el.timeline
 		}
 
-		onShowEntireSegment = (event: any) => {
+		onShowEntireSegment = () => {
 			this.setState({
 				scrollLeft: 0,
 				followLiveLine: this.state.isLiveSegment ? false : this.state.followLiveLine,

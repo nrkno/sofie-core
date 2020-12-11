@@ -623,7 +623,11 @@ export namespace ServerPlayoutAPI {
 			}
 		)
 	}
-	export function disableNextPiece(context: MethodContext, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+	export function disableNextPiece(
+		context: MethodContext,
+		rundownPlaylistId: RundownPlaylistId,
+		undo?: boolean
+	): ClientAPI.ClientResponse<void> {
 		// @TODO Check for a better solution to validate security methods
 		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 		check(rundownPlaylistId, String)
@@ -728,8 +732,10 @@ export namespace ServerPlayoutAPI {
 					updateTimeline(cache, playlist.studioId)
 
 					waitForPromise(cache.saveAllToDatabase())
+
+					return ClientAPI.responseSuccess(undefined)
 				} else {
-					throw new Meteor.Error(500, 'Found no future pieces')
+					return ClientAPI.responseError(404, 'Found no future pieces')
 				}
 			}
 		)
@@ -1104,11 +1110,13 @@ export namespace ServerPlayoutAPI {
 		context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
-		userData: any
+		userData: any,
+		triggerMode?: string
 	) {
 		check(rundownPlaylistId, String)
 		check(actionId, String)
 		check(userData, Match.Any)
+		check(triggerMode, Match.Maybe(String))
 
 		return executeActionInner(context, rundownPlaylistId, (actionContext, cache, rundown) => {
 			const showStyleBase = waitForPromise(cache.activationCache.getShowStyleBase(rundown))
@@ -1122,7 +1130,7 @@ export namespace ServerPlayoutAPI {
 
 			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
 
-			blueprint.blueprint.executeAction(actionContext, actionId, userData)
+			blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
 		})
 	}
 

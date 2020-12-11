@@ -453,11 +453,7 @@ function buildTimelineObjsForRundown(
 		)
 		const currentInfinitePieceIds = _.compact(currentInfinitePieces.map((l) => l.infinite?.infinitePieceId))
 
-		let allowTransition = false
-
 		if (partInstancesInfo.previous) {
-			allowTransition = !partInstancesInfo.previous.partInstance.part.disableOutTransition
-
 			const previousPartLastStarted = partInstancesInfo.previous.partInstance.timings?.startedPlayback
 			if (previousPartLastStarted) {
 				const prevPartOverlapDuration = calcPartKeepaliveDuration(
@@ -490,6 +486,7 @@ function buildTimelineObjsForRundown(
 
 				const groupClasses: string[] = ['previous_part']
 				let prevObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = [previousPartGroup]
+				const transProps = getTransformTransitionProps(partInstancesInfo.previous.partInstance)
 				prevObjs = prevObjs.concat(
 					transformPartIntoTimeline(
 						activePlaylist._id,
@@ -499,7 +496,7 @@ function buildTimelineObjsForRundown(
 						previousPartGroup,
 						partInstancesInfo.previous.nowInPart,
 						false,
-						undefined,
+						transProps,
 						activePlaylist.holdState
 					)
 				)
@@ -623,12 +620,7 @@ function buildTimelineObjsForRundown(
 		}
 
 		const groupClasses: string[] = ['current_part']
-		const transProps: TransformTransitionProps = {
-			allowed: allowTransition,
-			preroll: partInstancesInfo.current.partInstance.part.prerollDuration,
-			transitionPreroll: partInstancesInfo.current.partInstance.part.transitionPrerollDuration,
-			transitionKeepalive: partInstancesInfo.current.partInstance.part.transitionKeepaliveDuration,
-		}
+		const transProps = getTransformTransitionProps(partInstancesInfo.current.partInstance)
 		timelineObjs.push(
 			currentPartGroup,
 			createPartGroupFirstObject(
@@ -670,14 +662,10 @@ function buildTimelineObjsForRundown(
 			)
 
 			const groupClasses: string[] = ['next_part']
-			const transProps: TransformTransitionProps = {
-				allowed:
-					partInstancesInfo.current.partInstance &&
-					!partInstancesInfo.current.partInstance.part.disableOutTransition,
-				preroll: partInstancesInfo.next.partInstance.part.prerollDuration,
-				transitionPreroll: partInstancesInfo.next.partInstance.part.transitionPrerollDuration,
-				transitionKeepalive: partInstancesInfo.next.partInstance.part.transitionKeepaliveDuration,
-			}
+			const transProps = getTransformTransitionProps(
+				partInstancesInfo.next.partInstance,
+				!partInstancesInfo.current.partInstance.part.disableOutTransition
+			)
 			timelineObjs.push(
 				nextPartGroup,
 				createPartGroupFirstObject(
@@ -781,9 +769,9 @@ function transformBaselineItemsIntoTimeline(
 
 interface TransformTransitionProps {
 	allowed: boolean
-	preroll?: number
-	transitionPreroll?: number | null
-	transitionKeepalive?: number | null
+	preroll: number | undefined
+	transitionPreroll: number | null | undefined
+	transitionKeepalive: number | null | undefined
 }
 
 export function hasPieceInstanceDefinitelyEnded(
@@ -808,6 +796,15 @@ export function hasPieceInstanceDefinitelyEnded(
 	}
 
 	return relativeEnd !== undefined && relativeEnd + DEFINITELY_ENDED_FUTURE_DURATION < nowInPart
+}
+
+function getTransformTransitionProps(partInstance: PartInstance, allowTransition?: boolean): TransformTransitionProps {
+	return {
+		allowed: allowTransition ?? !!partInstance.allowedToUseTransition,
+		preroll: partInstance.part.prerollDuration,
+		transitionPreroll: partInstance.part.transitionPrerollDuration,
+		transitionKeepalive: partInstance.part.transitionKeepaliveDuration,
+	}
 }
 
 function transformPartIntoTimeline(

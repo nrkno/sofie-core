@@ -9,6 +9,8 @@ import { check } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { StudioReadAccess, StudioContentWriteAccess, studioContentAllowWrite } from './studio'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
+import { AdLibActionId } from '../../lib/collections/AdLibActions'
 
 export namespace BucketSecurity {
 	// Sometimes a studio ID is passed, others the peice / bucket id
@@ -46,5 +48,16 @@ export namespace BucketSecurity {
 		if (!bucketAdLib) throw new Meteor.Error(404, `Bucket AdLib "${selector._id}" not found!`)
 
 		return StudioContentWriteAccess.bucket(cred, bucketAdLib.studioId)
+	}
+	export function allowWriteAccessAction(selector: MongoQuery<{ _id: AdLibActionId }>, cred: Credentials) {
+		triggerWriteAccess()
+
+		check(selector, Object)
+		if (!Settings.enableUserAccounts) return true
+
+		const bucketAdLibAction = BucketAdLibActions.findOne(selector)
+		if (!bucketAdLibAction) throw new Meteor.Error(404, `Bucket AdLib Actions "${selector._id}" not found!`)
+
+		return StudioContentWriteAccess.bucket(cred, bucketAdLibAction.studioId)
 	}
 }
