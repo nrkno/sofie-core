@@ -26,7 +26,7 @@ import {
 	setupPieceInstanceInfiniteProperties,
 } from './pieces'
 import { updateTimeline } from './timeline'
-import { updatePartRanks, afterRemoveParts } from '../rundown'
+import { updateOrphanedPartInstanceRanks, afterRemoveParts } from '../rundown'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
 import {
@@ -419,7 +419,9 @@ export namespace ServerPlayoutAdLibAPI {
 			cache.PieceInstances.insert(pieceInstance)
 		})
 
-		updatePartRanks(cache, rundownPlaylist, [newPartInstance.part.segmentId])
+		updateOrphanedPartInstanceRanks(cache, rundownPlaylist, [
+			{ segmentId: newPartInstance.part.segmentId, oldPartIdsAndRanks: null },
+		])
 
 		// Find and insert any rundown defined infinites that we should inherit
 		const part = cache.Parts.findOne(newPartInstance.part._id)

@@ -7,7 +7,7 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segment, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts, PartId } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
-import { updatePartRanks, ServerRundownAPI } from '../../rundown'
+import { updateOrphanedPartInstanceRanks, ServerRundownAPI } from '../../rundown'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownInput } from '../rundownInput'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
@@ -997,7 +997,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		// Let the logic generate the correct rank first
 		wrapWithCacheForRundownPlaylistFromRundown(rundown._id, (cache) => {
-			updatePartRanks(cache, playlist, [part.segmentId])
+			updateOrphanedPartInstanceRanks(cache, playlist, [part.segmentId])
 		})
 		let dynamicPart = Parts.findOne(dynamicPartId) as Part
 		expect(dynamicPart).toBeTruthy()
@@ -1104,7 +1104,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		// Let the logic generate the correct rank first
 		wrapWithCacheForRundownPlaylistFromRundown(rundown._id, (cache) => {
-			updatePartRanks(cache, playlist, [part.segmentId])
+			updateOrphanedPartInstanceRanks(cache, playlist, [part.segmentId])
 		})
 
 		let part1 = Parts.findOne({ externalId: 'part1' }) as Part

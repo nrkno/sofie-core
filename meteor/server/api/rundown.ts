@@ -75,6 +75,7 @@ import { updateRundownsInPlaylist } from './ingest/rundownInput'
 import { Mongo } from 'meteor/mongo'
 import { getPlaylistIdFromExternalId, removeEmptyPlaylists } from './rundownPlaylist'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
+import { PartInstanceId } from '../../lib/collections/PartInstances'
 
 export function selectShowStyleVariant(
 	studio: Studio,
@@ -466,62 +467,90 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 	})
 }
 
+export type ChangedSegments = Array<{
+	segmentId: SegmentId
+	oldPartIdsAndRanks: Array<{ id: PartId; rank: number }> | null // Null if nothing changed except an orphan
+}>
+
 /**
  * Update the ranks of all dynamic parts in the given segments.
  * Adlib/dynamic parts get assigned ranks based on the rank of what they are told to be after
  */
-export function updatePartRanks(
+export function updateOrphanedPartInstanceRanks(
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
-	changedSegments: Array<{ segmentId: SegmentId; oldPartIds: PartId[] }>
+	changedSegments: ChangedSegments
 ) {
 	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point
 	// It should be a simple toggle to work on instances instead though. As it only changes the dynamic inserted ones it should be nice and safe
 	// Make sure to rethink the sorting, especially with regards to reset vs non-reset (as reset may have outdated ranks etc)
 
-	const allOrderedParts = getAllOrderedPartsFromCache(cache, playlist)
+	const groupedPartInstances = _.groupBy(
+		cache.PartInstances.findFetch({
+			reset: { $ne: true },
+			segmentId: { $in: changedSegments.map((s) => s.segmentId) },
+		}),
+		(p) => p.segmentId
+	)
+	const groupedNewParts = _.groupBy(
+		cache.Parts.findFetch({
+			segmentId: { $in: changedSegments.map((s) => s.segmentId) },
+		}),
+		(p) => p.segmentId
+	)
 
 	let updatedParts = 0
-	for (const segmentId of segmentIds) {
-		const parts = allOrderedParts.filter((p) => p.segmentId === segmentId)
-		const [dynamicParts, sortedParts] = _.partition(parts, (p) => !!p.dynamicallyInsertedAfterPartId)
+	for (const { segmentId, oldPartIdsAndRanks } of changedSegments) {
+		const newParts = groupedNewParts[unprotectString(segmentId)] || []
+		const segmentPartInstances = groupedPartInstances[unprotectString(segmentId)] || []
+		const orphanedPartInstances = segmentPartInstances
+			.map((p, i) => ({ rank: i, orphaned: p.orphaned, instanceId: p._id, id: p.part._id }))
+			.filter((p) => p.orphaned)
+
+		if (orphanedPartInstances.length === 0) {
+			// No orphans to position
+			continue
+		}
+
 		logger.debug(
-			`updatePartRanks (${parts.length} parts with ${dynamicParts.length} dynamic in segment "${segmentId}")`
+			`updateOrphanedPartInstanceRanks: ${segmentPartInstances.length} partInstances with ${orphanedPartInstances.length} orphans in segment "${segmentId}"`
 		)
 
-		// We have parts that need updating
-		if (dynamicParts.length) {
-			// Build the parts into an sorted array
-			let remainingParts = dynamicParts
-			let hasAddedAnything = true
-			while (hasAddedAnything) {
-				hasAddedAnything = false
-
-				const newRemainingParts: Part[] = []
-				_.each(remainingParts, (possiblePart) => {
-					const afterIndex = sortedParts.findIndex(
-						(p) => p._id === possiblePart.dynamicallyInsertedAfterPartId
-					)
-					if (afterIndex !== -1) {
-						// We found the one before
-						sortedParts.splice(afterIndex + 1, 0, possiblePart)
-						hasAddedAnything = true
-					} else {
-						newRemainingParts.push(possiblePart)
-					}
-				})
-				remainingParts = newRemainingParts
+		// If we have no instances, or no parts to base it on, then we can't do anything
+		if (newParts.length === 0) {
+			// position them all 0..n
+			let i = 0
+			for (const partInfo of orphanedPartInstances) {
+				cache.PartInstances.update(partInfo.id, { $set: { 'part._rank': i++ } })
 			}
+		} else if (oldPartIdsAndRanks.length === 0) {
+			// position them all before the first
+			const firstPartRank = newParts.length > 0 ? _.min(newParts, (p) => p._rank)._rank : 0
+			let i = firstPartRank - orphanedPartInstances.length
+			for (const partInfo of orphanedPartInstances) {
+				cache.PartInstances.update(partInfo.id, { $set: { 'part._rank': i++ } })
+			}
+		} else {
+			// they need interleaving
 
-			if (remainingParts.length) {
-				// TODO - remainingParts are invalid and should be deleted/warned about
+			// compile the old order, and get a list of the ones that still remain in the new state
+			const sortedPreviousParts: Array<{ rank: number; id: PartId; instanceId?: PartInstanceId }> = _.sortBy(
+				[...orphanedPartInstances, ...oldPartIdsAndRanks],
+				(p) => p.rank
+			)
+			const newPartIds = new Set(newParts.map((p) => p._id))
+			const remainingPreviousParts = sortedPreviousParts.filter((p) => p.instanceId || newPartIds.has(p.id))
+
+			const newPartRankMap = new Map<PartId, number>()
+			for (const newPart of newParts) {
+				newPartRankMap.set(newPart._id, newPart._rank)
 			}
 
 			// Now go through and update their ranks
-			for (let i = 0; i < sortedParts.length - 1; ) {
+			for (let i = 0; i < remainingPreviousParts.length - 1; ) {
 				// Find the range to process this iteration
 				const beforePartIndex = i
-				const afterPartIndex = sortedParts.findIndex((p, o) => o > i && !p.dynamicallyInsertedAfterPartId)
+				const afterPartIndex = remainingPreviousParts.findIndex((p, o) => o > i && !p.instanceId)
 
 				if (afterPartIndex === beforePartIndex + 1) {
 					// no dynamic parts in between
@@ -529,42 +558,38 @@ export function updatePartRanks(
 					continue
 				} else if (afterPartIndex === -1) {
 					// We will reach the end, so make sure we stop
-					i = sortedParts.length
+					i = remainingPreviousParts.length
 				} else {
 					// next iteration should look from the next fixed point
 					i = afterPartIndex
 				}
 
 				const firstDynamicIndex = beforePartIndex + 1
-				const lastDynamicIndex = afterPartIndex === -1 ? sortedParts.length - 1 : afterPartIndex - 1
+				const lastDynamicIndex = afterPartIndex === -1 ? remainingPreviousParts.length - 1 : afterPartIndex - 1
 
 				// Calculate the rank change per part
 				const dynamicPartCount = lastDynamicIndex - firstDynamicIndex + 1
-				const basePartRank = sortedParts[beforePartIndex]._rank
-				const afterPartRank = afterPartIndex === -1 ? basePartRank + 1 : sortedParts[afterPartIndex]._rank
+				const basePartRank = newPartRankMap.get(remainingPreviousParts[beforePartIndex].id)! // TODO - is this safe
+				const afterPartRank =
+					afterPartIndex === -1
+						? basePartRank + 1
+						: newPartRankMap.get(remainingPreviousParts[afterPartIndex].id)! // TODO - is this safe
 				const delta = (afterPartRank - basePartRank) / (dynamicPartCount + 1)
 
 				let prevRank = basePartRank
 				for (let o = firstDynamicIndex; o <= lastDynamicIndex; o++) {
 					const newRank = (prevRank = prevRank + delta)
 
-					const dynamicPart = sortedParts[o]
-					if (dynamicPart._rank !== newRank) {
-						cache.Parts.update(dynamicPart._id, { $set: { _rank: newRank } })
-						cache.PartInstances.update(
-							{
-								'part._id': dynamicPart._id,
-								reset: { $ne: true },
-							},
-							{ $set: { 'part._rank': newRank } }
-						)
+					const orphanedPart = remainingPreviousParts[o]
+					if (orphanedPart.instanceId && orphanedPart.rank !== newRank) {
+						cache.PartInstances.update(orphanedPart.instanceId, { $set: { 'part._rank': newRank } })
 						updatedParts++
 					}
 				}
 			}
 		}
 	}
-	logger.debug(`updatePartRanks: ${updatedParts} parts updated`)
+	logger.debug(`updatePartRanks: ${updatedParts} PartInstances updated`)
 }
 
 export namespace ServerRundownAPI {
