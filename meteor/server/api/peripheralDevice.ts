@@ -268,6 +268,9 @@ export namespace ServerPeripheralDeviceAPI {
 					}
 				})
 
+				// TODO - we should do the same for the partInstance.
+				// Or we should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
+
 				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
 				if (objPieceId && activePlaylist) {
 					logger.debug('Update PieceInstance: ', {
