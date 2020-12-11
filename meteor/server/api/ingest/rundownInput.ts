@@ -1123,7 +1123,7 @@ export function handleUpdatedSegment(
 			saveSegmentCache(rundown._id, segmentId, makeNewIngestSegment(ingestSegment))
 		})
 
-		const { segmentId: updatedSegmentId, newPartIds } = updateSegmentFromIngestData(
+		const { segmentId: updatedSegmentId, insertedPartExternalIds } = updateSegmentFromIngestData(
 			cache,
 			studio,
 			playlist,
@@ -1131,7 +1131,7 @@ export function handleUpdatedSegment(
 			ingestSegment
 		)
 		if (updatedSegmentId) {
-			afterIngestChangedData(cache, rundown, [updatedSegmentId], false, newPartIds)
+			afterIngestChangedData(cache, rundown, [updatedSegmentId], false, insertedPartExternalIds)
 		}
 
 		waitForPromise(cache.saveAllToDatabase())
@@ -1143,21 +1143,33 @@ export function updateSegmentsFromIngestData(
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	ingestSegments: IngestSegment[],
-	removedPreviousParts?: boolean
+	removedPartsBeforeInserted?: boolean
 ) {
 	const changedSegmentIds: SegmentId[] = []
-	const allNewPartIds: string[] = []
+	const allInsertedPartExternalIds: string[] = []
 	for (let ingestSegment of ingestSegments) {
-		const { segmentId, newPartIds } = updateSegmentFromIngestData(cache, studio, playlist, rundown, ingestSegment)
+		const { segmentId, insertedPartExternalIds } = updateSegmentFromIngestData(
+			cache,
+			studio,
+			playlist,
+			rundown,
+			ingestSegment
+		)
 		if (segmentId !== null) {
 			changedSegmentIds.push(segmentId)
 		}
-		if (newPartIds) {
-			allNewPartIds.push(...newPartIds)
+		if (insertedPartExternalIds) {
+			allInsertedPartExternalIds.push(...insertedPartExternalIds)
 		}
 	}
 	if (changedSegmentIds.length > 0) {
-		afterIngestChangedData(cache, rundown, changedSegmentIds, removedPreviousParts, allNewPartIds)
+		afterIngestChangedData(
+			cache,
+			rundown,
+			changedSegmentIds,
+			removedPartsBeforeInserted,
+			allInsertedPartExternalIds
+		)
 	}
 }
 /**
@@ -1174,7 +1186,7 @@ function updateSegmentFromIngestData(
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	ingestSegment: IngestSegment
-): { segmentId: SegmentId | null; newPartIds: string[] } {
+): { segmentId: SegmentId | null; insertedPartExternalIds: string[] } {
 	const span = profiler.startSpan('ingest.rundownInput.updateSegmentFromIngestData')
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 	const { blueprint, blueprintId } = loadShowStyleBlueprint(
@@ -1256,7 +1268,7 @@ function updateSegmentFromIngestData(
 	// determine if update is allowed here
 	if (!isUpdateAllowed(cache, playlist, rundown, {}, { changed: [newSegment] }, prepareSaveParts)) {
 		unsyncSegmentOrRundown(cache, rundown._id, segmentId)
-		return { segmentId: null, newPartIds: [] }
+		return { segmentId: null, insertedPartExternalIds: [] }
 	}
 
 	// Update segment info:
@@ -1323,9 +1335,9 @@ function updateSegmentFromIngestData(
 		})
 	)
 
-	const insertedPartsIds = prepareSaveParts.inserted.map((part) => part.externalId)
+	const insertedPartExternalIds = prepareSaveParts.inserted.map((part) => part.externalId)
 	span?.end()
-	return { segmentId: anythingChanged(changes) ? segmentId : null, newPartIds: insertedPartsIds }
+	return { segmentId: anythingChanged(changes) ? segmentId : null, insertedPartExternalIds }
 }
 function syncChangesToPartInstances(
 	cache: CacheForRundownPlaylist,
@@ -1438,8 +1450,8 @@ function afterIngestChangedData(
 	cache: CacheForRundownPlaylist,
 	rundown: Rundown,
 	changedSegmentIds: SegmentId[],
-	removedPreviousParts?: boolean,
-	newPartIds?: string[]
+	removedPartsBeforeInserted?: boolean,
+	insertedPartExternalIds?: string[]
 ) {
 	const playlist = cache.RundownPlaylists.findOne({ _id: rundown.playlistId })
 	if (!playlist) {
@@ -1451,8 +1463,8 @@ function afterIngestChangedData(
 	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
 	updatePartRanks(cache, playlist, changedSegmentIds)
 
-	if (newPartIds?.length) {
-		UpdateNext.afterInsertParts(cache, playlist, newPartIds, !!removedPreviousParts)
+	if (insertedPartExternalIds?.length) {
+		UpdateNext.afterInsertParts(cache, playlist, insertedPartExternalIds, !!removedPartsBeforeInserted)
 	} else {
 		UpdateNext.ensureNextPartIsValid(cache, playlist)
 	}
