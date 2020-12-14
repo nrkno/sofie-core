@@ -1427,9 +1427,16 @@ export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylist
 
 					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
-					if (playlist.active && playlist.currentPartInstanceId) {
-						// If the playlist is active, then updateTimeline as lookahead could have been affected
-						updateTimeline(cache, playlist.studioId)
+					if (playlist.active && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
+						const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+						if (!currentPartInstance?.timings?.startedPlayback) {
+							// HACK: The current PartInstance doesn't have a start time yet, so we know an updateTimeline is coming as part of onPartPlaybackStarted
+							// We mustn't run before that does, or we will get the timings in playout-gateway confused.
+						} else {
+							// It is safe enough (except adlibs) to update the timeline directly
+							// If the playlist is active, then updateTimeline as lookahead could have been affected
+							updateTimeline(cache, playlist.studioId)
+						}
 					}
 
 					waitForPromise(cache.saveAllToDatabase())
