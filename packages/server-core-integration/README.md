@@ -6,6 +6,8 @@ This library is used to connect to the [**Sofie Server Core**](https://github.co
 
 This is a part of the [**Sofie** TV News Studio Automation System](https://github.com/nrkno/Sofie-TV-automation/).
 
+Note: This library does not follow semver. It is recommended to add it in your package json like `"@sofie-automation/server-core-integration": "~1.16.0"` matching the version of sofie core you are running
+
 # Getting started
 
 ## Typescript
