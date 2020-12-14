@@ -91,7 +91,7 @@
 		"react-dom": "^16.14.0",
 		"react-escape": "0.0.8",
 		"react-hotkeys": "^2.0.0",
-		"react-i18next": "^11.8.4",
+		"react-i18next": "~11.7.2",
 		"react-intersection-observer": "^8.31.0",
 		"react-moment": "^0.9.7",
 		"react-popper": "^2.2.4",
