@@ -75,6 +75,11 @@ body.tv2 {
 			}
 		}
 
+		.segment-timeline__editorialline {
+			top: calc(1.8em - 13px);
+			bottom: 0;
+		}
+
 		.segment-timeline__identifier {
 			display: block;
 			grid-column: segment-name / segment-group-controls;
