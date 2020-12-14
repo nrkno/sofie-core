@@ -9,6 +9,8 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
 import * as _ from 'underscore'
 import { auto } from '@popperjs/core'
+import { PubSub } from '../../../lib/api/pubsub'
+import { stringifyObjects } from '../../../lib/lib'
 
 const globalTrackerQueue: Array<Function> = []
 let globalTrackerTimestamp: number | undefined = undefined
@@ -308,15 +310,22 @@ export function useTracker<T>(autorun: () => T, deps?: React.DependencyList | un
 	const [meteorData, setMeteorData] = useState<T | undefined>(undefined)
 
 	useEffect(() => {
-		const computation = Tracker.nonreactive(() =>
-			Tracker.autorun(() => {
-				setMeteorData(autorun())
-			})
-		)
-		return () => {
-			computation.stop()
-		}
+		const computation = Tracker.nonreactive(() => Tracker.autorun(() => setMeteorData(autorun())))
+		return () => computation.stop()
 	}, deps)
 
 	return meteorData
+}
+
+export function useSubscription(sub: PubSub, ...args: any[]) {
+	useEffect(() => {
+		console.log(`Subscription for ${sub} set up.`)
+		const subscription = Meteor.subscribe(sub, ...args)
+		return () => {
+			setTimeout(() => {
+				subscription.stop()
+				console.log(`Subscription for ${sub} torn down.`)
+			}, 100)
+		}
+	}, [stringifyObjects(args)])
 }

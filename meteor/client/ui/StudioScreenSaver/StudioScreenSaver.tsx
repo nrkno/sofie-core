@@ -35,11 +35,7 @@ interface IState {
 	subsReady: boolean
 }
 
-/**
- * This component renders a **nice**, animated screen saver with information about upcoming
- * shows planned in the studio and the time remaining to the expectedStart time of said show.
- */
-export const StudioScreenSaver = translateWithTracker((props: IProps) => {
+export const findNextPlaylist = (props: IProps) => {
 	invalidateAfter(5000)
 	const now = getCurrentTime()
 
@@ -82,7 +78,13 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				return false
 			}),
 	}
-})(
+}
+
+/**
+ * This component renders a **nice**, animated screen saver with information about upcoming
+ * shows planned in the studio and the time remaining to the expectedStart time of said show.
+ */
+export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 	class StudioScreenSaver extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		private _nextAnimationFrameRequest: number | undefined
 		private readonly SPEED = 0.5 // non-unit value
