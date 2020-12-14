@@ -43,7 +43,7 @@
 		"validate:dev-dependencies": "npm audit --only=dev --audit-level=moderate",
 		"check-types": "tsc --noEmit -p tsconfig.json",
 		"watch-types": "npm run check-types -- --watch",
-		"validate:release": "npm run validate:prod-dependencies && npm run license-validate && npm run lint && npm run test"
+		"validate:release": "npm run validate:prod-dependencies && npm run license-validate && npm run libs:install && npm run libs:build && npm run lint && npm run test"
 	},
 	"dependencies": {
 		"@babel/runtime": "^7.12.1",
