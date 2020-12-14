@@ -277,6 +277,7 @@ export const App = translateWithTracker(() => {
 								<this.protectedRoute path="/rundown/:playlistId" component={RundownView} />
 								<this.protectedRoute path="/activeRundown/:studioId" component={ActiveRundownView} />
 								<this.protectedRoute path="/prompter/:studioId" component={PrompterView} />
+								{/* We switch to the general ClockView component, and allow it to do the switch between various types of countdowns */}
 								<this.protectedRoute path="/countdowns/:studioId" component={ClockView} />
 								<this.protectedRoute path="/status" component={Status} />
 								<this.protectedRoute path="/settings" component={SettingsView} />

@@ -13,7 +13,9 @@ body.transparent {
 
 	height: 100vh;
 	width: 100vw;
-	font-size: 10vh;
+	// this ensures that no matter the screen size, the same amount of information can be displayed
+	// since the font-size is dependant on screen width
+	font-size: 5.6vw;
 
 	// &::before {
 	// 	position: absolute;
@@ -41,8 +43,8 @@ body.transparent {
 
 	.clocks-half {
 		position: fixed;
-		left: 2vmax;
-		right: 2vmax;
+		left: 3vmin;
+		right: 3vmin;
 		background: rgba(0, 0, 0, 0.75);
 		border-radius: 0.4vmax;
 		display: flex;
@@ -51,7 +53,7 @@ body.transparent {
 	}
 
 	.clocks-bottom {
-		bottom: 2vmax;
+		bottom: 3vmin;
 		height: 1.2em;
 	}
 
