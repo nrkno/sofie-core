@@ -25,10 +25,7 @@ import { registerIndex } from '../database'
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
 export interface InternalIBlueprintPartInstance
 	extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
-	part: ProtectedStringProperties<
-		IBlueprintPartInstance['part'],
-		'_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'
-	>
+	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>
 }
 export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance {
 	return partInstance as any

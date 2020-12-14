@@ -469,7 +469,7 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 
 export type ChangedSegments = Array<{
 	segmentId: SegmentId
-	oldPartIdsAndRanks: Array<{ id: PartId; rank: number }> | null // Null if nothing changed except an orphan
+	oldPartIdsAndRanks: Array<{ id: PartId; rank: number }> // | null // Null if nothing changed except an orphan
 }>
 
 /**
