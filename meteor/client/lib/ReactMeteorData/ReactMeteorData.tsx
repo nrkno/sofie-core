@@ -339,12 +339,10 @@ export function useTracker<T>(autorun: () => T, deps?: React.DependencyList | un
  */
 export function useSubscription(sub: PubSub, ...args: any[]) {
 	useEffect(() => {
-		console.log(`Subscription for ${sub} set up.`)
 		const subscription = Meteor.subscribe(sub, ...args)
 		return () => {
 			setTimeout(() => {
 				subscription.stop()
-				console.log(`Subscription for ${sub} torn down.`)
 			}, 100)
 		}
 	}, [stringifyObjects(args)])
