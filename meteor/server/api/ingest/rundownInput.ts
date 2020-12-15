@@ -41,7 +41,7 @@ import {
 	afterRemoveParts,
 	ServerRundownAPI,
 	removeSegments,
-	updateOrphanedPartInstanceRanks,
+	updatePartInstanceRanks,
 	produceRundownPlaylistInfoFromRundown,
 	allowedToMoveRundownOutOfPlaylist,
 	getAllRundownsInPlaylist,
@@ -1504,7 +1504,7 @@ function afterIngestChangedData(
 	updateExpectedMediaItemsOnRundown(cache, rundown._id)
 	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
 
-	updateOrphanedPartInstanceRanks(cache, playlist, changedSegments)
+	updatePartInstanceRanks(cache, playlist, changedSegments)
 
 	if (insertedPartExternalIds?.length) {
 		UpdateNext.afterInsertParts(cache, playlist, insertedPartExternalIds, !!removedPartsBeforeInserted)
