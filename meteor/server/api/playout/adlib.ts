@@ -26,7 +26,7 @@ import {
 	setupPieceInstanceInfiniteProperties,
 } from './pieces'
 import { updateTimeline } from './timeline'
-import { updateOrphanedPartInstanceRanks, afterRemoveParts } from '../rundown'
+import { updatePartInstanceRanks, afterRemoveParts } from '../rundown'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
 import {
@@ -273,7 +273,7 @@ export namespace ServerPlayoutAdLibAPI {
 				orphaned: 'adlib-part',
 				part: new Part({
 					_id: getRandomId(),
-					_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
+					_rank: 99999, // TODO - this
 					externalId: '',
 					segmentId: currentPartInstance.segmentId,
 					rundownId: rundown._id,
@@ -405,8 +405,6 @@ export namespace ServerPlayoutAdLibAPI {
 		newPartInstance.orphaned = 'adlib-part'
 
 		cache.PartInstances.insert(newPartInstance)
-		// TODO-PartInstance - pending new data flow
-		cache.Parts.insert(newPartInstance.part)
 
 		newPieceInstances.forEach((pieceInstance) => {
 			// Ensure it is labelled as dynamic
@@ -419,13 +417,13 @@ export namespace ServerPlayoutAdLibAPI {
 			cache.PieceInstances.insert(pieceInstance)
 		})
 
-		updateOrphanedPartInstanceRanks(cache, rundownPlaylist, [
+		updatePartInstanceRanks(cache, rundownPlaylist, [
 			{ segmentId: newPartInstance.part.segmentId, oldPartIdsAndRanks: null },
 		])
 
 		// Find and insert any rundown defined infinites that we should inherit
-		const part = cache.Parts.findOne(newPartInstance.part._id)
-		const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, part!))
+		newPartInstance = cache.PartInstances.findOne(newPartInstance._id)!
+		const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, newPartInstance.part))
 		const infinitePieceInstances = getPieceInstancesForPart(
 			cache,
 			rundownPlaylist,

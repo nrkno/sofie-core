@@ -19,19 +19,22 @@ import {
 	ISourceLayerExtended,
 	PartInstanceLimited,
 } from '../../lib/Rundown'
-import { DBSegment, SegmentId } from '../../lib/collections/Segments'
+import { DBSegment, Segment, SegmentId } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { literal, normalizeArray, getCurrentTime, applyToArray } from '../../lib/lib'
-import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../lib/collections/PartInstances'
+import { literal, normalizeArray, getCurrentTime, applyToArray, unprotectString } from '../../lib/lib'
+import { PartInstance, wrapPartToTemporaryInstance } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
-import { PartId } from '../../lib/collections/Parts'
+import { DBPart, PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { createPieceGroupAndCap, PieceGroupMetadata } from '../../lib/rundown/pieces'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
+import { Mongo } from 'meteor/mongo'
+import { FindOptions } from '../../lib/typings/meteor'
+import { Meteor } from 'meteor/meteor'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
@@ -218,6 +221,68 @@ export namespace RundownUtils {
 			.replace(/_/g, '-')
 	}
 
+	export function getSegmentsWithPartInstances(
+		playlist: RundownPlaylist,
+		segmentsQuery?: Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>,
+		partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>,
+		partInstancesQuery?: Mongo.Query<PartInstance>,
+		segmentsOptions?: FindOptions<DBSegment>,
+		partsOptions?: FindOptions<DBPart>,
+		partInstancesOptions?: FindOptions<PartInstance>
+	): Array<{ segment: Segment; partInstances: PartInstance[] }> {
+		const { segments, parts: rawParts } = playlist.getSegmentsAndPartsSync(
+			segmentsQuery,
+			partsQuery,
+			segmentsOptions,
+			partsOptions
+		)
+		const rawPartInstances = playlist.getActivePartInstances(partInstancesQuery, partInstancesOptions)
+
+		const partsBySegment = _.groupBy(rawParts, (p) => p.segmentId)
+		const partInstancesBySegment = _.groupBy(rawPartInstances, (p) => p.segmentId)
+
+		return segments.map((segment) => {
+			const segmentParts = partsBySegment[unprotectString(segment._id)] || []
+			const segmentPartInstances = partInstancesBySegment[unprotectString(segment._id)] || []
+
+			if (segmentPartInstances.length === 0) {
+				return {
+					segment,
+					partInstances: segmentParts.map(wrapPartToTemporaryInstance),
+				}
+			} else if (segmentParts.length === 0) {
+				return {
+					segment,
+					partInstances: _.sortBy(segmentPartInstances, (p) => p.part._rank),
+				}
+			} else {
+				const partInstanceMap = new Map<PartId, PartInstance>()
+				for (const part of segmentParts) partInstanceMap.set(part._id, wrapPartToTemporaryInstance(part))
+				for (const partInstance of segmentPartInstances) {
+					if (
+						partInstance._id === playlist.nextPartInstanceId ||
+						partInstance._id === playlist.previousPartInstanceId
+					) {
+						const currentValue = partInstanceMap.get(partInstance.part._id)
+						if (currentValue?._id === playlist.currentPartInstanceId) {
+							// Show the current instead of the next or previous PartInstance if they are the same
+							continue
+						}
+					}
+
+					partInstanceMap.set(partInstance.part._id, partInstance)
+				}
+
+				const allPartInstances = _.sortBy(Array.from(partInstanceMap.values()), (p) => p.part._rank)
+
+				return {
+					segment,
+					partInstances: allPartInstances,
+				}
+			}
+		})
+	}
+
 	/**
 	 * This function allows to see what the output of the playback will look like.
 	 * It simulates the operations done by the playout operations in core and playout-gateway
@@ -287,18 +352,20 @@ export namespace RundownUtils {
 		let partsE: Array<PartExtended> = []
 
 		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-		const segmentsAndParts = playlist.getSegmentsAndPartsSync(
+
+		const segmentInfo = getSegmentsWithPartInstances(
+			playlist,
 			{
 				_id: segment._id,
 			},
 			{
 				segmentId: segment._id,
-			}
-		)
-		const activePartInstancesMap = playlist.getActivePartInstancesMap(
+			},
 			{
 				segmentId: segment._id,
 			},
+			undefined,
+			undefined,
 			{
 				fields: {
 					isTaken: 0,
@@ -306,11 +373,9 @@ export namespace RundownUtils {
 					takeCount: 0,
 				},
 			}
-		) as { [indexKey: string]: PartInstanceLimited }
+		)[0] as { segment: Segment; partInstances: PartInstanceLimited[] } | undefined
 
-		const partsInSegment = segmentsAndParts.parts
-
-		if (partsInSegment.length > 0) {
+		if (segmentInfo && segmentInfo.partInstances.length > 0) {
 			// create local deep copies of the studio outputLayers and sourceLayers so that we can store
 			// pieces present on those layers inside and also figure out which layers are used when inside the rundown
 			const outputLayers = normalizeArray<IOutputLayerExtended>(
@@ -342,7 +407,7 @@ export namespace RundownUtils {
 			let startsAt = 0
 			let previousPart: PartExtended | undefined
 			// fetch all the pieces for the parts
-			const partIds = partsInSegment.map((part) => part._id)
+			const partIds = segmentInfo.partInstances.filter((p) => !p.orphaned).map((part) => part.part._id)
 
 			const currentPartIndex = currentPartInstance
 				? orderedAllPartIds.indexOf(currentPartInstance.part._id)
@@ -350,16 +415,15 @@ export namespace RundownUtils {
 
 			const nextPartIndex = nextPartInstance ? orderedAllPartIds.indexOf(nextPartInstance.part._id) : null
 
-			partsE = partsInSegment.map((part, itIndex) => {
-				const partInstance = findPartInstanceOrWrapToTemporary(activePartInstancesMap, part)
+			partsE = segmentInfo.partInstances.map((partInstance, itIndex) => {
 				let partTimeline: SuperTimeline.TimelineObject[] = []
 
 				// extend objects to match the Extended interface
 				let partE = literal<PartExtended>({
-					partId: part._id,
+					partId: partInstance.part._id,
 					instance: partInstance,
 					pieces: [],
-					renderedDuration: 0,
+					renderedDuration: partInstance.part.expectedDuration,
 					startsAt: 0,
 					willProbablyAutoNext: !!(
 						previousPart &&
@@ -532,9 +596,6 @@ export namespace RundownUtils {
 					}
 				}
 
-				// use the expectedDuration and fallback to the default display duration for the part
-				partE.renderedDuration = partE.instance.part.expectedDuration || Settings.defaultDisplayDuration // furthestDuration
-
 				// displayDuration groups are sets of Parts that share their expectedDurations.
 				// If a member of the group has a displayDuration > 0, this displayDuration is used as the renderedDuration of a part.
 				// This value is then deducted from the expectedDuration and the result leftover duration is added to the group pool.
@@ -546,8 +607,8 @@ export namespace RundownUtils {
 					// either this is not the first element of the displayDurationGroup
 					(displayDurationGroups.get(partE.instance.part.displayDurationGroup) !== undefined ||
 						// or there is a following member of this displayDurationGroup
-						(partsInSegment[itIndex + 1] &&
-							partsInSegment[itIndex + 1].displayDurationGroup ===
+						(segmentInfo.partInstances[itIndex + 1] &&
+							segmentInfo.partInstances[itIndex + 1].part.displayDurationGroup ===
 								partE.instance.part.displayDurationGroup))
 				) {
 					displayDurationGroups.set(
@@ -569,6 +630,9 @@ export namespace RundownUtils {
 						)
 					)
 				}
+
+				// use the expectedDuration and fallback to the default display duration for the part
+				partE.renderedDuration = partE.renderedDuration || Settings.defaultDisplayDuration // furthestDuration
 
 				// push the startsAt value, to figure out when each of the parts starts, relative to the beginning of the segment
 				partE.startsAt = startsAt

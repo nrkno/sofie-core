@@ -544,7 +544,7 @@ export function updatePartInstanceRanks(
 		}
 
 		logger.debug(
-			`updateOrphanedPartInstanceRanks: ${segmentPartInstances.length} partInstances with ${orphanedPartInstances.length} orphans in segment "${segmentId}"`
+			`updatePartInstanceRanks: ${segmentPartInstances.length} partInstances with ${orphanedPartInstances.length} orphans in segment "${segmentId}"`
 		)
 
 		// If we have no instances, or no parts to base it on, then we can't do anything
