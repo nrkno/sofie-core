@@ -306,6 +306,17 @@ export type Translated<T> = T & WithTranslation
 // 		) => React.Component<TrackedProps, IState, never>
 // 	) => any
 
+/**
+ * A Meteor Tracker hook that allows using React Functional Components and the Hooks API with Meteor Tracker
+ *
+ * @export
+ * @template T
+ * @param {() => T} autorun The autorun function to be run.
+ * @param {(React.DependencyList | undefined)} [deps] An optional list of dependenices to limit the tracker re-running
+ * 		for each render. Optional, but highly recommended, due to the heavy nature of Meteor.Trackers and high frequency
+ * 		of React renders.
+ * @return {*}  {(T | undefined)}
+ */
 export function useTracker<T>(autorun: () => T, deps?: React.DependencyList | undefined): T | undefined {
 	const [meteorData, setMeteorData] = useState<T | undefined>(undefined)
 
@@ -317,6 +328,15 @@ export function useTracker<T>(autorun: () => T, deps?: React.DependencyList | un
 	return meteorData
 }
 
+/**
+ * A Meteor Subscription hook that allows using React Functional Components and the Hooks API with Meteor subscriptions.
+ * Subscriptions will be torn down 100ms after unmounting the component.
+ *
+ * @export
+ * @param {PubSub} sub The subscription to be subscribed to
+ * @param {...any[]} args A list of arugments for the subscription. This is used for optimizing the subscription across
+ * 		renders so that it isn't torn down and created for every render.
+ */
 export function useSubscription(sub: PubSub, ...args: any[]) {
 	useEffect(() => {
 		console.log(`Subscription for ${sub} set up.`)
