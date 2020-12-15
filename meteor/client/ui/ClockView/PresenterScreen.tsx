@@ -36,83 +36,86 @@ interface RundownOverviewTrackedProps {
 	showStyleBaseId?: ShowStyleBaseId
 	rundownIds: RundownId[]
 }
+
+export const getPresenterScreenReactive = (props: RundownOverviewProps) => {
+	let playlist: RundownPlaylist | undefined
+	if (props.playlistId) playlist = RundownPlaylists.findOne(props.playlistId)
+	let segments: Array<SegmentUi> = []
+	let showStyleBaseId: ShowStyleBaseId | undefined = undefined
+	let rundownIds: RundownId[] = []
+
+	if (playlist) {
+		const allPartInstancesMap = playlist.getActivePartInstancesMap()
+		segments = playlist.getSegments().map((segment) => {
+			const displayDurationGroups: _.Dictionary<number> = {}
+			const parts = segment.getParts()
+			let displayDuration = 0
+
+			return extendMandadory<DBSegment, SegmentUi>(segment, {
+				items: parts.map((part, index) => {
+					const instance = findPartInstanceOrWrapToTemporary(allPartInstancesMap, part)
+					// take the displayDurationGroups into account
+					if (
+						part.displayDurationGroup &&
+						(displayDurationGroups[part.displayDurationGroup] ||
+							// or there is a following member of this displayDurationGroup
+							(parts[index + 1] && parts[index + 1].displayDurationGroup === part.displayDurationGroup))
+					) {
+						displayDurationGroups[part.displayDurationGroup] =
+							(displayDurationGroups[part.displayDurationGroup] || 0) +
+							((part.expectedDuration || 0) - (instance.timings?.duration || 0))
+						displayDuration = Math.max(
+							0,
+							Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0) ||
+								displayDurationGroups[part.displayDurationGroup]
+						)
+					}
+					return literal<PartUi>({
+						instance,
+						partId: part._id,
+						pieces: [],
+						renderedDuration: part.expectedDuration ? 0 : displayDuration,
+						startsAt: 0,
+						willProbablyAutoNext: false,
+					})
+				}),
+			})
+		})
+
+		if (playlist.currentPartInstanceId) {
+			const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+			const partInstance = currentPartInstance || nextPartInstance
+			if (partInstance) {
+				const currentRundown = Rundowns.findOne(partInstance.rundownId)
+				if (currentRundown) {
+					showStyleBaseId = currentRundown.showStyleBaseId
+				}
+			}
+		}
+
+		if (!showStyleBaseId) {
+			const rundowns = playlist.getRundowns()
+			if (rundowns.length > 0) {
+				showStyleBaseId = rundowns[0].showStyleBaseId
+			}
+		}
+
+		rundownIds = playlist.getRundownIDs()
+	}
+	return {
+		segments,
+		playlist,
+		showStyleBaseId,
+		rundownIds,
+	}
+}
+
 /**
  * This component renders a Countdown screen for a given playlist
  */
 export const PresenterScreen = withTranslation()(
 	withTracker<RundownOverviewProps & WithTranslation, RundownOverviewState, RundownOverviewTrackedProps>(
-		(props: RundownOverviewProps) => {
-			let playlist: RundownPlaylist | undefined
-			if (props.playlistId) playlist = RundownPlaylists.findOne(props.playlistId)
-			let segments: Array<SegmentUi> = []
-			let showStyleBaseId: ShowStyleBaseId | undefined = undefined
-			let rundownIds: RundownId[] = []
-
-			if (playlist) {
-				const allPartInstancesMap = playlist.getActivePartInstancesMap()
-				segments = playlist.getSegments().map((segment) => {
-					const displayDurationGroups: _.Dictionary<number> = {}
-					const parts = segment.getParts()
-					let displayDuration = 0
-
-					return extendMandadory<DBSegment, SegmentUi>(segment, {
-						items: parts.map((part, index) => {
-							const instance = findPartInstanceOrWrapToTemporary(allPartInstancesMap, part)
-							// take the displayDurationGroups into account
-							if (
-								part.displayDurationGroup &&
-								(displayDurationGroups[part.displayDurationGroup] ||
-									// or there is a following member of this displayDurationGroup
-									(parts[index + 1] && parts[index + 1].displayDurationGroup === part.displayDurationGroup))
-							) {
-								displayDurationGroups[part.displayDurationGroup] =
-									(displayDurationGroups[part.displayDurationGroup] || 0) +
-									((part.expectedDuration || 0) - (instance.timings?.duration || 0))
-								displayDuration = Math.max(
-									0,
-									Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0) ||
-										displayDurationGroups[part.displayDurationGroup]
-								)
-							}
-							return literal<PartUi>({
-								instance,
-								partId: part._id,
-								pieces: [],
-								renderedDuration: part.expectedDuration ? 0 : displayDuration,
-								startsAt: 0,
-								willProbablyAutoNext: false,
-							})
-						}),
-					})
-				})
-
-				if (playlist.currentPartInstanceId) {
-					const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-					const partInstance = currentPartInstance || nextPartInstance
-					if (partInstance) {
-						const currentRundown = Rundowns.findOne(partInstance.rundownId)
-						if (currentRundown) {
-							showStyleBaseId = currentRundown.showStyleBaseId
-						}
-					}
-				}
-
-				if (!showStyleBaseId) {
-					const rundowns = playlist.getRundowns()
-					if (rundowns.length > 0) {
-						showStyleBaseId = rundowns[0].showStyleBaseId
-					}
-				}
-
-				rundownIds = playlist.getRundownIDs()
-			}
-			return {
-				segments,
-				playlist,
-				showStyleBaseId,
-				rundownIds,
-			}
-		}
+		getPresenterScreenReactive
 	)(
 		withTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation, RundownOverviewState>()(
 			class PresenterScreen extends MeteorReactComponent<

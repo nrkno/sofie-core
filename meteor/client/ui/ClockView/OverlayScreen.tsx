@@ -1,20 +1,20 @@
-import React, { useEffect } from 'react'
+import React from 'react'
+import Moment from 'react-moment'
 import { DBSegment } from '../../../lib/collections/Segments'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { RundownId } from '../../../lib/collections/Rundowns'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { extendMandadory, literal, getCurrentTime } from '../../../lib/lib'
-import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
+import { getCurrentTime } from '../../../lib/lib'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
 import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
-import Moment from 'react-moment'
+import { getPresenterScreenReactive } from './PresenterScreen'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -25,7 +25,7 @@ interface TimeMap {
 }
 
 interface RundownOverviewProps {
-	playlistId?: RundownPlaylistId
+	playlistId: RundownPlaylistId
 	segmentLiveDurations?: TimeMap
 }
 interface RundownOverviewState {}
@@ -40,78 +40,7 @@ interface RundownOverviewTrackedProps {
  */
 export const OverlayScreen = withTranslation()(
 	withTracker<RundownOverviewProps & WithTranslation, RundownOverviewState, RundownOverviewTrackedProps>(
-		(props: RundownOverviewProps) => {
-			let playlist: RundownPlaylist | undefined
-			if (props.playlistId) playlist = RundownPlaylists.findOne(props.playlistId)
-			let segments: Array<SegmentUi> = []
-			let showStyleBaseId: ShowStyleBaseId | undefined = undefined
-			let rundownIds: RundownId[] = []
-
-			if (playlist) {
-				const allPartInstancesMap = playlist.getActivePartInstancesMap()
-				segments = playlist.getSegments().map((segment) => {
-					const displayDurationGroups: _.Dictionary<number> = {}
-					const parts = segment.getParts()
-					let displayDuration = 0
-
-					return extendMandadory<DBSegment, SegmentUi>(segment, {
-						items: parts.map((part, index) => {
-							const instance = findPartInstanceOrWrapToTemporary(allPartInstancesMap, part)
-							// take the displayDurationGroups into account
-							if (
-								part.displayDurationGroup &&
-								(displayDurationGroups[part.displayDurationGroup] ||
-									// or there is a following member of this displayDurationGroup
-									(parts[index + 1] && parts[index + 1].displayDurationGroup === part.displayDurationGroup))
-							) {
-								displayDurationGroups[part.displayDurationGroup] =
-									(displayDurationGroups[part.displayDurationGroup] || 0) +
-									((part.expectedDuration || 0) - (instance.timings?.duration || 0))
-								displayDuration = Math.max(
-									0,
-									Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0) ||
-										displayDurationGroups[part.displayDurationGroup]
-								)
-							}
-							return literal<PartUi>({
-								instance,
-								partId: part._id,
-								pieces: [],
-								renderedDuration: part.expectedDuration ? 0 : displayDuration,
-								startsAt: 0,
-								willProbablyAutoNext: false,
-							})
-						}),
-					})
-				})
-
-				if (playlist.currentPartInstanceId) {
-					const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-					const partInstance = currentPartInstance || nextPartInstance
-					if (partInstance) {
-						const currentRundown = Rundowns.findOne(partInstance.rundownId)
-						if (currentRundown) {
-							showStyleBaseId = currentRundown.showStyleBaseId
-						}
-					}
-				}
-
-				if (!showStyleBaseId) {
-					const rundowns = playlist.getRundowns()
-					if (rundowns.length > 0) {
-						showStyleBaseId = rundowns[0].showStyleBaseId
-					}
-				}
-
-				rundownIds = playlist.getRundownIDs()
-			}
-			return {
-				segments,
-				playlist,
-				showStyleBaseId,
-				rundownIds,
-			}
-		}
+		getPresenterScreenReactive
 	)(
 		withTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation, RundownOverviewState>()(
 			class OverlayScreen extends MeteorReactComponent<
