@@ -27,7 +27,6 @@ import {
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
-import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
 import {
 	ShowStyleVariants,
 	ShowStyleVariant,
@@ -53,7 +52,6 @@ import {
 	RundownPlaylist,
 } from '../../lib/collections/RundownPlaylists'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
-import { updateExpectedPlayoutItemsOnPart } from './ingest/expectedPlayoutItems'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
