@@ -43,7 +43,7 @@ export function OverlayScreenSaver({ studioId }: { studioId: StudioId }): JSX.El
 			// try and find a nice random position, thats significanlty different from the last postion
 			do {
 				position = Math.random() * ((parentWidth * 5) / 6 - width)
-			} while (Math.abs(position - lastPosition) < 10 && i++ < 10)
+			} while (Math.abs(position - lastPosition) < 200 && i++ < 10)
 			el.dataset.lastPosition = position.toString()
 
 			el.style.transform = `translate3d(${position}px, 0, 0.2px)`
