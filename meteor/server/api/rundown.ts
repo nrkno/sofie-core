@@ -467,7 +467,7 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 	})
 }
 
-export type ChangedSegments = Array<{
+export type ChangedSegmentsRankInfo = Array<{
 	segmentId: SegmentId
 	oldPartIdsAndRanks: Array<{ id: PartId; rank: number }> // | null // Null if nothing changed except an orphan
 }>
@@ -479,7 +479,7 @@ export type ChangedSegments = Array<{
 export function updateOrphanedPartInstanceRanks(
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
-	changedSegments: ChangedSegments
+	changedSegments: ChangedSegmentsRankInfo
 ) {
 	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point
 	// It should be a simple toggle to work on instances instead though. As it only changes the dynamic inserted ones it should be nice and safe

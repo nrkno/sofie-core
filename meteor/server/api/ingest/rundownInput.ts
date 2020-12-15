@@ -46,7 +46,7 @@ import {
 	allowedToMoveRundownOutOfPlaylist,
 	getAllRundownsInPlaylist,
 	sortDefaultRundownInPlaylistOrder,
-	ChangedSegments,
+	ChangedSegmentsRankInfo,
 } from '../rundown'
 import { loadShowStyleBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
 import {
@@ -1157,7 +1157,7 @@ export function updateSegmentsFromIngestData(
 	if (ingestSegments.length > 0) {
 		const blueprint = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
 
-		const changedSegments: ChangedSegments = []
+		const changedSegments: ChangedSegmentsRankInfo = []
 		const allInsertedPartExternalIds: string[] = []
 		for (let ingestSegment of ingestSegments) {
 			const { segmentId, insertedPartExternalIds, oldPartIdsAndRanks } = updateSegmentFromIngestData(
@@ -1491,7 +1491,7 @@ function afterIngestChangedData(
 	cache: CacheForRundownPlaylist,
 	blueprint: ShowStyleBlueprintManifest,
 	rundown: Rundown,
-	changedSegments: ChangedSegments,
+	changedSegments: ChangedSegmentsRankInfo,
 	removedPartsBeforeInserted?: boolean,
 	insertedPartExternalIds?: string[]
 ) {
@@ -1503,6 +1503,7 @@ function afterIngestChangedData(
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(cache, rundown._id)
 	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
+
 	updateOrphanedPartInstanceRanks(cache, playlist, changedSegments)
 
 	if (insertedPartExternalIds?.length) {
