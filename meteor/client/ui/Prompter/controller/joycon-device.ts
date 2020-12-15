@@ -192,7 +192,14 @@ export class JoyConController extends ControllerAbstract {
 					this.lastUsedJoyconIndex = o.index
 					this.lastUsedJoyconId = o.id
 					this.lastUsedJoyconMode =
-						o.axes.length === 4 ? 'LR' : o.id.match('(L)') ? 'L' : o.id.match('(R)') ? 'R' : null // we are setting this as a member as opposed to returning it functional-style, to avoid doing this calculation pr. tick
+						o.axes.length === 4
+							? 'LR'
+							: o.id.match('(L)') || o.id.match('Vendor: 057e Product: 2006')
+							? 'L'
+							: o.id.match('(R)') || o.id.match('Vendor: 057e Product: 2007')
+							? 'R'
+							: null // we are setting this as a member as opposed to returning it functional-style, to avoid doing this calculation pr. tick
+					// for documentation: L+R mode is also identified as Vendor: 057e Product: 200e
 					return { axes: o.axes, buttons: o.buttons }
 				}
 			}
