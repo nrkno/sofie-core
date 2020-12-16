@@ -132,6 +132,9 @@ export class Cache extends ReadOnlyCache {
 	defer(fcn: DeferredFunction<Cache>): void {
 		this._deferredFunctions.push(fcn)
 	}
+	/** Defer provided function to after cache.saveAllToDatabase().
+	 * Note that at the time of execution, the cache is no longer available.
+	 * */
 	deferAfterSave(fcn: () => void) {
 		this._deferredAfterSaveFunctions.push(fcn)
 	}
