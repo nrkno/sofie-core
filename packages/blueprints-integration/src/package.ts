@@ -27,16 +27,17 @@ export namespace ExpectedPackage {
 		 * A "version" is used to differ between different "modifications" for the same content. For a media file, think "modified date".
 		 */
 		version: object
+
 		/** Definition of the origin of the Package
 		 * The origin is used by the package manager to be able to be able to do an action on the Package. For a media file about to be copied, think "source file path".
+		 * Multiple origins can be defined, in order of preference(?)
 		 */
-		/** Reference to a PackageOrigin */
-		originId?: string
-		/** Contains data  */
-		originMetadata?: object
-
-		/** Metadata used in the Sofie GUI to visualize the Package(s) of a Piece */
-		presentation?: object
+		origins: {
+			/** Reference to a PackageOrigin */
+			originId: string
+			/** Locally defined PackageOrigin */
+			originMetadata: object
+		}[]
 	}
 
 	export interface ExpectedPackageMediaFile extends Base {
@@ -46,9 +47,16 @@ export namespace ExpectedPackage {
 			filePath: string
 		}
 		version: {
-			modifiedDate: string // @todo: should this be a number or a timestamp?
+			fileSize?: number // in bytes
+			modifiedDate?: string // @todo: should this be a number or a timestamp?
+			checksum?: string
+			checkSumType?: 'sha' | 'md5' | 'whatever'
 		}
-		origin: PackageOrigin.LocalFolder | PackageOrigin.FileShare | PackageOrigin.MappedDrive
+		origins: {
+			originId: string
+			originMetadata: PackageOriginMetadata.LocalFolder | PackageOriginMetadata.FileShare | PackageOriginMetadata.MappedDrive | PackageOriginMetadata.HTTP
+		}[]
+
 	}
 	export interface ExpectedPackageQuantelClip extends Base {
 		type: PackageType.QUANTEL_CLIP
@@ -58,24 +66,27 @@ export namespace ExpectedPackage {
 		version: {
 			// @todo: something here?
 		}
-		origin: {
-			// @todo define this
-			zoneId: string
-		}
+		origins: {
+			originId: string
+			originMetadata: {
+				// @todo define this
+				zoneId: string
+			}
+		}[]
 	}
 }
 
-export namespace PackageOrigin {
+export namespace PackageOriginMetadata {
 	export interface LocalFolder {
 		type: Type.LOCAL_FOLDER
 
 		/** Path to the folder
 		 * @example 'C:\media\'
 		 */
-		folderPath: string
+		folderPath?: string
 
 		/** Path to the file (starting from .folderPath) */
-		fileName: string
+		fileName?: string
 	}
 	export interface FileShare {
 		type: Type.FILE_SHARE
@@ -83,10 +94,10 @@ export namespace PackageOrigin {
 		/** Path to a folder on a network-share
 		 * @example '\\192.168.0.1\shared\'
 		 */
-		folderPath: string
+		folderPath?: string
 
 		/** Path to the file (starting from .folderPath) */
-		fileName: string
+		fileName?: string
 	}
 	export interface MappedDrive {
 		type: Type.MAPPED_DRIVE
@@ -100,10 +111,10 @@ export namespace PackageOrigin {
 		fileName: string
 
 		/** Drive letter to where the drive is mappedTo */
-		mappedDrive: string
+		mappedDrive?: string
 
-		userName: string
-		password: string
+		userName?: string
+		password?: string
 	}
 	export enum Type {
 		LOCAL_FOLDER = 'local_folder',

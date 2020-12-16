@@ -2076,6 +2076,13 @@ export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, 
 			const adlibs = waitForPromise(pAdlibs)
 			const actions = waitForPromise(pActions)
 
+			// const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
+			// 	cache,
+			// 	playlist
+			// )
+
+			// todo: keep expectedPackage of the currently playing partInstance
+
 			const expectedPackages: ExpectedPackageDB[] = [
 				...generateExpectedPackages(studioId, rundownId, pieces, ExpectedPackageDBType.PIECE),
 				...generateExpectedPackages(studioId, rundownId, adlibs, ExpectedPackageDBType.PIECE),
