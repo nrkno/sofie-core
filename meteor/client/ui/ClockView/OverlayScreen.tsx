@@ -147,6 +147,8 @@ export const OverlayScreen = withTranslation()(
 							}
 						}
 
+						// The over-under counter is something we may want to introduce into the screen at some point,
+						// So I'm leaving these as a reference -- Jan Starzak, 2020/12/16
 						// const overUnderClock = playlist.expectedDuration
 						// 	? (this.props.timingDurations.asPlayedRundownDuration || 0) - playlist.expectedDuration
 						// 	: (this.props.timingDurations.asPlayedRundownDuration || 0) -
@@ -164,7 +166,12 @@ export const OverlayScreen = withTranslation()(
 											<span className="clock-segment-countdown-next">{t('Next')}</span>
 										)}
 									</div>
-									{/* {currentPart && currentPart.instance.part.autoNext ? (
+									{/* 
+									// An Auto-Next is something we may want to introduce in this view after we have
+									// some feedback from the users and they say it may be useful.
+									// -- Jan Starzak, 2020/12/16
+									
+									{currentPart && currentPart.instance.part.autoNext ? (
 										<div style={{ display: 'inline-block', height: '0.5em' }}>
 											<img style={{ height: '0.5em', verticalAlign: 'top' }} src="/icons/auto-presenter-screen.svg" />
 										</div>
