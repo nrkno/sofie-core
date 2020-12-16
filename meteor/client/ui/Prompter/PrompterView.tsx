@@ -753,6 +753,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 										: this.props.config.margin
 										? this.props.config.margin + 'vh'
 										: undefined,
+								overflow-wrap: break-word,
 							}}>
 							<div className="prompter-break begin">{this.props.prompterData.title}</div>
 
