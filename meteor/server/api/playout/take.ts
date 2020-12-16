@@ -19,6 +19,7 @@ import {
 	getSegmentsAndPartsFromCache,
 	selectNextPart,
 	getAllPieceInstancesFromCache,
+	LOW_PRIO_DEFER_TIME,
 } from './lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
@@ -308,19 +309,23 @@ export function afterTake(
 	// or after a new part has started playing
 	updateTimeline(cache, studioId, forceNowTime)
 
-	// defer these so that the playout gateway has the chance to learn about the changes
-	Meteor.setTimeout(() => {
-		// todo
-		if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
-			const currentRundown = Rundowns.findOne(takePartInstance.rundownId)
-			if (!currentRundown)
-				throw new Meteor.Error(
-					404,
-					`Rundown "${takePartInstance.rundownId}" of partInstance "${takePartInstance._id}" not found`
-				)
-			IngestActions.notifyCurrentPlayingPart(currentRundown, takePartInstance.part)
-		}
-	}, 40)
+	cache.deferAfterSave(() => {
+		Meteor.setTimeout(() => {
+			// This is low-prio, defer so that it's executed well after publications has been updated,
+			// so that the playout gateway has haf the chance to learn about the timeline changes
+
+			// todo
+			if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
+				const currentRundown = Rundowns.findOne(takePartInstance.rundownId)
+				if (!currentRundown)
+					throw new Meteor.Error(
+						404,
+						`Rundown "${takePartInstance.rundownId}" of partInstance "${takePartInstance._id}" not found`
+					)
+				IngestActions.notifyCurrentPlayingPart(currentRundown, takePartInstance.part)
+			}
+		}, LOW_PRIO_DEFER_TIME)
+	})
 
 	triggerGarbageCollection()
 	if (span) span.end()

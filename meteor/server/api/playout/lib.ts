@@ -30,6 +30,8 @@ import { Pieces } from '../../../lib/collections/Pieces'
 import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { profiler } from '../profiler'
 
+export const LOW_PRIO_DEFER_TIME = 40 // ms
+
 /**
  * Reset the rundown:
  * Remove all dynamically inserted/updated pieces, parts, timings etc..
