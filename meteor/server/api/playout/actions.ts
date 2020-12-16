@@ -14,6 +14,7 @@ import {
 	selectNextPart,
 	getSelectedPartInstancesFromCache,
 	getAllOrderedPartsFromCache,
+	LOW_PRIO_DEFER_TIME,
 } from './lib'
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
@@ -118,17 +119,20 @@ export function deactivateRundownPlaylistInner(
 	let rundown: Rundown | undefined
 	if (currentPartInstance) {
 		// defer so that an error won't prevent deactivate
-		Meteor.setTimeout(() => {
-			rundown = Rundowns.findOne(currentPartInstance.rundownId)
+		cache.deferAfterSave(() => {
+			// This is low-prio, deferring
+			Meteor.setTimeout(() => {
+				rundown = Rundowns.findOne(currentPartInstance.rundownId)
 
-			if (rundown) {
-				IngestActions.notifyCurrentPlayingPart(rundown, null)
-			} else {
-				logger.error(
-					`Could not find owner Rundown "${currentPartInstance.rundownId}" of PartInstance "${currentPartInstance._id}"`
-				)
-			}
-		}, 40)
+				if (rundown) {
+					IngestActions.notifyCurrentPlayingPart(rundown, null)
+				} else {
+					logger.error(
+						`Could not find owner Rundown "${currentPartInstance.rundownId}" of PartInstance "${currentPartInstance._id}"`
+					)
+				}
+			}, LOW_PRIO_DEFER_TIME)
+		})
 	} else {
 		if (nextPartInstance) {
 			rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
