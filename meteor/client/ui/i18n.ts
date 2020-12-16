@@ -45,6 +45,7 @@ const i18nInstancePromise = i18n
 			} else {
 				i18nTranslator = t
 				moment.locale(i18n.language)
+				document.documentElement.lang = i18n.language
 			}
 		}
 	)
