@@ -233,11 +233,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 							<div>
 								<h3 className="mhn">{t('Full System Snapshot')}</h3>
 								<p className="mhn">
-									<i>
+									<span className="text-s vsubtle">
 										{t(
 											'A Full System Snapshot contains all system settings (studios, showstyles, blueprints, devices, etc.)'
 										)}
-									</i>
+									</span>
 								</p>
 								<div>
 									<button
@@ -251,8 +251,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 								{this.props.studios.length > 1 ? (
 									<div>
 										<h3 className="mhn">{t('Studio Snapshot')}</h3>
-										<p className="mhn">
-											<i>{t('A Studio Snapshot contains all system settings related to that studio')}</i>
+										<p className="mhn text-s dimmed">
+											{t('A Studio Snapshot contains all system settings related to that studio')}
 										</p>
 										{_.map(this.props.studios, (studio) => {
 											return (
@@ -331,7 +331,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 																e.preventDefault()
 																this.editSnapshot(snapshot._id)
 															}}>
-															<i>{multilineText(snapshot.comment)}</i>
+															<span className="text-s vsubtle">{multilineText(snapshot.comment)}</span>
 														</a>
 													)}
 												</td>

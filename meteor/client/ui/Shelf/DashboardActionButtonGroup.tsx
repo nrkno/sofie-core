@@ -31,85 +31,29 @@ export const DashboardActionButtonGroup = withTranslation()(
 			}
 		}
 
-		private hold = (e: any) => {
+		moveNext = (e: any, horizontalDelta: number, verticalDelta: number) => {
+			const { t } = this.props
 			if (this.props.studioMode) {
-				const { t } = this.props
-				if (!this.props.playlist.holdState) {
-					doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e) =>
-						MeteorCall.userAction.activateHold(e, this.props.playlist._id)
+				doUserAction(t, e, UserAction.MOVE_NEXT, (e) =>
+					MeteorCall.userAction.moveNext(e, this.props.playlist._id, horizontalDelta, verticalDelta)
+				)
+			}
+		}
+
+		hold = (e: any) => {
+			const { t } = this.props
+			if (this.props.studioMode && this.props.playlist.active) {
+				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e) =>
+					MeteorCall.userAction.activateHold(
+						e,
+						this.props.playlist._id,
+						this.props.playlist.holdState === RundownHoldState.PENDING
 					)
-				} else if (this.props.playlist.holdState === RundownHoldState.PENDING) {
-					doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e) =>
-						MeteorCall.userAction.activateHold(e, this.props.playlist._id, true)
-					)
-				}
-			}
-		}
-
-		private moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
-			if (this.props.studioMode) {
-				const { t } = this.props
-				if (this.props.playlist.active) {
-					doUserAction(t, e, UserAction.MOVE_NEXT, (e) =>
-						MeteorCall.userAction.moveNext(e, this.props.playlist._id, horizonalDelta, verticalDelta)
-					)
-				}
-			}
-		}
-
-		private moveNextPart = (e: any) => {
-			this.moveNext(e, 1, 0)
-		}
-
-		private moveNextSegment = (e: any) => {
-			this.moveNext(e, 0, 1)
-		}
-
-		private movePreviousPart = (e: any) => {
-			this.moveNext(e, -1, 0)
-		}
-
-		private movePreviousSegment = (e: any) => {
-			this.moveNext(e, 0, -1)
-		}
-
-		private activate = (e: any) => {
-			if (this.props.studioMode) {
-				const { t } = this.props
-				doUserAction(t, e, UserAction.ACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-					MeteorCall.userAction.activate(e, this.props.playlist._id, false)
 				)
 			}
 		}
 
-		private activateRehearsal = (e: any) => {
-			if (this.props.studioMode) {
-				const { t } = this.props
-				doUserAction(t, e, UserAction.ACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-					MeteorCall.userAction.activate(e, this.props.playlist._id, true)
-				)
-			}
-		}
-
-		private deactivate = (e: any) => {
-			if (this.props.studioMode) {
-				const { t } = this.props
-				doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-					MeteorCall.userAction.deactivate(e, this.props.playlist._id)
-				)
-			}
-		}
-
-		private resetRundown = (e: any) => {
-			if (this.props.studioMode) {
-				const { t } = this.props
-				doUserAction(t, e, UserAction.RESET_RUNDOWN_PLAYLIST, (e) =>
-					MeteorCall.userAction.resetRundownPlaylist(e, this.props.playlist._id)
-				)
-			}
-		}
-
-		private onButtonDown = (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => {
+		onButtonDown = (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => {
 			switch (button.type) {
 				case ActionButtonType.QUEUE_ADLIB:
 					this.props.onChangeQueueAdLib && this.props.onChangeQueueAdLib(true, e)
@@ -148,32 +92,20 @@ export const DashboardActionButtonGroup = withTranslation()(
 				case ActionButtonType.QUEUE_ADLIB:
 					this.props.onChangeQueueAdLib && this.props.onChangeQueueAdLib(false, e)
 					break
-				case ActionButtonType.HOLD:
-					this.hold(e)
-					break
 				case ActionButtonType.MOVE_NEXT_PART:
-					this.moveNextPart(e)
+					this.moveNext(e, 1, 0)
 					break
 				case ActionButtonType.MOVE_NEXT_SEGMENT:
-					this.moveNextSegment(e)
+					this.moveNext(e, 0, 1)
 					break
 				case ActionButtonType.MOVE_PREVIOUS_PART:
-					this.movePreviousPart(e)
+					this.moveNext(e, -1, 0)
 					break
 				case ActionButtonType.MOVE_PREVIOUS_SEGMENT:
-					this.movePreviousSegment(e)
+					this.moveNext(e, 0, -1)
 					break
-				case ActionButtonType.RESET_RUNDOWN:
-					this.resetRundown(e)
-					break
-				case ActionButtonType.ACTIVATE_REHEARSAL:
-					this.activateRehearsal(e)
-					break
-				case ActionButtonType.ACTIVATE:
-					this.activate(e)
-					break
-				case ActionButtonType.DEACTIVATE:
-					this.deactivate(e)
+				case ActionButtonType.HOLD:
+					this.hold(e)
 					break
 				case ActionButtonType.KLAR_ON_AIR:
 					this.klarOnAir(e)

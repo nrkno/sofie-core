@@ -3,6 +3,7 @@ import { TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { PeripheralDeviceId } from './PeripheralDevices'
+import { registerIndex } from '../database'
 
 /** A string, identifying a PeripheralDeviceCommand */
 export type PeripheralDeviceCommandId = ProtectedString<'PeripheralDeviceCommandId'>
@@ -37,12 +38,13 @@ let removeOldCommands = () => {
 	})
 }
 Meteor.startup(() => {
-	Meteor.setInterval(() => {
-		removeOldCommands()
-	}, 5 * 60 * 1000)
 	if (Meteor.isServer) {
-		PeripheralDeviceCommands._ensureIndex({
-			deviceId: 1,
-		})
+		Meteor.setInterval(() => {
+			removeOldCommands()
+		}, 5 * 60 * 1000)
 	}
+})
+
+registerIndex(PeripheralDeviceCommands, {
+	deviceId: 1,
 })

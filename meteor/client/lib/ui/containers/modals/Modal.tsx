@@ -1,6 +1,6 @@
 import * as React from 'react'
 import CoreIcons from '@nrk/core-icons/jsx'
-import * as Escape from 'react-escape'
+import Escape from 'react-escape'
 import { mousetrapHelper } from '../../../mousetrapHelper'
 
 export interface IModalAttributes {
@@ -93,7 +93,7 @@ export class Modal extends React.Component<IModalAttributes> {
 							</div>
 							<div className="title-box-content">{this.props.children}</div>
 							<div className="mod alright">
-								<button className="btn btn-primary right" onClick={this.handleDiscard}>
+								<button className="btn btn-primary" onClick={this.handleDiscard}>
 									OK
 								</button>
 							</div>

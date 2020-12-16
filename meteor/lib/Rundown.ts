@@ -12,7 +12,7 @@ import {
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 } from './rundown/infinites'
-import { Settings } from './Settings'
+import { FindOptions } from './typings/meteor'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -25,9 +25,11 @@ export interface SegmentExtended extends DBSegment {
 	}
 }
 
+export type PartInstanceLimited = Omit<PartInstance, 'isTaken' | 'previousPartEndState' | 'takeCount'>
+
 export interface PartExtended {
 	partId: PartId
-	instance: PartInstance
+	instance: PartInstanceLimited
 	/** Pieces belonging to this part */
 	pieces: Array<PieceExtended>
 	renderedDuration: number
@@ -81,30 +83,26 @@ export function fetchPiecesThatMayBeActiveForPart(
 	const segmentsBeforeThisInRundown = Array.from(segmentsBeforeThisInRundownSet.values())
 
 	const infinitePieces = Pieces.find(
-		buildPastInfinitePiecesForThisPartQuery(part, partsBeforeThisInSegment, segmentsBeforeThisInRundown),
-		{
-			fields: {
-				timings: 0,
-				startedPlayback: 0,
-				stoppedPlayback: 0,
-			},
-		}
+		buildPastInfinitePiecesForThisPartQuery(part, partsBeforeThisInSegment, segmentsBeforeThisInRundown)
 	).fetch()
 
 	return [...piecesStartingInPart, ...infinitePieces]
 }
 
 export function getPieceInstancesForPartInstance(
-	partInstance: PartInstance,
+	partInstance: PartInstanceLimited,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
 	orderedAllParts: PartId[],
-	nextPartIsAfterCurrentPart: boolean
+	nextPartIsAfterCurrentPart: boolean,
+	currentPartInstance: PartInstance | undefined,
+	currentPartInstancePieceInstances: PieceInstance[] | undefined,
+	options?: FindOptions<PieceInstance>
 ) {
 	if (partInstance.isTemporary) {
 		return getPieceInstancesForPart(
-			undefined,
-			undefined,
+			currentPartInstance,
+			currentPartInstancePieceInstances,
 			partInstance.part,
 			partsBeforeThisInSegmentSet,
 			segmentsBeforeThisInRundownSet,
@@ -119,7 +117,7 @@ export function getPieceInstancesForPartInstance(
 			partInstance.isTemporary
 		)
 	} else {
-		return PieceInstances.find({ partInstanceId: partInstance._id }).fetch()
+		return PieceInstances.find({ partInstanceId: partInstance._id }, options).fetch()
 	}
 }
 

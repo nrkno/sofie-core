@@ -3,12 +3,12 @@ import { Rundowns } from '../../lib/collections/Rundowns'
 import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { makePlaylistFromRundown_1_0_0 } from './deprecatedDataTypes/1_0_1'
 import { Random } from 'meteor/random'
-import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
+import { addMigrationSteps } from './databaseMigration'
 import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // 1.7.0 (Release 19)
-addMigrationSteps('1.7.0', [
+export const addSteps = addMigrationSteps('1.7.0', [
 	{
 		// migrate from Rundowns to RundownPlaylists
 		id: 'convert Rundowns to RundownPlaylists',

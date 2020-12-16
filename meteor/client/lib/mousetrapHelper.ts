@@ -1,4 +1,5 @@
 import * as mousetrap from 'mousetrap'
+import { ExtendedKeyboardEvent } from 'mousetrap'
 import * as _ from 'underscore'
 import { isEventInInputField } from './lib'
 import { isModalShowing } from './ModalDialog'

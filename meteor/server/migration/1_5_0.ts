@@ -7,7 +7,7 @@ import * as _ from 'underscore'
 import { protectString } from '../../lib/lib'
 
 // 1.5.0 (Release 17)
-addMigrationSteps('1.5.0', [
+export const addSteps = addMigrationSteps('1.5.0', [
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.4.0'),
 	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.5.0'),
 	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^1.1.0'),

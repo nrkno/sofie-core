@@ -7,6 +7,7 @@ import { Meteor } from 'meteor/meteor'
 import { IBlueprintSegmentDB, Time } from 'tv-automation-sofie-blueprints-integration'
 import { PartNote, SegmentNote } from '../api/notes'
 import { createMongoCollection } from './lib'
+import { registerIndex } from '../database'
 
 /** A string, identifying a Segment */
 export type SegmentId = ProtectedString<'SegmentId'>
@@ -86,11 +87,8 @@ export const Segments: TransformedCollection<Segment, DBSegment> = createMongoCo
 	transform: (doc) => applyClassToDocument(Segment, doc),
 })
 registerCollection('Segments', Segments)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Segments._ensureIndex({
-			rundownId: 1,
-			_rank: 1,
-		})
-	}
+
+registerIndex(Segments, {
+	rundownId: 1,
+	_rank: 1,
 })

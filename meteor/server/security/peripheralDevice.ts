@@ -11,6 +11,7 @@ import { MethodContext } from '../../lib/api/methods'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
+import { profiler } from '../api/profiler'
 
 type PeripheralDeviceContent = { deviceId: PeripheralDeviceId }
 export namespace PeripheralDeviceReadAccess {
@@ -68,6 +69,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 		device: PeripheralDevice | null
 		cred: ResolvedCredentials | Credentials
 	} {
+		const span = profiler.startSpan('PeripheralDeviceContentWriteAccess.anyContent')
 		triggerWriteAccess()
 		check(deviceId, String)
 		const device = PeripheralDevices.findOne(deviceId)
@@ -83,6 +85,8 @@ export namespace PeripheralDeviceContentWriteAccess {
 			if (!device.parentDeviceId && parentDevice.token !== cred0.token) {
 				throw new Meteor.Error(401, `Not allowed access to peripheralDevice`)
 			}
+
+			span?.end()
 			return {
 				userId: null,
 				organizationId: null,
@@ -99,6 +103,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 			if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
 			if (!access.document) throw new Meteor.Error(500, `Internal error: access.document not set`)
 
+			span?.end()
 			return {
 				userId: cred.user ? cred.user._id : null,
 				organizationId: cred.organization ? cred.organization._id : null,

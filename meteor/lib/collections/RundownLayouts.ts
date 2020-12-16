@@ -6,6 +6,7 @@ import { createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
 import { ShowStyleBaseId } from './ShowStyleBases'
 import { UserId } from './Users'
+import { registerIndex } from '../database'
 
 /**
  * The view targeted by this layout:
@@ -66,6 +67,9 @@ export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
 	adlibRank: number
 	labelBelowPanel: boolean
 	thumbnailSourceLayerIds: string[] | undefined
+	thumbnailPriorityNextPieces: boolean
+	hideThumbnailsForActivePieces: boolean
+	showBlackIfNoThumbnailPiece: boolean
 }
 
 export interface RundownLayoutPartCountdown extends RundownLayoutElementBase {
@@ -185,10 +189,10 @@ export enum ActionButtonType {
 	MOVE_NEXT_SEGMENT = 'move_next_segment',
 	MOVE_PREVIOUS_PART = 'move_previous_part',
 	MOVE_PREVIOUS_SEGMENT = 'move_previous_segment',
-	ACTIVATE = 'activate',
-	ACTIVATE_REHEARSAL = 'activate_rehearsal',
-	DEACTIVATE = 'deactivate',
-	RESET_RUNDOWN = 'reset_rundown',
+	// ACTIVATE = 'activate',
+	// ACTIVATE_REHEARSAL = 'activate_rehearsal',
+	// DEACTIVATE = 'deactivate',
+	// RESET_RUNDOWN = 'reset_rundown',
 	QUEUE_ADLIB = 'queue_adlib', // The idea for it is that you would be able to press and hold this button
 	// and then click on whatever adlib you would like
 	KLAR_ON_AIR = 'klar_on_air',
@@ -215,16 +219,13 @@ export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLay
 	RundownLayoutBase
 >('rundownLayouts')
 registerCollection('RundownLayouts', RundownLayouts)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		// RundownLayouts._ensureIndex({
-		// 	studioId: 1,
-		// 	collectionId: 1,
-		// 	objId: 1,
-		// 	mediaId: 1
-		// })
-		RundownLayouts._ensureIndex({
-			showStyleBaseId: 1,
-		})
-	}
+
+// addIndex(RundownLayouts, {
+// 	studioId: 1,
+// 	collectionId: 1,
+// 	objId: 1,
+// 	mediaId: 1
+// })
+registerIndex(RundownLayouts, {
+	showStyleBaseId: 1,
 })

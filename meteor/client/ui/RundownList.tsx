@@ -15,7 +15,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { doModalDialog } from '../lib/ModalDialog'
 import { StatusResponse } from '../../lib/api/systemStatus'
-import { ManualPlayout } from './manualPlayout'
 import { getAllowDeveloper, getAllowConfigure, getAllowService, getHelpMode } from '../lib/localStorage'
 import { doUserAction, UserAction } from '../lib/userAction'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
@@ -294,7 +293,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 					this.props.rundownPlaylist.expectedDuration !== undefined &&
 					this.props.rundownPlaylist.active && (
 						<tr className="hl expando-addon">
-							<td colSpan={8}>
+							<td colSpan={10}>
 								<ActiveProgressBar rundownPlaylist={this.props.rundownPlaylist} />
 							</td>
 						</tr>
@@ -670,7 +669,6 @@ export const RundownList = translateWithTracker(() => {
 								</React.Fragment>
 							) : null}
 						</div>
-						{getAllowDeveloper() ? <ManualPlayout></ManualPlayout> : null}
 					</div>
 				</React.Fragment>
 			)

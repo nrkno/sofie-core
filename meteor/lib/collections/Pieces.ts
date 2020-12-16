@@ -1,18 +1,12 @@
 import { RundownAPI } from '../api/rundown'
 import { TransformedCollection } from '../typings/meteor'
-import { PartTimings, PartId } from './Parts'
-import { registerCollection, ProtectedString, ProtectedStringProperties, Omit } from '../lib'
-import { Meteor } from 'meteor/meteor'
-import {
-	IBlueprintPieceGeneric,
-	IBlueprintPieceDB,
-	PieceLifespan,
-	BaseContent,
-	Timeline,
-} from 'tv-automation-sofie-blueprints-integration'
+import { PartId } from './Parts'
+import { registerCollection, ProtectedString, Omit } from '../lib'
+import { IBlueprintPieceGeneric, IBlueprintPieceDB, BaseContent } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
+import { registerIndex } from '../database'
 
 /** A string, identifying a Piece */
 export type PieceId = ProtectedString<'PieceId'>
@@ -31,13 +25,6 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	virtual?: boolean
 	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
 	continuesRefId?: PieceId
-	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
-	startedPlayback?: number
-	/** Playout timings, in here we log times when playout happens */
-	timings?: PartTimings
-
-	isTransition?: boolean
-	extendOnHold?: boolean
 }
 
 /** A Single item in a Part: script, VT, cameras */
@@ -70,24 +57,13 @@ export interface Piece extends RundownPieceGeneric, Omit<IBlueprintPieceDB, '_id
 
 	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintPiece
-
-	/** Whether the piece has stopped playback (the most recent time it was played).
-	 * This is set from a callback from the playout gateway
-	 */
-	stoppedPlayback?: number
-
-	/** This is set when the piece isn't infinite, but should overflow it's duration onto the adjacent (not just next) part on take */
-	overflows?: boolean
 }
 
 export const Pieces: TransformedCollection<Piece, Piece> = createMongoCollection<Piece>('pieces')
 registerCollection('Pieces', Pieces)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Pieces._ensureIndex({
-			startRundownId: 1,
-			startSegmentId: 1,
-			startPartId: 1,
-		})
-	}
+
+registerIndex(Pieces, {
+	startRundownId: 1,
+	startSegmentId: 1,
+	startPartId: 1,
 })

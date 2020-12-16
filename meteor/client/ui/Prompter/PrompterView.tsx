@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as Velocity from 'velocity-animate'
+import Velocity from 'velocity-animate'
 import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'

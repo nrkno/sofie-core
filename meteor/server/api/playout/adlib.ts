@@ -26,7 +26,12 @@ import {
 	getAllPieceInstancesFromCache,
 	getSelectedPartInstancesFromCache,
 } from './lib'
-import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
+import {
+	convertAdLibToPieceInstance,
+	getResolvedPieces,
+	convertPieceToAdLibPiece,
+	setupPieceInstanceInfiniteProperties,
+} from './pieces'
 import { updateTimeline } from './timeline'
 import { updatePartRanks, afterRemoveParts } from '../rundown'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
@@ -118,8 +123,8 @@ export namespace ServerPlayoutAdLibAPI {
 				if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
 					// Ensure the piece being copied isnt currently live
 					if (
-						pieceInstanceToCopy.piece.startedPlayback &&
-						pieceInstanceToCopy.piece.startedPlayback <= getCurrentTime()
+						pieceInstanceToCopy.startedPlayback &&
+						pieceInstanceToCopy.startedPlayback <= getCurrentTime()
 					) {
 						const resolvedPieces = getResolvedPieces(cache, showStyleBase, partInstance)
 						const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
@@ -378,7 +383,7 @@ export namespace ServerPlayoutAdLibAPI {
 			...customQuery,
 			rundownId: { $in: rundownIds },
 			'piece.sourceLayerId': sourceLayerId,
-			'piece.startedPlayback': {
+			startedPlayback: {
 				$exists: true,
 			},
 		}
@@ -396,8 +401,7 @@ export namespace ServerPlayoutAdLibAPI {
 		// TODO - will this cause problems?
 		return PieceInstances.findOne(query, {
 			sort: {
-				// @ts-ignore deep property
-				'piece.startedPlayback': -1,
+				startedPlayback: -1,
 			},
 		})
 	}
@@ -432,15 +436,16 @@ export namespace ServerPlayoutAdLibAPI {
 
 		newPieceInstances.forEach((pieceInstance) => {
 			// Ensure it is labelled as dynamic
+			pieceInstance.dynamicallyInserted = getCurrentTime()
 			pieceInstance.partInstanceId = newPartInstance._id
 			pieceInstance.piece.startPartId = newPartInstance.part._id
+
+			setupPieceInstanceInfiniteProperties(pieceInstance)
 
 			cache.PieceInstances.insert(pieceInstance)
 		})
 
 		updatePartRanks(cache, rundownPlaylist, [newPartInstance.part.segmentId])
-
-		setNextPart(cache, rundownPlaylist, newPartInstance)
 
 		// Find and insert any rundown defined infinites that we should inherit
 		const part = cache.Parts.findOne(newPartInstance.part._id)
@@ -458,6 +463,8 @@ export namespace ServerPlayoutAdLibAPI {
 			cache.PieceInstances.insert(pieceInstance)
 		}
 
+		setNextPart(cache, rundownPlaylist, newPartInstance)
+
 		if (span) span.end()
 	}
 
@@ -473,6 +480,8 @@ export namespace ServerPlayoutAdLibAPI {
 		newPieceInstance.partInstanceId = existingPartInstance._id
 		newPieceInstance.piece.startPartId = existingPartInstance.part._id
 		newPieceInstance.dynamicallyInserted = getCurrentTime()
+
+		setupPieceInstanceInfiniteProperties(newPieceInstance)
 
 		// exclusiveGroup is handled at runtime by processAndPrunePieceInstanceTimings
 
@@ -490,7 +499,7 @@ export namespace ServerPlayoutAdLibAPI {
 		const span = profiler.startSpan('innerStopPieces')
 		const stoppedInstances: PieceInstanceId[] = []
 
-		const lastStartedPlayback = currentPartInstance.part.getLastStartedPlayback()
+		const lastStartedPlayback = currentPartInstance.timings?.startedPlayback
 		if (lastStartedPlayback === undefined) {
 			throw new Error('Cannot stop pieceInstances when partInstance hasnt started playback')
 		}

@@ -32,7 +32,7 @@ import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PieceInstance, wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
 import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { getResolvedPieces } from '../../playout/pieces'
+import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { NotesContext, ShowStyleContext, EventContext } from './context'
 import { isTooCloseToAutonext } from '../../playout/lib'
@@ -234,15 +234,6 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			part === 'current',
 			true
 		)[0]
-		piece.timings = {
-			take: [getCurrentTime()],
-			startedPlayback: [],
-			next: [],
-			stoppedPlayback: [],
-			playOffset: [],
-			takeDone: [],
-			takeOut: [],
-		}
 		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
 
 		// Do the work
@@ -313,6 +304,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				update.$set[`piece.${k}`] = val
 			}
 		}
+
+		setupPieceInstanceInfiniteProperties(pieceInstance)
 
 		this._cache.PieceInstances.update(pieceInstance._id, update)
 

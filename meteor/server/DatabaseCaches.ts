@@ -19,9 +19,8 @@ import { Piece, Pieces } from '../lib/collections/Pieces'
 import { PartInstances, DBPartInstance, PartInstance } from '../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../lib/collections/PieceInstances'
 import { Studio, Studios, StudioId } from '../lib/collections/Studios'
-import { Timeline, TimelineObjGeneric } from '../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric, TimelineComplete } from '../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
-import { RecordedFile, RecordedFiles } from '../lib/collections/RecordedFiles'
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
 import {
 	protectString,
@@ -32,6 +31,7 @@ import {
 	waitTime,
 	sumChanges,
 	anythingChanged,
+	ProtectedString,
 } from '../lib/lib'
 import { logger } from './logging'
 import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
@@ -44,10 +44,20 @@ import { profiler } from './api/profiler'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
+type ReadOnlyCacheInner<T> = T extends DbCacheWriteCollection<infer A, infer B>
+	? DbCacheReadCollection<A, B>
+	: T extends DbCacheReadCollection<infer A, infer B>
+	? DbCacheReadCollection<A, B>
+	: T
+type IReadOnlyCache<T extends Cache> = Omit<
+	{ [K in keyof T]: ReadOnlyCacheInner<T[K]> },
+	'defer' | 'deferAfterSave' | 'saveAllToDatabase'
+>
+
 /** This cache contains data relevant in a studio */
-export class Cache {
-	private _deferredFunctions: DeferredFunction<Cache>[] = []
-	private _deferredAfterSaveFunctions: (() => void)[] = []
+export class ReadOnlyCache {
+	protected _deferredFunctions: DeferredFunction<ReadOnlyCache>[] = []
+	protected _deferredAfterSaveFunctions: (() => void)[] = []
 	private _activeTimeout: number | null = null
 
 	constructor() {
@@ -57,6 +67,7 @@ export class Cache {
 				const futureError = new Meteor.Error(500, `saveAllToDatabase never called`)
 				this._activeTimeout = Meteor.setTimeout(() => {
 					logger.error(futureError)
+					logger.error(futureError.stack)
 				}, 2000)
 			}
 		}
@@ -127,6 +138,8 @@ export class Cache {
 
 		if (span) span.end()
 	}
+}
+export class Cache extends ReadOnlyCache {
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
 	defer(fcn: DeferredFunction<Cache>): void {
 		this._deferredFunctions.push(fcn)
@@ -141,8 +154,7 @@ export class CacheForStudioBase extends Cache {
 	/** Contains contents in the Studio */
 	RundownPlaylists: DbCacheWriteCollection<RundownPlaylist, DBRundownPlaylist>
 	// Studios: DbCacheWriteCollection<Studio, Studio>
-	Timeline: DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>
-	RecordedFiles: DbCacheWriteCollection<RecordedFile, RecordedFile>
+	Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
 
 	constructor(studioId: StudioId) {
 		super()
@@ -150,8 +162,7 @@ export class CacheForStudioBase extends Cache {
 
 		this.RundownPlaylists = new DbCacheWriteCollection<RundownPlaylist, DBRundownPlaylist>(RundownPlaylists)
 		// this.Studios = new DbCacheWriteCollection<Studio, Studio>(Studios)
-		this.Timeline = new DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>(Timeline)
-		this.RecordedFiles = new DbCacheWriteCollection<RecordedFile, RecordedFile>(RecordedFiles)
+		this.Timeline = new DbCacheWriteCollection<TimelineComplete, TimelineComplete>(Timeline)
 	}
 	defer(fcn: DeferredFunction<CacheForStudioBase>) {
 		return super.defer(fcn)
@@ -159,6 +170,22 @@ export class CacheForStudioBase extends Cache {
 	deferAfterSave(fcn: () => void) {
 		return super.deferAfterSave(fcn)
 	}
+}
+/** Readonly version of CacheForStudioBase */
+export type ReadOnlyCacheForStudioBase = IReadOnlyCache<CacheForStudioBase>
+
+export function convertReadOnlyCacheForStudioBase(cache: CacheForStudioBase): ReadOnlyCacheForStudioBase {
+	cache._abortActiveTimeout()
+	cache.defer = () => {
+		throw new Meteor.Error(500, 'defer cannot be used in getReadOnlyCacheForStudioBase')
+	}
+	cache.deferAfterSave = () => {
+		throw new Meteor.Error(500, 'deferAfterSave cannot be used in getReadOnlyCacheForStudioBase')
+	}
+	cache.saveAllToDatabase = () => {
+		throw new Meteor.Error(500, 'saveAllToDatabase cannot be used in getReadOnlyCacheForStudioBase')
+	}
+	return cache
 }
 export class CacheForStudio extends CacheForStudioBase {
 	containsDataFromStudio: StudioId // Just to get the typings to alert on different cache types
@@ -188,8 +215,7 @@ async function fillCacheForStudioBaseWithData(
 ) {
 	await Promise.all([
 		makePromise(() => cache.RundownPlaylists.prepareInit({ studioId: studioId }, initializeImmediately)),
-		makePromise(() => cache.Timeline.prepareInit({ studioId: studioId }, initializeImmediately)),
-		makePromise(() => cache.RecordedFiles.prepareInit({ studioId: studioId }, initializeImmediately)),
+		makePromise(() => cache.Timeline.prepareInit({ _id: studioId }, initializeImmediately)),
 	])
 
 	return cache
@@ -213,9 +239,12 @@ async function fillCacheForStudioWithData(cache: CacheForStudio, studioId: Studi
 	return cache
 }
 export async function initCacheForStudio(studioId: StudioId, initializeImmediately: boolean = true) {
+	const span = profiler.startSpan('Cache.initCacheForStudio')
+
 	const cache: CacheForStudio = emptyCacheForStudio(studioId)
 	await fillCacheForStudioWithData(cache, studioId, initializeImmediately)
 
+	span?.end()
 	return cache
 }
 
@@ -246,7 +275,7 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 
 	activationCache: ActivationCache
 
-	constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
+	constructor(studioId: StudioId, playlistId: RundownPlaylistId, playlistIsActive: boolean) {
 		super(studioId)
 		this.containsDataFromPlaylist = playlistId
 
@@ -265,7 +294,11 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 		this.AdLibPieces = new DbCacheWriteCollection<AdLibPiece, AdLibPiece>(AdLibPieces)
 		this.AdLibActions = new DbCacheWriteCollection<AdLibAction, AdLibAction>(AdLibActions)
 
-		this.activationCache = getActivationCache(studioId, playlistId)
+		if (playlistIsActive) {
+			this.activationCache = getActivationCache(studioId, playlistId)
+		} else {
+			this.activationCache = new ActivationCache(playlistId)
+		}
 	}
 	defer(fcn: DeferredFunction<CacheForRundownPlaylist>) {
 		return super.defer(fcn)
@@ -274,8 +307,20 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 		return super.deferAfterSave(fcn)
 	}
 }
-function emptyCacheForRundownPlaylist(studioId: StudioId, playlistId: RundownPlaylistId): CacheForRundownPlaylist {
-	return new CacheForRundownPlaylist(studioId, playlistId)
+/** A read-only version of CacheForRundownPlaylist */
+export type ReadOnlyCacheForRundownPlaylist = IReadOnlyCache<CacheForRundownPlaylist>
+
+export function convertReadOnlyCacheForRundownPlaylist(
+	cache: CacheForRundownPlaylist
+): ReadOnlyCacheForRundownPlaylist {
+	return convertReadOnlyCacheForStudioBase(cache) as ReadOnlyCacheForRundownPlaylist
+}
+function emptyCacheForRundownPlaylist(
+	studioId: StudioId,
+	playlistId: RundownPlaylistId,
+	playlistIsActive: boolean
+): CacheForRundownPlaylist {
+	return new CacheForRundownPlaylist(studioId, playlistId, playlistIsActive)
 }
 async function fillCacheForRundownPlaylistWithData(
 	cache: CacheForRundownPlaylist,
@@ -350,20 +395,37 @@ async function fillCacheForRundownPlaylistWithData(
 	ps.push(cache.activationCache.initialize(playlist, rundownsInPlaylist))
 
 	await Promise.all(ps)
-	if (span) span.end()
+	span?.end()
 }
 export async function initCacheForRundownPlaylist(
 	playlist: RundownPlaylist,
 	extendFromCache?: CacheForStudioBase,
 	initializeImmediately: boolean = true
 ): Promise<CacheForRundownPlaylist> {
+	const span = profiler.startSpan('Cache.initCacheForRundownPlaylist')
+
 	if (!extendFromCache) extendFromCache = await initCacheForStudio(playlist.studioId, initializeImmediately)
-	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(playlist.studioId, playlist._id)
+	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(
+		playlist.studioId,
+		playlist._id,
+		playlist.active ?? false
+	)
 	if (extendFromCache) {
 		cache._extendWithData(extendFromCache)
 	}
 	await fillCacheForRundownPlaylistWithData(cache, playlist, initializeImmediately)
+
+	span?.end()
 	return cache
+}
+export async function initReadOnlyCacheForRundownPlaylist(
+	playlist: RundownPlaylist,
+	extendFromCache?: CacheForStudioBase,
+	initializeImmediately: boolean = true
+): Promise<ReadOnlyCacheForRundownPlaylist> {
+	return convertReadOnlyCacheForRundownPlaylist(
+		await initCacheForRundownPlaylist(playlist, extendFromCache, initializeImmediately)
+	)
 }
 /** Cache for playout, but there is no playlist playing */
 export async function initCacheForNoRundownPlaylist(
@@ -372,7 +434,7 @@ export async function initCacheForNoRundownPlaylist(
 	initializeImmediately: boolean = true
 ): Promise<CacheForRundownPlaylist> {
 	if (!extendFromCache) extendFromCache = await initCacheForStudioBase(studioId, initializeImmediately)
-	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(studioId, protectString(''))
+	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(studioId, protectString(''), false)
 	if (extendFromCache) {
 		cache._extendWithData(extendFromCache)
 	}

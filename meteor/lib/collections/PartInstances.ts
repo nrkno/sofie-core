@@ -2,7 +2,6 @@ import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
 import {
 	applyClassToDocument,
-	Time,
 	registerCollection,
 	ProtectedString,
 	ProtectedStringProperties,
@@ -10,15 +9,17 @@ import {
 	unprotectString,
 	Omit,
 } from '../lib'
-import { Meteor } from 'meteor/meteor'
-import { IBlueprintPartInstance, PartEndState } from 'tv-automation-sofie-blueprints-integration'
+import {
+	IBlueprintPartInstance,
+	PartEndState,
+	Time,
+	IBlueprintPartInstanceTimings,
+} from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { DBPart, Part } from './Parts'
-import { PieceInstance, PieceInstances } from './PieceInstances'
-import { Pieces } from './Pieces'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
-import { CacheForRundownPlaylist } from '../../server/DatabaseCaches'
+import { registerIndex } from '../database'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
@@ -46,6 +47,9 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
 	isTaken?: boolean
 
+	/** Playout timings, in here we log times when playout happens */
+	timings?: PartInstanceTimings
+
 	/** If the playlist was in rehearsal mode when the PartInstance was created */
 	rehearsal: boolean
 
@@ -53,6 +57,16 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 
 	/** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
 	previousPartEndState?: PartEndState
+}
+
+export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {
+	/** The playback offset that was set for the last take */
+	playOffset?: Time
+	/**
+	 * The duration this part was playing for.
+	 * This is set when the next part has started playback
+	 */
+	duration?: Time
 }
 
 export class PartInstance implements DBPartInstance {
@@ -65,6 +79,7 @@ export class PartInstance implements DBPartInstance {
 	public takeCount: number
 	public previousPartEndState?: PartEndState
 
+	public timings?: PartInstanceTimings
 	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
 	public isTaken?: boolean
 	public rehearsal: boolean
@@ -98,11 +113,11 @@ export function wrapPartToTemporaryInstance(part: DBPart): PartInstance {
 	)
 }
 
-export function findPartInstanceOrWrapToTemporary(
-	partInstances: { [partId: string]: PartInstance | undefined },
+export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance>>(
+	partInstances: { [partId: string]: T | undefined },
 	part: DBPart
-): PartInstance {
-	return partInstances[unprotectString(part._id)] || wrapPartToTemporaryInstance(part)
+): T {
+	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(part) as T)
 }
 
 export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> = createMongoCollection<PartInstance>(
@@ -110,22 +125,18 @@ export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> 
 	{ transform: (doc) => applyClassToDocument(PartInstance, doc) }
 )
 registerCollection('PartInstances', PartInstances)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		PartInstances._ensureIndex({
-			rundownId: 1,
-			segmentId: 1,
-			takeCount: 1,
-		})
-		PartInstances._ensureIndex({
-			rundownId: 1,
-			takeCount: 1,
-		})
-		PartInstances._ensureIndex({
-			rundownId: 1,
-			// @ts-ignore deep property
-			'part._id': 1,
-			takeCount: 1,
-		})
-	}
+registerIndex(PartInstances, {
+	rundownId: 1,
+	segmentId: 1,
+	takeCount: 1,
+})
+registerIndex(PartInstances, {
+	rundownId: 1,
+	takeCount: 1,
+})
+registerIndex(PartInstances, {
+	rundownId: 1,
+	// @ts-ignore deep property
+	'part._id': 1,
+	takeCount: 1,
 })

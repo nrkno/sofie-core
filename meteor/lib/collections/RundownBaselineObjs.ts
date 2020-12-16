@@ -4,6 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { TimelineObjGeneric } from './Timeline'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
+import { registerIndex } from '../database'
 
 /** A string, identifying a RundownBaselineObj */
 export type RundownBaselineObjId = ProtectedString<'RundownBaselineObjId'>
@@ -20,10 +21,6 @@ export const RundownBaselineObjs: TransformedCollection<RundownBaselineObj, Rund
 	RundownBaselineObj
 >('rundownBaselineObjs')
 registerCollection('RundownBaselineObjs', RundownBaselineObjs)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		RundownBaselineObjs._ensureIndex({
-			rundownId: 1,
-		})
-	}
+registerIndex(RundownBaselineObjs, {
+	rundownId: 1,
 })

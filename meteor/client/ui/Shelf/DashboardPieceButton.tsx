@@ -165,6 +165,19 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
+	renderGraphic(renderThumbnail?: boolean) {
+		if (this.props.metadata) {
+			const previewUrl = this.getPreviewUrl()
+			return (
+				<React.Fragment>
+					{previewUrl && renderThumbnail && (
+						<img src={previewUrl} className="dashboard-panel__panel__button__thumbnail" />
+					)}
+				</React.Fragment>
+			)
+		}
+	}
+
 	render() {
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
@@ -218,6 +231,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
 						: this.props.layer.type === SourceLayerType.SPLITS
 						? this.renderSplits(isList && this.props.showThumbnailsInList)
+						: this.props.layer.type === SourceLayerType.GRAPHICS
+						? this.renderGraphic(isList && this.props.showThumbnailsInList)
 						: null}
 					<div className="dashboard-panel__panel__button__label-container">
 						<span className="dashboard-panel__panel__button__label">

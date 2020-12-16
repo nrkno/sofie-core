@@ -1,5 +1,6 @@
 /** Stream Deck Original, button size 72px */
 @media screen and (width: 360px) and (height: 216px),
+	(height: 218px),
 	/** Stream Deck XL,
 	button size 96px */ screen and (width: 768px) and (height: 384px),
 	/** Stream Deck Mini,
@@ -120,10 +121,14 @@
 			}
 		}
 	}
+
+	#render-target .container-fluid .notification-pop-ups {
+		display: none;
+	}
 }
 
 /** Stream Deck Original */
-@media screen and (width: 360px) and (height: 216px) {
+@media screen and (width: 360px) and (height: 216px), (height: 218px) {
 	#render-target
 		> .container-fluid
 		> .rundown-view__shelf.dark.full-viewport

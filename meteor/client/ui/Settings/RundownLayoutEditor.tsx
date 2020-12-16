@@ -519,9 +519,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName="bghl"
 										attribute={`filters.${index}.includeClearInRundownBaseline`}
 										obj={item}
-										type="int"
+										type="checkbox"
 										collection={RundownLayouts}
-										className="input text-input input-l"
+										className="mod mas"
 									/>
 								</label>
 							</div>
@@ -1218,6 +1218,45 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
 								/>
 							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Give priority to thumbnails for next pieces')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.thumbnailPriorityNextPieces`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Hide thumbnails for active pieces')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.hideThumbnailsForActivePieces`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Show black if no thumbnail is found')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.showBlackIfNoThumbnailPiece`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
 						</React.Fragment>
 					)}
 				</React.Fragment>
@@ -1432,6 +1471,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</label>
 					</div>
 					<h4 className="mod mhs">{isRundownLayout ? t('Tabs') : isDashboardLayout ? t('Panels') : null}</h4>
+					{item.filters.length === 0 ? (
+						<p className="text-s dimmed mhs">{t('There are no filters set up yet')}</p>
+					) : null}
 					{item.filters.map((tab, index) => (
 						<div className="rundown-layout-editor-filter mod pan mas" key={tab._id}>
 							<button className="action-btn right mod man pas" onClick={(e) => this.onRemoveElement(item, tab)}>

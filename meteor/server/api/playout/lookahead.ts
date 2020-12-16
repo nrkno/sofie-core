@@ -7,18 +7,10 @@ import {
 	TimelineObjectCoreExt,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, MappingExt } from '../../../lib/collections/Studios'
-import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
+import { TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import {
-	literal,
-	clone,
-	unprotectString,
-	protectString,
-	asyncCollectionFindFetch,
-	waitForPromise,
-	getCurrentTime,
-} from '../../../lib/lib'
+import { literal, clone, unprotectString, asyncCollectionFindFetch } from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../../../lib/collections/PieceInstances'
 import {
@@ -36,7 +28,6 @@ import {
 	SelectedPartInstancesTimelineInfo,
 	SelectedPartInstanceTimelineInfo,
 } from './timeline'
-import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { Mongo } from 'meteor/mongo'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
@@ -48,8 +39,18 @@ interface PartInstanceAndPieceInstances {
 }
 interface PartAndPieces {
 	part: Part
-	pieces: PieceInstancePiece[]
+	pieces: Piece[] | PieceInstance[]
 	// allPieces: PieceInstancePiece[]
+}
+
+function isPieceInstance(piece: Piece | PieceInstance | PieceInstancePiece): piece is PieceInstance {
+	const tmpPiece = piece as PieceInstance
+	return typeof tmpPiece.piece !== 'undefined'
+}
+function isPieceInstanceArray(pieces: Piece[] | PieceInstance[] | PieceInstancePiece[]): pieces is PieceInstance[] {
+	const tmpPieces = pieces as PieceInstance[]
+	const samplePiece = tmpPieces[0]
+	return typeof samplePiece?.piece !== 'undefined'
 }
 
 function findLargestLookaheadDistance(mappings: Array<[string, MappingExt]>): number {
@@ -132,7 +133,7 @@ export async function getLookeaheadObjects(
 	studio: Studio,
 	playlist: RundownPlaylist,
 	partInstancesInfo0: SelectedPartInstancesTimelineInfo
-): Promise<Array<TimelineObjGeneric>> {
+): Promise<Array<TimelineObjRundown>> {
 	const span = profiler.startSpan('getLookeaheadObjects')
 	const mappingsToConsider = Object.entries(studio.mappings ?? {}).filter(
 		([id, map]) => map.lookahead !== LookaheadMode.NONE
@@ -144,6 +145,10 @@ export async function getLookeaheadObjects(
 
 	const maxLookaheadDistance = findLargestLookaheadDistance(mappingsToConsider)
 	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(cache, playlist, maxLookaheadDistance)
+	if (orderedPartsFollowingPlayhead.length === 0) {
+		// Nothing to search through
+		return []
+	}
 
 	const piecesToSearchQuery: Mongo.Query<Piece> = {
 		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
@@ -154,7 +159,7 @@ export async function getLookeaheadObjects(
 		? Promise.resolve(cache.Pieces.findFetch(piecesToSearchQuery))
 		: asyncCollectionFindFetch(Pieces, piecesToSearchQuery)
 
-	const timelineObjs: Array<TimelineObjGeneric> = []
+	const timelineObjs: Array<TimelineObjRundown> = []
 	const mutateAndPushObject = (
 		rawObj: TimelineObjRundown,
 		i: string,
@@ -162,7 +167,7 @@ export async function getLookeaheadObjects(
 		mapping: MappingExt,
 		priority: number
 	) => {
-		const obj: TimelineObjGeneric = clone(rawObj)
+		const obj: TimelineObjRundown & OnGenerateTimelineObj = clone(rawObj)
 
 		obj.id = `lookahead_${i}_${obj.id}`
 		obj.priority = priority
@@ -172,6 +177,8 @@ export async function getLookeaheadObjects(
 			obj.keyframes = obj.keyframes.filter((kf) => kf.preserveForLookahead)
 		}
 		delete obj.inGroup // force it to be cleared
+		// delete obj.pieceInstanceId
+		// delete obj.infinitePieceId
 
 		if (mapping.lookahead === LookaheadMode.PRELOAD) {
 			obj.lookaheadForLayer = obj.layer
@@ -181,18 +188,23 @@ export async function getLookeaheadObjects(
 		timelineObjs.push(obj)
 	}
 
-	const calculateStartAfterPreviousObj = (prevObj: TimelineObjRundown): TimelineTypes.TimelineEnable => {
+	// elsewhere uses prefixAllObjectIds to do this, but we want to apply to a single object from itself
+	const getStartOfObjectRef = (obj: TimelineObjRundown & OnGenerateTimelineObj): string =>
+		`#${obj.pieceInstanceId ?? ''}${obj.originalId ?? obj.id}.start`
+	const calculateStartAfterPreviousObj = (
+		prevObj: TimelineObjRundown & OnGenerateTimelineObj
+	): TimelineTypes.TimelineEnable => {
 		const prevHasDelayFlag = (prevObj.classes || []).indexOf('_lookahead_start_delay') !== -1
 
 		// Start with previous piece
 		const startOffset = prevHasDelayFlag ? 2000 : 0
 		return {
-			start: `#${prevObj.id}.start + ${startOffset}`,
+			start: `${getStartOfObjectRef(prevObj)} + ${startOffset}`,
 		}
 	}
 
 	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
-		if (!info.partInstance.part.startedPlayback) {
+		if (!info.partInstance.timings?.startedPlayback) {
 			return info.pieceInstances
 		} else {
 			return info.pieceInstances.filter((p) => !hasPieceInstanceDefinitelyEnded(p, info.nowInPart))
@@ -238,13 +250,12 @@ export async function getLookeaheadObjects(
 		}
 	}
 
-	const futurePartCount = orderedPartsFollowingPlayhead.length + (partInstancesInfo0.next ? 1 : 0)
 	for (const [layerId, mapping] of mappingsToConsider) {
 		const lookaheadTargetObjects = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
 		const lookaheadMaxSearchDistance =
 			mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0
 				? mapping.lookaheadMaxSearchDistance
-				: futurePartCount
+				: orderedPartsFollowingPlayhead.length
 
 		const lookaheadObjs = findLookaheadForlayer(
 			playlist,
@@ -269,7 +280,7 @@ export async function getLookeaheadObjects(
 			}
 			if (!entry.obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
-			enable.end = `#${entry.obj.id}.start`
+			enable.end = getStartOfObjectRef(entry.obj)
 
 			mutateAndPushObject(entry.obj, `timed${i}`, enable, mapping, LOOKAHEAD_OBJ_PRIORITY)
 		})
@@ -302,7 +313,8 @@ export async function getLookeaheadObjects(
 }
 
 export interface LookaheadObjectEntry {
-	obj: TimelineObjRundown
+	obj: TimelineObjRundown & OnGenerateTimelineObj
+	// pieceInstanceId: PieceInstanceId
 	partId: PartId
 }
 
@@ -328,7 +340,7 @@ function findLookaheadForlayer(
 		future: [],
 	}
 
-	if (mode === undefined || mode === LookaheadMode.NONE) {
+	if (mode === undefined || mode === LookaheadMode.NONE || lookaheadMaxSearchDistance <= 0) {
 		return res
 	}
 
@@ -337,7 +349,7 @@ function findLookaheadForlayer(
 	if (previousPartInstanceInfo) {
 		previousPartInfo = {
 			part: previousPartInstanceInfo.part.part,
-			pieces: previousPartInstanceInfo.allPieces.map((p) => p.piece),
+			pieces: previousPartInstanceInfo.allPieces,
 		}
 	}
 
@@ -345,10 +357,8 @@ function findLookaheadForlayer(
 	for (const partInstanceInfo of partInstancesInfo) {
 		const partInfo: PartAndPieces = {
 			part: partInstanceInfo.part.part,
-			pieces: partInstanceInfo.allPieces.map((p) => p.piece),
+			pieces: partInstanceInfo.allPieces,
 		}
-
-		if (!partInstanceInfo.onTimeline && lookaheadMaxSearchDistance <= 0) break
 
 		findObjectsForPart(playlist, layer, previousPartInfo, partInfo, partInstanceInfo.part._id).forEach((o) => {
 			if (partInstanceInfo.onTimeline) {
@@ -382,6 +392,23 @@ function findLookaheadForlayer(
 	return res
 }
 
+function getBestPieceIsntanceId(
+	piece: PieceInstance | Piece,
+	partInfo: PartAndPieces,
+	partInstanceId: PartInstanceId | null
+): string {
+	if (isPieceInstance(piece)) {
+		return unprotectString(piece._id)
+	}
+	if (partInstanceId) {
+		// Approximate what it would be
+		return unprotectString(rewrapPieceToInstance(piece, partInfo.part.rundownId, partInstanceId)._id)
+	}
+	// Something is needed, and it must be distant future here, so accuracy is not important
+	return unprotectString(piece._id)
+}
+
+// type MatchedTimelineObj = RequiredSelective<TimelineObjRundown & OnGenerateTimelineObj, 'pieceInstanceId'>
 function tryActivateKeyframesForObject(
 	obj: TimelineObjectCoreExt,
 	hasTransition: boolean,
@@ -390,14 +417,20 @@ function tryActivateKeyframesForObject(
 	// Try and find a keyframe that is used when in a transition
 	let transitionKF: TimelineTypes.TimelineKeyframe | undefined = undefined
 	if (hasTransition) {
-		transitionKF = _.find(obj.keyframes || [], (kf) => kf.enable.while === '.is_transition')
+		transitionKF = _.find(
+			obj.keyframes || [],
+			(kf) => !Array.isArray(kf.enable) && kf.enable.while === '.is_transition'
+		)
 
 		// TODO - this keyframe matching is a hack, and is very fragile
 
 		if (!transitionKF && classesFromPreviousPart && classesFromPreviousPart.length > 0) {
 			// Check if the keyframe also uses a class to match. This handles a specific edge case
 			transitionKF = _.find(obj.keyframes || [], (kf) =>
-				_.any(classesFromPreviousPart, (cl) => kf.enable.while === `.is_transition & .${cl}`)
+				_.any(
+					classesFromPreviousPart,
+					(cl) => !Array.isArray(kf.enable) && kf.enable.while === `.is_transition & .${cl}`
+				)
 			)
 		}
 		return { ...obj.content, ...transitionKF?.content }
@@ -412,27 +445,34 @@ function findObjectsForPart(
 	previousPartInfo: PartAndPieces | undefined,
 	partInfo: PartAndPieces,
 	partInstanceId: PartInstanceId | null
-): (TimelineObjRundown & OnGenerateTimelineObj)[] {
+): Array<TimelineObjRundown & OnGenerateTimelineObj> {
 	// Sanity check, if no part to search, then abort
 	if (!partInfo || partInfo.pieces.length === 0) {
 		return []
 	}
 	const span = profiler.startSpan('findObjectsForPart')
 
-	let allObjs: TimelineObjRundown[] = []
-	for (const piece of partInfo.pieces) {
+	let allObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
+	for (const rawPiece of partInfo.pieces) {
+		const tmpPieceInstanceId = getBestPieceIsntanceId(rawPiece, partInfo, partInstanceId)
+		const piece = isPieceInstance(rawPiece) ? rawPiece.piece : rawPiece
 		for (const obj of piece.content?.timelineObjects ?? []) {
 			if (obj && obj.layer === layer) {
 				allObjs.push(
-					literal<TimelineObjRundown>({
+					literal<TimelineObjRundown & OnGenerateTimelineObj>({
 						...obj,
-						_id: protectString(''), // set later
-						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN,
+						pieceInstanceId: tmpPieceInstanceId,
 					})
 				)
 			}
 		}
+	}
+
+	if (allObjs.length === 0) {
+		if (span) span.end()
+		// Should never happen. suggests something got 'corrupt' during this process
+		return []
 	}
 
 	let allowTransition = !partInstanceId
@@ -443,13 +483,10 @@ function findObjectsForPart(
 		classesFromPreviousPart = previousPartInfo.part.classesForNext || []
 	}
 
-	const transitionPiece = partInfo.pieces.find((i) => !!i.isTransition)
+	const rawPieces = isPieceInstanceArray(partInfo.pieces) ? partInfo.pieces.map((p) => p.piece) : partInfo.pieces
+	const transitionPiece = rawPieces.find((i) => !!i.isTransition)
 
-	if (allObjs.length === 0) {
-		if (span) span.end()
-		// Should never happen. suggests something got 'corrupt' during this process
-		return []
-	} else if (allObjs.length === 1) {
+	if (allObjs.length === 1) {
 		// Only one, just return it
 		const obj = allObjs[0]
 		const patchedContent = tryActivateKeyframesForObject(
@@ -467,12 +504,12 @@ function findObjectsForPart(
 		]
 	} else {
 		// They need to be ordered
-		const orderedPieces = sortPiecesByStart(partInfo.pieces)
+		const orderedPieces = sortPiecesByStart(rawPieces)
 
 		const hasTransitionObj =
 			allowTransition && !!transitionPiece?.content?.timelineObjects?.find((o) => o != null && o.layer === layer)
 
-		const res: TimelineObjRundown[] = []
+		const res: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
 		orderedPieces.forEach((piece) => {
 			if (!partInfo || (!allowTransition && piece.isTransition)) {
 				return
@@ -500,8 +537,6 @@ function findObjectsForPart(
 				res.push(
 					literal<TimelineObjRundown & OnGenerateTimelineObj>({
 						...obj,
-						_id: protectString(''), // set later
-						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN,
 						pieceInstanceId: unprotectString(pieceInstanceId),
 						infinitePieceId: unprotectString(piece._id),

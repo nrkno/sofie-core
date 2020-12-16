@@ -133,7 +133,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 					let statusCode = StatusCode.GOOD
 					let messages: Array<string> = []
 
-					if (semver.satisfies(version, '0.0.0')) {
+					if (semver.satisfies(version, '0.0.0') || semver.satisfies(expectedVersionStr, '0.0.0')) {
 						// if the major version is 0.0.0, ignore it
 					} else if (!versionStr) {
 						statusCode = StatusCode.BAD

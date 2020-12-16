@@ -6,7 +6,7 @@ import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // 0.24.0 (Release 9)
-addMigrationSteps('0.24.0', [
+export const addSteps = addMigrationSteps('0.24.0', [
 	{
 		// Ensure blueprints have type set
 		id: 'blueprints have blueprintType',

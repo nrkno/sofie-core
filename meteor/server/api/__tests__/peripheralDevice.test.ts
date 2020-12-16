@@ -10,7 +10,7 @@ import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 
-import { getCurrentTime, literal, protectString, unprotectString, ProtectedString } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, unprotectString, ProtectedString, waitTime } from '../../../lib/lib'
 import * as MOS from 'mos-connection'
 import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
@@ -27,7 +27,7 @@ const { ServerPlayoutAPI: _ActualServerPlayoutAPI } = jest.requireActual('../pla
 import { ServerPlayoutAPI } from '../playout/playout'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { Timeline } from '../../../lib/collections/Timeline'
+import { Timeline, TimelineEnableExt } from '../../../lib/collections/Timeline'
 import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
@@ -35,6 +35,7 @@ import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PeripheralDevicesAPI } from '../../../client/lib/clientAPI'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { MethodContext } from '../../../lib/api/methods'
+import { time } from 'console'
 
 const DEBUG = false
 
@@ -220,7 +221,7 @@ describe('test peripheralDevice general API methods', () => {
 		const response = Meteor.call(PeripheralDeviceAPIMethods.determineDiffTime)
 		expect(response).toBeTruthy()
 		expect(response.mean).toBeTruthy()
-		expect(response.stdDev).toBeTruthy()
+		expect(response.stdDev).toBeDefined()
 	})
 
 	testInFiber('getTimeDiff', () => {
@@ -281,6 +282,7 @@ describe('test peripheralDevice general API methods', () => {
 			undefined,
 			replyMessage
 		)
+		waitTime(10)
 		expect(PeripheralDeviceCommands.findOne()).toBeFalsy()
 
 		expect(resultErr).toBeNull()
@@ -393,12 +395,16 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const timelineObjs = Timeline.find({
-			studioId: env.studio._id,
-			enable: {
-				start: 'now',
-			},
-		}).fetch()
+		const studioTimeline = Timeline.findOne({
+			_id: env.studio._id,
+		})
+		expect(studioTimeline).toBeTruthy()
+		const timelineObjs =
+			(studioTimeline &&
+				studioTimeline.timeline.filter(
+					(x) => x.enable && !Array.isArray(x.enable) && x.enable.start === 'now'
+				)) ||
+			[]
 		expect(timelineObjs.length).toBe(1)
 		let timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = timelineObjs.map((tObj) => ({
 			id: tObj.id,
@@ -407,14 +413,17 @@ describe('test peripheralDevice general API methods', () => {
 
 		Meteor.call(PeripheralDeviceAPIMethods.timelineTriggerTime, device._id, device.token, timelineTriggerTimeResult)
 
-		const timelineUpdatedObjs = Timeline.find({
-			_id: {
-				$in: timelineObjs.map((tlObj) => tlObj._id),
-			},
+		const updatedStudioTimeline = Timeline.findOne({
+			_id: env.studio._id,
 		})
+		const prevIds = timelineObjs.map((x) => x.id)
+		const timelineUpdatedObjs =
+			(updatedStudioTimeline && updatedStudioTimeline.timeline.filter((x) => prevIds.indexOf(x.id) >= 0)) || []
 		timelineUpdatedObjs.forEach((tlObj) => {
-			expect(tlObj.enable.setFromNow).toBe(true)
-			expect(tlObj.enable.start).toBeGreaterThan(0)
+			expect(Array.isArray(tlObj.enable)).toBeFalsy
+			const enable = tlObj.enable as TimelineEnableExt
+			expect(enable.setFromNow).toBe(true)
+			expect(enable.start).toBeGreaterThan(0)
 		})
 
 		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, rundownPlaylistID)

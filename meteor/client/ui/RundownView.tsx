@@ -17,11 +17,11 @@ import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
-import { Segment, SegmentId } from '../../lib/collections/Segments'
-import { Studio, Studios } from '../../lib/collections/Studios'
+import { Segment, SegmentId, Segments } from '../../lib/collections/Segments'
+import { Studio, Studios, StudioRouteSet } from '../../lib/collections/Studios'
 import { Part, Parts, PartId } from '../../lib/collections/Parts'
 
-import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import {
 	RundownTimingProvider,
@@ -54,7 +54,7 @@ import {
 } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
-import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
+import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
@@ -96,7 +96,9 @@ import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/documentTitle'
 import { PartInstanceId, PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
+import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../lib/hotkeyRegistry'
+import { ExtendedKeyboardEvent } from 'mousetrap'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -750,7 +752,9 @@ const RundownHeader = withTranslation()(
 						(e) => MeteorCall.userAction.moveNext(e, this.props.playlist._id, horizonalDelta, verticalDelta),
 						(err, partId) => {
 							if (!err && partId) {
-								scrollToPart(partId).catch(() => console.error)
+								scrollToPart(partId).catch((error) => {
+									if (!error.toString().match(/another scroll/)) console.error(error)
+								})
 							}
 						}
 					)
@@ -1085,7 +1089,9 @@ const RundownHeader = withTranslation()(
 						if (!err && reloadResponse) {
 							if (!handleRundownPlaylistReloadResponse(t, this.props.playlist, reloadResponse)) {
 								if (this.props.playlist && this.props.playlist.nextPartInstanceId) {
-									scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch(() => console.error)
+									scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
+										if (!error.toString().match(/another scroll/)) console.error(error)
+									})
 								}
 							}
 						}
@@ -1192,7 +1198,9 @@ const RundownHeader = withTranslation()(
 										<MenuItem onClick={(e) => this.resetRundown(e)}>{t('Reset Rundown')}</MenuItem>
 									) : null}
 									<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>
-										{t('Reload {{nrcsName}} Data', { nrcsName: this.props.firstRundown?.externalNRCSName || 'NRCS' })}
+										{t('Reload {{nrcsName}} Data', {
+											nrcsName: (this.props.firstRundown && this.props.firstRundown.externalNRCSName) || 'NRCS',
+										})}
 									</MenuItem>
 									<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>{t('Store Snapshot')}</MenuItem>
 								</React.Fragment>
@@ -1207,7 +1215,6 @@ const RundownHeader = withTranslation()(
 						className={ClassNames('header rundown', {
 							active: this.props.playlist.active,
 							'not-active': !this.props.playlist.active,
-
 							rehearsal: this.props.playlist.rehearsal,
 						})}>
 						<ContextMenuTrigger
@@ -1565,7 +1572,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				playlistId,
 			})
 			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId)
+				let playlist = RundownPlaylists.findOne(playlistId, {
+					fields: {
+						_id: 1,
+						studioId: 1,
+					},
+				}) as Pick<RundownPlaylist, '_id' | 'studioId'> | undefined
 				if (playlist) {
 					this.subscribe(PubSub.studios, {
 						_id: playlist.studioId,
@@ -1577,9 +1589,18 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 
 			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId)
+				let playlist = RundownPlaylists.findOne(playlistId, {
+					fields: {
+						_id: 1,
+					},
+				})
 				if (playlist) {
-					const rundowns = playlist.getRundowns()
+					const rundowns = playlist.getRundowns(undefined, {
+						fields: {
+							_id: 1,
+							showStyleBaseId: 1,
+						},
+					})
 					this.subscribe(PubSub.showStyleBases, {
 						_id: {
 							$in: rundowns.map((i) => i.showStyleBaseId),
@@ -1590,7 +1611,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							$in: rundowns.map((i) => i.showStyleBaseId),
 						},
 					})
-
 					const rundownIDs = rundowns.map((i) => i._id)
 					this.subscribe(PubSub.segments, {
 						rundownId: {
@@ -1634,6 +1654,101 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							},
 						})
 					}
+				}
+			})
+			this.autorun(() => {
+				if (this.props.onlyShelf) {
+					let playlist = RundownPlaylists.findOne(playlistId, {
+						fields: {
+							currentPartInstanceId: 1,
+							nextPartInstanceId: 1,
+							previousPartInstanceId: 1,
+						},
+					})
+					if (playlist) {
+						this.subscribe(PubSub.pieceInstances, {
+							partInstanceId: {
+								$in: [
+									playlist.currentPartInstanceId,
+									playlist.nextPartInstanceId,
+									playlist.previousPartInstanceId,
+								].filter((p) => p !== null),
+							},
+							reset: {
+								$ne: true,
+							},
+						})
+					}
+				}
+			})
+			this.autorun(() => {
+				let playlist = RundownPlaylists.findOne(playlistId, {
+					fields: {
+						_id: 1,
+					},
+				})
+				if (playlist) {
+					const rundownIds = playlist.getRundownUnorderedIDs()
+					const segmentIds = Segments.find({
+						rundownId: {
+							$in: rundownIds,
+						},
+					}).map((s) => s._id)
+					this.subscribe(PubSub.parts, {
+						rundownId: {
+							$in: rundownIds,
+						},
+						segmentId: {
+							$in: segmentIds,
+						},
+					})
+					this.subscribe(PubSub.partInstances, {
+						rundownId: {
+							$in: rundownIds,
+						},
+						segmentId: {
+							$in: segmentIds,
+						},
+						reset: {
+							$ne: true,
+						},
+					})
+				}
+			})
+			this.autorun(() => {
+				const playlist = RundownPlaylists.findOne(playlistId, {
+					fields: {
+						previousPartInstanceId: 1,
+						currentPartInstanceId: 1,
+						nextPartInstanceId: 1,
+					},
+				})
+				if (playlist) {
+					const rundownIds = playlist.getRundownUnorderedIDs()
+					const partInstanceIds: PartInstanceId[] = []
+					if (playlist.previousPartInstanceId) {
+						partInstanceIds.push(playlist.previousPartInstanceId)
+					}
+					if (playlist.currentPartInstanceId) {
+						partInstanceIds.push(playlist.currentPartInstanceId)
+					}
+					if (playlist.nextPartInstanceId) {
+						partInstanceIds.push(playlist.nextPartInstanceId)
+					}
+					// run this subscription manually, so that it doesn't affect subscriptionsReady()
+					// it's in a MeteorReactComponent.autorun, so the component lifecycle will
+					// cause it to be unsubscribed when the view is unloaded
+					Meteor.subscribe(PubSub.pieceInstances, {
+						rundownId: {
+							$in: rundownIds,
+						},
+						partInstanceId: {
+							$in: partInstanceIds,
+						},
+						reset: {
+							$ne: true,
+						},
+					})
 				}
 			})
 			this.autorun(() => {
@@ -1720,7 +1835,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					followLiveSegments: true,
 				})
 				if (this.props.playlist.currentPartInstanceId) {
-					scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch(() => console.error)
+					scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+						if (!error.toString().match(/another scroll/)) console.error(error)
+					})
 				}
 			} else if (
 				this.props.playlist &&
@@ -1740,7 +1857,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.props.playlist.nextPartInstanceId
 			) {
 				// scroll to next after activation
-				scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch(() => console.error)
+				scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.error(error)
+				})
 			} else if (
 				// after take
 				this.props.playlist &&
@@ -1749,7 +1868,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.props.playlist.currentPartInstanceId &&
 				this.state.followLiveSegments
 			) {
-				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch(() => console.error)
+				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.error(error)
+				})
 			} else if (
 				// initial Rundown open
 				this.props.playlist &&
@@ -1945,7 +2066,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onGoToTop = () => {
-			scrollToPosition(0).catch(console.error)
+			scrollToPosition(0).catch((error) => {
+				if (!error.toString().match(/another scroll/)) console.error(error)
+			})
 
 			window.requestIdleCallback(
 				() => {
@@ -1966,7 +2089,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.setState({
 					followLiveSegments: true,
 				})
-				scrollToPartInstance(this.props.playlist.nextPartInstanceId, true).catch(console.error)
+				scrollToPartInstance(this.props.playlist.nextPartInstanceId, true).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.error(error)
+				})
 				setTimeout(() => {
 					this.setState({
 						followLiveSegments: true,
@@ -1977,7 +2102,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.setState({
 					followLiveSegments: true,
 				})
-				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch(console.error)
+				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.error(error)
+				})
 				setTimeout(() => {
 					this.setState({
 						followLiveSegments: true,
@@ -2089,7 +2216,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								})
 							)
 						})
-						.catch(console.error)
+						.catch((error) => {
+							if (!error.toString().match(/another scroll/)) console.error(error)
+						})
 				}
 			}
 		}
@@ -2114,6 +2243,29 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.setState({
 				isSupportPanelOpen: !this.state.isSupportPanelOpen,
 			})
+		}
+
+		onStudioRouteSetSwitch = (
+			e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+			routeSetId: string,
+			routeSet: StudioRouteSet,
+			state: boolean
+		) => {
+			const { t } = this.props
+			if (this.props.studio) {
+				e.persist()
+				doModalDialog({
+					title: t('Switching route'),
+					message: state
+						? t('Are you sure you want to enable this route: "{{routeName}}"?', { routeName: routeSet.name })
+						: t('Are you sure you want to disable this route: "{{routeName}}"?', { routeName: routeSet.name }),
+					onAccept: () => {
+						doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
+							MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
+						)
+					},
+				})
+			}
 		}
 
 		renderSegments() {
@@ -2169,7 +2321,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												onPieceDoubleClick={this.onPieceDoubleClick}
 												onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
 												ownCurrentPartInstance={
-													this.props.currentPartInstance && this.props.currentPartInstance.segmentId === segment._id
+													// feed the currentPartInstance into the SegmentTimelineContainer component, if the currentPartInstance
+													// is a part of the segment
+													(this.props.currentPartInstance &&
+														this.props.currentPartInstance.segmentId === segment._id) ||
+													// or the nextPartInstance is a part of this segment, and the currentPartInstance is autoNext
+													(this.props.nextPartInstance &&
+														this.props.nextPartInstance.segmentId === segment._id &&
+														this.props.currentPartInstance &&
+														this.props.currentPartInstance.part.autoNext)
 														? this.props.currentPartInstance
 														: undefined
 												}
@@ -2336,7 +2496,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				title: t('Restart CasparCG Server'),
 				message: t('Do you want to restart CasparCG Server "{{device}}"?', { device: device.name }),
 				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, 'restartCasparCG')
+					callPeripheralDeviceFunction(event, device._id, CASPARCG_RESTART_TIME, 'restartCasparCG')
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(
@@ -2446,7 +2606,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									)}
 								</ErrorBoundary>
 								<ErrorBoundary>
-									<RundownFullscreenControls
+									<RundownRightHandControls
 										isFollowingOnAir={this.state.followLiveSegments}
 										onFollowOnAir={this.onGoToLiveSegment}
 										onRewindSegments={this.onRewindSegments}
@@ -2456,6 +2616,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										onToggleSupportPanel={this.onToggleSupportPanel}
 										isStudioMode={this.state.studioMode}
 										onTake={this.onTake}
+										studioRouteSets={this.props.studio.routeSets}
+										onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
 									/>
 								</ErrorBoundary>
 								<ErrorBoundary>
