@@ -774,12 +774,10 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					)
 
 					const globalAdLibActions = memoizedIsolatedAutorun(
-						(rundownIds: RundownId[]) =>
+						(currentRundownId: RundownId) =>
 							RundownBaselineAdLibActions.find(
 								{
-									rundownId: {
-										$in: rundownIds,
-									},
+									rundownId: currentRundownId,
 									partId: {
 										$exists: false,
 									},
@@ -792,7 +790,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 								.fetch()
 								.map((action) => actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup)),
 						'globalAdLibActions',
-						rundownIds
+						currentRundownId
 					)
 
 					rundownBaselineAdLibs = rundownBaselineAdLibs

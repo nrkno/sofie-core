@@ -20,6 +20,7 @@ export enum SourceLayerType {
 	MIC = 12,
 	TRANSITION = 13,
 	LIGHTS = 14,
+	LOCAL = 15,
 }
 
 export interface MetadataElement {

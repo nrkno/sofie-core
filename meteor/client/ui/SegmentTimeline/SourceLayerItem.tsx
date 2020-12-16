@@ -46,7 +46,6 @@ export interface ISourceLayerItemProps {
 	scrollLeft: number
 	scrollWidth: number
 	liveLinePadding: number
-	renderToTimeline: (render: JSX.Element | null) => void
 	layerIndex: number
 }
 interface ISourceLayerItemState {

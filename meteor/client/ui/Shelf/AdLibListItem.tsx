@@ -53,8 +53,6 @@ const _isMacLike = !!navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i)
 
 export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 	class AdLibListItem extends MeteorReactComponent<Translated<IListViewItemProps>> {
-		private objId: string
-
 		constructor(props: IListViewItemProps) {
 			super(props)
 		}

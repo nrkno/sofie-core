@@ -83,11 +83,24 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 		}
 	})
 
-	const handleOnMouseEnter = (e: React.MouseEvent) => {
+	const handleOnMouseOver = (e: React.MouseEvent) => {
 		if (itemIconPosition) {
 			const left = e.pageX - itemIconPosition.left
 			const unprocessedPercentage = left / itemIconPosition.width
-			if (unprocessedPercentage >= 0 && unprocessedPercentage <= 1 && !showMiniInspector) {
+			if (unprocessedPercentage <= 1 && !showMiniInspector) {
+				setShowMiniInspector(true)
+			}
+		}
+	}
+
+	const handleOnMouseMove = (e: React.MouseEvent) => {
+		if (itemIconPosition) {
+			const left = e.pageX - itemIconPosition.left
+			const unprocessedPercentage = left / itemIconPosition.width
+			if ((unprocessedPercentage > 1 || unprocessedPercentage < 0) && showMiniInspector) {
+				setShowMiniInspector(false)
+				return false
+			} else if (unprocessedPercentage >= 0 && unprocessedPercentage <= 1 && !showMiniInspector) {
 				setShowMiniInspector(true)
 			}
 		}
@@ -120,7 +133,8 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 					}
 				)}
 				ref={itemIcon}
-				onMouseEnter={handleOnMouseEnter}
+				onMouseOver={handleOnMouseOver}
+				onMouseMove={handleOnMouseMove}
 				onMouseLeave={handleOnMouseLeave}>
 				{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
 			</td>

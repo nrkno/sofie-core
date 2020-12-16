@@ -1300,6 +1300,8 @@ interface IState {
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
 	rundownLayout: RundownLayout | undefined
 	currentRundown: Rundown | undefined
+	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
+	wasShelfResizedByUser: boolean
 }
 
 type MatchedSegment = {
@@ -1479,6 +1481,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				})
 			}
 
+			const rundownLayout = this.props.rundownLayouts?.find((layout) => layout._id === this.props.rundownLayoutId)
+
 			this.state = {
 				timeScale: MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale,
 				studioMode: getAllowStudio(),
@@ -1500,11 +1504,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				]),
 				isNotificationsCenterOpen: undefined,
 				isSupportPanelOpen: false,
-				isInspectorShelfExpanded: false,
+				isInspectorShelfExpanded: rundownLayout?.openByDefault ?? false,
 				isClipTrimmerOpen: false,
 				selectedPiece: undefined,
 				rundownLayout: undefined,
 				currentRundown: undefined,
+				wasShelfResizedByUser: false,
 			}
 		}
 
@@ -2273,6 +2278,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					isInspectorShelfExpanded: false,
 				})
 			}
+
+			this.setState({
+				wasShelfResizedByUser: true,
+			})
 		}
 
 		onRestartPlayout = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -2392,6 +2401,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		onShelfChangeExpanded = (value: boolean) => {
 			this.setState({
 				isInspectorShelfExpanded: value,
+				wasShelfResizedByUser: true,
 			})
 		}
 
@@ -2594,7 +2604,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								<ErrorBoundary>
 									<Shelf
 										buckets={this.props.buckets}
-										isExpanded={this.state.isInspectorShelfExpanded}
+										isExpanded={
+											this.state.isInspectorShelfExpanded ||
+											(!this.state.wasShelfResizedByUser && this.state.rundownLayout?.openByDefault)
+										}
 										onChangeExpanded={this.onShelfChangeExpanded}
 										hotkeys={this.state.usedHotkeys}
 										playlist={this.props.playlist}

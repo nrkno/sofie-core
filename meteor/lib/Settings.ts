@@ -37,6 +37,8 @@ export interface ISettings {
 	defaultDisplayDuration: number
 	/** If true, allows creation of new playlists in the Lobby Gui (rundown list). If false; only pre-existing playlists are allowed. */
 	allowMultiplePlaylistsInGUI: boolean
+	/** How many segments of history to show when scrolling back in time (0 = show current segment only) */
+	followOnAirSegmentsHistory: number
 }
 
 export let Settings: ISettings
@@ -57,6 +59,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	allowRundownResetOnAir: false,
 	defaultDisplayDuration: 3000,
 	allowMultiplePlaylistsInGUI: false,
+	followOnAirSegmentsHistory: 0,
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)
