@@ -188,7 +188,7 @@ export class JoyConController extends ControllerAbstract {
 
 			// falls back to searching for compatible gamepad
 			for (const o of gamepads) {
-				if (o && o.connected && o.id && typeof o.id === 'string' && (o.id.match('GAMEPAD Vendor: 057e')) || o.id.match('Joy-Con'))) {
+				if (o && o.connected && o.id && typeof o.id === 'string' && (o.id.match('GAMEPAD Vendor: 057e') || o.id.match('Joy-Con'))) {
 					this.lastUsedJoyconIndex = o.index
 					this.lastUsedJoyconId = o.id
 					this.lastUsedJoyconMode =
