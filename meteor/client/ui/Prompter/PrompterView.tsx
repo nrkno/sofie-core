@@ -412,7 +412,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				: null
 
 			const takeIndicator = document.querySelector('.take-indicator')
-			if (showindicators && takeIndicator) {
+			if (takeIndicator && this.configOptions.showindicators) {
 				if (currentPositionEnd && currentPositionEnd < positionTop) {
 					// Display take "^" indicator
 					takeIndicator.classList.remove('hidden')
@@ -426,7 +426,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			}
 
 			const nextIndicator = document.querySelector('.next-indicator')
-			if (showindicators && nextIndicator) {
+			if (nextIndicator && this.configOptions.showindicators) {
 				if (nextPositionEnd && nextPositionEnd < positionTop) {
 					// Display next "^" indicator
 					nextIndicator.classList.remove('hidden')
