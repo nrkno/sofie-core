@@ -119,7 +119,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				queryParams['reverseSpeedMap'] === undefined
 					? undefined
 					: new Array().concat(queryParams['reverseSpeedMap']).map((value) => parseInt(value, 10)),
-			pedalReverse: queryParams['pedalreverse'] === undefined ? false : queryParams['pedalreverse'] === '0',
 			rangeRevMin: parseInt(firstIfArray(queryParams['rangeRevMin']) as string, 10) || undefined,
 			rangeNeutralMin: parseInt(firstIfArray(queryParams['rangeNeutralMin']) as string, 10) || undefined,
 			rangeNeutralMax: parseInt(firstIfArray(queryParams['rangeNeutralMax']) as string, 10) || undefined,
@@ -129,7 +128,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			showScroll: queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1',
 			debug: queryParams['debug'] === undefined ? false : queryParams['debug'] === '1',
 			showOverUnder: queryParams['showoverunder'] === undefined ? true : queryParams['showoverunder'] === '1',
-			showIndicators: queryParams['showindicators'] === undefined ? true : queryParams['showindicators'] === '1',
 		}
 
 		this._controller = new PrompterControlManager(this)
