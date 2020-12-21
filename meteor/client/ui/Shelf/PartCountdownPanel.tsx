@@ -51,23 +51,18 @@ export class PartCountdownPanelInner extends MeteorReactComponent<
 	}
 
 	componentDidMount() {
-		window.addEventListener(RundownTiming.Events.timeupdateHR, this.updateTimecode)
+		window.addEventListener(RundownTiming.Events.timeupdate, this.updateTimecode)
 	}
 
 	componentWillUnmount() {
-		window.removeEventListener(RundownTiming.Events.timeupdateHR, this.updateTimecode)
+		window.removeEventListener(RundownTiming.Events.timeupdate, this.updateTimecode)
 	}
 
 	updateTimecode(e: TimingEvent) {
 		let timecode = 0
-		if (
-			this.props.livePiece &&
-			this.props.livePart &&
-			this.props.livePart.part.startedPlayback &&
-			this.props.livePiece.partInstanceId === this.props.livePart._id
-		) {
-			const partDuration = this.props.livePart.part.duration || this.props.livePart.part.expectedDuration || 0
-			const startedPlayback = this.props.livePart.part.getLastStartedPlayback()
+		if (this.props.livePiece && this.props.livePart && this.props.livePart.timings?.startedPlayback) {
+			const partDuration = this.props.livePart.timings?.duration || this.props.livePart.part.expectedDuration || 0
+			const startedPlayback = this.props.livePart.timings?.startedPlayback
 			if (startedPlayback) {
 				timecode = e.detail.currentTime - (startedPlayback + partDuration)
 			}
@@ -89,24 +84,22 @@ export class PartCountdownPanelInner extends MeteorReactComponent<
 						visibility: this.props.visible ? 'visible' : 'hidden',
 					}
 				)}>
-				<RundownTimingProvider playlist={this.props.playlist}>
-					<span
-						className={ClassNames('part-countdown-panel__timecode', {
-							overtime: !!(Math.floor(this.state.displayTimecode / 1000) > 0),
-						})}>
-						{RundownUtils.formatDiffToTimecode(
-							this.state.displayTimecode || 0,
-							true,
-							false,
-							true,
-							false,
-							true,
-							'',
-							false,
-							true
-						)}
-					</span>
-				</RundownTimingProvider>
+				<span
+					className={ClassNames('part-countdown-panel__timecode', {
+						overtime: !!(Math.floor(this.state.displayTimecode / 1000) > 0),
+					})}>
+					{RundownUtils.formatDiffToTimecode(
+						this.state.displayTimecode || 0,
+						true,
+						false,
+						true,
+						false,
+						true,
+						'',
+						false,
+						true
+					)}
+				</span>
 			</div>
 		)
 	}
@@ -119,15 +112,18 @@ export const PartCountdownPanel = withTracker<IPartCountdownPanelProps, IState, 
 			props.playlist.currentPartInstanceId
 		)
 		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
-		const livePiece: PieceInstance | undefined =
-			props.panel.sourceLayerIds && props.panel.sourceLayerIds.length
-				? _.find(_.flatten(_.values(unfinishedPieces)), (piece: PieceInstance) => {
-						return (props.panel.sourceLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1
-				  })
-				: undefined
 		const livePart = props.playlist.currentPartInstanceId
 			? PartInstances.findOne(props.playlist.currentPartInstanceId)
 			: undefined
+		const livePiece: PieceInstance | undefined =
+			props.panel.sourceLayerIds && props.panel.sourceLayerIds.length
+				? _.find(_.flatten(_.values(unfinishedPieces)), (piece: PieceInstance) => {
+						return (
+							(props.panel.sourceLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
+							piece.partInstanceId === props.playlist.currentPartInstanceId
+						)
+				  })
+				: undefined
 		return {
 			unfinishedAdLibIds,
 			unfinishedTags,
