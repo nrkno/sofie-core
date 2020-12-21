@@ -39,6 +39,7 @@ export enum RundownLayoutElementType {
 	ADLIB_REGION = 'adlib_region',
 	KEYBOARD_PREVIEW = 'keyboard_preview',
 	PART_COUNTDOWN = 'part_countdown',
+	PIECE_COUNTDOWN = 'piece_countdown',
 }
 
 export interface RundownLayoutElementBase {
