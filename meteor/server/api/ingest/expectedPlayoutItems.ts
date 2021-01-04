@@ -1,13 +1,13 @@
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { check } from '../../../lib/check'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
-import { ExpectedPlayoutItemGeneric } from 'tv-automation-sofie-blueprints-integration'
+import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
 import { DBRundown, RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { logger } from '../../logging'
 import { PartId, DBPart } from '../../../lib/collections/Parts'
-import { saveIntoDb, protectString } from '../../../lib/lib'
+import { saveIntoDb, protectString, unprotectString } from '../../../lib/lib'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { getAllPiecesFromCache, getAllAdLibPiecesFromCache } from '../playout/lib'
 
@@ -66,9 +66,21 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForRundownPlayli
 
 	const intermediaryItems: ExpectedPlayoutItemGenericWithPiece[] = []
 
+	const piecesStartingInThisRundown = cache.Pieces.findFetch({
+		startRundownId: rundown._id,
+	})
+	const piecesGrouped = _.groupBy(piecesStartingInThisRundown, 'startPartId')
+
+	const adlibPiecesInThisRundown = cache.AdLibPieces.findFetch({
+		rundownId: rundown._id,
+	})
+	const adlibPiecesGrouped = _.groupBy(adlibPiecesInThisRundown, 'partId')
+
 	for (const part of cache.Parts.findFetch({ rundownId: rundown._id })) {
-		intermediaryItems.push(...extractExpectedPlayoutItems(part, getAllPiecesFromCache(cache, part)))
-		intermediaryItems.push(...extractExpectedPlayoutItems(part, getAllAdLibPiecesFromCache(cache, part)))
+		intermediaryItems.push(...extractExpectedPlayoutItems(part, piecesGrouped[unprotectString(part._id)] || []))
+		intermediaryItems.push(
+			...extractExpectedPlayoutItems(part, adlibPiecesGrouped[unprotectString(part._id)] || [])
+		)
 	}
 
 	cache.deferAfterSave(() => {
@@ -118,7 +130,7 @@ export function updateExpectedPlayoutItemsOnPart(
 	cache.deferAfterSave(() => {
 		const intermediaryItems = extractExpectedPlayoutItems(part, [
 			...getAllPiecesFromCache(cache, part),
-			...part.getAllAdLibPieces(),
+			...getAllAdLibPiecesFromCache(cache, part),
 		])
 		const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)
 

@@ -22,7 +22,7 @@ import {
 	ConfigManifestEntryLayerMappings,
 	SourceLayerType,
 	ConfigManifestEntrySelectFromOptions,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { literal, DBObj, KeysByType, ProtectedString, objectPathGet } from '../../../lib/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
@@ -659,11 +659,13 @@ export class ConfigManifestSettings<
 
 		const value = rawValue === undefined ? item.defaultVal : rawValue
 
+		const rawValueArr = rawValue as any[]
+
 		switch (item.type) {
 			case ConfigManifestEntryType.BOOLEAN:
 				return value ? t('true') : t('false')
 			case ConfigManifestEntryType.TABLE:
-				return t('{{count}} rows', { count: ((rawValue as any[]) || []).length })
+				return t('{{count}} rows', { count: (rawValueArr || []).length })
 			case ConfigManifestEntryType.SELECT:
 			case ConfigManifestEntryType.LAYER_MAPPINGS:
 			case ConfigManifestEntryType.SOURCE_LAYERS:

@@ -7,7 +7,7 @@ import { Part, DBPart } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 
 // import { buildTimelineObjsForRundown } from '../playout'
-// import { getPartGroupId, getPartFirstObjectId, getPieceGroupId, getPieceFirstObjectId } from 'tv-automation-sofie-blueprints-integration/dist/timeline'
+// import { getPartGroupId, getPartFirstObjectId, getPieceGroupId, getPieceFirstObjectId } from '@sofie-automation/blueprints-integration/dist/timeline'
 // import { TriggerType } from 'superfly-timeline'
 // import { RundownAPI } from '../../../lib/api/rundown'
 

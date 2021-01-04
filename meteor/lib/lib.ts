@@ -13,10 +13,11 @@ import { logger } from './logging'
 import { Timecode } from 'timecode'
 import { Settings } from './Settings'
 import * as objectPath from 'object-path'
-import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
+import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-integration'
 import * as crypto from 'crypto'
-import { DeepReadonly } from 'utility-types'
+import { DeepReadonly, DeepPartial } from 'utility-types'
 import { BulkWriteOperation } from 'mongodb'
+import { _DeepPartialObject } from 'utility-types/dist/mapped-types'
 
 const cloneOrg = require('fast-clone')
 
@@ -80,6 +81,7 @@ export type Time = number
 export type TimeDuration = number
 
 const systemTime = {
+	hasBeenSet: false,
 	diff: 0,
 	stdDev: 9999,
 }
@@ -408,13 +410,10 @@ export function partialExceptId<T>(o: Partial<T> & IDObj) {
 export interface ObjId {
 	_id: ProtectedString<any>
 }
-export type OmitId<T> = Omit<T & ObjId, '_id'>
 
 export function omit<T, P extends keyof T>(obj: T, ...props: P[]): Omit<T, P> {
 	return _.omit(obj, ...(props as string[]))
 }
-
-export type ReturnType<T extends Function> = T extends (...args: any[]) => infer R ? R : never
 
 export function applyClassToDocument(docClass, document) {
 	return new docClass(document)
@@ -578,44 +577,59 @@ export const getCollectionStats: (collection: TransformedCollection<any, any>) =
 // 		return false
 // 	})
 // }
-// /**
-//  * Returns a rank number, to be used to insert new objects in a ranked list
-//  * @param before	Object before, null/undefined if inserted first
-//  * @param after			Object after, null/undefined if inserted last
-//  * @param i				If inserting multiple objects, this is the number of this object
-//  * @param count			If inserting multiple objects, this is total count of objects
-//  */
-// export function getRank<T extends { _rank: number }>(
-// 	before: T | null | undefined,
-// 	after: T | null | undefined,
-// 	i: number = 0,
-// 	count: number = 1
-// ): number {
-// 	let newRankMax
-// 	let newRankMin
 
-// 	if (after) {
-// 		if (before) {
-// 			newRankMin = before._rank
-// 			newRankMax = after._rank
-// 		} else {
-// 			// First
-// 			newRankMin = after._rank - 1
-// 			newRankMax = after._rank
-// 		}
-// 	} else {
-// 		if (before) {
-// 			// Last
-// 			newRankMin = before._rank
-// 			newRankMax = before._rank + 1
-// 		} else {
-// 			// Empty list
-// 			newRankMin = 0
-// 			newRankMax = 1
-// 		}
-// 	}
-// 	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
-// }
+/**
+ * Returns a rank number, to be used to insert new objects in a ranked list
+ * @param before   The element before the one-to-be-inserted, null/undefined if inserted first
+ * @param after	   The element after the one-to-be-inserted, null/undefined if inserted last
+ * @param i        If inserting multiple elements; the internal rank of the to-be-inserted element
+ * @param count    If inserting multiple elements, this is total count of inserted elements
+ */
+export function getRank<T extends { _rank: number }>(
+	before: T | null | undefined,
+	after: T | null | undefined,
+	i: number = 0,
+	count: number = 1
+): number {
+	let newRankMax
+	let newRankMin
+
+	if (after) {
+		if (before) {
+			newRankMin = before._rank
+			newRankMax = after._rank
+		} else {
+			// First
+			newRankMin = after._rank - 1
+			newRankMax = after._rank
+		}
+	} else {
+		if (before) {
+			// Last
+			newRankMin = before._rank
+			newRankMax = before._rank + 1
+		} else {
+			// Empty list
+			newRankMin = 0
+			newRankMax = 1
+		}
+	}
+	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
+}
+
+export function normalizeArrayFuncFilter<T>(
+	array: Array<T>,
+	getKey: (o: T) => string | undefined
+): { [indexKey: string]: T } {
+	const normalizedObject: any = {}
+	for (let i = 0; i < array.length; i++) {
+		const key = getKey(array[i])
+		if (key !== undefined) {
+			normalizedObject[key] = array[i]
+		}
+	}
+	return normalizedObject as { [key: string]: T }
+}
 export function normalizeArrayFunc<T>(array: Array<T>, getKey: (o: T) => string): { [indexKey: string]: T } {
 	const normalizedObject: any = {}
 	for (let i = 0; i < array.length; i++) {
@@ -632,6 +646,15 @@ export function normalizeArray<T>(array: Array<T>, indexKey: keyof T): { [indexK
 	}
 	return normalizedObject as { [key: string]: T }
 }
+export function normalizeArrayToMap<T, K extends keyof T>(array: T[], indexKey: K): Map<T[K], T> {
+	const normalizedObject = new Map<T[K], T>()
+	for (const item of array) {
+		const key = item[indexKey]
+		normalizedObject.set(key, item)
+	}
+	return normalizedObject
+}
+
 /** Convenience function, to be used when length of array has previously been verified */
 export function last<T>(values: T[]): T {
 	return _.last(values) as T
@@ -754,7 +777,7 @@ export function asyncCollectionFindOne<DocClass extends DBInterface, DBInterface
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoQuery<DBInterface> | string
 ): Promise<DocClass | undefined> {
-	return asyncCollectionFindFetch(collection, selector).then((arr) => {
+	return asyncCollectionFindFetch(collection, selector, { limit: 1 }).then((arr) => {
 		return arr[0]
 	})
 }
@@ -829,11 +852,11 @@ export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface 
 export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoQuery<DBInterface> | DBInterface['_id']
-): Promise<void> {
+): Promise<number> {
 	return new Promise((resolve, reject) => {
-		collection.remove(selector, (err: any) => {
+		collection.remove(selector, (err: any, count: number) => {
 			if (err) reject(err)
-			else resolve()
+			else resolve(count)
 		})
 	})
 }
@@ -1364,12 +1387,14 @@ export function isProtectedString(str: any): str is ProtectedString<any> {
 	return typeof str === 'string'
 }
 export type ProtectId<T extends { _id: string }> = Omit<T, '_id'> & { _id: ProtectedString<any> }
-export type UnprotectedStringProperties<T extends object> = {
+export type UnprotectedStringProperties<T extends object | undefined> = {
 	[P in keyof T]: T[P] extends ProtectedString<any>
 		? string
 		: T[P] extends ProtectedString<any> | undefined
 		? string | undefined
-		: T[P] extends UnprotectedStringProperties<any>
+		: T[P] extends object
+		? UnprotectedStringProperties<T[P]>
+		: T[P] extends object | undefined
 		? UnprotectedStringProperties<T[P]>
 		: T[P]
 }
@@ -1386,6 +1411,16 @@ export function isStringOrProtectedString<T extends ProtectedString<any>>(val: a
 	return _.isString(val)
 }
 
+export function unpartialString<T extends ProtectedString<any>>(obj: T | _DeepPartialObject<T>): T
+export function unpartialString<T extends ProtectedString<any>>(
+	str: T | _DeepPartialObject<T> | undefined
+): T | undefined
+export function unpartialString<T extends ProtectedString<any>>(
+	str: T | _DeepPartialObject<T> | undefined
+): T | undefined {
+	return str as any
+}
+
 export function isPromise<T extends any>(val: any): val is Promise<T> {
 	return _.isObject(val) && typeof val.then === 'function' && typeof val.catch === 'function'
 }
@@ -1394,6 +1429,14 @@ export function assertNever(_never: never): void {
 	// Do nothing. This is a type guard
 }
 
+/**
+ * This is a fast, shallow compare of two Sets.
+ *
+ * **Note**: This is a shallow compare, so it will return false if the objects in the arrays are identical, but not the same.
+ *
+ * @param a
+ * @param b
+ */
 export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
 	if (a === b) return true
 	if (a.size !== b.size) return false
@@ -1403,11 +1446,35 @@ export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
 	return true
 }
 
+/**
+ * This is a fast, shallow compare of two arrays that are used as unsorted lists. The ordering of the elements is ignored.
+ *
+ * **Note**: This is a shallow compare, so it will return false if the objects in the arrays are identical, but not the same.
+ *
+ * @param a
+ * @param b
+ */
 export function equivalentArrays<T>(a: T[], b: T[]): boolean {
 	if (a === b) return true
 	if (a.length !== b.length) return false
 	for (let i = 0; i < a.length; i++) {
 		if (!b.includes(a[i])) return false
+	}
+	return true
+}
+
+/**
+ * This is a fast, shallow compare of two arrays of the same type.
+ *
+ * **Note**: This is a shallow compare, so it will return false if the objects in the arrays are identical, but not the same.
+ * @param a
+ * @param b
+ */
+export function equalArrays<T>(a: T[], b: T[]): boolean {
+	if (a === b) return true
+	if (a.length !== b.length) return false
+	for (let i = 0; i < a.length; i++) {
+		if (b[i] !== a[i]) return false
 	}
 	return true
 }

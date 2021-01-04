@@ -11,11 +11,11 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { Segments, Segment } from '../../../lib/collections/Segments'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
-import { TSR } from 'tv-automation-sofie-blueprints-integration'
+import { TSR } from '@sofie-automation/blueprints-integration'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
@@ -23,16 +23,14 @@ import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 import { saveIntoCache } from '../../DatabaseCache'
-import { afterRemoveParts } from '../rundown'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
-import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
-import { MethodContext } from '../../../lib/api/methods'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { isAnySyncFunctionsRunning } from '../../codeControl'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { profiler } from '../profiler'
+
+export const LOW_PRIO_DEFER_TIME = 40 // ms
 
 /**
  * Reset the rundown:
@@ -144,6 +142,7 @@ function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPla
 		$unset: {
 			startedPlayback: 1,
 			previousPersistentState: 1,
+			trackedAbSessions: 1,
 		},
 	})
 
@@ -728,22 +727,22 @@ export function getAllPieceInstancesFromCache(
 	})
 }
 
-export function touchRundownPlaylistsInCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-	if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
-	if (getCurrentTime() - playlist.modified > 3600 * 1000) {
-		const m = getCurrentTime()
-		playlist.modified = m
-		cache.RundownPlaylists.update(playlist._id, { $set: { modified: m } })
-	}
-}
+// export function touchRundownPlaylistsInCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
+// 	if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
+// 	if (getCurrentTime() - playlist.modified > 3600 * 1000) {
+// 		const m = getCurrentTime()
+// 		playlist.modified = m
+// 		cache.RundownPlaylists.update(playlist._id, { $set: { modified: m } })
+// 	}
+// }
 
-export function getRundownPlaylistFromCache(cache: CacheForRundownPlaylist, rundown: Rundown) {
-	if (!rundown.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
-	let pls = cache.RundownPlaylists.findOne(rundown.playlistId)
-	if (pls) {
-		return pls
-	} else throw new Meteor.Error(404, `Rundown Playlist "${rundown.playlistId}" not found!`)
-}
+// export function getRundownPlaylistFromCache(cache: CacheForRundownPlaylist, rundown: Rundown) {
+// 	if (!rundown.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
+// 	let pls = cache.RundownPlaylists.findOne(rundown.playlistId)
+// 	if (pls) {
+// 		return pls
+// 	} else throw new Meteor.Error(404, `Rundown Playlist "${rundown.playlistId}" not found!`)
+// }
 
 export function getRundownsSegmentsAndPartsFromCache(
 	cache: CacheForRundownPlaylist,
@@ -789,51 +788,4 @@ export function getRundownsSegmentsAndPartsFromCache(
 		segments: segments,
 		parts: parts,
 	}
-}
-
-// export function getPartBeforeSegmentFromCache(
-// 	cache: CacheForRundownPlaylist,
-// 	rundownId: RundownId,
-// 	dbSegment: DBSegment
-// ): Part | undefined {
-// 	const prevSegment = cache.Segments.findOne(
-// 		{
-// 			rundownId: rundownId,
-// 			_rank: { $lt: dbSegment._rank },
-// 		},
-// 		{ sort: { _rank: -1 } }
-// 	)
-// 	if (prevSegment) {
-// 		return cache.Parts.findOne(
-// 			{
-// 				rundownId: rundownId,
-// 				segmentId: prevSegment._id,
-// 			},
-// 			{ sort: { _rank: -1 } }
-// 		)
-// 	}
-// 	return undefined
-// }
-
-export function checkAccessAndGetPlaylist(context: MethodContext, playlistId: RundownPlaylistId): RundownPlaylist {
-	const access = RundownPlaylistContentWriteAccess.playout(context, playlistId)
-	const playlist = access.playlist
-	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${playlistId}" not found!`)
-	return playlist
-}
-export function triggerGarbageCollection() {
-	Meteor.setTimeout(() => {
-		// Trigger a manual garbage collection:
-		if (global.gc) {
-			// This is only avaialble of the flag --expose_gc
-			// This can be done in prod by: node --expose_gc main.js
-			// or when running Meteor in development, set set SERVER_NODE_OPTIONS=--expose_gc
-
-			if (!isAnySyncFunctionsRunning()) {
-				// by passing true, we're triggering the "full" collection
-				// @ts-ignore (typings not avaiable)
-				global.gc(true)
-			}
-		}
-	}, 500)
 }

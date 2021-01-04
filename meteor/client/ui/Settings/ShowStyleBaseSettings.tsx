@@ -28,7 +28,7 @@ import {
 	IOutputLayer,
 	BlueprintManifestType,
 	ConfigManifestEntry,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Studios, Studio, MappingsExt } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
@@ -339,6 +339,8 @@ const SourceLayerSettings = withTranslation()(
 					return t('Transition')
 				case SourceLayerType.LIGHTS:
 					return t('Lights')
+				case SourceLayerType.LOCAL:
+					return t('Local')
 				default:
 					return SourceLayerType[type]
 			}

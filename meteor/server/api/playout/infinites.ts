@@ -1,8 +1,7 @@
 import * as _ from 'underscore'
-import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { DBPart, Part } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { asyncCollectionFindFetch, literal, assertNever, extendMandadory } from '../../../lib/lib'
+import { asyncCollectionFindFetch } from '../../../lib/lib'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -18,7 +17,7 @@ import {
 import { profiler } from '../profiler'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
-export const DEFINITELY_ENDED_FUTURE_DURATION = 10 * 1000
+export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
 
 /**
  * We can only continue adlib onEnd infinites if we go forwards in the rundown. Any distance backwards will clear them.

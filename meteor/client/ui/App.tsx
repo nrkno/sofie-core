@@ -21,17 +21,17 @@ import {
 	getUIZoom,
 } from '../lib/localStorage'
 import Status from './Status'
-import { Settings as SettingsComponent } from './Settings'
+import { Settings as SettingsView } from './Settings'
 import TestTools from './TestTools'
 import { RundownList } from './RundownList'
 import { RundownView } from './RundownView'
 import { ActiveRundownView } from './ActiveRundownView'
-import { ClockView } from './ClockView'
-import { ConnectionStatusNotification } from './ConnectionStatusNotification'
+import { ClockView } from './ClockView/ClockView'
+import { ConnectionStatusNotification } from '../lib/ConnectionStatusNotification'
 import { BrowserRouter as Router, Route, Switch, Redirect, RouteComponentProps } from 'react-router-dom'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './Prompter/PrompterView'
-import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
+import { ModalDialogGlobalContainer, doModalDialog } from '../lib/ModalDialog'
 import { Settings } from '../../lib/Settings'
 import { LoginPage } from './Account/NotLoggedIn/LoginPage'
 import { SignupPage } from './Account/NotLoggedIn/SignupPage'
@@ -43,7 +43,7 @@ import { getUser, User } from '../../lib/collections/Users'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { read } from 'fs'
+import { DocumentTitleProvider } from '../lib/DocumentTitleProvider'
 
 const NullComponent = () => null
 
@@ -175,8 +175,6 @@ export const App = translateWithTracker(() => {
 				}
 			})
 
-			m.locale(i18n.language)
-			document.documentElement.lang = i18n.language
 			setInterval(this.cronJob, CRON_INTERVAL)
 
 			const uiZoom = getUIZoom()
@@ -202,16 +200,28 @@ export const App = translateWithTracker(() => {
 		}
 
 		render() {
+			const { t } = this.props
 			return (
-				<Router>
+				<Router
+					getUserConfirmation={(message, callback) => {
+						doModalDialog({
+							title: t('Are you sure?'),
+							message,
+							onAccept: () => {
+								callback(true)
+							},
+							onDiscard: () => {
+								callback(false)
+							},
+						})
+					}}>
 					<div className="container-fluid">
 						{/* Header switch - render the usual header for all pages but the rundown view */}
 						{(!Settings.enableUserAccounts || this.props.user) && (
 							<ErrorBoundary>
 								<Switch>
 									<Route path="/rundown/:playlistId" component={NullComponent} />
-									<Route path="/countdowns/:studioId/presenter" component={NullComponent} />
-									<Route path="/countdowns/presenter" component={NullComponent} />
+									<Route path="/countdowns/:studioId" component={NullComponent} />
 									<Route path="/activeRundown" component={NullComponent} />
 									<Route path="/prompter/:studioId" component={NullComponent} />
 									<Route
@@ -259,23 +269,34 @@ export const App = translateWithTracker(() => {
 									<Route exact path="/" component={RundownList} />
 								)}
 								<this.protectedRoute path="/rundowns" component={RundownList} />
+								<this.protectedRoute
+									path="/rundown/:playlistId/shelf"
+									exact
+									component={(props) => <RundownView {...props} onlyShelf={true} />}
+								/>
 								<this.protectedRoute path="/rundown/:playlistId" component={RundownView} />
 								<this.protectedRoute path="/activeRundown/:studioId" component={ActiveRundownView} />
 								<this.protectedRoute path="/prompter/:studioId" component={PrompterView} />
-								<this.protectedRoute path="/countdowns/:studioId/presenter" component={ClockView} />
+								{/* We switch to the general ClockView component, and allow it to do the switch between various types of countdowns */}
+								<this.protectedRoute path="/countdowns/:studioId" component={ClockView} />
 								<this.protectedRoute path="/status" component={Status} />
-								<this.protectedRoute path="/settings" component={(props) => <SettingsComponent {...props} />} />
+								<this.protectedRoute path="/settings" component={SettingsView} />
 								<Route path="/testTools" component={TestTools} />
+								<Route>
+									<Redirect to="/" />
+								</Route>
 							</Switch>
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<Switch>
 								{/* Put views that should NOT have the Notification center here: */}
-								<Route path="/countdowns/:studioId/presenter" component={NullComponent} />
-								<Route path="/countdowns/presenter" component={NullComponent} />
+								<Route path="/countdowns/:studioId" component={NullComponent} />
 								<Route path="/prompter/:studioId" component={NullComponent} />
 								<Route path="/" component={ConnectionStatusNotification} />
 							</Switch>
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<DocumentTitleProvider />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<ModalDialogGlobalContainer />

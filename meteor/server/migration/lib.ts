@@ -4,7 +4,7 @@ import {
 	MigrationStepInput,
 	MigrationStepInputFilteredResult,
 	MigrationStepBase,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { Collections, objectPathGet, DBObj, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'

@@ -1,14 +1,15 @@
+import { testInFiber } from '../../__mocks__/helpers/jest'
 import { getRelevantSystemVersions } from '../coreSystem'
 
 describe('coreSystem', () => {
-	test('getRelevantSystemVersions', () => {
+	testInFiber('getRelevantSystemVersions', () => {
 		const versions = getRelevantSystemVersions()
 
-		expect(versions).toMatchObject({
-			core: expect.stringMatching(/(\d+)\.(\d+)\.(\d+)/),
-			'superfly-timeline': expect.stringMatching(/(\d+)\.(\d+)\.(\d+)/),
-			'timeline-state-resolver-types': expect.stringMatching(/(\d+)\.(\d+)\.(\d+)/),
-			'tv-automation-sofie-blueprints-integration': expect.stringMatching(/(\d+)\.(\d+)\.(\d+)/),
+		expect(versions).toEqual({
+			core: expect.stringMatching(/^(\d+)\.(\d+)\.(\d+)/),
+			'mos-connection': expect.stringMatching(/^(\d+)\.(\d+)\.(\d+)/),
+			'superfly-timeline': expect.stringMatching(/^(\d+)\.(\d+)\.(\d+)/),
+			'timeline-state-resolver-types': expect.stringMatching(/^(\d+)\.(\d+)\.(\d+)/),
 		})
 	})
 })

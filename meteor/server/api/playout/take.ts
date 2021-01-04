@@ -1,6 +1,14 @@
 import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { ClientAPI } from '../../../lib/api/client'
-import { getCurrentTime, waitForPromise, unprotectObjectArray, protectString, literal, clone } from '../../../lib/lib'
+import {
+	getCurrentTime,
+	waitForPromise,
+	unprotectObjectArray,
+	protectString,
+	literal,
+	clone,
+	getRandomId,
+} from '../../../lib/lib'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { Meteor } from 'meteor/meteor'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
@@ -10,20 +18,17 @@ import {
 	isTooCloseToAutonext,
 	getSegmentsAndPartsFromCache,
 	selectNextPart,
-	checkAccessAndGetPlaylist,
-	triggerGarbageCollection,
 	getAllPieceInstancesFromCache,
+	LOW_PRIO_DEFER_TIME,
 } from './lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { updateTimeline } from './timeline'
 import { logger } from '../../logging'
-import { PartEndState, VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { PartEndState, VTContent } from '@sofie-automation/blueprints-integration'
 import { getResolvedPieces } from './pieces'
-import { Part } from '../../../lib/collections/Parts'
 import * as _ from 'underscore'
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, PieceInstanceId, PieceInstanceInfiniteId } from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
@@ -32,9 +37,10 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartHasStarted } from '../asRunLog'
 import { MethodContext } from '../../../lib/api/methods'
 import { profiler } from '../profiler'
-import { ServerPlayoutAPI } from './playout'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { isAnySyncFunctionsRunning } from '../../codeControl'
+import { checkAccessAndGetPlaylist } from '../lib'
 
 export function takeNextPartInner(
 	context: MethodContext,
@@ -199,6 +205,8 @@ export function takeNextPartInnerSync(
 			isTaken: true,
 			'timings.take': now,
 			'timings.playOffset': timeOffset || 0,
+			// set transition properties to what will be used to generate timeline later:
+			allowedToUseTransition: currentPartInstance && !currentPartInstance.part.disableOutTransition,
 		},
 		$unset: {} as { string: 0 | 1 },
 	}
@@ -320,19 +328,23 @@ export function afterTake(
 	// or after a new part has started playing
 	updateTimeline(cache, studioId, forceNowTime)
 
-	// defer these so that the playout gateway has the chance to learn about the changes
-	Meteor.setTimeout(() => {
-		// todo
-		if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
-			const currentRundown = Rundowns.findOne(takePartInstance.rundownId)
-			if (!currentRundown)
-				throw new Meteor.Error(
-					404,
-					`Rundown "${takePartInstance.rundownId}" of partInstance "${takePartInstance._id}" not found`
-				)
-			IngestActions.notifyCurrentPlayingPart(currentRundown, takePartInstance.part)
-		}
-	}, 40)
+	cache.deferAfterSave(() => {
+		Meteor.setTimeout(() => {
+			// This is low-prio, defer so that it's executed well after publications has been updated,
+			// so that the playout gateway has haf the chance to learn about the timeline changes
+
+			// todo
+			if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
+				const currentRundown = Rundowns.findOne(takePartInstance.rundownId)
+				if (!currentRundown)
+					throw new Meteor.Error(
+						404,
+						`Rundown "${takePartInstance.rundownId}" of partInstance "${takePartInstance._id}" not found`
+					)
+				IngestActions.notifyCurrentPlayingPart(currentRundown, takePartInstance.part)
+			}
+		}, LOW_PRIO_DEFER_TIME)
+	})
 
 	triggerGarbageCollection()
 	if (span) span.end()
@@ -354,10 +366,12 @@ function startHold(
 	const itemsToCopy = getAllPieceInstancesFromCache(cache, holdFromPartInstance).filter((pi) => pi.piece.extendOnHold)
 	itemsToCopy.forEach((instance) => {
 		if (!instance.infinite) {
+			const infiniteInstanceId: PieceInstanceInfiniteId = getRandomId()
 			// mark current one as infinite
 			cache.PieceInstances.update(instance._id, {
 				$set: {
 					infinite: {
+						infiniteInstanceId: infiniteInstanceId,
 						infinitePieceId: instance.piece._id,
 						fromPreviousPart: false,
 					},
@@ -372,16 +386,18 @@ function startHold(
 				dynamicallyInserted: getCurrentTime(),
 				piece: {
 					...clone(instance.piece),
-					_id: protectString<PieceId>(instance.piece._id + '_hold'),
-					startPartId: holdToPartInstance.part._id,
 					enable: { start: 0 },
 					extendOnHold: false,
 				},
 				infinite: {
+					infiniteInstanceId: infiniteInstanceId,
 					infinitePieceId: instance.piece._id,
 					fromPreviousPart: true,
 					fromHold: true,
 				},
+				// Preserve the timings from the playing instance
+				startedPlayback: instance.startedPlayback,
+				stoppedPlayback: instance.stoppedPlayback,
 			})
 			const content = newInstance.piece.content as VTContent | undefined
 			if (content && content.fileName && content.sourceDuration && instance.startedPlayback) {
@@ -421,4 +437,21 @@ function completeHold(
 	}
 
 	updateTimeline(cache, playlist.studioId)
+}
+
+export function triggerGarbageCollection() {
+	Meteor.setTimeout(() => {
+		// Trigger a manual garbage collection:
+		if (global.gc) {
+			// This is only avaialble of the flag --expose_gc
+			// This can be done in prod by: node --expose_gc main.js
+			// or when running Meteor in development, set set SERVER_NODE_OPTIONS=--expose_gc
+
+			if (!isAnySyncFunctionsRunning()) {
+				// by passing true, we're triggering the "full" collection
+				// @ts-ignore (typings not avaiable)
+				global.gc(true)
+			}
+		}
+	}, 500)
 }

@@ -2,9 +2,8 @@ import * as _ from 'underscore'
 import moment from 'moment'
 import { VM } from 'vm2'
 import { logger } from '../../logging'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
@@ -13,7 +12,7 @@ import {
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest,
 	SystemBlueprintManifest,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { unprotectString } from '../../../lib/lib'
 

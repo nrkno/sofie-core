@@ -4,11 +4,11 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
-import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
-import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import {
 	IAdLibPanelProps,
-	IAdLibPanelTrackedProps,
+	AdLibFetchAndFilterProps,
 	fetchAndFilter,
 	AdLibPieceUi,
 	matchFilter,
@@ -39,7 +39,7 @@ interface IState {
 export const TimelineDashboardPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IDashboardPanelProps>,
 	IState,
-	IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
+	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
@@ -113,7 +113,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 											return (
 												<DashboardPieceButton
 													key={unprotectString(adLibListItem._id)}
-													adLibListItem={adLibListItem}
+													piece={adLibListItem}
+													studio={this.props.studio}
 													layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
 													outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
 													onToggleAdLib={this.onToggleAdLib}
@@ -126,6 +127,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 													}
 													widthScale={filter.buttonWidthScale}
 													heightScale={filter.buttonHeightScale}
+													displayStyle={PieceDisplayStyle.BUTTONS}
 													showThumbnailsInList={filter.showThumbnailsInList}>
 													{adLibListItem.name}
 												</DashboardPieceButton>
@@ -162,17 +164,19 @@ export const TimelineDashboardPanel = translateWithTracker<
 												return (
 													<DashboardPieceButton
 														key={unprotectString(adLibListItem._id)}
-														adLibListItem={adLibListItem}
+														piece={adLibListItem}
 														layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
 														outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
 														onToggleAdLib={this.onToggleAdLib}
 														playlist={this.props.playlist}
+														studio={this.props.studio}
 														isOnAir={this.isAdLibOnAir(adLibListItem)}
 														mediaPreviewUrl={
 															this.props.studio
 																? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
 																: ''
 														}
+														displayStyle={PieceDisplayStyle.BUTTONS}
 														widthScale={filter.buttonWidthScale}
 														heightScale={filter.buttonHeightScale}
 														showThumbnailsInList={filter.showThumbnailsInList}>

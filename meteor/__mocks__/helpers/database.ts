@@ -27,7 +27,7 @@ import {
 	IBlueprintPart,
 	IBlueprintPiece,
 	TSR,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
 	ShowStyleVariant,
@@ -71,14 +71,14 @@ export enum LAYER_IDS {
 }
 
 function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VERSION: string } {
-	const INTEGRATION_VERSION = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
+	const INTEGRATION_VERSION = require('../../node_modules/@sofie-automation/blueprints-integration/package.json')
 		.version
 
 	let TSR_VERSION = ''
 	try {
 		TSR_VERSION = require('../../node_modules/timeline-state-resolver-types/package.json').version
 	} catch (e) {
-		TSR_VERSION = require('../../node_modules/tv-automation-sofie-blueprints-integration/node_modules/timeline-state-resolver-types/package.json')
+		TSR_VERSION = require('../../node_modules/@sofie-automation/blueprints-integration/node_modules/timeline-state-resolver-types/package.json')
 			.version
 	}
 
@@ -165,6 +165,7 @@ export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 		},
 		_rundownVersionHash: 'asdf',
 		routeSets: {},
+		routeSetExclusivityGroups: {},
 	}
 	const studio = _.extend(defaultStudio, doc)
 	Studios.insert(studio)
@@ -250,7 +251,6 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.STUDIO
-	const CORE_VERSION: string = CURRENT_SYSTEM_VERSION
 	const SHOW_STYLE_ID: string = unprotectString(showStyleBaseId)
 
 	const code = packageBlueprint<StudioBlueprintManifest>(
@@ -259,7 +259,6 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 			BLUEPRINT_TYPE,
 			INTEGRATION_VERSION,
 			TSR_VERSION,
-			CORE_VERSION,
 			SHOW_STYLE_ID,
 		},
 		function(): StudioBlueprintManifest {
@@ -268,7 +267,6 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 				blueprintVersion: '0.0.0',
 				integrationVersion: INTEGRATION_VERSION,
 				TSRVersion: TSR_VERSION,
-				minimumCoreVersion: CORE_VERSION,
 
 				studioConfigManifest: [],
 				studioMigrations: [],
@@ -295,7 +293,6 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
-	const CORE_VERSION: string = CURRENT_SYSTEM_VERSION
 	const SHOW_STYLE_VARIANT_ID: string = unprotectString(showStyleVariantId)
 
 	const code = packageBlueprint<ShowStyleBlueprintManifest>(
@@ -304,7 +301,6 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 			BLUEPRINT_TYPE,
 			INTEGRATION_VERSION,
 			TSR_VERSION,
-			CORE_VERSION,
 			SHOW_STYLE_VARIANT_ID,
 		},
 		function(): ShowStyleBlueprintManifest {
@@ -313,7 +309,6 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 				blueprintVersion: '0.0.0',
 				integrationVersion: INTEGRATION_VERSION,
 				TSRVersion: TSR_VERSION,
-				minimumCoreVersion: CORE_VERSION,
 
 				showStyleConfigManifest: [],
 				showStyleMigrations: [],

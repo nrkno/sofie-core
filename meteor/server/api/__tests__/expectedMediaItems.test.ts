@@ -2,7 +2,7 @@ import { Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundown
 import { literal, protectString, getRandomId, waitForPromise } from '../../../lib/lib'
 import { setupDefaultStudioEnvironment, LAYER_IDS } from '../../../__mocks__/helpers/database'
 import { DBPart, Parts, PartId } from '../../../lib/collections/Parts'
-import { VTContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { Segments, DBSegment } from '../../../lib/collections/Segments'
 import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'

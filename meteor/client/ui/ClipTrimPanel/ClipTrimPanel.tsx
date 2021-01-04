@@ -4,7 +4,7 @@ import { ensureHasTrailingSlash } from '../../lib/lib'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { PubSub } from '../../../lib/api/pubsub'
-import { VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent } from '@sofie-automation/blueprints-integration'
 import { VideoEditMonitor } from './VideoEditMonitor'
 import { MediaObjects, MediaObject } from '../../../lib/collections/MediaObjects'
 import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
@@ -15,7 +15,7 @@ import { PartId } from '../../../lib/collections/Parts'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { faUndo } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-const Tooltip = require('rc-tooltip')
+import Tooltip from 'rc-tooltip'
 
 export interface IProps {
 	pieceId: PieceId

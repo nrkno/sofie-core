@@ -11,6 +11,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { unprotectString } from '../../../lib/lib'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
+import { Studio } from '../../../lib/collections/Studios'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -19,6 +20,7 @@ export interface IShelfDashboardLayoutProps {
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	shouldQueue: boolean
+	studio: Studio
 	onChangeQueueAdLib: (isQueue: boolean, e: any) => void
 }
 
@@ -42,6 +44,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								showStyleBase={props.showStyleBase}
 								studioMode={props.studioMode}
 								shouldQueue={props.shouldQueue}
+								studio={props.studio}
 								selectedPiece={undefined}
 							/>
 						) : (
@@ -56,6 +59,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								showStyleBase={props.showStyleBase}
 								studioMode={props.studioMode}
 								shouldQueue={props.shouldQueue}
+								studio={props.studio}
 								selectedPiece={undefined}
 							/>
 						)
@@ -80,6 +84,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							showStyleBase={props.showStyleBase}
 							studioMode={props.studioMode}
 							selectedPiece={undefined}
+							studio={props.studio}
 							hotkeyGroup={panel.name.replace(/\W/, '_')}
 						/>
 					) : (

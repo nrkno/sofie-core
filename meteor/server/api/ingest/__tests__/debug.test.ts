@@ -6,7 +6,7 @@ import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segments } from '../../../../lib/collections/Segments'
 import { Parts } from '../../../../lib/collections/Parts'
-import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed

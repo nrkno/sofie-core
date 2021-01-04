@@ -5,28 +5,34 @@ import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
 
-import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import { RundownUtils } from '../../lib/rundown'
 import {
 	ISourceLayer,
 	IOutputLayer,
 	SourceLayerType,
 	VTContent,
 	LiveSpeakContent,
-} from 'tv-automation-sofie-blueprints-integration'
+	IBlueprintActionTriggerMode,
+} from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
-import { PieceId, PieceGeneric } from '../../../lib/collections/Pieces'
+import { PieceGeneric } from '../../../lib/collections/Pieces'
 import { unprotectString } from '../../../lib/lib'
+import renderItem from './Renderers/ItemRendererFactory'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
+import { Studio } from '../../../lib/collections/Studios'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
+import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
 
-export interface IAdLibListItem extends PieceGeneric {
+export interface IAdLibListItem extends AdLibPieceUi {
 	status: RundownAPI.PieceStatusCode
+	contentMetaData?: any
+	sourceLayer?: ISourceLayer
+	outputLayer?: IOutputLayer
 	hotkey?: string
 	isHidden?: boolean
 	invalid?: boolean
@@ -34,110 +40,62 @@ export interface IAdLibListItem extends PieceGeneric {
 }
 
 interface IListViewItemProps {
-	adLibListItem: IAdLibListItem
-	selected: boolean
+	piece: IAdLibListItem
+	studio: Studio
 	layer: ISourceLayer | undefined
-	outputLayer: IOutputLayer | undefined
+	selected: boolean
 	onSelectAdLib: (aSLine: PieceGeneric) => void
-	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
+	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
 	playlist: RundownPlaylist
-}
-
-interface IAdLibListItemTrackedProps {
-	status: RundownAPI.PieceStatusCode | undefined
 }
 
 const _isMacLike = !!navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i)
 
-export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLibListItemTrackedProps>(
-	(props: IListViewItemProps) => {
-		const piece = (props.adLibListItem as any) as AdLibPieceUi
-
-		const { status } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
-
-		return {
-			status,
-		}
-	}
-)(
-	class AdLibListItem extends MeteorReactComponent<Translated<IListViewItemProps & IAdLibListItemTrackedProps>> {
-		private objId: string
-
+export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
+	class AdLibListItem extends MeteorReactComponent<Translated<IListViewItemProps>> {
 		constructor(props: IListViewItemProps) {
 			super(props)
 		}
 
-		componentDidMount() {
-			Meteor.defer(() => {
-				this.updateMediaObjectSubscription()
-			})
-		}
-
-		componentDidUpdate() {
-			Meteor.defer(() => {
-				this.updateMediaObjectSubscription()
-			})
-		}
-
-		updateMediaObjectSubscription() {
-			if (this.props.adLibListItem && this.props.layer) {
-				const piece = (this.props.adLibListItem as any) as AdLibPieceUi
-				let objId: string | undefined = undefined
-
-				if (piece.content && piece.content.fileName) {
-					switch (this.props.layer.type) {
-						case SourceLayerType.VT:
-							objId = (piece.content as VTContent).fileName.toUpperCase()
-							break
-						case SourceLayerType.LIVE_SPEAK:
-							objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
-							break
-					}
-				}
-
-				if (objId && objId !== this.objId) {
-					// if (this.mediaObjectSub) this.mediaObjectSub.stop()
-					this.objId = objId
-					this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
-						mediaId: this.objId,
-					})
-				}
-			}
-		}
-
 		render() {
 			return (
-				<tr
-					className={ClassNames('adlib-panel__list-view__list__segment__item', {
+				<ContextMenuTrigger
+					id="shelf-context-menu"
+					attributes={{
+						className: ClassNames('adlib-panel__list-view__list__segment__item', {
+							selected: this.props.selected,
+							invalid: this.props.piece.invalid,
+							floated: this.props.piece.floated,
+						}),
+						//@ts-ignore React.HTMLAttributes does not list data attributes, but that's fine
+						'data-obj-id': this.props.piece._id,
+						onClick: (e) => this.props.onSelectAdLib(this.props.piece),
+						onContextMenu: (e) => this.props.onSelectAdLib(this.props.piece),
+						onDoubleClick: (e) => this.props.onToggleAdLib(this.props.piece, e.shiftKey, e),
+					}}
+					collect={() =>
+						setShelfContextMenuContext({
+							type: MenuContextType.ADLIB,
+							details: {
+								adLib: this.props.piece,
+								onToggle: this.props.onToggleAdLib,
+							},
+						})
+					}
+					holdToDisplay={contextMenuHoldToDisplayTime()}
+					renderTag="tr"
+					key={unprotectString(this.props.piece._id)}>
+					{renderItem({
+						adLibListItem: this.props.piece,
+						layer: this.props.layer,
+						outputLayer: this.props.piece.outputLayer,
 						selected: this.props.selected,
-						invalid: this.props.adLibListItem.invalid,
-						floated: this.props.adLibListItem.floated,
+						status: this.props.piece.status,
+						message: this.props.piece.message,
+						metadata: this.props.piece.contentMetaData,
+						mediaPreviewUrl: this.props.studio.settings.mediaPreviewsUrl,
 					})}
-					key={unprotectString(this.props.adLibListItem._id)}
-					onClick={(e) => this.props.onSelectAdLib(this.props.adLibListItem)}
-					onDoubleClick={(e) => this.props.onToggleAdLib(this.props.adLibListItem, e.shiftKey, e)}
-					data-obj-id={this.props.adLibListItem._id}>
-					<td
-						className={ClassNames(
-							'adlib-panel__list-view__list__table__cell--icon',
-							this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type),
-							{
-								'source-missing': this.props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
-								'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-								'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
-							}
-						)}>
-						{this.props.layer && (this.props.layer.abbreviation || this.props.layer.name)}
-					</td>
-					<td className="adlib-panel__list-view__list__table__cell--shortcut">
-						{this.props.adLibListItem.hotkey &&
-							mousetrapHelper.shortcutLabel(this.props.adLibListItem.hotkey, _isMacLike)}
-					</td>
-					<td className="adlib-panel__list-view__list__table__cell--output">
-						{this.props.outputLayer && this.props.outputLayer.name}
-					</td>
-					<DefaultListItemRenderer {...this.props} />
-				</tr>
+				</ContextMenuTrigger>
 			)
 		}
 	}

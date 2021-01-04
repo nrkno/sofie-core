@@ -1,7 +1,6 @@
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
-import { Meteor } from 'meteor/meteor'
-import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'

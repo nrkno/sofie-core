@@ -1,12 +1,7 @@
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { protectString, unprotectString, Omit, literal } from '../../../lib/lib'
-import {
-	TimelineObjGeneric,
-	TimelineObjRundown,
-	TimelineObjType,
-	TimelineEnableExt,
-} from '../../../lib/collections/Timeline'
+import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -15,8 +10,8 @@ import {
 	IBlueprintAdLibPiece,
 	TSR,
 	IBlueprintActionManifest,
-	ICommonContext,
-} from 'tv-automation-sofie-blueprints-integration'
+	NotesContext as INotesContext,
+} from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { RundownImportVersions, Rundown } from '../../../lib/collections/Rundowns'
@@ -29,8 +24,13 @@ import { RundownId } from '../../../lib/collections/Rundowns'
 import { prefixAllObjectIds } from '../playout/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { profiler } from '../profiler'
-import { CommonContext, StudioContext, ShowStyleContext } from './context'
+import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 
+/**
+ *
+ * allowNowForPiece: allows the pieces to use a start of 'now', should be true for adlibs and false for ingest
+ * prefixAllTimelineObjects: Add a prefix to the timeline object ids, to ensure duplicate ids don't occur when inserting a copy of a piece
+ */
 export function postProcessPieces(
 	innerContext: ShowStyleContext,
 	pieces: IBlueprintPiece[],
@@ -44,13 +44,16 @@ export function postProcessPieces(
 ): Piece[] {
 	const span = profiler.startSpan('blueprints.postProcess.postProcessPieces')
 
-	let i = 0
-	let timelineUniqueIds: { [id: string]: true } = {}
-	const processedPieces = pieces.map((itemOrig: IBlueprintPiece) => {
+	const externalIds = new Map<string, number>()
+	const timelineUniqueIds = new Set<string>()
+
+	const processedPieces = pieces.map((orgPiece: IBlueprintPiece) => {
+		const i = externalIds.get(orgPiece.externalId) ?? 0
+		externalIds.set(orgPiece.externalId, i + 1)
 		let piece: Piece = {
-			...(itemOrig as Omit<IBlueprintPiece, 'continuesRefId'>),
-			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${i++}`)),
-			continuesRefId: protectString(itemOrig.continuesRefId),
+			...(orgPiece as Omit<IBlueprintPiece, 'continuesRefId'>),
+			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${orgPiece.externalId}_${i}`)),
+			continuesRefId: protectString(orgPiece.continuesRefId),
 			startRundownId: rundownId,
 			startSegmentId: segmentId,
 			startPartId: partId,
@@ -104,8 +107,8 @@ export function postProcessTimelineObjects(
 	pieceId: PieceId,
 	blueprintId: BlueprintId,
 	timelineObjects: TSR.TSRTimelineObjBase[],
-	prefixAllTimelineObjects: boolean,
-	timelineUniqueIds: { [key: string]: boolean }
+	prefixAllTimelineObjects: boolean, // TODO: remove, default to true?
+	timelineUniqueIds: Set<string> = new Set<string>()
 ) {
 	let newObjs = timelineObjects.map((o: TimelineObjectCoreExt, i) => {
 		const obj: TimelineObjRundown = {
@@ -123,14 +126,14 @@ export function postProcessTimelineObjects(
 				)}")`
 			)
 
-		if (timelineUniqueIds[obj.id])
+		if (timelineUniqueIds.has(obj.id))
 			throw new Meteor.Error(
 				400,
 				`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("${innerContext.unhashId(
 					obj.id
 				)}")`
 			)
-		timelineUniqueIds[obj.id] = true
+		timelineUniqueIds.add(obj.id)
 
 		return obj
 	})
@@ -151,14 +154,19 @@ export function postProcessAdLibPieces(
 ): AdLibPiece[] {
 	const span = profiler.startSpan('blueprints.postProcess.postProcessAdLibPieces')
 
-	let i = 0
-	let timelineUniqueIds: { [id: string]: true } = {}
+	const externalIds = new Map<string, number>()
+	const timelineUniqueIds = new Set<string>()
 
-	const processedPieces = adLibPieces.map((itemOrig) => {
+	const processedPieces = adLibPieces.map((orgAdlib) => {
+		const i = externalIds.get(orgAdlib.externalId) ?? 0
+		externalIds.set(orgAdlib.externalId, i + 1)
+
 		const piece: AdLibPiece = {
-			...itemOrig,
-			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${i++}`)),
-			rundownId: rundownId,
+			...orgAdlib,
+			_id: protectString(
+				innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${orgAdlib.externalId}_${i}`)
+			),
+			rundownId: protectString(innerContext.rundown._id),
 			partId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
 		}
@@ -224,13 +232,9 @@ export function postProcessAdLibActions(
 	)
 }
 
-export function postProcessStudioBaselineObjects(
-	context: StudioContext,
-	blueprintId: BlueprintId,
-	objs: TSR.TSRTimelineObjBase[]
-): TimelineObjRundown[] {
-	const timelineUniqueIds: { [id: string]: true } = {}
-	return postProcessTimelineObjects(context, protectString('studio'), blueprintId, objs, false, timelineUniqueIds)
+export function postProcessStudioBaselineObjects(studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
+	const context = new NotesContext('studio', 'studio', false)
+	return postProcessTimelineObjects(context, protectString('studio'), studio.blueprintId!, objs, false)
 }
 
 export function postProcessRundownBaselineItems(
@@ -238,35 +242,26 @@ export function postProcessRundownBaselineItems(
 	blueprintId: BlueprintId,
 	baselineItems: TSR.TSRTimelineObjBase[]
 ): TimelineObjGeneric[] {
-	const timelineUniqueIds: { [id: string]: true } = {}
-	return postProcessTimelineObjects(
-		innerContext,
-		protectString('baseline'),
-		blueprintId,
-		baselineItems,
-		false,
-		timelineUniqueIds
-	)
+	return postProcessTimelineObjects(innerContext, protectString('baseline'), blueprintId, baselineItems, false)
 }
 
 export function postProcessBucketAdLib(
 	innerContext: ShowStyleContext,
 	itemOrig: IBlueprintAdLibPiece,
+	externalId: string,
 	blueprintId: BlueprintId,
 	bucketId: BucketId,
 	rank: number | undefined,
 	importVersions: RundownImportVersions
 ): BucketAdLib {
-	let i = 0
-	let partsUniqueIds: { [id: string]: true } = {}
-	let timelineUniqueIds: { [id: string]: true } = {}
 	let piece: BucketAdLib = {
 		...itemOrig,
 		_id: protectString(
 			innerContext.getHashId(
-				`${innerContext.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${itemOrig.externalId}`
+				`${innerContext.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${externalId}`
 			)
 		),
+		externalId,
 		studioId: innerContext.studioId,
 		showStyleVariantId: innerContext.showStyleVariantId,
 		bucketId,
@@ -274,33 +269,45 @@ export function postProcessBucketAdLib(
 		_rank: rank || itemOrig._rank,
 	}
 
-	if (!piece.externalId)
-		throw new Meteor.Error(
-			400,
-			`Error in blueprint "${blueprintId}" externalId not set for piece in ' + partId + '! ("${innerContext.unhashId(
-				unprotectString(piece._id)
-			)}")`
-		)
-
-	if (partsUniqueIds[unprotectString(piece._id)])
-		throw new Meteor.Error(
-			400,
-			`Error in blueprint "${blueprintId}" ids of pieces must be unique! ("${innerContext.unhashId(
-				unprotectString(piece._id)
-			)}")`
-		)
-	partsUniqueIds[unprotectString(piece._id)] = true
-
 	if (piece.content && piece.content.timelineObjects) {
 		piece.content.timelineObjects = postProcessTimelineObjects(
 			innerContext,
 			piece._id,
 			blueprintId,
 			piece.content.timelineObjects,
-			false,
-			timelineUniqueIds
+			false
 		)
 	}
 
 	return piece
+}
+
+export function postProcessBucketAction(
+	innerContext: ShowStyleContext,
+	itemOrig: IBlueprintActionManifest,
+	externalId: string,
+	_blueprintId: BlueprintId,
+	bucketId: BucketId,
+	rank: number | undefined,
+	importVersions: RundownImportVersions
+): BucketAdLibAction {
+	let action: BucketAdLibAction = {
+		...itemOrig,
+		_id: protectString(
+			innerContext.getHashId(
+				`${innerContext.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${externalId}`
+			)
+		),
+		externalId,
+		studioId: innerContext.studioId,
+		showStyleVariantId: innerContext.showStyleVariantId,
+		bucketId,
+		importVersions,
+		display: {
+			...itemOrig.display,
+			_rank: rank ?? itemOrig.display._rank,
+		},
+	}
+
+	return action
 }

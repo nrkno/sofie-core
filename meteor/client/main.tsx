@@ -9,6 +9,9 @@ import './ui/i18n'
 
 import '../lib/main'
 
+// Import some browser polyfills to handle rare features
+import './lib/polyfill/polyfills'
+
 // Import files that call Meteor.startup:
 import './lib/currentTimeReactive'
 import './lib/keyboardShortcuts'

@@ -20,7 +20,6 @@ namespace PlayoutAPI {
 		'rundownResetAndActivate' = 'playout.rundownResetAndActivate',
 		'rundownActivate' = 'playout.rundownActivate',
 		'rundownDeactivate' = 'playout.rundownDeactivate',
-		'reloadData' = 'playout.reloadData',
 
 		'updateStudioBaseline' = 'playout.updateStudioBaseline',
 		'shouldUpdateStudioBaseline' = 'playout.shouldUpdateStudioBaseline',

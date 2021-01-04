@@ -37,6 +37,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				blueprintConfig: {},
 				_rundownVersionHash: '',
 				routeSets: {},
+				routeSetExclusivityGroups: {},
 			})
 		},
 	},

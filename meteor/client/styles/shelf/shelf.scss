@@ -57,6 +57,7 @@
 	.rundown-view__shelf__contents {
 		flex: 1 1;
 		display: flex;
+		overflow: hidden;
 
 		> .rundown-view__shelf__contents__pane {
 			position: relative;

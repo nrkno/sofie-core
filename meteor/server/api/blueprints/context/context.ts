@@ -9,23 +9,27 @@ import {
 	unprotectObjectArray,
 	protectString,
 	getCurrentTime,
-	objectPathGet,
-	objectPathSet,
 	waitForPromise,
+	clone,
+	omit,
+	getRandomId,
+	unpartialString,
+	unprotectStringArray,
 } from '../../../../lib/lib'
 import { PartId } from '../../../../lib/collections/Parts'
 import { check, Match } from '../../../../lib/check'
 import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
-	IUserNotesContext,
-	IShowStyleContext,
-	IRundownContext,
-	ISegmentUserContext,
-	IEventContext,
-	IAsRunEventContext,
-	IPartEventContext,
-	ITimelineEventContext,
+	NotesContext as INotesContext,
+	ShowStyleContext as IShowStyleContext,
+	RundownContext as IRundownContext,
+	SegmentContext as ISegmentContext,
+	EventContext as IEventContext,
+	AsRunEventContext as IAsRunEventContext,
+	PartEventContext as IPartEventContext,
+	TimelineEventContext as ITimelineEventContext,
+	IStudioConfigContext,
 	IStudioContext,
 	IStudioUserContext,
 	BlueprintMappings,
@@ -38,38 +42,35 @@ import {
 	IBlueprintAsRunLogEvent,
 	IBlueprintExternalMessageQueueObj,
 	ExtendedIngestRundown,
-} from 'tv-automation-sofie-blueprints-integration'
-import { Studio, StudioId, Studios } from '../../../../lib/collections/Studios'
-import { ConfigRef, preprocessStudioConfig, findMissingConfigs, preprocessShowStyleConfig } from '../config'
+	OnGenerateTimelineObj,
+} from '@sofie-automation/blueprints-integration'
+import { Studio, StudioId } from '../../../../lib/collections/Studios'
+import {
+	ConfigRef,
+	getStudioBlueprintConfig,
+	resetStudioBlueprintConfig,
+	getShowStyleBlueprintConfig,
+	resetShowStyleBlueprintConfig,
+} from '../config'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
-import {
-	ShowStyleVariantId,
-	ShowStyleVariants,
-	ShowStyleVariant,
-	createShowStyleCompound,
-} from '../../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariantId, ShowStyleVariants, ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { NoteType, INoteBase } from '../../../../lib/api/notes'
 import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
-import { RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { PieceInstances, unprotectPieceInstance } from '../../../../lib/collections/PieceInstances'
+import { RundownPlaylistId, ABSessionInfo } from '../../../../lib/collections/RundownPlaylists'
+import {
+	PieceInstances,
+	unprotectPieceInstance,
+	protectPieceInstance,
+} from '../../../../lib/collections/PieceInstances'
 import { unprotectPartInstance, PartInstance } from '../../../../lib/collections/PartInstances'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
-import { loadStudioBlueprint, loadShowStyleBlueprint } from '../cache'
 import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { BlueprintId } from '../../../../lib/collections/Blueprints'
-
-export interface ContextInfo {
-	/** Short name for the context (eg the blueprint function being called) */
-	name: string
-	/** Full identifier info for the context. Should be able to identify the rundown/studio/blueprint etc being executed */
-	identifier: string
-}
-export interface UserContextInfo extends ContextInfo {
-	tempSendUserNotesIntoBlackHole?: boolean // TODO-CONTEXT remove this
-}
+import { DeepReadonly } from 'utility-types'
+import { Random } from 'meteor/random'
+import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
 
 /** Common */
 
@@ -113,12 +114,6 @@ export class CommonContext implements ICommonContext {
 	}
 }
 
-const studioBlueprintConfigCache: { [studioId: string]: Cache } = {}
-const showStyleBlueprintConfigCache: { [showStyleBaseId: string]: { [showStyleVariantId: string]: Cache } } = {}
-interface Cache {
-	config: unknown
-}
-
 /** Studio */
 
 export class StudioContext extends CommonContext implements IStudioContext {
@@ -136,34 +131,10 @@ export class StudioContext extends CommonContext implements IStudioContext {
 		return this.studio
 	}
 	getStudioConfig(): unknown {
-		const studioId = unprotectString(this.studio._id)
-		if (studioBlueprintConfigCache[studioId]) {
-			return studioBlueprintConfigCache[studioId].config
-		}
-
-		logger.debug('Building Studio config')
-		const studioBlueprint = loadStudioBlueprint(this.studio)
-		if (studioBlueprint) {
-			const diffs = findMissingConfigs(
-				studioBlueprint.blueprint.studioConfigManifest,
-				this.studio.blueprintConfig
-			)
-			if (diffs && diffs.length) {
-				logger.warn(`Studio "${this.studio._id}" missing required config: ${diffs.join(', ')}`)
-			}
-		} else {
-			logger.warn(`Studio blueprint "${this.studio.blueprintId}" not found!`)
-		}
-		const compiledConfig = preprocessStudioConfig(this.studio, studioBlueprint?.blueprint)
-		studioBlueprintConfigCache[studioId] = {
-			config: compiledConfig,
-		}
-		return compiledConfig
+		return getStudioBlueprintConfig(this.studio)
 	}
 	protected wipeCache() {
-		const studioId = unprotectString(this.studio._id)
-		delete studioBlueprintConfigCache[studioId]
-		this.getStudioConfig()
+		resetStudioBlueprintConfig(this.studio)
 	}
 	getStudioConfigRef(configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
@@ -224,6 +195,8 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	) {
 		super(contextInfo, studio)
 	}
+	error: (message: string) => void
+	warning: (message: string) => void
 
 	getShowStyleBase(): ShowStyleBase {
 		if (this.cache && this._rundown) {
@@ -245,47 +218,11 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 		}
 	}
 	getShowStyleConfig(): unknown {
-		const cacheId = `${this.showStyleBaseId}.${this.showStyleVariantId}`
-		const cachedConfig = objectPathGet(showStyleBlueprintConfigCache, cacheId)
-		if (cachedConfig) {
-			return cachedConfig.config
-		}
-
-		logger.debug('Building ShowStyle config')
-		const showStyleBase = this.getShowStyleBase()
-		const showStyleVariant = this.getShowStyleVariant()
-
-		const showStyleCompound = createShowStyleCompound(showStyleBase, showStyleVariant)
-		if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${showStyleVariant._id}"`)
-
-		const showStyleBlueprint = loadShowStyleBlueprint(showStyleCompound)
-		if (showStyleBlueprint) {
-			const diffs = findMissingConfigs(
-				showStyleBlueprint.blueprint.showStyleConfigManifest,
-				showStyleCompound.blueprintConfig
-			)
-			if (diffs && diffs.length) {
-				logger.warn(
-					`ShowStyle "${showStyleCompound._id}-${
-						showStyleCompound.showStyleVariantId
-					}" missing required config: ${diffs.join(', ')}`
-				)
-			}
-		} else {
-			logger.warn(`ShowStyle blueprint "${showStyleCompound.blueprintId}" not found!`)
-		}
-
-		const compiledConfig = preprocessShowStyleConfig(showStyleCompound, showStyleBlueprint?.blueprint)
-		objectPathSet(showStyleBlueprintConfigCache, cacheId, {
-			config: compiledConfig,
-		})
-		return compiledConfig
+		return getShowStyleBlueprintConfig(this.getShowStyleBase(), this.getShowStyleVariant())
 	}
 	wipeCache() {
 		super.wipeCache()
-		const cacheId = `${this.showStyleBaseId}.${this.showStyleVariantId}`
-		objectPath.del(showStyleBlueprintConfigCache, cacheId)
-		this.getShowStyleConfig()
+		resetShowStyleBlueprintConfig(this.getShowStyleBase(), this.getShowStyleVariant())
 	}
 	getShowStyleConfigRef(configKey: string): string {
 		return ConfigRef.getShowStyleConfigRef(this.showStyleVariantId, configKey)
@@ -358,6 +295,8 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 		this._rundown = rundown
 		this.playlistId = rundown.playlistId
 	}
+	error: (message: string) => void
+	warning: (message: string) => void
 }
 
 export class RundownEventContext extends RundownContext implements IEventContext {
@@ -441,63 +380,198 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 
 		this.part = unprotectPartInstance(partInstance)
 	}
+	error: (message: string) => void
+	warning: (message: string) => void
 
 	getCurrentTime(): number {
 		return getCurrentTime()
 	}
 }
 
+interface ABSessionInfoExt extends ABSessionInfo {
+	/** Whether to store this session on the playlist (ie, whether it is still valid) */
+	keep?: boolean
+}
+
 export class TimelineEventContext extends RundownContext implements ITimelineEventContext {
+	private readonly partInstances: DeepReadonly<Array<PartInstance>>
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
 	readonly nextPartInstance: Readonly<IBlueprintPartInstance> | undefined
 
-	public readonly notes: INoteBase[] = []
-	private readonly tempSendNotesIntoBlackHole: boolean
+	private readonly _knownSessions: ABSessionInfoExt[]
+
+	public get knownSessions() {
+		return this._knownSessions.filter((s) => s.keep).map((s) => omit(s, 'keep'))
+	}
 
 	constructor(
 		contextInfo: UserContextInfo,
 		rundown: Rundown,
 		cache: CacheForRundownPlaylist,
+		previousPartInstance: PartInstance | undefined,
 		currentPartInstance: PartInstance | undefined,
 		nextPartInstance: PartInstance | undefined
 	) {
-		super(contextInfo, rundown, cache)
+		super(
+			rundown,
+			cache,
+			new NotesContext(
+				rundown.name,
+				`rundownId=${rundown._id},previousPartInstance=${previousPartInstance?._id},currentPartInstance=${currentPartInstance?._id},nextPartInstance=${nextPartInstance?._id}`,
+				false
+			)
+		)
 
 		this.currentPartInstance = currentPartInstance ? unprotectPartInstance(currentPartInstance) : undefined
 		this.nextPartInstance = nextPartInstance ? unprotectPartInstance(nextPartInstance) : undefined
 
-		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
+		this.partInstances = _.compact([previousPartInstance, currentPartInstance, nextPartInstance])
+
+		this._knownSessions =
+			clone(cache.RundownPlaylists.findOne(cache.containsDataFromPlaylist)?.trackedAbSessions) ?? []
 	}
+	error: (message: string) => void
+	warning: (message: string) => void
 
 	getCurrentTime(): number {
 		return getCurrentTime()
 	}
 
-	notifyUserError(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteType.ERROR,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
+	/** Internal, for overriding in tests */
+	getNewSessionId(): string {
+		return Random.id()
 	}
-	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteType.WARNING,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
+
+	getPieceABSessionId(pieceInstance0: IBlueprintPieceInstance, sessionName: string): string {
+		const pieceInstance = protectPieceInstance(pieceInstance0)
+		const partInstanceId = pieceInstance.partInstanceId
+		if (!partInstanceId) throw new Error('Missing partInstanceId in call to getPieceABSessionId')
+
+		const partInstanceIndex = this.partInstances.findIndex((p) => p._id === partInstanceId)
+		const partInstance = partInstanceIndex >= 0 ? this.partInstances[partInstanceIndex] : undefined
+		if (!partInstance) throw new Error('Unknown partInstanceId in call to getPieceABSessionId')
+
+		const infiniteId = pieceInstance.infinite?.infiniteInstanceId
+		const preserveSession = (session: ABSessionInfoExt): string => {
+			session.keep = true
+			session.infiniteInstanceId = unpartialString(infiniteId)
+			delete session.lookaheadForPartId
+			return session.id
 		}
+
+		// If this is an infinite continuation, then reuse that
+		if (infiniteId) {
+			const infiniteSession = this._knownSessions.find(
+				(s) => s.infiniteInstanceId === infiniteId && s.name === sessionName
+			)
+			if (infiniteSession) {
+				return preserveSession(infiniteSession)
+			}
+		}
+
+		// We only want to consider sessions already tagged to this partInstance
+		const existingSession = this._knownSessions.find(
+			(s) => s.partInstanceIds?.includes(unpartialString(partInstanceId)) && s.name === sessionName
+		)
+		if (existingSession) {
+			return preserveSession(existingSession)
+		}
+
+		// Check if we can continue sessions from the part before, or if we should create new ones
+		const canReuseFromPartInstanceBefore =
+			partInstanceIndex > 0 && this.partInstances[partInstanceIndex - 1].part._rank < partInstance.part._rank
+
+		if (canReuseFromPartInstanceBefore) {
+			// Try and find a session from the part before that we can use
+			const previousPartInstanceId = this.partInstances[partInstanceIndex - 1]._id
+			const continuedSession = this._knownSessions.find(
+				(s) => s.partInstanceIds?.includes(previousPartInstanceId) && s.name === sessionName
+			)
+			if (continuedSession) {
+				continuedSession.partInstanceIds = [
+					...(continuedSession.partInstanceIds || []),
+					unpartialString(partInstanceId),
+				]
+				return preserveSession(continuedSession)
+			}
+		}
+
+		// Find an existing lookahead session to convert
+		const partId = partInstance.part._id
+		const lookaheadSession = this._knownSessions.find(
+			(s) => s.name === sessionName && s.lookaheadForPartId === partId
+		)
+		if (lookaheadSession) {
+			lookaheadSession.partInstanceIds = [unpartialString(partInstanceId)]
+			return preserveSession(lookaheadSession)
+		}
+
+		// Otherwise define a new session
+		const sessionId = this.getNewSessionId()
+		const newSession: ABSessionInfoExt = {
+			id: sessionId,
+			name: sessionName,
+			infiniteInstanceId: unpartialString(infiniteId),
+			partInstanceIds: _.compact([!infiniteId ? unpartialString(partInstanceId) : undefined]),
+			keep: true,
+		}
+		this._knownSessions.push(newSession)
+		return sessionId
+	}
+
+	getTimelineObjectAbSessionId(tlObj: OnGenerateTimelineObjExt, sessionName: string): string | undefined {
+		// Find an infinite
+		const searchId = tlObj.infinitePieceInstanceId
+		if (searchId) {
+			const infiniteSession = this._knownSessions.find(
+				(s) => s.infiniteInstanceId === searchId && s.name === sessionName
+			)
+			if (infiniteSession) {
+				infiniteSession.keep = true
+				return infiniteSession.id
+			}
+		}
+
+		// Find an normal partInstance
+		const partInstanceId = tlObj.partInstanceId
+		if (partInstanceId) {
+			const partInstanceSession = this._knownSessions.find(
+				(s) => s.partInstanceIds?.includes(partInstanceId) && s.name === sessionName
+			)
+			if (partInstanceSession) {
+				partInstanceSession.keep = true
+				return partInstanceSession.id
+			}
+		}
+
+		// If it is lookahead, then we run differently
+		let partId = protectString<PartId>(unprotectString(partInstanceId))
+		if (tlObj.isLookahead && partInstanceId && partId) {
+			// If partId is a known partInstanceId, then convert it to a partId
+			const partInstance = this.partInstances.find((p) => p._id === partInstanceId)
+			if (partInstance) partId = partInstance.part._id
+
+			const lookaheadSession = this._knownSessions.find((s) => s.lookaheadForPartId === partId)
+			if (lookaheadSession) {
+				lookaheadSession.keep = true
+				if (partInstance) {
+					lookaheadSession.partInstanceIds = [partInstanceId]
+				}
+				return lookaheadSession.id
+			} else {
+				const sessionId = this.getNewSessionId()
+				this._knownSessions.push({
+					id: sessionId,
+					name: sessionName,
+					lookaheadForPartId: partId,
+					partInstanceIds: partInstance ? [partInstanceId] : undefined,
+					keep: true,
+				})
+				return sessionId
+			}
+		}
+
+		return undefined
 	}
 }
 
@@ -513,6 +587,8 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		super(contextInfo, rundown, cache)
 		this.asRunEvent = unprotectObject(asRunEvent)
 	}
+	error: (message: string) => void
+	warning: (message: string) => void
 
 	getCurrentTime(): number {
 		return getCurrentTime()
@@ -664,41 +740,3 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		return ids.join(',')
 	}
 }
-
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Studios.find(
-			{},
-			{
-				fields: {
-					_rundownVersionHash: 1,
-				},
-			}
-		).observeChanges({
-			changed: (id: StudioId) => delete studioBlueprintConfigCache[unprotectString(id)],
-		})
-		ShowStyleBases.find(
-			{},
-			{
-				fields: {
-					_rundownVersionHash: 1,
-				},
-			}
-		).observeChanges({
-			changed: (id: ShowStyleBaseId) => delete showStyleBlueprintConfigCache[unprotectString(id)],
-		})
-		ShowStyleVariants.find(
-			{},
-			{
-				fields: {
-					_rundownVersionHash: 1,
-					showStyleBaseId: 1,
-					_id: 1,
-				},
-			}
-		).observe({
-			changed: (doc: ShowStyleVariant) =>
-				objectPath.del(showStyleBlueprintConfigCache, `${doc.showStyleBaseId}.${doc._id}`),
-		})
-	}
-})

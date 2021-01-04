@@ -5,7 +5,6 @@ import {
 	getCurrentTime,
 	Time,
 	waitForPromise,
-	pushOntoPath,
 	waitForPromiseAll,
 	asyncCollectionFindOne,
 	asyncCollectionUpdate,
@@ -13,28 +12,20 @@ import {
 	asyncCollectionUpsert,
 	getHash,
 	protectString,
-	isProtectedString,
 } from '../../lib/lib'
-import { Rundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { Parts } from '../../lib/collections/Parts'
-import { Pieces } from '../../lib/collections/Pieces'
+import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { logger } from '../../lib/logging'
 import {
 	IBlueprintExternalMessageQueueObj,
 	IBlueprintAsRunLogEventContent,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { queueExternalMessages } from './ExternalMessageQueue'
 import { loadShowStyleBlueprint } from './blueprints/cache'
 import { AsRunEventContext } from './blueprints/context'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
-import {
-	CacheForRundownPlaylist,
-	initCacheForRundownPlaylist,
-	convertReadOnlyCacheForRundownPlaylist,
-	initReadOnlyCacheForRundownPlaylist,
-} from '../DatabaseCaches'
+import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
+import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
+import { CacheForRundownPlaylist, initReadOnlyCacheForRundownPlaylist } from '../DatabaseCaches'
 import { profiler } from './profiler'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
@@ -270,7 +261,7 @@ export function reportPieceHasStarted(playlistId: RundownPlaylistId, pieceInstan
 					PieceInstances,
 					{
 						partInstanceId: playlist.nextPartInstanceId,
-						'infinite.infinitePieceId': pieceInstance.infinite.infinitePieceId,
+						'infinite.infiniteInstanceId': pieceInstance.infinite.infiniteInstanceId,
 					},
 					{
 						$set: {

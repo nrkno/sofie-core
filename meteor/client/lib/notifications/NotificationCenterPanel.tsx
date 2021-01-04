@@ -7,9 +7,10 @@ import { MeteorReactComponent } from '../MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from './notifications'
 import { ContextMenuTrigger, ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
 import * as _ from 'underscore'
+import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { translateMessage, isTranslatableMessage } from '../../../lib/api/TranslatableMessage'
-import { CriticalIcon, WarningIcon, CollapseChevrons, InformationIcon } from '../notificationIcons'
+import { CriticalIcon, WarningIcon, CollapseChevrons, InformationIcon } from '../ui/icons/notifications'
 import update from 'immutability-helper'
 import { i18nTranslator } from '../../ui/i18n'
 
@@ -83,6 +84,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 							{defaultAction ? (
 								<div className="notification-pop-up__actions--default">
 									<button
+										disabled={defaultAction.disabled}
 										className="btn btn-default notification-pop-up__actions--button"
 										onClick={(e) => this.triggerEvent(defaultAction, e)}>
 										<CoreIcon.NrkArrowLeft
@@ -99,6 +101,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 									{_.map(allActions, (action: NotificationAction, i: number) => {
 										return (
 											<button
+												disabled={action.disabled}
 												key={i}
 												className={ClassNames(
 													'btn',
@@ -156,7 +159,7 @@ interface IState {
 
 interface ITrackedProps {
 	notifications: Array<Notification>
-	highlightedSource: SegmentId | string | undefined
+	highlightedSource: RundownId | SegmentId | string | undefined
 	highlightedLevel: NoticeLevel
 }
 
@@ -165,15 +168,13 @@ interface ITrackedProps {
  * @class NotificationCenterPopUps
  * @extends React.Component<IProps>
  */
-export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITrackedProps>(
-	(props: IProps, state: IState) => {
-		return {
-			notifications: NotificationCenter.getNotifications(),
-			highlightedSource: NotificationCenter.getHighlightedSource(),
-			highlightedLevel: NotificationCenter.getHighlightedLevel(),
-		}
+export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITrackedProps>(() => {
+	return {
+		notifications: NotificationCenter.getNotifications(),
+		highlightedSource: NotificationCenter.getHighlightedSource(),
+		highlightedLevel: NotificationCenter.getHighlightedLevel(),
 	}
-)(
+})(
 	class NotificationCenterPopUps extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		private readonly DISMISS_ANIMATION_DURATION = 500
 		private readonly LEAVE_ANIMATION_DURATION = 150

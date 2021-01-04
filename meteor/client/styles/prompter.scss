@@ -145,6 +145,14 @@ body.prompter-scrollbar {
 		right: 0;
 		z-index: 1000;
 
+		.indicators {
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+		}
+
 		.read-marker {
 			position: absolute;
 			left: 0;
@@ -192,7 +200,8 @@ body.prompter-scrollbar {
 			transition: opacity 0.5s;
 
 			&.top {
-				top: 0;
+				bottom: auto;
+				top: 1.1em;
 				margin-top: -1em;
 			}
 			&.hidden {
@@ -218,6 +227,51 @@ body.prompter-scrollbar {
 				border-top: 1em solid transparent;
 				border-bottom: 1em solid #0f0;
 			}
+		}
+	}
+}
+
+#prompter-debug {
+	position: fixed;
+	top: 0;
+	left: 0;
+	background: black;
+	padding: 3vh;
+	font-size: 3vh;
+	color: gold;
+
+	h2 {
+		font-size: 1em;
+		font-weight: 600;
+		padding: 0;
+		margin: 0;
+	}
+}
+
+.prompter-timing-clock {
+	position: fixed;
+	display: block;
+	top: 0;
+	right: 0;
+	left: auto;
+	font-size: 75%;
+	padding: 0.05em 0.3em;
+	border-radius: 1em;
+	box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+
+	&.heavy-light {
+		font-weight: 600;
+
+		&.heavy {
+			// color: $general-late-color;
+			background-color: #ffe900;
+			color: #000;
+		}
+
+		&.light {
+			background-color: $general-fast-color;
+			color: #fff;
+			text-shadow: 1px 1px 0px #000, 1px -1px 0px #000, -1px -1px 0px #000, -1px 1px 0px #000;
 		}
 	}
 }

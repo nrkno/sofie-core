@@ -1,4 +1,4 @@
-import { MigrationStepInput, MigrationStepInputResult } from 'tv-automation-sofie-blueprints-integration'
+import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import { BlueprintId } from '../collections/Blueprints'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import { StudioId } from '../collections/Studios'

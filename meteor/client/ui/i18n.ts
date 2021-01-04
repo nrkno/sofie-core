@@ -1,3 +1,4 @@
+import moment from 'moment'
 import i18n, { TFunction } from 'i18next'
 import Backend from 'i18next-xhr-backend'
 import LanguageDetector from 'i18next-browser-languagedetector'
@@ -52,7 +53,8 @@ class I18nContainer extends WithManagedTracker {
 				console.error('Error initializing i18Next:', err)
 			} else {
 				this.i18nTranslator = t
-				console.debug(`i18nTranslator init complete, using language ${this.i18nInstance.language}`)
+				moment.locale(i18n.language)
+				document.documentElement.lang = i18n.language
 			}
 		})
 

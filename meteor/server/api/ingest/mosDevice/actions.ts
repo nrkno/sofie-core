@@ -6,7 +6,7 @@ import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../.
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { handleMosRundownData } from './ingest'
 import { Piece } from '../../../../lib/collections/Pieces'
-import { IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { parseMosString } from './lib'
 import { IngestActions } from '../actions'
 import { WrapAsyncCallback } from '../../../../lib/lib'

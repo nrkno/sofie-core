@@ -24,7 +24,8 @@ $segment-item-disabled-color: #c9c9c9;
 $segment-nextline-shade-width: 1.875rem;
 $segment-nextline-shade-fill: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
 
-$rundown-divider-background-color: rgba(0, 0, 0, 0.2);
+$rundown-divider-color: #000000;
+$rundown-divider-background-color: #dddddd;
 
 $liveline-timecode-color: #ffff00; //$general-live-color;
 $hold-status-color: $liveline-timecode-color;
@@ -348,8 +349,12 @@ body.no-overflow {
 
 				&.rundown-name {
 					width: auto;
-					max-width: calc(30vw - 138px);
+					max-width: calc(40vw - 138px);
 					min-width: 100%;
+
+					> strong {
+						margin-right: 0.4em;
+					}
 				}
 			}
 
@@ -1146,6 +1151,8 @@ body.no-overflow {
 			--invalid-reason-color-opaque: rgba(0, 0, 0, 1);
 			--invalid-reason-color-transparent: rgba(0, 0, 0, 0);
 
+			--segment-layer-height: #{$segment-layer-height};
+
 			* {
 				backface-visibility: hidden;
 				-webkit-backface-visibility: hidden;
@@ -1598,128 +1605,6 @@ body.no-overflow {
 							z-index: 2;
 						}
 
-						.segment-timeline__piece__label {
-							position: relative;
-							z-index: 10;
-							margin: 0 0.3em;
-							text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
-							font-weight: 400;
-							transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity
-								($output-layer-group-collapse-animation-duration * 2/3);
-							pointer-events: none;
-							display: inline-block;
-							white-space: nowrap;
-
-							transform: translate3d(0, 0, 1px); // Just to make it render in front
-
-							&:not(.right-side) {
-								overflow: hidden;
-								text-overflow: ellipsis;
-							}
-
-							&.with-overflow {
-								overflow: visible !important;
-							}
-
-							&.secondary {
-								font-weight: 300;
-							}
-
-							&.third {
-								font-weight: 200;
-							}
-
-							&.emphasis {
-								font-weight: 500;
-							}
-
-							&.missing {
-								color: orange;
-							}
-
-							&.first-words {
-								position: absolute;
-								left: 0;
-								font-weight: 300;
-								font-style: italic;
-
-								> * {
-									position: relative;
-								}
-							}
-
-							&.right-side {
-								position: absolute;
-								right: 0;
-								transform: translate3d(0, 0, 15px);
-								text-align: right;
-								max-width: calc(100% - 10px);
-								overflow: hidden;
-								text-overflow: clip;
-
-								> * {
-									position: relative;
-								}
-
-								> .segment-timeline__piece__label {
-									margin-right: 0 !important;
-									margin-left: 5px !important;
-									overflow: initial;
-									max-width: none;
-								}
-
-								> .label-icon {
-									margin: 0 -10px 0 0;
-								}
-
-								> .label-icon.label-infinite-icon {
-									margin: 0 0 0 0;
-								}
-
-								> .last-words {
-									float: right;
-								}
-							}
-
-							&.last-words {
-								font-weight: 300;
-								font-style: italic;
-
-								display: block;
-							}
-
-							&.file-name {
-								font-weight: 200;
-							}
-
-							&.label-icon {
-								margin: 0;
-							}
-
-							&.label-overflow-time {
-								font-weight: 300;
-							}
-
-							> .segment-timeline__piece__label {
-								margin: 0;
-								max-width: none;
-							}
-
-							> .segment-timeline__piece__label + .segment-timeline__piece__label {
-								margin: 0 0.3em;
-							}
-
-							.segment-timeline__piece__label__transition-icon {
-								max-width: 16px;
-								max-height: 1.4em;
-								vertical-align: top;
-								height: 1.4em;
-								object-fit: contain;
-								object-position: center center;
-								margin-left: 0.5em;
-							}
-						}
-
 						&.hide-overflow-labels {
 							.segment-timeline__piece__label {
 								&.overflow-label {
@@ -1804,7 +1689,142 @@ body.no-overflow {
 								}
 							}
 						}
+
+						&.layer-count-1 {
+							.segment-timeline__layer {
+								max-height: $segment-layer-height / 2;
+							}
+						}
 					}
+				}
+			}
+
+			.segment-timeline__piece__label {
+				position: relative;
+				z-index: 10;
+				margin: 0 0.3em;
+				text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
+				font-weight: 400;
+				transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity
+					($output-layer-group-collapse-animation-duration * 2/3);
+				pointer-events: none;
+				display: inline-block;
+				white-space: nowrap;
+				line-height: 1.5em;
+
+				transform: translate3d(0, 0, 1px); // Just to make it render in front
+
+				&:not(.right-side) {
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+
+				&.with-overflow {
+					overflow: visible !important;
+				}
+
+				&.secondary {
+					font-weight: 300;
+				}
+
+				&.third {
+					font-weight: 200;
+				}
+
+				&.emphasis {
+					font-weight: 500;
+				}
+
+				&.missing {
+					color: orange;
+				}
+
+				&.first-words {
+					position: absolute;
+					left: 0;
+					font-weight: 300;
+					font-style: italic;
+
+					> * {
+						position: relative;
+					}
+				}
+
+				&.right-side {
+					position: absolute;
+					right: 0;
+					transform: translate3d(0, 0, 15px);
+					text-align: right;
+					margin: 0;
+					padding: 0 0.3em;
+					max-width: calc(100% - 10px);
+					overflow: hidden;
+					text-overflow: clip;
+
+					> * {
+						position: relative;
+					}
+
+					> .segment-timeline__piece__label {
+						margin-right: 0 !important;
+						margin-left: 5px !important;
+						overflow: initial;
+						max-width: none;
+					}
+
+					> .label-icon {
+						margin: 0 -10px 0 0;
+					}
+
+					> .label-icon.label-infinite-icon {
+						margin: 0 0 0 0;
+					}
+				}
+
+				&.last-words {
+					font-weight: 300;
+					font-style: italic;
+
+					display: block;
+				}
+
+				&.file-name {
+					font-weight: 200;
+				}
+
+				&.label-icon {
+					margin: 0;
+				}
+
+				&.label-overflow-time {
+					text-shadow: 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px 1px 1px black, 1px 1px 3px black,
+						1px 1px 8px black, 1px 1px 8px black, 1px 1px 8px black;
+					top: -7px;
+					right: -4px;
+					color: white;
+					font-weight: 600;
+					padding: 0;
+					font-size: 0.8em;
+					margin: 0;
+				}
+
+				> .segment-timeline__piece__label {
+					margin: 0;
+					max-width: none;
+				}
+
+				> .segment-timeline__piece__label + .segment-timeline__piece__label {
+					margin: 0 0.3em;
+				}
+
+				.segment-timeline__piece__label__transition-icon {
+					max-width: 16px;
+					max-height: 1.4em;
+					vertical-align: top;
+					height: 1.4em;
+					object-fit: contain;
+					object-position: center center;
+					margin-left: 0.5em;
 				}
 			}
 
@@ -1816,6 +1836,17 @@ body.no-overflow {
 					border-left: 2px dotted $segment-layer-background-mic;
 					margin-left: -2px;
 					box-shadow: 0px 0px 1px 1px rgba(0, 30, 0, 0.18);
+
+					&.hidden,
+					&.at-end {
+						display: none;
+					}
+				}
+
+				&.right-side {
+					left: auto;
+					right: 0;
+					bottom: auto;
 
 					&.hidden {
 						display: none;
@@ -2038,6 +2069,12 @@ body.no-overflow {
 			}
 		}
 
+		.segment-timeline__piece-appendage {
+			&.right-side {
+				display: none;
+			}
+		}
+
 		> .segment-timeline__timeline-container > .segment-timeline__timeline,
 		> .segment-timeline__next-preview {
 			.segment-timeline__part {
@@ -2104,11 +2141,11 @@ body.no-overflow {
 }
 
 .rundown-divider-timeline {
-	display: grid;
-	grid-column-gap: 0;
-	grid-row-gap: 0;
-	grid-template-columns: [rundown-name] 50% [rundown-details] auto;
-	grid-template-rows: auto;
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+	align-items: stretch;
+	align-content: space-between;
 	overflow: hidden;
 	user-select: none;
 	-moz-user-select: none;
@@ -2116,18 +2153,77 @@ body.no-overflow {
 
 	width: auto;
 	margin: 1.5em;
-	// padding: 0 0 0.15em 0.15em;
 
+	color: $rundown-divider-color;
 	background: $rundown-divider-background-color;
-	.rundown-divider-timeline__title {
-		margin: auto 0 auto 0; // center vertically
+
+	margin-left: 0;
+	margin-right: 0;
+	padding-left: 1em;
+	padding-right: 1em;
+
+	> .rundown-divider-timeline__title {
+		margin: 0 1em 0 0; // center vertically
 		padding: 0.3em;
 		line-height: 1.2em;
 		letter-spacing: 0px;
-		font-weight: 400;
+		font-weight: 600;
 		hyphens: auto;
 		-webkit-hyphens: auto;
 		-ms-hyphens: auto;
+		display: inline-block;
+	}
+
+	> .rundown-divider-timeline__playlist-name {
+		margin: 0.7em 1em 0.4em 0; // center vertically
+		line-height: 1.2em;
+		font-size: 1.17em;
+		letter-spacing: 0px;
+		font-weight: 200;
+		hyphens: auto;
+		-webkit-hyphens: auto;
+		-ms-hyphens: auto;
+	}
+
+	> .rundown-divider-timeline__notifications-group {
+		vertical-align: bottom;
+		white-space: nowrap;
+		margin-bottom: 0.6em;
+		margin-left: 0.5em;
+	}
+
+	.rundown-divider-timeline__notifications {
+		font-size: 0.8em;
+		font-weight: 400;
+		> svg {
+			height: 1.5em;
+			width: 1.5em;
+			vertical-align: bottom;
+			filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+			margin-right: 0.3em;
+			position: relative;
+			top: 0.05em;
+		}
+		margin-right: 0.8em;
+	}
+
+	> .rundown-divider-timeline__expected-start,
+	> .rundown-divider-timeline__expected-duration {
+		vertical-align: bottom;
+		margin: 1em 0.5em 0.5em;
+
+		> time {
+			font-weight: 600;
+		}
+
+		> .rundown-divider-timeline__expected-start__countdown {
+			font-weight: 600;
+			color: $general-late-color;
+		}
+	}
+
+	> .rundown-divider-timeline__expected-duration {
+		margin-left: auto;
 	}
 }
 
@@ -2195,6 +2291,15 @@ body.no-overflow {
 		z-index: 1;
 	}
 
+	@include item-type-before-background();
+
+	&.segment-timeline__mini-inspector--graphics--preview {
+		border: none;
+		&::before {
+			display: none;
+		}
+	}
+
 	&.segment-timeline__mini-inspector--notice {
 		padding-left: 3.5em;
 	}
@@ -2247,6 +2352,7 @@ body.no-overflow {
 		transform: translate(-100%, -100%);
 		width: 480px;
 		height: 270px;
+		max-width: none;
 
 		> .preview {
 			width: 1920px;
@@ -2299,6 +2405,22 @@ body.no-overflow {
 			padding: 0.2em 0.3em;
 			background: rgba(0, 0, 0, 0.25);
 			border-bottom-left-radius: 3px;
+		}
+
+		> .segment-timeline__mini-inspector__frame-marker {
+			display: block;
+			position: absolute;
+			bottom: 1px;
+
+			&.segment-timeline__mini-inspector__frame-marker--first-frame {
+				left: 6px;
+			}
+
+			&.segment-timeline__mini-inspector__frame-marker--last-frame {
+				left: auto;
+				right: 6px;
+				transform: scaleX(-1);
+			}
 		}
 
 		> .segment-timeline__mini-inspector__warnings {

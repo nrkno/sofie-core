@@ -12,7 +12,10 @@ import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineCon
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelinePart } from './SegmentTimelinePart'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
-import { SegmentDuration, PartCountdown, RundownTiming, CurrentPartRemaining } from '../RundownView/RundownTiming'
+import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
+import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
+import { RundownTiming } from '../RundownView/RundownTiming/RundownTiming'
+import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -32,16 +35,17 @@ import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
 // @ts-ignore Not recognized by Typescript
 import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
 import { LottieButton } from '../../lib/LottieButton'
-import { PartNote, NoteType, SegmentNote } from '../../../lib/api/notes'
+import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getAllowSpeaking } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
-import { MAGIC_TIME_SCALE_FACTOR, RundownViewEvents, IContextMenuContext } from '../RundownView'
+import { IContextMenuContext } from '../RundownView'
 import { literal, unprotectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
-import { WarningIconSmall, CriticalIconSmall } from '../../lib/notificationIcons'
+import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
+import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
 interface IProps {
 	id: string
@@ -77,7 +81,7 @@ interface IProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onHeaderNoteClick?: (level: NoteType) => void
+	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteType) => void
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
@@ -306,25 +310,25 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	componentDidMount() {
 		super.componentDidMount && super.componentDidMount()
-		window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
 
-		window.addEventListener(RundownViewEvents.segmentZoomOn, this.onRundownEventSegmentZoomOn)
-		window.addEventListener(RundownViewEvents.segmentZoomOff, this.onRundownEventSegmentZoomOff)
+		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
+		RundownViewEventBus.on(RundownViewEvents.SEGMENT_ZOOM_ON, this.onRundownEventSegmentZoomOn)
+		RundownViewEventBus.on(RundownViewEvents.SEGMENT_ZOOM_OFF, this.onRundownEventSegmentZoomOff)
 	}
 
 	componentWillUnmount() {
 		super.componentWillUnmount && super.componentWillUnmount()
-		window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
 		clearTimeout(this.highlightTimeout)
 
-		window.removeEventListener(RundownViewEvents.segmentZoomOn, this.onRundownEventSegmentZoomOn)
-		window.removeEventListener(RundownViewEvents.segmentZoomOff, this.onRundownEventSegmentZoomOff)
+		RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
+		RundownViewEventBus.off(RundownViewEvents.SEGMENT_ZOOM_ON, this.onRundownEventSegmentZoomOn)
+		RundownViewEventBus.off(RundownViewEvents.SEGMENT_ZOOM_OFF, this.onRundownEventSegmentZoomOff)
 	}
 
 	private highlightTimeout: NodeJS.Timer
 
-	private onHighlight = (e: any) => {
-		if (e.detail && e.detail.segmentId === this.props.segment._id && !e.detail.partId && !e.detail.pieceId) {
+	private onHighlight = (e: HighlightEvent) => {
+		if (e.segmentId === this.props.segment._id && !e.partId && !e.pieceId) {
 			this.setState({
 				highlight: true,
 			})
@@ -484,29 +488,29 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		document.removeEventListener('pointerlockerror', this.onTimelinePointerError)
 	}
 
-	onRundownEventSegmentZoomOn = (e: any) => {
+	onRundownEventSegmentZoomOn = () => {
 		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.playlist.currentPartInstanceId === null)) {
-			this.onTimelineZoomOn(e)
+			this.onTimelineZoomOn()
 		}
 	}
 
-	onRundownEventSegmentZoomOff = (e: any) => {
+	onRundownEventSegmentZoomOff = () => {
 		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.playlist.currentPartInstanceId === null)) {
-			this.onTimelineZoomOff(e)
+			this.onTimelineZoomOff()
 		}
 	}
 
-	onTimelineZoomOn = (e: any) => {
+	onTimelineZoomOn = () => {
 		if (SegmentTimelineClass._zoomOutLatch === undefined) {
 			SegmentTimelineClass._zoomOutLatch = this.props.timeScale
 		}
 		SegmentTimelineClass._zoomOutLatchId = this.props.id
-		if (this.props.onShowEntireSegment) this.props.onShowEntireSegment(e)
+		if (this.props.onShowEntireSegment) this.props.onShowEntireSegment(undefined)
 	}
 
-	onTimelineZoomOff = (e: any) => {
+	onTimelineZoomOff = () => {
 		if (SegmentTimelineClass._zoomOutLatch !== undefined) {
-			this.props.onZoomChange(SegmentTimelineClass._zoomOutLatch, e)
+			this.props.onZoomChange(SegmentTimelineClass._zoomOutLatch, undefined)
 		}
 		SegmentTimelineClass._zoomOutLatch = undefined
 		SegmentTimelineClass._zoomOutLatchId = undefined
@@ -515,21 +519,14 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	// doubleclick is simulated by onTimelineMouseUp, because we use pointer lock and that prevents dblclick events
 	onTimelineDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (SegmentTimelineClass._zoomOutLatch === undefined || SegmentTimelineClass._zoomOutLatchId !== this.props.id) {
-			this.onTimelineZoomOn(e)
+			this.onTimelineZoomOn()
 		} else {
-			this.onTimelineZoomOff(e)
+			this.onTimelineZoomOff()
 		}
 	}
 
 	onTimelineWheel = (e: WheelEvent) => {
-		if (
-			e.ctrlKey &&
-			!e.altKey &&
-			!e.metaKey &&
-			!e.shiftKey &&
-			// @ts-ignore
-			!window.keyboardModifiers.altRight
-		) {
+		if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
 			// ctrl + Scroll
 			this.props.onZoomChange(Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1))), e)
 			e.preventDefault()
@@ -537,7 +534,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		} else if (
 			(!e.ctrlKey && e.altKey && !e.metaKey && !e.shiftKey) ||
 			// @ts-ignore
-			(e.ctrlKey && !e.metaKey && !e.shiftKey && window.keyboardModifiers.altRight)
+			(e.ctrlKey && !e.metaKey && !e.shiftKey && e.altKey)
 		) {
 			// Alt + Scroll
 			this.props.onScroll(Math.max(0, this.props.scrollLeft + e.deltaY / this.props.timeScale), e)
@@ -826,7 +823,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							{criticalNotes > 0 && (
 								<div
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
-									onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(NoteType.ERROR)}>
+									onClick={(e) =>
+										this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(this.props.segment._id, NoteType.ERROR)
+									}>
 									<CriticalIconSmall />
 									<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
 								</div>
@@ -834,7 +833,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							{warningNotes > 0 && (
 								<div
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
-									onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(NoteType.WARNING)}>
+									onClick={(e) =>
+										this.props.onHeaderNoteClick &&
+										this.props.onHeaderNoteClick(this.props.segment._id, NoteType.WARNING)
+									}>
 									<WarningIconSmall />
 									<div className="segment-timeline__title__notes__count">{warningNotes}</div>
 								</div>
@@ -862,11 +864,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						this.props.parts &&
 						this.props.parts.length > 0 &&
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
-							<SegmentDuration
-								partIds={this.props.parts
-									.filter((item) => item.instance.timings?.duration === undefined)
-									.map((item) => item.instance.part._id)}
-							/>
+							<SegmentDuration parts={this.props.parts} />
 						)}
 				</div>
 				<div

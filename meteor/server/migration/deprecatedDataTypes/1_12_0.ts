@@ -1,4 +1,4 @@
-import { TimelineObjectCoreExt, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { TimelineObjectCoreExt, TSR } from '@sofie-automation/blueprints-integration'
 import { TimelineObjId, TimelineObjType } from '../../../lib/collections/Timeline'
 import { StudioId } from '../../../lib/collections/Studios'
 

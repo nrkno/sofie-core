@@ -9,7 +9,7 @@ import {
 	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
 	TimelineObjectCoreExt,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import {
 	SegmentExtended,
 	PartExtended,
@@ -28,10 +28,12 @@ import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
-import { createPieceGroupAndCap } from '../../lib/rundown/pieces'
+import { createPieceGroupAndCap, PieceGroupMetadata } from '../../lib/rundown/pieces'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
+import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
+import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 
-interface PieceGroupMetadata {
+interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
 }
 
@@ -227,14 +229,21 @@ export namespace RundownUtils {
 	 * @export
 	 * @param {ShowStyleBase} showStyleBase
 	 * @param {RundownPlaylist} playlist
-	 * @param {Segment} segment
+	 * @param {DBSegment} segment
+	 * @param {Set<SegmentId>} segmentsBeforeThisInRundownSet
+	 * @param {PartId[]} orderedAllPartIds
+	 * @param {boolean} [pieceInstanceSimulation=false] Can be used client-side to simulate the contents of a
+	 * 		PartInstance, whose contents are being streamed in. When ran in a reactive context, the computation will
+	 * 		be eventually invalidated so that the actual data can be streamed in (to show that the part is actually empty)
+	 * @return {*}  {({
 	 */
 	export function getResolvedSegment(
 		showStyleBase: ShowStyleBase,
 		playlist: RundownPlaylist,
 		segment: DBSegment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
-		orderedAllPartIds: PartId[]
+		orderedAllPartIds: PartId[],
+		pieceInstanceSimulation: boolean = false
 	): {
 		/** A Segment with some additional information */
 		segmentExtended: SegmentExtended
@@ -395,7 +404,8 @@ export namespace RundownUtils {
 							'piece.startedPlayback': 0,
 							'piece.timings': 0,
 						},
-					}
+					},
+					pieceInstanceSimulation
 				)
 
 				const partStarted = partE.instance.timings?.startedPlayback
@@ -416,8 +426,9 @@ export namespace RundownUtils {
 					}
 
 					const { pieceGroup, capObjs } = createPieceGroupAndCap(piece)
-					pieceGroup.metaData = literal<PieceGroupMetadata>({
+					pieceGroup.metaData = literal<PieceGroupMetadataExt>({
 						id: piece.piece._id,
+						pieceId: piece._id,
 					})
 					partTimeline.push(pieceGroup)
 					partTimeline.push(...capObjs)
@@ -497,7 +508,7 @@ export namespace RundownUtils {
 				const objs = Object.values(tlResolved.objects)
 				for (let i = 0; i < objs.length; i++) {
 					const obj = objs[i]
-					const obj0 = (obj as unknown) as TimelineObjectCoreExt<PieceGroupMetadata>
+					const obj0 = (obj as unknown) as TimelineObjectCoreExt<PieceGroupMetadataExt>
 					if (obj.resolved.resolved && obj0.metaData) {
 						// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
 						const piece = piecesLookup.get(obj0.metaData.id)
@@ -662,18 +673,38 @@ export namespace RundownUtils {
 		// get the part immediately after the last segment
 	}
 
-	export function isPieceInstance(piece: PieceUi | AdLibPieceUi): piece is PieceUi {
+	export function isPieceInstance(
+		piece: BucketAdLibItem | IAdLibListItem | PieceUi | AdLibPieceUi
+	): piece is PieceUi {
 		if (piece['instance'] && piece['name'] === undefined) {
 			return true
 		}
 		return false
 	}
 
-	export function isAdLibPiece(piece: PieceUi | AdLibPieceUi): piece is AdLibPieceUi {
+	export function isAdLibPiece(
+		piece: PieceUi | IAdLibListItem | BucketAdLibItem
+	): piece is IAdLibListItem | BucketAdLibUi {
 		if (piece['instance'] || piece['name'] === undefined) {
 			return false
 		}
 		return true
+	}
+
+	export function isAdLibPieceOrAdLibListItem(
+		piece: IAdLibListItem | PieceUi | AdLibPieceUi | BucketAdLibItem
+	): piece is IAdLibListItem | AdLibPieceUi | BucketAdLibItem {
+		if (piece['instance'] || piece['name'] === undefined) {
+			return false
+		}
+		return true
+	}
+
+	export function isAdLibActionItem(piece: IAdLibListItem | AdLibPieceUi | BucketAdLibItem): boolean {
+		if (piece['adlibAction']) {
+			return true
+		}
+		return false
 	}
 
 	export function isAdlibActionContent(
