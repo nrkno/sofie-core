@@ -281,11 +281,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	render() {
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
-		const hasMediaInfo =
-			this.props.layer &&
-			this.props.layer.type === SourceLayerType.VT &&
-			this.props.piece.contentMetaData &&
-			this.props.piece.contentMetaData.mediainfo
 		return (
 			<div
 				className={ClassNames(
@@ -336,11 +331,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
 					: null}
 
-				{isList && hasMediaInfo ? (
-					<span className="dashboard-panel__panel__button__label">
-						{this.props.piece.contentMetaData!.mediainfo!.name}
-					</span>
-				) : this.props.editableName ? (
+				{this.props.editableName ? (
 					<textarea
 						className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
 						value={this.state.label}
