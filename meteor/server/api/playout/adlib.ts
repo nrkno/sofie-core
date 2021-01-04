@@ -10,6 +10,7 @@ import {
 	getRandomId,
 	waitForPromise,
 	assertNever,
+	getRank,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
@@ -18,7 +19,14 @@ import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
 import { Part } from '../../../lib/collections/Parts'
-import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache, getSelectedPartInstancesFromCache } from './lib'
+import {
+	prefixAllObjectIds,
+	setNextPart,
+	getRundownIDsFromCache,
+	getSelectedPartInstancesFromCache,
+	selectNextPart,
+	getAllOrderedPartsFromCache,
+} from './lib'
 import {
 	convertAdLibToPieceInstance,
 	getResolvedPieces,
@@ -273,7 +281,7 @@ export namespace ServerPlayoutAdLibAPI {
 				orphaned: 'adlib-part',
 				part: new Part({
 					_id: getRandomId(),
-					_rank: 99999, // TODO - this
+					_rank: 99999, // Corrected in innerStartQueuedAdLib
 					externalId: '',
 					segmentId: currentPartInstance.segmentId,
 					rundownId: rundown._id,
@@ -403,6 +411,17 @@ export namespace ServerPlayoutAdLibAPI {
 
 		// Ensure it is labelled as dynamic
 		newPartInstance.orphaned = 'adlib-part'
+
+		const followingPart = selectNextPart(
+			rundownPlaylist,
+			currentPartInstance,
+			getAllOrderedPartsFromCache(cache, rundownPlaylist),
+			true
+		)
+		newPartInstance.part._rank = getRank(
+			currentPartInstance.part,
+			followingPart?.part?.segmentId === newPartInstance.segmentId ? followingPart?.part : undefined
+		)
 
 		cache.PartInstances.insert(newPartInstance)
 

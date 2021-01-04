@@ -290,7 +290,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				_id: getRandomId(),
 				rundownId: currentPartInstance.rundownId,
 				segmentId: currentPartInstance.segmentId,
-				_rank: 99999, // TODO - this
+				_rank: 99999, // Corrected in innerStartQueuedAdLib
 				notes: [],
 				invalid: false,
 				invalidReason: undefined,

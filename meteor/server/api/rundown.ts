@@ -505,7 +505,7 @@ export function updatePartInstanceRanks(
 			(p) => p.part._rank
 		)
 
-		// Ensure the PartInstance ranks are synced to their Parts
+		// Ensure the PartInstance ranks are synced with their Parts
 		const newPartsMap = normalizeArrayToMap(newParts, '_id')
 		for (const partInstance of segmentPartInstances) {
 			const part = newPartsMap.get(partInstance.part._id)
@@ -524,11 +524,11 @@ export function updatePartInstanceRanks(
 				delete partInstance.orphaned
 				partInstance.part._rank = part._rank
 			} else if (!partInstance.orphaned) {
-				// TODO: Future flow, should be impossible to get to here currently because of unsynced behaviour, but unit tests provide coverage
+				// TODO: Future flow. For now it should be impossible to get to here currently because of unsynced behaviour, but unit tests provide coverage
 				partInstance.orphaned = 'adlib-part' // 'deleted'
 				cache.PartInstances.update(partInstance._id, {
 					$set: {
-						orphaned: 'adlib-part', // 'deleted',
+						orphaned: 'adlib-part', // Future: 'deleted',
 					},
 				})
 			}

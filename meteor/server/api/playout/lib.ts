@@ -163,7 +163,8 @@ export interface SelectNextPartResult {
 export function selectNextPart(
 	rundownPlaylist: Pick<RundownPlaylist, 'nextSegmentId' | 'loop'>,
 	previousPartInstance: PartInstance | null,
-	parts: Part[]
+	parts: Part[],
+	ignoreUnplayabale = true
 ): SelectNextPartResult | undefined {
 	const span = profiler.startSpan('selectNextPart')
 	const findFirstPlayablePart = (
@@ -173,7 +174,7 @@ export function selectNextPart(
 		// Filter to after and find the first playabale
 		for (let index = offset; index < parts.length; index++) {
 			const part = parts[index]
-			if (part.isPlayable() && (!condition || condition(part))) {
+			if ((!ignoreUnplayabale || part.isPlayable()) && (!condition || condition(part))) {
 				return { part, index }
 			}
 		}
@@ -183,23 +184,38 @@ export function selectNextPart(
 	let offset = 0
 	if (previousPartInstance) {
 		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
-		// TODO - choose something better for next?
 		if (currentIndex !== -1) {
+			// Start looking at the next part
 			offset = currentIndex + 1
+		} else {
+			// Look for other parts in the segment to reference
+			let segmentStartIndex: number | undefined
+			let nextInSegmentIndex: number | undefined
+			parts.forEach((p, i) => {
+				if (p.segmentId === previousPartInstance.segmentId) {
+					if (segmentStartIndex === undefined) segmentStartIndex = i
+
+					if (p._rank <= previousPartInstance.part._rank) {
+						nextInSegmentIndex = i + 1
+					}
+				}
+			})
+			offset = nextInSegmentIndex ?? segmentStartIndex ?? offset
 		}
 	}
 
+	// Filter to after and find the first playabale
 	let nextPart = findFirstPlayablePart(offset)
 
 	if (rundownPlaylist.nextSegmentId) {
 		// No previous part, or segment has changed
 		if (!previousPartInstance || (nextPart && previousPartInstance.segmentId !== nextPart.part.segmentId)) {
 			// Find first in segment
-			const nextPart2 = findFirstPlayablePart(0, (part) => part.segmentId === rundownPlaylist.nextSegmentId)
-			if (nextPart2) {
+			const newSegmentPart = findFirstPlayablePart(0, (part) => part.segmentId === rundownPlaylist.nextSegmentId)
+			if (newSegmentPart) {
 				// If matched matched, otherwise leave on auto
 				nextPart = {
-					...nextPart2,
+					...newSegmentPart,
 					consumesNextSegmentId: true,
 				}
 			}
@@ -208,10 +224,8 @@ export function selectNextPart(
 
 	// TODO - rundownPlaylist.loop
 
-	// Filter to after and find the first playabale
-	const res = nextPart || findFirstPlayablePart(offset)
 	if (span) span.end()
-	return res
+	return nextPart
 }
 export function setNextPart(
 	cache: CacheForRundownPlaylist,
