@@ -240,9 +240,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						? this.renderGraphic(isList && this.props.showThumbnailsInList)
 						: null}
 					<div className="dashboard-panel__panel__button__label-container">
-						<span className="dashboard-panel__panel__button__label">
-							{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.adLibListItem.name}
-						</span>
+						<span className="dashboard-panel__panel__button__label">{this.props.adLibListItem.name}</span>
 					</div>
 				</div>
 			</div>
