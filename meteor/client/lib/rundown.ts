@@ -423,7 +423,7 @@ export namespace RundownUtils {
 					partId: partInstance.part._id,
 					instance: partInstance,
 					pieces: [],
-					renderedDuration: partInstance.part.expectedDuration,
+					renderedDuration: partInstance.part.expectedDuration ?? 0,
 					startsAt: 0,
 					willProbablyAutoNext: !!(
 						previousPart &&
