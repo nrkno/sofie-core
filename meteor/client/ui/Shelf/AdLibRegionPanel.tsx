@@ -37,6 +37,7 @@ import { Meteor } from 'meteor/meteor'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 
 interface IState {
 	objId?: string
@@ -269,10 +270,30 @@ export const AdLibRegionPanel = translateWithTracker<
 >(
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
 		const studio = props.playlist.getStudio()
-		const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
-			props.playlist.currentPartInstanceId
-		)
-		const { nextAdLibIds, nextTags, nextPieceInstances } = getNextPieceInstancesGrouped(
+		const {
+			unfinishedAdLibIds,
+			unfinishedTags,
+			unfinishedPieceInstances,
+			nextAdLibIds,
+			nextTags,
+			nextPieceInstances,
+		} = memoizedIsolatedAutorun(
+			(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null) => {
+				const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
+					currentPartInstanceId
+				)
+				const { nextAdLibIds, nextTags, nextPieceInstances } = getNextPieceInstancesGrouped(nextPartInstanceId)
+				return {
+					unfinishedAdLibIds,
+					unfinishedTags,
+					unfinishedPieceInstances,
+					nextAdLibIds,
+					nextTags,
+					nextPieceInstances,
+				}
+			},
+			'unfinishedAndNextPieceInstances',
+			props.playlist.currentPartInstanceId,
 			props.playlist.nextPartInstanceId
 		)
 

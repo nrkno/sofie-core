@@ -44,6 +44,7 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { registerHotkey, RegisteredHotkeys, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 import { pieceSetInOutPoints } from '../../../server/api/userActions'
 import { ExtendedKeyboardEvent } from 'mousetrap'
+import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 
 interface IState {
 	outputLayers: {
@@ -825,10 +826,21 @@ export const DashboardPanel = translateWithTracker<
 	IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps>) => {
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist.currentPartInstanceId
+		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
+			(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null) => {
+				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(currentPartInstanceId)
+				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(nextPartInstanceId)
+				return {
+					unfinishedAdLibIds,
+					unfinishedTags,
+					nextAdLibIds,
+					nextTags,
+				}
+			},
+			'unfinishedAndNextAdLibsAndTags',
+			props.playlist.currentPartInstanceId,
+			props.playlist.nextPartInstanceId
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),
