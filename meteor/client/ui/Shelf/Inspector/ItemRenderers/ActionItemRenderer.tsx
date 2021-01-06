@@ -276,7 +276,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 							) : null}
 						</div>
 						<div className="shelf-inspector__action-editor__actions">
-							{modes ? (
+							{modes?.length ? (
 								<button className="btn" onClick={(e) => this.onTrigger(e, modes[0])}>
 									{modes[0].display.label}
 								</button>
