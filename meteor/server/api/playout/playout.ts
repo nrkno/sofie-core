@@ -7,7 +7,7 @@ import {
 	getCurrentTime,
 	Time,
 	waitForPromise,
-	normalizeArray,
+	normalizeArrayToMap,
 	unprotectString,
 	isStringOrProtectedString,
 	getRandomId,
@@ -657,7 +657,7 @@ export namespace ServerPlayoutAPI {
 				// logger.info(o)
 				// logger.info(JSON.stringify(o, '', 2))
 
-				const allowedSourceLayers = normalizeArray(showStyleBase.sourceLayers, '_id')
+				const allowedSourceLayers = normalizeArrayToMap(showStyleBase.sourceLayers, '_id')
 
 				// logger.info('nowInPart', nowInPart)
 				// logger.info('filteredPieces', filteredPieces)
@@ -670,30 +670,32 @@ export namespace ServerPlayoutAPI {
 					}
 
 					const pieceInstances = getAllPieceInstancesFromCache(cache, partInstance)
-					const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(pieceInstances, nowInPart)
+
+					const filteredPieces = pieceInstances.filter((piece: PieceInstance) => {
+						const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+						if (
+							sourceLayer &&
+							sourceLayer.allowDisable &&
+							!piece.piece.virtual &&
+							!piece.piece.isTransition
+						)
+							return true
+						return false
+					})
+
+					const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(
+						_.sortBy(filteredPieces, (piece: PieceInstance) => {
+							let sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+							return sourceLayer?._rank || -9999
+						}),
+						nowInPart
+					)
 
 					let findLast: boolean = !!undo
 
-					let filteredPieces = _.sortBy(
-						_.filter(sortedPieces, (piece: PieceInstance) => {
-							let sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
-							if (
-								sourceLayer &&
-								sourceLayer.allowDisable &&
-								!piece.piece.virtual &&
-								!piece.piece.isTransition
-							)
-								return true
-							return false
-						}),
-						(piece: PieceInstance) => {
-							let sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
-							return sourceLayer._rank || -9999
-						}
-					)
-					if (findLast) filteredPieces.reverse()
+					if (findLast) sortedPieces.reverse()
 
-					return filteredPieces.find((piece) => {
+					return sortedPieces.find((piece) => {
 						return (
 							piece.piece.enable.start >= nowInPart &&
 							((!undo && !piece.disabled) || (undo && piece.disabled))
