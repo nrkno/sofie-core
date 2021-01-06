@@ -399,7 +399,8 @@ function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number
 export function processAndPrunePieceInstanceTimings(
 	showStyle: ShowStyleBase,
 	pieces: PieceInstance[],
-	nowInPart: number
+	nowInPart: number,
+	keepDisabledPieces?: boolean
 ): PieceInstanceWithTimings[] {
 	const result: PieceInstanceWithTimings[] = []
 
@@ -437,7 +438,7 @@ export function processAndPrunePieceInstanceTimings(
 	}
 
 	const groupedPieces = _.groupBy(
-		pieces.filter((p) => !p.disabled),
+		keepDisabledPieces ? pieces : pieces.filter((p) => !p.disabled),
 		(p) => exclusiveGroupMap.get(p.piece.sourceLayerId) || p.piece.sourceLayerId
 	)
 	for (const pieces of Object.values(groupedPieces)) {

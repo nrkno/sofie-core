@@ -396,6 +396,14 @@ export class DbCacheWriteCollection<
 			}
 		}
 	}
+	isModified(): boolean {
+		for (const doc of Object.values(this.documents)) {
+			if (doc.inserted || doc.removed || doc.updated) {
+				return true
+			}
+		}
+		return false
+	}
 }
 type SelectorFunction<DBInterface> = (doc: DBInterface) => boolean
 interface DbCacheCollectionDocument<Class> {

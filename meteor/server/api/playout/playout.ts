@@ -717,7 +717,7 @@ export namespace ServerPlayoutAPI {
 				for (const [partInstance, ignoreStartedPlayback] of partInstances) {
 					if (partInstance) {
 						nextPieceInstance = getNextPiece(partInstance, !!undo, ignoreStartedPlayback)
-						break
+						if (nextPieceInstance) break
 					}
 				}
 
@@ -735,6 +735,8 @@ export namespace ServerPlayoutAPI {
 
 					return ClientAPI.responseSuccess(undefined)
 				} else {
+					cache.assertNoChanges()
+
 					return ClientAPI.responseError(404, 'Found no future pieces')
 				}
 			}

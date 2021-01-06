@@ -126,6 +126,42 @@ export class ReadOnlyCache {
 
 		if (span) span.end()
 	}
+	assertNoChanges() {
+		const span = profiler.startSpan('Cache.assertNoChanges')
+
+		const allDBs: DbCacheWriteCollection<any, any>[] = []
+		_.map(_.keys(this), (key) => {
+			const db = this[key]
+			if (isDbCacheWriteCollection(db)) {
+				allDBs.push(db)
+			}
+		})
+
+		if (this._deferredFunctions.length > 0)
+			throw new Meteor.Error(
+				500,
+				`Failed no changes in cache assertion, there were ${this._deferredFunctions} deferred functions`
+			)
+
+		if (this._deferredAfterSaveFunctions.length > 0)
+			throw new Meteor.Error(
+				500,
+				`Failed no changes in cache assertion, there were ${this._deferredAfterSaveFunctions} after-save deferred functions`
+			)
+
+		_.map(allDBs, (db) => {
+			if (db.isModified()) {
+				throw new Meteor.Error(
+					500,
+					`Failed no changes in cache assertion, cache was modified: collection: ${db.name}`
+				)
+			}
+		})
+
+		this._abortActiveTimeout()
+
+		if (span) span.end()
+	}
 }
 export class Cache extends ReadOnlyCache {
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
