@@ -4,6 +4,13 @@ export { TSR }
 
 export { Timeline } from 'timeline-state-resolver-types'
 
+export enum TimelineObjClassesCore {
+	RundownRehearsal = 'rundown_rehersal',
+	RundownActive = 'rundown_active',
+	BeforeFirstPart = 'before_first_part',
+	IsLastPart = 'last_part',
+}
+
 export enum TimelineObjHoldMode {
 	NORMAL = 0,
 	ONLY = 1, // Only use when in HOLD
