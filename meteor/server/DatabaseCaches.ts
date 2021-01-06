@@ -134,6 +134,15 @@ export class ReadOnlyCache {
 	assertNoChanges() {
 		const span = profiler.startSpan('Cache.assertNoChanges')
 
+		function logOrThrowError(error: Meteor.Error) {
+			if (!Meteor.isProduction) {
+				throw error
+			} else {
+				logger.error(error)
+				logger.error(error.stack)
+			}
+		}
+
 		const allDBs: DbCacheWriteCollection<any, any>[] = []
 		_.map(_.keys(this), (key) => {
 			const db = this[key]
@@ -143,22 +152,28 @@ export class ReadOnlyCache {
 		})
 
 		if (this._deferredFunctions.length > 0)
-			throw new Meteor.Error(
-				500,
-				`Failed no changes in cache assertion, there were ${this._deferredFunctions.length} deferred functions`
+			logOrThrowError(
+				new Meteor.Error(
+					500,
+					`Failed no changes in cache assertion, there were ${this._deferredFunctions.length} deferred functions`
+				)
 			)
 
 		if (this._deferredAfterSaveFunctions.length > 0)
-			throw new Meteor.Error(
-				500,
-				`Failed no changes in cache assertion, there were ${this._deferredAfterSaveFunctions.length} after-save deferred functions`
+			logOrThrowError(
+				new Meteor.Error(
+					500,
+					`Failed no changes in cache assertion, there were ${this._deferredAfterSaveFunctions.length} after-save deferred functions`
+				)
 			)
 
 		_.map(allDBs, (db) => {
 			if (db.isModified()) {
-				throw new Meteor.Error(
-					500,
-					`Failed no changes in cache assertion, cache was modified: collection: ${db.name}`
+				logOrThrowError(
+					new Meteor.Error(
+						500,
+						`Failed no changes in cache assertion, cache was modified: collection: ${db.name}`
+					)
 				)
 			}
 		})
