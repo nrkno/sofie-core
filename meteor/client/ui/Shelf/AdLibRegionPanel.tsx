@@ -38,6 +38,7 @@ import { ensureHasTrailingSlash } from '../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 interface IState {
 	objId?: string
@@ -278,11 +279,18 @@ export const AdLibRegionPanel = translateWithTracker<
 			nextTags,
 			nextPieceInstances,
 		} = memoizedIsolatedAutorun(
-			(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null) => {
+			(
+				currentPartInstanceId: PartInstanceId | null,
+				nextPartInstanceId: PartInstanceId | null,
+				showStyleBase: ShowStyleBase
+			) => {
 				const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
 					currentPartInstanceId
 				)
-				const { nextAdLibIds, nextTags, nextPieceInstances } = getNextPieceInstancesGrouped(nextPartInstanceId)
+				const { nextAdLibIds, nextTags, nextPieceInstances } = getNextPieceInstancesGrouped(
+					showStyleBase,
+					nextPartInstanceId
+				)
 				return {
 					unfinishedAdLibIds,
 					unfinishedTags,
@@ -294,7 +302,8 @@ export const AdLibRegionPanel = translateWithTracker<
 			},
 			'unfinishedAndNextPieceInstances',
 			props.playlist.currentPartInstanceId,
-			props.playlist.nextPartInstanceId
+			props.playlist.nextPartInstanceId,
+			props.showStyleBase
 		)
 
 		// Pick thumbnails to display
