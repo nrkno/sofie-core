@@ -72,7 +72,7 @@ import {
 	initCacheForNoRundownPlaylist,
 	CacheForStudio,
 } from '../../DatabaseCaches'
-import { takeNextPartInner, afterTake, takeNextPartInnerSync } from './take'
+import { takeNextPartInner, afterTake, takeNextPartInnerSync, updatePartInstanceOnTake } from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
@@ -942,6 +942,25 @@ export namespace ServerPlayoutAPI {
 
 							reportPartHasStarted(cache, playingPartInstance, startedPlayback)
 
+							// Update generated properties on the newly playing partInstance
+							const currentRundown = currentPartInstance
+								? cache.Rundowns.findOne(currentPartInstance.rundownId)
+								: undefined
+							const pShowStyle = cache.activationCache.getShowStyleBase(currentRundown ?? rundown)
+							const blueprint = waitForPromise(
+								pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
+							)
+							updatePartInstanceOnTake(
+								cache,
+								playlist,
+								pShowStyle,
+								blueprint.blueprint,
+								rundown,
+								playingPartInstance,
+								currentPartInstance
+							)
+
+							// Update the next partinstance
 							const nextPart = selectNextPart(
 								playlist,
 								playingPartInstance,
