@@ -126,6 +126,11 @@ export class ReadOnlyCache {
 
 		if (span) span.end()
 	}
+	/**
+	 * Assert that no changes should have been made to the cache, will throw an Error otherwise. This can be used in
+	 * place of `saveAllToDatabase()`, when the code controlling the cache expects no changes to have been made and any
+	 * changes made are an error and will cause issues.
+	 */
 	assertNoChanges() {
 		const span = profiler.startSpan('Cache.assertNoChanges')
 
