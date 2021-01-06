@@ -558,7 +558,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	getSegmentContext = (props) => {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
-			part: this.props.parts.length > 0 ? this.props.parts[0] : null,
+			part: this.props.parts.find((p) => p.instance.part.isPlayable()) || null,
 		})
 
 		if (this.props.onContextMenu && typeof this.props.onContextMenu === 'function') {
