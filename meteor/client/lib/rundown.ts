@@ -29,7 +29,7 @@ import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { createPieceGroupAndCap, PieceGroupMetadata } from '../../lib/rundown/pieces'
-import { PieceInstances } from '../../lib/collections/PieceInstances'
+import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { FindOptions } from '../../lib/typings/meteor'
@@ -391,11 +391,10 @@ export namespace RundownUtils {
 					hasAlreadyPlayed = true
 				}
 
-				const pieceInstanceFieldOptions: FindOptions<PartInstance> = {
+				const pieceInstanceFieldOptions: FindOptions<PieceInstance> = {
 					fields: {
-						//@ts-ignore deep property
-						'piece.startedPlayback': 0,
-						'piece.timings': 0,
+						startedPlayback: 0,
+						stoppedPlayback: 0,
 					},
 				}
 
