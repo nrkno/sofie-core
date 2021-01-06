@@ -439,7 +439,12 @@ export function processAndPrunePieceInstanceTimings(
 
 	const groupedPieces = _.groupBy(
 		keepDisabledPieces ? pieces : pieces.filter((p) => !p.disabled),
-		(p) => exclusiveGroupMap.get(p.piece.sourceLayerId) || p.piece.sourceLayerId
+		// At this stage, if a Piece is disabled, the `keepDisabledPieces` must be turned on. If that's the case
+		// we split out the disabled Pieces onto the sourceLayerId they actually exist on, instead of putting them
+		// onto the shared "exclusivityGroup" layer. This may cause it to not display "exactly" accurately
+		// while in the disabled state, but it should keep it from affecting any not-disabled Pieces.
+		(p) =>
+			p.disabled ? p.piece.sourceLayerId : exclusiveGroupMap.get(p.piece.sourceLayerId) || p.piece.sourceLayerId
 	)
 	for (const pieces of Object.values(groupedPieces)) {
 		// Group and sort the pieces so that we can step through each point in time
