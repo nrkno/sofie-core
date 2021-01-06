@@ -140,13 +140,13 @@ export class ReadOnlyCache {
 		if (this._deferredFunctions.length > 0)
 			throw new Meteor.Error(
 				500,
-				`Failed no changes in cache assertion, there were ${this._deferredFunctions} deferred functions`
+				`Failed no changes in cache assertion, there were ${this._deferredFunctions.length} deferred functions`
 			)
 
 		if (this._deferredAfterSaveFunctions.length > 0)
 			throw new Meteor.Error(
 				500,
-				`Failed no changes in cache assertion, there were ${this._deferredAfterSaveFunctions} after-save deferred functions`
+				`Failed no changes in cache assertion, there were ${this._deferredAfterSaveFunctions.length} after-save deferred functions`
 			)
 
 		_.map(allDBs, (db) => {
