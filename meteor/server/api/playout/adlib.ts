@@ -34,7 +34,7 @@ import {
 	setupPieceInstanceInfiniteProperties,
 } from './pieces'
 import { updateTimeline } from './timeline'
-import { updatePartInstanceRanks, afterRemoveParts } from '../rundown'
+import { updatePartInstanceRanks } from '../rundown'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
 import {
