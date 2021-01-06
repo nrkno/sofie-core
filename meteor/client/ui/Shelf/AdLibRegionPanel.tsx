@@ -27,6 +27,7 @@ import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { PieceExtended } from '../../../lib/Rundown'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 interface IState {}
 
@@ -217,6 +218,7 @@ export const AdLibRegionPanel = translateWithTracker<
 			props.playlist.currentPartInstanceId
 		)
 		const { nextAdLibIds, nextTags, nextPieceInstances } = getNextPieceInstancesGrouped(
+			props.showStyleBase,
 			props.playlist.nextPartInstanceId
 		)
 

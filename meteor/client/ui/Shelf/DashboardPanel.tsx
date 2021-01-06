@@ -32,6 +32,8 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
+import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 interface IState {
 	outputLayers: {
@@ -664,7 +666,10 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 	return prospectivePieces
 }
 
-export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): PieceInstance[] {
+export function getNextPiecesReactive(
+	showStyleBase: ShowStyleBase,
+	nextPartInstanceId: PartInstanceId | null
+): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
 	if (nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
@@ -691,6 +696,8 @@ export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null)
 				},
 			],
 		}).fetch()
+
+		prospectivePieceInstances = processAndPrunePieceInstanceTimings(showStyleBase, prospectivePieceInstances, 0)
 	}
 
 	return prospectivePieceInstances
@@ -719,9 +726,10 @@ export function getUnfinishedPieceInstancesGrouped(
 }
 
 export function getNextPieceInstancesGrouped(
+	showStyleBase: ShowStyleBase,
 	nextPartInstanceId: PartInstanceId | null
 ): Pick<IDashboardPanelTrackedProps, 'nextAdLibIds' | 'nextTags'> & { nextPieceInstances: PieceInstance[] } {
-	const nextPieceInstances = getNextPiecesReactive(nextPartInstanceId)
+	const nextPieceInstances = getNextPiecesReactive(showStyleBase, nextPartInstanceId)
 
 	const nextAdLibIds: PieceId[] = nextPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
@@ -773,7 +781,10 @@ export const DashboardPanel = translateWithTracker<
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist.currentPartInstanceId
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(
+			props.showStyleBase,
+			props.playlist.nextPartInstanceId
+		)
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),

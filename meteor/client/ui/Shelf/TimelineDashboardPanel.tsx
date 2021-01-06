@@ -45,7 +45,10 @@ export const TimelineDashboardPanel = translateWithTracker<
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist.currentPartInstanceId
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(
+			props.showStyleBase,
+			props.playlist.nextPartInstanceId
+		)
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),
