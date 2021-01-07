@@ -107,7 +107,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 
 		const results: Class[] = []
 		docsToSearch.forEach((doc, _id) => {
-			if (doc.removed) return
+			if (doc === null) return
 			if (
 				!selector
 					? true
@@ -178,7 +178,7 @@ export class DbCacheWriteCollection<
 		this._initialize()
 
 		const existing = doc._id && this.documents.get(doc._id)
-		if (existing && !existing.removed) {
+		if (existing) {
 			throw new Meteor.Error(500, `Error in cache insert to "${this.name}": _id "${doc._id}" already exists`)
 		}
 		if (!doc._id) doc._id = getRandomId()
@@ -196,16 +196,12 @@ export class DbCacheWriteCollection<
 		let removed = 0
 		if (isProtectedString(selector)) {
 			if (this.documents.has(selector)) {
-				this.documents.set(selector, {
-					removed: true,
-				})
+				this.documents.set(selector, null)
 			}
 		} else {
 			const idsToRemove = this.findFetch(selector)
 			_.each(idsToRemove, (doc) => {
-				this.documents.set(doc._id, {
-					removed: true,
-				})
+				this.documents.set(doc._id, null)
 			})
 			removed += idsToRemove.length
 		}
@@ -268,7 +264,7 @@ export class DbCacheWriteCollection<
 		const _id = doc._id
 
 		const oldDoc = this.documents.get(_id)
-		if (oldDoc && !oldDoc.removed) {
+		if (oldDoc) {
 			oldDoc.updated = true
 			oldDoc.document = this._transform(doc)
 		} else {
@@ -331,35 +327,35 @@ export class DbCacheWriteCollection<
 		const updates: BulkWriteOperation<DBInterface>[] = []
 		const removedDocs: Class['_id'][] = []
 		this.documents.forEach((doc, id) => {
-			const _id: DBInterface['_id'] = id
-			if (doc.removed) {
-				removedDocs.push(_id)
+			if (doc === null) {
+				removedDocs.push(id)
 				changes.removed++
-			} else if (doc.inserted) {
-				updates.push({
-					replaceOne: {
-						filter: {
-							_id: id as any,
+			} else {
+				if (doc.inserted) {
+					updates.push({
+						replaceOne: {
+							filter: {
+								_id: id as any,
+							},
+							replacement: doc.document,
+							upsert: true,
 						},
-						replacement: doc.document,
-						upsert: true,
-					},
-				})
-				changes.added++
-			} else if (doc.updated) {
-				updates.push({
-					replaceOne: {
-						filter: {
-							_id: id as any,
+					})
+					changes.added++
+				} else if (doc.updated) {
+					updates.push({
+						replaceOne: {
+							filter: {
+								_id: id as any,
+							},
+							replacement: doc.document,
 						},
-						replacement: doc.document,
-					},
-				})
-				changes.updated++
+					})
+					changes.updated++
+				}
+				delete doc.inserted
+				delete doc.updated
 			}
-			delete doc.inserted
-			delete doc.updated
-			// Note: we don't delete doc.removed, because that breaks this._collection[x].document
 		})
 		if (removedDocs.length) {
 			updates.push({
@@ -385,7 +381,7 @@ export class DbCacheWriteCollection<
 	}
 	updateOtherCacheWithData(otherCache: DbCacheWriteCollection<Class, DBInterface>) {
 		this.documents.forEach((doc, id) => {
-			if (doc.removed) {
+			if (doc === null) {
 				otherCache.remove(id)
 				this.documents.delete(id)
 			} else {
@@ -401,7 +397,7 @@ export class DbCacheWriteCollection<
 	}
 	isModified(): boolean {
 		for (const doc of Array.from(this.documents.values())) {
-			if (doc.inserted || doc.removed || doc.updated) {
+			if (doc === null || doc.inserted || doc.updated) {
 				return true
 			}
 		}
@@ -409,21 +405,12 @@ export class DbCacheWriteCollection<
 	}
 }
 type SelectorFunction<DBInterface> = (doc: DBInterface) => boolean
-type DbCacheCollectionDocument<Class> =
-	| {
-			inserted?: boolean
-			updated?: boolean
-			removed?: false
+type DbCacheCollectionDocument<Class> = {
+	inserted?: boolean
+	updated?: boolean
 
-			document: Class
-	  }
-	| {
-			inserted?: false
-			updated?: false
-			removed: true
-
-			document?: never
-	  }
+	document: Class
+} | null // removed
 
 interface SaveIntoDbOptions<DocClass, DBInterface> {
 	beforeInsert?: (o: DBInterface) => DBInterface
