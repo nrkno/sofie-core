@@ -242,14 +242,16 @@ const AdLibListView = withTranslation()(
 				<tbody className="adlib-panel__list-view__list__segment adlib-panel__list-view__item__rundown-baseline">
 					{this.props.rundownAdLibs &&
 						this.props.rundownAdLibs
-							.filter((item) =>
-								matchFilter(
-									item,
-									this.props.showStyleBase,
-									this.props.uiSegments,
-									this.props.filter,
-									this.props.searchFilter
-								)
+							.filter(
+								(item) =>
+									!item.isHidden &&
+									matchFilter(
+										item,
+										this.props.showStyleBase,
+										this.props.uiSegments,
+										this.props.filter,
+										this.props.searchFilter
+									)
 							)
 							.map((adLibPiece: AdLibPieceUi) => (
 								<AdLibListItem
@@ -800,7 +802,9 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 							const uiAdLib: AdLibPieceUi = _.clone(item)
 							uiAdLib.isGlobal = true
 
-							let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
+							let sourceLayer = (uiAdLib.sourceLayer =
+								(item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]) || undefined)
+							uiAdLib.outputLayer = (item.outputLayerId && outputLayerLookup[item.outputLayerId]) || undefined
 							if (sourceLayer && sourceLayer.activateKeyboardHotkeys && sourceLayer.assignHotkeysToGlobalAdlibs) {
 								let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 								const sourceHotKeyUseLayerId =
