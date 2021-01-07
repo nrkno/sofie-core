@@ -30,7 +30,7 @@ export function isDbCacheWriteCollection(o: any): o is DbCacheWriteCollection<an
 }
 /** Caches data, allowing reads from cache, but not writes */
 export class DbCacheReadCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }> {
-	documents: { [_id: string]: DbCacheCollectionDocument<Class> } = {}
+	documents = new Map<DBInterface['_id'], DbCacheCollectionDocument<Class>>()
 
 	private _initialized: boolean = false
 	private _initializer?: MongoQuery<DBInterface> | (() => Promise<void>) = undefined
@@ -57,8 +57,9 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	extendWithData(cacheCollection: DbCacheReadCollection<Class, DBInterface>) {
 		this._initialized = cacheCollection._initialized
 		this._initializer = cacheCollection._initializer
-		_.each(cacheCollection.documents, (doc, key) => {
-			if (!this.documents[key]) this.documents[key] = doc
+
+		cacheCollection.documents.forEach((doc, key) => {
+			if (!this.documents.has(key)) this.documents.set(key, doc)
 		})
 	}
 
@@ -97,15 +98,15 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		let docsToSearch = this.documents
 		if (selector['_id'] && _.isString(selector['_id'])) {
 			// Optimization: Make the lookup as small as possible:
-			docsToSearch = {}
-			const doc = this.documents[selector['_id']]
+			docsToSearch = new Map()
+			const doc = this.documents.get(protectString(selector['_id']))
 			if (doc) {
-				docsToSearch[selector['_id']] = doc
+				docsToSearch.set(protectString(selector['_id']), doc)
 			}
 		}
 
 		const results: Class[] = []
-		_.each(docsToSearch, (doc, _id) => {
+		docsToSearch.forEach((doc, _id) => {
 			if (doc.removed) return
 			if (
 				!selector
@@ -116,7 +117,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 					? selector(doc.document)
 					: mongoWhere(doc.document, selector)
 			) {
-				if (unprotectString(doc.document['_id']) !== _id) {
+				if (doc.document['_id'] !== _id) {
 					throw new Meteor.Error(
 						500,
 						`Error: document._id "${doc.document['_id']}" is not equal to the key "${_id}"`
@@ -147,17 +148,17 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	}
 	fillWithDataFromArray(documents: Class[]) {
 		_.each(documents, (doc) => {
-			const id = unprotectString(doc._id)
-			if (this.documents[id]) {
+			const id = doc._id
+			if (this.documents.has(id)) {
 				throw new Meteor.Error(
 					500,
 					`Unable to fill cache with data "${this._collection['name']}", _id "${doc._id}" already exists`
 				)
 			}
 
-			this.documents[id] = {
+			this.documents.set(id, {
 				document: doc,
-			}
+			})
 		})
 	}
 	protected _transform(doc: DBInterface): Class {
@@ -176,15 +177,15 @@ export class DbCacheWriteCollection<
 		const span = profiler.startSpan(`DBCache.insert.${this.name}`)
 		this._initialize()
 
-		const existing = doc._id && this.documents[unprotectString(doc._id)]
+		const existing = doc._id && this.documents.get(doc._id)
 		if (existing && !existing.removed) {
 			throw new Meteor.Error(500, `Error in cache insert to "${this.name}": _id "${doc._id}" already exists`)
 		}
 		if (!doc._id) doc._id = getRandomId()
-		this.documents[unprotectString(doc._id)] = {
+		this.documents.set(doc._id, {
 			inserted: true,
 			document: this._transform(clone(doc)), // Unlinke a normal collection, this class stores the transformed objects
-		}
+		})
 		if (span) span.end()
 		return doc._id
 	}
@@ -194,18 +195,17 @@ export class DbCacheWriteCollection<
 
 		let removed = 0
 		if (isProtectedString(selector)) {
-			const oldDoc = this.documents[unprotectString(selector)]
-			if (oldDoc && !oldDoc.removed) {
-				oldDoc.removed = true
-				// @ts-ignore TODO - resolve this
-				delete oldDoc.document
+			if (this.documents.has(selector)) {
+				this.documents.set(selector, {
+					removed: true,
+				})
 			}
 		} else {
-			const idsToRemove = this.findFetch(selector).map((doc) => unprotectString(doc._id))
-			_.each(idsToRemove, (id) => {
-				this.documents[id].removed = true
-				// @ts-ignore TODO - resolve this
-				delete this.documents[id].document
+			const idsToRemove = this.findFetch(selector)
+			_.each(idsToRemove, (doc) => {
+				this.documents.set(doc._id, {
+					removed: true,
+				})
 			})
 			removed += idsToRemove.length
 		}
@@ -229,12 +229,12 @@ export class DbCacheWriteCollection<
 
 		let count = 0
 		_.each(this.findFetch(selector), (doc) => {
-			const _id = unprotectString(doc._id)
+			const _id = doc._id
 
 			let newDoc: DBInterface = _.isFunction(modifier)
 				? modifier(clone(doc))
 				: mongoModify(selectorInModify, clone(doc), modifier)
-			if (unprotectString(newDoc._id) !== _id) {
+			if (newDoc._id !== _id) {
 				throw new Meteor.Error(
 					500,
 					`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`
@@ -247,7 +247,11 @@ export class DbCacheWriteCollection<
 				_.each(_.uniq([..._.keys(newDoc), ..._.keys(doc)]), (key) => {
 					doc[key] = newDoc[key]
 				})
-				this.documents[_id].updated = true
+
+				const docEntry = this.documents.get(_id)
+				if (docEntry) {
+					docEntry.updated = true
+				}
 			}
 			count++
 		})
@@ -261,17 +265,17 @@ export class DbCacheWriteCollection<
 		this._initialize()
 
 		if (!doc._id) throw new Meteor.Error(500, `Error: The (immutable) field '_id' must be defined: "${doc._id}"`)
-		const _id = unprotectString(doc._id)
+		const _id = doc._id
 
-		const oldDoc = this.documents[_id]
+		const oldDoc = this.documents.get(_id)
 		if (oldDoc && !oldDoc.removed) {
 			oldDoc.updated = true
 			oldDoc.document = this._transform(doc)
 		} else {
-			this.documents[_id] = {
+			this.documents.set(_id, {
 				inserted: true,
 				document: this._transform(doc),
-			}
+			})
 		}
 
 		if (span) span.end()
@@ -326,8 +330,8 @@ export class DbCacheWriteCollection<
 
 		const updates: BulkWriteOperation<DBInterface>[] = []
 		const removedDocs: Class['_id'][] = []
-		_.each(this.documents, (doc, id) => {
-			const _id: DBInterface['_id'] = protectString(id)
+		this.documents.forEach((doc, id) => {
+			const _id: DBInterface['_id'] = id
 			if (doc.removed) {
 				removedDocs.push(_id)
 				changes.removed++
@@ -370,7 +374,7 @@ export class DbCacheWriteCollection<
 		const pBulkWriteResult = asyncCollectionBulkWrite(this._collection, updates)
 
 		_.each(removedDocs, (_id) => {
-			delete this._collection[unprotectString(_id)]
+			this.documents.delete(_id)
 		})
 
 		await pBulkWriteResult
@@ -380,26 +384,23 @@ export class DbCacheWriteCollection<
 		return changes
 	}
 	updateOtherCacheWithData(otherCache: DbCacheWriteCollection<Class, DBInterface>) {
-		for (const id of Object.keys(this.documents)) {
-			const _id: DBInterface['_id'] = protectString(id)
-			const doc = this.documents[id]
-
+		this.documents.forEach((doc, id) => {
 			if (doc.removed) {
-				otherCache.remove(_id)
-				delete this.documents[id]
+				otherCache.remove(id)
+				this.documents.delete(id)
 			} else {
 				if (doc.inserted) {
 					otherCache.insert(doc.document)
 				} else if (doc.updated) {
-					otherCache.upsert(_id, doc.document, true)
+					otherCache.upsert(id, doc.document, true)
 				}
 				delete doc.inserted
 				delete doc.updated
 			}
-		}
+		})
 	}
 	isModified(): boolean {
-		for (const doc of Object.values(this.documents)) {
+		for (const doc of Array.from(this.documents.values())) {
 			if (doc.inserted || doc.removed || doc.updated) {
 				return true
 			}
@@ -408,13 +409,21 @@ export class DbCacheWriteCollection<
 	}
 }
 type SelectorFunction<DBInterface> = (doc: DBInterface) => boolean
-interface DbCacheCollectionDocument<Class> {
-	inserted?: boolean
-	updated?: boolean
-	removed?: boolean
+type DbCacheCollectionDocument<Class> =
+	| {
+			inserted?: boolean
+			updated?: boolean
+			removed?: false
 
-	document: Class
-}
+			document: Class
+	  }
+	| {
+			inserted?: false
+			updated?: false
+			removed: true
+
+			document?: never
+	  }
 
 interface SaveIntoDbOptions<DocClass, DBInterface> {
 	beforeInsert?: (o: DBInterface) => DBInterface
