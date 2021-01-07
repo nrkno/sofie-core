@@ -425,7 +425,7 @@ function buildTimelineObjsForRundown(
 					? TimelineObjClassesCore.RundownRehearsal
 					: TimelineObjClassesCore.RundownActive,
 				!activePlaylist.currentPartInstanceId ? TimelineObjClassesCore.BeforeFirstPart : undefined,
-				!activePlaylist.nextPartInstanceId ? TimelineObjClassesCore.IsLastPart : undefined,
+				!activePlaylist.nextPartInstanceId ? TimelineObjClassesCore.NoNextPart : undefined,
 			].filter((v): v is TimelineObjClassesCore => v !== undefined),
 			partInstanceId: null,
 		})

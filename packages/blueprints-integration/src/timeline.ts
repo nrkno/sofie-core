@@ -8,7 +8,7 @@ export enum TimelineObjClassesCore {
 	RundownRehearsal = 'rundown_rehersal',
 	RundownActive = 'rundown_active',
 	BeforeFirstPart = 'before_first_part',
-	IsLastPart = 'last_part',
+	NoNextPart = 'last_part',
 }
 
 export enum TimelineObjHoldMode {
