@@ -126,6 +126,62 @@ export class ReadOnlyCache {
 
 		if (span) span.end()
 	}
+	/**
+	 * Assert that no changes should have been made to the cache, will throw an Error otherwise. This can be used in
+	 * place of `saveAllToDatabase()`, when the code controlling the cache expects no changes to have been made and any
+	 * changes made are an error and will cause issues.
+	 */
+	assertNoChanges() {
+		const span = profiler.startSpan('Cache.assertNoChanges')
+
+		function logOrThrowError(error: Meteor.Error) {
+			if (!Meteor.isProduction) {
+				throw error
+			} else {
+				logger.error(error)
+				logger.error(error.stack)
+			}
+		}
+
+		const allDBs: DbCacheWriteCollection<any, any>[] = []
+		_.map(_.keys(this), (key) => {
+			const db = this[key]
+			if (isDbCacheWriteCollection(db)) {
+				allDBs.push(db)
+			}
+		})
+
+		if (this._deferredFunctions.length > 0)
+			logOrThrowError(
+				new Meteor.Error(
+					500,
+					`Failed no changes in cache assertion, there were ${this._deferredFunctions.length} deferred functions`
+				)
+			)
+
+		if (this._deferredAfterSaveFunctions.length > 0)
+			logOrThrowError(
+				new Meteor.Error(
+					500,
+					`Failed no changes in cache assertion, there were ${this._deferredAfterSaveFunctions.length} after-save deferred functions`
+				)
+			)
+
+		_.map(allDBs, (db) => {
+			if (db.isModified()) {
+				logOrThrowError(
+					new Meteor.Error(
+						500,
+						`Failed no changes in cache assertion, cache was modified: collection: ${db.name}`
+					)
+				)
+			}
+		})
+
+		this._abortActiveTimeout()
+
+		if (span) span.end()
+	}
 }
 export class Cache extends ReadOnlyCache {
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */

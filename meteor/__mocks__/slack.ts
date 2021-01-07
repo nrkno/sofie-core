@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
-import { IncomingWebhook, IncomingWebhookResult } from '@slack/client'
+import { IncomingWebhookResult } from '@slack/webhook'
 
 export function sendSlackMessageToWebhook(message: string, webhookURL: string): Promise<IncomingWebhookResult> {
 	return new Promise((resolve, reject) => {
-		let result: IncomingWebhookResult = { text: message } as IncomingWebhookResult
+		let result: IncomingWebhookResult = { text: message }
 		process.nextTick(() => {
 			if (message.match(/error/)) {
 				reject(new Meteor.Error(500, 'Failed to send slack message'))

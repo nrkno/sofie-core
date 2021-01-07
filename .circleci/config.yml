@@ -221,7 +221,7 @@ jobs:
           command: |
             cd packages
             yarn docs
-            gh-pages -d docs
+            yarn gh-pages -d docs
 
   validate-prod-dependencies-libs:
     parameters:
@@ -506,7 +506,7 @@ workflows:
             - test-libs
           filters:
             tags:
-              only: /^[0-9]+\.[0-9]+\.[0-9]+.*/
+              only: /v.*/
             branches:
               ignore: /.*/
       - typedoc-libs:
@@ -514,7 +514,7 @@ workflows:
             - release-libs
           filters:
             tags:
-              only: /^[0-9]+\.[0-9]+\.[0-9]+.*/
+              only: /v.*/
             branches:
               ignore: /.*/
         

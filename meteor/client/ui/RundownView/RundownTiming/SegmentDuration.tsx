@@ -2,9 +2,7 @@ import * as React from 'react'
 import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
-import { SegmentId } from '../../../../lib/collections/Segments'
 import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
-import { processAndPrunePieceInstanceTimings } from '../../../../lib/rundown/infinites'
 
 interface ISegmentDurationProps {
 	parts: PartUi[]
