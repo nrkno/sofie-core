@@ -3,7 +3,7 @@
 	"version": "1.17.0-in-development-R29.0",
 	"private": true,
 	"engines": {
-		"node": "^12.18 || 14"
+		"node": "^12.20.1 || 14"
 	},
 	"scripts": {
 		"start": "meteor --version && meteor npm install && meteor npm run dev",
