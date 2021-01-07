@@ -1,4 +1,4 @@
-import { DeepReadonly } from 'ts-essentials'
+import { ReadonlyDeep } from 'type-fest'
 import { PieceInstanceWithTimings } from './infinites'
 import {
 	TimelineObjRundown,
@@ -19,7 +19,7 @@ export interface PieceGroupMetadata {
 
 export function createPieceGroupAndCap(
 	pieceInstance: Pick<
-		DeepReadonly<PieceInstanceWithTimings>,
+		ReadonlyDeep<PieceInstanceWithTimings>,
 		'_id' | 'rundownId' | 'piece' | 'infinite' | 'resolvedEndCap' | 'priority' | 'partInstanceId'
 	>,
 	partGroup?: TimelineObjRundown,
