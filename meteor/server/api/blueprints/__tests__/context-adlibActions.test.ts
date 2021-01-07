@@ -661,9 +661,7 @@ describe('Test blueprint api context', () => {
 					playlist.currentPartInstanceId = pieceInstance0.partInstanceId
 
 					// Ensure there are no pending updates already
-					expect(
-						Array.from(cache.PieceInstances.documents.values()).filter((doc) => !!doc.updated)
-					).toHaveLength(0)
+					expect(cache.PieceInstances.isModified()).toBeFalsy()
 
 					// Update it and expect it to match
 					const pieceInstance0Before = _.clone(pieceInstance0)
@@ -685,7 +683,7 @@ describe('Test blueprint api context', () => {
 					}
 					expect(pieceInstance0).toEqual(pieceInstance0After)
 					expect(
-						Array.from(cache.PieceInstances.documents.values()).filter((doc) => !!doc.updated)
+						Array.from(cache.PieceInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
 					).toMatchObject([
 						{
 							updated: true,
@@ -1036,9 +1034,7 @@ describe('Test blueprint api context', () => {
 					playlist.nextPartInstanceId = partInstance0._id
 
 					// Ensure there are no pending updates already
-					expect(
-						Array.from(cache.PartInstances.documents.values()).filter((doc) => !!doc.updated)
-					).toHaveLength(0)
+					expect(cache.PartInstances.isModified()).toBeFalsy()
 
 					// Update it and expect it to match
 					const partInstance0Before = _.clone(partInstance0)
@@ -1059,7 +1055,7 @@ describe('Test blueprint api context', () => {
 					}
 					expect(partInstance0).toEqual(pieceInstance0After)
 					expect(
-						Array.from(cache.PartInstances.documents.values()).filter((doc) => !!doc.updated)
+						Array.from(cache.PartInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
 					).toMatchObject([
 						{
 							updated: true,
