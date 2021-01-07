@@ -5,7 +5,7 @@ import {
 	TSR,
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
-import { DeepReadonly } from 'ts-essentials'
+import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../../../lib/logging'
 import {
 	TimelineObjGeneric,
@@ -32,7 +32,6 @@ import {
 	getRandomId,
 	applyToArray,
 	protectString,
-	makeDeepReadonly,
 } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -492,7 +491,7 @@ function buildTimelineObjsForRundown(
 					transformPartIntoTimeline(
 						activePlaylist._id,
 						partInstancesInfo.previous.partInstance.part._id,
-						makeDeepReadonly(previousContinuedPieces),
+						previousContinuedPieces,
 						groupClasses,
 						previousPartGroup,
 						partInstancesInfo.previous.nowInPart,
@@ -608,7 +607,7 @@ function buildTimelineObjsForRundown(
 				transformPartIntoTimeline(
 					activePlaylist._id,
 					partInstancesInfo.current.partInstance.part._id,
-					makeDeepReadonly([piece]),
+					[piece],
 					groupClasses,
 					infiniteGroup,
 					nowInParent,
@@ -633,7 +632,7 @@ function buildTimelineObjsForRundown(
 			...transformPartIntoTimeline(
 				activePlaylist._id,
 				partInstancesInfo.current.partInstance.part._id,
-				makeDeepReadonly(currentNormalItems),
+				currentNormalItems,
 				groupClasses,
 				currentPartGroup,
 				partInstancesInfo.current.nowInPart,
@@ -678,7 +677,7 @@ function buildTimelineObjsForRundown(
 				...transformPartIntoTimeline(
 					activePlaylist._id,
 					partInstancesInfo.next.partInstance.part._id,
-					makeDeepReadonly(nextPieceInstances),
+					nextPieceInstances,
 					groupClasses,
 					nextPartGroup,
 					0,
@@ -776,7 +775,7 @@ interface TransformTransitionProps {
 }
 
 export function hasPieceInstanceDefinitelyEnded(
-	pieceInstance: DeepReadonly<PieceInstanceWithTimings>,
+	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
 	nowInPart: number
 ): boolean {
 	if (nowInPart <= 0) return false
@@ -811,7 +810,7 @@ function getTransformTransitionProps(partInstance: PartInstance, allowTransition
 function transformPartIntoTimeline(
 	playlistId: RundownPlaylistId,
 	partId: PartId,
-	pieceInstances: DeepReadonly<Array<PieceInstanceWithTimings>>,
+	pieceInstances: ReadonlyDeep<Array<PieceInstanceWithTimings>>,
 	firstObjClasses: string[],
 	partGroup: TimelineObjGroupPart & OnGenerateTimelineObjExt,
 	nowInPart: number,
@@ -826,7 +825,7 @@ function transformPartIntoTimeline(
 	const isHold = holdState === RundownHoldState.ACTIVE
 	const allowTransition =
 		transitionProps && transitionProps.allowed && !isHold && holdState !== RundownHoldState.COMPLETE
-	const transition: DeepReadonly<PieceInstanceWithTimings> | undefined = allowTransition
+	const transition: ReadonlyDeep<PieceInstanceWithTimings> | undefined = allowTransition
 		? pieceInstances.find((i) => !!i.piece.isTransition)
 		: undefined
 	const transitionPieceDelay = transitionProps

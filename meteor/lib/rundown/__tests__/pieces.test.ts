@@ -1,5 +1,5 @@
 import '../../../__mocks__/_extendJest'
-import { literal, getRandomId, makeDeepReadonly } from '../../../lib/lib'
+import { literal, getRandomId } from '../../../lib/lib'
 import { Piece } from '../../../lib/collections/Pieces'
 import { createPieceGroupAndCap } from '../pieces'
 import { TimelineObjRundown } from '../../collections/Timeline'
@@ -20,7 +20,7 @@ describe('Pieces', () => {
 			_id: getRandomId(),
 			rundownId: getRandomId(),
 			partInstanceId: getRandomId(),
-			piece: makeDeepReadonly(createFakePiece({ start: 10 }, 'some-layer')),
+			piece: createFakePiece({ start: 10 }, 'some-layer'),
 			infinite: undefined,
 			resolvedEndCap: undefined,
 			priority: 123,
