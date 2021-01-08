@@ -32,7 +32,7 @@ export interface MetadataElement {
 
 export interface BaseContent {
 	[key: string]: TimelineObjectCoreExt[] | number | string | boolean | object | undefined | null
-
+	timelineObjects?: TimelineObjectCoreExt[]
 	// We leave it up to the blueprints to ensure that each all of their types implement this interface but more strongly typed
 	// If we were to enforce it here then this lib and core would need to be aware of every type
 	editable?: BaseEditableParameters

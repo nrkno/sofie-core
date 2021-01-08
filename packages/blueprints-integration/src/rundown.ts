@@ -2,7 +2,6 @@ import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContentVizMSE } from '
 import { Time } from './common'
 import { SomeContent } from './content'
 import { ExpectedPackage } from './package'
-import { TimelineObjectCoreExt } from './timeline'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -230,9 +229,6 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	 * @deprecated
 	 */
 	content?: SomeContent // @todo: rename to guiContent displayManifest?
-
-	/** Contains the timeline-objects on this Piece */
-	timelineObjects: TimelineObjectCoreExt[]
 
 	/** The transition used by this piece to transition to and from the piece */
 	transitions?: {
