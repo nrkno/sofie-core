@@ -1127,20 +1127,17 @@ export function handleUpdatedSegment(
 
 		const blueprint = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
 
-		const {
-			segmentId: updatedSegmentId,
-			insertedPartExternalIds,
-			oldPartIdsAndRanks,
-		} = updateSegmentFromIngestData(cache, blueprint, playlist, rundown, ingestSegment)
+		const { segmentId: updatedSegmentId, oldPartIdsAndRanks } = updateSegmentFromIngestData(
+			cache,
+			blueprint,
+			playlist,
+			rundown,
+			ingestSegment
+		)
 		if (updatedSegmentId) {
-			afterIngestChangedData(
-				cache,
-				blueprint.blueprint,
-				rundown,
-				[{ segmentId: updatedSegmentId, oldPartIdsAndRanks }],
-				false,
-				insertedPartExternalIds
-			)
+			afterIngestChangedData(cache, blueprint.blueprint, rundown, [
+				{ segmentId: updatedSegmentId, oldPartIdsAndRanks },
+			])
 		}
 
 		waitForPromise(cache.saveAllToDatabase())
@@ -1151,16 +1148,14 @@ export function updateSegmentsFromIngestData(
 	studio: Studio,
 	playlist: RundownPlaylist,
 	rundown: Rundown,
-	ingestSegments: IngestSegment[],
-	removedPartsBeforeInserted?: boolean
+	ingestSegments: IngestSegment[]
 ) {
 	if (ingestSegments.length > 0) {
 		const blueprint = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
 
 		const changedSegments: ChangedSegmentsRankInfo = []
-		const allInsertedPartExternalIds: string[] = []
 		for (let ingestSegment of ingestSegments) {
-			const { segmentId, insertedPartExternalIds, oldPartIdsAndRanks } = updateSegmentFromIngestData(
+			const { segmentId, oldPartIdsAndRanks } = updateSegmentFromIngestData(
 				cache,
 				blueprint,
 				playlist,
@@ -1170,19 +1165,9 @@ export function updateSegmentsFromIngestData(
 			if (segmentId !== null) {
 				changedSegments.push({ segmentId, oldPartIdsAndRanks })
 			}
-			if (insertedPartExternalIds) {
-				allInsertedPartExternalIds.push(...insertedPartExternalIds)
-			}
 		}
 		if (changedSegments.length > 0) {
-			afterIngestChangedData(
-				cache,
-				blueprint.blueprint,
-				rundown,
-				changedSegments,
-				removedPartsBeforeInserted,
-				allInsertedPartExternalIds
-			)
+			afterIngestChangedData(cache, blueprint.blueprint, rundown, changedSegments)
 		}
 	}
 }
@@ -1202,7 +1187,6 @@ function updateSegmentFromIngestData(
 	ingestSegment: IngestSegment
 ): {
 	segmentId: SegmentId | null
-	insertedPartExternalIds: string[]
 	oldPartIdsAndRanks: Array<{ id: PartId; rank: number }>
 } {
 	const span = profiler.startSpan('ingest.rundownInput.updateSegmentFromIngestData')
@@ -1279,7 +1263,7 @@ function updateSegmentFromIngestData(
 	// determine if update is allowed here
 	if (!isUpdateAllowed(cache, playlist, rundown, {}, { changed: [newSegment] }, prepareSaveParts)) {
 		unsyncSegmentOrRundown(cache, rundown._id, segmentId)
-		return { segmentId: null, insertedPartExternalIds: [], oldPartIdsAndRanks: [] }
+		return { segmentId: null, oldPartIdsAndRanks: [] }
 	}
 
 	// Update segment info:
@@ -1346,10 +1330,9 @@ function updateSegmentFromIngestData(
 		})
 	)
 
-	const insertedPartExternalIds = prepareSaveParts.inserted.map((part) => part.externalId)
 	const oldPartIdsAndRanks = existingParts.map((p) => ({ id: p._id, rank: p._rank }))
 	span?.end()
-	return { segmentId: anythingChanged(changes) ? segmentId : null, insertedPartExternalIds, oldPartIdsAndRanks }
+	return { segmentId: anythingChanged(changes) ? segmentId : null, oldPartIdsAndRanks }
 }
 function syncChangesToPartInstances(
 	cache: CacheForRundownPlaylist,
@@ -1491,9 +1474,7 @@ function afterIngestChangedData(
 	cache: CacheForRundownPlaylist,
 	blueprint: ShowStyleBlueprintManifest,
 	rundown: Rundown,
-	changedSegments: ChangedSegmentsRankInfo,
-	removedPartsBeforeInserted?: boolean,
-	insertedPartExternalIds?: string[]
+	changedSegments: ChangedSegmentsRankInfo
 ) {
 	const playlist = cache.RundownPlaylists.findOne({ _id: rundown.playlistId })
 	if (!playlist) {
@@ -1506,11 +1487,7 @@ function afterIngestChangedData(
 
 	updatePartInstanceRanks(cache, playlist, changedSegments)
 
-	if (insertedPartExternalIds?.length) {
-		UpdateNext.afterInsertParts(cache, playlist, insertedPartExternalIds, !!removedPartsBeforeInserted)
-	} else {
-		UpdateNext.ensureNextPartIsValid(cache, playlist)
-	}
+	UpdateNext.ensureNextPartIsValid(cache, playlist)
 
 	syncChangesToPartInstances(cache, blueprint, playlist, rundown)
 

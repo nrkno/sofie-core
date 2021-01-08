@@ -344,7 +344,7 @@ export function setNextPart(
 		cache.RundownPlaylists.update(rundownPlaylist._id, {
 			$set: literal<Partial<RundownPlaylist>>({
 				nextPartInstanceId: newInstanceId,
-				nextPartManual: !!setManually,
+				nextPartManual: !!(setManually || newNextPartInstance?.orphaned),
 				nextTimeOffset: nextTimeOffset || null,
 			}),
 		})

@@ -323,12 +323,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData]))
 
-		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(
-			expect.anything(),
-			playlist,
-			[newPartData.ID.toString()],
-			false
-		)
+		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(expect.anything(), playlist)
 
 		const segments = rundown.getSegments()
 		const parts = rundown.getParts({}, undefined, segments)
@@ -369,12 +364,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData]))
 
-		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(
-			expect.anything(),
-			playlist,
-			[newPartData.ID.toString()],
-			false
-		)
+		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(expect.anything(), playlist)
 
 		const segments = rundown.getSegments()
 		const parts = rundown.getParts({}, undefined, segments)
@@ -491,12 +481,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryReplace(device._id, device.token, action, [newPartData]))
 
-		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(
-			expect.anything(),
-			playlist,
-			[newPartData.ID.toString()],
-			true
-		)
+		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(expect.anything(), playlist)
 
 		const segments = rundown.getSegments()
 		const parts = rundown.getParts({}, undefined, segments)
