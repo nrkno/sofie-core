@@ -80,8 +80,19 @@ export namespace ExpectedPackage {
 }
 
 export namespace PackageOriginMetadata {
-	export interface LocalFolder {
-		type: Type.LOCAL_FOLDER
+	export type Any = LocalFolder | FileShare | MappedDrive | HTTP
+
+	export enum OriginType {
+		LOCAL_FOLDER = 'local_folder',
+		FILE_SHARE = 'file_share',
+		MAPPED_DRIVE = 'mapped_drive',
+		HTTP = 'http',
+	}
+	export interface Base {
+		type: OriginType
+	}
+	export interface LocalFolder extends Base {
+		type: OriginType.LOCAL_FOLDER
 
 		/** Path to the folder
 		 * @example 'C:\media\'
@@ -91,8 +102,8 @@ export namespace PackageOriginMetadata {
 		/** Path to the file (starting from .folderPath) */
 		fileName?: string
 	}
-	export interface FileShare {
-		type: Type.FILE_SHARE
+	export interface FileShare extends Base {
+		type: OriginType.FILE_SHARE
 
 		/** Path to a folder on a network-share
 		 * @example '\\192.168.0.1\shared\'
@@ -102,8 +113,8 @@ export namespace PackageOriginMetadata {
 		/** Path to the file (starting from .folderPath) */
 		fileName?: string
 	}
-	export interface MappedDrive {
-		type: Type.MAPPED_DRIVE
+	export interface MappedDrive extends Base {
+		type: OriginType.MAPPED_DRIVE
 
 		/** Path to a folder on a network-share
 		 * @example '\\192.168.0.1\shared\'
@@ -119,8 +130,8 @@ export namespace PackageOriginMetadata {
 		userName?: string
 		password?: string
 	}
-	export interface HTTP {
-		type: Type.HTTP
+	export interface HTTP extends Base {
+		type: OriginType.HTTP
 
 		/** Base url (url to the host), for example http://myhost.com/fileShare/ */
 		baseUrl: string
@@ -136,11 +147,5 @@ export namespace PackageOriginMetadata {
 
 		/** Body parameters to send along with the request (for POST-requests). */
 		requestBody?: any
-	}
-	export enum Type {
-		LOCAL_FOLDER = 'local_folder',
-		FILE_SHARE = 'file_share',
-		MAPPED_DRIVE = 'mapped_drive',
-		HTTP = 'http',
 	}
 }

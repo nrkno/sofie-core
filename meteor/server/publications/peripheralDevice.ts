@@ -28,6 +28,7 @@ import _, { map } from 'underscore'
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
+import { DBObj, literal, protectString } from '../../lib/lib'
 
 function checkAccess(cred: Credentials | ResolvedCredentials, selector) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -110,7 +111,8 @@ meteorPublish(PubSub.mediaWorkFlowSteps, function(selector0, token) {
 meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackages', function(
 	pub,
 	deviceId: PeripheralDeviceId,
-	token
+	filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
+	token: string
 ) {
 	if (PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })) {
 		let peripheralDevice = PeripheralDevices.findOne(deviceId)
@@ -169,9 +171,9 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					studioId: studioId,
 					deviceId: deviceId,
 
-					invalidateStudio: false,
-					invalidateExpectedPackages: false,
-					invalidateRundownPlaylist: false,
+					invalidateStudio: true,
+					invalidateExpectedPackages: true,
+					invalidateRundownPlaylist: true,
 
 					studio: undefined,
 					expectedPackages: [],
@@ -242,6 +244,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					_.each(context.expectedPackages, (expectedPackage) => {
 						const layerName = expectedPackage.layer
 						const mapping = studio.mappings[layerName]
+
 						if (mapping) {
 							if (!mappingsWithPackages[layerName]) {
 								mappingsWithPackages[layerName] = {
@@ -260,21 +263,27 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 						routes
 					)
 
+					console.log('routedMappingsWithPackages', routedMappingsWithPackages)
 					// Filter, keep only the routed mappings for this device:
 					const routedExpectedPackages: ResultingExpectedPackage[] = []
-					// const routedMappingsForDevice: { [layerName: string]: MappingExt } = {}
+
 					for (const layerName of Object.keys(routedMappingsWithPackages)) {
 						const mapping = routedMappingsWithPackages[layerName]
 
-						if (mapping.deviceId === deviceId) {
+						if (!filterPlayoutDeviceIds || filterPlayoutDeviceIds.includes(mapping.deviceId)) {
 							for (const expectedPackage of mapping.expectedPackages) {
 								// todo: lookup Package Origin
-								const origin = 'todo'
+								const origins = expectedPackage.origins.map((packageOrigin) => {
+									// lookup:
+									packageOrigin.originId
+
+									return 'todo'
+								})
 
 								routedExpectedPackages.push({
 									expectedPackage: expectedPackage,
-									deviceId: deviceId,
-									origin: origin,
+									playoutDeviceId: deviceId,
+									origins: origins,
 								})
 							}
 						}
@@ -282,14 +291,16 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					context.routedExpectedPackages = routedExpectedPackages
 				}
 
-				return [
+				const pubData = literal<DBObj[]>([
 					{
-						_id: `${deviceId}_expectedPackages`,
+						_id: protectString(`${deviceId}_expectedPackages`),
+						type: 'expected_packages',
 						studioId: studioId,
 						expectedPackages: context.routedExpectedPackages,
 					},
 					{
-						_id: `${deviceId}_rundownPlaylist`,
+						_id: protectString(`${deviceId}_rundownPlaylist`),
+						type: 'active_playlist',
 						studioId: studioId,
 						activeplaylist: context.activePlaylist
 							? {
@@ -305,7 +316,8 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 							}
 						}),
 					},
-				]
+				])
+				return pubData
 			},
 			(newData) => {
 				pub.updatedDocs(newData)
@@ -320,6 +332,6 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 
 interface ResultingExpectedPackage {
 	expectedPackage: ExpectedPackage.Base
-	origin: any
-	deviceId: PeripheralDeviceId
+	origins: any[] // TODO
+	playoutDeviceId: PeripheralDeviceId
 }
