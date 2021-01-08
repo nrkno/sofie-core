@@ -12,6 +12,8 @@ import { Bucket } from '../../../lib/collections/Buckets'
 import { unprotectString } from '../../../lib/lib'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
 import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
+import { PartCountdownPanel } from './PartCountdownPanel'
+import { PieceCountdownPanel } from './PieceCountdownPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -91,15 +93,23 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							layout={rundownLayout}
 							panel={panel}
 						/>
-					) : (
-						/*) : RundownLayoutsAPI.isPartCountdown(panel) ? (
+					) : RundownLayoutsAPI.isPartCountdown(panel) ? (
 						<PartCountdownPanel
 							key={panel._id}
 							panel={panel}
 							layout={rundownLayout}
 							playlist={props.playlist}
 							visible={true}
-						/>*/
+						/>
+					) : RundownLayoutsAPI.isPieceCountdown(panel) ? (
+						<PieceCountdownPanel
+							key={panel._id}
+							panel={panel}
+							layout={rundownLayout}
+							playlist={props.playlist}
+							visible={true}
+						/>
+					) : (
 						undefined
 					)
 				)}

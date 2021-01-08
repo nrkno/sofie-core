@@ -19,29 +19,34 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownTiming, TimingEvent, RundownTimingProvider } from '../RundownView/RundownTiming'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
+import { Meteor } from 'meteor/meteor'
+import { PubSub } from '../../../lib/api/pubsub'
 
-interface IPartCountdownPanelProps {
+interface IPieceCountdownPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPartCountdown
 	playlist: RundownPlaylist
 }
 
-interface IPartCountdownPanelTrackedProps extends IDashboardPanelTrackedProps {
-	livePiece?: PieceInstance
-	livePart?: PartInstance
+interface IPieceCountdownPanelTrackedProps {
+	livePieceInstance?: PieceInstance
+	metadata?: MediaObject
 }
 
 interface IState {
 	displayTimecode: number
 }
 
-export class PartCountdownPanelInner extends MeteorReactComponent<
-	IPartCountdownPanelProps & IPartCountdownPanelTrackedProps,
+export class PieceCountdownPanelInner extends MeteorReactComponent<
+	IPieceCountdownPanelProps & IPieceCountdownPanelTrackedProps,
 	IState
 > {
+	private objId: string
+
 	constructor(props) {
 		super(props)
 		this.state = {
@@ -52,6 +57,9 @@ export class PartCountdownPanelInner extends MeteorReactComponent<
 
 	componentDidMount() {
 		window.addEventListener(RundownTiming.Events.timeupdate, this.updateTimecode)
+		Meteor.defer(() => {
+			this.updateMediaObjectSubscription()
+		})
 	}
 
 	componentWillUnmount() {
@@ -60,16 +68,49 @@ export class PartCountdownPanelInner extends MeteorReactComponent<
 
 	updateTimecode(e: TimingEvent) {
 		let timecode = 0
-		if (this.props.livePiece && this.props.livePart && this.props.livePart.timings?.startedPlayback) {
-			const partDuration = this.props.livePart.timings?.duration || this.props.livePart.part.expectedDuration || 0
-			const startedPlayback = this.props.livePart.timings?.startedPlayback
-			if (startedPlayback) {
-				timecode = e.detail.currentTime - (startedPlayback + partDuration)
+		if (this.props.livePieceInstance && this.props.livePieceInstance.startedPlayback) {
+			const vtContent = this.props.livePieceInstance.piece.content as VTContent | undefined
+			const sourceDuration =
+				Math.max(
+					(this.props.metadata?.mediainfo?.format?.duration || 0) * 1000 - (vtContent?.postrollDuration || 0),
+					0
+				) ||
+				vtContent?.sourceDuration ||
+				0
+			const startedPlayback = this.props.livePieceInstance.startedPlayback
+			if (startedPlayback && sourceDuration > 0) {
+				timecode = e.detail.currentTime - (startedPlayback + sourceDuration)
 			}
 		}
-		this.setState({
-			displayTimecode: timecode,
+		if (this.state.displayTimecode != timecode) {
+			this.setState({
+				displayTimecode: timecode,
+			})
+		}
+	}
+
+	componentDidUpdate() {
+		Meteor.defer(() => {
+			this.updateMediaObjectSubscription()
 		})
+	}
+
+	updateMediaObjectSubscription() {
+		if (this.props.livePieceInstance) {
+			const piece = this.props.livePieceInstance.piece
+			let objId: string | undefined = undefined
+
+			if (piece.content && piece.content.fileName) {
+				objId = (piece.content as VTContent | undefined)?.fileName?.toUpperCase()
+			}
+
+			if (objId && objId !== this.objId) {
+				this.objId = objId
+				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
+					mediaId: this.objId,
+				})
+			}
+		}
 	}
 
 	render() {
@@ -105,17 +146,13 @@ export class PartCountdownPanelInner extends MeteorReactComponent<
 	}
 }
 
-export const PartCountdownPanel = withTracker<IPartCountdownPanelProps, IState, IPartCountdownPanelTrackedProps>(
-	(props: IPartCountdownPanelProps & IPartCountdownPanelTrackedProps) => {
+export const PieceCountdownPanel = withTracker<IPieceCountdownPanelProps, IState, IPieceCountdownPanelTrackedProps>(
+	(props: IPieceCountdownPanelProps & IPieceCountdownPanelTrackedProps) => {
 		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId, false)
 		const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
 			props.playlist.currentPartInstanceId
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
-		const livePart = props.playlist.currentPartInstanceId
-			? PartInstances.findOne(props.playlist.currentPartInstanceId)
-			: undefined
-		const livePiece: PieceInstance | undefined =
+		const livePieceInstance: PieceInstance | undefined =
 			props.panel.sourceLayerIds && props.panel.sourceLayerIds.length
 				? _.find(_.flatten(_.values(unfinishedPieces)), (piece: PieceInstance) => {
 						return (
@@ -124,16 +161,14 @@ export const PartCountdownPanel = withTracker<IPartCountdownPanelProps, IState, 
 						)
 				  })
 				: undefined
+		const mediaId = (livePieceInstance?.piece.content as VTContent | undefined)?.fileName?.toUpperCase()
+		const metadata = mediaId ? MediaObjects.findOne({ mediaId }) : undefined
 		return {
-			unfinishedAdLibIds,
-			unfinishedTags,
-			nextAdLibIds,
-			nextTags,
-			livePiece,
-			livePart,
+			livePieceInstance,
+			metadata,
 		}
 	},
-	(_data, props: IPartCountdownPanelProps, nextProps: IPartCountdownPanelProps) => {
+	(_data, props: IPieceCountdownPanelProps, nextProps: IPieceCountdownPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
-)(PartCountdownPanelInner)
+)(PieceCountdownPanelInner)

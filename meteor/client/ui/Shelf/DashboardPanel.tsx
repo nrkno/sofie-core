@@ -32,6 +32,8 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { registerHotkey, RegisteredHotkeys, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 import { ExtendedKeyboardEvent } from 'mousetrap'
+import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
+import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 
 interface IState {
 	outputLayers: {
@@ -706,7 +708,10 @@ export function getUnfinishedPieceInstancesReactive(
 	return prospectivePieces
 }
 
-export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): PieceInstance[] {
+export function getNextPiecesReactive(
+	showStyleBase: ShowStyleBase,
+	nextPartInstanceId: PartInstanceId | null
+): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
 	if (nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
@@ -733,6 +738,8 @@ export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null)
 				},
 			],
 		}).fetch()
+
+		prospectivePieceInstances = processAndPrunePieceInstanceTimings(showStyleBase, prospectivePieceInstances, 0)
 	}
 
 	return prospectivePieceInstances
@@ -762,9 +769,10 @@ export function getUnfinishedPieceInstancesGrouped(
 }
 
 export function getNextPieceInstancesGrouped(
+	showStyleBase: ShowStyleBase,
 	nextPartInstanceId: PartInstanceId | null
 ): Pick<IDashboardPanelTrackedProps, 'nextAdLibIds' | 'nextTags'> & { nextPieceInstances: PieceInstance[] } {
-	const nextPieceInstances = getNextPiecesReactive(nextPartInstanceId)
+	const nextPieceInstances = getNextPiecesReactive(showStyleBase, nextPartInstanceId)
 
 	const nextAdLibIds: PieceId[] = nextPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
@@ -813,10 +821,26 @@ export const DashboardPanel = translateWithTracker<
 	IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps>) => {
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist.currentPartInstanceId
+		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
+			(
+				currentPartInstanceId: PartInstanceId | null,
+				nextPartInstanceId: PartInstanceId | null,
+				showStyleBase: ShowStyleBase
+			) => {
+				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(currentPartInstanceId)
+				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(showStyleBase, nextPartInstanceId)
+				return {
+					unfinishedAdLibIds,
+					unfinishedTags,
+					nextAdLibIds,
+					nextTags,
+				}
+			},
+			'unfinishedAndNextAdLibsAndTags',
+			props.playlist.currentPartInstanceId,
+			props.playlist.nextPartInstanceId,
+			props.showStyleBase
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),

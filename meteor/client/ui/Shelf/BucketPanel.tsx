@@ -216,7 +216,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist.currentPartInstanceId
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(
+			props.showStyleBase,
+			props.playlist.nextPartInstanceId
+		)
 		return literal<IBucketPanelTrackedProps>({
 			adLibPieces: BucketAdLibs.find(
 				{
