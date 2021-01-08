@@ -28,7 +28,9 @@ import _, { map } from 'underscore'
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
-import { DBObj, literal, protectString } from '../../lib/lib'
+import { DBObj, literal, protectString, unprotectString } from '../../lib/lib'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PlayoutDeviceSettings } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 
 function checkAccess(cred: Credentials | ResolvedCredentials, selector) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -176,6 +178,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					invalidateRundownPlaylist: true,
 
 					studio: undefined,
+					peripheralDevicesInStudio: [],
 					expectedPackages: [],
 					routedExpectedPackages: [],
 					activePlaylist: undefined,
@@ -194,6 +197,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 
 				// cache:
 				studio: Studio | undefined
+				peripheralDevicesInStudio: PeripheralDevice[]
 				expectedPackages: ExpectedPackageDB[]
 				routedExpectedPackages: ResultingExpectedPackage[]
 				activePlaylist: DBRundownPlaylist | undefined
@@ -207,6 +211,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					context.invalidateStudio = false
 					invalidateRoutedExpectedPackages = true
 					context.studio = Studios.findOne(context.studioId)
+					context.peripheralDevicesInStudio = PeripheralDevices.find({ studioId: context.studioId }).fetch()
 				}
 				if (!context.studio) return []
 
@@ -274,17 +279,46 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 							for (const expectedPackage of mapping.expectedPackages) {
 								// todo: lookup Package Origin
 								const origins = expectedPackage.origins.map((packageOrigin) => {
-									// lookup:
+									// TODO: lookup:
 									packageOrigin.originId
+									const lookedUpOrigin = {}
 
-									return 'todo'
+									const origin = {
+										...lookedUpOrigin,
+										...packageOrigin.originMetadata,
+									}
+
+									return origin
 								})
 
-								routedExpectedPackages.push({
-									expectedPackage: expectedPackage,
-									playoutDeviceId: deviceId,
-									origins: origins,
-								})
+								// Lookup location
+								let playoutLocation = undefined
+								for (const device of context.peripheralDevicesInStudio) {
+									if (
+										device.category === PeripheralDeviceAPI.DeviceCategory.PLAYOUT &&
+										device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+										device.settings
+									) {
+										const settings = device.settings as PlayoutDeviceSettings
+
+										if (
+											settings.locations &&
+											settings.locations[unprotectString(mapping.deviceId)]
+										) {
+											playoutLocation = settings.locations[unprotectString(mapping.deviceId)]
+										}
+									}
+									if (playoutLocation) break
+								}
+
+								if (playoutLocation) {
+									routedExpectedPackages.push({
+										expectedPackage: expectedPackage,
+										playoutDeviceId: mapping.deviceId,
+										playoutLocation: playoutLocation,
+										origins: origins,
+									})
+								}
 							}
 						}
 					}
@@ -334,4 +368,5 @@ interface ResultingExpectedPackage {
 	expectedPackage: ExpectedPackage.Base
 	origins: any[] // TODO
 	playoutDeviceId: PeripheralDeviceId
+	playoutLocation: any // todo
 }
