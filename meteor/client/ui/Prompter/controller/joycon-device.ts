@@ -188,11 +188,24 @@ export class JoyConController extends ControllerAbstract {
 
 			// falls back to searching for compatible gamepad
 			for (const o of gamepads) {
-				if (o && o.connected && o.id && typeof o.id === 'string' && o.id.match('Joy-Con')) {
+				if (
+					o &&
+					o.connected &&
+					o.id &&
+					typeof o.id === 'string' &&
+					o.id.match('STANDARD GAMEPAD Vendor: 057e')
+				) {
 					this.lastUsedJoyconIndex = o.index
 					this.lastUsedJoyconId = o.id
 					this.lastUsedJoyconMode =
-						o.axes.length === 4 ? 'LR' : o.id.match('(L)') ? 'L' : o.id.match('(R)') ? 'R' : null // we are setting this as a member as opposed to returning it functional-style, to avoid doing this calculation pr. tick
+						o.axes.length === 4
+							? 'LR'
+							: o.id.match('Product: 2006')
+							? 'L'
+							: o.id.match('Product: 2007')
+							? 'R'
+							: null // we are setting lastUsedJoyconId as a member as opposed to returning it functional-style, to avoid doing this calculation pr. tick
+					// for documentation: L+R mode is also identified as Vendor: 057e Product: 200e
 					return { axes: o.axes, buttons: o.buttons }
 				}
 			}
