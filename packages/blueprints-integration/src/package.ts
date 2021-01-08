@@ -54,9 +54,12 @@ export namespace ExpectedPackage {
 		}
 		origins: {
 			originId: string
-			originMetadata: PackageOriginMetadata.LocalFolder | PackageOriginMetadata.FileShare | PackageOriginMetadata.MappedDrive | PackageOriginMetadata.HTTP
+			originMetadata:
+				| PackageOriginMetadata.LocalFolder
+				| PackageOriginMetadata.FileShare
+				| PackageOriginMetadata.MappedDrive
+				| PackageOriginMetadata.HTTP
 		}[]
-
 	}
 	export interface ExpectedPackageQuantelClip extends Base {
 		type: PackageType.QUANTEL_CLIP
@@ -116,9 +119,28 @@ export namespace PackageOriginMetadata {
 		userName?: string
 		password?: string
 	}
+	export interface HTTP {
+		type: Type.HTTP
+
+		/** Base url (url to the host), for example http://myhost.com/fileShare/ */
+		baseUrl: string
+
+		/** URL path to resource (combined with .baseUrl gives the full URL), for example: /folder/myFile */
+		url: string
+
+		/** Type of request. Defaults to 'get' */
+		method?: 'get' | 'post' | string
+
+		/** Any headers to send along with the request */
+		headers?: { [name: string]: any }
+
+		/** Body parameters to send along with the request (for POST-requests). */
+		requestBody?: any
+	}
 	export enum Type {
 		LOCAL_FOLDER = 'local_folder',
 		FILE_SHARE = 'file_share',
 		MAPPED_DRIVE = 'mapped_drive',
+		HTTP = 'http',
 	}
 }
