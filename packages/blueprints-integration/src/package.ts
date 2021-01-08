@@ -48,7 +48,7 @@ export namespace ExpectedPackage {
 		}
 		version: {
 			fileSize?: number // in bytes
-			modifiedDate?: string // @todo: should this be a number or a timestamp?
+			modifiedDate?: number // timestamp (ms)
 			checksum?: string
 			checkSumType?: 'sha' | 'md5' | 'whatever'
 		}
@@ -97,9 +97,9 @@ export namespace PackageOriginMetadata {
 		/** Path to the folder
 		 * @example 'C:\media\'
 		 */
-		folderPath?: string
+		folderPath: string
 
-		/** Path to the file (starting from .folderPath) */
+		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
 		fileName?: string
 	}
 	export interface FileShare extends Base {
@@ -108,9 +108,9 @@ export namespace PackageOriginMetadata {
 		/** Path to a folder on a network-share
 		 * @example '\\192.168.0.1\shared\'
 		 */
-		folderPath?: string
+		folderPath: string
 
-		/** Path to the file (starting from .folderPath) */
+		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
 		fileName?: string
 	}
 	export interface MappedDrive extends Base {
@@ -121,8 +121,8 @@ export namespace PackageOriginMetadata {
 		 */
 		folderPath: string
 
-		/** Path to the file (starting from .folderPath) */
-		fileName: string
+		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
+		fileName?: string
 
 		/** Drive letter to where the drive is mappedTo */
 		mappedDrive?: string
