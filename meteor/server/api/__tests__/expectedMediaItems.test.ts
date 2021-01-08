@@ -6,7 +6,7 @@ import { VTContent, PieceLifespan } from '@sofie-automation/blueprints-integrati
 import { Segments, DBSegment } from '../../../lib/collections/Segments'
 import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { updateExpectedMediaItemsOnPart, updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
+import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
@@ -199,66 +199,4 @@ describe('Expected Media Items', () => {
 			expect(items).toHaveLength(0)
 		})
 	})
-
-	describe('Based on a Part', () => {
-		testInFiber('Generates ExpectedMediaItems based on a Part', () => {
-			expect(Rundowns.findOne(rdId1)).toBeTruthy()
-			expect(Parts.findOne(protectString(rdId1 + '_' + mockPart0))).toBeTruthy()
-			expect(Pieces.find({ startPartId: protectString(rdId1 + '_' + mockPart0) }).count()).toBe(1)
-
-			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId1))
-			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart0))
-			waitForPromise(cache.saveAllToDatabase())
-
-			const items = ExpectedMediaItems.find({
-				rundownId: rdId1,
-				studioId: env.studio._id,
-			}).fetch()
-			expect(items).toHaveLength(2)
-		})
-		testInFiber('Removes all ExpectedMediaItems if a Part has been deleted', () => {
-			Parts.remove({
-				_id: protectString(rdId1 + '_' + mockPart0),
-			})
-
-			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId1))
-			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart0))
-			waitForPromise(cache.saveAllToDatabase())
-
-			const items = ExpectedMediaItems.find({
-				rundownId: rdId1,
-				studioId: env.studio._id,
-			}).fetch()
-			expect(items).toHaveLength(0)
-		})
-		testInFiber('Removes all ExpectedMediaItems if a Rundown has been deleted', () => {
-			const rd = Rundowns.findOne(rdId1)
-			if (!rd) {
-				fail()
-				return
-			}
-			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rd._id))
-
-			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart1))
-
-			waitForPromise(cache.saveAllToDatabase())
-			let items = ExpectedMediaItems.find({
-				rundownId: rdId1,
-				studioId: env.studio._id,
-			}).fetch()
-			expect(items).toHaveLength(2)
-
-			cache.Rundowns.remove(rd._id)
-			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart1))
-
-			waitForPromise(cache.saveAllToDatabase())
-			items = ExpectedMediaItems.find({
-				rundownId: rdId1,
-				studioId: env.studio._id,
-			}).fetch()
-			expect(items).toHaveLength(0)
-		})
-	})
-
-	return
 })

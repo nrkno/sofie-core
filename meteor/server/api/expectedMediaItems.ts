@@ -12,7 +12,6 @@ import {
 import { RundownId } from '../../lib/collections/Rundowns'
 import { Piece, PieceGeneric, PieceId } from '../../lib/collections/Pieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { syncFunctionIgnore } from '../codeControl'
 import {
 	saveIntoDb,
 	getCurrentTime,
@@ -20,6 +19,7 @@ import {
 	protectString,
 	asyncCollectionRemove,
 	waitForPromise,
+	Subtract,
 } from '../../lib/lib'
 import { PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
@@ -34,7 +34,6 @@ import {
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
-import { Subtract } from 'utility-types'
 
 export enum PieceType {
 	PIECE = 'piece',
@@ -250,66 +249,6 @@ export function updateExpectedMediaItemsOnRundown(cache: CacheForRundownPlaylist
 			ExpectedMediaItems,
 			{
 				rundownId: rundown._id,
-			},
-			eMIs
-		)
-	})
-}
-
-export function updateExpectedMediaItemsOnPart(
-	cache: CacheForRundownPlaylist,
-	rundownId: RundownId,
-	partId: PartId
-): void {
-	check(rundownId, String)
-	check(partId, String)
-
-	const rundown = cache.Rundowns.findOne(rundownId)
-	if (!rundown) {
-		cache.deferAfterSave(() => {
-			const removedItems = ExpectedMediaItems.remove({
-				rundownId: rundownId,
-			})
-			logger.info(`Removed ${removedItems} expected media items for deleted rundown "${rundownId}"`)
-		})
-		return
-	}
-	const studioId = rundown.studioId
-
-	const part = cache.Parts.findOne(partId)
-	if (!part) {
-		cache.deferAfterSave(() => {
-			const removedItems = ExpectedMediaItems.remove({
-				rundownId: rundownId,
-				partId: partId,
-			})
-			logger.info(`Removed ${removedItems} expected media items for deleted part "${partId}"`)
-		})
-		return
-	}
-
-	cache.deferAfterSave(() => {
-		const pieces = cache.Pieces.findFetch({
-			startRundownId: rundown._id,
-			startPartId: partId,
-		})
-
-		const adlibs = AdLibPieces.find({
-			rundownId: rundown._id,
-			partId: partId,
-		}).fetch()
-
-		const actions = AdLibActions.find({
-			rundownId: rundown._id,
-			partId: partId,
-		}).fetch()
-
-		const eMIs = generateExpectedMediaItemsFull(studioId, rundownId, pieces, adlibs, actions)
-		saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(
-			ExpectedMediaItems,
-			{
-				rundownId: rundown._id,
-				partId: partId,
 			},
 			eMIs
 		)

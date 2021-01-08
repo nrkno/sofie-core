@@ -10,7 +10,7 @@ import { BucketAdLibs, BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { FindOptions } from '../../lib/typings/meteor'
 import { BucketAdLibActions, BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 
-meteorPublish(PubSub.buckets, function(selector: MongoQuery<BucketAdLibAction>, token) {
+meteorPublish(PubSub.buckets, function(selector: MongoQuery<Bucket>, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<Bucket> = {
 		fields: {},
@@ -24,7 +24,7 @@ meteorPublish(PubSub.buckets, function(selector: MongoQuery<BucketAdLibAction>, 
 	return null
 })
 
-meteorPublish(PubSub.bucketAdLibPieces, function(selector: MongoQuery<BucketAdLibAction>, token) {
+meteorPublish(PubSub.bucketAdLibPieces, function(selector: MongoQuery<BucketAdLib>, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<BucketAdLib> = {
 		fields: {},

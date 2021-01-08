@@ -1,7 +1,7 @@
 /* tslint:disable:no-use-before-declare */
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import * as _ from 'underscore'
-import { DeepReadonly } from 'utility-types'
+import { ReadonlyDeep } from 'type-fest'
 import { Piece } from '../../../lib/collections/Pieces'
 import {
 	literal,
@@ -33,7 +33,7 @@ import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap, PieceGroupMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
@@ -75,7 +75,7 @@ export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[
 
 export function createPieceGroupFirstObject(
 	playlistId: RundownPlaylistId,
-	pieceInstance: DeepReadonly<PieceInstance>,
+	pieceInstance: ReadonlyDeep<PieceInstance>,
 	pieceGroup: TimelineObjRundown & OnGenerateTimelineObjExt,
 	firstObjClasses?: string[]
 ): TimelineObjPieceAbstract & OnGenerateTimelineObjExt {
@@ -205,7 +205,11 @@ export function getResolvedPieces(
 	const partStarted = partInstance.timings?.startedPlayback
 	const nowInPart = now - (partStarted ?? 0)
 
-	const preprocessedPieces = processAndPrunePieceInstanceTimings(showStyleBase, pieceInstances, nowInPart)
+	const preprocessedPieces: ReadonlyDeep<PieceInstanceWithTimings[]> = processAndPrunePieceInstanceTimings(
+		showStyleBase,
+		pieceInstances,
+		nowInPart
+	)
 
 	const objs = flatten(
 		preprocessedPieces.map((piece) => {

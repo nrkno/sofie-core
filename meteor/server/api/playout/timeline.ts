@@ -5,7 +5,7 @@ import {
 	TSR,
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
-import { DeepReadonly } from 'utility-types'
+import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../../../lib/logging'
 import {
 	TimelineObjGeneric,
@@ -775,7 +775,7 @@ interface TransformTransitionProps {
 }
 
 export function hasPieceInstanceDefinitelyEnded(
-	pieceInstance: DeepReadonly<PieceInstanceWithTimings>,
+	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
 	nowInPart: number
 ): boolean {
 	if (nowInPart <= 0) return false
@@ -810,7 +810,7 @@ function getTransformTransitionProps(partInstance: PartInstance, allowTransition
 function transformPartIntoTimeline(
 	playlistId: RundownPlaylistId,
 	partId: PartId,
-	pieceInstances: DeepReadonly<PieceInstanceWithTimings>[],
+	pieceInstances: ReadonlyDeep<Array<PieceInstanceWithTimings>>,
 	firstObjClasses: string[],
 	partGroup: TimelineObjGroupPart & OnGenerateTimelineObjExt,
 	nowInPart: number,
@@ -825,7 +825,7 @@ function transformPartIntoTimeline(
 	const isHold = holdState === RundownHoldState.ACTIVE
 	const allowTransition =
 		transitionProps && transitionProps.allowed && !isHold && holdState !== RundownHoldState.COMPLETE
-	const transition: DeepReadonly<PieceInstanceWithTimings> | undefined = allowTransition
+	const transition: ReadonlyDeep<PieceInstanceWithTimings> | undefined = allowTransition
 		? pieceInstances.find((i) => !!i.piece.isTransition)
 		: undefined
 	const transitionPieceDelay = transitionProps

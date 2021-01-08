@@ -29,9 +29,10 @@ import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { createPieceGroupAndCap, PieceGroupMetadata } from '../../lib/rundown/pieces'
-import { PieceInstances } from '../../lib/collections/PieceInstances'
+import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
+import { FindOptions } from '../../lib/typings/meteor'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
@@ -235,6 +236,9 @@ export namespace RundownUtils {
 	 * @param {boolean} [pieceInstanceSimulation=false] Can be used client-side to simulate the contents of a
 	 * 		PartInstance, whose contents are being streamed in. When ran in a reactive context, the computation will
 	 * 		be eventually invalidated so that the actual data can be streamed in (to show that the part is actually empty)
+	 * @param {boolean} [includeDisabledPieces=false] In some uses (like when previewing a Segment in the GUI) it's needed
+	 * 		to consider disabled Piecess as where they are, insted of stripping them out. When enabled, the method will
+	 * 		keep them in the result set.
 	 * @return {*}  {({
 	 */
 	export function getResolvedSegment(
@@ -243,7 +247,8 @@ export namespace RundownUtils {
 		segment: DBSegment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
 		orderedAllPartIds: PartId[],
-		pieceInstanceSimulation: boolean = false
+		pieceInstanceSimulation: boolean = false,
+		includeDisabledPieces: boolean = false
 	): {
 		/** A Segment with some additional information */
 		segmentExtended: SegmentExtended
@@ -386,6 +391,13 @@ export namespace RundownUtils {
 					hasAlreadyPlayed = true
 				}
 
+				const pieceInstanceFieldOptions: FindOptions<PieceInstance> = {
+					fields: {
+						startedPlayback: 0,
+						stoppedPlayback: 0,
+					},
+				}
+
 				const rawPieceInstances = getPieceInstancesForPartInstance(
 					partInstance,
 					new Set(partIds.slice(0, itIndex)),
@@ -394,17 +406,14 @@ export namespace RundownUtils {
 					currentPartIndex !== null && nextPartIndex !== null ? currentPartIndex < nextPartIndex : false,
 					currentPartInstance,
 					currentPartInstance
-						? PieceInstances.find({
-								partInstanceId: currentPartInstance._id,
-						  }).fetch()
+						? PieceInstances.find(
+								{
+									partInstanceId: currentPartInstance._id,
+								},
+								pieceInstanceFieldOptions
+						  ).fetch()
 						: undefined,
-					{
-						fields: {
-							//@ts-ignore deep property
-							'piece.startedPlayback': 0,
-							'piece.timings': 0,
-						},
-					},
+					pieceInstanceFieldOptions,
 					pieceInstanceSimulation
 				)
 
@@ -414,7 +423,8 @@ export namespace RundownUtils {
 				const preprocessedPieces = processAndPrunePieceInstanceTimings(
 					showStyleBase,
 					rawPieceInstances,
-					nowInPart
+					nowInPart,
+					includeDisabledPieces
 				)
 
 				// insert items into the timeline for resolution

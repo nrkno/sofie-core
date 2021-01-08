@@ -18,7 +18,7 @@ import { Piece, PieceId } from './Pieces'
 import { PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
 import { registerIndex } from '../database'
-import { DeepPartial } from 'utility-types'
+import { PartialDeep } from 'type-fest'
 
 /** A string, identifying a PieceInstance */
 export type PieceInstanceId = ProtectedString<'PieceInstanceId'>
@@ -29,7 +29,7 @@ export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined)
 export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined): IBlueprintPieceInstance | undefined {
 	return pieceInstance as any
 }
-export function protectPieceInstance(pieceInstance: IBlueprintPieceInstance): DeepPartial<PieceInstance> {
+export function protectPieceInstance(pieceInstance: IBlueprintPieceInstance): PartialDeep<PieceInstance> {
 	return pieceInstance as any
 }
 

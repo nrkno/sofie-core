@@ -738,7 +738,7 @@ const RundownHeader = withTranslation()(
 						(err, partId) => {
 							if (!err && partId) {
 								scrollToPart(partId).catch((error) => {
-									if (!error.toString().match(/another scroll/)) console.error(error)
+									if (!error.toString().match(/another scroll/)) console.warn(error)
 								})
 							}
 						}
@@ -1075,7 +1075,7 @@ const RundownHeader = withTranslation()(
 							if (!handleRundownPlaylistReloadResponse(t, reloadResponse)) {
 								if (this.props.playlist && this.props.playlist.nextPartInstanceId) {
 									scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
-										if (!error.toString().match(/another scroll/)) console.error(error)
+										if (!error.toString().match(/another scroll/)) console.warn(error)
 									})
 								}
 							}
@@ -1768,7 +1768,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				})
 				if (this.props.playlist.currentPartInstanceId) {
 					scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
-						if (!error.toString().match(/another scroll/)) console.error(error)
+						if (!error.toString().match(/another scroll/)) console.warn(error)
 					})
 				}
 			} else if (
@@ -1790,7 +1790,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			) {
 				// scroll to next after activation
 				scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
-					if (!error.toString().match(/another scroll/)) console.error(error)
+					if (!error.toString().match(/another scroll/)) console.warn(error)
 				})
 			} else if (
 				// after take
@@ -1801,7 +1801,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.state.followLiveSegments
 			) {
 				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
-					if (!error.toString().match(/another scroll/)) console.error(error)
+					if (!error.toString().match(/another scroll/)) console.warn(error)
 				})
 			} else if (
 				// initial Rundown open
@@ -1956,7 +1956,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		onGoToTop = () => {
 			scrollToPosition(0).catch((error) => {
-				if (!error.toString().match(/another scroll/)) console.error(error)
+				if (!error.toString().match(/another scroll/)) console.warn(error)
 			})
 
 			window.requestIdleCallback(
@@ -1979,7 +1979,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					followLiveSegments: true,
 				})
 				scrollToPartInstance(this.props.playlist.nextPartInstanceId, true).catch((error) => {
-					if (!error.toString().match(/another scroll/)) console.error(error)
+					if (!error.toString().match(/another scroll/)) console.warn(error)
 				})
 				setTimeout(() => {
 					this.setState({
@@ -1992,7 +1992,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					followLiveSegments: true,
 				})
 				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
-					if (!error.toString().match(/another scroll/)) console.error(error)
+					if (!error.toString().match(/another scroll/)) console.warn(error)
 				})
 				setTimeout(() => {
 					this.setState({
@@ -2102,7 +2102,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							RundownViewEventBus.emit(RundownViewEvents.HIGHLIGHT, e.sourceLocator)
 						})
 						.catch((error) => {
-							if (!error.toString().match(/another scroll/)) console.error(error)
+							if (!error.toString().match(/another scroll/)) console.warn(error)
 						})
 				}
 			}

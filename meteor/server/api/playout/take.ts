@@ -19,12 +19,13 @@ import {
 	getSegmentsAndPartsFromCache,
 	selectNextPart,
 	getAllPieceInstancesFromCache,
+	LOW_PRIO_DEFER_TIME,
 } from './lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { updateTimeline } from './timeline'
 import { logger } from '../../logging'
-import { PartEndState, VTContent } from '@sofie-automation/blueprints-integration'
+import { PartEndState, ShowStyleBlueprintManifest, VTContent } from '@sofie-automation/blueprints-integration'
 import { getResolvedPieces } from './pieces'
 import * as _ from 'underscore'
 import { PieceInstance, PieceInstanceId, PieceInstanceInfiniteId } from '../../../lib/collections/PieceInstances'
@@ -40,6 +41,7 @@ import { ServerPlayoutAdLibAPI } from './adlib'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { isAnySyncFunctionsRunning } from '../../codeControl'
 import { checkAccessAndGetPlaylist } from '../lib'
+import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 
 export function takeNextPartInner(
 	context: MethodContext,
@@ -94,22 +96,21 @@ export function takeNextPartInnerSync(
 	let pShowStyle = cache.activationCache.getShowStyleBase(currentRundown)
 	let pBlueprint = pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
 
-	const currentPart = currentPartInstance
-	if (currentPart) {
+	if (currentPartInstance) {
 		const allowTransition = previousPartInstance && !previousPartInstance.part.disableOutTransition
-		const start = currentPart.timings?.startedPlayback
+		const start = currentPartInstance.timings?.startedPlayback
 
 		// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
 		if (
 			allowTransition &&
-			currentPart.part.transitionDuration &&
+			currentPartInstance.part.transitionDuration &&
 			start &&
-			now < start + currentPart.part.transitionDuration
+			now < start + currentPartInstance.part.transitionDuration
 		) {
 			return ClientAPI.responseError('Cannot take during a transition')
 		}
 
-		if (isTooCloseToAutonext(currentPart, true)) {
+		if (isTooCloseToAutonext(currentPartInstance, true)) {
 			return ClientAPI.responseError('Cannot take shortly before an autoTake')
 		}
 	}
@@ -129,7 +130,7 @@ export function takeNextPartInnerSync(
 		return ClientAPI.responseSuccess(undefined)
 	}
 
-	let takePartInstance = nextPartInstance
+	const takePartInstance = nextPartInstance
 	if (!takePartInstance) throw new Meteor.Error(404, 'takePart not found!')
 	const takeRundown: Rundown | undefined = cache.Rundowns.findOne(takePartInstance.rundownId)
 	if (!takeRundown)
@@ -156,27 +157,9 @@ export function takeNextPartInnerSync(
 			logger.error(e)
 		}
 	}
-	// TODO - the state could change after this sampling point. This should be handled properly
-	let previousPartEndState: PartEndState | undefined = undefined
-	if (blueprint.getEndStateForPart && previousPartInstance) {
-		const time = getCurrentTime()
-		const showStyle = waitForPromise(pShowStyle)
-		if (showStyle) {
-			const resolvedPieces = getResolvedPieces(cache, showStyle, previousPartInstance)
 
-			const span = profiler.startSpan('blueprint.getEndStateForPart')
-			const context = new RundownContext(takeRundown, cache, undefined)
-			previousPartEndState = blueprint.getEndStateForPart(
-				context,
-				playlist.previousPersistentState,
-				previousPartInstance.previousPartEndState,
-				unprotectObjectArray(resolvedPieces),
-				time
-			)
-			if (span) span.end()
-			logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
-		}
-	}
+	updatePartInstanceOnTake(cache, playlist, pShowStyle, blueprint, takeRundown, takePartInstance, currentPartInstance)
+
 	const m: Partial<RundownPlaylist> = {
 		previousPartInstanceId: playlist.currentPartInstanceId,
 		currentPartInstanceId: takePartInstance._id,
@@ -190,25 +173,13 @@ export function takeNextPartInnerSync(
 		$set: m,
 	})
 
-	let partInstanceM: any = {
+	cache.PartInstances.update(takePartInstance._id, {
 		$set: {
 			isTaken: true,
 			'timings.take': now,
 			'timings.playOffset': timeOffset || 0,
-			// set transition properties to what will be used to generate timeline later:
-			allowedToUseTransition: currentPartInstance && !currentPartInstance.part.disableOutTransition,
 		},
-		$unset: {} as { string: 0 | 1 },
-	}
-	if (previousPartEndState) {
-		partInstanceM.$set.previousPartEndState = previousPartEndState
-	} else {
-		partInstanceM.$unset.previousPartEndState = 1
-	}
-	if (Object.keys(partInstanceM.$set).length === 0) delete partInstanceM.$set
-	if (Object.keys(partInstanceM.$unset).length === 0) delete partInstanceM.$unset
-
-	cache.PartInstances.update(takePartInstance._id, partInstanceM)
+	})
 
 	if (m.previousPartInstanceId) {
 		cache.PartInstances.update(m.previousPartInstanceId, {
@@ -292,6 +263,51 @@ export function takeNextPartInnerSync(
 	return ClientAPI.responseSuccess(undefined)
 }
 
+export function updatePartInstanceOnTake(
+	cache: CacheForRundownPlaylist,
+	playlist: RundownPlaylist,
+	pShowStyle: Promise<ShowStyleBase>,
+	blueprint: ShowStyleBlueprintManifest,
+	takeRundown: Rundown,
+	takePartInstance: PartInstance,
+	currentPartInstance: PartInstance | undefined
+): void {
+	// TODO - the state could change after this sampling point. This should be handled properly
+	let previousPartEndState: PartEndState | undefined = undefined
+	if (blueprint.getEndStateForPart && currentPartInstance) {
+		const time = getCurrentTime()
+		const showStyle = waitForPromise(pShowStyle)
+		if (showStyle) {
+			const resolvedPieces = getResolvedPieces(cache, showStyle, currentPartInstance)
+
+			const span = profiler.startSpan('blueprint.getEndStateForPart')
+			const context = new RundownContext(takeRundown, cache, undefined)
+			previousPartEndState = blueprint.getEndStateForPart(
+				context,
+				playlist.previousPersistentState,
+				currentPartInstance.previousPartEndState,
+				unprotectObjectArray(resolvedPieces),
+				time
+			)
+			if (span) span.end()
+			logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
+		}
+	}
+
+	let partInstanceM: any = {
+		$set: {
+			isTaken: true,
+			// set transition properties to what will be used to generate timeline later:
+			allowedToUseTransition: currentPartInstance && !currentPartInstance.part.disableOutTransition,
+		},
+	}
+	if (previousPartEndState) {
+		partInstanceM.$set.previousPartEndState = previousPartEndState
+	}
+
+	cache.PartInstances.update(takePartInstance._id, partInstanceM)
+}
+
 export function afterTake(
 	cache: CacheForRundownPlaylist,
 	studioId: StudioId,
@@ -308,19 +324,23 @@ export function afterTake(
 	// or after a new part has started playing
 	updateTimeline(cache, studioId, forceNowTime)
 
-	// defer these so that the playout gateway has the chance to learn about the changes
-	Meteor.setTimeout(() => {
-		// todo
-		if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
-			const currentRundown = Rundowns.findOne(takePartInstance.rundownId)
-			if (!currentRundown)
-				throw new Meteor.Error(
-					404,
-					`Rundown "${takePartInstance.rundownId}" of partInstance "${takePartInstance._id}" not found`
-				)
-			IngestActions.notifyCurrentPlayingPart(currentRundown, takePartInstance.part)
-		}
-	}, 40)
+	cache.deferAfterSave(() => {
+		Meteor.setTimeout(() => {
+			// This is low-prio, defer so that it's executed well after publications has been updated,
+			// so that the playout gateway has haf the chance to learn about the timeline changes
+
+			// todo
+			if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
+				const currentRundown = Rundowns.findOne(takePartInstance.rundownId)
+				if (!currentRundown)
+					throw new Meteor.Error(
+						404,
+						`Rundown "${takePartInstance.rundownId}" of partInstance "${takePartInstance._id}" not found`
+					)
+				IngestActions.notifyCurrentPlayingPart(currentRundown, takePartInstance.part)
+			}
+		}, LOW_PRIO_DEFER_TIME)
+	})
 
 	triggerGarbageCollection()
 	if (span) span.end()
