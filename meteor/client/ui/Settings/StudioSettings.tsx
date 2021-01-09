@@ -14,6 +14,7 @@ import {
 	RouteMapping,
 	StudioRouteSetExclusivityGroup,
 	getActiveRoutes,
+	StudioPackageOrigin,
 } from '../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -34,6 +35,7 @@ import {
 	BlueprintManifestType,
 	TSR,
 	ConfigManifestEntry,
+	PackageOrigin,
 } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
@@ -825,7 +827,7 @@ interface IStudioRoutingsProps {
 	studio: Studio
 }
 interface IStudioRoutingsState {
-	editedRouteSets: Array<string>
+	editedOrigins: Array<string>
 }
 
 const StudioRoutings = withTranslation()(
@@ -834,26 +836,26 @@ const StudioRoutings = withTranslation()(
 			super(props)
 
 			this.state = {
-				editedRouteSets: [],
+				editedOrigins: [],
 			}
 		}
 		isItemEdited = (routeSetId: string) => {
-			return this.state.editedRouteSets.indexOf(routeSetId) >= 0
+			return this.state.editedOrigins.indexOf(routeSetId) >= 0
 		}
 		finishEditItem = (routeSetId: string) => {
-			let index = this.state.editedRouteSets.indexOf(routeSetId)
+			let index = this.state.editedOrigins.indexOf(routeSetId)
 			if (index >= 0) {
-				this.state.editedRouteSets.splice(index, 1)
+				this.state.editedOrigins.splice(index, 1)
 				this.setState({
-					editedRouteSets: this.state.editedRouteSets,
+					editedOrigins: this.state.editedOrigins,
 				})
 			}
 		}
 		editItem = (routeSetId: string) => {
-			if (this.state.editedRouteSets.indexOf(routeSetId) < 0) {
-				this.state.editedRouteSets.push(routeSetId)
+			if (this.state.editedOrigins.indexOf(routeSetId) < 0) {
+				this.state.editedOrigins.push(routeSetId)
 				this.setState({
-					editedRouteSets: this.state.editedRouteSets,
+					editedOrigins: this.state.editedOrigins,
 				})
 			} else {
 				this.finishEditItem(routeSetId)
@@ -1461,6 +1463,373 @@ const StudioRoutings = withTranslation()(
 		}
 	}
 )
+const StudioPackageManagerSettings = withTranslation()(
+	class StudioRoutings extends React.Component<Translated<IStudioRoutingsProps>, IStudioRoutingsState> {
+		constructor(props: Translated<IStudioRoutingsProps>) {
+			super(props)
+
+			this.state = {
+				editedOrigins: [],
+			}
+		}
+		isItemEdited = (id: string) => {
+			return this.state.editedOrigins.indexOf(id) >= 0
+		}
+		finishEditItem = (id: string) => {
+			let index = this.state.editedOrigins.indexOf(id)
+			if (index >= 0) {
+				this.state.editedOrigins.splice(index, 1)
+				this.setState({
+					editedOrigins: this.state.editedOrigins,
+				})
+			}
+		}
+		editItem = (id: string) => {
+			if (this.state.editedOrigins.indexOf(id) < 0) {
+				this.state.editedOrigins.push(id)
+				this.setState({
+					editedOrigins: this.state.editedOrigins,
+				})
+			} else {
+				this.finishEditItem(id)
+			}
+		}
+		confirmRemove = (originId: string) => {
+			const { t } = this.props
+			doModalDialog({
+				title: t('Remove this Package Origin?'),
+				yes: t('Remove'),
+				no: t('Cancel'),
+				onAccept: () => {
+					this.removeOrigin(originId)
+				},
+				message: (
+					<React.Fragment>
+						<p>{t('Are you sure you want to remove the Package origin "{{originId}}"?', { originId: originId })}</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
+					</React.Fragment>
+				),
+			})
+		}
+		removeOrigin = (originId: string) => {
+			let unsetObject = {}
+			unsetObject['packageOrigins.' + originId] = ''
+			Studios.update(this.props.studio._id, {
+				$unset: unsetObject,
+			})
+		}
+		addNewOrigin = () => {
+			// find free key name
+			let newOriginKeyName = 'newOrigin'
+			let iter: number = 0
+			while ((this.props.studio.packageOrigins || {})[newOriginKeyName + iter]) {
+				iter++
+			}
+
+			let newOrigin: StudioPackageOrigin = {
+				name: 'New Package Origin',
+				origin: {
+					type: PackageOrigin.OriginType.LOCAL_FOLDER,
+					folderPath: '',
+				},
+			}
+			let setObject: Partial<DBStudio> = {}
+			setObject['packageOrigins.' + newOriginKeyName + iter] = newOrigin
+
+			Studios.update(this.props.studio._id, {
+				$set: setObject,
+			})
+		}
+		updateOriginId = (edit: EditAttributeBase, newValue: string) => {
+			let oldOriginId = edit.props.overrideDisplayValue
+			let newOriginId = newValue + ''
+			let origin = this.props.studio.packageOrigins[oldOriginId]
+
+			if (this.props.studio.packageOrigins[newOriginId]) {
+				throw new Meteor.Error(400, 'Origin "' + newOriginId + '" already exists')
+			}
+
+			let mSet = {}
+			let mUnset = {}
+			mSet['packageOrigins.' + newOriginId] = origin
+			mUnset['packageOrigins.' + oldOriginId] = 1
+
+			if (edit.props.collection) {
+				edit.props.collection.update(this.props.studio._id, {
+					$set: mSet,
+					$unset: mUnset,
+				})
+			}
+
+			this.finishEditItem(oldOriginId)
+			this.editItem(newOriginId)
+		}
+
+		renderOrigins() {
+			const { t } = this.props
+
+			if (Object.keys(this.props.studio.packageOrigins).length === 0) {
+				return (
+					<tr>
+						<td className="mhn dimmed">{t('There are no Package origins set up.')}</td>
+					</tr>
+				)
+			}
+
+			return _.map(this.props.studio.packageOrigins, (origin: StudioPackageOrigin, originId: string) => {
+				const originContent: string[] = []
+				_.each(origin.origin as any, (value, key: string) => {
+					if (key !== 'type') {
+						let str = JSON.stringify(value)
+						if (str.length > 20) str = str.slice(0, 17) + '...'
+						originContent.push(`${key}: ${str}`)
+					}
+				})
+				return (
+					<React.Fragment key={originId}>
+						<tr
+							className={ClassNames({
+								hl: this.isItemEdited(originId),
+							})}>
+							<th className="settings-studio-origin__id c2">{originId}</th>
+							<td className="settings-studio-origin__name c2">{origin.name}</td>
+							<td className="settings-studio-origin__type c1">{origin.origin.type}</td>
+							<td className="settings-studio-origin__originContent c7">{originContent.join(', ')}</td>
+
+							<td className="settings-studio-origin__actions table-item-actions c3">
+								<button className="action-btn" onClick={(e) => this.editItem(originId)}>
+									<FontAwesomeIcon icon={faPencilAlt} />
+								</button>
+								<button className="action-btn" onClick={(e) => this.confirmRemove(originId)}>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
+							</td>
+						</tr>
+						{this.isItemEdited(originId) && (
+							<tr className="expando-details hl">
+								<td colSpan={6}>
+									<div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Origin ID')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'packageOrigins'}
+													overrideDisplayValue={originId}
+													obj={this.props.studio}
+													type="text"
+													collection={Studios}
+													updateFunction={this.updateOriginId}
+													className="input text-input input-l"></EditAttribute>
+											</label>
+										</div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Name')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`packageOrigins.${originId}.name`}
+													obj={this.props.studio}
+													type="text"
+													collection={Studios}
+													className="input text-input input-l"></EditAttribute>
+												<span className="text-s dimmed">{t('Display name of the Package Origin')}</span>
+											</label>
+										</div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Origin Type')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`packageOrigins.${originId}.origin.type`}
+													obj={this.props.studio}
+													type="dropdown"
+													options={PackageOrigin.OriginType}
+													collection={Studios}
+													className="input text-input input-l"></EditAttribute>
+											</label>
+										</div>
+										{origin.origin.type === PackageOrigin.OriginType.LOCAL_FOLDER ? (
+											<>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Folder path')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageOrigins.${originId}.origin.folderPath`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">{t('File path to the folder of the local folder')}</span>
+													</label>
+												</div>
+											</>
+										) : origin.origin.type === PackageOrigin.OriginType.HTTP ? (
+											<>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Base URL')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageOrigins.${originId}.origin.baseUrl`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">
+															{t('Base url to the resource (example: http://myserver/folder)')}
+														</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Default request method')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageOrigins.${originId}.origin.method`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">{t('get, post etc...')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Defaults request headers')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageOrigins.${originId}.origin.headers`}
+															obj={this.props.studio}
+															type="json"
+															storeJsonAsObject={true}
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">{t('')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Defaults request body')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageOrigins.${originId}.origin.requestBody`}
+															obj={this.props.studio}
+															type="json"
+															storeJsonAsObject={true}
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">{t('')}</span>
+													</label>
+												</div>
+											</>
+										) : origin.origin.type === PackageOrigin.OriginType.FILE_SHARE ? (
+											<>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Base URL')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageOrigins.${originId}.origin.folderPath`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">{t('Folder path to shared folder')}</span>
+													</label>
+												</div>
+											</>
+										) : origin.origin.type === PackageOrigin.OriginType.MAPPED_DRIVE ? (
+											<>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Base URL')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageOrigins.${originId}.origin.folderPath`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">{t('Folder path to shared folder')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Mapped Drive')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageOrigins.${originId}.origin.mappedDrive`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">{t('Drive letter to where the drive is mappedTo')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('UserName')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageOrigins.${originId}.origin.userName`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">{t('Username for athuentication')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Password')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageOrigins.${originId}.origin.password`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">{t('Password for authentication')}</span>
+													</label>
+												</div>
+											</>
+										) : null}
+									</div>
+									<div className="mod">
+										<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(originId)}>
+											<FontAwesomeIcon icon={faCheck} />
+										</button>
+									</div>
+								</td>
+							</tr>
+						)}
+					</React.Fragment>
+				)
+			})
+		}
+
+		render() {
+			const { t } = this.props
+			return (
+				<div>
+					<h2 className="mhn mbs">{t('Package Manager')}</h2>
+
+					<h3 className="mhn">{t('Package Origins')}</h3>
+					<table className="expando settings-studio-mappings-table">
+						<tbody>{this.renderOrigins()}</tbody>
+					</table>
+					<div className="mod mhs">
+						<button className="btn btn-primary" onClick={(e) => this.addNewOrigin()}>
+							<FontAwesomeIcon icon={faPlus} />
+						</button>
+					</div>
+				</div>
+			)
+		}
+	}
+)
 
 interface IStudioSettingsProps {
 	match: {
@@ -1908,6 +2277,11 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					<div className="row">
 						<div className="col c12 r1-c12">
 							<StudioRoutings studio={this.props.studio} />
+						</div>
+					</div>
+					<div className="row">
+						<div className="col c12 r1-c12">
+							<StudioPackageManagerSettings studio={this.props.studio} />
 						</div>
 					</div>
 				</div>

@@ -13,6 +13,7 @@ import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartI
 import { removeRundownFromCache } from '../../playout/lib'
 import { wrapWithCacheForRundownPlaylistFromRundown, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { Studios } from '../../../../lib/collections/Studios'
+import { defaultStudio } from '../../../../__mocks__/defaultCollectionObjects'
 jest.mock('../../playout/playout')
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
@@ -25,19 +26,8 @@ function createMockRO() {
 		wrapWithCacheForRundownPlaylistFromRundown(existing._id, (cache) => removeRundownFromCache(cache, existing))
 
 	Studios.insert({
-		_id: protectString('mock_studio'),
-		organizationId: null,
+		...defaultStudio(protectString('mock_studio')),
 		name: 'mock studio',
-		mappings: {},
-		routeSets: {},
-		routeSetExclusivityGroups: {},
-		supportedShowStyleBase: [],
-		blueprintConfig: {},
-		settings: {
-			mediaPreviewsUrl: '',
-			sofieUrl: '',
-		},
-		_rundownVersionHash: '',
 	})
 
 	RundownPlaylists.insert({

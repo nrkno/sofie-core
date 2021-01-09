@@ -25,12 +25,13 @@ import {
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
 import { ExpectedPackageDB, ExpectedPackages, getRoutedExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import _, { map } from 'underscore'
-import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackage, PackageLocation } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
 import { DBObj, literal, protectString, unprotectString } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
+import deepExtend from 'deep-extend'
 
 function checkAccess(cred: Credentials | ResolvedCredentials, selector) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -131,14 +132,26 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 				return [
 					Studios.find(studioId, {
 						fields: {
-							// It should be enough to watch the mappingsHash, since that should change whenever there is a
-							// change to the mappings or the routes
-							mappingsHash: 1,
+							mappingsHash: 1, // is changed when routes are changed
+							packageOrigins: 1,
 						},
 					}).observe({
 						added: () => triggerUpdate({ studioId: studioId, invalidateStudio: true }),
 						changed: () => triggerUpdate({ studioId: studioId, invalidateStudio: true }),
 						removed: () => triggerUpdate({ studioId: null, invalidateStudio: true }),
+					}),
+					PeripheralDevices.find(
+						{ studioId: studioId },
+						{
+							fields: {
+								// Only monitor settings
+								settings: 1,
+							},
+						}
+					).observe({
+						added: () => triggerUpdate({ invalidatePeripheralDevices: true }),
+						changed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
+						removed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
 					}),
 					ExpectedPackages.find({
 						studioId: studioId,
@@ -173,7 +186,9 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					studioId: studioId,
 					deviceId: deviceId,
 
+					// All invalidate flags should be true, so that they run on first run:
 					invalidateStudio: true,
+					invalidatePeripheralDevices: true,
 					invalidateExpectedPackages: true,
 					invalidateRundownPlaylist: true,
 
@@ -192,6 +207,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 
 				// Data invalidation flags:
 				invalidateStudio: boolean
+				invalidatePeripheralDevices: boolean
 				invalidateExpectedPackages: boolean
 				invalidateRundownPlaylist: boolean
 
@@ -211,10 +227,14 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					context.invalidateStudio = false
 					invalidateRoutedExpectedPackages = true
 					context.studio = Studios.findOne(context.studioId)
-					context.peripheralDevicesInStudio = PeripheralDevices.find({ studioId: context.studioId }).fetch()
 				}
 				if (!context.studio) return []
 
+				if (context.invalidatePeripheralDevices) {
+					context.invalidatePeripheralDevices = false
+					invalidateRoutedExpectedPackages = true
+					context.peripheralDevicesInStudio = PeripheralDevices.find({ studioId: context.studioId }).fetch()
+				}
 				if (context.invalidateExpectedPackages) {
 					context.invalidateExpectedPackages = false
 					invalidateRoutedExpectedPackages = true
@@ -277,22 +297,22 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 
 						if (!filterPlayoutDeviceIds || filterPlayoutDeviceIds.includes(mapping.deviceId)) {
 							for (const expectedPackage of mapping.expectedPackages) {
-								// todo: lookup Package Origin
+								console.log('expectedPackage', expectedPackage)
+								// Lookup Package Origin:
 								const origins = expectedPackage.origins.map((packageOrigin) => {
-									// TODO: lookup:
-									packageOrigin.originId
-									const lookedUpOrigin = {}
-
-									const origin = {
-										...lookedUpOrigin,
-										...packageOrigin.originMetadata,
+									const lookedUpOrigin = context.studio?.packageOrigins[packageOrigin.originId]
+									if (
+										lookedUpOrigin &&
+										lookedUpOrigin.origin.type === packageOrigin.originMetadata.type
+									) {
+										return deepExtend(lookedUpOrigin.origin, packageOrigin.originMetadata)
+									} else {
+										return packageOrigin.originMetadata
 									}
-
-									return origin
 								})
 
-								// Lookup location
-								let playoutLocation = undefined
+								// Lookup location:
+								let playoutLocation: PackageLocation.Any | undefined = undefined
 								for (const device of context.peripheralDevicesInStudio) {
 									if (
 										device.category === PeripheralDeviceAPI.DeviceCategory.PLAYOUT &&
@@ -301,11 +321,16 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 									) {
 										const settings = device.settings as PlayoutDeviceSettings
 
-										if (
-											settings.locations &&
-											settings.locations[unprotectString(mapping.deviceId)]
-										) {
-											playoutLocation = settings.locations[unprotectString(mapping.deviceId)]
+										const deviceSettings = settings.devices?.[unprotectString(mapping.deviceId)]
+										console.log(mapping.deviceId, deviceSettings)
+
+										if (deviceSettings) {
+											// @ts-expect-error this is somewhat of a hack, the location isn't defined in typings,
+											// but assumed given by the config manifest of the playout-device.
+											const location = deviceSettings.location as PackageLocation.Any
+											if (location) {
+												playoutLocation = location
+											}
 										}
 									}
 									if (playoutLocation) break
@@ -322,6 +347,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 							}
 						}
 					}
+					console.log('routedExpectedPackages', routedExpectedPackages)
 					context.routedExpectedPackages = routedExpectedPackages
 				}
 
