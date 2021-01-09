@@ -11,7 +11,7 @@ import { setExpectedVersion } from './lib'
  *
  * **************************************************************************************
  */
-// Release X
+// Release 28
 export const addSteps = addMigrationSteps('1.16.0', [
 	//                     ^--- To be set to an absolute version number when doing the release
 	// add steps here:

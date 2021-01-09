@@ -135,6 +135,7 @@ body.prompter-scrollbar {
 		letter-spacing: 0em;
 		line-height: 1.2em;
 		margin-bottom: 0.5em;
+		overflow-wrap: break-word;
 	}
 
 	.overlay-fix {
@@ -151,6 +152,7 @@ body.prompter-scrollbar {
 			left: 0;
 			bottom: 0;
 			right: 0;
+			opacity: 0.25;
 		}
 
 		.read-marker {

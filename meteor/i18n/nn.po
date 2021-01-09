@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2020-11-17T11:30:06.090Z\n"
-"PO-Revision-Date: 2020-11-17 15:55+0100\n"
+"POT-Creation-Date: 2021-01-07T09:15:46.298Z\n"
+"PO-Revision-Date: 2021-01-07 10:47+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -218,6 +218,27 @@ msgstr "Sofie-status"
 msgid "Test test"
 msgstr "Test test"
 
+msgid "Until next take"
+msgstr "Til neste Take"
+
+msgid "Until next segment"
+msgstr "Til neste segment"
+
+msgid "Until end of segment"
+msgstr "Til slutten av segment"
+
+msgid "Until next rundown"
+msgstr "Til neste køyreplan"
+
+msgid "Until end of rundown"
+msgstr "Til slutten av køyreplanen"
+
+msgid "Script is empty"
+msgstr "Manuset er tomt"
+
+msgid "File name"
+msgstr "Filnamn"
+
 msgid "Home"
 msgstr "Heim"
 
@@ -301,55 +322,14 @@ msgstr "Dokumentasjon er tilgjengelig på"
 msgid "Today"
 msgstr "I dag"
 
-msgid "Tomorrow"
-msgstr "I morgon"
-
 msgid "Yesterday"
 msgstr "I går"
 
+msgid "Tomorrow"
+msgstr "I morgon"
+
 msgid "Last"
 msgstr "Førre"
-
-msgid "Delete this RundownPlaylist?"
-msgstr "Slett denne køyreplanlista?"
-
-msgid "Delete"
-msgstr "Slett"
-
-msgid "Are you sure you want to delete the \"{{name}}\" RundownPlaylist?"
-msgstr "Er du sikker på at du vil slette køyreplanlista \"{{name}}\"?"
-
-msgid "Please note: This action is irreversible!"
-msgstr "Merk: Denne handlinga kan du ikkje angre!"
-
-msgid "Re-Sync this rundownPlaylist?"
-msgstr "Synkroniser køyreplanlista på nytt?"
-
-msgid "Re-Sync"
-msgstr "Synkroniser"
-
-msgid "Are you sure you want to re-sync all rundowns in playlist \"{{name}}\"?"
-msgstr ""
-"Er du sikker på at du vil synkronisere alle køyreplanane i køyreplanlista "
-"\"{{name}}\" om att?"
-
-msgid "Standalone Shelf"
-msgstr "Frittståande skuff"
-
-msgid "Timeline views"
-msgstr "Tidslinjevisningar"
-
-msgid "Default"
-msgstr "Standard"
-
-msgid "This rundown is currently active"
-msgstr "Denne køyreplanen er allereie aktiv"
-
-msgid "Multiple ({{count}})"
-msgstr "Fleire ({{count}})"
-
-msgid "Re-sync all rundowns in playlist"
-msgstr "Synkroniser alle køyreplanane i lista på nytt"
 
 msgid "Use ENPS order"
 msgstr "Nytt rekkefølgje frå ENPS"
@@ -389,11 +369,23 @@ msgstr "Systemet har problemer som må løysast"
 msgid "Status Messages:"
 msgstr "Statusmeldingar:"
 
+msgid "{{showStyleVariant}} – {{showStyleBase}}"
+msgstr "{{showStyleVariant}} – {{showStyleBase}}"
+
 msgid "Drag to reorder or move out of playlist"
 msgstr "Dra for å endre rekkefølgje eller flytta ut av speleliste "
 
+msgid "This rundown is currently active"
+msgstr "Denne køyreplanen er allereie aktiv"
+
 msgid "Not set"
 msgstr "Ikkje angjeve"
+
+msgid "Re-sync rundown data with {{nrcsName}}"
+msgstr "Ikkje synkronisert med MOS/{{nrcsName}}"
+
+msgid "Delete"
+msgstr "Slett"
 
 msgid "Delete rundown?"
 msgstr "Slette køyreplanen?"
@@ -401,8 +393,14 @@ msgstr "Slette køyreplanen?"
 msgid "Are you sure you want to delete the \"{{name}}\" rundown?"
 msgstr "Er du viss på at du vil slette køyreplanen \"{{name}}\"?"
 
+msgid "Please note: This action is irreversible!"
+msgstr "Merk: Denne handlinga kan du ikkje angre!"
+
 msgid "Re-Sync rundown?"
 msgstr "Synkroniser køyreplanen med ENPS på ny"
+
+msgid "Re-Sync"
+msgstr "Synkroniser"
 
 msgid "Are you sure you want to re-sync the \"{{name}}\" rundown?"
 msgstr ""
@@ -480,6 +478,9 @@ msgstr "Unskip neste super"
 
 msgid "Log Error"
 msgstr "Loggfør feil"
+
+msgid "Could not find a Piece that can be disabled."
+msgstr "Kunne ikkje finne eit element som kan skippes."
 
 msgid "Failed to activate"
 msgstr "Kunne ikkje aktivere"
@@ -636,33 +637,36 @@ msgid "Unknown error"
 msgstr "Ukjend feil"
 
 msgid ""
-"Rundown {{rundownName}} in Playlist {{playlistName}} is missing, what do you "
-"want to do?"
+"Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data "
+"from {{nrcsName}}, what do you want to do?"
 msgstr ""
-"Køyreplanen {{rundownName}} i lista {{playlistName}} finnast ikkje. Kva vil "
-"du gjere?"
+"Køyreplanen {{rundownName}} i lista {{playlistName}} manglar i data frå "
+"{{nrcsName}}. Kva vil du gjere?"
 
-msgid "Mark the rundown as unsynced"
+#, fuzzy
+#| msgid "Mark the rundown as unsynced"
+msgid "Leave it in Sofie (mark the rundown as unsynced)"
 msgstr "Marker køyreplan som ikkje-synkronisert"
 
-msgid "Remove just the rundown"
+#, fuzzy
+#| msgid "Remove just the rundown"
+msgid "Remove just the rundown from Sofie"
 msgstr "Fjern berre køyreplan"
 
-msgid ""
-"Do you really want to remove just the rundown \"{{rundownName}}\" in the "
-"playlist {{playlistName}}? This cannot be undone!"
-msgstr ""
-"Er du sikker på at du berre vil slette køyreplanen {{rundownName}} i lista "
-"{{playlistName}} frå Sofie? Denne handlinga kan du ikkje angre!"
-
-msgid "Remove rundown playlist"
+#, fuzzy
+#| msgid "Remove rundown playlist"
+msgid "Remove rundown"
 msgstr "Fjern køyreplanliste"
 
+#, fuzzy
+#| msgid ""
+#| "Do you really want to remove just the rundown \"{{rundownName}}\" in the "
+#| "playlist {{playlistName}}? This cannot be undone!"
 msgid ""
-"Do you really want to remove the rundownPlaylist \"{{rundownName}}\"? This "
-"cannot be undone!"
+"Do you really want to remove just the rundown \"{{rundownName}}\" in the "
+"playlist {{playlistName}} from Sofie? This cannot be undone!"
 msgstr ""
-"Er du sikker på at du vil slette køyreplanen {{rundownName}} i lista "
+"Er du sikker på at du berre vil slette køyreplanen {{rundownName}} i lista "
 "{{playlistName}} frå Sofie? Denne handlinga kan du ikkje angre!"
 
 msgid "(in: {{time}})"
@@ -675,11 +679,11 @@ msgid "Planned Duration"
 msgstr "Planlagt varigheit"
 
 msgid ""
-"The Rundown has been UNSYNCED from {{nrcsName}}! No data updates will "
-"currently come through."
+"The Rundown \"{{rundownName}}\" has been UNSYNCED from {{nrcsName}}! No data "
+"updates will currently come through."
 msgstr ""
-"Køyreplanen er ikkje synkronisert med {{nrcsName}}! Ingen oppdateringer vil "
-"hentast inn."
+"Køyreplanen \"{{rundownName}}\" er ikkje synkronisert med MOS/{{nrcsName}}! "
+"Ingen oppdateringer vil hentast inn."
 
 msgid "Re-sync"
 msgstr "Synkroniser med MOS"
@@ -807,27 +811,6 @@ msgstr "Denne innstillinga er vorte endra frå standardverdien"
 
 msgid "Off"
 msgstr "Av"
-
-msgid "Until next take"
-msgstr "Til neste Take"
-
-msgid "Until next segment"
-msgstr "Til neste segment"
-
-msgid "Until end of segment"
-msgstr "Til slutten av segment"
-
-msgid "Until next rundown"
-msgstr "Til neste køyreplan"
-
-msgid "Until end of rundown"
-msgstr "Til slutten av køyreplanen"
-
-msgid "Script is empty"
-msgstr "Manuset er tomt"
-
-msgid "File name"
-msgstr "Filnamn"
 
 msgid "Set this part as <strong>Next</strong>"
 msgstr "Set dette punktet som <strong>neste</neste>: Startar på neste Take"
@@ -1390,6 +1373,12 @@ msgstr "Ikon"
 msgid "Icon color"
 msgstr "Ikonfarge"
 
+msgid "Open shelf by default"
+msgstr "Åpne skuff som standard"
+
+msgid "Default shelf height"
+msgstr "Standard høyde for skuff"
+
 msgid "Tabs"
 msgstr "Faner"
 
@@ -1493,6 +1482,9 @@ msgstr "Effekt"
 msgid "Lights"
 msgstr "Lys"
 
+msgid "Local"
+msgstr "Lokal"
+
 msgid "New Source"
 msgstr "Ny kjelde"
 
@@ -1532,12 +1524,15 @@ msgstr "Fjern hurtigtast"
 msgid "Assign Hotkeys to Global AdLibs"
 msgstr "Tildel hurtigtastar til globale adliber"
 
+#, fuzzy
 msgid "Pieces on this layer are sticky"
 msgstr "Element på dette laget er sticky"
 
+#, fuzzy
 msgid "Only Pieces present in rundown are sticky"
 msgstr "Kun element til stades i køyreplanen er sticky"
 
+#, fuzzy
 msgid "Activate Sticky Piece Shortcut"
 msgstr "Aktiver hurtigtast for sticky element"
 
@@ -1550,6 +1545,7 @@ msgstr "Adliber på dette laget kan setjas i kø"
 msgid "Exclusivity group"
 msgstr "Ekslusivitetgruppe"
 
+#, fuzzy
 msgid ""
 "Add some source layers (e.g. Graphics) for your data to appear in rundowns"
 msgstr ""
@@ -1574,11 +1570,13 @@ msgstr "Kanalnavn"
 msgid "Is PGM Output"
 msgstr "Er programutgang"
 
+#, fuzzy
 msgid "Is collapsed by default"
-msgstr ""
+msgstr "Er minimert som standard"
 
+#, fuzzy
 msgid "Is flattened"
-msgstr ""
+msgstr "Er slått saman"
 
 msgid "Output channels are required for your studio to work"
 msgstr "Utgangskanalar er naudsynte for at studioet ditt skal fungere"
@@ -1771,6 +1769,7 @@ msgstr "Ukjend einingtype: {{device}}"
 msgid "Layer ID"
 msgstr "Lag-id"
 
+#, fuzzy
 msgid "ID of the timeline-layer to map to some output"
 msgstr "Lag-id for tidslinjelaget som skal mappast til ein utgang"
 
@@ -1853,10 +1852,8 @@ msgstr "Eksklusivitetsgruppa sitt namn som visast i oversikten"
 msgid "Active"
 msgstr "Aktiv"
 
-#, fuzzy
-#| msgid "Active"
 msgid "Not Active"
-msgstr "Aktiv"
+msgstr "Inaktiv"
 
 msgid "Not defined"
 msgstr "Ikkje definert"
@@ -1874,7 +1871,7 @@ msgid "Default State"
 msgstr "Standardtilstand"
 
 msgid "The default state of this Route Set"
-msgstr "Standardtilstanden åt denne omkoplingsgruppa"
+msgstr "Standardtilstand for denne omkoplingsgruppa"
 
 msgid "Route Set Name"
 msgstr "Omkoplingsgruppa sitt namn"
@@ -2066,8 +2063,9 @@ msgstr "Kan ikkje spele av adlib fordi det er markert som på vent (float)"
 msgid "AdLib does not provide any options"
 msgstr "Adlib har ingen val"
 
-msgid "Cue as Next"
-msgstr "Sett som neste"
+#, fuzzy
+msgid "Execute"
+msgstr "Utfør"
 
 msgid "Save to Bucket"
 msgstr "Lagre til bøtte"
@@ -2075,8 +2073,9 @@ msgstr "Lagre til bøtte"
 msgid "Reveal in Shelf"
 msgstr "Vis i skuff"
 
-msgid "Edit"
-msgstr "Endre"
+#, fuzzy
+msgid "Edit in Nora"
+msgstr "Rediger i Nora"
 
 msgid "New Bucket"
 msgstr "Ny bøtte"
@@ -2090,26 +2089,38 @@ msgstr "Er du sikker på at du vil slette denne bøtta?"
 msgid "Are you sure you want to empty (remove all adlibs inside) this Bucket?"
 msgstr "Er du sikker på at du vil tømme denne bøtta (fjerner alle adliber)?"
 
+msgid "Toggle Shelf"
+msgstr "Skuff"
+
+msgid "Escape from filter search"
+msgstr "Gå ut av filtersøk"
+
+msgid "Start this AdLib"
+msgstr "Start denne adliben"
+
+msgid "Queue this AdLib"
+msgstr "Sett denne adliben i kø"
+
+msgid "Inspect this AdLib"
+msgstr "Inspiser denne adliben"
+
+msgid "Rename this AdLib"
+msgstr "Gi denne adliben nytt namn"
+
 msgid "Delete this AdLib"
-msgstr "Slett dette elementet"
+msgstr "Slett denne adliben"
 
 msgid "Empty this Bucket"
 msgstr "Tøm denne bøtta"
 
 msgid "Rename this Bucket"
-msgstr "Gi bøtta eit nytt namn"
+msgstr "Gi bøtta nytt namn"
 
 msgid "Delete this Bucket"
 msgstr "Slett denne bøtta"
 
 msgid "Create new Bucket"
 msgstr "Opprett ny bøtte"
-
-msgid "Toggle Shelf"
-msgstr "Skuff"
-
-msgid "Escape from filter search"
-msgstr "Gå ut av filtersøk"
 
 msgid "AdLib"
 msgstr "Adlib"
@@ -2298,9 +2309,8 @@ msgid "Not Connected"
 msgstr "Ikkje tilkopla"
 
 #, fuzzy
-#| msgid "Execution time"
 msgid "Execution time*"
-msgstr "Eksekveringsvarigheit"
+msgstr "Utføringsvarigheit*"
 
 msgid "User ID"
 msgstr "Brukar-id"
@@ -2321,31 +2331,31 @@ msgid "User Activity Log"
 msgstr "Aktivitetslogg"
 
 msgid "in {{days}} days, {{hours}} h {{minutes}} min {{seconds}} s"
-msgstr ""
+msgstr "om {{days}} dagar, {{hours}} h {{minutes}} min {{seconds}} s"
 
 msgid "in {{hours}} h {{minutes}} min {{seconds}} s"
-msgstr ""
+msgstr "om {{hours}} t {{minutes}} min {{seconds}} s"
 
 msgid "in {{minutes}} min {{seconds}} s"
-msgstr ""
+msgstr "om {{minutes}} min {{seconds}} s"
 
 msgid "in {{seconds}} s"
-msgstr ""
+msgstr "om {{seconds}} s"
 
 msgid "{{days}} days, {{hours}} h {{minutes}} min {{seconds}} s ago"
-msgstr ""
+msgstr "for {{days}} dagar, {{hours}} t {{minutes}} min {{seconds}} s sidan"
 
 msgid "{{hours}} h {{minutes}} min {{seconds}} s ago"
-msgstr ""
+msgstr "for {{hours}} t {{minutes}} min {{seconds}} s sidan"
 
 msgid "{{minutes}} min {{seconds}} s ago"
-msgstr ""
+msgstr "for {{minutes}} min {{seconds}} s sidan"
 
 msgid "{{seconds}} s ago"
-msgstr ""
+msgstr "for {{seconds}} s sidan"
 
 msgid "Next scheduled show"
-msgstr ""
+msgstr "Neste planlagde sending"
 
 msgid "Help & Support"
 msgstr "Hjelp og brukarstøtte"
@@ -2412,10 +2422,6 @@ msgid "Clip is being ingested"
 msgstr "Klippet blir prosessert"
 
 msgctxt "°°°°°°plural"
-msgid "Multiple ({{count}})°°°°°°"
-msgstr "Fleire ({{count}})°°°°°°"
-
-msgctxt "°°°°°°plural"
 msgid "{{count}} rows°°°°°°"
 msgstr "{{count}} rader°°°°°°"
 
@@ -2449,6 +2455,53 @@ msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
+#~ msgid "Delete this RundownPlaylist?"
+#~ msgstr "Slett denne køyreplanlista?"
+
+#~ msgid "Are you sure you want to delete the \"{{name}}\" RundownPlaylist?"
+#~ msgstr "Er du sikker på at du vil slette køyreplanlista \"{{name}}\"?"
+
+#~ msgid "Re-Sync this rundownPlaylist?"
+#~ msgstr "Synkroniser køyreplanlista på nytt?"
+
+#~ msgid ""
+#~ "Are you sure you want to re-sync all rundowns in playlist \"{{name}}\"?"
+#~ msgstr ""
+#~ "Er du sikker på at du vil synkronisere alle køyreplanane i køyreplanlista "
+#~ "\"{{name}}\" om att?"
+
+#~ msgid "Standalone Shelf"
+#~ msgstr "Frittståande skuff"
+
+#~ msgid "Timeline views"
+#~ msgstr "Tidslinjevisningar"
+
+#~ msgid "Default"
+#~ msgstr "Standard"
+
+#~ msgid "Multiple ({{count}})"
+#~ msgstr "Fleire ({{count}})"
+
+#~ msgid "Re-sync all rundowns in playlist"
+#~ msgstr "Synkroniser alle køyreplanane i lista på nytt"
+
+#~ msgid ""
+#~ "Do you really want to remove the rundownPlaylist \"{{rundownName}}\"? "
+#~ "This cannot be undone!"
+#~ msgstr ""
+#~ "Er du sikker på at du vil slette køyreplanen {{rundownName}} i lista "
+#~ "{{playlistName}} frå Sofie? Denne handlinga kan du ikkje angre!"
+
+#~ msgid "Cue as Next"
+#~ msgstr "Sett som neste"
+
+#~ msgid "Edit"
+#~ msgstr "Endre"
+
+#~ msgctxt "°°°°°°plural"
+#~ msgid "Multiple ({{count}})°°°°°°"
+#~ msgstr "Fleire ({{count}})°°°°°°"
+
 #~ msgid "Add rundowns by connecting a gateway."
 #~ msgstr "Legg til køyreplanar ved å kople til ein gateway."
 
@@ -2460,9 +2513,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
 #~ msgid "Air Status"
 #~ msgstr "Status for sendinga"
-
-#~ msgid "Unsynced from {{nrcsNames}}"
-#~ msgstr "Ikkje synkronisert med MOS/{{nrcsNames}}"
 
 #~ msgid "Sofie Automation Server"
 #~ msgstr "Sofie"
