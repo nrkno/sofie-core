@@ -11,135 +11,16 @@ import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { setExpectedVersion } from './lib'
+import { ensureCollectionProperty, removeCollectionProperty, setExpectedVersion } from './lib'
 
 // Release 24
 export const addSteps = addMigrationSteps('1.12.0', [
-	{
-		id: 'Add new routeSets property to studio where missing',
-		canBeRunAutomatically: true,
-		validate: () => {
-			return (
-				Studios.find({
-					routeSets: { $exists: false },
-				}).count() > 0
-			)
-		},
-		migrate: () => {
-			Studios.find({
-				routeSets: { $exists: false },
-			}).forEach((studio) => {
-				Studios.update(studio._id, { $set: { routeSets: {} } })
-			})
-		},
-	},
-	{
-		id: 'Studios: Default organizationId',
-		canBeRunAutomatically: true,
-		validate: () => {
-			if (
-				Studios.findOne({
-					organizationId: { $exists: false },
-				})
-			)
-				return 'Studio without organizationId'
-			return false
-		},
-		migrate: () => {
-			// add organizationId: null
-			Studios.update(
-				{
-					organizationId: { $exists: false },
-				},
-				{
-					$set: {
-						organizationId: null,
-					},
-				},
-				{ multi: true }
-			)
-		},
-	},
-	{
-		id: 'PeripheralDevices: Default organizationId',
-		canBeRunAutomatically: true,
-		validate: () => {
-			if (
-				PeripheralDevices.findOne({
-					organizationId: { $exists: false },
-				})
-			)
-				return 'PeripheralDevice without organizationId'
-			return false
-		},
-		migrate: () => {
-			// add organizationId: null
-			PeripheralDevices.update(
-				{
-					organizationId: { $exists: false },
-				},
-				{
-					$set: {
-						organizationId: null,
-					},
-				},
-				{ multi: true }
-			)
-		},
-	},
-	{
-		id: 'ShowStyleBases: Default organizationId',
-		canBeRunAutomatically: true,
-		validate: () => {
-			if (
-				ShowStyleBases.findOne({
-					organizationId: { $exists: false },
-				})
-			)
-				return 'ShowStyleBase without organizationId'
-			return false
-		},
-		migrate: () => {
-			// add organizationId: null
-			ShowStyleBases.update(
-				{
-					organizationId: { $exists: false },
-				},
-				{
-					$set: {
-						organizationId: null,
-					},
-				},
-				{ multi: true }
-			)
-		},
-	},
+	ensureCollectionProperty('Studios', {}, 'routeSets', {}, undefined),
+	ensureCollectionProperty('Studios', {}, 'organizationId', null, undefined),
+	ensureCollectionProperty('PeripheralDevices', {}, 'organizationId', null, undefined),
+	ensureCollectionProperty('ShowStyleBases', {}, 'organizationId', null, undefined),
+	removeCollectionProperty('ShowStyleBases', {}, 'runtimeArguments'),
 
-	{
-		id: 'Remove runtimeArguments from ShowStyleBase',
-		canBeRunAutomatically: true,
-		validate: () => {
-			const studio = ShowStyleBases.find().fetch()
-			let result: string | boolean = false
-			studio.forEach((siItem) => {
-				if ((siItem as any).runtimeArguments) {
-					result = `Rundown Arguments set in a Studio Installation "${siItem._id}"`
-				}
-			})
-			return result
-		},
-		migrate: () => {
-			ShowStyleBases.update(
-				{},
-				{
-					$unset: {
-						runtimeArguments: 1,
-					},
-				},
-				{ multi: true }
-			)
-		},
-	},
 	{
 		id: 'Pieces properties',
 		canBeRunAutomatically: true,
