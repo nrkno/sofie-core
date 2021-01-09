@@ -35,8 +35,8 @@ export namespace ExpectedPackage {
 		origins: {
 			/** Reference to a PackageOrigin */
 			originId: string
-			/** Locally defined PackageOrigin */
-			originMetadata: object
+			/** Locally defined PackageOrigin, this is combined (deep extended) with the PackageOrigin if it is found */
+			originMetadata: PackageOriginOnPackage.Any
 		}[]
 	}
 
@@ -55,89 +55,82 @@ export namespace ExpectedPackage {
 		origins: {
 			originId: string
 			originMetadata:
-				| PackageOriginMetadata.LocalFolder
-				| PackageOriginMetadata.FileShare
-				| PackageOriginMetadata.MappedDrive
-				| PackageOriginMetadata.HTTP
+				| PackageOriginOnPackage.LocalFolder
+				| PackageOriginOnPackage.FileShare
+				| PackageOriginOnPackage.MappedDrive
+				| PackageOriginOnPackage.HTTP
 		}[]
 	}
 	export interface ExpectedPackageQuantelClip extends Base {
 		type: PackageType.QUANTEL_CLIP
 		content: {
-			guid: string
+			guid?: string
+			title?: string
 		}
 		version: {
 			// @todo: something here?
 		}
 		origins: {
 			originId: string
-			originMetadata: {
-				// @todo define this
-				zoneId: string
-			}
+			originMetadata: PackageOriginOnPackage.Quantel
 		}[]
 	}
 }
 
-export namespace PackageOriginMetadata {
-	export type Any = LocalFolder | FileShare | MappedDrive | HTTP
+// An "Origin" defines a resource that contains Packages, that can be read
+// For example; for a Media file transfer, the Origin could be a source-folder
+export namespace PackageOrigin {
+	export type Any = LocalFolder | FileShare | MappedDrive | HTTP | Quantel
 
 	export enum OriginType {
 		LOCAL_FOLDER = 'local_folder',
 		FILE_SHARE = 'file_share',
 		MAPPED_DRIVE = 'mapped_drive',
 		HTTP = 'http',
+
+		QUANTEL = 'quantel',
+
+		CORE_PACKAGE_INFO = 'core_package_info',
 	}
+
 	export interface Base {
-		type: OriginType
+		type: PackageOrigin.OriginType
 	}
-	export interface LocalFolder extends Base {
-		type: OriginType.LOCAL_FOLDER
+	export interface LocalFolder extends PackageOrigin.Base {
+		type: PackageOrigin.OriginType.LOCAL_FOLDER
 
 		/** Path to the folder
 		 * @example 'C:\media\'
 		 */
 		folderPath: string
-
-		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
-		fileName?: string
 	}
-	export interface FileShare extends Base {
-		type: OriginType.FILE_SHARE
+	export interface FileShare extends PackageOrigin.Base {
+		type: PackageOrigin.OriginType.FILE_SHARE
 
 		/** Path to a folder on a network-share
 		 * @example '\\192.168.0.1\shared\'
 		 */
 		folderPath: string
-
-		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
-		fileName?: string
 	}
-	export interface MappedDrive extends Base {
-		type: OriginType.MAPPED_DRIVE
+	export interface MappedDrive extends PackageOrigin.Base {
+		type: PackageOrigin.OriginType.MAPPED_DRIVE
 
 		/** Path to a folder on a network-share
 		 * @example '\\192.168.0.1\shared\'
 		 */
 		folderPath: string
-
-		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
-		fileName?: string
-
-		/** Drive letter to where the drive is mappedTo */
-		mappedDrive?: string
 
 		userName?: string
 		password?: string
+
+		/** Drive letter to where the drive is mappedTo */
+		mappedDrive?: string
 	}
-	export interface HTTP extends Base {
-		type: OriginType.HTTP
+	export interface HTTP extends PackageOrigin.Base {
+		type: PackageOrigin.OriginType.HTTP
 
 		/** Base url (url to the host), for example http://myhost.com/fileShare/ */
 		baseUrl: string
-
-		/** URL path to resource (combined with .baseUrl gives the full URL), for example: /folder/myFile */
-		url: string
 
 		/** Type of request. Defaults to 'get' */
 		method?: 'get' | 'post' | string
@@ -146,6 +139,58 @@ export namespace PackageOriginMetadata {
 		headers?: { [name: string]: any }
 
 		/** Body parameters to send along with the request (for POST-requests). */
-		requestBody?: any
+		requestBody?: object
+	}
+	export interface Quantel extends PackageOrigin.Base {
+		type: PackageOrigin.OriginType.QUANTEL
+
+		zoneId: string
+	}
+}
+/**
+ * PackageOriginOnPackage contains interfaces for origin defenitions that are put ON the Package.
+ * The info is then (optionally) combined with the PackageOrigin data
+ */
+export namespace PackageOriginOnPackage {
+	export type Any = LocalFolder | FileShare | MappedDrive | HTTP | Quantel
+
+	export interface LocalFolder extends Partial<PackageOrigin.LocalFolder> {
+		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
+		filePath: string
+	}
+	export interface FileShare extends Partial<PackageOrigin.FileShare> {
+		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
+		filePath: string
+	}
+	export interface MappedDrive extends Partial<PackageOrigin.MappedDrive> {
+		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
+		filePath?: string
+	}
+	export interface HTTP extends Partial<PackageOrigin.HTTP> {
+		/** URL path to resource (combined with .baseUrl gives the full URL), for example: /folder/myFile */
+		url: string
+	}
+	export interface Quantel extends Partial<PackageOrigin.Quantel> {
+		guid?: string
+		title?: string
+	}
+}
+
+// A Location is a target that can contain Packages, that can be written to
+// For example; for a Media file transfer, the Origin could be a target-folder
+export namespace PackageLocation {
+	// TODO: Decide how this should be handled...
+
+	export type Any = LocalFolder | FileShare | MappedDrive | HTTP | Quantel | CorePackageCollection
+
+	export type LocalFolder = PackageOrigin.LocalFolder
+	export type FileShare = PackageOrigin.FileShare
+	export type MappedDrive = PackageOrigin.MappedDrive
+	export type HTTP = PackageOrigin.HTTP
+
+	export type Quantel = PackageOrigin.Quantel // todo: extend with serverId?
+
+	export interface CorePackageCollection {
+		type: PackageOrigin.OriginType.CORE_PACKAGE_INFO
 	}
 }
