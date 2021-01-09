@@ -288,7 +288,6 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 						routes
 					)
 
-					console.log('routedMappingsWithPackages', routedMappingsWithPackages)
 					// Filter, keep only the routed mappings for this device:
 					const routedExpectedPackages: ResultingExpectedPackage[] = []
 
@@ -297,7 +296,6 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 
 						if (!filterPlayoutDeviceIds || filterPlayoutDeviceIds.includes(mapping.deviceId)) {
 							for (const expectedPackage of mapping.expectedPackages) {
-								console.log('expectedPackage', expectedPackage)
 								// Lookup Package Origin:
 								const origins = expectedPackage.origins.map((packageOrigin) => {
 									const lookedUpOrigin = context.studio?.packageOrigins[packageOrigin.originId]
@@ -322,7 +320,6 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 										const settings = device.settings as PlayoutDeviceSettings
 
 										const deviceSettings = settings.devices?.[unprotectString(mapping.deviceId)]
-										console.log(mapping.deviceId, deviceSettings)
 
 										if (deviceSettings) {
 											// @ts-expect-error this is somewhat of a hack, the location isn't defined in typings,
@@ -347,7 +344,6 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 							}
 						}
 					}
-					console.log('routedExpectedPackages', routedExpectedPackages)
 					context.routedExpectedPackages = routedExpectedPackages
 				}
 
