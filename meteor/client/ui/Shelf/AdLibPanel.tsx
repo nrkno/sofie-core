@@ -389,6 +389,12 @@ export const AdLibPanelToolbar = withTranslation()(
 				this.props.onFilterChange(this.searchInput.value)
 		}
 
+		searchInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+			if (e.key === 'Escape') {
+				document.querySelector('button')?.focus()
+			}
+		}
+
 		clearSearchInput = () => {
 			this.searchInput.value = ''
 
@@ -409,6 +415,7 @@ export const AdLibPanelToolbar = withTranslation()(
 							ref={this.setSearchInputRef}
 							placeholder={t('Search...')}
 							onChange={this.searchInputChanged}
+							onKeyDown={this.searchInputKeyDown}
 						/>
 						{this.state.searchInputValue !== '' && (
 							<div className="adlib-panel__list-view__toolbar__filter__clear" onClick={this.clearSearchInput}>
