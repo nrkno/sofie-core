@@ -242,14 +242,16 @@ const AdLibListView = withTranslation()(
 				<tbody className="adlib-panel__list-view__list__segment adlib-panel__list-view__item__rundown-baseline">
 					{this.props.rundownAdLibs &&
 						this.props.rundownAdLibs
-							.filter((item) =>
-								matchFilter(
-									item,
-									this.props.showStyleBase,
-									this.props.uiSegments,
-									this.props.filter,
-									this.props.searchFilter
-								)
+							.filter(
+								(item) =>
+									!item.isHidden &&
+									matchFilter(
+										item,
+										this.props.showStyleBase,
+										this.props.uiSegments,
+										this.props.filter,
+										this.props.searchFilter
+									)
 							)
 							.map((adLibPiece: AdLibPieceUi) => (
 								<AdLibListItem
@@ -387,6 +389,12 @@ export const AdLibPanelToolbar = withTranslation()(
 				this.props.onFilterChange(this.searchInput.value)
 		}
 
+		searchInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+			if (e.key === 'Escape') {
+				document.querySelector('button')?.focus()
+			}
+		}
+
 		clearSearchInput = () => {
 			this.searchInput.value = ''
 
@@ -407,6 +415,7 @@ export const AdLibPanelToolbar = withTranslation()(
 							ref={this.setSearchInputRef}
 							placeholder={t('Search...')}
 							onChange={this.searchInputChanged}
+							onKeyDown={this.searchInputKeyDown}
 						/>
 						{this.state.searchInputValue !== '' && (
 							<div className="adlib-panel__list-view__toolbar__filter__clear" onClick={this.clearSearchInput}>
@@ -800,7 +809,9 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 							const uiAdLib: AdLibPieceUi = _.clone(item)
 							uiAdLib.isGlobal = true
 
-							let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
+							let sourceLayer = (uiAdLib.sourceLayer =
+								(item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]) || undefined)
+							uiAdLib.outputLayer = (item.outputLayerId && outputLayerLookup[item.outputLayerId]) || undefined
 							if (sourceLayer && sourceLayer.activateKeyboardHotkeys && sourceLayer.assignHotkeysToGlobalAdlibs) {
 								let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 								const sourceHotKeyUseLayerId =

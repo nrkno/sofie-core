@@ -2,8 +2,8 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
-import { Part, DBPart } from '../../lib/collections/Parts'
-import { Piece } from '../../lib/collections/Pieces'
+import { Part, DBPart, PartId } from '../../lib/collections/Parts'
+import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { Segments, SegmentId } from '../../lib/collections/Segments'
 import {
@@ -21,11 +21,12 @@ import {
 	getRandomId,
 	mongoFindOptions,
 	getRank,
+	waitForPromiseAll,
+	asyncCollectionRemove,
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
-import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
 import {
 	ShowStyleVariants,
 	ShowStyleVariant,
@@ -50,7 +51,6 @@ import {
 	RundownPlaylist,
 } from '../../lib/collections/RundownPlaylists'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
-import { updateExpectedPlayoutItemsOnPart } from './ingest/expectedPlayoutItems'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
@@ -73,6 +73,7 @@ import { profiler } from './profiler'
 import { updateRundownsInPlaylist } from './ingest/rundownInput'
 import { Mongo } from 'meteor/mongo'
 import { getPlaylistIdFromExternalId, removeEmptyPlaylists } from './rundownPlaylist'
+import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 
 export function selectShowStyleVariant(
 	context: IStudioUserContext,
@@ -450,81 +451,34 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 	)
 
 	// Clean up all the db items that belong to the removed Parts
-	// TODO - is there anything else to remove?
-
-	saveIntoCache<Piece, Piece>(
-		cache.Pieces,
-		{
-			rundownId: rundownId,
-			startPartId: { $in: _.map(removedParts, (p) => p._id) },
-		},
-		[],
-		{
-			afterRemoveAll(pieces) {
-				afterRemovePieces(cache, rundownId, pieces)
-			},
-		}
-	)
-
-	afterRemovePartsAuxiliary(cache, rundownId, removedParts)
-
-	_.each(removedParts, (part) => {
-		// TODO - batch?
-		updateExpectedMediaItemsOnPart(cache, part.rundownId, part._id) // todo: is this correct
-		updateExpectedPlayoutItemsOnPart(cache, part.rundownId, part._id)
+	const removedPartIds = removedParts.map((p) => p._id)
+	cache.Pieces.remove({
+		rundownId: rundownId,
+		startPartId: { $in: removedPartIds },
 	})
-}
 
-export function afterRemovePartsAuxiliary(
-	cache: CacheForRundownPlaylist,
-	rundownId: RundownId,
-	removedParts: DBPart[]
-) {
 	cache.deferAfterSave(() => {
-		ExpectedPlayoutItems.remove({
-			rundownId: rundownId,
-			partId: { $in: _.map(removedParts, (p) => p._id) },
-		})
-
-		saveIntoDb<AdLibPiece, AdLibPiece>(
-			AdLibPieces,
-			{
+		waitForPromiseAll([
+			asyncCollectionRemove(ExpectedPlayoutItems, {
 				rundownId: rundownId,
-				partId: { $in: _.map(removedParts, (p) => p._id) },
-			},
-			[],
-			{
-				afterRemoveAll(pieces) {
-					afterRemovePieces(cache, rundownId, pieces)
-				},
-			}
-		)
-
-		AdLibActions.remove({
-			rundownId: rundownId,
-			partId: { $in: _.map(removedParts, (p) => p._id) },
-		})
+				partId: { $in: removedPartIds },
+			}),
+			asyncCollectionRemove(ExpectedMediaItems, {
+				rundownId: rundownId,
+				partId: { $in: removedPartIds },
+			}),
+			asyncCollectionRemove(AdLibPieces, {
+				rundownId: rundownId,
+				partId: { $in: removedPartIds },
+			}),
+			asyncCollectionRemove(AdLibActions, {
+				rundownId: rundownId,
+				partId: { $in: removedPartIds },
+			}),
+		])
 	})
 }
 
-/**
- * After Pieces have been removed, handle the contents.
- * This will NOT trigger an update of the timeline
- * @param rundownId Id of the Rundown
- * @param removedPieces The pieces that have been removed
- */
-export function afterRemovePieces(
-	cache: CacheForRundownPlaylist,
-	rundownId: RundownId,
-	removedPieces: Array<Piece | AdLibPiece>
-) {
-	cache.deferAfterSave(() => {
-		ExpectedPlayoutItems.remove({
-			rundownId: rundownId,
-			pieceId: { $in: _.map(removedPieces, (p) => p._id) },
-		})
-	})
-}
 /**
  * Update the ranks of all dynamic parts in the given segments.
  * Adlib/dynamic parts get assigned ranks based on the rank of what they are told to be after

@@ -67,7 +67,7 @@ export class ActivationCache {
 	private _persistant: boolean = false
 
 	private _playlist: RundownPlaylist | undefined
-	private _studio: Studio
+	private _studio: Studio | undefined
 	private _showStyleBases: { [id: string]: InternalCache<ShowStyleBase> } = {}
 	private _showStyleVariants: { [id: string]: InternalCache<ShowStyleVariant> } = {}
 	private _rundownBaselineObjs: { [id: string]: InternalCache<RundownBaselineObj[]> } = {}
@@ -180,7 +180,7 @@ export class ActivationCache {
 		return this._playlist
 	}
 	getStudio(): Studio {
-		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
+		if (!this._initialized || !this._studio) throw new Meteor.Error(`ActivationCache is not initialized`)
 		return this._studio
 	}
 	async getShowStyleBase(rundown: Rundown): Promise<ShowStyleBase> {
@@ -261,17 +261,15 @@ export class ActivationCache {
 		)
 	}
 	private async _getPeripheralDevices(): Promise<PeripheralDevice[]> {
-		return this._getFromCache(
-			this._peripheralDevices,
-			this._playlist?.studioId ?? this._studio._id,
-			'',
-			async (id) => {
-				const devices = await asyncCollectionFindFetch(PeripheralDevices, {
-					studioId: id,
-				})
-				return devices
-			}
-		)
+		const studioId = this._playlist?.studioId ?? this._studio?._id
+		if (!studioId) return []
+
+		return this._getFromCache(this._peripheralDevices, studioId, '', async (id) => {
+			const devices = await asyncCollectionFindFetch(PeripheralDevices, {
+				studioId: id,
+			})
+			return devices
+		})
 	}
 	private _updateExpires() {
 		const TTL = 30 * 60 * 1000 // 30 minutes

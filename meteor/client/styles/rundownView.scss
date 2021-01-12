@@ -1678,7 +1678,11 @@ body.no-overflow {
 						.segment-timeline__layer {
 							// min-height: 0 causes the layers to collapse and divide the output-group min-height amongst themselves
 							min-height: 0;
-							border-bottom: 0px solid $segment-layer-separator-color;
+							border-bottom: 0.5px solid $segment-layer-separator-color;
+
+							&:last-child {
+								border-bottom-width: 0;
+							}
 
 							.segment-timeline__piece {
 								.segment-timeline__piece__label {

@@ -570,7 +570,7 @@ export const RundownViewBuckets = withTranslation()(
 											className: 'buckets',
 										}}
 										collect={() =>
-											new Promise((resolve) => {
+											new Promise<void>((resolve) => {
 												setShelfContextMenuContext({
 													type: MenuContextType.BUCKET,
 													details: {

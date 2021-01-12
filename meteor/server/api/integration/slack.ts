@@ -1,4 +1,4 @@
-import { IncomingWebhook, IncomingWebhookResult } from '@slack/client'
+import { IncomingWebhook, IncomingWebhookResult } from '@slack/webhook'
 import { Meteor } from 'meteor/meteor'
 
 const webHookCache: { [webhookURL: string]: IncomingWebhook } = {}
@@ -9,14 +9,12 @@ const webHookCache: { [webhookURL: string]: IncomingWebhook } = {}
  * @param webhookURL
  */
 export function sendSlackMessageToWebhook(message: string, webhookURL: string): Promise<IncomingWebhookResult> {
-	return new Promise((resolve, reject) => {
-		let webhook: IncomingWebhook = webHookCache[webhookURL]
-		if (!webhook) {
-			webhook = new IncomingWebhook(webhookURL)
-			webHookCache[webhookURL] = webhook
-		}
-		return webhook.send(message)
-	})
+	let webhook: IncomingWebhook = webHookCache[webhookURL]
+	if (!webhook) {
+		webhook = new IncomingWebhook(webhookURL)
+		webHookCache[webhookURL] = webhook
+	}
+	return webhook.send(message)
 }
 export const sendSlackMessageToWebhookSync: (
 	message: string,

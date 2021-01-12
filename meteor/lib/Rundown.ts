@@ -136,7 +136,12 @@ export function getPieceInstancesForPartInstance(
 			partInstance.isTemporary
 		)
 	} else {
-		const results = PieceInstances.find({ partInstanceId: partInstance._id }, options).fetch()
+		const results =
+			// Check if the PartInstance we're currently looking for PieceInstances for is already the current one.
+			// If that's the case, we can sace ourselves a scan across the PieceInstances collection
+			partInstance._id === currentPartInstance?._id && currentPartInstancePieceInstances
+				? currentPartInstancePieceInstances
+				: PieceInstances.find({ partInstanceId: partInstance._id }, options).fetch()
 		// check if we can return the results immediately
 		if (results.length > 0 || !pieceInstanceSimulation) return results
 

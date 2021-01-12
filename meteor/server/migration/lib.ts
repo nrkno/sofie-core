@@ -103,6 +103,44 @@ export function ensureCollectionProperty<T = any>(
 		dependOnResultFrom: dependOnResultFrom,
 	}
 }
+export function removeCollectionProperty<T = any>(
+	collectionName: string,
+	selector: Mongo.Selector<T>,
+	property: string,
+	dependOnResultFrom?: string
+): MigrationStepBase {
+	let collection: TransformedCollection<T, any> = Collections[collectionName]
+	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
+
+	return {
+		id: `${collectionName}.${property}`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			let objects = collection.find(selector).fetch()
+			let propertySet: string | boolean = false
+			_.each(objects, (obj: any) => {
+				let objValue = objectPathGet(obj, property)
+				if (objValue !== undefined) {
+					propertySet = `${property} is set ${obj._id}`
+				}
+			})
+
+			return propertySet
+		},
+		migrate: () => {
+			const objects = collection.find(selector).fetch()
+			_.each(objects, (obj: any) => {
+				if (obj && objectPathGet(obj, property) !== undefined) {
+					let m = {}
+					m[property] = 1
+					logger.info(`Migration: Removing property ${collectionName}."${obj._id}".${property}`)
+					collection.update(obj._id, { $unset: m })
+				}
+			})
+		},
+		dependOnResultFrom: dependOnResultFrom,
+	}
+}
 function getMinVersion(versionStr: string | undefined): string {
 	return (semver.minVersion(versionStr || '0.0.0') || { version: '0.0.0' }).version
 }

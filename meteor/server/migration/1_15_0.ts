@@ -1,5 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
-import { setExpectedVersion } from './lib'
+import { ensureCollectionProperty, setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 /*
@@ -11,7 +11,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
  *
  * **************************************************************************************
  */
-// Release X
+// Release 27
 export const addSteps = addMigrationSteps('1.15.0', [
 	//                     ^--- To be set to an absolute version number when doing the release
 	// add steps here:

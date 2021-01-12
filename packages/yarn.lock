@@ -6265,10 +6265,10 @@ through@2, "through@>=2.2.7 <3", through@^2.3.8:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
-timeline-state-resolver-types@5.3.0-nightly-release28-20201214-110646-441c431f.0:
-  version "5.3.0-nightly-release28-20201214-110646-441c431f.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-5.3.0-nightly-release28-20201214-110646-441c431f.0.tgz#9b5ce3659b95c21f4104c37debbfbef9a0440e01"
-  integrity sha512-EZ0CsNmr1RO1iW2uO3eEt2UzPOFTuuSpUHfBaDjC+N5xCpDzyYFVJej3hBLoG7/y0in6Ihi8L5uHZ1yWMTueew==
+timeline-state-resolver-types@5.3.0-nightly-release29-20210104-122313-8763a79d.0:
+  version "5.3.0-nightly-release29-20210104-122313-8763a79d.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-5.3.0-nightly-release29-20210104-122313-8763a79d.0.tgz#1ef1c5533fff51b678d10fe926014ab475006428"
+  integrity sha512-bGd3AOVr9aYmx5bU70G4tcsIJ3eS9sCoUFseCKSP69Xxkh1J9QycO63ybdPTDjdNiydLQaGUk+uW82ENhtU46A==
   dependencies:
     tslib "^1.13.0"
 

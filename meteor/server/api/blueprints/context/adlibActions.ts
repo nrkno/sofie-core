@@ -178,6 +178,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			part === 'current',
 			true
 		)[0]
+		piece._id = getRandomId() // Make id random, as postProcessPieces is too predictable (for ingest)
 		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
 
 		// Do the work

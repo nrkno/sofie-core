@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   build-core:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11.1
+      - image: sofietv/tv-automation-meteor-base:1.12.1
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
@@ -27,7 +27,7 @@ jobs:
 
   test-core:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11.1
+      - image: sofietv/tv-automation-meteor-base:1.12.1
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
@@ -43,7 +43,7 @@ jobs:
           no_output_timeout: 60m
   lint-core:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11.1
+      - image: sofietv/tv-automation-meteor-base:1.12.1
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
@@ -221,7 +221,7 @@ jobs:
           command: |
             cd packages
             yarn docs
-            gh-pages -d docs
+            yarn gh-pages -d docs
 
   validate-prod-dependencies-libs:
     parameters:
@@ -272,7 +272,7 @@ jobs:
 
   validate-prod-dependencies-core:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11.1
+      - image: sofietv/tv-automation-meteor-base:1.12.1
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
@@ -288,7 +288,7 @@ jobs:
           no_output_timeout: 15m
   validate-all-dependencies-core:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11.1
+      - image: sofietv/tv-automation-meteor-base:1.12.1
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
@@ -506,7 +506,7 @@ workflows:
             - test-libs
           filters:
             tags:
-              only: /^[0-9]+\.[0-9]+\.[0-9]+.*/
+              only: /v.*/
             branches:
               ignore: /.*/
       - typedoc-libs:
@@ -514,7 +514,7 @@ workflows:
             - release-libs
           filters:
             tags:
-              only: /^[0-9]+\.[0-9]+\.[0-9]+.*/
+              only: /v.*/
             branches:
               ignore: /.*/
         
