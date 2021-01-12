@@ -459,6 +459,8 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 		startPartId: { $in: removedPartIds },
 	})
 
+	cache.PartInstances.update({ 'part._id': { $in: _.map(removedParts, (p) => p._id) } }, { $set: { reset: true } })
+
 	cache.deferAfterSave(() => {
 		waitForPromiseAll([
 			asyncCollectionRemove(ExpectedPlayoutItems, {
