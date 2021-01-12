@@ -100,8 +100,6 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		const leftLabelWidth = this.leftLabel ? Math.max(0, getElementWidth(this.leftLabel) - 2) : 0
 		const rightLabelWidth = this.rightLabel ? Math.max(0, getElementWidth(this.rightLabel) - 2) : 0
 
-		console.log(leftLabelWidth, rightLabelWidth)
-
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
