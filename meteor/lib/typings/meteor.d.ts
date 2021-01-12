@@ -34,7 +34,6 @@ export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpec
 export type IndexSpecifier<T> = {
 	[P in keyof T]?: -1 | 1 | string
 }
-export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpecifierZeroes<T>
 
 export interface FindOptions<DBInterface> {
 	sort?: SortSpecifier<DBInterface>

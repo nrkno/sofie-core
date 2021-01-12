@@ -13,9 +13,7 @@ import {
 	waitForPromise,
 	clone,
 	omit,
-	getRandomId,
 	unpartialString,
-	unprotectStringArray,
 } from '../../../../lib/lib'
 import { PartId } from '../../../../lib/collections/Parts'
 import { check, Match } from '../../../../lib/check'
@@ -68,7 +66,7 @@ import { unprotectPartInstance, PartInstance } from '../../../../lib/collections
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
 import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { DeepReadonly } from 'utility-types'
+import { ReadonlyDeep } from 'type-fest'
 import { Random } from 'meteor/random'
 import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
 
@@ -332,7 +330,7 @@ interface ABSessionInfoExt extends ABSessionInfo {
 }
 
 export class TimelineEventContext extends RundownContext implements ITimelineEventContext {
-	private readonly partInstances: DeepReadonly<Array<PartInstance>>
+	private readonly partInstances: ReadonlyDeep<Array<PartInstance>>
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
 	readonly nextPartInstance: Readonly<IBlueprintPartInstance> | undefined
 

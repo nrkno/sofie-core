@@ -104,7 +104,7 @@ Meteor.startup(() => {
 						logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 
 						ps.push(
-							new Promise((resolve, reject) => {
+							new Promise<void>((resolve, reject) => {
 								PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 									subDevice._id,
 									(err) => {

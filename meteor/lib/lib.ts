@@ -15,13 +15,14 @@ import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-integration'
 import * as crypto from 'crypto'
-import { DeepReadonly, DeepPartial } from 'utility-types'
+import { ReadonlyDeep, PartialDeep } from 'type-fest'
 import { BulkWriteOperation } from 'mongodb'
-import { _DeepPartialObject } from 'utility-types/dist/mapped-types'
 
 const cloneOrg = require('fast-clone')
 
-export function clone<T>(o: DeepReadonly<T> | Readonly<T> | T): T {
+export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
+
+export function clone<T>(o: ReadonlyDeep<T> | Readonly<T> | T): T {
 	// Use this instead of fast-clone directly, as this retains the type
 	return cloneOrg(o)
 }
@@ -1411,13 +1412,9 @@ export function isStringOrProtectedString<T extends ProtectedString<any>>(val: a
 	return _.isString(val)
 }
 
-export function unpartialString<T extends ProtectedString<any>>(obj: T | _DeepPartialObject<T>): T
-export function unpartialString<T extends ProtectedString<any>>(
-	str: T | _DeepPartialObject<T> | undefined
-): T | undefined
-export function unpartialString<T extends ProtectedString<any>>(
-	str: T | _DeepPartialObject<T> | undefined
-): T | undefined {
+export function unpartialString<T extends ProtectedString<any>>(obj: T | PartialDeep<T>): T
+export function unpartialString<T extends ProtectedString<any>>(str: T | PartialDeep<T> | undefined): T | undefined
+export function unpartialString<T extends ProtectedString<any>>(str: T | PartialDeep<T> | undefined): T | undefined {
 	return str as any
 }
 

@@ -52,6 +52,7 @@ describe('Service messages internal API', () => {
 		it('should throw when core system object doesnt have a serviceMessages field', () => {
 			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => {
 				const brokenCore = { ...fakeCoreSystem }
+				// @ts-expect-error
 				delete brokenCore.serviceMessages
 				return brokenCore
 			})
@@ -99,6 +100,7 @@ describe('Service messages internal API', () => {
 		it('should throw when core system object doesnt have a serviceMessages field', () => {
 			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => {
 				const brokenCore = { ...fakeCoreSystem }
+				// @ts-expect-error
 				delete brokenCore.serviceMessages
 				return brokenCore
 			})

@@ -556,13 +556,13 @@ describe('Test blueprint api context', () => {
 
 					postProcessPiecesMock.mockImplementationOnce(() => [
 						{
-							_id: 'fake4',
+							_id: 'fake4', // Should be ignored
 						} as any,
 					])
 					innerStartAdLibPieceMock.mockImplementationOnce(innerStartAdLibPieceOrig)
 
 					const newPieceInstanceId = context.insertPiece('current', { externalId: 'input1' } as any)._id
-					expect(newPieceInstanceId).toMatch(/randomId([0-9]+)_part0_0_instance_fake4/)
+					expect(newPieceInstanceId).toMatch(/randomId([0-9]+)_part0_0_instance_randomId([0-9]+)/)
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
 					expect(postProcessPiecesMock).toHaveBeenCalledWith(
 						expect.anything(),
@@ -661,7 +661,7 @@ describe('Test blueprint api context', () => {
 					playlist.currentPartInstanceId = pieceInstance0.partInstanceId
 
 					// Ensure there are no pending updates already
-					expect(Object.values(cache.PieceInstances.documents).filter((doc) => !!doc.updated)).toHaveLength(0)
+					expect(cache.PieceInstances.isModified()).toBeFalsy()
 
 					// Update it and expect it to match
 					const pieceInstance0Before = _.clone(pieceInstance0)
@@ -682,7 +682,9 @@ describe('Test blueprint api context', () => {
 						},
 					}
 					expect(pieceInstance0).toEqual(pieceInstance0After)
-					expect(Object.values(cache.PieceInstances.documents).filter((doc) => !!doc.updated)).toMatchObject([
+					expect(
+						Array.from(cache.PieceInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
+					).toMatchObject([
 						{
 							updated: true,
 							document: { _id: pieceInstance0._id },
@@ -1032,7 +1034,7 @@ describe('Test blueprint api context', () => {
 					playlist.nextPartInstanceId = partInstance0._id
 
 					// Ensure there are no pending updates already
-					expect(Object.values(cache.PartInstances.documents).filter((doc) => !!doc.updated)).toHaveLength(0)
+					expect(cache.PartInstances.isModified()).toBeFalsy()
 
 					// Update it and expect it to match
 					const partInstance0Before = _.clone(partInstance0)
@@ -1052,7 +1054,9 @@ describe('Test blueprint api context', () => {
 						},
 					}
 					expect(partInstance0).toEqual(pieceInstance0After)
-					expect(Object.values(cache.PartInstances.documents).filter((doc) => !!doc.updated)).toMatchObject([
+					expect(
+						Array.from(cache.PartInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
+					).toMatchObject([
 						{
 							updated: true,
 							document: { _id: partInstance0._id },

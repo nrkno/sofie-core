@@ -146,6 +146,7 @@ describe('Test blueprint post-process', () => {
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
 				// 'Hack' off the invalid fields to make the MatchObject pass
+				// @ts-expect-error
 				if (obj.id === '') delete obj.id
 			})
 			expect(res).toMatchObject(rawObjects)
@@ -264,6 +265,7 @@ describe('Test blueprint post-process', () => {
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
 				// 'Hack' off the invalid fields to make the MatchObject pass
+				// @ts-expect-error
 				if (obj.id === '') delete obj.id
 			})
 			expect(res).toMatchObject(rawObjects)
