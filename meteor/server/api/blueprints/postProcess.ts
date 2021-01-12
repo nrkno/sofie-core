@@ -10,7 +10,8 @@ import {
 	IBlueprintAdLibPiece,
 	TSR,
 	IBlueprintActionManifest,
-	NotesContext as INotesContext,
+	ICommonContext,
+	IShowStyleContext,
 } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
@@ -25,6 +26,7 @@ import { prefixAllObjectIds } from '../playout/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { profiler } from '../profiler'
 import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
+import { CommonContext, ShowStyleContext } from './context'
 
 /**
  *
@@ -32,7 +34,7 @@ import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
  * prefixAllTimelineObjects: Add a prefix to the timeline object ids, to ensure duplicate ids don't occur when inserting a copy of a piece
  */
 export function postProcessPieces(
-	innerContext: ShowStyleContext,
+	innerContext: IShowStyleContext,
 	pieces: IBlueprintPiece[],
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
@@ -166,7 +168,7 @@ export function postProcessAdLibPieces(
 			_id: protectString(
 				innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${orgAdlib.externalId}_${i}`)
 			),
-			rundownId: protectString(innerContext.rundown._id),
+			rundownId: rundownId,
 			partId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
 		}
@@ -233,7 +235,7 @@ export function postProcessAdLibActions(
 }
 
 export function postProcessStudioBaselineObjects(studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
-	const context = new NotesContext('studio', 'studio', false)
+	const context = new CommonContext({ identifier: 'studio', name: 'studio' })
 	return postProcessTimelineObjects(context, protectString('studio'), studio.blueprintId!, objs, false)
 }
 

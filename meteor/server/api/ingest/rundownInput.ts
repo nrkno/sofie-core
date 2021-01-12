@@ -50,9 +50,11 @@ import { loadShowStyleBlueprint, WrappedShowStyleBlueprint } from '../blueprints
 import {
 	ShowStyleContext,
 	RundownContext,
-	SegmentContext,
-	NotesContext,
 	SyncIngestUpdateToPartInstanceContext,
+	StudioUserContext,
+	ShowStyleUserContext,
+	CommonContext,
+	SegmentUserContext,
 } from '../blueprints/context'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
@@ -638,7 +640,7 @@ function updateRundownFromIngestData(
 		}
 	}
 
-	const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(studio, dbRundownData, peripheralDevice)
+	const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(dbRundownData, peripheralDevice)
 	dbRundownData.playlistId = rundownPlaylistInfo.rundownPlaylist._id
 
 	// Save rundown into database:
@@ -1237,17 +1239,14 @@ function updateSegmentFromIngestData(
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 
-	const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundown._id},segmentId=${segmentId}`, true)
-	const context = new SegmentContext(rundown, cache, notesContext)
-	const blueprintSegment = blueprint.blueprint.getSegment(context, ingestSegment)
-
 	const { parts, segmentPieces, adlibPieces, adlibActions, newSegment } = generateSegmentContents(
-		context,
+		cache,
+		rundown,
+		blueprint.blueprint,
 		blueprint.blueprintId,
 		ingestSegment,
 		existingSegment,
-		existingParts,
-		blueprintSegment
+		existingParts
 	)
 
 	const prepareSaveParts = prepareSaveIntoCache<Part, DBPart>(
@@ -1437,13 +1436,12 @@ function syncChangesToPartInstances(
 					}
 
 					const syncContext = new SyncIngestUpdateToPartInstanceContext(
+						{
+							name: `Update to ${newPart.externalId}`,
+							identifier: `rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
+						},
 						rundown,
 						cache,
-						new NotesContext(
-							`Update to ${newPart.externalId}`,
-							`rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
-							true
-						),
 						existingPartInstance,
 						pieceInstancesInPart,
 						proposedPieceInstances,
@@ -1469,7 +1467,7 @@ function syncChangesToPartInstances(
 					if (!existingPartInstance.part.notes) existingPartInstance.part.notes = []
 					const notes: PartNote[] = existingPartInstance.part.notes
 					let changed = false
-					for (const note of syncContext.notesContext.getNotes()) {
+					for (const note of syncContext.notes) {
 						changed = true
 						notes.push(
 							literal<SegmentNote>({

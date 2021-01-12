@@ -21,15 +21,7 @@ import { check, Match } from '../../../../lib/check'
 import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
-	NotesContext as INotesContext,
-	ShowStyleContext as IShowStyleContext,
-	RundownContext as IRundownContext,
-	SegmentContext as ISegmentContext,
-	EventContext as IEventContext,
-	AsRunEventContext as IAsRunEventContext,
-	PartEventContext as IPartEventContext,
-	TimelineEventContext as ITimelineEventContext,
-	IStudioConfigContext,
+	IUserNotesContext,
 	IStudioContext,
 	IStudioUserContext,
 	BlueprintMappings,
@@ -43,6 +35,13 @@ import {
 	IBlueprintExternalMessageQueueObj,
 	ExtendedIngestRundown,
 	OnGenerateTimelineObj,
+	IShowStyleContext,
+	IRundownContext,
+	IEventContext,
+	ISegmentUserContext,
+	IPartEventContext,
+	ITimelineEventContext,
+	IAsRunEventContext,
 } from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
@@ -71,6 +70,18 @@ import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../
 import { DeepReadonly } from 'utility-types'
 import { Random } from 'meteor/random'
 import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
+import { BlueprintId } from '../../../../lib/collections/Blueprints'
+import _ from 'underscore'
+
+export interface ContextInfo {
+	/** Short name for the context (eg the blueprint function being called) */
+	name: string
+	/** Full identifier info for the context. Should be able to identify the rundown/studio/blueprint etc being executed */
+	identifier: string
+}
+export interface UserContextInfo extends ContextInfo {
+	tempSendUserNotesIntoBlackHole?: boolean // TODO-CONTEXT remove this
+}
 
 /** Common */
 
@@ -183,7 +194,6 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 }
 
 /** Show Style Variant */
-
 export class ShowStyleContext extends StudioContext implements IShowStyleContext {
 	constructor(
 		contextInfo: ContextInfo,
@@ -195,8 +205,6 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	) {
 		super(contextInfo, studio)
 	}
-	error: (message: string) => void
-	warning: (message: string) => void
 
 	getShowStyleBase(): ShowStyleBase {
 		if (this.cache && this._rundown) {
@@ -295,8 +303,6 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 		this._rundown = rundown
 		this.playlistId = rundown.playlistId
 	}
-	error: (message: string) => void
-	warning: (message: string) => void
 }
 
 export class RundownEventContext extends RundownContext implements IEventContext {
@@ -380,8 +386,6 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 
 		this.part = unprotectPartInstance(partInstance)
 	}
-	error: (message: string) => void
-	warning: (message: string) => void
 
 	getCurrentTime(): number {
 		return getCurrentTime()
@@ -405,7 +409,6 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 	}
 
 	constructor(
-		contextInfo: UserContextInfo,
 		rundown: Rundown,
 		cache: CacheForRundownPlaylist,
 		previousPartInstance: PartInstance | undefined,
@@ -413,13 +416,12 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 		nextPartInstance: PartInstance | undefined
 	) {
 		super(
+			{
+				name: rundown.name,
+				identifier: `rundownId=${rundown._id},previousPartInstance=${previousPartInstance?._id},currentPartInstance=${currentPartInstance?._id},nextPartInstance=${nextPartInstance?._id}`,
+			},
 			rundown,
-			cache,
-			new NotesContext(
-				rundown.name,
-				`rundownId=${rundown._id},previousPartInstance=${previousPartInstance?._id},currentPartInstance=${currentPartInstance?._id},nextPartInstance=${nextPartInstance?._id}`,
-				false
-			)
+			cache
 		)
 
 		this.currentPartInstance = currentPartInstance ? unprotectPartInstance(currentPartInstance) : undefined
@@ -430,8 +432,6 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 		this._knownSessions =
 			clone(cache.RundownPlaylists.findOne(cache.containsDataFromPlaylist)?.trackedAbSessions) ?? []
 	}
-	error: (message: string) => void
-	warning: (message: string) => void
 
 	getCurrentTime(): number {
 		return getCurrentTime()
@@ -587,8 +587,6 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		super(contextInfo, rundown, cache)
 		this.asRunEvent = unprotectObject(asRunEvent)
 	}
-	error: (message: string) => void
-	warning: (message: string) => void
 
 	getCurrentTime(): number {
 		return getCurrentTime()

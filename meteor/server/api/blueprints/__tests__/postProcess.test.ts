@@ -114,7 +114,7 @@ describe('Test blueprint post-process', () => {
 			const blueprintId = protectString('blueprint0')
 
 			// Ensure that an empty array works ok
-			const res = postProcessStudioBaselineObjects(context, blueprintId, [])
+			const res = postProcessStudioBaselineObjects(studio, [])
 			expect(res).toHaveLength(0)
 		})
 
@@ -160,7 +160,7 @@ describe('Test blueprint post-process', () => {
 
 			// TODO - mock getHash?
 
-			const res = postProcessStudioBaselineObjects(context, blueprintId, _.clone(rawObjects))
+			const res = postProcessStudioBaselineObjects(studio, _.clone(rawObjects))
 
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
@@ -218,7 +218,7 @@ describe('Test blueprint post-process', () => {
 			])
 
 			try {
-				postProcessStudioBaselineObjects(context, blueprintId, _.clone(rawObjects))
+				postProcessStudioBaselineObjects(studio, _.clone(rawObjects))
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(

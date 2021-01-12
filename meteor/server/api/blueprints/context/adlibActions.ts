@@ -30,12 +30,13 @@ import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartIn
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { NotesContext, ShowStyleContext } from './context'
+import { ShowStyleContext, ShowStyleUserContext, UserContextInfo } from './context'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
 import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'
+import { NoteType } from '../../../../lib/api/notes'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -43,7 +44,7 @@ export enum ActionPartChange {
 }
 
 /** Actions */
-export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
+export class ActionExecutionContext extends ShowStyleUserContext implements IActionExecutionContext, IEventContext {
 	private readonly _cache: CacheForRundownPlaylist
 	private readonly rundownPlaylist: RundownPlaylist
 	private readonly rundown: Rundown
@@ -66,35 +67,6 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		this.rundownPlaylist = rundownPlaylist
 		this.rundown = rundown
 		this.takeAfterExecute = false
-
-		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
-	}
-
-	notifyUserError(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logError(message)
-		} else {
-			this.notes.push({
-				type: NoteType.ERROR,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
-	}
-	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logWarning(message)
-		} else {
-			this.notes.push({
-				type: NoteType.WARNING,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
 	}
 
 	private _getPartInstanceId(part: 'current' | 'next'): PartInstanceId | null {

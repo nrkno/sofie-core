@@ -9,7 +9,6 @@ import { getHash, protectString, unprotectObject, unprotectString, waitForPromis
 import { Studio } from '../../../../lib/collections/Studios'
 import {
 	LookaheadMode,
-	NotesContext as INotesContext,
 	IBlueprintAsRunLogEventContent,
 	IBlueprintSegmentDB,
 	TSR,
@@ -22,10 +21,8 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import {
 	CommonContext,
-	StudioConfigContext,
 	StudioContext,
 	ShowStyleContext,
-	NotesContext,
 	PartEventContext,
 	AsRunEventContext,
 	TimelineEventContext,
@@ -42,6 +39,7 @@ import {
 	PartInstances,
 	unprotectPartInstance,
 	PartInstanceId,
+	PartInstance,
 } from '../../../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstanceInfiniteId } from '../../../../lib/collections/PieceInstances'
 import { SegmentId } from '../../../../lib/collections/Segments'

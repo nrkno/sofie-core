@@ -40,7 +40,6 @@ import {
 	ExtendedIngestRundown,
 	BlueprintResultRundownPlaylist,
 } from '@sofie-automation/blueprints-integration'
-import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
@@ -76,7 +75,7 @@ import { Mongo } from 'meteor/mongo'
 import { getPlaylistIdFromExternalId, removeEmptyPlaylists } from './rundownPlaylist'
 
 export function selectShowStyleVariant(
-	context: StudioUserContext,
+	context: IStudioUserContext,
 	ingestRundown: ExtendedIngestRundown
 ): { variant: ShowStyleVariant; base: ShowStyleBase } | null {
 	const studio = context.getStudio()
@@ -217,7 +216,6 @@ export function produceRundownPlaylistRanks(
  * This function is (/can be) run before the playlist has been created.
  */
 export function produceRundownPlaylistInfoFromRundown(
-	studio: Studio,
 	currentRundown: DBRundown,
 	peripheralDevice: PeripheralDevice | undefined
 ): RundownPlaylistAndOrder {

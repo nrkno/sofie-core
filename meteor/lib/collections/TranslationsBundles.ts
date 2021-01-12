@@ -1,7 +1,7 @@
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 
-import { TranslationsBundle as BlueprintTranslationsBundle } from 'tv-automation-sofie-blueprints-integration'
+import { TranslationsBundle as BlueprintTranslationsBundle } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 
 /** A string identifying a translations bundle */

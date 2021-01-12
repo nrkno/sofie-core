@@ -1,5 +1,5 @@
 import { clone } from 'underscore'
-import { RundownContext, NotesContext } from './context'
+import { ContextInfo, RundownContext } from './context'
 import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import {
 	IBlueprintPiece,
@@ -7,7 +7,7 @@ import {
 	OmitId,
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
-	SyncIngestUpdateToPartInstanceContext as ISyncIngestUpdateToPartInstanceContext,
+	ISyncIngestUpdateToPartInstanceContext,
 } from '@sofie-automation/blueprints-integration'
 import { PartInstance, DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import _ from 'underscore'
@@ -31,23 +31,26 @@ import { Rundown } from '../../../../lib/collections/Rundowns'
 import { DbCacheWriteCollection } from '../../../DatabaseCache'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { Meteor } from 'meteor/meteor'
+import { INoteBase, NoteType } from '../../../../lib/api/notes'
 
 export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 	implements ISyncIngestUpdateToPartInstanceContext {
 	private readonly _partInstanceCache: DbCacheWriteCollection<PartInstance, DBPartInstance>
 	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance>
 	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>
+	public readonly notes: INoteBase[] = []
+	private readonly tempSendNotesIntoBlackHole: boolean
 
 	constructor(
+		contextInfo: ContextInfo,
 		rundown: Rundown,
 		cache: ReadOnlyCacheForRundownPlaylist,
-		notesContext: NotesContext,
 		private partInstance: PartInstance,
 		pieceInstances: PieceInstance[],
 		proposedPieceInstances: PieceInstance[],
 		private playStatus: 'current' | 'next'
 	) {
-		super(rundown, cache, notesContext)
+		super(contextInfo, rundown, cache)
 
 		// Create temporary cache databases
 		this._pieceInstanceCache = new DbCacheWriteCollection(PieceInstances)
@@ -57,6 +60,33 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		this._partInstanceCache.fillWithDataFromArray([partInstance])
 
 		this._proposedPieceInstances = normalizeArrayToMap(proposedPieceInstances, '_id')
+	}
+
+	notifyUserError(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.ERROR,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
 	}
 
 	applyChangesToCache(cache: CacheForRundownPlaylist) {
