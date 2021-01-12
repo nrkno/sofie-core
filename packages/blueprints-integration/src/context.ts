@@ -88,6 +88,8 @@ export interface ActionExecutionContext extends ShowStyleContext {
 			pieceMetaDataFilter?: any // Mongo query against properties inside of piece.metaData
 		}
 	): IBlueprintPieceInstance | undefined
+	/** Gets the PartInstance for a PieceInstane retrieved from findLastPieceOnLayer. This primarily allows for accessing metadata of the PartInstance */
+	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance
 	/** Fetch the showstyle config for the specified part */
 	// getNextShowStyleConfig(): Readonly<{ [key: string]: ConfigItemValue }>
 
