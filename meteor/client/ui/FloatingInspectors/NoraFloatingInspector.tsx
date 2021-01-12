@@ -186,11 +186,11 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		style.visibility = this.state.show ? 'visible' : 'hidden'
 
 		if (this.state.flip.x && this.state.flip.y) {
-			style.transform = 'translate(0, 2em)'
+			style.transform = 'translate(0, var(--popdown))'
 		} else if (this.state.flip.x) {
 			style.transform = 'translate(0, -100%)'
 		} else if (this.state.flip.y) {
-			style.transform = 'translate(-100%, 2em)'
+			style.transform = 'translate(-100%, var(--popdown))'
 		}
 
 		return style
