@@ -13,6 +13,8 @@ import { FindOptions } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
+import { ExpectedPackageDB, ExpectedPackageDBBase, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageWorkStatus, ExpectedPackageWorkStatuses } from '../../lib/collections/ExpectedPackageStatuses'
 
 meteorPublish(PubSub.studios, function(selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
@@ -69,6 +71,26 @@ meteorPublish(PubSub.mediaObjects, function(studioId, selector, token) {
 	selector.studioId = studioId
 	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
 		return MediaObjects.find(selector, modifier)
+	}
+	return null
+})
+meteorPublish(PubSub.expectedPackages, function(selector, token) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+	const modifier: FindOptions<ExpectedPackageDBBase> = {
+		fields: {},
+	}
+	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
+		return ExpectedPackages.find(selector, modifier)
+	}
+	return null
+})
+meteorPublish(PubSub.expectedPackageWorkStatuses, function(selector, token) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+	const modifier: FindOptions<ExpectedPackageWorkStatus> = {
+		fields: {},
+	}
+	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
+		return ExpectedPackageWorkStatuses.find(selector, modifier)
 	}
 	return null
 })

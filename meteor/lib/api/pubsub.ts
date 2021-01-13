@@ -44,6 +44,8 @@ export enum PubSub {
 	buckets = 'buckets',
 	bucketAdLibPieces = 'bucketAdLibPieces',
 	bucketAdLibActions = 'bucketAdLibActions',
+	expectedPackages = 'expectedPackages',
+	expectedPackageWorkStatuses = 'expectedPackageWorkStatuses',
 	// custom publications:
 	mappingsForDevice = 'mappingsForDevice',
 	timelineForDevice = 'timelineForDevice',

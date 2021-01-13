@@ -20,7 +20,7 @@ export enum ExpectedPackageDBType {
 	// ADLIB_PIECE = 'adlib_piece',
 	ADLIB_ACTION = 'adlib_action',
 }
-export interface ExpectedPackageDBBase extends ExpectedPackage.Base {
+export interface ExpectedPackageDBBase extends Omit<ExpectedPackage.Base, '_id'> {
 	_id: ExpectedPackageId
 
 	/** The studio of the Rundown of the Piece this package belongs to */
@@ -52,6 +52,7 @@ export const ExpectedPackages: TransformedCollection<ExpectedPackageDB, Expected
 registerCollection('ExpectedPackages', ExpectedPackages)
 
 registerIndex(ExpectedPackages, {
+	studioId: 1,
 	rundownId: 1,
 	pieceId: 1,
 })

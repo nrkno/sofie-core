@@ -12,6 +12,7 @@ import { UserActivity } from './Status/UserActivity'
 import { EvaluationView } from './Status/Evaluations'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { PubSub } from '../../lib/api/pubsub'
+import { ExpectedPackagesStatus } from './Status/ExpectedPackages'
 
 class WelcomeToStatus extends React.Component {
 	render() {
@@ -40,6 +41,12 @@ const StatusMenu = withTranslation()(
 						className="status-menu__status-menu-item selectable clickable"
 						to={'/status/media'}>
 						<h3>{t('Media')}</h3>
+					</NavLink>
+					<NavLink
+						activeClassName="selectable-selected"
+						className="status-menu__status-menu-item selectable clickable"
+						to={'/status/expected-packages'}>
+						<h3>{t('Packages')}</h3>
 					</NavLink>
 					<NavLink
 						activeClassName="selectable-selected"
@@ -100,6 +107,7 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 								{/* <Route path='/status' exact component={WelcomeToStatus} /> */}
 								<Route path="/status/messages" component={ExternalMessages} />
 								<Route path="/status/media" component={MediaManagerStatus} />
+								<Route path="/status/expected-packages" component={ExpectedPackagesStatus} />
 								<Route path="/status/system" component={SystemStatus} />
 								<Route path="/status/userLog" component={UserActivity} />
 								<Route path="/status/evaluations" component={EvaluationView} />

@@ -451,3 +451,26 @@
 		}
 	}
 }
+
+.package-statuses {
+	.package {
+		box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.25);
+		background: #ffffff;
+		border-radius: 3px;
+
+		.package__header {
+			background: #eeeeee;
+			border-bottom: 1px solid grey;
+		}
+
+		.package-status {
+			margin-left: 1em;
+			margin-top: 0.5em;
+			margin-bottom: 0.5em;
+			padding: 0.5em;
+
+			border: 1px solid #333333;
+			border-radius: 5px;
+		}
+	}
+}

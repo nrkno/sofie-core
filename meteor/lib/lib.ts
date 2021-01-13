@@ -1374,6 +1374,11 @@ export function protectString<T extends ProtectedString<any>>(str: string | unde
 export function protectStringArray<T extends ProtectedString<any>>(arr: string[]): T[] {
 	return (arr as any) as T[]
 }
+export function protectStringObject<O extends object, Props extends keyof O>(
+	obj: O
+): ProtectedStringProperties<O, Props> {
+	return (obj as any) as ProtectedStringProperties<O, Props>
+}
 export function unprotectString(protectedStr: ProtectedString<any>): string
 export function unprotectString(protectedStr: ProtectedString<any> | null): string | null
 export function unprotectString(protectedStr: ProtectedString<any> | undefined): string | undefined

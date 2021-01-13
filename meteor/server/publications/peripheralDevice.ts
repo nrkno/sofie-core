@@ -25,10 +25,10 @@ import {
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
 import { ExpectedPackageDB, ExpectedPackages, getRoutedExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import _, { map } from 'underscore'
-import { ExpectedPackage, PackageLocation } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackage, PackageLocation, PackageOrigin } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
-import { DBObj, literal, protectString, unprotectString } from '../../lib/lib'
+import { DBObj, literal, protectString, unprotectObject, unprotectString } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import deepExtend from 'deep-extend'
@@ -325,6 +325,11 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 											// @ts-expect-error this is somewhat of a hack, the location isn't defined in typings,
 											// but assumed given by the config manifest of the playout-device.
 											const location = deviceSettings.location as PackageLocation.Any
+
+											// TODO: this is a hack, this info should come from somewhere else:
+											// @ts-ignore
+											if (!location.type) location.type = PackageOrigin.OriginType.LOCAL_FOLDER
+
 											if (location) {
 												playoutLocation = location
 											}
@@ -335,7 +340,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 
 								if (playoutLocation) {
 									routedExpectedPackages.push({
-										expectedPackage: expectedPackage,
+										expectedPackage: unprotectObject(expectedPackage),
 										playoutDeviceId: mapping.deviceId,
 										playoutLocation: playoutLocation,
 										origins: origins,

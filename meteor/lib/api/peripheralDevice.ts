@@ -3,7 +3,7 @@ import { getCurrentTime, getRandomId } from '../lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 import { DeviceConfigManifest } from './deviceConfig'
-import { TSR } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackageStatusAPI, TSR } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PeripheralDeviceId, PeripheralDevice } from '../collections/PeripheralDevices'
 import { PieceInstanceId } from '../collections/PieceInstances'
@@ -12,6 +12,8 @@ import { MediaObject } from '../collections/MediaObjects'
 import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../collections/MediaWorkFlowSteps'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { TimelineHash } from '../collections/Timeline'
+import { ExpectedPackageId } from '../collections/ExpectedPackages'
+import { ExpectedPackageWorkStatusId } from '../collections/ExpectedPackageStatuses'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
 
@@ -269,6 +271,25 @@ export interface NewPeripheralDeviceAPI {
 		obj: MediaWorkFlowStep | null
 	): Promise<void>
 
+	insertExpectedPackageWorkStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		packageStatusId: ExpectedPackageWorkStatusId,
+		packageStatus: ExpectedPackageStatusAPI.PackageStatus
+	): Promise<void>
+	updateExpectedPackageWorkStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		packageStatusId: ExpectedPackageWorkStatusId,
+		packageStatus: Partial<ExpectedPackageStatusAPI.PackageStatus>
+	): Promise<boolean>
+	removeExpectedPackageWorkStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		packageStatusId: ExpectedPackageWorkStatusId
+	): Promise<void>
+	removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
+
 	determineDiffTime(): Promise<DiffTimeResult>
 	getTimeDiff(): Promise<TimeDiff>
 	getTime(): Promise<number>
@@ -343,6 +364,11 @@ export enum PeripheralDeviceAPIMethods {
 	'updateMediaWorkFlow' = 'peripheralDevice.mediaManager.updateMediaWorkFlow',
 	'getMediaWorkFlowStepRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowStepRevisions',
 	'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep',
+
+	'insertExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.insertExpectedPackageWorkStatus',
+	'updateExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.updateExpectedPackageWorkStatus',
+	'removeExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.removeExpectedPackageWorkStatus',
+	'removeAllExpectedPackageWorkStatusOfDevice' = 'peripheralDevice.packageManager.removeAllExpectedPackageWorkStatusOfDevice',
 
 	'requestUserAuthToken' = 'peripheralDevice.spreadsheet.requestUserAuthToken',
 	'storeAccessToken' = 'peripheralDevice.spreadsheet.storeAccessToken',

@@ -11,6 +11,8 @@ export namespace ExpectedPackage {
 	}
 
 	export interface Base {
+		/** Unique id of the expectedPackage */
+		_id: string
 		/** Reference to which timeline-layer the Package is going to be used in.
 		 * (Used to route the package to the right playout-device)
 		 */
@@ -192,5 +194,34 @@ export namespace PackageLocation {
 
 	export interface CorePackageCollection {
 		type: PackageOrigin.OriginType.CORE_PACKAGE_INFO
+	}
+}
+
+// todo: should this be moved into core-integration?
+export namespace ExpectedPackageStatusAPI {
+	export interface WorkStatus extends WorkBaseInfo, WorkStatusInfo {}
+	export interface WorkBaseInfo {
+		/** Which package the PackageStatus belongs to */
+		packageId: string
+
+		/** Short Display label */
+		label: string
+		/** Longer expanation on what the Expectation does */
+		description: string
+		/** Used in status GUI to order the Expecations within the same packageId. */
+		displayRank?: number
+		/** If the expectation is required to be fullfilled for playout */
+		requiredForPlayout?: boolean
+	}
+	export interface WorkStatusInfo {
+		/** Short description on what the current status is. Example "working", "fulfilled" */
+		status: string
+		/** Longer reason as to why the status is what it is */
+		statusReason: string
+
+		/** Progress, 0-1 */
+		progress?: number
+		/** Calculated time left of this step */
+		expectedLeft?: number
 	}
 }
