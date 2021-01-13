@@ -40,6 +40,7 @@ import {
 	BlueprintResultOrderedRundowns,
 	ExtendedIngestRundown,
 	BlueprintResultRundownPlaylist,
+	IStudioUserContext,
 } from '@sofie-automation/blueprints-integration'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
@@ -74,9 +75,10 @@ import { updateRundownsInPlaylist } from './ingest/rundownInput'
 import { Mongo } from 'meteor/mongo'
 import { getPlaylistIdFromExternalId, removeEmptyPlaylists } from './rundownPlaylist'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
+import { StudioUserContext } from './blueprints/context'
 
 export function selectShowStyleVariant(
-	context: IStudioUserContext,
+	context: StudioUserContext,
 	ingestRundown: ExtendedIngestRundown
 ): { variant: ShowStyleVariant; base: ShowStyleBase } | null {
 	const studio = context.getStudio()
@@ -200,7 +202,17 @@ export function produceRundownPlaylistRanks(
 	const { rundowns } = getAllRundownsInPlaylist(existingPlaylist._id, existingPlaylist.externalId)
 
 	const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
-		? studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(rundowns))
+		? studioBlueprint.blueprint.getRundownPlaylistInfo(
+				new StudioUserContext(
+					{
+						name: 'produceRundownPlaylistRanks',
+						identifier: `studioId=${studio._id},playlistId=${unprotectString(playlistId)}`,
+						tempSendUserNotesIntoBlackHole: true,
+					},
+					studio
+				),
+				unprotectObjectArray(rundowns)
+		  )
 		: null
 
 	if (playlistInfo) {
@@ -217,10 +229,10 @@ export function produceRundownPlaylistRanks(
  * This function is (/can be) run before the playlist has been created.
  */
 export function produceRundownPlaylistInfoFromRundown(
+	studio: Studio,
 	currentRundown: DBRundown,
 	peripheralDevice: PeripheralDevice | undefined
 ): RundownPlaylistAndOrder {
-	const studio = context.getStudio()
 	const studioBlueprint = loadStudioBlueprint(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
@@ -256,7 +268,19 @@ export function produceRundownPlaylistInfoFromRundown(
 			const rundowns = getAllRundownsInPlaylist2(playlistId, playlistExternalId)
 
 			const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
-				? studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(rundowns))
+				? studioBlueprint.blueprint.getRundownPlaylistInfo(
+						new StudioUserContext(
+							{
+								name: 'produceRundownPlaylistInfoFromRundown',
+								identifier: `studioId=${studio._id},playlistId=${unprotectString(
+									playlistId
+								)},rundownId=${currentRundown._id}`,
+								tempSendUserNotesIntoBlackHole: true,
+							},
+							studio
+						),
+						unprotectObjectArray(rundowns)
+				  )
 				: null
 
 			if (playlistInfo) {

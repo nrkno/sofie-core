@@ -640,7 +640,7 @@ function updateRundownFromIngestData(
 		}
 	}
 
-	const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(dbRundownData, peripheralDevice)
+	const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(studio, dbRundownData, peripheralDevice)
 	dbRundownData.playlistId = rundownPlaylistInfo.rundownPlaylist._id
 
 	// Save rundown into database:

@@ -1,5 +1,5 @@
 import { TranslationsBundles, TranslationsBundleId } from '../../lib/collections/TranslationsBundles'
-import { TranslationsBundle, TranslationsBundleType } from 'tv-automation-sofie-blueprints-integration'
+import { TranslationsBundle, TranslationsBundleType } from '@sofie-automation/blueprints-integration'
 import { getRandomId, unprotectString } from '../../lib/lib'
 import { logger } from '../logging'
 import { BlueprintId } from '../../lib/collections/Blueprints'
