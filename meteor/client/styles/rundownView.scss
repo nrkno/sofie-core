@@ -2272,6 +2272,8 @@ body.no-overflow {
 	border: 1px black solid;
 	max-width: 26em;
 
+	--popdown: 2em;
+
 	&.segment-timeline__mini-inspector--sub-inspector {
 		transform: none;
 		bottom: 100%;
@@ -2346,7 +2348,7 @@ body.no-overflow {
 	}
 
 	&.segment-timeline__mini-inspector--pop-down {
-		transform: translate(-50%, 2em);
+		transform: translate(-50%, var(--popdown));
 	}
 
 	&.segment-timeline__mini-inspector--graphics {
