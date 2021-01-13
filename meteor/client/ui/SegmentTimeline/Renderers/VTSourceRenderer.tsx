@@ -131,7 +131,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		newState: Partial<IState>,
 		itemElement: HTMLElement | null
 	): Partial<IState> {
-		const { relative: relativeRendering, isLiveLine, outputLayer } = props
+		const { relative: relativeRendering, isLiveLine, outputLayer, livePosition } = props
 		if (
 			this.countdownContainer &&
 			!this.state.sourceEndCountdownAppendage &&
@@ -140,7 +140,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			!outputLayer.collapsed &&
 			itemElement
 		) {
-			//  && (this.props.livePosition || 0) > 0
 			const liveLine = itemElement.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.querySelector(
 				'.segment-timeline__liveline'
 			)
@@ -165,7 +164,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			super.componentDidMount()
 		}
 
-		const { itemElement, relative: relativeRendering } = this.props
+		const { itemElement } = this.props
 
 		let newState: Partial<IState> = {}
 
@@ -445,6 +444,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			isLiveLine &&
 			this.countdownContainer &&
 			livePositionInPart >= (uiPiece.renderedInPoint || 0) &&
+			livePositionInPart < (uiPiece.renderedInPoint || 0) + (uiPiece.renderedDuration || Number.POSITIVE_INFINITY) &&
 			vtContent &&
 			vtContent.sourceDuration !== undefined &&
 			((part.instance.part.autoNext &&
