@@ -494,6 +494,8 @@ body.no-overflow {
 	-moz-box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
 	box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
 
+	--segment-layer-height: #{$segment-layer-height};
+
 	// padding has to be the same on both of these elements so that the layers and their controls line up
 	.segment-timeline__output-layers,
 	.segment-timeline__timeline {
@@ -1162,8 +1164,6 @@ body.no-overflow {
 
 			--invalid-reason-color-opaque: rgba(0, 0, 0, 1);
 			--invalid-reason-color-transparent: rgba(0, 0, 0, 0);
-
-			--segment-layer-height: #{$segment-layer-height};
 
 			* {
 				backface-visibility: hidden;
