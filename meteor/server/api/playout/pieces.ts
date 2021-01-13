@@ -39,7 +39,7 @@ import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
-import { createPieceGroupAndCap, PieceGroupMetadata } from '../../../lib/rundown/pieces'
+import { createPieceGroupAndCap, PieceGroupMetadata, PieceTimelineMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 
@@ -244,11 +244,7 @@ export function getResolvedPiecesFromFullTimeline(
 ): { pieces: ResolvedPieceInstance[]; time: number } {
 	const span = profiler.startSpan('getResolvedPiecesFromFullTimeline')
 	const objs = clone(
-		allObjs.filter(
-			(o) =>
-				o.isGroup &&
-				((o as any).isPartGroup || (o.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
-		)
+		allObjs.filter((o) => (o.metaData as Partial<PieceTimelineMetadata> | undefined)?.isPieceTimeline)
 	)
 
 	const now = getCurrentTime()
