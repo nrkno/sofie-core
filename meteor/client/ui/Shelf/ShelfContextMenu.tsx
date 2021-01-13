@@ -79,8 +79,8 @@ export default function ShelfContextMenu() {
 		adLib: T
 		onToggle: (adLib: T, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => void
 	}) {
-		return isActionItem(item.adLib) ? (
-			getActionItem(item.adLib)
+		if (isActionItem(item.adLib)) {
+			const triggerModes = getActionItem(item.adLib)
 				?.triggerModes?.sort(
 					(a, b) => a.display._rank - b.display._rank || a.display.label.localeCompare(b.display.label)
 				)
@@ -93,35 +93,40 @@ export default function ShelfContextMenu() {
 						}}>
 						{mode.display.label}
 					</MenuItem>
-				)) || (
-				<MenuItem
-					onClick={(e) => {
-						e.persist()
-						item.onToggle(item.adLib, false, e)
-					}}>
-					{t('Execute')}
-				</MenuItem>
-			)
-		) : (
-			<>
-				<MenuItem
-					onClick={(e) => {
-						e.persist()
-						item.onToggle(item.adLib, false, e)
-					}}>
-					{t('Start this AdLib')}
-				</MenuItem>
-				{item.adLib.sourceLayer && item.adLib.sourceLayer?.isQueueable && (
+				))
+			return (
+				(triggerModes !== undefined && triggerModes.length > 0 && triggerModes) || (
 					<MenuItem
 						onClick={(e) => {
 							e.persist()
-							item.onToggle(item.adLib, true, e)
+							item.onToggle(item.adLib, false, e)
 						}}>
-						{t('Queue this AdLib')}
+						{t('Execute')}
 					</MenuItem>
-				)}
-			</>
-		)
+				)
+			)
+		} else {
+			return (
+				<>
+					<MenuItem
+						onClick={(e) => {
+							e.persist()
+							item.onToggle(item.adLib, false, e)
+						}}>
+						{t('Start this AdLib')}
+					</MenuItem>
+					{item.adLib.sourceLayer && item.adLib.sourceLayer?.isQueueable && (
+						<MenuItem
+							onClick={(e) => {
+								e.persist()
+								item.onToggle(item.adLib, true, e)
+							}}>
+							{t('Queue this AdLib')}
+						</MenuItem>
+					)}
+				</>
+			)
+		}
 	}
 
 	return (
