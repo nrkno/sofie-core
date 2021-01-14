@@ -74,7 +74,7 @@ export function removeOrganization(context: MethodContext, organizationId: Organ
 	users.forEach((user) => {
 		resetCredentials({ userId: user._id })
 	})
-	Organizations.remove({ organizationId })
+	Organizations.remove(organizationId)
 }
 
 class ServerOrganizationAPI extends MethodContextAPI implements NewOrganizationAPI {
