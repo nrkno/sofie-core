@@ -51,7 +51,7 @@ import { CacheForRundownPlaylist, CacheForStudioBase } from '../../DatabaseCache
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getExpectedLatency } from '../../../lib/collections/PeripheralDevices'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
-import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
+import { createPieceGroupAndCap, PieceTimelineMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
@@ -725,6 +725,9 @@ function createPartGroup(
 		isGroup: true,
 		isPartGroup: true,
 		partInstanceId: partInstance._id,
+		metaData: literal<PieceTimelineMetadata>({
+			isPieceTimeline: true,
+		}),
 	})
 
 	return partGrp

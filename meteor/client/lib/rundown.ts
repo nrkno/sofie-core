@@ -495,6 +495,7 @@ export namespace RundownUtils {
 					pieceGroup.metaData = literal<PieceGroupMetadataExt>({
 						id: piece.piece._id,
 						pieceId: piece._id,
+						isPieceTimeline: true,
 					})
 					partTimeline.push(pieceGroup)
 					partTimeline.push(...capObjs)
