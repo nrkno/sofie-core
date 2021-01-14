@@ -96,10 +96,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			const itemDuration = this.getItemDuration(true)
 			if (prevProps === null || itemElement !== prevProps.itemElement) {
 				if (itemDuration === Number.POSITIVE_INFINITY) {
-					itemElement.parentNode &&
-						itemElement.parentNode.parentNode &&
-						itemElement.parentNode.parentNode.parentNode &&
-						itemElement.parentNode.parentNode.parentNode.appendChild(this.rightLabelContainer)
+					itemElement.parentElement?.parentElement?.parentElement?.appendChild(this.rightLabelContainer)
 
 					newState.rightLabelIsAppendage = true
 				} else {
@@ -107,12 +104,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					itemElement.appendChild(this.rightLabelContainer)
 					newState.rightLabelIsAppendage = false
 				}
-			} else if (prevProps && prevProps.partDuration !== props.partDuration) {
+			} else if (prevProps?.partDuration !== props.partDuration) {
 				if (itemDuration === Number.POSITIVE_INFINITY && this.state.rightLabelIsAppendage !== true) {
-					itemElement.parentNode &&
-						itemElement.parentNode.parentNode &&
-						itemElement.parentNode.parentNode.parentNode &&
-						itemElement.parentNode.parentNode.parentNode.appendChild(this.rightLabelContainer)
+					itemElement.parentElement?.parentElement?.parentElement?.appendChild(this.rightLabelContainer)
 
 					newState.rightLabelIsAppendage = true
 				} else if (itemDuration !== Number.POSITIVE_INFINITY && this.state.rightLabelIsAppendage === true) {
@@ -462,7 +456,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			if (counter > 0) {
 				countdown = (
 					<div
-						className="segment-timeline__liveline__apendage segment-timeline__liveline__apendage--piece-countdown"
+						className="segment-timeline__liveline__appendage segment-timeline__liveline__appendage--piece-countdown"
 						style={{
 							top: `calc(${this.props.layerIndex} * var(--segment-layer-height))`,
 						}}>

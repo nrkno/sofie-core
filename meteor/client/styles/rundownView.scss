@@ -1116,12 +1116,12 @@ body.no-overflow {
 			}
 		}
 
-		.segment-timeline__liveline__apendage {
+		.segment-timeline__liveline__appendage {
 			position: absolute;
 			margin-left: 5px;
 			margin-top: 0.1em;
 
-			&.segment-timeline__liveline__apendage--piece-countdown {
+			&.segment-timeline__liveline__appendage--piece-countdown {
 				color: $liveline-timecode-color;
 				font-weight: 500;
 				text-shadow: -1px -1px 1px #000, 1px -1px 1px #000, -1px 1px 1px #000, 1px 1px 1px #000, 2px 2px 5px #000;
