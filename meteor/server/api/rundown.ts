@@ -457,7 +457,7 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 	saveIntoCache<Piece, Piece>(
 		cache.Pieces,
 		{
-			rundownId: rundownId,
+			startRundownId: rundownId,
 			startPartId: { $in: _.map(removedParts, (p) => p._id) },
 		},
 		[],
