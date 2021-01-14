@@ -100,6 +100,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							layout={rundownLayout}
 							playlist={props.playlist}
 							visible={true}
+							showStyleBase={props.showStyleBase}
 						/>
 					) : RundownLayoutsAPI.isPieceCountdown(panel) ? (
 						<PieceCountdownPanel
