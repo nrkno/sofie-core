@@ -368,8 +368,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	}
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
 	getSegmentsAndPartsSync(
-		segmentsQuery?: Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>,
-		partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>,
+		segmentsQuery?: Mongo.Query<DBSegment>,
+		partsQuery?: Mongo.Query<DBPart>,
 		segmentsOptions?: FindOptions<DBSegment>,
 		partsOptions?: FindOptions<DBPart>
 	): { segments: Segment[]; parts: Part[] } {

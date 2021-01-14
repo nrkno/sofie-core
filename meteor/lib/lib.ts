@@ -776,7 +776,7 @@ export function asyncCollectionFindFetch<
 }
 export function asyncCollectionFindOne<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | string
+	selector: MongoQuery<DBInterface> | DBInterface['_id']
 ): Promise<DocClass | undefined> {
 	return asyncCollectionFindFetch(collection, selector, { limit: 1 }).then((arr) => {
 		return arr[0]

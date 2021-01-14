@@ -103,7 +103,7 @@ meteorPublish(PubSub.pieces, function(selector: MongoQuery<Piece>, token?: strin
 			'content.timelineObjects': 0,
 		},
 	}
-	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+	if (RundownReadAccess.rundownContent({ rundownId: selector.startRundownId }, { userId: this.userId, token })) {
 		return Pieces.find(selector, modifier)
 	}
 	return null
@@ -118,7 +118,7 @@ meteorPublish(PubSub.piecesSimple, function(selector: MongoQuery<Piece>, token?:
 			'content.timelineObjects': 0,
 		},
 	}
-	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+	if (RundownReadAccess.rundownContent({ rundownId: selector.startRundownId }, { userId: this.userId, token })) {
 		return Pieces.find(selector, modifier)
 	}
 	return null
