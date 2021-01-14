@@ -673,11 +673,12 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					// @ts-ignore deep-property
 					sort: { 'display._rank': 1 },
 				}
-			)
-				.fetch()
-				.map((action) => {
-					return [action.partId, actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup)]
-				}),
+			).map((action) => {
+				return [action.partId, actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup)] as [
+					PartId,
+					AdLibPieceUi
+				]
+			}),
 		'adLibActions',
 		rundownIds,
 		partIds
@@ -696,19 +697,26 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 	})
 
 	if (liveSegment) {
-		liveSegment.pieces.forEach((item) => {
-			let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
+		liveSegment.pieces = liveSegment.pieces.map((piece) => {
+			let sourceLayer = piece.sourceLayerId && sourceLayerLookup[piece.sourceLayerId]
 
 			if (sourceLayer && sourceLayer.activateKeyboardHotkeys) {
 				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 				const sourceHotKeyUseLayerId =
-					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || item.sourceLayerId
+					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || piece.sourceLayerId
 				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
-					item.hotkey = keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0]
+					// clone the AdLibPieceUi object, so that it doesn't affect any memoized autoruns that may have
+					// inserted pieces to this list
+					piece = {
+						...piece,
+						hotkey: keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0],
+					}
 					// add one to the usage hash table
 					sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
 				}
 			}
+
+			return piece
 		})
 	}
 
