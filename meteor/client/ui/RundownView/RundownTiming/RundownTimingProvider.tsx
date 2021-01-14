@@ -9,8 +9,8 @@ import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import {
 	PartInstance,
-	findPartInstanceOrWrapToTemporary,
 	wrapPartToTemporaryInstance,
+	findPartInstanceInMapOrWrapToTemporary,
 } from '../../../../lib/collections/PartInstances'
 import { Settings } from '../../../../lib/Settings'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
@@ -43,7 +43,7 @@ interface IRundownTimingProviderChildContext {
 interface IRundownTimingProviderState {}
 interface IRundownTimingProviderTrackedProps {
 	parts: Array<Part>
-	partInstancesMap: { [partId: string]: PartInstance | undefined }
+	partInstancesMap: Map<PartId, PartInstance>
 }
 
 /**
@@ -58,10 +58,43 @@ export const RundownTimingProvider = withTracker<
 	IRundownTimingProviderTrackedProps
 >((props) => {
 	let parts: Array<Part> = []
-	let partInstancesMap: { [partId: string]: PartInstance | undefined } = {}
+	const partInstancesMap = new Map<PartId, PartInstance>()
 	if (props.playlist) {
-		parts = props.playlist.getAllOrderedParts()
-		partInstancesMap = props.playlist.getActivePartInstancesMap()
+		const { parts: incomingParts } = props.playlist.getSegmentsAndPartsSync()
+		parts = incomingParts
+		const partInstances = props.playlist.getActivePartInstances()
+
+		partInstances.forEach((partInstance) => {
+			partInstancesMap.set(partInstance.part._id, partInstance)
+
+			// if the part is orphaned, we need to inject it's part into the incoming parts in the correct position
+			if (partInstance.orphaned) {
+				let foundSegment = false
+				let insertBefore: number | null = null
+				for (let i = 0; i < parts.length; i++) {
+					if (parts[i].segmentId === partInstance.segmentId) {
+						// mark that we have found parts from the segment we're looking for
+						foundSegment = true
+
+						if (parts[i]._rank > partInstance.part._rank) {
+							// we have found a part with a rank greater than the rank of the orphaned PartInstance
+							insertBefore = i
+							break
+						}
+					} else if (foundSegment && parts[i].segmentId !== partInstance.segmentId) {
+						// we have found parts from the segment we're looking for, but none of them had a rank
+						// greater than the rank of the orphaned PartInstance. Lets insert the part before the first
+						// part of the next segment
+						insertBefore = i
+						break
+					}
+				}
+
+				if (insertBefore !== null) {
+					parts.splice(insertBefore, 0, partInstance.part)
+				}
+			}
+		})
 	}
 	return {
 		parts,
@@ -85,34 +118,18 @@ export const RundownTimingProvider = withTracker<
 		refreshTimerInterval: number
 		refreshDecimator: number
 
-		private temporaryPartInstances: {
-			[key: string]: PartInstance
-		} = {}
+		private temporaryPartInstances: Map<PartId, PartInstance> = new Map<PartId, PartInstance>()
 
 		private linearParts: Array<[PartId, number | null]> = []
 		// look at the comments on RundownTimingContext to understand what these do
-		private partDurations: {
-			[key: string]: number
-		} = {}
-		private partExpectedDurations: {
-			[key: string]: number
-		} = {}
-		private partPlayed: {
-			[key: string]: number
-		} = {}
-		private partStartsAt: {
-			[key: string]: number
-		} = {}
-		private partDisplayStartsAt: {
-			[key: string]: number
-		} = {}
-		private partDisplayDurations: {
-			[key: string]: number
-		} = {}
-		private partDisplayDurationsNoPlayback: {
-			[key: string]: number
-		} = {}
-		private displayDurationGroups: _.Dictionary<number> = {}
+		private partDurations: Record<string, number> = {}
+		private partExpectedDurations: Record<string, number> = {}
+		private partPlayed: Record<string, number> = {}
+		private partStartsAt: Record<string, number> = {}
+		private partDisplayStartsAt: Record<string, number> = {}
+		private partDisplayDurations: Record<string, number> = {}
+		private partDisplayDurationsNoPlayback: Record<string, number> = {}
+		private displayDurationGroups: Record<string, number> = {}
 
 		constructor(props: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
 			super(props)
@@ -156,7 +173,7 @@ export const RundownTimingProvider = withTracker<
 			}
 			if (prevProps.parts !== this.props.parts) {
 				// empty the temporary Part Instances cache
-				this.temporaryPartInstances = {}
+				this.temporaryPartInstances.clear()
 				this.onRefreshTimer()
 			}
 		}
@@ -187,19 +204,18 @@ export const RundownTimingProvider = withTracker<
 			window.dispatchEvent(event)
 		}
 
-		private getPartInstanceOrGetCachedTemp(
-			partInstancesMap: { [key: string]: PartInstance | undefined },
-			part: Part
-		): PartInstance {
-			const origPartId = unprotectString(part._id)
-			if (partInstancesMap[origPartId] !== undefined) {
-				return partInstancesMap[origPartId]!
+		private getPartInstanceOrGetCachedTemp(partInstancesMap: Map<PartId, PartInstance>, part: Part): PartInstance {
+			const origPartId = part._id
+			const partInstance = partInstancesMap.get(origPartId)
+			if (partInstance !== undefined) {
+				return partInstance
 			} else {
-				if (this.temporaryPartInstances[origPartId]) {
-					return this.temporaryPartInstances[origPartId]
+				const tempPartInstance = this.temporaryPartInstances.get(origPartId)
+				if (tempPartInstance !== undefined) {
+					return tempPartInstance
 				} else {
 					const partInstance = wrapPartToTemporaryInstance(part)
-					this.temporaryPartInstances[origPartId] = partInstance
+					this.temporaryPartInstances.set(origPartId, partInstance)
 					return partInstance
 				}
 			}
@@ -304,11 +320,13 @@ export const RundownTimingProvider = withTracker<
 						// because displayDurationGroups have no actual timing on them, we need to have a copy of the
 						// partDisplayDuration, but calculated as if it's not playing, so that the countdown can be
 						// calculated
-						partDisplayDurationNoPlayback =
+						const partDisplayDurationNoPlaybackBeforeFallback =
 							partInstance.timings?.duration ||
-							(memberOfDisplayDurationGroup ? displayDurationFromGroup : partInstance.part.expectedDuration) ||
-							this.props.defaultDuration ||
-							Settings.defaultDisplayDuration
+							(memberOfDisplayDurationGroup ? displayDurationFromGroup : partInstance.part.expectedDuration)
+						partDisplayDurationNoPlayback =
+							partDisplayDurationNoPlaybackBeforeFallback !== undefined
+								? partDisplayDurationNoPlaybackBeforeFallback
+								: this.props.defaultDuration || Settings.defaultDisplayDuration
 						partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
 						this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
 					} else {
@@ -454,7 +472,7 @@ export const RundownTimingProvider = withTracker<
 			let currentPartWillAutoNext = false
 			if (currentAIndex >= 0) {
 				const currentLivePart = parts[currentAIndex]
-				const currentLivePartInstance = findPartInstanceOrWrapToTemporary(partInstancesMap, currentLivePart)
+				const currentLivePartInstance = findPartInstanceInMapOrWrapToTemporary(partInstancesMap, currentLivePart)
 
 				const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
 

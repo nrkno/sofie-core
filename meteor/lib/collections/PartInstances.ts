@@ -16,7 +16,7 @@ import {
 	IBlueprintPartInstanceTimings,
 } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { DBPart, Part } from './Parts'
+import { DBPart, Part, PartId } from './Parts'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 import { registerIndex } from '../database'
@@ -118,6 +118,13 @@ export function wrapPartToTemporaryInstance(part: DBPart): PartInstance {
 		},
 		true
 	)
+}
+
+export function findPartInstanceInMapOrWrapToTemporary<T extends Partial<PartInstance>>(
+	partInstancesMap: Map<PartId, T>,
+	part: DBPart
+): T {
+	return partInstancesMap.get(part._id) || (wrapPartToTemporaryInstance(part) as T)
 }
 
 export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance>>(
