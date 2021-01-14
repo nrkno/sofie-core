@@ -56,6 +56,7 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
 import { getPartFirstObjectId, getPartGroupId, getPieceGroupId } from '../../../lib/rundown/timeline'
+import { TimelineObjClassesCore } from '@sofie-automation/blueprints-integration'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -419,7 +420,13 @@ function buildTimelineObjsForRundown(
 			content: {
 				deviceType: TSR.DeviceType.ABSTRACT,
 			},
-			classes: [activePlaylist.rehearsal ? 'rundown_rehersal' : 'rundown_active'],
+			classes: [
+				activePlaylist.rehearsal
+					? TimelineObjClassesCore.RundownRehearsal
+					: TimelineObjClassesCore.RundownActive,
+				!activePlaylist.currentPartInstanceId ? TimelineObjClassesCore.BeforeFirstPart : undefined,
+				!activePlaylist.nextPartInstanceId ? TimelineObjClassesCore.NoNextPart : undefined,
+			].filter((v): v is TimelineObjClassesCore => v !== undefined),
 			partInstanceId: null,
 		})
 	)
