@@ -176,6 +176,8 @@ function checkDatabaseVersions() {
 						}
 					})
 				})
+
+				checkBlueprintCompability(blueprint)
 			}
 		})
 		_.each(lastDatabaseVersionBlueprintIds, (_val, id: string) => {
@@ -275,6 +277,58 @@ function checkDatabaseVersion(
 			statusCode: StatusCode.FATAL,
 			messages: [`Expected ${theyName} version missing (when comparing with ${meName})`],
 		}
+	}
+}
+
+function checkBlueprintCompability(blueprint: Blueprint) {
+	if (!PackageInfo.dependencies) throw new Meteor.Error(500, `Package.dependencies not set`)
+
+	let systemStatusId = 'blueprintCompability_' + blueprint._id
+
+	let integrationStatus = checkDatabaseVersion(
+		parseVersion(blueprint.integrationVersion || '0.0.0'),
+		parseRange(PackageInfo.dependencies['tv-automation-sofie-blueprints-integration']),
+		'Blueprint has to be updated',
+		'blueprint.integrationVersion',
+		'core.tv-automation-sofie-blueprints-integration'
+	)
+	let tsrStatus = checkDatabaseVersion(
+		parseVersion(blueprint.TSRVersion || '0.0.0'),
+		parseRange(BlueprintIntegrationPackageInfo.dependencies['timeline-state-resolver-types']),
+		'Blueprint has to be updated',
+		'blueprint.TSRVersion',
+		'core.timeline-state-resolver-types'
+	)
+	let coreStatus:
+		| {
+				statusCode: StatusCode
+				messages: string[]
+		  }
+		| undefined = undefined
+	if (blueprint.minimumCoreVersion) {
+		coreStatus = checkDatabaseVersion(
+			parseVersion(CURRENT_SYSTEM_VERSION),
+			parseRange(blueprint.minimumCoreVersion),
+			'Blueprint does not support this version of core',
+			'blueprint.minimumCoreVersion',
+			'core system'
+		)
+	}
+
+	if (coreStatus && coreStatus.statusCode >= StatusCode.WARNING_MAJOR) {
+		coreStatus.messages[0] = 'Core version: ' + coreStatus.messages[0]
+		setSystemStatus(systemStatusId, coreStatus)
+	} else if (tsrStatus && tsrStatus.statusCode >= StatusCode.WARNING_MAJOR) {
+		tsrStatus.messages[0] = 'Core - TSR library version: ' + tsrStatus.messages[0]
+		setSystemStatus(systemStatusId, tsrStatus)
+	} else if (integrationStatus.statusCode >= StatusCode.WARNING_MAJOR) {
+		integrationStatus.messages[0] = 'Integration version: ' + integrationStatus.messages[0]
+		setSystemStatus(systemStatusId, integrationStatus)
+	} else {
+		setSystemStatus(systemStatusId, {
+			statusCode: StatusCode.GOOD,
+			messages: ['Versions match'],
+		})
 	}
 }
 
