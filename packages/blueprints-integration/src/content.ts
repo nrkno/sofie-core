@@ -20,13 +20,6 @@ export enum SourceLayerType {
 	LOCAL = 15,
 }
 
-// export interface MetadataElement {
-// 	_id: string
-// 	key: string
-// 	value: string
-// 	source: string
-// }
-
 export interface BaseContent {
 	timelineObjects: TimelineObjectCoreExt[]
 	editable?: BaseEditableParameters
@@ -36,9 +29,7 @@ export interface BaseContent {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface BaseEditableParameters {
-	// [key: string]: number | string | boolean | object | undefined | null
-}
+export interface BaseEditableParameters {}
 
 export interface VTEditableParameters extends BaseEditableParameters {
 	editorialStart: number
@@ -50,46 +41,34 @@ export type SomeContent =
 	| CameraContent
 	| RemoteContent
 	| ScriptContent
-	// | GraphicsContent
 	| NoraContent
 	| SplitsContent
-	// | AudioContent
-	// | LowerThirdContent
 	| LiveSpeakContent
 	| TransitionContent
 
 export interface VTContent extends BaseContent {
 	fileName: string
 	path: string
-	// proxyPath?: string
-	// thumbnail?: string
 	loop?: boolean
-	// sourceDuration?: number
-	// objectDuration?: number
-	// metadata?: MetadataElement[]
 	mediaFlowIds?: string[]
 	seek?: number
 	editable?: VTEditableParameters
-	// ignoreMediaObjectStatus?: boolean
 }
 
 export interface CameraContent extends BaseContent {
 	studioLabel: string
 	switcherInput: number | string
-	// thumbnail?: string
 }
 
 export interface RemoteContent extends BaseContent {
 	studioLabel: string
 	switcherInput: number | string
-	// thumbnail?: string
 }
 
 export interface ScriptContent extends BaseContent {
 	firstWords: string
 	lastWords: string
 	fullScript?: string
-	// sourceDuration?: number
 	lastModified?: Time | null
 }
 
@@ -151,15 +130,8 @@ export interface SplitsContent extends BaseContent {
 export interface AudioContent extends BaseContent {
 	fileName: string
 	path: string
-	// proxyPath?: string
 	loop?: boolean
-	// sourceDuration: number
-	// metadata?: MetadataElement[]
 }
-
-// export interface CameraMovementContent extends BaseContent {
-// 	cameraConfiguration: any
-// }
 
 // export type LowerThirdContent = GraphicsContent
 export type LiveSpeakContent = VTContent
