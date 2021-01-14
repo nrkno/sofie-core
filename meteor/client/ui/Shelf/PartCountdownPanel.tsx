@@ -19,14 +19,17 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownTiming, TimingEvent, RundownTimingProvider } from '../RundownView/RundownTiming'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 
 interface IPartCountdownPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPartCountdown
 	playlist: RundownPlaylist
+	showStyleBase: ShowStyleBase
 }
 
 interface IPartCountdownPanelTrackedProps extends IDashboardPanelTrackedProps {
@@ -108,10 +111,26 @@ export class PartCountdownPanelInner extends MeteorReactComponent<
 export const PartCountdownPanel = withTracker<IPartCountdownPanelProps, IState, IPartCountdownPanelTrackedProps>(
 	(props: IPartCountdownPanelProps & IPartCountdownPanelTrackedProps) => {
 		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId, false)
-		const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
-			props.playlist.currentPartInstanceId
+		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
+			(
+				currentPartInstanceId: PartInstanceId | null,
+				nextPartInstanceId: PartInstanceId | null,
+				showStyleBase: ShowStyleBase
+			) => {
+				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(currentPartInstanceId)
+				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(showStyleBase, nextPartInstanceId)
+				return {
+					unfinishedAdLibIds,
+					unfinishedTags,
+					nextAdLibIds,
+					nextTags,
+				}
+			},
+			'unfinishedAndNextAdLibsAndTags',
+			props.playlist.currentPartInstanceId,
+			props.playlist.nextPartInstanceId,
+			props.showStyleBase
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
 		const livePart = props.playlist.currentPartInstanceId
 			? PartInstances.findOne(props.playlist.currentPartInstanceId)
 			: undefined
