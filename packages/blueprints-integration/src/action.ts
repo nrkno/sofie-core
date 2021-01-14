@@ -29,6 +29,8 @@ export interface IBlueprintActionManifestDisplay {
 	currentPieceTags?: string[]
 	/** Piece tags to use to determine if action is set as next */
 	nextPieceTags?: string[]
+	/** Can be used by the UI to filter out identical AdLib Actions repeated across multiple segments */
+	uniquenessId?: string
 }
 
 export interface IBlueprintActionManifestDisplayContent extends IBlueprintActionManifestDisplay {

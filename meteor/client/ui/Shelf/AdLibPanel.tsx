@@ -95,7 +95,8 @@ export function matchFilter(
 	showStyleBase: ShowStyleBase,
 	uiSegments: Array<AdlibSegmentUi>,
 	filter?: RundownLayoutFilterBase,
-	searchFilter?: string
+	searchFilter?: string,
+	uniquenessIds?: Set<string>
 ) {
 	if (!searchFilter && !filter) return true
 	const liveSegment = uiSegments.find((i) => i.isLive === true)
@@ -154,6 +155,16 @@ export function matchFilter(
 			}, true) === false
 		) {
 			return false
+		}
+		// Hide duplicates
+		if (filter.hideDuplicates && uniquenessIds) {
+			const uniquenessId = item.uniquenessId || unprotectString(item._id)
+			console.log(uniquenessId)
+			if (uniquenessIds.has(uniquenessId)) {
+				return false
+			} else {
+				uniquenessIds.add(uniquenessId)
+			}
 		}
 	}
 	if (searchFilter) {
@@ -236,7 +247,7 @@ const AdLibListView = withTranslation()(
 			}
 		}
 
-		renderRundownAdLibs() {
+		renderRundownAdLibs(uniquenessIds: Set<string>) {
 			const { t } = this.props
 
 			return (
@@ -249,7 +260,8 @@ const AdLibListView = withTranslation()(
 									this.props.showStyleBase,
 									this.props.uiSegments,
 									this.props.filter,
-									this.props.searchFilter
+									this.props.searchFilter,
+									uniquenessIds
 								)
 							)
 							.map((adLibPiece: AdLibPieceUi) => (
@@ -273,7 +285,7 @@ const AdLibListView = withTranslation()(
 			)
 		}
 
-		renderSegments() {
+		renderSegments(uniquenessIds: Set<string>) {
 			return this.props.uiSegments
 				.filter((a) => (this.props.filter ? (this.props.filter.currentSegment ? a.isLive : true) : true))
 				.map((segment) => {
@@ -303,7 +315,8 @@ const AdLibListView = withTranslation()(
 											this.props.showStyleBase,
 											this.props.uiSegments,
 											this.props.filter,
-											this.props.searchFilter
+											this.props.searchFilter,
+											uniquenessIds
 										)
 									)
 									.map((adLibPiece: AdLibPieceUi) => (
@@ -334,6 +347,7 @@ const AdLibListView = withTranslation()(
 
 		render() {
 			const selected = this.props.selectedPiece
+			const uniquenessIds = new Set<string>()
 
 			return (
 				<div
@@ -344,8 +358,8 @@ const AdLibListView = withTranslation()(
 						id={'adlib-panel__list-view__table__' + Random.id()}
 						className="adlib-panel__list-view__list__table"
 						ref={this.setTableRef}>
-						{this.renderRundownAdLibs()}
-						{this.renderSegments()}
+						{this.renderRundownAdLibs(uniquenessIds)}
+						{this.renderSegments(uniquenessIds)}
 					</table>
 				</div>
 			)
@@ -441,6 +455,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 	adlibAction?: AdLibAction | RundownBaselineAdLibAction
 	contentMetaData?: any
 	message?: string | null
+	uniquenessId?: string
 }
 
 export interface AdlibSegmentUi extends DBSegment {
@@ -519,6 +534,7 @@ function actionToAdLibPieceUi(
 		tags: action.display.tags,
 		currentPieceTags: action.display.currentPieceTags,
 		nextPieceTags: action.display.nextPieceTags,
+		uniquenessId: action.display.uniquenessId,
 		lifespan: PieceLifespan.WithinPart, // value doesn't matter
 	})
 }

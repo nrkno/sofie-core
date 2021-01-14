@@ -92,6 +92,7 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	tags: string[] | undefined
 	displayStyle: PieceDisplayStyle
 	showThumbnailsInList: boolean
+	hideDuplicates: boolean
 	currentSegment: boolean
 	/**
 	 * true: include Rundown Baseline AdLib Pieces
