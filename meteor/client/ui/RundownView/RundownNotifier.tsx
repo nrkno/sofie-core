@@ -300,7 +300,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							'Devices',
 							getCurrentTime(),
 							true,
-							parent && parent.connected
+							parent && parent.connected && item.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MAJOR
 								? [
 										{
 											label: t('Restart'),
