@@ -90,7 +90,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 		_rundownVersionHash: '',
 		routeSets: {},
 		routeSetExclusivityGroups: {},
-		packageOrigins: {},
+		packageContainers: {},
 	}
 }
 

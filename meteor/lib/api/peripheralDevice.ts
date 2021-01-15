@@ -274,19 +274,19 @@ export interface NewPeripheralDeviceAPI {
 	insertExpectedPackageWorkStatus(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		packageStatusId: ExpectedPackageWorkStatusId,
-		packageStatus: ExpectedPackageStatusAPI.PackageStatus
+		workStatusId: ExpectedPackageWorkStatusId,
+		workStatus: ExpectedPackageStatusAPI.WorkStatus
 	): Promise<void>
 	updateExpectedPackageWorkStatus(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		packageStatusId: ExpectedPackageWorkStatusId,
-		packageStatus: Partial<ExpectedPackageStatusAPI.PackageStatus>
+		workStatusId: ExpectedPackageWorkStatusId,
+		workStatus: Partial<ExpectedPackageStatusAPI.WorkStatus>
 	): Promise<boolean>
 	removeExpectedPackageWorkStatus(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		packageStatusId: ExpectedPackageWorkStatusId
+		workStatusId: ExpectedPackageWorkStatusId
 	): Promise<void>
 	removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
 

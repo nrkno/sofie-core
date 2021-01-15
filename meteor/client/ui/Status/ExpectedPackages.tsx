@@ -113,7 +113,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 									Version: <pre>{JSON.stringify(p.package.version)}</pre>
 								</div>
 								<div>
-									Origins <pre>{JSON.stringify(p.package.origins)}</pre>
+									Sources <pre>{JSON.stringify(p.package.sources)}</pre>
 								</div>
 							</div>
 						) : (

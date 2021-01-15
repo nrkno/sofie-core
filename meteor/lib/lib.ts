@@ -21,7 +21,7 @@ import { BulkWriteOperation } from 'mongodb'
 const cloneOrg = require('fast-clone')
 
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
-
+/** Deep clones a value */
 export function clone<T>(o: ReadonlyDeep<T> | Readonly<T> | T): T {
 	// Use this instead of fast-clone directly, as this retains the type
 	return cloneOrg(o)

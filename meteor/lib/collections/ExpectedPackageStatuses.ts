@@ -8,7 +8,7 @@ import { PeripheralDeviceId } from './PeripheralDevices'
 
 export type ExpectedPackageWorkStatusId = ProtectedString<'ExpectedPackageStatusId'>
 
-export interface ExpectedPackageWorkStatus extends Omit<ExpectedPackageStatusAPI.PackageStatus, 'packageId'> {
+export interface ExpectedPackageWorkStatus extends Omit<ExpectedPackageStatusAPI.WorkStatus, 'packageId'> {
 	_id: ExpectedPackageWorkStatusId
 
 	packageId: ExpectedPackageDBBase['_id']

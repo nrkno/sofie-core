@@ -18,23 +18,23 @@ export namespace PackageManagerIntegration {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		packageStatusId: ExpectedPackageWorkStatusId,
-		packageStatus0: ExpectedPackageStatusAPI.PackageStatus
+		workStatusId: ExpectedPackageWorkStatusId,
+		workStatus0: ExpectedPackageStatusAPI.WorkStatus
 	): void {
-		const packageStatus = protectStringObject<ExpectedPackageStatusAPI.PackageStatus, 'packageId'>(packageStatus0)
+		const workStatus = protectStringObject<ExpectedPackageStatusAPI.WorkStatus, 'packageId'>(workStatus0)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 
-		check(packageStatus.packageId, String)
-		const expPackage = ExpectedPackages.findOne(packageStatus.packageId)
-		if (!expPackage) throw new Meteor.Error(404, `ExpectedPackage "${packageStatus.packageId}" not found`)
+		check(workStatus.packageId, String)
+		const expPackage = ExpectedPackages.findOne(workStatus.packageId)
+		if (!expPackage) throw new Meteor.Error(404, `ExpectedPackage "${workStatus.packageId}" not found`)
 
 		const doc: ExpectedPackageWorkStatus = {
-			...packageStatus,
+			...workStatus,
 
-			_id: packageStatusId,
+			_id: workStatusId,
 			studioId: expPackage.studioId,
 			rundownId: expPackage.rundownId,
 			pieceId: expPackage.pieceId,
@@ -42,34 +42,32 @@ export namespace PackageManagerIntegration {
 
 			modified: getCurrentTime(),
 		}
-		ExpectedPackageWorkStatuses.upsert(packageStatusId, { $set: doc })
+		ExpectedPackageWorkStatuses.upsert(workStatusId, { $set: doc })
 	}
 	/**
-	 * Update ExpectedPackageStatus
+	 * Update ExpectedPackageWorkStatus
 	 * Returns true if update successful, false if the document to update isn't found (ie an insert should then be sent as well)
 	 */
 	export function updateExpectedPackageWorkStatus(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		packageStatusId: ExpectedPackageWorkStatusId,
-		packageStatus0: Partial<ExpectedPackageStatusAPI.PackageStatus>
+		workStatusId: ExpectedPackageWorkStatusId,
+		workStatus0: Partial<ExpectedPackageStatusAPI.WorkStatus>
 	): boolean {
-		const packageStatus = protectStringObject<Partial<ExpectedPackageStatusAPI.PackageStatus>, 'packageId'>(
-			packageStatus0
-		)
+		const workStatus = protectStringObject<Partial<ExpectedPackageStatusAPI.WorkStatus>, 'packageId'>(workStatus0)
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 
-		check(packageStatusId, String)
-		check(packageStatus, Object)
+		check(workStatusId, String)
+		check(workStatus, Object)
 
 		// Update progress only:
 
-		const updateCount = ExpectedPackageWorkStatuses.update(packageStatusId, {
+		const updateCount = ExpectedPackageWorkStatuses.update(workStatusId, {
 			$set: {
-				...packageStatus,
+				...workStatus,
 				modified: getCurrentTime(),
 			},
 		})
@@ -80,13 +78,13 @@ export namespace PackageManagerIntegration {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		packageStatusId: ExpectedPackageWorkStatusId
+		workStatusId: ExpectedPackageWorkStatusId
 	): void {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		check(packageStatusId, String)
+		check(workStatusId, String)
 
 		ExpectedPackageWorkStatuses.remove({
-			_id: packageStatusId,
+			_id: workStatusId,
 			deviceId: peripheralDevice._id,
 		})
 	}

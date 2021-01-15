@@ -20,15 +20,21 @@ import {
 	MappingsExt,
 	Studio,
 	StudioId,
+	StudioPackageContainer,
 	Studios,
 } from '../../lib/collections/Studios'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
 import { ExpectedPackageDB, ExpectedPackages, getRoutedExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import _, { map } from 'underscore'
-import { ExpectedPackage, PackageLocation, PackageOrigin } from '@sofie-automation/blueprints-integration'
+import {
+	ExpectedPackage,
+	PackageContainer,
+	Accessor,
+	PackageContainerOnPackage,
+} from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
-import { DBObj, literal, protectString, unprotectObject, unprotectString } from '../../lib/lib'
+import { clone, DBObj, literal, omit, protectString, unprotectObject, unprotectString } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import deepExtend from 'deep-extend'
@@ -133,7 +139,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					Studios.find(studioId, {
 						fields: {
 							mappingsHash: 1, // is changed when routes are changed
-							packageOrigins: 1,
+							packageContainers: 1,
 						},
 					}).observe({
 						added: () => triggerUpdate({ studioId: studioId, invalidateStudio: true }),
@@ -296,22 +302,43 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 
 						if (!filterPlayoutDeviceIds || filterPlayoutDeviceIds.includes(mapping.deviceId)) {
 							for (const expectedPackage of mapping.expectedPackages) {
-								// Lookup Package Origin:
-								const origins = expectedPackage.origins.map((packageOrigin) => {
-									const lookedUpOrigin = context.studio?.packageOrigins[packageOrigin.originId]
-									if (
-										lookedUpOrigin &&
-										lookedUpOrigin.origin.type === packageOrigin.originMetadata.type
-									) {
-										return deepExtend(lookedUpOrigin.origin, packageOrigin.originMetadata)
-									} else {
-										return packageOrigin.originMetadata
-									}
-								})
+								// Lookup Package sources:
+								const combinedSources: PackageContainerOnPackage[] = []
 
-								// Lookup location:
-								let playoutLocation: PackageLocation.Any | undefined = undefined
+								for (const packageSource of expectedPackage.sources) {
+									const lookedUpSource = context.studio?.packageContainers[packageSource.containerId]
+									if (lookedUpSource) {
+										// We're going to combine the accessor attributes set on the Package with the ones defined on the source
+										const combinedSource: PackageContainerOnPackage = {
+											...omit(clone(lookedUpSource.container), 'accessors'),
+											accessors: {},
+										}
+
+										for (const [packageAccessorId, packageAccessor] of Object.entries(
+											packageSource.accessors
+										)) {
+											const sourceAccessor = lookedUpSource.container.accessors[
+												packageAccessorId
+											] as Accessor.Any | undefined
+
+											if (sourceAccessor && sourceAccessor.type === packageAccessor.type) {
+												combinedSource.accessors[packageAccessorId] = deepExtend(
+													sourceAccessor,
+													packageAccessor
+												)
+											} else {
+												combinedSource.accessors[packageAccessorId] = packageAccessor
+											}
+										}
+										combinedSources.push(combinedSource)
+									}
+								}
+
+								// Lookup Package targets:
+								const combinedTargets: PackageContainerOnPackage[] = []
+
 								for (const device of context.peripheralDevicesInStudio) {
+									// Look up any devices that are referenced in the mappings
 									if (
 										device.category === PeripheralDeviceAPI.DeviceCategory.PLAYOUT &&
 										device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
@@ -324,26 +351,30 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 										if (deviceSettings) {
 											// @ts-expect-error this is somewhat of a hack, the location isn't defined in typings,
 											// but assumed given by the config manifest of the playout-device.
-											const location = deviceSettings.location as PackageLocation.Any
+											const packageContainer = deviceSettings.packageContainer as {
+												containerId: string | undefined
+											}
 
-											// TODO: this is a hack, this info should come from somewhere else:
-											// @ts-ignore
-											if (!location.type) location.type = PackageOrigin.OriginType.LOCAL_FOLDER
-
-											if (location) {
-												playoutLocation = location
+											if (packageContainer.containerId) {
+												const lookedUpSource =
+													context.studio?.packageContainers[packageContainer.containerId]
+												if (lookedUpSource) {
+													// Todo: should the be any combination of properties here?
+													combinedTargets.push(
+														lookedUpSource.container as PackageContainerOnPackage
+													)
+												}
 											}
 										}
 									}
-									if (playoutLocation) break
 								}
 
-								if (playoutLocation) {
+								if (combinedSources.length && combinedTargets.length) {
 									routedExpectedPackages.push({
 										expectedPackage: unprotectObject(expectedPackage),
+										sources: combinedSources,
+										targets: combinedTargets,
 										playoutDeviceId: mapping.deviceId,
-										playoutLocation: playoutLocation,
-										origins: origins,
 									})
 								}
 							}
@@ -393,7 +424,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 
 interface ResultingExpectedPackage {
 	expectedPackage: ExpectedPackage.Base
-	origins: any[] // TODO
+	sources: PackageContainerOnPackage[]
+	targets: PackageContainerOnPackage[]
 	playoutDeviceId: PeripheralDeviceId
-	playoutLocation: any // todo
 }

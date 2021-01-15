@@ -7,7 +7,7 @@ import {
 	BlueprintMapping,
 	TSR,
 	LookaheadMode,
-	PackageOrigin,
+	PackageContainer,
 } from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
@@ -83,7 +83,7 @@ export interface DBStudio {
 
 	routeSetExclusivityGroups: StudioRouteSetExclusivityGroups
 
-	packageOrigins: StudioPackageOrigins
+	packageContainers: StudioPackageContainers
 }
 export interface StudioRouteSets {
 	[id: string]: StudioRouteSet
@@ -91,14 +91,13 @@ export interface StudioRouteSets {
 export interface StudioRouteSetExclusivityGroups {
 	[id: string]: StudioRouteSetExclusivityGroup
 }
-export interface StudioPackageOrigins {
-	[id: string]: StudioPackageOrigin
+export interface StudioPackageContainers {
+	[id: string]: StudioPackageContainer
 }
 
-export interface StudioPackageOrigin {
-	name: string
+export interface StudioPackageContainer {
 	disable?: boolean
-	origin: PackageOrigin.Any
+	container: PackageContainer
 }
 export interface StudioRouteSetExclusivityGroup {
 	name: string
@@ -235,7 +234,7 @@ export class Studio implements DBStudio {
 
 	public routeSets: StudioRouteSets
 	public routeSetExclusivityGroups: StudioRouteSetExclusivityGroups
-	public packageOrigins: StudioPackageOrigins
+	public packageContainers: StudioPackageContainers
 
 	constructor(document: DBStudio) {
 		for (let [key, value] of Object.entries(document)) {

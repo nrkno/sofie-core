@@ -14,7 +14,7 @@ import {
 	RouteMapping,
 	StudioRouteSetExclusivityGroup,
 	getActiveRoutes,
-	StudioPackageOrigin,
+	StudioPackageContainer,
 } from '../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -35,7 +35,8 @@ import {
 	BlueprintManifestType,
 	TSR,
 	ConfigManifestEntry,
-	PackageOrigin,
+	PackageContainer,
+	Accessor,
 } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
@@ -827,7 +828,7 @@ interface IStudioRoutingsProps {
 	studio: Studio
 }
 interface IStudioRoutingsState {
-	editedOrigins: Array<string>
+	editedItems: Array<string>
 }
 
 const StudioRoutings = withTranslation()(
@@ -836,26 +837,26 @@ const StudioRoutings = withTranslation()(
 			super(props)
 
 			this.state = {
-				editedOrigins: [],
+				editedItems: [],
 			}
 		}
 		isItemEdited = (routeSetId: string) => {
-			return this.state.editedOrigins.indexOf(routeSetId) >= 0
+			return this.state.editedItems.indexOf(routeSetId) >= 0
 		}
 		finishEditItem = (routeSetId: string) => {
-			let index = this.state.editedOrigins.indexOf(routeSetId)
+			let index = this.state.editedItems.indexOf(routeSetId)
 			if (index >= 0) {
-				this.state.editedOrigins.splice(index, 1)
+				this.state.editedItems.splice(index, 1)
 				this.setState({
-					editedOrigins: this.state.editedOrigins,
+					editedItems: this.state.editedItems,
 				})
 			}
 		}
 		editItem = (routeSetId: string) => {
-			if (this.state.editedOrigins.indexOf(routeSetId) < 0) {
-				this.state.editedOrigins.push(routeSetId)
+			if (this.state.editedItems.indexOf(routeSetId) < 0) {
+				this.state.editedItems.push(routeSetId)
 				this.setState({
-					editedOrigins: this.state.editedOrigins,
+					editedItems: this.state.editedItems,
 				})
 			} else {
 				this.finishEditItem(routeSetId)
@@ -1463,96 +1464,111 @@ const StudioRoutings = withTranslation()(
 		}
 	}
 )
+interface IStudioPackageManagerSettingsProps {
+	studio: Studio
+}
+interface IStudioPackageManagerSettingsState {
+	editedPackageContainer: Array<string>
+	editedAccessors: Array<string>
+}
+
 const StudioPackageManagerSettings = withTranslation()(
-	class StudioRoutings extends React.Component<Translated<IStudioRoutingsProps>, IStudioRoutingsState> {
-		constructor(props: Translated<IStudioRoutingsProps>) {
+	class StudioPackageManagerSettings extends React.Component<
+		Translated<IStudioPackageManagerSettingsProps>,
+		IStudioPackageManagerSettingsState
+	> {
+		constructor(props: Translated<IStudioPackageManagerSettingsProps>) {
 			super(props)
 
 			this.state = {
-				editedOrigins: [],
+				editedPackageContainer: [],
+				editedAccessors: [],
 			}
 		}
-		isItemEdited = (id: string) => {
-			return this.state.editedOrigins.indexOf(id) >= 0
+		isPackageContainerEdited = (containerId: string) => {
+			return this.state.editedPackageContainer.indexOf(containerId) >= 0
 		}
-		finishEditItem = (id: string) => {
-			let index = this.state.editedOrigins.indexOf(id)
+		finishEditPackageContainer = (containerId: string) => {
+			let index = this.state.editedPackageContainer.indexOf(containerId)
 			if (index >= 0) {
-				this.state.editedOrigins.splice(index, 1)
+				this.state.editedPackageContainer.splice(index, 1)
 				this.setState({
-					editedOrigins: this.state.editedOrigins,
+					editedPackageContainer: this.state.editedPackageContainer,
 				})
 			}
 		}
-		editItem = (id: string) => {
-			if (this.state.editedOrigins.indexOf(id) < 0) {
-				this.state.editedOrigins.push(id)
+		editPackageContainer = (containerId: string) => {
+			if (this.state.editedPackageContainer.indexOf(containerId) < 0) {
+				this.state.editedPackageContainer.push(containerId)
 				this.setState({
-					editedOrigins: this.state.editedOrigins,
+					editedPackageContainer: this.state.editedPackageContainer,
 				})
 			} else {
-				this.finishEditItem(id)
+				this.finishEditPackageContainer(containerId)
 			}
 		}
-		confirmRemove = (originId: string) => {
+		confirmRemovePackageContainer = (containerId: string) => {
 			const { t } = this.props
 			doModalDialog({
-				title: t('Remove this Package Origin?'),
+				title: t('Remove this Package Container?'),
 				yes: t('Remove'),
 				no: t('Cancel'),
 				onAccept: () => {
-					this.removeOrigin(originId)
+					this.removePackageContainer(containerId)
 				},
 				message: (
 					<React.Fragment>
-						<p>{t('Are you sure you want to remove the Package origin "{{originId}}"?', { originId: originId })}</p>
+						<p>
+							{t('Are you sure you want to remove the Package Container "{{containerId}}"?', {
+								containerId: containerId,
+							})}
+						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</React.Fragment>
 				),
 			})
 		}
-		removeOrigin = (originId: string) => {
+		removePackageContainer = (containerId: string) => {
 			let unsetObject = {}
-			unsetObject['packageOrigins.' + originId] = ''
+			unsetObject['packageContainers.' + containerId] = ''
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
 			})
 		}
-		addNewOrigin = () => {
+		addNewPackageContainer = () => {
 			// find free key name
-			let newOriginKeyName = 'newOrigin'
+			let newKeyName = 'newContainer'
 			let iter: number = 0
-			while ((this.props.studio.packageOrigins || {})[newOriginKeyName + iter]) {
+			while ((this.props.studio.packageContainers || {})[newKeyName + iter]) {
 				iter++
 			}
 
-			let newOrigin: StudioPackageOrigin = {
-				name: 'New Package Origin',
-				origin: {
-					type: PackageOrigin.OriginType.LOCAL_FOLDER,
-					folderPath: '',
+			let newPackageContainer: StudioPackageContainer = {
+				container: {
+					label: 'New Package Container',
+					accessors: {},
 				},
 			}
 			let setObject: Partial<DBStudio> = {}
-			setObject['packageOrigins.' + newOriginKeyName + iter] = newOrigin
+			setObject['packageContainers.' + newKeyName + iter] = newPackageContainer
 
 			Studios.update(this.props.studio._id, {
 				$set: setObject,
 			})
 		}
-		updateOriginId = (edit: EditAttributeBase, newValue: string) => {
-			let oldOriginId = edit.props.overrideDisplayValue
-			let newOriginId = newValue + ''
-			let origin = this.props.studio.packageOrigins[oldOriginId]
+		containerId = (edit: EditAttributeBase, newValue: string) => {
+			const oldContainerId = edit.props.overrideDisplayValue
+			const newContainerId = newValue + ''
+			const packageContainer = this.props.studio.packageContainers[oldContainerId]
 
-			if (this.props.studio.packageOrigins[newOriginId]) {
-				throw new Meteor.Error(400, 'Origin "' + newOriginId + '" already exists')
+			if (this.props.studio.packageContainers[newContainerId]) {
+				throw new Meteor.Error(400, 'PackageContainer "' + newContainerId + '" already exists')
 			}
 
 			let mSet = {}
 			let mUnset = {}
-			mSet['packageOrigins.' + newOriginId] = origin
-			mUnset['packageOrigins.' + oldOriginId] = 1
+			mSet['packageContainers.' + newContainerId] = packageContainer
+			mUnset['packageContainers.' + oldContainerId] = 1
 
 			if (edit.props.collection) {
 				edit.props.collection.update(this.props.studio._id, {
@@ -1561,102 +1577,291 @@ const StudioPackageManagerSettings = withTranslation()(
 				})
 			}
 
-			this.finishEditItem(oldOriginId)
-			this.editItem(newOriginId)
+			this.finishEditPackageContainer(oldContainerId)
+			this.editPackageContainer(newContainerId)
 		}
-
-		renderOrigins() {
+		renderPackageContainers() {
 			const { t } = this.props
 
-			if (Object.keys(this.props.studio.packageOrigins).length === 0) {
+			if (Object.keys(this.props.studio.packageContainers).length === 0) {
 				return (
 					<tr>
-						<td className="mhn dimmed">{t('There are no Package origins set up.')}</td>
+						<td className="mhn dimmed">{t('There are no Package Containers set up.')}</td>
 					</tr>
 				)
 			}
 
-			return _.map(this.props.studio.packageOrigins, (origin: StudioPackageOrigin, originId: string) => {
-				const originContent: string[] = []
-				_.each(origin.origin as any, (value, key: string) => {
-					if (key !== 'type') {
+			return _.map(
+				this.props.studio.packageContainers,
+				(packageContainer: StudioPackageContainer, containerId: string) => {
+					return (
+						<React.Fragment key={containerId}>
+							<tr
+								className={ClassNames({
+									hl: this.isPackageContainerEdited(containerId),
+								})}>
+								<th className="settings-studio-package-container__id c2">{containerId}</th>
+								<td className="settings-studio-package-container__name c2">{packageContainer.container.label}</td>
+
+								<td className="settings-studio-package-container__actions table-item-actions c3">
+									<button className="action-btn" onClick={(e) => this.editPackageContainer(containerId)}>
+										<FontAwesomeIcon icon={faPencilAlt} />
+									</button>
+									<button className="action-btn" onClick={(e) => this.confirmRemovePackageContainer(containerId)}>
+										<FontAwesomeIcon icon={faTrash} />
+									</button>
+								</td>
+							</tr>
+							{this.isPackageContainerEdited(containerId) && (
+								<tr className="expando-details hl">
+									<td colSpan={6}>
+										<div>
+											<div className="mod mvs mhs">
+												<label className="field">
+													{t('Package Container ID')}
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={'packageContainers'}
+														overrideDisplayValue={containerId}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														updateFunction={this.containerId}
+														className="input text-input input-l"></EditAttribute>
+												</label>
+											</div>
+											<div className="mod mvs mhs">
+												<label className="field">
+													{t('Label')}
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.label`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"></EditAttribute>
+													<span className="text-s dimmed">{t('Display name/label of the Package Container')}</span>
+												</label>
+											</div>
+										</div>
+										<div>
+											<div className="settings-studio-accessors">
+												<h3 className="mhn">{t('Accessors')}</h3>
+												<table className="expando settings-studio-package-containers-accessors-table">
+													<tbody>{this.renderAccessors(containerId, packageContainer)}</tbody>
+												</table>
+												<div className="mod mhs">
+													<button className="btn btn-primary" onClick={(e) => this.addNewAccessor(containerId)}>
+														<FontAwesomeIcon icon={faPlus} />
+													</button>
+												</div>
+											</div>
+										</div>
+									</td>
+								</tr>
+							)}
+						</React.Fragment>
+					)
+				}
+			)
+		}
+		isAccessorEdited = (containerId: string, accessorId: string) => {
+			return this.state.editedAccessors.indexOf(containerId + accessorId) >= 0
+		}
+		finishEditAccessor = (containerId: string, accessorId: string) => {
+			let index = this.state.editedAccessors.indexOf(containerId + accessorId)
+			if (index >= 0) {
+				this.state.editedAccessors.splice(index, 1)
+				this.setState({
+					editedAccessors: this.state.editedAccessors,
+				})
+			}
+		}
+		editAccessor = (containerId: string, accessorId: string) => {
+			if (this.state.editedAccessors.indexOf(containerId + accessorId) < 0) {
+				this.state.editedAccessors.push(containerId + accessorId)
+				this.setState({
+					editedAccessors: this.state.editedAccessors,
+				})
+			} else {
+				this.finishEditPackageContainer(containerId + accessorId)
+			}
+		}
+		confirmRemoveAccessor = (containerId: string, accessorId: string) => {
+			const { t } = this.props
+			doModalDialog({
+				title: t('Remove this Package Container Accessor?'),
+				yes: t('Remove'),
+				no: t('Cancel'),
+				onAccept: () => {
+					this.removeAccessor(containerId, accessorId)
+				},
+				message: (
+					<React.Fragment>
+						<p>
+							{t('Are you sure you want to remove the Package Container Accessor "{{accessorId}}"?', {
+								accessorId: accessorId,
+							})}
+						</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
+					</React.Fragment>
+				),
+			})
+		}
+		removeAccessor = (containerId: string, accessorId: string) => {
+			let unsetObject = {}
+			unsetObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = ''
+			Studios.update(this.props.studio._id, {
+				$unset: unsetObject,
+			})
+		}
+		addNewAccessor = (containerId: string) => {
+			// find free key name
+			let newKeyName = 'local'
+			let iter: number = 0
+			const packageContainer = this.props.studio.packageContainers[containerId]
+			if (!packageContainer) throw new Error(`Can't add an accessor to nonexistant Package Container "${containerId}"`)
+
+			while (packageContainer.container.accessors[newKeyName + iter]) {
+				iter++
+			}
+			const accessorId = newKeyName + iter
+
+			let newAccessor: Accessor.LocalFolder = {
+				type: Accessor.AccessType.LOCAL_FOLDER,
+				allowRead: true,
+				allowWrite: false,
+				folderPath: '',
+			}
+			let setObject: Partial<DBStudio> = {}
+			setObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = newAccessor
+
+			Studios.update(this.props.studio._id, {
+				$set: setObject,
+			})
+		}
+		updateAccessorId = (edit: EditAttributeBase, newValue: string) => {
+			let oldAccessorId = edit.props.overrideDisplayValue
+			let newAccessorId = newValue + ''
+			const containerId = edit.props.attribute
+			if (!containerId) throw new Error(`containerId not set`)
+			let packageContainer = this.props.studio.packageContainers[containerId]
+			if (!packageContainer) throw new Error(`Can't edit an accessor to nonexistant Package Container "${containerId}"`)
+
+			let accessor = this.props.studio.packageContainers[containerId].container.accessors[oldAccessorId]
+
+			if (this.props.studio.packageContainers[containerId].container.accessors[newAccessorId]) {
+				throw new Meteor.Error(400, 'Accessor "' + newAccessorId + '" already exists')
+			}
+
+			let mSet = {}
+			let mUnset = {}
+			mSet[`packageContainers.${containerId}.container.accessors.${newAccessorId}`] = accessor
+			mUnset[`packageContainers.${containerId}.container.accessors.${oldAccessorId}`] = 1
+
+			if (edit.props.collection) {
+				edit.props.collection.update(this.props.studio._id, {
+					$set: mSet,
+					$unset: mUnset,
+				})
+			}
+
+			this.finishEditAccessor(containerId, oldAccessorId)
+			this.editAccessor(containerId, newAccessorId)
+		}
+
+		renderAccessors(containerId: string, packageContainer: StudioPackageContainer) {
+			const { t } = this.props
+
+			if (Object.keys(this.props.studio.packageContainers).length === 0) {
+				return (
+					<tr>
+						<td className="mhn dimmed">{t('There are no Accessors set up.')}</td>
+					</tr>
+				)
+			}
+
+			return _.map(packageContainer.container.accessors, (accessor: Accessor.Any, accessorId: string) => {
+				const accessorContent: string[] = []
+				_.each(accessor as any, (value, key: string) => {
+					if (key !== 'type' && value !== '') {
 						let str = JSON.stringify(value)
 						if (str.length > 20) str = str.slice(0, 17) + '...'
-						originContent.push(`${key}: ${str}`)
+						accessorContent.push(`${key}: ${str}`)
 					}
 				})
 				return (
-					<React.Fragment key={originId}>
+					<React.Fragment key={accessorId}>
 						<tr
 							className={ClassNames({
-								hl: this.isItemEdited(originId),
+								hl: this.isAccessorEdited(containerId, accessorId),
 							})}>
-							<th className="settings-studio-origin__id c2">{originId}</th>
-							<td className="settings-studio-origin__name c2">{origin.name}</td>
-							<td className="settings-studio-origin__type c1">{origin.origin.type}</td>
-							<td className="settings-studio-origin__originContent c7">{originContent.join(', ')}</td>
+							<th className="settings-studio-accessor__id c2">{accessorId}</th>
+							{/* <td className="settings-studio-accessor__name c2">{accessor.name}</td> */}
+							<td className="settings-studio-accessor__type c1">{accessor.type}</td>
+							<td className="settings-studio-accessor__accessorContent c7">{accessorContent.join(', ')}</td>
 
-							<td className="settings-studio-origin__actions table-item-actions c3">
-								<button className="action-btn" onClick={(e) => this.editItem(originId)}>
+							<td className="settings-studio-accessor__actions table-item-actions c3">
+								<button className="action-btn" onClick={(e) => this.editAccessor(containerId, accessorId)}>
 									<FontAwesomeIcon icon={faPencilAlt} />
 								</button>
-								<button className="action-btn" onClick={(e) => this.confirmRemove(originId)}>
+								<button className="action-btn" onClick={(e) => this.confirmRemoveAccessor(containerId, accessorId)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</td>
 						</tr>
-						{this.isItemEdited(originId) && (
+						{this.isAccessorEdited(containerId, accessorId) && (
 							<tr className="expando-details hl">
 								<td colSpan={6}>
 									<div>
 										<div className="mod mvs mhs">
 											<label className="field">
-												{t('Origin ID')}
+												{t('Accessor ID')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'packageOrigins'}
-													overrideDisplayValue={originId}
+													attribute={containerId}
+													overrideDisplayValue={accessorId}
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
-													updateFunction={this.updateOriginId}
+													updateFunction={this.updateAccessorId}
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
 											<label className="field">
-												{t('Name')}
+												{t('Label')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={`packageOrigins.${originId}.name`}
+													attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.label`}
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
 													className="input text-input input-l"></EditAttribute>
-												<span className="text-s dimmed">{t('Display name of the Package Origin')}</span>
+												<span className="text-s dimmed">{t('Display name of the Package Container')}</span>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
 											<label className="field">
-												{t('Origin Type')}
+												{t('Accessor Type')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={`packageOrigins.${originId}.origin.type`}
+													attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.type`}
 													obj={this.props.studio}
 													type="dropdown"
-													options={PackageOrigin.OriginType}
+													options={Accessor.AccessType}
 													collection={Studios}
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
-										{origin.origin.type === PackageOrigin.OriginType.LOCAL_FOLDER ? (
+										{accessor.type === Accessor.AccessType.LOCAL_FOLDER ? (
 											<>
 												<div className="mod mvs mhs">
 													<label className="field">
 														{t('Folder path')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageOrigins.${originId}.origin.folderPath`}
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.folderPath`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -1664,15 +1869,30 @@ const StudioPackageManagerSettings = withTranslation()(
 														<span className="text-s dimmed">{t('File path to the folder of the local folder')}</span>
 													</label>
 												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Resource Id')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.containerId`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">
+															{t('(Optional) This could be the name of the computer on which the local folder is on')}
+														</span>
+													</label>
+												</div>
 											</>
-										) : origin.origin.type === PackageOrigin.OriginType.HTTP ? (
+										) : accessor.type === Accessor.AccessType.HTTP ? (
 											<>
 												<div className="mod mvs mhs">
 													<label className="field">
 														{t('Base URL')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageOrigins.${originId}.origin.baseUrl`}
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.baseUrl`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -1687,7 +1907,7 @@ const StudioPackageManagerSettings = withTranslation()(
 														{t('Default request method')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageOrigins.${originId}.origin.method`}
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.method`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -1700,7 +1920,7 @@ const StudioPackageManagerSettings = withTranslation()(
 														{t('Defaults request headers')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageOrigins.${originId}.origin.headers`}
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.headers`}
 															obj={this.props.studio}
 															type="json"
 															storeJsonAsObject={true}
@@ -1714,7 +1934,7 @@ const StudioPackageManagerSettings = withTranslation()(
 														{t('Defaults request body')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageOrigins.${originId}.origin.requestBody`}
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.requestBody`}
 															obj={this.props.studio}
 															type="json"
 															storeJsonAsObject={true}
@@ -1724,14 +1944,14 @@ const StudioPackageManagerSettings = withTranslation()(
 													</label>
 												</div>
 											</>
-										) : origin.origin.type === PackageOrigin.OriginType.FILE_SHARE ? (
+										) : accessor.type === Accessor.AccessType.FILE_SHARE ? (
 											<>
 												<div className="mod mvs mhs">
 													<label className="field">
 														{t('Base URL')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageOrigins.${originId}.origin.folderPath`}
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.folderPath`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -1739,15 +1959,30 @@ const StudioPackageManagerSettings = withTranslation()(
 														<span className="text-s dimmed">{t('Folder path to shared folder')}</span>
 													</label>
 												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Network Id')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">
+															{t('(Optional) A name/identifier of the local network where the share is located')}
+														</span>
+													</label>
+												</div>
 											</>
-										) : origin.origin.type === PackageOrigin.OriginType.MAPPED_DRIVE ? (
+										) : accessor.type === Accessor.AccessType.MAPPED_DRIVE ? (
 											<>
 												<div className="mod mvs mhs">
 													<label className="field">
 														{t('Base URL')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageOrigins.${originId}.origin.folderPath`}
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.folderPath`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -1760,7 +1995,7 @@ const StudioPackageManagerSettings = withTranslation()(
 														{t('Mapped Drive')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageOrigins.${originId}.origin.mappedDrive`}
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.mappedDrive`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -1773,7 +2008,7 @@ const StudioPackageManagerSettings = withTranslation()(
 														{t('UserName')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageOrigins.${originId}.origin.userName`}
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.userName`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -1786,7 +2021,7 @@ const StudioPackageManagerSettings = withTranslation()(
 														{t('Password')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageOrigins.${originId}.origin.password`}
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.password`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -1794,11 +2029,55 @@ const StudioPackageManagerSettings = withTranslation()(
 														<span className="text-s dimmed">{t('Password for authentication')}</span>
 													</label>
 												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Network Id')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">
+															{t('(Optional) A name/identifier of the local network where the share is located')}
+														</span>
+													</label>
+												</div>
 											</>
 										) : null}
+
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Allow Read access')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.allowRead`}
+													obj={this.props.studio}
+													type="checkbox"
+													collection={Studios}
+													className="input"></EditAttribute>
+												<span className="text-s dimmed">{t('')}</span>
+											</label>
+										</div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Allow Write access')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.allowWrite`}
+													obj={this.props.studio}
+													type="checkbox"
+													collection={Studios}
+													className="input"></EditAttribute>
+												<span className="text-s dimmed">{t('')}</span>
+											</label>
+										</div>
 									</div>
 									<div className="mod">
-										<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(originId)}>
+										<button
+											className="btn btn-primary right"
+											onClick={(e) => this.finishEditPackageContainer(accessorId)}>
 											<FontAwesomeIcon icon={faCheck} />
 										</button>
 									</div>
@@ -1816,14 +2095,16 @@ const StudioPackageManagerSettings = withTranslation()(
 				<div>
 					<h2 className="mhn mbs">{t('Package Manager')}</h2>
 
-					<h3 className="mhn">{t('Package Origins')}</h3>
-					<table className="expando settings-studio-mappings-table">
-						<tbody>{this.renderOrigins()}</tbody>
-					</table>
-					<div className="mod mhs">
-						<button className="btn btn-primary" onClick={(e) => this.addNewOrigin()}>
-							<FontAwesomeIcon icon={faPlus} />
-						</button>
+					<div className="settings-studio-package-containers">
+						<h3 className="mhn">{t('Package Containers')}</h3>
+						<table className="expando settings-studio-package-containers-table">
+							<tbody>{this.renderPackageContainers()}</tbody>
+						</table>
+						<div className="mod mhs">
+							<button className="btn btn-primary" onClick={(e) => this.addNewPackageContainer()}>
+								<FontAwesomeIcon icon={faPlus} />
+							</button>
+						</div>
 					</div>
 				</div>
 			)

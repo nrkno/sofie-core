@@ -1078,42 +1078,42 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	insertExpectedPackageWorkStatus(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		packageStatusId: ExpectedPackageWorkStatusId,
-		packageStatus: ExpectedPackageStatusAPI.PackageStatus
+		workStatusId: ExpectedPackageWorkStatusId,
+		workStatus: ExpectedPackageStatusAPI.WorkStatus
 	) {
 		return makePromise(() =>
 			PackageManagerIntegration.insertExpectedPackageWorkStatus(
 				this,
 				deviceId,
 				deviceToken,
-				packageStatusId,
-				packageStatus
+				workStatusId,
+				workStatus
 			)
 		)
 	}
 	updateExpectedPackageWorkStatus(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		packageStatusId: ExpectedPackageWorkStatusId,
-		packageStatus: Partial<ExpectedPackageStatusAPI.PackageStatus>
+		workStatusId: ExpectedPackageWorkStatusId,
+		workStatus: Partial<ExpectedPackageStatusAPI.WorkStatus>
 	) {
 		return makePromise(() =>
 			PackageManagerIntegration.updateExpectedPackageWorkStatus(
 				this,
 				deviceId,
 				deviceToken,
-				packageStatusId,
-				packageStatus
+				workStatusId,
+				workStatus
 			)
 		)
 	}
 	removeExpectedPackageWorkStatus(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		packageStatusId: ExpectedPackageWorkStatusId
+		workStatusId: ExpectedPackageWorkStatusId
 	) {
 		return makePromise(() =>
-			PackageManagerIntegration.removeExpectedPackageWorkStatus(this, deviceId, deviceToken, packageStatusId)
+			PackageManagerIntegration.removeExpectedPackageWorkStatus(this, deviceId, deviceToken, workStatusId)
 		)
 	}
 	removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
