@@ -5,6 +5,10 @@
 	button size 96px */ screen and (width: 768px) and (height: 384px),
 	/** Stream Deck Mini,
 	button size 80px */ screen and (width: 240px) and (height: 160px) {
+	:root {
+		--pointer: 'no-pointer';
+	}
+
 	#render-target > .container-fluid > .rundown-view {
 		background: #000;
 

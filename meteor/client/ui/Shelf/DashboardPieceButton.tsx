@@ -38,6 +38,7 @@ export interface IDashboardButtonProps {
 	layer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
+	onSelectAdLib: (aSLine: IAdLibListItem, context: any) => void
 	playlist: RundownPlaylist
 	mediaPreviewUrl?: string
 	isOnAir?: boolean
@@ -51,6 +52,7 @@ export interface IDashboardButtonProps {
 	showThumbnailsInList?: boolean
 	editableName?: boolean
 	onNameChanged?: (e: any, value: string) => void
+	toggleOnSingleClick?: boolean
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
@@ -74,6 +76,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		height: number
 	} | null = null
 	private _labelEl: HTMLTextAreaElement
+	private isTouching: boolean = false
 
 	constructor(props: IDashboardButtonProps) {
 		super(props)
@@ -191,6 +194,10 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	private setRef = (el: HTMLDivElement | null) => {
 		this.element = el
+
+		if (this.element) {
+			this.element.addEventListener('touchstart', this.handleTouchStart)
+		}
 	}
 
 	private handleOnMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -278,6 +285,38 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		this._labelEl = ref
 	}
 
+	private handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+	}
+
+	private handleTouchStart = (e: TouchEvent) => {
+		this.isTouching = true
+		document.body.addEventListener('touchcancel', this.handleTouchCancel, {
+			passive: true,
+		})
+		this.element?.addEventListener('touchend', this.handleTouchEnd, {
+			passive: false,
+		})
+		document.body.addEventListener('touchend', this.handleTouchCancel, {
+			passive: true,
+		})
+		e.preventDefault()
+		e.stopPropagation()
+	}
+
+	private handleTouchCancel = (e: TouchEvent) => {
+		this.isTouching = false
+	}
+
+	private handleTouchEnd = (e: TouchEvent) => {
+		if (this.isTouching) {
+			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+			e.preventDefault()
+			e.stopPropagation()
+		}
+		this.isTouching = false
+	}
+
 	render() {
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
@@ -319,7 +358,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							  (this.props.heightScale as number) * DEFAULT_BUTTON_HEIGHT + 'em'
 							: undefined,
 				}}
-				onClick={(e) => this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)}
+				onClick={this.handleClick}
 				ref={this.setRef}
 				onMouseEnter={this.handleOnMouseEnter}
 				onMouseLeave={this.handleOnMouseLeave}
