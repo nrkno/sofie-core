@@ -459,7 +459,11 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 		startPartId: { $in: removedPartIds },
 	})
 
-	cache.PartInstances.update({ 'part._id': { $in: removedPartIds } }, { $set: { reset: true } })
+	const removePartInstanceIds = cache.PartInstances.findFetch({ 'part._id': { $in: removedPartIds } }).map(
+		(p) => p._id
+	)
+	cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+	cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
 
 	cache.deferAfterSave(() => {
 		waitForPromiseAll([
