@@ -134,7 +134,7 @@ export async function getLookeaheadObjects(
 	playlist: RundownPlaylist,
 	partInstancesInfo0: SelectedPartInstancesTimelineInfo
 ): Promise<Array<TimelineObjRundown>> {
-	const span = profiler.startSpan('getLookeaheadObjects')
+	const span = profiler.startSpan('getLookaheadObjects')
 	const mappingsToConsider = Object.entries(studio.mappings ?? {}).filter(
 		([id, map]) => map.lookahead !== LookaheadMode.NONE
 	)
@@ -145,7 +145,7 @@ export async function getLookeaheadObjects(
 
 	const maxLookaheadDistance = findLargestLookaheadDistance(mappingsToConsider)
 	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(cache, playlist, maxLookaheadDistance)
-	if (orderedPartsFollowingPlayhead.length === 0) {
+	if (orderedPartsFollowingPlayhead.length === 0 && !partInstancesInfo0.next) {
 		// Nothing to search through
 		return []
 	}
@@ -255,7 +255,7 @@ export async function getLookeaheadObjects(
 		const lookaheadMaxSearchDistance =
 			mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0
 				? mapping.lookaheadMaxSearchDistance
-				: orderedPartsFollowingPlayhead.length
+				: Math.max(orderedPartsFollowingPlayhead.length, partInstancesInfo0.next ? 1 : 0)
 
 		const lookaheadObjs = findLookaheadForlayer(
 			playlist,
