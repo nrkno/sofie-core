@@ -45,6 +45,7 @@ function determineDiffTimeInner(config: Config): Promise<DiffTimeResult> {
 				})
 				.catch((e) => {
 					if (results.length < maxSampleCount) pushTime()
+					else resolve(results)
 				})
 		}
 		pushTime()
