@@ -1,5 +1,4 @@
 import { IBlueprintAsRunLogEvent } from './asRunLog'
-import { IngestPart, ExtendedIngestRundown } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
 import {
 	IBlueprintPart,
@@ -223,15 +222,4 @@ export interface AsRunEventContext extends RundownContext {
 	 * @param id Id of partInstance to fetch items in
 	 */
 	getPieceInstances(partInstanceId: string): Readonly<IBlueprintPieceInstance[]>
-
-	/** Ingest Data */
-
-	/** Get the ingest data related to the rundown */
-	getIngestDataForRundown(): Readonly<ExtendedIngestRundown> | undefined
-
-	/** Get the ingest data related to a part */
-	getIngestDataForPart(part: Readonly<IBlueprintPartDB>): Readonly<IngestPart> | undefined
-
-	/** Get the ingest data related to a partInstance */
-	getIngestDataForPartInstance(partInstance: Readonly<IBlueprintPartInstance>): Readonly<IngestPart> | undefined
 }
