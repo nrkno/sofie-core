@@ -1,5 +1,5 @@
 import * as React from 'react'
-import InView, { useInView } from 'react-intersection-observer'
+import { InView } from 'react-intersection-observer'
 
 export interface IProps {
 	initialShow?: boolean
@@ -37,8 +37,6 @@ interface IState {
 }
 
 const OPTIMIZE_PERIOD = 5000
-const IN_VIEW_GRACE_PERIOD = 500
-
 export class VirtualElement extends React.Component<IProps, IState> {
 	private el: HTMLElement | null = null
 	private instance: HTMLElement | null = null
@@ -144,7 +142,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 				!this.state.inView && (!this.props.initialShow || this.state.isMeasured)
 			)
 		return (
-			<InView threshold={0} rootMargin={this.props.margin || '50% 0px 50% 0px'} onChange={this.visibleChanged}>
+			<InView threshold={0} rootMargin={this.props.margin || '50% 0px 50% 0px'} onChange={this.visibleChanged} as="div">
 				<div ref={this.setRef}>
 					{!this.state.inView && (!this.props.initialShow || this.state.isMeasured) ? (
 						<div
