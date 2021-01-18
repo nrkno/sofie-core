@@ -150,8 +150,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		return clone(unprotectObject(lastPieceInstance))
 	}
 	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance {
-		const pieceExt = (piece as unknown) as Partial<PieceInstance>
-		const partInstanceId = pieceExt.partInstanceId
+		const pieceExt = (piece as unknown) as Partial<PieceInstance> | undefined
+		const partInstanceId = pieceExt?.partInstanceId
 		if (!partInstanceId) {
 			throw new Error('Cannot find PartInstance from invalid PieceInstance')
 		}

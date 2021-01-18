@@ -928,6 +928,11 @@ export function makePromise<T>(fcn: () => T): Promise<T> {
 }
 
 export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
+	if (typeof selector !== 'object') {
+		// selector must be an object
+		return false
+	}
+
 	let ok = true
 	_.each(selector, (s: any, key: string) => {
 		if (!ok) return
