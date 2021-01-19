@@ -211,6 +211,7 @@ export interface IBucketPanelProps {
 	moveBucket: (id: BucketId, atIndex: number) => void
 	findBucket: (id: BucketId) => { bucket: Bucket | undefined; index: number }
 	onBucketReorder: (draggedId: BucketId, newIndex: number, oldIndex: number) => void
+	onSelectAdlib
 	onAdLibContext: (args: { contextBucket: Bucket; contextBucketAdLib: BucketAdLibItem }, callback: () => void) => void
 	onPieceNameRename: () => void
 }
@@ -449,6 +450,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						)
 					}
 				}
+
+				onSelectAdLib = (piece: BucketAdLibItem, e: any) => {}
 
 				onToggleAdLib = (piece: BucketAdLibItem, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 					const { t } = this.props
@@ -774,6 +777,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 													layer={this.props.sourceLayers[adlib.sourceLayerId]}
 													outputLayer={this.props.outputLayers[adlib.outputLayerId]}
 													onToggleAdLib={this.onToggleAdLib as any}
+													onSelectAdLib={this.onSelectAdLib as any}
 													playlist={this.props.playlist}
 													isOnAir={this.isAdLibOnAir((adlib as any) as AdLibPieceUi)}
 													mediaPreviewUrl={

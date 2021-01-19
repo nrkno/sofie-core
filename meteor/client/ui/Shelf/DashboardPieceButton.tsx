@@ -61,6 +61,7 @@ interface IState {
 	label: string
 	isHovered: boolean
 	timePosition: number
+	active: boolean
 }
 
 export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
@@ -76,7 +77,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		height: number
 	} | null = null
 	private _labelEl: HTMLTextAreaElement
-	private isTouching: boolean = false
+	private activeTouch: React.Touch | null = null
 
 	constructor(props: IDashboardButtonProps) {
 		super(props)
@@ -85,6 +86,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			isHovered: false,
 			timePosition: 0,
 			label: this.props.piece.name,
+			active: false,
 		}
 	}
 
@@ -197,6 +199,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 		if (this.element) {
 			this.element.addEventListener('touchstart', this.handleTouchStart)
+			this.element.addEventListener('touchend', this.handleTouchEnd)
+			this.element.addEventListener('touchcancel', this.handleTouchCancel)
 		}
 	}
 
@@ -286,35 +290,63 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	private handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-		this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+		const { toggleOnSingleClick } = this.props
+		if (toggleOnSingleClick) {
+			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+		} else {
+			this.props.onSelectAdLib(this.props.piece, e)
+		}
+	}
+
+	private handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		const { toggleOnSingleClick } = this.props
+		if (toggleOnSingleClick) {
+			return
+		} else {
+			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+		}
 	}
 
 	private handleTouchStart = (e: TouchEvent) => {
-		this.isTouching = true
-		document.body.addEventListener('touchcancel', this.handleTouchCancel, {
-			passive: true,
-		})
-		this.element?.addEventListener('touchend', this.handleTouchEnd, {
-			passive: false,
-		})
-		document.body.addEventListener('touchend', this.handleTouchCancel, {
-			passive: true,
-		})
+		this.activeTouch = e.changedTouches.item(0) || null
 		e.preventDefault()
 		e.stopPropagation()
+		e.stopImmediatePropagation()
+		if (this.activeTouch) {
+			this.setState({
+				active: true,
+			})
+		}
 	}
 
 	private handleTouchCancel = (e: TouchEvent) => {
-		this.isTouching = false
+		const targetTouch = Array.from(e.changedTouches).find((touch) => touch.identifier === this.activeTouch?.identifier)
+		if (targetTouch) {
+			this.activeTouch = null
+
+			this.setState({
+				active: false,
+			})
+		}
 	}
 
 	private handleTouchEnd = (e: TouchEvent) => {
-		if (this.isTouching) {
+		const targetTouch = Array.from(e.changedTouches).find((touch) => touch.identifier === this.activeTouch?.identifier)
+		if (
+			targetTouch &&
+			targetTouch.screenX === this.activeTouch?.screenX &&
+			targetTouch.screenY === this.activeTouch?.screenY
+		) {
 			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
 			e.preventDefault()
 			e.stopPropagation()
+			e.stopImmediatePropagation()
+			this.activeTouch = null
+
+			this.setState({
+				active: false,
+			})
 		}
-		this.isTouching = false
 	}
 
 	render() {
@@ -322,7 +354,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
 		const hasMediaInfo =
 			this.props.layer &&
-			this.props.layer.type === SourceLayerType.VT &&
+			(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK) &&
 			this.props.piece.contentMetaData &&
 			this.props.piece.contentMetaData.mediainfo
 		return (
@@ -332,6 +364,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					{
 						invalid: this.props.piece.invalid,
 						floated: this.props.piece.floated,
+						active: this.state.active,
 
 						'source-missing': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
 						'source-broken': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
@@ -359,6 +392,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							: undefined,
 				}}
 				onClick={this.handleClick}
+				onDoubleClick={this.handleDoubleClick}
 				ref={this.setRef}
 				onMouseEnter={this.handleOnMouseEnter}
 				onMouseLeave={this.handleOnMouseLeave}

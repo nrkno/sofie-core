@@ -32,6 +32,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
+import { RundownUtils } from '../../lib/rundown'
 
 interface IState {
 	outputLayers: {
@@ -120,7 +121,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	static getDerivedStateFromProps(props: IAdLibPanelProps, state) {
+	static getDerivedStateFromProps(props: IAdLibPanelProps, state: IState): Partial<IState> | null {
 		let tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
@@ -192,11 +193,41 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentDidUpdate(prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps) {
+	componentDidUpdate(prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps, prevState: IState) {
+		const { selectedAdLib } = this.state
+		const { selectedPiece } = this.props
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 		this.usedHotkeys.length = 0
 
+		const newState: Partial<IState> = {}
+
 		this.refreshKeyboardHotkeys()
+		if (
+			selectedAdLib &&
+			selectedAdLib !== prevState.selectedAdLib &&
+			!(
+				selectedPiece &&
+				RundownUtils.isAdLibPieceOrAdLibListItem(selectedPiece) &&
+				selectedPiece?._id === selectedAdLib._id
+			)
+		) {
+			this.props.onSelectPiece && this.props.onSelectPiece(selectedAdLib)
+		} else if (
+			selectedPiece &&
+			selectedPiece !== prevProps.selectedPiece &&
+			RundownUtils.isAdLibPieceOrAdLibListItem(selectedPiece)
+		) {
+			let memberAdLib = DashboardPanelInner.filterOutAdLibs(this.props, this.state).find(
+				(adLib) => adLib._id === selectedPiece._id
+			)
+			if (memberAdLib) {
+				newState.selectedAdLib = memberAdLib
+			}
+		}
+
+		if (Object.keys(newState).length > 0) {
+			this.setState(newState as IState)
+		}
 	}
 
 	componentWillUnmount() {
@@ -207,15 +238,21 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		this.usedHotkeys.length = 0
 	}
 
-	isAdLibOnAir(adLib: AdLibPieceUi) {
+	protected static filterOutAdLibs(props: IAdLibPanelProps & AdLibFetchAndFilterProps, state: IState): AdLibPieceUi[] {
+		return props.rundownBaselineAdLibs
+			.concat(props.uiSegments.map((seg) => seg.pieces).flat())
+			.filter((item) => matchFilter(item, props.showStyleBase, props.uiSegments, props.filter, state.searchFilter))
+	}
+
+	protected isAdLibOnAir(adLib: AdLibPieceUi) {
 		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
-	isAdLibNext(adLib: AdLibPieceUi) {
+	protected isAdLibNext(adLib: AdLibPieceUi) {
 		return isAdLibNext(this.props.nextAdLibIds, this.props.unfinishedTags, this.props.nextTags, adLib)
 	}
 
-	refreshKeyboardHotkeys() {
+	protected refreshKeyboardHotkeys() {
 		if (!this.props.studioMode) return
 		if (!this.props.registerHotkeys) return
 
@@ -319,7 +356,21 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
+	protected onToggleOrSelectAdLib = (
+		adlibPiece: AdLibPieceUi,
+		queue: boolean,
+		e: any,
+		mode?: IBlueprintActionTriggerMode
+	) => {
+		const filter = this.props.filter as DashboardLayoutFilter | undefined
+		if (filter?.displayTakeButtons) {
+			this.onSelectAdLib(adlibPiece, e)
+		} else {
+			this.onToggleAdLib(adlibPiece, queue, e, mode)
+		}
+	}
+
+	protected onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 		const { t } = this.props
 
 		queue = queue || this.props.shouldQueue
@@ -398,7 +449,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	onToggleSticky = (sourceLayerId: string, e: any) => {
+	protected onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
@@ -407,7 +458,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
+	protected onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
 		const { t } = this.props
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const playlistId = this.props.playlist._id
@@ -423,13 +474,13 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	onFilterChange = (filter: string) => {
+	protected onFilterChange = (filter: string) => {
 		this.setState({
 			searchFilter: filter,
 		})
 	}
 
-	onIn = (e: any) => {
+	protected onIn = (e: any) => {
 		const { t } = this.props
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
@@ -469,7 +520,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	onOut = (e: any, outButton?: boolean) => {
+	protected onOut = (e: any, outButton?: boolean) => {
 		const { t } = this.props
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
@@ -480,7 +531,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	onSelectAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
+	protected onSelectAdLib = (piece: AdLibPieceUi, e: any) => {
 		this.setState({
 			selectedAdLib: piece,
 		})
@@ -488,6 +539,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	render() {
 		const { t } = this.props
+		const filteredAdLibs = DashboardPanelInner.filterOutAdLibs(this.props, this.state)
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
 			if (!this.props.uiSegments || !this.props.playlist) {
@@ -505,57 +557,47 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							className={ClassNames('dashboard-panel__panel', {
 								'dashboard-panel__panel--horizontal': filter.overflowHorizontally,
 							})}>
-							{this.props.rundownBaselineAdLibs
-								.concat(_.flatten(this.props.uiSegments.map((seg) => seg.pieces)))
-								.filter((item) =>
-									matchFilter(
-										item,
-										this.props.showStyleBase,
-										this.props.uiSegments,
-										this.props.filter,
-										this.state.searchFilter
-									)
-								)
-								.map((adLibPiece: AdLibPieceUi) => {
-									return (
-										<ContextMenuTrigger
-											id="shelf-context-menu"
-											collect={() =>
-												setShelfContextMenuContext({
-													type: ContextType.ADLIB,
-													details: {
-														adLib: adLibPiece,
-														onToggle: this.onToggleAdLib,
-													},
-												})
+							{filteredAdLibs.map((adLibPiece: AdLibPieceUi) => {
+								return (
+									<ContextMenuTrigger
+										id="shelf-context-menu"
+										collect={() =>
+											setShelfContextMenuContext({
+												type: ContextType.ADLIB,
+												details: {
+													adLib: adLibPiece,
+													onToggle: this.onToggleAdLib,
+												},
+											})
+										}
+										renderTag="span"
+										key={unprotectString(adLibPiece._id)}
+										holdToDisplay={contextMenuHoldToDisplayTime()}>
+										<DashboardPieceButton
+											piece={adLibPiece}
+											studio={this.props.studio}
+											layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
+											outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
+											onToggleAdLib={this.onToggleOrSelectAdLib}
+											onSelectAdLib={this.onSelectAdLib}
+											playlist={this.props.playlist}
+											isOnAir={this.isAdLibOnAir(adLibPiece)}
+											isNext={this.isAdLibNext(adLibPiece)}
+											mediaPreviewUrl={
+												this.props.studio
+													? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
+													: ''
 											}
-											renderTag="span"
-											key={unprotectString(adLibPiece._id)}
-											holdToDisplay={contextMenuHoldToDisplayTime()}>
-											<DashboardPieceButton
-												piece={adLibPiece}
-												studio={this.props.studio}
-												layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
-												outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
-												onToggleAdLib={filter.displayTakeButtons ? this.onSelectAdLib : this.onToggleAdLib}
-												playlist={this.props.playlist}
-												isOnAir={this.isAdLibOnAir(adLibPiece)}
-												isNext={this.isAdLibNext(adLibPiece)}
-												mediaPreviewUrl={
-													this.props.studio
-														? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
-														: ''
-												}
-												widthScale={filter.buttonWidthScale}
-												heightScale={filter.buttonHeightScale}
-												displayStyle={filter.displayStyle}
-												showThumbnailsInList={filter.showThumbnailsInList}
-												isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}>
-												{adLibPiece.name}
-											</DashboardPieceButton>
-										</ContextMenuTrigger>
-									)
-								})}
+											widthScale={filter.buttonWidthScale}
+											heightScale={filter.buttonHeightScale}
+											displayStyle={filter.displayStyle}
+											showThumbnailsInList={filter.showThumbnailsInList}
+											isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}>
+											{adLibPiece.name}
+										</DashboardPieceButton>
+									</ContextMenuTrigger>
+								)
+							})}
 						</div>
 						{filter.displayTakeButtons && (
 							<div className="dashboard-panel__buttons">

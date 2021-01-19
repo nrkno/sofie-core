@@ -26,6 +26,7 @@ import {
 	getNextPieceInstancesGrouped,
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
+import { RundownUtils } from '../../lib/rundown'
 interface IState {
 	outputLayers: {
 		[key: string]: IOutputLayer
@@ -66,8 +67,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 			this.liveLine = el
 			this.ensureLiveLineVisible()
 		}
-		componentDidUpdate(prevProps) {
-			super.componentDidUpdate(prevProps)
+		componentDidUpdate(prevProps, prevState) {
+			super.componentDidUpdate(prevProps, prevState)
 			this.ensureLiveLineVisible()
 		}
 		componentDidMount() {
@@ -117,7 +118,14 @@ export const TimelineDashboardPanel = translateWithTracker<
 													studio={this.props.studio}
 													layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
 													outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
-													onToggleAdLib={this.onToggleAdLib}
+													onToggleAdLib={this.onToggleOrSelectAdLib}
+													onSelectAdLib={this.onSelectAdLib}
+													isSelected={
+														(this.props.selectedPiece &&
+															RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+															this.props.selectedPiece._id === adLibListItem._id) ||
+														false
+													}
 													playlist={this.props.playlist}
 													isOnAir={this.isAdLibOnAir(adLibListItem)}
 													mediaPreviewUrl={
@@ -167,7 +175,14 @@ export const TimelineDashboardPanel = translateWithTracker<
 														piece={adLibListItem}
 														layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
 														outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
-														onToggleAdLib={this.onToggleAdLib}
+														onToggleAdLib={this.onToggleOrSelectAdLib}
+														onSelectAdLib={this.onSelectAdLib}
+														isSelected={
+															(this.props.selectedPiece &&
+																RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+																this.props.selectedPiece._id === adLibListItem._id) ||
+															false
+														}
 														playlist={this.props.playlist}
 														studio={this.props.studio}
 														isOnAir={this.isAdLibOnAir(adLibListItem)}
