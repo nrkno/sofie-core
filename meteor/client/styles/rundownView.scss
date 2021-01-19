@@ -1123,8 +1123,12 @@ body.no-overflow {
 
 			&.segment-timeline__liveline__appendage--piece-countdown {
 				color: $liveline-timecode-color;
-				font-weight: 500;
+				font-weight: 400;
 				text-shadow: -1px -1px 1px #000, 1px -1px 1px #000, -1px 1px 1px #000, 1px 1px 1px #000, 2px 2px 5px #000;
+
+				font-size: 1.2em;
+				margin-top: -0.25em;
+				white-space: nowrap;
 			}
 		}
 

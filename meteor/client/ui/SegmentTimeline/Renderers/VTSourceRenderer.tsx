@@ -460,7 +460,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 						style={{
 							top: `calc(${this.props.layerIndex} * var(--segment-layer-height))`,
 						}}>
-						{RundownUtils.formatDiffToTimecode(counter || 0, true, false, true, false, true, '', false, false)}
+						{RundownUtils.formatDiffToTimecode(counter || 0, false, false, true, false, true, '', false, false)}
 					</div>
 				)
 			}
