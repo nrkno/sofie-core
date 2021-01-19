@@ -20,6 +20,7 @@ import {
 	protectString,
 	asyncCollectionRemove,
 	waitForPromise,
+	ProtectedString,
 } from '../../lib/lib'
 import { PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
@@ -44,6 +45,7 @@ export enum PieceType {
 // TODO-PartInstance generate these for when the part has no need, but the instance still references something
 
 function generateExpectedMediaItems<T extends ExpectedMediaItemBase>(
+	sourceId: ProtectedString<any>,
 	commonProps: Subtract<T, ExpectedMediaItemBase>,
 	studioId: StudioId,
 	label: string,
@@ -56,7 +58,7 @@ function generateExpectedMediaItems<T extends ExpectedMediaItemBase>(
 	if (pieceContent && pieceContent.fileName && pieceContent.path && pieceContent.mediaFlowIds) {
 		for (const flow of pieceContent.mediaFlowIds) {
 			const id = protectString<ExpectedMediaItemId>(
-				getHash(pieceType + '_' + JSON.stringify(commonProps) + '_' + flow)
+				getHash(pieceType + '_' + sourceId + '_' + JSON.stringify(commonProps) + '_' + flow)
 			)
 			const baseObj: ExpectedMediaItemBase = {
 				_id: id,
@@ -90,6 +92,7 @@ function generateExpectedMediaItemsFull(
 	pieces.forEach((doc) =>
 		eMIs.push(
 			...generateExpectedMediaItems<ExpectedMediaItemRundown>(
+				doc._id,
 				{
 					partId: doc.startPartId,
 					rundownId: doc.startRundownId,
@@ -104,6 +107,7 @@ function generateExpectedMediaItemsFull(
 	adlibs.forEach((doc) =>
 		eMIs.push(
 			...generateExpectedMediaItems<ExpectedMediaItemRundown>(
+				doc._id,
 				{
 					partId: doc.partId,
 					rundownId: rundownId,
@@ -118,6 +122,7 @@ function generateExpectedMediaItemsFull(
 	actions.forEach((doc) =>
 		eMIs.push(
 			...generateExpectedMediaItems<ExpectedMediaItemRundown>(
+				doc._id,
 				{
 					partId: doc.partId,
 					rundownId: rundownId,
@@ -167,6 +172,7 @@ export function updateExpectedMediaItemForBucketAdLibPiece(adLibId: PieceId): vo
 	}
 
 	const result = generateExpectedMediaItems<ExpectedMediaItemBucketPiece>(
+		piece._id,
 		{
 			bucketId: piece.bucketId,
 			bucketAdLibPieceId: piece._id,
@@ -196,6 +202,7 @@ export function updateExpectedMediaItemForBucketAdLibAction(actionId: AdLibActio
 	}
 
 	const result = generateExpectedMediaItems<ExpectedMediaItemBucketAction>(
+		action._id,
 		{
 			bucketId: action.bucketId,
 			bucketAdLibActionId: action._id,
