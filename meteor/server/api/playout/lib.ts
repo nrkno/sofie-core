@@ -180,10 +180,11 @@ export function selectNextPart(
 	const span = profiler.startSpan('selectNextPart')
 	const findFirstPlayablePart = (
 		offset: number,
-		condition?: (part: Part) => boolean
+		condition?: (part: Part) => boolean,
+		length?: number
 	): SelectNextPartResult | undefined => {
 		// Filter to after and find the first playabale
-		for (let index = offset; index < parts.length; index++) {
+		for (let index = offset; index < (length || parts.length); index++) {
 			const part = parts[index]
 			if (part.isPlayable() && (!condition || condition(part))) {
 				return { part, index }
@@ -221,7 +222,14 @@ export function selectNextPart(
 		}
 	}
 
-	// TODO - rundownPlaylist.loop
+	// if playlist should loop, check from 0 to currentPart
+	if (rundownPlaylist.loop && !nextPart && previousPartInstance) {
+		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
+		// TODO - choose something better for next?
+		if (currentIndex !== -1) {
+			nextPart = findFirstPlayablePart(0, undefined, currentIndex)
+		}
+	}
 
 	// Filter to after and find the first playabale
 	const res = nextPart || findFirstPlayablePart(offset)
