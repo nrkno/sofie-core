@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.16.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.0-in-testing-R28.1...v1.16.0) (2021-01-19)
+
 ## [1.16.0-in-testing-R28.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.0-in-testing-R28.0...v1.16.0-in-testing-R28.1) (2020-12-14)
 
 ## [1.16.0-in-testing-R28.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.15.0...v1.16.0-in-testing-R28.0) (2020-12-14)
