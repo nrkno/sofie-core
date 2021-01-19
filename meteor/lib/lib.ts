@@ -49,6 +49,23 @@ export function getHash(str: string): string {
 		.digest('base64')
 		.replace(/[\+\/\=]/g, '_') // remove +/= from strings, because they cause troubles
 }
+/** Returns a string that'll change whenever the content of the object changes (excluding ordering of properties) */
+export function hashObj(obj: any): string {
+	if (typeof obj === 'object') {
+		const keys = Object.keys(obj).sort((a, b) => {
+			if (a > b) return 1
+			if (a < b) return -1
+			return 0
+		})
+
+		const strs: string[] = []
+		for (const key of keys) {
+			strs.push(hashObj(obj[key]))
+		}
+		return getHash(strs.join('|'))
+	}
+	return obj + ''
+}
 
 export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
 	return Random.id(numberOfChars) as any

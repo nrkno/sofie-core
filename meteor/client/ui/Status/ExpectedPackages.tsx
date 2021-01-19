@@ -6,7 +6,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
-} from '../../../lib/collections/ExpectedPackageStatuses'
+} from '../../../lib/collections/ExpectedPackageWorkStatuses'
 import { unprotectString } from '../../../lib/lib'
 import { ExpectedPackageDB, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { stat } from 'fs'
@@ -71,7 +71,8 @@ export const ExpectedPackagesStatus = translateWithTracker<
 				}
 			} = {}
 			for (const work of this.props.expectedPackageWorkStatuses) {
-				const packageId = unprotectString(work.packageId)
+				// todo: make this better:
+				const packageId = unprotectString(work.fromPackages[0]?.id) || 'N/A'
 				const referencedPackage = packageRef[packageId]
 				let packageWithWorkStatus = packagesWithWorkStatuses[packageId]
 				if (!packageWithWorkStatus) {

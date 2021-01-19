@@ -8,13 +8,17 @@ import { PeripheralDeviceId } from './PeripheralDevices'
 
 export type ExpectedPackageWorkStatusId = ProtectedString<'ExpectedPackageStatusId'>
 
-export interface ExpectedPackageWorkStatus extends Omit<ExpectedPackageStatusAPI.WorkStatus, 'packageId'> {
+export interface ExpectedPackageWorkStatus extends Omit<ExpectedPackageStatusAPI.WorkStatus, 'fromPackages'> {
 	_id: ExpectedPackageWorkStatusId
 
-	packageId: ExpectedPackageDBBase['_id']
 	studioId: ExpectedPackageDBBase['studioId']
-	rundownId: ExpectedPackageDBBase['rundownId']
-	pieceId: ExpectedPackageDBBase['pieceId']
+	fromPackages: {
+		id: ExpectedPackageDBBase['_id']
+		contentVersionHash: string
+	}[]
+	// rundownId: ExpectedPackageDBBase['rundownId']
+	// pieceId: ExpectedPackageDBBase['pieceId']
+
 	/** Which PeripheralDevice this update came from */
 	deviceId: PeripheralDeviceId
 
@@ -29,8 +33,8 @@ registerCollection('ExpectedPackageStatuses', ExpectedPackageWorkStatuses)
 
 registerIndex(ExpectedPackageWorkStatuses, {
 	studioId: 1,
-	rundownId: 1,
+	// fromPackages: 1,
 })
-registerIndex(ExpectedPackageWorkStatuses, {
-	deviceId: 1,
-})
+// registerIndex(ExpectedPackageWorkStatuses, {
+// 	deviceId: 1,
+// })

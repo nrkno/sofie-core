@@ -159,6 +159,11 @@ export namespace PeripheralDeviceAPI {
 		"removeExpectedPackageWorkStatus" = "peripheralDevice.packageManager.removeExpectedPackageWorkStatus",
 		"removeAllExpectedPackageWorkStatusOfDevice" = "peripheralDevice.packageManager.removeAllExpectedPackageWorkStatusOfDevice",
 
+		"updatePackageContainerPackageStatus" = "peripheralDevice.packageManager.updatePackageContainerPackageStatus",
+		"fetchPackageInfoMetadata" = "peripheralDevice.packageManager.fetchPackageInfoMetadata",
+		"updatePackageInfo" = "peripheralDevice.packageManager.updatePackageInfo",
+		"removePackageInfo" = "peripheralDevice.packageManager.removePackageInfo",
+
 		"requestUserAuthToken" = "peripheralDevice.spreadsheet.requestUserAuthToken",
 		"storeAccessToken" = "peripheralDevice.spreadsheet.storeAccessToken",
 	}

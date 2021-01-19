@@ -1,12 +1,20 @@
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Time, ProtectedString } from '../lib'
+import { registerCollection, Time, ProtectedString, hashObj } from '../lib'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { ResultingMappingRoutes, StudioId } from './Studios'
 import { PieceId } from './Pieces'
 import { registerIndex } from '../database'
 import { AdLibActionId } from './AdLibActions'
+/*
+ Expected Packages are created from Pieces in the rundown.
+ A "Package" is a generic term for a "thing that can be played", such as media files, audio, graphics etc..
+ The blueprints generate Pieces with expectedPackages on them.
+ These are then picked up by a Package Manager who then tries to fullfill the expectations.
+ Example: An ExpectedPackage could be a "Media file to be present on the location used by a playout device".
+   The Package Manager will then copy the file to the right place.
+*/
 
 export type ExpectedPackageId = ProtectedString<'ExpectedPackageId'>
 
@@ -27,6 +35,9 @@ export interface ExpectedPackageDBBase extends Omit<ExpectedPackage.Base, '_id'>
 	studioId: StudioId
 	/** The rundown of the Piece this package belongs to */
 	rundownId: RundownId
+
+	/** Hash that changes whenever the content or version changes. See getContentVersionHash() */
+	contentVersionHash: string
 
 	pieceId: ProtectedString<any>
 	fromPieceType: ExpectedPackageDBType
@@ -56,43 +67,10 @@ registerIndex(ExpectedPackages, {
 	rundownId: 1,
 	pieceId: 1,
 })
-
-export function getRoutedExpectedPackages(
-	expectedPackages: ExpectedPackageDBBase[],
-	mappingRoutes: ResultingMappingRoutes
-) {
-	// const outputTimelineObjs: TimelineObjGeneric[] = []
-
-	expectedPackages[0].layer
-
-	// for (let obj of inputTimelineObjs) {
-	// 	let inputLayer = obj.layer + ''
-	// 	if (obj.isLookahead && obj.lookaheadForLayer) {
-	// 		// For lookahead objects, .layer doesn't point to any real layer
-	// 		inputLayer = obj.lookaheadForLayer + ''
-	// 	}
-	// 	const routes = mappingRoutes.existing[inputLayer]
-	// 	if (routes) {
-	// 		for (let i = 0; i < routes.length; i++) {
-	// 			const route = routes[i]
-	// 			const routedObj: TimelineObjGeneric = {
-	// 				...obj,
-	// 				layer: route.outputMappedLayer,
-	// 			}
-	// 			if (routedObj.isLookahead && routedObj.lookaheadForLayer) {
-	// 				// Update lookaheadForLayer to reference the original routed layer:
-	// 				updateLookaheadLayer(routedObj)
-	// 			}
-	// 			if (i > 0) {
-	// 				// If there are multiple routes we must rename the ids, so that they stay unique.
-	// 				routedObj.id = `_${i}_${routedObj.id}`
-	// 			}
-	// 			outputTimelineObjs.push(routedObj)
-	// 		}
-	// 	} else {
-	// 		// If no route is found at all, pass it through (backwards compatibility)
-	// 		outputTimelineObjs.push(obj)
-	// 	}
-	// }
-	// return outputTimelineObjs
+export function getContentVersionHash(expectedPackage: Omit<ExpectedPackage.Any, '_id'>): string {
+	return hashObj({
+		content: expectedPackage.content,
+		version: expectedPackage.version,
+		// todo: should expectedPackage.sources.containerId be here as well?
+	})
 }

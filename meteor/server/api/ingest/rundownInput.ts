@@ -142,7 +142,12 @@ import {
 	syncPlayheadInfinitesForNextPartInstance,
 } from '../playout/infinites'
 import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
-import { ExpectedPackageDB, ExpectedPackageDBType, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
+import {
+	ExpectedPackageDB,
+	ExpectedPackageDBType,
+	ExpectedPackages,
+	getContentVersionHash,
+} from '../../../lib/collections/ExpectedPackages'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -2159,6 +2164,7 @@ function generateExpectedPackages(
 				packages.push({
 					...expectedPackage,
 					_id: protectString(`${piece._id}_${getHash(JSON.stringify(expectedPackage))}`),
+					contentVersionHash: getContentVersionHash(expectedPackage),
 					studioId,
 					rundownId,
 					pieceId: piece._id,

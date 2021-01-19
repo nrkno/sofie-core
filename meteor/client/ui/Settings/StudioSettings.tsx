@@ -1729,6 +1729,7 @@ const StudioPackageManagerSettings = withTranslation()(
 
 			let newAccessor: Accessor.LocalFolder = {
 				type: Accessor.AccessType.LOCAL_FOLDER,
+				label: 'Local folder',
 				allowRead: true,
 				allowWrite: false,
 				folderPath: '',

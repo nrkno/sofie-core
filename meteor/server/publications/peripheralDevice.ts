@@ -24,7 +24,7 @@ import {
 	Studios,
 } from '../../lib/collections/Studios'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
-import { ExpectedPackageDB, ExpectedPackages, getRoutedExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDB, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import _, { map } from 'underscore'
 import {
 	ExpectedPackage,

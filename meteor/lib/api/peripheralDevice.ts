@@ -13,7 +13,8 @@ import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../collections/MediaWork
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { TimelineHash } from '../collections/Timeline'
 import { ExpectedPackageId } from '../collections/ExpectedPackages'
-import { ExpectedPackageWorkStatusId } from '../collections/ExpectedPackageStatuses'
+import { ExpectedPackageWorkStatusId } from '../collections/ExpectedPackageWorkStatuses'
+import { PackageContainerPackageStatus } from '../collections/PackageContainerStatuses'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
 
@@ -290,6 +291,36 @@ export interface NewPeripheralDeviceAPI {
 	): Promise<void>
 	removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
 
+	updatePackageContainerPackageStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		containerId: string,
+		packageId: string,
+		packageStatus: PackageContainerPackageStatus | null
+	): Promise<void>
+
+	fetchPackageInfoMetadata(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		type: string,
+		packageIds: ExpectedPackageId[]
+	): Promise<{ packageId: ExpectedPackageId; expectedContentVersionHash: string; actualContentVersionHash: string }[]>
+	updatePackageInfo(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		type: string,
+		packageId: ExpectedPackageId,
+		expectedContentVersionHash: string,
+		actualContentVersionHash: string,
+		payload: any
+	): Promise<void>
+	removePackageInfo(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		type: string,
+		packageId: ExpectedPackageId
+	): Promise<void>
+
 	determineDiffTime(): Promise<DiffTimeResult>
 	getTimeDiff(): Promise<TimeDiff>
 	getTime(): Promise<number>
@@ -369,6 +400,11 @@ export enum PeripheralDeviceAPIMethods {
 	'updateExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.updateExpectedPackageWorkStatus',
 	'removeExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.removeExpectedPackageWorkStatus',
 	'removeAllExpectedPackageWorkStatusOfDevice' = 'peripheralDevice.packageManager.removeAllExpectedPackageWorkStatusOfDevice',
+
+	'updatePackageContainerPackageStatus' = 'peripheralDevice.packageManager.updatePackageContainerPackageStatus',
+	'fetchPackageInfoMetadata' = 'peripheralDevice.packageManager.fetchPackageInfoMetadata',
+	'updatePackageInfo' = 'peripheralDevice.packageManager.updatePackageInfo',
+	'removePackageInfo' = 'peripheralDevice.packageManager.removePackageInfo',
 
 	'requestUserAuthToken' = 'peripheralDevice.spreadsheet.requestUserAuthToken',
 	'storeAccessToken' = 'peripheralDevice.spreadsheet.storeAccessToken',

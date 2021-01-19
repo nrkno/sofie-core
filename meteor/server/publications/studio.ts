@@ -14,7 +14,10 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
 import { ExpectedPackageDB, ExpectedPackageDBBase, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
-import { ExpectedPackageWorkStatus, ExpectedPackageWorkStatuses } from '../../lib/collections/ExpectedPackageStatuses'
+import {
+	ExpectedPackageWorkStatus,
+	ExpectedPackageWorkStatuses,
+} from '../../lib/collections/ExpectedPackageWorkStatuses'
 
 meteorPublish(PubSub.studios, function(selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)

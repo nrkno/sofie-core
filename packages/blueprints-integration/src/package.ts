@@ -30,6 +30,9 @@ export namespace ExpectedPackage {
 		 */
 		version: object
 
+		/** Hash that changes whenever the content or version changes. */
+		contentVersionHash: string
+
 		/** Definition of the source-PackageContainers of the Package
 		 * The source is used by the package manager to be able to be able to do an action on the Package. For a media file about to be copied, think "source file path".
 		 * Multiple sources can be defined, in order of preference(?)
@@ -228,8 +231,16 @@ export namespace ExpectedPackageStatusAPI {
 	/** Information about the status of some work being performed with regards to an Expected Package */
 	export interface WorkStatus extends WorkBaseInfo, WorkStatusInfo {}
 	export interface WorkBaseInfo {
-		/** Which package the PackageStatus belongs to */
-		packageId: string
+		/** Which packages the WorkStatus belongs to */
+		fromPackages: {
+			/** Reference to the id of the Package */
+			id: string
+			/** Reference to the contentVersionHash of the ExpectedPackage, used to reference the expected content+version of the Package */
+			expectedContentVersionHash: string
+
+			/** Referring to the actual contentVersionHash of the Package, used to reference the exact content+version of the Package */
+			actualContentVersionHash: string
+		}[]
 
 		/** Short Display label */
 		label: string
