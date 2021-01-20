@@ -37,7 +37,7 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	rundownId: RundownId
 
 	/** The id of the playlist activation session */
-	// playlistActivationId: RundownPlaylistActivationId
+	playlistActivationId: RundownPlaylistActivationId
 
 	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	reset?: boolean
@@ -81,7 +81,7 @@ export class PartInstance implements DBPartInstance {
 	/** Whether this PartInstance is a temprorary wrapping of a Part */
 	public readonly isTemporary: boolean
 
-	// public playlistActivationId: RundownPlaylistActivationId
+	public playlistActivationId: RundownPlaylistActivationId
 	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	public reset?: boolean
 	public takeCount: number
@@ -111,12 +111,16 @@ export class PartInstance implements DBPartInstance {
 	}
 }
 
-export function wrapPartToTemporaryInstance(part: DBPart): PartInstance {
+export function wrapPartToTemporaryInstance(
+	playlistActivationId: RundownPlaylistActivationId,
+	part: DBPart
+): PartInstance {
 	return new PartInstance(
 		{
 			_id: protectString(`${part._id}_tmp_instance`),
 			rundownId: part.rundownId,
 			segmentId: part.segmentId,
+			playlistActivationId,
 			takeCount: -1,
 			rehearsal: false,
 			part: new Part(part),
@@ -129,14 +133,14 @@ export function findPartInstanceInMapOrWrapToTemporary<T extends Partial<PartIns
 	partInstancesMap: Map<PartId, T>,
 	part: DBPart
 ): T {
-	return partInstancesMap.get(part._id) || (wrapPartToTemporaryInstance(part) as T)
+	return partInstancesMap.get(part._id) || (wrapPartToTemporaryInstance(protectString(''), part) as T)
 }
 
 export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance>>(
 	partInstances: { [partId: string]: T | undefined },
 	part: DBPart
 ): T {
-	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(part) as T)
+	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(protectString(''), part) as T)
 }
 
 export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> = createMongoCollection<PartInstance>(

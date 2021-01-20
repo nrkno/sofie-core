@@ -48,7 +48,7 @@ export interface PieceInstance
 	readonly isTemporary?: boolean
 
 	/** The id of the playlist activation session */
-	// playlistActivationId: RundownPlaylistActivationId
+	playlistActivationId: RundownPlaylistActivationId
 
 	/** Whether this instance has been finished with and reset (to restore the original piece as the primary version) */
 	reset?: boolean
@@ -99,6 +99,7 @@ export function omitPiecePropertiesForInstance(piece: Piece): PieceInstancePiece
 
 export function rewrapPieceToInstance(
 	piece: PieceInstancePiece,
+	playlistActivationId: RundownPlaylistActivationId,
 	rundownId: RundownId,
 	partInstanceId: PartInstanceId,
 	isTemporary?: boolean
@@ -107,6 +108,7 @@ export function rewrapPieceToInstance(
 		isTemporary,
 		_id: protectString(`${partInstanceId}_${piece._id}`),
 		rundownId: rundownId,
+		playlistActivationId: playlistActivationId,
 		partInstanceId: partInstanceId,
 		piece: piece,
 	}
@@ -114,11 +116,13 @@ export function rewrapPieceToInstance(
 
 export function wrapPieceToInstance(
 	piece: Piece,
+	playlistActivationId: RundownPlaylistActivationId,
 	partInstanceId: PartInstanceId,
 	isTemporary?: boolean
 ): PieceInstance {
 	return rewrapPieceToInstance(
 		omitPiecePropertiesForInstance(piece),
+		playlistActivationId,
 		piece.startRundownId,
 		partInstanceId,
 		partInstanceId === protectString('') || isTemporary

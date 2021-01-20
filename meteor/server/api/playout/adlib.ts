@@ -33,7 +33,7 @@ import {
 	convertPieceToAdLibPiece,
 	setupPieceInstanceInfiniteProperties,
 } from './pieces'
-import { updateTimeline } from './timeline'
+import { getActiveRundownPlaylist, updateTimeline } from './timeline'
 import { updatePartInstanceRanks } from '../rundown'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
@@ -100,7 +100,12 @@ export namespace ServerPlayoutAdLibAPI {
 						`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS item!`
 					)
 
-				const newPieceInstance = convertAdLibToPieceInstance(pieceToCopy, partInstance, false)
+				const newPieceInstance = convertAdLibToPieceInstance(
+					rundownPlaylist.activationId,
+					pieceToCopy,
+					partInstance,
+					false
+				)
 				if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
 					newPieceInstance.piece.content.timelineObjects = prefixAllObjectIds(
 						_.map(newPieceInstance.piece.content.timelineObjects, (obj) => {
@@ -270,12 +275,15 @@ export namespace ServerPlayoutAdLibAPI {
 		currentPartInstance: PartInstance,
 		adLibPiece: AdLibPiece | BucketAdLib
 	) {
+		if (!rundownPlaylist.activationId) throw new Meteor.Error(500, 'RundownPlaylist is not active')
+
 		const span = profiler.startSpan('innerStartOrQueueAdLibPiece')
 		if (queue || adLibPiece.toBeQueued) {
 			const newPartInstance = new PartInstance({
 				_id: getRandomId(),
 				rundownId: rundown._id,
 				segmentId: currentPartInstance.segmentId,
+				playlistActivationId: rundownPlaylist.activationId,
 				takeCount: currentPartInstance.takeCount + 1,
 				rehearsal: !!rundownPlaylist.rehearsal,
 				orphaned: 'adlib-part',
@@ -290,14 +298,24 @@ export namespace ServerPlayoutAdLibAPI {
 					expectedDuration: adLibPiece.expectedDuration,
 				}),
 			})
-			const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, newPartInstance, queue)
+			const newPieceInstance = convertAdLibToPieceInstance(
+				rundownPlaylist.activationId,
+				adLibPiece,
+				newPartInstance,
+				queue
+			)
 			innerStartQueuedAdLib(cache, rundownPlaylist, rundown, currentPartInstance, newPartInstance, [
 				newPieceInstance,
 			])
 
 			// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 		} else {
-			const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, currentPartInstance, queue)
+			const newPieceInstance = convertAdLibToPieceInstance(
+				rundownPlaylist.activationId,
+				adLibPiece,
+				currentPartInstance,
+				queue
+			)
 			innerStartAdLibPiece(cache, rundownPlaylist, rundown, currentPartInstance, newPieceInstance)
 
 			syncPlayheadInfinitesForNextPartInstance(cache, rundownPlaylist)
@@ -373,6 +391,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 		const query = {
 			...customQuery,
+			playlistActivationId: rundownPlaylist.activationId,
 			rundownId: { $in: rundownIds },
 			'piece.sourceLayerId': sourceLayerId,
 			startedPlayback: {
@@ -560,6 +579,7 @@ export namespace ServerPlayoutAdLibAPI {
 									status: RundownAPI.PieceStatusCode.UNKNOWN,
 									virtual: true,
 								},
+								currentPartInstance.playlistActivationId,
 								currentPartInstance.rundownId,
 								currentPartInstance._id
 							),

@@ -146,7 +146,9 @@ describe('findLookaheadForLayer', () => {
 			const part = orderedParts[i]
 			return {
 				part,
-				pieces: piecesMap.get(part._id)?.map((p) => wrapPieceToInstance(p, protectString(''), true)),
+				pieces: piecesMap
+					.get(part._id)
+					?.map((p) => wrapPieceToInstance(p, protectString('active'), protectString(''), true)),
 			} as any
 		}
 

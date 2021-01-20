@@ -1403,6 +1403,7 @@ function syncChangesToPartInstances(
 					}
 
 					const syncContext = new SyncIngestUpdateToPartInstanceContext(
+						playlist.activationId,
 						rundown,
 						cache,
 						new NotesContext(

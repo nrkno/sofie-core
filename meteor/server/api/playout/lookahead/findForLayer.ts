@@ -2,6 +2,7 @@ import { PartInstanceId } from '../../../../lib/collections/PartInstances'
 import { Part, PartId } from '../../../../lib/collections/Parts'
 import { wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
 import { Piece } from '../../../../lib/collections/Pieces'
+import { RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
 import { OnGenerateTimelineObjExt, TimelineObjRundown } from '../../../../lib/collections/Timeline'
 import { protectString } from '../../../../lib/lib'
 import { profiler } from '../../profiler'
@@ -73,7 +74,7 @@ export function findLookaheadForLayer(
 			}
 			const pieces = piecesByPart.get(part._id) ?? []
 			if (pieces.length > 0 && part.isPlayable()) {
-				const tmpPieces = pieces.map((p) => wrapPieceToInstance(p, protectString(''), true))
+				const tmpPieces = pieces.map((p) => wrapPieceToInstance(p, protectString(''), protectString(''), true))
 				const partInfo: PartAndPieces = { part, pieces: tmpPieces }
 				const objs = findLookaheadObjectsForPart(
 					currentPartInstanceId,

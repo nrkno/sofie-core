@@ -1,4 +1,8 @@
-import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylistId,
+	RundownPlaylist,
+	RundownPlaylistActivationId,
+} from '../../../lib/collections/RundownPlaylists'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	getCurrentTime,
@@ -78,9 +82,8 @@ export function takeNextPartInnerSync(
 
 	let playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
-
-	// const playlistActivationId = playlist.currentActivationId
-	// if (!playlistActivationId)
+	if (!playlist.activationId) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
+	const playlistActivationId = playlist.activationId
 
 	let timeOffset: number | null = playlist.nextTimeOffset || null
 	let firstTake = !playlist.startedPlayback
@@ -206,7 +209,7 @@ export function takeNextPartInnerSync(
 
 	// Setup the parts for the HOLD we are starting
 	if (playlist.previousPartInstanceId && m.holdState === RundownHoldState.ACTIVE) {
-		startHold(cache, currentPartInstance, nextPartInstance)
+		startHold(cache, playlistActivationId, currentPartInstance, nextPartInstance)
 	}
 	afterTake(cache, playlist.studioId, takePartInstance, timeOffset)
 
@@ -354,7 +357,7 @@ export function afterTake(
  */
 function startHold(
 	cache: CacheForRundownPlaylist,
-	// activationId: RundownPlaylistActivationId,
+	activationId: RundownPlaylistActivationId,
 	holdFromPartInstance: PartInstance | undefined,
 	holdToPartInstance: PartInstance | undefined
 ) {
@@ -381,7 +384,7 @@ function startHold(
 			// make the extension
 			const newInstance = literal<PieceInstance>({
 				_id: protectString<PieceInstanceId>(instance._id + '_hold'),
-				// playlistActivationId: activationId,
+				playlistActivationId: activationId,
 				rundownId: instance.rundownId,
 				partInstanceId: holdToPartInstance._id,
 				dynamicallyInserted: getCurrentTime(),

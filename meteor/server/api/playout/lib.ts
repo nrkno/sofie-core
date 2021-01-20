@@ -235,6 +235,10 @@ export function setNextPart(
 	nextTimeOffset?: number | undefined
 ) {
 	const span = profiler.startSpan('setNextPart')
+
+	if (!rundownPlaylist.activationId)
+		throw new Meteor.Error(500, `RundownPlaylist "${rundownPlaylist._id}" is not active`)
+
 	const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
 		cache,
@@ -287,6 +291,7 @@ export function setNextPart(
 			cache.PartInstances.insert({
 				_id: newInstanceId,
 				takeCount: newTakeCount,
+				playlistActivationId: rundownPlaylist.activationId,
 				rundownId: nextPart.rundownId,
 				segmentId: nextPart.segmentId,
 				part: nextPart,

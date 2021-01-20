@@ -4,7 +4,7 @@ import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Part, PartId } from '../../../../lib/collections/Parts'
-import { getCurrentTime, literal, unprotectString } from '../../../../lib/lib'
+import { getCurrentTime, literal, protectString, unprotectString } from '../../../../lib/lib'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import {
@@ -214,7 +214,7 @@ export const RundownTimingProvider = withTracker<
 				if (tempPartInstance !== undefined) {
 					return tempPartInstance
 				} else {
-					tempPartInstance = wrapPartToTemporaryInstance(part)
+					tempPartInstance = wrapPartToTemporaryInstance(protectString(''), part)
 					this.temporaryPartInstances.set(origPartId, tempPartInstance)
 					return tempPartInstance
 				}

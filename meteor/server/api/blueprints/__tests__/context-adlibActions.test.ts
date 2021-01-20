@@ -58,6 +58,7 @@ describe('Test blueprint api context', () => {
 				_id: protectString(`${part._id}_instance`),
 				rundownId: part.rundownId,
 				segmentId: part.segmentId,
+				playlistActivationId: protectString('active'),
 				takeCount: i,
 				rehearsal: false,
 				part,
@@ -69,6 +70,7 @@ describe('Test blueprint api context', () => {
 					_id: protectString(`${part._id}_piece${i}`),
 					rundownId: rundown._id,
 					partInstanceId: protectString(`${part._id}_instance`),
+					playlistActivationId: protectString('active'),
 					piece: {
 						_id: protectString(`${part._id}_piece_inner${i}`),
 						externalId: '-',
@@ -308,6 +310,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId0,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: protectString('active'),
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -335,6 +338,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId1,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: protectString('active'),
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -383,6 +387,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId0,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: protectString('active'),
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -403,6 +408,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId1,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[2]._id,
+						playlistActivationId: protectString('active'),
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -456,6 +462,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId0,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: protectString('active'),
 						piece: {
 							_id: getRandomId(),
 							startPartId: partInstances[0].part._id,
@@ -475,6 +482,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId1,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[2]._id,
+						playlistActivationId: protectString('active'),
 						piece: {
 							_id: getRandomId(),
 							startPartId: partInstances[2].part._id,
