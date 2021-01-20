@@ -65,6 +65,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
 		setRef = (el: HTMLDivElement) => {
 			this.liveLine = el
+			super.setRef(el)
 			this.ensureLiveLineVisible()
 		}
 		componentDidUpdate(prevProps, prevState) {
@@ -136,7 +137,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 													widthScale={filter.buttonWidthScale}
 													heightScale={filter.buttonHeightScale}
 													displayStyle={PieceDisplayStyle.BUTTONS}
-													showThumbnailsInList={filter.showThumbnailsInList}>
+													showThumbnailsInList={filter.showThumbnailsInList}
+													toggleOnSingleClick={this.state.singleClickMode}>
 													{adLibListItem.name}
 												</DashboardPieceButton>
 											)

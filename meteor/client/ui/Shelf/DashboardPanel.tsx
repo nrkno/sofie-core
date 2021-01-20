@@ -23,7 +23,12 @@ import {
 	AdLibPanelToolbar,
 } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
-import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
+import {
+	ensureHasTrailingSlash,
+	contextMenuHoldToDisplayTime,
+	UserAgentPointer,
+	USER_AGENT_POINTER_PROPERTY,
+} from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { invalidateAt } from '../../lib/invalidatingTime'
@@ -43,6 +48,7 @@ interface IState {
 	}
 	searchFilter: string | undefined
 	selectedAdLib?: AdLibPieceUi
+	singleClickMode: boolean
 }
 
 const BUTTON_GRID_WIDTH = 1
@@ -118,6 +124,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			outputLayers: {},
 			sourceLayers: {},
 			searchFilter: undefined,
+			singleClickMode: false,
 		}
 	}
 
@@ -537,6 +544,19 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		})
 	}
 
+	protected setRef = (ref: HTMLDivElement) => {
+		const _panel = ref
+		if (_panel) {
+			const style = window.getComputedStyle(_panel)
+			const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
+			if (this.state.singleClickMode !== (value === UserAgentPointer.NO_POINTER)) {
+				this.setState({
+					singleClickMode: value === UserAgentPointer.NO_POINTER,
+				})
+			}
+		}
+	}
+
 	render() {
 		const { t } = this.props
 		const filteredAdLibs = DashboardPanelInner.filterOutAdLibs(this.props, this.state)
@@ -550,6 +570,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						className={ClassNames('dashboard-panel', {
 							'dashboard-panel--take': filter.displayTakeButtons,
 						})}
+						ref={this.setRef}
 						style={dashboardElementPosition(filter)}>
 						<h4 className="dashboard-panel__header">{this.props.filter.name}</h4>
 						{filter.enableSearch && <AdLibPanelToolbar onFilterChange={this.onFilterChange} />}
@@ -592,6 +613,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 											heightScale={filter.buttonHeightScale}
 											displayStyle={filter.displayStyle}
 											showThumbnailsInList={filter.showThumbnailsInList}
+											toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
 											isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}>
 											{adLibPiece.name}
 										</DashboardPieceButton>

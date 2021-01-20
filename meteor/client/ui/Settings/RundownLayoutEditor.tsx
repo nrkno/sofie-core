@@ -764,6 +764,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									/>
 								</label>
 							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Toggle AdLibs on single mouse click')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.toggleOnSingleClick`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
 						</React.Fragment>
 					)}
 				</React.Fragment>

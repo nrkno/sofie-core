@@ -98,3 +98,8 @@ export function ensureHasTrailingSlash(input: string | null): string | null {
 		return input
 	}
 }
+
+export const USER_AGENT_POINTER_PROPERTY = '--pointer'
+export enum UserAgentPointer {
+	NO_POINTER = 'no-pointer',
+}
