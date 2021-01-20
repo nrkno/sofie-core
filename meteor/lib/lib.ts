@@ -592,8 +592,8 @@ export function getRank<T extends { _rank: number }>(
 	i: number = 0,
 	count: number = 1
 ): number {
-	let newRankMax
-	let newRankMin
+	let newRankMax: number
+	let newRankMin: number
 
 	if (after) {
 		if (before) {
