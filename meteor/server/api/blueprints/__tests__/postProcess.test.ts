@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal, protectString, waitForPromise } from '../../../../lib/lib'
+import { literal, protectString, unprotectString, waitForPromise } from '../../../../lib/lib'
 import { Studios, Studio } from '../../../../lib/collections/Studios'
 import {
 	postProcessStudioBaselineObjects,
@@ -181,7 +181,7 @@ describe('Test blueprint post-process', () => {
 		testInFiber('duplicate ids', () => {
 			const studio = getStudio()
 			const context = getStudioContext(studio)
-			const blueprintId = protectString('blueprint0')
+			const blueprintId = protectString(unprotectString(studio.blueprintId)) // the unit could modify the value, so make a literal copy
 
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
