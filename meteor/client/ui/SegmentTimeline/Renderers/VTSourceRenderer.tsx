@@ -17,6 +17,7 @@ import { PieceStatusIcon } from '../PieceStatusIcon'
 import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
 import { RundownUtils } from '../../../lib/rundown'
+import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
 
 interface IProps extends ICustomLayerItemProps {}
 interface IState {
@@ -461,6 +462,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 							top: `calc(${this.props.layerIndex} * var(--segment-layer-height))`,
 						}}>
 						{RundownUtils.formatDiffToTimecode(counter || 0, false, false, true, false, true, '', false, false)}
+						<FreezeFrameIcon className="segment-timeline__liveline__appendage--piece-countdown__icon" />
 					</div>
 				)
 			}
