@@ -428,13 +428,13 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	}
 
 	renderContentEndCountdown() {
-		const { piece: uiPiece, part, isLiveLine, livePosition } = this.props
+		const { piece: uiPiece, part, isLiveLine, livePosition, partStartsAt } = this.props
 		const innerPiece = uiPiece.instance.piece
 
 		const vtContent = innerPiece.content as VTContent | undefined
 		const seek = vtContent && vtContent.seek ? vtContent.seek : 0
 		let countdown: React.ReactNode = null
-		const livePositionInPart = (livePosition || 0) - part.startsAt
+		const livePositionInPart = (livePosition || 0) - partStartsAt
 		if (
 			isLiveLine &&
 			this.countdownContainer &&
