@@ -509,7 +509,8 @@ export namespace ServerPlayoutAdLibAPI {
 				!pieceInstance.piece.virtual &&
 				filter(pieceInstance) &&
 				pieceInstance.resolvedStart !== undefined &&
-				pieceInstance.resolvedStart <= relativeStopAt
+				pieceInstance.resolvedStart <= relativeStopAt &&
+				!pieceInstance.stoppedPlayback
 			) {
 				switch (pieceInstance.piece.lifespan) {
 					case PieceLifespan.WithinPart:
