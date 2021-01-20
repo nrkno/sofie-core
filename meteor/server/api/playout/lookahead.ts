@@ -145,10 +145,6 @@ export async function getLookeaheadObjects(
 
 	const maxLookaheadDistance = findLargestLookaheadDistance(mappingsToConsider)
 	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(cache, playlist, maxLookaheadDistance)
-	if (orderedPartsFollowingPlayhead.length === 0 && !partInstancesInfo0.next) {
-		// Nothing to search through
-		return []
-	}
 
 	const piecesToSearchQuery: Mongo.Query<Piece> = {
 		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
