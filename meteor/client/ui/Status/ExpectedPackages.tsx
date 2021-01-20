@@ -130,7 +130,8 @@ export const ExpectedPackagesStatus = translateWithTracker<
 											<i>{status.description}</i>
 										</div>
 										<div>
-											Progress: <b>{Math.round((status.progress || 0) * 100)} %</b>
+											Progress:{' '}
+											<b>{status.status === 'working' ? `${Math.round((status.progress || 0) * 100)} %` : null}</b>
 										</div>
 										<div>
 											Status: <b>{status.status}</b>

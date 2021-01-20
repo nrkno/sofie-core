@@ -48,8 +48,8 @@ export enum PackageContainerPackageStatusStatus {
 export const PackageContainerStatuses: TransformedCollection<
 	PackageContainerStatus,
 	PackageContainerStatus
-> = createMongoCollection<PackageContainerStatus>('packageContainers')
-registerCollection('PackageContainers', PackageContainerStatuses)
+> = createMongoCollection<PackageContainerStatus>('packageContainerStatuses')
+registerCollection('PackageContainerStatuses', PackageContainerStatuses)
 
 registerIndex(PackageContainerStatuses, {
 	studioId: 1,

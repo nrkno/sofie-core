@@ -182,7 +182,7 @@ export namespace Accessor {
 		zoneId: string
 	}
 	/** Virtual PackageContainer used for piping data into core */
-	export interface CorePackageCollection {
+	export interface CorePackageCollection extends Base {
 		type: Accessor.AccessType.CORE_PACKAGE_INFO
 		// TODO
 	}
