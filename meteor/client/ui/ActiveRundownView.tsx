@@ -59,7 +59,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 				PubSub.rundownPlaylists,
 				_.extend(
 					{
-						active: true,
+						activationId: { exists: true },
 					},
 					this.props.studioId
 						? {

@@ -282,7 +282,7 @@ export const RundownPlaylistUi = DropTarget(
 
 					return rundown ? (
 						<RundownListItem
-							isActive={!!playlist.active}
+							isActive={!!playlist.activationId}
 							key={unprotectString(rundown._id)}
 							rundown={rundown}
 							swapRundownOrder={handleRundownSwap}

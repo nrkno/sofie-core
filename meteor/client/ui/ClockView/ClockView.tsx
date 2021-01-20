@@ -42,7 +42,7 @@ export const ClockView = withTracker(function(props: IPropsHeader) {
 			let studioId = this.props.studioId
 			if (studioId) {
 				this.subscribe(PubSub.rundownPlaylists, {
-					active: true,
+					activationId: { exists: true },
 					studioId: studioId,
 				})
 			}

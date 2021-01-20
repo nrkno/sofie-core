@@ -76,7 +76,7 @@ describe('Playout API', () => {
 		const segments = getRundown0().getSegments()
 
 		expect(getPlaylist0()).toMatchObject({
-			active: false,
+			ac: false,
 			rehearsal: false,
 		})
 
@@ -87,7 +87,7 @@ describe('Playout API', () => {
 			expect(instances).toHaveLength(1)
 			expect(instances[0].part._id).toEqual(parts[0]._id)
 			expect(getPlaylist0()).toMatchObject({
-				active: true,
+				activationId: 'something',
 				rehearsal: true,
 				currentPartInstanceId: null,
 				nextPartInstanceId: instances[0]._id,
@@ -264,7 +264,7 @@ describe('Playout API', () => {
 			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
 			expect(instances).toHaveLength(3)
 			expect(getPlaylist0()).toMatchObject({
-				active: false,
+				activationId: undefined,
 				currentPartInstanceId: null,
 				nextPartInstanceId: null,
 			})
@@ -313,7 +313,7 @@ describe('Playout API', () => {
 			expect(instances).toHaveLength(1)
 			expect(instances[0].part._id).toEqual(parts[0]._id)
 			expect(getPlaylist0()).toMatchObject({
-				active: true,
+				activationId: 'something',
 				rehearsal: true,
 				currentPartInstanceId: null,
 				nextPartInstanceId: instances[0]._id,

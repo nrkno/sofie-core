@@ -115,7 +115,7 @@ describe('User Actions - General', () => {
 		const parts = getRundown0().getParts()
 
 		expect(getPlaylist0()).toMatchObject({
-			active: false,
+			activationId: false,
 			rehearsal: false,
 		})
 
@@ -131,7 +131,7 @@ describe('User Actions - General', () => {
 			expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
 
 			expect(getPlaylist0()).toMatchObject({
-				active: true,
+				activationId: 'seomething',
 				rehearsal: true,
 				currentPartInstanceId: null,
 				// nextPartInstanceId: parts[0]._id,
@@ -260,7 +260,7 @@ describe('User Actions - General', () => {
 		// Deactivate rundown:
 		expect(Meteor.call(UserActionAPI.methods.deactivate, 'e', playlistId0)).toMatchObject({ success: 200 })
 		expect(getPlaylist0()).toMatchObject({
-			active: false,
+			activationId: undefined,
 			currentPartInstanceId: null,
 			nextPartInstanceId: null,
 		})
