@@ -257,7 +257,7 @@ export const RundownTimingProvider = withTracker<
 
 					const partCounts =
 						playlist.outOfOrderTiming ||
-						!playlist.active ||
+						!playlist.activationId ||
 						(itIndex >= currentAIndex && currentAIndex >= 0) ||
 						(itIndex >= nextAIndex && nextAIndex >= 0 && currentAIndex === -1)
 

@@ -51,7 +51,7 @@ function createMockRO() {
 		currentPartInstanceId: null,
 		nextPartInstanceId: null,
 		previousPartInstanceId: null,
-		active: true,
+		activationId: protectString('active'),
 	})
 
 	Rundowns.insert({

@@ -39,10 +39,10 @@ export const SegmentContextMenu = withTranslation()(
 			const isCurrentPart =
 				(part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInstanceId) || undefined
 
-			return this.props.studioMode && this.props.playlist && this.props.playlist.active ? (
+			return this.props.studioMode && this.props.playlist && this.props.playlist.activationId ? (
 				<Escape to="document">
 					<ContextMenu id="segment-timeline-context-menu">
-						{this.props.playlist.active ? (
+						{this.props.playlist.activationId ? (
 							<>
 								{part && !part.instance.part.invalid && timecode !== null && (
 									<>

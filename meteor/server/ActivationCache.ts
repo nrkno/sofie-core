@@ -123,7 +123,7 @@ export class ActivationCache {
 
 		const pStudio = asyncCollectionFindOne(Studios, this._playlist.studioId)
 
-		if (!playlist.active) {
+		if (!playlist.activationId) {
 			// If the playlist is not active we won't do the pre-loading now
 			// we're also not calling ourselves "persistant", so we won't be living longer than
 			this._persistant = false

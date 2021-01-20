@@ -351,7 +351,7 @@ function createDebugSnapshot(studioId: StudioId, organizationId: OrganizationId 
 
 	let activePlaylists = RundownPlaylists.find({
 		studioId: studio._id,
-		active: true,
+		activationId: { $exists: true },
 	}).fetch()
 
 	let activePlaylistSnapshots = _.map(activePlaylists, (playlist) => {
@@ -605,7 +605,7 @@ export function restoreFromRundownPlaylistSnapshot(
 	const playlistId = (snapshot.playlist._id = getRandomId())
 	snapshot.playlist.restoredFromSnapshotId = snapshot.playlistId
 	snapshot.playlist.peripheralDeviceId = protectString('')
-	snapshot.playlist.active = false
+	delete snapshot.playlist.activationId
 	snapshot.playlist.currentPartInstanceId = null
 	snapshot.playlist.nextPartInstanceId = null
 

@@ -117,7 +117,7 @@ if (!Settings.enableUserAccounts) {
 					const playlist = RundownPlaylists.findOne(id)
 					if (!playlist) throw new Meteor.Error(404, 'not found')
 
-					if (playlist.nextPartInstanceId && playlist.active) {
+					if (playlist.nextPartInstanceId && playlist.activationId) {
 						const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
 						const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)

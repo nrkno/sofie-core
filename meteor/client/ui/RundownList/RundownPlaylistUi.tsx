@@ -265,7 +265,7 @@ export const RundownPlaylistUi = DropTarget(
 					return (
 						<>
 							<RundownListItem
-								isActive={playlist.active === true}
+								isActive={!!playlist.activeInstanceId}
 								key={unprotectString(playlist.rundowns[0]._id)}
 								rundown={playlist.rundowns[0]}
 								rundownViewUrl={playlistViewURL}
@@ -282,7 +282,7 @@ export const RundownPlaylistUi = DropTarget(
 
 					return rundown ? (
 						<RundownListItem
-							isActive={playlist.active === true}
+							isActive={!!playlist.active}
 							key={unprotectString(rundown._id)}
 							rundown={rundown}
 							swapRundownOrder={handleRundownSwap}
@@ -341,7 +341,7 @@ export const RundownPlaylistUi = DropTarget(
 )
 
 function createProgressBarRow(playlist: RundownPlaylistUi): React.ReactElement | null {
-	if (playlist.active && playlist.expectedDuration !== undefined && playlist.startedPlayback) {
+	if (playlist.activationId && playlist.expectedDuration !== undefined && playlist.startedPlayback) {
 		return <ActiveProgressBar rundownPlaylist={playlist} />
 	}
 

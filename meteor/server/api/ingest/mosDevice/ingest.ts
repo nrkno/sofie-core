@@ -621,7 +621,7 @@ function diffAndApplyChanges(
 
 	// Check if operation affect currently playing Part:
 	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
-	if (playlist.active && currentPartInstance && currentPartInstance.rundownId === rundown._id) {
+	if (playlist.activationId && currentPartInstance && currentPartInstance.rundownId === rundown._id) {
 		let currentPart: LocalIngestPart | undefined = undefined
 
 		for (let i = 0; currentPart === undefined && i < newIngestSegments.length; i++) {

@@ -72,12 +72,15 @@ export function takeNextPartInnerSync(
 ) {
 	const span = profiler.startSpan('takeNextPartInner')
 	const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!dbPlaylist.active) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
+	if (!dbPlaylist.activationId) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
 	if (!dbPlaylist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
 	const cache = existingCache ?? waitForPromise(initCacheForRundownPlaylist(dbPlaylist, undefined, true))
 
 	let playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
+
+	// const playlistActivationId = playlist.currentActivationId
+	// if (!playlistActivationId)
 
 	let timeOffset: number | null = playlist.nextTimeOffset || null
 	let firstTake = !playlist.startedPlayback
@@ -351,6 +354,7 @@ export function afterTake(
  */
 function startHold(
 	cache: CacheForRundownPlaylist,
+	// activationId: RundownPlaylistActivationId,
 	holdFromPartInstance: PartInstance | undefined,
 	holdToPartInstance: PartInstance | undefined
 ) {
@@ -377,6 +381,7 @@ function startHold(
 			// make the extension
 			const newInstance = literal<PieceInstance>({
 				_id: protectString<PieceInstanceId>(instance._id + '_hold'),
+				// playlistActivationId: activationId,
 				rundownId: instance.rundownId,
 				partInstanceId: holdToPartInstance._id,
 				dynamicallyInserted: getCurrentTime(),

@@ -19,6 +19,7 @@ import { PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
 import { registerIndex } from '../database'
 import { PartialDeep } from 'type-fest'
+import { RundownPlaylistActivationId } from './RundownPlaylists'
 
 /** A string, identifying a PieceInstance */
 export type PieceInstanceId = ProtectedString<'PieceInstanceId'>
@@ -45,6 +46,9 @@ export interface PieceInstance
 	extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece' | 'infinite'>, '_id' | 'adLibSourceId'> {
 	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
 	readonly isTemporary?: boolean
+
+	/** The id of the playlist activation session */
+	// playlistActivationId: RundownPlaylistActivationId
 
 	/** Whether this instance has been finished with and reset (to restore the original piece as the primary version) */
 	reset?: boolean

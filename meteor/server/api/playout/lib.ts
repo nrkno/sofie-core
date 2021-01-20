@@ -145,7 +145,7 @@ function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPla
 		}
 	)
 
-	if (rundownPlaylist.active) {
+	if (rundownPlaylist.activationId) {
 		// put the first on queue:
 		const firstPart = selectNextPart(rundownPlaylist, null, getAllOrderedPartsFromCache(cache, rundownPlaylist))
 		setNextPart(cache, rundownPlaylist, firstPart ? firstPart.part : null)

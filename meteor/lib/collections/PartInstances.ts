@@ -20,6 +20,7 @@ import { DBPart, Part, PartId } from './Parts'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 import { registerIndex } from '../database'
+import { RundownPlaylistActivationId } from './RundownPlaylists'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
@@ -34,6 +35,9 @@ export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPar
 export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	_id: PartInstanceId
 	rundownId: RundownId
+
+	/** The id of the playlist activation session */
+	// playlistActivationId: RundownPlaylistActivationId
 
 	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	reset?: boolean
@@ -77,6 +81,7 @@ export class PartInstance implements DBPartInstance {
 	/** Whether this PartInstance is a temprorary wrapping of a Part */
 	public readonly isTemporary: boolean
 
+	// public playlistActivationId: RundownPlaylistActivationId
 	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	public reset?: boolean
 	public takeCount: number

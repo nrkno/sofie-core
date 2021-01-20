@@ -30,6 +30,8 @@ import { PieceInstanceInfiniteId } from './PieceInstances'
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
 /** A string, identifying an activation of a playlist */
 export type ActiveInstanceId = ProtectedString<'ActiveInstanceId'>
+/** A string, identifying an activation of a playlist */
+export type RundownPlaylistActivationId = ProtectedString<'RundownPlaylistActivationId'>
 
 /** Details of an ab-session requested by the blueprints in onTimelineGenerate */
 export interface ABSessionInfo {
@@ -73,7 +75,8 @@ export interface DBRundownPlaylist {
 	/** Playout hold state */
 	holdState?: RundownHoldState
 	/** Is the playlist currently active in the studio */
-	active?: boolean
+	activationId?: RundownPlaylistActivationId
+	active?: never
 	/** This is set to a random string when the rundown is activated */
 	activeInstanceId?: ActiveInstanceId
 	/** Should the playlist loop at the end */
@@ -126,7 +129,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public rehearsal?: boolean
 	public activeInstanceId?: ActiveInstanceId
 	public holdState?: RundownHoldState
-	public active?: boolean
+	public activationId?: RundownPlaylistActivationId
+	public active?: never
 	public currentPartInstanceId: PartInstanceId | null
 	public nextPartInstanceId: PartInstanceId | null
 	public nextSegmentId?: SegmentId
@@ -621,5 +625,5 @@ registerCollection('RundownPlaylists', RundownPlaylists)
 
 registerIndex(RundownPlaylists, {
 	studioId: 1,
-	active: 1,
+	activationId: 1,
 })

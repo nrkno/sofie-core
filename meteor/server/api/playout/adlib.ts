@@ -64,7 +64,7 @@ export namespace ServerPlayoutAdLibAPI {
 			RundownSyncFunctionPriority.USER_PLAYOUT,
 			'pieceTakeNow',
 			() => {
-				if (!rundownPlaylist.active)
+				if (!rundownPlaylist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
 				if (rundownPlaylist.currentPartInstanceId !== partInstanceId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
@@ -170,7 +170,7 @@ export namespace ServerPlayoutAdLibAPI {
 			RundownSyncFunctionPriority.USER_PLAYOUT,
 			'segmentAdLibPieceStart',
 			() => {
-				if (!rundownPlaylist.active)
+				if (!rundownPlaylist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
 				if (
 					rundownPlaylist.holdState === RundownHoldState.ACTIVE ||
@@ -222,7 +222,7 @@ export namespace ServerPlayoutAdLibAPI {
 			() => {
 				logger.debug('rundownBaselineAdLibPieceStart')
 
-				if (!rundownPlaylist.active)
+				if (!rundownPlaylist.activationId)
 					throw new Meteor.Error(
 						403,
 						`Rundown Baseline AdLib-pieces can be only placed in an active rundown!`
@@ -316,7 +316,7 @@ export namespace ServerPlayoutAdLibAPI {
 			() => {
 				const playlist = RundownPlaylists.findOne(rundownPlaylist._id)
 				if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylist._id}" not found!`)
-				if (!playlist.active)
+				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
 				if (!playlist.currentPartInstanceId)
 					throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
@@ -599,7 +599,7 @@ export namespace ServerPlayoutAdLibAPI {
 			() => {
 				const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 				if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-				if (!rundownPlaylist.active)
+				if (!rundownPlaylist.activationId)
 					throw new Meteor.Error(403, `Bucket AdLib-pieces can be only placed in an active rundown!`)
 				if (!rundownPlaylist.currentPartInstanceId)
 					throw new Meteor.Error(400, `A part needs to be active to use a bucket adlib`)

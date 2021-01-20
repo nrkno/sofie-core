@@ -173,7 +173,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			})
 
 			this.subscribe(PubSub.rundownPlaylists, {
-				active: true,
+				activationId: { $exists: true },
 				studioId: this.props.studioId,
 			})
 		}
@@ -182,7 +182,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			let playlist = RundownPlaylists.findOne(
 				{
 					studioId: this.props.studioId,
-					active: true,
+					activationId: { $exists: true },
 				},
 				{
 					fields: {
@@ -511,7 +511,7 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	const studio = studioId ? Studios.findOne(studioId) : undefined
 
 	const rundownPlaylist = RundownPlaylists.findOne({
-		active: true,
+		activationId: { $exists: true },
 		studioId: studioId,
 	})
 

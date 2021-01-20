@@ -77,7 +77,7 @@ describe('test peripheralDevice general API methods', () => {
 			currentPartInstanceId: null,
 			nextPartInstanceId: null,
 			previousPartInstanceId: null,
-			active: true,
+			activationId: protectString('active'),
 		})
 		Rundowns.insert({
 			_id: rundownID,
