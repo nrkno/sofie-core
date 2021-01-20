@@ -461,7 +461,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 						style={{
 							top: `calc(${this.props.layerIndex} * var(--segment-layer-height))`,
 						}}>
-						{RundownUtils.formatDiffToTimecode(counter || 0, false, false, true, false, true, '', false, false)}
+						<span className="segment-timeline__liveline__appendage--piece-countdown__content">
+							{RundownUtils.formatDiffToTimecode(counter || 0, false, false, true, false, true, '', false, false)}
+						</span>
 						<FreezeFrameIcon className="segment-timeline__liveline__appendage--piece-countdown__icon" />
 					</div>
 				)
