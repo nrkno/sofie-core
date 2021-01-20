@@ -736,7 +736,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 	testInFiber('dataSegmentDelete for a second time', () => {
 		const rundown = Rundowns.findOne() as Rundown
-		expect(Segments.find({ rundownId: rundown._id, externalID: segExternalId }).count()).toBe(0)
+		expect(Segments.find({ rundownId: rundown._id, externalId: segExternalId }).count()).toBe(0)
 
 		try {
 			Meteor.call(

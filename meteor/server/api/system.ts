@@ -287,7 +287,7 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 						rundownId: { $exists: true },
 					},
 					{
-						bucketId: { $nin: rundownIds },
+						rundownId: { $nin: rundownIds },
 					},
 				],
 			},

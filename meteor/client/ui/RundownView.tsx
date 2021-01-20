@@ -2648,24 +2648,29 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					)
 				} else if (this.props.playlist && this.props.studio && this.props.showStyleBase && this.props.onlyShelf) {
 					return (
-						<ErrorBoundary>
-							<Shelf
-								buckets={this.props.buckets}
-								isExpanded={this.state.isInspectorShelfExpanded}
-								onChangeExpanded={this.onShelfChangeExpanded}
-								hotkeys={this.state.usedHotkeys}
-								playlist={this.props.playlist}
-								showStyleBase={this.props.showStyleBase}
-								studioMode={this.state.studioMode}
-								onChangeBottomMargin={this.onChangeBottomMargin}
-								onRegisterHotkeys={this.onRegisterHotkeys}
-								rundownLayout={this.state.rundownLayout}
-								studio={this.props.studio}
-								fullViewport={true}
-								shelfDisplayOptions={this.props.shelfDisplayOptions}
-								bucketDisplayFilter={this.props.bucketDisplayFilter}
-							/>
-						</ErrorBoundary>
+						<>
+							<ErrorBoundary>
+								<NoraPreviewRenderer />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<Shelf
+									buckets={this.props.buckets}
+									isExpanded={this.state.isInspectorShelfExpanded}
+									onChangeExpanded={this.onShelfChangeExpanded}
+									hotkeys={this.state.usedHotkeys}
+									playlist={this.props.playlist}
+									showStyleBase={this.props.showStyleBase}
+									studioMode={this.state.studioMode}
+									onChangeBottomMargin={this.onChangeBottomMargin}
+									onRegisterHotkeys={this.onRegisterHotkeys}
+									rundownLayout={this.state.rundownLayout}
+									studio={this.props.studio}
+									fullViewport={true}
+									shelfDisplayOptions={this.props.shelfDisplayOptions}
+									bucketDisplayFilter={this.props.bucketDisplayFilter}
+								/>
+							</ErrorBoundary>
+						</>
 					)
 				} else {
 					return (

@@ -134,14 +134,17 @@ registerIndex(PartInstances, {
 	rundownId: 1,
 	segmentId: 1,
 	takeCount: 1,
+	reset: 1,
 })
 registerIndex(PartInstances, {
 	rundownId: 1,
 	takeCount: 1,
+	reset: 1,
 })
 registerIndex(PartInstances, {
 	rundownId: 1,
 	// @ts-ignore deep property
 	'part._id': 1,
 	takeCount: 1,
+	reset: 1,
 })

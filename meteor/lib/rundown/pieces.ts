@@ -13,7 +13,11 @@ import { clone } from 'underscore'
 import { PieceInstanceId } from '../collections/PieceInstances'
 import { getPieceGroupId } from './timeline'
 
-export interface PieceGroupMetadata {
+export interface PieceTimelineMetadata {
+	isPieceTimeline: boolean
+}
+
+export interface PieceGroupMetadata extends PieceTimelineMetadata {
 	pieceId: PieceInstanceId
 }
 
@@ -46,6 +50,7 @@ export function createPieceGroupAndCap(
 		priority: pieceInstance.priority,
 		metaData: literal<PieceGroupMetadata>({
 			pieceId: pieceInstance._id,
+			isPieceTimeline: true,
 		}),
 	})
 
@@ -66,6 +71,9 @@ export function createPieceGroupAndCap(
 				deviceType: TSR.DeviceType.ABSTRACT,
 			},
 			partInstanceId: pieceGroup.partInstanceId,
+			metaData: literal<PieceTimelineMetadata>({
+				isPieceTimeline: true,
+			}),
 		})
 		capObjs.push(nowObj)
 	}
@@ -78,6 +86,7 @@ export function createPieceGroupAndCap(
 				updatedPieceGroup = true
 				pieceGroup.enable.end = Math.min(pieceGroup.enable.end, pieceInstance.resolvedEndCap)
 			} else if (typeof pieceGroup.enable.start === 'number' && typeof pieceGroup.enable.duration === 'number') {
+				updatedPieceGroup = true
 				pieceGroup.enable.end = Math.min(
 					pieceGroup.enable.start + pieceGroup.enable.duration,
 					pieceInstance.resolvedEndCap
@@ -105,6 +114,9 @@ export function createPieceGroupAndCap(
 				isGroup: true,
 				inGroup: partGroup && partGroup.id,
 				partInstanceId: pieceGroup.partInstanceId,
+				metaData: literal<PieceTimelineMetadata>({
+					isPieceTimeline: true,
+				}),
 			})
 			capObjs.push(pieceEndCapGroup)
 			pieceGroup.inGroup = pieceEndCapGroup.id
