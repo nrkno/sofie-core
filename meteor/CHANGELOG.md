@@ -46,6 +46,22 @@ All notable changes to this project will be documented in this file. See [standa
 * update dockerfiles for meteor 1.12.1 ([10217a4](https://github.com/nrkno/tv-automation-server-core/commit/10217a4567282af08b9e9b9afc3470d5b8877b51))
 * using RundownViewEventBus for switching shelf tabs doesn't work ([cda34d8](https://github.com/nrkno/tv-automation-server-core/commit/cda34d8d9d7f7d3115024f2ca147cca09711a690))
 
+## [1.16.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.0-in-testing-R28.1...v1.16.0) (2021-01-19)
+
+
+### Bug Fixes
+
+* some incorrect queries ([fd9c1ae](https://github.com/nrkno/tv-automation-server-core/commit/fd9c1ae40f928eb4f6fc76ae1ec495f1bc2483c6))
+* **ExternalFramePanel:** listen to messages from same origin as well as `null` origin ([1f6bb90](https://github.com/nrkno/tv-automation-server-core/commit/1f6bb90ac54f9661598610e2556a880e1296c4e8))
+* detached shelf crashes when showing Nora hoverscrub preview ([486eca0](https://github.com/nrkno/tv-automation-server-core/commit/486eca0382893049a0692801f58085a679bda4d3))
+* disable & undo disable doesn't work, hides Pieces from timeline or throws errors ([#420](https://github.com/nrkno/tv-automation-server-core/issues/420)) ([51aecf4](https://github.com/nrkno/tv-automation-server-core/commit/51aecf4d6602f32f6202c69c121950ef1051fcb5))
+* give pieces inserted via adlib-actions random ids, to avoid duplicate id issues ([8fc837c](https://github.com/nrkno/tv-automation-server-core/commit/8fc837c15d6d73681af187659176414eabd388c6))
+* inspector crashing when adlib-action has empty array of triggerModes ([c620e58](https://github.com/nrkno/tv-automation-server-core/commit/c620e58e6e584d075b43b2f5bd5504b6062b157f))
+* prompter generic gamepad ([#418](https://github.com/nrkno/tv-automation-server-core/issues/418)) ([ad6acf4](https://github.com/nrkno/tv-automation-server-core/commit/ad6acf4d4305abeba2a6fd87896b2be1f32adb75))
+* prompter improvements ([#419](https://github.com/nrkno/tv-automation-server-core/issues/419)) ([12449d6](https://github.com/nrkno/tv-automation-server-core/commit/12449d69251ed633cdb3b5f98a37fe24c4e7fa67))
+* set allowedToUseTransition and previousPartEndState on the taken partinstance during autonext ([0a62318](https://github.com/nrkno/tv-automation-server-core/commit/0a623184150a5134770b7cc06ce802fa8657be6f))
+* update @slack/webhook to fix audit ([d232d37](https://github.com/nrkno/tv-automation-server-core/commit/d232d37ffbe7b978f1929cfebd73142cce324d5c))
+
 ## [1.16.0-in-testing-R28.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.0-in-testing-R28.0...v1.16.0-in-testing-R28.1) (2020-12-14)
 
 ## [1.16.0-in-testing-R28.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.15.0...v1.16.0-in-testing-R28.0) (2020-12-14)
