@@ -724,6 +724,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					this._panel = ref
 					if (this._panel) {
 						const style = window.getComputedStyle(this._panel)
+						// check if a special variable is set through CSS to indicate that we shouldn't expect
+						// double clicks to trigger AdLibs
 						const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
 						if (this.state.singleClickMode !== (value === UserAgentPointer.NO_POINTER)) {
 							this.setState({

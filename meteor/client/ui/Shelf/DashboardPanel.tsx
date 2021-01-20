@@ -209,6 +209,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		const newState: Partial<IState> = {}
 
 		this.refreshKeyboardHotkeys()
+		// Synchronize the internal selectedAdlib state with the outer selectedPiece
 		if (
 			selectedAdLib &&
 			selectedAdLib !== prevState.selectedAdLib &&
@@ -218,12 +219,17 @@ export class DashboardPanelInner extends MeteorReactComponent<
 				selectedPiece?._id === selectedAdLib._id
 			)
 		) {
+			// If the local selectedAdLib is changing, inform the application that the selection has changed
+			// (this will change the inspected AdLib in the inspector)
 			this.props.onSelectPiece && this.props.onSelectPiece(selectedAdLib)
 		} else if (
 			selectedPiece &&
 			selectedPiece !== prevProps.selectedPiece &&
 			RundownUtils.isAdLibPieceOrAdLibListItem(selectedPiece)
 		) {
+			// If the outer selectedPiece is changing, we should check if it's present in this Panel. If it is
+			// we should change our inner selectedAdLib state. If it isn't, we should leave it be, so that it
+			// doesn't affect any selections the user may have made when using "displayTakeButtons".
 			let memberAdLib = DashboardPanelInner.filterOutAdLibs(this.props, this.state).find(
 				(adLib) => adLib._id === selectedPiece._id
 			)
@@ -548,6 +554,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		const _panel = ref
 		if (_panel) {
 			const style = window.getComputedStyle(_panel)
+			// check if a special variable is set through CSS to indicate that we shouldn't expect
+			// double clicks to trigger AdLibs
 			const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
 			if (this.state.singleClickMode !== (value === UserAgentPointer.NO_POINTER)) {
 				this.setState({

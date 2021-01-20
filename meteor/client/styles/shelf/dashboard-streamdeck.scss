@@ -6,6 +6,9 @@
 	/** Stream Deck Mini,
 	button size 80px */ screen and (width: 240px) and (height: 160px) {
 	:root {
+		// by setting the --pointer CSS variable, we indicate to the UI that it's being run on a Stream Deck and
+		// that it should run in a single-click-to-activate mode (like a touchscreen) even though the events emitted
+		// are mouse clicks
 		--pointer: 'no-pointer';
 	}
 
