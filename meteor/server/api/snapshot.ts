@@ -606,7 +606,6 @@ export function restoreFromRundownPlaylistSnapshot(
 	snapshot.rundowns.forEach((rd) => {
 		if (!rd.unsynced) {
 			rd.unsynced = true
-			rd.unsyncedTime = getCurrentTime()
 		}
 
 		rd.playlistId = playlistId
