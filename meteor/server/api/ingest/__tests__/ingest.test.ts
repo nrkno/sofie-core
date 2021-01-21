@@ -1004,13 +1004,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		// Activate the rundown, make data updates and verify that it gets unsynced properly
 		ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, playlist._id, true)
-		expect(getRundown().unsynced).toEqual(false)
+		expect(getRundown().orphaned).toBeUndefined()
 
 		RundownInput.dataRundownDelete(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId)
-		expect(getRundown().unsynced).toEqual(true)
+		expect(getRundown().orphaned).toEqual('deleted')
 
 		resyncRundown()
-		expect(getRundown().unsynced).toEqual(false)
+		expect(getRundown().orphaned).toBeUndefined()
 
 		ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlist._id)
 		const partInstance = PartInstances.find({ 'part._id': parts[0]._id }).fetch()
@@ -1024,10 +1024,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rundownData.externalId,
 			segments[0].externalId
 		)
-		expect(getRundown().unsynced).toEqual(true)
+		expect(getRundown().orphaned).toEqual('deleted')
 
 		resyncRundown()
-		expect(getRundown().unsynced).toEqual(false)
+		expect(getRundown().orphaned).toBeUndefined()
 
 		RundownInput.dataPartDelete(
 			DEFAULT_CONTEXT,
@@ -1037,9 +1037,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segments[0].externalId,
 			parts[0].externalId
 		)
-		expect(getRundown().unsynced).toEqual(true)
+		expect(getRundown().orphaned).toEqual('deleted')
 
 		resyncRundown()
-		expect(getRundown().unsynced).toEqual(false)
+		expect(getRundown().orphaned).toBeUndefined()
 	})
 })
