@@ -454,16 +454,6 @@ export function handleUpdatedRundownInner(
 	const existingDbRundown = Rundowns.findOne(rundownId)
 	if (!canBeUpdated(existingDbRundown)) return
 
-	updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
-}
-export function updateRundownAndSaveCache(
-	studio: Studio,
-	rundownId: RundownId,
-	existingDbRundown: Rundown | undefined,
-	ingestRundown: IngestRundown | LocalIngestRundown,
-	dataSource?: string,
-	peripheralDevice?: PeripheralDevice
-) {
 	logger.info((existingDbRundown ? 'Updating' : 'Adding') + ' rundown ' + rundownId)
 
 	const newIngestRundown = isLocalIngestRundown(ingestRundown) ? ingestRundown : makeNewIngestRundown(ingestRundown)
@@ -482,13 +472,24 @@ export function regenerateRundown(rundownId: RundownId) {
 	const studio = Studios.findOne(existingDbRundown.studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${existingDbRundown.studioId}" not found`)
 
-	const ingestRundown = loadCachedRundownData(rundownId, existingDbRundown.externalId)
+	return rundownPlaylistSyncFunction(
+		existingDbRundown.playlistId,
+		RundownSyncFunctionPriority.INGEST,
+		'handleUpdatedRundown',
+		() => {
+			// Reload to ensure it isnt stale
+			const existingDbRundown = Rundowns.findOne(rundownId)
+			if (!existingDbRundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
 
-	const dataSource = 'regenerate'
+			const ingestRundown = loadCachedRundownData(rundownId, existingDbRundown.externalId)
 
-	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, undefined)
+			const dataSource = 'regenerate'
 
-	span?.end()
+			updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, undefined)
+
+			span?.end()
+		}
+	)
 }
 function updateRundownFromIngestData(
 	studio: Studio,
