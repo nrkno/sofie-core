@@ -56,7 +56,6 @@ export function activateRundownPlaylist(
 		$set: {
 			activationId: getRandomId(),
 			rehearsal: rehearsal,
-			activeInstanceId: getRandomId(),
 		},
 	})
 

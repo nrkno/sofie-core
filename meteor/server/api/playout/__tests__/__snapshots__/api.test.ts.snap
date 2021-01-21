@@ -3,9 +3,9 @@
 exports[`Playout API Global and Part Ad-Libs 1`] = `
 Array [
   Object {
-    "_id": "randomId9002_part0_0_randomId9008_randomId9002_piece000",
+    "_id": "randomId9002_part0_0_randomId9007_randomId9002_piece000",
     "isTemporary": false,
-    "partInstanceId": "randomId9002_part0_0_randomId9008",
+    "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
       "_id": "randomId9002_piece000",
       "enable": Object {
@@ -26,9 +26,9 @@ Array [
     "rundownId": "randomId9002",
   },
   Object {
-    "_id": "randomId9002_part0_0_randomId9008_randomId9002_piece001",
+    "_id": "randomId9002_part0_0_randomId9007_randomId9002_piece001",
     "isTemporary": false,
-    "partInstanceId": "randomId9002_part0_0_randomId9008",
+    "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
       "_id": "randomId9002_piece001",
       "enable": Object {
@@ -49,17 +49,17 @@ Array [
     "rundownId": "randomId9002",
   },
   Object {
-    "_id": "randomId9002_part0_0_randomId9008_randomId9015",
+    "_id": "randomId9002_part0_0_randomId9007_randomId9014",
     "adLibSourceId": "randomId9002_globalAdLib0",
     "dynamicallyInserted": 1000,
     "infinite": Object {
       "fromPreviousPart": false,
-      "infiniteInstanceId": "randomId9017",
-      "infinitePieceId": "randomId9015",
+      "infiniteInstanceId": "randomId9016",
+      "infinitePieceId": "randomId9014",
     },
-    "partInstanceId": "randomId9002_part0_0_randomId9008",
+    "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
-      "_id": "randomId9015",
+      "_id": "randomId9014",
       "enable": Object {
         "start": "now",
       },
@@ -80,9 +80,9 @@ Array [
 exports[`Playout API Global and Part Ad-Libs 2`] = `
 Array [
   Object {
-    "_id": "randomId9002_part0_0_randomId9008_randomId9002_piece000",
+    "_id": "randomId9002_part0_0_randomId9007_randomId9002_piece000",
     "isTemporary": false,
-    "partInstanceId": "randomId9002_part0_0_randomId9008",
+    "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
       "_id": "randomId9002_piece000",
       "enable": Object {
@@ -103,9 +103,9 @@ Array [
     "rundownId": "randomId9002",
   },
   Object {
-    "_id": "randomId9002_part0_0_randomId9008_randomId9002_piece001",
+    "_id": "randomId9002_part0_0_randomId9007_randomId9002_piece001",
     "isTemporary": false,
-    "partInstanceId": "randomId9002_part0_0_randomId9008",
+    "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
       "_id": "randomId9002_piece001",
       "enable": Object {
@@ -126,17 +126,17 @@ Array [
     "rundownId": "randomId9002",
   },
   Object {
-    "_id": "randomId9002_part0_0_randomId9008_randomId9015",
+    "_id": "randomId9002_part0_0_randomId9007_randomId9014",
     "adLibSourceId": "randomId9002_globalAdLib0",
     "dynamicallyInserted": 1000,
     "infinite": Object {
       "fromPreviousPart": false,
-      "infiniteInstanceId": "randomId9017",
-      "infinitePieceId": "randomId9015",
+      "infiniteInstanceId": "randomId9016",
+      "infinitePieceId": "randomId9014",
     },
-    "partInstanceId": "randomId9002_part0_0_randomId9008",
+    "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
-      "_id": "randomId9015",
+      "_id": "randomId9014",
       "enable": Object {
         "start": "now",
       },
@@ -152,12 +152,12 @@ Array [
     "rundownId": "randomId9002",
   },
   Object {
-    "_id": "randomId9002_part0_0_randomId9008_randomId9020",
+    "_id": "randomId9002_part0_0_randomId9007_randomId9019",
     "adLibSourceId": "randomId9002_adLib000",
     "dynamicallyInserted": 3000,
-    "partInstanceId": "randomId9002_part0_0_randomId9008",
+    "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
-      "_id": "randomId9020",
+      "_id": "randomId9019",
       "enable": Object {
         "duration": 1000,
         "start": "now",

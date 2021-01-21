@@ -108,8 +108,8 @@ export class ActivationCache {
 		this._persistant = false
 	}
 	async initialize(playlist: RundownPlaylist, rundownsInPlaylist: Rundown[]) {
-		if (this._initialized && (!this._playlist || playlist.activeInstanceId !== this._playlist.activeInstanceId)) {
-			// activeInstanceId has changed, we should clear out the data because it might not be valid anymore
+		if (this._initialized && (!this._playlist || playlist.activationId !== this._playlist.activationId)) {
+			// activationId has changed, we should clear out the data because it might not be valid anymore
 			this._uninitialize()
 		}
 

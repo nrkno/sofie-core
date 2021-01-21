@@ -76,8 +76,6 @@ export interface DBRundownPlaylist {
 	holdState?: RundownHoldState
 	/** Is the playlist currently active in the studio */
 	activationId?: RundownPlaylistActivationId
-	/** This is set to a random string when the rundown is activated */
-	activeInstanceId?: ActiveInstanceId
 	/** Should the playlist loop at the end */
 	loop?: boolean
 
@@ -126,7 +124,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public expectedStart?: Time
 	public expectedDuration?: number
 	public rehearsal?: boolean
-	public activeInstanceId?: ActiveInstanceId
 	public holdState?: RundownHoldState
 	public activationId?: RundownPlaylistActivationId
 	public currentPartInstanceId: PartInstanceId | null
