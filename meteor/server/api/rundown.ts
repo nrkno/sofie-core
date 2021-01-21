@@ -688,7 +688,6 @@ export namespace ServerRundownAPI {
 			cache.Rundowns.update(rundown._id, {
 				$set: {
 					unsynced: true,
-					unsyncedTime: getCurrentTime(),
 				},
 			})
 		} else {
@@ -814,7 +813,6 @@ export namespace ServerRundownAPI {
 			cache.Segments.update(segmentId, {
 				$set: {
 					unsynced: true,
-					unsyncedTime: getCurrentTime(),
 				},
 			})
 		} else {

@@ -80,8 +80,6 @@ export interface DBRundown
 
 	/** Is the rundown in an unsynced (has been unpublished from ENPS) state? */
 	unsynced?: boolean
-	/** Timestamp of when rundown was unsynced */
-	unsyncedTime?: Time
 
 	/** Last sent storyStatus to ingestDevice (MOS) */
 	notifiedCurrentPlayingPartExternalId?: string
@@ -130,7 +128,6 @@ export class Rundown implements DBRundown {
 	public status?: string
 	public airStatus?: string
 	public unsynced?: boolean
-	public unsyncedTime?: Time
 	public startedPlayback?: Time
 	public notifiedCurrentPlayingPartExternalId?: string
 	public dataSource: string
