@@ -397,6 +397,7 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
+		expect(playlist?.activationId).toBeTruthy()
 		const studioTimeline = Timeline.findOne({
 			_id: env.studio._id,
 		})

@@ -60,10 +60,14 @@ describe('Playout API', () => {
 			return Rundowns.findOne(rundownId1) as Rundown
 		}
 		const getPlaylist0 = () => {
-			return RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+			const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+			playlist.activationId = playlist.activationId ?? undefined
+			return playlist
 		}
 		const getPlaylist1 = () => {
-			return RundownPlaylists.findOne(playlistId1) as RundownPlaylist
+			const playlist = RundownPlaylists.findOne(playlistId1) as RundownPlaylist
+			playlist.activationId = playlist.activationId ?? undefined
+			return playlist
 		}
 
 		expect(getRundown0()).toBeTruthy()
@@ -76,7 +80,7 @@ describe('Playout API', () => {
 		const segments = getRundown0().getSegments()
 
 		expect(getPlaylist0()).toMatchObject({
-			ac: false,
+			activationId: undefined,
 			rehearsal: false,
 		})
 
@@ -87,7 +91,7 @@ describe('Playout API', () => {
 			expect(instances).toHaveLength(1)
 			expect(instances[0].part._id).toEqual(parts[0]._id)
 			expect(getPlaylist0()).toMatchObject({
-				activationId: 'something',
+				activationId: expect.stringMatching(/^randomId/),
 				rehearsal: true,
 				currentPartInstanceId: null,
 				nextPartInstanceId: instances[0]._id,
@@ -313,7 +317,7 @@ describe('Playout API', () => {
 			expect(instances).toHaveLength(1)
 			expect(instances[0].part._id).toEqual(parts[0]._id)
 			expect(getPlaylist0()).toMatchObject({
-				activationId: 'something',
+				activationId: expect.stringMatching(/^randomId/),
 				rehearsal: true,
 				currentPartInstanceId: null,
 				nextPartInstanceId: instances[0]._id,

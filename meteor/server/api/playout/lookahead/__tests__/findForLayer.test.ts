@@ -148,7 +148,7 @@ describe('findLookaheadForLayer', () => {
 				part,
 				pieces: piecesMap
 					.get(part._id)
-					?.map((p) => wrapPieceToInstance(p, protectString('active'), protectString(''), true)),
+					?.map((p) => wrapPieceToInstance(p, protectString(''), protectString(''), true)),
 			} as any
 		}
 
