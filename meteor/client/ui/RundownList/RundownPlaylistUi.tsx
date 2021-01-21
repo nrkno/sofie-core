@@ -265,7 +265,7 @@ export const RundownPlaylistUi = DropTarget(
 					return (
 						<>
 							<RundownListItem
-								isActive={!!playlist.activeInstanceId}
+								isActive={!!playlist.activationId}
 								key={unprotectString(playlist.rundowns[0]._id)}
 								rundown={playlist.rundowns[0]}
 								rundownViewUrl={playlistViewURL}
