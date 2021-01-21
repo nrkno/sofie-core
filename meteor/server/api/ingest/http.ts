@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { logger } from '../../../lib/logging'
 import { Meteor } from 'meteor/meteor'
-import { updateRundownAndSaveCache, handleUpdatedRundown } from './rundownInput'
+import { handleUpdatedRundown } from './rundownInput'
 import { Studios, StudioId } from '../../../lib/collections/Studios'
 import { check } from '../../../lib/check'
 import { Rundowns } from '../../../lib/collections/Rundowns'
