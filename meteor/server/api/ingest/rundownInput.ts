@@ -408,7 +408,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 			}
 		} else {
 			logger.info(`Rundown "${rundown._id}" cannot be updated`)
-			if (!rundown.unsynced) {
+			if (!rundown.orphaned) {
 				ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 			}
 		}
@@ -553,7 +553,7 @@ function updateRundownFromIngestData(
 				studioId: studio._id,
 				showStyleVariantId: showStyle.variant._id,
 				showStyleBaseId: showStyle.base._id,
-				unsynced: false,
+				orphaned: undefined,
 
 				importVersions: {
 					studio: studio._rundownVersionHash,
@@ -1771,7 +1771,7 @@ export function isUpdateAllowed(
 	let allowed: boolean = true
 
 	if (!rundown) return false
-	if (rundown.unsynced) {
+	if (rundown.orphaned) {
 		logger.info(`Rundown "${rundown._id}" has been unsynced and needs to be synced before it can be updated.`)
 		return false
 	}

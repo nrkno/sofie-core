@@ -268,7 +268,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 
 					const classNames: string[] = []
 					if (isDragging) classNames.push('dragging')
-					if (rundown.unsynced) classNames.push('unsynced')
+					if (rundown.orphaned) classNames.push('unsynced')
 
 					// rundown ids can start with digits, which is illegal for HTML id attributes
 					const htmlElementId = `${HTML_ID_PREFIX}${unprotectString(rundown._id)}`
@@ -297,12 +297,12 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 							showStyleName={showStyleLabel}
 							showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
 							confirmDeleteRundownHandler={
-								(rundown.unsynced && getAllowStudio()) || userCanConfigure || getAllowService()
+								(rundown.orphaned && getAllowStudio()) || userCanConfigure || getAllowService()
 									? () => confirmDeleteRundown(rundown, t)
 									: undefined
 							}
 							confirmReSyncRundownHandler={
-								rundown.unsynced && getAllowStudio() ? () => confirmReSyncRundown(rundown, t) : undefined
+								rundown.orphaned && getAllowStudio() ? () => confirmReSyncRundown(rundown, t) : undefined
 							}
 						/>
 					)
