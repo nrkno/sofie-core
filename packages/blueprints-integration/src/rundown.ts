@@ -1,6 +1,6 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContentVizMSE } from 'timeline-state-resolver-types'
 import { Time } from './common'
-import { SomeContent } from './content'
+import { SomeTimelineContent } from './content'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -221,7 +221,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** Layer output this piece belongs to */
 	outputLayerId: string
 	/** The object describing the item in detail */
-	content: SomeContent
+	content: SomeTimelineContent
 
 	/** The transition used by this piece to transition to and from the piece */
 	transitions?: {
