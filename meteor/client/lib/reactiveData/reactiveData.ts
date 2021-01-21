@@ -99,7 +99,7 @@ export namespace reactiveData {
 			const rundownIds = rRundowns.get().map((r) => r._id)
 			const slis = Pieces.find(
 				{
-					rundownId: { $in: rundownIds },
+					startRundownId: { $in: rundownIds },
 				},
 				options
 			).fetch()

@@ -531,6 +531,60 @@ describe('Test blueprint api context', () => {
 			})
 		})
 
+		describe('getPartInstanceForPreviousPiece', () => {
+			testInFiber('invalid parameters', () => {
+				wrapWithCache((cache) => {
+					const { context } = getActionExecutionContext(cache)
+
+					// @ts-ignore
+					expect(() => context.getPartInstanceForPreviousPiece()).toThrowError(
+						'Cannot find PartInstance from invalid PieceInstance'
+					)
+					// @ts-ignore
+					expect(() => context.getPartInstanceForPreviousPiece({})).toThrowError(
+						'Cannot find PartInstance from invalid PieceInstance'
+					)
+					// @ts-ignore
+					expect(() => context.getPartInstanceForPreviousPiece('abc')).toThrowError(
+						'Cannot find PartInstance from invalid PieceInstance'
+					)
+					expect(() =>
+						context.getPartInstanceForPreviousPiece({
+							// @ts-ignore
+							partInstanceId: 6,
+						})
+					).toThrowError('Cannot find PartInstance for PieceInstance')
+					expect(() =>
+						context.getPartInstanceForPreviousPiece({
+							// @ts-ignore
+							partInstanceId: 'abc',
+						})
+					).toThrowError('Cannot find PartInstance for PieceInstance')
+				})
+			})
+
+			testInFiber('valid parameters', () => {
+				wrapWithCache((cache) => {
+					const { context, playlist } = getActionExecutionContext(cache)
+
+					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
+					expect(partInstanceIds).toHaveLength(5)
+
+					expect(
+						context.getPartInstanceForPreviousPiece({ partInstanceId: partInstanceIds[1] } as any)
+					).toMatchObject({
+						_id: partInstanceIds[1],
+					})
+
+					expect(
+						context.getPartInstanceForPreviousPiece({ partInstanceId: partInstanceIds[4] } as any)
+					).toMatchObject({
+						_id: partInstanceIds[4],
+					})
+				})
+			})
+		})
+
 		describe('insertPiece', () => {
 			beforeEach(() => {
 				postProcessPiecesMock.mockClear()
@@ -839,7 +893,7 @@ describe('Test blueprint api context', () => {
 					expect(newPartInstance).toBeTruthy()
 					expect(newPartInstance.part._rank).toBeLessThan(9000)
 					expect(newPartInstance.part._rank).toBeGreaterThan(partInstance.part._rank)
-					expect(newPartInstance.part.dynamicallyInsertedAfterPartId).toBeTruthy()
+					expect(newPartInstance.orphaned).toEqual('adlib-part')
 
 					const newNextPartInstances = context.getPieceInstances('next')
 					expect(newNextPartInstances).toHaveLength(1)

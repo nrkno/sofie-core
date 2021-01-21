@@ -33,21 +33,23 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 
 	iframeElement: HTMLIFrameElement
 
-	private _intersections: {
-		boundingClientRect: {
-			top: number
-			right: number
-			bottom: number
-			left: number
-		}
-		intersectionRect: {
-			top: number
-			right: number
-			bottom: number
-			left: number
-		}
-	}
-	private _observer: IntersectionObserver
+	private _intersections:
+		| {
+				boundingClientRect: {
+					top: number
+					right: number
+					bottom: number
+					left: number
+				}
+				intersectionRect: {
+					top: number
+					right: number
+					bottom: number
+					left: number
+				}
+		  }
+		| undefined
+	private _observer: IntersectionObserver | undefined
 
 	static show(noraContent: NoraContent, style: React.CSSProperties) {
 		NoraPreviewRenderer._singletonRef._show(noraContent, style)
@@ -111,19 +113,21 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		let x = this.state.flip.x
 		let y = this.state.flip.y
 
-		if (y && this._intersections.intersectionRect.bottom < this._intersections.boundingClientRect.bottom) {
-			// flip to bottom
-			y = false
-		} else if (!y && this._intersections.intersectionRect.top > this._intersections.boundingClientRect.top) {
-			// flip to top
-			y = true
-		}
-		if (x && this._intersections.intersectionRect.right < this._intersections.boundingClientRect.right) {
-			// flip to bottom
-			x = false
-		} else if (!x && this._intersections.intersectionRect.left > this._intersections.boundingClientRect.left) {
-			// flip to top
-			x = true
+		if (this._intersections) {
+			if (y && this._intersections.intersectionRect.bottom < this._intersections.boundingClientRect.bottom) {
+				// flip to bottom
+				y = false
+			} else if (!y && this._intersections.intersectionRect.top > this._intersections.boundingClientRect.top) {
+				// flip to top
+				y = true
+			}
+			if (x && this._intersections.intersectionRect.right < this._intersections.boundingClientRect.right) {
+				// flip to bottom
+				x = false
+			} else if (!x && this._intersections.intersectionRect.left > this._intersections.boundingClientRect.left) {
+				// flip to top
+				x = true
+			}
 		}
 
 		this.setState({
@@ -178,7 +182,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	}
 
 	componentWillUnmount() {
-		this._observer.disconnect()
+		if (this._observer) this._observer.disconnect()
 	}
 
 	getElStyle() {

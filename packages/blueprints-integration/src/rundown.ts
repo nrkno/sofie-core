@@ -165,9 +165,6 @@ export interface IBlueprintPartDB<TMetadata = unknown> extends IBlueprintPart<TM
 	_id: string
 	/** The segment ("Title") this line belongs to */
 	segmentId: string
-
-	/** if the part was dunamically inserted (adlib) */
-	dynamicallyInsertedAfterPartId?: string
 }
 /** The Part instance sent from Core */
 export interface IBlueprintPartInstance<TMetadata = unknown> {
