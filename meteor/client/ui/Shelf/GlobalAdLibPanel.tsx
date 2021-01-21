@@ -32,6 +32,7 @@ import {
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
+	SomeTimelineContent,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -406,7 +407,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			.map((action) => {
 				let sourceLayerId = ''
 				let outputLayerId = ''
-				let content: SomeContent = { timelineObjects: [] }
+				let content: SomeTimelineContent = { timelineObjects: [] }
 				const isContent = RundownUtils.isAdlibActionContent(action.display)
 				if (isContent) {
 					sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId

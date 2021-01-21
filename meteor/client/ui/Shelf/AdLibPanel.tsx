@@ -27,6 +27,7 @@ import {
 	SomeContent,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
+	SomeTimelineContent,
 } from '@sofie-automation/blueprints-integration'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
@@ -501,7 +502,7 @@ function actionToAdLibPieceUi(
 ): AdLibPieceUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
-	let content: SomeContent = { timelineObjects: [] }
+	let content: SomeTimelineContent = { timelineObjects: [] }
 	const isContent = RundownUtils.isAdlibActionContent(action.display)
 	if (isContent) {
 		sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId

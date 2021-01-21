@@ -25,6 +25,7 @@ import {
 	IBlueprintPieceGeneric,
 	PieceLifespan,
 	VTContent,
+	WithTimeline,
 } from '@sofie-automation/blueprints-integration'
 import { IStudioSettings } from '../collections/Studios'
 import { RundownAPI } from '../api/rundown'
@@ -106,7 +107,7 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: literal<VTContent>({
+				content: literal<WithTimeline<VTContent>>({
 					fileName: 'test',
 					path: '',
 					timelineObjects: [],
@@ -128,7 +129,7 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: literal<VTContent>({
+				content: literal<WithTimeline<VTContent>>({
 					fileName: 'TEST',
 					path: '',
 					timelineObjects: [],
@@ -245,7 +246,7 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: literal<VTContent>({
+			content: literal<WithTimeline<VTContent>>({
 				fileName: 'test_file',
 				path: '',
 				timelineObjects: [],
@@ -331,7 +332,7 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: literal<VTContent>({
+			content: literal<WithTimeline<VTContent>>({
 				fileName: 'test_file_2',
 				path: '',
 				timelineObjects: [],
@@ -346,7 +347,7 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: literal<VTContent>({
+			content: literal<WithTimeline<VTContent>>({
 				fileName: 'test_file_3',
 				path: '',
 				timelineObjects: [],
