@@ -63,7 +63,6 @@ export namespace ExpectedPackage {
 				[accessorId: string]:
 					| AccessorOnPackage.LocalFolder
 					| AccessorOnPackage.FileShare
-					| AccessorOnPackage.MappedDrive
 					| AccessorOnPackage.HTTP
 			}
 		}[]
@@ -102,12 +101,11 @@ export interface PackageContainer {
  * For example, a local folder on a computer might be accessed through a LocalFolder and a FileShare
  */
 export namespace Accessor {
-	export type Any = LocalFolder | FileShare | MappedDrive | HTTP | Quantel
+	export type Any = LocalFolder | FileShare | HTTP | Quantel
 
 	export enum AccessType {
 		LOCAL_FOLDER = 'local_folder',
 		FILE_SHARE = 'file_share',
-		MAPPED_DRIVE = 'mapped_drive',
 		HTTP = 'http',
 
 		QUANTEL = 'quantel',
@@ -143,23 +141,9 @@ export namespace Accessor {
 		 * @example '\\192.168.0.1\shared\'
 		 */
 		folderPath: string
-	}
-	export interface MappedDrive extends Base {
-		type: AccessType.MAPPED_DRIVE
-
-		/** Name/Id of the network the share exists on. Used to differ between different local networks. */
-		networkId?: string
-
-		/** Path to a folder on a network-share
-		 * @example '\\192.168.0.1\shared\'
-		 */
-		folderPath: string
 
 		userName?: string
 		password?: string
-
-		/** Drive letter to where the drive is (to be) mapped to */
-		mappedDrive?: string
 	}
 	export interface HTTP extends Base {
 		type: AccessType.HTTP
@@ -175,6 +159,9 @@ export namespace Accessor {
 
 		/** Body parameters to send along with the request (for POST-requests). */
 		requestBody?: object
+
+		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible*/
+		networkId?: string
 	}
 	export interface Quantel extends Base {
 		type: AccessType.QUANTEL
@@ -192,7 +179,7 @@ export namespace Accessor {
  * The info is then (optionally) combined with the Accessor data
  */
 export namespace AccessorOnPackage {
-	export type Any = LocalFolder | FileShare | MappedDrive | HTTP | Quantel | CorePackageCollection
+	export type Any = LocalFolder | FileShare | HTTP | Quantel | CorePackageCollection
 
 	export interface LocalFolder extends Partial<Accessor.LocalFolder> {
 		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
@@ -201,10 +188,6 @@ export namespace AccessorOnPackage {
 	export interface FileShare extends Partial<Accessor.FileShare> {
 		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
 		filePath: string
-	}
-	export interface MappedDrive extends Partial<Accessor.MappedDrive> {
-		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
-		filePath?: string
 	}
 	export interface HTTP extends Partial<Accessor.HTTP> {
 		/** URL path to resource (combined with .baseUrl gives the full URL), for example: /folder/myFile */

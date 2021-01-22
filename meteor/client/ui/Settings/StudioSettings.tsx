@@ -1875,7 +1875,7 @@ const StudioPackageManagerSettings = withTranslation()(
 														{t('Resource Id')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.containerId`}
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.resourceId`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -1944,6 +1944,23 @@ const StudioPackageManagerSettings = withTranslation()(
 														<span className="text-s dimmed">{t('')}</span>
 													</label>
 												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Network Id')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"></EditAttribute>
+														<span className="text-s dimmed">
+															{t(
+																'(Optional) A name/identifier of the local network where the share is located, leave empty if globally accessible'
+															)}
+														</span>
+													</label>
+												</div>
 											</>
 										) : accessor.type === Accessor.AccessType.FILE_SHARE ? (
 											<>
@@ -1958,50 +1975,6 @@ const StudioPackageManagerSettings = withTranslation()(
 															collection={Studios}
 															className="input text-input input-l"></EditAttribute>
 														<span className="text-s dimmed">{t('Folder path to shared folder')}</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Network Id')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
-														<span className="text-s dimmed">
-															{t('(Optional) A name/identifier of the local network where the share is located')}
-														</span>
-													</label>
-												</div>
-											</>
-										) : accessor.type === Accessor.AccessType.MAPPED_DRIVE ? (
-											<>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Base URL')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.folderPath`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
-														<span className="text-s dimmed">{t('Folder path to shared folder')}</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Mapped Drive')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.mappedDrive`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
-														<span className="text-s dimmed">{t('Drive letter to where the drive is mappedTo')}</span>
 													</label>
 												</div>
 												<div className="mod mvs mhs">
