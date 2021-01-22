@@ -862,6 +862,24 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 			RundownInput.dataSegmentUpdate(this, deviceId, deviceToken, rundownExternalId, ingestSegment)
 		)
 	}
+	dataSegmentRanksUpdate(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		rundownExternalId: string,
+		segmentExternalIds: string[],
+		ranks: number[]
+	) {
+		return makePromise(() => {
+			RundownInput.dataSegmentRanksUpdate(
+				this,
+				deviceId,
+				deviceToken,
+				rundownExternalId,
+				segmentExternalIds,
+				ranks
+			)
+		})
+	}
 	dataPartDelete(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,

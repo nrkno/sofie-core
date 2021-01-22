@@ -273,6 +273,21 @@ export namespace RundownInput {
 		check(ingestSegment, Object)
 		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment)
 	}
+	export function dataSegmentRanksUpdate(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		rundownExternalId: string,
+		segmentExternalIds: string[],
+		ranks: number[]
+	) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		logger.info('dataSegmentRanksUpdate', rundownExternalId, segmentExternalIds, ranks)
+		check(rundownExternalId, String)
+		check(segmentExternalIds, Array)
+		check(ranks, Array)
+		handleUpdatedSegmentRanks(peripheralDevice, rundownExternalId, segmentExternalIds, ranks)
+	}
 	// Delete, Create & Update Part:
 	export function dataPartDelete(
 		context: MethodContext,
@@ -1492,6 +1507,48 @@ function afterIngestChangedData(
 	syncChangesToPartInstances(cache, blueprint, playlist, rundown)
 
 	triggerUpdateTimelineAfterIngestData(rundown.playlistId)
+}
+
+export function handleUpdatedSegmentRanks(
+	peripheralDevice: PeripheralDevice,
+	rundownExternalId: string,
+	segmentExternalIds: string[],
+	ranks: number[]
+) {
+	if (segmentExternalIds.length !== ranks.length) {
+		throw new Meteor.Error(400, `Number of segmentExternalIds does not match number of ranks`)
+	}
+
+	const studio = getStudioFromDevice(peripheralDevice)
+	const rundownId = getRundownId(studio, rundownExternalId)
+	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
+
+	return rundownPlaylistSyncFunction(
+		playlistId,
+		RundownSyncFunctionPriority.INGEST,
+		'handleUpdatedSegmentRanks',
+		() => {
+			const rundown = getRundown(rundownId, rundownExternalId)
+			const playlist = getRundownPlaylist(rundown)
+			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+
+			for (const [index, externalId] of segmentExternalIds.entries()) {
+				cache.Segments.update(
+					{
+						externalId,
+						rundownId,
+					},
+					{
+						$set: {
+							_rank: ranks[index],
+						},
+					}
+				)
+			}
+
+			waitForPromise(cache.saveAllToDatabase())
+		}
+	)
 }
 
 export function handleRemovedPart(
