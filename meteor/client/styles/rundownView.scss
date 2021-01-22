@@ -270,11 +270,10 @@ body.no-overflow {
 			position: relative;
 			margin-right: 1em;
 			font-family: 'Roboto', Helvetica Neue, Arial, sans-serif;
-			font-weight: normal;
+			font-weight: 100;
 			color: $general-clock;
 			font-size: 1.5em;
 			margin-top: 0.8em;
-			font-weight: 100;
 			word-break: keep-all;
 			white-space: nowrap;
 
@@ -1222,7 +1221,6 @@ body.no-overflow {
 
 				.segment-timeline__part__nextline__label {
 					display: none;
-					text-transform: uppercase;
 					position: absolute;
 					top: -2px;
 					left: 2px;
