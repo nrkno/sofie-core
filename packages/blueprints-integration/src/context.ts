@@ -251,3 +251,5 @@ export interface IAsRunEventContext extends IEventContext, IRundownContext {
 	/** Get the ingest data related to a partInstance */
 	getIngestDataForPartInstance(partInstance: Readonly<IBlueprintPartInstance>): Readonly<IngestPart> | undefined
 }
+
+export interface IAsRunEventUserContext extends IAsRunEventContext, IUserNotesContext {}
