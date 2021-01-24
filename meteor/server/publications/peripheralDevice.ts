@@ -323,6 +323,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 
 											if (sourceAccessor && sourceAccessor.type === packageAccessor.type) {
 												combinedSource.accessors[packageAccessorId] = deepExtend(
+													{},
 													sourceAccessor,
 													packageAccessor
 												)
