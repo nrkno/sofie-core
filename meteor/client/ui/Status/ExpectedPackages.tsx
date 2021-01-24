@@ -9,7 +9,7 @@ import {
 } from '../../../lib/collections/ExpectedPackageWorkStatuses'
 import { unprotectString } from '../../../lib/lib'
 import { ExpectedPackageDB, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
-import { stat } from 'fs'
+import * as VelocityReact from 'velocity-react'
 
 interface IExpectedPackagesStatusProps {}
 
@@ -102,42 +102,87 @@ export const ExpectedPackagesStatus = translateWithTracker<
 			return Object.keys(packagesWithWorkStatuses).map((packageId) => {
 				const p = packagesWithWorkStatuses[packageId]
 				return (
-					<div key={packageId} className="package">
+					<div key={packageId} className="package mbs">
 						{p.package ? (
 							<div className="package__header">
-								<div>Package: {p.package._id}</div>
-								<br />
-								<div>
-									Content: <pre>{JSON.stringify(p.package.content)}</pre>
+								<div className="workflow__header__progress">
+									{/* <VelocityReact.VelocityComponent
+										animation={finishedOK ? iconEnterAnimation : iconLeaveAnimation}
+										duration={300}
+										easing="easeIn">
+										<div className="big-status ok">
+											<FontAwesomeIcon icon={faCheck} />
+										</div>
+									</VelocityReact.VelocityComponent>
+									<VelocityReact.VelocityComponent
+										animation={finishedError ? iconEnterAnimation : iconLeaveAnimation}
+										duration={300}
+										easing="easeIn">
+										<div className="big-status error">
+											<WarningIcon />
+										</div>
+									</VelocityReact.VelocityComponent>
+									<VelocityReact.VelocityComponent
+										animation={!finishedOK && !finishedError ? iconEnterAnimation : iconLeaveAnimation}
+										duration={300}
+										easing="easeIn">
+										<CircularProgressbar
+											value={progress * 100} // TODO: initialAnimation={true} removed, make the animation other way if needed
+											text={Math.round(progress * 100) + '%'}
+											strokeWidth={10}
+											styles={{
+												path: { stroke: `#1769ff`, strokeLinecap: 'round' },
+												trail: { stroke: '#E0E3E4' },
+												text: { fill: '#252627', fontSize: '170%', transform: 'translate(0, 8%)', textAnchor: 'middle' },
+											}}
+										/>
+									</VelocityReact.VelocityComponent>
+									<VelocityReact.VelocityComponent
+										animation={!finishedOK && !finishedError && keyFinishedOK ? subIconEnterAnimation : subIconLeaveAnimation}
+										duration={300}
+										easing="easeIn">
+										<div className="big-status sub-icon ok">
+											<FontAwesomeIcon icon={faCheck} />
+										</div>
+									</VelocityReact.VelocityComponent> */}
 								</div>
-								<div>
-									Version: <pre>{JSON.stringify(p.package.version)}</pre>
-								</div>
-								<div>
-									Sources <pre>{JSON.stringify(p.package.sources)}</pre>
+								<div className="package__header__summary">
+									<div className="package__header__name">
+										<div className="package__header__name__name">{p.package._id}</div>
+										<div className="package__header__name__content">{JSON.stringify(p.package.content)}</div>
+										<div className="package__header__name__version">{JSON.stringify(p.package.version)}</div>
+									</div>
+									{/* <div>Package: </div>
+									<br />
+									<div>
+										Content: <pre>{}</pre>
+									</div>
+									<div>
+										Version: <pre>{JSON.stringify(p.package.version)}</pre>
+									</div>
+									<div>
+										Sources <pre>{JSON.stringify(p.package.sources)}</pre>
+									</div> */}
 								</div>
 							</div>
 						) : (
 							<div className="workflow__header">Unknown package "{packageId}"</div>
 						)}
 
-						<div>
+						<div className="package__statuses">
 							{p.statuses.map((status) => {
 								return (
-									<div className="package-status" key={unprotectString(status._id)}>
-										<div>Expectation "{status.label}"</div>
-										<div>
-											<i>{status.description}</i>
+									<div className="package__statuses__status" key={unprotectString(status._id)}>
+										<div className="package__statuses__status__labels">
+											<div className="package__statuses__status__label">{status.label}</div>
+											<div className="package__statuses__status__progress">
+												{status.progress ? `${Math.round(status.progress * 100)}%` : ''}
+											</div>
+											<div className="package__statuses__status__status">{status.status}</div>
 										</div>
-										<div>
-											Progress:{' '}
-											<b>{status.status === 'working' ? `${Math.round((status.progress || 0) * 100)} %` : null}</b>
-										</div>
-										<div>
-											Status: <b>{status.status}</b>
-										</div>
-										<div>
-											Status reason: <i>{status.statusReason}</i>
+										<div className="package__statuses__status__descriptions">
+											<div className="package__statuses__status__description">{status.description}</div>
+											<div className="package__statuses__status__reason">{status.statusReason}</div>
 										</div>
 									</div>
 								)
