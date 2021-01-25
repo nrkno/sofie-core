@@ -8,7 +8,6 @@ import {
 	IStudioContext,
 	IPartEventContext,
 	IRundownContext,
-	ITimelineEventContext,
 	IStudioUserContext,
 	ISegmentUserContext,
 	IShowStyleUserContext,
