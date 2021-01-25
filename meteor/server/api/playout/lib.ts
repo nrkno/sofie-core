@@ -178,6 +178,12 @@ export function selectNextPart(
 	parts: Part[]
 ): SelectNextPartResult | undefined {
 	const span = profiler.startSpan('selectNextPart')
+	/**
+	 * Iterates over all the parts and searches for the first one to be playable
+	 * @param offset the index from where to start the search
+	 * @param condition whether the part will be returned
+	 * @param length the maximum index or where to stop the search
+	 */
 	const findFirstPlayablePart = (
 		offset: number,
 		condition?: (part: Part) => boolean,
