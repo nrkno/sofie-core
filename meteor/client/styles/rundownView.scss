@@ -472,6 +472,11 @@ body.no-overflow {
 	width: auto;
 }
 
+svg.icon {
+	margin-top: -0.2em;
+	position: relative;
+}
+
 // A component for displaying the segments (ENPS Stories/NKR Titles)
 .segment-timeline {
 	display: grid;
@@ -1402,6 +1407,10 @@ body.no-overflow {
 					position: absolute;
 					top: 50%;
 					transform: translateY(calc(-50% - 6px));
+				}
+
+				&.loop {
+					border-left: 0;
 				}
 			}
 
