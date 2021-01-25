@@ -11,7 +11,7 @@ const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
  */
 export class MidiPedalController extends ControllerAbstract {
 	private prompterView: PrompterViewInner
-	private midiInput: Input | undefined
+	private midiInputs: Input[] = []
 
 	private rangeRevMin = 0 // pedal "all back" position, the max-reverse-position
 	private rangeNeutralMin = 35 // pedal "back" position where reverse-range transistions to the neutral range
@@ -100,24 +100,27 @@ export class MidiPedalController extends ControllerAbstract {
 
 		console.log('WebMIDI enabled')
 		webmidi.addListener('connected', (e) => {
-			if (e?.port?.type === 'input') {
-				this.removeMidiInput()
-				this.midiInput = webmidi.inputs[0]
-				this.midiInput.addListener('controlchange', 8, this.onMidiInputCC.bind(this))
-			}
+			this.updateMidiInputs()
 		})
 		webmidi.addListener('disconnected', () => {
-			this.removeMidiInput()
+			this.updateMidiInputs()		
 		})
 	}
 
-	private removeMidiInput() {
+	private updateMidiInputs() {
+		// reset all inputs
+		this.midiInputs.forEach((i) => i.removeListener('controlchange', 8, this.onMidiInputCC))
+		this.midiInputs = []
 		this.lastSpeed = 0
-		if (this.midiInput) {
-			this.midiInput.removeListener('controlchange', 8, this.onMidiInputCC)
-			this.midiInput = undefined
-		}
+
+		// re-adds all active inputs and sets up listeners
+		this.midiInputs = webmidi.inputs.filter((i) => {
+			return i.type === 'input' && i.connection === 'open' && i.state === 'connected'
+		})
+
+		this.midiInputs.forEach((i) => i.addListener('controlchange', 8, this.onMidiInputCC.bind(this)))
 	}
+
 
 	private onMidiInputCC(e: InputEventControlchange) {
 		const { rangeRevMin, rangeNeutralMin, rangeNeutralMax, rangeFwdMax } = this
