@@ -238,12 +238,16 @@ const TimingDisplay = withTranslation()(
 				return currentRundown && (rundownPlaylist.name !== currentRundown.name || rundownCount > 1) ? (
 					<span
 						className="timing-clock-label left hide-overflow rundown-name"
-						title={`${currentRundown.name} - ${rundownPlaylist.name} (Looped)`}>
-						<strong>{currentRundown.name}</strong> {rundownPlaylist.name} <LoopingIcon />
+						title={
+							rundownPlaylist.loop
+								? `${currentRundown.name} - ${rundownPlaylist.name} (Looped)`
+								: `${currentRundown.name} - ${rundownPlaylist.name}`
+						}>
+						<strong>{currentRundown.name}</strong> {rundownPlaylist.name} {rundownPlaylist.loop && <LoopingIcon />}
 					</span>
 				) : (
 					<span className="timing-clock-label left hide-overflow rundown-name" title={rundownPlaylist.name}>
-						{rundownPlaylist.name} <LoopingIcon />
+						{rundownPlaylist.name} {rundownPlaylist.loop && <LoopingIcon />}
 					</span>
 				)
 			}
@@ -268,7 +272,7 @@ const TimingDisplay = withTranslation()(
 						{rundownPlaylist.startedPlayback && rundownPlaylist.active && !rundownPlaylist.rehearsal ? (
 							rundownPlaylist.expectedStart ? (
 								<span className="timing-clock countdown playback-started left">
-									{this.renderRundownName()} <LoopingIcon />
+									{this.renderRundownName()}
 									{RundownUtils.formatDiffToTimecode(
 										rundownPlaylist.startedPlayback - rundownPlaylist.expectedStart,
 										true,
@@ -279,9 +283,7 @@ const TimingDisplay = withTranslation()(
 									)}
 								</span>
 							) : (
-								<span className="timing-clock countdown playback-started left">
-									{this.renderRundownName()} <LoopingIcon />
-								</span>
+								<span className="timing-clock countdown playback-started left">{this.renderRundownName()}</span>
 							)
 						) : (
 							(rundownPlaylist.expectedStart ? (
