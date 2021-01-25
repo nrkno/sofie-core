@@ -22,6 +22,8 @@ import {
 	clone,
 	normalizeArrayToMap,
 	omit,
+	asyncSaveIntoDb,
+	waitForPromiseAll,
 } from '../../../lib/lib'
 import {
 	IngestRundown,
@@ -764,28 +766,30 @@ function updateRundownFromIngestData(
 	}
 
 	const rundownBaselineChanges = sumChanges(
-		saveIntoDb<RundownBaselineObj, RundownBaselineObj>(
-			RundownBaselineObjs,
-			{
-				rundownId: dbRundown._id,
-			},
-			[baselineObj]
-		),
-		// Save the global adlibs
-		saveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
-			RundownBaselineAdLibPieces,
-			{
-				rundownId: dbRundown._id,
-			},
-			baselineAdlibPieces
-		),
-		saveIntoDb<RundownBaselineAdLibAction, RundownBaselineAdLibAction>(
-			RundownBaselineAdLibActions,
-			{
-				rundownId: dbRundown._id,
-			},
-			baselineAdlibActions
-		)
+		...waitForPromiseAll([
+			asyncSaveIntoDb<RundownBaselineObj, RundownBaselineObj>(
+				RundownBaselineObjs,
+				{
+					rundownId: dbRundown._id,
+				},
+				[baselineObj]
+			),
+			// Save the global adlibs
+			asyncSaveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
+				RundownBaselineAdLibPieces,
+				{
+					rundownId: dbRundown._id,
+				},
+				baselineAdlibPieces
+			),
+			asyncSaveIntoDb<RundownBaselineAdLibAction, RundownBaselineAdLibAction>(
+				RundownBaselineAdLibActions,
+				{
+					rundownId: dbRundown._id,
+				},
+				baselineAdlibActions
+			),
+		])
 	)
 	if (anythingChanged(rundownBaselineChanges)) {
 		// If any of the rundown baseline datas was modified, we'll update the baselineModifyHash of the rundown
