@@ -5,7 +5,6 @@ import { ConfigManifestEntry } from './config'
 import {
 	IActionExecutionContext,
 	ISyncIngestUpdateToPartInstanceContext,
-	IAsRunEventContext,
 	IStudioContext,
 	IPartEventContext,
 	IRundownContext,
@@ -14,6 +13,7 @@ import {
 	ISegmentUserContext,
 	IShowStyleUserContext,
 	ICommonContext,
+	IAsRunEventUserContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
@@ -180,7 +180,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	) => PartEndState
 
 	/** Called after an as-run event is created */
-	onAsRunEvent?: (context: IAsRunEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>
+	onAsRunEvent?: (context: IAsRunEventUserContext) => Promise<IBlueprintExternalMessageQueueObj[]>
 }
 
 export type PartEndState = unknown
