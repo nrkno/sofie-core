@@ -122,7 +122,7 @@ function updateDeviceLastDataReceived(deviceId: PeripheralDeviceId) {
 	})
 }
 
-export function canBeUpdated(rundown: Rundown | undefined, segment?: Segment, _partId?: PartId) {
+export function canBeUpdated(rundown: Rundown | undefined, segment?: Segment) {
 	if (!rundown) return true
 	if (rundown.orphaned) {
 		logger.info(`Rundown "${rundown._id}" has been unsynced and needs to be synced before it can be updated.`)
