@@ -14,6 +14,7 @@ import {
 	IShowStyleUserContext,
 	ICommonContext,
 	IAsRunEventUserContext,
+	ITimelineEventUserContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
@@ -163,7 +164,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 
 	/** Called after the timeline has been generated, used to manipulate the timeline */
 	onTimelineGenerate?: (
-		context: ITimelineEventContext,
+		context: ITimelineEventUserContext,
 		timeline: OnGenerateTimelineObj[],
 		previousPersistentState: TimelinePersistentState | undefined,
 		previousPartEndState: PartEndState | undefined,
@@ -172,7 +173,6 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 
 	/** Called just before taking the next part. This generates some persisted data used by onTimelineGenerate to modify the timeline based on the previous part (eg, persist audio levels) */
 	getEndStateForPart?: (
-		context: IRundownContext,
 		previousPersistentState: TimelinePersistentState | undefined,
 		previousPartEndState: PartEndState | undefined,
 		resolvedPieces: IBlueprintResolvedPieceInstance[],

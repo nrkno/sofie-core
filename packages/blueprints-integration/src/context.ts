@@ -193,6 +193,8 @@ export interface ITimelineEventContext extends IEventContext, IRundownContext {
 	getTimelineObjectAbSessionId(obj: OnGenerateTimelineObj, sessionName: string): string | undefined
 }
 
+export interface ITimelineEventUserContext extends ITimelineEventContext, IUserNotesContext {}
+
 export interface IPartEventContext extends IEventContext, IRundownContext {
 	readonly part: Readonly<IBlueprintPartInstance>
 }
