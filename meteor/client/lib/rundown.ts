@@ -677,7 +677,12 @@ export namespace RundownUtils {
 					// check if the Pieces should be cropped (as should be the case if an item on a layer is placed after
 					// an infinite Piece) and limit the width of the labels so that they dont go under or over the next Piece.
 					for (let [outputSourceCombination, layerItems] of Object.entries(itemsByLayer)) {
-						const sortedItems = _.sortBy(layerItems, 'renderedInPoint')
+						// sort on rendered in-point and then on priority
+						const sortedItems = layerItems.sort(
+							(a, b) =>
+								(a.renderedInPoint || 0) - (b.renderedInPoint || 0) ||
+								a.instance.priority - b.instance.priority
+						)
 						for (let i = 1; i < sortedItems.length; i++) {
 							const currentItem = sortedItems[i]
 							const previousItem = sortedItems[i - 1]
