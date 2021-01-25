@@ -99,11 +99,11 @@ export class MidiPedalController extends ControllerAbstract {
 		}
 
 		console.log('WebMIDI enabled')
-		webmidi.addListener('connected', (e) => {
+		webmidi.addListener('connected', () => {
 			this.updateMidiInputs()
 		})
 		webmidi.addListener('disconnected', () => {
-			this.updateMidiInputs()		
+			this.updateMidiInputs()
 		})
 	}
 
@@ -120,7 +120,6 @@ export class MidiPedalController extends ControllerAbstract {
 
 		this.midiInputs.forEach((i) => i.addListener('controlchange', 8, this.onMidiInputCC))
 	}
-
 
 	private onMidiInputCC = (e: InputEventControlchange) => {
 		const { rangeRevMin, rangeNeutralMin, rangeNeutralMax, rangeFwdMax } = this
