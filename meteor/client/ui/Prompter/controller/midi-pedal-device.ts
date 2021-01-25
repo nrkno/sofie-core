@@ -118,11 +118,11 @@ export class MidiPedalController extends ControllerAbstract {
 			return i.type === 'input' && i.connection === 'open' && i.state === 'connected'
 		})
 
-		this.midiInputs.forEach((i) => i.addListener('controlchange', 8, this.onMidiInputCC.bind(this)))
+		this.midiInputs.forEach((i) => i.addListener('controlchange', 8, this.onMidiInputCC))
 	}
 
 
-	private onMidiInputCC(e: InputEventControlchange) {
+	private onMidiInputCC = (e: InputEventControlchange) => {
 		const { rangeRevMin, rangeNeutralMin, rangeNeutralMax, rangeFwdMax } = this
 		let inputValue = e.value || 0
 
