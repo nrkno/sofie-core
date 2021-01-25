@@ -383,7 +383,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
-		if (rundown.orphaned) {
+		if (!canBeUpdated(rundown)) {
 			// Rundown is already deleted
 		} else if (!allowedToMoveRundownOutOfPlaylist(playlist, rundown)) {
 			// Don't allow removing currently playing rundown playlists:
@@ -1000,9 +1000,6 @@ export function handleRemovedSegment(
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleRemovedSegment', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
-		if (rundown.orphaned)
-			throw new Meteor.Error(403, `Rundown "${rundownId}" has been deleted and cannot be modified`)
-
 		const playlist = getRundownPlaylist(rundown)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 
@@ -1011,7 +1008,7 @@ export function handleRemovedSegment(
 		const segment = cache.Segments.findOne(segmentId)
 		if (!segment) throw new Meteor.Error(404, `handleRemovedSegment: Segment "${segmentId}" not found`)
 
-		if (segment.orphaned === 'deleted') {
+		if (!canBeUpdated(rundown, segment)) {
 			// segment has already been deleted
 		} else {
 			if (!canRemoveSegment(cache, playlist, segment)) {
@@ -1050,14 +1047,13 @@ export function handleUpdatedSegment(
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleUpdatedSegment', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
-		if (rundown.orphaned)
-			throw new Meteor.Error(403, `Rundown "${rundownId}" has been deleted and cannot be modified`)
-
 		const playlist = getRundownPlaylist(rundown)
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
 		const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
+		const oldSegment = cache.Segments.findOne(segmentId)
+		if (!canBeUpdated(rundown, oldSegment)) return
 
 		const localIngestSegment = makeNewIngestSegment(ingestSegment)
 		cache.defer(() => {
@@ -1442,14 +1438,11 @@ export function handleRemovedPart(
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleRemovedPart', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
-		if (rundown.orphaned)
-			throw new Meteor.Error(403, `Rundown "${rundownId}" has been deleted and cannot be modified`)
-
 		const playlist = getRundownPlaylist(rundown)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		const segment = getSegment(segmentId)
-		if (segment.orphaned)
-			throw new Meteor.Error(403, `Segment "${segmentId}" has been deleted and cannot be updated`)
+
+		if (!canBeUpdated(rundown, segment)) return
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
@@ -1495,8 +1488,7 @@ export function handleUpdatedPart(
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleUpdatedPart', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
-		if (rundown.orphaned)
-			throw new Meteor.Error(403, `Rundown "${rundownId}" has been deleted and cannot be modified`)
+		if (!rundown) return
 
 		const playlist = getRundownPlaylist(rundown)
 
@@ -1519,7 +1511,7 @@ export function handleUpdatedPartInner(
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
 	const segment = cache.Segments.findOne(segmentId)
 	if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found`)
-	if (segment.orphaned) throw new Meteor.Error(403, `Segment "${segmentId}" has been deleted and cannot be updated`)
+	if (!canBeUpdated(rundown, segment)) return
 
 	// Blueprints will handle the creation of the Part
 	const ingestSegment: LocalIngestSegment = loadCachedIngestSegment(
