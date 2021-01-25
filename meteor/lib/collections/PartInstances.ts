@@ -91,7 +91,7 @@ export class PartInstance implements DBPartInstance {
 
 	public allowedToUseTransition?: boolean
 
-	public orphaned?: 'adlib-part' // Future scope: | 'deleted'
+	public orphaned?: 'adlib-part' | 'deleted'
 
 	constructor(document: DBPartInstance, isTemporary?: boolean) {
 		_.each(_.keys(document), (key) => {

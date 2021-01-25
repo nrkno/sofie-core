@@ -281,7 +281,7 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 		ingestPart.payload = story
 
 		// Update db with the full story:
-		handleUpdatedPartInner(cache, studio, playlist, rundown, ingestSegment.externalId, ingestPart)
+		handleUpdatedPartInner(cache, playlist, rundown, ingestSegment.externalId, ingestPart)
 		waitForPromise(cache.saveAllToDatabase())
 
 		span?.end()
@@ -336,7 +336,7 @@ export function handleMosDeleteStory(
 		})
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
-		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
+		diffAndApplyChanges(cache, playlist, rundown, ingestRundown, newIngestSegments)
 		UpdateNext.ensureNextPartIsValid(cache, playlist)
 		waitForPromise(cache.saveAllToDatabase())
 
@@ -424,7 +424,7 @@ export function handleInsertParts(
 		})
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(existingPlaylist)) // todo: change this
-		diffAndApplyChanges(cache, studio, existingPlaylist, rundown, ingestRundown, newIngestSegments)
+		diffAndApplyChanges(cache, existingPlaylist, rundown, ingestRundown, newIngestSegments)
 		waitForPromise(cache.saveAllToDatabase())
 
 		span?.end()
@@ -478,7 +478,7 @@ export function handleSwapStories(
 		})
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
-		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
+		diffAndApplyChanges(cache, playlist, rundown, ingestRundown, newIngestSegments)
 		UpdateNext.ensureNextPartIsValid(cache, playlist)
 		waitForPromise(cache.saveAllToDatabase())
 
@@ -546,7 +546,7 @@ export function handleMoveStories(
 		})
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
-		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
+		diffAndApplyChanges(cache, playlist, rundown, ingestRundown, newIngestSegments)
 		UpdateNext.ensureNextPartIsValid(cache, playlist)
 		waitForPromise(cache.saveAllToDatabase())
 
@@ -603,7 +603,6 @@ function groupPartsIntoIngestSegments(rundown: Rundown, newIngestParts: Annotate
 
 function diffAndApplyChanges(
 	cache: CacheForRundownPlaylist,
-	studio: Studio,
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	oldIngestRundown: LocalIngestRundown,
@@ -712,7 +711,6 @@ function diffAndApplyChanges(
 	// Create/Update segments
 	updateSegmentsFromIngestData(
 		cache,
-		studio,
 		playlist,
 		rundown,
 		_.sortBy([..._.values(segmentDiff.added), ..._.values(segmentDiff.changed)], (se) => se.rank)

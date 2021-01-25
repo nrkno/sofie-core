@@ -403,33 +403,26 @@ export function removeSegments(cache: CacheForRundownPlaylist, rundownId: Rundow
 		rundownId: rundownId,
 	})
 	if (count > 0) {
-		afterRemoveSegments(cache, rundownId, segmentIds)
+		// Remove the parts:
+		const changes = saveIntoCache(
+			cache.Parts,
+			{
+				rundownId: rundownId,
+				segmentId: { $in: segmentIds },
+			},
+			[],
+			{
+				afterRemoveAll(parts) {
+					removeSegmentsParts(cache, rundownId, parts)
+				},
+			}
+		)
+
+		if (changes.removed > 0) {
+			triggerUpdateTimelineAfterIngestData(cache.containsDataFromPlaylist)
+		}
 	}
 	return count
-}
-/**
- * After Segments have been removed, handle the contents.
- * This will trigger an update of the timeline
- * @param rundownId Id of the Rundown
- * @param segmentIds Id of the Segments
- */
-export function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: RundownId, segmentIds: SegmentId[]) {
-	// Remove the parts:
-	saveIntoCache(
-		cache.Parts,
-		{
-			rundownId: rundownId,
-			segmentId: { $in: segmentIds },
-		},
-		[],
-		{
-			afterRemoveAll(parts) {
-				afterRemoveParts(cache, rundownId, parts)
-			},
-		}
-	)
-
-	triggerUpdateTimelineAfterIngestData(cache.containsDataFromPlaylist)
 }
 
 /**
@@ -438,7 +431,7 @@ export function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: R
  * @param rundownId Id of the Rundown
  * @param removedParts The parts that have been removed
  */
-export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: RundownId, removedParts: DBPart[]) {
+function removeSegmentsParts(cache: CacheForRundownPlaylist, rundownId: RundownId, removedParts: DBPart[]) {
 	// Clean up all the db items that belong to the removed Parts
 	const removedPartIds = removedParts.map((p) => p._id)
 	cache.Pieces.remove({
@@ -446,11 +439,7 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 		startPartId: { $in: removedPartIds },
 	})
 
-	const removePartInstanceIds = cache.PartInstances.findFetch({ 'part._id': { $in: removedPartIds } }).map(
-		(p) => p._id
-	)
-	cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
-	cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+	afterRemoveParts(cache, removedPartIds)
 
 	cache.deferAfterSave(() => {
 		waitForPromiseAll([
@@ -472,6 +461,19 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 			}),
 		])
 	})
+}
+
+/**
+ * After Parts have been removed, inform the partInstances.
+ * This will NOT remove any data or update the timeline
+ * @param removedPartIds The ids of the parts that have been removed
+ */
+export function afterRemoveParts(cache: CacheForRundownPlaylist, removedPartIds: PartId[]) {
+	const removePartInstanceIds = cache.PartInstances.findFetch({ 'part._id': { $in: removedPartIds } }).map(
+		(p) => p._id
+	)
+	cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+	cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
 }
 
 export type ChangedSegmentsRankInfo = Array<{
@@ -530,11 +532,11 @@ export function updatePartInstanceRanks(
 				delete partInstance.orphaned
 				partInstance.part._rank = part._rank
 			} else if (!partInstance.orphaned) {
-				// TODO: Future flow. For now it should be impossible to get to here currently because of unsynced behaviour, but unit tests provide coverage
-				partInstance.orphaned = 'adlib-part' // 'deleted'
+				// TODO ORPHAN - verify this works
+				partInstance.orphaned = 'deleted'
 				cache.PartInstances.update(partInstance._id, {
 					$set: {
-						orphaned: 'adlib-part', // Future: 'deleted',
+						orphaned: 'deleted',
 					},
 				})
 			}
