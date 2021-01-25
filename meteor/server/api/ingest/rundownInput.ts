@@ -14,7 +14,6 @@ import {
 	waitForPromise,
 	unprotectString,
 	protectString,
-	ProtectedString,
 	getRandomId,
 	PreparedChanges,
 	unprotectObject,
@@ -41,7 +40,6 @@ import {
 	selectShowStyleVariant,
 	afterRemoveParts,
 	ServerRundownAPI,
-	removeSegments,
 	updatePartInstanceRanks,
 	produceRundownPlaylistInfoFromRundown,
 	allowedToMoveRundownOutOfPlaylist,
@@ -49,6 +47,7 @@ import {
 	sortDefaultRundownInPlaylistOrder,
 	ChangedSegmentsRankInfo,
 	removeSegmentContents,
+	unsyncAndEmptySegment,
 } from '../rundown'
 import { loadShowStyleBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
 import {
@@ -76,7 +75,7 @@ import {
 	RundownBaselineAdLibItem,
 	RundownBaselineAdLibPieces,
 } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { DBSegment, Segments, SegmentId, Segment } from '../../../lib/collections/Segments'
+import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import {
 	saveRundownCache,
@@ -122,13 +121,9 @@ import {
 	getRundownsSegmentsAndPartsFromCache,
 	removeRundownFromCache,
 } from '../playout/lib'
-import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../lib/api/methods'
-import {
-	CacheForRundownPlaylist,
-	initCacheForRundownPlaylist,
-	initCacheForRundownPlaylistFromRundown,
-} from '../../DatabaseCaches'
+import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
 import { prepareSaveIntoCache, saveIntoCache, savePreparedChangesIntoCache } from '../../DatabaseCache'
 import { reportRundownDataHasChanged } from '../asRunLog'
 import { Settings } from '../../../lib/Settings'
@@ -461,14 +456,14 @@ export function regenerateRundown(rundownId: RundownId) {
 		'handleUpdatedRundown',
 		() => {
 			// Reload to ensure it isnt stale
-			const existingDbRundown = Rundowns.findOne(rundownId)
-			if (!existingDbRundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
+			const existingDbRundown2 = Rundowns.findOne(rundownId)
+			if (!existingDbRundown2) throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
 
-			const ingestRundown = loadCachedRundownData(rundownId, existingDbRundown.externalId)
+			const ingestRundown = loadCachedRundownData(rundownId, existingDbRundown2.externalId)
 
 			const dataSource = 'regenerate'
 
-			updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, undefined)
+			updateRundownFromIngestData(studio, existingDbRundown2, ingestRundown, dataSource, undefined)
 
 			span?.end()
 		}
@@ -1012,8 +1007,7 @@ export function handleRemovedSegment(
 			// segment has already been deleted
 		} else {
 			if (!canRemoveSegment(cache, playlist, segment)) {
-				ServerRundownAPI.unsyncSegmentInner(cache, rundownId, segmentId)
-				removeSegmentContents(cache, rundownId, [segmentId])
+				unsyncAndEmptySegment(cache, rundownId, segmentId)
 			} else {
 				cache.defer(() => {
 					IngestDataCache.remove({
@@ -1022,14 +1016,10 @@ export function handleRemovedSegment(
 					})
 				})
 
-				if (removeSegments(cache, rundownId, [segmentId]) === 0) {
-					throw new Meteor.Error(
-						404,
-						`handleRemovedSegment: removeSegments: Segment ${segmentExternalId} not found`
-					)
-				} else {
-					UpdateNext.ensureNextPartIsValid(cache, playlist)
-				}
+				cache.Segments.remove(segmentId)
+				removeSegmentContents(cache, rundownId, [segmentId])
+
+				UpdateNext.ensureNextPartIsValid(cache, playlist)
 			}
 		}
 
@@ -1665,7 +1655,7 @@ function generateSegmentContents(
 	}
 }
 
-function canRemoveSegment(
+export function canRemoveSegment(
 	cache: CacheForRundownPlaylist,
 	rundownPlaylist: RundownPlaylist,
 	segment: DBSegment | undefined

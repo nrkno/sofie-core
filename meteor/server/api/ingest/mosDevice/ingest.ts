@@ -28,6 +28,7 @@ import {
 	handleUpdatedRundownInner,
 	handleUpdatedPartInner,
 	updateSegmentsFromIngestData,
+	canRemoveSegment,
 } from '../rundownInput'
 import {
 	loadCachedRundownData,
@@ -43,8 +44,7 @@ import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundow
 import { Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Segments, Segment } from '../../../../lib/collections/Segments'
-import { loadShowStyleBlueprint } from '../../blueprints/cache'
-import { removeSegments, ServerRundownAPI } from '../../rundown'
+import { removeSegments, ServerRundownAPI, unsyncAndEmptySegment } from '../../rundown'
 import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
@@ -223,8 +223,6 @@ export function handleMosRundownMetadata(
 					`Failed to ShowStyleBase "${rundown.showStyleBaseId}" for rundown "${rundown._id}"`
 				)
 			}
-			const showStyleBlueprint = loadShowStyleBlueprint(showStyleBase)
-
 			// Load the cached RO Data
 			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 			ingestRundown.payload = _.extend(ingestRundown.payload, mosRunningOrderBase)
@@ -334,6 +332,8 @@ export function handleMosDeleteStory(
 
 			return filteredParts
 		})
+
+		// TODO ORPHAN is this guarded correctly?
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
 		diffAndApplyChanges(cache, playlist, rundown, ingestRundown, newIngestSegments)
@@ -618,39 +618,6 @@ function diffAndApplyChanges(
 	const newSegmentEntries = compileSegmentEntries(newIngestSegments)
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
 
-	// Check if operation affect currently playing Part:
-	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
-	if (playlist.active && currentPartInstance && currentPartInstance.rundownId === rundown._id) {
-		let currentPart: LocalIngestPart | undefined = undefined
-
-		for (let i = 0; currentPart === undefined && i < newIngestSegments.length; i++) {
-			const { parts } = newIngestSegments[i]
-			currentPart = parts.find((ingestPart) => {
-				const partId = getPartId(rundown._id, ingestPart.externalId)
-				return partId === currentPartInstance.part._id
-			})
-		}
-
-		if (!currentPart) {
-			// Looks like the currently playing part has been removed.
-			logger.warn(
-				`Currently playing part "${currentPartInstance.part._id}" was removed during ingestData. Unsyncing the rundown!`
-			)
-			if (Settings.allowUnsyncedSegments) {
-				ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, currentPartInstance.part.segmentId)
-			} else {
-				ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
-			}
-			span?.end()
-			return
-		} else {
-			// TODO: add logic for determining whether to allow changes to the currently playing Part.
-			// TODO: use isUpdateAllowed()
-		}
-
-		span?.end()
-	}
-
 	// Save new cache
 	const newIngestRundown = updateIngestRundownWithData(oldIngestRundown, newIngestSegments)
 	saveRundownCache(rundown._id, newIngestRundown)
@@ -673,6 +640,8 @@ function diffAndApplyChanges(
 	_.each(segmentDiff.onlyExternalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
 		const oldSegmentId = getSegmentId(rundown._id, oldSegmentExternalId)
 		const newSegmentId = getSegmentId(rundown._id, newSegmentExternalId)
+
+		// TODO ORPHAN - can this be done in a more generic way?
 
 		// Move over those parts to the new segmentId.
 		// These parts will be orphaned temporarily, but will be picked up inside of updateSegmentsFromIngestData later
@@ -702,11 +671,17 @@ function diffAndApplyChanges(
 		)
 	})
 
-	// Remove old segments
-	const removedSegmentIds = _.map(segmentDiff.removed, (_segmentEntry, segmentExternalId) =>
-		getSegmentId(rundown._id, segmentExternalId)
-	)
-	removeSegments(cache, rundown._id, removedSegmentIds)
+	// Remove/orphan old segments
+	for (const segmentExternalId of Object.keys(segmentDiff.removed)) {
+		const segmentId = getSegmentId(rundown._id, segmentExternalId)
+		unsyncAndEmptySegment(cache, rundown._id, segmentId)
+
+		// Remove it too, if it can be removed
+		const segment = cache.Segments.findOne(segmentId)
+		if (!Settings.allowUnsyncedSegments && canRemoveSegment(cache, playlist, segment)) {
+			cache.Segments.remove(segmentId)
+		}
+	}
 
 	// Create/Update segments
 	updateSegmentsFromIngestData(
@@ -715,6 +690,8 @@ function diffAndApplyChanges(
 		rundown,
 		_.sortBy([..._.values(segmentDiff.added), ..._.values(segmentDiff.changed)], (se) => se.rank)
 	)
+
+	span?.end()
 }
 
 export interface SegmentEntries {
