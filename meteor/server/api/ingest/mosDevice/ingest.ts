@@ -2,14 +2,7 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import {
-	getStudioFromDevice,
-	getSegmentId,
-	canRundownBeUpdated,
-	getRundown,
-	getPartId,
-	getRundownPlaylist,
-} from '../lib'
+import { getStudioFromDevice, getSegmentId, canRundownBeUpdated, getRundown, getRundownPlaylist } from '../lib'
 import {
 	getRundownIdFromMosRO,
 	getPartIdFromMosStory,
@@ -19,15 +12,13 @@ import {
 } from './lib'
 import {
 	literal,
-	asyncCollectionUpdate,
-	waitForPromiseAll,
 	protectString,
 	unprotectString,
 	waitForPromise,
 	getCurrentTime,
 	normalizeArray,
 } from '../../../../lib/lib'
-import { IngestPart, IngestSegment, IngestRundown } from '@sofie-automation/blueprints-integration'
+import { IngestPart, IngestSegment } from '@sofie-automation/blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
 	rundownPlaylistSyncFunction,
@@ -48,17 +39,14 @@ import {
 	updateIngestRundownWithData,
 } from '../ingestCache'
 import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
-import { Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { Segments, Segment } from '../../../../lib/collections/Segments'
+import { Segment } from '../../../../lib/collections/Segments'
 import { unsyncAndEmptySegment } from '../../rundown'
 import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { Parts, PartId } from '../../../../lib/collections/Parts'
-import { PartInstances } from '../../../../lib/collections/PartInstances'
+import { PartId } from '../../../../lib/collections/Parts'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { getSelectedPartInstancesFromCache } from '../../playout/lib'
 import { Settings } from '../../../../lib/Settings'
 import { profiler } from '../../profiler'
 
