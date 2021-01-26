@@ -50,5 +50,5 @@ export function importIngestRundown(studioId: StudioId, ingestRundown: any) {
 			`Cannot replace existing rundown from '${existingDbRundown.dataSource}' with http data`
 		)
 
-	handleUpdatedRundown(studio, undefined, ingestRundown, 'http')
+	handleUpdatedRundown(studio, undefined, ingestRundown, 'http', true)
 }

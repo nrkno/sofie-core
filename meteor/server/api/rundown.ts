@@ -569,7 +569,6 @@ export function updatePartInstanceRanks(
 				delete partInstance.orphaned
 				partInstance.part._rank = part._rank
 			} else if (!partInstance.orphaned) {
-				// TODO ORPHAN - verify this works
 				partInstance.orphaned = 'deleted'
 				cache.PartInstances.update(partInstance._id, {
 					$set: {

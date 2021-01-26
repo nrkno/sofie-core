@@ -122,22 +122,32 @@ function updateDeviceLastDataReceived(deviceId: PeripheralDeviceId) {
 	})
 }
 
-export function canBeUpdated(rundown: Rundown | undefined, segment?: Segment) {
+export function canRundownBeUpdated(rundown: Rundown | undefined, isCreateAction: boolean): boolean {
 	if (!rundown) return true
-	if (rundown.orphaned) {
+	if (rundown.orphaned && !isCreateAction) {
 		logger.info(`Rundown "${rundown._id}" has been unsynced and needs to be synced before it can be updated.`)
+		return false
+	}
+	return true
+}
+export function canSegmentBeUpdated(
+	rundown: Rundown | undefined,
+	segment: Segment | undefined,
+	isCreateAction: boolean
+): boolean {
+	if (!canRundownBeUpdated(rundown, false)) {
 		return false
 	}
 
 	if (!segment) return true
-	if (segment.orphaned) {
+	if (segment.orphaned && !isCreateAction) {
 		logger.info(`Segment "${segment._id}" has been unsynced and needs to be synced before it can be updated.`)
 		return false
 	}
 
-	// TODO
 	return true
 }
+
 export function extendIngestRundownCore(
 	ingestRundown: IngestRundown,
 	existingDbRundown: Rundown | undefined

@@ -57,7 +57,8 @@ export namespace GenericDeviceActions {
 								undefined,
 								peripheralDevice,
 								ingestRundown,
-								'triggerReloadRundown reply'
+								'triggerReloadRundown reply',
+								true
 							)
 
 							cb(null, TriggerReloadDataResponse.COMPLETED)
