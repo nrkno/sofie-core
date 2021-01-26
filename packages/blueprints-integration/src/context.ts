@@ -37,11 +37,38 @@ export interface ICommonContext {
 	logError: (message: string) => void
 }
 
+export function isCommonContext(obj: unknown): obj is ICommonContext {
+	if (!obj || typeof obj !== 'object') {
+		return false
+	}
+
+	const { getHashId, unhashId, logDebug, logInfo, logWarning, logError } = obj as any
+
+	return (
+		typeof getHashId === 'function' &&
+		typeof unhashId === 'function' &&
+		typeof logDebug === 'function' &&
+		typeof logInfo === 'function' &&
+		typeof logWarning === 'function' &&
+		typeof logError === 'function'
+	)
+}
+
 export interface IUserNotesContext extends ICommonContext {
 	/** Display a notification to the user of an error */
 	notifyUserError(message: string, params?: { [key: string]: any }): void
 	/** Display a notification to the user of an warning */
 	notifyUserWarning(message: string, params?: { [key: string]: any }): void
+}
+
+export function isUserNotesContext(obj: unknown): obj is IUserNotesContext {
+	if (!isCommonContext(obj)) {
+		return false
+	}
+
+	const { notifyUserError, notifyUserWarning } = obj as any
+
+	return typeof notifyUserError === 'function' && typeof notifyUserWarning === 'function'
 }
 
 /** Studio */
@@ -193,8 +220,6 @@ export interface ITimelineEventContext extends IEventContext, IRundownContext {
 	getTimelineObjectAbSessionId(obj: OnGenerateTimelineObj, sessionName: string): string | undefined
 }
 
-export interface ITimelineEventUserContext extends ITimelineEventContext, IUserNotesContext {}
-
 export interface IPartEventContext extends IEventContext, IRundownContext {
 	readonly part: Readonly<IBlueprintPartInstance>
 }
@@ -253,5 +278,3 @@ export interface IAsRunEventContext extends IEventContext, IRundownContext {
 	/** Get the ingest data related to a partInstance */
 	getIngestDataForPartInstance(partInstance: Readonly<IBlueprintPartInstance>): Readonly<IngestPart> | undefined
 }
-
-export interface IAsRunEventUserContext extends IAsRunEventContext, IUserNotesContext {}
