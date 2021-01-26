@@ -4,18 +4,16 @@ import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { Segment, Segments } from '../../../../lib/collections/Segments'
-import { Part, Parts, PartId } from '../../../../lib/collections/Parts'
+import { Segment, SegmentId, Segments } from '../../../../lib/collections/Segments'
+import { Part, Parts } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
-import { updatePartInstanceRanks, ServerRundownAPI } from '../../rundown'
+import { ServerRundownAPI } from '../../rundown'
 import { ServerPlayoutAPI } from '../../playout/playout'
-import { RundownInput } from '../rundownInput'
+import { regenerateRundown, RundownInput } from '../rundownInput'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { unprotectString, protectString } from '../../../../lib/lib'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { getSegmentId } from '../lib'
-
-import { wrapWithCacheForRundownPlaylistFromRundown, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { removeRundownPlaylistFromCache } from '../../playout/lib'
 import { MethodContext } from '../../../../lib/api/methods'
 
@@ -984,12 +982,16 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
 		const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
+		const getSegment = (id: SegmentId) => Segments.findOne(id) as Segment
 		const resyncRundown = () => {
 			try {
 				ServerRundownAPI.resyncRundown(DEFAULT_CONTEXT, rundown._id)
 			} catch (e) {
 				if (e.toString().match(/does not support the method "reloadRundown"/)) {
 					// This is expected
+
+					// Force the regeneration from cached data
+					regenerateRundown(rundown._id)
 					return
 				}
 				throw e
@@ -1016,6 +1018,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const partInstance = PartInstances.find({ 'part._id': parts[0]._id }).fetch()
 		expect(partInstance).toHaveLength(1)
 		expect(getPlaylist().currentPartInstanceId).toEqual(partInstance[0]._id)
+		expect(partInstance[0].segmentId).toEqual(segments[0]._id)
 
 		RundownInput.dataSegmentDelete(
 			DEFAULT_CONTEXT,
@@ -1024,10 +1027,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rundownData.externalId,
 			segments[0].externalId
 		)
-		expect(getRundown().orphaned).toEqual('deleted')
+		expect(getRundown().orphaned).toBeUndefined()
+		expect(getSegment(segments[0]._id).orphaned).toEqual('deleted')
 
 		resyncRundown()
 		expect(getRundown().orphaned).toBeUndefined()
+		expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
 
 		RundownInput.dataPartDelete(
 			DEFAULT_CONTEXT,
@@ -1037,9 +1042,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segments[0].externalId,
 			parts[0].externalId
 		)
-		expect(getRundown().orphaned).toEqual('deleted')
+		expect(getRundown().orphaned).toBeUndefined()
+		expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
 
 		resyncRundown()
 		expect(getRundown().orphaned).toBeUndefined()
+		expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
 	})
 })

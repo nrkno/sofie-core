@@ -796,17 +796,10 @@ export namespace ServerRundownAPI {
 		const segment = Segments.findOne(segmentId)
 		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
 
-		// TODO ORPHAN
-		Segments.update(segment._id, {
-			$set: {
-				unsynced: false,
-			},
-		})
-
 		const rundown = Rundowns.findOne({ _id: segment.rundownId })
-
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${segment.rundownId}" not found!`)
 
+		// Orphaned flag will be reset by the response update
 		return IngestActions.reloadSegment(rundown, segment)
 	}
 
@@ -815,13 +808,7 @@ export namespace ServerRundownAPI {
 
 		// if (rundown.active) throw new Meteor.Error(400,`Not allowed to resync an active Rundown "${rundownId}".`)
 
-		// TODO ORPHAN
-		Rundowns.update(rundown._id, {
-			$set: {
-				unsynced: false,
-			},
-		})
-
+		// Orphaned flag will be reset by the response update
 		return IngestActions.reloadRundown(rundown)
 	}
 

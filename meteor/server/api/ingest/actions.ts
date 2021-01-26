@@ -44,7 +44,8 @@ export namespace IngestActions {
 		const device = getPeripheralDeviceFromRundown(rundown)
 
 		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
-			return reloadRundown(rundown)
+			// MOS doesn't support reloading a segment, so do the whole rundown
+			return MOSDeviceActions.reloadRundown(device, rundown)
 		} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
 			return GenericDeviceActions.reloadSegment(device, rundown, segment)
 		} else {
