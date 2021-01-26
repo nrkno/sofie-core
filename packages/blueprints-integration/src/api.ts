@@ -12,8 +12,8 @@ import {
 	ISegmentUserContext,
 	IShowStyleUserContext,
 	ICommonContext,
-	IAsRunEventUserContext,
-	ITimelineEventUserContext,
+	IAsRunEventContext,
+	ITimelineEventContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
@@ -159,7 +159,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 
 	/** Called after the timeline has been generated, used to manipulate the timeline */
 	onTimelineGenerate?: (
-		context: ITimelineEventUserContext,
+		context: ITimelineEventContext,
 		timeline: OnGenerateTimelineObj[],
 		previousPersistentState: TimelinePersistentState | undefined,
 		previousPartEndState: PartEndState | undefined,
@@ -175,7 +175,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	) => PartEndState
 
 	/** Called after an as-run event is created */
-	onAsRunEvent?: (context: IAsRunEventUserContext) => Promise<IBlueprintExternalMessageQueueObj[]>
+	onAsRunEvent?: (context: IAsRunEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>
 }
 
 export type PartEndState = unknown
