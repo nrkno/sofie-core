@@ -28,6 +28,7 @@ import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { PieceExtended } from '../../../lib/Rundown'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
 
 interface IState {}
 
@@ -39,7 +40,7 @@ interface IAdLibRegionPanelProps {
 }
 
 interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {
-	piece: PieceUi
+	piece: PieceUi | undefined
 	layer?: ISourceLayer
 	isLiveLine: boolean
 }
@@ -146,7 +147,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 	getThumbnailUrl = (): string | undefined => {
 		const { piece } = this.props
 		const { mediaPreviewsUrl } = this.props.studio.settings
-		if (piece.contentMetaData && piece.contentMetaData.previewPath && mediaPreviewsUrl) {
+		if (piece && piece.contentMetaData && piece.contentMetaData.previewPath && mediaPreviewsUrl) {
 			return mediaPreviewsUrl + 'media/thumbnail/' + encodeURIComponent(piece.contentMetaData.mediaId)
 		}
 		return undefined
@@ -183,8 +184,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 					className={ClassNames('adlib-region-panel__image-container', {
 						next: piece && this.isAdLibNext(piece),
 						'on-air': piece && this.isAdLibOnAir(piece),
-						'has-preview':
-							this.props.panel.thumbnailSourceLayerIds && this.props.panel.thumbnailSourceLayerIds.length > 0,
+						'has-preview': !!this.props.piece,
 					})}>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>
 						{this.renderPreview()}
@@ -221,7 +221,7 @@ export const AdLibRegionPanel = translateWithTracker<
 		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
 		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
 		const nextPieces = getNextPiecesReactive(props.playlist.nextPartInstanceId)
-		const thumbnailPieceInstance =
+		const thumbnailPieceInstance: PieceInstance | undefined =
 			props.panel.thumbnailSourceLayerIds && props.panel.thumbnailSourceLayerIds.length
 				? _.find([..._.flatten(_.values(nextPieces)), ..._.flatten(_.values(unfinishedPieces))], (piece) => {
 						return (props.panel.thumbnailSourceLayerIds || []).indexOf(piece.sourceLayerId) !== -1
@@ -229,12 +229,14 @@ export const AdLibRegionPanel = translateWithTracker<
 				: undefined
 		const sourceLayer =
 			thumbnailPieceInstance &&
-			props.showStyleBase.sourceLayers.find((layer) => thumbnailPieceInstance.sourceLayerId === layer._id)
-		const pieceExtended: PieceExtended = {
-			instance: thumbnailPieceInstance,
-			renderedInPoint: null,
-			renderedDuration: null,
-		}
+			props.showStyleBase.sourceLayers.find((layer) => thumbnailPieceInstance.piece.sourceLayerId === layer._id)
+		const pieceExtended: PieceExtended | undefined = thumbnailPieceInstance
+			? {
+					instance: thumbnailPieceInstance,
+					renderedInPoint: null,
+					renderedDuration: null,
+			  }
+			: undefined
 		return Object.assign({}, fetchAndFilter(props), {
 			studio,
 			piece: pieceExtended,
