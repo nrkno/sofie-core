@@ -8,6 +8,7 @@ import { Rundowns } from '../../../lib/collections/Rundowns'
 import { getRundownId } from './lib'
 import { protectString } from '../../../lib/lib'
 import { PickerPOST } from '../http'
+import { getExternalNRCSName } from '../../../lib/collections/PeripheralDevices'
 
 PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	check(params.studioId, String)
@@ -44,11 +45,11 @@ export function importIngestRundown(studioId: StudioId, ingestRundown: any) {
 
 	const existingDbRundown = Rundowns.findOne(rundownId)
 	// If the RO exists and is not from http then don't replace it. Otherwise, it is free to be replaced
-	if (existingDbRundown && existingDbRundown.dataSource !== 'http')
+	if (existingDbRundown && existingDbRundown.externalNRCSName !== getExternalNRCSName(undefined))
 		throw new Meteor.Error(
 			403,
-			`Cannot replace existing rundown from '${existingDbRundown.dataSource}' with http data`
+			`Cannot replace existing rundown from '${existingDbRundown.externalNRCSName}' with http data`
 		)
 
-	handleUpdatedRundown(studio, undefined, ingestRundown, 'http', true)
+	handleUpdatedRundown(studio, undefined, ingestRundown, true)
 }

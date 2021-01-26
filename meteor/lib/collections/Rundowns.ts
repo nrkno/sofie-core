@@ -84,9 +84,6 @@ export interface DBRundown
 	/** Last sent storyStatus to ingestDevice (MOS) */
 	notifiedCurrentPlayingPartExternalId?: string
 
-	/** What the source of the data was */
-	dataSource: string
-
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
 	notes?: Array<RundownNote>
 
@@ -128,7 +125,6 @@ export class Rundown implements DBRundown {
 	public orphaned?: 'deleted'
 	public startedPlayback?: Time
 	public notifiedCurrentPlayingPartExternalId?: string
-	public dataSource: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
 	public externalNRCSName: string

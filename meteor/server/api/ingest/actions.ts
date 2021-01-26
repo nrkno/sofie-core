@@ -149,14 +149,7 @@ export namespace IngestActions {
 
 					waitForPromise(cache.saveAllToDatabase())
 
-					handleUpdatedRundownInner(
-						studio,
-						rundown._id,
-						ingestRundown,
-						rundown.dataSource,
-						true,
-						peripheralDevice
-					)
+					handleUpdatedRundownInner(studio, rundown._id, ingestRundown, true, peripheralDevice)
 				})
 
 				waitForPromise(cache.saveAllToDatabase())

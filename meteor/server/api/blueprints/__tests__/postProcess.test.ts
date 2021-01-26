@@ -54,7 +54,6 @@ describe('Test blueprint post-process', () => {
 				blueprint: '',
 				core: '',
 			},
-			dataSource: '',
 			externalNRCSName: 'mockNRCS',
 			playlistId: protectString(''),
 			_rank: 0,

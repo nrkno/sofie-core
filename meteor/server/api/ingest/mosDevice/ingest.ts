@@ -192,14 +192,7 @@ export function handleMosRundownData(
 			modified: getCurrentTime(),
 		})
 
-		handleUpdatedRundownInner(
-			studio,
-			rundownId,
-			ingestRundown,
-			createFresh ? 'mosCreate' : 'mosList',
-			createFresh,
-			peripheralDevice
-		)
+		handleUpdatedRundownInner(studio, rundownId, ingestRundown, createFresh, peripheralDevice)
 
 		span?.end()
 	})
@@ -238,7 +231,7 @@ export function handleMosRundownMetadata(
 			// TODO - verify this doesn't lose data, it was doing more work before
 
 			// TODO - make this more lightweight?
-			handleUpdatedRundownInner(studio, rundownId, ingestRundown, 'mosRoMetadata', false, peripheralDevice)
+			handleUpdatedRundownInner(studio, rundownId, ingestRundown, false, peripheralDevice)
 
 			span?.end()
 		}

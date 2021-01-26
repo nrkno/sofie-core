@@ -53,13 +53,7 @@ export namespace GenericDeviceActions {
 							// 	throw new Meteor.Error(401, iNewsRunningOrder)
 							// }
 
-							handleUpdatedRundown(
-								undefined,
-								peripheralDevice,
-								ingestRundown,
-								'triggerReloadRundown reply',
-								true
-							)
+							handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, true)
 
 							cb(null, TriggerReloadDataResponse.COMPLETED)
 						}
@@ -115,7 +109,7 @@ export namespace GenericDeviceActions {
 								)
 							}
 
-							handleUpdatedSegment(peripheralDevice, rundown.externalId, ingestSegment)
+							handleUpdatedSegment(peripheralDevice, rundown.externalId, ingestSegment, true)
 
 							cb(null, TriggerReloadDataResponse.COMPLETED)
 						}
