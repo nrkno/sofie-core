@@ -90,7 +90,7 @@ describe('updatePartInstanceRanks', () => {
 		}))
 	}
 
-	function insertPartInstance(part: Part): PartInstanceId {
+	function insertPartInstance(part: Part, orphaned?: PartInstance['orphaned']): PartInstanceId {
 		const id: PartInstanceId = protectString(`${part._id}_instance`)
 		PartInstances.insert({
 			_id: id,
@@ -99,6 +99,7 @@ describe('updatePartInstanceRanks', () => {
 			rundownId,
 			segmentId,
 			part,
+			orphaned: orphaned,
 		})
 		return id
 	}
@@ -235,7 +236,8 @@ describe('updatePartInstanceRanks', () => {
 				segmentId,
 				externalId: adlibId,
 				title: adlibId,
-			})
+			}),
+			'adlib-part'
 		)
 
 		// remove one and offset the others
