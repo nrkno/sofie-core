@@ -22,7 +22,6 @@ Object {
   "_rank": 1,
   "baselineModifyHash": "randomId10003",
   "created": 0,
-  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -310,7 +309,6 @@ Object {
   "_rank": 1,
   "baselineModifyHash": "randomId11003",
   "created": 0,
-  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -598,7 +596,6 @@ Object {
   "airStatus": "READY",
   "baselineModifyHash": "randomId29003",
   "created": 0,
-  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -899,7 +896,6 @@ Object {
   "airStatus": "READY",
   "baselineModifyHash": "randomId16003",
   "created": 0,
-  "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -1188,7 +1184,6 @@ Object {
   "_rank": 1,
   "baselineModifyHash": "randomId14003",
   "created": 0,
-  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -1478,7 +1473,6 @@ Object {
   "airStatus": "READY",
   "baselineModifyHash": "randomId27003",
   "created": 0,
-  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -1733,7 +1727,6 @@ Object {
   "airStatus": "READY",
   "baselineModifyHash": "randomId16003",
   "created": 0,
-  "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -2035,7 +2028,6 @@ Object {
   "airStatus": "READY",
   "baselineModifyHash": "randomId16003",
   "created": 0,
-  "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -2346,7 +2338,6 @@ Object {
   "airStatus": "READY",
   "baselineModifyHash": "randomId39003",
   "created": 0,
-  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -2638,7 +2629,6 @@ Object {
   "airStatus": "READY",
   "baselineModifyHash": "randomId38003",
   "created": 0,
-  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -2930,7 +2920,6 @@ Object {
   "airStatus": "READY",
   "baselineModifyHash": "randomId25003",
   "created": 0,
-  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -3206,7 +3195,6 @@ Object {
   "airStatus": "READY",
   "baselineModifyHash": "randomId16003",
   "created": 0,
-  "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -3499,7 +3487,6 @@ Object {
   "airStatus": "READY",
   "baselineModifyHash": "randomId36003",
   "created": 0,
-  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -3782,7 +3769,6 @@ Object {
   "airStatus": "READY",
   "baselineModifyHash": "randomId37003",
   "created": 0,
-  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -4101,7 +4087,6 @@ Object {
   "airStatus": "READY",
   "baselineModifyHash": "randomId33003",
   "created": 0,
-  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -4394,7 +4379,6 @@ Object {
   "airStatus": "READY",
   "baselineModifyHash": "randomId32003",
   "created": 0,
-  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {

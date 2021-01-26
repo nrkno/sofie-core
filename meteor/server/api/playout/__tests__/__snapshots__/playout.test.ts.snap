@@ -113,7 +113,6 @@ Object {
   "_id": "randomId9002",
   "_rank": 0,
   "created": 0,
-  "dataSource": "mock",
   "externalId": "MOCK_RUNDOWN",
   "externalNRCSName": "mock",
   "importVersions": Object {
@@ -192,7 +191,6 @@ Object {
   "_id": "randomId9002",
   "_rank": 0,
   "created": 0,
-  "dataSource": "mock",
   "externalId": "MOCK_RUNDOWN",
   "externalNRCSName": "mock",
   "importVersions": Object {

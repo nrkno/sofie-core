@@ -69,7 +69,6 @@ export function defaultRundown(
 			core: '',
 		},
 
-		dataSource: 'mock',
 		externalNRCSName: 'mock',
 	}
 }

@@ -209,7 +209,7 @@ export namespace RundownInput {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownCreate', ingestRundown)
 		check(ingestRundown, Object)
-		handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, 'dataRundownCreate', true)
+		handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, true)
 	}
 	export function dataRundownUpdate(
 		context: MethodContext,
@@ -220,7 +220,7 @@ export namespace RundownInput {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownUpdate', ingestRundown)
 		check(ingestRundown, Object)
-		handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, 'dataRundownUpdate', false)
+		handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, false)
 	}
 	export function dataSegmentGet(
 		context: MethodContext,
@@ -401,7 +401,6 @@ export function handleUpdatedRundown(
 	studio0: Studio | undefined,
 	peripheralDevice: PeripheralDevice | undefined,
 	ingestRundown: IngestRundown,
-	dataSource: string,
 	isCreateAction: boolean
 ) {
 	if (!peripheralDevice && !studio0) {
@@ -425,7 +424,6 @@ export function handleUpdatedRundown(
 			studio,
 			rundownId,
 			makeNewIngestRundown(ingestRundown),
-			dataSource,
 			isCreateAction,
 			peripheralDevice
 		)
@@ -435,7 +433,6 @@ export function handleUpdatedRundownInner(
 	studio: Studio,
 	rundownId: RundownId,
 	ingestRundown: IngestRundown | LocalIngestRundown,
-	dataSource: string,
 	isCreateAction: boolean,
 	peripheralDevice?: PeripheralDevice
 ) {
@@ -448,7 +445,7 @@ export function handleUpdatedRundownInner(
 
 	saveRundownCache(rundownId, newIngestRundown)
 
-	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
+	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, peripheralDevice)
 }
 export function regenerateRundown(rundownId: RundownId) {
 	const span = profiler.startSpan('ingest.rundownInput.regenerateRundown')
@@ -471,9 +468,7 @@ export function regenerateRundown(rundownId: RundownId) {
 
 			const ingestRundown = loadCachedRundownData(rundownId, existingDbRundown2.externalId)
 
-			const dataSource = 'regenerate'
-
-			updateRundownFromIngestData(studio, existingDbRundown2, ingestRundown, dataSource, undefined)
+			updateRundownFromIngestData(studio, existingDbRundown2, ingestRundown, undefined)
 
 			span?.end()
 		}
@@ -483,7 +478,6 @@ function updateRundownFromIngestData(
 	studio: Studio,
 	existingDbRundown: Rundown | undefined,
 	ingestRundown: IngestRundown,
-	dataSource?: string,
 	peripheralDevice?: PeripheralDevice
 ): boolean {
 	const span = profiler.startSpan('ingest.rundownInput.updateRundownFromIngestData')
@@ -559,11 +553,10 @@ function updateRundownFromIngestData(
 				modified: 0, // omitted, set later, below
 				peripheralDeviceId: protectString(''), // omitted, set later, below
 				externalNRCSName: '', // omitted, set later, below
-				dataSource: '', // omitted, set later, below
 				playlistId: protectString<RundownPlaylistId>(''), // omitted, set later, in produceRundownPlaylistInfo
 				_rank: 0, // omitted, set later, in produceRundownPlaylistInfo
 			}),
-			['created', 'modified', 'peripheralDeviceId', 'externalNRCSName', 'dataSource', 'playlistId', '_rank']
+			['created', 'modified', 'peripheralDeviceId', 'externalNRCSName', 'playlistId', '_rank']
 		)
 	)
 	if (peripheralDevice) {
@@ -574,9 +567,7 @@ function updateRundownFromIngestData(
 			dbRundownData.externalNRCSName = getExternalNRCSName(undefined)
 		}
 	}
-	if (dataSource) {
-		dbRundownData.dataSource = dataSource
-	}
+
 	// Do a check if we're allowed to move out of currently playing playlist:
 	if (existingDbRundown && existingDbRundown.playlistExternalId !== dbRundownData.playlistExternalId) {
 		// The rundown is going to change playlist
