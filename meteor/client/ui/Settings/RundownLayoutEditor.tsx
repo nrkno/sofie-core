@@ -1514,6 +1514,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								? this.renderKeyboardLayout(item, tab, index, isRundownLayout, isDashboardLayout)
 								: RundownLayoutsAPI.isPartCountdown(tab)
 								? this.renderPartCountdown(item, tab, index, isRundownLayout, isDashboardLayout)
+								: RundownLayoutsAPI.isPieceCountdown(tab)
+								? this.renderPartCountdown(item, tab, index, isRundownLayout, isDashboardLayout)
 								: undefined}
 						</div>
 					))}

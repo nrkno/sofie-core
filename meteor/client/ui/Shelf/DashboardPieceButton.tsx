@@ -131,7 +131,12 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					{vtContent && (
 						<span className="dashboard-panel__panel__button__sub-label">
 							{RundownUtils.formatDiffToTimecode(
-								vtContent.sourceDuration || 0,
+								Math.max(
+									(this.props.metadata.mediainfo?.format?.duration || 0) * 1000 - (vtContent?.postrollDuration || 0),
+									0
+								) ||
+									vtContent.sourceDuration ||
+									0,
 								false,
 								undefined,
 								undefined,
@@ -235,9 +240,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						? this.renderGraphic(isList && this.props.showThumbnailsInList)
 						: null}
 					<div className="dashboard-panel__panel__button__label-container">
-						<span className="dashboard-panel__panel__button__label">
-							{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.adLibListItem.name}
-						</span>
+						<span className="dashboard-panel__panel__button__label">{this.props.adLibListItem.name}</span>
 					</div>
 				</div>
 			</div>

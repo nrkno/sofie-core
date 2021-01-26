@@ -95,7 +95,7 @@
 		"soap": "^0.31.0",
 		"superfly-timeline": "^8.1.2",
 		"timecode": "0.0.4",
-		"tv-automation-sofie-blueprints-integration": "git+https://github.com/olzzon/tv-automation-sofie-blueprints-integration.git#dist20201216_1",
+		"tv-automation-sofie-blueprints-integration": "git+https://github.com/olzzon/tv-automation-sofie-blueprints-integration.git#dist20201221_1",
 		"underscore": "1.10.0",
 		"utility-types": "^3.10.0",
 		"velocity-animate": "^1.5.2",

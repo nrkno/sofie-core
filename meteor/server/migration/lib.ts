@@ -133,7 +133,10 @@ export function setExpectedVersion(
 
 				if (expectedVersion) {
 					try {
-						if (semver.lt(minExpectedVersion, minVersion)) {
+						if (
+							(versionStr === '0.0.0' && expectedVersion !== '0.0.0') ||
+							semver.lt(minExpectedVersion, minVersion)
+						) {
 							return `Expected version ${libraryName}: ${expectedVersion} should be at least ${versionStr}`
 						}
 					} catch (e) {
@@ -153,7 +156,7 @@ export function setExpectedVersion(
 				const expectedVersion = device.expectedVersions[libraryName] || '0.0.0'
 				const minExpectedVersion = getMinVersion(expectedVersion)
 
-				if (!expectedVersion || semver.lt(minExpectedVersion, minVersion)) {
+				if (!expectedVersion || semver.lt(minExpectedVersion, minVersion) || versionStr === '0.0.0') {
 					let m = {}
 					m['expectedVersions.' + libraryName] = versionStr
 					logger.info(

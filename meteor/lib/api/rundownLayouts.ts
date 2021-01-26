@@ -59,6 +59,10 @@ export namespace RundownLayoutsAPI {
 		return element.type === RundownLayoutElementType.PART_COUNTDOWN
 	}
 
+	export function isPieceCountdown(element: RundownLayoutElementBase): element is RundownLayoutPartCountdown {
+		return element.type === RundownLayoutElementType.PIECE_COUNTDOWN
+	}
+
 	export function adLibRegionToFilter(element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {
 		return {
 			..._.pick(element, '_id', 'name', 'rank', 'tags'),

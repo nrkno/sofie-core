@@ -33,6 +33,9 @@ Array [
         "isGroup": true,
         "isPartGroup": true,
         "layer": "",
+        "metaData": Object {
+          "isPieceTimeline": true,
+        },
         "objectType": "rundown",
         "priority": 5,
       },
@@ -70,6 +73,7 @@ Array [
         "isGroup": true,
         "layer": "vt0",
         "metaData": Object {
+          "isPieceTimeline": true,
           "pieceId": "randomId9002_part0_0_randomId9007_randomId9002_piece001",
         },
         "objectType": "rundown",
@@ -115,6 +119,9 @@ Array [
         "isGroup": true,
         "isPartGroup": true,
         "layer": "",
+        "metaData": Object {
+          "isPieceTimeline": true,
+        },
         "objectType": "rundown",
         "priority": 5,
       },
@@ -152,6 +159,7 @@ Array [
         "isGroup": true,
         "layer": "vt0",
         "metaData": Object {
+          "isPieceTimeline": true,
           "pieceId": "randomId9002_part0_0_randomId9007_randomId9002_piece001",
         },
         "objectType": "rundown",

@@ -58,7 +58,7 @@ import { CacheForRundownPlaylist, CacheForStudio, CacheForStudioBase } from '../
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getExpectedLatency } from '../../../lib/collections/PeripheralDevices'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
-import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
+import { createPieceGroupAndCap, PieceTimelineMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
@@ -726,6 +726,9 @@ function createPartGroup(partInstance: PartInstance, enable: TSR.Timeline.Timeli
 		children: [],
 		isGroup: true,
 		isPartGroup: true,
+		metaData: literal<PieceTimelineMetadata>({
+			isPieceTimeline: true,
+		}),
 	})
 
 	return partGrp
