@@ -51,7 +51,7 @@ import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundow
 import { Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Segments, Segment } from '../../../../lib/collections/Segments'
-import { removeSegments, ServerRundownAPI, unsyncAndEmptySegment } from '../../rundown'
+import { unsyncAndEmptySegment } from '../../rundown'
 import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
