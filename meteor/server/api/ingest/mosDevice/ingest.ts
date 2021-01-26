@@ -2,7 +2,14 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getStudioFromDevice, getSegmentId, canBeUpdated, getRundown, getPartId, getRundownPlaylist } from '../lib'
+import {
+	getStudioFromDevice,
+	getSegmentId,
+	canRundownBeUpdated,
+	getRundown,
+	getPartId,
+	getRundownPlaylist,
+} from '../lib'
 import {
 	getRundownIdFromMosRO,
 	getPartIdFromMosStory,
@@ -190,6 +197,7 @@ export function handleMosRundownData(
 			rundownId,
 			ingestRundown,
 			createFresh ? 'mosCreate' : 'mosList',
+			createFresh,
 			peripheralDevice
 		)
 
@@ -213,7 +221,7 @@ export function handleMosRundownMetadata(
 		'handleMosRundownMetadata',
 		() => {
 			const rundown = getRundown(rundownId, parseMosString(mosRunningOrderBase.ID))
-			if (!canBeUpdated(rundown)) return
+			if (!canRundownBeUpdated(rundown, false)) return
 
 			// Load the blueprint to process the data
 			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
@@ -230,7 +238,7 @@ export function handleMosRundownMetadata(
 			// TODO - verify this doesn't lose data, it was doing more work before
 
 			// TODO - make this more lightweight?
-			handleUpdatedRundownInner(studio, rundownId, ingestRundown, 'mosRoMetadata', peripheralDevice)
+			handleUpdatedRundownInner(studio, rundownId, ingestRundown, 'mosRoMetadata', false, peripheralDevice)
 
 			span?.end()
 		}
@@ -302,7 +310,7 @@ export function handleMosDeleteStory(
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleMosDeleteStory', () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
-		if (!canBeUpdated(rundown)) {
+		if (!canRundownBeUpdated(rundown, false)) {
 			span?.end()
 			return
 		}
@@ -379,7 +387,7 @@ export function handleInsertParts(
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleInsertParts', () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
-		if (!canBeUpdated(rundown)) return
+		if (!canRundownBeUpdated(rundown, false)) return
 
 		const existingPlaylist = getRundownPlaylist(rundown)
 
@@ -454,7 +462,7 @@ export function handleSwapStories(
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleSwapStories', () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
-		if (!canBeUpdated(rundown)) return
+		if (!canRundownBeUpdated(rundown, false)) return
 
 		const playlist = getRundownPlaylist(rundown)
 
@@ -499,7 +507,7 @@ export function handleMoveStories(
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleMoveStories', () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
-		if (!canBeUpdated(rundown)) return
+		if (!canRundownBeUpdated(rundown, false)) return
 
 		const playlist = getRundownPlaylist(rundown)
 

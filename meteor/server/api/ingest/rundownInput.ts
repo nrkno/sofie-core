@@ -95,7 +95,8 @@ import {
 	getPartId,
 	getStudioFromDevice,
 	getRundown,
-	canBeUpdated,
+	canRundownBeUpdated,
+	canSegmentBeUpdated,
 	getRundownPlaylist,
 	getSegment,
 	checkAccessAndGetPeripheralDevice,
@@ -208,7 +209,7 @@ export namespace RundownInput {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownCreate', ingestRundown)
 		check(ingestRundown, Object)
-		handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, 'dataRundownCreate')
+		handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, 'dataRundownCreate', true)
 	}
 	export function dataRundownUpdate(
 		context: MethodContext,
@@ -219,7 +220,7 @@ export namespace RundownInput {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownUpdate', ingestRundown)
 		check(ingestRundown, Object)
-		handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, 'dataRundownUpdate')
+		handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, 'dataRundownUpdate', false)
 	}
 	export function dataSegmentGet(
 		context: MethodContext,
@@ -259,7 +260,7 @@ export namespace RundownInput {
 		logger.info('dataSegmentCreate', rundownExternalId, ingestSegment)
 		check(rundownExternalId, String)
 		check(ingestSegment, Object)
-		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment)
+		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment, true)
 	}
 	export function dataSegmentUpdate(
 		context: MethodContext,
@@ -272,7 +273,7 @@ export namespace RundownInput {
 		logger.info('dataSegmentUpdate', rundownExternalId, ingestSegment)
 		check(rundownExternalId, String)
 		check(ingestSegment, Object)
-		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment)
+		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment, false)
 	}
 	// Delete, Create & Update Part:
 	export function dataPartDelete(
@@ -378,7 +379,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
-		if (!canBeUpdated(rundown)) {
+		if (!canRundownBeUpdated(rundown, false)) {
 			// Rundown is already deleted
 		} else if (!allowedToMoveRundownOutOfPlaylist(playlist, rundown)) {
 			// Don't allow removing currently playing rundown playlists:
@@ -400,7 +401,8 @@ export function handleUpdatedRundown(
 	studio0: Studio | undefined,
 	peripheralDevice: PeripheralDevice | undefined,
 	ingestRundown: IngestRundown,
-	dataSource: string
+	dataSource: string,
+	isCreateAction: boolean
 ) {
 	if (!peripheralDevice && !studio0) {
 		throw new Meteor.Error(500, `A PeripheralDevice or Studio is required to update a rundown`)
@@ -419,18 +421,26 @@ export function handleUpdatedRundown(
 	const existingRundown = Rundowns.findOne(rundownId)
 	const playlistId = existingRundown ? existingRundown.playlistId : protectString('newPlaylist')
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleUpdatedRundown', () =>
-		handleUpdatedRundownInner(studio, rundownId, makeNewIngestRundown(ingestRundown), dataSource, peripheralDevice)
+		handleUpdatedRundownInner(
+			studio,
+			rundownId,
+			makeNewIngestRundown(ingestRundown),
+			dataSource,
+			isCreateAction,
+			peripheralDevice
+		)
 	)
 }
 export function handleUpdatedRundownInner(
 	studio: Studio,
 	rundownId: RundownId,
 	ingestRundown: IngestRundown | LocalIngestRundown,
-	dataSource?: string,
+	dataSource: string,
+	isCreateAction: boolean,
 	peripheralDevice?: PeripheralDevice
 ) {
 	const existingDbRundown = Rundowns.findOne(rundownId)
-	if (!canBeUpdated(existingDbRundown)) return
+	if (!canRundownBeUpdated(existingDbRundown, isCreateAction)) return
 
 	logger.info((existingDbRundown ? 'Updating' : 'Adding') + ' rundown ' + rundownId)
 
@@ -478,17 +488,7 @@ function updateRundownFromIngestData(
 ): boolean {
 	const span = profiler.startSpan('ingest.rundownInput.updateRundownFromIngestData')
 
-	// TODO ORPHAN is this wanted? should we unsync when an update or insert happens? shouldnt we just 'replace' the rundown instead
-	// const existingPlaylist = existingDbRundown ? RundownPlaylists.findOne(existingDbRundown.playlistId) : undefined
-	// if (existingDbRundown && existingPlaylist) {
-	// 	if (!canUpdateRundown(existingPlaylist, existingDbRundown, false)) {
-	// 		// Unsync rundown instead
-	// 		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(existingDbRundown._id))
-	// 		ServerRundownAPI.unsyncRundownInner(cache, existingDbRundown._id)
-	// 		waitForPromise(cache.saveAllToDatabase())
-	// 		return false
-	// 	}
-	// }
+	// canBeUpdated is run by the callers
 
 	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, existingDbRundown)
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
@@ -1003,7 +1003,7 @@ export function handleRemovedSegment(
 		const segment = cache.Segments.findOne(segmentId)
 		if (!segment) throw new Meteor.Error(404, `handleRemovedSegment: Segment "${segmentId}" not found`)
 
-		if (!canBeUpdated(rundown, segment)) {
+		if (!canSegmentBeUpdated(rundown, segment, false)) {
 			// segment has already been deleted
 		} else {
 			if (!canRemoveSegment(cache, playlist, segment)) {
@@ -1029,7 +1029,8 @@ export function handleRemovedSegment(
 export function handleUpdatedSegment(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
-	ingestSegment: IngestSegment
+	ingestSegment: IngestSegment,
+	isCreateAction: boolean
 ) {
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
@@ -1043,7 +1044,7 @@ export function handleUpdatedSegment(
 
 		const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 		const oldSegment = cache.Segments.findOne(segmentId)
-		if (!canBeUpdated(rundown, oldSegment)) return
+		if (!canSegmentBeUpdated(rundown, oldSegment, isCreateAction)) return
 
 		const localIngestSegment = makeNewIngestSegment(ingestSegment)
 		cache.defer(() => {
@@ -1432,7 +1433,7 @@ export function handleRemovedPart(
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
 		const segment = getSegment(segmentId)
 
-		if (!canBeUpdated(rundown, segment)) return
+		if (!canSegmentBeUpdated(rundown, segment, false)) return
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
@@ -1501,7 +1502,7 @@ export function handleUpdatedPartInner(
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
 	const segment = cache.Segments.findOne(segmentId)
 	if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found`)
-	if (!canBeUpdated(rundown, segment)) return
+	if (!canSegmentBeUpdated(rundown, segment, false)) return
 
 	// Blueprints will handle the creation of the Part
 	const ingestSegment: LocalIngestSegment = loadCachedIngestSegment(
