@@ -391,22 +391,10 @@ function defaultPlaylistForRundown(
 }
 
 /**
- * Removes Segments from the database
+ * Removes the contents of specified Segments from the cache/database
  * @param rundownId The Rundown id to remove from
  * @param segmentIds The Segment ids to be removed
  */
-export function removeSegments(cache: CacheForRundownPlaylist, rundownId: RundownId, segmentIds: SegmentId[]): number {
-	logger.debug('removeSegments', rundownId, segmentIds)
-
-	const count = cache.Segments.remove({
-		_id: { $in: segmentIds },
-		rundownId: rundownId,
-	})
-	if (count > 0) {
-		removeSegmentContents(cache, rundownId, segmentIds)
-	}
-	return count
-}
 export function removeSegmentContents(
 	cache: CacheForRundownPlaylist,
 	rundownId: RundownId,

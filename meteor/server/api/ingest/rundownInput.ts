@@ -478,7 +478,7 @@ function updateRundownFromIngestData(
 	studio: Studio,
 	existingDbRundown: Rundown | undefined,
 	ingestRundown: IngestRundown,
-	peripheralDevice?: PeripheralDevice
+	peripheralDevice: PeripheralDevice | undefined
 ): boolean {
 	const span = profiler.startSpan('ingest.rundownInput.updateRundownFromIngestData')
 
