@@ -14,6 +14,8 @@ import {
 } from '../../../../lib/collections/PartInstances'
 import { Settings } from '../../../../lib/Settings'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
+import { LIVE_LINE_TIME_PADDING } from '../../SegmentTimeline/SegmentTimelinePart'
+import { SegmentId } from '../../../../lib/collections/Segments'
 
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
 const MINIMAL_NONZERO_DURATION = 1
@@ -36,6 +38,8 @@ interface IRundownTimingProviderProps {
 	refreshInterval?: number
 	/** Fallback duration for Parts that have no as-played duration of their own. */
 	defaultDuration?: number
+	/** Time scale of the rundown, used to calculate partLiveDisplayDurations */
+	timeScale?: number
 }
 interface IRundownTimingProviderChildContext {
 	durations: RundownTiming.RundownTimingContext
@@ -113,6 +117,8 @@ export const RundownTimingProvider = withTracker<
 			[key: string]: number
 		} = {}
 		private displayDurationGroups: _.Dictionary<number> = {}
+		private partLiveDisplayDurations: _.Dictionary<number> = {}
+		private segmentBudgetDurations: _.Dictionary<number> = {}
 
 		constructor(props: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
 			super(props)
@@ -205,6 +211,57 @@ export const RundownTimingProvider = withTracker<
 			}
 		}
 
+		static getCurrentLiveLinePosition(partInstance: PartInstance, currentTime: number): number {
+			if (partInstance.timings?.startedPlayback) {
+				if (partInstance.timings?.duration) {
+					return partInstance.timings.duration
+				} else {
+					return currentTime - partInstance.timings.startedPlayback
+				}
+			} else {
+				return 0
+			}
+		}
+
+		static getLiveLineTimePadding(timeScale: number): number {
+			return LIVE_LINE_TIME_PADDING / timeScale
+		}
+
+		static getLiveDuration(
+			partInstance: PartInstance,
+			partDurations: any,
+			currentTime: number,
+			isDurationSettling: boolean,
+			isLive: boolean,
+			timeScale: number
+		): number {
+			const startedPlayback = partInstance.timings?.startedPlayback
+			let liveDuration = 0
+			if (!isDurationSettling) {
+				// if the duration isn't settling, calculate the live line postion and add some liveLive time padding
+				if (isLive && !partInstance.part.autoNext) {
+					// TODO: !nextProps.autoNextPart
+					liveDuration = Math.max(
+						(startedPlayback &&
+							RundownTimingProvider.getCurrentLiveLinePosition(partInstance, currentTime) +
+								RundownTimingProvider.getLiveLineTimePadding(timeScale)) ||
+							0,
+						partInstance.part.displayDuration || partDurations[unprotectString(partInstance.part._id)]
+					)
+				}
+			} else {
+				// if the duration is settling, just calculate the current liveLine position and show without any padding
+				if (!partInstance.part.autoNext) {
+					// TODO: !nextProps.autoNextPart
+					liveDuration = Math.max(
+						(startedPlayback && RundownTimingProvider.getCurrentLiveLinePosition(partInstance, currentTime)) || 0,
+						partInstance.part.displayDuration || partDurations[unprotectString(partInstance.part._id)]
+					)
+				}
+			}
+			return liveDuration
+		}
+
 		updateDurations(now: number, isLowResolution: boolean) {
 			let totalRundownDuration = 0
 			let remainingRundownDuration = 0
@@ -214,20 +271,49 @@ export const RundownTimingProvider = withTracker<
 			let currentRemaining = 0
 			let startsAtAccumulator = 0
 			let displayStartsAtAccumulator = 0
+			let segmentDisplayDuration = 0
 
+			Object.keys(this.partLiveDisplayDurations).forEach((key) => delete this.partLiveDisplayDurations[key])
 			Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
+			Object.keys(this.segmentBudgetDurations).forEach((key) => delete this.segmentBudgetDurations[key])
+
 			this.linearParts.length = 0
 
 			let debugConsole = ''
 
 			const { playlist, parts, partInstancesMap } = this.props
 
+			let previousAIndex = -1
 			let nextAIndex = -1
 			let currentAIndex = -1
+
+			let lastSegmentId: SegmentId | undefined = undefined
+
+			parts.forEach((origPart) => {
+				if (origPart.budgetDuration !== undefined) {
+					const segmentId = unprotectString(origPart.segmentId)
+					if (this.segmentBudgetDurations[segmentId] !== undefined) {
+						this.segmentBudgetDurations[unprotectString(origPart.segmentId)] += origPart.budgetDuration
+					} else {
+						this.segmentBudgetDurations[unprotectString(origPart.segmentId)] = origPart.budgetDuration
+					}
+				}
+			})
 
 			if (playlist && parts) {
 				parts.forEach((origPart, itIndex) => {
 					const partInstance = this.getPartInstanceOrGetCachedTemp(partInstancesMap, origPart)
+
+					if (partInstance.segmentId !== lastSegmentId) {
+						if (lastSegmentId) {
+							const lastSegmentBudgetDuration = this.segmentBudgetDurations[unprotectString(lastSegmentId)]
+							if (lastSegmentBudgetDuration > segmentDisplayDuration) {
+								waitAccumulator += lastSegmentBudgetDuration - segmentDisplayDuration
+							}
+						}
+						lastSegmentId = partInstance.segmentId
+						segmentDisplayDuration = 0
+					}
 
 					// add piece to accumulator
 					const aIndex = this.linearParts.push([partInstance.part._id, waitAccumulator]) - 1
@@ -237,6 +323,8 @@ export const RundownTimingProvider = withTracker<
 						nextAIndex = aIndex
 					} else if (playlist.currentPartInstanceId === partInstance._id) {
 						currentAIndex = aIndex
+					} else if (playlist.previousPartInstanceId === partInstance._id) {
+						previousAIndex = aIndex
 					}
 
 					const partCounts =
@@ -289,6 +377,16 @@ export const RundownTimingProvider = withTracker<
 
 					// This is where we actually calculate all the various variants of duration of a part
 					if (lastStartedPlayback && !partInstance.timings?.duration) {
+						// because displayDurationGroups have no actual timing on them, we need to have a copy of the
+						// partDisplayDuration, but calculated as if it's not playing, so that the countdown can be
+						// calculated
+						partDisplayDurationNoPlayback =
+							partInstance.timings?.duration ||
+							(memberOfDisplayDurationGroup ? displayDurationFromGroup : partInstance.part.expectedDuration) ||
+							this.props.defaultDuration ||
+							Settings.defaultDisplayDuration
+						partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
+						this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
 						currentRemaining = Math.max(
 							0,
 							(partInstance.timings?.duration ||
@@ -301,16 +399,6 @@ export const RundownTimingProvider = withTracker<
 								partInstance.timings?.duration || partInstance.part.expectedDuration || 0,
 								now - lastStartedPlayback
 							) - playOffset
-						// because displayDurationGroups have no actual timing on them, we need to have a copy of the
-						// partDisplayDuration, but calculated as if it's not playing, so that the countdown can be
-						// calculated
-						partDisplayDurationNoPlayback =
-							partInstance.timings?.duration ||
-							(memberOfDisplayDurationGroup ? displayDurationFromGroup : partInstance.part.expectedDuration) ||
-							this.props.defaultDuration ||
-							Settings.defaultDisplayDuration
-						partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
-						this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
 					} else {
 						partDuration = (partInstance.timings?.duration || partInstance.part.expectedDuration || 0) - playOffset
 						partDisplayDuration = Math.max(
@@ -390,12 +478,15 @@ export const RundownTimingProvider = withTracker<
 					displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId] // || this.props.defaultDuration || 3000
 					// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 					// always add the full duration, in case by some manual intervention this segment should play twice
+					let waitDuration = 0
 					if (memberOfDisplayDurationGroup) {
-						waitAccumulator +=
+						waitDuration =
 							partInstance.timings?.duration || partDisplayDuration || partInstance.part.expectedDuration || 0
 					} else {
-						waitAccumulator += partInstance.timings?.duration || partInstance.part.expectedDuration || 0
+						waitDuration = partInstance.timings?.duration || partInstance.part.expectedDuration || 0
 					}
+
+					waitAccumulator += waitDuration
 
 					// remaining is the sum of unplayed lines + whatever is left of the current segment
 					// if outOfOrderTiming is true, count parts before current part towards remaining rundown duration
@@ -472,6 +563,32 @@ export const RundownTimingProvider = withTracker<
 					currentLivePart.autoNext &&
 					(currentLivePart.expectedDuration !== undefined ? currentLivePart.expectedDuration !== 0 : false)
 				)
+				if (this.props.timeScale !== undefined) {
+					this.partLiveDisplayDurations[unprotectString(currentLivePart._id)] = RundownTimingProvider.getLiveDuration(
+						currentLivePartInstance,
+						this.partDurations,
+						now,
+						false,
+						true,
+						this.props.timeScale
+					)
+				}
+			}
+
+			if (this.props.timeScale !== undefined && previousAIndex >= 0) {
+				const previousLivePart = parts[previousAIndex]
+				const previousLivePartInstance = findPartInstanceOrWrapToTemporary(partInstancesMap, previousLivePart)
+				const startedPlayback = previousLivePartInstance.timings?.startedPlayback
+				const isDurationSettling = !!playlist?.active && currentAIndex !== previousAIndex
+				!!startedPlayback && !previousLivePartInstance.timings?.duration
+				this.partLiveDisplayDurations[unprotectString(previousLivePart._id)] = RundownTimingProvider.getLiveDuration(
+					previousLivePartInstance,
+					this.partDurations,
+					now,
+					isDurationSettling,
+					false,
+					this.props.timeScale
+				)
 			}
 
 			this.durations = Object.assign(
@@ -488,6 +605,7 @@ export const RundownTimingProvider = withTracker<
 					partDisplayStartsAt: this.partDisplayStartsAt,
 					partExpectedDurations: this.partExpectedDurations,
 					partDisplayDurations: this.partDisplayDurations,
+					partLiveDisplayDurations: this.partLiveDisplayDurations,
 					currentTime: now,
 					remainingTimeOnCurrentPart,
 					currentPartWillAutoNext,

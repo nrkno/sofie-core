@@ -64,6 +64,7 @@ interface ISourceLayerItemState {
 export const SourceLayerItem = withTranslation()(
 	class SourceLayerItem extends React.Component<ISourceLayerItemProps & WithTranslation, ISourceLayerItemState> {
 		private _resizeObserver: ResizeObserver | undefined
+		private itemElement: HTMLDivElement | undefined
 
 		constructor(props) {
 			super(props)
@@ -91,6 +92,7 @@ export const SourceLayerItem = withTranslation()(
 			this.setState({
 				itemElement: e,
 			})
+			this.itemElement = e
 		}
 
 		getItemLabelOffsetLeft = (): React.CSSProperties => {
@@ -430,11 +432,11 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		private mountResizeObserver() {
-			if (this.props.isLiveLine && !this._resizeObserver && this.state.itemElement) {
+			if (this.props.isLiveLine && !this._resizeObserver && this.itemElement) {
 				this._resizeObserver = new ResizeObserver(this.onResize)
-				this._resizeObserver.observe(this.state.itemElement)
+				this._resizeObserver.observe(this.itemElement)
 
-				const width = getElementWidth(this.state.itemElement) || 0
+				const width = getElementWidth(this.itemElement) || 0
 				if (this.state.elementWidth !== width) {
 					this.setState({
 						elementWidth: width,
@@ -469,6 +471,13 @@ export const SourceLayerItem = withTranslation()(
 		componentDidMount() {
 			if (this.props.isLiveLine) {
 				this.mountResizeObserver()
+			} else if (this.itemElement) {
+				const width = getElementWidth(this.itemElement) || 0
+				if (this.state.elementWidth !== width) {
+					this.setState({
+						elementWidth: width,
+					})
+				}
 			}
 
 			RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)

@@ -6,6 +6,8 @@ import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 
 interface ISegmentDurationProps {
 	parts: PartUi[]
+	budgetDuration?: number
+	playedOutDuration: number
 }
 
 /**

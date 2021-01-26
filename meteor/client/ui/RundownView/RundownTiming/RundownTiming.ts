@@ -61,6 +61,16 @@ export namespace RundownTiming {
 		partDisplayDurations?: {
 			[key: string]: number
 		}
+		/** Overrides for partDisplayDurations, for some parts, including the
+		 * timeScale-adjusted Live Line padding
+		 * (contains values only for the live Part and the previous part when duration is settling).
+		 */
+		partLiveDisplayDurations?: {
+			[key: string]: number
+		}
+		segmentBudgetDurations?: {
+			[key: string]: number
+		}
 		/** As-played durations of each part. Will be 0, if not yet played.
 		 * Will be counted from start to now if currently playing.
 		 */
@@ -106,6 +116,7 @@ export function computeSegmentDuration(
 	display?: boolean
 ): number {
 	let partDurations = timingDurations.partDurations
+	let partPlayed = timingDurations.partPlayed || {}
 
 	if (partDurations === undefined) return 0
 
@@ -114,6 +125,6 @@ export function computeSegmentDuration(
 		const partDuration =
 			(partDurations ? (partDurations[pId] !== undefined ? partDurations[pId] : 0) : 0) ||
 			(display ? Settings.defaultDisplayDuration : 0)
-		return memo + partDuration
+		return memo + partDuration - (partPlayed[pId] ?? 0)
 	}, 0)
 }

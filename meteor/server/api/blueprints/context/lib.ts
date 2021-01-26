@@ -41,6 +41,7 @@ const IBlueprintMutatablePartSample: Required<IBlueprintMutatablePart> = {
 	transitionDuration: null,
 	disableOutTransition: false,
 	expectedDuration: 0,
+	budgetDuration: 0,
 	holdMode: PartHoldMode.NONE,
 	shouldNotifyCurrentPlayingPart: false,
 	classes: [],
