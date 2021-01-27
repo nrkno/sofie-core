@@ -789,7 +789,19 @@ export namespace ServerRundownAPI {
 			},
 		})
 
-		return IngestActions.reloadRundown(rundown)
+		const result = IngestActions.reloadRundown(rundown)
+
+		// If the rundown source says the rundown is missing, we should set the unsynced flag back, since it
+		// is not going to be resynced.
+		if (result === TriggerReloadDataResponse.MISSING) {
+			Rundowns.update(rundown._id, {
+				$set: {
+					unsynced: true,
+				},
+			})
+		}
+
+		return result
 	}
 
 	export function unsyncSegmentInner(
