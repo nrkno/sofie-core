@@ -24,6 +24,8 @@ $segment-item-disabled-color: #c9c9c9;
 $segment-nextline-shade-width: 1.875rem;
 $segment-nextline-shade-fill: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
 
+$segment-editorialline-color: rgba(255, 255, 255, 0.25);
+
 $rundown-divider-color: #000000;
 $rundown-divider-background-color: #dddddd;
 
@@ -1132,6 +1134,14 @@ body.no-overflow {
 				background-color: $hold-status-color;
 			}
 		}
+	}
+
+	.segment-timeline__editorialline {
+		border-left: 2px dashed $segment-editorialline-color;
+		position: absolute;
+		top: calc(2.3em - 13px);
+		left: 0;
+		bottom: 1.2em;
 	}
 
 	/** This is a child element of the .segment-timeline__timeline-container.

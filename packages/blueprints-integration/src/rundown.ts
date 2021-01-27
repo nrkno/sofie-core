@@ -97,6 +97,9 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
 
+	/** Budget duration of this part, in milliseconds */
+	budgetDuration?: number
+
 	/** Whether this segment line supports being used in HOLD */
 	holdMode?: PartHoldMode
 

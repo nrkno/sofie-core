@@ -2432,7 +2432,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						undefined
 
 					return (
-						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
+						<RundownTimingProvider
+							playlist={this.props.playlist}
+							defaultDuration={Settings.defaultDisplayDuration}
+							timeScale={this.state.timeScale}>
 							<div
 								className={ClassNames('rundown-view', {
 									'notification-center-open': this.state.isNotificationsCenterOpen !== undefined,
