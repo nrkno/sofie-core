@@ -189,7 +189,7 @@ const WarningDisplay = withTranslation()(
 						}>
 						<p>
 							{t(
-								'You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to reset the rundown and go into playout mode?'
+								'You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to reset the rundown and go into on-air mode?'
 							)}
 						</p>
 					</ModalDialog>
@@ -474,19 +474,19 @@ const RundownHeader = withTranslation()(
 					{
 						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE,
 						up: this.keyActivate,
-						label: t('Activate'),
+						label: t('Activate (On-air)'),
 						global: true,
 					},
 					{
 						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE2,
 						up: this.keyActivate,
-						label: t('Activate'),
+						label: t('Activate (On-air)'),
 						global: true,
 					},
 					{
 						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE3,
 						up: this.keyActivate,
-						label: t('Activate'),
+						label: t('Activate (On-air)'),
 						global: true,
 					},
 					{
@@ -873,11 +873,11 @@ const RundownHeader = withTranslation()(
 						rundownName: otherRundowns.map((i) => i.name).join(', '),
 					}
 				),
-				yes: t('Activate Anyway'),
+				yes: t('Activate Anyway (Rehearsal)'),
 				no: t('Cancel'),
 				actions: [
 					{
-						label: t('Activate Anyway (GO ON AIR)'),
+						label: t('Activate Anyway (On-air)'),
 						classNames: 'btn-primary',
 						on: (e) => {
 							doUserAction(
@@ -940,6 +940,7 @@ const RundownHeader = withTranslation()(
 					doModalDialog({
 						title: this.props.playlist.name,
 						message: t('Do you want to activate this Rundown?'),
+						yes: 'Activate (on-air)',
 						onAccept: () => {
 							this.rewindSegments()
 							doUserAction(
@@ -968,6 +969,7 @@ const RundownHeader = withTranslation()(
 					doModalDialog({
 						title: this.props.playlist.name,
 						message: t('The planned end time has passed, are you sure you want to activate this Rundown?'),
+						yes: 'Activate (on-air)',
 						onAccept: () => {
 							doActivate()
 						},
@@ -1029,6 +1031,7 @@ const RundownHeader = withTranslation()(
 						doModalDialog({
 							title: this.props.playlist.name,
 							message: t('Are you sure you want to activate Rehearsal Mode?'),
+							yes: 'Activate (Rehearsal)',
 							onAccept: (e) => {
 								doActivateRehersal()
 							},
@@ -1043,6 +1046,7 @@ const RundownHeader = withTranslation()(
 						doModalDialog({
 							title: this.props.playlist.name,
 							message: t('Are you sure you want to activate Rehearsal Mode?'),
+							yes: 'Activate (Rehearsal)',
 							onAccept: (e) => {
 								doActivateRehersal()
 							},
@@ -1224,7 +1228,7 @@ const RundownHeader = withTranslation()(
 											<MenuItem onClick={(e) => this.activateRehearsal(e)}>{t('Activate (Rehearsal)')}</MenuItem>
 										)
 									) : (
-										<MenuItem onClick={(e) => this.activate(e)}>{t('Activate')}</MenuItem>
+										<MenuItem onClick={(e) => this.activate(e)}>{t('Activate (On-air)')}</MenuItem>
 									)}
 									{this.props.playlist.active ? (
 										<MenuItem onClick={(e) => this.deactivate(e)}>{t('Deactivate')}</MenuItem>
