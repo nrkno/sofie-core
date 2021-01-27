@@ -667,7 +667,7 @@ function diffAndApplyChanges(
 
 		// Remove it too, if it can be removed
 		const segment = cache.Segments.findOne(segmentId)
-		if (!Settings.allowUnsyncedSegments && canRemoveSegment(cache, playlist, segment)) {
+		if (canRemoveSegment(cache, playlist, segment)) {
 			cache.Segments.remove(segmentId)
 		}
 	}
