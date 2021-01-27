@@ -2726,26 +2726,53 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	}
 )
 
-export function handleRundownPlaylistReloadResponse(
-	t: i18next.TFunction,
-	result: ReloadRundownPlaylistResponse
-): boolean {
-	let possiblyBadResponse = _.first(result.rundownsResponses)
+function handleRundownPlaylistReloadResponse(t: i18next.TFunction, result: ReloadRundownPlaylistResponse): boolean {
+	const rundownsInNeedOfHandling = result.rundownsResponses.filter(
+		(r) => r.response === TriggerReloadDataResponse.MISSING
+	)
+	const firstRundownId = _.first(rundownsInNeedOfHandling)?.rundownId
+	let allRundownsAffected = false
 
-	result.rundownsResponses.forEach((r) => {
-		if (r.response === TriggerReloadDataResponse.MISSING) {
-			possiblyBadResponse = r
+	if (firstRundownId) {
+		const firstRundown = Rundowns.findOne(firstRundownId)
+		const playlist = RundownPlaylists.findOne(firstRundown?.playlistId)
+		const allRundownIds = playlist?.getRundownUnorderedIDs() || []
+		if (
+			_.difference(
+				rundownsInNeedOfHandling.map((r) => r.rundownId),
+				allRundownIds
+			).length === 0
+		) {
+			allRundownsAffected = true
 		}
-	})
-	// TODO: This is a hack, since it only handles the first error
-	return possiblyBadResponse
-		? handleRundownReloadResponse(t, possiblyBadResponse.rundownId, possiblyBadResponse.response)
-		: false
+	}
+
+	let actionsTaken: RundownReloadResponseUserAction[] = []
+	function onActionTaken(action: RundownReloadResponseUserAction): void {
+		actionsTaken.push(action)
+		if (actionsTaken.length === rundownsInNeedOfHandling.length) {
+			// the user has taken action on all of the missing rundowns
+			if (allRundownsAffected && actionsTaken.filter((actionTaken) => actionTaken !== 'removed').length === 0) {
+				// all rundowns in the playlist were affected and all of them were removed
+				// we redirect to the Lobby
+				window.location.assign('/')
+			}
+		}
+	}
+
+	const handled = rundownsInNeedOfHandling.map((r) =>
+		handleRundownReloadResponse(t, r.rundownId, r.response, onActionTaken)
+	)
+	return handled.reduce((previousValue, value) => previousValue || value, false)
 }
+
+type RundownReloadResponseUserAction = 'removed' | 'unsynced' | 'error'
+
 export function handleRundownReloadResponse(
 	t: i18next.TFunction,
 	rundownId: RundownId,
-	result: TriggerReloadDataResponse
+	result: TriggerReloadDataResponse,
+	clb?: (action: RundownReloadResponseUserAction) => void
 ): boolean {
 	let hasDoneSomething = false
 
@@ -2759,7 +2786,7 @@ export function handleRundownReloadResponse(
 				undefined,
 				NoticeLevel.CRITICAL,
 				t(
-					'Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data from {{nrcsName}}, what do you want to do?',
+					'Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data from {{nrcsName}}. You can either leave it in Sofie and mark it as Unsynced or remove the rundown from Sofie. What do you want to do?',
 					{
 						nrcsName: rundown?.externalNRCSName || 'NRCS',
 						rundownName: rundown?.name || 'N/A',
@@ -2772,7 +2799,7 @@ export function handleRundownReloadResponse(
 				[
 					// actions:
 					{
-						label: t('Leave it in Sofie (mark the rundown as unsynced)'),
+						label: t('Leave Unsynced'),
 						type: 'default',
 						disabled: !getAllowStudio(),
 						action: () => {
@@ -2784,13 +2811,16 @@ export function handleRundownReloadResponse(
 								(err) => {
 									if (!err) {
 										notification.stop()
+										clb && clb('unsynced')
+									} else {
+										clb && clb('error')
 									}
 								}
 							)
 						},
 					},
 					{
-						label: t('Remove just the rundown from Sofie'),
+						label: t('Remove'),
 						type: 'default',
 						action: () => {
 							doModalDialog({
@@ -2812,7 +2842,9 @@ export function handleRundownReloadResponse(
 										(err) => {
 											if (!err) {
 												notification.stop()
-												window.location.assign(`/`)
+												clb && clb('removed')
+											} else {
+												clb && clb('error')
 											}
 										}
 									)
