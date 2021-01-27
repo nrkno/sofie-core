@@ -55,9 +55,10 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 		if (this.props.livePieceInstance && this.props.livePieceInstance.startedPlayback) {
 			const vtContent = this.props.livePieceInstance.piece.content as VTContent | undefined
 			const sourceDuration = vtContent?.sourceDuration || 0
+			const seek = vtContent?.seek || 0
 			const startedPlayback = this.props.livePieceInstance.startedPlayback
 			if (startedPlayback && sourceDuration > 0) {
-				timecode = e.detail.currentTime - (startedPlayback + sourceDuration)
+				timecode = e.detail.currentTime - (startedPlayback + sourceDuration - seek)
 			}
 		}
 		if (this.state.displayTimecode != timecode) {
