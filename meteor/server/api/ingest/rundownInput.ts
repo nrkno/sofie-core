@@ -278,15 +278,13 @@ export namespace RundownInput {
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		rundownExternalId: string,
-		segmentExternalIds: string[],
-		ranks: number[]
+		newRanks: { [segmentExternalId: string]: number }
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		logger.info('dataSegmentRanksUpdate', rundownExternalId, segmentExternalIds, ranks)
+		logger.info('dataSegmentRanksUpdate', rundownExternalId, Object.keys(newRanks))
 		check(rundownExternalId, String)
-		check(segmentExternalIds, Array)
-		check(ranks, Array)
-		handleUpdatedSegmentRanks(peripheralDevice, rundownExternalId, segmentExternalIds, ranks)
+		check(newRanks, Object)
+		handleUpdatedSegmentRanks(peripheralDevice, rundownExternalId, newRanks)
 	}
 	// Delete, Create & Update Part:
 	export function dataPartDelete(
@@ -1512,13 +1510,8 @@ function afterIngestChangedData(
 export function handleUpdatedSegmentRanks(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
-	segmentExternalIds: string[],
-	ranks: number[]
+	newRanks: { [segmentExternalId: string]: number }
 ) {
-	if (segmentExternalIds.length !== ranks.length) {
-		throw new Meteor.Error(400, `Number of segmentExternalIds does not match number of ranks`)
-	}
-
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
@@ -1532,18 +1525,22 @@ export function handleUpdatedSegmentRanks(
 			const playlist = getRundownPlaylist(rundown)
 			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
-			for (const [index, externalId] of segmentExternalIds.entries()) {
-				cache.Segments.update(
+			for (const [externalId, rank] of Object.entries(newRanks)) {
+				const changed = cache.Segments.update(
 					{
 						externalId,
 						rundownId,
 					},
 					{
 						$set: {
-							_rank: ranks[index],
+							_rank: rank,
 						},
 					}
 				)
+
+				if (changed === 0) {
+					logger.warn(`Failed to update rank of segment "${externalId}" (${rundownExternalId})`)
+				}
 			}
 
 			waitForPromise(cache.saveAllToDatabase())
