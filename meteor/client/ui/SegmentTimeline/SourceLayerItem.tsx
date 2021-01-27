@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { ISourceLayerUi, IOutputLayerUi, PartUi, PieceUi } from './SegmentTimelineContainer'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { SourceLayerType, PieceLifespan, PieceTransitionType } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, PieceLifespan, PieceTransitionType } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import ClassNames from 'classnames'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
@@ -14,15 +14,11 @@ import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
-import { doModalDialog, SomeEvent, ModalInputResult } from '../../lib/ModalDialog'
-import { doUserAction, UserAction } from '../../lib/userAction'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
-import { MeteorCall } from '../../../lib/api/methods'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { RundownViewEvents } from '../RundownView'
+import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -68,6 +64,7 @@ interface ISourceLayerItemState {
 export const SourceLayerItem = withTranslation()(
 	class SourceLayerItem extends React.Component<ISourceLayerItemProps & WithTranslation, ISourceLayerItemState> {
 		private _resizeObserver: ResizeObserver | undefined
+		private itemElement: HTMLDivElement | undefined
 
 		constructor(props) {
 			super(props)
@@ -95,6 +92,7 @@ export const SourceLayerItem = withTranslation()(
 			this.setState({
 				itemElement: e,
 			})
+			this.itemElement = e
 		}
 
 		getItemLabelOffsetLeft = (): React.CSSProperties => {
@@ -436,11 +434,11 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		private mountResizeObserver() {
-			if (this.props.isLiveLine && !this._resizeObserver && this.state.itemElement) {
+			if (this.props.isLiveLine && !this._resizeObserver && this.itemElement) {
 				this._resizeObserver = new ResizeObserver(this.onResize)
-				this._resizeObserver.observe(this.state.itemElement)
+				this._resizeObserver.observe(this.itemElement)
 
-				const width = getElementWidth(this.state.itemElement) || 0
+				const width = getElementWidth(this.itemElement) || 0
 				if (this.state.elementWidth !== width) {
 					this.setState({
 						elementWidth: width,
@@ -458,12 +456,8 @@ export const SourceLayerItem = withTranslation()(
 
 		private highlightTimeout: NodeJS.Timer
 
-		private onHighlight = (e: any) => {
-			if (
-				e.detail &&
-				e.detail.partId === this.props.part.partId &&
-				e.detail.pieceId === this.props.piece.instance.piece._id
-			) {
+		private onHighlight = (e: HighlightEvent) => {
+			if (e.partId === this.props.part.partId && e.pieceId === this.props.piece.instance.piece._id) {
 				this.setState({
 					highlight: true,
 				})
@@ -479,14 +473,21 @@ export const SourceLayerItem = withTranslation()(
 		componentDidMount() {
 			if (this.props.isLiveLine) {
 				this.mountResizeObserver()
+			} else if (this.itemElement) {
+				const width = getElementWidth(this.itemElement) || 0
+				if (this.state.elementWidth !== width) {
+					this.setState({
+						elementWidth: width,
+					})
+				}
 			}
 
-			window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
+			RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		}
 
 		componentWillUnmount() {
 			super.componentWillUnmount && super.componentWillUnmount()
-			window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
+			RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 			this.unmountResizeObserver()
 			clearTimeout(this.highlightTimeout)
 		}
@@ -742,7 +743,7 @@ export const SourceLayerItem = withTranslation()(
 						onDoubleClick={this.itemDblClick}
 						onMouseUp={this.itemMouseUp}
 						onMouseMove={this.moveMiniInspector}
-						onMouseOver={this.toggleMiniInspectorOn}
+						onMouseEnter={this.toggleMiniInspectorOn}
 						onMouseLeave={this.toggleMiniInspectorOff}
 						style={this.getItemStyle()}>
 						{this.renderInsideItem(typeClass)}

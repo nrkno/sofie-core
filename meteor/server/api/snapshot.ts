@@ -51,7 +51,7 @@ import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { AudioContent } from 'tv-automation-sofie-blueprints-integration'
+import { AudioContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
@@ -667,7 +667,9 @@ export function restoreFromRundownPlaylistSnapshot(
 	const partIdMap: { [key: string]: PartId } = {}
 	_.each(snapshot.parts, (part) => {
 		const oldId = part._id
-		partIdMap[unprotectString(oldId)] = part._id = getPartId(getNewRundownId(part.rundownId), part.externalId)
+		partIdMap[unprotectString(oldId)] = part._id = part.externalId
+			? getPartId(getNewRundownId(part.rundownId), part.externalId)
+			: getRandomId()
 	})
 	const partInstanceIdMap: { [key: string]: PartInstanceId } = {}
 	_.each(snapshot.partInstances, (partInstance) => {
@@ -698,10 +700,6 @@ export function restoreFromRundownPlaylistSnapshot(
 		pieceInstance.piece._id = pieceIdMap[unprotectString(pieceInstance.piece._id)] || getRandomId()
 		if (pieceInstance.infinite) {
 			pieceInstance.infinite.infinitePieceId = pieceIdMap[unprotectString(pieceInstance.infinite.infinitePieceId)]
-			if (pieceInstance.infinite.lastPartInstanceId) {
-				pieceInstance.infinite.lastPartInstanceId =
-					partInstanceIdMap[unprotectString(pieceInstance.infinite.lastPartInstanceId)]
-			}
 		}
 	})
 

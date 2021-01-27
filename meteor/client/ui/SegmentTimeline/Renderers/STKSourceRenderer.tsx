@@ -16,7 +16,7 @@ import { Lottie } from '@crello/react-lottie'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 import { WithTranslation, withTranslation } from 'react-i18next'
-import { LiveSpeakContent, VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { LiveSpeakContent, VTContent } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { PieceStatusIcon } from '../PieceStatusIcon'
 import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'

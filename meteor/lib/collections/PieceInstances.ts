@@ -12,7 +12,7 @@ import {
 	IBlueprintPieceInstance,
 	Time,
 	IBlueprintResolvedPieceInstance,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { Piece, PieceId } from './Pieces'
 import { PartInstanceId } from './PartInstances'
@@ -35,8 +35,14 @@ export function protectPieceInstance(pieceInstance: IBlueprintPieceInstance): De
 
 export type PieceInstancePiece = Omit<Piece, 'startRundownId' | 'startSegmentId'>
 
+export interface PieceInstanceInfinite
+	extends ProtectedStringProperties<Required<IBlueprintPieceInstance>['infinite'], 'infinitePieceId'> {
+	/** A random id for this instance of this infinite */
+	infiniteInstanceId: PieceInstanceInfiniteId
+}
+
 export interface PieceInstance
-	extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece'>, '_id' | 'adLibSourceId'> {
+	extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece' | 'infinite'>, '_id' | 'adLibSourceId'> {
 	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
 	readonly isTemporary?: boolean
 
@@ -62,25 +68,7 @@ export interface PieceInstance
 	dynamicallyInserted?: Time
 
 	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
-	infinite?: {
-		/** A random id for this instance of this infinite */
-		infiniteInstanceId: PieceInstanceInfiniteId
-		/** The piece that this instance is a continuation of */
-		infinitePieceId: PieceId
-		// TODO - more properties?
-		/** When the instance was a copy made from hold */
-		fromHold?: boolean
-
-		/** Whether this was 'copied' from the previous PartInstance or Part */
-		fromPreviousPart: boolean
-		/** Whether this was 'copied' from the previous PartInstance via the playhead, rather than from a Part */
-		fromPreviousPlayhead?: boolean
-
-		// /** The first partInstance this existed in */
-		// firstPartInsanceId: PartInstanceId
-		/** The last partInstance this should exist in */
-		lastPartInstanceId?: PartInstanceId
-	}
+	infinite?: PieceInstanceInfinite
 
 	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
 	startedPlayback?: Time
@@ -97,22 +85,12 @@ export interface PieceInstance
 
 export interface ResolvedPieceInstance
 	extends PieceInstance,
-		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'piece'> {
+		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'piece' | 'infinite'> {
 	piece: PieceInstancePiece
 }
 
 export function omitPiecePropertiesForInstance(piece: Piece): PieceInstancePiece {
 	return omit(piece, 'startRundownId', 'startSegmentId')
-}
-
-export function wrapPieceToTemporaryInstance(piece: Piece, partInstanceId: PartInstanceId): PieceInstance {
-	return literal<PieceInstance>({
-		isTemporary: true,
-		_id: protectString(`${piece._id}_tmp_instance`),
-		rundownId: piece.startRundownId,
-		partInstanceId: partInstanceId,
-		piece: omitPiecePropertiesForInstance(piece),
-	})
 }
 
 export function rewrapPieceToInstance(
@@ -130,13 +108,17 @@ export function rewrapPieceToInstance(
 	}
 }
 
-export function wrapPieceToInstance(piece: Piece, partInstanceId: PartInstanceId): PieceInstance {
-	return {
-		_id: protectString(`${partInstanceId}_${piece._id}`),
-		rundownId: piece.startRundownId,
-		partInstanceId: partInstanceId,
-		piece: omitPiecePropertiesForInstance(piece),
-	}
+export function wrapPieceToInstance(
+	piece: Piece,
+	partInstanceId: PartInstanceId,
+	isTemporary?: boolean
+): PieceInstance {
+	return rewrapPieceToInstance(
+		omitPiecePropertiesForInstance(piece),
+		piece.startRundownId,
+		partInstanceId,
+		partInstanceId === protectString('') || isTemporary
+	)
 }
 
 export const PieceInstances: TransformedCollection<PieceInstance, PieceInstance> = createMongoCollection<PieceInstance>(

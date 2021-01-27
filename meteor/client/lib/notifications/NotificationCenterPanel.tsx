@@ -9,7 +9,7 @@ import { ContextMenuTrigger, ContextMenu, MenuItem } from '@jstarpl/react-contex
 import * as _ from 'underscore'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { CriticalIcon, WarningIcon, CollapseChevrons, InformationIcon } from '../notificationIcons'
+import { CriticalIcon, WarningIcon, CollapseChevrons, InformationIcon } from '../ui/icons/notifications'
 import update from 'immutability-helper'
 
 interface IPopUpProps {
@@ -80,6 +80,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 							{defaultAction ? (
 								<div className="notification-pop-up__actions--default">
 									<button
+										disabled={defaultAction.disabled}
 										className="btn btn-default notification-pop-up__actions--button"
 										onClick={(e) => this.triggerEvent(defaultAction, e)}>
 										<CoreIcon.NrkArrowLeft
@@ -96,6 +97,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 									{_.map(allActions, (action: NotificationAction, i: number) => {
 										return (
 											<button
+												disabled={action.disabled}
 												key={i}
 												className={ClassNames(
 													'btn',

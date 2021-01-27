@@ -39,12 +39,14 @@ import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getAllowSpeaking } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
-import { RundownViewEvents, IContextMenuContext } from '../RundownView'
-import { literal, unprotectString } from '../../../lib/lib'
+import { IContextMenuContext } from '../RundownView'
+import { literal, protectString, unprotectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
-import { WarningIconSmall, CriticalIconSmall } from '../../lib/notificationIcons'
+import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
+import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
 
 interface IProps {
 	id: string
@@ -84,6 +86,8 @@ interface IProps {
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
+	budgetGap: number
+	budgetDuration?: number
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -188,6 +192,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 					isLastInSegment={false}
 					isAfterLastValidInSegmentAndItsLive={false}
 					isLastSegment={false}
+					isBudgetGap={true}
 				/>
 			)
 		})
@@ -309,25 +314,25 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	componentDidMount() {
 		super.componentDidMount && super.componentDidMount()
-		window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
 
-		window.addEventListener(RundownViewEvents.segmentZoomOn, this.onRundownEventSegmentZoomOn)
-		window.addEventListener(RundownViewEvents.segmentZoomOff, this.onRundownEventSegmentZoomOff)
+		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
+		RundownViewEventBus.on(RundownViewEvents.SEGMENT_ZOOM_ON, this.onRundownEventSegmentZoomOn)
+		RundownViewEventBus.on(RundownViewEvents.SEGMENT_ZOOM_OFF, this.onRundownEventSegmentZoomOff)
 	}
 
 	componentWillUnmount() {
 		super.componentWillUnmount && super.componentWillUnmount()
-		window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
 		clearTimeout(this.highlightTimeout)
 
-		window.removeEventListener(RundownViewEvents.segmentZoomOn, this.onRundownEventSegmentZoomOn)
-		window.removeEventListener(RundownViewEvents.segmentZoomOff, this.onRundownEventSegmentZoomOff)
+		RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
+		RundownViewEventBus.off(RundownViewEvents.SEGMENT_ZOOM_ON, this.onRundownEventSegmentZoomOn)
+		RundownViewEventBus.off(RundownViewEvents.SEGMENT_ZOOM_OFF, this.onRundownEventSegmentZoomOff)
 	}
 
 	private highlightTimeout: NodeJS.Timer
 
-	private onHighlight = (e: any) => {
-		if (e.detail && e.detail.segmentId === this.props.segment._id && !e.detail.partId && !e.detail.pieceId) {
+	private onHighlight = (e: HighlightEvent) => {
+		if (e.segmentId === this.props.segment._id && !e.partId && !e.pieceId) {
 			this.setState({
 				highlight: true,
 			})
@@ -487,29 +492,29 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		document.removeEventListener('pointerlockerror', this.onTimelinePointerError)
 	}
 
-	onRundownEventSegmentZoomOn = (e: any) => {
+	onRundownEventSegmentZoomOn = () => {
 		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.playlist.currentPartInstanceId === null)) {
-			this.onTimelineZoomOn(e)
+			this.onTimelineZoomOn()
 		}
 	}
 
-	onRundownEventSegmentZoomOff = (e: any) => {
+	onRundownEventSegmentZoomOff = () => {
 		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.playlist.currentPartInstanceId === null)) {
-			this.onTimelineZoomOff(e)
+			this.onTimelineZoomOff()
 		}
 	}
 
-	onTimelineZoomOn = (e: any) => {
+	onTimelineZoomOn = () => {
 		if (SegmentTimelineClass._zoomOutLatch === undefined) {
 			SegmentTimelineClass._zoomOutLatch = this.props.timeScale
 		}
 		SegmentTimelineClass._zoomOutLatchId = this.props.id
-		if (this.props.onShowEntireSegment) this.props.onShowEntireSegment(e)
+		if (this.props.onShowEntireSegment) this.props.onShowEntireSegment(undefined)
 	}
 
-	onTimelineZoomOff = (e: any) => {
+	onTimelineZoomOff = () => {
 		if (SegmentTimelineClass._zoomOutLatch !== undefined) {
-			this.props.onZoomChange(SegmentTimelineClass._zoomOutLatch, e)
+			this.props.onZoomChange(SegmentTimelineClass._zoomOutLatch, undefined)
 		}
 		SegmentTimelineClass._zoomOutLatch = undefined
 		SegmentTimelineClass._zoomOutLatchId = undefined
@@ -518,9 +523,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	// doubleclick is simulated by onTimelineMouseUp, because we use pointer lock and that prevents dblclick events
 	onTimelineDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (SegmentTimelineClass._zoomOutLatch === undefined || SegmentTimelineClass._zoomOutLatchId !== this.props.id) {
-			this.onTimelineZoomOn(e)
+			this.onTimelineZoomOn()
 		} else {
-			this.onTimelineZoomOff(e)
+			this.onTimelineZoomOff()
 		}
 	}
 
@@ -557,7 +562,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	getSegmentContext = (props) => {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
-			part: this.props.parts.length > 0 ? this.props.parts[0] : null,
+			part: this.props.parts.find((p) => p.instance.part.isPlayable()) || null,
 		})
 
 		if (this.props.onContextMenu && typeof this.props.onContextMenu === 'function') {
@@ -665,16 +670,68 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							scrollWidth={this.state.timelineWidth / this.props.timeScale}
 							firstPartInSegment={this.props.parts[0]}
 							isLastSegment={this.props.isLastSegment}
-							isLastInSegment={index === this.props.parts.length - 1}
+							isLastInSegment={index === this.props.parts.length - 1 && this.props.budgetGap <= 0}
 							isAfterLastValidInSegmentAndItsLive={
 								index === (this.props.lastValidPartIndex || 0) + 1 &&
 								previousPartIsLive &&
 								!!this.props.playlist.nextPartInstanceId
 							}
 							part={part}
+							isBudgetGap={false}
 						/>
 					)
 				})}
+				{this.props.budgetGap > 0 && (
+					<SegmentTimelinePart
+						segment={this.props.segment}
+						playlist={this.props.playlist}
+						studio={this.props.studio}
+						collapsedOutputs={this.props.collapsedOutputs}
+						isCollapsed={this.props.isCollapsed}
+						scrollLeft={this.props.scrollLeft}
+						timeScale={this.props.timeScale}
+						autoNextPart={this.props.autoNextPart}
+						followLiveLine={this.props.followLiveLine}
+						liveLineHistorySize={this.props.liveLineHistorySize}
+						livePosition={this.props.livePosition}
+						onScroll={this.props.onScroll}
+						onCollapseOutputToggle={this.props.onCollapseOutputToggle}
+						onCollapseSegmentToggle={this.props.onCollapseSegmentToggle}
+						onFollowLiveLine={this.props.onFollowLiveLine}
+						onContextMenu={this.props.onContextMenu}
+						relative={false}
+						onPieceClick={this.props.onItemClick}
+						onPieceDoubleClick={this.props.onItemDoubleClick}
+						scrollWidth={this.state.timelineWidth / this.props.timeScale}
+						firstPartInSegment={this.props.parts[0]}
+						lastPartInSegment={this.props.parts[this.props.parts.length - 1]}
+						isLastSegment={this.props.isLastSegment}
+						isLastInSegment={true}
+						isAfterLastValidInSegmentAndItsLive={
+							this.props.parts.length === (this.props.lastValidPartIndex || 0) + 1 &&
+							partIsLive &&
+							!!this.props.playlist.nextPartInstanceId
+						}
+						isBudgetGap={true}
+						part={{
+							partId: protectString('gap'),
+							instance: wrapPartToTemporaryInstance({
+								_id: protectString('gap'),
+								_rank: 0,
+								segmentId: this.props.segment._id,
+								rundownId: this.props.segment.rundownId,
+								externalId: 'gap',
+								gap: true,
+								title: 'gap',
+								invalid: true,
+							}),
+							pieces: [],
+							renderedDuration: this.props.budgetGap,
+							startsAt: 0,
+							willProbablyAutoNext: false,
+						}}
+					/>
+				)}
 			</React.Fragment>
 		)
 	}
@@ -741,6 +798,15 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						)
 					}
 				})
+		}
+	}
+
+	renderEditorialLine() {
+		if (this.props.budgetDuration !== undefined) {
+			let lineStyle = {
+				left: this.props.budgetDuration * this.props.timeScale - this.props.scrollLeft * this.props.timeScale + 'px',
+			}
+			return <div className="segment-timeline__editorialline" style={lineStyle}></div>
 		}
 	}
 
@@ -863,7 +929,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						this.props.parts &&
 						this.props.parts.length > 0 &&
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
-							<SegmentDuration parts={this.props.parts} />
+							<SegmentDuration
+								parts={this.props.parts}
+								budgetDuration={this.props.budgetDuration}
+								playedOutDuration={this.props.isLiveSegment ? this.props.livePosition : 0}
+							/>
 						)}
 				</div>
 				<div className="segment-timeline__identifier">{this.props.segment.identifier}</div>
@@ -898,6 +968,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							{this.renderEndOfSegment()}
 						</ErrorBoundary>
 					</div>
+					{this.renderEditorialLine()}
 					{this.renderLiveLine()}
 				</div>
 				<ErrorBoundary>

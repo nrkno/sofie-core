@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { ExternalMessageQueueObjRabbitMQ } from 'tv-automation-sofie-blueprints-integration'
+import { ExternalMessageQueueObjRabbitMQ } from '@sofie-automation/blueprints-integration'
 import { ExternalMessageQueueObj } from '../lib/collections/ExternalMessageQueue'
 
 export async function sendRabbitMQMessage(msg0: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj) {

@@ -18,8 +18,8 @@ import { Meteor } from 'meteor/meteor'
 import { AdLibPieces, AdLibPiece } from './AdLibPieces'
 import { RundownBaselineObjs } from './RundownBaselineObjs'
 import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from './RundownBaselineAdLibPieces'
-import { IBlueprintRundownDB, TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
-import { ShowStyleCompound, getShowStyleCompound, ShowStyleVariantId } from './ShowStyleVariants'
+import { IBlueprintRundownDB } from '@sofie-automation/blueprints-integration'
+import { ShowStyleVariantId, ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
 import { IngestDataCache } from './IngestDataCache'
@@ -28,7 +28,7 @@ import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownP
 import { createMongoCollection } from './lib'
 import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
 import { PartInstances, PartInstance, DBPartInstance } from './PartInstances'
-import { PieceInstances, PieceInstance } from './PieceInstances'
+import { PieceInstances } from './PieceInstances'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { OrganizationId } from './Organization'
 import { AdLibActions } from './AdLibActions'
@@ -115,6 +115,7 @@ export class Rundown implements DBRundown {
 	public externalId: string
 	public organizationId: OrganizationId
 	public name: string
+	public description?: string
 	public expectedStart?: Time
 	public expectedDuration?: number
 	public metaData?: {
@@ -167,6 +168,11 @@ export class Rundown implements DBRundown {
 	// 		return ss
 	// 	} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
 	// }
+	getShowStyleVariant(): ShowStyleVariant {
+		let showStyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
+		if (!showStyleVariant) throw new Meteor.Error(404, `ShowStyleVariant "${this.showStyleVariantId}" not found!`)
+		return showStyleVariant
+	}
 	getShowStyleBase(): ShowStyleBase {
 		let showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)

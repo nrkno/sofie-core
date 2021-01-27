@@ -2,12 +2,12 @@ import * as React from 'react'
 import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
-import { SegmentId } from '../../../../lib/collections/Segments'
 import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
-import { processAndPrunePieceInstanceTimings } from '../../../../lib/rundown/infinites'
 
 interface ISegmentDurationProps {
 	parts: PartUi[]
+	budgetDuration?: number
+	playedOutDuration: number
 }
 
 /**
@@ -19,7 +19,10 @@ interface ISegmentDurationProps {
 export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function SegmentDuration(
 	props: WithTiming<ISegmentDurationProps>
 ) {
-	if (props.parts && props.timingDurations.partPlayed) {
+	let duration: number | undefined = undefined
+	if (props.budgetDuration !== undefined) {
+		duration = props.budgetDuration - props.playedOutDuration
+	} else if (props.parts && props.timingDurations.partPlayed) {
 		const { partPlayed } = props.timingDurations
 
 		let budget = 0
@@ -29,8 +32,10 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 			playedOut += partPlayed[unprotectString(part.instance.part._id)] || 0
 		})
 
-		const duration = budget - playedOut
+		duration = budget - playedOut
+	}
 
+	if (duration !== undefined) {
 		return (
 			<span className={duration < 0 ? 'negative' : undefined}>
 				{RundownUtils.formatDiffToTimecode(duration, false, false, true, false, true, '+')}

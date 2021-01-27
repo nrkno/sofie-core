@@ -17,7 +17,7 @@ import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Run
 import { Studio, Studios, StudioId } from './Studios'
 import { Segments, Segment, DBSegment, SegmentId } from './Segments'
 import { Parts, Part, DBPart, PartId } from './Parts'
-import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
+import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
 import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
 import { PeripheralDeviceId } from './PeripheralDevices'

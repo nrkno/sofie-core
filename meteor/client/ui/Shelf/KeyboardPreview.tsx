@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import ClassNames from 'classnames'
-import { ISourceLayer, SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { IHotkeyAssignment, RegisteredHotkeys, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'

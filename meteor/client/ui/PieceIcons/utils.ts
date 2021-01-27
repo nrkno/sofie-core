@@ -1,4 +1,4 @@
-import { SourceLayerType, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { normalizeArray } from '../../../lib/lib'
 import * as _ from 'underscore'
 

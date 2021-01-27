@@ -8,20 +8,35 @@ import {
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
 	SyncIngestUpdateToPartInstanceContext as ISyncIngestUpdateToPartInstanceContext,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { PartInstance, DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import _ from 'underscore'
 import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { wrapPieceToInstance, PieceInstance, PieceInstances } from '../../../../lib/collections/PieceInstances'
-import { unprotectObject, protectString, protectStringArray, unprotectStringArray } from '../../../../lib/lib'
+import {
+	wrapPieceToInstance,
+	PieceInstance,
+	PieceInstances,
+	PieceInstanceId,
+} from '../../../../lib/collections/PieceInstances'
+import {
+	unprotectObject,
+	protectString,
+	protectStringArray,
+	unprotectStringArray,
+	normalizeArray,
+	normalizeArrayToMap,
+} from '../../../../lib/lib'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { DbCacheWriteCollection } from '../../../DatabaseCache'
+import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
+import { Meteor } from 'meteor/meteor'
 
 export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 	implements ISyncIngestUpdateToPartInstanceContext {
 	private readonly _partInstanceCache: DbCacheWriteCollection<PartInstance, DBPartInstance>
 	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance>
+	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>
 
 	constructor(
 		rundown: Rundown,
@@ -29,6 +44,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		notesContext: NotesContext,
 		private partInstance: PartInstance,
 		pieceInstances: PieceInstance[],
+		proposedPieceInstances: PieceInstance[],
 		private playStatus: 'current' | 'next'
 	) {
 		super(rundown, cache, notesContext)
@@ -39,11 +55,52 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 
 		this._partInstanceCache = new DbCacheWriteCollection(PartInstances)
 		this._partInstanceCache.fillWithDataFromArray([partInstance])
+
+		this._proposedPieceInstances = normalizeArrayToMap(proposedPieceInstances, '_id')
 	}
 
 	applyChangesToCache(cache: CacheForRundownPlaylist) {
 		this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
 		this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
+	}
+
+	syncPieceInstance(
+		pieceInstanceId: string,
+		modifiedPiece?: Omit<IBlueprintPiece, 'lifespan'>
+	): IBlueprintPieceInstance {
+		const proposedPieceInstance = this._proposedPieceInstances.get(protectString(pieceInstanceId))
+		if (!proposedPieceInstance) {
+			throw new Meteor.Error(404, `PieceInstance "${pieceInstanceId}" could not be found`)
+		}
+
+		// filter the submission to the allowed ones
+		const piece = modifiedPiece
+			? postProcessPieces(
+					this,
+					[
+						{
+							...modifiedPiece,
+							// Some properties arent allowed to be changed
+							lifespan: proposedPieceInstance.piece.lifespan,
+						},
+					],
+					this.getShowStyleBase().blueprintId,
+					this.partInstance.rundownId,
+					this.partInstance.segmentId,
+					this.partInstance.part._id,
+					this.playStatus === 'current',
+					true
+			  )[0]
+			: proposedPieceInstance.piece
+
+		const existingPieceInstance = this._pieceInstanceCache.findOne(proposedPieceInstance._id)
+		const newPieceInstance: PieceInstance = {
+			...existingPieceInstance,
+			...proposedPieceInstance,
+			piece: piece,
+		}
+		this._pieceInstanceCache.replace(newPieceInstance)
+		return clone(unprotectObject(newPieceInstance))
 	}
 
 	insertPieceInstance(piece0: IBlueprintPiece): IBlueprintPieceInstance {
@@ -61,29 +118,32 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		)[0]
 		const newPieceInstance = wrapPieceToInstance(piece, this.partInstance._id)
 
+		// Ensure the infinite-ness is setup correctly. We assume any piece inserted starts in the current part
+		setupPieceInstanceInfiniteProperties(newPieceInstance)
+
 		this._pieceInstanceCache.insert(newPieceInstance)
 
 		return clone(unprotectObject(newPieceInstance))
 	}
-	updatePieceInstance(
-		pieceInstanceId: string,
-		updatedPiece: Partial<OmitId<IBlueprintPiece>>
-	): IBlueprintPieceInstance {
+	updatePieceInstance(pieceInstanceId: string, updatedPiece: Partial<IBlueprintPiece>): IBlueprintPieceInstance {
 		// filter the submission to the allowed ones
 		const trimmedPiece: Partial<OmitId<IBlueprintPiece>> = _.pick(updatedPiece, IBlueprintPieceSampleKeys)
 		if (Object.keys(trimmedPiece).length === 0) {
-			throw new Error('Some valid properties must be defined')
+			throw new Meteor.Error(
+				404,
+				`Cannot update PieceInstance "${pieceInstanceId}". Some valid properties must be defined`
+			)
 		}
 
 		const pieceInstance = this._pieceInstanceCache.findOne(protectString(pieceInstanceId))
 		if (!pieceInstance) {
-			throw new Error('PieceInstance could not be found')
+			throw new Meteor.Error(404, `PieceInstance "${pieceInstanceId}" could not be found`)
 		}
 		if (pieceInstance.partInstanceId !== this.partInstance._id) {
-			throw new Error('PieceInstance is not in the right partInstance')
-		}
-		if (pieceInstance.infinite?.fromPreviousPart) {
-			throw new Error('Cannot update an infinite piece that is continued from a previous part')
+			throw new Meteor.Error(
+				404,
+				`PieceInstance "${pieceInstanceId}" does not belong to the current PartInstance`
+			)
 		}
 
 		if (updatedPiece.content && updatedPiece.content.timelineObjects) {
@@ -117,7 +177,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		// filter the submission to the allowed ones
 		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(updatePart, IBlueprintMutatablePartSampleKeys)
 		if (Object.keys(trimmedProps).length === 0) {
-			throw new Error('Some valid properties must be defined')
+			throw new Meteor.Error(404, `Cannot update PartInstance. Some valid properties must be defined`)
 		}
 
 		const update = {

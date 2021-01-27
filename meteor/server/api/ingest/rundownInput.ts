@@ -11,7 +11,6 @@ import {
 	literal,
 	sumChanges,
 	anythingChanged,
-	ReturnType,
 	waitForPromise,
 	unprotectString,
 	protectString,
@@ -21,6 +20,7 @@ import {
 	PreparedChanges,
 	unprotectObject,
 	unprotectObjectArray,
+	clone,
 } from '../../../lib/lib'
 import {
 	IngestRundown,
@@ -28,10 +28,10 @@ import {
 	IngestPart,
 	BlueprintResultSegment,
 	BlueprintResultOrderedRundowns,
-	BlueprintResultPartInstance,
+	BlueprintSyncIngestPartInstance,
 	ShowStyleBlueprintManifest,
-	BlueprintResultPartDB,
-} from 'tv-automation-sofie-blueprints-integration'
+	BlueprintSyncIngestNewData,
+} from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import {
@@ -46,7 +46,7 @@ import {
 	getAllRundownsInPlaylist,
 	sortDefaultRundownInPlaylistOrder,
 } from '../rundown'
-import { loadShowStyleBlueprint } from '../blueprints/cache'
+import { loadShowStyleBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
 import {
 	ShowStyleContext,
 	RundownContext,
@@ -131,7 +131,11 @@ import {
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { removeEmptyPlaylists } from '../rundownPlaylist'
 import { profiler } from '../profiler'
-import { syncPlayheadInfinitesForNextPartInstance } from '../playout/infinites'
+import {
+	fetchPiecesThatMayBeActiveForPart,
+	getPieceInstancesForPart,
+	syncPlayheadInfinitesForNextPartInstance,
+} from '../playout/infinites'
 import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
@@ -145,7 +149,7 @@ export enum RundownSyncFunctionPriority {
 	/** Events initiated from playout-gateway callbacks */
 	CALLBACK_PLAYOUT = 20,
 }
-export function rundownPlaylistSyncFunction<T extends Function>(
+export function rundownPlaylistSyncFunction<T extends () => any>(
 	rundownPlaylistId: RundownPlaylistId,
 	priority: RundownSyncFunctionPriority,
 	context: string,
@@ -266,6 +270,19 @@ export namespace RundownInput {
 		check(rundownExternalId, String)
 		check(ingestSegment, Object)
 		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment)
+	}
+	export function dataSegmentRanksUpdate(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		rundownExternalId: string,
+		newRanks: { [segmentExternalId: string]: number }
+	) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		logger.info('dataSegmentRanksUpdate', rundownExternalId, Object.keys(newRanks))
+		check(rundownExternalId, String)
+		check(newRanks, Object)
+		handleUpdatedSegmentRanks(peripheralDevice, rundownExternalId, newRanks)
 	}
 	// Delete, Create & Update Part:
 	export function dataPartDelete(
@@ -731,17 +748,6 @@ function updateRundownFromIngestData(
 			res
 		)
 
-		syncChangesToPartInstances(
-			cache,
-			blueprint,
-			dbPlaylist,
-			dbRundown,
-			segmentContents.parts,
-			segmentContents.segmentPieces,
-			segmentContents.adlibPieces,
-			segmentContents.adlibActions
-		)
-
 		segments.push(segmentContents.newSegment)
 		parts.push(...segmentContents.parts)
 		segmentPieces.push(...segmentContents.segmentPieces)
@@ -997,6 +1003,7 @@ function updateRundownFromIngestData(
 	if (didChange) {
 		afterIngestChangedData(
 			cache,
+			blueprint,
 			dbRundown,
 			_.map(segments, (s) => s._id)
 		)
@@ -1083,11 +1090,7 @@ export function handleRemovedSegment(
 
 		if (canBeUpdated(rundown, segment)) {
 			if (!isUpdateAllowed(cache, playlist, rundown, {}, { removed: [segment] }, {})) {
-				if (Settings.allowUnsyncedSegments) {
-					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId, SegmentUnsyncedReason.REMOVED)
-				} else {
-					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
-				}
+				unsyncSegmentOrRundown(cache, rundown._id, segmentId, SegmentUnsyncedReason.REMOVED)
 			} else {
 				if (removeSegments(cache, rundownId, [segmentId]) === 0) {
 					throw new Meteor.Error(
@@ -1132,15 +1135,24 @@ export function handleUpdatedSegment(
 			saveSegmentCache(rundown._id, segmentId, makeNewIngestSegment(ingestSegment))
 		})
 
-		const { segmentId: updatedSegmentId, newPartIds } = updateSegmentFromIngestData(
+		const blueprint = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
+
+		const { segmentId: updatedSegmentId, insertedPartExternalIds } = updateSegmentFromIngestData(
 			cache,
-			studio,
+			blueprint,
 			playlist,
 			rundown,
 			ingestSegment
 		)
 		if (updatedSegmentId) {
-			afterIngestChangedData(cache, rundown, [updatedSegmentId], false, newPartIds)
+			afterIngestChangedData(
+				cache,
+				blueprint.blueprint,
+				rundown,
+				[updatedSegmentId],
+				false,
+				insertedPartExternalIds
+			)
 		}
 
 		waitForPromise(cache.saveAllToDatabase())
@@ -1152,21 +1164,38 @@ export function updateSegmentsFromIngestData(
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	ingestSegments: IngestSegment[],
-	removedPreviousParts?: boolean
+	removedPartsBeforeInserted?: boolean
 ) {
-	const changedSegmentIds: SegmentId[] = []
-	const allNewPartIds: string[] = []
-	for (let ingestSegment of ingestSegments) {
-		const { segmentId, newPartIds } = updateSegmentFromIngestData(cache, studio, playlist, rundown, ingestSegment)
-		if (segmentId !== null) {
-			changedSegmentIds.push(segmentId)
+	if (ingestSegments.length > 0) {
+		const blueprint = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
+
+		const changedSegmentIds: SegmentId[] = []
+		const allInsertedPartExternalIds: string[] = []
+		for (let ingestSegment of ingestSegments) {
+			const { segmentId, insertedPartExternalIds } = updateSegmentFromIngestData(
+				cache,
+				blueprint,
+				playlist,
+				rundown,
+				ingestSegment
+			)
+			if (segmentId !== null) {
+				changedSegmentIds.push(segmentId)
+			}
+			if (insertedPartExternalIds) {
+				allInsertedPartExternalIds.push(...insertedPartExternalIds)
+			}
 		}
-		if (newPartIds) {
-			allNewPartIds.push(...newPartIds)
+		if (changedSegmentIds.length > 0) {
+			afterIngestChangedData(
+				cache,
+				blueprint.blueprint,
+				rundown,
+				changedSegmentIds,
+				removedPartsBeforeInserted,
+				allInsertedPartExternalIds
+			)
 		}
-	}
-	if (changedSegmentIds.length > 0) {
-		afterIngestChangedData(cache, rundown, changedSegmentIds, removedPreviousParts, allNewPartIds)
 	}
 }
 /**
@@ -1179,17 +1208,13 @@ export function updateSegmentsFromIngestData(
  */
 function updateSegmentFromIngestData(
 	cache: CacheForRundownPlaylist,
-	studio: Studio,
+	blueprint: WrappedShowStyleBlueprint,
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	ingestSegment: IngestSegment
-): { segmentId: SegmentId | null; newPartIds: string[] } {
+): { segmentId: SegmentId | null; insertedPartExternalIds: string[] } {
 	const span = profiler.startSpan('ingest.rundownInput.updateSegmentFromIngestData')
-
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
-	const { blueprint, blueprintId } = loadShowStyleBlueprint(
-		waitForPromise(cache.activationCache.getShowStyleBase(rundown))
-	)
 
 	const existingSegment = cache.Segments.findOne({
 		_id: segmentId,
@@ -1206,18 +1231,63 @@ function updateSegmentFromIngestData(
 
 	const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundown._id},segmentId=${segmentId}`, true)
 	const context = new SegmentContext(rundown, cache, notesContext)
-	const blueprintSegment = blueprint.getSegment(context, ingestSegment)
+	const blueprintSegment = blueprint.blueprint.getSegment(context, ingestSegment)
 
 	const { parts, segmentPieces, adlibPieces, adlibActions, newSegment } = generateSegmentContents(
 		context,
-		blueprintId,
+		blueprint.blueprintId,
 		ingestSegment,
 		existingSegment,
 		existingParts,
 		blueprintSegment
 	)
 
-	syncChangesToPartInstances(cache, blueprint, playlist, rundown, parts, segmentPieces, adlibPieces, adlibActions)
+	if (Settings.allowUnsyncedSegments && rundown.hasUnsyncedSegment) {
+		const removedSegment = cache.Segments.findOne((s) => s.unsynced === SegmentUnsyncedReason.REMOVED)
+		if (removedSegment) {
+			const allSegmentsByRank = cache.Segments.findFetch(
+				{
+					rundownId: rundown._id,
+				},
+				{
+					sort: {
+						_rank: -1,
+					},
+				}
+			)
+			const removedInd = allSegmentsByRank.findIndex((s) => s.unsynced === SegmentUnsyncedReason.REMOVED)
+			let eps = 0.0001
+			let newRank = Number.MIN_SAFE_INTEGER
+			let previousSegment = allSegmentsByRank[removedInd + 1]
+			let nextSegment = allSegmentsByRank[removedInd - 1]
+			let previousPreviousSegment = allSegmentsByRank[removedInd + 2]
+			if (previousSegment) {
+				newRank = previousSegment._rank + eps
+				if (previousSegment._id === segmentId) {
+					if (previousSegment._rank > newSegment._rank) {
+						// moved previous segment up: follow it
+						newRank = newSegment._rank + eps
+					} else if (previousSegment._rank < newSegment._rank && previousPreviousSegment) {
+						// moved previous segment down: stay behind more previous
+						newRank = previousPreviousSegment._rank + eps
+					}
+				} else if (nextSegment && nextSegment._id === segmentId && nextSegment._rank > newSegment._rank) {
+					// next segment was moved up
+					if (previousPreviousSegment) {
+						if (previousPreviousSegment._rank < newSegment._rank) {
+							// swapped segments directly before and after
+							// will always result in both going below the unsynced
+							// will also affect multiple segments moved directly above the previous
+							newRank = previousPreviousSegment._rank + eps
+						}
+					} else {
+						newRank = Number.MIN_SAFE_INTEGER
+					}
+				}
+			}
+			cache.Segments.update(allSegmentsByRank[removedInd]._id, { $set: { _rank: newRank } })
+		}
+	}
 
 	const prepareSaveParts = prepareSaveIntoCache<Part, DBPart>(
 		cache.Parts,
@@ -1265,12 +1335,8 @@ function updateSegmentFromIngestData(
 
 	// determine if update is allowed here
 	if (!isUpdateAllowed(cache, playlist, rundown, {}, { changed: [newSegment] }, prepareSaveParts)) {
-		if (Settings.allowUnsyncedSegments) {
-			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId, SegmentUnsyncedReason.CHANGED)
-		} else {
-			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
-		}
-		return { segmentId: null, newPartIds: [] }
+		unsyncSegmentOrRundown(cache, rundown._id, segmentId, SegmentUnsyncedReason.CHANGED)
+		return { segmentId: null, insertedPartExternalIds: [] }
 	}
 
 	// Update segment info:
@@ -1337,50 +1403,76 @@ function updateSegmentFromIngestData(
 		})
 	)
 
-	const hasChanged = anythingChanged(changes) ? segmentId : null
-	const insertedPartsIds = prepareSaveParts.inserted.map((part) => part.externalId)
+	const insertedPartExternalIds = prepareSaveParts.inserted.map((part) => part.externalId)
 	span?.end()
-	return { segmentId: hasChanged, newPartIds: insertedPartsIds }
+	return { segmentId: anythingChanged(changes) ? segmentId : null, insertedPartExternalIds }
 }
 function syncChangesToPartInstances(
 	cache: CacheForRundownPlaylist,
 	blueprint: ShowStyleBlueprintManifest,
 	playlist: RundownPlaylist,
-	rundown: Rundown,
-	parts: DBPart[],
-	segmentPieces: Piece[],
-	adlibPieces: AdLibPiece[],
-	adlibActions: AdLibAction[]
+	rundown: Rundown
 ) {
-	if (blueprint.syncIngestUpdateToPartInstance) {
-		if (playlist.active) {
-			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
-			const instances: { existingPartInstance: PartInstance; playStatus: 'current' | 'next' }[] = []
+	if (playlist.active) {
+		if (blueprint.syncIngestUpdateToPartInstance) {
+			const { previousPartInstance, currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
+				cache,
+				playlist
+			)
+			const instances: {
+				existingPartInstance: PartInstance
+				previousPartInstance: PartInstance | undefined
+				playStatus: 'current' | 'next'
+			}[] = []
 			if (currentPartInstance)
-				instances.push({ existingPartInstance: currentPartInstance, playStatus: 'current' })
+				instances.push({
+					existingPartInstance: currentPartInstance,
+					previousPartInstance: previousPartInstance,
+					playStatus: 'current',
+				})
 			if (nextPartInstance)
 				instances.push({
 					existingPartInstance: nextPartInstance,
+					previousPartInstance: currentPartInstance,
 					playStatus: isTooCloseToAutonext(currentPartInstance, false) ? 'current' : 'next',
 				})
 
-			for (const { existingPartInstance, playStatus } of instances) {
+			for (const { existingPartInstance, previousPartInstance, playStatus } of instances) {
 				const pieceInstancesInPart = cache.PieceInstances.findFetch({
-					partInstanceId: existingPartInstance?._id,
+					partInstanceId: existingPartInstance._id,
 				})
 
-				const newPart = parts.find((p) => p._id === existingPartInstance.part._id)
+				const partId = existingPartInstance.part._id
+				const newPart = cache.Parts.findOne(partId)
 
 				if (newPart) {
-					const existingResultPartInstance: BlueprintResultPartInstance = {
+					const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
 						partInstance: unprotectObject(existingPartInstance),
 						pieceInstances: unprotectObjectArray(pieceInstancesInPart),
 					}
-					const newResultPart: BlueprintResultPartDB | undefined = {
+
+					const referencedAdlibIds = _.compact(pieceInstancesInPart.map((p) => p.adLibSourceId))
+					const referencedAdlibs = cache.AdLibPieces.findFetch({ _id: { $in: referencedAdlibIds } })
+
+					const adlibPieces = cache.AdLibPieces.findFetch({ partId: partId })
+					const adlibActions = cache.AdLibActions.findFetch({ partId: partId })
+
+					const proposedPieceInstances = getPieceInstancesForPart(
+						cache,
+						playlist,
+						previousPartInstance,
+						newPart,
+						waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, newPart)),
+						existingPartInstance._id,
+						false
+					)
+
+					const newResultData: BlueprintSyncIngestNewData = {
 						part: unprotectObject(newPart),
-						pieces: unprotectObjectArray(segmentPieces.filter((p) => p.startPartId === newPart._id)),
-						adLibPieces: unprotectObjectArray(adlibPieces.filter((p) => p.partId === newPart._id)),
-						actions: unprotectObjectArray(adlibActions.filter((p) => p.partId === newPart._id)),
+						pieceInstances: unprotectObjectArray(proposedPieceInstances),
+						adLibPieces: unprotectObjectArray(adlibPieces),
+						actions: unprotectObjectArray(adlibActions),
+						referencedAdlibs: unprotectObjectArray(referencedAdlibs),
 					}
 
 					const syncContext = new SyncIngestUpdateToPartInstanceContext(
@@ -1393,14 +1485,16 @@ function syncChangesToPartInstances(
 						),
 						existingPartInstance,
 						pieceInstancesInPart,
+						proposedPieceInstances,
 						playStatus
 					)
+					// TODO - how can we limit the frequency we run this? (ie, how do we know nothing affecting this has changed)
 					try {
 						// The blueprint handles what in the updated part is going to be synced into the partInstance:
 						blueprint.syncIngestUpdateToPartInstance(
 							syncContext,
 							existingResultPartInstance,
-							newResultPart,
+							clone(newResultData),
 							playStatus
 						)
 
@@ -1436,7 +1530,7 @@ function syncChangesToPartInstances(
 						})
 					}
 
-					if (playStatus === 'current') {
+					if (existingPartInstance._id === playlist.currentPartInstanceId) {
 						// This should be run after 'current', before 'next':
 						syncPlayheadInfinitesForNextPartInstance(cache, playlist)
 					}
@@ -1444,17 +1538,18 @@ function syncChangesToPartInstances(
 					// the part has been removed, don't sync that
 				}
 			}
+		} else {
+			// blueprint.syncIngestUpdateToPartInstance is not set, default behaviour is to not sync the partInstance at all.
 		}
-	} else {
-		// blueprint.syncIngestUpdateToPartInstance is not set, default behaviour is to not sync the partInstance at all.
 	}
 }
 function afterIngestChangedData(
 	cache: CacheForRundownPlaylist,
+	blueprint: ShowStyleBlueprintManifest,
 	rundown: Rundown,
 	changedSegmentIds: SegmentId[],
-	removedPreviousParts?: boolean,
-	newPartIds?: string[]
+	removedPartsBeforeInserted?: boolean,
+	insertedPartExternalIds?: string[]
 ) {
 	const playlist = cache.RundownPlaylists.findOne({ _id: rundown.playlistId })
 	if (!playlist) {
@@ -1466,13 +1561,56 @@ function afterIngestChangedData(
 	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
 	updatePartRanks(cache, playlist, changedSegmentIds)
 
-	if (newPartIds?.length) {
-		UpdateNext.afterInsertParts(cache, playlist, newPartIds, !!removedPreviousParts)
+	if (insertedPartExternalIds?.length) {
+		UpdateNext.afterInsertParts(cache, playlist, insertedPartExternalIds, !!removedPartsBeforeInserted)
 	} else {
 		UpdateNext.ensureNextPartIsValid(cache, playlist)
 	}
 
+	syncChangesToPartInstances(cache, blueprint, playlist, rundown)
+
 	triggerUpdateTimelineAfterIngestData(rundown.playlistId)
+}
+
+export function handleUpdatedSegmentRanks(
+	peripheralDevice: PeripheralDevice,
+	rundownExternalId: string,
+	newRanks: { [segmentExternalId: string]: number }
+) {
+	const studio = getStudioFromDevice(peripheralDevice)
+	const rundownId = getRundownId(studio, rundownExternalId)
+	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
+
+	return rundownPlaylistSyncFunction(
+		playlistId,
+		RundownSyncFunctionPriority.INGEST,
+		'handleUpdatedSegmentRanks',
+		() => {
+			const rundown = getRundown(rundownId, rundownExternalId)
+			const playlist = getRundownPlaylist(rundown)
+			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+
+			for (const [externalId, rank] of Object.entries(newRanks)) {
+				const changed = cache.Segments.update(
+					{
+						externalId,
+						rundownId,
+					},
+					{
+						$set: {
+							_rank: rank,
+						},
+					}
+				)
+
+				if (changed === 0) {
+					logger.warn(`Failed to update rank of segment "${externalId}" (${rundownExternalId})`)
+				}
+			}
+
+			waitForPromise(cache.saveAllToDatabase())
+		}
+	)
 }
 
 export function handleRemovedPart(
@@ -1503,11 +1641,7 @@ export function handleRemovedPart(
 			if (!part) throw new Meteor.Error(404, 'Part not found')
 
 			if (!isUpdateAllowed(cache, playlist, rundown, {}, {}, { removed: [part] })) {
-				if (Settings.allowUnsyncedSegments) {
-					ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId, SegmentUnsyncedReason.CHANGED)
-				} else {
-					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
-				}
+				unsyncSegmentOrRundown(cache, rundown._id, segmentId, SegmentUnsyncedReason.CHANGED)
 			} else {
 				// Blueprints will handle the deletion of the Part
 				const ingestSegment = loadCachedIngestSegment(
@@ -1522,15 +1656,20 @@ export function handleRemovedPart(
 				cache.defer(() => {
 					saveSegmentCache(rundown._id, segmentId, ingestSegment)
 				})
+
+				const blueprint = loadShowStyleBlueprint(
+					waitForPromise(cache.activationCache.getShowStyleBase(rundown))
+				)
+
 				const { segmentId: updatedSegmentId } = updateSegmentFromIngestData(
 					cache,
-					studio,
+					blueprint,
 					playlist,
 					rundown,
 					ingestSegment
 				)
 				if (updatedSegmentId) {
-					afterIngestChangedData(cache, rundown, [updatedSegmentId])
+					afterIngestChangedData(cache, blueprint.blueprint, rundown, [updatedSegmentId])
 				}
 			}
 
@@ -1583,11 +1722,7 @@ export function handleUpdatedPartInner(
 	})
 
 	if (part && !isUpdateAllowed(cache, playlist, rundown, {}, {}, { changed: [part] })) {
-		if (Settings.allowUnsyncedSegments) {
-			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId, SegmentUnsyncedReason.CHANGED)
-		} else {
-			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
-		}
+		unsyncSegmentOrRundown(cache, rundown._id, segmentId, SegmentUnsyncedReason.CHANGED)
 	} else {
 		// Blueprints will handle the creation of the Part
 		const ingestSegment: LocalIngestSegment = loadCachedIngestSegment(
@@ -1603,15 +1738,18 @@ export function handleUpdatedPartInner(
 		cache.defer(() => {
 			saveSegmentCache(rundown._id, segmentId, ingestSegment)
 		})
+
+		const blueprint = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
+
 		const { segmentId: updatedSegmentId } = updateSegmentFromIngestData(
 			cache,
-			studio,
+			blueprint,
 			playlist,
 			rundown,
 			ingestSegment
 		)
 		if (updatedSegmentId) {
-			afterIngestChangedData(cache, rundown, [updatedSegmentId])
+			afterIngestChangedData(cache, blueprint.blueprint, rundown, [updatedSegmentId])
 		}
 	}
 
@@ -1686,9 +1824,10 @@ function generateSegmentContents(
 			}
 		}
 
-		const existingPart = _.find(existingParts, (p) => p._id === partId)
+		const existingPart = existingParts.find((p) => p._id === partId)
+		const existingPartProps = existingPart ? _.pick(existingPart, 'status') : {} // This property is 'owned' by core and updated via its own flow
 		const part = literal<DBPart>({
-			..._.omit(existingPart || {}, 'invalid'),
+			...existingPartProps,
 			...blueprintPart.part,
 			_id: partId,
 			rundownId: rundownId,
@@ -2043,5 +2182,18 @@ function makeChangeObj(segmentId: SegmentId): SegmentChanges {
 			removed: [],
 			unchanged: [],
 		},
+	}
+}
+
+function unsyncSegmentOrRundown(
+	cache: CacheForRundownPlaylist,
+	rundownId: RundownId,
+	segmentId: SegmentId,
+	reason: SegmentUnsyncedReason
+) {
+	if (Settings.allowUnsyncedSegments) {
+		ServerRundownAPI.unsyncSegmentInner(cache, rundownId, segmentId, reason)
+	} else {
+		ServerRundownAPI.unsyncRundownInner(cache, rundownId)
 	}
 }

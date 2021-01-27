@@ -1,13 +1,10 @@
 import {
 	Time,
-	getPartGroupId,
-	getPartFirstObjectId,
 	TimelineObjectCoreExt,
-	getPieceGroupId,
 	TimelineObjHoldMode,
 	TSR,
 	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { DeepReadonly } from 'utility-types'
 import { logger } from '../../../lib/logging'
 import {
@@ -29,12 +26,12 @@ import {
 	omit,
 	unprotectString,
 	unprotectObjectArray,
-	unprotectObject,
 	normalizeArrayFunc,
 	clone,
 	normalizeArray,
 	getRandomId,
 	applyToArray,
+	protectString,
 } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -48,7 +45,7 @@ import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache } from './lib'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
-import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, CacheForStudioBase } from '../../DatabaseCaches'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -58,6 +55,7 @@ import { createPieceGroupAndCap, PieceTimelineMetadata } from '../../../lib/rund
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
+import { getPartFirstObjectId, getPartGroupId, getPieceGroupId } from '../../../lib/rundown/timeline'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -455,11 +453,7 @@ function buildTimelineObjsForRundown(
 		)
 		const currentInfinitePieceIds = _.compact(currentInfinitePieces.map((l) => l.infinite?.infinitePieceId))
 
-		let allowTransition = false
-
 		if (partInstancesInfo.previous) {
-			allowTransition = !partInstancesInfo.previous.partInstance.part.disableOutTransition
-
 			const previousPartLastStarted = partInstancesInfo.previous.partInstance.timings?.startedPlayback
 			if (previousPartLastStarted) {
 				const prevPartOverlapDuration = calcPartKeepaliveDuration(
@@ -468,7 +462,7 @@ function buildTimelineObjsForRundown(
 					true
 				)
 
-				const currentPartGroupId = getPartGroupId(unprotectObject(partInstancesInfo.current.partInstance))
+				const currentPartGroupId = getPartGroupId(partInstancesInfo.current.partInstance)
 
 				const previousPartGroupEnable = {
 					start: previousPartLastStarted,
@@ -492,6 +486,7 @@ function buildTimelineObjsForRundown(
 
 				const groupClasses: string[] = ['previous_part']
 				let prevObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = [previousPartGroup]
+				const transProps = getTransformTransitionProps(partInstancesInfo.previous.partInstance)
 				prevObjs = prevObjs.concat(
 					transformPartIntoTimeline(
 						activePlaylist._id,
@@ -501,7 +496,7 @@ function buildTimelineObjsForRundown(
 						previousPartGroup,
 						partInstancesInfo.previous.nowInPart,
 						false,
-						undefined,
+						transProps,
 						activePlaylist.holdState
 					)
 				)
@@ -551,7 +546,7 @@ function buildTimelineObjsForRundown(
 				start: `#${currentPartGroup.id}.start`, // This gets overriden with a concrete time if the original piece is known to have already started
 				duration: piece.piece.enable.duration || undefined,
 			})
-			infiniteGroup.id = getPartGroupId(unprotectString(piece._id)) + '_infinite' // This doesnt want to belong to a part, so force the ids
+			infiniteGroup.id = getPartGroupId(protectString<PartInstanceId>(unprotectString(piece._id))) + '_infinite' // This doesnt want to belong to a part, so force the ids
 			infiniteGroup.priority = 1
 
 			const groupClasses: string[] = ['current_part']
@@ -625,12 +620,7 @@ function buildTimelineObjsForRundown(
 		}
 
 		const groupClasses: string[] = ['current_part']
-		const transProps: TransformTransitionProps = {
-			allowed: allowTransition,
-			preroll: partInstancesInfo.current.partInstance.part.prerollDuration,
-			transitionPreroll: partInstancesInfo.current.partInstance.part.transitionPrerollDuration,
-			transitionKeepalive: partInstancesInfo.current.partInstance.part.transitionKeepaliveDuration,
-		}
+		const transProps = getTransformTransitionProps(partInstancesInfo.current.partInstance)
 		timelineObjs.push(
 			currentPartGroup,
 			createPartGroupFirstObject(
@@ -672,14 +662,10 @@ function buildTimelineObjsForRundown(
 			)
 
 			const groupClasses: string[] = ['next_part']
-			const transProps: TransformTransitionProps = {
-				allowed:
-					partInstancesInfo.current.partInstance &&
-					!partInstancesInfo.current.partInstance.part.disableOutTransition,
-				preroll: partInstancesInfo.next.partInstance.part.prerollDuration,
-				transitionPreroll: partInstancesInfo.next.partInstance.part.transitionPrerollDuration,
-				transitionKeepalive: partInstancesInfo.next.partInstance.part.transitionKeepaliveDuration,
-			}
+			const transProps = getTransformTransitionProps(
+				partInstancesInfo.next.partInstance,
+				!partInstancesInfo.current.partInstance.part.disableOutTransition
+			)
 			timelineObjs.push(
 				nextPartGroup,
 				createPartGroupFirstObject(
@@ -719,7 +705,7 @@ function createPartGroup(
 		enable.start = 'now'
 	}
 	let partGrp = literal<TimelineObjGroupPart & OnGenerateTimelineObjExt>({
-		id: getPartGroupId(unprotectObject(partInstance)),
+		id: getPartGroupId(partInstance),
 		objectType: TimelineObjType.RUNDOWN,
 		enable: enable,
 		priority: 5,
@@ -746,7 +732,7 @@ function createPartGroupFirstObject(
 	previousPart?: PartInstance
 ): TimelineObjPartAbstract & OnGenerateTimelineObjExt {
 	return literal<TimelineObjPartAbstract & OnGenerateTimelineObjExt>({
-		id: getPartFirstObjectId(unprotectObject(partInstance)),
+		id: getPartFirstObjectId(partInstance),
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
 		layer: 'group_first_object',
@@ -786,9 +772,9 @@ function transformBaselineItemsIntoTimeline(
 
 interface TransformTransitionProps {
 	allowed: boolean
-	preroll?: number
-	transitionPreroll?: number | null
-	transitionKeepalive?: number | null
+	preroll: number | undefined
+	transitionPreroll: number | null | undefined
+	transitionKeepalive: number | null | undefined
 }
 
 export function hasPieceInstanceDefinitelyEnded(
@@ -813,6 +799,15 @@ export function hasPieceInstanceDefinitelyEnded(
 	}
 
 	return relativeEnd !== undefined && relativeEnd + DEFINITELY_ENDED_FUTURE_DURATION < nowInPart
+}
+
+function getTransformTransitionProps(partInstance: PartInstance, allowTransition?: boolean): TransformTransitionProps {
+	return {
+		allowed: allowTransition ?? !!partInstance.allowedToUseTransition,
+		preroll: partInstance.part.prerollDuration,
+		transitionPreroll: partInstance.part.transitionPrerollDuration,
+		transitionKeepalive: partInstance.part.transitionKeepaliveDuration,
+	}
 }
 
 function transformPartIntoTimeline(
@@ -884,9 +879,7 @@ function transformPartIntoTimeline(
 				) {
 					const transitionContentsDelayStr =
 						transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`
-					pieceEnable.start = `#${getPieceGroupId(
-						unprotectString(transition._id)
-					)}.start ${transitionContentsDelayStr}`
+					pieceEnable.start = `#${getPieceGroupId(transition)}.start ${transitionContentsDelayStr}`
 				} else if (pieceInstance.piece.isTransition && transitionPieceDelay) {
 					pieceEnable.start = Math.max(0, transitionPieceDelay)
 				}

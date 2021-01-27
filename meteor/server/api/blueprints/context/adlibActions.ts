@@ -22,7 +22,7 @@ import {
 	IBlueprintResolvedPieceInstance,
 	OmitId,
 	IBlueprintMutatablePart,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
@@ -178,6 +178,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			part === 'current',
 			true
 		)[0]
+		piece._id = getRandomId() // Make id random, as postProcessPieces is too predictable (for ingest)
 		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
 
 		// Do the work

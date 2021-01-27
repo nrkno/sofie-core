@@ -5,7 +5,7 @@ import {
 	ISourceLayer,
 	IBlueprintPieceGeneric,
 	GraphicsContent,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
 import * as i18next from 'i18next'
@@ -99,7 +99,7 @@ export function getAcceptedFormats(settings: IStudioSettings | undefined): Array
 	)
 }
 
-export function getMediaObjectMediaId(piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer) {
+export function getMediaObjectMediaId(piece: Pick<IBlueprintPieceGeneric, 'content'>, sourceLayer: ISourceLayer) {
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
@@ -118,7 +118,7 @@ export function getMediaObjectMediaId(piece: IBlueprintPieceGeneric, sourceLayer
 }
 
 export function checkPieceContentStatus(
-	piece: IBlueprintPieceGeneric,
+	piece: Pick<IBlueprintPieceGeneric, 'name' | 'content'>,
 	sourceLayer: ISourceLayer | undefined,
 	settings: IStudioSettings | undefined,
 	t?: i18next.TFunction

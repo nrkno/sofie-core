@@ -17,7 +17,7 @@ import {
 import { DBSegment, SegmentId, Segments } from '../../../../../lib/collections/Segments'
 import { DBPart, Part, PartId, Parts } from '../../../../../lib/collections/Parts'
 import { Piece, PieceId, Pieces } from '../../../../../lib/collections/Pieces'
-import { LookaheadMode, OnGenerateTimelineObj, PieceLifespan, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { LookaheadMode, OnGenerateTimelineObj, PieceLifespan, TSR } from '@sofie-automation/blueprints-integration'
 import { MappingsExt, Studios } from '../../../../../lib/collections/Studios'
 import { PartInstanceId } from '../../../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../../../lib/collections/PieceInstances'

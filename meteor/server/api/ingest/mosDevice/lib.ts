@@ -3,7 +3,7 @@ import * as MOS from 'mos-connection'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import { getRundownId, getPartId, getRundown } from '../lib'
-import { IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { RundownId } from '../../../../lib/collections/Rundowns'
 
 export function getRundownIdFromMosRO(studio: Studio, runningOrderMosId: MOS.MosString128) {

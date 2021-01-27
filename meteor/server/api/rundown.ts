@@ -39,7 +39,7 @@ import {
 	BlueprintResultOrderedRundowns,
 	ExtendedIngestRundown,
 	BlueprintResultRundownPlaylist,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'

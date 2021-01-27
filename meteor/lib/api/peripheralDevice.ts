@@ -3,7 +3,7 @@ import { getCurrentTime, getRandomId } from '../lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 import { DeviceConfigManifest } from './deviceConfig'
-import { TSR } from 'tv-automation-sofie-blueprints-integration'
+import { TSR } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PeripheralDeviceId, PeripheralDevice } from '../collections/PeripheralDevices'
 import { PieceInstanceId } from '../collections/PieceInstances'
@@ -121,6 +121,12 @@ export interface NewPeripheralDeviceAPI {
 		deviceToken: string,
 		rundownExternalId: string,
 		ingestSegment: IngestSegment
+	): Promise<void>
+	dataSegmentRanksUpdate(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		rundownExternalId: string,
+		newRanks: { [segmentExternalId: string]: number }
 	): Promise<void>
 	dataPartDelete(
 		deviceId: PeripheralDeviceId,
@@ -328,6 +334,7 @@ export enum PeripheralDeviceAPIMethods {
 	'dataSegmentDelete' = 'peripheralDevice.rundown.segmentDelete',
 	'dataSegmentCreate' = 'peripheralDevice.rundown.segmentCreate',
 	'dataSegmentUpdate' = 'peripheralDevice.rundown.segmentUpdate',
+	'dataSegmentRanksUpdate' = 'peripheralDevice.rundown.segmentRanksUpdate',
 	'dataPartDelete' = 'peripheralDevice.rundown.partDelete',
 	'dataPartCreate' = 'peripheralDevice.rundown.partCreate',
 	'dataPartUpdate' = 'peripheralDevice.rundown.partUpdate',

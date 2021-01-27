@@ -8,7 +8,7 @@ import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
 import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { getCurrentTime } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
@@ -99,7 +99,7 @@ export namespace reactiveData {
 			const rundownIds = rRundowns.get().map((r) => r._id)
 			const slis = Pieces.find(
 				{
-					rundownId: { $in: rundownIds },
+					startRundownId: { $in: rundownIds },
 				},
 				options
 			).fetch()

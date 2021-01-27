@@ -43,7 +43,7 @@ import {
 	IBlueprintExternalMessageQueueObj,
 	ExtendedIngestRundown,
 	OnGenerateTimelineObj,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
 	ConfigRef,

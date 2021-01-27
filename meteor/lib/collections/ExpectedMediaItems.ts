@@ -7,6 +7,7 @@ import { StudioId } from './Studios'
 import { BucketId } from './Buckets'
 import { PieceId } from './Pieces'
 import { registerIndex } from '../database'
+import { AdLibActionId } from './AdLibActions'
 
 /** A string, identifying a ExpectedMediaItem */
 export type ExpectedMediaItemId = ProtectedString<'ExpectedMediaItemId'>
@@ -47,15 +48,22 @@ export interface ExpectedMediaItemRundown extends ExpectedMediaItemBase {
 	partId: PartId | undefined
 }
 
-export interface ExpectedMediaItemBucket extends ExpectedMediaItemBase {
+export interface ExpectedMediaItemBucketPiece extends ExpectedMediaItemBase {
 	/** The bucket id that is the source of this Media Item */
 	bucketId: BucketId
 
 	/** The bucked adLib piece that is the source of this Media Item */
 	bucketAdLibPieceId: PieceId
 }
+export interface ExpectedMediaItemBucketAction extends ExpectedMediaItemBase {
+	/** The bucket id that is the source of this Media Item */
+	bucketId: BucketId
 
-export type ExpectedMediaItem = ExpectedMediaItemRundown | ExpectedMediaItemBucket
+	/** The bucked adLib piece that is the source of this Media Item */
+	bucketAdLibActionId: AdLibActionId
+}
+
+export type ExpectedMediaItem = ExpectedMediaItemRundown | ExpectedMediaItemBucketPiece | ExpectedMediaItemBucketAction
 
 export const ExpectedMediaItems: TransformedCollection<ExpectedMediaItem, ExpectedMediaItem> = createMongoCollection<
 	ExpectedMediaItem

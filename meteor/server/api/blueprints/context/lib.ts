@@ -3,7 +3,7 @@ import {
 	PartHoldMode,
 	IBlueprintMutatablePart,
 	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 
 const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	externalId: '',
@@ -25,6 +25,7 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	adlibAutoNext: false,
 	adlibAutoNextOverlap: 0,
 	adlibDisableOutTransition: false,
+	adlibTransitionKeepAlive: 0,
 	tags: [],
 }
 // Compile a list of the keys which are allowed to be set
@@ -41,6 +42,7 @@ const IBlueprintMutatablePartSample: Required<IBlueprintMutatablePart> = {
 	transitionDuration: null,
 	disableOutTransition: false,
 	expectedDuration: 0,
+	budgetDuration: 0,
 	holdMode: PartHoldMode.NONE,
 	shouldNotifyCurrentPlayingPart: false,
 	classes: [],

@@ -16,7 +16,7 @@ import {
 	isAdLibNext,
 } from './DashboardPanel'
 import ClassNames from 'classnames'
-import { AdLibPieceUi, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, matchFilter } from './AdLibPanel'
+import { AdLibPieceUi, IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, matchFilter } from './AdLibPanel'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -29,7 +29,7 @@ import {
 	VTContent,
 	LiveSpeakContent,
 	GraphicsContent,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -37,6 +37,7 @@ import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
 
 interface IState {
 	objId?: string
@@ -56,10 +57,10 @@ interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {
 }
 
 export class AdLibRegionPanelInner extends MeteorReactComponent<
-	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps>,
+	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
 	IState
 > {
-	constructor(props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
+	constructor(props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>) {
 		super(props)
 
 		this.state = {}
@@ -265,7 +266,7 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 export const AdLibRegionPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps>,
 	IState,
-	IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps
+	AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
 		const studio = props.playlist.getStudio()

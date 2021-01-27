@@ -8,7 +8,7 @@ import {
 	IOutputLayer,
 	ISourceLayer,
 	SourceLayerType,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
 import { OrganizationId } from './Organization'

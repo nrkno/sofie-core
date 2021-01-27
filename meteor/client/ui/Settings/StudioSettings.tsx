@@ -35,7 +35,7 @@ import {
 	TSR,
 	ConfigManifestEntry,
 	BlueprintMapping,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
 import {

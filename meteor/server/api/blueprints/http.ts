@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
-import { BlueprintManifestSet } from 'tv-automation-sofie-blueprints-integration'
+import { BlueprintManifestSet } from '@sofie-automation/blueprints-integration'
 import { ServerResponse, IncomingMessage } from 'http'
 import { check, Match } from '../../../lib/check'
 import { parse as parseUrl } from 'url'

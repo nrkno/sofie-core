@@ -7,7 +7,7 @@ import {
 	getCurrentTime,
 	Time,
 	waitForPromise,
-	normalizeArray,
+	normalizeArrayToMap,
 	unprotectString,
 	isStringOrProtectedString,
 	getRandomId,
@@ -17,7 +17,7 @@ import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections/Studios'
-import { PartHoldMode } from 'tv-automation-sofie-blueprints-integration'
+import { PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportRundownHasStarted,
@@ -72,7 +72,7 @@ import {
 	initCacheForNoRundownPlaylist,
 	CacheForStudio,
 } from '../../DatabaseCaches'
-import { takeNextPartInner, afterTake, takeNextPartInnerSync } from './take'
+import { takeNextPartInner, afterTake, takeNextPartInnerSync, updatePartInstanceOnTake } from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
@@ -623,7 +623,11 @@ export namespace ServerPlayoutAPI {
 			}
 		)
 	}
-	export function disableNextPiece(context: MethodContext, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+	export function disableNextPiece(
+		context: MethodContext,
+		rundownPlaylistId: RundownPlaylistId,
+		undo?: boolean
+	): ClientAPI.ClientResponse<void> {
 		// @TODO Check for a better solution to validate security methods
 		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 		check(rundownPlaylistId, String)
@@ -653,7 +657,7 @@ export namespace ServerPlayoutAPI {
 				// logger.info(o)
 				// logger.info(JSON.stringify(o, '', 2))
 
-				const allowedSourceLayers = normalizeArray(showStyleBase.sourceLayers, '_id')
+				const allowedSourceLayers = normalizeArrayToMap(showStyleBase.sourceLayers, '_id')
 
 				// logger.info('nowInPart', nowInPart)
 				// logger.info('filteredPieces', filteredPieces)
@@ -666,30 +670,32 @@ export namespace ServerPlayoutAPI {
 					}
 
 					const pieceInstances = getAllPieceInstancesFromCache(cache, partInstance)
-					const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(pieceInstances, nowInPart)
+
+					const filteredPieces = pieceInstances.filter((piece: PieceInstance) => {
+						const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+						if (
+							sourceLayer &&
+							sourceLayer.allowDisable &&
+							!piece.piece.virtual &&
+							!piece.piece.isTransition
+						)
+							return true
+						return false
+					})
+
+					const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(
+						_.sortBy(filteredPieces, (piece: PieceInstance) => {
+							let sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+							return sourceLayer?._rank || -9999
+						}),
+						nowInPart
+					)
 
 					let findLast: boolean = !!undo
 
-					let filteredPieces = _.sortBy(
-						_.filter(sortedPieces, (piece: PieceInstance) => {
-							let sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
-							if (
-								sourceLayer &&
-								sourceLayer.allowDisable &&
-								!piece.piece.virtual &&
-								!piece.piece.isTransition
-							)
-								return true
-							return false
-						}),
-						(piece: PieceInstance) => {
-							let sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
-							return sourceLayer._rank || -9999
-						}
-					)
-					if (findLast) filteredPieces.reverse()
+					if (findLast) sortedPieces.reverse()
 
-					return filteredPieces.find((piece) => {
+					return sortedPieces.find((piece) => {
 						return (
 							piece.piece.enable.start >= nowInPart &&
 							((!undo && !piece.disabled) || (undo && piece.disabled))
@@ -713,7 +719,7 @@ export namespace ServerPlayoutAPI {
 				for (const [partInstance, ignoreStartedPlayback] of partInstances) {
 					if (partInstance) {
 						nextPieceInstance = getNextPiece(partInstance, !!undo, ignoreStartedPlayback)
-						break
+						if (nextPieceInstance) break
 					}
 				}
 
@@ -728,8 +734,12 @@ export namespace ServerPlayoutAPI {
 					updateTimeline(cache, playlist.studioId)
 
 					waitForPromise(cache.saveAllToDatabase())
+
+					return ClientAPI.responseSuccess(undefined)
 				} else {
-					throw new Meteor.Error(500, 'Found no future pieces')
+					cache.assertNoChanges()
+
+					return ClientAPI.responseError(404, 'Found no future pieces')
 				}
 			}
 		)
@@ -932,6 +942,25 @@ export namespace ServerPlayoutAPI {
 
 							reportPartHasStarted(cache, playingPartInstance, startedPlayback)
 
+							// Update generated properties on the newly playing partInstance
+							const currentRundown = currentPartInstance
+								? cache.Rundowns.findOne(currentPartInstance.rundownId)
+								: undefined
+							const pShowStyle = cache.activationCache.getShowStyleBase(currentRundown ?? rundown)
+							const blueprint = waitForPromise(
+								pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
+							)
+							updatePartInstanceOnTake(
+								cache,
+								playlist,
+								pShowStyle,
+								blueprint.blueprint,
+								rundown,
+								playingPartInstance,
+								currentPartInstance
+							)
+
+							// Update the next partinstance
 							const nextPart = selectNextPart(
 								playlist,
 								playingPartInstance,
@@ -1104,11 +1133,13 @@ export namespace ServerPlayoutAPI {
 		context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
-		userData: any
+		userData: any,
+		triggerMode?: string
 	) {
 		check(rundownPlaylistId, String)
 		check(actionId, String)
 		check(userData, Match.Any)
+		check(triggerMode, Match.Maybe(String))
 
 		return executeActionInner(context, rundownPlaylistId, (actionContext, cache, rundown) => {
 			const showStyleBase = waitForPromise(cache.activationCache.getShowStyleBase(rundown))
@@ -1122,7 +1153,7 @@ export namespace ServerPlayoutAPI {
 
 			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
 
-			blueprint.blueprint.executeAction(actionContext, actionId, userData)
+			blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
 		})
 	}
 

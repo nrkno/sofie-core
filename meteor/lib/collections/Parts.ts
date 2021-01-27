@@ -13,7 +13,7 @@ import {
 } from '../lib'
 import { RundownAPI } from '../api/rundown'
 import { checkPieceContentStatus, getNoteTypeForPieceStatus } from '../mediaObjects'
-import { IBlueprintPartDB, PartHoldMode } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintPartDB, PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { PartNote, NoteType } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { Studio } from './Studios'
@@ -60,6 +60,7 @@ export class Part implements DBPart {
 	public transitionDuration?: number | null
 	public disableOutTransition?: boolean
 	public expectedDuration?: number
+	public budgetDuration?: number
 	public holdMode?: PartHoldMode
 	public shouldNotifyCurrentPlayingPart?: boolean
 	public classes?: string[]

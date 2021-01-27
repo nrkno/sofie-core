@@ -12,7 +12,7 @@ import {
 	TSR,
 	IBlueprintActionManifest,
 	NotesContext as INotesContext,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { ShowStyleContext, NotesContext } from './context'
@@ -26,6 +26,7 @@ import { RundownId } from '../../../lib/collections/Rundowns'
 import { prefixAllObjectIds } from '../playout/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { profiler } from '../profiler'
+import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 
 /**
  *
@@ -246,6 +247,7 @@ export function postProcessRundownBaselineItems(
 export function postProcessBucketAdLib(
 	innerContext: ShowStyleContext,
 	itemOrig: IBlueprintAdLibPiece,
+	externalId: string,
 	blueprintId: BlueprintId,
 	bucketId: BucketId,
 	rank: number | undefined,
@@ -255,23 +257,16 @@ export function postProcessBucketAdLib(
 		...itemOrig,
 		_id: protectString(
 			innerContext.getHashId(
-				`${innerContext.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${itemOrig.externalId}`
+				`${innerContext.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${externalId}`
 			)
 		),
+		externalId,
 		studioId: innerContext.studioId,
 		showStyleVariantId: innerContext.showStyleVariantId,
 		bucketId,
 		importVersions,
 		_rank: rank || itemOrig._rank,
 	}
-
-	if (!piece.externalId)
-		throw new Meteor.Error(
-			400,
-			`Error in blueprint "${blueprintId}" externalId not set for piece in ' + partId + '! ("${innerContext.unhashId(
-				unprotectString(piece._id)
-			)}")`
-		)
 
 	if (piece.content && piece.content.timelineObjects) {
 		piece.content.timelineObjects = postProcessTimelineObjects(
@@ -284,4 +279,34 @@ export function postProcessBucketAdLib(
 	}
 
 	return piece
+}
+
+export function postProcessBucketAction(
+	innerContext: ShowStyleContext,
+	itemOrig: IBlueprintActionManifest,
+	externalId: string,
+	_blueprintId: BlueprintId,
+	bucketId: BucketId,
+	rank: number | undefined,
+	importVersions: RundownImportVersions
+): BucketAdLibAction {
+	let action: BucketAdLibAction = {
+		...itemOrig,
+		_id: protectString(
+			innerContext.getHashId(
+				`${innerContext.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${externalId}`
+			)
+		),
+		externalId,
+		studioId: innerContext.studioId,
+		showStyleVariantId: innerContext.showStyleVariantId,
+		bucketId,
+		importVersions,
+		display: {
+			...itemOrig.display,
+			_rank: rank ?? itemOrig.display._rank,
+		},
+	}
+
+	return action
 }

@@ -19,7 +19,7 @@ import {
 	BlueprintManifestType,
 	ConfigManifestEntry,
 	SomeBlueprintManifest,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import {
 	CommonContext,
 	StudioConfigContext,
@@ -157,7 +157,6 @@ describe('Test blueprint api context', () => {
 				blueprintVersion: '0.0.0',
 				integrationVersion: '0.0.0',
 				TSRVersion: '0.0.0',
-				minimumCoreVersion: '0.0.0',
 
 				studioConfigManifest: [
 					{
@@ -283,7 +282,6 @@ describe('Test blueprint api context', () => {
 				blueprintVersion: '0.0.0',
 				integrationVersion: '0.0.0',
 				TSRVersion: '0.0.0',
-				minimumCoreVersion: '0.0.0',
 
 				showStyleConfigManifest: [
 					{

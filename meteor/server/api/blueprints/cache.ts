@@ -12,7 +12,7 @@ import {
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest,
 	SystemBlueprintManifest,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { unprotectString } from '../../../lib/lib'
 

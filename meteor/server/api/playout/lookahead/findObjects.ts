@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { Timeline as TimelineTypes, TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
+import { Timeline as TimelineTypes, TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { OnGenerateTimelineObjExt, TimelineObjRundown, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { Part } from '../../../../lib/collections/Parts'
 import { Piece } from '../../../../lib/collections/Pieces'
@@ -10,21 +10,12 @@ import { sortPieceInstancesByStart } from '../pieces'
 import { profiler } from '../../profiler'
 import { isPieceInstance, PartAndPieces } from './util'
 
-function getBestPieceInstanceId(
-	piece: PieceInstance | Piece,
-	partInfo: PartAndPieces,
-	partInstanceId: PartInstanceId | null
-): string {
-	if (isPieceInstance(piece) && !piece.isTemporary) {
+function getBestPieceInstanceId(piece: PieceInstance): string {
+	if (!piece.isTemporary || piece.partInstanceId) {
 		return unprotectString(piece._id)
 	}
-	const pieceInner = isPieceInstance(piece) ? piece.piece : piece
-	if (partInstanceId) {
-		// Approximate what it would be
-		return unprotectString(rewrapPieceToInstance(pieceInner, partInfo.part.rundownId, partInstanceId)._id)
-	}
 	// Something is needed, and it must be distant future here, so accuracy is not important
-	return unprotectString(pieceInner.startPartId)
+	return unprotectString(piece.piece.startPartId)
 }
 
 function tryActivateKeyframesForObject(
@@ -72,7 +63,7 @@ export function findLookaheadObjectsForPart(
 
 	let allObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 	for (const rawPiece of partInfo.pieces) {
-		const tmpPieceInstanceId = getBestPieceInstanceId(rawPiece, partInfo, partInstanceId)
+		const tmpPieceInstanceId = getBestPieceInstanceId(rawPiece)
 		for (const obj of rawPiece.piece.content?.timelineObjects ?? []) {
 			if (obj && obj.layer === layer) {
 				allObjs.push(
@@ -146,7 +137,7 @@ export function findLookaheadObjectsForPart(
 					literal<TimelineObjRundown & OnGenerateTimelineObjExt>({
 						...obj,
 						objectType: TimelineObjType.RUNDOWN,
-						pieceInstanceId: getBestPieceInstanceId(piece, partInfo, partInstanceId),
+						pieceInstanceId: getBestPieceInstanceId(piece),
 						infinitePieceInstanceId: piece.infinite?.infiniteInstanceId,
 						partInstanceId: partInstanceId ?? protectString(unprotectString(partInfo.part._id)),
 						content: patchedContent,

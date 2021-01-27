@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2020-11-17T11:30:06.090Z\n"
-"PO-Revision-Date: 2020-11-17T11:30:06.090Z\n"
+"POT-Creation-Date: 2021-01-07T09:15:46.298Z\n"
+"PO-Revision-Date: 2021-01-07T09:15:46.298Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -207,6 +207,27 @@ msgstr ""
 msgid "Test test"
 msgstr ""
 
+msgid "Until next take"
+msgstr ""
+
+msgid "Until next segment"
+msgstr ""
+
+msgid "Until end of segment"
+msgstr ""
+
+msgid "Until next rundown"
+msgstr ""
+
+msgid "Until end of rundown"
+msgstr ""
+
+msgid "Script is empty"
+msgstr ""
+
+msgid "File name"
+msgstr ""
+
 msgid "Home"
 msgstr ""
 
@@ -290,52 +311,13 @@ msgstr ""
 msgid "Today"
 msgstr ""
 
-msgid "Tomorrow"
-msgstr ""
-
 msgid "Yesterday"
 msgstr ""
 
+msgid "Tomorrow"
+msgstr ""
+
 msgid "Last"
-msgstr ""
-
-msgid "Delete this RundownPlaylist?"
-msgstr ""
-
-msgid "Delete"
-msgstr ""
-
-msgid "Are you sure you want to delete the \"{{name}}\" RundownPlaylist?"
-msgstr ""
-
-msgid "Please note: This action is irreversible!"
-msgstr ""
-
-msgid "Re-Sync this rundownPlaylist?"
-msgstr ""
-
-msgid "Re-Sync"
-msgstr ""
-
-msgid "Are you sure you want to re-sync all rundowns in playlist \"{{name}}\"?"
-msgstr ""
-
-msgid "Standalone Shelf"
-msgstr ""
-
-msgid "Timeline views"
-msgstr ""
-
-msgid "Default"
-msgstr ""
-
-msgid "This rundown is currently active"
-msgstr ""
-
-msgid "Multiple ({{count}})"
-msgstr ""
-
-msgid "Re-sync all rundowns in playlist"
 msgstr ""
 
 msgid "Use ENPS order"
@@ -374,10 +356,22 @@ msgstr ""
 msgid "Status Messages:"
 msgstr ""
 
+msgid "{{showStyleVariant}} – {{showStyleBase}}"
+msgstr ""
+
 msgid "Drag to reorder or move out of playlist"
 msgstr ""
 
+msgid "This rundown is currently active"
+msgstr ""
+
 msgid "Not set"
+msgstr ""
+
+msgid "Re-sync rundown data with {{nrcsName}}"
+msgstr ""
+
+msgid "Delete"
 msgstr ""
 
 msgid "Delete rundown?"
@@ -386,7 +380,13 @@ msgstr ""
 msgid "Are you sure you want to delete the \"{{name}}\" rundown?"
 msgstr ""
 
+msgid "Please note: This action is irreversible!"
+msgstr ""
+
 msgid "Re-Sync rundown?"
+msgstr ""
+
+msgid "Re-Sync"
 msgstr ""
 
 msgid "Are you sure you want to re-sync the \"{{name}}\" rundown?"
@@ -461,6 +461,9 @@ msgid "Undo Disable the next element"
 msgstr ""
 
 msgid "Log Error"
+msgstr ""
+
+msgid "Could not find a Piece that can be disabled."
 msgstr ""
 
 msgid "Failed to activate"
@@ -607,27 +610,22 @@ msgid "Unknown error"
 msgstr ""
 
 msgid ""
-"Rundown {{rundownName}} in Playlist {{playlistName}} is missing, what do "
-"you want to do?"
+"Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data "
+"from {{nrcsName}}, what do you want to do?"
 msgstr ""
 
-msgid "Mark the rundown as unsynced"
+msgid "Leave it in Sofie (mark the rundown as unsynced)"
 msgstr ""
 
-msgid "Remove just the rundown"
+msgid "Remove just the rundown from Sofie"
+msgstr ""
+
+msgid "Remove rundown"
 msgstr ""
 
 msgid ""
 "Do you really want to remove just the rundown \"{{rundownName}}\" in the "
-"playlist {{playlistName}}? This cannot be undone!"
-msgstr ""
-
-msgid "Remove rundown playlist"
-msgstr ""
-
-msgid ""
-"Do you really want to remove the rundownPlaylist \"{{rundownName}}\"? This "
-"cannot be undone!"
+"playlist {{playlistName}} from Sofie? This cannot be undone!"
 msgstr ""
 
 msgid "(in: {{time}})"
@@ -640,8 +638,8 @@ msgid "Planned Duration"
 msgstr ""
 
 msgid ""
-"The Rundown has been UNSYNCED from {{nrcsName}}! No data updates will "
-"currently come through."
+"The Rundown \"{{rundownName}}\" has been UNSYNCED from {{nrcsName}}! No "
+"data updates will currently come through."
 msgstr ""
 
 msgid "Re-sync"
@@ -760,27 +758,6 @@ msgid "This is not in it's normal setting"
 msgstr ""
 
 msgid "Off"
-msgstr ""
-
-msgid "Until next take"
-msgstr ""
-
-msgid "Until next segment"
-msgstr ""
-
-msgid "Until end of segment"
-msgstr ""
-
-msgid "Until next rundown"
-msgstr ""
-
-msgid "Until end of rundown"
-msgstr ""
-
-msgid "Script is empty"
-msgstr ""
-
-msgid "File name"
 msgstr ""
 
 msgid "Set this part as <strong>Next</strong>"
@@ -1323,6 +1300,12 @@ msgstr ""
 msgid "Icon color"
 msgstr ""
 
+msgid "Open shelf by default"
+msgstr ""
+
+msgid "Default shelf height"
+msgstr ""
+
 msgid "Tabs"
 msgstr ""
 
@@ -1422,6 +1405,9 @@ msgid "Transition"
 msgstr ""
 
 msgid "Lights"
+msgstr ""
+
+msgid "Local"
 msgstr ""
 
 msgid "New Source"
@@ -1970,7 +1956,7 @@ msgstr ""
 msgid "AdLib does not provide any options"
 msgstr ""
 
-msgid "Cue as Next"
+msgid "Execute"
 msgstr ""
 
 msgid "Save to Bucket"
@@ -1979,7 +1965,7 @@ msgstr ""
 msgid "Reveal in Shelf"
 msgstr ""
 
-msgid "Edit"
+msgid "Edit in Nora"
 msgstr ""
 
 msgid "New Bucket"
@@ -1992,6 +1978,24 @@ msgid "Are you sure you want to delete this Bucket?"
 msgstr ""
 
 msgid "Are you sure you want to empty (remove all adlibs inside) this Bucket?"
+msgstr ""
+
+msgid "Toggle Shelf"
+msgstr ""
+
+msgid "Escape from filter search"
+msgstr ""
+
+msgid "Start this AdLib"
+msgstr ""
+
+msgid "Queue this AdLib"
+msgstr ""
+
+msgid "Inspect this AdLib"
+msgstr ""
+
+msgid "Rename this AdLib"
 msgstr ""
 
 msgid "Delete this AdLib"
@@ -2007,12 +2011,6 @@ msgid "Delete this Bucket"
 msgstr ""
 
 msgid "Create new Bucket"
-msgstr ""
-
-msgid "Toggle Shelf"
-msgstr ""
-
-msgid "Escape from filter search"
 msgstr ""
 
 msgid "AdLib"
@@ -2308,10 +2306,6 @@ msgid "{{frames}} {{type}} frame detected in clip"
 msgstr ""
 
 msgid "Clip is being ingested"
-msgstr ""
-
-msgctxt "°°°°°°plural"
-msgid "Multiple ({{count}})°°°°°°"
 msgstr ""
 
 msgctxt "°°°°°°plural"

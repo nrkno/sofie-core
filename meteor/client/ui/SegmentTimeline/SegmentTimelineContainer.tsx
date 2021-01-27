@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
-import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
@@ -17,7 +17,7 @@ import {
 	PartExtended,
 	SegmentExtended,
 } from '../../../lib/Rundown'
-import { RundownViewEvents, IContextMenuContext, IGoToPartEvent, IGoToPartInstanceEvent } from '../RundownView'
+import { IContextMenuContext } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
@@ -35,6 +35,11 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	GoToPartEvent,
+	GoToPartInstanceEvent,
+} from '../RundownView/RundownViewEventBus'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -101,6 +106,8 @@ interface IState {
 	currentLivePart: PartUi | undefined
 	currentNextPart: PartUi | undefined
 	autoNextPart: boolean
+	budgetDuration: number | undefined
+	budgetGap: number
 }
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined
@@ -149,7 +156,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.playlist,
 			segment,
 			props.segmentsIdsBefore,
-			props.orderedAllPartIds
+			props.orderedAllPartIds,
+			true,
+			true
 		)
 		let notes: Array<SegmentNote> = []
 		o.parts.forEach((part) => {
@@ -275,6 +284,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				autoNextPart: false,
 				currentLivePart: undefined,
 				currentNextPart: undefined,
+				budgetDuration: undefined,
+				budgetGap: 0,
 			}
 
 			this.isLiveSegment = false
@@ -354,9 +365,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					})
 				}
 			}
-			window.addEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
-			window.addEventListener(RundownViewEvents.goToPart, this.onGoToPart)
-			window.addEventListener(RundownViewEvents.goToPartInstance, this.onGoToPart)
+			RundownViewEventBus.on(RundownViewEvents.REWIND_SEGMENTS, this.onRewindSegment)
+			RundownViewEventBus.on(RundownViewEvents.GO_TO_PART, this.onGoToPart)
+			RundownViewEventBus.on(RundownViewEvents.GO_TO_PART_INSTANCE, this.onGoToPartInstance)
 			window.requestAnimationFrame(() => {
 				this.mountedTime = Date.now()
 				if (this.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
@@ -511,12 +522,16 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.pastInfinitesComp.invalidate()
 			}
 
+			const budgetDuration = this.getSegmentBudgetDuration()
+
 			this.setState({
 				isLiveSegment,
 				isNextSegment,
 				currentLivePart,
 				currentNextPart,
 				autoNextPart,
+				budgetDuration,
+				budgetGap: budgetDuration ? budgetDuration - this.getSegmentDuration() : 0,
 			})
 		}
 
@@ -532,7 +547,48 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				}, 500)
 			}
 			this.stopLive()
-			window.removeEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
+			RundownViewEventBus.off(RundownViewEvents.REWIND_SEGMENTS, this.onRewindSegment)
+			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART, this.onGoToPart)
+			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART_INSTANCE, this.onGoToPartInstance)
+		}
+
+		private getSegmentDuration(): number {
+			let total = 0
+			if (this.context && this.context.durations) {
+				const durations = this.context.durations as RundownTiming.RundownTimingContext
+				this.props.parts.forEach((item) => {
+					const duration = Math.max(
+						(durations.partLiveDisplayDurations &&
+							durations.partLiveDisplayDurations[unprotectString(item.instance.part._id)]) ||
+							0,
+						item.instance.timings?.duration ||
+							(durations.partDisplayDurations &&
+								durations.partDisplayDurations[unprotectString(item.instance.part._id)]) ||
+							item.renderedDuration ||
+							Settings.defaultDisplayDuration ||
+							0
+					)
+					total += duration
+				})
+			} else {
+				total = RundownUtils.getSegmentDuration(this.props.parts, true)
+			}
+			return total
+		}
+
+		private getSegmentBudgetDuration(): number | undefined {
+			let duration = 0
+			let anyBudgetDurations = false
+			for (const part of this.props.parts) {
+				if (part.instance.part.budgetDuration !== undefined) {
+					anyBudgetDurations = true
+					duration += part.instance.part.budgetDuration
+				}
+			}
+			if (anyBudgetDurations) {
+				return duration
+			}
+			return undefined
 		}
 
 		private partInstanceSub: Meteor.SubscriptionHandle | undefined
@@ -616,9 +672,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
-		onGoToPart = (e: CustomEvent<IGoToPartEvent>) => {
-			if (this.props.segmentId === e.detail.segmentId) {
-				const part = this.props.parts.find((part) => part.partId === e.detail.partId)
+		onGoToPart = (e: GoToPartEvent) => {
+			if (this.props.segmentId === e.segmentId) {
+				const part = this.props.parts.find((part) => part.partId === e.partId)
 				if (part) {
 					this.setState({
 						scrollLeft: part.startsAt,
@@ -627,10 +683,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
-		onGoToPartInstance = (e: CustomEvent<IGoToPartInstanceEvent>) => {
-			if (this.props.segmentId === e.detail.segmentId) {
+		onGoToPartInstance = (e: GoToPartInstanceEvent) => {
+			if (this.props.segmentId === e.segmentId) {
 				for (const part of this.props.parts) {
-					if (part.instance._id === e.detail.partInstanceId) {
+					if (part.instance._id === e.partInstanceId) {
 						this.setState({
 							scrollLeft: part.startsAt,
 						})
@@ -683,12 +739,15 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					this.playbackSimulationPercentage = Math.min(simulationPercentage + SIMULATED_PLAYBACK_CROSSFADE_STEP, 1)
 				}
 
-				//@ts-ignore
+				const budgetDuration = this.getSegmentBudgetDuration()
+
 				this.setState({
 					livePosition: newLivePosition,
 					scrollLeft: this.state.followLiveLine
 						? Math.max(newLivePosition - this.props.liveLineHistorySize / this.props.timeScale, 0)
 						: this.state.scrollLeft,
+					budgetDuration,
+					budgetGap: budgetDuration ? budgetDuration - this.getSegmentDuration() : 0,
 				})
 			}
 		}
@@ -739,7 +798,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			this.timelineDiv = el.timeline
 		}
 
-		onShowEntireSegment = (event: any) => {
+		onShowEntireSegment = () => {
 			this.setState({
 				scrollLeft: 0,
 				followLiveLine: this.state.isLiveSegment ? false : this.state.followLiveLine,
@@ -800,6 +859,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						isLastSegment={this.props.isLastSegment}
 						lastValidPartIndex={this.props.lastValidPartIndex}
 						onHeaderNoteClick={this.props.onHeaderNoteClick}
+						budgetDuration={this.state.budgetDuration}
+						budgetGap={this.state.budgetGap}
 					/>
 				)) ||
 				null

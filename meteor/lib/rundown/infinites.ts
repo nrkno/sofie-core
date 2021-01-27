@@ -9,7 +9,7 @@ import {
 import { DBPart, PartId } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
-import { PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import {
 	assertNever,
 	max,
@@ -22,6 +22,7 @@ import {
 } from '../lib'
 import { Mongo } from 'meteor/mongo'
 import { ShowStyleBase } from '../collections/ShowStyleBases'
+import { getPieceGroupId } from './timeline'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
 	return { startPartId: part._id }
@@ -324,9 +325,8 @@ export function getPieceInstancesForPart(
 
 	// Compile the resulting list
 
-	const playingPieceInstancesMap = normalizeArrayFuncFilter(
-		playingPieceInstances ?? [],
-		(p) => unprotectString(p.infinite?.infinitePieceId) // TODO - is this 'unique' enough? what about replaying the source if the infinites started there?
+	const playingPieceInstancesMap = normalizeArrayFuncFilter(playingPieceInstances ?? [], (p) =>
+		unprotectString(p.infinite?.infiniteInstanceId)
 	)
 
 	const wrapPiece = (p: PieceInstancePiece) => {
@@ -388,9 +388,7 @@ function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number
 	const offset = newPiece.piece.adlibPreroll
 	if (!offset) return start
 
-	return typeof start === 'number'
-		? start + offset
-		: `#${getPieceGroupId(unprotectPieceInstance(newPiece))}.start + ${offset}`
+	return typeof start === 'number' ? start + offset : `#${getPieceGroupId(newPiece)}.start + ${offset}`
 }
 
 /**
@@ -401,7 +399,8 @@ function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number
 export function processAndPrunePieceInstanceTimings(
 	showStyle: ShowStyleBase,
 	pieces: PieceInstance[],
-	nowInPart: number
+	nowInPart: number,
+	keepDisabledPieces?: boolean
 ): PieceInstanceWithTimings[] {
 	const result: PieceInstanceWithTimings[] = []
 
@@ -439,8 +438,13 @@ export function processAndPrunePieceInstanceTimings(
 	}
 
 	const groupedPieces = _.groupBy(
-		pieces.filter((p) => !p.disabled),
-		(p) => exclusiveGroupMap.get(p.piece.sourceLayerId) || p.piece.sourceLayerId
+		keepDisabledPieces ? pieces : pieces.filter((p) => !p.disabled),
+		// At this stage, if a Piece is disabled, the `keepDisabledPieces` must be turned on. If that's the case
+		// we split out the disabled Pieces onto the sourceLayerId they actually exist on, instead of putting them
+		// onto the shared "exclusivityGroup" layer. This may cause it to not display "exactly" accurately
+		// while in the disabled state, but it should keep it from affecting any not-disabled Pieces.
+		(p) =>
+			p.disabled ? p.piece.sourceLayerId : exclusiveGroupMap.get(p.piece.sourceLayerId) || p.piece.sourceLayerId
 	)
 	for (const pieces of Object.values(groupedPieces)) {
 		// Group and sort the pieces so that we can step through each point in time

@@ -119,6 +119,24 @@ $segment-layer-background-guest: #008a92;
 		}
 	}
 
+	&.local {
+		#{$selectors} {
+			text-shadow: 1px -1px 1px var(--segment-layer-background-local),
+				-1px 1px 1px var(--segment-layer-background-local), -1px -1px 1px var(--segment-layer-background-local),
+				1px 1px 1px var(--segment-layer-background-local), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
+		}
+
+		&.second {
+			#{$selectors} {
+				text-shadow: 1px -1px 1px var(--segment-layer-background-local--second),
+					-1px 1px 1px var(--segment-layer-background-local--second),
+					-1px -1px 1px var(--segment-layer-background-local--second),
+					1px 1px 1px var(--segment-layer-background-local--second), 1px 1px 3px rgba(0, 0, 0, 1),
+					1px 1px 8px rgba(0, 0, 0, 1);
+			}
+		}
+	}
+
 	&.script {
 		#{$selectors} {
 			text-shadow: 1px -1px 1px var(--segment-layer-background-script),
