@@ -99,6 +99,7 @@ import { LoopingIcon } from '../lib/ui/icons/looping'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
+const REHEARSAL_MARGIN = 1 * 60 * 1000
 const HIDE_NOTIFICATIONS_AFTER_MOUNT: number | undefined = 5000
 
 type WrappedShelf = ShelfBase & { getWrappedInstance(): ShelfBase }
@@ -117,8 +118,6 @@ interface ITimingWarningState {
 const WarningDisplay = withTranslation()(
 	timer(5000)(
 		class WarningDisplay extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
-			private readonly REHEARSAL_MARGIN = 1 * 60 * 1000
-
 			constructor(props: Translated<ITimingWarningProps>) {
 				super(props)
 
@@ -140,7 +139,7 @@ const WarningDisplay = withTranslation()(
 					this.props.playlist.rehearsal &&
 					this.props.playlist.expectedStart &&
 					// the expectedStart is near
-					getCurrentTime() + this.REHEARSAL_MARGIN > this.props.playlist.expectedStart &&
+					getCurrentTime() + REHEARSAL_MARGIN > this.props.playlist.expectedStart &&
 					// but it's not horribly in the past
 					getCurrentTime() <
 						this.props.playlist.expectedStart + (this.props.playlist.expectedDuration || 60 * 60 * 1000) &&
@@ -834,6 +833,11 @@ const RundownHeader = withTranslation()(
 		rundownShouldHaveStarted() {
 			return getCurrentTime() > (this.props.playlist.expectedStart || 0)
 		}
+		rundownWillShortlyStart() {
+			return (
+				!this.rundownShouldHaveEnded() && getCurrentTime() > (this.props.playlist.expectedStart || 0) - REHEARSAL_MARGIN
+			)
+		}
 		rundownShouldHaveEnded() {
 			return getCurrentTime() > (this.props.playlist.expectedStart || 0) + (this.props.playlist.expectedDuration || 0)
 		}
@@ -1229,6 +1233,9 @@ const RundownHeader = withTranslation()(
 										)
 									) : (
 										<MenuItem onClick={(e) => this.activate(e)}>{t('Activate (On-air)')}</MenuItem>
+									)}
+									{this.rundownWillShortlyStart() && !this.props.playlist.active && (
+										<MenuItem onClick={(e) => this.activate(e)}>{t('Activate (On-Air)')}</MenuItem>
 									)}
 									{this.props.playlist.active ? (
 										<MenuItem onClick={(e) => this.deactivate(e)}>{t('Deactivate')}</MenuItem>
