@@ -188,7 +188,7 @@ const WarningDisplay = withTranslation()(
 						}>
 						<p>
 							{t(
-								'You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to reset the rundown and go into on-air mode?'
+								'You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to reset the rundown and go into On-Air mode?'
 							)}
 						</p>
 					</ModalDialog>
@@ -473,19 +473,19 @@ const RundownHeader = withTranslation()(
 					{
 						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE,
 						up: this.keyActivate,
-						label: t('Activate (On-air)'),
+						label: t('Activate (On-Air)'),
 						global: true,
 					},
 					{
 						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE2,
 						up: this.keyActivate,
-						label: t('Activate (On-air)'),
+						label: t('Activate (On-Air)'),
 						global: true,
 					},
 					{
 						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE3,
 						up: this.keyActivate,
-						label: t('Activate (On-air)'),
+						label: t('Activate (On-Air)'),
 						global: true,
 					},
 					{
@@ -751,7 +751,7 @@ const RundownHeader = withTranslation()(
 						yes: t('Activate (Rehearsal)'),
 						actions: [
 							{
-								label: t('Activate (On-air)'),
+								label: t('Activate (On-Air)'),
 								classNames: 'btn-primary',
 								on: (e) => {
 									doUserAction(
@@ -881,7 +881,7 @@ const RundownHeader = withTranslation()(
 				no: t('Cancel'),
 				actions: [
 					{
-						label: t('Activate Anyway (On-air)'),
+						label: t('Activate Anyway (On-Air)'),
 						classNames: 'btn-primary',
 						on: (e) => {
 							doUserAction(
@@ -944,7 +944,7 @@ const RundownHeader = withTranslation()(
 					doModalDialog({
 						title: this.props.playlist.name,
 						message: t('Do you want to activate this Rundown?'),
-						yes: 'Activate (on-air)',
+						yes: 'Activate (On-Air)',
 						onAccept: () => {
 							this.rewindSegments()
 							doUserAction(
@@ -973,7 +973,7 @@ const RundownHeader = withTranslation()(
 					doModalDialog({
 						title: this.props.playlist.name,
 						message: t('The planned end time has passed, are you sure you want to activate this Rundown?'),
-						yes: 'Activate (on-air)',
+						yes: 'Activate (On-Air)',
 						onAccept: () => {
 							doActivate()
 						},
@@ -1232,7 +1232,7 @@ const RundownHeader = withTranslation()(
 											<MenuItem onClick={(e) => this.activateRehearsal(e)}>{t('Activate (Rehearsal)')}</MenuItem>
 										)
 									) : (
-										<MenuItem onClick={(e) => this.activate(e)}>{t('Activate (On-air)')}</MenuItem>
+										<MenuItem onClick={(e) => this.activate(e)}>{t('Activate (On-Air)')}</MenuItem>
 									)}
 									{this.rundownWillShortlyStart() && !this.props.playlist.active && (
 										<MenuItem onClick={(e) => this.activate(e)}>{t('Activate (On-Air)')}</MenuItem>
