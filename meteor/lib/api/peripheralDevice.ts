@@ -126,8 +126,7 @@ export interface NewPeripheralDeviceAPI {
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		rundownExternalId: string,
-		segmentExternalIds: string[],
-		ranks: number[]
+		newRanks: { [segmentExternalId: string]: number }
 	): Promise<void>
 	dataPartDelete(
 		deviceId: PeripheralDeviceId,

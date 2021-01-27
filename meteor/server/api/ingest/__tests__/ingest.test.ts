@@ -987,14 +987,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
 
-		Meteor.call(
-			PeripheralDeviceAPIMethods.dataSegmentRanksUpdate,
-			device._id,
-			device.token,
-			externalId,
-			['segment0', 'segment2', 'segment5'],
-			[6, 1, 3]
-		)
+		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentRanksUpdate, device._id, device.token, externalId, {
+			['segment0']: 6,
+			['segment2']: 1,
+			['segment5']: 3,
+		})
 
 		expect(Segments.findOne({ externalId: 'segment0' })?._rank).toBe(6)
 		expect(Segments.findOne({ externalId: 'segment1' })?._rank).toBe(2)
