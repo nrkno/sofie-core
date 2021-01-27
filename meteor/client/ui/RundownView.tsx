@@ -2738,9 +2738,10 @@ function handleRundownPlaylistReloadResponse(t: i18next.TFunction, result: Reloa
 		const playlist = RundownPlaylists.findOne(firstRundown?.playlistId)
 		const allRundownIds = playlist?.getRundownUnorderedIDs() || []
 		if (
+			allRundownIds.length > 0 &&
 			_.difference(
-				rundownsInNeedOfHandling.map((r) => r.rundownId),
-				allRundownIds
+				allRundownIds,
+				rundownsInNeedOfHandling.map((r) => r.rundownId)
 			).length === 0
 		) {
 			allRundownsAffected = true
