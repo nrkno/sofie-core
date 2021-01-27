@@ -249,6 +249,8 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	adlibAutoNextOverlap?: number
 	/** When queued, block transition at the end of the part */
 	adlibDisableOutTransition?: boolean
+	/** When queued, how long to keep the old part alive */
+	adlibTransitionKeepAlive?: number
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
 }
