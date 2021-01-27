@@ -168,6 +168,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 
 	/** Called just before taking the next part. This generates some persisted data used by onTimelineGenerate to modify the timeline based on the previous part (eg, persist audio levels) */
 	getEndStateForPart?: (
+		context: IRundownContext,
 		previousPersistentState: TimelinePersistentState | undefined,
 		previousPartEndState: PartEndState | undefined,
 		resolvedPieces: IBlueprintResolvedPieceInstance[],
