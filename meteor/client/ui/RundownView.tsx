@@ -727,7 +727,58 @@ const RundownHeader = withTranslation()(
 		take = (e: any) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
-				doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+				if (!this.props.playlist.active) {
+					const onSuccess = () => {
+						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+					}
+					const handleResult = (err) => {
+						if (!err) {
+							onSuccess()
+						} else if (ClientAPI.isClientResponseError(err)) {
+							if (err.error === 409) {
+								this.handleAnotherPlaylistActive(this.props.playlist._id, true, err, onSuccess)
+								return false
+							}
+						}
+					}
+					// ask to activate
+					doModalDialog({
+						title: t('Failed to execute take'),
+						message: t(
+							'The rundown you are trying to execute a take on is inactive, would you like to activate this rundown?'
+						),
+						acceptOnly: false,
+						warning: true,
+						yes: t('Activate (Rehearsal)'),
+						actions: [
+							{
+								label: t('Activate (On-air)'),
+								classNames: 'btn-primary',
+								on: (e) => {
+									doUserAction(
+										t,
+										e,
+										UserAction.DEACTIVATE_OTHER_RUNDOWN_PLAYLIST,
+										(e) => MeteorCall.userAction.forceResetAndActivate(e, this.props.playlist._id, false),
+										handleResult
+									)
+								},
+							},
+						],
+						onAccept: () => {
+							// nothing
+							doUserAction(
+								t,
+								e,
+								UserAction.ACTIVATE_RUNDOWN_PLAYLIST,
+								(e) => MeteorCall.userAction.activate(e, this.props.playlist._id, true),
+								handleResult
+							)
+						},
+					})
+				} else {
+					doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+				}
 			}
 		}
 
