@@ -119,24 +119,6 @@ $segment-layer-background-guest: #008a92;
 		}
 	}
 
-	&.local {
-		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-local),
-				-1px 1px 1px var(--segment-layer-background-local), -1px -1px 1px var(--segment-layer-background-local),
-				1px 1px 1px var(--segment-layer-background-local), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
-		}
-
-		&.second {
-			#{$selectors} {
-				text-shadow: 1px -1px 1px var(--segment-layer-background-local--second),
-					-1px 1px 1px var(--segment-layer-background-local--second),
-					-1px -1px 1px var(--segment-layer-background-local--second),
-					1px 1px 1px var(--segment-layer-background-local--second), 1px 1px 3px rgba(0, 0, 0, 1),
-					1px 1px 8px rgba(0, 0, 0, 1);
-			}
-		}
-	}
-
 	&.script {
 		#{$selectors} {
 			text-shadow: 1px -1px 1px var(--segment-layer-background-script),
@@ -255,6 +237,40 @@ $segment-layer-background-guest: #008a92;
 
 	&.mic {
 		border-color: var(--segment-layer-background-mic);
+	}
+}
+
+@mixin item-type-before-background {
+	&.camera::before {
+		background: var(--segment-layer-background-camera);
+	}
+
+	&.graphics::before {
+		background: var(--segment-layer-background-graphics);
+	}
+
+	&.lower-third::before {
+		background: var(--segment-layer-background-lower-third);
+	}
+
+	&.live-speak::before {
+		background: var(--segment-layer-background-live-speak);
+	}
+
+	&.vt::before {
+		background: var(--segment-layer-background-vt);
+	}
+
+	&.remote::before {
+		background: var(--segment-layer-background-remote);
+	}
+
+	&.script::before {
+		background: var(--segment-layer-background-script);
+	}
+
+	&.mic::before {
+		background: var(--segment-layer-background-mic);
 	}
 }
 

@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'

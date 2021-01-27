@@ -31,7 +31,7 @@ import { i18nTranslator } from '../i18n'
 import { PartNote, NoteType, TrackedNote } from '../../../lib/api/notes'
 import { Pieces, PieceId } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
-import { handleRundownPlaylistReloadResponse } from '../RundownView'
+import { handleRundownReloadResponse } from '../RundownView'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
@@ -163,8 +163,10 @@ class RundownViewNotifier extends WithManagedTracker {
 				_id: 1,
 				unsynced: 1,
 				notes: 1,
+				name: 1,
+				externalNRCSName: 1,
 			},
-		})
+		}) as ReactiveVar<Pick<Rundown, '_id' | 'unsynced' | 'notes' | 'name' | 'externalNRCSName'>[]>
 		this.autorun(() => {
 			const newNoteIds: Array<string> = []
 
@@ -180,10 +182,14 @@ class RundownViewNotifier extends WithManagedTracker {
 						newNotification = new Notification(
 							unsyncedId,
 							NoticeLevel.CRITICAL,
-							t('The Rundown has been UNSYNCED from {{nrcsName}}! No data updates will currently come through.', {
-								nrcsName: rundown.externalNRCSName || 'NRCS',
-							}),
-							'Rundown',
+							t(
+								'The Rundown "{{rundownName}}" has been UNSYNCED from {{nrcsName}}! No data updates will currently come through.',
+								{
+									rundownName: rundown.name,
+									nrcsName: rundown.externalNRCSName || 'NRCS',
+								}
+							),
+							rundown._id,
 							getCurrentTime(),
 							true,
 							[
@@ -203,10 +209,10 @@ class RundownViewNotifier extends WithManagedTracker {
 													t,
 													event,
 													UserAction.RESYNC_RUNDOWN_PLAYLIST,
-													(e) => MeteorCall.userAction.resyncRundownPlaylist(e, playlist._id),
+													(e) => MeteorCall.userAction.resyncRundown(e, rundown._id),
 													(err, reloadResult) => {
 														if (!err && reloadResult) {
-															handleRundownPlaylistReloadResponse(t, playlist, reloadResult)
+															handleRundownReloadResponse(t, rundown._id, reloadResult)
 														}
 													}
 												)
@@ -434,7 +440,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							<div>{item.message || t('There is an unknown problem with the part.')}</div>
 						</>
 					),
-					item.origin.segmentId || 'unknown',
+					item.origin.segmentId || item.origin.rundownId || 'unknown',
 					getCurrentTime(),
 					true,
 					[

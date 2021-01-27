@@ -23,13 +23,10 @@ import { Part, Parts, PartId } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
-import {
-	RundownTimingProvider,
-	withTiming,
-	WithTiming,
-	CurrentPartRemaining,
-	AutoNextStatus,
-} from './RundownView/RundownTiming'
+import { RundownTimingProvider } from './RundownView/RundownTiming/RundownTimingProvider'
+import { withTiming, WithTiming } from './RundownView/RundownTiming/withTiming'
+import { CurrentPartRemaining } from './RundownView/RundownTiming/CurrentPartRemaining'
+import { AutoNextStatus } from './RundownView/RundownTiming/AutoNextStatus'
 import { SegmentTimelineContainer, PieceUi, PartUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
@@ -93,10 +90,11 @@ import { AdlibSegmentUi } from './Shelf/AdLibPanel'
 import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
-import { documentTitle } from '../lib/documentTitle'
+import { documentTitle } from '../lib/DocumentTitleProvider'
 import { PartInstanceId, PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
+import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../lib/hotkeyRegistry'
 import { ExtendedKeyboardEvent } from 'mousetrap'
 
@@ -666,51 +664,51 @@ const RundownHeader = withTranslation()(
 		keyTake = (e: ExtendedKeyboardEvent) => {
 			if (!isModalShowing()) this.take(e)
 		}
-		keyHold = (e: ExtendedKeyboardEvent) => {
+		keyHold = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.hold(e)
 		}
-		keyHoldUndo = (e: ExtendedKeyboardEvent) => {
+		keyHoldUndo = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.holdUndo(e)
 		}
-		keyActivate = (e: ExtendedKeyboardEvent) => {
+		keyActivate = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.activate(e)
 		}
-		keyActivateRehearsal = (e: ExtendedKeyboardEvent) => {
+		keyActivateRehearsal = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.activateRehearsal(e)
 		}
 
-		keyDeactivate = (e: ExtendedKeyboardEvent) => {
+		keyDeactivate = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.deactivate(e)
 		}
-		keyResetRundown = (e: ExtendedKeyboardEvent) => {
+		keyResetRundown = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.resetRundown(e)
 		}
-		keyReloadRundown = (e: ExtendedKeyboardEvent) => {
+		keyReloadRundown = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.reloadRundownPlaylist(e)
 		}
-		keyMoveNextForward = (e: ExtendedKeyboardEvent) => {
+		keyMoveNextForward = (e: mousetrap.ExtendedKeyboardEvent) => {
 			// "forward" = to next Part
 			this.moveNext(e, 1, 0)
 		}
-		keyMoveNextBack = (e: ExtendedKeyboardEvent) => {
+		keyMoveNextBack = (e: mousetrap.ExtendedKeyboardEvent) => {
 			// "down" = to next Segment
 			this.moveNext(e, -1, 0)
 		}
-		keyMoveNextDown = (e: ExtendedKeyboardEvent) => {
+		keyMoveNextDown = (e: mousetrap.ExtendedKeyboardEvent) => {
 			// "down" = to next Segment
 			this.moveNext(e, 0, 1)
 		}
-		keyMoveNextUp = (e: ExtendedKeyboardEvent) => {
+		keyMoveNextUp = (e: mousetrap.ExtendedKeyboardEvent) => {
 			// "down" = to next Segment
 			this.moveNext(e, 0, -1)
 		}
-		keyDisableNextPiece = (e: ExtendedKeyboardEvent) => {
+		keyDisableNextPiece = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.disableNextPiece(e)
 		}
-		keyDisableNextPieceUndo = (e: ExtendedKeyboardEvent) => {
+		keyDisableNextPieceUndo = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.disableNextPieceUndo(e)
 		}
-		keyLogError = (e: ExtendedKeyboardEvent) => {
+		keyLogError = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.takeRundownSnapshot(e)
 		}
 
@@ -1083,11 +1081,11 @@ const RundownHeader = withTranslation()(
 				doUserAction(
 					t,
 					e,
-					UserAction.RELOAD_RUNDOWN_DATA,
-					(e) => MeteorCall.userAction.reloadData(e, this.props.playlist._id),
+					UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA,
+					(e) => MeteorCall.userAction.resyncRundownPlaylist(e, this.props.playlist._id),
 					(err, reloadResponse) => {
 						if (!err && reloadResponse) {
-							if (!handleRundownPlaylistReloadResponse(t, this.props.playlist, reloadResponse)) {
+							if (!handleRundownPlaylistReloadResponse(t, reloadResponse)) {
 								if (this.props.playlist && this.props.playlist.nextPartInstanceId) {
 									scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
 										if (!error.toString().match(/another scroll/)) console.error(error)
@@ -1339,6 +1337,7 @@ export interface IGoToPartInstanceEvent {
 type MatchedSegment = {
 	rundown: Rundown
 	segments: Segment[]
+	segmentIdsBeforeEachSegment: Set<SegmentId>[]
 }
 
 interface ITrackedProps {
@@ -1379,15 +1378,20 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
-		rundowns = playlist.getRundowns()
-		allParts = playlist
-			.getAllOrderedParts(undefined, {
-				fields: {
-					segmentId: 1,
-					_rank: 1,
-				},
-			})
-			.map((part) => part._id)
+		rundowns = memoizedIsolatedAutorun((_playlistId) => playlist.getRundowns(), 'playlist.getRundowns', playlistId)
+		allParts = memoizedIsolatedAutorun(
+			(_playlistId) =>
+				playlist
+					.getAllOrderedParts(undefined, {
+						fields: {
+							segmentId: 1,
+							_rank: 1,
+						},
+					})
+					.map((part) => part._id),
+			'playlist.getAllOrderedParts',
+			playlistId
+		)
 		;({ currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances())
 	}
 
@@ -1403,11 +1407,24 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownPlaylistId: playlistId,
 		rundowns,
 		matchedSegments: playlist
-			? playlist.getRundownsAndSegments({
-					isHidden: {
-						$ne: true,
-					},
-			  })
+			? playlist
+					.getRundownsAndSegments({
+						isHidden: {
+							$ne: true,
+						},
+					})
+					.map((input, rundownIndex, rundownArray) => ({
+						...input,
+						segmentIdsBeforeEachSegment: input.segments.map(
+							(segment, segmentIndex, segmentArray) =>
+								new Set([
+									...(_.flatten(
+										rundownArray.slice(0, rundownIndex).map((match) => match.segments.map((segment) => segment._id))
+									) as SegmentId[]),
+									...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
+								])
+						),
+					}))
 			: [],
 		playlist,
 		studio: studio,
@@ -2051,15 +2068,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		// }
 
 		onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-			if (
-				!e.altKey &&
-				e.ctrlKey &&
-				!e.shiftKey &&
-				!e.metaKey &&
-				// @ts-ignore
-				!window.keyboardModifiers.altRight &&
-				e.deltaY !== 0
-			) {
+			if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey && e.deltaY !== 0) {
 				this.onTimeScaleChange(Math.min(500, this.state.timeScale * (1 + 0.001 * (e.deltaY * -1))))
 				e.preventDefault()
 			}
@@ -2246,25 +2255,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onStudioRouteSetSwitch = (
-			e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+			e: React.MouseEvent<HTMLElement, MouseEvent>,
 			routeSetId: string,
 			routeSet: StudioRouteSet,
 			state: boolean
 		) => {
 			const { t } = this.props
 			if (this.props.studio) {
-				e.persist()
-				doModalDialog({
-					title: t('Switching route'),
-					message: state
-						? t('Are you sure you want to enable this route: "{{routeName}}"?', { routeName: routeSet.name })
-						: t('Are you sure you want to disable this route: "{{routeName}}"?', { routeName: routeSet.name }),
-					onAccept: () => {
-						doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
-							MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
-						)
-					},
-				})
+				doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
+					MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
+				)
 			}
 		}
 
@@ -2304,22 +2304,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
 												orderedAllPartIds={this.props.orderedPartsIds}
-												segmentsIdsBefore={
-													new Set([
-														..._.flatten(
-															rundownArray
-																.slice(0, rundownIndex)
-																.map((match) => match.segments.map((segment) => segment._id))
-														),
-														...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
-													])
-												}
+												segmentsIdsBefore={rundownAndSegments.segmentIdsBeforeEachSegment[segmentIndex]}
 												isLastSegment={
 													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
 												}
 												onPieceClick={this.onSelectPiece}
 												onPieceDoubleClick={this.onPieceDoubleClick}
-												onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
+												onHeaderNoteClick={this.onHeaderNoteClick}
 												ownCurrentPartInstance={
 													// feed the currentPartInstance into the SegmentTimelineContainer component, if the currentPartInstance
 													// is a part of the segment
@@ -2617,6 +2608,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										isStudioMode={this.state.studioMode}
 										onTake={this.onTake}
 										studioRouteSets={this.props.studio.routeSets}
+										studioRouteSetExclusivityGroups={this.props.studio.routeSetExclusivityGroups}
 										onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
 									/>
 								</ErrorBoundary>
@@ -2657,26 +2649,32 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										}}>
 										{this.state.isSupportPanelOpen && (
 											<SupportPopUp>
-												<button className="btn btn-primary" onClick={this.onToggleHotkeys}>
+												<hr />
+												<button className="btn btn-secondary" onClick={this.onToggleHotkeys}>
 													{t('Show Hotkeys')}
 												</button>
-												<button className="btn btn-primary" onClick={this.onTakeRundownSnapshot}>
+												<hr />
+												<button className="btn btn-secondary" onClick={this.onTakeRundownSnapshot}>
 													{t('Take a Snapshot')}
 												</button>
+												<hr />
 												{this.state.studioMode && (
-													<button className="btn btn-primary" onClick={this.onRestartPlayout}>
-														{t('Restart Playout')}
-													</button>
+													<>
+														<button className="btn btn-secondary" onClick={this.onRestartPlayout}>
+															{t('Restart Playout')}
+														</button>
+														<hr />
+													</>
 												)}
 												{this.state.studioMode &&
 													this.props.casparCGPlayoutDevices &&
 													this.props.casparCGPlayoutDevices.map((i) => (
-														<button
-															className="btn btn-primary"
-															onClick={() => this.onRestartCasparCG(i)}
-															key={unprotectString(i._id)}>
-															{t('Restart {{device}}', { device: i.name })}
-														</button>
+														<React.Fragment key={unprotectString(i._id)}>
+															<button className="btn btn-secondary" onClick={() => this.onRestartCasparCG(i)}>
+																{t('Restart {{device}}', { device: i.name })}
+															</button>
+															<hr />
+														</React.Fragment>
 													))}
 											</SupportPopUp>
 										)}
@@ -2861,44 +2859,58 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 export function handleRundownPlaylistReloadResponse(
 	t: i18next.TFunction,
-	rundownPlaylist: RundownPlaylist,
 	result: ReloadRundownPlaylistResponse
+): boolean {
+	let possiblyBadResponse = _.first(result.rundownsResponses)
+
+	result.rundownsResponses.forEach((r) => {
+		if (r.response === TriggerReloadDataResponse.MISSING) {
+			possiblyBadResponse = r
+		}
+	})
+	// TODO: This is a hack, since it only handles the first error
+	return possiblyBadResponse
+		? handleRundownReloadResponse(t, possiblyBadResponse.rundownId, possiblyBadResponse.response)
+		: false
+}
+export function handleRundownReloadResponse(
+	t: i18next.TFunction,
+	rundownId: RundownId,
+	result: TriggerReloadDataResponse
 ): boolean {
 	let hasDoneSomething = false
 
-	let maybeMissingRundownId: RundownId | null = null
-	result.rundownsResponses.forEach((r) => {
-		if (r.response === TriggerReloadDataResponse.MISSING) {
-			maybeMissingRundownId = r.rundownId
-		}
-	})
-	if (maybeMissingRundownId) {
-		const missingRundownId: RundownId = maybeMissingRundownId
-		const missingRundown = Rundowns.findOne(missingRundownId)
-		const missingRundownName = missingRundown ? missingRundown.name : 'N/A'
+	if (result === TriggerReloadDataResponse.MISSING) {
+		const rundown = Rundowns.findOne(rundownId)
+		const playlist = RundownPlaylists.findOne(rundown?.playlistId)
+
 		hasDoneSomething = true
 		const notification = NotificationCenter.push(
 			new Notification(
 				undefined,
 				NoticeLevel.CRITICAL,
-				t('Rundown {{rundownName}} in Playlist {{playlistName}} is missing, what do you want to do?', {
-					rundownName: missingRundownName,
-					playlistName: rundownPlaylist.name,
-				}),
+				t(
+					'Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data from {{nrcsName}}, what do you want to do?',
+					{
+						nrcsName: rundown?.externalNRCSName || 'NRCS',
+						rundownName: rundown?.name || 'N/A',
+						playlistName: playlist?.name || 'N/A',
+					}
+				),
 				'userAction',
 				undefined,
 				true,
 				[
 					// actions:
 					{
-						label: t('Mark the rundown as unsynced'),
+						label: t('Leave it in Sofie (mark the rundown as unsynced)'),
 						type: 'default',
 						action: () => {
 							doUserAction(
 								t,
 								'Missing rundown action',
 								UserAction.UNSYNC_RUNDOWN,
-								(e) => MeteorCall.userAction.unsyncRundown(e, missingRundownId),
+								(e) => MeteorCall.userAction.unsyncRundown(e, rundownId),
 								(err) => {
 									if (!err) {
 										notification.stop()
@@ -2908,16 +2920,16 @@ export function handleRundownPlaylistReloadResponse(
 						},
 					},
 					{
-						label: t('Remove just the rundown'),
+						label: t('Remove just the rundown from Sofie'),
 						type: 'default',
 						action: () => {
 							doModalDialog({
-								title: rundownPlaylist.name,
+								title: t('Remove rundown'),
 								message: t(
-									'Do you really want to remove just the rundown "{{rundownName}}" in the playlist {{playlistName}}? This cannot be undone!',
+									'Do you really want to remove just the rundown "{{rundownName}}" in the playlist {{playlistName}} from Sofie? This cannot be undone!',
 									{
-										rundownName: missingRundownName,
-										playlistName: rundownPlaylist.name,
+										rundownName: rundown?.name || 'N/A',
+										playlistName: playlist?.name || 'N/A',
 									}
 								),
 								onAccept: () => {
@@ -2926,35 +2938,7 @@ export function handleRundownPlaylistReloadResponse(
 										t,
 										'Missing rundown action',
 										UserAction.REMOVE_RUNDOWN,
-										(e) => MeteorCall.userAction.removeRundown(e, missingRundownId),
-										(err) => {
-											if (!err) {
-												notification.stop()
-												window.location.assign(`/`)
-											}
-										}
-									)
-								},
-							})
-						},
-					},
-					{
-						label: t('Remove rundown playlist'),
-						type: 'default',
-						action: () => {
-							doModalDialog({
-								title: rundownPlaylist.name,
-								message: t(
-									'Do you really want to remove the rundownPlaylist "{{rundownName}}"? This cannot be undone!',
-									{ rundownName: missingRundownName }
-								),
-								onAccept: () => {
-									// nothing
-									doUserAction(
-										t,
-										'Missing rundown action',
-										UserAction.REMOVE_RUNDOWN_PLAYLIST,
-										(e) => MeteorCall.userAction.removeRundownPlaylist(e, rundownPlaylist._id),
+										(e) => MeteorCall.userAction.removeRundown(e, rundownId),
 										(err) => {
 											if (!err) {
 												notification.stop()

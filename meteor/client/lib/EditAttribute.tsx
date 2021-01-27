@@ -10,6 +10,7 @@ import { TransformedCollection } from '../../lib/typings/meteor'
 import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
+import { Random } from 'meteor/random'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -21,6 +22,7 @@ export type EditAttributeType =
 	| 'float'
 	| 'checkbox'
 	| 'dropdown'
+	| 'dropdowntext'
 	| 'switch'
 	| 'multiselect'
 	| 'json'
@@ -42,6 +44,8 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeSwitch {...this.props} />
 		} else if (this.props.type === 'dropdown') {
 			return <EditAttributeDropdown {...this.props} />
+		} else if (this.props.type === 'dropdowntext') {
+			return <EditAttributeDropdownText {...this.props} />
 		} else if (this.props.type === 'multiselect') {
 			return <EditAttributeMultiSelect {...this.props} />
 		} else if (this.props.type === 'json') {
@@ -600,6 +604,164 @@ const EditAttributeDropdown = wrapEditAttribute(
 						)
 					)}
 				</select>
+			)
+		}
+	}
+)
+const EditAttributeDropdownText = wrapEditAttribute(
+	class EditAttributeDropdownText extends EditAttributeBase {
+		private _id: string
+
+		constructor(props) {
+			super(props)
+
+			this.handleChangeDropdown = this.handleChangeDropdown.bind(this)
+			this.handleChangeText = this.handleChangeText.bind(this)
+			this.handleBlurText = this.handleBlurText.bind(this)
+			this.handleEscape = this.handleEscape.bind(this)
+
+			this._id = Random.id()
+		}
+		handleChangeDropdown(event) {
+			// because event.target.value is always a string, use the original value instead
+			let option = _.find(this.getOptions(), (o) => {
+				return o.value + '' === event.target.value + ''
+			})
+
+			let value = option ? option.value : event.target.value
+
+			this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
+		}
+		handleChangeText(event) {
+			this.handleChangeDropdown(event)
+		}
+		handleBlurText(event) {
+			this.handleUpdate(event.target.value)
+		}
+		handleEscape(event) {
+			let e = event as KeyboardEvent
+			if (e.key === 'Escape') {
+				this.handleDiscard()
+			}
+		}
+		getOptions(addOptionForCurrentValue?: boolean) {
+			let options: Array<{ value: any; name: string; i?: number }> = []
+
+			if (Array.isArray(this.props.options)) {
+				// is it an enum?
+				for (let key in this.props.options) {
+					let val = this.props.options[key]
+					if (typeof val === 'object') {
+						options.push({
+							name: val.name,
+							value: val.value,
+						})
+					} else {
+						options.push({
+							name: val,
+							value: val,
+						})
+					}
+				}
+			} else if (typeof this.props.options === 'object') {
+				// Is options an enum?
+				let keys = Object.keys(this.props.options)
+				let first = this.props.options[keys[0]]
+				if (this.props.options[first] + '' === keys[0] + '') {
+					// is an enum, only pick
+					for (let key in this.props.options) {
+						if (!_.isNaN(parseInt(key, 10))) {
+							// key is a number (the key)
+							let enumValue = this.props.options[key]
+							let enumKey = this.props.options[enumValue]
+							options.push({
+								name: enumValue,
+								value: enumKey,
+							})
+						}
+					}
+				} else {
+					for (let key in this.props.options) {
+						let val = this.props.options[key]
+						if (Array.isArray(val)) {
+							options.push({
+								name: key,
+								value: val,
+							})
+						} else {
+							options.push({
+								name: key + ': ' + val,
+								value: val,
+							})
+						}
+					}
+				}
+			}
+
+			if (addOptionForCurrentValue) {
+				let currentValue = this.getAttribute()
+				let currentOption = _.find(options, (o) => {
+					if (Array.isArray(o.value)) {
+						return _.contains(o.value, currentValue)
+					}
+					return o.value === currentValue
+				})
+				if (!currentOption) {
+					// if currentOption not found, then add it to the list:
+					options.push({
+						name: 'Value: ' + currentValue,
+						value: currentValue,
+					})
+				}
+			}
+
+			for (let i = 0; i < options.length; i++) {
+				options[i].i = i
+			}
+
+			return options
+		}
+		render() {
+			return (
+				<div className="input-dropdowntext">
+					<input
+						type="text"
+						className={
+							'form-control' +
+							' ' +
+							(this.state.valueError ? 'error ' : '') +
+							(this.props.className || '') +
+							' ' +
+							(this.state.editing ? this.props.modifiedClassName || '' : '')
+						}
+						placeholder={this.props.label}
+						value={this.getEditAttribute() || ''}
+						onChange={this.handleChangeText}
+						onBlur={this.handleBlurText}
+						onKeyUp={this.handleEscape}
+						disabled={this.props.disabled}
+						spellCheck={false}
+						list={this._id}
+					/>
+
+					<datalist id={this._id}>
+						{this.getOptions(true).map((o, j) =>
+							Array.isArray(o.value) ? (
+								<optgroup key={j} label={o.name}>
+									{o.value.map((v, i) => (
+										<option key={i} value={v + ''}>
+											{v}
+										</option>
+									))}
+								</optgroup>
+							) : (
+								<option key={o.i} value={o.value + ''}>
+									{o.name}
+								</option>
+							)
+						)}
+					</datalist>
+				</div>
 			)
 		}
 	}

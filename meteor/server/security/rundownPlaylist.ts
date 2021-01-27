@@ -10,6 +10,7 @@ import { isProtectedString } from '../../lib/lib'
 import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
+import { StudioId } from '../../lib/collections/Studios'
 
 type RundownPlaylistContent = { playlistId: RundownPlaylistId }
 export namespace RundownPlaylistReadAccess {
@@ -56,17 +57,18 @@ export namespace RundownPlaylistContentWriteAccess {
 	): {
 		userId: UserId | null
 		organizationId: OrganizationId | null
-		studioId: RundownPlaylistId | null
+		studioId: StudioId | null
 		playlist: RundownPlaylist | null
 		cred: ResolvedCredentials | Credentials
 	} {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) {
+			const playlist = RundownPlaylists.findOne(playlistId) || null
 			return {
 				userId: null,
 				organizationId: null,
-				studioId: playlistId,
-				playlist: RundownPlaylists.findOne(playlistId) || null,
+				studioId: playlist?.studioId || null,
+				playlist: playlist,
 				cred: cred0,
 			}
 		}
@@ -79,7 +81,7 @@ export namespace RundownPlaylistContentWriteAccess {
 		return {
 			userId: cred.user._id,
 			organizationId: cred.organization._id,
-			studioId: playlistId,
+			studioId: access.document?.studioId || null,
 			playlist: access.document,
 			cred: cred,
 		}

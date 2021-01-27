@@ -10,6 +10,7 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
 
 import { getElementWidth } from '../../../utils/dimensions'
+import { protectString, unprotectString } from '../../../../lib/lib'
 
 const BREAK_SCRIPT_BREAKPOINT = 620
 const SCRIPT_PART_LENGTH = 250
@@ -27,8 +28,9 @@ export const MicSourceRenderer = withTranslation()(
 		rightLabel: HTMLSpanElement
 
 		readTime: number
+		lastPartDuration: number
 
-		private _forceSizingRecheck: boolean
+		private _lineAtEnd: boolean = false
 
 		constructor(props: IProps & WithTranslation) {
 			super(props)
@@ -47,24 +49,33 @@ export const MicSourceRenderer = withTranslation()(
 		}
 
 		refreshLine = () => {
-			if (this.itemElement) {
+			if (this.itemElement && !this.props.relative) {
 				this.itemPosition = this.itemElement.offsetLeft
 				const content = this.props.piece.instance.piece.content as ScriptContent | undefined
-				let scriptReadTime = 0
 				if (content && content.sourceDuration) {
-					scriptReadTime = content.sourceDuration * this.props.timeScale
+					const scriptReadTime = content.sourceDuration * this.props.timeScale
 					this.readTime = content.sourceDuration
 					const positionByReadTime = this.itemPosition + scriptReadTime
 					const positionByPartEnd = this.props.partDuration * this.props.timeScale
-					const positionByExpectedPartEnd =
-						(this.props.part.instance.part.expectedDuration || this.props.partDuration) * this.props.timeScale
-					if (positionByReadTime !== this.linePosition) {
-						this.linePosition = Math.min(positionByReadTime, positionByPartEnd)
+
+					if (
+						positionByReadTime !== this.linePosition ||
+						(this._lineAtEnd && positionByPartEnd !== this.lastPartDuration)
+					) {
+						this.linePosition = positionByReadTime
+						this.lastPartDuration = positionByPartEnd
 						this.repositionLine()
-						if (Math.abs(positionByReadTime - positionByExpectedPartEnd) <= 1) {
+
+						if (
+							!this._lineAtEnd &&
+							(positionByReadTime >= positionByPartEnd || Math.abs(positionByReadTime - positionByPartEnd) <= 4)
+						) {
+							// difference is less than a frame
 							this.addClassToLine('at-end')
-						} else {
+							this._lineAtEnd = true
+						} else if (this._lineAtEnd && positionByReadTime < positionByPartEnd) {
 							this.removeClassFromLine('at-end')
+							this._lineAtEnd = false
 						}
 					}
 					this.removeClassFromLine('hidden')
@@ -85,7 +96,7 @@ export const MicSourceRenderer = withTranslation()(
 		componentDidMount() {
 			// Create line element
 			this.lineItem = document.createElement('div')
-			this.lineItem.classList.add('segment-timeline__piece-appendage', 'script-line')
+			this.lineItem.classList.add('segment-timeline__piece-appendage', 'script-line', 'hidden')
 			this.updateAnchoredElsWidths()
 			if (this.props.itemElement) {
 				this.itemElement = this.props.itemElement
@@ -115,7 +126,17 @@ export const MicSourceRenderer = withTranslation()(
 				prevProps.piece.renderedInPoint !== this.props.piece.renderedInPoint ||
 				prevProps.piece.renderedDuration !== this.props.piece.renderedDuration ||
 				!_.isEqual(prevProps.piece.instance.userDuration, this.props.piece.instance.userDuration) ||
-				!_.isEqual(prevProps.piece.instance.piece.enable, this.props.piece.instance.piece.enable)
+				!_.isEqual(prevProps.piece.instance.piece.enable, this.props.piece.instance.piece.enable) ||
+				prevProps.timeScale !== this.props.timeScale
+			) {
+				_forceSizingRecheck = true
+			}
+
+			if (
+				!_forceSizingRecheck &&
+				this._lineAtEnd === true &&
+				(this.props.part.instance.part.expectedDuration || this.props.partDuration) * this.props.timeScale !==
+					(prevProps.part.instance.part.expectedDuration || prevProps.partDuration) * prevProps.timeScale
 			) {
 				_forceSizingRecheck = true
 			}
@@ -130,7 +151,7 @@ export const MicSourceRenderer = withTranslation()(
 					this.itemElement.parentNode &&
 						this.itemElement.parentNode.parentNode &&
 						this.itemElement.parentNode.parentNode.appendChild(this.lineItem)
-					this._forceSizingRecheck = true
+					_forceSizingRecheck = true
 				}
 			}
 

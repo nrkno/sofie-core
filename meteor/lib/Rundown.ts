@@ -1,12 +1,10 @@
 import * as _ from 'underscore'
-import * as SuperTimeline from 'superfly-timeline'
 import { Pieces, Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
-import { literal } from './lib'
 import { DBSegment, SegmentId } from './collections/Segments'
-import { PartId, Part, DBPart } from './collections/Parts'
+import { PartId, DBPart } from './collections/Parts'
 import { PartInstance } from './collections/PartInstances'
-import { PieceInstance, PieceInstances, wrapPieceToTemporaryInstance } from './collections/PieceInstances'
+import { PieceInstance, PieceInstances } from './collections/PieceInstances'
 import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,
@@ -48,9 +46,7 @@ export interface ISourceLayerExtended extends ISourceLayer {
 	pieces: Array<PieceExtended>
 	followingItems: Array<PieceExtended>
 }
-interface IPieceExtendedDictionary {
-	[key: string]: PieceExtended
-}
+
 export interface PieceExtended {
 	instance: PieceInstance
 
@@ -118,35 +114,6 @@ export function getPieceInstancesForPartInstance(
 		)
 	} else {
 		return PieceInstances.find({ partInstanceId: partInstance._id }, options).fetch()
-	}
-}
-
-export function offsetTimelineEnableExpression(
-	val: SuperTimeline.Expression | undefined,
-	offset: string | number | undefined
-) {
-	if (offset === undefined) {
-		return val
-	} else {
-		// return literal<SuperTimeline.ExpressionObj>({
-		// 	l: interpretExpression(val || null) || 0,
-		// 	o: '+',
-		// 	r: offset
-		// })
-		if (_.isString(val) || _.isNumber(val)) {
-			return `${val} + ${offset}`
-		} else if (_.isObject(val)) {
-			return literal<SuperTimeline.ExpressionObj>({
-				l: val || 0,
-				o: '+',
-				r: offset,
-			})
-		} else if (val === undefined) {
-			return offset
-		} else {
-			// Unreachable fallback case
-			return val
-		}
 	}
 }
 

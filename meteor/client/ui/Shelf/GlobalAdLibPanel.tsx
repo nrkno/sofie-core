@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import * as mousetrap from 'mousetrap'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { withTranslation } from 'react-i18next'
@@ -48,7 +49,7 @@ import { ExtendedKeyboardEvent } from 'mousetrap'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
-	onToggleAdLib: (piece: IAdLibListItem, queue: boolean, e: ExtendedKeyboardEvent) => void
+	onToggleAdLib: (piece: IAdLibListItem, queue: boolean, e: mousetrap.ExtendedKeyboardEvent) => void
 	onToggleSticky: (item: IAdLibListItem, e: any) => void
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
 	searchFilter: string | undefined
@@ -510,7 +511,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 						mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							item.hotkey,
-							(e: ExtendedKeyboardEvent) => {
+							(e: mousetrap.ExtendedKeyboardEvent) => {
 								preventDefault(e)
 								this.onToggleAdLib(item, false, e)
 							},
@@ -538,7 +539,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 							mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 							mousetrapHelper.bind(
 								queueHotkey,
-								(e: ExtendedKeyboardEvent) => {
+								(e: mousetrap.ExtendedKeyboardEvent) => {
 									preventDefault(e)
 									this.onToggleAdLib(item, true, e)
 								},
@@ -580,7 +581,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 							mousetrapHelper.bind(element, preventDefault, 'keydown', this.props.hotkeyGroup)
 							mousetrapHelper.bind(
 								element,
-								(e: ExtendedKeyboardEvent) => {
+								(e: mousetrap.ExtendedKeyboardEvent) => {
 									preventDefault(e)
 									this.onToggleSticky(sourceLayer._id, e)
 								},
@@ -596,7 +597,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					mousetrapHelper.bind(hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 					mousetrapHelper.bind(
 						hotkey,
-						(e: ExtendedKeyboardEvent) => {
+						(e: mousetrap.ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onClearAllSourceLayers(sourceLayers, e)
 						},

@@ -141,7 +141,9 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		return (
 			<React.Fragment>
 				<Escape to="document">
-					<div className="segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics" style={style}>
+					<div
+						className="segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics segment-timeline__mini-inspector--graphics--preview"
+						style={style}>
 						<div className="preview">
 							<img width="100%" src="../images/previewBG.png" alt="" />
 							<iframe

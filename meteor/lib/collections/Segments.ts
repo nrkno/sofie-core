@@ -1,11 +1,10 @@
 import * as _ from 'underscore'
 import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Parts, DBPart } from './Parts'
-import { Rundowns, RundownId } from './Rundowns'
+import { RundownId } from './Rundowns'
 import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
-import { Meteor } from 'meteor/meteor'
 import { IBlueprintSegmentDB, Time } from 'tv-automation-sofie-blueprints-integration'
-import { PartNote, SegmentNote } from '../api/notes'
+import { SegmentNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 

@@ -2,7 +2,10 @@ version: 2
 jobs:
   build:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11
+      - image: sofietv/tv-automation-meteor-base:1.11.1
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     steps:
       - checkout
       - run:
@@ -34,7 +37,10 @@ jobs:
 
   tests:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11
+      - image: sofietv/tv-automation-meteor-base:1.11.1
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     steps:
       - checkout
       - run:
@@ -43,7 +49,10 @@ jobs:
           no_output_timeout: 60m
   lint:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11
+      - image: sofietv/tv-automation-meteor-base:1.11.1
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     steps:
       - checkout
       - run:
@@ -53,7 +62,10 @@ jobs:
 
   validate-prod-dependencies:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11
+      - image: sofietv/tv-automation-meteor-base:1.11.1
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     steps:
       - checkout
       - run:
@@ -62,7 +74,10 @@ jobs:
           no_output_timeout: 15m
   validate-all-dependencies:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11
+      - image: sofietv/tv-automation-meteor-base:1.11.1
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     steps:
       - checkout
       - run:
@@ -73,6 +88,9 @@ jobs:
   publish-tag:
     docker:
       - image: circleci/buildpack-deps:buster
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     steps:
       - setup_remote_docker:
           version: 19.03.8
@@ -84,7 +102,7 @@ jobs:
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
-            if [ -z "$DOCKERHUB_PASS" ]; then
+            if [ -z "$DOCKERHUB_IMAGE" ]; then
               echo "Skipping"
             else
               echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
@@ -104,6 +122,9 @@ jobs:
   publish-branch:
     docker:
       - image: circleci/buildpack-deps:buster
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     steps:
       - setup_remote_docker:
           version: 19.03.8
@@ -115,7 +136,7 @@ jobs:
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
-            if [ -z "$DOCKERHUB_PASS" ]; then
+            if [ -z "$DOCKERHUB_IMAGE" ]; then
               echo "Skipping"
             else
               echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin

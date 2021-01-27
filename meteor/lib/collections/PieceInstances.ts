@@ -8,7 +8,6 @@ import {
 	Omit,
 	omit,
 } from '../lib'
-import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPieceInstance,
 	Time,
@@ -16,21 +15,28 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { Piece, PieceId } from './Pieces'
-import { PartInstance, PartInstanceId } from './PartInstances'
+import { PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
 import { registerIndex } from '../database'
+import { DeepPartial } from 'utility-types'
 
 /** A string, identifying a PieceInstance */
 export type PieceInstanceId = ProtectedString<'PieceInstanceId'>
+export type PieceInstanceInfiniteId = ProtectedString<'PieceInstanceInfiniteId'>
+
 export function unprotectPieceInstance(pieceInstance: PieceInstance): IBlueprintPieceInstance
 export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined): IBlueprintPieceInstance | undefined
 export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined): IBlueprintPieceInstance | undefined {
 	return pieceInstance as any
 }
+export function protectPieceInstance(pieceInstance: IBlueprintPieceInstance): DeepPartial<PieceInstance> {
+	return pieceInstance as any
+}
 
 export type PieceInstancePiece = Omit<Piece, 'startRundownId' | 'startSegmentId'>
 
-export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece'>, '_id'> {
+export interface PieceInstance
+	extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece'>, '_id' | 'adLibSourceId'> {
 	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
 	readonly isTemporary?: boolean
 
@@ -57,6 +63,9 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 
 	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
 	infinite?: {
+		/** A random id for this instance of this infinite */
+		infiniteInstanceId: PieceInstanceInfiniteId
+		/** The piece that this instance is a continuation of */
 		infinitePieceId: PieceId
 		// TODO - more properties?
 		/** When the instance was a copy made from hold */
@@ -86,7 +95,9 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 	}
 }
 
-export interface ResolvedPieceInstance extends PieceInstance, Omit<IBlueprintResolvedPieceInstance, '_id' | 'piece'> {
+export interface ResolvedPieceInstance
+	extends PieceInstance,
+		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'piece'> {
 	piece: PieceInstancePiece
 }
 

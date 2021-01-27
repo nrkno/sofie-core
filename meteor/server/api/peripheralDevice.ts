@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, makePromise, waitForPromise, getRandomId, applyToArray } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
@@ -46,8 +46,8 @@ export namespace ServerPeripheralDeviceAPI {
 	): PeripheralDeviceId {
 		triggerWriteAccess() // This is somewhat of a hack, since we want to check if it exists at all, before checking access
 		check(deviceId, String)
-		const peripheralDevice = PeripheralDevices.findOne(deviceId)
-		if (peripheralDevice) {
+		const existingDevice = PeripheralDevices.findOne(deviceId)
+		if (existingDevice) {
 			PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
 		}
 
@@ -63,7 +63,7 @@ export namespace ServerPeripheralDeviceAPI {
 		// Omitting some of the properties that tend to be rather large
 		logger.debug('Initialize device ' + deviceId, _.omit(options, 'versions', 'configManifest'))
 
-		if (peripheralDevice) {
+		if (existingDevice) {
 			PeripheralDevices.update(deviceId, {
 				$set: {
 					lastSeen: getCurrentTime(),
@@ -75,7 +75,12 @@ export namespace ServerPeripheralDeviceAPI {
 					type: options.type,
 					subType: options.subType,
 
-					name: peripheralDevice.name || options.name,
+					name:
+						// Only allow name changes if the name is unmodified:
+						existingDevice.name === existingDevice.deviceName || existingDevice.deviceName === undefined
+							? options.name
+							: existingDevice.name,
+					deviceName: options.name,
 					parentDeviceId: options.parentDeviceId,
 					versions: options.versions,
 
@@ -102,6 +107,7 @@ export namespace ServerPeripheralDeviceAPI {
 				subType: options.subType,
 
 				name: options.name,
+				deviceName: options.name,
 				parentDeviceId: options.parentDeviceId,
 				versions: options.versions,
 				// settings: {},
@@ -261,6 +267,9 @@ export namespace ServerPeripheralDeviceAPI {
 						tlChanged = true
 					}
 				})
+
+				// TODO - we should do the same for the partInstance.
+				// Or we should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
 
 				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
 				if (objPieceId && activePlaylist) {

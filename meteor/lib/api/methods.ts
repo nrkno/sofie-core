@@ -15,7 +15,7 @@ import { NewUserActionAPI, UserActionAPIMethods } from './userActions'
 import { StudiosAPIMethods, NewStudiosAPI } from './studios'
 import { NewOrganizationAPI, OrganizationAPIMethods } from './organization'
 import { NewUserAPI, UserAPIMethods } from './user'
-import { SystemAPIMethods, NewSystemAPI } from './system'
+import { SystemAPIMethods, SystemAPI } from './system'
 import { UserId } from '../typings/meteor'
 import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundownNotifications'
 import { Meteor } from 'meteor/meteor'
@@ -41,7 +41,7 @@ interface IMeteorCall {
 	userAction: NewUserActionAPI
 	organization: NewOrganizationAPI
 	rundownNotifications: RundownNotificationsAPI
-	system: NewSystemAPI
+	system: SystemAPI
 }
 export const MeteorCall: IMeteorCall = {
 	blueprint: makeMethods(BlueprintAPIMethods),

@@ -189,8 +189,39 @@
 			}
 		}
 
-		&.status-bar__controls__button--route-set-panel {
+		&.status-bar__controls__button--switchboard-panel {
+			position: fixed;
+			right: 0.3125rem;
+			bottom: 4.3125rem;
 			z-index: 310;
+			text-align: right;
+
+			> svg {
+				width: 2em;
+				height: 2em;
+				position: relative;
+				left: -0.5em;
+				top: 0.1em;
+				transition: 0.5s fill;
+
+				&.status-bar__controls__button--switchboard-panel__notification {
+					position: absolute;
+					width: 1.4em;
+					height: 1.4em;
+					top: 0;
+					left: auto;
+					right: 0;
+				}
+			}
+
+			&.status-bar__controls__button--open > svg {
+				> circle {
+					fill: #676767;
+				}
+				> path {
+					fill: #ccc9c9;
+				}
+			}
 		}
 	}
 }

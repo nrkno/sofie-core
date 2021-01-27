@@ -103,6 +103,8 @@ export interface DBRundown
 	externalNRCSName: string
 	/** The id of the Rundown Playlist this rundown is in */
 	playlistId: RundownPlaylistId
+	/** If the playlistId has ben set manually by a user in Sofie */
+	playlistIdIsSetInSofie?: boolean
 	/** Rank of the Rundown inside of its Rundown Playlist */
 	_rank: number
 	/** Whenever the baseline (RundownBaselineObjs, RundownBaselineAdLibItems, RundownBaselineAdLibActions) changes, this is changed too */
@@ -141,6 +143,7 @@ export class Rundown implements DBRundown {
 	public playlistExternalId?: string
 	public externalNRCSName: string
 	public playlistId: RundownPlaylistId
+	public playlistIdIsSetInSofie?: boolean
 	public _rank: number
 	public baselineModifyHash?: string
 	_: any
