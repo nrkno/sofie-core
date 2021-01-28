@@ -1,14 +1,13 @@
-import { NoraPayload, IBlueprintPieceGeneric } from '@sofie-automation/blueprints-integration'
-import { isArray } from 'util'
+import { IBlueprintPieceGeneric, NoraContent } from '@sofie-automation/blueprints-integration'
 
 export { createMosObjectXmlStringNoraBluePrintPiece }
 
 function createMosObjectXmlStringNoraBluePrintPiece(piece: IBlueprintPieceGeneric): string {
-	if (!piece.content || !piece.content.payload) {
+	const noraContent = piece.content as NoraContent | undefined
+	const noraPayload = noraContent?.payload
+	if (!noraPayload) {
 		throw new Error('Not a Nora blueprint piece')
 	}
-
-	const noraPayload = piece.content.payload as NoraPayload
 
 	const doc = objectToXML(
 		{
@@ -43,7 +42,7 @@ function createMosObjectXmlStringNoraBluePrintPiece(piece: IBlueprintPieceGeneri
 							mosSchema: 'http://nora.core.mesosint.nrk.no/mos/timing',
 							mosPayload: {
 								timeIn: 0,
-								duration: piece.content.sourceDuration,
+								duration: noraContent.sourceDuration,
 							},
 						},
 					],
@@ -79,7 +78,7 @@ function addNodes(obj: object, rootNode: Node): void {
 	for (const name of Object.keys(obj)) {
 		const value = obj[name]
 
-		if (isArray(value)) {
+		if (Array.isArray(value)) {
 			value.forEach((element) => {
 				rootNode.appendChild(createNode(name, element, doc))
 			})

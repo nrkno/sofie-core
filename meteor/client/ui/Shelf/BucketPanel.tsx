@@ -25,6 +25,7 @@ import {
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
+	SomeTimelineContent,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -171,12 +172,14 @@ export function actionToAdLibPieceUi(
 ): BucketAdLibActionUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
-	let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
-	const isContent = RundownUtils.isAdlibActionContent(action.display)
-	if (isContent) {
-		sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
-		outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-		content = (action.display as IBlueprintActionManifestDisplayContent).content
+	let content: SomeTimelineContent = { timelineObjects: [] }
+	if (RundownUtils.isAdlibActionContent(action.display)) {
+		sourceLayerId = action.display.sourceLayerId
+		outputLayerId = action.display.outputLayerId
+		content = {
+			timelineObjects: [],
+			...action.display.content,
+		}
 	}
 
 	return literal<BucketAdLibActionUi>({

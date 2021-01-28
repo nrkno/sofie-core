@@ -7,7 +7,6 @@ import {
 	ProtectedStringProperties,
 	protectString,
 	unprotectString,
-	Omit,
 } from '../lib'
 import {
 	IBlueprintPartInstance,

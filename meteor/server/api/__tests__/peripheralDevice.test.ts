@@ -135,6 +135,7 @@ describe('test peripheralDevice general API methods', () => {
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			lifespan: PieceLifespan.WithinPart,
 			invalid: false,
+			content: { timelineObjects: [] },
 		})
 		Parts.insert({
 			_id: protectString('part001'),

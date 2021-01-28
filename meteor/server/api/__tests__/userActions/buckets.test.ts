@@ -72,6 +72,9 @@ describe('User Actions - Buckets', () => {
 				sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 				studioId: env.studio._id,
 				lifespan: PieceLifespan.WithinPart,
+				content: {
+					timelineObjects: [],
+				},
 			})
 		}
 
