@@ -10,6 +10,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
 import JonasFormattedTime from './JonasFormattedTime'
 import { EyeIcon } from '../../lib/ui/icons/rundownList'
+import { LoopingIcon } from '../../lib/ui/icons/looping'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
@@ -104,6 +105,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
+				{rundown.getRundownPlaylist().loop && <LoopingIcon />}
 			</span>
 			<span className="rundown-list-item__text">
 				<JonasFormattedTime timestamp={rundown.modified} t={t} />

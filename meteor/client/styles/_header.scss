@@ -12,7 +12,9 @@
 	.badge {
 		color: #fff;
 		text-decoration: none;
-		&:visited {
+		&:link,
+		&:visited,
+		&:active {
 			color: #fff;
 		}
 		.sofie-logo {

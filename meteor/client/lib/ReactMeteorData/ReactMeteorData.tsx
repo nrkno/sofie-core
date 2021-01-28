@@ -44,7 +44,7 @@ class MeteorDataManager {
 		clearTimeout(globalTrackerTimeout)
 		globalTrackerTimeout = undefined
 		globalTrackerTimestamp = undefined
-		globalTrackerQueue.map((func) => func())
+		globalTrackerQueue.forEach((func) => func())
 		globalTrackerQueue.length = 0
 	}
 

@@ -79,7 +79,7 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 						},
 					}
 				)
-				.map((part) => {
+				.forEach((part) => {
 					const instance = findPartInstanceOrWrapToTemporary(partInstancesMap, part)
 					const partUi = literal<PartUi>({
 						partId: part._id,
