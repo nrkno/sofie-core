@@ -10,6 +10,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
 import JonasFormattedTime from './JonasFormattedTime'
 import { EyeIcon } from '../../lib/ui/icons/rundownList'
+import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
@@ -107,6 +108,9 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			</span>
 			<span className="rundown-list-item__text">
 				<JonasFormattedTime timestamp={rundown.modified} t={t} />
+			</span>
+			<span className="rundown-list-item__text">
+				<RundownShelfLayoutSelection rundown={props.rundown} />
 			</span>
 			<span className="rundown-list-item__actions">
 				{confirmReSyncRundownHandler ? (

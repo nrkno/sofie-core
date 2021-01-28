@@ -11,9 +11,10 @@
 	 * percentages do not add up to a perfect 100% (ie. 1.0)
 	 */
 	--nameColumnSize: 0.4;
-	--showStyleColumnSize: 0.22;
+	--showStyleColumnSize: 0.17;
 	--standardColumnSize: 0.11;
 	--actionsColumnSize: 0.05;
+	--layoutSelectionColumnSize: 0.05;
 
 	/* "column" width calculations */
 	--statusBarWidth: 2.1rem; //  the width of the floating right status bar
@@ -24,6 +25,7 @@
 	--durationColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
 	--lastModifiedColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
 	--actionsColumnWidth: calc(var(--componentWidth) * var(--actionsColumnSize));
+	--layoutSelectionColumnWidth: calc(var(--componentWidth) * var(--layoutSelectionColumnSize));
 
 	background-color: transparent;
 	width: 100%;
@@ -254,7 +256,7 @@
 		display: grid;
 		grid-template-columns:
 			var(--nameColumnWidth) var(--showStyleColumnWidth) var(--airTimeColumnWidth)
-			var(--durationColumnWidth) var(--lastModifiedColumnWidth) var(--actionsColumnWidth);
+			var(--durationColumnWidth) var(--lastModifiedColumnWidth) var(--layoutSelectionColumnWidth) var(--actionsColumnWidth);
 
 		.rundown-list-item__text {
 			padding: 7px 0;
