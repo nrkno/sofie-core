@@ -1573,14 +1573,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									</div>
 								</div>
 								<div>
-									{RundownLayoutsAPI.isRundownLayout(item) ? (
-										this.renderElements(item)
-									) : RundownLayoutsAPI.isDashboardLayout(item) ? (
-										<>
-											{this.renderElements(item)}
-											{this.renderActionButtons(item)}
-										</>
-									) : null}
+									{item.type === RundownLayoutType.RUNDOWN_LAYOUT
+										? this.renderElements(item)
+										: item.type === RundownLayoutType.DASHBOARD_LAYOUT
+										? this.renderElements(item)
+										: null}
 								</div>
 								<div className="mod mls">
 									<button className="btn btn-secondary" onClick={(e) => this.onAddElement(item)}>
@@ -1592,13 +1589,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											? t('Add panel')
 											: null}
 									</button>
-									{RundownLayoutsAPI.isDashboardLayout(item) ? (
-										<button className="btn btn-secondary" onClick={(e) => this.onAddButton(item)}>
-											<FontAwesomeIcon icon={faPlus} />
-											&nbsp;
-											{t('Add button')}
-										</button>
-									) : null}
 								</div>
 								{item.type === RundownLayoutType.DASHBOARD_LAYOUT ? (
 									<>
