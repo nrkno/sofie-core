@@ -173,13 +173,12 @@ export function actionToAdLibPieceUi(
 	let sourceLayerId = ''
 	let outputLayerId = ''
 	let content: SomeTimelineContent = { timelineObjects: [] }
-	const isContent = RundownUtils.isAdlibActionContent(action.display)
-	if (isContent) {
-		sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
-		outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
+	if (RundownUtils.isAdlibActionContent(action.display)) {
+		sourceLayerId = action.display.sourceLayerId
+		outputLayerId = action.display.outputLayerId
 		content = {
 			timelineObjects: [],
-			...(action.display as IBlueprintActionManifestDisplayContent).content,
+			...action.display.content,
 		}
 	}
 

@@ -1,14 +1,13 @@
-import { NoraPayload, IBlueprintPieceGeneric, NoraContent } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceGeneric, NoraContent } from '@sofie-automation/blueprints-integration'
 
 export { createMosObjectXmlStringNoraBluePrintPiece }
 
 function createMosObjectXmlStringNoraBluePrintPiece(piece: IBlueprintPieceGeneric): string {
 	const noraContent = piece.content as NoraContent | undefined
-	if (!noraContent?.payload) {
+	const noraPayload = noraContent?.payload
+	if (!noraPayload) {
 		throw new Error('Not a Nora blueprint piece')
 	}
-
-	const noraPayload = noraContent.payload
 
 	const doc = objectToXML(
 		{

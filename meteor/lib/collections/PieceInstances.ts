@@ -1,5 +1,5 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, literal, ProtectedString, ProtectedStringProperties, protectString, omit } from '../lib'
+import { registerCollection, ProtectedString, ProtectedStringProperties, protectString, omit } from '../lib'
 import {
 	IBlueprintPieceInstance,
 	Time,
