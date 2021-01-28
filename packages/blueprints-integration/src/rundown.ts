@@ -172,7 +172,10 @@ export interface IBlueprintPartInstance<TMetadata = unknown> {
 	/** The segment ("Title") this line belongs to */
 	segmentId: string
 
-	part: IBlueprintPartDB<TMetadata> // TODO - omit some duplicated fields?
+	part: IBlueprintPartDB<TMetadata>
+
+	/** Whether the PartInstance is an orphan (the Part referenced does not exist). Indicates the reason it is orphaned */
+	orphaned?: 'adlib-part' // Future scope: | 'deleted'
 }
 
 export interface IBlueprintPartInstanceTimings {

@@ -56,9 +56,6 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 
 	/** The transition props as used when entering this PartInstance */
 	allowedToUseTransition?: boolean
-
-	/** Whether the PartInstance is an orphan. Indicates the reason it is orphaned */
-	orphaned?: 'adlib-part' // Future scope: | 'deleted'
 }
 
 export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {

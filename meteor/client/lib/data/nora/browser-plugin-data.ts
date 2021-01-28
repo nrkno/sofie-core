@@ -5,7 +5,7 @@ export { createMosObjectXmlStringNoraBluePrintPiece }
 function createMosObjectXmlStringNoraBluePrintPiece(piece: IBlueprintPieceGeneric): string {
 	const noraContent = piece.content as NoraContent | undefined
 	const noraPayload = noraContent?.payload
-	if (!noraPayload) {
+	if (!noraContent || !noraPayload) {
 		throw new Error('Not a Nora blueprint piece')
 	}
 
