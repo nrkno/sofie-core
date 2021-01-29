@@ -85,7 +85,7 @@ export function OverlayScreenSaver({ studioId }: { studioId: StudioId }): JSX.El
 				el.style.opacity = ''
 				el.style.position = ''
 				el.style.left = ''
-				Velocity(el, 'stop')
+				Velocity(el, 'stop', true)
 			}
 		}
 	}, [studioNameRef.current, data?.rundownPlaylist?.name, data?.studio?.name])
