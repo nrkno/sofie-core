@@ -251,7 +251,7 @@ export function migrateConfigToBlueprintConfigOnObject<
 		blueprintConfig?: IBlueprintConfig
 	}
 >(document: DBInterface): DBInterface {
-	document.blueprintConfig = {}
+	document.blueprintConfig = document.blueprintConfig || {}
 	// @ts-ignore old typing
 	const oldConfig = document.config as any
 	if (oldConfig) {
