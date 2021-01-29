@@ -47,11 +47,10 @@ meteorPublish(PubSub.studioOfDevice, function(deviceId: PeripheralDeviceId, toke
 		const modifier: FindOptions<DBStudio> = {
 			fields: {},
 		}
-		let selector = {
-			_id: peripheralDevice.studioId,
-		}
-		if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
-			return Studios.find(selector, modifier)
+
+		const studioId = peripheralDevice.studioId
+		if (StudioReadAccess.studioContent({ studioId }, { userId: this.userId, token })) {
+			return Studios.find(studioId, modifier)
 		}
 	}
 	return null

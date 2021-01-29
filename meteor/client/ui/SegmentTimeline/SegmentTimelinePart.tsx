@@ -40,6 +40,7 @@ interface ISourceLayerPropsBase {
 	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
+	expectedDuration: number
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
@@ -117,6 +118,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 							part={this.props.part}
 							partStartsAt={this.props.startsAt}
 							partDuration={this.props.duration}
+							partExpectedDuration={this.props.expectedDuration}
 							timeScale={this.props.timeScale}
 							relative={this.props.relative}
 							autoNextPart={this.props.autoNextPart}
@@ -196,6 +198,7 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 								part={this.props.part}
 								partStartsAt={this.props.startsAt}
 								partDuration={this.props.duration}
+								partExpectedDuration={this.props.expectedDuration}
 								timeScale={this.props.timeScale}
 								relative={this.props.relative}
 								autoNextPart={this.props.autoNextPart}
@@ -236,6 +239,7 @@ interface IOutputGroupProps {
 	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
+	expectedDuration: number
 	timeScale: number
 	collapsedOutputs: {
 		[key: string]: boolean
@@ -275,6 +279,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 							part={this.props.part}
 							startsAt={this.props.startsAt}
 							duration={this.props.duration}
+							expectedDuration={this.props.expectedDuration}
 							timeScale={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
 							liveLinePadding={this.props.liveLinePadding}
@@ -308,6 +313,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 						part={this.props.part}
 						startsAt={this.props.startsAt}
 						duration={this.props.duration}
+						expectedDuration={this.props.expectedDuration}
 						timeScale={this.props.timeScale}
 						autoNextPart={this.props.autoNextPart}
 						liveLinePadding={this.props.liveLinePadding}
@@ -628,6 +634,16 @@ export const SegmentTimelinePart = withTranslation()(
 				}
 			}
 
+			static getPartExpectedDuration(props: WithTiming<IProps>): number {
+				return (
+					props.part.instance.timings?.duration ||
+					(props.timingDurations.partDisplayDurations &&
+						props.timingDurations.partDisplayDurations[unprotectString(props.part.instance.part._id)]) ||
+					props.part.renderedDuration ||
+					0
+				)
+			}
+
 			static getPartDuration(props: WithTiming<IProps>, liveDuration: number): number {
 				// const part = this.props.part
 
@@ -639,10 +655,6 @@ export const SegmentTimelinePart = withTranslation()(
 						props.part.renderedDuration ||
 						0
 				)
-
-				/* return part.duration !== undefined ? part.duration : Math.max(
-			((this.props.timingDurations.partDurations && this.props.timingDurations.partDurations[unprotectString(part._id)]) || 0),
-			this.props.part.renderedDuration || 0, this.state.liveDuration, 0) */
 			}
 
 			static getPartStartsAt(props: WithTiming<IProps>): number {
@@ -697,6 +709,7 @@ export const SegmentTimelinePart = withTranslation()(
 										studio={this.props.studio}
 										startsAt={SegmentTimelinePart0.getPartStartsAt(this.props) || this.props.part.startsAt || 0}
 										duration={SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration)}
+										expectedDuration={SegmentTimelinePart0.getPartExpectedDuration(this.props)}
 										isLiveLine={this.props.playlist.currentPartInstanceId === part.instance._id}
 										isNextLine={this.props.playlist.nextPartInstanceId === part.instance._id}
 										timeScale={this.props.timeScale}

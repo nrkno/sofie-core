@@ -63,6 +63,7 @@ body.transparent {
 		margin-left: 0.3em;
 	}
 
+	.clocks-next-rundown,
 	.clocks-part-title {
 		font-size: 1em;
 
@@ -74,6 +75,10 @@ body.transparent {
 		font-style: normal;
 		font-stretch: normal;
 		letter-spacing: normal;
+		font-weight: 300 !important;
+		//margin-left: 35px;
+		flex: 1 1;
+		padding-left: 0.1em;
 	}
 
 	.clocks-part-title.clocks-current-segment-title {
@@ -83,14 +88,7 @@ body.transparent {
 	.clocks-studio-name {
 		font-weight: 800;
 		transform-origin: 0 0;
-	}
-
-	.clocks-part-title,
-	.clocks-next-rundown {
-		font-weight: 300 !important;
-		//margin-left: 35px;
-		flex: 1 1;
-		padding-left: 0.1em;
+		padding: 0 0.2em;
 	}
 
 	.clocks-current-segment-title {

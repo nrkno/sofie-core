@@ -31,6 +31,7 @@ export interface ISourceLayerItemProps {
 	part: PartUi
 	partStartsAt: number
 	partDuration: number
+	partExpectedDuration: number
 	piece: PieceUi
 	timeScale: number
 	isLiveLine: boolean

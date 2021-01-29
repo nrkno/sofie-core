@@ -26,12 +26,12 @@ import { Studio } from '../../../../lib/collections/Studios'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PieceInstance, wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
-import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { NotesContext, ShowStyleContext } from './context'
-import { isTooCloseToAutonext } from '../../playout/lib'
+import { getRundownIDsFromCache, isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
@@ -149,6 +149,31 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		return clone(unprotectObject(lastPieceInstance))
 	}
+	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance {
+		const pieceExt = (piece as unknown) as Partial<PieceInstance>
+		const partInstanceId = pieceExt.partInstanceId
+		if (!partInstanceId) {
+			throw new Error('Cannot find PartInstance from invalid PieceInstance')
+		}
+
+		const cached = this._cache.PartInstances.findOne(partInstanceId)
+		if (cached) {
+			return clone(unprotectObject(cached))
+		}
+
+		// It might be reset and so not in the cache
+		const rundownIds = getRundownIDsFromCache(this._cache, this.rundownPlaylist)
+		const oldInstance = PartInstances.findOne({
+			_id: partInstanceId,
+			rundownId: { $in: rundownIds },
+		})
+		if (oldInstance) {
+			return unprotectObject(oldInstance)
+		} else {
+			throw new Error('Cannot find PartInstance for PieceInstance')
+		}
+	}
+
 	insertPiece(part: 'current' | 'next', rawPiece: IBlueprintPiece): IBlueprintPieceInstance {
 		const partInstanceId = this._getPartInstanceId(part)
 		if (!partInstanceId) {

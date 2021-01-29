@@ -455,7 +455,7 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 	// Clean up all the db items that belong to the removed Parts
 	const removedPartIds = removedParts.map((p) => p._id)
 	cache.Pieces.remove({
-		rundownId: rundownId,
+		startRundownId: rundownId,
 		startPartId: { $in: removedPartIds },
 	})
 

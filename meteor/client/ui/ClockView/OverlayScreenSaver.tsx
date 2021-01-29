@@ -93,7 +93,9 @@ export function OverlayScreenSaver({ studioId }: { studioId: StudioId }): JSX.El
 	return (
 		<div className="clocks-overlay">
 			<div className="clocks-half clocks-bottom">
-				<div className="clocks-current-segment-countdown clocks-segment-countdown"></div>
+				{data?.rundownPlaylist?.name && (
+					<div className="clocks-current-segment-countdown clocks-segment-countdown"></div>
+				)}
 				<div className="clocks-studio-name" ref={studioNameRef}>
 					{data?.studio?.name ?? null}
 				</div>

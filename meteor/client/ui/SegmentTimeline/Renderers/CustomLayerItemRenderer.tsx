@@ -17,7 +17,10 @@ export interface ICustomLayerItemProps {
 	outputLayer: IOutputLayerUi
 	outputGroupCollapsed: boolean
 	part: PartUi
+	isLiveLine: boolean
+	partStartsAt: number
 	partDuration: number // 0 if unknown
+	partExpectedDuration: number
 	piece: PieceUi
 	timeScale: number
 	onFollowLiveLine?: (state: boolean, event: any) => void
