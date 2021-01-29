@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ExpectedPackage {
 	export type Any = ExpectedPackageMediaFile | ExpectedPackageQuantelClip
 
@@ -24,11 +25,11 @@ export namespace ExpectedPackage {
 		/** Definition of the content of the Package.
 		 * With "content", we mean what's the basic definition of a package. For a media file, think "filename".
 		 */
-		content: object
+		content: unknown
 		/** Definition of the version of the Package
 		 * A "version" is used to differ between different "modifications" for the same content. For a media file, think "modified date".
 		 */
-		version: object
+		version: unknown
 
 		/** Hash that changes whenever the content or version changes. */
 		contentVersionHash: string
@@ -117,6 +118,7 @@ export interface PackageContainer {
 /** Defines different ways of accessing a PackageContainer.
  * For example, a local folder on a computer might be accessed through a LocalFolder and a FileShare
  */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Accessor {
 	export type Any = LocalFolder | FileShare | HTTP | Quantel
 
@@ -175,7 +177,7 @@ export namespace Accessor {
 		headers?: { [name: string]: any }
 
 		/** Body parameters to send along with the request (for POST-requests). */
-		requestBody?: object
+		requestBody?: unknown
 
 		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible*/
 		networkId?: string
@@ -195,6 +197,7 @@ export namespace Accessor {
  * AccessorOnPackage contains interfaces for Accessor definitions that are put ON the Package.
  * The info is then (optionally) combined with the Accessor data
  */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AccessorOnPackage {
 	export type Any = LocalFolder | FileShare | HTTP | Quantel | CorePackageCollection
 
@@ -214,6 +217,7 @@ export namespace AccessorOnPackage {
 		guid?: string
 		title?: string
 	}
+	// eslint-disable-next-line @typescript-eslint/no-empty-interface
 	export interface CorePackageCollection extends Partial<Accessor.CorePackageCollection> {
 		// todo
 	}
@@ -228,6 +232,7 @@ export interface PackageContainerOnPackage extends Omit<PackageContainer, 'acces
 }
 
 // todo: should this be moved into core-integration?
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ExpectedPackageStatusAPI {
 	/** Information about the status of some work being performed with regards to an Expected Package */
 	export interface WorkStatus extends WorkBaseInfo, WorkStatusInfo {}
