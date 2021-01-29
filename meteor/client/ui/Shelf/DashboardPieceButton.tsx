@@ -173,7 +173,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	renderSplits(renderThumbnail: boolean = false) {
 		const splitAdLib = this.props.piece
 		if (splitAdLib && splitAdLib.content) {
-			const splitContent = splitAdLib.content as SplitsContent
 			return (
 				<>
 					{renderThumbnail ? (
