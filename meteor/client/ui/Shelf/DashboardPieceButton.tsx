@@ -333,27 +333,32 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				onMouseLeave={this.handleOnMouseLeave}
 				onMouseMove={this.handleOnMouseMove}
 				data-obj-id={this.props.piece._id}>
-				{!this.props.layer
-					? null
-					: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
-					? // VT should have thumbnails in "Button" layout.
-					  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
-					: this.props.layer.type === SourceLayerType.SPLITS
-					? this.renderSplits(isList && this.props.showThumbnailsInList)
-					: this.props.layer.type === SourceLayerType.GRAPHICS || this.props.layer.type === SourceLayerType.LOWER_THIRD
-					? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
-					: null}
+				<div className="dashboard-panel__panel__button__content">
+					{!this.props.layer
+						? null
+						: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
+						? // VT should have thumbnails in "Button" layout.
+						  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
+						: this.props.layer.type === SourceLayerType.SPLITS
+						? this.renderSplits(isList && this.props.showThumbnailsInList)
+						: this.props.layer.type === SourceLayerType.GRAPHICS ||
+						  this.props.layer.type === SourceLayerType.LOWER_THIRD
+						? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
+						: null}
 
-				{this.props.editableName ? (
-					<textarea
-						className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
-						value={this.state.label}
-						onChange={this.onNameChanged}
-						onBlur={this.onRenameTextBoxBlur}
-						ref={this.onRenameTextBoxShow}></textarea>
-				) : (
-					<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
-				)}
+					<div className="dashboard-panel__panel__button__label-container">
+						{this.props.editableName ? (
+							<textarea
+								className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
+								value={this.state.label}
+								onChange={this.onNameChanged}
+								onBlur={this.onRenameTextBoxBlur}
+								ref={this.onRenameTextBoxShow}></textarea>
+						) : (
+							<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
+						)}
+					</div>
+				</div>
 			</div>
 		)
 	}
