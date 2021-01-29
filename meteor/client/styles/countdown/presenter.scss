@@ -82,6 +82,7 @@
 		font-weight: 100;
 		font-size: 12.5rem;
 		text-align: center;
+		color: $general-countdown-to-next-color;
 	}
 
 	.clocks-rundown-countdown {
@@ -101,7 +102,7 @@
 	}
 
 	.clocks-segment-countdown-red {
-		color: red;
+		color: $general-late-color;
 	}
 
 	.clocks-counter-heavy {
