@@ -43,6 +43,13 @@ export namespace ExpectedPackage {
 			/** Locally defined Accessors, these are combined (deep extended) with the PackageContainer (if it is found) Accessors */
 			accessors: { [accessorId: string]: AccessorOnPackage.Any }
 		}[]
+
+		sideEffect: {
+			/** Which container previews are to be put into */
+			previewContainerId?: string
+			/** Which container thumbnails are to be put into */
+			thumbnailContainerId?: string
+		}
 	}
 
 	export interface ExpectedPackageMediaFile extends Base {
@@ -66,6 +73,11 @@ export namespace ExpectedPackage {
 					| AccessorOnPackage.HTTP
 			}
 		}[]
+
+		sideEffect: {
+			previewContainerId?: string
+			thumbnailContainerId?: string
+		}
 	}
 	export interface ExpectedPackageQuantelClip extends Base {
 		type: PackageType.QUANTEL_CLIP
@@ -80,6 +92,11 @@ export namespace ExpectedPackage {
 			containerId: string
 			accessors: { [accessorId: string]: AccessorOnPackage.Quantel }
 		}[]
+
+		sideEffect: {
+			previewContainerId?: string
+			thumbnailContainerId?: string
+		}
 	}
 }
 
@@ -203,6 +220,7 @@ export namespace AccessorOnPackage {
 }
 
 export interface PackageContainerOnPackage extends Omit<PackageContainer, 'accessors'> {
+	containerId: string
 	/** Short name, for displaying to user */
 	label: string
 
@@ -246,3 +264,5 @@ export namespace ExpectedPackageStatusAPI {
 		expectedLeft?: number
 	}
 }
+
+export type ListenToPackageUpdate = any // tmp, to be implemented

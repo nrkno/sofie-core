@@ -159,7 +159,7 @@ export class Part implements DBPart {
 
 			if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
 				const part = partLookup[piece.sourceLayerId]
-				const st = checkPieceContentStatus(piece, part, studio ? studio.settings : undefined)
+				const st = checkPieceContentStatus(piece, part, studio)
 				if (st.status !== RundownAPI.PieceStatusCode.OK && st.status !== RundownAPI.PieceStatusCode.UNKNOWN) {
 					notes.push({
 						type: getNoteTypeForPieceStatus(st.status) || NoteType.WARNING,

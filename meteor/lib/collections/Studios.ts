@@ -1,5 +1,12 @@
 import { TransformedCollection } from '../typings/meteor'
-import { applyClassToDocument, registerCollection, ProtectedString, omit, ProtectedStringProperties } from '../lib'
+import {
+	applyClassToDocument,
+	registerCollection,
+	ProtectedString,
+	omit,
+	ProtectedStringProperties,
+	unprotectObject,
+} from '../lib'
 import * as _ from 'underscore'
 import {
 	IBlueprintConfig,
@@ -8,6 +15,7 @@ import {
 	TSR,
 	LookaheadMode,
 	PackageContainer,
+	ExpectedPackage,
 } from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
@@ -15,6 +23,7 @@ import { BlueprintId } from './Blueprints'
 import { ShowStyleBaseId } from './ShowStyleBases'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
+import { ExpectedPackageDB } from './ExpectedPackages'
 
 export interface MappingsExt {
 	[layerName: string]: MappingExt
@@ -84,6 +93,9 @@ export interface DBStudio {
 	routeSetExclusivityGroups: StudioRouteSetExclusivityGroups
 
 	packageContainers: StudioPackageContainers
+	/** Which package containers is used for media previews in GUI */
+	previewContainerIds: string[]
+	thumbnailContainerIds: string[]
 }
 export interface StudioRouteSets {
 	[id: string]: StudioRouteSet
@@ -96,7 +108,8 @@ export interface StudioPackageContainers {
 }
 
 export interface StudioPackageContainer {
-	disable?: boolean
+	/** List of which peripheraldevices uses this packageContainer */
+	deviceIds: string[]
 	container: PackageContainer
 }
 export interface StudioRouteSetExclusivityGroup {
@@ -219,6 +232,37 @@ export function getRoutedMappings<M extends MappingExt>(
 	return outputMappings
 }
 
+export type MappingsExtWithPackage = {
+	[layerName: string]: MappingExt & { expectedPackages: ExpectedPackage.Base[] }
+}
+export function routeExpectedPackages(
+	studio: Studio,
+	expectedPackages: (ExpectedPackageDB | ExpectedPackage.Base)[]
+): MappingsExtWithPackage {
+	// Map the expectedPackages onto their specified layer:
+	const mappingsWithPackages: MappingsExtWithPackage = {}
+	for (const expectedPackage of expectedPackages) {
+		const layerName = expectedPackage.layer
+		const mapping = studio.mappings[layerName]
+
+		if (mapping) {
+			if (!mappingsWithPackages[layerName]) {
+				mappingsWithPackages[layerName] = {
+					...mapping,
+					expectedPackages: [],
+				}
+			}
+			mappingsWithPackages[layerName].expectedPackages.push(unprotectObject(expectedPackage))
+		}
+	}
+
+	// Route the mappings
+	const routes = getActiveRoutes(studio)
+	const routedMappingsWithPackages: MappingsExtWithPackage = getRoutedMappings(mappingsWithPackages, routes)
+
+	return routedMappingsWithPackages
+}
+
 export class Studio implements DBStudio {
 	public _id: StudioId
 	public organizationId: OrganizationId | null
@@ -235,6 +279,8 @@ export class Studio implements DBStudio {
 	public routeSets: StudioRouteSets
 	public routeSetExclusivityGroups: StudioRouteSetExclusivityGroups
 	public packageContainers: StudioPackageContainers
+	public previewContainerIds: string[]
+	public thumbnailContainerIds: string[]
 
 	constructor(document: DBStudio) {
 		for (let [key, value] of Object.entries(document)) {

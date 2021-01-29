@@ -9,7 +9,7 @@ import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collect
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
-import { FindOptions } from '../../lib/typings/meteor'
+import { FindOptions, MongoQuery } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
@@ -18,6 +18,11 @@ import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
 } from '../../lib/collections/ExpectedPackageWorkStatuses'
+import {
+	PackageContainerPackageStatuses,
+	PackageContainerPackageStatusDB,
+} from '../../lib/collections/PackageContainerPackageStatus'
+import { Match } from 'meteor/check'
 
 meteorPublish(PubSub.studios, function(selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
@@ -94,6 +99,27 @@ meteorPublish(PubSub.expectedPackageWorkStatuses, function(selector, token) {
 	}
 	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
 		return ExpectedPackageWorkStatuses.find(selector, modifier)
+	}
+	return null
+})
+meteorPublish(PubSub.packageContainerStatuses, function(studioId: StudioId, containerId?: string, packageId?: string) {
+	if (!studioId) throw new Meteor.Error(400, 'studioId argument missing')
+
+	check(studioId, String)
+	check(containerId, Match.Optional(String))
+	check(packageId, Match.Optional(String))
+
+	const modifier: FindOptions<PackageContainerPackageStatusDB> = {
+		fields: {},
+	}
+	const selector: MongoQuery<PackageContainerPackageStatusDB> = {
+		studioId: studioId,
+	}
+	if (containerId) selector.containerId = containerId
+	if (packageId) selector.packageId = packageId
+
+	if (StudioReadAccess.studioContent(selector, { userId: this.userId })) {
+		return PackageContainerPackageStatuses.find(selector, modifier)
 	}
 	return null
 })

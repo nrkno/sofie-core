@@ -29,6 +29,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	//
 	//
 	ensureCollectionProperty('Studios', {}, 'packageContainers', {}, undefined),
+	ensureCollectionProperty('Studios', {}, 'previewContainerIds', {}, undefined),
+	ensureCollectionProperty('Studios', {}, 'thumbnailContainerIds', {}, undefined),
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),

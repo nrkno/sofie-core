@@ -42,6 +42,8 @@ export function insertStudioInner(organizationId: OrganizationId | null, newId?:
 			routeSets: {},
 			routeSetExclusivityGroups: {},
 			packageContainers: {},
+			thumbnailContainerIds: [],
+			previewContainerIds: [],
 		})
 	)
 }

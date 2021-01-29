@@ -1,7 +1,7 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContentVizMSE } from 'timeline-state-resolver-types'
 import { Time } from './common'
 import { SomeContent } from './content'
-import { ExpectedPackage } from './package'
+import { ExpectedPackage, ListenToPackageUpdate } from './package'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -262,7 +262,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	expectedPackages?: ExpectedPackage.Any[]
 
 	/** @todo: to be defined */
-	listenToPackageInfoUpdates?: any[]
+	listenToPackageInfoUpdates?: ListenToPackageUpdate[]
 }
 
 /** @deprecated */

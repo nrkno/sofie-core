@@ -18,6 +18,7 @@ import {
 	getRoutedMappings,
 	MappingExt,
 	MappingsExt,
+	routeExpectedPackages,
 	Studio,
 	StudioId,
 	StudioPackageContainer,
@@ -31,6 +32,7 @@ import {
 	PackageContainer,
 	Accessor,
 	PackageContainerOnPackage,
+	AccessorOnPackage,
 } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
@@ -199,7 +201,6 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					invalidateRundownPlaylist: true,
 
 					studio: undefined,
-					peripheralDevicesInStudio: [],
 					expectedPackages: [],
 					routedExpectedPackages: [],
 					activePlaylist: undefined,
@@ -219,7 +220,6 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 
 				// cache:
 				studio: Studio | undefined
-				peripheralDevicesInStudio: PeripheralDevice[]
 				expectedPackages: ExpectedPackageDB[]
 				routedExpectedPackages: ResultingExpectedPackage[]
 				activePlaylist: DBRundownPlaylist | undefined
@@ -239,7 +239,6 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 				if (context.invalidatePeripheralDevices) {
 					context.invalidatePeripheralDevices = false
 					invalidateRoutedExpectedPackages = true
-					context.peripheralDevicesInStudio = PeripheralDevices.find({ studioId: context.studioId }).fetch()
 				}
 				if (context.invalidateExpectedPackages) {
 					context.invalidateExpectedPackages = false
@@ -271,28 +270,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 
 				if (invalidateRoutedExpectedPackages) {
 					// Map the expectedPackages onto their specified layer:
-					const mappingsWithPackages: MappingsExtWithPackage = {}
-					_.each(context.expectedPackages, (expectedPackage) => {
-						const layerName = expectedPackage.layer
-						const mapping = studio.mappings[layerName]
-
-						if (mapping) {
-							if (!mappingsWithPackages[layerName]) {
-								mappingsWithPackages[layerName] = {
-									...mapping,
-									expectedPackages: [],
-								}
-							}
-							mappingsWithPackages[layerName].expectedPackages.push(expectedPackage)
-						}
-					})
-
-					// Route the mappings
-					const routes = getActiveRoutes(studio)
-					const routedMappingsWithPackages: MappingsExtWithPackage = getRoutedMappings(
-						mappingsWithPackages,
-						routes
-					)
+					const routedMappingsWithPackages = routeExpectedPackages(studio, context.expectedPackages)
 
 					// Filter, keep only the routed mappings for this device:
 					const routedExpectedPackages: ResultingExpectedPackage[] = []
@@ -312,61 +290,90 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 										const combinedSource: PackageContainerOnPackage = {
 											...omit(clone(lookedUpSource.container), 'accessors'),
 											accessors: {},
+											containerId: packageSource.containerId,
 										}
 
-										for (const [packageAccessorId, packageAccessor] of Object.entries(
-											packageSource.accessors
-										)) {
-											const sourceAccessor = lookedUpSource.container.accessors[
-												packageAccessorId
-											] as Accessor.Any | undefined
+										const accessorIds = _.uniq(
+											Object.keys(lookedUpSource.container.accessors).concat(
+												Object.keys(packageSource.accessors)
+											)
+										)
 
-											if (sourceAccessor && sourceAccessor.type === packageAccessor.type) {
-												combinedSource.accessors[packageAccessorId] = deepExtend(
+										for (const accessorId of accessorIds) {
+											const sourceAccessor = lookedUpSource.container.accessors[accessorId] as
+												| Accessor.Any
+												| undefined
+
+											const packageAccessor = packageSource.accessors[accessorId] as
+												| AccessorOnPackage.Any
+												| undefined
+
+											if (
+												packageAccessor &&
+												sourceAccessor &&
+												packageAccessor.type === sourceAccessor.type
+											) {
+												combinedSource.accessors[accessorId] = deepExtend(
 													{},
 													sourceAccessor,
 													packageAccessor
 												)
-											} else {
-												combinedSource.accessors[packageAccessorId] = packageAccessor
+											} else if (packageAccessor) {
+												combinedSource.accessors[accessorId] = clone<AccessorOnPackage.Any>(
+													packageAccessor
+												)
+											} else if (sourceAccessor) {
+												combinedSource.accessors[accessorId] = clone<Accessor.Any>(
+													sourceAccessor
+												) as AccessorOnPackage.Any
 											}
 										}
+
+										// for (const [packageAccessorId, packageAccessor] of Object.entries(
+										// 	packageSource.accessors
+										// )) {
+										// 	const sourceAccessor = lookedUpSource.container.accessors[
+										// 		packageAccessorId
+										// 	] as Accessor.Any | undefined
+
+										// 	if (sourceAccessor && sourceAccessor.type === packageAccessor.type) {
+										// 		combinedSource.accessors[packageAccessorId] = deepExtend(
+										// 			{},
+										// 			sourceAccessor,
+										// 			packageAccessor
+										// 		)
+										// 	} else {
+										// 		combinedSource.accessors[packageAccessorId] = packageAccessor
+										// 	}
+										// }
 										combinedSources.push(combinedSource)
 									}
 								}
 
 								// Lookup Package targets:
+
+								const mappingDeviceId = unprotectString(mapping.deviceId)
+
+								let packageContainerId: string | undefined
+								for (const [containerId, packageContainer] of Object.entries(
+									studio.packageContainers
+								)) {
+									if (packageContainer.deviceIds.includes(mappingDeviceId)) {
+										// TODO: how to handle if a device has multiple containers?
+										packageContainerId = containerId
+										break // just picking the first one found, for now
+									}
+								}
+
 								const combinedTargets: PackageContainerOnPackage[] = []
-
-								for (const device of context.peripheralDevicesInStudio) {
-									// Look up any devices that are referenced in the mappings
-									if (
-										device.category === PeripheralDeviceAPI.DeviceCategory.PLAYOUT &&
-										device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
-										device.settings
-									) {
-										const settings = device.settings as PlayoutDeviceSettings
-
-										const deviceSettings = settings.devices?.[unprotectString(mapping.deviceId)]
-
-										if (deviceSettings) {
-											// @ts-expect-error this is somewhat of a hack, the location isn't defined in typings,
-											// but assumed given by the config manifest of the playout-device.
-											const packageContainer = deviceSettings.packageContainer as {
-												containerId: string | undefined
-											}
-
-											if (packageContainer.containerId) {
-												const lookedUpSource =
-													context.studio?.packageContainers[packageContainer.containerId]
-												if (lookedUpSource) {
-													// Todo: should the be any combination of properties here?
-													combinedTargets.push(
-														lookedUpSource.container as PackageContainerOnPackage
-													)
-												}
-											}
-										}
+								if (packageContainerId) {
+									const lookedUpTarget = context.studio?.packageContainers[packageContainerId]
+									if (lookedUpTarget) {
+										// Todo: should the be any combination of properties here?
+										combinedTargets.push({
+											...(lookedUpTarget.container as PackageContainerOnPackage),
+											containerId: packageContainerId,
+										})
 									}
 								}
 
@@ -384,12 +391,18 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					context.routedExpectedPackages = routedExpectedPackages
 				}
 
+				const packageContainers: { [containerId: string]: PackageContainer } = {}
+				for (const [containerId, studioPackageContainer] of Object.entries(studio.packageContainers)) {
+					packageContainers[containerId] = studioPackageContainer.container
+				}
+
 				const pubData = literal<DBObj[]>([
 					{
 						_id: protectString(`${deviceId}_expectedPackages`),
 						type: 'expected_packages',
 						studioId: studioId,
 						expectedPackages: context.routedExpectedPackages,
+						packageContainers: packageContainers,
 					},
 					{
 						_id: protectString(`${deviceId}_rundownPlaylist`),

@@ -39,6 +39,8 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				routeSets: {},
 				routeSetExclusivityGroups: {},
 				packageContainers: {},
+				thumbnailContainerIds: [],
+				previewContainerIds: [],
 			})
 		},
 	},

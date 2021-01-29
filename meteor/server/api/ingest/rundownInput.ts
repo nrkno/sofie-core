@@ -2117,6 +2117,7 @@ export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, 
 		cache.deferAfterSave(() => {
 			const pAdlibs = asyncCollectionFindFetch(AdLibPieces, { rundownId: rundown._id })
 			const pActions = asyncCollectionFindFetch(AdLibActions, { rundownId: rundown._id })
+			const pStudio = asyncCollectionFindOne(Studios, { _id: studioId })
 
 			const pieces = cache.Pieces.findFetch({
 				startRundownId: rundown._id,
@@ -2124,6 +2125,7 @@ export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, 
 
 			const adlibs = waitForPromise(pAdlibs)
 			const actions = waitForPromise(pActions)
+			const studio = waitForPromise(pStudio)
 
 			// const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
 			// 	cache,
@@ -2131,11 +2133,12 @@ export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, 
 			// )
 
 			// todo: keep expectedPackage of the currently playing partInstance
+			if (!studio) throw new Error(`Studio "${studioId}" not found!`)
 
 			const expectedPackages: ExpectedPackageDB[] = [
-				...generateExpectedPackages(studioId, rundownId, pieces, ExpectedPackageDBType.PIECE),
-				...generateExpectedPackages(studioId, rundownId, adlibs, ExpectedPackageDBType.PIECE),
-				...generateExpectedPackages(studioId, rundownId, actions, ExpectedPackageDBType.ADLIB_ACTION),
+				...generateExpectedPackages(studio, rundownId, pieces, ExpectedPackageDBType.PIECE),
+				...generateExpectedPackages(studio, rundownId, adlibs, ExpectedPackageDBType.PIECE),
+				...generateExpectedPackages(studio, rundownId, actions, ExpectedPackageDBType.ADLIB_ACTION),
 			]
 
 			saveIntoDb<ExpectedPackageDB, ExpectedPackageDB>(
@@ -2149,7 +2152,7 @@ export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, 
 	}
 }
 function generateExpectedPackages(
-	studioId: StudioId,
+	studio: Studio,
 	rundownId: RundownId,
 	pieces: {
 		_id: ProtectedString<any>
@@ -2160,15 +2163,23 @@ function generateExpectedPackages(
 	const packages: ExpectedPackageDB[] = []
 	for (const piece of pieces) {
 		if (piece.expectedPackages) {
+			let i = 0
 			for (const expectedPackage of piece.expectedPackages) {
+				let id = expectedPackage._id
+				if (!id) id = '__unnamed' + i++
+
 				packages.push({
 					...expectedPackage,
-					_id: protectString(`${piece._id}_${getHash(JSON.stringify(expectedPackage))}`),
+					_id: protectString(`${piece._id}_${id}`),
 					contentVersionHash: getContentVersionHash(expectedPackage),
-					studioId,
+					studioId: studio._id,
 					rundownId,
 					pieceId: piece._id,
 					fromPieceType: pieceType,
+					sideEffect: {
+						previewContainerId: studio.previewContainerIds[0], // just pick the first. Todo: something else?
+						thumbnailContainerId: studio.thumbnailContainerIds[0], // just pick the first. Todo: something else?
+					},
 				})
 			}
 		}

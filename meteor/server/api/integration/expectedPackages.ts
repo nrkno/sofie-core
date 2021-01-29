@@ -13,12 +13,18 @@ import {
 } from '../../../lib/collections/ExpectedPackageWorkStatuses'
 import { getCurrentTime, literal, protectStringObject } from '../../../lib/lib'
 import {
-	getPackageContainerId,
+	getPackageContainerPackageId,
+	PackageContainerPackageStatuses,
+	PackageContainerPackageStatusDB,
 	PackageContainerPackageStatus,
-	PackageContainerStatus,
-	PackageContainerStatuses,
-} from '../../../lib/collections/PackageContainerStatuses'
-import { getPackageInfoId, PackageInfoBase, PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
+} from '../../../lib/collections/PackageContainerPackageStatus'
+import {
+	getPackageInfoId,
+	PackageInfoBase,
+	PackageInfoDB,
+	PackageInfoDBType,
+	PackageInfos,
+} from '../../../lib/collections/PackageInfos'
 
 export namespace PackageManagerIntegration {
 	export function insertExpectedPackageWorkStatus(
@@ -130,31 +136,33 @@ export namespace PackageManagerIntegration {
 		check(containerId, String)
 		check(packageId, String)
 
-		const id = getPackageContainerId(peripheralDevice.studioId, containerId)
+		const id = getPackageContainerPackageId(peripheralDevice.studioId, containerId, packageId)
 
 		if (packageStatus) {
-			const mod = {}
-			mod[`packages.${packageId}`] = packageStatus
-
-			const updateCount = PackageContainerStatuses.update(id, { $set: mod })
+			const updateCount = PackageContainerPackageStatuses.update(id, {
+				$set: {
+					status: packageStatus,
+					modified: getCurrentTime(),
+				},
+			})
 			if (updateCount === 0) {
 				// The PackageContainerStatus doesn't exist
 				// Create it on the fly:
 
-				PackageContainerStatuses.upsert(id, {
-					$set: literal<Omit<PackageContainerStatus, 'packages'>>({
+				PackageContainerPackageStatuses.upsert(id, {
+					$set: literal<PackageContainerPackageStatusDB>({
 						_id: id,
 						studioId: peripheralDevice.studioId,
-						[`packages.${packageId}`]: packageStatus,
+						containerId: containerId,
+						packageId: packageId,
+						status: packageStatus,
+						modified: getCurrentTime(),
 					}),
 				})
 			}
 		} else {
 			// removed
-
-			const mod = {}
-			mod[`packages.${packageId}`] = 1
-			PackageContainerStatuses.update(id, { $unset: mod })
+			PackageContainerPackageStatuses.remove(id)
 		}
 	}
 	export function fetchPackageInfoMetadata(
@@ -189,7 +197,7 @@ export namespace PackageManagerIntegration {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		type: string,
+		type: PackageInfoDBType, // string
 		packageId: ExpectedPackageId,
 		expectedContentVersionHash: string,
 		actualContentVersionHash: string,

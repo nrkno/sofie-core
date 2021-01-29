@@ -43,7 +43,8 @@ import { PieceGroupMetadata } from '../../lib/rundown/pieces'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPackageWorkStatuses'
-import { PackageContainerPackageStatus } from '../../lib/collections/PackageContainerStatuses'
+import { PackageContainerPackageStatus } from '../../lib/collections/PackageContainerPackageStatus'
+import { PackageInfoDBType } from '../../lib/collections/PackageInfos'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -1153,7 +1154,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	updatePackageInfo(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		type: string,
+		type: PackageInfoDBType, // string
 		packageId: ExpectedPackageId,
 		expectedContentVersionHash: string,
 		actualContentVersionHash: string,
