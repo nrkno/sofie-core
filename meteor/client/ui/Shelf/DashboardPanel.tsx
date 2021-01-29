@@ -32,10 +32,10 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
-import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../../lib/hotkeyRegistry'
+import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 
 interface IState {
 	outputLayers: {
@@ -770,12 +770,11 @@ export function getNextPiecesReactive(
 }
 
 export function getUnfinishedPieceInstancesGrouped(
-	currentPartInstanceId: PartInstanceId | null,
-	adlib: boolean = true
+	currentPartInstanceId: PartInstanceId | null
 ): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> & {
 	unfinishedPieceInstances: PieceInstance[]
 } {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId, adlib)
+	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)
 
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
@@ -865,6 +864,7 @@ export const DashboardPanel = translateWithTracker<
 			props.playlist.nextPartInstanceId,
 			props.showStyleBase
 		)
+
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),
