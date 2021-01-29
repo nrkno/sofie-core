@@ -20,7 +20,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { RundownViewKbdShortcuts } from '../RundownView'
 
 import { Spinner } from '../../lib/Spinner'
-import { literal, normalizeArray, unprotectString, protectString, Omit } from '../../../lib/lib'
+import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -32,6 +32,7 @@ import {
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
+	SomeTimelineContent,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -144,6 +145,7 @@ const AdLibListView = withTranslation()(
 										outputLayerId: '',
 										rundownId: protectString(''),
 										_rank: layer._rank,
+										content: { timelineObjects: [] },
 									})
 								)
 						)
@@ -405,12 +407,15 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			.map((action) => {
 				let sourceLayerId = ''
 				let outputLayerId = ''
-				let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
+				let content: SomeTimelineContent = { timelineObjects: [] }
 				const isContent = RundownUtils.isAdlibActionContent(action.display)
 				if (isContent) {
 					sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
 					outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-					content = (action.display as IBlueprintActionManifestDisplayContent).content
+					content = {
+						timelineObjects: [],
+						...(action.display as IBlueprintActionManifestDisplayContent).content,
+					}
 				}
 
 				return literal<AdLibPieceUi>({

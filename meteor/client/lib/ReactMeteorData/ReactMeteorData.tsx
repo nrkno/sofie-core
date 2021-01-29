@@ -8,7 +8,6 @@ import { Tracker } from 'meteor/tracker'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
 import * as _ from 'underscore'
-import { auto } from '@popperjs/core'
 import { PubSub } from '../../../lib/api/pubsub'
 import { stringifyObjects } from '../../../lib/lib'
 
@@ -45,7 +44,7 @@ class MeteorDataManager {
 		clearTimeout(globalTrackerTimeout)
 		globalTrackerTimeout = undefined
 		globalTrackerTimestamp = undefined
-		globalTrackerQueue.map((func) => func())
+		globalTrackerQueue.forEach((func) => func())
 		globalTrackerQueue.length = 0
 	}
 

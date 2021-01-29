@@ -91,10 +91,11 @@ import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/DocumentTitleProvider'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
+import { RundownDividerHeader, RundownLoopingHeader } from './RundownView/RundownDividerHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownViewEventBus'
+import { LoopingIcon } from '../lib/ui/icons/looping'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -236,12 +237,16 @@ const TimingDisplay = withTranslation()(
 				return currentRundown && (rundownPlaylist.name !== currentRundown.name || rundownCount > 1) ? (
 					<span
 						className="timing-clock-label left hide-overflow rundown-name"
-						title={`${currentRundown.name} - ${rundownPlaylist.name}`}>
-						<strong>{currentRundown.name}</strong> {rundownPlaylist.name}
+						title={
+							rundownPlaylist.loop
+								? `${currentRundown.name} - ${rundownPlaylist.name} (Looped)`
+								: `${currentRundown.name} - ${rundownPlaylist.name}`
+						}>
+						<strong>{currentRundown.name}</strong> {rundownPlaylist.name} {rundownPlaylist.loop && <LoopingIcon />}
 					</span>
 				) : (
 					<span className="timing-clock-label left hide-overflow rundown-name" title={rundownPlaylist.name}>
-						{rundownPlaylist.name}
+						{rundownPlaylist.name} {rundownPlaylist.loop && <LoopingIcon />}
 					</span>
 				)
 			}
@@ -316,7 +321,7 @@ const TimingDisplay = withTranslation()(
 						)}
 						{rundownPlaylist.expectedDuration ? (
 							<React.Fragment>
-								{rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration && (
+								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration && (
 									<span className="timing-clock plan-end right visual-last-child">
 										<span className="timing-clock-label right">{t('Planned End')}</span>
 										<Moment
@@ -326,7 +331,7 @@ const TimingDisplay = withTranslation()(
 										/>
 									</span>
 								)}
-								{rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration && (
+								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration && (
 									<span className="timing-clock countdown plan-end right">
 										{RundownUtils.formatDiffToTimecode(
 											getCurrentTime() - (rundownPlaylist.expectedStart + rundownPlaylist.expectedDuration),
@@ -362,7 +367,7 @@ const TimingDisplay = withTranslation()(
 							</React.Fragment>
 						) : (
 							<React.Fragment>
-								{this.props.timingDurations ? (
+								{!rundownPlaylist.loop && this.props.timingDurations ? (
 									<span className="timing-clock plan-end right visual-last-child">
 										<span className="timing-clock-label right">{t('Expected End')}</span>
 										<Moment
@@ -2285,7 +2290,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		renderSegmentsList() {
 			if (this.props.playlist && this.props.rundowns.length) {
-				return <div className="segment-timeline-container">{this.renderSegments()}</div>
+				return (
+					<React.Fragment>
+						{this.props.playlist?.loop && <RundownLoopingHeader playlist={this.props.playlist} />}
+						<div className="segment-timeline-container">{this.renderSegments()}</div>
+						{this.props.playlist?.loop && <RundownLoopingHeader playlist={this.props.playlist} />}
+					</React.Fragment>
+				)
 			} else {
 				return (
 					<div className="mod">

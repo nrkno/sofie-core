@@ -150,8 +150,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		return clone(unprotectObject(lastPieceInstance))
 	}
 	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance {
-		const pieceExt = (piece as unknown) as Partial<PieceInstance>
-		const partInstanceId = pieceExt.partInstanceId
+		const pieceExt = (piece as unknown) as Partial<PieceInstance> | undefined
+		const partInstanceId = pieceExt?.partInstanceId
 		if (!partInstanceId) {
 			throw new Error('Cannot find PartInstance from invalid PieceInstance')
 		}
@@ -316,7 +316,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				_id: getRandomId(),
 				rundownId: currentPartInstance.rundownId,
 				segmentId: currentPartInstance.segmentId,
-				_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
+				_rank: 99999, // Corrected in innerStartQueuedAdLib
 				notes: [],
 				invalid: false,
 				invalidReason: undefined,

@@ -7,7 +7,6 @@ import {
 	ProtectedStringProperties,
 	protectString,
 	unprotectString,
-	Omit,
 } from '../lib'
 import {
 	IBlueprintPartInstance,
@@ -16,7 +15,7 @@ import {
 	IBlueprintPartInstanceTimings,
 } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { DBPart, Part } from './Parts'
+import { DBPart, Part, PartId } from './Parts'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 import { registerIndex } from '../database'
@@ -25,10 +24,7 @@ import { registerIndex } from '../database'
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
 export interface InternalIBlueprintPartInstance
 	extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
-	part: ProtectedStringProperties<
-		IBlueprintPartInstance['part'],
-		'_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'
-	>
+	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>
 }
 export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance {
 	return partInstance as any
@@ -95,6 +91,8 @@ export class PartInstance implements DBPartInstance {
 
 	public allowedToUseTransition?: boolean
 
+	public orphaned?: 'adlib-part' // Future scope: | 'deleted'
+
 	constructor(document: DBPartInstance, isTemporary?: boolean) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
@@ -118,6 +116,13 @@ export function wrapPartToTemporaryInstance(part: DBPart): PartInstance {
 	)
 }
 
+export function findPartInstanceInMapOrWrapToTemporary<T extends Partial<PartInstance>>(
+	partInstancesMap: Map<PartId, T>,
+	part: DBPart
+): T {
+	return partInstancesMap.get(part._id) || (wrapPartToTemporaryInstance(part) as T)
+}
+
 export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance>>(
 	partInstances: { [partId: string]: T | undefined },
 	part: DBPart
@@ -134,14 +139,17 @@ registerIndex(PartInstances, {
 	rundownId: 1,
 	segmentId: 1,
 	takeCount: 1,
+	reset: 1,
 })
 registerIndex(PartInstances, {
 	rundownId: 1,
 	takeCount: 1,
+	reset: 1,
 })
 registerIndex(PartInstances, {
 	rundownId: 1,
 	// @ts-ignore deep property
 	'part._id': 1,
 	takeCount: 1,
+	reset: 1,
 })

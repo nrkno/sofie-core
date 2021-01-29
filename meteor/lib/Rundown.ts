@@ -9,6 +9,7 @@ import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
+	PieceInstanceWithTimings,
 } from './rundown/infinites'
 import { FindOptions } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
@@ -49,7 +50,7 @@ export interface ISourceLayerExtended extends ISourceLayer {
 	followingItems: Array<PieceExtended>
 }
 export interface PieceExtended {
-	instance: PieceInstance
+	instance: PieceInstanceWithTimings
 
 	/** Source layer that this piece belongs to */
 	sourceLayer?: ISourceLayerExtended

@@ -1,5 +1,5 @@
 import { TransformedCollection } from '../typings/meteor'
-import { Time, registerCollection, Omit, ProtectedString, ProtectedStringProperties } from '../lib'
+import { Time, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { IBlueprintAsRunLogEvent } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'

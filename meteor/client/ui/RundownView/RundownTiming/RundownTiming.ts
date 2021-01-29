@@ -38,41 +38,27 @@ export namespace RundownTiming {
 		/** This is the complete duration of the rundown: as planned for the unplayed content, and as-run for the played-out, but ignoring unplayed/unplayable parts in order */
 		asPlayedRundownDuration?: number
 		/** this is the countdown to each of the parts relative to the current on air part. */
-		partCountdown?: {
-			[key: string]: number
-		}
+		partCountdown?: Record<string, number>
 		/** The calculated durations of each of the Parts: as-planned/as-run depending on state. */
-		partDurations?: {
-			[key: string]: number
-		}
+		partDurations?: Record<string, number>
 		/** The offset of each of the Parts from the beginning of the Rundown. */
-		partStartsAt?: {
-			[key: string]: number
-		}
+		partStartsAt?: Record<string, number>
 		/** Same as partStartsAt, but will include display duration overrides
 		 *  (such as minimal display width for an Part, etc.).
 		 */
-		partDisplayStartsAt?: {
-			[key: string]: number
-		}
+		partDisplayStartsAt?: Record<string, number>
 		/** Same as partDurations, but will include display duration overrides
 		 * (such as minimal display width for an Part, etc.).
 		 */
-		partDisplayDurations?: {
-			[key: string]: number
-		}
+		partDisplayDurations?: Record<string, number>
 		/** As-played durations of each part. Will be 0, if not yet played.
 		 * Will be counted from start to now if currently playing.
 		 */
-		partPlayed?: {
-			[key: string]: number
-		}
+		partPlayed?: Record<string, number>
 		/** Expected durations of each of the parts or the as-played duration,
 		 * if the Part does not have an expected duration.
 		 */
-		partExpectedDurations?: {
-			[key: string]: number
-		}
+		partExpectedDurations?: Record<string, number>
 		/** Remaining time on current part */
 		remainingTimeOnCurrentPart?: number | undefined
 		/** Current part will autoNext */

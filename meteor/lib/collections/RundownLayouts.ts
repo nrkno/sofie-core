@@ -125,6 +125,7 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	hide?: boolean
 	displayTakeButtons?: boolean
 	queueAllAdlibs?: boolean
+	toggleOnSingleClick?: boolean
 }
 
 /** A string, identifying a RundownLayout */

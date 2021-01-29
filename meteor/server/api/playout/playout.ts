@@ -352,8 +352,6 @@ export namespace ServerPlayoutAPI {
 				nextPart = nextPartId
 			}
 			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
-			if (nextPart.dynamicallyInsertedAfterPartId)
-				throw new Meteor.Error(500, `Part "${nextPartId}" cannot be set as next!`)
 		}
 
 		libsetNextPart(cache, playlist, nextPart, setManually, nextTimeOffset)

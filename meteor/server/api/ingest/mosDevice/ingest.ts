@@ -424,7 +424,7 @@ export function handleInsertParts(
 		})
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(existingPlaylist)) // todo: change this
-		diffAndApplyChanges(cache, studio, existingPlaylist, rundown, ingestRundown, newIngestSegments, removePrevious)
+		diffAndApplyChanges(cache, studio, existingPlaylist, rundown, ingestRundown, newIngestSegments)
 		waitForPromise(cache.saveAllToDatabase())
 
 		span?.end()
@@ -607,8 +607,7 @@ function diffAndApplyChanges(
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	oldIngestRundown: LocalIngestRundown,
-	newIngestSegments: LocalIngestSegment[],
-	removePreviousParts?: boolean
+	newIngestSegments: LocalIngestSegment[]
 	// newIngestParts: AnnotatedIngestPart[]
 ) {
 	const span = profiler.startSpan('mosDevice.ingest.diffAndApplyChanges')
@@ -716,8 +715,7 @@ function diffAndApplyChanges(
 		studio,
 		playlist,
 		rundown,
-		_.sortBy([..._.values(segmentDiff.added), ..._.values(segmentDiff.changed)], (se) => se.rank),
-		removePreviousParts
+		_.sortBy([..._.values(segmentDiff.added), ..._.values(segmentDiff.changed)], (se) => se.rank)
 	)
 }
 

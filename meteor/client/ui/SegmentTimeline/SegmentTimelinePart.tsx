@@ -26,6 +26,7 @@ import { IContextMenuContext } from '../RundownView'
 import { CSSProperties } from '../../styles/_cssVariables'
 import { ISourceLayerExtended, PieceExtended } from '../../../lib/Rundown'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import { LoopingIcon } from '../../lib/ui/icons/looping'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -760,6 +761,7 @@ export const SegmentTimelinePart = withTranslation()(
 					this.props.isLastSegment &&
 					this.props.isLastInSegment &&
 					(!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartInstanceId))
+				const isEndOfLoopingShow = this.props.isLastSegment && this.props.isLastInSegment && this.props.playlist.loop
 				let invalidReasonColorVars: CSSProperties | undefined = undefined
 				if (innerPart.invalidReason && innerPart.invalidReason.color) {
 					const invalidColor = SegmentTimelinePart0.convertHexToRgba(innerPart.invalidReason.color)
@@ -815,7 +817,8 @@ export const SegmentTimelinePart = withTranslation()(
 											{(this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive) && t('Next')}
 										</React.Fragment>
 									)}
-									{this.props.isAfterLastValidInSegmentAndItsLive && CARRIAGE_RETURN_ICON}
+									{this.props.isAfterLastValidInSegmentAndItsLive && !this.props.playlist.loop && CARRIAGE_RETURN_ICON}
+									{this.props.isAfterLastValidInSegmentAndItsLive && this.props.playlist.loop && <LoopingIcon />}
 								</div>
 								{!this.props.relative && this.props.part.instance.part.identifier && (
 									<div className="segment-timeline__identifier">{this.props.part.instance.part.identifier}</div>
@@ -887,13 +890,19 @@ export const SegmentTimelinePart = withTranslation()(
 										})}>
 										{innerPart.autoNext && t('Auto') + ' '}
 										{this.state.isLive && t('Next')}
-										{!isEndOfShow && CARRIAGE_RETURN_ICON}
+										{!isEndOfShow && !isEndOfLoopingShow && CARRIAGE_RETURN_ICON}
+										{isEndOfLoopingShow && <LoopingIcon />}
 									</div>
 								</div>
 							)}
-							{isEndOfShow && (
+							{isEndOfShow && !this.props.playlist.loop && (
 								<div className="segment-timeline__part__show-end">
 									<div className="segment-timeline__part__show-end__label">{t('Show End')}</div>
+								</div>
+							)}
+							{isEndOfShow && this.props.playlist.loop && (
+								<div className="segment-timeline__part__show-end loop">
+									<div className="segment-timeline__part__show-end__label">{t('Loops to top')}</div>
 								</div>
 							)}
 						</div>

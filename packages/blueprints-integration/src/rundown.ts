@@ -1,7 +1,7 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContentVizMSE } from 'timeline-state-resolver-types'
 import { Time } from './common'
-import { SomeContent } from './content'
 import { ExpectedPackage, ListenToPackageUpdate } from './package'
+import { SomeTimelineContent } from './content'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -166,9 +166,6 @@ export interface IBlueprintPartDB<TMetadata = unknown> extends IBlueprintPart<TM
 	_id: string
 	/** The segment ("Title") this line belongs to */
 	segmentId: string
-
-	/** if the part was dunamically inserted (adlib) */
-	dynamicallyInsertedAfterPartId?: string
 }
 /** The Part instance sent from Core */
 export interface IBlueprintPartInstance<TMetadata = unknown> {
@@ -176,7 +173,10 @@ export interface IBlueprintPartInstance<TMetadata = unknown> {
 	/** The segment ("Title") this line belongs to */
 	segmentId: string
 
-	part: IBlueprintPartDB<TMetadata> // TODO - omit some duplicated fields?
+	part: IBlueprintPartDB<TMetadata>
+
+	/** Whether the PartInstance is an orphan (the Part referenced does not exist). Indicates the reason it is orphaned */
+	orphaned?: 'adlib-part' // Future scope: | 'deleted'
 }
 
 export interface IBlueprintPartInstanceTimings {
@@ -224,11 +224,8 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	sourceLayerId: string
 	/** Layer output this piece belongs to */
 	outputLayerId: string
-	/** The object describing the item in detail
-	 * @todo should this be deprecated altogether?
-	 * @deprecated
-	 */
-	content?: SomeContent // @todo: rename to guiContent displayManifest?
+	/** The object describing the item in detail */
+	content: SomeTimelineContent
 
 	/** The transition used by this piece to transition to and from the piece */
 	transitions?: {

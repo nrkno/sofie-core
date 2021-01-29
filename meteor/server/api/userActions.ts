@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
-import { getCurrentTime, getHash, Omit, makePromise } from '../../lib/lib'
+import { getCurrentTime, getHash, makePromise } from '../../lib/lib'
 import { Rundowns, RundownHoldState, RundownId, Rundown } from '../../lib/collections/Rundowns'
 import { Parts, Part, PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
@@ -167,10 +167,7 @@ export function setNextSegment(
 		}
 
 		const partsInSegment = nextSegment.getParts()
-		const firstValidPartInSegment = _.find(
-			partsInSegment,
-			(p) => p.isPlayable() && !p.dynamicallyInsertedAfterPartId
-		)
+		const firstValidPartInSegment = _.find(partsInSegment, (p) => p.isPlayable())
 
 		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')
 

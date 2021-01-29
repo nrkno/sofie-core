@@ -526,6 +526,9 @@ export function setupDefaultRundown(
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
 	}
 	Pieces.insert(piece000)
 
@@ -544,6 +547,9 @@ export function setupDefaultRundown(
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
 	}
 	Pieces.insert(piece001)
 
@@ -559,6 +565,9 @@ export function setupDefaultRundown(
 		name: 'AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	AdLibPieces.insert(adLibPiece000)
@@ -588,6 +597,9 @@ export function setupDefaultRundown(
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
 	}
 	Pieces.insert(piece010)
 
@@ -651,6 +663,9 @@ export function setupDefaultRundown(
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	const globalAdLib1: RundownBaselineAdLibItem = {
@@ -663,6 +678,9 @@ export function setupDefaultRundown(
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	RundownBaselineAdLibPieces.insert(globalAdLib0)
@@ -801,6 +819,9 @@ export function setupRundownWithAutoplayPart0(
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	const globalAdLib1: RundownBaselineAdLibItem = {
@@ -813,6 +834,9 @@ export function setupRundownWithAutoplayPart0(
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	RundownBaselineAdLibPieces.insert(globalAdLib0)

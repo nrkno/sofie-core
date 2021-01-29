@@ -10,6 +10,7 @@ import {
 	getRandomId,
 	waitForPromise,
 	assertNever,
+	getRank,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
@@ -18,7 +19,14 @@ import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
 import { Part } from '../../../lib/collections/Parts'
-import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache, getSelectedPartInstancesFromCache } from './lib'
+import {
+	prefixAllObjectIds,
+	setNextPart,
+	getRundownIDsFromCache,
+	getSelectedPartInstancesFromCache,
+	selectNextPart,
+	getAllOrderedPartsFromCache,
+} from './lib'
 import {
 	convertAdLibToPieceInstance,
 	getResolvedPieces,
@@ -26,7 +34,7 @@ import {
 	setupPieceInstanceInfiniteProperties,
 } from './pieces'
 import { updateTimeline } from './timeline'
-import { updatePartRanks, afterRemoveParts } from '../rundown'
+import { updatePartInstanceRanks } from '../rundown'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
 import {
@@ -270,15 +278,14 @@ export namespace ServerPlayoutAdLibAPI {
 				segmentId: currentPartInstance.segmentId,
 				takeCount: currentPartInstance.takeCount + 1,
 				rehearsal: !!rundownPlaylist.rehearsal,
+				orphaned: 'adlib-part',
 				part: new Part({
 					_id: getRandomId(),
-					_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
+					_rank: 99999, // Corrected in innerStartQueuedAdLib
 					externalId: '',
 					segmentId: currentPartInstance.segmentId,
 					rundownId: rundown._id,
 					title: adLibPiece.name,
-					dynamicallyInsertedAfterPartId:
-						currentPartInstance.part.dynamicallyInsertedAfterPartId ?? currentPartInstance.part._id,
 					prerollDuration: adLibPiece.adlibPreroll,
 					expectedDuration: adLibPiece.expectedDuration,
 				}),
@@ -402,22 +409,21 @@ export namespace ServerPlayoutAdLibAPI {
 		const span = profiler.startSpan('innerStartQueuedAdLib')
 		logger.info('adlibQueueInsertPartInstance')
 
-		// check if there's already a queued part after this:
-		const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
-		if (nextPartInstance && nextPartInstance.part.dynamicallyInsertedAfterPartId) {
-			// TODO-PartInstance - pending new data flow - the call to setNextPart will prune the partInstance, so this will not be needed
-			cache.Parts.remove(nextPartInstance.part._id)
-			cache.PartInstances.remove(nextPartInstance._id)
-			cache.PieceInstances.remove({ partInstanceId: nextPartInstance._id })
-			afterRemoveParts(cache, currentPartInstance.rundownId, [nextPartInstance.part])
-		}
-
 		// Ensure it is labelled as dynamic
-		newPartInstance.part.dynamicallyInsertedAfterPartId = currentPartInstance.part._id
+		newPartInstance.orphaned = 'adlib-part'
+
+		const followingPart = selectNextPart(
+			rundownPlaylist,
+			currentPartInstance,
+			getAllOrderedPartsFromCache(cache, rundownPlaylist),
+			true
+		)
+		newPartInstance.part._rank = getRank(
+			currentPartInstance.part,
+			followingPart?.part?.segmentId === newPartInstance.segmentId ? followingPart?.part : undefined
+		)
 
 		cache.PartInstances.insert(newPartInstance)
-		// TODO-PartInstance - pending new data flow
-		cache.Parts.insert(newPartInstance.part)
 
 		newPieceInstances.forEach((pieceInstance) => {
 			// Ensure it is labelled as dynamic
@@ -430,11 +436,13 @@ export namespace ServerPlayoutAdLibAPI {
 			cache.PieceInstances.insert(pieceInstance)
 		})
 
-		updatePartRanks(cache, rundownPlaylist, [newPartInstance.part.segmentId])
+		updatePartInstanceRanks(cache, rundownPlaylist, [
+			{ segmentId: newPartInstance.part.segmentId, oldPartIdsAndRanks: null },
+		])
 
 		// Find and insert any rundown defined infinites that we should inherit
-		const part = cache.Parts.findOne(newPartInstance.part._id)
-		const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, part!))
+		newPartInstance = cache.PartInstances.findOne(newPartInstance._id)!
+		const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, newPartInstance.part))
 		const infinitePieceInstances = getPieceInstancesForPart(
 			cache,
 			rundownPlaylist,
@@ -551,6 +559,9 @@ export namespace ServerPlayoutAdLibAPI {
 									startPartId: currentPartInstance.part._id,
 									status: RundownAPI.PieceStatusCode.UNKNOWN,
 									virtual: true,
+									content: {
+										timelineObjects: [],
+									},
 								},
 								currentPartInstance.rundownId,
 								currentPartInstance._id

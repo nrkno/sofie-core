@@ -587,7 +587,7 @@ export function getAllNotesForSegmentAndParts(segments: DBSegment[], parts: Part
 			},
 		])
 	)
-	parts.map((part) => {
+	parts.forEach((part) => {
 		const newNotes = (part.notes || []).concat(part.getInvalidReasonNotes())
 		if (newNotes.length > 0) {
 			const segNotes = segmentNotes[unprotectString(part.segmentId)]
