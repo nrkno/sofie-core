@@ -31,30 +31,18 @@ interface PrompterConfig {
 	followTake?: boolean
 	fontSize?: number
 	margin?: number
-
-//	replaced by joycon and pedal
-//	speedMap?: number[]
-//	reverseSpeedMap?: number[]
-//	rangeRevMin?: number
-//	rangeNeutralMin?: number
-//	rangeNeutralMax?: number
-//	rangeFwdMax?: number
-
-//	start replacement
-	joyconSpeedMap?: number[]
-	joyconReverseSpeedMap?: number[]
-	joyconRangeRevMin?: number
-	joyconRangeNeutralMin?: number
-	joyconRangeNeutralMax?: number
-	joyconRangeFwdMax?: number
-	pedalSpeedMap?: number[]
-	pedalReverseSpeedMap?: number[]
-	pedalRangeRevMin?: number
-	pedalRangeNeutralMin?: number
-	pedalRangeNeutralMax?: number
-	pedalRangeFwdMax?: number
-//	end replacement
-
+	joycon_speedMap?: number[]
+	joycon_reverseSpeedMap?: number[]
+	joycon_rangeRevMin?: number
+	joycon_rangeNeutralMin?: number
+	joycon_rangeNeutralMax?: number
+	joycon_rangeFwdMax?: number
+	pedal_speedMap?: number[]
+	pedal_reverseSpeedMap?: number[]
+	pedal_rangeRevMin?: number
+	pedal_rangeNeutralMin?: number
+	pedal_rangeNeutralMax?: number
+	pedal_rangeFwdMax?: number
 	marker?: 'center' | 'top' | 'bottom' | 'hide'
 	showMarker: boolean
 	showScroll: boolean
@@ -128,53 +116,31 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			followTake: queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1',
 			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
 			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
-
-//
-//			Replaced by joycon and pedal settings
-//
-//			speedMap:
-//				queryParams['speedMap'] === undefined
-//					? undefined
-//					: new Array().concat(queryParams['speedMap']).map((value) => parseInt(value, 10)),
-//			reverseSpeedMap:
-//				queryParams['reverseSpeedMap'] === undefined
-//					? undefined
-//					: new Array().concat(queryParams['reverseSpeedMap']).map((value) => parseInt(value, 10)),
-//			rangeRevMin: parseInt(firstIfArray(queryParams['rangeRevMin']) as string, 10) || undefined,
-//			rangeNeutralMin: parseInt(firstIfArray(queryParams['rangeNeutralMin']) as string, 10) || undefined,
-//			rangeNeutralMax: parseInt(firstIfArray(queryParams['rangeNeutralMax']) as string, 10) || undefined,
-//			rangeFwdMax: parseInt(firstIfArray(queryParams['rangeFwdMax']) as string, 10) || undefined,
-//
-
-//			start replacement
-
-			joyconSpeedMap:
-				queryParams['joyconSpeedMap'] === undefined
+			joycon_speedMap:
+				queryParams['joycon_speedMap'] === undefined
 					? undefined
-					: new Array().concat(queryParams['joyconSpeedMap']).map((value) => parseInt(value, 10)),
-			joyconReverseSpeedMap:
-				queryParams['joyconReverseSpeedMap'] === undefined
+					: new Array().concat(queryParams['joycon_speedMap']).map((value) => parseInt(value, 10)),
+			joycon_reverseSpeedMap:
+				queryParams['joycon_reverseSpeedMap'] === undefined
 					? undefined
-					: new Array().concat(queryParams['joyconReverseSpeedMap']).map((value) => parseInt(value, 10)),
-			joyconRangeRevMin: parseInt(firstIfArray(queryParams['joyconRangeRevMin']) as string, 10) || undefined,
-			joyconRangeNeutralMin: parseInt(firstIfArray(queryParams['joyconRangeNeutralMin']) as string, 10) || undefined,
-			joyconRangeNeutralMax: parseInt(firstIfArray(queryParams['joyconRangeNeutralMax']) as string, 10) || undefined,
-			joyconRangeFwdMax: parseInt(firstIfArray(queryParams['joyconRangeFwdMax']) as string, 10) || undefined,
-			pedalSpeedMap:
-				queryParams['pedalSpeedMap'] === undefined
+					: new Array().concat(queryParams['joycon_reverseSpeedMap']).map((value) => parseInt(value, 10)),
+			joycon_rangeRevMin: parseInt(firstIfArray(queryParams['joycon_rangeRevMin']) as string, 10) || undefined,
+			joycon_rangeNeutralMin: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMin']) as string, 10) || undefined,
+			joycon_rangeNeutralMax: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMax']) as string, 10) || undefined,
+			joycon_rangeFwdMax: parseInt(firstIfArray(queryParams['joycon_rangeFwdMax']) as string, 10) || undefined,
+			pedal_speedMap:
+				queryParams['pedal_speedMap'] === undefined
 					? undefined
-					: new Array().concat(queryParams['pedalSpeedMap']).map((value) => parseInt(value, 10)),
-			pedalReverseSpeedMap:
-				queryParams['pedalReverseSpeedMap'] === undefined
+					: new Array().concat(queryParams['pedal_speedMap']).map((value) => parseInt(value, 10)),
+			pedal_reverseSpeedMap:
+				queryParams['pedal_reverseSpeedMap'] === undefined
 					? undefined
-					: new Array().concat(queryParams['pedalReverseSpeedMap']).map((value) => parseInt(value, 10)),
-			pedalRangeRevMin: parseInt(firstIfArray(queryParams['pedalRangeRevMin']) as string, 10) || undefined,
-			pedalRangeNeutralMin: parseInt(firstIfArray(queryParams['pedalRangeNeutralMin']) as string, 10) || undefined,
-			pedalRangeNeutralMax: parseInt(firstIfArray(queryParams['pedalRangeNeutralMax']) as string, 10) || undefined,
-			pedalRangeFwdMax: parseInt(firstIfArray(queryParams['pedalRangeFwdMax']) as string, 10) || undefined,
+					: new Array().concat(queryParams['pedal_reverseSpeedMap']).map((value) => parseInt(value, 10)),
+			pedal_rangeRevMin: parseInt(firstIfArray(queryParams['pedal_rangeRevMin']) as string, 10) || undefined,
+			pedal_rangeNeutralMin: parseInt(firstIfArray(queryParams['pedal_rangeNeutralMin']) as string, 10) || undefined,
+			pedal_rangeNeutralMax: parseInt(firstIfArray(queryParams['pedal_rangeNeutralMax']) as string, 10) || undefined,
+			pedal_rangeFwdMax: parseInt(firstIfArray(queryParams['pedal_rangeFwdMax']) as string, 10) || undefined,
 
-// 			end replacement
-			
 			marker: (firstIfArray(queryParams['marker']) as any) || undefined,
 			showMarker: queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1',
 			showScroll: queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1',

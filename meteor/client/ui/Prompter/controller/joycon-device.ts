@@ -35,12 +35,12 @@ export class JoyConController extends ControllerAbstract {
 		this.prompterView = view
 
 		// assigns params from URL or falls back to the default
-		this.speedMap = view.configOptions.joyconSpeedMap || this.speedMap
-		this.reverseSpeedMap = view.configOptions.joyconReverseSpeedMap || this.reverseSpeedMap
-		this.rangeRevMin = view.configOptions.joyconRangeRevMin || this.rangeRevMin
-		this.rangeNeutralMin = view.configOptions.joyconRangeNeutralMin || this.rangeNeutralMin
-		this.rangeNeutralMax = view.configOptions.joyconRangeNeutralMax || this.rangeNeutralMax
-		this.rangeFwdMax = view.configOptions.joyconRangeFwdMax || this.rangeFwdMax
+		this.speedMap = view.configOptions.joycon_speedMap || this.speedMap
+		this.reverseSpeedMap = view.configOptions.joycon_reverseSpeedMap || this.reverseSpeedMap
+		this.rangeRevMin = view.configOptions.joycon_rangeRevMin || this.rangeRevMin
+		this.rangeNeutralMin = view.configOptions.joycon_rangeNeutralMin || this.rangeNeutralMin
+		this.rangeNeutralMax = view.configOptions.joycon_rangeNeutralMax || this.rangeNeutralMax
+		this.rangeFwdMax = view.configOptions.joycon_rangeFwdMax || this.rangeFwdMax
 		this.deadBand = Math.min(Math.abs(this.rangeNeutralMin), Math.abs(this.rangeNeutralMax))
 
 		// validate range settings, they need to be in sequence, or the logic will break
