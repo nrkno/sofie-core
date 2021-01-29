@@ -8,6 +8,11 @@ import { PeripheralDeviceId } from './PeripheralDevices'
 
 export type ExpectedPackageWorkStatusId = ProtectedString<'ExpectedPackageStatusId'>
 
+/**
+ * ExpectedPackageWorkStatus contains statuses about Work that is being performed on expected packages
+ * This collection is populated by a Package Manager-device.
+ */
+
 export interface ExpectedPackageWorkStatus extends Omit<ExpectedPackageStatusAPI.WorkStatus, 'fromPackages'> {
 	_id: ExpectedPackageWorkStatusId
 

@@ -6,10 +6,16 @@ import { registerIndex } from '../database'
 import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
 import { ExpectedPackageDB, ExpectedPackageId } from './ExpectedPackages'
 
-/*
-  The PackageContainerPackage collection contains statuses about "a Package on a PackageContainer"
-*/
+/**
+ * The PackageContainerPackageStatuses-collection contains statuses about "a Package on a specific PackageContainer"
+ * PackageContainerPackageStatuses are populated by the Package Manager-device and can be used to look up whether a Package
+ * (that originally is specified in the ExpectedPackages collection) is present on a certain Package Container.
+ *
+ * Note: A "Package Container" is a generic term for "something that contains packages".
+ * One  example of this could be a Media-folder (the "package container") which contains Media-files ("packages").
+ */
 
+/** Id of a package container */
 export type PackageContainerId = ProtectedString<'PackageContainerId'>
 
 export interface PackageContainerPackageStatusDB {

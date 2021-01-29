@@ -7,10 +7,10 @@ import { ExpectedPackageDB, ExpectedPackageId } from './ExpectedPackages'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { Anomaly, FieldOrder } from './MediaObjects'
 
-/*
-  The PackageInfos collection contains information about Packages / ExpectedPackages.
-  This information is fed to Core by the Package Manager
-*/
+/**
+ * The PackageInfos collection contains information related to Packages.
+ * This collection is populated from a Package Manager-device.
+ */
 
 export type PackageInfoId = ProtectedString<'PackageInfoId'>
 
