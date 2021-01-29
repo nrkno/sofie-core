@@ -100,7 +100,7 @@ export function getAcceptedFormats(settings: IStudioSettings | undefined): Array
 }
 
 export function getMediaObjectMediaId(piece: Pick<IBlueprintPieceGeneric, 'content'>, sourceLayer: ISourceLayer) {
-	switch (sourceLayer.type) {
+	switch (sourceLayer.type && piece.content) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
 			// case SourceLayerType.TRANSITION:
