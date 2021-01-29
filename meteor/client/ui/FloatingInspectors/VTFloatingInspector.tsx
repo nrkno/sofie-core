@@ -5,9 +5,11 @@ import { useTranslation } from 'react-i18next'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { FloatingInspector } from '../FloatingInspector'
 import { NoticeLevel } from '../../lib/notifications/notifications'
-import { VTContent } from '@sofie-automation/blueprints-integration'
+import { Accessor, ExpectedPackage, VTContent } from '@sofie-automation/blueprints-integration'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { StyledTimecode } from '../../lib/StyledTimecode'
+import { ScanInfoForPackages } from '../../../lib/mediaObjects'
+import { StudioPackageContainers } from '../../../lib/collections/Studios'
 
 interface IProps {
 	mediaPreviewUrl?: string
@@ -21,9 +23,55 @@ interface IProps {
 	noticeMessage: string | null
 	contentMetaData: MediaObject | null
 	renderedDuration?: number | undefined
+
+	contentPackageInfos: ScanInfoForPackages | undefined
+	expectedPackages: ExpectedPackage.Any[] | undefined
+	studioPackageContainers: StudioPackageContainers | undefined
 }
 
-function getPreviewUrl(contentMetaData: MediaObject | null, mediaPreviewUrl: string | undefined): string | undefined {
+function getPackagePreviewUrl(
+	expectedPackages: ExpectedPackage.Any[],
+	studioPackageContainers: StudioPackageContainers
+): string | undefined {
+	// use Expected packages:
+	// Just use the first one we find.
+	// TODO: support multiple expected packages?
+	let packagePath: string | undefined
+	let previewContainerId: string | undefined
+	for (const expectedPackage of expectedPackages) {
+		if (expectedPackage.type === ExpectedPackage.PackageType.MEDIA_FILE) {
+			packagePath = expectedPackage.content.filePath
+			previewContainerId = expectedPackage.sideEffect.previewContainerId
+		} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
+			packagePath = expectedPackage.content.guid || expectedPackage.content.title
+			previewContainerId = expectedPackage.sideEffect.previewContainerId
+			break
+		}
+	}
+	if (packagePath && previewContainerId) {
+		const packageContainer = studioPackageContainers[previewContainerId]
+		if (packageContainer) {
+			// Look up an accessor we can use:
+			for (const accessor of Object.values(packageContainer.container.accessors)) {
+				if (accessor.type === Accessor.AccessType.HTTP && accessor.baseUrl) {
+					// TODO: add fiter for accessor.networkId ?
+					return [
+						accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
+						encodeURIComponent(
+							packagePath
+								.replace(/^\//, '') // trim leading slash
+								.replace(/(\.[^.]+$)/, '.webm') // replace file extension with webm
+						),
+					].join('/')
+				}
+			}
+		}
+	}
+}
+function getMediaPreviewUrl(
+	contentMetaData: MediaObject | null,
+	mediaPreviewUrl: string | undefined
+): string | undefined {
 	const metadata = contentMetaData
 	if (metadata && metadata.previewPath && mediaPreviewUrl) {
 		return mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.mediaId)
@@ -81,19 +129,19 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 	const offsetTimePosition = timePosition + seek
 	const showFrameMarker = offsetTimePosition === 0 || offsetTimePosition >= itemDuration
 
+	const previewUrl: string | undefined = props.contentPackageInfos
+		? props.expectedPackages && props.studioPackageContainers
+			? getPackagePreviewUrl(props.expectedPackages, props.studioPackageContainers)
+			: undefined
+		: getMediaPreviewUrl(props.contentMetaData, props.mediaPreviewUrl) // Fallback, media objects
+
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined}>
-			{getPreviewUrl(props.contentMetaData, props.mediaPreviewUrl) ? (
+			{previewUrl ? (
 				<div
 					className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
 					style={props.floatingInspectorStyle}>
-					<video
-						src={getPreviewUrl(props.contentMetaData, props.mediaPreviewUrl)}
-						ref={videoElement}
-						crossOrigin="anonymous"
-						playsInline={true}
-						muted={true}
-					/>
+					<video src={previewUrl} ref={videoElement} crossOrigin="anonymous" playsInline={true} muted={true} />
 					{showFrameMarker && (
 						<div
 							className={classNames('segment-timeline__mini-inspector__frame-marker', {

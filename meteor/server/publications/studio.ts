@@ -102,7 +102,11 @@ meteorPublish(PubSub.expectedPackageWorkStatuses, function(selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.packageContainerStatuses, function(studioId: StudioId, containerId?: string, packageId?: string) {
+meteorPublish(PubSub.packageContainerPackageStatuses, function(
+	studioId: StudioId,
+	containerId?: string,
+	packageId?: string
+) {
 	if (!studioId) throw new Meteor.Error(400, 'studioId argument missing')
 
 	check(studioId, String)

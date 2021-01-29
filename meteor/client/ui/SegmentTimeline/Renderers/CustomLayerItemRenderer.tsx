@@ -7,9 +7,11 @@ import { faCut } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PieceLifespan, VTContent } from '@sofie-automation/blueprints-integration'
 import { OffsetPosition } from '../../../utils/positions'
+import { StudioPackageContainers } from '../../../../lib/collections/Studios'
 
 export interface ICustomLayerItemProps {
 	mediaPreviewUrl?: string
+	studioPackageContainers: StudioPackageContainers | undefined
 	typeClass?: string
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi

@@ -176,7 +176,11 @@ export const ExpectedPackagesStatus = translateWithTracker<
 										<div className="package__statuses__status__labels">
 											<div className="package__statuses__status__label">{status.label}</div>
 											<div className="package__statuses__status__progress">
-												{status.progress ? `${Math.round(status.progress * 100)}%` : ''}
+												{status.status === 'fulfilled'
+													? '100%'
+													: status.status === 'working' && status.progress
+													? `${Math.round(status.progress * 100)}%`
+													: '-'}
 											</div>
 											<div className="package__statuses__status__status">{status.status}</div>
 										</div>

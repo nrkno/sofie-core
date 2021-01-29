@@ -64,6 +64,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { TransformedCollection } from '../../../lib/typings/meteor'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { Settings } from '../../../lib/Settings'
+import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -1544,6 +1545,7 @@ const StudioPackageManagerSettings = withTranslation()(
 			}
 
 			let newPackageContainer: StudioPackageContainer = {
+				deviceIds: [],
 				container: {
 					label: 'New Package Container',
 					accessors: {},
@@ -1579,6 +1581,30 @@ const StudioPackageManagerSettings = withTranslation()(
 
 			this.finishEditPackageContainer(oldContainerId)
 			this.editPackageContainer(newContainerId)
+		}
+		getPlayoutDeviceIds() {
+			const deviceIds: {
+				name: string
+				value: string
+			}[] = []
+
+			PeripheralDevices.find().forEach((device) => {
+				if (
+					device.category === PeripheralDeviceAPI.DeviceCategory.PLAYOUT &&
+					device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+					device.settings
+				) {
+					const settings = device.settings as PlayoutDeviceSettings
+
+					for (const deviceId of Object.keys(settings.devices || {})) {
+						deviceIds.push({
+							name: deviceId,
+							value: deviceId,
+						})
+					}
+				}
+			})
+			return deviceIds
 		}
 		renderPackageContainers() {
 			const { t } = this.props
@@ -1643,6 +1669,23 @@ const StudioPackageManagerSettings = withTranslation()(
 													<span className="text-s dimmed">{t('Display name/label of the Package Container')}</span>
 												</label>
 											</div>
+											<div className="mod mvs mhs">
+												<label className="field">
+													{t('Playout devices which uses this package container')}
+													<EditAttribute
+														attribute={`packageContainers.${containerId}.deviceIds`}
+														obj={this.props.studio}
+														options={this.getPlayoutDeviceIds()}
+														label={t('Select playout devices')}
+														type="multiselect"
+														collection={Studios}></EditAttribute>
+													<span className="text-s dimmed">
+														{t('Select which playout devices are using this package container')}
+													</span>
+												</label>
+											</div>
+
+											<div className="mdi"></div>
 										</div>
 										<div>
 											<div className="settings-studio-accessors">
@@ -1684,7 +1727,7 @@ const StudioPackageManagerSettings = withTranslation()(
 					editedAccessors: this.state.editedAccessors,
 				})
 			} else {
-				this.finishEditPackageContainer(containerId + accessorId)
+				this.finishEditAccessor(containerId, accessorId)
 			}
 		}
 		confirmRemoveAccessor = (containerId: string, accessorId: string) => {
@@ -2051,7 +2094,7 @@ const StudioPackageManagerSettings = withTranslation()(
 									<div className="mod">
 										<button
 											className="btn btn-primary right"
-											onClick={(e) => this.finishEditPackageContainer(accessorId)}>
+											onClick={(e) => this.finishEditAccessor(containerId, accessorId)}>
 											<FontAwesomeIcon icon={faCheck} />
 										</button>
 									</div>
@@ -2062,6 +2105,29 @@ const StudioPackageManagerSettings = withTranslation()(
 				)
 			})
 		}
+		getAvailablePackageContainers() {
+			const arr: {
+				name: string
+				value: string
+			}[] = []
+
+			for (const [containerId, packageContainer] of Object.entries(this.props.studio.packageContainers)) {
+				let hasHttpAccessor = false
+				for (const [accessorId, accessor] of Object.entries(packageContainer.container.accessors)) {
+					if (accessor.type === Accessor.AccessType.HTTP) {
+						hasHttpAccessor = true
+						break
+					}
+				}
+				if (hasHttpAccessor) {
+					arr.push({
+						name: packageContainer.container.label,
+						value: containerId,
+					})
+				}
+			}
+			return arr
+		}
 
 		render() {
 			const { t } = this.props
@@ -2070,6 +2136,35 @@ const StudioPackageManagerSettings = withTranslation()(
 					<h2 className="mhn mbs">{t('Package Manager')}</h2>
 
 					<div className="settings-studio-package-containers">
+						<h3 className="mhn">{t('Studio Settings')}</h3>
+
+						<div>
+							<label className="field">
+								{t('Package Containers to use for previews')}
+								<div className="mdi">
+									<EditAttribute
+										attribute="previewContainerIds"
+										obj={this.props.studio}
+										options={this.getAvailablePackageContainers()}
+										label={t('Click to show available Package Containers')}
+										type="multiselect"
+										collection={Studios}></EditAttribute>
+								</div>
+							</label>
+							<label className="field">
+								{t('Package Containers to use for thumbnails')}
+								<div className="mdi">
+									<EditAttribute
+										attribute="thumbnailContainerIds"
+										obj={this.props.studio}
+										options={this.getAvailablePackageContainers()}
+										label={t('Click to show available Package Containers')}
+										type="multiselect"
+										collection={Studios}></EditAttribute>
+								</div>
+							</label>
+						</div>
+
 						<h3 className="mhn">{t('Package Containers')}</h3>
 						<table className="expando settings-studio-package-containers-table">
 							<tbody>{this.renderPackageContainers()}</tbody>

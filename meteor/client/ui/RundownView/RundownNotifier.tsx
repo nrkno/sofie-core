@@ -558,7 +558,7 @@ class RundownViewNotifier extends WithManagedTracker {
 								mediaId: mediaId.toUpperCase(),
 							})
 						}
-						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio.settings)
+						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
 						localStatus.push({
 							name: piece.name,
 							rundownId: part.rundownId,

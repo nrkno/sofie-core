@@ -19,6 +19,7 @@ import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import { Studio, StudioPackageContainers } from '../../../lib/collections/Studios'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -47,6 +48,7 @@ export interface ISourceLayerItemProps {
 	scrollWidth: number
 	liveLinePadding: number
 	layerIndex: number
+	studio: Studio | undefined
 }
 interface ISourceLayerItemState {
 	showMiniInspector: boolean
@@ -583,6 +585,7 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
+							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>
@@ -596,6 +599,7 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
+							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>
@@ -610,6 +614,7 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
+							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>
@@ -623,6 +628,7 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
+							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>
@@ -638,6 +644,7 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
+							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>
@@ -652,6 +659,7 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
+							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>
@@ -665,6 +673,7 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
+							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>

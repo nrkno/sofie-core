@@ -127,6 +127,9 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 						props.status !== null && props.status !== undefined ? getNoticeLevelForPieceStatus(props.status) : null
 					}
 					mediaPreviewUrl={props.mediaPreviewUrl}
+					contentPackageInfos={props.packageInfos}
+					expectedPackages={props.adLibListItem.expectedPackages}
+					studioPackageContainers={props.studioPackageContainers}
 				/>
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--duration">

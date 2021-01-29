@@ -40,6 +40,7 @@ import RundownViewEventBus, {
 	GoToPartEvent,
 	GoToPartInstanceEvent,
 } from '../RundownView/RundownViewEventBus'
+import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -66,6 +67,7 @@ export interface PieceUi extends PieceExtended {
 	linked?: boolean
 	/** Metadata object */
 	contentMetaData?: any
+	contentPackageInfos?: ScanInfoForPackages
 	message?: string | null
 }
 interface IProps {

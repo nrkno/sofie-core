@@ -24,7 +24,7 @@ import { ConfigItemValue } from '@sofie-automation/blueprints-integration'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
 import { CSSProperties } from '../../styles/_cssVariables'
-import { ISourceLayerExtended } from '../../../lib/Rundown'
+import { ISourceLayerExtended, PieceExtended } from '../../../lib/Rundown'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'

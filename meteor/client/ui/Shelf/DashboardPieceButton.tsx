@@ -14,6 +14,8 @@ import {
 	LiveSpeakContent,
 	SplitsContent,
 	NoraContent,
+	ExpectedPackage,
+	Accessor,
 } from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
@@ -95,9 +97,47 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	getThumbnailUrl = (): string | undefined => {
 		const { piece } = this.props
-		if (this.props.mediaPreviewUrl && piece.contentMetaData) {
-			if (piece.contentMetaData && piece.contentMetaData.previewPath && this.props.mediaPreviewUrl) {
-				return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(piece.contentMetaData.mediaId)
+		if (piece.expectedPackages) {
+			// use Expected packages:
+			// Just use the first one we find.
+			// TODO: support multiple expected packages?
+			let packagePath: string | undefined
+			let thumbnailContainerId: string | undefined
+			for (const expectedPackage of piece.expectedPackages) {
+				if (expectedPackage.type === ExpectedPackage.PackageType.MEDIA_FILE) {
+					packagePath = expectedPackage.content.filePath
+					thumbnailContainerId = expectedPackage.sideEffect.thumbnailContainerId
+				} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
+					packagePath = expectedPackage.content.guid || expectedPackage.content.title
+					thumbnailContainerId = expectedPackage.sideEffect.thumbnailContainerId
+					break
+				}
+			}
+			if (packagePath && thumbnailContainerId) {
+				const packageContainer = this.props.studio?.packageContainers[thumbnailContainerId]
+				if (packageContainer) {
+					// Look up an accessor we can use:
+					for (const accessor of Object.values(packageContainer.container.accessors)) {
+						if (accessor.type === Accessor.AccessType.HTTP && accessor.baseUrl) {
+							// TODO: add fiter for accessor.networkId ?
+							return [
+								accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
+								encodeURIComponent(
+									packagePath
+										.replace(/^\//, '') // trim leading slash
+										.replace(/(\.[^.]+$)/, '.png') // replace file extension with png
+								),
+							].join('/')
+						}
+					}
+				}
+			}
+		} else {
+			// Fallback to media objects
+			if (this.props.mediaPreviewUrl && piece.contentMetaData) {
+				if (piece.contentMetaData && piece.contentMetaData.previewPath && this.props.mediaPreviewUrl) {
+					return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(piece.contentMetaData.mediaId)
+				}
 			}
 		}
 		return undefined
@@ -164,6 +204,9 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							: null
 					}
 					mediaPreviewUrl={this.props.mediaPreviewUrl}
+					contentPackageInfos={this.props.piece.contentPackageInfos}
+					expectedPackages={this.props.piece.expectedPackages}
+					studioPackageContainers={this.props.studio?.packageContainers}
 				/>
 			</>
 		)
@@ -281,11 +324,10 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	render() {
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
-		const hasMediaInfo =
+		const hasMediaInfo: boolean =
 			this.props.layer &&
 			this.props.layer.type === SourceLayerType.VT &&
-			this.props.piece.contentMetaData &&
-			this.props.piece.contentMetaData.mediainfo
+			(this.props.piece.contentPackageInfos?.length || this.props.piece.contentMetaData?.mediainfo)
 		return (
 			<div
 				className={ClassNames(
@@ -338,7 +380,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 				{isList && hasMediaInfo ? (
 					<span className="dashboard-panel__panel__button__label">
-						{this.props.piece.contentMetaData!.mediainfo!.name}
+						{this.props.piece.contentPackageInfos
+							? this.props.piece.contentPackageInfos[0]?.packageName
+							: this.props.piece.contentMetaData
+							? this.props.piece.contentMetaData?.mediainfo?.name
+							: ''}
 					</span>
 				) : this.props.editableName ? (
 					<textarea

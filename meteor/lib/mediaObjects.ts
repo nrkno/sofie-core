@@ -71,6 +71,38 @@ export function buildFormatString(mediainfo: MediaInfo, stream: MediaStream): st
 
 	return format
 }
+export function buildPackageFormatString(deepScan: FFProbeDeepScan, stream: FFProbeScanStream): string {
+	let format = `${stream.width || 0}x${stream.height || 0}`
+	switch (deepScan.field_order) {
+		case FieldOrder.Progressive:
+			format += 'p'
+			break
+		case FieldOrder.Unknown:
+			format += '?'
+			break
+		default:
+			format += 'i'
+			break
+	}
+	if (stream.codec_time_base) {
+		const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec_time_base) as RegExpExecArray
+		let fps = Number(formattedTimebase[2]) / Number(formattedTimebase[1])
+		fps = Math.floor(fps * 100 * 100) / 100
+		format += fps
+	}
+	switch (deepScan.field_order) {
+		case FieldOrder.BFF:
+			format += 'bff'
+			break
+		case FieldOrder.TFF:
+			format += 'tff'
+			break
+		default:
+			break
+	}
+
+	return format
+}
 
 /**
  * Checks if a source format is an accepted format by doing:
