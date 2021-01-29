@@ -104,15 +104,9 @@ export function getMediaObjectMediaId(piece: Pick<IBlueprintPieceGeneric, 'conte
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
 			// case SourceLayerType.TRANSITION:
-			if (piece.content && piece.content.fileName) {
-				return (piece.content as VTContent).fileName.toUpperCase()
-			}
-			return undefined
+			return (piece.content as VTContent).fileName?.toUpperCase()
 		case SourceLayerType.GRAPHICS:
-			if (piece.content && piece.content.fileName) {
-				return (piece.content as GraphicsContent).fileName.toUpperCase()
-			}
-			return undefined
+			return (piece.content as GraphicsContent).fileName?.toUpperCase()
 	}
 	return undefined
 }

@@ -4,10 +4,10 @@ import { Tracker } from 'meteor/tracker'
 import { PieceUi } from './SegmentTimelineContainer'
 import { AdLibPieceUi } from '../Shelf/AdLibPanel'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { SourceLayerType, VTContent, LiveSpeakContent, ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { RundownUtils } from '../../lib/rundown'
-import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
 import { Studio } from '../../../lib/collections/Studios'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
@@ -38,20 +38,11 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 			private updateMediaObjectSubscription() {
 				if (this.destroyed) return
 
-				const layer = this.props.piece?.sourceLayer || this.props.layer
+				const layer = this.props.piece?.sourceLayer || (this.props.layer as ISourceLayer | undefined)
 
 				if (this.props.piece && layer) {
 					const piece = WithMediaObjectStatusHOCComponent.unwrapPieceInstance(this.props.piece!)
-					let objId: string | undefined = undefined
-
-					switch (layer.type) {
-						case SourceLayerType.VT:
-							objId = piece.content ? (piece.content as VTContent).fileName?.toUpperCase() : undefined
-							break
-						case SourceLayerType.LIVE_SPEAK:
-							objId = piece.content ? (piece.content as LiveSpeakContent).fileName?.toUpperCase() : undefined
-							break
-					}
+					let objId: string | undefined = getMediaObjectMediaId(piece, layer)
 
 					if (objId && objId !== this.objId && this.props.studio) {
 						if (this.subscription) this.subscription.stop()
