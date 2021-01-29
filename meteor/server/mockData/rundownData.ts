@@ -11,6 +11,7 @@ import { Settings } from '../../lib/Settings'
 import { initCacheForRundownPlaylistFromRundown, initCacheForRundownPlaylist } from '../DatabaseCaches'
 import { removeRundownPlaylistFromCache, setNextPart, getSelectedPartInstancesFromCache } from '../api/playout/lib'
 import {
+	regenerateRundown,
 	rundownPlaylistSyncFunction,
 	RundownSyncFunctionPriority,
 	updateExpectedPackagesOnRundown,
@@ -22,6 +23,7 @@ import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { updateTimeline } from '../api/playout/timeline'
 import { getActiveRundownPlaylistsInStudio } from '../api/playout/studio'
 import { forceClearAllBlueprintConfigCaches } from '../api/blueprints/config'
+import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -85,9 +87,21 @@ if (!Settings.enableUserAccounts) {
 
 			rundowns.map((i) => {
 				const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(i._id)) // todo: is this correct? - what if rundown has no playlist?
+				updateExpectedMediaItemsOnRundown(cache, i._id)
+				waitForPromise(cache.saveAllToDatabase())
+			})
+		},
+		debug_updateExpectedPackages() {
+			const rundowns = Rundowns.find().fetch()
+
+			rundowns.map((i) => {
+				const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(i._id)) // todo: is this correct? - what if rundown has no playlist?
 				updateExpectedPackagesOnRundown(cache, i._id)
 				waitForPromise(cache.saveAllToDatabase())
 			})
+		},
+		debug_regenerateRundown(rundownId) {
+			regenerateRundown(rundownId)
 		},
 
 		debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
