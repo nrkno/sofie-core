@@ -138,6 +138,10 @@ body.prompter-scrollbar {
 		overflow-wrap: break-word;
 	}
 
+	.prompter-line.empty {
+		margin-bottom: 0.5em;
+	}
+
 	.overlay-fix {
 		position: fixed;
 		top: 0;

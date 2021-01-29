@@ -45,6 +45,7 @@ interface PrompterConfig {
 	pedal_rangeFwdMax?: number
 	marker?: 'center' | 'top' | 'bottom' | 'hide'
 	showMarker: boolean
+	showIndicators: boolean
 	showScroll: boolean
 	debug: boolean
 	showOverUnder: boolean
@@ -143,6 +144,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 			marker: (firstIfArray(queryParams['marker']) as any) || undefined,
 			showMarker: queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1',
+			showIndicators: queryParams['showindicators'] === undefined ? true : queryParams['showinicators'] === '1',
 			showScroll: queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1',
 			debug: queryParams['debug'] === undefined ? false : queryParams['debug'] === '1',
 			showOverUnder: queryParams['showoverunder'] === undefined ? true : queryParams['showoverunder'] === '1',
@@ -739,7 +741,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 								}></div>
 
 							<div
-								className="indicators"
+								className={'indicators ' + (!this.props.config.showIndicators ? 'hide' : undefined)}
 								style={{
 									marginTop: this.props.config.margin ? `${this.props.config.margin}vh` : undefined,
 									marginLeft: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
