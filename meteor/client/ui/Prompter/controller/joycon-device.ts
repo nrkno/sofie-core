@@ -242,7 +242,7 @@ export class JoyConController extends ControllerAbstract {
 				if (this.lastUsedJoyconMode === 'L') {
 					return input.axes[0] * -1 // in this mode, L is "negative"
 				} else if (this.lastUsedJoyconMode === 'R') {
-					return input.axes[0] // in this mode, R is "positive"
+					return input.axes[0] * 1.3 // in this mode, R is "positive"
 				}
 			}
 		} else if (this.lastUsedJoyconMode === 'LR') {
@@ -252,7 +252,7 @@ export class JoyConController extends ControllerAbstract {
 				return input.axes[1] * -1 // in this mode, we are "negative" on both sticks....
 			}
 			if (Math.abs(input.axes[3]) > this.deadBand) {
-				return input.axes[3] * -1 // in this mode, we are "negative" on both sticks....
+				return input.axes[3] * -1.3 // in this mode, we are "negative" on both sticks....
 			}
 		}
 
