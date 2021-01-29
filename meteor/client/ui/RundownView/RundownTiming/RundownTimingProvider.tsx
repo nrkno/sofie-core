@@ -272,6 +272,7 @@ export const RundownTimingProvider = withTracker<
 			let startsAtAccumulator = 0
 			let displayStartsAtAccumulator = 0
 			let segmentDisplayDuration = 0
+			let segmentBudgetDurationLeft = 0
 
 			Object.keys(this.partLiveDisplayDurations).forEach((key) => delete this.partLiveDisplayDurations[key])
 			Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
@@ -305,14 +306,12 @@ export const RundownTimingProvider = withTracker<
 					const partInstance = this.getPartInstanceOrGetCachedTemp(partInstancesMap, origPart)
 
 					if (partInstance.segmentId !== lastSegmentId) {
-						if (lastSegmentId) {
-							const lastSegmentBudgetDuration = this.segmentBudgetDurations[unprotectString(lastSegmentId)]
-							if (lastSegmentBudgetDuration > segmentDisplayDuration) {
-								waitAccumulator += lastSegmentBudgetDuration - segmentDisplayDuration
-							}
-						}
 						lastSegmentId = partInstance.segmentId
 						segmentDisplayDuration = 0
+						if (segmentBudgetDurationLeft > 0) {
+							waitAccumulator += segmentBudgetDurationLeft
+						}
+						segmentBudgetDurationLeft = this.segmentBudgetDurations[unprotectString(partInstance.segmentId)]
 					}
 
 					// add piece to accumulator
@@ -387,13 +386,23 @@ export const RundownTimingProvider = withTracker<
 							Settings.defaultDisplayDuration
 						partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
 						this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
-						currentRemaining = Math.max(
-							0,
-							(partInstance.timings?.duration ||
-								(memberOfDisplayDurationGroup ? displayDurationFromGroup : partInstance.part.expectedDuration) ||
-								0) -
-								(now - lastStartedPlayback)
-						)
+						if (this.segmentBudgetDurations[unprotectString(partInstance.segmentId)] !== undefined) {
+							currentRemaining = Math.max(
+								0,
+								this.segmentBudgetDurations[unprotectString(partInstance.segmentId)] -
+									segmentDisplayDuration -
+									(now - lastStartedPlayback)
+							)
+							segmentBudgetDurationLeft = 0
+						} else {
+							currentRemaining = Math.max(
+								0,
+								(partInstance.timings?.duration ||
+									(memberOfDisplayDurationGroup ? displayDurationFromGroup : partInstance.part.expectedDuration) ||
+									0) -
+									(now - lastStartedPlayback)
+							)
+						}
 						partDuration =
 							Math.max(
 								partInstance.timings?.duration || partInstance.part.expectedDuration || 0,
@@ -485,8 +494,13 @@ export const RundownTimingProvider = withTracker<
 					} else {
 						waitDuration = partInstance.timings?.duration || partInstance.part.expectedDuration || 0
 					}
-
-					waitAccumulator += waitDuration
+					waitAccumulator +=
+						this.segmentBudgetDurations[unprotectString(partInstance.segmentId)] !== undefined
+							? Math.min(waitDuration, Math.max(segmentBudgetDurationLeft, 0))
+							: waitDuration
+					if (this.segmentBudgetDurations[unprotectString(partInstance.segmentId)] !== undefined) {
+						segmentBudgetDurationLeft -= waitDuration
+					}
 
 					// remaining is the sum of unplayed lines + whatever is left of the current segment
 					// if outOfOrderTiming is true, count parts before current part towards remaining rundown duration
