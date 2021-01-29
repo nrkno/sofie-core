@@ -107,8 +107,13 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	renderGraphics(renderThumbnail?: boolean) {
 		const adLib = (this.props.piece as any) as AdLibPieceUi
 		const noraContent = adLib.content as NoraContent | undefined
+
+		const thumbnailUrl = this.getThumbnailUrl()
 		return (
 			<>
+				{thumbnailUrl && renderThumbnail && (
+					<img src={thumbnailUrl} className="dashboard-panel__panel__button__thumbnail" />
+				)}
 				<L3rdFloatingInspector
 					showMiniInspector={this.state.isHovered}
 					content={noraContent}
