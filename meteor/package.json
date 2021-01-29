@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.18.0-in-development-R30",
+	"version": "1.18.0-in-development-R30-package-management",
 	"private": true,
 	"engines": {
 		"node": "^12.20.1 || 14"
