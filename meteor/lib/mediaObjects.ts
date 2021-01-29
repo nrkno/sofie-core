@@ -100,13 +100,13 @@ export function getAcceptedFormats(settings: IStudioSettings | undefined): Array
 }
 
 export function getMediaObjectMediaId(piece: Pick<IBlueprintPieceGeneric, 'content'>, sourceLayer: ISourceLayer) {
-	switch (sourceLayer.type && piece.content) {
+	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
 			// case SourceLayerType.TRANSITION:
-			return (piece.content as VTContent).fileName?.toUpperCase()
+			return (piece.content as VTContent)?.fileName?.toUpperCase()
 		case SourceLayerType.GRAPHICS:
-			return (piece.content as GraphicsContent).fileName?.toUpperCase()
+			return (piece.content as GraphicsContent)?.fileName?.toUpperCase()
 	}
 	return undefined
 }
