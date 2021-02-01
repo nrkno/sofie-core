@@ -3,15 +3,24 @@ import { Meteor } from 'meteor/meteor'
 import { ExpectedMediaItems, ExpectedMediaItem, ExpectedMediaItemId } from '../../lib/collections/ExpectedMediaItems'
 import { RundownId } from '../../lib/collections/Rundowns'
 import { PieceGeneric, PieceId } from '../../lib/collections/Pieces'
-import { AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { syncFunctionIgnore } from '../codeControl'
-import { saveIntoDb, getCurrentTime, getHash, protectString } from '../../lib/lib'
+import { saveIntoDb, getCurrentTime, getHash, protectString, literal, unprotectString } from '../../lib/lib'
 import { PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 import { StudioId } from '../../lib/collections/Studios'
 import { BucketId } from '../../lib/collections/Buckets'
 import { CacheForRundownPlaylist } from '../DatabaseCaches'
+import { AdLibAction, AdLibActions } from '../../lib/collections/AdLibActions'
+import {
+	SomeContent,
+	IBlueprintActionManifestDisplayContent,
+	PieceLifespan,
+	IBlueprintActionManifestDisplay,
+} from 'tv-automation-sofie-blueprints-integration'
+import { RundownAPI } from '../../lib/api/rundown'
+import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
 
 export enum PieceType {
 	PIECE = 'piece',
@@ -133,6 +142,10 @@ export function updateExpectedMediaItemsOnRundown(cache: CacheForRundownPlaylist
 			rundownId: rundown._id,
 		}).fetch()
 
+		const actions = AdLibActions.find({
+			rundownId: rundown._id,
+		}).fetch()
+
 		const eMIs: ExpectedMediaItem[] = []
 
 		function iterateOnPieceLike(piece: PieceGeneric, partId: PartId | undefined, pieceType: string) {
@@ -141,6 +154,7 @@ export function updateExpectedMediaItemsOnRundown(cache: CacheForRundownPlaylist
 
 		pieces.forEach((doc) => iterateOnPieceLike(doc, doc.startPartId, PieceType.PIECE))
 		adlibs.forEach((doc) => iterateOnPieceLike(doc, doc.partId, PieceType.ADLIB))
+		actions.forEach((doc) => iterateOnPieceLike(actionToAdLibPieceUi(doc), doc.partId, PieceType.ADLIB))
 
 		saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(
 			ExpectedMediaItems,
@@ -151,6 +165,59 @@ export function updateExpectedMediaItemsOnRundown(cache: CacheForRundownPlaylist
 		)
 	})
 }
+
+// TEMP: Tests fail if the function is imported from the UI
+export interface AdLibPieceUi extends AdLibPiece {
+	hotkey?: string
+	isGlobal?: boolean
+	isHidden?: boolean
+	isSticky?: boolean
+	isAction?: boolean
+	isClearSourceLayer?: boolean
+	adlibAction?: AdLibAction | RundownBaselineAdLibAction
+}
+
+export function isAdlibActionContent(
+	display: IBlueprintActionManifestDisplay | IBlueprintActionManifestDisplayContent
+): display is IBlueprintActionManifestDisplayContent {
+	if ((display as any).sourceLayerId !== undefined) {
+		return true
+	}
+	return false
+}
+
+function actionToAdLibPieceUi(action: AdLibAction | RundownBaselineAdLibAction): AdLibPieceUi {
+	let sourceLayerId = ''
+	let outputLayerId = ''
+	let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
+	const isContent = isAdlibActionContent(action.display)
+	if (isContent) {
+		sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
+		outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
+		content = (action.display as IBlueprintActionManifestDisplayContent).content
+	}
+
+	return literal<AdLibPieceUi>({
+		_id: protectString(`function_${action._id}`),
+		name: action.display.label,
+		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		isAction: true,
+		expectedDuration: 0,
+		externalId: unprotectString(action._id),
+		rundownId: action.rundownId,
+		sourceLayerId,
+		outputLayerId,
+		_rank: action.display._rank || 0,
+		content: content,
+		adlibAction: action,
+		tags: action.display.tags,
+		currentPieceTags: action.display.currentPieceTags,
+		nextPieceTags: action.display.nextPieceTags,
+		lifespan: PieceLifespan.WithinPart, // value doesn't matter
+	})
+}
+
+// End TEMP
 
 export function updateExpectedMediaItemsOnPart(
 	cache: CacheForRundownPlaylist,
