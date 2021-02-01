@@ -313,7 +313,6 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 				showStyleConfigManifest: [],
 				showStyleMigrations: [],
 				getShowStyleVariantId: (
-					context: unknown,
 					showStyleVariants: Array<IBlueprintShowStyleVariant>,
 					ingestRundown: IngestRundown
 				): string | null => {

@@ -124,7 +124,6 @@ export function selectShowStyleVariant(
 
 	const variantId: ShowStyleVariantId | null = protectString(
 		showStyleBlueprint.blueprint.getShowStyleVariantId(
-			context,
 			unprotectObjectArray(showStyleVariants) as any,
 			ingestRundown
 		)
@@ -203,14 +202,14 @@ export function produceRundownPlaylistRanks(
 
 	const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
 		? studioBlueprint.blueprint.getRundownPlaylistInfo(
-				new StudioUserContext(
-					{
-						name: 'produceRundownPlaylistRanks',
-						identifier: `studioId=${studio._id},playlistId=${unprotectString(playlistId)}`,
-						tempSendUserNotesIntoBlackHole: true,
-					},
-					studio
-				),
+				// new StudioUserContext(
+				// 	{
+				// 		name: 'produceRundownPlaylistRanks',
+				// 		identifier: `studioId=${studio._id},playlistId=${unprotectString(playlistId)}`,
+				// 		tempSendUserNotesIntoBlackHole: true,
+				// 	},
+				// 	studio
+				// ),
 				unprotectObjectArray(rundowns)
 		  )
 		: null
@@ -269,16 +268,16 @@ export function produceRundownPlaylistInfoFromRundown(
 
 			const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
 				? studioBlueprint.blueprint.getRundownPlaylistInfo(
-						new StudioUserContext(
-							{
-								name: 'produceRundownPlaylistInfoFromRundown',
-								identifier: `studioId=${studio._id},playlistId=${unprotectString(
-									playlistId
-								)},rundownId=${currentRundown._id}`,
-								tempSendUserNotesIntoBlackHole: true,
-							},
-							studio
-						),
+						// new StudioUserContext(
+						// 	{
+						// 		name: 'produceRundownPlaylistInfoFromRundown',
+						// 		identifier: `studioId=${studio._id},playlistId=${unprotectString(
+						// 			playlistId
+						// 		)},rundownId=${currentRundown._id}`,
+						// 		tempSendUserNotesIntoBlackHole: true,
+						// 	},
+						// 	studio
+						// ),
 						unprotectObjectArray(rundowns)
 				  )
 				: null

@@ -96,11 +96,11 @@ export function preprocessStudioConfig(studio: Studio, blueprint?: StudioBluepri
 	res['SofieHostURL'] = studio.settings.sofieUrl
 
 	if (blueprint && blueprint.preprocessConfig) {
-		const context = new CommonContext({
-			name: `preprocessStudioConfig`,
-			identifier: `studioId=${studio._id}`,
-		})
-		res = blueprint.preprocessConfig(context, res)
+		// const context = new CommonContext({
+		// 	name: `preprocessStudioConfig`,
+		// 	identifier: `studioId=${studio._id}`,
+		// })
+		res = blueprint.preprocessConfig(res)
 	}
 	return res
 }
