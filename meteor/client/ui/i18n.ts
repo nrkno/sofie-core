@@ -5,7 +5,8 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
 import { PubSub } from '../../lib/api/pubsub'
-import { TranslationsBundles } from '../../lib/collections/TranslationsBundles'
+import { Translation, TranslationsBundles } from '../../lib/collections/TranslationsBundles'
+import { I18NextData } from '@sofie-automation/blueprints-integration'
 
 const i18nOptions = {
 	fallbackLng: {
@@ -37,6 +38,15 @@ const i18nOptions = {
 	},
 }
 
+function toI18NextData(translations: Translation[]): I18NextData {
+	const data = {}
+	for (const { original, translation } of translations) {
+		data[original] = translation
+	}
+
+	return data
+}
+
 class I18nContainer extends WithManagedTracker {
 	i18nInstance: typeof i18n
 
@@ -64,11 +74,13 @@ class I18nContainer extends WithManagedTracker {
 			const bundles = TranslationsBundles.find().fetch()
 			console.debug(`Got ${bundles.length} bundles from database`)
 			for (const bundle of bundles) {
-				if (Object.keys(bundle.data).length > 0) {
+				if (bundle.data.length > 0) {
+					const i18NextData = toI18NextData(bundle.data)
+
 					this.i18nInstance.addResourceBundle(
 						bundle.language,
 						bundle.namespace || i18nOptions.defaultNS,
-						bundle.data,
+						i18NextData,
 						true,
 						true
 					)
@@ -104,10 +116,10 @@ class I18nContainer extends WithManagedTracker {
 			Object.assign(options, { ...options.replace })
 		}
 
-		const interpolated = String(key)
+		let interpolated = String(key)
 		for (const placeholder of key.match(/[^{\}]+(?=})/g) || []) {
 			const value = options[placeholder] || placeholder
-			interpolated.replace(`{{${placeholder}}}`, value)
+			interpolated = interpolated.replace(`{{${placeholder}}}`, value)
 		}
 
 		return interpolated
