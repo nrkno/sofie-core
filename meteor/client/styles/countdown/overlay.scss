@@ -100,11 +100,13 @@ body.transparent {
 		font-weight: 100;
 		text-align: center;
 		min-width: 3em;
+		color: $general-countdown-to-next-color;
 	}
 
 	.clock-segment-countdown-next {
 		font-weight: 500;
 		text-transform: uppercase;
+		color: #ffffff;
 	}
 
 	.clocks-rundown-countdown {
@@ -116,7 +118,7 @@ body.transparent {
 	}
 
 	.clocks-segment-countdown-red {
-		color: red;
+		color: $general-late-color;
 	}
 
 	.clocks-counter-heavy {
