@@ -56,6 +56,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: rundown._id,
 		})
 
+		// // Set to unsynced to ensure that flag gets ignored by the debug method
+		// Rundowns.update(rundown._id, {
+		// 	$set: {
+		// 		unsynced: true
+		// 	}
+		// })
+
 		// Remove the parts to make it explicit that the blueprints rerun properly
 		Segments.remove({ rundownId: rundown._id })
 		Parts.remove({ rundownId: rundown._id })

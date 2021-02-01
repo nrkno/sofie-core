@@ -68,6 +68,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 						core: '',
 					},
 
+					dataSource: 'mock',
 					externalNRCSName: 'mock',
 				}
 				Rundowns.insert(rundown)

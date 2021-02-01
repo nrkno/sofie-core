@@ -20,8 +20,9 @@ exports[`Test recieved mos ingest payloads mosRoCreate 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId10003",
   "created": 0,
+  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -158,6 +159,7 @@ Object {
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -167,7 +169,6 @@ Array [
     "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
     "_rank": 3,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -176,7 +177,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -185,7 +185,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -194,7 +193,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -307,8 +305,9 @@ exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId11003",
   "created": 0,
+  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -445,6 +444,7 @@ Object {
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -454,7 +454,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -463,7 +462,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -472,7 +470,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -594,8 +591,9 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId29003",
   "created": 0,
+  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -733,6 +731,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -742,7 +741,6 @@ Array [
     "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
     "_rank": 3,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -751,7 +749,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -760,7 +757,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -769,7 +765,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -894,8 +889,9 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId16002",
   "created": 0,
+  "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -1033,6 +1029,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -1042,7 +1039,6 @@ Array [
     "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
     "_rank": 3,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -1051,7 +1047,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -1060,7 +1055,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -1069,7 +1063,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -1182,8 +1175,9 @@ exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId14003",
   "created": 0,
+  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -1321,6 +1315,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -1330,7 +1325,6 @@ Array [
     "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
     "_rank": 3,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -1339,7 +1333,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -1348,7 +1341,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -1357,7 +1349,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -1471,8 +1462,9 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId27003",
   "created": 0,
+  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -1610,6 +1602,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -1619,7 +1612,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -1628,7 +1620,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -1725,8 +1716,9 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId16002",
   "created": 0,
+  "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -1864,6 +1856,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -1873,7 +1866,6 @@ Array [
     "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
     "_rank": 3,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -1882,7 +1874,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -1891,7 +1882,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -1900,7 +1890,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2026,8 +2015,9 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId16002",
   "created": 0,
+  "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -2165,6 +2155,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -2174,7 +2165,6 @@ Array [
     "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
     "_rank": 4,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2183,7 +2173,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2192,7 +2181,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2201,7 +2189,6 @@ Array [
     "_id": "9VE_IbHiHyW6VjY6Fi8fMJEgtS4_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1B_ro1;s1b;newPart1",
-    "externalModified": 0,
     "name": "SEGMENT1B",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2210,7 +2197,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 3,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2336,8 +2322,9 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId39003",
   "created": 0,
+  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -2475,6 +2462,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -2484,7 +2472,6 @@ Array [
     "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2493,7 +2480,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2502,7 +2488,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 3,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2511,7 +2496,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2627,8 +2611,9 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId38003",
   "created": 0,
+  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -2766,6 +2751,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -2775,7 +2761,6 @@ Array [
     "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
     "_rank": 3,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2784,7 +2769,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2793,7 +2777,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2802,7 +2785,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -2918,8 +2900,9 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId25003",
   "created": 0,
+  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -3057,6 +3040,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -3066,7 +3050,6 @@ Array [
     "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
     "_rank": 3,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3075,7 +3058,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3084,7 +3066,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3093,7 +3074,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3193,8 +3173,9 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId16002",
   "created": 0,
+  "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -3332,6 +3313,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -3341,7 +3323,6 @@ Array [
     "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
     "_rank": 3,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3350,7 +3331,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3359,7 +3339,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3368,7 +3347,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3485,8 +3463,9 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId36003",
   "created": 0,
+  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -3624,6 +3603,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -3633,7 +3613,6 @@ Array [
     "_id": "sLfUx9cadyquE07Vw9byoX35G9I_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p2",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3642,7 +3621,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3651,7 +3629,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3767,8 +3744,9 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId37003",
   "created": 0,
+  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -3906,6 +3884,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -3915,7 +3894,6 @@ Array [
     "_id": "oLlO42uuh1jzxrJrFmnAqDH5_Do_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p2",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3924,7 +3902,6 @@ Array [
     "_id": "apDVfF5nk1_StK474hEUxLMZIag_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p3",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3933,7 +3910,6 @@ Array [
     "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
     "_rank": 6,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3942,7 +3918,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 3,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3951,7 +3926,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3960,7 +3934,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 5,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -3969,7 +3942,6 @@ Array [
     "_id": "6tE1R4qyvS2U8gUoAc23Y8R50UI_",
     "_rank": 4,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p2",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -4085,8 +4057,9 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId33003",
   "created": 0,
+  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -4224,6 +4197,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -4233,7 +4207,6 @@ Array [
     "_id": "apDVfF5nk1_StK474hEUxLMZIag_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p3",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -4242,7 +4215,6 @@ Array [
     "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
     "_rank": 3,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -4251,7 +4223,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -4260,7 +4231,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -4377,8 +4347,9 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "baselineModifyHash": "randomId9003",
+  "baselineModifyHash": "randomId32003",
   "created": 0,
+  "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
   "importVersions": Object {
@@ -4516,6 +4487,7 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "unsynced": false,
 }
 `;
 
@@ -4525,7 +4497,6 @@ Array [
     "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
     "_rank": 3,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -4534,7 +4505,6 @@ Array [
     "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
     "_rank": 1,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
     "name": "SEGMENT2",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -4543,7 +4513,6 @@ Array [
     "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
     "_rank": 0,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
     "name": "SEGMENT1",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
@@ -4552,7 +4521,6 @@ Array [
     "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
     "_rank": 2,
     "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
     "name": "SEGMENT3",
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",

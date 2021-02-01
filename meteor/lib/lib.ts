@@ -135,28 +135,8 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 	const changes = savePreparedChanges(preparedChanges, collection, options)
 
-	return waitForPromise(changes)
-}
-/**
- * Saves an array of data into a collection
- * No matter if the data needs to be created, updated or removed
- * @param collection The collection to be updated
- * @param filter The filter defining the data subset to be affected in db
- * @param newData The new data
- */
-export function asyncSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj>(
-	collection: TransformedCollection<DocClass, DBInterface>,
-	filter: MongoQuery<DBInterface>,
-	newData: Array<DBInterface>,
-	options?: SaveIntoDbOptions<DocClass, DBInterface>
-): Promise<Changes> {
-	const preparedChanges = prepareSaveIntoDb(collection, filter, newData, options)
-
-	const changes = savePreparedChanges(preparedChanges, collection, options)
-
 	return changes
 }
-
 export interface PreparedChanges<T> {
 	inserted: T[]
 	changed: T[]
@@ -236,11 +216,11 @@ export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface exte
 	})
 	return preparedChanges
 }
-export async function savePreparedChanges<DocClass extends DBInterface, DBInterface extends DBObj>(
+export function savePreparedChanges<DocClass extends DBInterface, DBInterface extends DBObj>(
 	preparedChanges: PreparedChanges<DBInterface>,
 	collection: TransformedCollection<DocClass, DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
-): Promise<Changes> {
+) {
 	let change: Changes = {
 		added: 0,
 		updated: 0,
@@ -311,7 +291,7 @@ export async function savePreparedChanges<DocClass extends DBInterface, DBInterf
 		})
 	}
 
-	await pBulkWriteResult
+	waitForPromise(pBulkWriteResult)
 
 	if (options.afterRemoveAll) {
 		const objs = _.compact(preparedChanges.removed || [])

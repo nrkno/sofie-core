@@ -114,7 +114,7 @@ export const RundownList = translateWithTracker(() => {
 					airStatuses.push(String(rundown.airStatus))
 					statuses.push(String(rundown.status))
 
-					if (rundown.orphaned) {
+					if (rundown.unsynced) {
 						playlist.unsyncedRundowns.push(rundown)
 					}
 

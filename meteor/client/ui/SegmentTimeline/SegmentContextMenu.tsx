@@ -102,7 +102,7 @@ export const SegmentContextMenu = withTranslation()(
 			t: (key: string | string[], options?: unknown | undefined) => any,
 			segment: SegmentUi | null
 		) => {
-			if (segment && segment.orphaned) {
+			if (segment && segment.unsynced) {
 				return (
 					<MenuItem onClick={(e) => this.props.onResyncSegment(segment, e)}>
 						<span>{t('Resync Segment')}</span>

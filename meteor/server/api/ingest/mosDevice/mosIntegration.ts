@@ -4,7 +4,7 @@ import * as MOS from 'mos-connection'
 import { Rundowns } from '../../../../lib/collections/Rundowns'
 import { Parts } from '../../../../lib/collections/Parts'
 import { logger } from '../../../logging'
-import { getStudioFromDevice, canRundownBeUpdated, checkAccessAndGetPeripheralDevice } from '../lib'
+import { getStudioFromDevice, canBeUpdated, checkAccessAndGetPeripheralDevice } from '../lib'
 import { handleRemovedRundown, regenerateRundown } from '../rundownInput'
 import { getPartIdFromMosStory, getRundownFromMosRO, parseMosString } from './lib'
 import {
@@ -110,7 +110,7 @@ export namespace MosIntegration {
 
 		const studio = getStudioFromDevice(peripheralDevice)
 		const rundown = getRundownFromMosRO(studio, status.ID)
-		if (!canRundownBeUpdated(rundown, false)) return
+		if (!canBeUpdated(rundown)) return
 
 		Rundowns.update(rundown._id, {
 			$set: {
@@ -136,8 +136,7 @@ export namespace MosIntegration {
 
 		const studio = getStudioFromDevice(peripheralDevice)
 		const rundown = getRundownFromMosRO(studio, status.RunningOrderId)
-		if (!canRundownBeUpdated(rundown, false)) return
-		// TODO ORPHAN include segment in check
+		if (!canBeUpdated(rundown)) return
 
 		// Save Stories (aka Part ) status into database:
 		const part = Parts.findOne({
@@ -278,7 +277,7 @@ export namespace MosIntegration {
 
 		const studio = getStudioFromDevice(peripheralDevice)
 		const rundown = getRundownFromMosRO(studio, Action.ID)
-		if (!canRundownBeUpdated(rundown, false)) return
+		if (!canBeUpdated(rundown)) return
 
 		// Set the ready to air status of a Rundown
 		if (rundown.airStatus !== Action.Status) {

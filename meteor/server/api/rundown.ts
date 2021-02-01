@@ -2,11 +2,14 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
-import { DBPart, PartId } from '../../lib/collections/Parts'
-import { AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { Part, DBPart, PartId } from '../../lib/collections/Parts'
+import { Piece, Pieces } from '../../lib/collections/Pieces'
+import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { Segments, SegmentId } from '../../lib/collections/Segments'
 import {
+	saveIntoDb,
 	getCurrentTime,
+	getHash,
 	waitForPromise,
 	unprotectObjectArray,
 	protectString,
@@ -33,7 +36,7 @@ import {
 } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { Studios, Studio } from '../../lib/collections/Studios'
+import { Studios, Studio, StudioId } from '../../lib/collections/Studios'
 import {
 	BlueprintResultOrderedRundowns,
 	ExtendedIngestRundown,
@@ -53,23 +56,20 @@ import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
-import { StudioContentWriteAccess } from '../security/studio'
-import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
+import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
+import { RundownPlaylistContentWriteAccess, RundownPlaylistReadAccess } from '../security/rundownPlaylist'
 import {
 	CacheForRundownPlaylist,
 	initCacheForRundownPlaylist,
 	initCacheForRundownPlaylistFromRundown,
 } from '../DatabaseCaches'
 import { saveIntoCache } from '../DatabaseCache'
-import {
-	removeRundownFromCache,
-	removeRundownPlaylistFromCache,
-	getSelectedPartInstancesFromCache,
-} from './playout/lib'
+import { removeRundownFromCache, removeRundownPlaylistFromCache, getAllOrderedPartsFromCache } from './playout/lib'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
 import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
+import { modifyPlaylistExternalId } from './ingest/lib'
 import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
 import { profiler } from './profiler'
 import { updateRundownsInPlaylist } from './ingest/rundownInput'
@@ -391,17 +391,31 @@ function defaultPlaylistForRundown(
 }
 
 /**
- * Removes the contents of specified Segments from the cache/database
+ * Removes Segments from the database
  * @param rundownId The Rundown id to remove from
  * @param segmentIds The Segment ids to be removed
  */
-export function removeSegmentContents(
-	cache: CacheForRundownPlaylist,
-	rundownId: RundownId,
-	segmentIds: SegmentId[]
-): void {
+export function removeSegments(cache: CacheForRundownPlaylist, rundownId: RundownId, segmentIds: SegmentId[]): number {
+	logger.debug('removeSegments', rundownId, segmentIds)
+
+	const count = cache.Segments.remove({
+		_id: { $in: segmentIds },
+		rundownId: rundownId,
+	})
+	if (count > 0) {
+		afterRemoveSegments(cache, rundownId, segmentIds)
+	}
+	return count
+}
+/**
+ * After Segments have been removed, handle the contents.
+ * This will trigger an update of the timeline
+ * @param rundownId Id of the Rundown
+ * @param segmentIds Id of the Segments
+ */
+export function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: RundownId, segmentIds: SegmentId[]) {
 	// Remove the parts:
-	const changes = saveIntoCache(
+	saveIntoCache(
 		cache.Parts,
 		{
 			rundownId: rundownId,
@@ -410,33 +424,12 @@ export function removeSegmentContents(
 		[],
 		{
 			afterRemoveAll(parts) {
-				removeSegmentsParts(cache, rundownId, parts)
+				afterRemoveParts(cache, rundownId, parts)
 			},
 		}
 	)
 
-	if (changes.removed > 0) {
-		triggerUpdateTimelineAfterIngestData(cache.containsDataFromPlaylist)
-	}
-}
-export function unsyncAndEmptySegment(cache: CacheForRundownPlaylist, rundownId: RundownId, segmentId: SegmentId) {
-	cache.Segments.update(segmentId, {
-		$set: {
-			orphaned: 'deleted',
-		},
-	})
-
-	if (!Settings.allowUnsyncedSegments) {
-		// Remove everything inside the segment
-		removeSegmentContents(cache, rundownId, [segmentId])
-
-		// Mark all the instances as deleted
-		cache.PartInstances.update((p) => !p.reset && p.segmentId === segmentId && !p.orphaned, {
-			$set: {
-				orphaned: 'deleted',
-			},
-		})
-	}
+	triggerUpdateTimelineAfterIngestData(cache.containsDataFromPlaylist)
 }
 
 /**
@@ -445,7 +438,7 @@ export function unsyncAndEmptySegment(cache: CacheForRundownPlaylist, rundownId:
  * @param rundownId Id of the Rundown
  * @param removedParts The parts that have been removed
  */
-function removeSegmentsParts(cache: CacheForRundownPlaylist, rundownId: RundownId, removedParts: DBPart[]) {
+export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: RundownId, removedParts: DBPart[]) {
 	// Clean up all the db items that belong to the removed Parts
 	const removedPartIds = removedParts.map((p) => p._id)
 	cache.Pieces.remove({
@@ -453,7 +446,11 @@ function removeSegmentsParts(cache: CacheForRundownPlaylist, rundownId: RundownI
 		startPartId: { $in: removedPartIds },
 	})
 
-	afterRemoveParts(cache, removedPartIds)
+	const removePartInstanceIds = cache.PartInstances.findFetch({ 'part._id': { $in: removedPartIds } }).map(
+		(p) => p._id
+	)
+	cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+	cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
 
 	cache.deferAfterSave(() => {
 		waitForPromiseAll([
@@ -475,30 +472,6 @@ function removeSegmentsParts(cache: CacheForRundownPlaylist, rundownId: RundownI
 			}),
 		])
 	})
-}
-
-/**
- * After Parts have been removed, inform the partInstances.
- * This will NOT remove any data or update the timeline
- * @param removedPartIds The ids of the parts that have been removed
- */
-export function afterRemoveParts(cache: CacheForRundownPlaylist, removedPartIds: PartId[]) {
-	const removedPartIdsSet = new Set(removedPartIds)
-
-	const playlist = cache.RundownPlaylists.findOne(cache.containsDataFromPlaylist)
-	if (playlist) {
-		// Update the selected partinstances
-
-		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
-		const removePartInstanceIds = cache.PartInstances.findFetch(
-			(p) =>
-				removedPartIdsSet.has(p.part._id) &&
-				p._id !== currentPartInstance?._id &&
-				p._id !== nextPartInstance?._id
-		).map((p) => p._id)
-		cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
-		cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
-	}
 }
 
 export type ChangedSegmentsRankInfo = Array<{
@@ -557,10 +530,11 @@ export function updatePartInstanceRanks(
 				delete partInstance.orphaned
 				partInstance.part._rank = part._rank
 			} else if (!partInstance.orphaned) {
-				partInstance.orphaned = 'deleted'
+				// TODO: Future flow. For now it should be impossible to get to here currently because of unsynced behaviour, but unit tests provide coverage
+				partInstance.orphaned = 'adlib-part' // 'deleted'
 				cache.PartInstances.update(partInstance._id, {
 					$set: {
-						orphaned: 'deleted',
+						orphaned: 'adlib-part', // Future: 'deleted',
 					},
 				})
 			}
@@ -710,10 +684,11 @@ export namespace ServerRundownAPI {
 		let rundown = cache.Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
-		if (!rundown.orphaned) {
+		if (!rundown.unsynced) {
 			cache.Rundowns.update(rundown._id, {
 				$set: {
-					orphaned: 'deleted',
+					unsynced: true,
+					unsyncedTime: getCurrentTime(),
 				},
 			})
 		} else {
@@ -783,11 +758,24 @@ export namespace ServerRundownAPI {
 		const segment = Segments.findOne(segmentId)
 		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
 
+		Segments.update(segment._id, {
+			$set: {
+				unsynced: false,
+			},
+		})
+
 		const rundown = Rundowns.findOne({ _id: segment.rundownId })
+
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${segment.rundownId}" not found!`)
 
-		// Orphaned flag will be reset by the response update
 		return IngestActions.reloadSegment(rundown, segment)
+	}
+	export function unsyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId): void {
+		rundownContentAllowWrite(context.userId, { rundownId })
+		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
+		const result = unsyncSegmentInner(cache, rundownId, segmentId)
+		waitForPromise(cache.saveAllToDatabase())
+		return result
 	}
 
 	export function innerResyncRundown(rundown: Rundown): TriggerReloadDataResponse {
@@ -795,10 +783,44 @@ export namespace ServerRundownAPI {
 
 		// if (rundown.active) throw new Meteor.Error(400,`Not allowed to resync an active Rundown "${rundownId}".`)
 
-		// Orphaned flag will be reset by the response update
+		Rundowns.update(rundown._id, {
+			$set: {
+				unsynced: false,
+			},
+		})
+
 		return IngestActions.reloadRundown(rundown)
 	}
 
+	export function unsyncSegmentInner(
+		cache: CacheForRundownPlaylist,
+		rundownId: RundownId,
+		segmentId: SegmentId
+	): void {
+		check(segmentId, String)
+		logger.info('unsyncSegment' + segmentId)
+		let segment = cache.Segments.findOne({
+			rundownId: rundownId,
+			_id: segmentId,
+		})
+		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found in rundown "${rundownId}"!`)
+
+		// Fallback to unsyncing rundown
+		if (!Settings.allowUnsyncedSegments) {
+			return unsyncRundownInner(cache, segment.rundownId)
+		}
+
+		if (!segment.unsynced) {
+			cache.Segments.update(segmentId, {
+				$set: {
+					unsynced: true,
+					unsyncedTime: getCurrentTime(),
+				},
+			})
+		} else {
+			logger.info(`Segment "${segmentId}" was already unsynced`)
+		}
+	}
 	/** Move a rundown manually (by a user in Sofie)  */
 	export function moveRundown(
 		context: MethodContext,
@@ -1093,6 +1115,9 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	}
 	unsyncRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.unsyncRundown(this, rundownId))
+	}
+	unsyncSegment(rundownId: RundownId, segmentId: SegmentId) {
+		return makePromise(() => ServerRundownAPI.unsyncSegment(this, rundownId, segmentId))
 	}
 	moveRundown(
 		rundownId: RundownId,

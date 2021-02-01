@@ -89,6 +89,7 @@ describe('test peripheralDevice general API methods', () => {
 			created: 1000,
 			playlistId: rundownPlaylistID,
 			_rank: 0,
+			dataSource: 'mock',
 			peripheralDeviceId: env.ingestDevice._id,
 			modified: getCurrentTime(),
 			importVersions: {
@@ -1333,6 +1334,7 @@ describe('peripheralDevice: MOS Basic functions', function() {
 	// 		currentPartId: null,
 	// 		nextPartId: null,
 	// 		previousPartId: null,
+	// 		dataSource: 'mock',
 	// 		peripheralDeviceId: 'testMosDevice',
 	// 		modified: getCurrentTime(),
 	// 	})
@@ -1389,6 +1391,7 @@ describe('peripheralDevice: MOS Basic functions', function() {
 	// 		currentPartId: null,
 	// 		nextPartId: null,
 	// 		previousPartId: null,
+	// 		dataSource: 'mock',
 	// 		peripheralDeviceId: 'testMosDevice',
 	// 		modified: getCurrentTime(),
 	// 	})
@@ -1411,6 +1414,7 @@ describe('peripheralDevice: MOS Basic functions', function() {
 	// 		currentPartId: null,
 	// 		nextPartId: null,
 	// 		previousPartId: null,
+	// 		dataSource: 'mock',
 	// 		peripheralDeviceId: 'testMosDevice',
 	// 		modified: getCurrentTime(),
 	// 	})

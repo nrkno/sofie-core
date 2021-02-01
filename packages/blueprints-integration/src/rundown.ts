@@ -175,7 +175,7 @@ export interface IBlueprintPartInstance<TMetadata = unknown> {
 	part: IBlueprintPartDB<TMetadata>
 
 	/** Whether the PartInstance is an orphan (the Part referenced does not exist). Indicates the reason it is orphaned */
-	orphaned?: 'adlib-part' | 'deleted'
+	orphaned?: 'adlib-part' // Future scope: | 'deleted'
 }
 
 export interface IBlueprintPartInstanceTimings {

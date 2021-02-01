@@ -57,6 +57,7 @@ describe('Test external message queue static methods', () => {
 				blueprint: 'on',
 				core: 'plate',
 			},
+			dataSource: 'frank',
 			externalNRCSName: 'mockNRCS',
 			organizationId: protectString(''),
 		})
@@ -204,6 +205,7 @@ describe('Test sending messages to mocked endpoints', () => {
 				blueprint: 'on',
 				core: 'plate',
 			},
+			dataSource: 'frank',
 			externalNRCSName: 'mockNRCS',
 			organizationId: protectString(''),
 		})
