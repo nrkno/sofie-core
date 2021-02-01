@@ -604,9 +604,8 @@ export function restoreFromRundownPlaylistSnapshot(
 	snapshot.playlist.nextPartInstanceId = null
 
 	snapshot.rundowns.forEach((rd) => {
-		if (!rd.unsynced) {
-			rd.unsynced = true
-			rd.unsyncedTime = getCurrentTime()
+		if (!rd.orphaned) {
+			rd.orphaned = 'from-snapshot'
 		}
 
 		rd.playlistId = playlistId
