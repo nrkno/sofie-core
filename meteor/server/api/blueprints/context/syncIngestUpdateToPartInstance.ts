@@ -24,7 +24,6 @@ import {
 	protectString,
 	protectStringArray,
 	unprotectStringArray,
-	normalizeArray,
 	normalizeArrayToMap,
 } from '../../../../lib/lib'
 import { Rundown } from '../../../../lib/collections/Rundowns'

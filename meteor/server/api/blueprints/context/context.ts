@@ -1,4 +1,3 @@
-import * as objectPath from 'object-path'
 import { Meteor } from 'meteor/meteor'
 import {
 	getHash,
@@ -32,7 +31,6 @@ import {
 	IBlueprintAsRunLogEvent,
 	IBlueprintExternalMessageQueueObj,
 	ExtendedIngestRundown,
-	OnGenerateTimelineObj,
 	IShowStyleContext,
 	IRundownContext,
 	IEventContext,
