@@ -6,6 +6,8 @@
 	overflow-y: auto;
 	overflow-x: hidden;
 
+	background: #1f1f1f;
+
 	> dl {
 		margin: 0 0.5em;
 
@@ -27,9 +29,9 @@
 		width: 100%;
 	}
 
-	input[type='text'],
-	input[type='number'],
-	select {
+	input.text-input[type='text'],
+	input.text-input[type='number'],
+	select.text-input {
 		background: #2d2d2d;
 		border: 1px solid #424242;
 		box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) inset, 1px 1px 2px rgba(0, 0, 0, 0.2);
@@ -77,12 +79,14 @@
 		.shelf-inspector__action-editor__panel {
 			grid-area: body;
 			overflow: hidden auto;
+			margin: 10px;
 		}
 
 		.shelf-inspector__action-editor__actions {
 			grid-area: footer;
 			display: flex;
-			justify-content: space-between;
+			justify-content: space-around;
+			flex-wrap: wrap;
 		}
 	}
 
@@ -96,6 +100,7 @@
 		padding: 0;
 
 		.shelf-inspector__title__icon {
+			position: relative;
 			display: inline-block;
 			vertical-align: top;
 
@@ -109,6 +114,8 @@
 			text-align: center;
 
 			@include item-type-colors();
+			@include missing-overlay();
+			@include floated-overlay();
 		}
 
 		.shelf-inspector__title__label {
@@ -119,6 +126,6 @@
 
 .rundown-view__shelf .rundown-view__shelf__contents > .rundown-view__shelf__contents__pane.shelf-inspector {
 	flex: 0.3 1;
-	min-width: 300px;
+	min-width: 335px;
 	max-width: 400px;
 }

@@ -42,19 +42,6 @@ if (!Settings.enableUserAccounts) {
 			MediaObjects.remove({})
 		},
 
-		debug_rundownSetStarttimeSoon() {
-			let rundown = Rundowns.findOne({
-				active: true,
-			})
-			if (rundown) {
-				Rundowns.update(rundown._id, {
-					$set: {
-						expectedStart: getCurrentTime() + 70 * 1000,
-					},
-				})
-			}
-		},
-
 		debug_removeRundownPlaylist(id: RundownPlaylistId) {
 			logger.debug('Remove playlist "' + id + '"')
 

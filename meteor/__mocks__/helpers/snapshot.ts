@@ -61,11 +61,11 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 				}
 			})
 		} else if (isPlaylist(o)) {
-			delete o['created']
-			delete o['modified']
+			o['created'] = 0
+			o['modified'] = 0
 		} else if (isRundown(o)) {
-			delete o['created']
-			delete o['modified']
+			o['created'] = 0
+			o['modified'] = 0
 			if (o.importVersions.core) {
 				// re-write the core version so something static, so tests won't fail just because the version has changed
 				o.importVersions.core = '0.0.0-test'
@@ -74,8 +74,6 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 			// } else if (isPart(o)) {
 			// } else if (isSegment(o)) {
 			// } else if (isPieceInstance(o)) {
-		} else if (isTimelineComplete(o)) {
-			delete o.generated
 		}
 		return o
 	}

@@ -67,6 +67,7 @@ describe('Rundown Layouts', () => {
 				exposeAsStandalone: false,
 				icon: '',
 				iconColor: '',
+				openByDefault: false,
 			})
 			return { rundownLayout: mockLayout, rundownLayoutId }
 		}

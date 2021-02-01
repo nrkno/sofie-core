@@ -3,16 +3,13 @@ import * as _ from 'underscore'
 
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import ClassNames from 'classnames'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { getCurrentTime, extendMandadory, normalizeArray, literal, unprotectString } from '../../../lib/lib'
+import { getCurrentTime, literal, unprotectString } from '../../../lib/lib'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
-import { withTiming, WithTiming } from './RundownTiming'
+import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
+import { withTiming, WithTiming } from './RundownTiming/withTiming'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
-import { PartExtended } from '../../../lib/Rundown'
-import { Part } from '../../../lib/collections/Parts'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
 
@@ -82,7 +79,7 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 						},
 					}
 				)
-				.map((part) => {
+				.forEach((part) => {
 					const instance = findPartInstanceOrWrapToTemporary(partInstancesMap, part)
 					const partUi = literal<PartUi>({
 						partId: part._id,

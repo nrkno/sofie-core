@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
-import { Omit, ProtectedString } from '../lib'
+import { ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { Collection as RawCollection } from 'mongodb'
 
@@ -34,7 +34,6 @@ export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpec
 export type IndexSpecifier<T> = {
 	[P in keyof T]?: -1 | 1 | string
 }
-export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpecifierZeroes<T>
 
 export interface FindOptions<DBInterface> {
 	sort?: SortSpecifier<DBInterface>

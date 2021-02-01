@@ -28,11 +28,12 @@ import { IngestActions } from '../../ingest/actions'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { protectString } from '../../../../lib/lib'
 import { AsRunLog } from '../../../../lib/collections/AsRunLog'
-import { IBlueprintAsRunLogEventContent } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintAsRunLogEventContent } from '@sofie-automation/blueprints-integration'
 import { Random } from 'meteor/random'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import * as lib from '../../../../lib/lib'
 import { ClientAPI } from '../../../../lib/api/client'
+import { ServerRundownAPI } from '../../rundown'
 
 const DEFAULT_CONTEXT: MethodContext = {
 	userId: null,
@@ -415,11 +416,11 @@ describe('Playout API', () => {
 		IngestActions.reloadRundown = jest.fn(() => TriggerReloadDataResponse.COMPLETED)
 
 		expect(() => {
-			ServerPlayoutAPI.reloadRundownPlaylistData(DEFAULT_CONTEXT, protectString('fake_id'))
+			ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'))
 		}).toThrowError(/not found/gi)
 
 		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
-		ServerPlayoutAPI.reloadRundownPlaylistData(DEFAULT_CONTEXT, playlistId0)
+		ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
 
 		expect(IngestActions.reloadRundown).toHaveBeenCalled()
 		expect((IngestActions.reloadRundown as jest.Mock).mock.calls[0][0]).toMatchObject({

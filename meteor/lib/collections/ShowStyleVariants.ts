@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
-import { IBlueprintConfig, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
 import {
 	registerCollection,
 	applyClassToDocument,
@@ -13,9 +12,10 @@ import {
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import deepmerge from 'deepmerge'
-import { DeepReadonly } from 'utility-types'
 import { DBRundown } from './Rundowns'
 import { registerIndex } from '../database'
+import { ReadonlyDeep } from 'type-fest'
+import { IBlueprintConfig, IBlueprintShowStyleVariant } from '@sofie-automation/blueprints-integration'
 
 /** A string, identifying a ShowStyleVariant */
 export type ShowStyleVariantId = ProtectedString<'ShowStyleVariantId'>
@@ -33,7 +33,7 @@ export interface ShowStyleCompound extends ShowStyleBase {
 	_rundownVersionHashVariant: string
 }
 
-export function getShowStyleCompound2(rundown: DeepReadonly<DBRundown>): ShowStyleCompound {
+export function getShowStyleCompound2(rundown: ReadonlyDeep<DBRundown>): ShowStyleCompound {
 	const [showStyleBase, showStyleVariant] = waitForPromiseAll([
 		asyncCollectionFindOne(ShowStyleBases, rundown.showStyleBaseId),
 		asyncCollectionFindOne(ShowStyleVariants, rundown.showStyleVariantId),

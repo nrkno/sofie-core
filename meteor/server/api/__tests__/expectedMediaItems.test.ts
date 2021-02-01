@@ -2,7 +2,7 @@ import { Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundown
 import { literal, protectString, getRandomId, waitForPromise } from '../../../lib/lib'
 import { setupDefaultStudioEnvironment, LAYER_IDS } from '../../../__mocks__/helpers/database'
 import { DBPart, Parts, PartId } from '../../../lib/collections/Parts'
-import { VTContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent, PieceLifespan, WithTimeline } from '@sofie-automation/blueprints-integration'
 import { Segments, DBSegment } from '../../../lib/collections/Segments'
 import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -95,12 +95,10 @@ describe('Expected Media Items', () => {
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: RundownAPI.PieceStatusCode.UNKNOWN,
 				lifespan: PieceLifespan.OutOnSegmentChange,
-				content: literal<VTContent>({
+				content: literal<WithTimeline<VTContent>>({
 					fileName: mockFileName0,
 					path: mockPath0,
 					mediaFlowIds: [mockFlow0, mockFlow1],
-					firstWords: '',
-					lastWords: '',
 					sourceDuration: 0,
 					timelineObjects: [],
 				}),
@@ -127,12 +125,10 @@ describe('Expected Media Items', () => {
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: RundownAPI.PieceStatusCode.UNKNOWN,
 				lifespan: PieceLifespan.OutOnSegmentChange,
-				content: literal<VTContent>({
+				content: literal<WithTimeline<VTContent>>({
 					fileName: mockFileName1,
 					path: mockPath1,
 					mediaFlowIds: [mockFlow0],
-					firstWords: '',
-					lastWords: '',
 					sourceDuration: 0,
 					timelineObjects: [],
 				}),
@@ -152,12 +148,10 @@ describe('Expected Media Items', () => {
 				outputLayerId: LAYER_IDS.OUTPUT_PGM,
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: RundownAPI.PieceStatusCode.UNKNOWN,
-				content: literal<VTContent>({
+				content: literal<WithTimeline<VTContent>>({
 					fileName: mockFileName1,
 					path: mockPath1,
 					mediaFlowIds: [mockFlow0],
-					firstWords: '',
-					lastWords: '',
 					sourceDuration: 0,
 					timelineObjects: [],
 				}),
@@ -212,6 +206,4 @@ describe('Expected Media Items', () => {
 			expect(items).toHaveLength(0)
 		})
 	})
-
-	return
 })

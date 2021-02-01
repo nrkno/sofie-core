@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2020-09-30T12:24:48.297Z\n"
-"PO-Revision-Date: 2020-09-30T12:24:48.297Z\n"
+"POT-Creation-Date: 2021-01-07T09:15:46.298Z\n"
+"PO-Revision-Date: 2021-01-07T09:15:46.298Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -192,27 +192,6 @@ msgstr ""
 msgid "Out"
 msgstr ""
 
-msgid "Sofie Automation Server"
-msgstr ""
-
-msgid "Connecting to the {{platformName}}"
-msgstr ""
-
-msgid "Cannot connect to the {{platformName}}: {{reason}}"
-msgstr ""
-
-msgid "Reconnecting to the {{platformName}}"
-msgstr ""
-
-msgid "Your machine is offline and cannot connect to the {{platformName}}."
-msgstr ""
-
-msgid "Connected to the {{platformName}}."
-msgstr ""
-
-msgid "Reconnect now"
-msgstr ""
-
 msgid "Could not get system status. Please consult system administrator."
 msgstr ""
 
@@ -226,6 +205,27 @@ msgid "Sofie status"
 msgstr ""
 
 msgid "Test test"
+msgstr ""
+
+msgid "Until next take"
+msgstr ""
+
+msgid "Until next segment"
+msgstr ""
+
+msgid "Until end of segment"
+msgstr ""
+
+msgid "Until next rundown"
+msgstr ""
+
+msgid "Until end of rundown"
+msgstr ""
+
+msgid "Script is empty"
+msgstr ""
+
+msgid "File name"
 msgstr ""
 
 msgid "Home"
@@ -258,61 +258,31 @@ msgstr ""
 msgid "Switching operating mode to {{mode}}"
 msgstr ""
 
+msgid "Prompter"
+msgstr ""
+
 msgid "End of script"
 msgstr ""
 
-msgid "Delete this RundownPlaylist?"
-msgstr ""
-
-msgid "Delete"
-msgstr ""
-
-msgid "Are you sure you want to delete the \"{{name}}\" RundownPlaylist?"
-msgstr ""
-
-msgid "Please note: This action is irreversible!"
-msgstr ""
-
-msgid "Re-Sync this rundownPlaylist?"
-msgstr ""
-
-msgid "Re-Sync"
-msgstr ""
-
-msgid "Are you sure you want to re-sync all rundowns in playlist \"{{name}}\"?"
-msgstr ""
-
-msgid "Standalone Shelf"
-msgstr ""
-
-msgid "Timeline views"
-msgstr ""
-
-msgid "Default"
-msgstr ""
-
-msgid "This rundown is currently active"
-msgstr ""
-
-msgid "Multiple ({{count}})"
-msgstr ""
-
-msgid "Re-sync all rundowns in playlist"
-msgstr ""
-
-msgid "Enable configuration mode by adding ?configure=1 to the address bar."
-msgstr ""
-
-msgid "You need to run migrations to set the system up for operation."
-msgstr ""
-
-msgid "Add rundowns by connecting a gateway."
-msgstr ""
-
-msgid "Check system status messages."
-msgstr ""
-
 msgid "There are no rundowns ingested into Sofie."
+msgstr ""
+
+msgid "Click on a rundown to control your studio"
+msgstr ""
+
+msgid "Rundown"
+msgstr ""
+
+msgid "Problems"
+msgstr ""
+
+msgid "Show style"
+msgstr ""
+
+msgid "On Air Start Time"
+msgstr ""
+
+msgid "Last updated"
 msgstr ""
 
 msgid "Getting Started"
@@ -338,25 +308,37 @@ msgstr ""
 msgid "Documentation is available at"
 msgstr ""
 
-msgid "Click on a rundown to control your studio"
+msgid "Today"
 msgstr ""
 
-msgid "Rundown"
+msgid "Yesterday"
 msgstr ""
 
-msgid "Show style"
+msgid "Tomorrow"
 msgstr ""
 
-msgid "Created"
+msgid "Last"
 msgstr ""
 
-msgid "On Air Start Time"
+msgid "Use ENPS order"
 msgstr ""
 
-msgid "Air Status"
+msgid "Using ENPS order"
 msgstr ""
 
-msgid "Unsynced from {{nrcsNames}}"
+msgid "Using local Sofie order"
+msgstr ""
+
+msgid "Change order in playlist to override"
+msgstr ""
+
+msgid "Enable configuration mode by adding ?configure=1 to the address bar."
+msgstr ""
+
+msgid "You need to run migrations to set the system up for operation."
+msgstr ""
+
+msgid "Drop rundown here to move it out of its current playlist"
 msgstr ""
 
 msgid "Sofie Automation"
@@ -372,6 +354,42 @@ msgid "System has issues which need to be resolved"
 msgstr ""
 
 msgid "Status Messages:"
+msgstr ""
+
+msgid "{{showStyleVariant}} – {{showStyleBase}}"
+msgstr ""
+
+msgid "Drag to reorder or move out of playlist"
+msgstr ""
+
+msgid "This rundown is currently active"
+msgstr ""
+
+msgid "Not set"
+msgstr ""
+
+msgid "Re-sync rundown data with {{nrcsName}}"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Delete rundown?"
+msgstr ""
+
+msgid "Are you sure you want to delete the \"{{name}}\" rundown?"
+msgstr ""
+
+msgid "Please note: This action is irreversible!"
+msgstr ""
+
+msgid "Re-Sync rundown?"
+msgstr ""
+
+msgid "Re-Sync"
+msgstr ""
+
+msgid "Are you sure you want to re-sync the \"{{name}}\" rundown?"
 msgstr ""
 
 msgid "Start time is close"
@@ -443,6 +461,9 @@ msgid "Undo Disable the next element"
 msgstr ""
 
 msgid "Log Error"
+msgstr ""
+
+msgid "Could not find a Piece that can be disabled."
 msgstr ""
 
 msgid "Failed to activate"
@@ -529,15 +550,6 @@ msgstr ""
 msgid "This rundown is now active. Are you sure you want to exit this screen?"
 msgstr ""
 
-msgid "Switching route"
-msgstr ""
-
-msgid "Are you sure you want to enable this route: \"{{routeName}}\"?"
-msgstr ""
-
-msgid "Are you sure you want to disable this route: \"{{routeName}}\"?"
-msgstr ""
-
 msgid ""
 "There are no Playout Gateways connected and attached to this studio. Please "
 "contact the system administrator to start the Playout Gateway."
@@ -598,32 +610,36 @@ msgid "Unknown error"
 msgstr ""
 
 msgid ""
-"Rundown {{rundownName}} in Playlist {{playlistName}} is missing, what do "
-"you want to do?"
+"Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data "
+"from {{nrcsName}}, what do you want to do?"
 msgstr ""
 
-msgid "Mark the rundown as unsynced"
+msgid "Leave it in Sofie (mark the rundown as unsynced)"
 msgstr ""
 
-msgid "Remove just the rundown"
+msgid "Remove just the rundown from Sofie"
+msgstr ""
+
+msgid "Remove rundown"
 msgstr ""
 
 msgid ""
 "Do you really want to remove just the rundown \"{{rundownName}}\" in the "
-"playlist {{playlistName}}? This cannot be undone!"
+"playlist {{playlistName}} from Sofie? This cannot be undone!"
 msgstr ""
 
-msgid "Remove rundown playlist"
+msgid "(in: {{time}})"
+msgstr ""
+
+msgid "({{time}} ago)"
+msgstr ""
+
+msgid "Planned Duration"
 msgstr ""
 
 msgid ""
-"Do you really want to remove the rundownPlaylist \"{{rundownName}}\"? This "
-"cannot be undone!"
-msgstr ""
-
-msgid ""
-"The Rundown has been UNSYNCED from {{nrcsName}}! No data updates will "
-"currently come through."
+"The Rundown \"{{rundownName}}\" has been UNSYNCED from {{nrcsName}}! No "
+"data updates will currently come through."
 msgstr ""
 
 msgid "Re-sync"
@@ -735,25 +751,13 @@ msgstr ""
 msgid "All devices working correctly"
 msgstr ""
 
-msgid "Until next take"
+msgid "Switchboard"
 msgstr ""
 
-msgid "Until next segment"
+msgid "This is not in it's normal setting"
 msgstr ""
 
-msgid "Until end of segment"
-msgstr ""
-
-msgid "Until next rundown"
-msgstr ""
-
-msgid "Until end of rundown"
-msgstr ""
-
-msgid "Script is empty"
-msgstr ""
-
-msgid "File name"
+msgid "Off"
 msgstr ""
 
 msgid "Set this part as <strong>Next</strong>"
@@ -1296,6 +1300,12 @@ msgstr ""
 msgid "Icon color"
 msgstr ""
 
+msgid "Open shelf by default"
+msgstr ""
+
+msgid "Default shelf height"
+msgstr ""
+
 msgid "Tabs"
 msgstr ""
 
@@ -1395,6 +1405,9 @@ msgid "Transition"
 msgstr ""
 
 msgid "Lights"
+msgstr ""
+
+msgid "Local"
 msgstr ""
 
 msgid "New Source"
@@ -1688,6 +1701,14 @@ msgstr ""
 msgid "Layer Mappings"
 msgstr ""
 
+msgid "Remove this Exclusivity Group?"
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove exclusivity group \"{{eGroupName}}\"?\n"
+"Route Sets assigned to this group will be reset to no group."
+msgstr ""
+
 msgid "Remove this Route from this Route Set?"
 msgstr ""
 
@@ -1708,22 +1729,52 @@ msgstr ""
 msgid "There are no routes set up yet"
 msgstr ""
 
-msgid "Source Layer ID"
+msgid "Original Layer"
 msgstr ""
 
-msgid "New Layer ID"
+msgid "None"
+msgstr ""
+
+msgid "New Layer"
 msgstr ""
 
 msgid "Source Layer not found"
 msgstr ""
 
+msgid "There are no exclusivity groups set up."
+msgstr ""
+
+msgid "Exclusivity Group ID"
+msgstr ""
+
+msgid "Exclusivity Group Name"
+msgstr ""
+
+msgid "Display name of the Exclusivity Group"
+msgstr ""
+
 msgid "Active"
+msgstr ""
+
+msgid "Not Active"
+msgstr ""
+
+msgid "Not defined"
+msgstr ""
+
+msgid "There are no Route Sets set up."
 msgstr ""
 
 msgid "Route Set ID"
 msgstr ""
 
 msgid "Is this Route Set currently active"
+msgstr ""
+
+msgid "Default State"
+msgstr ""
+
+msgid "The default state of this Route Set"
 msgstr ""
 
 msgid "Route Set Name"
@@ -1744,6 +1795,14 @@ msgstr ""
 msgid "Route Sets"
 msgstr ""
 
+msgid ""
+"Controls for exposed Route Sets will be displayed to the producer within "
+"the Rundown View in the Switchboard."
+msgstr ""
+
+msgid "Exclusivity Groups"
+msgstr ""
+
 msgid "Studio Baseline needs update: "
 msgstr ""
 
@@ -1751,9 +1810,6 @@ msgid "Baseline needs reload, this studio may not work until reloaded"
 msgstr ""
 
 msgid "Reload Baseline"
-msgstr ""
-
-msgid "None"
 msgstr ""
 
 msgid "Studio Name"
@@ -1900,7 +1956,7 @@ msgstr ""
 msgid "AdLib does not provide any options"
 msgstr ""
 
-msgid "Cue as Next"
+msgid "Execute"
 msgstr ""
 
 msgid "Save to Bucket"
@@ -1909,7 +1965,7 @@ msgstr ""
 msgid "Reveal in Shelf"
 msgstr ""
 
-msgid "Edit"
+msgid "Edit in Nora"
 msgstr ""
 
 msgid "New Bucket"
@@ -1922,6 +1978,24 @@ msgid "Are you sure you want to delete this Bucket?"
 msgstr ""
 
 msgid "Are you sure you want to empty (remove all adlibs inside) this Bucket?"
+msgstr ""
+
+msgid "Toggle Shelf"
+msgstr ""
+
+msgid "Escape from filter search"
+msgstr ""
+
+msgid "Start this AdLib"
+msgstr ""
+
+msgid "Queue this AdLib"
+msgstr ""
+
+msgid "Inspect this AdLib"
+msgstr ""
+
+msgid "Rename this AdLib"
 msgstr ""
 
 msgid "Delete this AdLib"
@@ -1937,12 +2011,6 @@ msgid "Delete this Bucket"
 msgstr ""
 
 msgid "Create new Bucket"
-msgstr ""
-
-msgid "Toggle Shelf"
-msgstr ""
-
-msgid "Escape from filter search"
 msgstr ""
 
 msgid "AdLib"
@@ -2129,7 +2197,7 @@ msgstr ""
 msgid "Not Connected"
 msgstr ""
 
-msgid "Execution time"
+msgid "Execution time*"
 msgstr ""
 
 msgid "User ID"
@@ -2148,6 +2216,36 @@ msgid "Parameters"
 msgstr ""
 
 msgid "User Activity Log"
+msgstr ""
+
+msgid "in {{days}} days, {{hours}} h {{minutes}} min {{seconds}} s"
+msgstr ""
+
+msgid "in {{hours}} h {{minutes}} min {{seconds}} s"
+msgstr ""
+
+msgid "in {{minutes}} min {{seconds}} s"
+msgstr ""
+
+msgid "in {{seconds}} s"
+msgstr ""
+
+msgid "{{days}} days, {{hours}} h {{minutes}} min {{seconds}} s ago"
+msgstr ""
+
+msgid "{{hours}} h {{minutes}} min {{seconds}} s ago"
+msgstr ""
+
+msgid "{{minutes}} min {{seconds}} s ago"
+msgstr ""
+
+msgid "{{seconds}} s ago"
+msgstr ""
+
+msgid "Next scheduled show"
+msgstr ""
+
+msgid "Help & Support"
 msgstr ""
 
 msgid "Disable hints by adding this to the URL:"
@@ -2208,10 +2306,6 @@ msgid "{{frames}} {{type}} frame detected in clip"
 msgstr ""
 
 msgid "Clip is being ingested"
-msgstr ""
-
-msgctxt "°°°°°°plural"
-msgid "Multiple ({{count}})°°°°°°"
 msgstr ""
 
 msgctxt "°°°°°°plural"

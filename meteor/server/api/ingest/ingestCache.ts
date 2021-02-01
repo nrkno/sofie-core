@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
-import { IngestRundown, IngestSegment, IngestPart, IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import {
 	IngestDataCacheObj,
 	IngestCacheType,
@@ -66,7 +66,7 @@ export function loadCachedRundownData(
 	return ingestRundown
 }
 export function loadCachedIngestSegment(
-	cache: RundownIngestDataCacheCollection,
+	cache: ReadOnlyRundownIngestDataCacheCollection,
 	rundownExternalId: string,
 	segmentId: SegmentId,
 	segmentExternalId: string

@@ -24,7 +24,9 @@ import {
 	SourceLayerType,
 	IBlueprintPieceGeneric,
 	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
+	VTContent,
+	WithTimeline,
+} from '@sofie-automation/blueprints-integration'
 import { IStudioSettings } from '../collections/Studios'
 import { RundownAPI } from '../api/rundown'
 
@@ -105,9 +107,11 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: {
+				content: literal<WithTimeline<VTContent>>({
 					fileName: 'test',
-				},
+					path: '',
+					timelineObjects: [],
+				}),
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -125,9 +129,11 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: {
+				content: literal<WithTimeline<VTContent>>({
 					fileName: 'TEST',
-				},
+					path: '',
+					timelineObjects: [],
+				}),
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -145,7 +151,9 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: {},
+				content: {
+					timelineObjects: [],
+				},
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -238,9 +246,11 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: {
+			content: literal<WithTimeline<VTContent>>({
 				fileName: 'test_file',
-			},
+				path: '',
+				timelineObjects: [],
+			}),
 		})
 
 		const sourcelayer1 = literal<ISourceLayer>({
@@ -322,9 +332,11 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: {
+			content: literal<WithTimeline<VTContent>>({
 				fileName: 'test_file_2',
-			},
+				path: '',
+				timelineObjects: [],
+			}),
 		})
 
 		const piece3 = literal<IBlueprintPieceGeneric>({
@@ -335,9 +347,11 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: {
+			content: literal<WithTimeline<VTContent>>({
 				fileName: 'test_file_3',
-			},
+				path: '',
+				timelineObjects: [],
+			}),
 		})
 
 		const status1 = checkPieceContentStatus(piece1, sourcelayer1, mockStudioSettings)

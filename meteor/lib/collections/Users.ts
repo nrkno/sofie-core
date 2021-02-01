@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString, protectString, unprotectString } from '../lib'
+import { registerCollection, ProtectedString, unprotectString } from '../lib'
 import { OrganizationId, UserRoles, Organizations, Organization } from './Organization'
 import { registerIndex } from '../database'
 

@@ -87,7 +87,6 @@
 			width: #{$fullscreen-controls__button--radius + 0.3125rem};
 			border-radius: 0 100% 100% 0;
 			background-color: #fff;
-			margin-left: 0;
 			border-top: 1px solid rgba(0, 0, 0, 0.3);
 			border-right: 1px solid rgba(0, 0, 0, 0.3);
 			border-bottom: 1px solid rgba(0, 0, 0, 0.3);
@@ -148,7 +147,6 @@
 			display: inline-block;
 			border: 1px solid #fff;
 			border-radius: 4px;
-			font-size: 0.8rem;
 			padding: 0 rem(3px);
 			margin-bottom: 0.2rem;
 			font-size: 0.9em;
@@ -189,7 +187,7 @@
 			}
 		}
 
-		&.status-bar__controls__button--route-set-panel {
+		&.status-bar__controls__button--switchboard-panel {
 			position: fixed;
 			right: 0.3125rem;
 			bottom: 4.3125rem;
@@ -197,14 +195,30 @@
 			text-align: right;
 
 			> svg {
-				width: 1.7em;
-				height: 1.7em;
+				width: 2em;
+				height: 2em;
 				position: relative;
-				left: -0.6em;
+				left: -0.5em;
+				top: 0.1em;
+				transition: 0.5s fill;
+
+				&.status-bar__controls__button--switchboard-panel__notification {
+					position: absolute;
+					width: 1.4em;
+					height: 1.4em;
+					top: 0;
+					left: auto;
+					right: 0;
+				}
 			}
 
-			&.status-bar__controls__button--open > svg > path {
-				fill: var(--ui-dark-color);
+			&.status-bar__controls__button--open > svg {
+				> circle {
+					fill: #676767;
+				}
+				> path {
+					fill: #ccc9c9;
+				}
 			}
 		}
 	}

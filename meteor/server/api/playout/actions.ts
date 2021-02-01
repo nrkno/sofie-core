@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Rundowns'
-import { Studio } from '../../../lib/collections/Studios'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime, getRandomId, waitForPromise } from '../../../lib/lib'
@@ -111,15 +110,18 @@ export function deactivateRundownPlaylistInner(cache: CacheForPlayout): Rundown 
 	if (currentPartInstance) {
 		rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 		// defer so that an error won't prevent deactivate
-		Meteor.setTimeout(() => {
-			if (rundown) {
-				IngestActions.notifyCurrentPlayingPart(rundown, null)
-			} else {
-				logger.error(
-					`Could not find owner Rundown "${currentPartInstance.rundownId}" of PartInstance "${currentPartInstance._id}"`
-				)
-			}
-		}, 40)
+		cache.deferAfterSave(() => {
+			// This is low-prio, deferring
+			Meteor.setTimeout(() => {
+				if (rundown) {
+					IngestActions.notifyCurrentPlayingPart(rundown, null)
+				} else {
+					logger.error(
+						`Could not find owner Rundown "${currentPartInstance.rundownId}" of PartInstance "${currentPartInstance._id}"`
+					)
+				}
+			}, LOW_PRIO_DEFER_TIME)
+		})
 	} else {
 		if (nextPartInstance) {
 			rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)

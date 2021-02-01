@@ -6,7 +6,7 @@ import { getCurrentTime } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
-import { TSR } from 'tv-automation-sofie-blueprints-integration'
+import { TSR } from '@sofie-automation/blueprints-integration'
 import { AsRunLog } from '../lib/collections/AsRunLog'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
@@ -104,7 +104,7 @@ Meteor.startup(() => {
 						logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 
 						ps.push(
-							new Promise((resolve, reject) => {
+							new Promise<void>((resolve, reject) => {
 								PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 									subDevice._id,
 									(err) => {

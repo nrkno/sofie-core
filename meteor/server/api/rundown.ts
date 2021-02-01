@@ -18,6 +18,10 @@ import {
 	unReadOnlyProtectedStringArray,
 	waitForPromiseAll,
 	asyncCollectionUpdate,
+	normalizeArrayToMap,
+	getRank,
+	getRandomId,
+	mongoFindOptions,
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
@@ -31,8 +35,12 @@ import {
 } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { Studios, Studio } from '../../lib/collections/Studios'
-import { BlueprintResultOrderedRundowns, ExtendedIngestRundown } from 'tv-automation-sofie-blueprints-integration'
+import { Studios, Studio, StudioId } from '../../lib/collections/Studios'
+import {
+	BlueprintResultOrderedRundowns,
+	ExtendedIngestRundown,
+	BlueprintResultRundownPlaylist,
+} from '@sofie-automation/blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
@@ -43,24 +51,30 @@ import {
 	RundownPlaylistId,
 	RundownPlaylist,
 } from '../../lib/collections/RundownPlaylists'
-import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
+import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
-import { CacheForIngest } from '../cache/DatabaseCaches'
+import { CacheForIngest, CacheForPlayout } from '../cache/DatabaseCaches'
 import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
 import { getRundown2, rundownIngestSyncFunction, rundownIngestSyncFromStudioFunction } from './ingest/lib'
-import { DeepReadonly } from 'utility-types'
 import { DbCacheWriteCollection } from '../cache/lib'
 import { PartInstance, DBPartInstance, PartInstances } from '../../lib/collections/PartInstances'
 import { rundownPlaylistPlayoutSyncFunction } from './playout/playout'
 import { profiler } from './profiler'
+import { updateRundownsInPlaylist } from './ingest/rundownInput'
+import { Mongo } from 'meteor/mongo'
+import { getPlaylistIdFromExternalId, removeEmptyPlaylists } from './rundownPlaylist'
+import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
+import { PartInstanceId } from '../../lib/collections/PartInstances'
+import { ReadonlyDeep } from 'type-fest'
 
 export function selectShowStyleVariant(
-	studio: DeepReadonly<Studio>,
+	studio: ReadonlyDeep<Studio>,
 	ingestRundown: ExtendedIngestRundown
 ): { variant: ShowStyleVariant; base: ShowStyleBase; compound: ShowStyleCompound } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -132,125 +146,249 @@ export function selectShowStyleVariant(
 		}
 	}
 }
+/** Return true if the rundown is allowed to be moved out of that playlist */
+export function allowedToMoveRundownOutOfPlaylist(playlist: RundownPlaylist, rundown: ReadonlyDeep<DBRundown>) {
+	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+
+	if (rundown.playlistId !== playlist._id)
+		throw new Meteor.Error(
+			500,
+			`Wrong playlist "${playlist._id}" provided for rundown "${rundown._id}" ("${rundown.playlistId}")`
+		)
+
+	return !(
+		playlist.active &&
+		((currentPartInstance && currentPartInstance.rundownId === rundown._id) ||
+			(nextPartInstance && nextPartInstance.rundownId === rundown._id))
+	)
+}
 
 export interface RundownPlaylistAndOrder {
 	rundownPlaylist: DBRundownPlaylist
 	order: BlueprintResultOrderedRundowns
 }
 
-export function produceRundownPlaylistInfo(
-	studio: DeepReadonly<Studio>,
-	currentRundown: DeepReadonly<DBRundown>,
+export function getAllRundownsInPlaylist(playlistId: RundownPlaylistId, playlistExternalId: string | null) {
+	let selector: Mongo.Selector<DBRundown> = {
+		$or: [{ playlistId: playlistId }],
+	}
+	if (playlistExternalId) {
+		// When playlist externalId is set, also include rundowns with playlistExternalId
+		selector.$or?.push({
+			playlistExternalId: playlistExternalId,
+			playlistIdIsSetInSofie: { $ne: true }, // Don't include rundowns that has been manually moved into another playlist.
+		})
+	}
+	return {
+		rundowns: Rundowns.find(selector).fetch() as DBRundown[],
+		selector: selector,
+	}
+}
+/**
+ * Produce the ranks of rundowns in a playlist.
+ * @param studio
+ * @param playlistId
+ */
+export function produceRundownPlaylistRanks(
+	studio: Studio,
+	playlistId: RundownPlaylistId
+): BlueprintResultOrderedRundowns {
+	// Note: This function does essentially the same as produceRundownPlaylistInfoFromRundown
+	// but just returns the rundown order
+
+	const studioBlueprint = loadStudioBlueprint(studio)
+	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
+
+	const existingPlaylist = RundownPlaylists.findOne(playlistId)
+	if (!existingPlaylist) throw new Meteor.Error(404, `Playlist "${playlistId}" not found`)
+
+	const { rundowns } = getAllRundownsInPlaylist(existingPlaylist._id, existingPlaylist.externalId)
+
+	const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
+		? studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(rundowns))
+		: null
+
+	if (playlistInfo) {
+		if (playlistInfo.order) {
+			return playlistInfo.order
+		}
+	}
+	// If no order is provided, fall back to default sorting:
+	const rundownsInOrder = sortDefaultRundownInPlaylistOrder(rundowns)
+	return _.object(rundownsInOrder.map((i, index) => [i._id, index + 1]))
+}
+
+/** Produce info about playlist from rundown (using blueprints)
+ * This function is (/can be) run before the playlist has been created.
+ */
+export function produceRundownPlaylistInfoFromRundown(
+	studio: ReadonlyDeep<Studio>,
+	currentRundown: ReadonlyDeep<DBRundown>,
 	peripheralDevice: PeripheralDevice | undefined
 ): RundownPlaylistAndOrder {
 	const studioBlueprint = loadStudioBlueprint(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
-	const playlistExternalId = currentRundown.playlistExternalId
-	if (playlistExternalId && studioBlueprint.blueprint.getRundownPlaylistInfo) {
-		// Note: We have to use the ExternalId of the playlist here, since we actually don't know the id of the playlist yet
-		const allRundowns = Rundowns.find({ playlistExternalId: playlistExternalId }).fetch()
+	/** The playlist that the rundown is going to be inserted into. */
+	let playlistId: RundownPlaylistId | undefined
+	if (currentRundown.playlistIdIsSetInSofie) {
+		playlistId = currentRundown.playlistId
+	} else if (currentRundown.playlistExternalId) {
+		playlistId = getPlaylistIdFromExternalId(studio._id, currentRundown.playlistExternalId)
+	}
 
-		if (!_.find(allRundowns, (rd) => rd._id === currentRundown._id))
-			throw new Meteor.Error(
-				500,
-				`produceRundownPlaylistInfo: currentRundown ("${currentRundown._id}") not found in collection!`
-			)
+	const getAllRundownsInPlaylist2 = (playlistId: RundownPlaylistId, playlistExternalId: string | null) => {
+		const { rundowns: rundowns0 } = getAllRundownsInPlaylist(playlistId, playlistExternalId)
+		const rundowns: Array<ReadonlyDeep<DBRundown>> = rundowns0
 
-		const playlistInfo = studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(allRundowns))
-		if (!playlistInfo)
-			throw new Meteor.Error(
-				500,
-				`blueprint.getRundownPlaylistInfo() returned null for externalId "${playlistExternalId}"`
-			)
-
-		const playlistId: RundownPlaylistId = protectString(getHash(playlistExternalId))
-
-		const existingPlaylist = RundownPlaylists.findOne(playlistId)
-
-		const playlist: DBRundownPlaylist = {
-			created: getCurrentTime(),
-			currentPartInstanceId: null,
-			nextPartInstanceId: null,
-			previousPartInstanceId: null,
-
-			...existingPlaylist,
-
-			_id: playlistId,
-			externalId: playlistExternalId,
-			organizationId: studio.organizationId,
-			studioId: studio._id,
-			name: playlistInfo.playlist.name,
-			expectedStart: playlistInfo.playlist.expectedStart,
-			expectedDuration: playlistInfo.playlist.expectedDuration,
-
-			loop: playlistInfo.playlist.loop,
-
-			outOfOrderTiming: playlistInfo.playlist.outOfOrderTiming,
-
-			modified: getCurrentTime(),
-
-			peripheralDeviceId: peripheralDevice
-				? peripheralDevice._id
-				: existingPlaylist
-				? existingPlaylist.peripheralDeviceId
-				: protectString(''),
+		const currentIndex = rundowns.findIndex((rd) => rd._id === currentRundown._id)
+		if (currentIndex !== -1) {
+			rundowns[currentIndex] = currentRundown
+		} else {
+			rundowns.push(currentRundown)
 		}
 
-		let order: BlueprintResultOrderedRundowns | null = playlistInfo.order
-		if (!order) {
-			// If no order is provided, fall back to sort the rundowns by their name:
-			const rundownsInPlaylist = Rundowns.find(
-				{
-					playlistExternalId: playlist.externalId,
-				},
-				{
-					sort: {
-						expectedStart: 1,
-						name: 1,
-						_id: 1,
-					},
+		return rundowns
+	}
+
+	if (playlistId) {
+		// The rundown is going to be (or already is) inserted into a new (or existing) playlist.
+
+		const existingPlaylist: RundownPlaylist | undefined = RundownPlaylists.findOne(playlistId)
+
+		const playlistExternalId: string | undefined = existingPlaylist?.externalId || currentRundown.playlistExternalId
+
+		if (playlistExternalId) {
+			const rundowns = getAllRundownsInPlaylist2(playlistId, playlistExternalId)
+
+			const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
+				? studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(rundowns))
+				: null
+
+			if (playlistInfo) {
+				const playlist: DBRundownPlaylist = {
+					created: getCurrentTime(),
+					currentPartInstanceId: null,
+					nextPartInstanceId: null,
+					previousPartInstanceId: null,
+
+					...existingPlaylist,
+
+					_id: playlistId,
+					externalId: playlistExternalId,
+					organizationId: studio.organizationId,
+					studioId: studio._id,
+					name: playlistInfo.playlist.name,
+					expectedStart: playlistInfo.playlist.expectedStart,
+					expectedDuration: playlistInfo.playlist.expectedDuration,
+
+					loop: playlistInfo.playlist.loop,
+
+					outOfOrderTiming: playlistInfo.playlist.outOfOrderTiming,
+
+					modified: getCurrentTime(),
+
+					peripheralDeviceId: peripheralDevice
+						? peripheralDevice._id
+						: existingPlaylist
+						? existingPlaylist.peripheralDeviceId
+						: protectString(''),
 				}
-			).fetch()
-			order = _.object(rundownsInPlaylist.map((i, index) => [i._id, index + 1]))
-		}
 
-		return {
-			rundownPlaylist: playlist,
-			order: order,
+				let order: BlueprintResultOrderedRundowns | null = playlistInfo.order
+				if (!order) {
+					// If no order is provided, fall back to default sorting:
+
+					const rundownsInOrder = sortDefaultRundownInPlaylistOrder(rundowns)
+					order = _.object(rundownsInOrder.map((i, index) => [i._id, index + 1]))
+				}
+
+				return {
+					rundownPlaylist: playlist,
+					order: order, // Note: if playlist.rundownRanksAreSetInSofie is set, this order should be ignored later
+				}
+			} else {
+				// Blueprints returned null.
+			}
+		} else {
+			// No playlist externalId could be found.
 		}
 	} else {
-		const tmpPlaylistExternalId = unprotectString(currentRundown._id)
-		// It's a rundown that "doesn't have a playlist", so we jsut make one up:
-		const playlistId: RundownPlaylistId = protectString(getHash(tmpPlaylistExternalId))
+		// No playlistId could be determined.
+	}
 
+	// Fallback:
+
+	// It's a rundown that "doesn't have a playlist", so we just make one up:
+
+	let playlistExternalId: string | null
+	let newPlaylistId: RundownPlaylistId
+
+	if (playlistId) {
+		// There is a playlistId specified, that should be used then:
 		const existingPlaylist = RundownPlaylists.findOne(playlistId)
 
-		const playlist: DBRundownPlaylist = {
-			created: getCurrentTime(),
-			currentPartInstanceId: null,
-			nextPartInstanceId: null,
-			previousPartInstanceId: null,
+		playlistExternalId = existingPlaylist?.externalId || null
+		newPlaylistId = playlistId
+	} else {
+		playlistExternalId = unprotectString(currentRundown._id)
+		newPlaylistId = getPlaylistIdFromExternalId(studio._id, playlistExternalId)
+	}
 
-			...existingPlaylist,
+	const existingPlaylist = RundownPlaylists.findOne(newPlaylistId)
 
-			_id: playlistId,
-			externalId: tmpPlaylistExternalId,
-			organizationId: studio.organizationId,
-			studioId: studio._id,
-			name: currentRundown.name,
-			expectedStart: currentRundown.expectedStart,
-			expectedDuration: currentRundown.expectedDuration,
+	const rundowns = getAllRundownsInPlaylist2(newPlaylistId, playlistExternalId)
 
-			modified: getCurrentTime(),
+	const defaultPlaylist: DBRundownPlaylist = defaultPlaylistForRundown(currentRundown, studio, existingPlaylist)
 
-			peripheralDeviceId: peripheralDevice ? peripheralDevice._id : protectString(''),
-		}
+	const playlist = {
+		...defaultPlaylist,
 
-		return {
-			rundownPlaylist: playlist,
-			order: _.object([[currentRundown._id, 1]]),
-		}
+		_id: newPlaylistId,
+		externalId: playlistExternalId,
+		peripheralDeviceId: peripheralDevice ? peripheralDevice._id : protectString(''),
+	}
+
+	const rundownsInOrder = sortDefaultRundownInPlaylistOrder(rundowns)
+
+	return {
+		rundownPlaylist: playlist,
+		order: _.object(rundownsInOrder.map((i, index) => [i._id, index + 1])),
+	}
+}
+export function sortDefaultRundownInPlaylistOrder(rundowns: DBRundown[]): DBRundown[] {
+	return mongoFindOptions<DBRundown, DBRundown>(rundowns, {
+		sort: {
+			expectedStart: 1,
+			name: 1,
+			_id: 1,
+		},
+	})
+}
+function defaultPlaylistForRundown(
+	rundown: DBRundown,
+	studio: Studio,
+	existingPlaylist?: RundownPlaylist
+): DBRundownPlaylist {
+	return {
+		_id: getRandomId(),
+		externalId: '',
+		created: getCurrentTime(),
+		currentPartInstanceId: null,
+		nextPartInstanceId: null,
+		previousPartInstanceId: null,
+
+		...existingPlaylist,
+
+		organizationId: studio.organizationId,
+		studioId: studio._id,
+		name: rundown.name,
+		expectedStart: rundown.expectedStart,
+		expectedDuration: rundown.expectedDuration,
+
+		modified: getCurrentTime(),
+
+		peripheralDeviceId: rundown.peripheralDeviceId,
 	}
 }
 
@@ -293,12 +431,12 @@ export function afterRemoveSegments(cache: CacheForIngest, segmentIds: SegmentId
  * @param removedParts The parts that have been removed
  */
 export function afterRemoveParts(cache: CacheForIngest, removedPartIds: PartId[]) {
-	const removedDynamicPartIds = cache.Parts.remove({ dynamicallyInsertedAfterPartId: { $in: removedPartIds } })
-
-	if (removedDynamicPartIds.length > 0) {
-		// Do the same for any affected dynamicallyInserted Parts
-		afterRemoveParts(cache, removedDynamicPartIds)
-	}
+	// Ensure the partInstances which have no purpose are reset
+	const removePartInstanceIds = cache.PartInstances.findFetch({ 'part._id': { $in: removedPartIds } }).map(
+		(p) => p._id
+	)
+	cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+	cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
 
 	// Clean up all the db items that belong to the removed Parts
 
@@ -311,72 +449,119 @@ export function afterRemoveParts(cache: CacheForIngest, removedPartIds: PartId[]
 	cache.ExpectedPlayoutItems.remove({ partId: { $in: removedPartIds } })
 }
 
+export type ChangedSegmentsRankInfo = Array<{
+	segmentId: SegmentId
+	oldPartIdsAndRanks: Array<{ id: PartId; rank: number }> | null // Null if the Parts havent changed, and so can be loaded locally
+}>
+
 /**
- * Update the ranks of all dynamic parts in the given segments.
- * Adlib/dynamic parts get assigned ranks based on the rank of what they are told to be after
+ * Update the ranks of all PartInstances in the given segments.
+ * Syncs the ranks from matching Parts to PartInstances.
+ * Orphaned PartInstances get ranks interpolated based on what they were ranked between before the ingest update
  */
-export function updatePartRanks(
-	partsCache: DbCacheWriteCollection<Part, DBPart>,
-	partInstancesCache: DbCacheWriteCollection<PartInstance, DBPartInstance> | undefined,
-	segmentIds: SegmentId[]
-) {
-	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point
-	// It should be a simple toggle to work on instances instead though. As it only changes the dynamic inserted ones it should be nice and safe
-	// Make sure to rethink the sorting, especially with regards to reset vs non-reset (as reset may have outdated ranks etc)
-
-	// const allOrderedParts = getAllOrderedPartsFromCache(cache)
-
-	const ps: Array<Promise<any>> = []
+export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments: ChangedSegmentsRankInfo) {
+	const groupedPartInstances = _.groupBy(
+		cache.PartInstances.findFetch({
+			reset: { $ne: true },
+			segmentId: { $in: changedSegments.map((s) => s.segmentId) },
+		}),
+		(p) => p.segmentId
+	)
+	const groupedNewParts = _.groupBy(
+		cache.Parts.findFetch({
+			segmentId: { $in: changedSegments.map((s) => s.segmentId) },
+		}),
+		(p) => p.segmentId
+	)
 
 	let updatedParts = 0
-	for (const segmentId of segmentIds) {
-		const parts = partsCache.findFetch(
-			{ segmentId },
-			{
-				sort: {
-					_rank: 1,
-					_id: 1,
-				},
-			}
-		)
-		const [dynamicParts, sortedParts] = _.partition(parts, (p) => !!p.dynamicallyInsertedAfterPartId)
-		logger.debug(
-			`updatePartRanks (${parts.length} parts with ${dynamicParts.length} dynamic in segment "${segmentId}")`
+	for (const { segmentId, oldPartIdsAndRanks: oldPartIdsAndRanks0 } of changedSegments) {
+		const newParts = groupedNewParts[unprotectString(segmentId)] || []
+		const segmentPartInstances = _.sortBy(
+			groupedPartInstances[unprotectString(segmentId)] || [],
+			(p) => p.part._rank
 		)
 
-		// We have parts that need updating
-		if (dynamicParts.length) {
-			// Build the parts into an sorted array
-			let remainingParts = dynamicParts
-			let hasAddedAnything = true
-			while (hasAddedAnything) {
-				hasAddedAnything = false
-
-				const newRemainingParts: Part[] = []
-				_.each(remainingParts, (possiblePart) => {
-					const afterIndex = sortedParts.findIndex(
-						(p) => p._id === possiblePart.dynamicallyInsertedAfterPartId
-					)
-					if (afterIndex !== -1) {
-						// We found the one before
-						sortedParts.splice(afterIndex + 1, 0, possiblePart)
-						hasAddedAnything = true
-					} else {
-						newRemainingParts.push(possiblePart)
-					}
+		// Ensure the PartInstance ranks are synced with their Parts
+		const newPartsMap = normalizeArrayToMap(newParts, '_id')
+		for (const partInstance of segmentPartInstances) {
+			const part = newPartsMap.get(partInstance.part._id)
+			if (part) {
+				// We have a part and instance, so make sure the part isn't orphaned and sync the rank
+				cache.PartInstances.update(partInstance._id, {
+					$set: {
+						'part._rank': part._rank,
+					},
+					$unset: {
+						orphaned: 1,
+					},
 				})
-				remainingParts = newRemainingParts
-			}
 
-			if (remainingParts.length) {
-				// TODO - remainingParts are invalid and should be deleted/warned about
+				// Update local copy
+				delete partInstance.orphaned
+				partInstance.part._rank = part._rank
+			} else if (!partInstance.orphaned) {
+				// TODO: Future flow. For now it should be impossible to get to here currently because of unsynced behaviour, but unit tests provide coverage
+				partInstance.orphaned = 'adlib-part' // 'deleted'
+				cache.PartInstances.update(partInstance._id, {
+					$set: {
+						orphaned: 'adlib-part', // Future: 'deleted',
+					},
+				})
 			}
+		}
+
+		const orphanedPartInstances = segmentPartInstances
+			.map((p, i) => ({ rank: p.part._rank, orphaned: p.orphaned, instanceId: p._id, id: p.part._id }))
+			.filter((p) => p.orphaned)
+
+		if (orphanedPartInstances.length === 0) {
+			// No orphans to position
+			continue
+		}
+
+		logger.debug(
+			`updatePartInstanceRanks: ${segmentPartInstances.length} partInstances with ${orphanedPartInstances.length} orphans in segment "${segmentId}"`
+		)
+
+		// If we have no instances, or no parts to base it on, then we can't do anything
+		if (newParts.length === 0) {
+			// position them all 0..n
+			let i = 0
+			for (const partInfo of orphanedPartInstances) {
+				cache.PartInstances.update(partInfo.instanceId, { $set: { 'part._rank': i++ } })
+			}
+			continue
+		}
+
+		const oldPartIdsAndRanks =
+			oldPartIdsAndRanks0 ?? cache.Parts.findFetch({ segmentId }).map((p) => ({ id: p._id, rank: p._rank }))
+
+		const preservedPreviousParts = oldPartIdsAndRanks.filter((p) => newPartsMap.has(p.id))
+
+		if (preservedPreviousParts.length === 0) {
+			// position them all before the first
+			const firstPartRank = newParts.length > 0 ? _.min(newParts, (p) => p._rank)._rank : 0
+			let i = firstPartRank - orphanedPartInstances.length
+			for (const partInfo of orphanedPartInstances) {
+				cache.PartInstances.update(partInfo.instanceId, { $set: { 'part._rank': i++ } })
+			}
+		} else {
+			// they need interleaving
+
+			// compile the old order, and get a list of the ones that still remain in the new state
+			const allParts = new Map<PartId, { rank: number; id: PartId; instanceId?: PartInstanceId }>()
+			for (const oldPart of oldPartIdsAndRanks) allParts.set(oldPart.id, oldPart)
+			for (const orphanedPart of orphanedPartInstances) allParts.set(orphanedPart.id, orphanedPart)
 
 			// Now go through and update their ranks
-			for (let i = 0; i < sortedParts.length - 1; ) {
+			const remainingPreviousParts = _.sortBy(Array.from(allParts.values()), (p) => p.rank).filter(
+				(p) => p.instanceId || newPartsMap.has(p.id)
+			)
+			for (let i = 0; i < remainingPreviousParts.length - 1; ) {
 				// Find the range to process this iteration
 				const beforePartIndex = i
-				const afterPartIndex = sortedParts.findIndex((p, o) => o > i && !p.dynamicallyInsertedAfterPartId)
+				const afterPartIndex = remainingPreviousParts.findIndex((p, o) => o > i && !p.instanceId)
 
 				if (afterPartIndex === beforePartIndex + 1) {
 					// no dynamic parts in between
@@ -384,58 +569,38 @@ export function updatePartRanks(
 					continue
 				} else if (afterPartIndex === -1) {
 					// We will reach the end, so make sure we stop
-					i = sortedParts.length
+					i = remainingPreviousParts.length
 				} else {
 					// next iteration should look from the next fixed point
 					i = afterPartIndex
 				}
 
 				const firstDynamicIndex = beforePartIndex + 1
-				const lastDynamicIndex = afterPartIndex === -1 ? sortedParts.length - 1 : afterPartIndex - 1
+				const lastDynamicIndex = afterPartIndex === -1 ? remainingPreviousParts.length - 1 : afterPartIndex - 1
 
 				// Calculate the rank change per part
 				const dynamicPartCount = lastDynamicIndex - firstDynamicIndex + 1
-				const basePartRank = sortedParts[beforePartIndex]._rank
-				const afterPartRank = afterPartIndex === -1 ? basePartRank + 1 : sortedParts[afterPartIndex]._rank
+				const basePartRank = newPartsMap.get(remainingPreviousParts[beforePartIndex].id)?._rank!
+				const afterPartRank =
+					afterPartIndex === -1
+						? basePartRank + 1
+						: newPartsMap.get(remainingPreviousParts[afterPartIndex].id)?._rank!
 				const delta = (afterPartRank - basePartRank) / (dynamicPartCount + 1)
 
 				let prevRank = basePartRank
 				for (let o = firstDynamicIndex; o <= lastDynamicIndex; o++) {
 					const newRank = (prevRank = prevRank + delta)
 
-					const dynamicPart = sortedParts[o]
-					if (dynamicPart._rank !== newRank) {
-						partsCache.update(dynamicPart._id, { $set: { _rank: newRank } })
-
-						if (partInstancesCache) {
-							partInstancesCache.update(
-								{
-									'part._id': dynamicPart._id,
-									reset: { $ne: true },
-								},
-								{ $set: { 'part._rank': newRank } }
-							)
-						} else {
-							ps.push(
-								asyncCollectionUpdate(
-									PartInstances,
-									{
-										'part._id': dynamicPart._id,
-										reset: { $ne: true },
-									},
-									{ $set: { 'part._rank': newRank } }
-								)
-							)
-						}
+					const orphanedPart = remainingPreviousParts[o]
+					if (orphanedPart.instanceId && orphanedPart.rank !== newRank) {
+						cache.PartInstances.update(orphanedPart.instanceId, { $set: { 'part._rank': newRank } })
 						updatedParts++
 					}
 				}
 			}
 		}
 	}
-
-	if (ps.length > 0) waitForPromiseAll(ps)
-	logger.debug(`updatePartRanks: ${updatedParts} parts updated`)
+	logger.debug(`updatePartRanks: ${updatedParts} PartInstances updated`)
 }
 
 export namespace ServerRundownAPI {
@@ -543,8 +708,8 @@ export namespace ServerRundownAPI {
 		segmentId: SegmentId
 	): TriggerReloadDataResponse {
 		check(segmentId, String)
-		logger.info('resyncSegment ' + segmentId)
 		rundownContentAllowWrite(context.userId, { rundownId })
+		logger.info('resyncSegment ' + segmentId)
 		const segment = Segments.findOne(segmentId)
 		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
 
@@ -620,6 +785,149 @@ export namespace ServerRundownAPI {
 				logger.info(`Segment "${segmentId}" was already unsynced`)
 			}
 		}
+	}
+	/** Move a rundown manually (by a user in Sofie)  */
+	export function moveRundown(
+		context: MethodContext,
+		/** The rundown to be moved */
+		rundownId: RundownId,
+		/** Which playlist to move into. If null, move into a (new) separate playlist */
+		intoPlaylistId: RundownPlaylistId | null,
+		/** The new rundowns in the new playlist */
+		rundownsIdsInPlaylistInOrder: RundownId[]
+	): void {
+		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
+
+		const rundown: Rundown = access.rundown
+		const oldPlaylist: RundownPlaylist | null = access.playlist
+
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		if (oldPlaylist && rundown.playlistId !== oldPlaylist._id)
+			throw new Meteor.Error(
+				500,
+				`moveRundown: rundown.playlistId "${rundown.playlistId}" is not equal to oldPlaylist._id "${oldPlaylist._id}"`
+			)
+
+		let intoPlaylist: RundownPlaylist | null = null
+		if (intoPlaylistId) {
+			const access2 = RundownPlaylistContentWriteAccess.anyContent(context, intoPlaylistId)
+
+			intoPlaylist = access2.playlist
+			if (!intoPlaylist) throw new Meteor.Error(404, `Playlist "${intoPlaylistId}" not found!`)
+		}
+
+		const studio = Studios.findOne(rundown.studioId)
+		if (!studio) throw new Meteor.Error(404, `Studio "${rundown.studioId}" of rundown "${rundown._id}" not found!`)
+
+		if (intoPlaylist && intoPlaylist.studioId !== rundown.studioId) {
+			throw new Meteor.Error(
+				404,
+				`Cannot move Rundown "${rundown._id}" into playlist "${intoPlaylist._id}" because they are in different studios ("${intoPlaylist.studioId}", "${rundown.studioId}")!`
+			)
+		}
+
+		// Do a check if we're allowed to move out of currently playing playlist:
+		if (oldPlaylist) {
+			if (!allowedToMoveRundownOutOfPlaylist(oldPlaylist, rundown)) {
+				throw new Meteor.Error(400, `Not allowed to move currently playing rundown!`)
+			}
+		}
+
+		const peripheralDevice: PeripheralDevice | undefined =
+			rundown.peripheralDeviceId && PeripheralDevices.findOne(rundown.peripheralDeviceId)
+
+		if (intoPlaylist) {
+			// Move into an existing playlist:
+
+			if (intoPlaylist._id === oldPlaylist?._id) {
+				// Move the rundown within the playlist
+
+				const i = rundownsIdsInPlaylistInOrder.indexOf(rundownId)
+				if (i === -1)
+					throw new Meteor.Error(500, `RundownId "${rundownId}" not found in rundownsIdsInPlaylistInOrder`)
+
+				const rundownIdBefore: RundownId | undefined = rundownsIdsInPlaylistInOrder[i - 1]
+				const rundownIdAfter: RundownId | undefined = rundownsIdsInPlaylistInOrder[i + 1]
+
+				const rundownBefore: Rundown | undefined = rundownIdBefore && Rundowns.findOne(rundownIdBefore)
+				const rundownAfter: Rundown | undefined = rundownIdAfter && Rundowns.findOne(rundownIdAfter)
+
+				let newRank: number | undefined = getRank(rundownBefore, rundownAfter)
+
+				if (newRank === undefined) throw new Meteor.Error(500, `newRank is undefined`)
+
+				RundownPlaylists.update(intoPlaylist._id, {
+					$set: {
+						rundownRanksAreSetInSofie: true,
+					},
+				})
+				Rundowns.update(rundown._id, {
+					$set: {
+						_rank: newRank,
+					},
+				})
+			} else {
+				// Move into another playlist
+
+				// Note: When moving into another playlist, the rundown is placed last.
+
+				Rundowns.update(rundown._id, {
+					$set: {
+						playlistId: intoPlaylist._id,
+						playlistIdIsSetInSofie: true,
+						_rank: 99999, // The rank will be set later, in updateRundownsInPlaylist
+					},
+				})
+				rundown.playlistId = intoPlaylist._id
+				rundown.playlistIdIsSetInSofie = true
+
+				// When updating the rundowns in the playlist, the newly moved rundown will be given it's proper _rank:
+				const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(studio, rundown, peripheralDevice)
+				updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundown)
+			}
+		} else {
+			// Move into a new playlist:
+
+			const playlist = defaultPlaylistForRundown(rundown, studio)
+			RundownPlaylists.insert(playlist)
+
+			Rundowns.update(rundown._id, {
+				$set: {
+					playlistId: playlist._id,
+					playlistIdIsSetInSofie: true,
+					_rank: 1,
+				},
+			})
+		}
+
+		if (oldPlaylist) {
+			// Remove the old playlist if it's empty:
+			removeEmptyPlaylists(oldPlaylist.studioId)
+		}
+	}
+	/** Restore the order of rundowns in a playlist, giving control over the ordering back to the NRCS */
+	export function restoreRundownsInPlaylistToDefaultOrder(context: MethodContext, playlistId: RundownPlaylistId) {
+		const access = RundownPlaylistContentWriteAccess.anyContent(context, playlistId)
+		if (!access.playlist) throw new Meteor.Error(404, `Playlist "${playlistId}" not found!`)
+
+		const studio = Studios.findOne(access.playlist.studioId)
+		if (!studio)
+			throw new Meteor.Error(
+				404,
+				`Studio "${access.playlist.studioId}" of playlist "${access.playlist._id}" not found!`
+			)
+
+		RundownPlaylists.update(access.playlist._id, {
+			$set: {
+				rundownRanksAreSetInSofie: false,
+			},
+		})
+		// Update local copy:
+		access.playlist.rundownRanksAreSetInSofie = false
+
+		// Update the _rank of the rundowns
+		const order = produceRundownPlaylistRanks(studio, access.playlist._id)
+		updateRundownsInPlaylist(access.playlist, order)
 	}
 }
 export namespace ClientRundownAPI {
@@ -775,6 +1083,18 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	}
 	unsyncSegment(rundownId: RundownId, segmentId: SegmentId) {
 		return makePromise(() => ServerRundownAPI.unsyncSegment(this, rundownId, segmentId))
+	}
+	moveRundown(
+		rundownId: RundownId,
+		intoPlaylistId: RundownPlaylistId | null,
+		rundownsIdsInPlaylistInOrder: RundownId[]
+	) {
+		return makePromise(() =>
+			ServerRundownAPI.moveRundown(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
+		)
+	}
+	restoreRundownsInPlaylistToDefaultOrder(playlistId: RundownPlaylistId) {
+		return makePromise(() => ServerRundownAPI.restoreRundownsInPlaylistToDefaultOrder(this, playlistId))
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)

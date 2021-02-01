@@ -3,7 +3,7 @@ import { getCurrentTime, protectString, unprotectString, getRandomId, makePromis
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
-import { BlueprintManifestType, SomeBlueprintManifest } from 'tv-automation-sofie-blueprints-integration'
+import { BlueprintManifestType, SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods } from '../../methods'
@@ -50,7 +50,6 @@ export function insertBlueprint(
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
-		minimumCoreVersion: '',
 	})
 }
 export function removeBlueprint(methodContext: MethodContext, blueprintId: BlueprintId) {
@@ -121,7 +120,6 @@ export function innerUploadBlueprint(
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
-		minimumCoreVersion: '',
 		blueprintType: undefined,
 	}
 
@@ -147,7 +145,6 @@ export function innerUploadBlueprint(
 	newBlueprint.blueprintVersion = blueprintManifest.blueprintVersion
 	newBlueprint.integrationVersion = blueprintManifest.integrationVersion
 	newBlueprint.TSRVersion = blueprintManifest.TSRVersion
-	newBlueprint.minimumCoreVersion = blueprintManifest.minimumCoreVersion
 
 	if (blueprint && blueprint.blueprintType && blueprint.blueprintType !== newBlueprint.blueprintType) {
 		throw new Meteor.Error(
@@ -185,7 +182,6 @@ export function innerUploadBlueprint(
 	parseVersion(blueprintManifest.blueprintVersion)
 	parseVersion(blueprintManifest.integrationVersion)
 	parseVersion(blueprintManifest.TSRVersion)
-	parseRange(blueprintManifest.minimumCoreVersion)
 
 	Blueprints.upsert(newBlueprint._id, newBlueprint)
 	return newBlueprint

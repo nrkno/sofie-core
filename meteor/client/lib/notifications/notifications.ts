@@ -8,6 +8,7 @@ import { Time, ProtectedString, unprotectString, isProtectedString, protectStrin
 import { HTMLAttributes } from 'react'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { RundownId } from '../../../lib/collections/Rundowns'
 
 /**
  * Priority level for Notifications.
@@ -41,6 +42,8 @@ export interface NotificationAction {
 	icon?: any
 	/** The method that will be called when the user takes the aciton. */
 	action?: Function
+	/** If true, will disable the action (ie the button will show, but not clickable). */
+	disabled?: boolean
 }
 
 /** A source of notifications */
@@ -110,7 +113,7 @@ export class NotifierHandle {
 	}
 }
 
-type NotificationsSource = SegmentId | string | undefined
+type NotificationsSource = RundownId | SegmentId | string | undefined
 /**
  * Singleton handling all the notifications.
  *

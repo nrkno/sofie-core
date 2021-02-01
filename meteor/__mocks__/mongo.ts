@@ -2,7 +2,6 @@ import * as _ from 'underscore'
 import {
 	mongoWhere,
 	literal,
-	Omit,
 	ProtectedString,
 	unprotectString,
 	protectString,

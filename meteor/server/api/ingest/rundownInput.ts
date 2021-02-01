@@ -1,13 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import * as _ from 'underscore'
-import {
-	PeripheralDevice,
-	PeripheralDeviceId,
-	getExternalNRCSName,
-	getStudioIdFromDevice,
-} from '../../../lib/collections/PeripheralDevices'
-import { Rundown, Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
+import { PeripheralDevice, PeripheralDeviceId, getExternalNRCSName } from '../../../lib/collections/PeripheralDevices'
+import { Rundown, Rundowns, DBRundown } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import {
@@ -16,42 +11,53 @@ import {
 	literal,
 	sumChanges,
 	anythingChanged,
-	ReturnType,
 	waitForPromise,
 	unprotectString,
 	protectString,
 	ProtectedString,
-	Omit,
 	getRandomId,
 	PreparedChanges,
+	unprotectObject,
+	unprotectObjectArray,
 	clone,
+	normalizeArrayToMap,
 } from '../../../lib/lib'
 import {
 	IngestRundown,
 	IngestSegment,
 	IngestPart,
 	BlueprintResultSegment,
-} from 'tv-automation-sofie-blueprints-integration'
+	BlueprintResultOrderedRundowns,
+	BlueprintSyncIngestPartInstance,
+	ShowStyleBlueprintManifest,
+	BlueprintSyncIngestNewData,
+} from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
+import { StudioId } from '../../../lib/collections/Studios'
 import {
 	selectShowStyleVariant,
 	afterRemoveSegments,
 	afterRemoveParts,
 	ServerRundownAPI,
 	removeSegments,
-	updatePartRanks,
-	produceRundownPlaylistInfo,
+	updatePartInstanceRanks,
 	RundownPlaylistAndOrder,
+	allowedToMoveRundownOutOfPlaylist,
+	produceRundownPlaylistInfoFromRundown,
+	getAllRundownsInPlaylist,
+	sortDefaultRundownInPlaylistOrder,
+	ChangedSegmentsRankInfo,
 } from '../rundown'
 import { loadShowStyleBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
-import { ShowStyleContext, RundownContext, SegmentContext, NotesContext } from '../blueprints/context'
-import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
-	RundownBaselineObj,
-	RundownBaselineObjId,
-	RundownBaselineObjs,
-} from '../../../lib/collections/RundownBaselineObjs'
+	ShowStyleContext,
+	RundownContext,
+	SegmentContext,
+	NotesContext,
+	SyncIngestUpdateToPartInstanceContext,
+} from '../blueprints/context'
+import { BlueprintId } from '../../../lib/collections/Blueprints'
+import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
 import { Random } from 'meteor/random'
 import {
 	postProcessRundownBaselineItems,
@@ -60,11 +66,8 @@ import {
 	postProcessAdLibActions,
 	postProcessGlobalAdLibActions,
 } from '../blueprints/postProcess'
-import {
-	RundownBaselineAdLibItem,
-	RundownBaselineAdLibPieces,
-} from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { DBSegment, Segments, SegmentId, Segment } from '../../../lib/collections/Segments'
+import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
+import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import {
 	saveRundownCache,
@@ -107,24 +110,28 @@ import {
 	RundownPlaylist,
 	RundownPlaylistId,
 } from '../../../lib/collections/RundownPlaylists'
-import { Mongo } from 'meteor/mongo'
-import { isTooCloseToAutonext } from '../playout/lib'
-import { PartInstances } from '../../../lib/collections/PartInstances'
+import { getSelectedPartInstancesFromCache, isTooCloseToAutonext } from '../playout/lib'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../lib/api/methods'
-import { CacheForStudio, CacheForIngest, ReadOnlyCache } from '../../cache/DatabaseCaches'
+import { CacheForStudio, CacheForIngest, ReadOnlyCache, CacheForPlayout } from '../../cache/DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache, saveIntoCache } from '../../cache/lib'
 import { reportRundownDataHasChanged } from '../asRunLog'
 import { Settings } from '../../../lib/Settings'
-import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions'
+import { AdLibAction } from '../../../lib/collections/AdLibActions'
 import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { removeEmptyPlaylists } from '../rundownPlaylist'
-import { DeepReadonly } from 'utility-types'
+import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleCompound, getShowStyleCompound2 } from '../../../lib/collections/ShowStyleVariants'
-import { run } from 'tslint/lib/runner'
 import { profiler } from '../profiler'
+import {
+	fetchPiecesThatMayBeActiveForPart,
+	getPieceInstancesForPart,
+	syncPlayheadInfinitesForNextPartInstance,
+} from '../playout/infinites'
+import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 
 /** Priority for handling of synchronous events. Higher value means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -139,7 +146,7 @@ export enum RundownSyncFunctionPriority {
 	/** Events initiated from playout-gateway callbacks */
 	CALLBACK_PLAYOUT = 20,
 }
-export function rundownPlaylistSyncFunction<T extends Function>( // TODO - remove this
+export function rundownPlaylistSyncFunction<T extends () => any>( // TODO - remove this
 	rundownPlaylistId: RundownPlaylistId,
 	priority: RundownSyncFunctionPriority,
 	context: string,
@@ -247,6 +254,31 @@ export namespace RundownInput {
 		logger.info('dataRundownUpdate', ingestRundown)
 		check(ingestRundown, Object)
 		handleUpdatedRundown(peripheralDevice, ingestRundown, 'dataRundownUpdate')
+	}
+	export function dataSegmentGet(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		rundownExternalId: string,
+		segmentExternalId: string
+	) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		logger.info('dataSegmentGet', rundownExternalId, segmentExternalId)
+		check(rundownExternalId, String)
+		check(segmentExternalId, String)
+
+		const rundown = Rundowns.findOne({
+			peripheralDeviceId: peripheralDevice._id,
+			externalId: rundownExternalId,
+		})
+		if (!rundown) {
+			throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`)
+		}
+
+		const segmentId = getSegmentId(rundown._id, segmentExternalId)
+
+		const ingestDataCache = waitForPromise(getReadonlyIngestObjectCache(rundown._id))
+		return loadCachedIngestSegment(ingestDataCache, rundown.externalId, segmentId, segmentExternalId)
 	}
 	// Delete, Create & Update Segment (and it's contents):
 	export function dataSegmentDelete(
@@ -536,13 +568,7 @@ function updateRundownFromIngestData(
 		// The rundown is going to change playlist
 		const existingPlaylist = RundownPlaylists.findOne(cache.Rundown.doc.playlistId)
 		if (existingPlaylist) {
-			const { currentPartInstance, nextPartInstance } = existingPlaylist.getSelectedPartInstances()
-
-			if (
-				existingPlaylist.active &&
-				(currentPartInstance?.rundownId === cache.Rundown.doc._id ||
-					nextPartInstance?.rundownId === cache.Rundown.doc._id)
-			) {
+			if (!allowedToMoveRundownOutOfPlaylist(existingPlaylist, cache.Rundown.doc)) {
 				// The rundown contains a PartInstance that is currently on air.
 				// We're trying for a "soft approach" here, instead of rejecting the change altogether,
 				// and will just revert the playlist change:
@@ -558,13 +584,18 @@ function updateRundownFromIngestData(
 						name: 'Data update',
 					},
 				})
+
+				logger.warn(
+					`Blocking moving rundown "${cache.Rundown.doc._id}" out of playlist "${cache.Rundown.doc.playlistId}"`
+				)
 			}
 		} else {
 			logger.warn(`Existing playlist "${cache.Rundown.doc.playlistId}" not found`)
 		}
 	}
 
-	const rundownPlaylistInfo = produceRundownPlaylistInfo(studio, dbRundown, peripheralDevice)
+	const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(cache.Studio.doc, dbRundown, peripheralDevice)
+	dbRundown.playlistId = rundownPlaylistInfo.rundownPlaylist._id
 
 	// Save the baseline
 	const rundownNotesContext = new NotesContext(dbRundown.name, `rundownId=${dbRundown._id}`, true)
@@ -603,8 +634,8 @@ function updateRundownFromIngestData(
 	// TODO - store notes from rundownNotesContext
 
 	const segmentsAndParts = getRundownSegmentsAndPartsFromIngestCache(cache)
-	const existingRundownParts = _.filter(segmentsAndParts.parts, (part) => !part.dynamicallyInsertedAfterPartId)
-	const existingSegments = segmentsAndParts.segments
+	const existingRundownParts = _.groupBy(segmentsAndParts.parts, (part) => part.segmentId)
+	const existingSegments = normalizeArrayToMap(segmentsAndParts.segments, '_id')
 
 	const segments: DBSegment[] = []
 	const parts: DBPart[] = []
@@ -612,12 +643,10 @@ function updateRundownFromIngestData(
 	const adlibPieces: AdLibPiece[] = []
 	const adlibActions: AdLibAction[] = []
 
-	// const { blueprint, blueprintId } = loadShowStyleBlueprint(showStyle.base)
-
 	_.each(ingestRundown.segments, (ingestSegment: IngestSegment) => {
 		const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
-		const existingSegment = _.find(existingSegments, (s) => s._id === segmentId)
-		const existingParts = existingRundownParts.filter((p) => p.segmentId === segmentId)
+		const existingSegment = existingSegments.get(segmentId)
+		const existingParts = existingRundownParts[unprotectString(segmentId)] || []
 
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, (part) => part.rank)
 
@@ -633,6 +662,7 @@ function updateRundownFromIngestData(
 			existingParts,
 			res
 		)
+
 		segments.push(segmentContents.newSegment)
 		parts.push(...segmentContents.parts)
 		segmentPieces.push(...segmentContents.segmentPieces)
@@ -736,15 +766,7 @@ export function savePreparedRundownChanges(
 	}
 
 	if (Settings.allowUnsyncedSegments) {
-		if (
-			!isUpdateAllowed(
-				playoutInfo,
-				dbRundown,
-				{ changed: [dbRundown] },
-				preparedChanges.segments,
-				preparedChanges.parts
-			)
-		) {
+		if (!isUpdateAllowed(playoutInfo, dbRundown, { changed: [dbRundown] })) {
 			ServerRundownAPI.unsyncRundownInner(cache)
 			waitForPromise(cache.saveAllToDatabase())
 
@@ -956,10 +978,18 @@ export function savePreparedRundownChanges(
 
 	const didChange = anythingChanged(allChanges)
 	if (didChange) {
-		afterIngestChangedData(cache, playoutInfo, [
-			...preparedChanges.segments.changed.map((s) => s._id),
-			...preparedChanges.segments.inserted.map((s) => s._id),
-		])
+		const segments = [...preparedChanges.segments.changed, ...preparedChanges.segments.inserted]
+		afterIngestChangedData(
+			cache,
+			playoutInfo,
+			segments.map((s) => ({
+				segmentId: s._id,
+				oldPartIdsAndRanks: (existingRundownParts[unprotectString(s._id)] || []).map((p) => ({
+					id: p._id,
+					rank: p._rank,
+				})),
+			}))
+		)
 
 		reportRundownDataHasChanged(cache, dbPlaylist)
 	}
@@ -970,52 +1000,59 @@ export function savePreparedRundownChanges(
 	return didChange
 }
 
-/** Set order and playlistID of rundowns in a playlist */
-function handleUpdatedRundownPlaylist(
-	currentRundown: DBRundown,
+/** Set _rank and playlistId of rundowns in a playlist */
+export function updateRundownsInPlaylist(
 	playlist: DBRundownPlaylist,
-	order: _.Dictionary<number>
+	rundownRanks: BlueprintResultOrderedRundowns,
+	currentRundown?: DBRundown
 ) {
-	let rundowns: DBRundown[] = []
-	let selector: Mongo.Selector<DBRundown> = {}
-	if (currentRundown.playlistExternalId && playlist.externalId === currentRundown.playlistExternalId) {
-		selector = { playlistExternalId: currentRundown.playlistExternalId }
-		rundowns = Rundowns.find({ playlistExternalId: currentRundown.playlistExternalId }).fetch()
-	} else if (!currentRundown.playlistExternalId) {
-		selector = { _id: currentRundown._id }
-		rundowns = [currentRundown]
-	} else if (currentRundown.playlistExternalId && playlist.externalId !== currentRundown.playlistExternalId) {
+	// TODO - locking
+	const { rundowns, selector } = getAllRundownsInPlaylist(playlist._id, playlist.externalId)
+
+	let maxRank: number = Number.NEGATIVE_INFINITY
+	let currentRundownUpdated: DBRundown | undefined
+	rundowns.forEach((rundown) => {
+		rundown.playlistId = playlist._id
+
+		if (!playlist.rundownRanksAreSetInSofie) {
+			const rundownRank = rundownRanks[unprotectString(rundown._id)]
+			if (rundownRank !== undefined) {
+				rundown._rank = rundownRank
+			}
+		}
+		if (!_.isNaN(Number(rundown._rank))) {
+			maxRank = Math.max(maxRank, rundown._rank)
+		}
+		if (currentRundown && rundown._id === currentRundown._id) currentRundownUpdated = rundown
+		return rundown
+	})
+	if (playlist.rundownRanksAreSetInSofie) {
+		// Place new rundowns at the end:
+
+		const unrankedRundowns = sortDefaultRundownInPlaylistOrder(rundowns.filter((r) => r._rank === undefined))
+
+		unrankedRundowns.forEach((rundown) => {
+			if (rundown._rank === undefined) {
+				rundown._rank = ++maxRank
+			}
+		})
+	}
+	if (currentRundown && !currentRundownUpdated) {
 		throw new Meteor.Error(
-			501,
-			`Rundown "${currentRundown._id}" is assigned to a playlist "${currentRundown.playlistExternalId}", but the produced playlist has external ID: "${playlist.externalId}".`
+			500,
+			`updateRundownsInPlaylist: Rundown "${currentRundown._id}" is not a part of rundowns`
 		)
-	} else {
-		throw new Meteor.Error(501, `Unknown error when handling rundown playlist.`)
+	}
+	if (currentRundown && currentRundownUpdated) {
+		// Apply to in-memory copy:
+		currentRundown.playlistId = currentRundownUpdated.playlistId
+		currentRundown._rank = currentRundownUpdated._rank
 	}
 
-	const updated = rundowns.map((r) => {
-		const rundownOrder = order[unprotectString(r._id)]
-		r.playlistId = playlist._id
-		if (rundownOrder !== undefined) {
-			r._rank = rundownOrder
-		} else {
-			// an unranked Rundown is essentially "floated" - it is a part of the playlist, but it shouldn't be visible in the UI
-			r._rank = -1
-			// TODO - this should do something to make it be floated
-		}
-
-		if (r._id === currentRundown._id) {
-			// Apply to in-memory copy
-			currentRundown.playlistId = r.playlistId
-			currentRundown._rank = r._rank
-		}
-		return r
-	})
-
-	saveIntoDb(Rundowns, selector, updated)
+	saveIntoDb(Rundowns, selector, rundowns)
 }
 
-function handleRemovedSegment(
+export function handleRemovedSegment(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
 	segmentExternalId: string
@@ -1035,15 +1072,24 @@ function handleRemovedSegment(
 
 			if (canBeUpdated(rundown, segment)) {
 				if (!isUpdateAllowed(playoutInfo, rundown, {}, { removed: [segment] }, {})) {
-					ServerRundownAPI.unsyncRundownInner(cache)
+					unsyncSegmentOrRundown(cache, segmentId)
 				} else {
 					if (removeSegments(cache, [segmentId]) === 0) {
 						throw new Meteor.Error(
 							404,
 							`handleRemovedSegment: removeSegments: Segment ${segmentExternalId} not found`
 						)
+					} else {
+						UpdateNext.ensureNextPartIsValid(cache, playoutInfo)
 					}
 				}
+
+				cache.defer(() => {
+					IngestDataCache.remove({
+						segmentId: segmentId,
+						rundownId: rundown._id,
+					})
+				})
 			}
 		}
 	)
@@ -1073,9 +1119,13 @@ export function handleUpdatedSegment(
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
-				const updatedSegmentId = savePreparedSegmentChanges(cache, playoutInfo, preparedChanges)
+				const { segmentId: updatedSegmentId, oldPartIdsAndRanks } = savePreparedSegmentChanges(
+					cache,
+					playoutInfo,
+					preparedChanges
+				)
 				if (updatedSegmentId) {
-					afterIngestChangedData(cache, playoutInfo, [updatedSegmentId])
+					afterIngestChangedData(cache, playoutInfo, [{ segmentId: updatedSegmentId, oldPartIdsAndRanks }])
 				}
 			}
 		}
@@ -1090,7 +1140,7 @@ export function handleUpdatedSegment(
  */
 export function prepareUpdateSegmentFromIngestData(
 	cache: ReadOnlyCache<CacheForIngest>,
-	showStyle: DeepReadonly<ShowStyleCompound>,
+	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	wrappedBlueprint: WrappedShowStyleBlueprint,
 	ingestSegment: IngestSegment
 ): PreparedSegmentChanges {
@@ -1103,7 +1153,6 @@ export function prepareUpdateSegmentFromIngestData(
 	// The segment may not yet exist (if it had its id changed), so we need to fetch the old ones manually
 	const existingParts = cache.Parts.findFetch({
 		segmentId: segmentId,
-		dynamicallyInsertedAfterPartId: { $exists: false },
 	})
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
@@ -1147,7 +1196,10 @@ export function savePreparedSegmentChanges(
 	cache: CacheForIngest,
 	playoutInfo: IngestPlayoutInfo,
 	preparedChanges: PreparedSegmentChanges
-): SegmentId | null {
+): {
+	segmentId: SegmentId | null
+	oldPartIdsAndRanks: Array<{ id: PartId; rank: number }>
+} {
 	const span = profiler.startSpan('ingest.rundownInput.savePreparedSegmentChanges')
 	const rundown = getRundown2(cache)
 
@@ -1165,7 +1217,6 @@ export function savePreparedSegmentChanges(
 					_id: { $in: partIds },
 				},
 			],
-			dynamicallyInsertedAfterPartId: { $exists: false }, // do not affect dynamically inserted parts (such as adLib parts)
 		},
 		preparedChanges.parts
 	)
@@ -1193,9 +1244,8 @@ export function savePreparedSegmentChanges(
 
 	// determine if update is allowed here
 	if (!isUpdateAllowed(playoutInfo, rundown, {}, { changed: [preparedChanges.segment] }, prepareSaveParts)) {
-		ServerRundownAPI.unsyncRundownInner(cache)
-		span?.end()
-		return null
+		unsyncSegmentOrRundown(cache, preparedChanges.segmentId)
+		return { segmentId: null, oldPartIdsAndRanks: [] }
 	}
 
 	// Update segment info:
@@ -1259,24 +1309,158 @@ export function savePreparedSegmentChanges(
 		})
 	)
 
-	const hasChanged = anythingChanged(changes) ? preparedChanges.segmentId : null
+	const oldPartIdsAndRanks = existingParts.map((p) => ({ id: p._id, rank: p._rank }))
 	span?.end()
-	return hasChanged
+	return { segmentId: anythingChanged(changes) ? preparedChanges.segmentId : null, oldPartIdsAndRanks }
+}
+function syncChangesToPartInstances(
+	cache: CacheForPlayout,
+	blueprint: ShowStyleBlueprintManifest,
+	playlist: RundownPlaylist,
+	rundown: Rundown
+) {
+	if (playlist.active) {
+		if (blueprint.syncIngestUpdateToPartInstance) {
+			const { previousPartInstance, currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
+				cache
+			)
+			const instances: {
+				existingPartInstance: PartInstance
+				previousPartInstance: PartInstance | undefined
+				playStatus: 'current' | 'next'
+			}[] = []
+			if (currentPartInstance)
+				instances.push({
+					existingPartInstance: currentPartInstance,
+					previousPartInstance: previousPartInstance,
+					playStatus: 'current',
+				})
+			if (nextPartInstance)
+				instances.push({
+					existingPartInstance: nextPartInstance,
+					previousPartInstance: currentPartInstance,
+					playStatus: isTooCloseToAutonext(currentPartInstance, false) ? 'current' : 'next',
+				})
+
+			for (const { existingPartInstance, previousPartInstance, playStatus } of instances) {
+				const pieceInstancesInPart = cache.PieceInstances.findFetch({
+					partInstanceId: existingPartInstance._id,
+				})
+
+				const partId = existingPartInstance.part._id
+				const newPart = cache.Parts.findOne(partId)
+
+				if (newPart) {
+					const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
+						partInstance: unprotectObject(existingPartInstance),
+						pieceInstances: unprotectObjectArray(pieceInstancesInPart),
+					}
+
+					const referencedAdlibIds = _.compact(pieceInstancesInPart.map((p) => p.adLibSourceId))
+					const referencedAdlibs = cache.AdLibPieces.findFetch({ _id: { $in: referencedAdlibIds } })
+
+					const adlibPieces = cache.AdLibPieces.findFetch({ partId: partId })
+					const adlibActions = cache.AdLibActions.findFetch({ partId: partId })
+
+					const proposedPieceInstances = getPieceInstancesForPart(
+						cache,
+						previousPartInstance,
+						newPart,
+						waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, newPart)),
+						existingPartInstance._id,
+						false
+					)
+
+					const newResultData: BlueprintSyncIngestNewData = {
+						part: unprotectObject(newPart),
+						pieceInstances: unprotectObjectArray(proposedPieceInstances),
+						adLibPieces: unprotectObjectArray(adlibPieces),
+						actions: unprotectObjectArray(adlibActions),
+						referencedAdlibs: unprotectObjectArray(referencedAdlibs),
+					}
+
+					const syncContext = new SyncIngestUpdateToPartInstanceContext(
+						rundown,
+						cache,
+						new NotesContext(
+							`Update to ${newPart.externalId}`,
+							`rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
+							true
+						),
+						existingPartInstance,
+						pieceInstancesInPart,
+						proposedPieceInstances,
+						playStatus
+					)
+					// TODO - how can we limit the frequency we run this? (ie, how do we know nothing affecting this has changed)
+					try {
+						// The blueprint handles what in the updated part is going to be synced into the partInstance:
+						blueprint.syncIngestUpdateToPartInstance(
+							syncContext,
+							existingResultPartInstance,
+							clone(newResultData),
+							playStatus
+						)
+
+						// If the blueprint function throws, no changes will be synced to the cache:
+						syncContext.applyChangesToCache(cache)
+					} catch (e) {
+						logger.error(e)
+					}
+
+					// Save notes:
+					if (!existingPartInstance.part.notes) existingPartInstance.part.notes = []
+					const notes: PartNote[] = existingPartInstance.part.notes
+					let changed = false
+					for (const note of syncContext.notesContext.getNotes()) {
+						changed = true
+						notes.push(
+							literal<SegmentNote>({
+								type: note.type,
+								message: note.message,
+								origin: {
+									name: '', // TODO
+								},
+							})
+						)
+					}
+					if (changed) {
+						// TODO - these dont get shown to the user currently
+						// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?
+						cache.PartInstances.update(existingPartInstance._id, {
+							$set: {
+								'part.notes': notes,
+							},
+						})
+					}
+
+					if (existingPartInstance._id === playlist.currentPartInstanceId) {
+						// This should be run after 'current', before 'next':
+						syncPlayheadInfinitesForNextPartInstance(cache)
+					}
+				} else {
+					// the part has been removed, don't sync that
+				}
+			}
+		} else {
+			// blueprint.syncIngestUpdateToPartInstance is not set, default behaviour is to not sync the partInstance at all.
+		}
+	}
 }
 
 export function afterIngestChangedData(
 	cache: CacheForIngest,
 	playoutInfo: IngestPlayoutInfo,
-	changedSegmentIds: SegmentId[]
+	changedSegments: ChangedSegmentsRankInfo
 ) {
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(cache)
 	updateExpectedPlayoutItemsOnRundown(cache)
 
-	updatePartRanks(cache.Parts, undefined, changedSegmentIds)
+	updatePartInstanceRanks(cache, playoutInfo, changedSegments)
 
-	UpdateNext.ensureNextPartIsValid(cache, playoutInfo)
-	// TODO - this timeline update stuff needs rethinking
+	syncChangesToPartInstances(cache, blueprint, playlist, rundown)
+
 	triggerUpdateTimelineAfterIngestData(playoutInfo.playlist._id)
 }
 
@@ -1327,11 +1511,17 @@ export function handleRemovedPart(
 				if (!part) throw new Meteor.Error(404, 'Part not found')
 
 				if (!isUpdateAllowed(playoutInfo, rundown, {}, {}, { removed: [part] })) {
-					ServerRundownAPI.unsyncRundownInner(cache)
+					unsyncSegmentOrRundown(cache, segmentId)
 				} else {
-					const updatedSegmentId = savePreparedSegmentChanges(cache, playoutInfo, preparedChanges)
+					const { segmentId: updatedSegmentId, oldPartIdsAndRanks } = savePreparedSegmentChanges(
+						cache,
+						playoutInfo,
+						preparedChanges
+					)
 					if (updatedSegmentId) {
-						afterIngestChangedData(cache, playoutInfo, [updatedSegmentId])
+						afterIngestChangedData(cache, playoutInfo, [
+							{ segmentId: updatedSegmentId, oldPartIdsAndRanks },
+						])
 					}
 				}
 			}
@@ -1357,9 +1547,15 @@ export function handleUpdatedPart(
 				if (!isUpdateAllowed(playoutInfo, rundown, {}, {}, {})) {
 					ServerRundownAPI.unsyncRundownInner(cache)
 				} else {
-					const updatedSegmentId = savePreparedSegmentChanges(cache, playoutInfo, preparedChanges)
+					const { segmentId: updatedSegmentId, oldPartIdsAndRanks } = savePreparedSegmentChanges(
+						cache,
+						playoutInfo,
+						preparedChanges
+					)
 					if (updatedSegmentId) {
-						afterIngestChangedData(cache, playoutInfo, [updatedSegmentId])
+						afterIngestChangedData(cache, playoutInfo, [
+							{ segmentId: updatedSegmentId, oldPartIdsAndRanks },
+						])
 					}
 				}
 			}
@@ -1480,9 +1676,10 @@ function generateSegmentContents(
 			}
 		}
 
-		const existingPart = _.find(existingParts, (p) => p._id === partId)
+		const existingPart = existingParts.find((p) => p._id === partId)
+		const existingPartProps = existingPart ? _.pick(existingPart, 'status') : {} // This property is 'owned' by core and updated via its own flow
 		const part = literal<DBPart>({
-			..._.omit(existingPart || {}, 'invalid'),
+			...existingPartProps,
 			...blueprintPart.part,
 			_id: partId,
 			rundownId: rundownId,
@@ -1532,8 +1729,8 @@ function generateSegmentContents(
 
 export function isUpdateAllowed(
 	playoutInfo: IngestPlayoutInfo,
-	rundown: DeepReadonly<Rundown>,
-	rundownChanges?: Partial<PreparedChanges<DeepReadonly<DBRundown>>>,
+	rundown: ReadonlyDeep<Rundown>,
+	rundownChanges?: Partial<PreparedChanges<ReadonlyDeep<DBRundown>>>,
 	segmentChanges?: Partial<PreparedChanges<DBSegment>>,
 	partChanges?: Partial<PreparedChanges<DBPart>>
 ): boolean {
@@ -1566,7 +1763,7 @@ export function isUpdateAllowed(
 					if (currentPartInstance.part._id === part._id) {
 						// Don't allow removing currently playing part
 						logger.warn(
-							`Not allowing removal of currently playing part "${part._id}", making rundown unsynced instead`
+							`Not allowing removal of currently playing part "${part._id}" ("${part.externalId}"), making rundown unsynced instead`
 						)
 						allowed = false
 					} else if (
@@ -1576,7 +1773,7 @@ export function isUpdateAllowed(
 					) {
 						// Don't allow removing next part, when autonext is about to happen
 						logger.warn(
-							`Not allowing removal of nexted part "${part._id}", making rundown unsynced instead`
+							`Not allowing removal of nexted part "${part._id}" ("${part.externalId}"), making rundown unsynced instead`
 						)
 						allowed = false
 					}
@@ -1587,7 +1784,7 @@ export function isUpdateAllowed(
 					if (currentPartInstance.segmentId === segment._id) {
 						// Don't allow removing segment with currently playing part
 						logger.warn(
-							`Not allowing removal of segment "${segment._id}", containing currently playing part "${currentPartInstance.part._id}", making rundown unsynced instead`
+							`Not allowing removal of segment "${segment._id}" ("${segment.externalId}"), containing currently playing part "${currentPartInstance.part._id}", making rundown unsynced instead`
 						)
 					}
 				})
@@ -1598,29 +1795,11 @@ export function isUpdateAllowed(
 						if (currentPartInstance && currentPartInstance.segmentId === segment._id) {
 							// Don't allow removing segment with currently playing part
 							logger.warn(
-								`Not allowing removal of segment "${segment._id}", containing currently playing part "${currentPartInstance._id}"`
+								`Not allowing removal of segment "${segment._id}" ("${segment.externalId}"), containing currently playing part "${currentPartInstance._id}" ("${currentPartInstance.part.externalId}")`
 							)
 							allowed = false
 						}
 					})
-				}
-				if (
-					allowed &&
-					partChanges &&
-					partChanges.removed &&
-					partChanges.removed.length &&
-					currentPartInstance &&
-					currentPartInstance.part.dynamicallyInsertedAfterPartId
-				) {
-					// If the currently playing part is a queued part and depending on any of the parts that are to be removed:
-					const removedPartIds = partChanges.removed.map((part) => part._id)
-					if (removedPartIds.includes(currentPartInstance.part.dynamicallyInsertedAfterPartId)) {
-						// Don't allow removal of a part that has a currently playing queued Part
-						logger.warn(
-							`Not allowing removal of part "${currentPartInstance.part.dynamicallyInsertedAfterPartId}", because currently playing (queued) part "${currentPartInstance._id}" is after it`
-						)
-						allowed = false
-					}
 				}
 			}
 		}
@@ -1634,12 +1813,16 @@ export function isUpdateAllowed(
 	span?.end()
 	return allowed
 }
-function printChanges(changes: Partial<PreparedChanges<{ _id: ProtectedString<any> }>>): string {
+function printChanges(changes: Partial<PreparedChanges<{ _id: ProtectedString<any>; externalId: string }>>): string {
 	let str = ''
 
-	if (changes.changed) str += _.map(changes.changed, (doc) => 'change:' + doc._id).join(',')
-	if (changes.inserted) str += _.map(changes.inserted, (doc) => 'insert:' + doc._id).join(',')
-	if (changes.removed) str += _.map(changes.removed, (doc) => 'remove:' + doc._id).join(',')
+	const compileDocs = (docs: { _id: ProtectedString<any>; externalId: string }[], keyword: string) => {
+		return _.map(docs, (doc) => `${keyword}: "${doc._id}" ("${doc.externalId}")`).join(', ')
+	}
+
+	if (changes.changed) str += compileDocs(changes.changed, 'change')
+	if (changes.inserted) str += compileDocs(changes.inserted, 'insert')
+	if (changes.removed) str += compileDocs(changes.removed, 'remove')
 
 	return str
 }
@@ -1870,5 +2053,13 @@ function makeChangeObj(segmentId: SegmentId): SegmentChanges {
 			removed: [],
 			unchanged: [],
 		},
+	}
+}
+
+function unsyncSegmentOrRundown(cache: CacheForIngest, segmentId: SegmentId) {
+	if (Settings.allowUnsyncedSegments) {
+		ServerRundownAPI.unsyncSegmentInner(cache, segmentId)
+	} else {
+		ServerRundownAPI.unsyncRundownInner(cache)
 	}
 }

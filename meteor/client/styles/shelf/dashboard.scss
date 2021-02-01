@@ -258,10 +258,9 @@ $dashboard-button-height: 5.625em;
 		word-break: break-all;
 		width: $dashboard-button-width;
 		height: $dashboard-button-height;
-		border: none;
 		margin: 4px;
 		vertical-align: top;
-		cursor: pointer;
+		cursor: default;
 
 		@include item-type-colors();
 		@include invalid-overlay();
@@ -313,12 +312,18 @@ $dashboard-button-height: 5.625em;
 			}
 		}
 
+		&.selected {
+			box-shadow: 2px 2px 0 var(--adlib-item-selected-color), -2px -2px 0 var(--adlib-item-selected-color),
+				-2px 2px 0 var(--adlib-item-selected-color), 2px -2px 0 var(--adlib-item-selected-color);
+		}
+
 		&:focus {
 			outline: none;
 			box-shadow: none;
 		}
 
-		&:active {
+		&:active,
+		&.active {
 			&::before {
 				content: ' ';
 				display: block;
@@ -353,6 +358,12 @@ $dashboard-button-height: 5.625em;
 			text-shadow: -1px -1px 0px rgba(0, 0, 0, 0.5), 1px 1px 0px rgba(0, 0, 0, 0.5), 1px -1px 0px rgba(0, 0, 0, 0.5),
 				1px -1px 0px rgba(0, 0, 0, 0.5), 0.5px 0.5px 2px rgba(0, 0, 0, 1);
 			z-index: 2;
+
+			&.dashboard-panel__panel__button__label--editable {
+				text-shadow: none;
+				color: #000;
+				background: #fff;
+			}
 		}
 
 		> .dashboard-panel__panel__button__thumbnail {
@@ -366,7 +377,7 @@ $dashboard-button-height: 5.625em;
 
 		> .dashboard-panel__panel__button__sub-label {
 			position: absolute;
-			top: 2px;
+			bottom: 2px;
 			right: 4px;
 			font-size: 8px;
 			text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);

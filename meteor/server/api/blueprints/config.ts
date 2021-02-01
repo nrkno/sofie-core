@@ -7,7 +7,7 @@ import {
 	ShowStyleBlueprintManifest,
 	BasicConfigItemValue,
 	TableConfigItemValue,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -327,9 +327,11 @@ Meteor.startup(() => {
 		).observeChanges({
 			changed: (id: BlueprintId) => {
 				studioBlueprintConfigCache.delete(id)
+				showStyleBlueprintConfigCache.delete(id)
 			},
 			removed: (id: BlueprintId) => {
 				studioBlueprintConfigCache.delete(id)
+				showStyleBlueprintConfigCache.delete(id)
 			},
 		})
 	}

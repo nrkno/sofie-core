@@ -1,28 +1,31 @@
 import * as React from 'react'
 import { getElementWidth } from '../../../utils/dimensions'
 
-import { FloatingInspector } from '../../FloatingInspector'
-
 import ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 
-import { SourceLayerType, SplitsContent } from 'tv-automation-sofie-blueprints-integration'
+import {
+	SourceLayerType,
+	SplitsContent,
+	SplitsContentBoxContent,
+	SplitsContentBoxProperties,
+} from '@sofie-automation/blueprints-integration'
 import { literal } from '../../../../lib/lib'
-import * as _ from 'underscore'
 import { RundownUtils } from '../../../lib/rundown'
+import { SplitsFloatingInspector } from '../../FloatingInspectors/SplitsFloatingInspector'
 
 export enum SplitRole {
 	ART = 0,
 	BOX = 1,
 }
 
-interface SplitSubItem {
+export interface SplitSubItem {
 	_id: string
 	type: SourceLayerType
 	label: string
 	// TODO: To be replaced with the structure used by the Core
 	role: SplitRole
-	content?: any
+	content?: SplitsContentBoxProperties['geometry']
 }
 
 interface IProps extends ICustomLayerItemProps {}
@@ -55,19 +58,25 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		}
 	}
 
+	static generateSplitSubItems(
+		boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]
+	): SplitSubItem[] {
+		return boxSourceConfiguration.map((item, index) => {
+			return literal<SplitSubItem>({
+				_id: item.studioLabel + '_' + index,
+				type: item.type,
+				label: item.studioLabel,
+				role: SplitRole.BOX,
+				content: item.geometry || DEFAULT_POSITIONS[index],
+			})
+		})
+	}
+
 	static getDerivedStateFromProps(props: IProps): IState {
 		let subItems: Array<SplitSubItem> = []
 		const splitContent = props.piece.instance.piece.content as SplitsContent | undefined
 		if (splitContent && splitContent.boxSourceConfiguration) {
-			subItems = splitContent.boxSourceConfiguration.map((item, index) => {
-				return literal<SplitSubItem>({
-					_id: item.studioLabel + '_' + index,
-					type: item.type,
-					label: item.studioLabel,
-					role: SplitRole.BOX,
-					content: item.geometry || DEFAULT_POSITIONS[index],
-				})
-			})
+			subItems = SplitsSourceRenderer.generateSplitSubItems(splitContent.boxSourceConfiguration)
 		}
 
 		return {
@@ -88,8 +97,8 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	}
 
 	updateAnchoredElsWidths = () => {
-		const leftLabelWidth = getElementWidth(this.leftLabel)
-		const rightLabelWidth = getElementWidth(this.rightLabel)
+		const leftLabelWidth = this.leftLabel ? Math.max(0, getElementWidth(this.leftLabel) - 2) : 0
+		const rightLabelWidth = this.rightLabel ? Math.max(0, getElementWidth(this.rightLabel) - 2) : 0
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
@@ -123,43 +132,6 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 			})
 	}
 
-	renderSplitPreview() {
-		return (
-			<div className="video-preview">
-				{this.state.subItems.reverse().map((item, index, array) => {
-					return (
-						<div
-							className={ClassNames(
-								'video-preview',
-								RundownUtils.getSourceLayerClassName(item.type),
-								{
-									background: item.role === SplitRole.ART,
-									box: item.role === SplitRole.BOX,
-								},
-								{
-									second: array.length > 1 && index > 0 && item.type === array[index - 1].type,
-								}
-							)}
-							key={item._id + '-preview'}
-							style={{
-								left: ((item.content && item.content.x) * 100).toString() + '%',
-								top: ((item.content && item.content.y) * 100).toString() + '%',
-								width: ((item.content && item.content.scale) * 100).toString() + '%',
-								height: ((item.content && item.content.scale) * 100).toString() + '%',
-								clipPath:
-									item.content && item.content.crop
-										? `inset(${item.content.crop.top * 100}% ${item.content.crop.right * 100}% ${item.content.crop
-												.bottom * 100}% ${item.content.crop.left * 100}%)`
-										: undefined,
-							}}>
-							{item.role === SplitRole.BOX && <div className="video-preview__label">{item.label}</div>}
-						</div>
-					)
-				})}
-			</div>
-		)
-	}
-
 	render() {
 		let labelItems = this.props.piece.instance.piece.name.split('||')
 		let begin = labelItems[0] || ''
@@ -178,17 +150,19 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 					className="segment-timeline__piece__label right-side"
 					ref={this.setRightLabelRef}
 					style={this.getItemLabelOffsetRight()}>
-					<span className="segment-timeline__piece__label last-words">{end}</span>
+					{end && <span className="segment-timeline__piece__label last-words">{end}</span>}
 					{this.renderInfiniteIcon()}
 					{this.renderOverflowTimeLabel()}
 				</span>
-				<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
-					<div
-						className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
-						style={this.getFloatingInspectorStyle()}>
-						{this.renderSplitPreview()}
-					</div>
-				</FloatingInspector>
+				{this.props.piece.instance.piece.content ? (
+					<SplitsFloatingInspector
+						floatingInspectorStyle={this.getFloatingInspectorStyle()}
+						content={this.props.piece.instance.piece.content as SplitsContent}
+						itemElement={this.props.itemElement}
+						showMiniInspector={this.props.showMiniInspector}
+						typeClass={this.props.typeClass}
+					/>
+				) : null}
 			</React.Fragment>
 		)
 	}

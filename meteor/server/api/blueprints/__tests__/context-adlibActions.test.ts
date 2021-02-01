@@ -6,7 +6,7 @@ import {
 } from '../../../../__mocks__/helpers/database'
 import { protectString, unprotectString, waitForPromise, getRandomId, getCurrentTime } from '../../../../lib/lib'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
-import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { NotesContext, ActionExecutionContext, ActionPartChange } from '../context'
 import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../../lib/collections/PartInstances'
@@ -83,7 +83,7 @@ describe('Test blueprint api context', () => {
 						startPartId: part._id,
 						content: {
 							index: i,
-						},
+						} as any,
 						lifespan: PieceLifespan.WithinPart,
 						invalid: false,
 					},
@@ -324,6 +324,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 1000,
 					})
@@ -351,6 +354,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 2000,
 					})
@@ -399,6 +405,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 1000,
 					})
@@ -419,6 +428,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 2000,
 					})
@@ -471,6 +483,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 1000,
 					})
@@ -494,6 +509,9 @@ describe('Test blueprint api context', () => {
 							},
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 2000,
 					})
@@ -513,6 +531,60 @@ describe('Test blueprint api context', () => {
 							pieceMetaDataFilter: { prop1: { $ne: 'hello' } },
 						})
 					).toMatchObject({ _id: pieceId0 })
+				})
+			})
+		})
+
+		describe('getPartInstanceForPreviousPiece', () => {
+			testInFiber('invalid parameters', () => {
+				wrapWithCache((cache) => {
+					const { context } = getActionExecutionContext(cache)
+
+					// @ts-ignore
+					expect(() => context.getPartInstanceForPreviousPiece()).toThrowError(
+						'Cannot find PartInstance from invalid PieceInstance'
+					)
+					// @ts-ignore
+					expect(() => context.getPartInstanceForPreviousPiece({})).toThrowError(
+						'Cannot find PartInstance from invalid PieceInstance'
+					)
+					// @ts-ignore
+					expect(() => context.getPartInstanceForPreviousPiece('abc')).toThrowError(
+						'Cannot find PartInstance from invalid PieceInstance'
+					)
+					expect(() =>
+						context.getPartInstanceForPreviousPiece({
+							// @ts-ignore
+							partInstanceId: 6,
+						})
+					).toThrowError('Cannot find PartInstance for PieceInstance')
+					expect(() =>
+						context.getPartInstanceForPreviousPiece({
+							// @ts-ignore
+							partInstanceId: 'abc',
+						})
+					).toThrowError('Cannot find PartInstance for PieceInstance')
+				})
+			})
+
+			testInFiber('valid parameters', () => {
+				wrapWithCache((cache) => {
+					const { context, playlist } = getActionExecutionContext(cache)
+
+					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
+					expect(partInstanceIds).toHaveLength(5)
+
+					expect(
+						context.getPartInstanceForPreviousPiece({ partInstanceId: partInstanceIds[1] } as any)
+					).toMatchObject({
+						_id: partInstanceIds[1],
+					})
+
+					expect(
+						context.getPartInstanceForPreviousPiece({ partInstanceId: partInstanceIds[4] } as any)
+					).toMatchObject({
+						_id: partInstanceIds[4],
+					})
 				})
 			})
 		})
@@ -560,13 +632,13 @@ describe('Test blueprint api context', () => {
 
 					postProcessPiecesMock.mockImplementationOnce(() => [
 						{
-							_id: 'fake4',
+							_id: 'fake4', // Should be ignored
 						} as any,
 					])
 					innerStartAdLibPieceMock.mockImplementationOnce(innerStartAdLibPieceOrig)
 
 					const newPieceInstanceId = context.insertPiece('current', { externalId: 'input1' } as any)._id
-					expect(newPieceInstanceId).toMatch(/randomId([0-9]+)_part0_0_instance_fake4/)
+					expect(newPieceInstanceId).toMatch(/randomId([0-9]+)_part0_0_instance_randomId([0-9]+)/)
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
 					expect(postProcessPiecesMock).toHaveBeenCalledWith(
 						expect.anything(),
@@ -665,7 +737,7 @@ describe('Test blueprint api context', () => {
 					playlist.currentPartInstanceId = pieceInstance0.partInstanceId
 
 					// Ensure there are no pending updates already
-					expect(Object.values(cache.PieceInstances.documents).filter((doc) => !!doc.updated)).toHaveLength(0)
+					expect(cache.PieceInstances.isModified()).toBeFalsy()
 
 					// Update it and expect it to match
 					const pieceInstance0Before = _.clone(pieceInstance0)
@@ -686,7 +758,9 @@ describe('Test blueprint api context', () => {
 						},
 					}
 					expect(pieceInstance0).toEqual(pieceInstance0After)
-					expect(Object.values(cache.PieceInstances.documents).filter((doc) => !!doc.updated)).toMatchObject([
+					expect(
+						Array.from(cache.PieceInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
+					).toMatchObject([
 						{
 							updated: true,
 							document: { _id: pieceInstance0._id },
@@ -796,6 +870,9 @@ describe('Test blueprint api context', () => {
 						externalId: '-',
 						enable: { start: 0 },
 						lifespan: PieceLifespan.OutOnRundownEnd,
+						content: {
+							timelineObjects: [],
+						},
 					}
 					const newPart: IBlueprintPart = {
 						externalId: 'nope',
@@ -820,7 +897,7 @@ describe('Test blueprint api context', () => {
 					expect(newPartInstance).toBeTruthy()
 					expect(newPartInstance.part._rank).toBeLessThan(9000)
 					expect(newPartInstance.part._rank).toBeGreaterThan(partInstance.part._rank)
-					expect(newPartInstance.part.dynamicallyInsertedAfterPartId).toBeTruthy()
+					expect(newPartInstance.orphaned).toEqual('adlib-part')
 
 					const newNextPartInstances = context.getPieceInstances('next')
 					expect(newNextPartInstances).toHaveLength(1)
@@ -1036,7 +1113,7 @@ describe('Test blueprint api context', () => {
 					playlist.nextPartInstanceId = partInstance0._id
 
 					// Ensure there are no pending updates already
-					expect(Object.values(cache.PartInstances.documents).filter((doc) => !!doc.updated)).toHaveLength(0)
+					expect(cache.PartInstances.isModified()).toBeFalsy()
 
 					// Update it and expect it to match
 					const partInstance0Before = _.clone(partInstance0)
@@ -1056,7 +1133,9 @@ describe('Test blueprint api context', () => {
 						},
 					}
 					expect(partInstance0).toEqual(pieceInstance0After)
-					expect(Object.values(cache.PartInstances.documents).filter((doc) => !!doc.updated)).toMatchObject([
+					expect(
+						Array.from(cache.PartInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
+					).toMatchObject([
 						{
 							updated: true,
 							document: { _id: partInstance0._id },

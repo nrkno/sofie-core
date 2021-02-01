@@ -103,7 +103,7 @@ meteorPublish(PubSub.pieces, function(selector: MongoQuery<Piece>, token?: strin
 			'content.timelineObjects': 0,
 		},
 	}
-	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+	if (RundownReadAccess.rundownContent({ rundownId: selector.startRundownId }, { userId: this.userId, token })) {
 		return Pieces.find(selector, modifier)
 	}
 	return null
@@ -118,7 +118,7 @@ meteorPublish(PubSub.piecesSimple, function(selector: MongoQuery<Piece>, token?:
 			'content.timelineObjects': 0,
 		},
 	}
-	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+	if (RundownReadAccess.rundownContent({ rundownId: selector.startRundownId }, { userId: this.userId, token })) {
 		return Pieces.find(selector, modifier)
 	}
 	return null
@@ -215,7 +215,7 @@ meteorPublish(PubSub.expectedPlayoutItems, function(selector: MongoQuery<Expecte
 	return null
 })
 // Note: this publication is for dev purposes only:
-meteorPublish(PubSub.ingestDataCache, function(selector: MongoQuery<IngestDataCacheObjBase>, token?: string) {
+meteorPublish(PubSub.ingestDataCache, function(selector: MongoQuery<IngestDataCacheObj>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<IngestDataCacheObj> = {
 		fields: {},

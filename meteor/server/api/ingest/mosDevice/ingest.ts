@@ -13,7 +13,7 @@ import {
 } from '../lib'
 import { getPartIdFromMosStory, getSegmentExternalId, fixIllegalObject, parseMosString } from './lib'
 import { literal, protectString, unprotectString, getCurrentTime, normalizeArray } from '../../../../lib/lib'
-import { IngestPart, IngestSegment } from 'tv-automation-sofie-blueprints-integration'
+import { IngestPart, IngestSegment } from '@sofie-automation/blueprints-integration'
 import { IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
 	prepareUpdateRundownInner,
@@ -37,13 +37,13 @@ import {
 } from '../ingestCache'
 import { Rundown, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segment, SegmentId } from '../../../../lib/collections/Segments'
-import { removeSegments, ServerRundownAPI } from '../../rundown'
+import { ChangedSegmentsRankInfo, removeSegments, ServerRundownAPI } from '../../rundown'
 import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
 import { PartId } from '../../../../lib/collections/Parts'
 import { CacheForIngest, ReadOnlyCache } from '../../../cache/DatabaseCaches'
 import { Settings } from '../../../../lib/Settings'
-import { DeepReadonly } from 'utility-types'
+import { ReadonlyDeep } from 'type-fest'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { loadShowStyleBlueprint } from '../../blueprints/cache'
 import { getShowStyleCompound2 } from '../../../../lib/collections/ShowStyleVariants'
@@ -91,24 +91,24 @@ function storiesToIngestParts(
 }
 /** Group IngestParts together into something that could be Segments */
 function groupIngestParts(parts: AnnotatedIngestPart[]): { name: string; parts: LocalIngestPart[] }[] {
-	const groupedStories: { name: string; parts: LocalIngestPart[] }[] = []
-	_.each(parts, (s) => {
-		const lastSegment = _.last(groupedStories)
-		if (lastSegment && lastSegment.name === s.segmentName) {
-			lastSegment.parts.push(s.ingest)
+	const groupedParts: { name: string; parts: LocalIngestPart[] }[] = []
+	_.each(parts, (part) => {
+		const lastSegment = _.last(groupedParts)
+		if (lastSegment && lastSegment.name === part.segmentName) {
+			lastSegment.parts.push(part.ingest)
 		} else {
-			groupedStories.push({ name: s.segmentName, parts: [s.ingest] })
+			groupedParts.push({ name: part.segmentName, parts: [part.ingest] })
 		}
 	})
 
 	// Ensure ranks are correct
-	_.each(groupedStories, (group) => {
+	_.each(groupedParts, (group) => {
 		for (let i = 0; i < group.parts.length; i++) {
 			group.parts[i].rank = i
 		}
 	})
 
-	return groupedStories
+	return groupedParts
 }
 function groupedPartsToSegments(
 	rundownId: RundownId,
@@ -274,9 +274,13 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
-				const updatedSegmentId = savePreparedSegmentChanges(cache, playoutInfo, preparedChanges)
+				const { segmentId: updatedSegmentId, oldPartIdsAndRanks } = savePreparedSegmentChanges(
+					cache,
+					playoutInfo,
+					preparedChanges
+				)
 				if (updatedSegmentId) {
-					afterIngestChangedData(cache, playoutInfo, [updatedSegmentId])
+					afterIngestChangedData(cache, playoutInfo, [{ segmentId: updatedSegmentId, oldPartIdsAndRanks }])
 				}
 			}
 		}
@@ -392,17 +396,18 @@ export function handleInsertParts(
 			}
 
 			const newParts = storiesToIngestParts(rundown._id, newStories || [], true, ingestParts).filter(
-				(p): p is AnnotatedIngestPart => !!p
+				(p): p is AnnotatedIngestPart => !!p // remove falsy values from array
 			)
-			const newPartIds = newParts.map((part) => part.externalId)
+			const newPartExtenalIds = new Set(newParts.map((part) => part.externalId))
 
-			const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestParts) => {
+			const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestPartsToModify) => {
+				const modifiedIngestParts = [...ingestPartsToModify] // clone
 				if (removePrevious) {
-					ingestParts.splice(insertIndex, 1) // Replace the previous part with new parts
+					modifiedIngestParts.splice(insertIndex, 1) // Replace the previous part with new parts
 				}
 
-				const collidingPartIds = ingestParts
-					.filter((part) => newPartIds.indexOf(part.externalId) > -1)
+				const collidingPartIds = modifiedIngestParts
+					.filter((part) => newPartExtenalIds.has(part.externalId))
 					.map((part) => part.externalId)
 				if (collidingPartIds.length > 0) {
 					throw new Meteor.Error(
@@ -411,20 +416,19 @@ export function handleInsertParts(
 					)
 				}
 				// Update parts list
-				ingestParts.splice(insertIndex, 0, ...newParts)
+				modifiedIngestParts.splice(insertIndex, 0, ...newParts)
 
-				return ingestParts
+				return modifiedIngestParts
 			})
 
 			return {
 				preparedChanges: prepareMosSegmentChanges(cache, ingestDataCache, ingestRundown, newIngestSegments),
-				newPartIds,
+				newPartExtenalIds,
 			}
 		},
 		(cache, playoutInfo, data) => {
 			if (data) {
 				applyMosSegmentChanges(cache, playoutInfo, data.preparedChanges)
-				UpdateNext.afterInsertParts(cache, playoutInfo, data.newPartIds, removePrevious)
 			}
 		}
 	)
@@ -564,18 +568,21 @@ export function handleMoveStories(
 }
 /** Takes a list of ingestParts, modify it, then output them grouped together into ingestSegments, keeping track of the modified property */
 function makeChangeToIngestParts(
-	rundown: DeepReadonly<Rundown>,
+	rundown: ReadonlyDeep<Rundown>,
 	ingestParts: AnnotatedIngestPart[],
 	modifyFunction: (ingestParts: AnnotatedIngestPart[]) => AnnotatedIngestPart[]
 ): LocalIngestSegment[] {
 	const span = profiler.startSpan('mosDevice.ingest.makeChangeToIngestParts')
 
+	// Before making the modification to ingestParts, create a list of segments from the original data, to use for calculating the
+	// .modified property below.
 	const referenceIngestSegments = groupPartsIntoIngestSegments(rundown, ingestParts)
 
 	const modifiedParts = modifyFunction(ingestParts)
 
 	// Compare to reference, to make sure that ingestSegment.modified is updated in case of a change
 	const newIngestSegments = groupPartsIntoIngestSegments(rundown, modifiedParts)
+
 	_.each(newIngestSegments, (ingestSegment) => {
 		if (!ingestSegment.modified) {
 			ingestSegment.modified = getCurrentTime()
@@ -600,7 +607,7 @@ function makeChangeToIngestParts(
 	return newIngestSegments
 }
 function groupPartsIntoIngestSegments(
-	rundown: DeepReadonly<Rundown>,
+	rundown: ReadonlyDeep<Rundown>,
 	newIngestParts: AnnotatedIngestPart[]
 ): LocalIngestSegment[] {
 	// Group the parts and make them into Segments:
@@ -668,7 +675,11 @@ function applyMosSegmentChanges(
 	const rundown = getRundown2(cache)
 
 	// Check if operation affect currently playing Part:
-	if (playoutInfo.playlist.active && playoutInfo.currentPartInstance) {
+	if (
+		playoutInfo.playlist.active &&
+		playoutInfo.currentPartInstance &&
+		playoutInfo.currentPartInstance.rundownId === rundown._id
+	) {
 		const currentPartInstance = playoutInfo.currentPartInstance
 		let currentPart: LocalIngestPart | undefined = undefined
 
@@ -755,15 +766,15 @@ function applyMosSegmentChanges(
 	removeSegments(cache, removedSegmentIds)
 
 	// Store updated sgements
-	const changedSegmentIds: SegmentId[] = []
+	const changedSegments: ChangedSegmentsRankInfo = []
 	for (const segmentChanges of preparedChanges.preparedSegmentChanges) {
-		const segmentId = savePreparedSegmentChanges(cache, playoutInfo, segmentChanges)
+		const { segmentId, oldPartIdsAndRanks } = savePreparedSegmentChanges(cache, playoutInfo, segmentChanges)
 		if (segmentId !== null) {
-			changedSegmentIds.push(segmentId)
+			changedSegments.push({ segmentId, oldPartIdsAndRanks })
 		}
 	}
-	if (changedSegmentIds.length > 0) {
-		afterIngestChangedData(cache, playoutInfo, changedSegmentIds)
+	if (changedSegments.length > 0) {
+		afterIngestChangedData(cache, playoutInfo, changedSegments)
 	}
 
 	span?.end()

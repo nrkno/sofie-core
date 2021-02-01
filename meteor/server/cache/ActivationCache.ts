@@ -1,5 +1,5 @@
 import { RundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { asyncCollectionFindOne, ProtectedString, asyncCollectionFindFetch } from '../../lib/lib'
+import { asyncCollectionFindOne, ProtectedString, asyncCollectionFindFetch, clone } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
@@ -18,6 +18,7 @@ import {
 	RundownBaselineAdLibActions,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { ReadonlyDeep } from 'type-fest'
 
 export function getActivationCache(studioId: StudioId, playlistId: RundownPlaylistId): ActivationCache {
 	let activationCache = activationCaches.get(studioId)
@@ -74,8 +75,8 @@ export class ActivationCache {
 	private _initialized: boolean = false
 	private _persistant: boolean = false
 
-	private _playlist: RundownPlaylist
-	private _studio: Studio
+	private _playlist: RundownPlaylist | undefined
+	private _studio: Studio | undefined
 	private _showStyleBases: { [id: string]: InternalCache<ShowStyleBase> } = {}
 	private _showStyleVariants: { [id: string]: InternalCache<ShowStyleVariant> } = {}
 	private _rundownBaselineObjs: { [id: string]: InternalCache<RundownBaselineObj[]> } = {}
@@ -115,8 +116,8 @@ export class ActivationCache {
 		this._initialized = false
 		this._persistant = false
 	}
-	async initialize(playlist: RundownPlaylist, rundownsInPlaylist: Rundown[]) {
-		if (this._initialized && playlist.activeInstanceId !== this._playlist.activeInstanceId) {
+	async initialize(playlist: ReadonlyDeep<RundownPlaylist>, rundownsInPlaylist: Rundown[]) {
+		if (this._initialized && (!this._playlist || playlist.activeInstanceId !== this._playlist.activeInstanceId)) {
 			// activeInstanceId has changed, we should clear out the data because it might not be valid anymore
 			this._uninitialize()
 		}
@@ -127,7 +128,7 @@ export class ActivationCache {
 			throw new Error(
 				`ActivationCache.initialize playlist._id "${playlist._id}" not equal to this.playlistId "${this.playlistId}"`
 			)
-		this._playlist = playlist
+		this._playlist = clone<RundownPlaylist>(playlist)
 
 		const pStudio = asyncCollectionFindOne(Studios, this._playlist.studioId)
 
@@ -187,7 +188,7 @@ export class ActivationCache {
 	// 	return this._playlist
 	// }
 	getStudio(): Studio {
-		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
+		if (!this._initialized || !this._studio) throw new Meteor.Error(`ActivationCache is not initialized`)
 		return this._studio
 	}
 	async getShowStyleBase(rundown: Rundown): Promise<ShowStyleBase> {
@@ -224,7 +225,7 @@ export class ActivationCache {
 		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
 		return this._getPeripheralDevices()
 	}
-	private async _getShowStyleBase(rundown: Rundown, supressError?: boolean): Promise<ShowStyleBase> {
+	private async _getShowStyleBase(rundown: Rundown): Promise<ShowStyleBase> {
 		if (!rundown.showStyleBaseId) throw new Meteor.Error(500, `Rundown.showStyleBaseId not set!`)
 		return this._getFromCache(this._showStyleBases, rundown.showStyleBaseId, '', async (id) => {
 			const showStyleBase = await asyncCollectionFindOne(ShowStyleBases, id)
@@ -278,7 +279,10 @@ export class ActivationCache {
 		)
 	}
 	private async _getPeripheralDevices(): Promise<PeripheralDevice[]> {
-		return this._getFromCache(this._peripheralDevices, this._playlist.studioId, '', async (id) => {
+		const studioId = this._playlist?.studioId ?? this._studio?._id
+		if (!studioId) return []
+
+		return this._getFromCache(this._peripheralDevices, studioId, '', async (id) => {
 			const devices = await asyncCollectionFindFetch(PeripheralDevices, {
 				studioId: id,
 			})

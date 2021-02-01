@@ -11,9 +11,9 @@ import {
 } from '../../lib/lib'
 import { TransformedCollection, MongoModifier } from '../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
-import { DeepReadonly } from 'utility-types'
 import _ from 'underscore'
 import { profiler } from '../api/profiler'
+import { ReadonlyDeep } from 'type-fest'
 
 export class DbCacheReadObject<
 	Class extends DBInterface,
@@ -59,7 +59,7 @@ export class DbCacheReadObject<
 		this._initialized = true
 	}
 
-	get doc(): DocOptional extends true ? DeepReadonly<Class> | undefined : DeepReadonly<Class> {
+	get doc(): DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class> {
 		return this._document as any
 	}
 }
@@ -76,7 +76,7 @@ export class DbCacheWriteObject<
 	}
 
 	update(modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface>): boolean {
-		const localDoc: DeepReadonly<Class> | undefined = this.doc
+		const localDoc: ReadonlyDeep<Class> | undefined = this.doc
 		if (!localDoc) throw new Meteor.Error(404, `Error: The document does not yet exist`)
 
 		let newDoc: DBInterface = _.isFunction(modifier)
@@ -136,6 +136,9 @@ export class DbCacheWriteObject<
 			return transform(doc)
 		} else return doc as Class
 	}
+	isModified(): boolean {
+		return this._updated
+	}
 }
 
 export class DbCacheWriteOptionalObject<
@@ -148,7 +151,7 @@ export class DbCacheWriteOptionalObject<
 		super(collection, true)
 	}
 
-	replace(doc: DBInterface): DeepReadonly<Class> {
+	replace(doc: DBInterface): ReadonlyDeep<Class> {
 		this._inserted = true
 
 		if (!doc._id) doc._id = getRandomId()

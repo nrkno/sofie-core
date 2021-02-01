@@ -37,6 +37,9 @@ Object {
             "partInstanceId": "randomId9002_part0_0_tmp_instance",
             "piece": Object {
               "_id": "randomId9002_piece001",
+              "content": Object {
+                "timelineObjects": Array [],
+              },
               "enable": Object {
                 "start": 0,
               },
@@ -85,6 +88,9 @@ Object {
                       "partInstanceId": "randomId9002_part0_1_tmp_instance",
                       "piece": Object {
                         "_id": "randomId9002_piece010",
+                        "content": Object {
+                          "timelineObjects": Array [],
+                        },
                         "enable": Object {
                           "start": 0,
                         },
@@ -158,6 +164,9 @@ Object {
             "partInstanceId": "randomId9002_part0_1_tmp_instance",
             "piece": Object {
               "_id": "randomId9002_piece010",
+              "content": Object {
+                "timelineObjects": Array [],
+              },
               "enable": Object {
                 "start": 0,
               },
@@ -195,6 +204,9 @@ Object {
                       "partInstanceId": "randomId9002_part0_0_tmp_instance",
                       "piece": Object {
                         "_id": "randomId9002_piece001",
+                        "content": Object {
+                          "timelineObjects": Array [],
+                        },
                         "enable": Object {
                           "start": 0,
                         },
@@ -281,6 +293,9 @@ Object {
                   "partInstanceId": "randomId9002_part0_0_tmp_instance",
                   "piece": Object {
                     "_id": "randomId9002_piece001",
+                    "content": Object {
+                      "timelineObjects": Array [],
+                    },
                     "enable": Object {
                       "start": 0,
                     },
@@ -320,6 +335,9 @@ Object {
                   "partInstanceId": "randomId9002_part0_1_tmp_instance",
                   "piece": Object {
                     "_id": "randomId9002_piece010",
+                    "content": Object {
+                      "timelineObjects": Array [],
+                    },
                     "enable": Object {
                       "start": 0,
                     },

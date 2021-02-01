@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { Rundown, Rundowns, DBRundown, RundownId } from '../../lib/collections/Rundowns'
+import { Rundown, Rundowns, DBRundown } from '../../lib/collections/Rundowns'
 import {
 	RundownPlaylist,
 	RundownPlaylists,
@@ -25,19 +25,7 @@ import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
 import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import {
-	protectString,
-	waitForPromiseAll,
-	waitForPromise,
-	makePromise,
-	getCurrentTime,
-	clone,
-	unprotectString,
-	waitTime,
-	sumChanges,
-	anythingChanged,
-	ProtectedString,
-} from '../../lib/lib'
+import { protectString, waitForPromise, makePromise, waitTime, sumChanges, anythingChanged } from '../../lib/lib'
 import { logger } from '../logging'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
@@ -53,6 +41,7 @@ import { getRundownId } from '../api/ingest/lib'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { removeRundownsFromDb, removeRundownPlaylistFromDb } from '../api/playout/lib'
+import { ReadonlyDeep } from 'type-fest'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
@@ -141,10 +130,70 @@ export abstract class Cache {
 		if (span) span.end()
 	}
 
+	/**
+	 * Assert that no changes should have been made to the cache, will throw an Error otherwise. This can be used in
+	 * place of `saveAllToDatabase()`, when the code controlling the cache expects no changes to have been made and any
+	 * changes made are an error and will cause issues.
+	 */
+	assertNoChanges() {
+		const span = profiler.startSpan('Cache.assertNoChanges')
+
+		function logOrThrowError(error: Meteor.Error) {
+			if (!Meteor.isProduction) {
+				throw error
+			} else {
+				logger.error(error)
+				logger.error(error.stack)
+			}
+		}
+
+		const allDBs: DbCacheWritable<any, any>[] = []
+		_.map(_.keys(this), (key) => {
+			const db = this[key]
+			if (isDbCacheWritable(db)) {
+				allDBs.push(db)
+			}
+		})
+
+		if (this._deferredFunctions.length > 0)
+			logOrThrowError(
+				new Meteor.Error(
+					500,
+					`Failed no changes in cache assertion, there were ${this._deferredFunctions.length} deferred functions`
+				)
+			)
+
+		if (this._deferredAfterSaveFunctions.length > 0)
+			logOrThrowError(
+				new Meteor.Error(
+					500,
+					`Failed no changes in cache assertion, there were ${this._deferredAfterSaveFunctions.length} after-save deferred functions`
+				)
+			)
+
+		_.map(allDBs, (db) => {
+			if (db.isModified()) {
+				logOrThrowError(
+					new Meteor.Error(
+						500,
+						`Failed no changes in cache assertion, cache was modified: collection: ${db.name}`
+					)
+				)
+			}
+		})
+
+		this._abortActiveTimeout()
+
+		if (span) span.end()
+	}
+
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
 	defer(fcn: DeferredFunction<Cache>): void {
 		this._deferredFunctions.push(fcn)
 	}
+	/** Defer provided function to after cache.saveAllToDatabase().
+	 * Note that at the time of execution, the cache is no longer available.
+	 * */
 	deferAfterSave(fcn: () => void) {
 		this._deferredAfterSaveFunctions.push(fcn)
 	}
@@ -296,7 +345,7 @@ export abstract class CacheForPlayoutPreInit extends Cache {
 		this.Rundowns = new DbCacheWriteCollection(Rundowns)
 	}
 
-	protected async preInit(tmpPlaylist: RundownPlaylist) {
+	protected async preInit(tmpPlaylist: ReadonlyDeep<RundownPlaylist>) {
 		await Promise.all([
 			this.Playlist._initialize(tmpPlaylist._id),
 			this.Rundowns.prepareInit({ playlistId: tmpPlaylist._id }, true),
@@ -385,7 +434,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		this.PieceInstances = new DbCacheWriteCollection<PieceInstance, PieceInstance>(PieceInstances)
 	}
 
-	static async create(tmpPlaylist: RundownPlaylist): Promise<CacheForPlayout> {
+	static async create(tmpPlaylist: ReadonlyDeep<RundownPlaylist>): Promise<CacheForPlayout> {
 		const res = new CacheForPlayout(tmpPlaylist.studioId, tmpPlaylist._id)
 
 		await res.preInit(tmpPlaylist)
@@ -409,10 +458,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		ps.push(this.Segments.prepareInit({ rundownId: { $in: rundownIds } }, true)) // TODO - omit if we cant or are unlikely to change the current part
 		ps.push(this.Parts.prepareInit({ rundownId: { $in: rundownIds } }, true)) // TODO - omit if we cant or are unlikely to change the current part
 
-		ps.push(
-			this.PartInstances.prepareInit({ rundownId: { $in: rundownIds } }, true)
-			// TODO - should this only load the non-reset?
-		)
+		ps.push(this.PartInstances.prepareInit({ rundownId: { $in: rundownIds }, reset: { $ne: true } }, true))
 
 		ps.push(
 			this.PieceInstances.prepareInit(

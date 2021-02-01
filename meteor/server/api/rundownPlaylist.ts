@@ -1,6 +1,6 @@
 import { StudioId } from '../../lib/collections/Studios'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { waitForPromiseAll, makePromise, waitForPromise } from '../../lib/lib'
+import { waitForPromiseAll, makePromise, waitForPromise, getHash, protectString } from '../../lib/lib'
 import * as _ from 'underscore'
 import {
 	studioSyncFunction,
@@ -8,6 +8,7 @@ import {
 	RundownSyncFunctionPriority,
 } from './ingest/rundownInput'
 import { removeRundownPlaylistFromDb } from './playout/lib'
+import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 
 export function removeEmptyPlaylists(studioId: StudioId) {
 	return studioSyncFunction('removeEmptyPlaylists', studioId, (cache) => {
@@ -35,4 +36,11 @@ export function removeEmptyPlaylists(studioId: StudioId) {
 			)
 		)
 	})
+}
+/**
+ * Convert the playlistExternalId into a playlistId.
+ * When we've received an externalId for a playlist, that can directly be used to reference a playlistId
+ */
+export function getPlaylistIdFromExternalId(studioId: StudioId, playlistExternalId: string): RundownPlaylistId {
+	return protectString(getHash(`${studioId}_${playlistExternalId}`))
 }

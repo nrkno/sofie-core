@@ -2,8 +2,10 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
-import { waitForPromise, getHash } from '../lib/lib'
+import { getHash } from '../lib/lib'
 // import * as callerModule from 'caller-module'
+
+const ACCEPTABLE_WAIT_TIME = 200 // ms
 
 enum syncFunctionFcnStatus {
 	WAITING = 0,
@@ -23,6 +25,8 @@ interface SyncFunctionFcn {
 	status: syncFunctionFcnStatus
 	priority: number
 	started?: number
+	queueTime: number
+	waitingOnFunctions: string[]
 }
 /** Queue of syncFunctions */
 const syncFunctionFcns: Array<SyncFunctionFcn> = []
@@ -89,6 +93,7 @@ function syncFunctionInner<T extends Function>(
 	priority: number = 1
 ): T {
 	return MeteorWrapAsync((...args0: any[]) => {
+		const queueTime = Date.now()
 		let args = args0.slice(0, -1)
 		// @ts-ignore
 		let cb: Callback = _.last(args0) // the callback is the last argument
@@ -102,12 +107,15 @@ function syncFunctionInner<T extends Function>(
 		let id = id0 ? getId(id0, args) : getHash(id1 + JSON.stringify(args.join()))
 		const name = getFunctionName(context, fcn)
 		logger.debug(`syncFunction: ${id} (${name})`)
+		const waitingOnFunctions = getSyncFunctionsRunningOrWaiting(id)
 		syncFunctionFcns.push({
 			id: id,
 			fcn: fcn,
 			name: name,
 			args: args,
 			cb: cb,
+			queueTime: queueTime,
+			waitingOnFunctions: waitingOnFunctions,
 			timeout: timeout,
 			status: syncFunctionFcnStatus.WAITING,
 			priority: priority,
@@ -145,6 +153,16 @@ function evaluateFunctions() {
 			if (_.isObject(nextFcn)) {
 				nextFcn.status = syncFunctionFcnStatus.RUNNING
 				nextFcn.started = Date.now()
+				const waitTime = nextFcn.started - nextFcn.queueTime
+				if (waitTime > ACCEPTABLE_WAIT_TIME) {
+					logger.warn(
+						`syncFunction ${nextFcn.id} "${
+							nextFcn.name
+						}" waited ${waitTime} ms for other functions to complete before starting: [${nextFcn.waitingOnFunctions.join(
+							', '
+						)}]`
+					)
+				}
 				Meteor.setTimeout(() => {
 					try {
 						let result = nextFcn.fcn(...nextFcn.args)
@@ -192,6 +210,18 @@ export function isAnySyncFunctionsRunning(): boolean {
 		}
 	}
 	return found
+}
+export function getSyncFunctionsRunningOrWaiting(id: string): string[] {
+	let names: string[] = []
+	for (const fcn of syncFunctionFcns) {
+		if (
+			fcn.id == id &&
+			(fcn.status === syncFunctionFcnStatus.RUNNING || fcn.status === syncFunctionFcnStatus.WAITING)
+		) {
+			names.push(fcn.name)
+		}
+	}
+	return names
 }
 /**
  * like syncFunction, but ignores subsequent calls, if there is a function queued to be executed already

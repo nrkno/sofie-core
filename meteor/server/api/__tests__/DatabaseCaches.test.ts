@@ -1,5 +1,5 @@
-import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { getRandomId, waitTime, protectString } from '../../../lib/lib'
 import { RundownPlaylistId, RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -10,17 +10,14 @@ import { defaultRundownPlaylist } from '../../../__mocks__/defaultCollectionObje
 const orgSetTimeout = setTimeout
 
 describe('DatabaseCaches', () => {
-	// beforeAllInFiber(() => {
-	// })
-	let env: DefaultEnvironment
 	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+		setupDefaultStudioEnvironment()
 	})
 	testInFiber('skip', () => {
 		// TODO-CACHE
 	})
-	// describe('CacheForStudioBase', () => {
-	// 	testInFiber('Insert, update & remove', async () => {
+	// describe('CacheForStudio', () => {
+	// 	testInFiber('Assert no changes', async () => {
 	// 		const studio = Studios.findOne() as Studio
 	// 		expect(studio).toBeTruthy()
 
@@ -33,157 +30,56 @@ describe('DatabaseCaches', () => {
 	// 			removed,
 	// 		})
 
-	// 		let dbObj: RundownPlaylist | undefined
-	// 		// const cache = new CacheForStudioBase()
-	// 		const cache = await initCacheForStudioBase(studio._id)
+	// 		{
+	// 			const cache = await initCacheForStudio(studio._id)
 
-	// 		const id: RundownPlaylistId = protectString('myPlaylist0')
+	// 			const cachedStudio = cache.Studios.findOne(studio._id)
+	// 			expect(cachedStudio).toMatchObject(studio)
 
-	// 		// Insert a document:
-	// 		cache.RundownPlaylists.insert({
-	// 			...defaultRundownPlaylist(id, studio._id, getRandomId()),
-	// 			name: 'insert',
-	// 		})
-	// 		cache.RundownPlaylists.update(id, { $set: { name: 'insertthenupdate' } })
+	// 			cache.assertNoChanges() // this shouldn't throw
+	// 			expect(true).toBeTruthy()
+	// 		}
 
-	// 		expect(cache.RundownPlaylists.findOne(id)).toBeTruthy()
-	// 		expect(RundownPlaylists.findOne(id)).toBeFalsy()
+	// 		{
+	// 			const cache = await initCacheForStudio(studio._id)
+	// 			const id: RundownPlaylistId = protectString('myPlaylist0')
 
-	// 		waitTime(1) // to allow for observers to trigger
-	// 		expect(added).toHaveBeenCalledTimes(0)
-	// 		expect(changed).toHaveBeenCalledTimes(0)
-	// 		expect(removed).toHaveBeenCalledTimes(0)
+	// 			// Insert a document:
+	// 			cache.RundownPlaylists.insert({
+	// 				...defaultRundownPlaylist(id, studio._id, getRandomId()),
+	// 				name: 'insert',
+	// 			})
+	// 			cache.RundownPlaylists.update(id, { $set: { name: 'insertthenupdate' } })
 
-	// 		await cache.saveAllToDatabase()
-	// 		waitTime(1) // to allow for observers to trigger
-	// 		expect(added).toHaveBeenCalledTimes(1)
-	// 		expect(changed).toHaveBeenCalledTimes(0) // the previous update should have been included in the insert
-	// 		expect(removed).toHaveBeenCalledTimes(0)
-	// 		added.mockClear()
-	// 		dbObj = RundownPlaylists.findOne(id)
-	// 		expect(dbObj).toMatchObject({ name: 'insertthenupdate' })
-
-	// 		// Update a document:
-	// 		cache.RundownPlaylists.update(
-	// 			{
-	// 				name: 'insertthenupdate',
-	// 			},
-	// 			{ $set: { name: 'updated' } }
-	// 		)
-
-	// 		await cache.saveAllToDatabase()
-
-	// 		waitTime(1) // to allow for observers to trigger
-	// 		expect(added).toHaveBeenCalledTimes(0)
-	// 		expect(changed).toHaveBeenCalledTimes(1)
-	// 		expect(removed).toHaveBeenCalledTimes(0)
-	// 		changed.mockClear()
-	// 		dbObj = RundownPlaylists.findOne(id)
-	// 		expect(dbObj).toMatchObject({ name: 'updated' })
-
-	// 		// Remove a document:
-	// 		cache.RundownPlaylists.remove(id)
-
-	// 		await cache.saveAllToDatabase()
-	// 		waitTime(1) // to allow for observers to trigger
-	// 		expect(added).toHaveBeenCalledTimes(0)
-	// 		expect(changed).toHaveBeenCalledTimes(0)
-	// 		expect(removed).toHaveBeenCalledTimes(1)
-	// 		removed.mockClear()
-	// 		expect(RundownPlaylists.findOne(id)).toBeFalsy()
-	// 	})
-	// 	testInFiber('Multiple saves', async () => {
-	// 		const studio = Studios.findOne() as Studio
-	// 		expect(studio).toBeTruthy()
-
-	// 		const added = jest.fn()
-	// 		const changed = jest.fn()
-	// 		const removed = jest.fn()
-	// 		RundownPlaylists.find().observeChanges({
-	// 			added,
-	// 			changed,
-	// 			removed,
-	// 		})
-
-	// 		let dbObj: RundownPlaylist | undefined
-	// 		// const cache = new CacheForStudioBase()
-	// 		const cache = await initCacheForStudioBase(studio._id)
-
-	// 		const id: RundownPlaylistId = protectString('myPlaylist1')
-
-	// 		// Insert a document:
-	// 		cache.RundownPlaylists.insert({
-	// 			...defaultRundownPlaylist(id, studio._id, getRandomId()),
-	// 			name: 'insert',
-	// 		})
-	// 		const deferFcn0 = jest.fn(() => {
+	// 			expect(cache.RundownPlaylists.findOne(id)).toBeTruthy()
 	// 			expect(RundownPlaylists.findOne(id)).toBeFalsy()
-	// 		})
-	// 		const deferAfterSaveFcn0 = jest.fn(() => {
-	// 			expect(RundownPlaylists.findOne(id)).toBeTruthy()
-	// 		})
-	// 		cache.defer(deferFcn0)
-	// 		cache.deferAfterSave(deferAfterSaveFcn0)
 
-	// 		expect(RundownPlaylists.findOne(id)).toBeFalsy()
-	// 		await cache.saveAllToDatabase()
-	// 		waitTime(1) // to allow for observers to trigger
-	// 		expect(added).toHaveBeenCalledTimes(1)
-	// 		expect(changed).toHaveBeenCalledTimes(0)
-	// 		expect(removed).toHaveBeenCalledTimes(0)
-	// 		expect(RundownPlaylists.findOne(id)).toBeTruthy()
-	// 		expect(deferFcn0).toHaveReturnedTimes(1)
-	// 		expect(deferAfterSaveFcn0).toHaveReturnedTimes(1)
-	// 		added.mockClear()
-	// 		deferFcn0.mockClear()
-	// 		deferAfterSaveFcn0.mockClear()
+	// 			expect(() => {
+	// 				cache.assertNoChanges()
+	// 			}).toThrowError(/failed .+ assertion,.+ was modified/gi)
+	// 		}
 
-	// 		// Running the save again should render no changes:
-	// 		await cache.saveAllToDatabase()
-	// 		waitTime(1) // to allow for observers to trigger
-	// 		expect(added).toHaveBeenCalledTimes(0)
-	// 		expect(changed).toHaveBeenCalledTimes(0)
-	// 		expect(removed).toHaveBeenCalledTimes(0)
-	// 		expect(deferFcn0).toHaveReturnedTimes(0)
-	// 		expect(deferAfterSaveFcn0).toHaveReturnedTimes(0)
+	// 		{
+	// 			const cache = await initCacheForStudio(studio._id)
 
-	// 		// Update the document:
-	// 		cache.RundownPlaylists.update(id, { $set: { name: 'updated' } })
-	// 		// add new defered functions:
-	// 		const deferFcn1 = jest.fn(() => {
-	// 			expect(RundownPlaylists.findOne(id)).toMatchObject({ name: 'insert' })
-	// 		})
-	// 		const deferAfterSaveFcn1 = jest.fn(() => {
-	// 			expect(RundownPlaylists.findOne(id)).toMatchObject({ name: 'updated' })
-	// 		})
-	// 		cache.defer(deferFcn1)
-	// 		cache.deferAfterSave(deferAfterSaveFcn1)
+	// 			// Insert a document:
+	// 			cache.defer(() => {})
 
-	// 		await cache.saveAllToDatabase()
-	// 		waitTime(1) // to allow for observers to trigger
-	// 		expect(added).toHaveBeenCalledTimes(0)
-	// 		expect(changed).toHaveBeenCalledTimes(1)
-	// 		expect(removed).toHaveBeenCalledTimes(0)
-	// 		expect(deferFcn0).toHaveReturnedTimes(0)
-	// 		expect(deferAfterSaveFcn0).toHaveReturnedTimes(0)
-	// 		expect(deferFcn1).toHaveReturnedTimes(1)
-	// 		expect(deferAfterSaveFcn1).toHaveReturnedTimes(1)
-	// 		changed.mockClear()
-	// 		deferFcn1.mockClear()
-	// 		deferAfterSaveFcn1.mockClear()
+	// 			expect(() => {
+	// 				cache.assertNoChanges()
+	// 			}).toThrowError(/failed .+ assertion,.+ deferred/gi)
+	// 		}
 
-	// 		// Remove the document:
-	// 		cache.RundownPlaylists.remove(id)
+	// 		{
+	// 			const cache = await initCacheForStudio(studio._id)
 
-	// 		await cache.saveAllToDatabase()
-	// 		waitTime(1) // to allow for observers to trigger
-	// 		expect(added).toHaveBeenCalledTimes(0)
-	// 		expect(changed).toHaveBeenCalledTimes(0)
-	// 		expect(removed).toHaveBeenCalledTimes(1)
-	// 		expect(deferFcn0).toHaveReturnedTimes(0)
-	// 		expect(deferAfterSaveFcn0).toHaveReturnedTimes(0)
-	// 		expect(deferFcn1).toHaveReturnedTimes(0)
-	// 		expect(deferAfterSaveFcn1).toHaveReturnedTimes(0)
+	// 			// Insert a document:
+	// 			cache.deferAfterSave(() => {})
+
+	// 			expect(() => {
+	// 				cache.assertNoChanges()
+	// 			}).toThrowError(/failed .+ assertion,.+ after-save deferred/gi)
+	// 		}
 	// 	})
 	// })
 })

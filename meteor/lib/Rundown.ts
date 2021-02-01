@@ -1,18 +1,19 @@
 import * as _ from 'underscore'
-import * as SuperTimeline from 'superfly-timeline'
 import { Pieces, Piece } from './collections/Pieces'
-import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
-import { literal } from './lib'
+import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { DBSegment, SegmentId } from './collections/Segments'
-import { PartId, Part, DBPart } from './collections/Parts'
+import { PartId, DBPart } from './collections/Parts'
 import { PartInstance } from './collections/PartInstances'
-import { PieceInstance, PieceInstances, wrapPieceToTemporaryInstance } from './collections/PieceInstances'
+import { PieceInstance, PieceInstances } from './collections/PieceInstances'
 import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
+	PieceInstanceWithTimings,
 } from './rundown/infinites'
 import { FindOptions } from './typings/meteor'
+import { invalidateAfter } from '../client/lib/invalidatingTime'
+import { getCurrentTime } from './lib'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -48,11 +49,9 @@ export interface ISourceLayerExtended extends ISourceLayer {
 	pieces: Array<PieceExtended>
 	followingItems: Array<PieceExtended>
 }
-interface IPieceExtendedDictionary {
-	[key: string]: PieceExtended
-}
+
 export interface PieceExtended {
-	instance: PieceInstance
+	instance: PieceInstanceWithTimings
 
 	/** Source layer that this piece belongs to */
 	sourceLayer?: ISourceLayerExtended
@@ -89,6 +88,26 @@ export function fetchPiecesThatMayBeActiveForPart(
 	return [...piecesStartingInPart, ...infinitePieces]
 }
 
+const SIMULATION_INVALIDATION = 3000
+
+/**
+ * Get the PieceInstances for a given PartInstance. Will create temporary PieceInstances, based on the Pieces collection
+ * if the partInstance is temporary.
+ *
+ * @export
+ * @param {PartInstanceLimited} partInstance
+ * @param {Set<PartId>} partsBeforeThisInSegmentSet
+ * @param {Set<SegmentId>} segmentsBeforeThisInRundownSet
+ * @param {PartId[]} orderedAllParts
+ * @param {boolean} nextPartIsAfterCurrentPart
+ * @param {(PartInstance | undefined)} currentPartInstance
+ * @param {(PieceInstance[] | undefined)} currentPartInstancePieceInstances
+ * @param {FindOptions<PieceInstance>} [options]
+ * @param {boolean} [pieceInstanceSimulation] If there are no PieceInstances in the PartInstance, create temporary
+ * 		PieceInstances based on the Pieces collection and register a reactive dependancy to recalculate the current
+ * 		computation after some time to return the actual PieceInstances for the PartInstance.
+ * @return {*}
+ */
 export function getPieceInstancesForPartInstance(
 	partInstance: PartInstanceLimited,
 	partsBeforeThisInSegmentSet: Set<PartId>,
@@ -97,7 +116,8 @@ export function getPieceInstancesForPartInstance(
 	nextPartIsAfterCurrentPart: boolean,
 	currentPartInstance: PartInstance | undefined,
 	currentPartInstancePieceInstances: PieceInstance[] | undefined,
-	options?: FindOptions<PieceInstance>
+	options?: FindOptions<PieceInstance>,
+	pieceInstanceSimulation?: boolean
 ) {
 	if (partInstance.isTemporary) {
 		return getPieceInstancesForPart(
@@ -117,35 +137,46 @@ export function getPieceInstancesForPartInstance(
 			partInstance.isTemporary
 		)
 	} else {
-		return PieceInstances.find({ partInstanceId: partInstance._id }, options).fetch()
-	}
-}
+		const results =
+			// Check if the PartInstance we're currently looking for PieceInstances for is already the current one.
+			// If that's the case, we can sace ourselves a scan across the PieceInstances collection
+			partInstance._id === currentPartInstance?._id && currentPartInstancePieceInstances
+				? currentPartInstancePieceInstances
+				: PieceInstances.find({ partInstanceId: partInstance._id }, options).fetch()
+		// check if we can return the results immediately
+		if (results.length > 0 || !pieceInstanceSimulation) return results
 
-export function offsetTimelineEnableExpression(
-	val: SuperTimeline.Expression | undefined,
-	offset: string | number | undefined
-) {
-	if (offset === undefined) {
-		return val
-	} else {
-		// return literal<SuperTimeline.ExpressionObj>({
-		// 	l: interpretExpression(val || null) || 0,
-		// 	o: '+',
-		// 	r: offset
-		// })
-		if (_.isString(val) || _.isNumber(val)) {
-			return `${val} + ${offset}`
-		} else if (_.isObject(val)) {
-			return literal<SuperTimeline.ExpressionObj>({
-				l: val || 0,
-				o: '+',
-				r: offset,
-			})
-		} else if (val === undefined) {
-			return offset
+		// if a simulation has been requested and less than SIMULATION_INVALIDATION time has passed
+		// since the PartInstance has been nexted or taken, simulate the PieceInstances using the Piece collection.
+		const now = getCurrentTime()
+		if (
+			pieceInstanceSimulation &&
+			results.length === 0 &&
+			(!partInstance.timings ||
+				(partInstance.timings.next || 0) > now - SIMULATION_INVALIDATION ||
+				(partInstance.timings.take || 0) > now - SIMULATION_INVALIDATION)
+		) {
+			// make sure to invalidate the current computation after SIMULATION_INVALIDATION has passed
+			invalidateAfter(SIMULATION_INVALIDATION)
+			return getPieceInstancesForPart(
+				currentPartInstance,
+				currentPartInstancePieceInstances,
+				partInstance.part,
+				partsBeforeThisInSegmentSet,
+				segmentsBeforeThisInRundownSet,
+				fetchPiecesThatMayBeActiveForPart(
+					partInstance.part,
+					partsBeforeThisInSegmentSet,
+					segmentsBeforeThisInRundownSet
+				),
+				orderedAllParts,
+				partInstance._id,
+				nextPartIsAfterCurrentPart,
+				true
+			)
 		} else {
-			// Unreachable fallback case
-			return val
+			// otherwise, return results as they are
+			return results
 		}
 	}
 }

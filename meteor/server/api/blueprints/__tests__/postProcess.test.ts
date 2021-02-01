@@ -17,7 +17,7 @@ import {
 	TimelineObjectCoreExt,
 	TSR,
 	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
@@ -148,6 +148,7 @@ describe('Test blueprint post-process', () => {
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
 				// 'Hack' off the invalid fields to make the MatchObject pass
+				// @ts-expect-error
 				if (obj.id === '') delete obj.id
 			})
 			expect(res).toMatchObject(rawObjects)
@@ -266,6 +267,7 @@ describe('Test blueprint post-process', () => {
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
 				// 'Hack' off the invalid fields to make the MatchObject pass
+				// @ts-expect-error
 				if (obj.id === '') delete obj.id
 			})
 			expect(res).toMatchObject(rawObjects)
@@ -357,20 +359,12 @@ describe('Test blueprint post-process', () => {
 
 			const pieces = literal<IBlueprintAdLibPiece[]>([
 				{
-					_rank: 0,
-					name: 'test',
-					externalId: 'eid0',
-					sourceLayerId: 'sl0',
-					outputLayerId: 'ol0',
-					lifespan: PieceLifespan.WithinPart,
-				},
-				{
 					_rank: 2,
 					name: 'test',
 					externalId: 'eid1',
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {},
+					content: {} as any,
 					lifespan: PieceLifespan.WithinPart,
 				},
 				{
@@ -398,7 +392,7 @@ describe('Test blueprint post-process', () => {
 			])
 
 			// mock getHash, to track the returned ids
-			const mockedIds = ['mocked1', 'mocked2', 'mocked3', 'mocked4']
+			const mockedIds = ['mocked1', 'mocked2', 'mocked3']
 			const expectedIds = _.clone(mockedIds)
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
@@ -416,16 +410,18 @@ describe('Test blueprint post-process', () => {
 				outputLayerId: '',
 				rundownId: protectString(''),
 				status: 0,
+				content: {
+					timelineObjects: [],
+				},
 				lifespan: PieceLifespan.WithinPart,
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
 			// Ensure getHashId was called as expected
-			expect(context.getHashId).toHaveBeenCalledTimes(4)
-			expect(context.getHashId).toHaveBeenNthCalledWith(1, 'blueprint9_undefined_adlib_piece_0')
-			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'blueprint9_undefined_adlib_piece_1')
-			expect(context.getHashId).toHaveBeenNthCalledWith(3, 'blueprint9_undefined_adlib_piece_2')
-			expect(context.getHashId).toHaveBeenNthCalledWith(4, 'blueprint9_undefined_adlib_piece_3')
+			expect(context.getHashId).toHaveBeenCalledTimes(3)
+			expect(context.getHashId).toHaveBeenNthCalledWith(1, 'blueprint9_undefined_adlib_piece_eid1_0')
+			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'blueprint9_undefined_adlib_piece_eid2_0')
+			expect(context.getHashId).toHaveBeenNthCalledWith(3, 'blueprint9_undefined_adlib_piece_eid2_1')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj._id).sort()
@@ -486,19 +482,11 @@ describe('Test blueprint post-process', () => {
 			const pieces = literal<IBlueprintPiece[]>([
 				{
 					name: 'test',
-					externalId: 'eid0',
-					enable: { start: 0 },
-					sourceLayerId: 'sl0',
-					outputLayerId: 'ol0',
-					lifespan: PieceLifespan.OutOnSegmentChange,
-				},
-				{
-					name: 'test',
 					externalId: 'eid1',
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {},
+					content: {} as any,
 					lifespan: PieceLifespan.OutOnSegmentEnd,
 				},
 				{
@@ -515,7 +503,7 @@ describe('Test blueprint post-process', () => {
 			])
 
 			// mock getHash, to track the returned ids
-			const mockedIds = ['mocked1', 'mocked2', 'mcoked3']
+			const mockedIds = ['mocked1', 'mocked2']
 			const expectedIds = [...mockedIds]
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
@@ -542,15 +530,17 @@ describe('Test blueprint post-process', () => {
 				startRundownId: protectString(''),
 				status: 0,
 				lifespan: PieceLifespan.WithinPart,
+				content: {
+					timelineObjects: [],
+				},
 				invalid: false,
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
 			// Ensure getHashId was called as expected
-			expect(context.getHashId).toHaveBeenCalledTimes(3)
-			expect(context.getHashId).toHaveBeenNthCalledWith(1, 'blueprint9_part8_piece_0')
-			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'blueprint9_part8_piece_1')
-			expect(context.getHashId).toHaveBeenNthCalledWith(3, 'blueprint9_part8_piece_2')
+			expect(context.getHashId).toHaveBeenCalledTimes(2)
+			expect(context.getHashId).toHaveBeenNthCalledWith(1, 'blueprint9_part8_piece_eid1_0')
+			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'blueprint9_part8_piece_eid2_0')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj._id).sort()

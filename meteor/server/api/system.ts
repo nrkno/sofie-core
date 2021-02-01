@@ -22,6 +22,7 @@ import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { AsRunLog } from '../../lib/collections/AsRunLog'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
 import { Buckets } from '../../lib/collections/Buckets'
 import { Evaluations } from '../../lib/collections/Evaluations'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
@@ -242,6 +243,10 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 	{
 		results.push(ownedByStudioId('BucketAdLibs', BucketAdLibs))
 	}
+	// BucketAdLibActions
+	{
+		results.push(ownedByStudioId('BucketAdLibActions', BucketAdLibActions))
+	}
 	// Buckets
 	{
 		results.push(ownedByStudioId('Buckets', Buckets))
@@ -282,7 +287,7 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 						rundownId: { $exists: true },
 					},
 					{
-						bucketId: { $nin: rundownIds },
+						rundownId: { $nin: rundownIds },
 					},
 				],
 			},
@@ -661,7 +666,9 @@ async function doSystemBenchmarkInner() {
 
 	return result
 }
-async function doSystemBenchmark(runCount: number = 1): Promise<SystemBenchmarkResults> {
+async function doSystemBenchmark(context: MethodContext, runCount: number = 1): Promise<SystemBenchmarkResults> {
+	SystemWriteAccess.coreSystem(context)
+
 	if (runCount < 1) throw new Error(`runCount must be >= 1`)
 
 	const results: BenchmarkResult[] = []
@@ -736,7 +743,7 @@ class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 		return makePromise(() => cleanupOldData(this, actuallyRemoveOldData))
 	}
 	async doSystemBenchmark(runCount: number = 1) {
-		return doSystemBenchmark(runCount)
+		return doSystemBenchmark(this, runCount)
 	}
 }
 registerClassToMeteorMethods(SystemAPIMethods, SystemAPIClass, false)

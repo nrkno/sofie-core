@@ -1,4 +1,4 @@
-import { getRandomId, getCurrentTime } from '../lib/lib'
+import { getCurrentTime } from '../lib/lib'
 import { StudioId } from '../lib/collections/Studios'
 import { DBRundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
 import { PeripheralDeviceId } from '../lib/collections/PeripheralDevices'
@@ -8,7 +8,7 @@ import { DBRundown, RundownId } from '../lib/collections/Rundowns'
 import { DBSegment, SegmentId } from '../lib/collections/Segments'
 import { PartId, DBPart } from '../lib/collections/Parts'
 import { RundownAPI } from '../lib/api/rundown'
-import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PieceId, Piece } from '../lib/collections/Pieces'
 import { AdLibPiece } from '../lib/collections/AdLibPieces'
 
@@ -111,6 +111,7 @@ export function defaultPiece(_id: PieceId, rundownId: RundownId, segmentId: Segm
 		},
 		sourceLayerId: '',
 		outputLayerId: '',
+		content: { timelineObjects: [] },
 	}
 }
 export function defaultAdLibPiece(_id: PieceId, rundownId: RundownId, partId: PartId): AdLibPiece {
@@ -125,5 +126,6 @@ export function defaultAdLibPiece(_id: PieceId, rundownId: RundownId, partId: Pa
 		lifespan: PieceLifespan.WithinPart,
 		sourceLayerId: '',
 		outputLayerId: '',
+		content: { timelineObjects: [] },
 	}
 }

@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../lib/collections/ExternalMessageQueue'
-import { ExternalMessageQueueObjSOAP } from 'tv-automation-sofie-blueprints-integration'
+import { ExternalMessageQueueObjSOAP } from '@sofie-automation/blueprints-integration'
 // Cyclic dependency issues with import of throwFatalError
 // import { throwFatalError } from '../server/api/ExternalMessageQueue'
 import { Fiber } from './Fibers'
@@ -16,7 +16,7 @@ export function throwFatalError(msg: ExternalMessageQueueObj, e: Meteor.Error) {
 }
 
 export async function sendSOAPMessage(msg: ExternalMessageQueueObjSOAP & ExternalMessageQueueObj) {
-	return new Promise((resolve, reject) => {
+	return new Promise<void>((resolve, reject) => {
 		process.nextTick(() => {
 			if (msg.message.fcn.match(/fatal/)) {
 				try {

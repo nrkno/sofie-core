@@ -20,86 +20,34 @@ import {
 	IBlueprintPiece,
 	IBlueprintPart,
 	IBlueprintResolvedPieceInstance,
-	PieceLifespan,
 	OmitId,
 	IBlueprintMutatablePart,
-	PartHoldMode,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PieceInstance, wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
-import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import { CacheForPlayout } from '../../../cache/DatabaseCaches'
-import { getResolvedPieces } from '../../playout/pieces'
+import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { NotesContext, ShowStyleContext, EventContext } from './context'
-import { isTooCloseToAutonext } from '../../playout/lib'
+import { NotesContext, ShowStyleContext } from './context'
+import { getRundownIDsFromCache, isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
 import { getShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
+import { IBlueprintMutatablePartSampleKeys, IBlueprintPieceSampleKeys } from './lib'
 
 export enum ActionPartChange {
 	NONE = 0,
 	SAFE_CHANGE = 1,
 }
 
-const IBlueprintPieceSample: Required<IBlueprintPiece> = {
-	externalId: '',
-	enable: { start: 0 },
-	virtual: false,
-	continuesRefId: '',
-	isTransition: false,
-	extendOnHold: false,
-	name: '',
-	metaData: {},
-	sourceLayerId: '',
-	outputLayerId: '',
-	content: {},
-	transitions: {},
-	lifespan: PieceLifespan.WithinPart,
-	adlibPreroll: 0,
-	toBeQueued: false,
-	expectedPlayoutItems: [],
-	adlibAutoNext: false,
-	adlibAutoNextOverlap: 0,
-	adlibDisableOutTransition: false,
-	tags: [],
-}
-// Compile a list of the keys which are allowed to be set
-const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof IBlueprintPiece>
-
-const IBlueprintMutatablePartSample: Required<IBlueprintMutatablePart> = {
-	title: '',
-	metaData: {},
-	autoNext: false,
-	autoNextOverlap: 0,
-	prerollDuration: 0,
-	transitionPrerollDuration: null,
-	transitionKeepaliveDuration: null,
-	transitionDuration: null,
-	disableOutTransition: false,
-	expectedDuration: 0,
-	holdMode: PartHoldMode.NONE,
-	shouldNotifyCurrentPlayingPart: false,
-	classes: [],
-	classesForNext: [],
-	displayDurationGroup: '',
-	displayDuration: 0,
-	identifier: '',
-}
-// Compile a list of the keys which are allowed to be set
-const IBlueprintMutatablePartSampleKeys = Object.keys(IBlueprintMutatablePartSample) as Array<
-	keyof IBlueprintMutatablePart
->
-
 /** Actions */
 export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
 	private readonly _cache: CacheForPlayout
 	private readonly rundown: Rundown
-
-	private queuedPartInstance: PartInstance | undefined
 
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
 	public currentPartState: ActionPartChange = ActionPartChange.NONE
@@ -201,6 +149,31 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		return clone(unprotectObject(lastPieceInstance))
 	}
+	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance {
+		const pieceExt = (piece as unknown) as Partial<PieceInstance> | undefined
+		const partInstanceId = pieceExt?.partInstanceId
+		if (!partInstanceId) {
+			throw new Error('Cannot find PartInstance from invalid PieceInstance')
+		}
+
+		const cached = this._cache.PartInstances.findOne(partInstanceId)
+		if (cached) {
+			return clone(unprotectObject(cached))
+		}
+
+		// It might be reset and so not in the cache
+		const rundownIds = getRundownIDsFromCache(this._cache)
+		const oldInstance = PartInstances.findOne({
+			_id: partInstanceId,
+			rundownId: { $in: rundownIds },
+		})
+		if (oldInstance) {
+			return unprotectObject(oldInstance)
+		} else {
+			throw new Error('Cannot find PartInstance for PieceInstance')
+		}
+	}
+
 	insertPiece(part: 'current' | 'next', rawPiece: IBlueprintPiece): IBlueprintPieceInstance {
 		const partInstanceId = this._getPartInstanceId(part)
 		if (!partInstanceId) {
@@ -231,6 +204,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			part === 'current',
 			true
 		)[0]
+		piece._id = getRandomId() // Make id random, as postProcessPieces is too predictable (for ingest)
 		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
 
 		// Do the work
@@ -284,8 +258,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				pieceInstance.piece._id,
 				showStyleBase.blueprintId,
 				piece.content.timelineObjects,
-				true,
-				{}
+				true
 			)
 		}
 
@@ -301,6 +274,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				update.$set[`piece.${k}`] = val
 			}
 		}
+
+		setupPieceInstanceInfiniteProperties(pieceInstance)
 
 		this._cache.PieceInstances.update(pieceInstance._id, update)
 
@@ -348,7 +323,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				_id: getRandomId(),
 				rundownId: currentPartInstance.rundownId,
 				segmentId: currentPartInstance.segmentId,
-				_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
+				_rank: 99999, // Corrected in innerStartQueuedAdLib
 				notes: [],
 				invalid: false,
 				invalidReason: undefined,

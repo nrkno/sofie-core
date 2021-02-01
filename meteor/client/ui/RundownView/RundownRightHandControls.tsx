@@ -4,7 +4,7 @@ import * as VelocityReact from 'velocity-react'
 
 import { StudioRouteSet, StudioRouteBehavior, StudioRouteSetExclusivityGroup } from '../../../lib/collections/Studios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFastBackward, faRandom } from '@fortawesome/free-solid-svg-icons'
+import { faFastBackward } from '@fortawesome/free-solid-svg-icons'
 
 import { Lottie } from '@crello/react-lottie'
 import { NotificationCenterPanelToggle } from '../../lib/notifications/NotificationCenterPanel'
@@ -24,8 +24,8 @@ import * as On_Air_MouseOver from './On_Air_MouseOver.json'
 import { SupportPopUpToggle } from '../SupportPopUp'
 import classNames from 'classnames'
 import { NoticeLevel } from '../../lib/notifications/notifications'
-import { RouteSetsIcon } from '../../lib/routeSetIcons'
-import { RouteSetsPopUp } from './RouteSetsPopUp'
+import { SwitchboardIcon, RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard'
+import { SwitchboardPopUp } from './SwitchboardPopUp'
 
 interface IProps {
 	studioRouteSets: {
@@ -54,7 +54,7 @@ interface IProps {
 interface IState {
 	onAirHover: boolean
 	rewindHover: boolean
-	isRouteSetsOpen: boolean
+	isSwitchboardOpen: boolean
 }
 
 export class RundownRightHandControls extends React.Component<IProps, IState> {
@@ -80,7 +80,7 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 		this.state = {
 			onAirHover: false,
 			rewindHover: false,
-			isRouteSetsOpen: false,
+			isSwitchboardOpen: false,
 		}
 
 		this.fullscreenOut = {
@@ -161,7 +161,7 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 
 	onRouteSetsToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
-			isRouteSetsOpen: !this.state.isRouteSetsOpen,
+			isSwitchboardOpen: !this.state.isSwitchboardOpen,
 		})
 	}
 
@@ -169,7 +169,9 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 		const availableRouteSets = Object.entries(this.props.studioRouteSets).filter(
 			([_id, routeSet]) => routeSet.behavior !== StudioRouteBehavior.HIDDEN
 		)
-		const activeRoutes = availableRouteSets.filter(([id, routeSet]) => routeSet.active).length
+		const nonDefaultRoutes = availableRouteSets.filter(
+			([id, routeSet]) => routeSet.defaultActive !== undefined && routeSet.active !== routeSet.defaultActive
+		).length
 		const exclusivityGroups: {
 			[id: string]: Array<[string, StudioRouteSet]>
 		} = {}
@@ -254,17 +256,19 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 								<button
 									className={classNames(
 										'status-bar__controls__button',
-										'status-bar__controls__button--route-set-panel',
+										'status-bar__controls__button--switchboard-panel',
 										'notifications-s notifications-text',
 										{
-											'status-bar__controls__button--open': this.state.isRouteSetsOpen,
+											'status-bar__controls__button--open': this.state.isSwitchboardOpen,
 										}
 									)}
 									role="button"
 									onClick={this.onRouteSetsToggle}
 									tabIndex={0}>
-									<RouteSetsIcon />
-									{activeRoutes > 0 && <span className="notification">{activeRoutes}</span>}
+									<SwitchboardIcon />
+									{nonDefaultRoutes > 0 && (
+										<RouteSetOverrideIcon className="status-bar__controls__button--switchboard-panel__notification" />
+									)}
 								</button>
 								<VelocityReact.VelocityTransitionGroup
 									enter={{
@@ -281,8 +285,8 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 										easing: 'ease-in',
 										duration: 500,
 									}}>
-									{this.state.isRouteSetsOpen && (
-										<RouteSetsPopUp
+									{this.state.isSwitchboardOpen && (
+										<SwitchboardPopUp
 											availableRouteSets={availableRouteSets}
 											studioRouteSetExclusivityGroups={this.props.studioRouteSetExclusivityGroups}
 											onStudioRouteSetSwitch={this.props.onStudioRouteSetSwitch}

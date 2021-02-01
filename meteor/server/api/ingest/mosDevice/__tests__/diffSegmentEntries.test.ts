@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 
 import { diffSegmentEntries, compileSegmentEntries } from '../ingest'
-import { IngestSegment } from 'tv-automation-sofie-blueprints-integration'
+import { IngestSegment } from '@sofie-automation/blueprints-integration'
 import { LocalIngestSegment } from '../../ingestCache'
 
 function clone<T>(o: T): T {

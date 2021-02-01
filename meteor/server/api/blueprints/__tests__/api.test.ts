@@ -1,9 +1,9 @@
 import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment, packageBlueprint } from '../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal, Omit, getRandomId, protectString } from '../../../../lib/lib'
+import { literal, getRandomId, protectString } from '../../../../lib/lib'
 import { Blueprints, Blueprint } from '../../../../lib/collections/Blueprints'
-import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { CoreSystem, SYSTEM_ID, ICoreSystem } from '../../../../lib/collections/CoreSystem'
 import { BlueprintAPIMethods } from '../../../../lib/api/blueprint'
 import { Meteor } from 'meteor/meteor'
@@ -61,7 +61,6 @@ describe('Test blueprint management api', () => {
 				blueprintVersion: '',
 				integrationVersion: '',
 				TSRVersion: '',
-				minimumCoreVersion: '',
 			}
 			Blueprints.insert(blueprint)
 			return blueprint
@@ -246,7 +245,6 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.0.0',
 					integrationVersion: '0.0.0',
 					TSRVersion: '0.0.0',
-					minimumCoreVersion: '0.0.0',
 
 					// studioConfigManifest: [],
 					// studioMigrations: [],
@@ -279,7 +277,6 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.0.0',
 						integrationVersion: '0.0.0',
 						TSRVersion: '0.0.0',
-						minimumCoreVersion: '0.0.0',
 					}
 				}
 			)
@@ -311,7 +308,6 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						minimumCoreVersion: '0.4.0',
 						showStyleConfigManifest: ['show1'],
 						studioConfigManifest: ['studio1'],
 					}
@@ -330,7 +326,6 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					minimumCoreVersion: '0.4.0',
 					showStyleConfigManifest: ['show1'] as any,
 					studioConfigManifest: [],
 					code: blueprintStr,
@@ -349,7 +344,6 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						minimumCoreVersion: '0.4.0',
 						showStyleConfigManifest: ['show1'],
 						studioConfigManifest: ['studio1'],
 					}
@@ -368,7 +362,6 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					minimumCoreVersion: '0.4.0',
 					showStyleConfigManifest: [],
 					studioConfigManifest: ['studio1'] as any,
 					code: blueprintStr,
@@ -388,7 +381,6 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						minimumCoreVersion: '0.4.0',
 						showStyleConfigManifest: ['show1'],
 						studioConfigManifest: ['studio1'],
 					}
@@ -407,7 +399,6 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					minimumCoreVersion: '0.4.0',
 					showStyleConfigManifest: [],
 					studioConfigManifest: [],
 					code: blueprintStr,
@@ -426,7 +417,6 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						minimumCoreVersion: '0.4.0',
 						showStyleConfigManifest: ['show1'],
 						studioConfigManifest: ['studio1'],
 					}
@@ -449,7 +439,6 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					minimumCoreVersion: '0.4.0',
 					showStyleConfigManifest: [],
 					studioConfigManifest: ['studio1'] as any,
 					code: blueprintStr,
@@ -469,7 +458,6 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						minimumCoreVersion: '0.4.0',
 						showStyleConfigManifest: ['show1'],
 						studioConfigManifest: ['studio1'],
 					}
@@ -495,7 +483,6 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					minimumCoreVersion: '0.4.0',
 					showStyleConfigManifest: ['show1'] as any,
 					studioConfigManifest: [],
 					code: blueprintStr,
@@ -515,7 +502,6 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						minimumCoreVersion: '0.4.0',
 						showStyleConfigManifest: ['show1'],
 						studioConfigManifest: ['studio1'],
 					}
@@ -550,7 +536,6 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						minimumCoreVersion: '0.4.0',
 						showStyleConfigManifest: ['show1'],
 						studioConfigManifest: ['studio1'],
 					}

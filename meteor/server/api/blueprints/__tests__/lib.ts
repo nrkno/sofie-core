@@ -1,4 +1,4 @@
-import { BlueprintManifestType, SomeBlueprintManifest } from 'tv-automation-sofie-blueprints-integration'
+import { BlueprintManifestType, SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { literal, protectString } from '../../../../lib/lib'
 import { Blueprint } from '../../../../lib/collections/Blueprints'
 
@@ -11,7 +11,6 @@ export function generateFakeBlueprint(id: string, type?: BlueprintManifestType, 
   blueprintVersion: '0.0.0',
   integrationVersion: '0.0.0',
   TSRVersion: '0.0.0',
-  minimumCoreVersion: '0.0.0',
   studioConfigManifest: [],
   studioMigrations: [],
   getBaseline: () => [],
@@ -40,6 +39,5 @@ export function generateFakeBlueprint(id: string, type?: BlueprintManifestType, 
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
-		minimumCoreVersion: '',
 	})
 }

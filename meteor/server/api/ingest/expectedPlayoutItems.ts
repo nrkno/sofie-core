@@ -1,16 +1,16 @@
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { check } from '../../../lib/check'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
-import { ExpectedPlayoutItemGeneric } from 'tv-automation-sofie-blueprints-integration'
+import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
 import { DBRundown, RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { logger } from '../../logging'
 import { PartId, DBPart } from '../../../lib/collections/Parts'
-import { protectString } from '../../../lib/lib'
+import { protectString, unprotectString } from '../../../lib/lib'
 import { CacheForIngest } from '../../cache/DatabaseCaches'
 import { getRundownId } from './lib'
-import { DeepReadonly } from 'utility-types'
+import { ReadonlyDeep } from 'type-fest'
 import { saveIntoCache } from '../../cache/lib'
 
 interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
@@ -39,7 +39,7 @@ function extractExpectedPlayoutItems(
 }
 
 function wrapExpectedPlayoutItems(
-	rundown: DeepReadonly<DBRundown>,
+	rundown: ReadonlyDeep<DBRundown>,
 	items: ExpectedPlayoutItemGenericWithPiece[]
 ): ExpectedPlayoutItem[] {
 	return items.map((item, i) => {
@@ -61,11 +61,16 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest): void
 		return
 	}
 
+	const piecesGrouped = _.groupBy(cache.Pieces.findFetch({}), 'startPartId')
+	const adlibPiecesGrouped = _.groupBy(cache.AdLibPieces.findFetch({}), 'partId')
+
 	const intermediaryItems: ExpectedPlayoutItemGenericWithPiece[] = []
 
-	for (const part of cache.Parts.findFetch({ rundownId: rundown._id })) {
-		intermediaryItems.push(...extractExpectedPlayoutItems(part, cache.Pieces.findFetch({ startPartId: part._id })))
-		intermediaryItems.push(...extractExpectedPlayoutItems(part, cache.AdLibPieces.findFetch({ partId: part._id })))
+	for (const part of cache.Parts.findFetch({})) {
+		intermediaryItems.push(...extractExpectedPlayoutItems(part, piecesGrouped[unprotectString(part._id)] || []))
+		intermediaryItems.push(
+			...extractExpectedPlayoutItems(part, adlibPiecesGrouped[unprotectString(part._id)] || [])
+		)
 	}
 
 	const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)

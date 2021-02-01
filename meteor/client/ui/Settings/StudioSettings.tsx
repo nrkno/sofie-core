@@ -35,7 +35,7 @@ import {
 	TSR,
 	ConfigManifestEntry,
 	BlueprintMapping,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
@@ -619,9 +619,6 @@ const StudioMappings = withTranslation()(
 			const activeRoutes = getActiveRoutes(this.props.studio)
 
 			return _.map(this.props.studio.mappings, (mapping: MappingExt, layerId: string) => {
-				// If an internal mapping, then hide it
-				if (mapping.internal) return <React.Fragment key={layerId}></React.Fragment>
-
 				return (
 					<React.Fragment key={layerId}>
 						<tr
@@ -1119,7 +1116,7 @@ const StudioRoutings = withTranslation()(
 									<div className="mod mvs mhs">
 										{t('Device Type')}
 										{route.mappedLayer ? (
-											deviceTypeFromMappedLayer ? (
+											deviceTypeFromMappedLayer !== undefined ? (
 												<span className="mls">{TSR.DeviceType[deviceTypeFromMappedLayer]}</span>
 											) : (
 												<span className="mls dimmed">{t('Source Layer not found')}</span>
@@ -1136,7 +1133,7 @@ const StudioRoutings = withTranslation()(
 												className="input text-input input-l"></EditAttribute>
 										)}
 									</div>
-									{routeDeviceType && route.remapping !== undefined && (
+									{routeDeviceType !== undefined && route.remapping !== undefined ? (
 										<>
 											<div className="mod mvs mhs">
 												<label className="field">
@@ -1172,7 +1169,7 @@ const StudioRoutings = withTranslation()(
 												showOptional={true}
 											/>
 										</>
-									)}
+									) : null}
 								</div>
 							</div>
 						)
@@ -1272,6 +1269,12 @@ const StudioRoutings = withTranslation()(
 		renderRouteSets() {
 			const { t } = this.props
 
+			const DEFAULT_ACTIVE_OPTIONS = {
+				[t('Active')]: true,
+				[t('Not Active')]: false,
+				[t('Not defined')]: undefined,
+			}
+
 			if (Object.keys(this.props.studio.routeSets).length === 0) {
 				return (
 					<tr>
@@ -1335,6 +1338,20 @@ const StudioRoutings = withTranslation()(
 													className=""></EditAttribute>
 												{t('Active')}
 												<span className="mlm text-s dimmed">{t('Is this Route Set currently active')}</span>
+											</label>
+										</div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Default State')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`routeSets.${routeId}.defaultActive`}
+													obj={this.props.studio}
+													type="dropdown"
+													collection={Studios}
+													options={DEFAULT_ACTIVE_OPTIONS}
+													className="input text-input input-l"></EditAttribute>
+												<span className="mlm text-s dimmed">{t('The default state of this Route Set')}</span>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -1416,7 +1433,12 @@ const StudioRoutings = withTranslation()(
 			const { t } = this.props
 			return (
 				<div>
-					<h2 className="mhn">{t('Route Sets')}</h2>
+					<h2 className="mhn mbs">{t('Route Sets')}</h2>
+					<p className="mhn mvs text-s dimmed">
+						{t(
+							'Controls for exposed Route Sets will be displayed to the producer within the Rundown View in the Switchboard.'
+						)}
+					</p>
 					<h3 className="mhn">{t('Exclusivity Groups')}</h3>
 					<table className="expando settings-studio-mappings-table">
 						<tbody>{this.renderExclusivityGroups()}</tbody>

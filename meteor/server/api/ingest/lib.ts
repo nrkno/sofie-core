@@ -28,16 +28,16 @@ import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDev
 import { MethodContext } from '../../../lib/api/methods'
 import { CacheForIngest, ReadOnlyCache } from '../../cache/DatabaseCaches'
 import { Credentials } from '../../security/lib/credentials'
-import { IngestRundown, ExtendedIngestRundown, IBlueprintRundown } from 'tv-automation-sofie-blueprints-integration'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { IngestRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { syncFunction } from '../../codeControl'
-import { DeepReadonly } from 'utility-types'
 import { rundownPlaylistCustomSyncFunction, RundownSyncFunctionPriority } from './rundownInput'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestDataCacheObj, IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { DbCacheWriteCollection, DbCacheReadCollection } from '../../cache/lib'
 import { RundownIngestDataCacheCollection } from './ingestCache'
 import { profiler } from '../profiler'
+import { ReadonlyDeep } from 'type-fest'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -59,7 +59,7 @@ export function checkAccessAndGetPeripheralDevice(
 	return peripheralDevice
 }
 
-export function getRundownId(studio: DeepReadonly<Studio> | StudioId, rundownExternalId: string): RundownId {
+export function getRundownId(studio: ReadonlyDeep<Studio> | StudioId, rundownExternalId: string): RundownId {
 	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!')
 	if (!rundownExternalId) throw new Meteor.Error(401, 'getRundownId: rundownExternalId must be set!')
 	return protectString<RundownId>(getHash(`${isProtectedString(studio) ? studio : studio._id}_${rundownExternalId}`))
@@ -110,7 +110,7 @@ export function getRundown(rundownId: RundownId, externalRundownId: string): Run
 	span?.end()
 	return rundown
 }
-export function getRundown2(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): DeepReadonly<Rundown> {
+export function getRundown2(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ReadonlyDeep<Rundown> {
 	const rundown = cache.Rundown.doc
 	if (!rundown) {
 		const rundownId = getRundownId(cache.Studio.doc, cache.RundownExternalId)
@@ -148,10 +148,10 @@ export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevi
 }
 
 export interface IngestPlayoutInfo {
-	readonly playlist: DeepReadonly<RundownPlaylist>
-	readonly rundowns: DeepReadonly<Array<Rundown>>
-	readonly currentPartInstance: DeepReadonly<PartInstance> | undefined
-	readonly nextPartInstance: DeepReadonly<PartInstance> | undefined
+	readonly playlist: ReadonlyDeep<RundownPlaylist>
+	readonly rundowns: ReadonlyDeep<Array<Rundown>>
+	readonly currentPartInstance: ReadonlyDeep<PartInstance> | undefined
+	readonly nextPartInstance: ReadonlyDeep<PartInstance> | undefined
 }
 
 export function rundownIngestSyncFunction<T>(
@@ -175,7 +175,7 @@ export function rundownIngestSyncFunction<T>(
 	)
 }
 
-export function getIngestPlaylistInfoFromDb(rundown: DeepReadonly<Rundown>) {
+export function getIngestPlaylistInfoFromDb(rundown: ReadonlyDeep<Rundown>) {
 	const [playlist, rundowns] = waitForPromiseAll([
 		asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId }),
 		asyncCollectionFindFetch(
@@ -296,7 +296,7 @@ function updateDeviceLastDataReceived(deviceId: PeripheralDeviceId) {
 	})
 }
 
-export function canBeUpdated(rundown: DeepReadonly<Rundown> | undefined, segment?: Segment, _partId?: PartId) {
+export function canBeUpdated(rundown: ReadonlyDeep<Rundown> | undefined, segment?: Segment, _partId?: PartId) {
 	if (!rundown) return true
 	if (rundown.unsynced) {
 		logger.info(`Rundown "${rundown._id}" has been unsynced and needs to be synced before it can be updated.`)
@@ -314,7 +314,7 @@ export function canBeUpdated(rundown: DeepReadonly<Rundown> | undefined, segment
 }
 export function extendIngestRundownCore(
 	ingestRundown: IngestRundown,
-	existingDbRundown: DeepReadonly<DBRundown> | undefined
+	existingDbRundown: ReadonlyDeep<DBRundown> | undefined
 ): ExtendedIngestRundown {
 	const extendedIngestRundown: ExtendedIngestRundown = {
 		...ingestRundown,

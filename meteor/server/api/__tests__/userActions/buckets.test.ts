@@ -17,7 +17,7 @@ import { ClientAPI } from '../../../../lib/api/client'
 import { Bucket, Buckets } from '../../../../lib/collections/Buckets'
 import { Random } from 'meteor/random'
 import { BucketAdLibs } from '../../../../lib/collections/BucketAdlibs'
-import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed
@@ -72,6 +72,9 @@ describe('User Actions - Buckets', () => {
 				sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 				studioId: env.studio._id,
 				lifespan: PieceLifespan.WithinPart,
+				content: {
+					timelineObjects: [],
+				},
 			})
 		}
 

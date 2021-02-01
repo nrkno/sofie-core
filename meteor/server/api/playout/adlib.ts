@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
-import { SourceLayerType, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import {
 	getCurrentTime,
 	literal,
@@ -9,9 +9,8 @@ import {
 	unprotectString,
 	getRandomId,
 	waitForPromise,
-	unprotectStringArray,
-	sleep,
 	assertNever,
+	getRank,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
@@ -27,10 +26,16 @@ import {
 	getSelectedPartInstancesFromCache,
 	removeDynamicallyInsertedPartsAfter,
 	getAllOrderedPartsFromPlayoutCache,
+	selectNextPart,
 } from './lib'
-import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
+import {
+	convertAdLibToPieceInstance,
+	getResolvedPieces,
+	convertPieceToAdLibPiece,
+	setupPieceInstanceInfiniteProperties,
+} from './pieces'
 import { updateTimeline } from './timeline'
-import { updatePartRanks } from '../rundown'
+import { updatePartInstanceRanks } from '../rundown'
 import {
 	PieceInstances,
 	PieceInstance,
@@ -43,7 +48,7 @@ import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { syncPlayheadInfinitesForNextPartInstance, fetchPiecesThatMayBeActiveForPart } from './infinites'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { getPieceInstancesForPart } from './infinites'
 import { MethodContext } from '../../../lib/api/methods'
@@ -95,7 +100,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 				const showStyleBase = waitForPromise(cache.activationCache.getShowStyleBase(rundown))
 				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
-				if (sourceLayer && sourceLayer.type !== SourceLayerType.GRAPHICS)
+				if (sourceLayer && (sourceLayer.type !== SourceLayerType.GRAPHICS || sourceLayer.exclusiveGroup))
 					throw new Meteor.Error(
 						403,
 						`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS item!`
@@ -263,15 +268,14 @@ export namespace ServerPlayoutAdLibAPI {
 				segmentId: currentPartInstance.segmentId,
 				takeCount: currentPartInstance.takeCount + 1,
 				rehearsal: !!playlist.rehearsal,
+				orphaned: 'adlib-part',
 				part: new Part({
 					_id: getRandomId(),
-					_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
+					_rank: 99999, // Corrected in innerStartQueuedAdLib
 					externalId: '',
 					segmentId: currentPartInstance.segmentId,
 					rundownId: rundown._id,
 					title: adLibPiece.name,
-					dynamicallyInsertedAfterPartId:
-						currentPartInstance.part.dynamicallyInsertedAfterPartId ?? currentPartInstance.part._id,
 					prerollDuration: adLibPiece.adlibPreroll,
 					expectedDuration: adLibPiece.expectedDuration,
 				}),
@@ -394,38 +398,38 @@ export namespace ServerPlayoutAdLibAPI {
 		const span = profiler.startSpan('innerStartQueuedAdLib')
 		logger.info('adlibQueueInsertPartInstance')
 
-		// check if there's already a queued part after this:
-		const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-		if (nextPartInstance && nextPartInstance.part.dynamicallyInsertedAfterPartId) {
-			// TODO-PartInstance - pending new data flow - the call to setNextPart will prune the partInstance, so this will not be needed
-			cache.Parts.remove(nextPartInstance.part._id)
-			cache.PartInstances.remove(nextPartInstance._id)
-			cache.PieceInstances.remove({ partInstanceId: nextPartInstance._id })
-			removeDynamicallyInsertedPartsAfter(cache, [nextPartInstance.part._id])
-		}
-
 		// Ensure it is labelled as dynamic
-		newPartInstance.part.dynamicallyInsertedAfterPartId = currentPartInstance.part._id
+		newPartInstance.orphaned = 'adlib-part'
+
+		const followingPart = selectNextPart(
+			cache.Playlist.doc,
+			currentPartInstance,
+			getAllOrderedPartsFromCache(cache),
+			true
+		)
+		newPartInstance.part._rank = getRank(
+			currentPartInstance.part,
+			followingPart?.part?.segmentId === newPartInstance.segmentId ? followingPart?.part : undefined
+		)
 
 		cache.PartInstances.insert(newPartInstance)
-		// TODO-PartInstance - pending new data flow
-		cache.Parts.insert(newPartInstance.part)
 
 		newPieceInstances.forEach((pieceInstance) => {
 			// Ensure it is labelled as dynamic
+			pieceInstance.dynamicallyInserted = getCurrentTime()
 			pieceInstance.partInstanceId = newPartInstance._id
 			pieceInstance.piece.startPartId = newPartInstance.part._id
+
+			setupPieceInstanceInfiniteProperties(pieceInstance)
 
 			cache.PieceInstances.insert(pieceInstance)
 		})
 
-		updatePartRanks(cache.Parts, cache.PartInstances, [newPartInstance.part.segmentId])
-
-		setNextPart(cache, newPartInstance)
+		updatePartInstanceRanks(cache, [{ segmentId: newPartInstance.part.segmentId, oldPartIdsAndRanks: null }])
 
 		// Find and insert any rundown defined infinites that we should inherit
-		const part = cache.Parts.findOne(newPartInstance.part._id)
-		const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, part!))
+		newPartInstance = cache.PartInstances.findOne(newPartInstance._id)!
+		const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, newPartInstance.part))
 		const infinitePieceInstances = getPieceInstancesForPart(
 			cache,
 			currentPartInstance,
@@ -437,6 +441,8 @@ export namespace ServerPlayoutAdLibAPI {
 		for (const pieceInstance of infinitePieceInstances) {
 			cache.PieceInstances.insert(pieceInstance)
 		}
+
+		setNextPart(cache, newPartInstance)
 
 		if (span) span.end()
 	}
@@ -452,6 +458,8 @@ export namespace ServerPlayoutAdLibAPI {
 		newPieceInstance.partInstanceId = existingPartInstance._id
 		newPieceInstance.piece.startPartId = existingPartInstance.part._id
 		newPieceInstance.dynamicallyInserted = getCurrentTime()
+
+		setupPieceInstanceInfiniteProperties(newPieceInstance)
 
 		// exclusiveGroup is handled at runtime by processAndPrunePieceInstanceTimings
 
@@ -486,7 +494,8 @@ export namespace ServerPlayoutAdLibAPI {
 				!pieceInstance.piece.virtual &&
 				filter(pieceInstance) &&
 				pieceInstance.resolvedStart !== undefined &&
-				pieceInstance.resolvedStart <= relativeStopAt
+				pieceInstance.resolvedStart <= relativeStopAt &&
+				!pieceInstance.stoppedPlayback
 			) {
 				switch (pieceInstance.piece.lifespan) {
 					case PieceLifespan.WithinPart:
@@ -499,8 +508,6 @@ export namespace ServerPlayoutAdLibAPI {
 							},
 						}
 						if (pieceInstance.infinite) {
-							// Mark where this ends
-							up['infinite.lastPartInstanceId'] = currentPartInstance._id
 							stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
 						}
 
@@ -537,12 +544,16 @@ export namespace ServerPlayoutAdLibAPI {
 									startPartId: currentPartInstance.part._id,
 									status: RundownAPI.PieceStatusCode.UNKNOWN,
 									virtual: true,
+									content: {
+										timelineObjects: [],
+									},
 								},
 								currentPartInstance.rundownId,
 								currentPartInstance._id
 							),
 							dynamicallyInserted: getCurrentTime(),
 							infinite: {
+								infiniteInstanceId: getRandomId(),
 								infinitePieceId: pieceId,
 								fromPreviousPart: false,
 							},
@@ -603,8 +614,7 @@ export namespace ServerPlayoutAdLibAPI {
 					)
 				}
 
-				const newPieceInstance = convertAdLibToPieceInstance(bucketAdlib, currentPartInstance, queue)
-				innerStartAdLibPiece(cache, rundown, currentPartInstance, newPieceInstance)
+				innerStartOrQueueAdLibPiece(cache, rundown, queue, currentPartInstance, bucketAdlib)
 			}
 		)
 	}

@@ -1,10 +1,8 @@
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Time, ProtectedString } from '../lib'
-import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { PeripheralDeviceId } from './PeripheralDevices'
-import { MediaManagerAPI } from '../api/mediaManager'
 import { registerIndex } from '../database'
 
 /** A string, identifying a MediaWorkFlow */

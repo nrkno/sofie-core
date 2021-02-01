@@ -21,6 +21,7 @@
 
 	--general-late-color: #ff0000;
 	--general-fast-color: #ff0000;
+	--general-countdown-to-next-color: #ffff00;
 	--general-fast-color--shadow: #{transparentize(#ff0000, 0.2)};
 
 	--general-clock: #49c0fb;
@@ -48,6 +49,8 @@
 	--segment-layer-background-live-speak: #{$segment-layer-background-live-speak};
 	--segment-layer-background-remote: #{$segment-layer-background-remote};
 	--segment-layer-background-remote--second: #{$segment-layer-background-remote--second};
+	--segment-layer-background-local: #{$segment-layer-background-local};
+	--segment-layer-background-local--second: #{$segment-layer-background-local--second};
 	--segment-layer-background-vt: #{$segment-layer-background-vt};
 	--segment-layer-background-vt--second: #{$segment-layer-background-vt--second};
 	--segment-layer-background-script: #{$segment-layer-background-script};

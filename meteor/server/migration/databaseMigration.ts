@@ -21,7 +21,7 @@ import {
 	ValidateFunctionShowStyle,
 	ValidateFunctionStudio,
 	SomeBlueprintManifest,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
 import {
 	GetMigrationStatusResult,

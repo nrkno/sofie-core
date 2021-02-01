@@ -1,7 +1,6 @@
-import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
 import { ShowStyleBaseId } from './ShowStyleBases'
@@ -126,6 +125,7 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	hide?: boolean
 	displayTakeButtons?: boolean
 	queueAllAdlibs?: boolean
+	toggleOnSingleClick?: boolean
 }
 
 /** A string, identifying a RundownLayout */
@@ -143,6 +143,8 @@ export interface RundownLayoutBase {
 	exposeAsShelf: boolean
 	icon: string
 	iconColor: string
+	openByDefault: boolean
+	startingHeight?: number
 }
 
 export interface RundownLayout extends RundownLayoutBase {

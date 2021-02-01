@@ -1,4 +1,3 @@
-import { MethodsBase } from './methods'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PieceInstanceId } from '../collections/PieceInstances'
@@ -15,7 +14,6 @@ export interface NewPlayoutAPI {
 	rundownResetAndActivate(playlistId: RundownPlaylistId, rehearsal?: boolean): Promise<void>
 	rundownActivate(playlistId: RundownPlaylistId, rehearsal: boolean): Promise<void>
 	rundownDeactivate(playlistId: RundownPlaylistId): Promise<void>
-	reloadRundownPlaylistData(playlistId: RundownPlaylistId): Promise<ReloadRundownPlaylistResponse>
 	pieceTakeNow(
 		playlistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -37,7 +35,10 @@ export interface NewPlayoutAPI {
 		verticalDelta: number
 	): Promise<PartId | null>
 	rundownActivateHold(playlistId: RundownPlaylistId): Promise<void>
-	rundownDisableNextPiece(rundownPlaylistId: RundownPlaylistId, undo?: boolean): Promise<void>
+	rundownDisableNextPiece(
+		rundownPlaylistId: RundownPlaylistId,
+		undo?: boolean
+	): Promise<ClientAPI.ClientResponse<void>>
 	segmentAdLibPieceStart(
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -67,7 +68,6 @@ export enum PlayoutAPIMethods {
 	'rundownResetAndActivate' = 'playout.rundownResetAndActivate',
 	'rundownActivate' = 'playout.rundownActivate',
 	'rundownDeactivate' = 'playout.rundownDeactivate',
-	'reloadRundownPlaylistData' = 'playout.reloadRundownPlaylistData',
 
 	'updateStudioBaseline' = 'playout.updateStudioBaseline',
 	'shouldUpdateStudioBaseline' = 'playout.shouldUpdateStudioBaseline',

@@ -291,7 +291,6 @@ export const addSteps = addMigrationSteps('0.25.0', [
 			segmentId: 'string',
 			rundownId: 'runningOrderId',
 			title: 'slug',
-			dynamicallyInsertedAfterPartId: 'afterSegmentLine',
 		},
 		'migrateDatabaseCollections'
 	),

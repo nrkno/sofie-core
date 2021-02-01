@@ -7,21 +7,18 @@ import {
 	BlueprintMapping,
 	TSR,
 	LookaheadMode,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
-import { ShowStyleBase, ShowStyleBaseId } from './ShowStyleBases'
+import { ShowStyleBaseId } from './ShowStyleBases'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 
 export interface MappingsExt extends BlueprintMappings {
 	[layerName: string]: MappingExt
 }
-export interface MappingExt extends BlueprintMapping {
-	/** Internal mappings are hidden in the UI */
-	internal?: boolean
-}
+export interface MappingExt extends BlueprintMapping {}
 
 export interface IStudioSettings {
 	/** URL to endpoint where media preview are exposed */
@@ -99,6 +96,8 @@ export interface StudioRouteSet {
 	name: string
 	/** Whether this group is active or not */
 	active: boolean
+	/** Default state of this group */
+	defaultActive?: boolean | undefined
 	/** Only one Route can be active at the same time in the exclusivity-group */
 	exclusivityGroup?: string
 	/** If true, should be displayed and toggleable by user */

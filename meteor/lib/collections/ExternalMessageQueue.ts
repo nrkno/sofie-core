@@ -1,10 +1,9 @@
 import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintExternalMessageQueueObj,
 	IBlueprintExternalMessageQueueType,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { RundownId } from './Rundowns'
