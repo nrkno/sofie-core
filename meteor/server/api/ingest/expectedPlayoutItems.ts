@@ -1,15 +1,22 @@
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { check } from '../../../lib/check'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
-import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integration'
+import {
+	ExpectedPlayoutItemGeneric,
+	IBlueprintActionManifestDisplayContent,
+	PieceLifespan,
+	SomeContent,
+} from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
 import { DBRundown, RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { logger } from '../../logging'
 import { PartId, DBPart } from '../../../lib/collections/Parts'
-import { saveIntoDb, protectString, unprotectString } from '../../../lib/lib'
+import { saveIntoDb, protectString, unprotectString, literal } from '../../../lib/lib'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { getAllPiecesFromCache, getAllAdLibPiecesFromCache } from '../playout/lib'
+import { RundownUtils } from '../../../client/lib/rundown'
+import { RundownAPI } from '../../../lib/api/rundown'
 
 interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
 	partId?: PartId
@@ -77,10 +84,48 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForRundownPlayli
 	})
 	const adlibPiecesGrouped = _.groupBy(adlibPiecesInThisRundown, 'partId')
 
+	const actionsInThisRundown = cache.AdLibActions.findFetch({
+		rundownId: rundown._id,
+	})
+	const actionsGrouped = _.groupBy(actionsInThisRundown, 'partId')
+
 	for (const part of cache.Parts.findFetch({ rundownId: rundown._id })) {
 		intermediaryItems.push(...extractExpectedPlayoutItems(part, piecesGrouped[unprotectString(part._id)] || []))
 		intermediaryItems.push(
 			...extractExpectedPlayoutItems(part, adlibPiecesGrouped[unprotectString(part._id)] || [])
+		)
+		intermediaryItems.push(
+			...extractExpectedPlayoutItems(
+				part,
+				actionsGrouped[unprotectString(part._id)].map<AdLibPiece>((action) => {
+					let sourceLayerId = ''
+					let outputLayerId = ''
+					let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
+					const isContent = RundownUtils.isAdlibActionContent(action.display)
+					if (isContent) {
+						sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
+						outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
+						content = (action.display as IBlueprintActionManifestDisplayContent).content
+					}
+
+					return literal<AdLibPiece>({
+						_id: protectString(`function_${action._id}`),
+						name: action.display.label,
+						status: RundownAPI.PieceStatusCode.UNKNOWN,
+						expectedDuration: 0,
+						externalId: unprotectString(action._id),
+						rundownId: action.rundownId,
+						sourceLayerId,
+						outputLayerId,
+						_rank: action.display._rank || 0,
+						content: content,
+						tags: action.display.tags,
+						currentPieceTags: action.display.currentPieceTags,
+						nextPieceTags: action.display.nextPieceTags,
+						lifespan: PieceLifespan.WithinPart, // value doesn't matter
+					})
+				}) || []
+			)
 		)
 	}
 
