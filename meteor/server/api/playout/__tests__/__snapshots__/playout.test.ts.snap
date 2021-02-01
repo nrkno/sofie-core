@@ -79,6 +79,29 @@ Array [
         "objectType": "rundown",
         "priority": 5,
       },
+      Object {
+        "classes": Array [
+          "current_part",
+        ],
+        "content": Object {
+          "callBack": "piecePlaybackStarted",
+          "callBackData": Object {
+            "dynamicallyInserted": false,
+            "pieceInstanceId": "randomId9002_part0_0_randomId9009_randomId9002_piece001",
+            "rundownPlaylistId": "playlist_randomId9002",
+          },
+          "callBackStopped": "piecePlaybackStopped",
+          "deviceType": 0,
+          "type": "callback",
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "piece_group_firstobject_randomId9002_part0_0_randomId9009_randomId9002_piece001",
+        "inGroup": "piece_group_randomId9002_part0_0_randomId9009_randomId9002_piece001",
+        "layer": "vt0_firstobject",
+        "objectType": "rundown",
+      },
     ],
     "timelineHash": "randomId9014",
   },
@@ -90,7 +113,6 @@ Object {
   "_id": "randomId9002",
   "_rank": 0,
   "created": 0,
-  "dataSource": "mock",
   "externalId": "MOCK_RUNDOWN",
   "externalNRCSName": "mock",
   "importVersions": Object {
@@ -169,7 +191,6 @@ Object {
   "_id": "randomId9002",
   "_rank": 0,
   "created": 0,
-  "dataSource": "mock",
   "externalId": "MOCK_RUNDOWN",
   "externalNRCSName": "mock",
   "importVersions": Object {

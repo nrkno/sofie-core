@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
-import { Omit, ProtectedString } from '../lib'
+import { ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { Collection as RawCollection } from 'mongodb'
 

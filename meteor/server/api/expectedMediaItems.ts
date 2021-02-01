@@ -10,8 +10,8 @@ import {
 	ExpectedMediaItemRundown,
 } from '../../lib/collections/ExpectedMediaItems'
 import { RundownId } from '../../lib/collections/Rundowns'
-import { Piece, PieceGeneric, PieceId } from '../../lib/collections/Pieces'
-import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { Piece, PieceId } from '../../lib/collections/Pieces'
+import { AdLibPiece } from '../../lib/collections/AdLibPieces'
 import {
 	saveIntoDb,
 	getCurrentTime,
@@ -22,12 +22,11 @@ import {
 	Subtract,
 	ProtectedString,
 } from '../../lib/lib'
-import { PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 import { StudioId } from '../../lib/collections/Studios'
 import { CacheForRundownPlaylist } from '../DatabaseCaches'
-import { AdLibAction, AdLibActionId, AdLibActions } from '../../lib/collections/AdLibActions'
+import { AdLibAction, AdLibActionId } from '../../lib/collections/AdLibActions'
 import {
 	IBlueprintActionManifestDisplayContent,
 	SomeContent,
@@ -48,7 +47,7 @@ function generateExpectedMediaItems<T extends ExpectedMediaItemBase>(
 	commonProps: Subtract<T, ExpectedMediaItemBase>,
 	studioId: StudioId,
 	label: string,
-	content: SomeContent | undefined,
+	content: Partial<SomeContent> | undefined,
 	pieceType: string
 ): T[] {
 	const result: T[] = []
@@ -241,13 +240,13 @@ export function updateExpectedMediaItemsOnRundown(cache: CacheForRundownPlaylist
 			startRundownId: rundown._id,
 		})
 
-		const adlibs = AdLibPieces.find({
+		const adlibs = cache.AdLibPieces.findFetch({
 			rundownId: rundown._id,
-		}).fetch()
+		})
 
-		const actions = AdLibActions.find({
+		const actions = cache.AdLibActions.findFetch({
 			rundownId: rundown._id,
-		}).fetch()
+		})
 
 		const eMIs = generateExpectedMediaItemsFull(studioId, rundownId, pieces, adlibs, actions)
 

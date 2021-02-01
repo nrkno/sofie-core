@@ -80,7 +80,7 @@ describe('Test blueprint api context', () => {
 						startPartId: part._id,
 						content: {
 							index: i,
-						},
+						} as any,
 						lifespan: PieceLifespan.WithinPart,
 						invalid: false,
 					},
@@ -327,6 +327,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 1000,
 					})
@@ -354,6 +357,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 2000,
 					})
@@ -402,6 +408,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 1000,
 					})
@@ -422,6 +431,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 2000,
 					})
@@ -474,6 +486,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 1000,
 					})
@@ -497,6 +512,9 @@ describe('Test blueprint api context', () => {
 							},
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 2000,
 					})
@@ -855,6 +873,9 @@ describe('Test blueprint api context', () => {
 						externalId: '-',
 						enable: { start: 0 },
 						lifespan: PieceLifespan.OutOnRundownEnd,
+						content: {
+							timelineObjects: [],
+						},
 					}
 					const newPart: IBlueprintPart = {
 						externalId: 'nope',
@@ -879,7 +900,7 @@ describe('Test blueprint api context', () => {
 					expect(newPartInstance).toBeTruthy()
 					expect(newPartInstance.part._rank).toBeLessThan(9000)
 					expect(newPartInstance.part._rank).toBeGreaterThan(partInstance.part._rank)
-					expect(newPartInstance.part.dynamicallyInsertedAfterPartId).toBeTruthy()
+					expect(newPartInstance.orphaned).toEqual('adlib-part')
 
 					const newNextPartInstances = context.getPieceInstances('next')
 					expect(newNextPartInstances).toHaveLength(1)

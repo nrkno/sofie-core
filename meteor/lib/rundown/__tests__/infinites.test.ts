@@ -46,6 +46,7 @@ describe('Infinites', () => {
 				invalid: false,
 				status: -1,
 				virtual: clear,
+				content: { timelineObjects: [] },
 			}),
 			dynamicallyInserted: clear ? getCurrentTime() : undefined,
 		})

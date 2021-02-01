@@ -1,6 +1,6 @@
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { protectString, unprotectString, Omit, literal } from '../../../lib/lib'
+import { protectString, unprotectString, literal } from '../../../lib/lib'
 import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'

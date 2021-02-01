@@ -162,12 +162,12 @@ class RundownViewNotifier extends WithManagedTracker {
 		const rRundowns = reactiveData.getRRundowns(playlistId, {
 			fields: {
 				_id: 1,
-				unsynced: 1,
+				orphaned: 1,
 				notes: 1,
 				name: 1,
 				externalNRCSName: 1,
 			},
-		}) as ReactiveVar<Pick<Rundown, '_id' | 'unsynced' | 'notes' | 'name' | 'externalNRCSName'>[]>
+		}) as ReactiveVar<Pick<Rundown, '_id' | 'orphaned' | 'notes' | 'name' | 'externalNRCSName'>[]>
 		this.autorun(() => {
 			const newNoteIds: Array<string> = []
 
@@ -179,7 +179,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					let unsyncedId = rundown._id + '_unsynced'
 					let newNotification: Notification | undefined = undefined
 
-					if (rundown.unsynced) {
+					if (rundown.orphaned) {
 						newNotification = new Notification(
 							unsyncedId,
 							NoticeLevel.CRITICAL,

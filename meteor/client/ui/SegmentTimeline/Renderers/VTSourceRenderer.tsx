@@ -17,6 +17,7 @@ import { PieceStatusIcon } from '../PieceStatusIcon'
 import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
 import { RundownUtils } from '../../../lib/rundown'
+import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
 
 interface IProps extends ICustomLayerItemProps {}
 interface IState {
@@ -427,13 +428,13 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	}
 
 	renderContentEndCountdown() {
-		const { piece: uiPiece, part, isLiveLine, livePosition } = this.props
+		const { piece: uiPiece, part, isLiveLine, livePosition, partStartsAt } = this.props
 		const innerPiece = uiPiece.instance.piece
 
 		const vtContent = innerPiece.content as VTContent | undefined
 		const seek = vtContent && vtContent.seek ? vtContent.seek : 0
 		let countdown: React.ReactNode = null
-		const livePositionInPart = (livePosition || 0) - part.startsAt
+		const livePositionInPart = (livePosition || 0) - partStartsAt
 		if (
 			isLiveLine &&
 			this.countdownContainer &&
@@ -460,7 +461,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 						style={{
 							top: `calc(${this.props.layerIndex} * var(--segment-layer-height))`,
 						}}>
-						{RundownUtils.formatDiffToTimecode(counter || 0, false, false, true, false, true, '', false, false)}
+						<span className="segment-timeline__liveline__appendage--piece-countdown__content">
+							{RundownUtils.formatDiffToTimecode(counter || 0, false, false, true, false, true, '', false, false)}
+						</span>
+						<FreezeFrameIcon className="segment-timeline__liveline__appendage--piece-countdown__icon" />
 					</div>
 				)
 			}

@@ -317,7 +317,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 				_id: getRandomId(),
 				rundownId: currentPartInstance.rundownId,
 				segmentId: currentPartInstance.segmentId,
-				_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
+				_rank: 99999, // Corrected in innerStartQueuedAdLib
 				notes: [],
 				invalid: false,
 				invalidReason: undefined,

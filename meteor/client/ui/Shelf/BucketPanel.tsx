@@ -25,12 +25,18 @@ import {
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
+	SomeTimelineContent,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
-import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
+import {
+	ensureHasTrailingSlash,
+	contextMenuHoldToDisplayTime,
+	UserAgentPointer,
+	USER_AGENT_POINTER_PROPERTY,
+} from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import {
 	IDashboardPanelTrackedProps,
@@ -156,6 +162,7 @@ interface IState {
 	dropActive: boolean
 	bucketName: string
 	adLibPieces: BucketAdLibItem[]
+	singleClickMode: boolean
 }
 
 export function actionToAdLibPieceUi(
@@ -165,12 +172,14 @@ export function actionToAdLibPieceUi(
 ): BucketAdLibActionUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
-	let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
-	const isContent = RundownUtils.isAdlibActionContent(action.display)
-	if (isContent) {
-		sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
-		outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-		content = (action.display as IBlueprintActionManifestDisplayContent).content
+	let content: SomeTimelineContent = { timelineObjects: [] }
+	if (RundownUtils.isAdlibActionContent(action.display)) {
+		sourceLayerId = action.display.sourceLayerId
+		outputLayerId = action.display.outputLayerId
+		content = {
+			timelineObjects: [],
+			...action.display.content,
+		}
 	}
 
 	return literal<BucketAdLibActionUi>({
@@ -211,6 +220,7 @@ export interface IBucketPanelProps {
 	moveBucket: (id: BucketId, atIndex: number) => void
 	findBucket: (id: BucketId) => { bucket: Bucket | undefined; index: number }
 	onBucketReorder: (draggedId: BucketId, newIndex: number, oldIndex: number) => void
+	onSelectAdlib
 	onAdLibContext: (args: { contextBucket: Bucket; contextBucketAdLib: BucketAdLibItem }, callback: () => void) => void
 	onPieceNameRename: () => void
 }
@@ -340,6 +350,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						dropActive: false,
 						bucketName: props.bucket.name,
 						adLibPieces: props.adLibPieces.slice(),
+						singleClickMode: false,
 					}
 				}
 
@@ -449,6 +460,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						)
 					}
 				}
+
+				onSelectAdLib = (piece: BucketAdLibItem, e: any) => {}
 
 				onToggleAdLib = (piece: BucketAdLibItem, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 					const { t } = this.props
@@ -710,6 +723,21 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					}
 				}
 
+				private setRef = (ref: HTMLDivElement) => {
+					this._panel = ref
+					if (this._panel) {
+						const style = window.getComputedStyle(this._panel)
+						// check if a special variable is set through CSS to indicate that we shouldn't expect
+						// double clicks to trigger AdLibs
+						const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
+						if (this.state.singleClickMode !== (value === UserAgentPointer.NO_POINTER)) {
+							this.setState({
+								singleClickMode: value === UserAgentPointer.NO_POINTER,
+							})
+						}
+					}
+				}
+
 				render() {
 					const { isDragging, connectDragSource, connectDragPreview, connectDropTarget } = this.props
 					const opacity = isDragging ? 0 : 1
@@ -723,7 +751,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 										'dashboard-panel__panel--sort-dragging': this.props.isDragging,
 									})}
 									data-bucket-id={this.props.bucket._id}
-									ref={(el) => (this._panel = el)}>
+									ref={this.setRef}>
 									{this.props.editableName ? (
 										<input
 											className="h4 dashboard-panel__header"
@@ -774,6 +802,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 													layer={this.props.sourceLayers[adlib.sourceLayerId]}
 													outputLayer={this.props.outputLayers[adlib.outputLayerId]}
 													onToggleAdLib={this.onToggleAdLib as any}
+													onSelectAdLib={this.onSelectAdLib as any}
 													playlist={this.props.playlist}
 													isOnAir={this.isAdLibOnAir((adlib as any) as AdLibPieceUi)}
 													mediaPreviewUrl={
@@ -793,6 +822,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 														RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
 														adlib._id === this.props.selectedPiece._id
 													}
+													toggleOnSingleClick={this.state.singleClickMode}
 													displayStyle={PieceDisplayStyle.BUTTONS}>
 													{adlib.name}
 												</BucketPieceButton>

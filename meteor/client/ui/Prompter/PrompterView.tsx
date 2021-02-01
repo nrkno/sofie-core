@@ -467,6 +467,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			marginBottom: this.configOptions.margin ? `${this.configOptions.margin}vh` : undefined,
 			marginRight: this.configOptions.margin ? `${this.configOptions.margin}vw` : undefined,
 			marginLeft: this.configOptions.margin ? `${this.configOptions.margin}vw` : undefined,
+			fontSize: (this.configOptions.fontSize ?? 0) > 12 ? `12vmin` : undefined,
 		}
 
 		return (
@@ -726,6 +727,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 									marginTop: this.props.config.margin ? `${this.props.config.margin}vh` : undefined,
 									marginLeft: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
 									marginRight: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
+									fontSize: (this.props.config.fontSize ?? 0) > 12 ? `12vmin` : undefined,
 								}}>
 								<div className="take-indicator hidden"></div>
 								<div className="next-indicator hidden"></div>

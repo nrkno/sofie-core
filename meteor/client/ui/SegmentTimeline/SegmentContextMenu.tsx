@@ -49,7 +49,7 @@ export const SegmentContextMenu = withTranslation()(
 										{startsAt !== null && (
 											<MenuItem
 												onClick={(e) => this.props.onSetNext(part.instance.part, e)}
-												disabled={isCurrentPart || !!part.instance.part.dynamicallyInsertedAfterPartId}>
+												disabled={isCurrentPart || !!part.instance.orphaned}>
 												<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span>{' '}
 												({RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
 											</MenuItem>
@@ -58,13 +58,13 @@ export const SegmentContextMenu = withTranslation()(
 											<>
 												<MenuItem
 													onClick={(e) => this.onSetAsNextFromHere(part.instance.part, e)}
-													disabled={isCurrentPart || !!part.instance.part.dynamicallyInsertedAfterPartId}>
+													disabled={isCurrentPart || !!part.instance.orphaned}>
 													<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> (
 													{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 												</MenuItem>
 												<MenuItem
 													onClick={(e) => this.onPlayFromHere(part.instance.part, e)}
-													disabled={isCurrentPart || !!part.instance.part.dynamicallyInsertedAfterPartId}>
+													disabled={isCurrentPart || !!part.instance.orphaned}>
 													<span dangerouslySetInnerHTML={{ __html: t('Play from Here') }}></span> (
 													{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 												</MenuItem>
@@ -102,7 +102,7 @@ export const SegmentContextMenu = withTranslation()(
 			t: (key: string | string[], options?: unknown | undefined) => any,
 			segment: SegmentUi | null
 		) => {
-			if (segment && segment.unsynced) {
+			if (segment && segment.orphaned) {
 				return (
 					<MenuItem onClick={(e) => this.props.onResyncSegment(segment, e)}>
 						<span>{t('Resync Segment')}</span>
