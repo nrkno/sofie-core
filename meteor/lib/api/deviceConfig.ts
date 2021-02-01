@@ -21,6 +21,10 @@ export interface DeviceConfigManifest {
 	 * getting an authentication token go in here
 	 */
 	deviceOAuthFlow?: DeviceOAuthFlow
+	/**
+	 * A description of the layer mapping config fields
+	 */
+	layerMappings?: MappingsManifest
 }
 
 export interface DeviceOAuthFlow {
@@ -49,6 +53,7 @@ export interface ConfigManifestEntryBase {
 	type: ConfigManifestEntryType
 	values?: any // for enum
 	placeholder?: string
+	hint?: string
 }
 export interface ConfigManifestEnumEntry extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.ENUM
@@ -82,4 +87,10 @@ export interface TableConfigManifestEntry extends ConfigManifestEntryBase {
 	typeField?: string
 	/** Only one type means that the type option will not be present */
 	config: { [type: string]: TableEntryConfigManifestEntry[] }
+}
+
+export type MappingsManifest = Record<string, MappingManifestEntry[]>
+
+export interface MappingManifestEntry extends ConfigManifestEntryBase {
+	optional?: boolean
 }
