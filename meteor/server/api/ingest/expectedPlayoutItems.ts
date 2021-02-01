@@ -97,7 +97,7 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForRundownPlayli
 		intermediaryItems.push(
 			...extractExpectedPlayoutItems(
 				part,
-				actionsGrouped[unprotectString(part._id)].map<AdLibPiece>((action) => {
+				actionsGrouped[unprotectString(part._id)]?.map<AdLibPiece>((action) => {
 					let sourceLayerId = ''
 					let outputLayerId = ''
 					let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
