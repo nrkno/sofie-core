@@ -625,6 +625,14 @@ export function getAllAdLibPiecesFromCache(cache: CacheForRundownPlaylist, part:
 		}
 	)
 }
+/** Get all adlib actions in a part */
+export function getAllAdLibActionsFromCache(cache: CacheForRundownPlaylist, part: Part) {
+	return cache.AdLibActions.findFetch({
+		rundownId: part.rundownId,
+		partId: part._id,
+	})
+}
+
 export function getStudioFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
 	if (!playlist.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
 	let studio = cache.activationCache.getStudio()

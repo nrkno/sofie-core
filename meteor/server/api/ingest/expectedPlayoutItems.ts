@@ -9,7 +9,8 @@ import { logger } from '../../logging'
 import { PartId, DBPart } from '../../../lib/collections/Parts'
 import { saveIntoDb, protectString, unprotectString } from '../../../lib/lib'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { getAllPiecesFromCache, getAllAdLibPiecesFromCache } from '../playout/lib'
+import { getAllPiecesFromCache, getAllAdLibPiecesFromCache, getAllAdLibActionsFromCache } from '../playout/lib'
+import { actionToAdLibPieceUi, AdLibPieceUi } from '../expectedMediaItems'
 
 interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
 	partId?: PartId
@@ -17,7 +18,7 @@ interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric
 }
 function extractExpectedPlayoutItems(
 	part: DBPart,
-	pieces: Array<Piece | AdLibPiece>
+	pieces: Array<Piece | AdLibPiece | AdLibPieceUi>
 ): ExpectedPlayoutItemGenericWithPiece[] {
 	let expectedPlayoutItemsGeneric: ExpectedPlayoutItemGenericWithPiece[] = []
 
@@ -132,6 +133,7 @@ export function updateExpectedPlayoutItemsOnPart(
 		const intermediaryItems = extractExpectedPlayoutItems(part, [
 			...getAllPiecesFromCache(cache, part),
 			...getAllAdLibPiecesFromCache(cache, part),
+			...getAllAdLibActionsFromCache(cache, part).map((action) => actionToAdLibPieceUi(action)),
 		])
 		const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)
 

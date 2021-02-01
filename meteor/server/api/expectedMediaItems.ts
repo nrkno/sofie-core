@@ -186,7 +186,7 @@ export function isAdlibActionContent(
 	return false
 }
 
-function actionToAdLibPieceUi(action: AdLibAction | RundownBaselineAdLibAction): AdLibPieceUi {
+export function actionToAdLibPieceUi(action: AdLibAction | RundownBaselineAdLibAction): AdLibPieceUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
 	let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
