@@ -84,6 +84,7 @@ export const ConfigManifestEntryComponent = withTranslation()(
 					<label className="field">
 						{t(configField.name)}
 						{this.renderEditAttribute(configField, obj, prefix)}
+						{configField.hint && <span className="text-s dimmed">{t(configField.hint)}</span>}
 					</label>
 				</div>
 			)

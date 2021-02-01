@@ -36,6 +36,7 @@ export interface ConfigManifestEntryBase {
 	type: ConfigManifestEntryType
 	values?: any // for enum
 	placeholder?: string
+	hint?: string
 }
 export interface ConfigManifestEnumEntry {
 	type: ConfigManifestEntryType.ENUM

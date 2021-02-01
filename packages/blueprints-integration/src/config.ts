@@ -38,6 +38,7 @@ export interface ConfigManifestEntryBase {
 	type: ConfigManifestEntryType
 	required: boolean
 	defaultVal: ConfigItemValue
+	hint?: string
 }
 export interface ConfigManifestEntryString extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.STRING
