@@ -114,11 +114,11 @@ export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
 	height: number
 }
 
-export interface DashboardLayoutPartCountdown extends RundownLayoutPieceCountdown {
+export interface DashboardLayoutPieceCountdown extends RundownLayoutPieceCountdown {
 	x: number
 	y: number
 	width: number
-	height: number
+	scale: number
 }
 
 export interface DashboardLayoutFilter extends RundownLayoutFilterBase {

@@ -1166,12 +1166,12 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							</div>
 							<div className="mod mvs mhs">
 								<label className="field">
-									{t('Height')}
+									{t('Scale')}
 									<EditAttribute
 										modifiedClassName="bghl"
-										attribute={`filters.${index}.height`}
+										attribute={`filters.${index}.scale`}
 										obj={item}
-										type="int"
+										type="float"
 										collection={RundownLayouts}
 										className="input text-input input-l"
 									/>
