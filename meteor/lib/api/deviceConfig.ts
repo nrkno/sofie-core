@@ -9,6 +9,10 @@
  * options. A table type is rendered as an actual table in core, where the rows
  * are instances of a certain type or are all the same. Manifests entries can
  * describe some properties to be rendered inside this table
+ *
+ * IMPORTANT - any updates done to this file should also be changed in
+ * @tv-automation/server-core-integration, such that the gateways can actually
+ * implement it in the manifests.
  */
 
 export interface DeviceConfigManifest {

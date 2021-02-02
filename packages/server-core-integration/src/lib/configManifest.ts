@@ -64,4 +64,5 @@ export type MappingsManifest = Record<string, MappingManifestEntry[]>
 
 export interface MappingManifestEntry extends ConfigManifestEntryBase {
 	optional?: boolean
+	includeInSummary?: boolean
 }
