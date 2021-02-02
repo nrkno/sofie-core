@@ -331,6 +331,8 @@ export interface IBlueprintAdLibPiece<TMetadata = unknown> extends IBlueprintPie
 	currentPieceTags?: string[]
 	/** Piece tags to use to determine if action is set as next */
 	nextPieceTags?: string[]
+	/** Can be used by the UI to filter out identical AdLib Actions repeated across multiple segments */
+	uniquenessId?: string
 }
 /** The AdLib piece sent from Core */
 export interface IBlueprintAdLibPieceDB<TMetadata = unknown> extends IBlueprintAdLibPiece<TMetadata> {
