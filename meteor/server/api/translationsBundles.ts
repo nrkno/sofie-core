@@ -10,7 +10,7 @@ import {
 	TranslationsBundle as BlueprintTranslationsbundle,
 	TranslationsBundleType,
 } from '@sofie-automation/blueprints-integration'
-import { getHash, getRandomId, unprotectString } from '../../lib/lib'
+import { getHash, protectString, unprotectString } from '../../lib/lib'
 import { logger } from '../logging'
 import { BlueprintId } from '../../lib/collections/Blueprints'
 import { Mongocursor } from '../../lib/typings/meteor'
@@ -19,9 +19,9 @@ import { Mongocursor } from '../../lib/typings/meteor'
  * Insert or update translation bundles in the database.
  *
  * @param bundles the bundles to insert or update
- * @param parentBlueprintId id of the blueprint the translation bundles belongs to
+ * @param originBlueprintId id of the blueprint the translation bundles belongs to
  */
-export function upsertBundles(bundles: BlueprintTranslationsbundle[], parentBlueprintId: BlueprintId) {
+export function upsertBundles(bundles: BlueprintTranslationsbundle[], originBlueprintId: BlueprintId) {
 	for (const bundle of bundles) {
 		const { type, language, data } = bundle
 
@@ -29,18 +29,25 @@ export function upsertBundles(bundles: BlueprintTranslationsbundle[], parentBlue
 			throw new Error(`Unknown bundle type ${type}`)
 		}
 
-		const namespace = unprotectString(parentBlueprintId)
-		const _id = getExistingId(namespace, language) || getRandomId<'TranslationsBundleId'>()
+		const _id = getExistingId(originBlueprintId, language) || createBundleId(originBlueprintId, language)
 
 		TranslationsBundleCollection.upsert(
 			_id,
-			{ _id, type, namespace, language, data: fromI18NextData(data), hash: getHash(JSON.stringify(data)) },
+			{
+				_id,
+				originBlueprintId,
+				type,
+				namespace: unprotectString(originBlueprintId),
+				language,
+				data: fromI18NextData(data),
+				hash: getHash(JSON.stringify(data)),
+			},
 			{ multi: false },
 			(err: Error, numberAffected: number) => {
 				if (!err && numberAffected) {
-					logger.info(`Stored${_id ? '' : ' new '}translation bundle :${namespace}:${language})`)
+					logger.info(`Stored ${_id ? '' : ' new '}translation bundle :${originBlueprintId}:${language})`)
 				} else {
-					logger.error(`Unable to store translation bundle ([${_id}]:${namespace}:${language})`, {
+					logger.error(`Unable to store translation bundle ([${_id}]:${originBlueprintId}:${language})`, {
 						error: err,
 					})
 				}
@@ -51,10 +58,14 @@ export function upsertBundles(bundles: BlueprintTranslationsbundle[], parentBlue
 	}
 }
 
-function getExistingId(namespace: string | undefined, language: string): TranslationsBundleId | null {
-	const bundle = TranslationsBundleCollection.findOne({ namespace, language })
+function createBundleId(blueprintId: BlueprintId, language: string): TranslationsBundleId {
+	return protectString<TranslationsBundleId>(getHash(`TranslationsBundle${blueprintId}${language}`))
+}
 
-	return bundle ? bundle._id : null
+function getExistingId(originBlueprintId: BlueprintId, language: string): TranslationsBundleId | null {
+	const bundle = TranslationsBundleCollection.findOne({ originBlueprintId, language })
+
+	return bundle?._id ?? null
 }
 
 function fetchAvailableBundles(dbCursor: Mongocursor<{ _id: TranslationsBundleId } & DBTranslationsBundle>) {
@@ -62,6 +73,13 @@ function fetchAvailableBundles(dbCursor: Mongocursor<{ _id: TranslationsBundleId
 	return stuff.map(({ namespace, language }) => ({ namespace, language }))
 }
 
+/**
+ * Retrieves a bundle from the database
+ *
+ * @param bundleId the id of the bundle to retrieve
+ * @returns the bundle with the given id
+ * @throws if there is no bundle with the given id
+ */
 export function getBundle(bundleId: TranslationsBundleId) {
 	const bundle = TranslationsBundleCollection.findOne(bundleId)
 	if (!bundle) {

@@ -3,6 +3,7 @@ import { registerCollection, ProtectedString } from '../lib'
 
 import { TranslationsBundleType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
+import { BlueprintId } from './Blueprints'
 
 /** A string identifying a translations bundle */
 export type TranslationsBundleId = ProtectedString<'TranslationsBundleId'>
@@ -24,6 +25,9 @@ export interface TranslationsBundle {
 	_id: TranslationsBundleId
 
 	type: TranslationsBundleType
+
+	/** the id of the blueprint the translations were bundled with */
+	originBlueprintId: BlueprintId
 
 	/** language code (example: 'nb'), annotates what language the translations are for */
 	language: string
