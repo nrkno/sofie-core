@@ -13,6 +13,7 @@ import {
 	protectString,
 	applyToArray,
 	getRandomId,
+	unprotectString,
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import {
@@ -20,7 +21,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { Segments, Segment } from '../../../lib/collections/Segments'
+import { Segments, Segment, SegmentId } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
@@ -38,6 +39,8 @@ import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBas
 import { Pieces } from '../../../lib/collections/Pieces'
 import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { profiler } from '../profiler'
+import { Settings } from '../../../lib/Settings'
+import { removeSegmentContents } from '../rundown'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -395,6 +398,7 @@ export function setNextPart(
 				nextTimeOffset: null,
 			}),
 		})
+		rundownPlaylist.nextPartInstanceId = null
 	}
 
 	// Remove any instances which havent been taken
@@ -419,6 +423,8 @@ export function setNextPart(
 		})
 		// delete rundownPlaylist.nextSegmentId
 	}
+
+	cleanupOrphanedItems(cache, rundownPlaylist)
 
 	if (span) span.end()
 }
@@ -456,6 +462,75 @@ export function setNextSegment(
 		})
 	}
 	if (span) span.end()
+}
+
+/**
+ * Cleanup any orphaned (deleted) segments and partinstances once they are no longer being played
+ * @param cache
+ * @param playlist
+ */
+function cleanupOrphanedItems(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
+	const rundownIds = getRundownIDsFromCache(cache, playlist)
+	const selectedPartInstanceIds = _.compact([playlist.currentPartInstanceId, playlist.nextPartInstanceId])
+
+	const removePartInstanceIds: PartInstanceId[] = []
+
+	// Cleanup any orphaned segments once they are no longer being played
+	const segments = cache.Segments.findFetch((s) => s.orphaned === 'deleted' && rundownIds.includes(s.rundownId))
+	const orphanedSegmentIds = new Set(segments.map((s) => s._id))
+	const groupedPartInstances = _.groupBy(
+		cache.PartInstances.findFetch((p) => orphanedSegmentIds.has(p.segmentId)),
+		(p) => p.segmentId
+	)
+	const removeSegmentIds: SegmentId[] = []
+	for (const segment of segments) {
+		const partInstances = groupedPartInstances[unprotectString(segment._id)]
+		const partInstanceIds = new Set(partInstances.map((p) => p._id))
+
+		// Not in current or next. Previous can be reset as it will still be in the db, but not shown in the ui
+		if (
+			(!playlist.currentPartInstanceId || !partInstanceIds.has(playlist.currentPartInstanceId)) &&
+			(!playlist.nextPartInstanceId || !partInstanceIds.has(playlist.nextPartInstanceId))
+		) {
+			// The segment is finished with
+			removeSegmentIds.push(segment._id)
+			cache.Segments.remove(segment._id)
+		}
+	}
+	if (removeSegmentIds.length > 0) {
+		if (Settings.allowUnsyncedSegments) {
+			// Ensure there are no contents left behind
+			for (const rundownId of rundownIds) {
+				// TODO - in future we could make this more lightweight by checking if there are any parts in the segment first, as that can be done with the cache
+				removeSegmentContents(cache, rundownId, removeSegmentIds)
+			}
+		}
+
+		// Ensure any PartInstances are reset
+		const removeSegmentIds2 = new Set(removeSegmentIds)
+		removePartInstanceIds.push(
+			...cache.PartInstances.findFetch((p) => removeSegmentIds2.has(p.segmentId) && !p.reset).map((p) => p._id)
+		)
+	}
+
+	// Cleanup any orphaned partinstances once they are no longer being played (and the segment isnt orphaned)
+	const orphanedInstances = cache.PartInstances.findFetch((p) => p.orphaned === 'deleted' && !p.reset)
+	for (const partInstance of orphanedInstances) {
+		if (Settings.allowUnsyncedSegments && orphanedSegmentIds.has(partInstance.segmentId)) {
+			// If the segment is also orphaned, then don't delete it until it is clear
+			continue
+		}
+
+		if (!selectedPartInstanceIds.includes(partInstance._id)) {
+			removePartInstanceIds.push(partInstance._id)
+		}
+	}
+
+	// Cleanup any instances from above
+	if (removePartInstanceIds.length > 0) {
+		cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+		cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+	}
 }
 
 export function onPartHasStoppedPlaying(

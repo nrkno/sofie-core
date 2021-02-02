@@ -493,6 +493,7 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, removedPartIds:
 		const removePartInstanceIds = cache.PartInstances.findFetch(
 			(p) =>
 				removedPartIdsSet.has(p.part._id) &&
+				!p.reset &&
 				p._id !== currentPartInstance?._id &&
 				p._id !== nextPartInstance?._id
 		).map((p) => p._id)
