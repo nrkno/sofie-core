@@ -99,23 +99,23 @@ class I18nContainer extends WithManagedTracker {
 			const bundlesInfo = TranslationsBundles.find().fetch() as Omit<TranslationsBundle, 'data'>[]
 			console.debug(`Got ${bundlesInfo.length} bundles from database`)
 			Promise.allSettled(
-				bundlesInfo.map((bundle) =>
+				bundlesInfo.map((bundleMetadata) =>
 					new Promise<TranslationsBundle>((resolve) => {
-						const bundleString = localStorage.getItem(`i18n.translationBundles.${bundle._id}`)
+						const bundleString = localStorage.getItem(`i18n.translationBundles.${bundleMetadata._id}`)
 						if (bundleString) {
 							// check hash
 							try {
 								const bundleObj = JSON.parse(bundleString) as TranslationsBundle
-								if (bundleObj.hash === bundle.hash) {
+								if (bundleObj.hash === bundleMetadata.hash) {
 									resolve(bundleObj) // the cached bundle is up-to-date
 									return
 								}
 							} finally {
 								// the cache seems to be corrupt, we re-fetch from backend
-								resolve(getAndCacheTranslationBundle(bundle._id))
+								resolve(getAndCacheTranslationBundle(bundleMetadata._id))
 							}
 						} else {
-							resolve(getAndCacheTranslationBundle(bundle._id))
+							resolve(getAndCacheTranslationBundle(bundleMetadata._id))
 						}
 					})
 						.then((bundle) => {
@@ -133,7 +133,7 @@ class I18nContainer extends WithManagedTracker {
 							})
 						})
 						.catch((reason) => {
-							console.error(`Failed to fetch translations bundle "${bundle._id}": `, reason)
+							console.error(`Failed to fetch translations bundle "${bundleMetadata._id}": `, reason)
 						})
 				)
 			).then(() => console.debug(`Finished updating ${bundlesInfo.length} translation bundles`))
