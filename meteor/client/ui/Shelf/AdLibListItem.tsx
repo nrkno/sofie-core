@@ -28,10 +28,11 @@ import { Studio } from '../../../lib/collections/Studios'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
+import { MediaObject } from '../../../lib/collections/MediaObjects'
 
 export interface IAdLibListItem extends AdLibPieceUi {
 	status: RundownAPI.PieceStatusCode
-	contentMetaData?: any
+	contentMetaData?: MediaObject
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	hotkey?: string
