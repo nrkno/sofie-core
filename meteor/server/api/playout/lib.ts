@@ -4,7 +4,16 @@ import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
 import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
-import { getCurrentTime, Time, clone, literal, waitForPromise, protectString, applyToArray } from '../../../lib/lib'
+import {
+	getCurrentTime,
+	Time,
+	clone,
+	literal,
+	waitForPromise,
+	protectString,
+	applyToArray,
+	getRandomId,
+} from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import {
 	fetchPiecesThatMayBeActiveForPart,
@@ -145,7 +154,15 @@ function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPla
 		}
 	)
 
-	if (rundownPlaylist.active) {
+	if (rundownPlaylist.activationId) {
+		// generate a new activationId
+		rundownPlaylist.activationId = getRandomId()
+		cache.RundownPlaylists.update(rundownPlaylist._id, {
+			$set: {
+				activationId: rundownPlaylist.activationId,
+			},
+		})
+
 		// put the first on queue:
 		const firstPart = selectNextPart(rundownPlaylist, null, getAllOrderedPartsFromCache(cache, rundownPlaylist))
 		setNextPart(cache, rundownPlaylist, firstPart ? firstPart.part : null)
@@ -249,6 +266,7 @@ export function setNextPart(
 	nextTimeOffset?: number | undefined
 ) {
 	const span = profiler.startSpan('setNextPart')
+
 	const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
 		cache,
@@ -268,6 +286,9 @@ export function setNextPart(
 	})
 
 	if (newNextPart || newNextPartInstance) {
+		if (!rundownPlaylist.activationId)
+			throw new Meteor.Error(500, `RundownPlaylist "${rundownPlaylist._id}" is not active`)
+
 		if ((newNextPart && newNextPart.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
 		}
@@ -301,6 +322,7 @@ export function setNextPart(
 			cache.PartInstances.insert({
 				_id: newInstanceId,
 				takeCount: newTakeCount,
+				playlistActivationId: rundownPlaylist.activationId,
 				rundownId: nextPart.rundownId,
 				segmentId: nextPart.segmentId,
 				part: nextPart,

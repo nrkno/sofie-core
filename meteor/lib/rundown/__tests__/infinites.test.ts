@@ -34,6 +34,7 @@ describe('Infinites', () => {
 			_id: protectString(id),
 			rundownId: protectString(''),
 			partInstanceId: protectString(''),
+			playlistActivationId: protectString('active'),
 			piece: literal<PieceInstancePiece>({
 				_id: protectString(`${id}_p`),
 				externalId: '',

@@ -126,7 +126,7 @@ const WarningDisplay = withTranslation()(
 
 			componentDidUpdate(prevProps: ITimingWarningProps) {
 				if (
-					(this.props.playlist.active && !prevProps.playlist.active && this.props.playlist.rehearsal) ||
+					(this.props.playlist.activationId && !prevProps.playlist.activationId && this.props.playlist.rehearsal) ||
 					this.props.playlist.rehearsal !== prevProps.playlist.rehearsal
 				) {
 					this.setState({
@@ -135,7 +135,7 @@ const WarningDisplay = withTranslation()(
 				}
 
 				if (
-					this.props.playlist.active &&
+					this.props.playlist.activationId &&
 					this.props.playlist.rehearsal &&
 					this.props.playlist.expectedStart &&
 					// the expectedStart is near
@@ -183,8 +183,8 @@ const WarningDisplay = withTranslation()(
 						show={
 							this.props.studioMode &&
 							this.state.plannedStartCloseShow &&
-							!(this.props.playlist.active && !this.props.playlist.rehearsal) &&
-							this.props.playlist.active
+							!(this.props.playlist.activationId && !this.props.playlist.rehearsal) &&
+							!!this.props.playlist.activationId
 						}>
 						<p>
 							{t(
@@ -257,7 +257,7 @@ const TimingDisplay = withTranslation()(
 
 				return (
 					<div className="timing mod">
-						{rundownPlaylist.startedPlayback && rundownPlaylist.active && !rundownPlaylist.rehearsal ? (
+						{rundownPlaylist.startedPlayback && rundownPlaylist.activationId && !rundownPlaylist.rehearsal ? (
 							<span className="timing-clock plan-start left">
 								<span className="timing-clock-label left">{t('Started')}</span>
 								<Moment interval={0} format="HH:mm:ss" date={rundownPlaylist.startedPlayback} />
@@ -268,7 +268,7 @@ const TimingDisplay = withTranslation()(
 								<Moment interval={0} format="HH:mm:ss" date={rundownPlaylist.expectedStart} />
 							</span>
 						)}
-						{rundownPlaylist.startedPlayback && rundownPlaylist.active && !rundownPlaylist.rehearsal ? (
+						{rundownPlaylist.startedPlayback && rundownPlaylist.activationId && !rundownPlaylist.rehearsal ? (
 							rundownPlaylist.expectedStart ? (
 								<span className="timing-clock countdown playback-started left">
 									{this.renderRundownName()}
@@ -726,7 +726,7 @@ const RundownHeader = withTranslation()(
 		take = (e: any) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
-				if (!this.props.playlist.active) {
+				if (!this.props.playlist.activationId) {
 					const onSuccess = () => {
 						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 					}
@@ -784,7 +784,7 @@ const RundownHeader = withTranslation()(
 		moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
-				if (this.props.playlist.active) {
+				if (this.props.playlist.activationId) {
 					doUserAction(
 						t,
 						e,
@@ -810,7 +810,7 @@ const RundownHeader = withTranslation()(
 
 		hold = (e: any) => {
 			const { t } = this.props
-			if (this.props.studioMode && this.props.playlist.active) {
+			if (this.props.studioMode && this.props.playlist.activationId) {
 				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e) =>
 					MeteorCall.userAction.activateHold(e, this.props.playlist._id, false)
 				)
@@ -821,7 +821,7 @@ const RundownHeader = withTranslation()(
 			const { t } = this.props
 			if (
 				this.props.studioMode &&
-				this.props.playlist.active &&
+				this.props.playlist.activationId &&
 				this.props.playlist.holdState === RundownHoldState.PENDING
 			) {
 				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e) =>
@@ -913,7 +913,7 @@ const RundownHeader = withTranslation()(
 
 			if (
 				this.props.studioMode &&
-				(!this.props.playlist.active || (this.props.playlist.active && this.props.playlist.rehearsal))
+				(!this.props.playlist.activationId || (this.props.playlist.activationId && this.props.playlist.rehearsal))
 			) {
 				const onSuccess = () => {
 					this.deferFlushAndRewindSegments()
@@ -987,7 +987,7 @@ const RundownHeader = withTranslation()(
 
 			if (
 				this.props.studioMode &&
-				(!this.props.playlist.active || (this.props.playlist.active && !this.props.playlist.rehearsal))
+				(!this.props.playlist.activationId || (this.props.playlist.activationId && !this.props.playlist.rehearsal))
 			) {
 				const onSuccess = () => {
 					if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
@@ -1012,7 +1012,7 @@ const RundownHeader = withTranslation()(
 				}
 				if (!this.rundownShouldHaveStarted()) {
 					// The broadcast hasn't started yet
-					if (!this.props.playlist.active) {
+					if (!this.props.playlist.activationId) {
 						// inactive, do the full preparation:
 						doUserAction(
 							t,
@@ -1066,7 +1066,7 @@ const RundownHeader = withTranslation()(
 			const { t } = this.props
 			if (e.persist) e.persist()
 
-			if (this.props.studioMode && this.props.playlist.active) {
+			if (this.props.studioMode && this.props.playlist.activationId) {
 				if (this.rundownShouldHaveStarted()) {
 					if (this.props.playlist.rehearsal) {
 						// We're in rehearsal mode
@@ -1110,7 +1110,7 @@ const RundownHeader = withTranslation()(
 					}
 				)
 			}
-			if (this.props.playlist.active && !this.props.playlist.rehearsal && !Settings.allowRundownResetOnAir) {
+			if (this.props.playlist.activationId && !this.props.playlist.rehearsal && !Settings.allowRundownResetOnAir) {
 				// The rundown is active and not in rehersal
 				doModalDialog({
 					title: this.props.playlist.name,
@@ -1223,8 +1223,8 @@ const RundownHeader = withTranslation()(
 							<div className="react-contextmenu-label">{this.props.playlist && this.props.playlist.name}</div>
 							{this.props.studioMode ? (
 								<React.Fragment>
-									{!(this.props.playlist.active && this.props.playlist.rehearsal) ? (
-										!this.rundownShouldHaveStarted() && !this.props.playlist.active ? (
+									{!(this.props.playlist.activationId && this.props.playlist.rehearsal) ? (
+										!this.rundownShouldHaveStarted() && !this.props.playlist.activationId ? (
 											<MenuItem onClick={(e) => this.activateRehearsal(e)}>
 												{t('Prepare Studio and Activate (Rehearsal)')}
 											</MenuItem>
@@ -1234,16 +1234,20 @@ const RundownHeader = withTranslation()(
 									) : (
 										<MenuItem onClick={(e) => this.activate(e)}>{t('Activate (On-Air)')}</MenuItem>
 									)}
-									{this.rundownWillShortlyStart() && !this.props.playlist.active && (
+									{this.rundownWillShortlyStart() && !this.props.playlist.activationId && (
 										<MenuItem onClick={(e) => this.activate(e)}>{t('Activate (On-Air)')}</MenuItem>
 									)}
-									{this.props.playlist.active ? (
+									{this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.deactivate(e)}>{t('Deactivate')}</MenuItem>
 									) : null}
-									{this.props.playlist.active ? <MenuItem onClick={(e) => this.take(e)}>{t('Take')}</MenuItem> : null}
-									{this.props.playlist.active ? <MenuItem onClick={(e) => this.hold(e)}>{t('Hold')}</MenuItem> : null}
+									{this.props.playlist.activationId ? (
+										<MenuItem onClick={(e) => this.take(e)}>{t('Take')}</MenuItem>
+									) : null}
+									{this.props.playlist.activationId ? (
+										<MenuItem onClick={(e) => this.hold(e)}>{t('Hold')}</MenuItem>
+									) : null}
 									{!(
-										this.props.playlist.active &&
+										this.props.playlist.activationId &&
 										!this.props.playlist.rehearsal &&
 										!Settings.allowRundownResetOnAir
 									) ? (
@@ -1265,8 +1269,8 @@ const RundownHeader = withTranslation()(
 					</Escape>
 					<div
 						className={ClassNames('header rundown', {
-							active: this.props.playlist.active,
-							'not-active': !this.props.playlist.active,
+							active: !!this.props.playlist.activationId,
+							'not-active': !this.props.playlist.activationId,
 							rehearsal: this.props.playlist.rehearsal,
 						})}>
 						<ContextMenuTrigger
@@ -1841,8 +1845,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			} else if (
 				this.props.playlist &&
 				prevProps.playlist &&
-				prevProps.playlist.active &&
-				!this.props.playlist.active
+				prevProps.playlist.activationId &&
+				!this.props.playlist.activationId
 			) {
 				// reset followLiveSegments after deactivating a rundown
 				this.setState({
@@ -1851,8 +1855,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			} else if (
 				this.props.playlist &&
 				prevProps.playlist &&
-				!prevProps.playlist.active &&
-				this.props.playlist.active &&
+				!prevProps.playlist.activationId &&
+				this.props.playlist.activationId &&
 				this.props.playlist.nextPartInstanceId
 			) {
 				// scroll to next after activation
@@ -1883,11 +1887,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			if (
 				typeof this.props.playlist !== typeof prevProps.playlist ||
-				(this.props.playlist || { _id: '' })._id !== (prevProps.playlist || { _id: '' })._id ||
-				(this.props.playlist || { active: false }).active !== (prevProps.playlist || { active: false }).active ||
+				this.props.playlist?._id !== prevProps.playlist?._id ||
+				!!this.props.playlist?.activationId !== !!prevProps.playlist?.activationId ||
 				this.state.studioMode !== prevState.studioMode
 			) {
-				if (this.props.playlist && this.props.playlist.active && this.state.studioMode && !getAllowDeveloper()) {
+				if (this.props.playlist && this.props.playlist.activationId && this.state.studioMode && !getAllowDeveloper()) {
 					window.addEventListener('beforeunload', this.onBeforeUnload)
 				} else {
 					window.removeEventListener('beforeunload', this.onBeforeUnload)
@@ -1997,7 +2001,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onSegmentScroll = () => {
-			if (this.state.followLiveSegments && this.props.playlist && this.props.playlist.active) {
+			if (this.state.followLiveSegments && this.props.playlist && this.props.playlist.activationId) {
 				this.setState({
 					followLiveSegments: false,
 				})
@@ -2007,7 +2011,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		// onWindowScroll = (e: Event) => {
 		// 	console.log('Scroll handler')
 		// 	const isAutoScrolling = document.body.classList.contains('auto-scrolling')
-		// 	if (this.state.followLiveSegments && !isAutoScrolling && this.props.rundown && this.props.rundown.active) {
+		// 	if (this.state.followLiveSegments && !isAutoScrolling && this.props.rundown && this.props.rundown.activationId) {
 		// 		this.setState({
 		// 			followLiveSegments: false
 		// 		})
@@ -2038,7 +2042,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		onGoToLiveSegment = () => {
 			if (
 				this.props.playlist &&
-				this.props.playlist.active &&
+				this.props.playlist.activationId &&
 				!this.props.playlist.currentPartInstanceId &&
 				this.props.playlist.nextPartInstanceId
 			) {
@@ -2054,7 +2058,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					})
 					RundownViewEventBus.emit(RundownViewEvents.REWIND_SEGMENTS)
 				}, 2000)
-			} else if (this.props.playlist && this.props.playlist.active && this.props.playlist.currentPartInstanceId) {
+			} else if (this.props.playlist && this.props.playlist.activationId && this.props.playlist.currentPartInstanceId) {
 				this.setState({
 					followLiveSegments: true,
 				})
@@ -2608,7 +2612,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								<ErrorBoundary>
 									{this.state.studioMode && (
 										<Prompt
-											when={this.props.playlist.active || false}
+											when={!!this.props.playlist.activationId}
 											message={t('This rundown is now active. Are you sure you want to exit this screen?')}
 										/>
 									)}

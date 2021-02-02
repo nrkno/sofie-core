@@ -31,6 +31,7 @@ import { Rundown } from '../../../../lib/collections/Rundowns'
 import { DbCacheWriteCollection } from '../../../DatabaseCache'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { Meteor } from 'meteor/meteor'
+import { RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
 
 export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 	implements ISyncIngestUpdateToPartInstanceContext {
@@ -39,6 +40,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>
 
 	constructor(
+		private readonly playlistActivationId: RundownPlaylistActivationId,
 		rundown: Rundown,
 		cache: ReadOnlyCacheForRundownPlaylist,
 		notesContext: NotesContext,
@@ -116,7 +118,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 			this.playStatus === 'current',
 			true
 		)[0]
-		const newPieceInstance = wrapPieceToInstance(piece, this.partInstance._id)
+		const newPieceInstance = wrapPieceToInstance(piece, this.playlistActivationId, this.partInstance._id)
 
 		// Ensure the infinite-ness is setup correctly. We assume any piece inserted starts in the current part
 		setupPieceInstanceInfiniteProperties(newPieceInstance)

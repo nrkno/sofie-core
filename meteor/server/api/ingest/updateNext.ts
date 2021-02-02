@@ -14,7 +14,7 @@ export namespace UpdateNext {
 		const span = profiler.startSpan('api.ingest.ensureNextPartIsValid')
 
 		// Ensure the next-id is still valid
-		if (playlist && playlist.active) {
+		if (playlist && playlist.activationId) {
 			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
 
 			if (playlist.nextPartManual && nextPartInstance?.part?.isPlayable()) {

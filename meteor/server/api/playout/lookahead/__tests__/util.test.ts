@@ -146,7 +146,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(firstPart).toBeTruthy()
 
 		// Convert to instance and set as next
-		const firstInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(firstPart))
+		const firstInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), firstPart))
 		playlist.nextPartInstanceId = firstInstanceId
 
 		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
@@ -171,7 +171,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(firstPart).toBeTruthy()
 
 		// Convert to instance and set as next
-		const firstInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(firstPart))
+		const firstInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), firstPart))
 		playlist.currentPartInstanceId = firstInstanceId
 
 		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
@@ -196,7 +196,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(lastPart).toBeTruthy()
 
 		// Convert to instance and set as next
-		const lastInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(lastPart))
+		const lastInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), lastPart))
 		playlist.currentPartInstanceId = lastInstanceId
 
 		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
@@ -249,7 +249,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		)
 
 		// Convert to instance and set as next
-		const nextInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(nextPart))
+		const nextInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), nextPart))
 		playlist.currentPartInstanceId = nextInstanceId
 
 		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
@@ -267,7 +267,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(firstPart).toBeTruthy()
 
 		// Convert to instance and set as next
-		const nextInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(firstPart))
+		const nextInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), firstPart))
 		playlist.currentPartInstanceId = nextInstanceId
 
 		// Change next segment

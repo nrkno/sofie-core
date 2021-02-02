@@ -1254,7 +1254,7 @@ function syncChangesToPartInstances(
 	playlist: RundownPlaylist,
 	rundown: Rundown
 ) {
-	if (playlist.active) {
+	if (playlist.activationId) {
 		if (blueprint.syncIngestUpdateToPartInstance) {
 			const { previousPartInstance, currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
 				cache,
@@ -1317,6 +1317,7 @@ function syncChangesToPartInstances(
 					}
 
 					const syncContext = new SyncIngestUpdateToPartInstanceContext(
+						playlist.activationId,
 						rundown,
 						cache,
 						new NotesContext(

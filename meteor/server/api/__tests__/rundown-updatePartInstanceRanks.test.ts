@@ -98,6 +98,7 @@ describe('updatePartInstanceRanks', () => {
 			takeCount: 0,
 			rundownId,
 			segmentId,
+			playlistActivationId: protectString('active'),
 			part,
 			orphaned: orphaned,
 		})
