@@ -32,6 +32,9 @@ export interface TranslationsBundle {
 	/** encoding used for the data, typically utf-8 */
 	encoding?: string
 
+	/** A unique hash of the `data` object, to signal that the contents have updated */
+	hash: string
+
 	/** the actual translations */
 	data: Translation[]
 }

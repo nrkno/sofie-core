@@ -9,7 +9,11 @@ meteorPublish(PubSub.translationsBundles, (selector, token) => {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 
 	if (TranslationsBundlesSecurity.allowReadAccess(selector, token, this)) {
-		return TranslationsBundles.find(selector)
+		return TranslationsBundles.find(selector, {
+			fields: {
+				data: 0,
+			},
+		})
 	}
 
 	return null

@@ -5,8 +5,15 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
 import { PubSub } from '../../lib/api/pubsub'
-import { Translation, TranslationsBundles } from '../../lib/collections/TranslationsBundles'
+import {
+	Translation,
+	TranslationsBundle,
+	TranslationsBundleId,
+	TranslationsBundles,
+} from '../../lib/collections/TranslationsBundles'
 import { I18NextData } from '@sofie-automation/blueprints-integration'
+import { MeteorCall } from '../../lib/api/methods'
+import { ClientAPI } from '../../lib/api/client'
 
 const i18nOptions = {
 	fallbackLng: {
@@ -47,6 +54,24 @@ function toI18NextData(translations: Translation[]): I18NextData {
 	return data
 }
 
+function getAndCacheTranslationBundle(bundleId: TranslationsBundleId) {
+	return new Promise<TranslationsBundle>((resolve, reject) =>
+		MeteorCall.userAction.getTranslationBundle(bundleId).then(
+			(response) => {
+				if (ClientAPI.isClientResponseSuccess(response) && response.result) {
+					localStorage.setItem(`i18n.translationBundles.${bundleId}`, JSON.stringify(response.result))
+					resolve(response.result)
+				} else {
+					reject(response)
+				}
+			},
+			(reason) => {
+				reject(reason)
+			}
+		)
+	)
+}
+
 class I18nContainer extends WithManagedTracker {
 	i18nInstance: typeof i18n
 
@@ -71,24 +96,47 @@ class I18nContainer extends WithManagedTracker {
 		this.subscribe(PubSub.translationsBundles, {})
 		this.autorun(() => {
 			console.debug('ManagedTracker autorun...')
-			const bundles = TranslationsBundles.find().fetch()
-			console.debug(`Got ${bundles.length} bundles from database`)
-			for (const bundle of bundles) {
-				if (bundle.data.length > 0) {
-					const i18NextData = toI18NextData(bundle.data)
+			const bundlesInfo = TranslationsBundles.find().fetch() as Omit<TranslationsBundle, 'data'>[]
+			console.debug(`Got ${bundlesInfo.length} bundles from database`)
+			Promise.allSettled(
+				bundlesInfo.map((bundle) =>
+					new Promise<TranslationsBundle>((resolve, reject) => {
+						const bundleString = localStorage.getItem(`i18n.translationBundles.${bundle._id}`)
+						if (bundleString) {
+							// check hash
+							try {
+								const bundleObj = JSON.parse(bundleString) as TranslationsBundle
+								if (bundleObj.hash === bundle.hash) {
+									resolve(bundleObj) // the cached bundle is up-to-date
+									return
+								}
+							} finally {
+								// the cache seems to be corrupt, we re-fetch from backend
+								resolve(getAndCacheTranslationBundle(bundle._id))
+							}
+						} else {
+							resolve(getAndCacheTranslationBundle(bundle._id))
+						}
+					})
+						.then((bundle) => {
+							const i18NextData = toI18NextData(bundle.data)
 
-					this.i18nInstance.addResourceBundle(
-						bundle.language,
-						bundle.namespace || i18nOptions.defaultNS,
-						i18NextData,
-						true,
-						true
-					)
-					console.debug('i18instance updated', { bundle: { lang: bundle.language, ns: bundle.namespace } })
-				} else {
-					console.debug(`Skipped bundle, no translations`, { bundle })
-				}
-			}
+							this.i18nInstance.addResourceBundle(
+								bundle.language,
+								bundle.namespace || i18nOptions.defaultNS,
+								i18NextData,
+								true,
+								true
+							)
+							console.debug('i18instance updated', {
+								bundle: { lang: bundle.language, ns: bundle.namespace },
+							})
+						})
+						.catch((reason) => {
+							console.error(`Failed to fetch translations bundle "${bundle._id}": `, reason)
+						})
+				)
+			).then(() => console.debug(`Finished updating ${bundlesInfo.length} translation bundles`))
 		})
 	}
 	// return key until real translator comes online

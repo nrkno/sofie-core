@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor'
 import {
 	TranslationsBundles as TranslationsBundleCollection,
 	TranslationsBundleId,
@@ -9,7 +10,7 @@ import {
 	TranslationsBundle as BlueprintTranslationsbundle,
 	TranslationsBundleType,
 } from '@sofie-automation/blueprints-integration'
-import { getRandomId, unprotectString } from '../../lib/lib'
+import { getHash, getRandomId, unprotectString } from '../../lib/lib'
 import { logger } from '../logging'
 import { BlueprintId } from '../../lib/collections/Blueprints'
 import { Mongocursor } from '../../lib/typings/meteor'
@@ -33,7 +34,7 @@ export function upsertBundles(bundles: BlueprintTranslationsbundle[], parentBlue
 
 		TranslationsBundleCollection.upsert(
 			_id,
-			{ _id, type, namespace, language, data: fromI18NextData(data) },
+			{ _id, type, namespace, language, data: fromI18NextData(data), hash: getHash(JSON.stringify(data)) },
 			{ multi: false },
 			(err: Error, numberAffected: number) => {
 				if (!err && numberAffected) {
@@ -59,6 +60,15 @@ function getExistingId(namespace: string | undefined, language: string): Transla
 function fetchAvailableBundles(dbCursor: Mongocursor<{ _id: TranslationsBundleId } & DBTranslationsBundle>) {
 	const stuff = dbCursor.fetch()
 	return stuff.map(({ namespace, language }) => ({ namespace, language }))
+}
+
+export function getBundle(bundleId: TranslationsBundleId) {
+	const bundle = TranslationsBundleCollection.findOne(bundleId)
+	if (!bundle) {
+		throw new Meteor.Error(404, `Bundle "${bundleId}" not found`)
+	}
+
+	return bundle
 }
 
 /**
