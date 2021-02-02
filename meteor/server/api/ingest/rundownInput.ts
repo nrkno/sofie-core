@@ -1825,7 +1825,7 @@ export function isUpdateAllowed(
 			if (allowed) {
 				if (segmentChanges && segmentChanges.removed && segmentChanges.removed.length) {
 					_.each(segmentChanges.removed, (segment) => {
-						if (currentPartInstance && currentPartInstance.segmentId === segment._id) {
+						if (currentPartInstance.segmentId === segment._id) {
 							// Don't allow removing segment with currently playing part
 							logger.warn(
 								`Not allowing removal of segment "${segment._id}" ("${segment.externalId}"), containing currently playing part "${currentPartInstance._id}" ("${currentPartInstance.part.externalId}, making rundown unsynced instead")`
@@ -1839,7 +1839,6 @@ export function isUpdateAllowed(
 					partChanges &&
 					partChanges.removed &&
 					partChanges.removed.length &&
-					currentPartInstance &&
 					currentPartInstance.part.dynamicallyInsertedAfterPartId
 				) {
 					// If the currently playing part is a queued part and depending on any of the parts that are to be removed:
