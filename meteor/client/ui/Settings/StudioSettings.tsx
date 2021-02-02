@@ -38,21 +38,6 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
-import {
-	mappingIsAbstract,
-	mappingIsCasparCG,
-	mappingIsAtem,
-	mappingIsLawo,
-	mappingIsPanasonicPtz,
-	mappingIsHTTPSend,
-	mappingIsHyperdeck,
-	mappingIsPharos,
-	mappingIsOSC,
-	mappingIsQuantel,
-	mappingIsSisyfos,
-	mappingIsTCPSend,
-	mappingIsSisyfosChannel,
-} from '../../../lib/api/studios'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
@@ -62,7 +47,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { TransformedCollection } from '../../../lib/typings/meteor'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { Settings } from '../../../lib/Settings'
-import { MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
+import { MappingManifestEntry, MappingsManifest, ConfigManifestEntryType } from '../../../lib/api/deviceConfig'
 import { renderEditAttribute } from './components/ConfigManifestEntryComponent'
 
 interface IStudioDevicesProps {
@@ -231,16 +216,15 @@ const DeviceMappingSettings = withTranslation()(
 		}
 
 		renderManifestEntry(attribute: string, manifest: MappingManifestEntry[], showOptional?: boolean) {
-			const { t } = this.props
 			return (
 				<React.Fragment>
 					{manifest.map((m) => (
-						<div className="mod mvs mhs">
+						<div className="mod mvs mhs" key={m.id}>
 							<label className="field">
-								{t(m.name)}
+								{m.name}
 								{showOptional && this.renderOptionalInput(attribute + '.' + m.id, this.props.studio, Studios)}
 								{renderEditAttribute(Studios, m as any, this.props.studio, attribute + '.')}
-								{m.hint && <span className="text-s dimmed">{t(m.hint)}</span>}
+								{m.hint && <span className="text-s dimmed">{m.hint}</span>}
 							</label>
 						</div>
 					))}
@@ -364,6 +348,29 @@ const StudioMappings = withTranslation()(
 			this.editItem(newLayerId)
 		}
 
+		renderSummary(manifest: MappingsManifest, mapping: MappingExt) {
+			const m = manifest[mapping.device]
+			if (m) {
+				return (
+					<span>
+						{m
+							.filter((entry) => entry.includeInSummary)
+							.map(
+								(entry) =>
+									entry.name +
+									': ' +
+									(entry.values && entry.values[mapping[entry.id]]
+										? entry.values[mapping[entry.id]]
+										: mapping[entry.id])
+							)
+							.join(' - ')}
+					</span>
+				)
+			} else {
+				return <span>-</span>
+			}
+		}
+
 		renderMappings(manifest: MappingsManifest) {
 			const { t } = this.props
 
@@ -391,51 +398,7 @@ const StudioMappings = withTranslation()(
 							</th>
 							<td className="settings-studio-device__id c2">{TSR.DeviceType[mapping.device]}</td>
 							<td className="settings-studio-device__id c2">{mapping.deviceId}</td>
-							<td className="settings-studio-device__id c4">
-								{(mappingIsAbstract(mapping) && <span>-</span>) ||
-									(mappingIsCasparCG(mapping) && (
-										<span>
-											{mapping.channel} - {mapping.layer}
-										</span>
-									)) ||
-									(mappingIsAtem(mapping) && (
-										<span>
-											{TSR.MappingAtemType[mapping.mappingType]} {mapping.index}
-										</span>
-									)) ||
-									(mappingIsLawo(mapping) && (
-										<span>
-											{TSR.MappingLawoType[mapping.mappingType]} {mapping.identifier}
-										</span>
-									)) ||
-									(mappingIsPanasonicPtz(mapping) && (
-										<span>
-											{mapping.mappingType === TSR.MappingPanasonicPtzType.PRESET
-												? t('Preset')
-												: mapping.mappingType === TSR.MappingPanasonicPtzType.PRESET_SPEED
-												? t('Preset Transition Speed')
-												: mapping.mappingType === TSR.MappingPanasonicPtzType.ZOOM
-												? t('Zoom')
-												: mapping.mappingType === TSR.MappingPanasonicPtzType.ZOOM_SPEED
-												? t('Zoom Speed')
-												: t('Unknown Mapping')}
-										</span>
-									)) ||
-									(mappingIsHTTPSend(mapping) && <span>-</span>) ||
-									(mappingIsHyperdeck(mapping) && <span>{mapping.mappingType}</span>) ||
-									(mappingIsPharos(mapping) && <span>-</span>) ||
-									(mappingIsOSC(mapping) && <span>-</span>) ||
-									(mappingIsSisyfos(mapping) && mappingIsSisyfosChannel(mapping) ? (
-										<span>{t('Channel: {{channel}}', { channel: mapping.channel })}</span>
-									) : (
-										''
-									)) ||
-									(mappingIsQuantel(mapping) && (
-										<span>
-											{t('Port: {{port}}, Channel: {{channel}}', { port: mapping.portId, channel: mapping.channelId })}
-										</span>
-									)) || <span>-</span>}
-							</td>
+							<td className="settings-studio-device__id c4">{this.renderSummary(manifest, mapping)}</td>
 
 							<td className="settings-studio-device__actions table-item-actions c3">
 								<button className="action-btn" onClick={(e) => this.editItem(layerId)}>
