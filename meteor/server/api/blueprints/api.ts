@@ -183,12 +183,17 @@ export function innerUploadBlueprint(
 		newBlueprint.studioConfigManifest = blueprintManifest.studioConfigManifest
 	}
 
-	// extract and store translations bundled with the manifest if any
-	logger.debug(`blueprintManifest for ${newBlueprint.name} translations`, {
-		translations: (blueprintManifest as any).translations,
-		type: typeof (blueprintManifest as any).translations,
-	})
-	if ((blueprintManifest as any).translations) {
+	// check for translations on the manifest and store them if they exist
+	if (
+		'translations' in blueprintManifest &&
+		(blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE ||
+			blueprintManifest.blueprintType === BlueprintManifestType.STUDIO)
+	) {
+		// Because the translations is bundled as stringified JSON and that string has already been
+		// converted back to object form together with the rest of the manifest at this point
+		// the casting is actually necessary.
+		// Note that the type has to be string in the manifest interfaces to allow attaching the
+		// stringified JSON in the first place.
 		const translations = (blueprintManifest as any).translations as TranslationsBundle[]
 		upsertBundles(translations, newBlueprint.blueprintId)
 	}

@@ -11,7 +11,6 @@ import {
 	TranslationsBundleType,
 } from '@sofie-automation/blueprints-integration'
 import { getHash, protectString, unprotectString } from '../../lib/lib'
-import { logger } from '../logging'
 import { BlueprintId } from '../../lib/collections/Blueprints'
 import { Mongocursor } from '../../lib/typings/meteor'
 
@@ -42,18 +41,7 @@ export function upsertBundles(bundles: BlueprintTranslationsbundle[], originBlue
 				data: fromI18NextData(data),
 				hash: getHash(JSON.stringify(data)),
 			},
-			{ multi: false },
-			(err: Error, numberAffected: number) => {
-				if (!err && numberAffected) {
-					logger.info(`Stored ${_id ? '' : ' new '}translation bundle :${originBlueprintId}:${language})`)
-				} else {
-					logger.error(`Unable to store translation bundle ([${_id}]:${originBlueprintId}:${language})`, {
-						error: err,
-					})
-				}
-				const dbCursor = TranslationsBundleCollection.find({})
-				logger.debug(`${dbCursor.count()} bundles in database:`, { bundles: fetchAvailableBundles(dbCursor) })
-			}
+			{ multi: false }
 		)
 	}
 }
@@ -66,11 +54,6 @@ function getExistingId(originBlueprintId: BlueprintId, language: string): Transl
 	const bundle = TranslationsBundleCollection.findOne({ originBlueprintId, language })
 
 	return bundle?._id ?? null
-}
-
-function fetchAvailableBundles(dbCursor: Mongocursor<{ _id: TranslationsBundleId } & DBTranslationsBundle>) {
-	const stuff = dbCursor.fetch()
-	return stuff.map(({ namespace, language }) => ({ namespace, language }))
 }
 
 /**

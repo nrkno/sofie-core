@@ -95,9 +95,8 @@ class I18nContainer extends WithManagedTracker {
 
 		this.subscribe(PubSub.translationsBundles, {})
 		this.autorun(() => {
-			console.debug('ManagedTracker autorun...')
 			const bundlesInfo = TranslationsBundles.find().fetch() as Omit<TranslationsBundle, 'data'>[]
-			console.debug(`Got ${bundlesInfo.length} bundles from database`)
+
 			Promise.allSettled(
 				bundlesInfo.map((bundleMetadata) =>
 					new Promise<TranslationsBundle>((resolve) => {
@@ -128,17 +127,15 @@ class I18nContainer extends WithManagedTracker {
 								true,
 								true
 							)
-							console.debug('i18instance updated', {
-								bundle: { lang: bundle.language, ns: bundle.namespace },
-							})
 						})
 						.catch((reason) => {
 							console.error(`Failed to fetch translations bundle "${bundleMetadata._id}": `, reason)
 						})
 				)
-			).then(() => console.debug(`Finished updating ${bundlesInfo.length} translation bundles`))
+			)
 		})
 	}
+
 	// return key until real translator comes online
 	i18nTranslator(key, ...args) {
 		console.debug('i18nTranslator placeholder called', { key, args })
