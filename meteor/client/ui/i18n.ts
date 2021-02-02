@@ -100,7 +100,7 @@ class I18nContainer extends WithManagedTracker {
 			console.debug(`Got ${bundlesInfo.length} bundles from database`)
 			Promise.allSettled(
 				bundlesInfo.map((bundle) =>
-					new Promise<TranslationsBundle>((resolve, reject) => {
+					new Promise<TranslationsBundle>((resolve) => {
 						const bundleString = localStorage.getItem(`i18n.translationBundles.${bundle._id}`)
 						if (bundleString) {
 							// check hash
