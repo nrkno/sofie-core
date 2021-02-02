@@ -1822,26 +1822,13 @@ export function isUpdateAllowed(
 					}
 				})
 			}
-			if (allowed && segmentChanges && segmentChanges.removed && segmentChanges.removed.length) {
-				_.each(segmentChanges.removed, (segment) => {
-					if (currentPartInstance.segmentId === segment._id) {
-						// Don't allow removing segment with currently playing part
-						logger.warn(
-							`Not allowing removal of segment "${segment._id}" ("${segment.externalId}"), containing currently playing part "${currentPartInstance.part._id}", making rundown unsynced instead`
-						)
-					}
-				})
-			}
 			if (allowed) {
-				const currentPart = rundownPlaylist.currentPartInstanceId
-					? PartInstances.findOne({ _id: rundownPlaylist.currentPartInstanceId })
-					: undefined
 				if (segmentChanges && segmentChanges.removed && segmentChanges.removed.length) {
 					_.each(segmentChanges.removed, (segment) => {
-						if (currentPart && currentPart.segmentId === segment._id) {
+						if (currentPartInstance && currentPartInstance.segmentId === segment._id) {
 							// Don't allow removing segment with currently playing part
 							logger.warn(
-								`Not allowing removal of segment "${segment._id}" ("${segment.externalId}"), containing currently playing part "${currentPart._id}" ("${currentPart.part.externalId}")`
+								`Not allowing removal of segment "${segment._id}" ("${segment.externalId}"), containing currently playing part "${currentPartInstance._id}" ("${currentPartInstance.part.externalId}, making rundown unsynced instead")`
 							)
 							allowed = false
 						}
@@ -1852,15 +1839,15 @@ export function isUpdateAllowed(
 					partChanges &&
 					partChanges.removed &&
 					partChanges.removed.length &&
-					currentPart &&
-					currentPart.part.dynamicallyInsertedAfterPartId
+					currentPartInstance &&
+					currentPartInstance.part.dynamicallyInsertedAfterPartId
 				) {
 					// If the currently playing part is a queued part and depending on any of the parts that are to be removed:
 					const removedPartIds = partChanges.removed.map((part) => part._id)
-					if (removedPartIds.includes(currentPart.part.dynamicallyInsertedAfterPartId)) {
+					if (removedPartIds.includes(currentPartInstance.part.dynamicallyInsertedAfterPartId)) {
 						// Don't allow removal of a part that has a currently playing queued Part
 						logger.warn(
-							`Not allowing removal of part "${currentPart.part.dynamicallyInsertedAfterPartId}" ("${currentPart.part.externalId}"), because currently playing (queued) part "${currentPart._id}" ("${currentPart.part.externalId}") is after it`
+							`Not allowing removal of part "${currentPartInstance.part.dynamicallyInsertedAfterPartId}" ("${currentPartInstance.part.externalId}"), because currently playing (queued) part "${currentPartInstance._id}" ("${currentPartInstance.part.externalId}") is after it`
 						)
 						allowed = false
 					}
