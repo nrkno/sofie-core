@@ -17,7 +17,11 @@ import {
 	PieceInstances,
 } from '../../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylistActivationId,
+	RundownPlaylists,
+} from '../../../../lib/collections/RundownPlaylists'
 import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
 
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
@@ -51,13 +55,17 @@ postProcessPiecesMock.mockImplementation(() => [])
 const { postProcessPieces: postProcessPiecesOrig } = jest.requireActual('../postProcess')
 
 describe('Test blueprint api context', () => {
-	function generateSparsePieceInstances(rundown: Rundown) {
+	function generateSparsePieceInstances(playlist: RundownPlaylist, rundown: Rundown) {
+		const activationId = playlist.activationId as RundownPlaylistActivationId
+		expect(activationId).toBeTruthy()
+
 		rundown.getParts().forEach((part, i) => {
 			// make into a partInstance
 			PartInstances.insert({
 				_id: protectString(`${part._id}_instance`),
 				rundownId: part.rundownId,
 				segmentId: part.segmentId,
+				playlistActivationId: activationId,
 				takeCount: i,
 				rehearsal: false,
 				part,
@@ -69,6 +77,7 @@ describe('Test blueprint api context', () => {
 					_id: protectString(`${part._id}_piece${i}`),
 					rundownId: rundown._id,
 					partInstanceId: protectString(`${part._id}_instance`),
+					playlistActivationId: activationId,
 					piece: {
 						_id: protectString(`${part._id}_piece_inner${i}`),
 						externalId: '-',
@@ -100,6 +109,9 @@ describe('Test blueprint api context', () => {
 		const rundown = cache.Rundowns.findOne({ playlistId: cache.containsDataFromPlaylist }) as Rundown
 		expect(rundown).toBeTruthy()
 
+		const activationId = playlist.activationId as RundownPlaylistActivationId
+		expect(activationId).toBeTruthy()
+
 		const studio = Studios.findOne(playlist.studioId) as Studio
 		expect(studio).toBeTruthy()
 
@@ -116,18 +128,27 @@ describe('Test blueprint api context', () => {
 			rundown,
 			notesContext,
 			context,
+			activationId,
 		}
 	}
 
 	function wrapWithCache<T>(fcn: (cache: CacheForRundownPlaylist, playlist: RundownPlaylist) => T) {
 		const defaultSetup = setupDefaultRundownPlaylist(env)
+
+		// Mark playlist as active
+		RundownPlaylists.update(defaultSetup.playlistId, {
+			$set: {
+				activationId: getRandomId(),
+			},
+		})
+
 		const tmpPlaylist = RundownPlaylists.findOne(defaultSetup.playlistId) as RundownPlaylist
 		expect(tmpPlaylist).toBeTruthy()
 
 		const rundown = Rundowns.findOne(defaultSetup.rundownId) as Rundown
 		expect(rundown).toBeTruthy()
 
-		generateSparsePieceInstances(rundown)
+		generateSparsePieceInstances(tmpPlaylist, rundown)
 
 		return wrapWithCacheForRundownPlaylist(tmpPlaylist, (cache) => fcn(cache, tmpPlaylist))
 	}
@@ -287,7 +308,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('basic and original only', () => {
 				wrapWithCache((cache) => {
-					const { context, rundown } = getActionExecutionContext(cache)
+					const { context, rundown, activationId } = getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -308,6 +329,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId0,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: activationId,
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -338,6 +360,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId1,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: activationId,
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -366,7 +389,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('excludeCurrentPart', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist, rundown } = getActionExecutionContext(cache)
+					const { context, playlist, rundown, activationId } = getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -389,6 +412,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId0,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: activationId,
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -412,6 +436,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId1,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[2]._id,
+						playlistActivationId: activationId,
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -445,7 +470,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('pieceMetaDataFilter', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist, rundown } = getActionExecutionContext(cache)
+					const { context, playlist, rundown, activationId } = getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -468,6 +493,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId0,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: activationId,
 						piece: {
 							_id: getRandomId(),
 							startPartId: partInstances[0].part._id,
@@ -490,6 +516,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId1,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[2]._id,
+						playlistActivationId: activationId,
 						piece: {
 							_id: getRandomId(),
 							startPartId: partInstances[2].part._id,

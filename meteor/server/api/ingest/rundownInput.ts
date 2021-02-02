@@ -1339,7 +1339,7 @@ function syncChangesToPartInstances(
 	playlist: RundownPlaylist,
 	rundown: Rundown
 ) {
-	if (playlist.active) {
+	if (playlist.activationId) {
 		if (blueprint.syncIngestUpdateToPartInstance) {
 			const { previousPartInstance, currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
 				cache,
@@ -1402,6 +1402,7 @@ function syncChangesToPartInstances(
 					}
 
 					const syncContext = new SyncIngestUpdateToPartInstanceContext(
+						playlist.activationId,
 						rundown,
 						cache,
 						new NotesContext(
@@ -1776,7 +1777,7 @@ export function isUpdateAllowed(
 		return false
 	}
 
-	if (rundownPlaylist.active) {
+	if (rundownPlaylist.activationId) {
 		if (allowed && rundownChanges && rundownChanges.removed && rundownChanges.removed.length) {
 			_.each(rundownChanges.removed, (rd) => {
 				if (rundown._id === rd._id) {

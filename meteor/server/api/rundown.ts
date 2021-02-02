@@ -156,7 +156,7 @@ export function allowedToMoveRundownOutOfPlaylist(playlist: RundownPlaylist, run
 		)
 
 	return !(
-		playlist.active &&
+		playlist.activationId &&
 		((currentPartInstance && currentPartInstance.rundownId === rundown._id) ||
 			(nextPartInstance && nextPartInstance.rundownId === rundown._id))
 	)
@@ -704,7 +704,7 @@ export namespace ServerRundownAPI {
 
 		const playlist = cache.RundownPlaylists.findOne(playlistId)
 		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
-		if (playlist.active)
+		if (playlist.activationId)
 			throw new Meteor.Error(400, `Not allowed to remove an active RundownPlaylist "${playlistId}".`)
 
 		removeRundownPlaylistFromCache(cache, playlist)
@@ -718,7 +718,7 @@ export namespace ServerRundownAPI {
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 		if (rundown.playlistId) {
 			const playlist = cache.RundownPlaylists.findOne(rundown.playlistId)
-			if (playlist && playlist.active && playlist.currentPartInstanceId) {
+			if (playlist && playlist.activationId && playlist.currentPartInstanceId) {
 				const partInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
 				if (partInstance && partInstance.rundownId === rundown._id) {
 					throw new Meteor.Error(

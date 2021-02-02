@@ -40,7 +40,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 
 		hold = (e: any) => {
 			const { t } = this.props
-			if (this.props.studioMode && this.props.playlist.active) {
+			if (this.props.studioMode && this.props.playlist.activationId) {
 				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e) =>
 					MeteorCall.userAction.activateHold(
 						e,

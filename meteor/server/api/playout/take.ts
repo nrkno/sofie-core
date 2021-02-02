@@ -1,4 +1,8 @@
-import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylistId,
+	RundownPlaylist,
+	RundownPlaylistActivationId,
+} from '../../../lib/collections/RundownPlaylists'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	getCurrentTime,
@@ -72,12 +76,14 @@ export function takeNextPartInnerSync(
 ) {
 	const span = profiler.startSpan('takeNextPartInner')
 	const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!dbPlaylist.active) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
+	if (!dbPlaylist.activationId) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
 	if (!dbPlaylist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
 	const cache = existingCache ?? waitForPromise(initCacheForRundownPlaylist(dbPlaylist, undefined, true))
 
 	let playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
+	if (!playlist.activationId) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
+	const playlistActivationId = playlist.activationId
 
 	let timeOffset: number | null = playlist.nextTimeOffset || null
 	let firstTake = !playlist.startedPlayback
@@ -203,7 +209,7 @@ export function takeNextPartInnerSync(
 
 	// Setup the parts for the HOLD we are starting
 	if (playlist.previousPartInstanceId && m.holdState === RundownHoldState.ACTIVE) {
-		startHold(cache, currentPartInstance, nextPartInstance)
+		startHold(cache, playlistActivationId, currentPartInstance, nextPartInstance)
 	}
 	afterTake(cache, playlist.studioId, takePartInstance, timeOffset)
 
@@ -351,6 +357,7 @@ export function afterTake(
  */
 function startHold(
 	cache: CacheForRundownPlaylist,
+	activationId: RundownPlaylistActivationId,
 	holdFromPartInstance: PartInstance | undefined,
 	holdToPartInstance: PartInstance | undefined
 ) {
@@ -377,6 +384,7 @@ function startHold(
 			// make the extension
 			const newInstance = literal<PieceInstance>({
 				_id: protectString<PieceInstanceId>(instance._id + '_hold'),
+				playlistActivationId: activationId,
 				rundownId: instance.rundownId,
 				partInstanceId: holdToPartInstance._id,
 				dynamicallyInserted: getCurrentTime(),

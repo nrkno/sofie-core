@@ -29,7 +29,7 @@ export function defaultRundownPlaylist(
 		created: getCurrentTime(),
 		modified: getCurrentTime(),
 
-		active: false,
+		// activationId: undefined,
 		rehearsal: false,
 		currentPartInstanceId: null,
 		nextPartInstanceId: null,

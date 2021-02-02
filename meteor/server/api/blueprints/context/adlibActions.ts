@@ -24,7 +24,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Rundown } from '../../../../lib/collections/Rundowns'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
 import { PieceInstance, wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
 import { PartInstanceId, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
@@ -36,6 +36,7 @@ import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
 import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'
+import { Meteor } from 'meteor/meteor'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -47,6 +48,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	private readonly _cache: CacheForRundownPlaylist
 	private readonly rundownPlaylist: RundownPlaylist
 	private readonly rundown: Rundown
+	private readonly playlistActivationId: RundownPlaylistActivationId
 
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
 	public currentPartState: ActionPartChange = ActionPartChange.NONE
@@ -66,6 +68,10 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		this.rundownPlaylist = rundownPlaylist
 		this.rundown = rundown
 		this.takeAfterExecute = false
+
+		if (!this.rundownPlaylist.activationId)
+			throw new Meteor.Error(500, `RundownPlaylist "${this.rundownPlaylist._id}" is not active`)
+		this.playlistActivationId = this.rundownPlaylist.activationId
 	}
 
 	private _getPartInstanceId(part: 'current' | 'next'): PartInstanceId | null {
@@ -203,7 +209,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			true
 		)[0]
 		piece._id = getRandomId() // Make id random, as postProcessPieces is too predictable (for ingest)
-		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
+		const newPieceInstance = wrapPieceToInstance(piece, this.playlistActivationId, partInstance._id)
 
 		// Do the work
 		ServerPlayoutAdLibAPI.innerStartAdLibPiece(
@@ -309,6 +315,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			_id: getRandomId(),
 			rundownId: currentPartInstance.rundownId,
 			segmentId: currentPartInstance.segmentId,
+			playlistActivationId: this.playlistActivationId,
 			takeCount: -1, // Filled in later
 			rehearsal: currentPartInstance.rehearsal,
 			part: new Part({
@@ -336,7 +343,9 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			newPartInstance.segmentId,
 			newPartInstance.part._id
 		)
-		const newPieceInstances = pieces.map((piece) => wrapPieceToInstance(piece, newPartInstance._id))
+		const newPieceInstances = pieces.map((piece) =>
+			wrapPieceToInstance(piece, this.playlistActivationId, newPartInstance._id)
+		)
 
 		// Do the work
 		ServerPlayoutAdLibAPI.innerStartQueuedAdLib(
