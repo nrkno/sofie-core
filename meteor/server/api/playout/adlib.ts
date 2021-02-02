@@ -33,7 +33,7 @@ import {
 	convertPieceToAdLibPiece,
 	setupPieceInstanceInfiniteProperties,
 } from './pieces'
-import { getActiveRundownPlaylist, updateTimeline } from './timeline'
+import { updateTimeline } from './timeline'
 import { updatePartInstanceRanks } from '../rundown'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
