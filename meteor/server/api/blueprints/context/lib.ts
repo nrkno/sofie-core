@@ -50,6 +50,7 @@ const IBlueprintMutatablePartSample: Required<IBlueprintMutatablePart> = {
 	displayDurationGroup: '',
 	displayDuration: 0,
 	identifier: '',
+	hackListenToMediaObjectUpdates: [],
 }
 // Compile a list of the keys which are allowed to be set
 export const IBlueprintMutatablePartSampleKeys = Object.keys(IBlueprintMutatablePartSample) as Array<

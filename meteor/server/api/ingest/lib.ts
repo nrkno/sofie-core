@@ -81,11 +81,15 @@ export function getRundownPlaylist(rundown: Rundown): RundownPlaylist {
 	span?.end()
 	return playlist
 }
-export function getRundown(rundownId: RundownId, externalRundownId: string): Rundown {
+export function getRundown(rundownId: RundownId, externalRundownId?: string): Rundown {
 	const span = profiler.startSpan('mosDevice.lib.getRundown')
 
 	const rundown = Rundowns.findOne(rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" ("${externalRundownId}") not found`)
+	if (!rundown)
+		throw new Meteor.Error(
+			404,
+			`Rundown "${rundownId}" ${externalRundownId && `("${externalRundownId}")`} not found`
+		)
 	rundown.touch()
 
 	span?.end()

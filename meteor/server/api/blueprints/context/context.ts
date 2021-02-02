@@ -71,6 +71,7 @@ import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../
 import { DeepReadonly } from 'utility-types'
 import { Random } from 'meteor/random'
 import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
+import { MediaObjects } from '../../../../lib/collections/MediaObjects'
 
 /** Common */
 
@@ -295,6 +296,11 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 export class SegmentContext extends RundownContext implements ISegmentContext {
 	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, notesContext: NotesContext) {
 		super(rundown, cache, notesContext)
+	}
+
+	hackGetMediaObjectDuration(mediaId: string): number | undefined {
+		return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: this.studioId })?.mediainfo?.format
+			?.duration
 	}
 }
 

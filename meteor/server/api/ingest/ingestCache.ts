@@ -60,7 +60,7 @@ export function loadCachedIngestSegment(
 	rundownId: RundownId,
 	rundownExternalId: string,
 	segmentId: SegmentId,
-	segmentExternalId: string
+	segmentExternalId?: string
 ): LocalIngestSegment {
 	const cacheEntries = IngestDataCache.find({
 		rundownId: rundownId,
@@ -70,14 +70,17 @@ export function loadCachedIngestSegment(
 	const segmentEntries = cacheEntries.filter((e) => e.type === IngestCacheType.SEGMENT)
 	if (segmentEntries.length > 1)
 		logger.warn(
-			`There are multiple segments (${cacheEntries.length}) in IngestDataCache for rundownId: "${rundownExternalId}", segmentId: "${segmentExternalId}"`
+			`There are multiple segments (${
+				cacheEntries.length
+			}) in IngestDataCache for rundownId: "${rundownExternalId}", segmentId: "${segmentExternalId || segmentId}"`
 		)
 
 	const segmentEntry = segmentEntries[0]
 	if (!segmentEntry)
 		throw new Meteor.Error(
 			404,
-			`Segment "${segmentExternalId}" in rundown "${rundownExternalId}" is missing cached ingest data`
+			`Segment "${segmentExternalId ||
+				segmentId}" in rundown "${rundownExternalId}" is missing cached ingest data`
 		)
 	if (segmentEntry.type !== IngestCacheType.SEGMENT) throw new Meteor.Error(500, 'Wrong type on cached segment')
 

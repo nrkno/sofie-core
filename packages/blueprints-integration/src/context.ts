@@ -67,6 +67,7 @@ export interface RundownContext extends ShowStyleContext {
 export interface SegmentContext extends RundownContext {
 	error: (message: string, partExternalId?: string) => void
 	warning: (message: string, partExternalId?: string) => void
+	hackGetMediaObjectDuration: (mediaId: string) => number | undefined
 }
 
 /** Actions */
@@ -111,6 +112,8 @@ export interface ActionExecutionContext extends ShowStyleContext {
 
 	/** Set flag to perform take after executing the current action. Returns state of the flag after each call. */
 	takeAfterExecuteAction(take: boolean): boolean
+
+	hackGetMediaObjectDuration: (mediaId: string) => number | undefined
 
 	/** Misc actions */
 	// updateAction(newManifest: Pick<IBlueprintAdLibActionManifest, 'description' | 'payload'>): void // only updates itself. to allow for the next one to do something different
