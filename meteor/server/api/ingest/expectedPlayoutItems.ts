@@ -3,6 +3,7 @@ import { check } from '../../../lib/check'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 import {
 	ExpectedPlayoutItemGeneric,
+	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
 	SomeContent,
@@ -15,7 +16,6 @@ import { PartId, DBPart } from '../../../lib/collections/Parts'
 import { saveIntoDb, protectString, unprotectString, literal } from '../../../lib/lib'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { getAllPiecesFromCache, getAllAdLibPiecesFromCache } from '../playout/lib'
-import { RundownUtils } from '../../../client/lib/rundown'
 import { RundownAPI } from '../../../lib/api/rundown'
 
 interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
@@ -101,7 +101,7 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForRundownPlayli
 					let sourceLayerId = ''
 					let outputLayerId = ''
 					let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
-					const isContent = RundownUtils.isAdlibActionContent(action.display)
+					const isContent = isAdlibActionContent(action.display)
 					if (isContent) {
 						sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
 						outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
@@ -140,6 +140,15 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForRundownPlayli
 			expectedPlayoutItems
 		)
 	})
+}
+
+function isAdlibActionContent(
+	display: IBlueprintActionManifestDisplay | IBlueprintActionManifestDisplayContent
+): display is IBlueprintActionManifestDisplayContent {
+	if ((display as any).sourceLayerId !== undefined) {
+		return true
+	}
+	return false
 }
 
 export function updateExpectedPlayoutItemsOnPart(
