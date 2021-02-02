@@ -14,6 +14,8 @@ import { Countdown } from './Countdown'
 interface IProps {
 	// the studio to be displayed in the screen saver
 	studioId: StudioId
+
+	ownBackground?: boolean
 }
 
 interface ITrackedProps {
@@ -122,6 +124,10 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 				studioId: this.props.studioId,
 			})
 
+			if (this.props.ownBackground) {
+				document.body.classList.add('dark', 'xdark')
+			}
+
 			window.addEventListener('resize', this.measureElement)
 
 			this.autorun(() => {
@@ -146,6 +152,11 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 
 		componentWillUnmount() {
 			super.componentWillUnmount()
+
+			if (this.props.ownBackground) {
+				document.body.classList.remove('dark', 'xdark')
+			}
+
 			this._nextAnimationFrameRequest && window.cancelAnimationFrame(this._nextAnimationFrameRequest)
 			window.removeEventListener('resize', this.measureElement)
 		}

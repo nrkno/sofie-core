@@ -89,7 +89,7 @@ describe('Test blueprint api context', () => {
 						startPartId: part._id,
 						content: {
 							index: i,
-						},
+						} as any,
 						lifespan: PieceLifespan.WithinPart,
 						invalid: false,
 					},
@@ -342,6 +342,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 1000,
 					})
@@ -370,6 +373,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 2000,
 					})
@@ -419,6 +425,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 1000,
 					})
@@ -440,6 +449,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 2000,
 					})
@@ -493,6 +505,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 1000,
 					})
@@ -517,6 +532,9 @@ describe('Test blueprint api context', () => {
 							},
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 2000,
 					})
@@ -875,6 +893,9 @@ describe('Test blueprint api context', () => {
 						externalId: '-',
 						enable: { start: 0 },
 						lifespan: PieceLifespan.OutOnRundownEnd,
+						content: {
+							timelineObjects: [],
+						},
 					}
 					const newPart: IBlueprintPart = {
 						externalId: 'nope',

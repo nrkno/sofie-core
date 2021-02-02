@@ -184,12 +184,19 @@ export function selectNextPart(
 	ignoreUnplayabale = true
 ): SelectNextPartResult | undefined {
 	const span = profiler.startSpan('selectNextPart')
+	/**
+	 * Iterates over all the parts and searches for the first one to be playable
+	 * @param offset the index from where to start the search
+	 * @param condition whether the part will be returned
+	 * @param length the maximum index or where to stop the search
+	 */
 	const findFirstPlayablePart = (
 		offset: number,
-		condition?: (part: Part) => boolean
+		condition?: (part: Part) => boolean,
+		length?: number
 	): SelectNextPartResult | undefined => {
 		// Filter to after and find the first playabale
-		for (let index = offset; index < parts.length; index++) {
+		for (let index = offset; index < (length || parts.length); index++) {
 			const part = parts[index]
 			if ((!ignoreUnplayabale || part.isPlayable()) && (!condition || condition(part))) {
 				return { part, index }
@@ -239,7 +246,14 @@ export function selectNextPart(
 		}
 	}
 
-	// TODO - rundownPlaylist.loop
+	// if playlist should loop, check from 0 to currentPart
+	if (rundownPlaylist.loop && !nextPart && previousPartInstance) {
+		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
+		// TODO - choose something better for next?
+		if (currentIndex !== -1) {
+			nextPart = findFirstPlayablePart(0, undefined, currentIndex)
+		}
+	}
 
 	if (span) span.end()
 	return nextPart

@@ -140,11 +140,7 @@ export const RundownPlaylistUi = DropTarget(
 				const playlistId = this.props.playlist._id
 				const rundownOrder = this.state.rundownOrder.slice()
 
-				if (
-					playlist.rundowns.findIndex((rundown) => {
-						rundownId === rundown._id
-					}) > -1
-				) {
+				if (playlist.rundowns.findIndex((rundown) => rundownId === rundown._id) > -1) {
 					// finalize order from component state
 					MeteorCall.userAction.moveRundown(
 						'Drag and drop rundown playlist reorder',

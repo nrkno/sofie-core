@@ -8,6 +8,9 @@ Array [
     "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
       "_id": "randomId9002_piece000",
+      "content": Object {
+        "timelineObjects": Array [],
+      },
       "enable": Object {
         "start": 0,
       },
@@ -31,6 +34,9 @@ Array [
     "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
       "_id": "randomId9002_piece001",
+      "content": Object {
+        "timelineObjects": Array [],
+      },
       "enable": Object {
         "start": 0,
       },
@@ -60,6 +66,9 @@ Array [
     "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
       "_id": "randomId9014",
+      "content": Object {
+        "timelineObjects": Array [],
+      },
       "enable": Object {
         "start": "now",
       },
@@ -85,6 +94,9 @@ Array [
     "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
       "_id": "randomId9002_piece000",
+      "content": Object {
+        "timelineObjects": Array [],
+      },
       "enable": Object {
         "start": 0,
       },
@@ -108,6 +120,9 @@ Array [
     "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
       "_id": "randomId9002_piece001",
+      "content": Object {
+        "timelineObjects": Array [],
+      },
       "enable": Object {
         "start": 0,
       },
@@ -137,6 +152,9 @@ Array [
     "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
       "_id": "randomId9014",
+      "content": Object {
+        "timelineObjects": Array [],
+      },
       "enable": Object {
         "start": "now",
       },
@@ -158,6 +176,9 @@ Array [
     "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
       "_id": "randomId9019",
+      "content": Object {
+        "timelineObjects": Array [],
+      },
       "enable": Object {
         "duration": 1000,
         "start": "now",

@@ -6,6 +6,7 @@ import { withTiming, WithTiming } from './RundownTiming/withTiming'
 import { RundownUtils } from '../../lib/rundown'
 import { withTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { LoopingIcon } from '../../lib/ui/icons/looping'
 
 interface IProps {
 	rundown: Rundown
@@ -107,6 +108,26 @@ export const RundownDividerHeader = withTranslation()(
 							<Moment interval={0} format="HH:mm:ss" date={rundown.expectedDuration} />
 						</div>
 					) : null}
+				</div>
+			)
+		}
+	}
+)
+
+interface ILoopingHeaderProps {
+	playlist: RundownPlaylist
+}
+export const RundownLoopingHeader = withTranslation()(
+	class RundownLoopingHeader extends React.Component<Translated<ILoopingHeaderProps>> {
+		render() {
+			const { t, playlist } = this.props
+			return (
+				<div className="rundown-divider-timeline">
+					<h3 className="rundown-divider-timeline__playlist-name">
+						<LoopingIcon />
+						&nbsp;
+						{t('Looping')}: {playlist.name}
+					</h3>
 				</div>
 			)
 		}

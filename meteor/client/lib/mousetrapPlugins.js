@@ -99,7 +99,7 @@ import Mousetrap from 'mousetrap'
 })(Mousetrap)
 
 // Disable default browser action for alt keys - focus window menu
-;(function() {
+;(function(Mousetrap) {
 	Mousetrap.init()
 
 	function preventDefault(e) {

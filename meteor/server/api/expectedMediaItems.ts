@@ -48,7 +48,7 @@ function generateExpectedMediaItems<T extends ExpectedMediaItemBase>(
 	commonProps: Subtract<T, ExpectedMediaItemBase>,
 	studioId: StudioId,
 	label: string,
-	content: SomeContent | undefined,
+	content: Partial<SomeContent> | undefined,
 	pieceType: string
 ): T[] {
 	const result: T[] = []

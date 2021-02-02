@@ -20,7 +20,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { RundownViewKbdShortcuts } from '../RundownView'
 
 import { Spinner } from '../../lib/Spinner'
-import { literal, normalizeArray, unprotectString, protectString, Omit } from '../../../lib/lib'
+import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -32,12 +32,13 @@ import {
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
+	SomeTimelineContent,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { PartInstances } from '../../../lib/collections/PartInstances'
-import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
+import { AdlibSegmentUi, AdLibPieceUi, AdLibPanelToolbar } from './AdLibPanel'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
@@ -144,6 +145,7 @@ const AdLibListView = withTranslation()(
 										outputLayerId: '',
 										rundownId: protectString(''),
 										_rank: layer._rank,
+										content: { timelineObjects: [] },
 									})
 								)
 						)
@@ -153,7 +155,7 @@ const AdLibListView = withTranslation()(
 									item.isSticky &&
 									item.sourceLayer &&
 									(!this.props.searchFilter ||
-										item.name.toUpperCase().indexOf(this.props.searchFilter.toUpperCase()) >= 0)
+										item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0)
 								) {
 									return (
 										<AdLibListItem
@@ -176,7 +178,7 @@ const AdLibListView = withTranslation()(
 									item.sourceLayer &&
 									item.outputLayer &&
 									(!this.props.searchFilter ||
-										item.name.toUpperCase().indexOf(this.props.searchFilter.toUpperCase()) >= 0)
+										item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0)
 								) {
 									return (
 										<AdLibListItem
@@ -197,7 +199,7 @@ const AdLibListView = withTranslation()(
 									)
 								} else if (
 									!this.props.searchFilter ||
-									item.name.toUpperCase().indexOf(this.props.searchFilter.toUpperCase()) >= 0
+									item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0
 								) {
 									return (
 										<AdLibListItem
@@ -237,78 +239,6 @@ const AdLibListView = withTranslation()(
 					<table className="adlib-panel__list-view__list__table" ref={this.setTableRef}>
 						{this.renderGlobalAdLibs()}
 					</table>
-				</div>
-			)
-		}
-	}
-)
-
-interface IToolbarPropsHeader {
-	onFilterChange?: (newFilter: string | undefined) => void
-}
-
-interface IToolbarStateHader {
-	searchInputValue: string
-}
-
-const AdLibPanelToolbar = withTranslation()(
-	class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
-		searchInput: HTMLInputElement
-
-		constructor(props: Translated<IToolbarPropsHeader>) {
-			super(props)
-
-			this.state = {
-				searchInputValue: '',
-			}
-		}
-
-		setSearchInputRef = (el: HTMLInputElement) => {
-			this.searchInput = el
-		}
-
-		searchInputChanged = (e?: React.ChangeEvent<HTMLInputElement>) => {
-			this.setState({
-				searchInputValue: this.searchInput.value,
-			})
-
-			this.props.onFilterChange &&
-				typeof this.props.onFilterChange === 'function' &&
-				this.props.onFilterChange(this.searchInput.value)
-		}
-
-		clearSearchInput = () => {
-			this.searchInput.value = ''
-
-			this.searchInputChanged()
-		}
-
-		render() {
-			const { t } = this.props
-			return (
-				<div className="adlib-panel__list-view__toolbar adlib-panel__list-view__toolbar--no-segments">
-					<div className="adlib-panel__list-view__toolbar__filter">
-						<input
-							className="adlib-panel__list-view__toolbar__filter__input"
-							type="text"
-							ref={this.setSearchInputRef}
-							placeholder={t('Search...')}
-							onChange={this.searchInputChanged}
-						/>
-						{this.state.searchInputValue !== '' && (
-							<div className="adlib-panel__list-view__toolbar__filter__clear" onClick={this.clearSearchInput}>
-								<FontAwesomeIcon icon={faTimes} />
-							</div>
-						)}
-					</div>
-					<div className="adlib-panel__list-view__toolbar__buttons" style={{ display: 'none' }}>
-						<button className="action-btn">
-							<FontAwesomeIcon icon={faList} />
-						</button>
-						<button className="action-btn">
-							<FontAwesomeIcon icon={faTh} />
-						</button>
-					</div>
 				</div>
 			)
 		}
@@ -405,12 +335,15 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			.map((action) => {
 				let sourceLayerId = ''
 				let outputLayerId = ''
-				let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
+				let content: SomeTimelineContent = { timelineObjects: [] }
 				const isContent = RundownUtils.isAdlibActionContent(action.display)
 				if (isContent) {
 					sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
 					outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-					content = (action.display as IBlueprintActionManifestDisplayContent).content
+					content = {
+						timelineObjects: [],
+						...(action.display as IBlueprintActionManifestDisplayContent).content,
+					}
 				}
 
 				return literal<AdLibPieceUi>({
@@ -731,7 +664,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		renderListView() {
 			return (
 				<React.Fragment>
-					<AdLibPanelToolbar onFilterChange={this.onFilterChange} />
+					<AdLibPanelToolbar onFilterChange={this.onFilterChange} noSegments={true} />
 					<AdLibListView
 						onSelectAdLib={this.onSelectAdLib}
 						onToggleAdLib={this.onToggleAdLib}

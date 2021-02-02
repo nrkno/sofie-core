@@ -43,6 +43,9 @@ describe('findLookaheadObjectsForPart', () => {
 			lifespan: PieceLifespan.WithinPart,
 			sourceLayerId: '',
 			outputLayerId: '',
+			content: {
+				timelineObjects: [],
+			},
 		},
 	}
 
