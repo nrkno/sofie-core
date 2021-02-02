@@ -55,7 +55,7 @@ export async function getLookeaheadObjects(
 		startRundownId: { $in: getRundownIDsFromCache(cache) },
 		invalid: { $ne: true },
 	}
-	const pPiecesToSearch = asyncCollectionFindFetch(Pieces, piecesToSearchQuery)
+	const pPiecesToSearch = asyncCollectionFindFetch(Pieces, piecesToSearchQuery, { fields: { metaData: 0 } })
 
 	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
 		if (!info.partInstance.timings?.startedPlayback) {
