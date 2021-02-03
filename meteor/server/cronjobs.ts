@@ -12,6 +12,8 @@ import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
 import { CASPARCG_RESTART_TIME } from '../lib/constants'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
+import { RundownPlaylists } from '../lib/collections/RundownPlaylists'
+import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 
 let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
 	// Do it at a random time in the future:
@@ -87,6 +89,19 @@ Meteor.startup(() => {
 				lowPrioFcn(() => {
 					Snapshots.remove({
 						created: { $lt: cleanLimitTime },
+					})
+				})
+			}
+
+			if (system?.cron?.storeRundownSnapshots?.enabled) {
+				let filter = system.cron.storeRundownSnapshots.rundownNames?.length
+					? { name: { $in: system.cron.storeRundownSnapshots.rundownNames } }
+					: {}
+
+				RundownPlaylists.find(filter).forEach((playlist) => {
+					lowPrioFcn(() => {
+						logger.info(`Cronjob: Will store snapshot for rundown playlist "${playlist._id}"`)
+						internalStoreRundownPlaylistSnapshot(null, playlist._id, 'Automatic, taken by cron job')
 					})
 				})
 			}

@@ -844,6 +844,16 @@ export function internalStoreSystemSnapshot(
 export function storeRundownPlaylistSnapshot(context: MethodContext, playlistId: RundownPlaylistId, reason: string) {
 	check(playlistId, String)
 	const { organizationId } = OrganizationContentWriteAccess.snapshot(context)
+	return internalStoreRundownPlaylistSnapshot(organizationId, playlistId, reason)
+}
+/** Take and store a rundwon playlist snapshot. For internal use only, performs no access control. */
+export function internalStoreRundownPlaylistSnapshot(
+	organizationId: OrganizationId | null,
+	playlistId: RundownPlaylistId,
+	reason: string
+) {
+	check(playlistId, String)
+
 	let s = createRundownPlaylistSnapshot(playlistId, organizationId)
 	return storeSnaphot(s, organizationId, reason)
 }
