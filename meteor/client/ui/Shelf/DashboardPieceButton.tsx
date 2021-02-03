@@ -135,13 +135,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	renderVTLiveSpeak(renderThumbnail?: boolean) {
 		let thumbnailUrl: string | undefined
 		let sourceDuration: number | undefined
-		let postrollDuration: number | undefined
 		const adLib = (this.props.piece as any) as AdLibPieceUi
 		if (this.props.piece.content) {
 			thumbnailUrl = this.getThumbnailUrl()
 			const vtContent = adLib.content as VTContent | undefined
 			sourceDuration = vtContent?.sourceDuration
-			postrollDuration = vtContent?.postrollDuration
 		}
 		return (
 			<>
@@ -150,19 +148,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				)}
 				{sourceDuration && (
 					<span className="dashboard-panel__panel__button__sub-label">
-						{sourceDuration ? (
-							<StyledTimecode
-								time={
-									Math.max(
-										(this.props.piece.contentMetaData?.mediainfo?.format?.duration || 0) * 1000 -
-											(postrollDuration || 0),
-										0
-									) ||
-									sourceDuration ||
-									0
-								}
-							/>
-						) : null}
+						{sourceDuration ? <StyledTimecode time={sourceDuration || 0} /> : null}
 					</span>
 				)}
 				<VTFloatingInspector

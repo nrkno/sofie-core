@@ -72,7 +72,6 @@ export interface VTContent extends BaseContent {
 	loop?: boolean
 	sourceDuration?: number
 	objectDuration?: number
-	postrollDuration?: number
 	metadata?: MetadataElement[]
 	timelineObjects: TimelineObjectCoreExt[]
 	mediaFlowIds?: string[]
