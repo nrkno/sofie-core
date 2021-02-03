@@ -12,7 +12,6 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { getHash, protectString, unprotectString } from '../../lib/lib'
 import { BlueprintId } from '../../lib/collections/Blueprints'
-import { Mongocursor } from '../../lib/typings/meteor'
 
 /**
  * Insert or update translation bundles in the database.
@@ -28,7 +27,9 @@ export function upsertBundles(bundles: BlueprintTranslationsbundle[], originBlue
 			throw new Error(`Unknown bundle type ${type}`)
 		}
 
-		const _id = getExistingId(originBlueprintId, language) || createBundleId(originBlueprintId, language)
+		// doesn't matter if it's a new or existing bundle, the id will be the same with the same
+		// originating blueprint and language
+		const _id = createBundleId(originBlueprintId, language)
 
 		TranslationsBundleCollection.upsert(
 			_id,
@@ -46,14 +47,17 @@ export function upsertBundles(bundles: BlueprintTranslationsbundle[], originBlue
 	}
 }
 
+/**
+ * Creates an id for a bundle based on its originating blueprint and language (which are
+ * guaranteed to be unique, as there is only one set of translations per language per blueprint).
+ * The id hash is guaranteed to be the same for every call with equal input, meaning it can be used
+ * to find a previously generated id as well as generating new ids.
+ *
+ * @param blueprintId the id of the blueprint the translations were bundled with
+ * @param language the language the bundle contains translations for
+ */
 function createBundleId(blueprintId: BlueprintId, language: string): TranslationsBundleId {
 	return protectString<TranslationsBundleId>(getHash(`TranslationsBundle${blueprintId}${language}`))
-}
-
-function getExistingId(originBlueprintId: BlueprintId, language: string): TranslationsBundleId | null {
-	const bundle = TranslationsBundleCollection.findOne({ originBlueprintId, language })
-
-	return bundle?._id ?? null
 }
 
 /**
@@ -63,7 +67,7 @@ function getExistingId(originBlueprintId: BlueprintId, language: string): Transl
  * @returns the bundle with the given id
  * @throws if there is no bundle with the given id
  */
-export function getBundle(bundleId: TranslationsBundleId) {
+export function getBundle(bundleId: TranslationsBundleId): DBTranslationsBundle {
 	const bundle = TranslationsBundleCollection.findOne(bundleId)
 	if (!bundle) {
 		throw new Meteor.Error(404, `Bundle "${bundleId}" not found`)
