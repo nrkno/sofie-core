@@ -336,6 +336,10 @@ body.tv2 {
 			}
 		}
 
+		.dashboard-panel__panel__button__sub-label {
+			display: none;
+		}
+
 		&.list {
 			&.selected > .dashboard-panel__panel__button__content {
 				box-shadow: inset 0 0 0 4px var(--general-next-color);
@@ -343,12 +347,6 @@ body.tv2 {
 
 			&.live > .dashboard-panel__panel__button__content {
 				box-shadow: inset 0 0 0 4px var(--general-live-color);
-			}
-		}
-
-		&:not(.list) {
-			.dashboard-panel__panel__button__sub-label {
-				display: none;
 			}
 		}
 	}
