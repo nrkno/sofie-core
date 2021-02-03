@@ -48,7 +48,7 @@ describe('systemStatus', () => {
 
 		const systemTimeCheck = result0.checks && result0.checks.find((p) => p.description === 'systemTime')
 		expect(systemTimeCheck).toMatchObject({
-			status: status2ExternalStatus(StatusCode.BAD),
+			status: status2ExternalStatus(StatusCode.GOOD),
 		})
 		const databaseVersionCheck = result0.checks && result0.checks.find((p) => p.description === 'databaseVersion')
 		expect(databaseVersionCheck).toMatchObject({

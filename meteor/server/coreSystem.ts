@@ -29,6 +29,7 @@ import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 import { profiler } from './api/profiler'
 import * as path from 'path'
 import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
+import { env } from 'process'
 
 export { PackageInfo }
 
@@ -459,6 +460,10 @@ function startupMessage() {
 }
 
 function startInstrumenting() {
+	if (!!env.JEST_WORKER_ID) {
+		return
+	}
+
 	// attempt init elastic APM
 	const system = getCoreSystem()
 	const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
