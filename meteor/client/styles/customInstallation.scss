@@ -368,4 +368,31 @@ body.tv2 {
 	.rundown-view__shelf__contents__pane.shelf-inspector {
 		display: none;
 	}
+
+	/** Lobby **/
+
+	section.rundown-list {
+		.rundown-list__header {
+			color: #252627;
+			font-weight: bold;
+			background-color: unset;
+		}
+
+		ul.rundown-playlists {
+			.draghandle {
+				display: none;
+			}
+
+			.rundown-list-item {
+				background-color: unset;
+			}
+
+			background: #f3f3f3;
+			border-top: 1px solid #ddd;
+
+			:hover {
+				background: #ffffff;
+			}
+		}
+	}
 }
