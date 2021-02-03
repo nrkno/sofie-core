@@ -21,6 +21,8 @@ import {
 	asyncCollectionRemove,
 	waitForPromise,
 	ProtectedString,
+	literal,
+	unprotectString,
 } from '../../lib/lib'
 import { PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
@@ -29,12 +31,16 @@ import { StudioId } from '../../lib/collections/Studios'
 import { CacheForRundownPlaylist } from '../DatabaseCaches'
 import { AdLibAction, AdLibActionId, AdLibActions } from '../../lib/collections/AdLibActions'
 import {
+	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
+	PieceLifespan,
 	SomeContent,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
 import { Subtract } from 'utility-types'
+import { RundownAPI } from '../../lib/api/rundown'
+import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
 
 export enum PieceType {
 	PIECE = 'piece',

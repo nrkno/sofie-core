@@ -15,8 +15,9 @@ import { logger } from '../../logging'
 import { PartId, DBPart } from '../../../lib/collections/Parts'
 import { saveIntoDb, protectString, unprotectString, literal } from '../../../lib/lib'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { getAllPiecesFromCache, getAllAdLibPiecesFromCache } from '../playout/lib'
+import { getAllPiecesFromCache, getAllAdLibPiecesFromCache, getAllAdLibActionsFromCache } from '../playout/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { AdLibPieceUi, actionToAdLibPieceUi } from '../expectedMediaItems'
 
 interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
 	partId?: PartId
