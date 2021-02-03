@@ -42,12 +42,10 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { unprotectString, protectString } from '../../../lib/lib'
-import { PlayoutAPIMethods } from '../../../lib/api/playout'
 import { MeteorCall } from '../../../lib/api/methods'
 import { TransformedCollection } from '../../../lib/typings/meteor'
 import { doUserAction, UserAction } from '../../lib/userAction'
-import { Settings } from '../../../lib/Settings'
-import { MappingManifestEntry, MappingsManifest, ConfigManifestEntryType } from '../../../lib/api/deviceConfig'
+import { MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
 import { renderEditAttribute } from './components/ConfigManifestEntryComponent'
 
 interface IStudioDevicesProps {
