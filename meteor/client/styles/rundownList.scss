@@ -24,8 +24,8 @@
 	--airTimeColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
 	--durationColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
 	--lastModifiedColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
-	--actionsColumnWidth: calc(var(--componentWidth) * var(--actionsColumnSize));
 	--layoutSelectionColumnWidth: calc(var(--componentWidth) * var(--layoutSelectionColumnSize));
+	--actionsColumnWidth: calc(var(--componentWidth) * var(--actionsColumnSize));
 
 	background-color: transparent;
 	width: 100%;
@@ -35,7 +35,7 @@
 		display: grid;
 		grid-template-columns:
 			var(--nameColumnWidth) var(--showStyleColumnWidth) var(--airTimeColumnWidth)
-			var(--durationColumnWidth) var(--lastModifiedColumnWidth) var(--actionsColumnWidth);
+			var(--durationColumnWidth) var(--lastModifiedColumnWidth) var(--layoutSelectionColumnWidth) var(--actionsColumnWidth);
 
 		background-color: #898989;
 		color: #fff;
