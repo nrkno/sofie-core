@@ -5,6 +5,7 @@ import { systemTime, getCurrentTime } from '../../../lib/lib'
 import { StatusCode, setSystemStatus } from '../../systemStatus/systemStatus'
 import { logger } from '../../logging'
 import { TimeDiff, DiffTimeResult } from '../../../lib/api/peripheralDevice'
+import { env } from 'process'
 
 /** How often the system-time should be updated */
 const UPDATE_SYSTEM_TIME_INTERVAL = 3600 * 1000
@@ -190,11 +191,21 @@ function updateServerTime(retries: number = 0) {
 		})
 }
 Meteor.startup(() => {
-	setSystemStatus('systemTime', { statusCode: StatusCode.BAD, messages: ['Starting up...'] })
-	Meteor.setInterval(() => {
-		updateServerTime()
-	}, UPDATE_SYSTEM_TIME_INTERVAL)
-	updateServerTime(5)
+	if (!env.JEST_WORKER_ID) {
+		setSystemStatus('systemTime', { statusCode: StatusCode.BAD, messages: ['Starting up...'] })
+		Meteor.setInterval(() => {
+			updateServerTime()
+		}, UPDATE_SYSTEM_TIME_INTERVAL)
+		updateServerTime(5)
+	} else {
+		systemTime.hasBeenSet = true
+		systemTime.diff = 0
+		systemTime.stdDev = 0
+		setSystemStatus('systemTime', {
+			statusCode: StatusCode.GOOD,
+			messages: [`NTP-time accuracy (standard deviation): 0 ms`],
+		})
+	}
 })
 
 // Example usage:
