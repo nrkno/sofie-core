@@ -489,7 +489,7 @@ export const SegmentTimelinePart = withTranslation()(
 				const startedPlayback = nextProps.part.instance.timings?.startedPlayback
 
 				const isDurationSettling =
-					!!nextProps.playlist.active &&
+					!!nextProps.playlist.activationId &&
 					isPrevious &&
 					!isLive &&
 					!!startedPlayback &&

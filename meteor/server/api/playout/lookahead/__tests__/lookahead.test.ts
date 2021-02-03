@@ -93,6 +93,7 @@ describe('Lookahead', () => {
 						blueprint: '',
 						core: '',
 					},
+					dataSource: 'mock',
 					externalNRCSName: 'mock',
 				}
 				Rundowns.insert(rundown)

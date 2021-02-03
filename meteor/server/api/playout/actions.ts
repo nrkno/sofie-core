@@ -54,9 +54,8 @@ export function activateRundownPlaylist(
 
 	cache.RundownPlaylists.update(rundownPlaylist._id, {
 		$set: {
-			active: true,
+			activationId: getRandomId(),
 			rehearsal: rehearsal,
-			activeInstanceId: getRandomId(),
 		},
 	})
 
@@ -145,10 +144,12 @@ export function deactivateRundownPlaylistInner(
 
 	cache.RundownPlaylists.update(rundownPlaylist._id, {
 		$set: {
-			active: false,
 			previousPartInstanceId: null,
 			currentPartInstanceId: null,
 			holdState: RundownHoldState.NONE,
+		},
+		$unset: {
+			activationId: 1,
 		},
 	})
 	// rundownPlaylist.currentPartInstanceId = null

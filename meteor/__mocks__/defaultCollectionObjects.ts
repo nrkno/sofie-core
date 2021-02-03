@@ -29,7 +29,7 @@ export function defaultRundownPlaylist(
 		created: getCurrentTime(),
 		modified: getCurrentTime(),
 
-		active: false,
+		// activationId: undefined,
 		rehearsal: false,
 		currentPartInstanceId: null,
 		nextPartInstanceId: null,
@@ -69,6 +69,7 @@ export function defaultRundown(
 			core: '',
 		},
 
+		dataSource: 'mock',
 		externalNRCSName: 'mock',
 	}
 }

@@ -73,7 +73,7 @@ export function findLookaheadForLayer(
 			}
 			const pieces = piecesByPart.get(part._id) ?? []
 			if (pieces.length > 0 && part.isPlayable()) {
-				const tmpPieces = pieces.map((p) => wrapPieceToInstance(p, protectString(''), true))
+				const tmpPieces = pieces.map((p) => wrapPieceToInstance(p, protectString(''), protectString(''), true))
 				const partInfo: PartAndPieces = { part, pieces: tmpPieces }
 				const objs = findLookaheadObjectsForPart(
 					currentPartInstanceId,

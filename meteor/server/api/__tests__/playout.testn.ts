@@ -628,6 +628,7 @@ function createEmptyRundownData () {
 		previousPartId: null,
 		currentPartId: null,
 		nextPartId: null,
+		dataSource: '',
 		importVersions: {
 			studio: '',
 			showStyleBase: '',

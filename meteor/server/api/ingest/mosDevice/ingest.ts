@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getStudioFromDevice, getSegmentId, canRundownBeUpdated, getRundown, getRundownPlaylist } from '../lib'
+import { getStudioFromDevice, getSegmentId, canBeUpdated, getRundown, getPartId, getRundownPlaylist } from '../lib'
 import {
 	getRundownIdFromMosRO,
 	getPartIdFromMosStory,
@@ -12,13 +12,15 @@ import {
 } from './lib'
 import {
 	literal,
+	asyncCollectionUpdate,
+	waitForPromiseAll,
 	protectString,
 	unprotectString,
 	waitForPromise,
 	getCurrentTime,
 	normalizeArray,
 } from '../../../../lib/lib'
-import { IngestPart, IngestSegment } from '@sofie-automation/blueprints-integration'
+import { IngestPart, IngestSegment, IngestRundown } from '@sofie-automation/blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
 	rundownPlaylistSyncFunction,
@@ -26,7 +28,6 @@ import {
 	handleUpdatedRundownInner,
 	handleUpdatedPartInner,
 	updateSegmentsFromIngestData,
-	canRemoveSegment,
 } from '../rundownInput'
 import {
 	loadCachedRundownData,
@@ -39,14 +40,18 @@ import {
 	updateIngestRundownWithData,
 } from '../ingestCache'
 import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
+import { Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { Segment } from '../../../../lib/collections/Segments'
-import { unsyncAndEmptySegment } from '../../rundown'
+import { Segments, Segment } from '../../../../lib/collections/Segments'
+import { loadShowStyleBlueprint } from '../../blueprints/cache'
+import { removeSegments, ServerRundownAPI } from '../../rundown'
 import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { PartId } from '../../../../lib/collections/Parts'
+import { Parts, PartId } from '../../../../lib/collections/Parts'
+import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { getSelectedPartInstancesFromCache } from '../../playout/lib'
 import { Settings } from '../../../../lib/Settings'
 import { profiler } from '../../profiler'
 
@@ -180,7 +185,13 @@ export function handleMosRundownData(
 			modified: getCurrentTime(),
 		})
 
-		handleUpdatedRundownInner(studio, rundownId, ingestRundown, createFresh, peripheralDevice)
+		handleUpdatedRundownInner(
+			studio,
+			rundownId,
+			ingestRundown,
+			createFresh ? 'mosCreate' : 'mosList',
+			peripheralDevice
+		)
 
 		span?.end()
 	})
@@ -202,7 +213,7 @@ export function handleMosRundownMetadata(
 		'handleMosRundownMetadata',
 		() => {
 			const rundown = getRundown(rundownId, parseMosString(mosRunningOrderBase.ID))
-			if (!canRundownBeUpdated(rundown, false)) return
+			if (!canBeUpdated(rundown)) return
 
 			// Load the blueprint to process the data
 			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
@@ -212,6 +223,8 @@ export function handleMosRundownMetadata(
 					`Failed to ShowStyleBase "${rundown.showStyleBaseId}" for rundown "${rundown._id}"`
 				)
 			}
+			const showStyleBlueprint = loadShowStyleBlueprint(showStyleBase)
+
 			// Load the cached RO Data
 			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 			ingestRundown.payload = _.extend(ingestRundown.payload, mosRunningOrderBase)
@@ -219,7 +232,7 @@ export function handleMosRundownMetadata(
 			// TODO - verify this doesn't lose data, it was doing more work before
 
 			// TODO - make this more lightweight?
-			handleUpdatedRundownInner(studio, rundownId, ingestRundown, false, peripheralDevice)
+			handleUpdatedRundownInner(studio, rundownId, ingestRundown, 'mosRoMetadata', peripheralDevice)
 
 			span?.end()
 		}
@@ -268,7 +281,7 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 		ingestPart.payload = story
 
 		// Update db with the full story:
-		handleUpdatedPartInner(cache, playlist, rundown, ingestSegment.externalId, ingestPart)
+		handleUpdatedPartInner(cache, studio, playlist, rundown, ingestSegment.externalId, ingestPart)
 		waitForPromise(cache.saveAllToDatabase())
 
 		span?.end()
@@ -291,7 +304,7 @@ export function handleMosDeleteStory(
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleMosDeleteStory', () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
-		if (!canRundownBeUpdated(rundown, false)) {
+		if (!canBeUpdated(rundown)) {
 			span?.end()
 			return
 		}
@@ -322,10 +335,8 @@ export function handleMosDeleteStory(
 			return filteredParts
 		})
 
-		// TODO ORPHAN is this guarded correctly?
-
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
-		diffAndApplyChanges(cache, playlist, rundown, ingestRundown, newIngestSegments)
+		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
 		UpdateNext.ensureNextPartIsValid(cache, playlist)
 		waitForPromise(cache.saveAllToDatabase())
 
@@ -368,7 +379,7 @@ export function handleInsertParts(
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleInsertParts', () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
-		if (!canRundownBeUpdated(rundown, false)) return
+		if (!canBeUpdated(rundown)) return
 
 		const existingPlaylist = getRundownPlaylist(rundown)
 
@@ -413,7 +424,7 @@ export function handleInsertParts(
 		})
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(existingPlaylist)) // todo: change this
-		diffAndApplyChanges(cache, existingPlaylist, rundown, ingestRundown, newIngestSegments)
+		diffAndApplyChanges(cache, studio, existingPlaylist, rundown, ingestRundown, newIngestSegments)
 		waitForPromise(cache.saveAllToDatabase())
 
 		span?.end()
@@ -443,7 +454,7 @@ export function handleSwapStories(
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleSwapStories', () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
-		if (!canRundownBeUpdated(rundown, false)) return
+		if (!canBeUpdated(rundown)) return
 
 		const playlist = getRundownPlaylist(rundown)
 
@@ -467,7 +478,7 @@ export function handleSwapStories(
 		})
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
-		diffAndApplyChanges(cache, playlist, rundown, ingestRundown, newIngestSegments)
+		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
 		UpdateNext.ensureNextPartIsValid(cache, playlist)
 		waitForPromise(cache.saveAllToDatabase())
 
@@ -488,7 +499,7 @@ export function handleMoveStories(
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleMoveStories', () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
-		if (!canRundownBeUpdated(rundown, false)) return
+		if (!canBeUpdated(rundown)) return
 
 		const playlist = getRundownPlaylist(rundown)
 
@@ -535,7 +546,7 @@ export function handleMoveStories(
 		})
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
-		diffAndApplyChanges(cache, playlist, rundown, ingestRundown, newIngestSegments)
+		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
 		UpdateNext.ensureNextPartIsValid(cache, playlist)
 		waitForPromise(cache.saveAllToDatabase())
 
@@ -592,6 +603,7 @@ function groupPartsIntoIngestSegments(rundown: Rundown, newIngestParts: Annotate
 
 function diffAndApplyChanges(
 	cache: CacheForRundownPlaylist,
+	studio: Studio,
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	oldIngestRundown: LocalIngestRundown,
@@ -606,6 +618,39 @@ function diffAndApplyChanges(
 	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
 	const newSegmentEntries = compileSegmentEntries(newIngestSegments)
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
+
+	// Check if operation affect currently playing Part:
+	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+	if (playlist.activationId && currentPartInstance && currentPartInstance.rundownId === rundown._id) {
+		let currentPart: LocalIngestPart | undefined = undefined
+
+		for (let i = 0; currentPart === undefined && i < newIngestSegments.length; i++) {
+			const { parts } = newIngestSegments[i]
+			currentPart = parts.find((ingestPart) => {
+				const partId = getPartId(rundown._id, ingestPart.externalId)
+				return partId === currentPartInstance.part._id
+			})
+		}
+
+		if (!currentPart) {
+			// Looks like the currently playing part has been removed.
+			logger.warn(
+				`Currently playing part "${currentPartInstance.part._id}" was removed during ingestData. Unsyncing the rundown!`
+			)
+			if (Settings.allowUnsyncedSegments) {
+				ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, currentPartInstance.part.segmentId)
+			} else {
+				ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+			}
+			span?.end()
+			return
+		} else {
+			// TODO: add logic for determining whether to allow changes to the currently playing Part.
+			// TODO: use isUpdateAllowed()
+		}
+
+		span?.end()
+	}
 
 	// Save new cache
 	const newIngestRundown = updateIngestRundownWithData(oldIngestRundown, newIngestSegments)
@@ -629,8 +674,6 @@ function diffAndApplyChanges(
 	_.each(segmentDiff.onlyExternalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
 		const oldSegmentId = getSegmentId(rundown._id, oldSegmentExternalId)
 		const newSegmentId = getSegmentId(rundown._id, newSegmentExternalId)
-
-		// TODO ORPHAN - can this be done in a more generic way?
 
 		// Move over those parts to the new segmentId.
 		// These parts will be orphaned temporarily, but will be picked up inside of updateSegmentsFromIngestData later
@@ -660,27 +703,20 @@ function diffAndApplyChanges(
 		)
 	})
 
-	// Remove/orphan old segments
-	for (const segmentExternalId of Object.keys(segmentDiff.removed)) {
-		const segmentId = getSegmentId(rundown._id, segmentExternalId)
-		unsyncAndEmptySegment(cache, rundown._id, segmentId)
-
-		// Remove it too, if it can be removed
-		const segment = cache.Segments.findOne(segmentId)
-		if (canRemoveSegment(cache, playlist, segment)) {
-			cache.Segments.remove(segmentId)
-		}
-	}
+	// Remove old segments
+	const removedSegmentIds = _.map(segmentDiff.removed, (_segmentEntry, segmentExternalId) =>
+		getSegmentId(rundown._id, segmentExternalId)
+	)
+	removeSegments(cache, rundown._id, removedSegmentIds)
 
 	// Create/Update segments
 	updateSegmentsFromIngestData(
 		cache,
+		studio,
 		playlist,
 		rundown,
 		_.sortBy([..._.values(segmentDiff.added), ..._.values(segmentDiff.changed)], (se) => se.rank)
 	)
-
-	span?.end()
 }
 
 export interface SegmentEntries {

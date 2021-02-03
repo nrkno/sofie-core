@@ -51,7 +51,7 @@ function createMockRO() {
 		currentPartInstanceId: null,
 		nextPartInstanceId: null,
 		previousPartInstanceId: null,
-		active: true,
+		activationId: protectString('active'),
 	})
 
 	Rundowns.insert({
@@ -62,6 +62,7 @@ function createMockRO() {
 		showStyleBaseId: protectString(''),
 		showStyleVariantId: protectString(''),
 		peripheralDeviceId: protectString(''),
+		dataSource: 'mock',
 		created: 0,
 		modified: 0,
 		importVersions: {} as any,
@@ -118,6 +119,7 @@ function createMockRO() {
 			_id: protectString('mock_part_instance1'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment1'),
+			playlistActivationId: protectString('active'),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
@@ -133,6 +135,7 @@ function createMockRO() {
 			_id: protectString('mock_part_instance2'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment1'),
+			playlistActivationId: protectString('active'),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
@@ -148,6 +151,7 @@ function createMockRO() {
 			_id: protectString('mock_part_instance3'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment1'),
+			playlistActivationId: protectString('active'),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
@@ -164,6 +168,7 @@ function createMockRO() {
 			_id: protectString('mock_part_instance4'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment2'),
+			playlistActivationId: protectString('active'),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
@@ -179,6 +184,7 @@ function createMockRO() {
 			_id: protectString('mock_part_instance5'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment2'),
+			playlistActivationId: protectString('active'),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
@@ -195,6 +201,7 @@ function createMockRO() {
 			_id: protectString('mock_part_instance6'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment3'),
+			playlistActivationId: protectString('active'),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
@@ -211,6 +218,7 @@ function createMockRO() {
 			_id: protectString('mock_part_instance7'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
+			playlistActivationId: protectString('active'),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
@@ -226,6 +234,7 @@ function createMockRO() {
 			_id: protectString('mock_part_instance8'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
+			playlistActivationId: protectString('active'),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
@@ -242,6 +251,7 @@ function createMockRO() {
 			_id: protectString('mock_part_instance9'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
+			playlistActivationId: protectString('active'),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({
@@ -258,6 +268,7 @@ function createMockRO() {
 			_id: protectString('orphan_part_instance1'), // after mock_part_instance8
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
+			playlistActivationId: protectString('active'),
 			takeCount: 0,
 			rehearsal: false,
 			part: literal<DBPart>({

@@ -429,9 +429,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.stopLive()
 				if (Settings.autoRewindLeavingSegment) this.onRewindSegment()
 
-				if (this.props.segmentui && this.props.segmentui.orphaned) {
+				if (this.props.segmentui && this.props.segmentui.unsynced) {
 					const { t } = this.props
-					// TODO ORPHAN
 					// TODO: This doesn't seem right? componentDidUpdate can be triggered in a lot of different ways.
 					// What is this supposed to do?
 					doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, (e) =>
@@ -496,15 +495,20 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 
 			// rewind all scrollLeft's to 0 on rundown activate
-			if (this.props.playlist && this.props.playlist.active && prevProps.playlist && !prevProps.playlist.active) {
+			if (
+				this.props.playlist &&
+				this.props.playlist.activationId &&
+				prevProps.playlist &&
+				!prevProps.playlist.activationId
+			) {
 				this.setState({
 					scrollLeft: 0,
 				})
 			} else if (
 				this.props.playlist &&
-				!this.props.playlist.active &&
+				!this.props.playlist.activationId &&
 				prevProps.playlist &&
-				prevProps.playlist.active
+				prevProps.playlist.activationId
 			) {
 				this.setState({
 					livePosition: 0,

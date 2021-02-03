@@ -39,10 +39,10 @@ export const SegmentContextMenu = withTranslation()(
 			const isCurrentPart =
 				(part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInstanceId) || undefined
 
-			return this.props.studioMode && this.props.playlist && this.props.playlist.active ? (
+			return this.props.studioMode && this.props.playlist && this.props.playlist.activationId ? (
 				<Escape to="document">
 					<ContextMenu id="segment-timeline-context-menu">
-						{this.props.playlist.active ? (
+						{this.props.playlist.activationId ? (
 							<>
 								{part && !part.instance.part.invalid && timecode !== null && (
 									<>
@@ -102,7 +102,7 @@ export const SegmentContextMenu = withTranslation()(
 			t: (key: string | string[], options?: unknown | undefined) => any,
 			segment: SegmentUi | null
 		) => {
-			if (segment && segment.orphaned) {
+			if (segment && segment.unsynced) {
 				return (
 					<MenuItem onClick={(e) => this.props.onResyncSegment(segment, e)}>
 						<span>{t('Resync Segment')}</span>

@@ -56,6 +56,7 @@ describe('Test blueprint api context', () => {
 			// make into a partInstance
 			PartInstances.insert({
 				_id: protectString(`${part._id}_instance`),
+				playlistActivationId: protectString('active'),
 				rundownId: part.rundownId,
 				segmentId: part.segmentId,
 				takeCount: i,
@@ -458,7 +459,7 @@ describe('Test blueprint api context', () => {
 				_id: protectString('not-a-real-part'),
 			}
 
-			const tmpPart = wrapPartToTemporaryInstance(mockPart as DBPart)
+			const tmpPart = wrapPartToTemporaryInstance(protectString('active'), mockPart as DBPart)
 			const context = new PartEventContext('fake', protectString('blueprint1'), rundown, cache, tmpPart)
 			expect(context.getStudio()).toBeTruthy()
 
@@ -790,7 +791,7 @@ describe('Test blueprint api context', () => {
 			const part = rundown.getParts()[3]
 			expect(part).toBeTruthy()
 
-			const partInstance = wrapPartToTemporaryInstance(part)
+			const partInstance = wrapPartToTemporaryInstance(protectString('active'), part)
 			const ingestPart = context.getIngestDataForPartInstance(unprotectPartInstance(partInstance))
 			expect(ingestPart).toBeUndefined()
 		})
@@ -816,7 +817,7 @@ describe('Test blueprint api context', () => {
 				} as any,
 			})
 
-			const partInstance = wrapPartToTemporaryInstance(part)
+			const partInstance = wrapPartToTemporaryInstance(protectString('active'), part)
 			const ingestPart = context.getIngestDataForPartInstance(unprotectObject(partInstance))
 			expect(ingestPart).toEqual({
 				fakeData: true,

@@ -26,6 +26,7 @@ export interface NewRundownAPI {
 	resyncRundown(rundownId: RundownId): Promise<TriggerReloadDataResponse>
 	resyncSegment(rundownId: RundownId, segmentId: SegmentId): Promise<TriggerReloadDataResponse>
 	unsyncRundown(rundownId: RundownId): Promise<void>
+	unsyncSegment(rundownId: RundownId, segmentId: SegmentId): Promise<void>
 	moveRundown(
 		rundownId: RundownId,
 		intoPlaylistId: RundownPlaylistId | null,
@@ -44,6 +45,7 @@ export enum RundownAPIMethods {
 	'resyncRundown' = 'rundown.resyncRundown',
 	'resyncSegment' = 'rundown.resyncSegment',
 	'unsyncRundown' = 'rundown.unsyncRundown',
+	'unsyncSegment' = 'rundown.unsyncSegment',
 	'moveRundown' = 'rundown.moveRundown',
 	'restoreRundownsInPlaylistToDefaultOrder' = 'rundown.restoreRundownsInPlaylistToDefaultOrder',
 }

@@ -26,7 +26,9 @@ export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB
 	expanded?: boolean
 
 	/** Is the segment in an unsynced state? */
-	orphaned?: 'deleted'
+	unsynced?: boolean
+	/** Timestamp of when segment was unsynced */
+	unsyncedTime?: Time
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<SegmentNote>
@@ -43,7 +45,8 @@ export class Segment implements DBSegment {
 	public expanded?: boolean
 	public notes?: Array<SegmentNote>
 	public isHidden?: boolean
-	public orphaned?: 'deleted'
+	public unsynced?: boolean
+	public unsyncedTime?: Time
 	public identifier?: string
 
 	constructor(document: DBSegment) {

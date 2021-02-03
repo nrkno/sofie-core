@@ -72,8 +72,7 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 			}
 			// } else if (isPiece(o)) {
 			// } else if (isPart(o)) {
-		} else if (isSegment(o)) {
-			if (o.externalModified) o.externalModified = 0
+			// } else if (isSegment(o)) {
 			// } else if (isPieceInstance(o)) {
 		}
 		return o

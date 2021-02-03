@@ -156,7 +156,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 export function getActiveRundownPlaylist(cache: CacheForStudioBase, studioId: StudioId): RundownPlaylist | undefined {
 	return cache.RundownPlaylists.findOne({
 		studioId: studioId,
-		active: true,
+		activationId: { $exists: true },
 	})
 }
 

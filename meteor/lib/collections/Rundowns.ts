@@ -79,10 +79,15 @@ export interface DBRundown
 	startedPlayback?: Time
 
 	/** Is the rundown in an unsynced (has been unpublished from ENPS) state? */
-	orphaned?: 'deleted' | 'from-snapshot'
+	unsynced?: boolean
+	/** Timestamp of when rundown was unsynced */
+	unsyncedTime?: Time
 
 	/** Last sent storyStatus to ingestDevice (MOS) */
 	notifiedCurrentPlayingPartExternalId?: string
+
+	/** What the source of the data was */
+	dataSource: string
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
 	notes?: Array<RundownNote>
@@ -108,7 +113,9 @@ export class Rundown implements DBRundown {
 	public description?: string
 	public expectedStart?: Time
 	public expectedDuration?: number
-	public metaData?: unknown
+	public metaData?: {
+		[key: string]: any
+	}
 	// From IBlueprintRundownDB:
 	public _id: RundownId
 	public showStyleVariantId: ShowStyleVariantId
@@ -122,9 +129,11 @@ export class Rundown implements DBRundown {
 	public importVersions: RundownImportVersions
 	public status?: string
 	public airStatus?: string
-	public orphaned?: 'deleted'
+	public unsynced?: boolean
+	public unsyncedTime?: Time
 	public startedPlayback?: Time
 	public notifiedCurrentPlayingPartExternalId?: string
+	public dataSource: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
 	public externalNRCSName: string

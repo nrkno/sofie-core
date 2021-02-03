@@ -544,7 +544,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		onToggleSticky = (sourceLayerId: string, e: any) => {
-			if (this.props.currentRundown && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
+			if (this.props.currentRundown && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
 				const { t } = this.props
 				doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
 					MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId)
