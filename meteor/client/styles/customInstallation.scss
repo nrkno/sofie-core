@@ -336,6 +336,13 @@ body.tv2 {
 			}
 		}
 
+		&:not(.list) {
+			.dashboard-panel__panel__button__sub-label {
+				width: 100%;
+				text-align: right;
+			}
+		}
+
 		&.list {
 			&.selected > .dashboard-panel__panel__button__content {
 				box-shadow: inset 0 0 0 4px var(--general-next-color);
