@@ -56,7 +56,7 @@ function toI18NextData(translations: Translation[]): I18NextData {
 
 function getAndCacheTranslationBundle(bundleId: TranslationsBundleId) {
 	return new Promise<TranslationsBundle>((resolve, reject) =>
-		MeteorCall.userAction.getTranslationBundle(bundleId).then(
+		MeteorCall.system.getTranslationBundle(bundleId).then(
 			(response) => {
 				if (ClientAPI.isClientResponseSuccess(response) && response.result) {
 					localStorage.setItem(`i18n.translationBundles.${bundleId}`, JSON.stringify(response.result))

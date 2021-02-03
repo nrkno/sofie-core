@@ -3,7 +3,7 @@ import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import { getCurrentTime, getHash, makePromise } from '../../lib/lib'
-import { Rundowns, RundownHoldState, RundownId, Rundown } from '../../lib/collections/Rundowns'
+import { Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { Parts, Part, PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout/playout'
@@ -21,7 +21,7 @@ import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDa
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { getActiveRundownPlaylistsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
-import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import {
 	PieceInstances,
@@ -50,8 +50,6 @@ import { profiler } from './profiler'
 import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { checkAccessAndGetPlaylist, checkAccessAndGetRundown } from './lib'
-import { TranslationsBundle, TranslationsBundleId } from '../../lib/collections/TranslationsBundles'
-import { getBundle as getTranslationBundleInner } from './translationsBundles'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -595,12 +593,6 @@ export function mediaAbortAllWorkflows(context: MethodContext) {
 	const access = OrganizationContentWriteAccess.anyContent(context)
 	return ClientAPI.responseSuccess(MediaManagerAPI.abortAllWorkflows(context, access.organizationId))
 }
-export function getTranslationBundle(context: MethodContext, bundleId: TranslationsBundleId) {
-	check(bundleId, String)
-
-	const access = OrganizationContentWriteAccess.anyContent(context)
-	return ClientAPI.responseSuccess(getTranslationBundleInner(bundleId))
-}
 export function bucketsRemoveBucket(context: MethodContext, id: BucketId) {
 	check(id, String)
 
@@ -1065,9 +1057,6 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	}
 	guiBlurred(_userEvent: string, _viewInfo: any[]) {
 		return traceAction('userAction.noop', noop, this)
-	}
-	getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>> {
-		return makePromise(() => getTranslationBundle(this, bundleId))
 	}
 	bucketsRemoveBucket(_userEvent: string, id: BucketId) {
 		return traceAction(UserActionAPIMethods.bucketsRemoveBucket, bucketsRemoveBucket, this, id)

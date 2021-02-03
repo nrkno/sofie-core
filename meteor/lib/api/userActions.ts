@@ -17,7 +17,6 @@ import { IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integr
 import { BucketAdLib } from '../collections/BucketAdlibs'
 import { AdLibActionId, AdLibActionCommon } from '../collections/AdLibActions'
 import { BucketAdLibAction } from '../collections/BucketAdlibActions'
-import { TranslationsBundle, TranslationsBundleId } from '../collections/TranslationsBundles'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -161,7 +160,6 @@ export interface NewUserActionAPI extends MethodContext {
 	restartCore(userEvent: string, token: string): Promise<ClientAPI.ClientResponse<string>>
 	guiFocused(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
 	guiBlurred(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
-	getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>>
 	bucketsRemoveBucket(userEvent: string, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
 	bucketsModifyBucket(
 		userEvent: string,
