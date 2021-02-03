@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../lib/collections/ExternalMessageQueue'
-import { ExternalMessageQueueObjSOAP } from 'tv-automation-sofie-blueprints-integration'
+import { ExternalMessageQueueObjSOAP } from '@sofie-automation/blueprints-integration'
 // Cyclic dependency issues with import of throwFatalError
 // import { throwFatalError } from '../server/api/ExternalMessageQueue'
 import { Fiber } from './Fibers'

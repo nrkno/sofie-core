@@ -15,10 +15,8 @@ import { SegmentId, Segment, Segments } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { touchRundownPlaylistsInCache } from '../playout/lib'
 import { Credentials } from '../../security/lib/credentials'
-import { IngestRundown, ExtendedIngestRundown, IBlueprintRundown } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 
@@ -83,11 +81,15 @@ export function getRundownPlaylist(rundown: Rundown): RundownPlaylist {
 	span?.end()
 	return playlist
 }
-export function getRundown(rundownId: RundownId, externalRundownId: string): Rundown {
+export function getRundown(rundownId: RundownId, externalRundownId?: string): Rundown {
 	const span = profiler.startSpan('mosDevice.lib.getRundown')
 
 	const rundown = Rundowns.findOne(rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" ("${externalRundownId}") not found`)
+	if (!rundown)
+		throw new Meteor.Error(
+			404,
+			`Rundown "${rundownId}" ${externalRundownId && `("${externalRundownId}")`} not found`
+		)
 	rundown.touch()
 
 	span?.end()

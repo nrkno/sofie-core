@@ -59,9 +59,11 @@ export namespace ClientAPI {
 	}
 	export type ClientResponse<Result> = ClientResponseError | ClientResponseSuccess<Result>
 	export function isClientResponseError(res: any): res is ClientResponseError {
-		return _.isObject(res) && !_.isArray(res) && res.error !== undefined
+		// a ClientResponseError has largely the same signature as a Meteor.Error, so we need to check that the
+		// `.errorType` is not equal `Meteor.Error`, since that's a signature of an exception thrown
+		return !!(_.isObject(res) && !_.isArray(res) && res.error !== undefined && res.errorType !== 'Meteor.Error')
 	}
 	export function isClientResponseSuccess(res: any): res is ClientResponseSuccess<any> {
-		return _.isObject(res) && !_.isArray(res) && res.error === undefined && res.success
+		return !!(_.isObject(res) && !_.isArray(res) && res.error === undefined && res.success)
 	}
 }

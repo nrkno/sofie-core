@@ -1,11 +1,11 @@
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Omit, ProtectedString, Time } from '../lib'
-import { TimelineObjectCoreExt, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { TimelineObjectCoreExt, TSR, OnGenerateTimelineObj } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
 import { createMongoCollection } from './lib'
 import { StudioId, ResultingMappingRoutes } from './Studios'
 import { PartInstanceId } from './PartInstances'
-import { PieceInstanceId } from './PieceInstances'
+import { PieceInstanceId, PieceInstanceInfiniteId } from './PieceInstances'
 import { RundownPlaylistId } from './RundownPlaylists'
 import { BlueprintId } from './Blueprints'
 
@@ -19,6 +19,14 @@ export type TimelineObjId = ProtectedString<'TimelineObjId'>
 export type TimelineHash = ProtectedString<'TimelineHash'>
 
 export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
+
+export interface OnGenerateTimelineObjExt<TMetadata = unknown, TKeyframeMetadata = unknown>
+	extends OnGenerateTimelineObj<TMetadata, TKeyframeMetadata> {
+	/** The id of the partInstance this object belongs to */
+	partInstanceId: PartInstanceId | null
+	/** If this is from an infinite piece, the id of the infinite instance */
+	infinitePieceInstanceId?: PieceInstanceInfiniteId
+}
 
 export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	/** Unique within a timeline (ie within a studio) */
@@ -97,27 +105,41 @@ export function getRoutedTimeline(
 ): TimelineObjGeneric[] {
 	const outputTimelineObjs: TimelineObjGeneric[] = []
 
-	_.each(inputTimelineObjs, (obj) => {
-		const inputLayer = obj.layer + ''
-		const routes = mappingRoutes[inputLayer]
+	for (let obj of inputTimelineObjs) {
+		let inputLayer = obj.layer + ''
+		if (obj.isLookahead && obj.lookaheadForLayer) {
+			// For lookahead objects, .layer doesn't point to any real layer
+			inputLayer = obj.lookaheadForLayer + ''
+		}
+		const routes = mappingRoutes.existing[inputLayer]
 		if (routes) {
-			_.each(routes, (route, i) => {
+			for (let i = 0; i < routes.length; i++) {
+				const route = routes[i]
 				const routedObj: TimelineObjGeneric = {
 					...obj,
 					layer: route.outputMappedLayer,
+				}
+				if (routedObj.isLookahead && routedObj.lookaheadForLayer) {
+					// Update lookaheadForLayer to reference the original routed layer:
+					updateLookaheadLayer(routedObj)
 				}
 				if (i > 0) {
 					// If there are multiple routes we must rename the ids, so that they stay unique.
 					routedObj.id = `_${i}_${routedObj.id}`
 				}
 				outputTimelineObjs.push(routedObj)
-			})
+			}
 		} else {
 			// If no route is found at all, pass it through (backwards compatibility)
 			outputTimelineObjs.push(obj)
 		}
-	})
+	}
 	return outputTimelineObjs
+}
+export function updateLookaheadLayer(obj: TimelineObjRundown): void {
+	// Set lookaheadForLayer to reference the original layer:
+	obj.lookaheadForLayer = obj.layer
+	obj.layer += '_lookahead'
 }
 export interface TimelineComplete {
 	/** The id of the timeline. Since there is one (1) timeline in a studio, we can use that id here. */

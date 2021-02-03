@@ -1,12 +1,15 @@
 # syntax=docker/dockerfile:experimental
 # BUILD IMAGE
-FROM node:12.18.3
-RUN curl "https://install.meteor.com/?release=1.11" | sh
-COPY meteor /opt/core/meteor
-WORKDIR /opt/core/meteor
+FROM node:12.18.4
+RUN curl "https://install.meteor.com/?release=1.11.1" | sh
 # Temporary change the NODE_ENV env variable, so that all libraries are installed:
 ENV NODE_ENV_TMP $NODE_ENV
 ENV NODE_ENV anythingButProduction
+COPY packages /opt/core/packages
+WORKDIR /opt/core/packages
+RUN yarn install && yarn build
+COPY meteor /opt/core/meteor
+WORKDIR /opt/core/meteor
 # Force meteor to setup the runtime
 RUN meteor --version --allow-superuser
 RUN meteor npm install
@@ -17,7 +20,7 @@ WORKDIR /opt/bundle/programs/server/
 RUN npm install
 
 # DEPLOY IMAGE
-FROM node:12.18.3-slim
+FROM node:12.18.4-slim
 COPY --from=0 /opt/bundle /opt/core
 COPY docker-entrypoint.sh /opt
 WORKDIR /opt/core/

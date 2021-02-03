@@ -11,9 +11,11 @@ import { PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './SegmentTimeli
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { unprotectString } from '../../../lib/lib'
+import { Studio } from '../../../lib/collections/Studios'
 
 interface IProps {
 	playlist: RundownPlaylist
+	studio: Studio
 	part?: PartUi
 	outputGroups?: {
 		[key: string]: IOutputLayerUi
@@ -27,7 +29,14 @@ interface IProps {
 	isCollapsed?: boolean
 }
 
-export const SegmentNextPreview = withTranslation()(
+/**
+ * This code is not used anywhere, and it's just saved here, because the idea of a SegmentNextPreview comes up occasionally
+ * and it would be a waste of time to try and dig it out of the darkness of the ages.
+ *
+ * -- Jan Starzak, 2020/11/12
+ */
+
+/* export const SegmentNextPreview = withTranslation()(
 	class SegmentNextPreview extends React.Component<Translated<IProps>> {
 		renderSourceLayers(outputLayer: IOutputLayerUi, layers: ISourceLayerUi[] | undefined) {
 			if (layers) {
@@ -57,7 +66,7 @@ export const SegmentNextPreview = withTranslation()(
 												this.props.part && (
 													<SourceLayerItemContainer
 														key={unprotectString(piece.instance._id)}
-														{...this.props}
+														studio={this.props.studio}
 														// The following code is fine, just withTracker HOC messing with available props
 														isLiveLine={false}
 														isNextLine={false}
@@ -131,4 +140,4 @@ export const SegmentNextPreview = withTranslation()(
 			)
 		}
 	}
-)
+) */

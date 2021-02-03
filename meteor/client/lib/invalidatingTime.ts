@@ -5,9 +5,14 @@ import { getCurrentTime } from '../../lib/lib'
 export function invalidateAfter(timeout: number): void {
 	const time = new Tracker.Dependency()
 	time.depend()
-	setTimeout(() => {
+	const t = setTimeout(() => {
 		time.changed()
 	}, timeout)
+	if (Tracker.currentComputation) {
+		Tracker.currentComputation.onInvalidate(() => {
+			clearTimeout(t)
+		})
+	}
 }
 
 /** Invalidate a reactive computation after when a given time is reached */

@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
-import { SourceLayerType, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import {
 	getCurrentTime,
 	literal,
@@ -9,7 +9,6 @@ import {
 	unprotectString,
 	getRandomId,
 	waitForPromise,
-	unprotectStringArray,
 	assertNever,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
@@ -19,13 +18,7 @@ import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
 import { Part } from '../../../lib/collections/Parts'
-import {
-	prefixAllObjectIds,
-	setNextPart,
-	getRundownIDsFromCache,
-	getAllPieceInstancesFromCache,
-	getSelectedPartInstancesFromCache,
-} from './lib'
+import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache, getSelectedPartInstancesFromCache } from './lib'
 import {
 	convertAdLibToPieceInstance,
 	getResolvedPieces,
@@ -46,13 +39,9 @@ import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collec
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { MongoQuery } from '../../../lib/typings/meteor'
-import {
-	syncPlayheadInfinitesForNextPartInstance,
-	DEFINITELY_ENDED_FUTURE_DURATION,
-	fetchPiecesThatMayBeActiveForPart,
-} from './infinites'
+import { syncPlayheadInfinitesForNextPartInstance, fetchPiecesThatMayBeActiveForPart } from './infinites'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { getPieceInstancesForPart } from './infinites'
 
@@ -97,7 +86,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 				const showStyleBase = rundown.getShowStyleBase() // todo: database
 				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
-				if (sourceLayer && sourceLayer.type !== SourceLayerType.GRAPHICS)
+				if (sourceLayer && (sourceLayer.type !== SourceLayerType.GRAPHICS || sourceLayer.exclusiveGroup))
 					throw new Meteor.Error(
 						403,
 						`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS item!`
@@ -529,8 +518,6 @@ export namespace ServerPlayoutAdLibAPI {
 							},
 						}
 						if (pieceInstance.infinite) {
-							// Mark where this ends
-							up['infinite.lastPartInstanceId'] = currentPartInstance._id
 							stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
 						}
 
@@ -573,6 +560,7 @@ export namespace ServerPlayoutAdLibAPI {
 							),
 							dynamicallyInserted: getCurrentTime(),
 							infinite: {
+								infiniteInstanceId: getRandomId(),
 								infinitePieceId: pieceId,
 								fromPreviousPart: false,
 							},
@@ -641,8 +629,7 @@ export namespace ServerPlayoutAdLibAPI {
 					)
 				}
 
-				const newPieceInstance = convertAdLibToPieceInstance(bucketAdlib, currentPartInstance, queue)
-				innerStartAdLibPiece(cache, rundownPlaylist, rundown, currentPartInstance, newPieceInstance)
+				innerStartOrQueueAdLibPiece(cache, rundownPlaylist, rundown, queue, currentPartInstance, bucketAdlib)
 
 				waitForPromise(cache.saveAllToDatabase())
 			}

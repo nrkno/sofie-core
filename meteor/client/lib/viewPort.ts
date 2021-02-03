@@ -6,7 +6,11 @@ import { Parts, PartId } from '../../lib/collections/Parts'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { SegmentId } from '../../lib/collections/Segments'
 import { isProtectedString } from '../../lib/lib'
-import { RundownViewEvents, IGoToPartEvent, IGoToPartInstanceEvent } from '../ui/RundownView'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	GoToPartEvent,
+	GoToPartInstanceEvent,
+} from '../ui/RundownView/RundownViewEventBus'
 import { Settings } from '../../lib/Settings'
 
 let focusInterval: NodeJS.Timer | undefined
@@ -56,14 +60,10 @@ export function scrollToPartInstance(
 	quitFocusOnPart()
 	const partInstance = PartInstances.findOne(partInstanceId)
 	if (partInstance) {
-		window.dispatchEvent(
-			new CustomEvent<IGoToPartInstanceEvent>(RundownViewEvents.goToPart, {
-				detail: {
-					segmentId: partInstance.segmentId,
-					partInstanceId: partInstanceId,
-				},
-			})
-		)
+		RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART_INSTANCE, {
+			segmentId: partInstance.segmentId,
+			partInstanceId: partInstanceId,
+		})
 		return scrollToSegment(partInstance.segmentId, forceScroll, noAnimation)
 	}
 	return Promise.reject('Could not find PartInstance')
@@ -75,14 +75,10 @@ export async function scrollToPart(partId: PartId, forceScroll?: boolean, noAnim
 	if (part) {
 		await scrollToSegment(part.segmentId, forceScroll, noAnimation)
 
-		window.dispatchEvent(
-			new CustomEvent<IGoToPartEvent>(RundownViewEvents.goToPart, {
-				detail: {
-					segmentId: part.segmentId,
-					partId: partId,
-				},
-			})
-		)
+		RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART, {
+			segmentId: part.segmentId,
+			partId: partId,
+		})
 
 		return true // rather meaningless as we don't know what happened
 	}
@@ -187,10 +183,6 @@ function innerScrollToSegment(
 
 					pendingSecondStageScroll = window.requestIdleCallback(
 						() => {
-							let { top, bottom } = elementToScrollTo!.getBoundingClientRect()
-							top = Math.floor(top)
-							bottom = Math.floor(bottom)
-
 							if (!secondStage) {
 								let { top, bottom } = elementToScrollTo!.getBoundingClientRect()
 								top = Math.floor(top)
@@ -259,17 +251,20 @@ export function scrollToPosition(scrollPosition: number, noAnimation?: boolean):
 				scrollToPositionRequestReject('Prevented by another scroll')
 
 			scrollToPositionRequestReject = reject
+			const currentTop = window.scrollY
+			const targetTop = Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN)
 			scrollToPositionRequest = window.requestIdleCallback(
 				() => {
 					window.scroll({
-						top: Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN),
+						top: targetTop,
 						left: 0,
 						behavior: 'smooth',
 					})
 					setTimeout(() => {
 						resolve()
 						scrollToPositionRequestReject = undefined
-					}, 3000)
+						// this formula was experimentally created from Chrome 86 behavior
+					}, 3000 * Math.log(Math.abs(currentTop - targetTop) / 2000 + 1))
 				},
 				{ timeout: 250 }
 			)

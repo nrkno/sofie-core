@@ -9,7 +9,7 @@ import {
 	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
 	TimelineObjectCoreExt,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import {
 	SegmentExtended,
 	PartExtended,
@@ -29,7 +29,10 @@ import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { createPieceGroupAndCap, PieceGroupMetadata } from '../../lib/rundown/pieces'
-import { PieceInstances } from '../../lib/collections/PieceInstances'
+import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
+import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
+import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
+import { FindOptions } from '../../lib/typings/meteor'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
@@ -227,14 +230,25 @@ export namespace RundownUtils {
 	 * @export
 	 * @param {ShowStyleBase} showStyleBase
 	 * @param {RundownPlaylist} playlist
-	 * @param {Segment} segment
+	 * @param {DBSegment} segment
+	 * @param {Set<SegmentId>} segmentsBeforeThisInRundownSet
+	 * @param {PartId[]} orderedAllPartIds
+	 * @param {boolean} [pieceInstanceSimulation=false] Can be used client-side to simulate the contents of a
+	 * 		PartInstance, whose contents are being streamed in. When ran in a reactive context, the computation will
+	 * 		be eventually invalidated so that the actual data can be streamed in (to show that the part is actually empty)
+	 * @param {boolean} [includeDisabledPieces=false] In some uses (like when previewing a Segment in the GUI) it's needed
+	 * 		to consider disabled Piecess as where they are, insted of stripping them out. When enabled, the method will
+	 * 		keep them in the result set.
+	 * @return {*}  {({
 	 */
 	export function getResolvedSegment(
 		showStyleBase: ShowStyleBase,
 		playlist: RundownPlaylist,
 		segment: DBSegment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
-		orderedAllPartIds: PartId[]
+		orderedAllPartIds: PartId[],
+		pieceInstanceSimulation: boolean = false,
+		includeDisabledPieces: boolean = false
 	): {
 		/** A Segment with some additional information */
 		segmentExtended: SegmentExtended
@@ -377,6 +391,13 @@ export namespace RundownUtils {
 					hasAlreadyPlayed = true
 				}
 
+				const pieceInstanceFieldOptions: FindOptions<PieceInstance> = {
+					fields: {
+						startedPlayback: 0,
+						stoppedPlayback: 0,
+					},
+				}
+
 				const rawPieceInstances = getPieceInstancesForPartInstance(
 					partInstance,
 					new Set(partIds.slice(0, itIndex)),
@@ -385,10 +406,15 @@ export namespace RundownUtils {
 					currentPartIndex !== null && nextPartIndex !== null ? currentPartIndex < nextPartIndex : false,
 					currentPartInstance,
 					currentPartInstance
-						? PieceInstances.find({
-								partInstanceId: currentPartInstance._id,
-						  }).fetch()
-						: undefined
+						? PieceInstances.find(
+								{
+									partInstanceId: currentPartInstance._id,
+								},
+								pieceInstanceFieldOptions
+						  ).fetch()
+						: undefined,
+					pieceInstanceFieldOptions,
+					pieceInstanceSimulation
 				)
 
 				const partStarted = partE.instance.timings?.startedPlayback
@@ -397,7 +423,8 @@ export namespace RundownUtils {
 				const preprocessedPieces = processAndPrunePieceInstanceTimings(
 					showStyleBase,
 					rawPieceInstances,
-					nowInPart
+					nowInPart,
+					includeDisabledPieces
 				)
 
 				// insert items into the timeline for resolution
@@ -657,18 +684,38 @@ export namespace RundownUtils {
 		// get the part immediately after the last segment
 	}
 
-	export function isPieceInstance(piece: PieceUi | AdLibPieceUi): piece is PieceUi {
+	export function isPieceInstance(
+		piece: BucketAdLibItem | IAdLibListItem | PieceUi | AdLibPieceUi
+	): piece is PieceUi {
 		if (piece['instance'] && piece['name'] === undefined) {
 			return true
 		}
 		return false
 	}
 
-	export function isAdLibPiece(piece: PieceUi | AdLibPieceUi): piece is AdLibPieceUi {
+	export function isAdLibPiece(
+		piece: PieceUi | IAdLibListItem | BucketAdLibItem
+	): piece is IAdLibListItem | BucketAdLibUi {
 		if (piece['instance'] || piece['name'] === undefined) {
 			return false
 		}
 		return true
+	}
+
+	export function isAdLibPieceOrAdLibListItem(
+		piece: IAdLibListItem | PieceUi | AdLibPieceUi | BucketAdLibItem
+	): piece is IAdLibListItem | AdLibPieceUi | BucketAdLibItem {
+		if (piece['instance'] || piece['name'] === undefined) {
+			return false
+		}
+		return true
+	}
+
+	export function isAdLibActionItem(piece: IAdLibListItem | AdLibPieceUi | BucketAdLibItem): boolean {
+		if (piece['adlibAction']) {
+			return true
+		}
+		return false
 	}
 
 	export function isAdlibActionContent(

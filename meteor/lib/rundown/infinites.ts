@@ -6,14 +6,23 @@ import {
 	rewrapPieceToInstance,
 	unprotectPieceInstance,
 } from '../collections/PieceInstances'
-import { DBPart, PartId, Part } from '../collections/Parts'
+import { DBPart, PartId } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
-import { PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
-import { assertNever, max, flatten, literal, protectString } from '../lib'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import {
+	assertNever,
+	max,
+	flatten,
+	literal,
+	protectString,
+	normalizeArrayFuncFilter,
+	unprotectString,
+	getRandomId,
+} from '../lib'
 import { Mongo } from 'meteor/mongo'
-import { Studio } from '../collections/Studios'
 import { ShowStyleBase } from '../collections/ShowStyleBases'
+import { getPieceGroupId } from './timeline'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
 	return { startPartId: part._id }
@@ -316,11 +325,17 @@ export function getPieceInstancesForPart(
 
 	// Compile the resulting list
 
+	const playingPieceInstancesMap = normalizeArrayFuncFilter(playingPieceInstances ?? [], (p) =>
+		unprotectString(p.infinite?.infiniteInstanceId)
+	)
+
 	const wrapPiece = (p: PieceInstancePiece) => {
 		const instance = rewrapPieceToInstance(p, part.rundownId, newInstanceId, isTemporary)
 
 		if (!instance.infinite && instance.piece.lifespan !== PieceLifespan.WithinPart) {
+			const existingPiece = playingPieceInstancesMap[unprotectString(instance.piece._id)]
 			instance.infinite = {
+				infiniteInstanceId: existingPiece?.infinite?.infiniteInstanceId ?? getRandomId(),
 				infinitePieceId: instance.piece._id,
 				fromPreviousPart: instance.piece.startPartId !== part._id,
 			}
@@ -342,11 +357,11 @@ export function getPieceInstancesForPart(
 	const normalPieces = possiblePieces.filter((p) => p.startPartId === part._id)
 	const result = normalPieces.map(wrapPiece).concat(infinitesFromPrevious)
 	for (const pieceSet of Array.from(piecesOnSourceLayers.values())) {
-		const basicPieces = _.compact([
+		const onEndPieces = _.compact([
 			pieceSet[PieceLifespan.OutOnRundownEnd],
 			pieceSet[PieceLifespan.OutOnSegmentEnd],
 		])
-		result.push(...basicPieces.map(wrapPiece))
+		result.push(...onEndPieces.map(wrapPiece))
 
 		// if (pieceSet.onChange) {
 		// 	result.push(rewrapInstance(pieceSet.onChange))
@@ -373,9 +388,7 @@ function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number
 	const offset = newPiece.piece.adlibPreroll
 	if (!offset) return start
 
-	return typeof start === 'number'
-		? start + offset
-		: `#${getPieceGroupId(unprotectPieceInstance(newPiece))}.start + ${offset}`
+	return typeof start === 'number' ? start + offset : `#${getPieceGroupId(newPiece)}.start + ${offset}`
 }
 
 /**
@@ -386,7 +399,8 @@ function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number
 export function processAndPrunePieceInstanceTimings(
 	showStyle: ShowStyleBase,
 	pieces: PieceInstance[],
-	nowInPart: number
+	nowInPart: number,
+	keepDisabledPieces?: boolean
 ): PieceInstanceWithTimings[] {
 	const result: PieceInstanceWithTimings[] = []
 
@@ -424,8 +438,13 @@ export function processAndPrunePieceInstanceTimings(
 	}
 
 	const groupedPieces = _.groupBy(
-		pieces.filter((p) => !p.disabled),
-		(p) => exclusiveGroupMap.get(p.piece.sourceLayerId) || p.piece.sourceLayerId
+		keepDisabledPieces ? pieces : pieces.filter((p) => !p.disabled),
+		// At this stage, if a Piece is disabled, the `keepDisabledPieces` must be turned on. If that's the case
+		// we split out the disabled Pieces onto the sourceLayerId they actually exist on, instead of putting them
+		// onto the shared "exclusivityGroup" layer. This may cause it to not display "exactly" accurately
+		// while in the disabled state, but it should keep it from affecting any not-disabled Pieces.
+		(p) =>
+			p.disabled ? p.piece.sourceLayerId : exclusiveGroupMap.get(p.piece.sourceLayerId) || p.piece.sourceLayerId
 	)
 	for (const pieces of Object.values(groupedPieces)) {
 		// Group and sort the pieces so that we can step through each point in time

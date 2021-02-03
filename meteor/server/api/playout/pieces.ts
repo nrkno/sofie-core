@@ -11,24 +11,19 @@ import {
 	normalizeArray,
 	protectString,
 	unprotectString,
-	omit,
 	flatten,
 	applyToArray,
+	getRandomId,
 } from '../../../lib/lib'
 import {
 	TimelineObjPieceAbstract,
 	TimelineObjType,
 	TimelineObjRundown,
 	TimelineObjGeneric,
+	OnGenerateTimelineObjExt,
 } from '../../../lib/collections/Timeline'
 import { logger } from '../../logging'
-import {
-	getPieceFirstObjectId,
-	TimelineObjectCoreExt,
-	OnGenerateTimelineObj,
-	TSR,
-	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
+import { TimelineObjectCoreExt, TSR, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
@@ -42,6 +37,7 @@ import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infini
 import { createPieceGroupAndCap, PieceGroupMetadata, PieceTimelineMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
+import { getPieceFirstObjectId } from '../../../lib/rundown/timeline'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	const aStart = a.enable.start === 'now' ? nowInPart : a.enable.start
@@ -80,13 +76,14 @@ export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[
 export function createPieceGroupFirstObject(
 	playlistId: RundownPlaylistId,
 	pieceInstance: DeepReadonly<PieceInstance>,
-	pieceGroup: TimelineObjRundown,
+	pieceGroup: TimelineObjRundown & OnGenerateTimelineObjExt,
 	firstObjClasses?: string[]
-): TimelineObjPieceAbstract & OnGenerateTimelineObj {
-	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObj>({
-		id: getPieceFirstObjectId(unprotectString(pieceInstance._id)),
+): TimelineObjPieceAbstract & OnGenerateTimelineObjExt {
+	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObjExt>({
+		id: getPieceFirstObjectId(pieceInstance),
 		pieceInstanceId: unprotectString(pieceInstance._id),
-		infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
+		infinitePieceInstanceId: pieceInstance.infinite?.infiniteInstanceId,
+		partInstanceId: pieceGroup.partInstanceId,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
 		layer: pieceInstance.piece.sourceLayerId + '_firstobject',
@@ -356,13 +353,7 @@ export function convertAdLibToPieceInstance(
 		}),
 	})
 
-	if (newPieceInstance.piece.lifespan !== PieceLifespan.WithinPart) {
-		// Set it up as an infinite
-		newPieceInstance.infinite = {
-			infinitePieceId: newPieceInstance.piece._id,
-			fromPreviousPart: false,
-		}
-	}
+	setupPieceInstanceInfiniteProperties(newPieceInstance)
 
 	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
 		let contentObjects = newPieceInstance.piece.content.timelineObjects
@@ -387,7 +378,7 @@ export function setupPieceInstanceInfiniteProperties(pieceInstance: PieceInstanc
 	if (pieceInstance.piece.lifespan !== PieceLifespan.WithinPart) {
 		// Set it up as an infinite
 		pieceInstance.infinite = {
-			// infiniteInstanceId: getRandomId(),
+			infiniteInstanceId: getRandomId(),
 			infinitePieceId: pieceInstance.piece._id,
 			fromPreviousPart: false,
 		}

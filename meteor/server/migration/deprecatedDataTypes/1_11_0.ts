@@ -6,7 +6,7 @@ import {
 	PieceLifespan,
 	BaseContent,
 	Time,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { PartId } from '../../../lib/collections/Parts'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PieceId } from '../../../lib/collections/Pieces'

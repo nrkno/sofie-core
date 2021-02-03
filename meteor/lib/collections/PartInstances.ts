@@ -14,7 +14,7 @@ import {
 	PartEndState,
 	Time,
 	IBlueprintPartInstanceTimings,
-} from 'tv-automation-sofie-blueprints-integration'
+} from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { DBPart, Part } from './Parts'
 import { RundownId } from './Rundowns'
@@ -57,6 +57,9 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 
 	/** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
 	previousPartEndState?: PartEndState
+
+	/** The transition props as used when entering this PartInstance */
+	allowedToUseTransition?: boolean
 }
 
 export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {
@@ -89,6 +92,8 @@ export class PartInstance implements DBPartInstance {
 	public _id: PartInstanceId
 	public segmentId: SegmentId
 	public rundownId: RundownId
+
+	public allowedToUseTransition?: boolean
 
 	constructor(document: DBPartInstance, isTemporary?: boolean) {
 		_.each(_.keys(document), (key) => {

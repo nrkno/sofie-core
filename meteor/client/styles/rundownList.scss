@@ -1,9 +1,305 @@
-.rundown-list-item {
-	.rundown-list-item__actions {
-		min-width: 4em;
+// Root playlist/rundown list, see RundownList.tsx
+.rundown-list {
+	--defaultSpacing: 20px;
+	--defaultItemBackgroundColor: #f6f6f6;
+	--descendantItemBackgroundColor: #e5e5e5;
+	--treeLinesColor: #dddddd;
 
-		> .action-btn {
-			width: 1.5em;
+	/* Column width percentage definitions
+	 *
+	 * Note that the standard size is used for several columns, which is why these
+	 * percentages do not add up to a perfect 100% (ie. 1.0)
+	 */
+	--nameColumnSize: 0.4;
+	--showStyleColumnSize: 0.17;
+	--standardColumnSize: 0.11;
+	--actionsColumnSize: 0.05;
+	--layoutSelectionColumnSize: 0.05;
+
+	/* "column" width calculations */
+	--statusBarWidth: 2.1rem; //  the width of the floating right status bar
+	--componentWidth: calc(100% - var(--statusBarWidth));
+	--nameColumnWidth: calc(var(--componentWidth) * var(--nameColumnSize));
+	--showStyleColumnWidth: calc(var(--componentWidth) * var(--showStyleColumnSize));
+	--airTimeColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
+	--durationColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
+	--lastModifiedColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
+	--layoutSelectionColumnWidth: calc(var(--componentWidth) * var(--layoutSelectionColumnSize));
+	--actionsColumnWidth: calc(var(--componentWidth) * var(--actionsColumnSize));
+
+	background-color: transparent;
+	width: 100%;
+	padding-right: var(--statusBarWidth);
+
+	.rundown-list__header {
+		display: grid;
+		grid-template-columns:
+			var(--nameColumnWidth) var(--showStyleColumnWidth) var(--airTimeColumnWidth)
+			var(--durationColumnWidth) var(--lastModifiedColumnWidth) var(--layoutSelectionColumnWidth) var(--actionsColumnWidth);
+
+		background-color: #898989;
+		color: #fff;
+		padding: 5px var(--defaultSpacing) 7px;
+		vertical-align: middle;
+	}
+
+	.rundown-list-item__name {
+		display: inline-block;
+		align-self: center;
+		align-items: center;
+
+		.draghandle {
+			cursor: grab;
+			width: var(--defaultSpacing);
+
+			button {
+				all: unset;
+				display: inline-flex;
+				align-self: center;
+				justify-content: center;
+				width: inherit;
+				overflow: hidden;
+
+				svg {
+					height: 1em;
+					width: 1em;
+					top: 0.125em;
+					position: relative;
+				}
+			}
+		}
+
+		.rundown-name {
+			margin-left: var(--defaultSpacing);
+		}
+	}
+	.rundown-list-description__icon {
+		margin-left: 1em;
+		vertical-align: top;
+	}
+	.rundown-list-item__text {
+		display: inline-flex;
+		align-self: center;
+		align-items: center;
+	}
+
+	/* currently not in use, because we don't have a performant way of getting all
+	 * problems associated with a rundown (fetch all parts and segments to read their
+	 * notes and keeping it updated is too expensive)
+	 */
+	.rundown-list-item__problems {
+		display: inline-grid;
+		grid-template-columns: 1fr 1fr;
+		align-self: center;
+		align-items: center;
+
+		.rundown-list-item__problem {
+			&:not(:last-child) {
+				margin-right: var(--defaultSpacing);
+			}
+
+			svg {
+				height: 1em;
+				width: 1em;
+				top: 0.125em;
+				position: relative;
+				margin-right: 4px;
+			}
+		}
+	}
+
+	.rundown-list-item__actions {
+		display: inline-grid;
+		grid-template-columns: 1fr 1fr;
+
+		.rundown-list-item__action {
+			all: unset; // unset button styles
+			cursor: pointer;
+
+			&:not(:last-child) {
+				margin-right: var(--defaultSpacing);
+			}
+
+			svg {
+				height: 1em;
+				width: 1em;
+				top: 0.125em;
+				position: relative;
+			}
+
+			.resync path {
+				fill: black;
+			}
+		}
+	}
+
+	&.droptarget {
+		border: 4px dashed green;
+	}
+
+	// the actual playlists and rundowns
+	.rundown-playlists {
+		margin: 0;
+
+		// a rundown playlist, see RundownPlaylistUi.tsx
+		.rundown-playlist {
+			list-style-type: none;
+			margin: 0 0 6px;
+			width: 100%;
+
+			&.droptarget {
+				border: 1px dashed green;
+			}
+
+			.rundown-playlist__header {
+				background-color: var(--defaultItemBackgroundColor);
+				padding: 0 var(--defaultSpacing);
+				display: grid;
+				// for the header, the first column spans the first four item columns
+				grid-template-columns:
+					calc(var(--nameColumnWidth) + var(--showStyleColumnWidth)) var(--airTimeColumnWidth)
+					var(--durationColumnWidth) var(--lastModifiedColumnWidth) var(--actionsColumnWidth);
+
+				.rundown-playlist__heading {
+					display: inline-block;
+					margin-left: 0;
+
+					.rundown-playlist__heading-text {
+						margin-left: 0.5em;
+					}
+				}
+
+				.rundown-playlist__sorting-origin-toggle {
+					font-size: 0.875rem;
+					line-height: 1.1875rem;
+
+					.rundown-playlist__sorting-origin-toggle--label {
+						&.active {
+							font-weight: normal;
+						}
+					}
+
+					.switch-button {
+						margin: auto 6px;
+						transform: scale(0.8) translateY(-3px);
+					}
+				}
+			}
+
+			.rundown-playlist__rundowns {
+				padding: 0;
+				margin: 0;
+				--leftGutterWidth: calc(2 * var(--defaultSpacing));
+
+				// overrides for rundowns inside of playlists
+				.rundown-list-item {
+					margin-left: var(--leftGutterWidth);
+
+					// recalc column widths to adjust for left gutter
+					--nameColumnWidth: calc(
+						(var(--componentWidth) + var(--leftGutterWidth)) * var(--nameColumnSize) - var(--leftGutterWidth)
+					);
+					--showStyleColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--showStyleColumnSize));
+					--airTimeColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--standardColumnSize));
+					--durationColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--standardColumnSize));
+					--lastModifiedColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--standardColumnSize));
+					--actionsColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--actionsColumnSize));
+
+					background-color: var(--descendantItemBackgroundColor);
+					border-top: 1px solid #c6c6c6;
+					margin-bottom: 0;
+					position: relative;
+
+					&::before,
+					&::after {
+						content: '';
+						position: absolute;
+						left: calc(-1 * var(--leftGutterWidth) / 2);
+					}
+
+					&::before {
+						border-top: 1px dotted var(--treeLinesColor);
+						top: calc(var(--leftGutterWidth) / 2);
+						width: calc(var(--leftGutterWidth) / 2);
+						height: 0;
+					}
+
+					&::after {
+						border-left: 1px dotted var(--treeLinesColor);
+						height: 100%;
+						width: 0px;
+						top: 0.1em;
+					}
+
+					&:last-child::after {
+						height: 50%;
+					}
+				}
+			}
+		}
+	}
+
+	.subtle {
+		font-style: italic;
+	}
+
+	// a single rundown representation, see RundownListItem.tsx
+	// some of these rules might be overridden when a rundown is included in a
+	// playlist, see the .rundown-playlist section
+	.rundown-list-item {
+		background-color: var(--defaultItemBackgroundColor);
+		box-shadow: 0px 8px 10px -10px rgba(0, 0, 0, 0.15);
+		margin: 0 0 6px;
+		padding: 0 var(--defaultSpacing);
+		list-style-type: none;
+		vertical-align: middle;
+		display: grid;
+		grid-template-columns:
+			var(--nameColumnWidth) var(--showStyleColumnWidth) var(--airTimeColumnWidth)
+			var(--durationColumnWidth) var(--lastModifiedColumnWidth) var(--layoutSelectionColumnWidth) var(--actionsColumnWidth);
+
+		.rundown-list-item__text {
+			padding: 7px 0;
+		}
+		.rundown-list-item__actions {
+			padding: 0 0 3px; // cater for icons being larger than the font
+		}
+
+		&.unsynced {
+			background-image: repeating-linear-gradient(
+				45deg,
+				transparent,
+				transparent 10px,
+				rgba(255, 255, 0, 0.3) 10px,
+				rgba(255, 255, 0, 0.3) 16px
+			);
+		}
+
+		&.dragging {
+			opacity: 0.25;
+		}
+
+		&.drag-preview {
+			transform: scale(1.03);
+			z-index: 99;
+
+			list-style-type: none;
+			opacity: 1;
+			box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+		}
+	}
+
+	// the area appearing under the playlists and rundown where a rundown can
+	// be dropped to move it to a new playlist. See RundownDropZone.tsx
+	.rundown-dropzone {
+		display: none;
+		border: 4px dashed green;
+		height: 61px;
+		margin-top: 8px;
+		align-items: center;
+
+		&.open {
+			display: flex;
 		}
 	}
 }

@@ -39,13 +39,12 @@ import { downloadBlob } from '../../lib/downloadBlob'
 import { AHKModifierMap, AHKKeyboardMap, AHKBaseHeader, useAHKComboTemplate } from '../../../lib/tv2/AHKkeyboardMap'
 import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
 import {
-	ConfigManifestEntry,
-	BlueprintManifestType,
 	ISourceLayer,
 	SourceLayerType,
 	IOutputLayer,
-	ConfigManifestEntryTable,
-} from 'tv-automation-sofie-blueprints-integration'
+	BlueprintManifestType,
+	ConfigManifestEntry,
+} from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Settings } from '../../../lib/Settings'
 import { defaultColorPickerPalette } from '../../lib/colorPicker'

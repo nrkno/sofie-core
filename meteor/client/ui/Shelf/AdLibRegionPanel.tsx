@@ -16,28 +16,17 @@ import {
 	isAdLibNext,
 } from './DashboardPanel'
 import ClassNames from 'classnames'
-import { AdLibPieceUi, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, matchFilter } from './AdLibPanel'
+import { AdLibPieceUi, IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, matchFilter } from './AdLibPanel'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { unprotectString } from '../../../lib/lib'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
-import { MediaObject } from '../../../lib/collections/MediaObjects'
-import {
-	ISourceLayer,
-	SourceLayerType,
-	VTContent,
-	LiveSpeakContent,
-	GraphicsContent,
-} from 'tv-automation-sofie-blueprints-integration'
-import { Meteor } from 'meteor/meteor'
-import { ensureHasTrailingSlash } from '../../lib/lib'
-import { PubSub } from '../../../lib/api/pubsub'
-import { checkPieceContentStatus } from '../../../lib/mediaObjects'
-import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
+import { PieceExtended } from '../../../lib/Rundown'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 interface IState {
@@ -52,31 +41,19 @@ interface IAdLibRegionPanelProps {
 }
 
 interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {
-	metadata: MediaObject | null
-	thumbnailPiece: PieceInstance | undefined
+	piece: PieceUi | undefined
 	layer?: ISourceLayer
+	isLiveLine: boolean
 }
 
-export class AdLibRegionPanelInner extends MeteorReactComponent<
-	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps>,
+export class AdLibRegionPanelBase extends MeteorReactComponent<
+	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
 	IState
 > {
-	constructor(props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
+	constructor(props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>) {
 		super(props)
 
 		this.state = {}
-	}
-
-	componentDidMount() {
-		Meteor.defer(() => {
-			this.updateMediaObjectSubscription()
-		})
-	}
-
-	componentDidUpdate() {
-		Meteor.defer(() => {
-			this.updateMediaObjectSubscription()
-		})
 	}
 
 	isAdLibOnAir(adLib: AdLibPieceUi) {
@@ -168,55 +145,19 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	getPreviewUrl = (): string | undefined => {
-		const { metadata } = this.props
-		const mediaPreviewUrl =
-			ensureHasTrailingSlash(this.props.playlist.getStudio().settings.mediaPreviewsUrl + '' || '') || ''
-
-		if (mediaPreviewUrl && metadata) {
-			if (metadata && metadata.previewPath && mediaPreviewUrl) {
-				return mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(metadata.mediaId)
-			}
+	getThumbnailUrl = (): string | undefined => {
+		const { piece } = this.props
+		const { mediaPreviewsUrl } = this.props.studio.settings
+		if (piece && piece.contentMetaData && piece.contentMetaData.previewPath && mediaPreviewsUrl) {
+			return mediaPreviewsUrl + 'media/thumbnail/' + encodeURIComponent(piece.contentMetaData.mediaId)
 		}
 		return undefined
 	}
 
 	renderPreview() {
-		if (this.props.metadata) {
-			const previewUrl = this.getPreviewUrl()
-			if (previewUrl) {
-				return <img src={previewUrl} className="multiview-panel__image" />
-			}
-		}
-	}
-
-	updateMediaObjectSubscription() {
-		if (this.props.thumbnailPiece) {
-			const piece = this.props.thumbnailPiece
-			let objId: string | undefined = undefined
-
-			if (piece.piece.content && piece.piece.content.fileName && this.props.layer) {
-				switch (this.props.layer.type) {
-					case SourceLayerType.VT:
-						objId = (piece.piece.content as VTContent).fileName?.toUpperCase()
-						break
-					case SourceLayerType.LIVE_SPEAK:
-						objId = (piece.piece.content as LiveSpeakContent).fileName?.toUpperCase()
-						break
-					case SourceLayerType.GRAPHICS:
-						if (piece.piece.content.fileName) {
-							objId = (piece.piece.content as GraphicsContent).fileName?.toUpperCase()
-						}
-						break
-				}
-			}
-
-			if (objId && objId !== this.state.objId) {
-				this.setState({ objId })
-				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
-					mediaId: objId,
-				})
-			}
+		const thumbnailUrl = this.getThumbnailUrl()
+		if (thumbnailUrl) {
+			return <img src={thumbnailUrl} className="multiview-panel__image" />
 		}
 	}
 
@@ -244,8 +185,7 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 					className={ClassNames('adlib-region-panel__image-container', {
 						next: piece && this.isAdLibNext(piece),
 						'on-air': piece && this.isAdLibOnAir(piece),
-						blackout:
-							!!this.props.thumbnailPiece || (this.props.panel.showBlackIfNoThumbnailPiece && !this.getPreviewUrl()),
+						blackout: !!this.props.piece || (this.props.panel.showBlackIfNoThumbnailPiece && !this.getThumbnailUrl()),
 					})}>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>
 						{this.renderPreview()}
@@ -264,81 +204,61 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 	}
 }
 
+export const AdLibRegionPanelWithStatus = withMediaObjectStatus<
+	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
+	{}
+>()(AdLibRegionPanelBase)
+
 export const AdLibRegionPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps>,
 	IState,
-	IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps
+	AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
 		const studio = props.playlist.getStudio()
-		const {
-			unfinishedAdLibIds,
-			unfinishedTags,
-			unfinishedPieceInstances,
-			nextAdLibIds,
-			nextTags,
-			nextPieceInstances,
-		} = memoizedIsolatedAutorun(
-			(
-				currentPartInstanceId: PartInstanceId | null,
-				nextPartInstanceId: PartInstanceId | null,
-				showStyleBase: ShowStyleBase
-			) => {
-				const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
-					currentPartInstanceId
-				)
-				const { nextAdLibIds, nextTags, nextPieceInstances } = getNextPieceInstancesGrouped(
-					showStyleBase,
-					nextPartInstanceId
-				)
-				return {
-					unfinishedAdLibIds,
-					unfinishedTags,
-					unfinishedPieceInstances,
-					nextAdLibIds,
-					nextTags,
-					nextPieceInstances,
-				}
-			},
-			'unfinishedAndNextPieceInstances',
-			props.playlist.currentPartInstanceId,
-			props.playlist.nextPartInstanceId,
-			props.showStyleBase
+		const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
+			props.playlist.currentPartInstanceId
+		)
+		const { nextAdLibIds, nextTags, nextPieceInstances } = getNextPieceInstancesGrouped(
+			props.showStyleBase,
+			props.playlist.nextPartInstanceId
 		)
 
 		// Pick thumbnails to display
-		const nextThumbnail = nextPieceInstances.find((p) =>
+		const nextThumbnail: PieceInstance | undefined = nextPieceInstances.find((p) =>
 			props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId)
 		)
-		const currentThumbnail = !props.panel.hideThumbnailsForActivePieces
+		const currentThumbnail: PieceInstance | undefined = !props.panel.hideThumbnailsForActivePieces
 			? unfinishedPieceInstances.find((p) => props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId))
 			: undefined
-		const thumbnailPiece = props.panel.thumbnailPriorityNextPieces
+		const thumbnailPiece: PieceInstance | undefined = props.panel.thumbnailPriorityNextPieces
 			? nextThumbnail ?? currentThumbnail
 			: currentThumbnail ?? nextThumbnail
 
-		const layer =
+		const pieceExtended: PieceExtended | undefined = thumbnailPiece
+			? {
+					instance: thumbnailPiece,
+					renderedInPoint: null,
+					renderedDuration: null,
+			  }
+			: undefined
+
+		const sourceLayer =
 			thumbnailPiece &&
 			props.showStyleBase.sourceLayers.find((layer) => thumbnailPiece.piece.sourceLayerId === layer._id)
-		const { metadata } = thumbnailPiece
-			? checkPieceContentStatus(
-					thumbnailPiece.piece,
-					props.showStyleBase.sourceLayers.find((layer) => thumbnailPiece.piece.sourceLayerId === layer._id),
-					studio.settings
-			  )
-			: { metadata: null }
+
 		return Object.assign({}, fetchAndFilter(props), {
-			studio: studio,
+			studio,
+			piece: pieceExtended,
+			sourceLayer,
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,
 			nextTags,
-			metadata,
-			thumbnailPiece,
-			layer,
+			isLiveLine: false,
 		})
 	},
 	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
-)(AdLibRegionPanelInner)
+)(AdLibRegionPanelWithStatus)

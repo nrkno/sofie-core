@@ -1,8 +1,7 @@
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
-import { Meteor } from 'meteor/meteor'
 
-import { ConfigManifestEntry, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestEntry, BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
@@ -36,7 +35,6 @@ export interface Blueprint {
 	blueprintVersion: string
 	integrationVersion: string
 	TSRVersion: string
-	minimumCoreVersion: string
 }
 
 export const Blueprints: TransformedCollection<Blueprint, Blueprint> = createMongoCollection<Blueprint>('blueprints')

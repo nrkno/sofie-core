@@ -16,7 +16,7 @@ export namespace mousetrapHelper {
 		[key: string]: IWrappedCallback[]
 	} = {}
 
-	function handleKey(keys: string, e: ExtendedKeyboardEvent) {
+	function handleKey(keys: string, e: mousetrap.ExtendedKeyboardEvent) {
 		if (_boundHotkeys[keys] === undefined) {
 			return
 		}
@@ -46,7 +46,7 @@ export namespace mousetrapHelper {
 			if (_boundHotkeys[index] === undefined) _boundHotkeys[index] = []
 			mousetrap.bindGlobal(
 				keys,
-				(e: ExtendedKeyboardEvent) => {
+				(e: mousetrap.ExtendedKeyboardEvent) => {
 					handleKey(index, e)
 				},
 				action
@@ -74,7 +74,7 @@ export namespace mousetrapHelper {
 			_boundHotkeys[index] = []
 			mousetrap.bind(
 				keys,
-				(e: ExtendedKeyboardEvent) => {
+				(e: mousetrap.ExtendedKeyboardEvent) => {
 					handleKey(index, e)
 				},
 				action

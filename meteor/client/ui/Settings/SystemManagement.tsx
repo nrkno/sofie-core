@@ -273,6 +273,32 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 									collection={CoreSystem}></EditAttribute>
 							</div>
 						</div>
+						<div className="field">
+							{t('Enable storing Rundown Playlist snapshots')}
+							<div className="mdi">
+								<EditAttribute
+									attribute="cron.storeRundownSnapshots.enabled"
+									obj={this.props.coreSystem}
+									type="checkbox"
+									collection={CoreSystem}></EditAttribute>
+							</div>
+							<div className="mdi">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="cron.storeRundownSnapshots.rundownNames"
+									obj={this.props.coreSystem}
+									type="text"
+									collection={CoreSystem}
+									className="mdinput"
+									label="Rundown Playlist names"
+									mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join(', '))}
+									mutateUpdateValue={(v) =>
+										v === undefined || v.length === 0 ? undefined : v.split(',').map((i) => i.trim())
+									}
+								/>
+							</div>
+							<div>{t('(Comma separated list. Empty - will store snapshots of all Rundown Playlists)')}</div>
+						</div>
 					</div>
 				</div>
 			) : null

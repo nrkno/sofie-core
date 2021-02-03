@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { getElementWidth } from '../../../utils/dimensions'
 
-import { TransitionContent } from 'tv-automation-sofie-blueprints-integration'
+import { TransitionContent } from '@sofie-automation/blueprints-integration'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { FloatingInspector } from '../../FloatingInspector'

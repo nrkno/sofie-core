@@ -20,7 +20,7 @@ import {
 	getCurrentTime,
 	normalizeArray,
 } from '../../../../lib/lib'
-import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
+import { IngestPart, IngestSegment, IngestRundown } from '@sofie-automation/blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
 	rundownPlaylistSyncFunction,
@@ -97,24 +97,24 @@ function storiesToIngestParts(
 }
 /** Group IngestParts together into something that could be Segments */
 function groupIngestParts(parts: AnnotatedIngestPart[]): { name: string; parts: LocalIngestPart[] }[] {
-	const groupedStories: { name: string; parts: LocalIngestPart[] }[] = []
-	_.each(parts, (s) => {
-		const lastSegment = _.last(groupedStories)
-		if (lastSegment && lastSegment.name === s.segmentName) {
-			lastSegment.parts.push(s.ingest)
+	const groupedParts: { name: string; parts: LocalIngestPart[] }[] = []
+	_.each(parts, (part) => {
+		const lastSegment = _.last(groupedParts)
+		if (lastSegment && lastSegment.name === part.segmentName) {
+			lastSegment.parts.push(part.ingest)
 		} else {
-			groupedStories.push({ name: s.segmentName, parts: [s.ingest] })
+			groupedParts.push({ name: part.segmentName, parts: [part.ingest] })
 		}
 	})
 
 	// Ensure ranks are correct
-	_.each(groupedStories, (group) => {
+	_.each(groupedParts, (group) => {
 		for (let i = 0; i < group.parts.length; i++) {
 			group.parts[i].rank = i
 		}
 	})
 
-	return groupedStories
+	return groupedParts
 }
 function groupedPartsToSegments(
 	rundownId: RundownId,
@@ -233,6 +233,8 @@ export function handleMosRundownMetadata(
 
 			// TODO - make this more lightweight?
 			handleUpdatedRundownInner(studio, rundownId, ingestRundown, 'mosRoMetadata', peripheralDevice)
+
+			span?.end()
 		}
 	)
 }
@@ -379,11 +381,12 @@ export function handleInsertParts(
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
-		const playlist = getRundownPlaylist(rundown)
+		const existingPlaylist = getRundownPlaylist(rundown)
 
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
+		// The part of which we are about to insert stories after
 		const insertBeforePartExternalId = insertBeforeStoryId ? parseMosString(insertBeforeStoryId) || '' : ''
 		const insertIndex = !insertBeforePartExternalId // insert last
 			? ingestParts.length
@@ -393,17 +396,19 @@ export function handleInsertParts(
 		}
 
 		const newParts = storiesToIngestParts(rundown._id, newStories || [], true, ingestParts).filter(
-			(p): p is AnnotatedIngestPart => !!p
+			(p): p is AnnotatedIngestPart => !!p // remove falsy values from array
 		)
-		const newPartIds = newParts.map((part) => part.externalId)
+		const newPartExtenalIds = newParts.map((part) => part.externalId)
 
-		const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestParts) => {
+		const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestPartsToModify) => {
+			const modifiedIngestParts = [...ingestPartsToModify] // clone
+
 			if (removePrevious) {
-				ingestParts.splice(insertIndex, 1) // Replace the previous part with new parts
+				modifiedIngestParts.splice(insertIndex, 1) // Replace the previous part with new parts
 			}
 
-			const collidingPartIds = ingestParts
-				.filter((part) => newPartIds.indexOf(part.externalId) > -1)
+			const collidingPartIds = modifiedIngestParts
+				.filter((part) => newPartExtenalIds.indexOf(part.externalId) > -1)
 				.map((part) => part.externalId)
 
 			if (collidingPartIds.length > 0) {
@@ -413,13 +418,13 @@ export function handleInsertParts(
 				)
 			}
 			// Update parts list
-			ingestParts.splice(insertIndex, 0, ...newParts)
+			modifiedIngestParts.splice(insertIndex, 0, ...newParts)
 
-			return ingestParts
+			return modifiedIngestParts
 		})
 
-		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
-		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments, removePrevious)
+		const cache = waitForPromise(initCacheForRundownPlaylist(existingPlaylist)) // todo: change this
+		diffAndApplyChanges(cache, studio, existingPlaylist, rundown, ingestRundown, newIngestSegments, removePrevious)
 		waitForPromise(cache.saveAllToDatabase())
 
 		span?.end()
@@ -556,12 +561,15 @@ function makeChangeToIngestParts(
 ): LocalIngestSegment[] {
 	const span = profiler.startSpan('mosDevice.ingest.makeChangeToIngestParts')
 
+	// Before making the modification to ingestParts, create a list of segments from the original data, to use for calculating the
+	// .modified property below.
 	const referenceIngestSegments = groupPartsIntoIngestSegments(rundown, ingestParts)
 
 	const modifiedParts = modifyFunction(ingestParts)
 
 	// Compare to reference, to make sure that ingestSegment.modified is updated in case of a change
 	const newIngestSegments = groupPartsIntoIngestSegments(rundown, modifiedParts)
+
 	_.each(newIngestSegments, (ingestSegment) => {
 		if (!ingestSegment.modified) {
 			ingestSegment.modified = getCurrentTime()
@@ -614,7 +622,12 @@ function diffAndApplyChanges(
 
 	// Check if operation affect currently playing Part:
 	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
-	if (playlist.active && currentPartInstance) {
+	if (
+		playlist.active &&
+		currentPartInstance &&
+		currentPartInstance.rundownId === rundown._id &&
+		!currentPartInstance.part.dynamicallyInsertedAfterPartId
+	) {
 		let currentPart: LocalIngestPart | undefined = undefined
 
 		for (let i = 0; currentPart === undefined && i < newIngestSegments.length; i++) {

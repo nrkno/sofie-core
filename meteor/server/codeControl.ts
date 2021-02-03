@@ -2,7 +2,7 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
-import { waitForPromise, getHash } from '../lib/lib'
+import { getHash } from '../lib/lib'
 // import * as callerModule from 'caller-module'
 
 enum syncFunctionFcnStatus {

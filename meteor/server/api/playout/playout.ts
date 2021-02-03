@@ -1,24 +1,23 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
-import { Rundown, RundownHoldState, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
+import { PieceId } from '../../../lib/collections/Pieces'
 import {
 	getCurrentTime,
 	Time,
 	waitForPromise,
-	normalizeArray,
+	normalizeArrayToMap,
 	unprotectString,
-	protectString,
 	isStringOrProtectedString,
 	getRandomId,
 } from '../../../lib/lib'
-import { TimelineObjGeneric, TimelineObjId, StatObjectMetadata } from '../../../lib/collections/Timeline'
+import { StatObjectMetadata } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections/Studios'
-import { PartHoldMode } from 'tv-automation-sofie-blueprints-integration'
+import { PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportRundownHasStarted,
@@ -47,7 +46,6 @@ import {
 	getStudioFromCache,
 	getAllOrderedPartsFromCache,
 	getAllPieceInstancesFromCache,
-	checkAccessAndGetPlaylist,
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -63,9 +61,8 @@ import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ing
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { ReloadRundownPlaylistResponse, UserActionAPIMethods } from '../../../lib/api/userActions'
+import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
 import { MethodContext } from '../../../lib/api/methods'
-import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
 import { StudioContentWriteAccess } from '../../security/studio'
 import {
@@ -75,13 +72,12 @@ import {
 	initCacheForNoRundownPlaylist,
 	CacheForStudio,
 } from '../../DatabaseCaches'
-import { takeNextPartInner, afterTake, takeNextPartInnerSync } from './take'
-import { syncPlayheadInfinitesForNextPartInstance, getPieceInstancesForPart } from './infinites'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { takeNextPartInner, afterTake, takeNextPartInnerSync, updatePartInstanceOnTake } from './take'
+import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { UserAction } from '../../../client/lib/userAction'
+import { checkAccessAndGetPlaylist } from '../lib'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -291,41 +287,6 @@ export namespace ServerPlayoutAPI {
 				libDeactivateRundownPlaylist(cache, playlist)
 
 				waitForPromise(cache.saveAllToDatabase())
-			}
-		)
-	}
-	/**
-	 * Trigger a reload of data of the rundown
-	 */
-	export function reloadRundownPlaylistData(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
-		// Reload and reset the Rundown
-		// @TODO Check for a better solution to validate security methods
-		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-		check(rundownPlaylistId, String)
-		return rundownPlaylistSyncFunction(
-			rundownPlaylistId,
-			RundownSyncFunctionPriority.USER_INGEST,
-			'reloadRundownPlaylistData',
-			() => {
-				const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist))
-
-				const playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
-				if (!playlist)
-					throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
-
-				const rundowns = getRundownsFromCache(cache, playlist)
-				const response: ReloadRundownPlaylistResponse = {
-					rundownsResponses: rundowns.map((rundown) => {
-						return {
-							rundownId: rundown._id,
-							response: IngestActions.reloadRundown(rundown),
-						}
-					}),
-				}
-
-				waitForPromise(cache.saveAllToDatabase())
-
-				return response
 			}
 		)
 	}
@@ -662,7 +623,11 @@ export namespace ServerPlayoutAPI {
 			}
 		)
 	}
-	export function disableNextPiece(context: MethodContext, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+	export function disableNextPiece(
+		context: MethodContext,
+		rundownPlaylistId: RundownPlaylistId,
+		undo?: boolean
+	): ClientAPI.ClientResponse<void> {
 		// @TODO Check for a better solution to validate security methods
 		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 		check(rundownPlaylistId, String)
@@ -692,7 +657,7 @@ export namespace ServerPlayoutAPI {
 				// logger.info(o)
 				// logger.info(JSON.stringify(o, '', 2))
 
-				const allowedSourceLayers = normalizeArray(showStyleBase.sourceLayers, '_id')
+				const allowedSourceLayers = normalizeArrayToMap(showStyleBase.sourceLayers, '_id')
 
 				// logger.info('nowInPart', nowInPart)
 				// logger.info('filteredPieces', filteredPieces)
@@ -705,30 +670,32 @@ export namespace ServerPlayoutAPI {
 					}
 
 					const pieceInstances = getAllPieceInstancesFromCache(cache, partInstance)
-					const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(pieceInstances, nowInPart)
+
+					const filteredPieces = pieceInstances.filter((piece: PieceInstance) => {
+						const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+						if (
+							sourceLayer &&
+							sourceLayer.allowDisable &&
+							!piece.piece.virtual &&
+							!piece.piece.isTransition
+						)
+							return true
+						return false
+					})
+
+					const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(
+						_.sortBy(filteredPieces, (piece: PieceInstance) => {
+							let sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+							return sourceLayer?._rank || -9999
+						}),
+						nowInPart
+					)
 
 					let findLast: boolean = !!undo
 
-					let filteredPieces = _.sortBy(
-						_.filter(sortedPieces, (piece: PieceInstance) => {
-							let sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
-							if (
-								sourceLayer &&
-								sourceLayer.allowDisable &&
-								!piece.piece.virtual &&
-								!piece.piece.isTransition
-							)
-								return true
-							return false
-						}),
-						(piece: PieceInstance) => {
-							let sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
-							return sourceLayer._rank || -9999
-						}
-					)
-					if (findLast) filteredPieces.reverse()
+					if (findLast) sortedPieces.reverse()
 
-					return filteredPieces.find((piece) => {
+					return sortedPieces.find((piece) => {
 						return (
 							piece.piece.enable.start >= nowInPart &&
 							((!undo && !piece.disabled) || (undo && piece.disabled))
@@ -752,7 +719,7 @@ export namespace ServerPlayoutAPI {
 				for (const [partInstance, ignoreStartedPlayback] of partInstances) {
 					if (partInstance) {
 						nextPieceInstance = getNextPiece(partInstance, !!undo, ignoreStartedPlayback)
-						break
+						if (nextPieceInstance) break
 					}
 				}
 
@@ -767,8 +734,12 @@ export namespace ServerPlayoutAPI {
 					updateTimeline(cache, playlist.studioId)
 
 					waitForPromise(cache.saveAllToDatabase())
+
+					return ClientAPI.responseSuccess(undefined)
 				} else {
-					throw new Meteor.Error(500, 'Found no future pieces')
+					cache.assertNoChanges()
+
+					return ClientAPI.responseError(404, 'Found no future pieces')
 				}
 			}
 		)
@@ -971,6 +942,25 @@ export namespace ServerPlayoutAPI {
 
 							reportPartHasStarted(cache, playingPartInstance, startedPlayback)
 
+							// Update generated properties on the newly playing partInstance
+							const currentRundown = currentPartInstance
+								? cache.Rundowns.findOne(currentPartInstance.rundownId)
+								: undefined
+							const pShowStyle = cache.activationCache.getShowStyleBase(currentRundown ?? rundown)
+							const blueprint = waitForPromise(
+								pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
+							)
+							updatePartInstanceOnTake(
+								cache,
+								playlist,
+								pShowStyle,
+								blueprint.blueprint,
+								rundown,
+								playingPartInstance,
+								currentPartInstance
+							)
+
+							// Update the next partinstance
 							const nextPart = selectNextPart(
 								playlist,
 								playingPartInstance,
@@ -1143,11 +1133,13 @@ export namespace ServerPlayoutAPI {
 		context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
-		userData: any
+		userData: any,
+		triggerMode?: string
 	) {
 		check(rundownPlaylistId, String)
 		check(actionId, String)
 		check(userData, Match.Any)
+		check(triggerMode, Match.Maybe(String))
 
 		return executeActionInner(context, rundownPlaylistId, (actionContext, cache, rundown) => {
 			const showStyleBase = waitForPromise(cache.activationCache.getShowStyleBase(rundown))
@@ -1161,7 +1153,7 @@ export namespace ServerPlayoutAPI {
 
 			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
 
-			blueprint.blueprint.executeAction(actionContext, actionId, userData)
+			blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
 		})
 	}
 
@@ -1458,9 +1450,16 @@ export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylist
 
 					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
-					if (playlist.active && playlist.currentPartInstanceId) {
-						// If the playlist is active, then updateTimeline as lookahead could have been affected
-						updateTimeline(cache, playlist.studioId)
+					if (playlist.active && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
+						const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+						if (!currentPartInstance?.timings?.startedPlayback) {
+							// HACK: The current PartInstance doesn't have a start time yet, so we know an updateTimeline is coming as part of onPartPlaybackStarted
+							// We mustn't run before that does, or we will get the timings in playout-gateway confused.
+						} else {
+							// It is safe enough (except adlibs) to update the timeline directly
+							// If the playlist is active, then updateTimeline as lookahead could have been affected
+							updateTimeline(cache, playlist.studioId)
+						}
 					}
 
 					waitForPromise(cache.saveAllToDatabase())

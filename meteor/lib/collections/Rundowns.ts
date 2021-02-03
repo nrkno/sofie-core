@@ -18,8 +18,8 @@ import { Meteor } from 'meteor/meteor'
 import { AdLibPieces, AdLibPiece } from './AdLibPieces'
 import { RundownBaselineObjs } from './RundownBaselineObjs'
 import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from './RundownBaselineAdLibPieces'
-import { IBlueprintRundownDB, TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
-import { ShowStyleCompound, getShowStyleCompound, ShowStyleVariantId } from './ShowStyleVariants'
+import { IBlueprintRundownDB } from '@sofie-automation/blueprints-integration'
+import { ShowStyleVariantId, ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
 import { IngestDataCache } from './IngestDataCache'
@@ -28,7 +28,7 @@ import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownP
 import { createMongoCollection } from './lib'
 import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
 import { PartInstances, PartInstance, DBPartInstance } from './PartInstances'
-import { PieceInstances, PieceInstance } from './PieceInstances'
+import { PieceInstances } from './PieceInstances'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { OrganizationId } from './Organization'
 import { AdLibActions } from './AdLibActions'
@@ -103,6 +103,8 @@ export interface DBRundown
 	externalNRCSName: string
 	/** The id of the Rundown Playlist this rundown is in */
 	playlistId: RundownPlaylistId
+	/** If the playlistId has ben set manually by a user in Sofie */
+	playlistIdIsSetInSofie?: boolean
 	/** Rank of the Rundown inside of its Rundown Playlist */
 	_rank: number
 	/** Whenever the baseline (RundownBaselineObjs, RundownBaselineAdLibItems, RundownBaselineAdLibActions) changes, this is changed too */
@@ -113,6 +115,7 @@ export class Rundown implements DBRundown {
 	public externalId: string
 	public organizationId: OrganizationId
 	public name: string
+	public description?: string
 	public expectedStart?: Time
 	public expectedDuration?: number
 	public metaData?: {
@@ -141,6 +144,7 @@ export class Rundown implements DBRundown {
 	public playlistExternalId?: string
 	public externalNRCSName: string
 	public playlistId: RundownPlaylistId
+	public playlistIdIsSetInSofie?: boolean
 	public _rank: number
 	public baselineModifyHash?: string
 	_: any
@@ -164,6 +168,11 @@ export class Rundown implements DBRundown {
 	// 		return ss
 	// 	} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
 	// }
+	getShowStyleVariant(): ShowStyleVariant {
+		let showStyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
+		if (!showStyleVariant) throw new Meteor.Error(404, `ShowStyleVariant "${this.showStyleVariantId}" not found!`)
+		return showStyleVariant
+	}
 	getShowStyleBase(): ShowStyleBase {
 		let showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)

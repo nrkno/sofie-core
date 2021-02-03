@@ -1,5 +1,5 @@
 import { ControllerAbstract, LONGPRESS_TIME } from './lib'
-import { PrompterViewInner } from '../PrompterView'
+import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 
 const LOCALSTORAGE_MODE = 'prompter-controller-mouseish'
@@ -189,6 +189,12 @@ export class MouseIshController extends ControllerAbstract {
 			}
 			this.triggerStartSpeedScrolling()
 		}
+
+		this._prompterView.DEBUG_controllerState({
+			source: PrompterConfigMode.MOUSE,
+			lastSpeed: this._scrollSpeedTarget,
+			lastEvent: 'wheel: ' + e.deltaY,
+		})
 	}
 	private triggerStartSpeedScrolling() {
 		if (this._scrollingDown) {
@@ -305,6 +311,7 @@ export class MouseIshController extends ControllerAbstract {
 			this._noMovement = 0
 		}
 		if (this._noMovement < 5) {
+			this._prompterView.DEBUG_controllerSpeed(speed)
 			this._updateSpeedHandle = window.requestAnimationFrame(() => {
 				this._updateSpeedHandle = null
 				this._updateScrollPosition()

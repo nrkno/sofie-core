@@ -1,7 +1,7 @@
 import { Time, literal, protectString } from '../../../lib/lib'
 import { RundownImportVersions, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
 import { RundownNote } from '../../../lib/api/notes'
-import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
+import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { StudioId } from '../../../lib/collections/Studios'

@@ -26,7 +26,7 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Buckets, Bucket, BucketId } from '../../../lib/collections/Buckets'
-import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
+import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
@@ -132,7 +132,7 @@ export const ExternalFramePanel = withTranslation()(
 		}
 
 		onReceiveMessage = (e: MessageEvent) => {
-			if (e.origin === 'null' && this.frame && e.source === this.frame.contentWindow) {
+			if ((e.origin === 'null' || e.origin === self.origin) && this.frame && e.source === this.frame.contentWindow) {
 				const data = e.data || e['message']
 				if (!data) return
 				if (data.type) {

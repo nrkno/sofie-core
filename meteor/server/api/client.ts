@@ -1,6 +1,4 @@
-import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 
 import { literal, getCurrentTime, Time, getRandomId, makePromise, isPromise, waitForPromise } from '../../lib/lib'

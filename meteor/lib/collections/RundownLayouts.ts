@@ -1,7 +1,6 @@
-import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
 import { ShowStyleBaseId } from './ShowStyleBases'
@@ -38,7 +37,6 @@ export enum RundownLayoutElementType {
 	EXTERNAL_FRAME = 'external_frame',
 	ADLIB_REGION = 'adlib_region',
 	KEYBOARD_PREVIEW = 'keyboard_preview',
-	PART_COUNTDOWN = 'part_countdown',
 	PIECE_COUNTDOWN = 'piece_countdown',
 }
 
@@ -73,8 +71,8 @@ export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
 	showBlackIfNoThumbnailPiece: boolean
 }
 
-export interface RundownLayoutPartCountdown extends RundownLayoutElementBase {
-	type: RundownLayoutElementType.PART_COUNTDOWN
+export interface RundownLayoutPieceCountdown extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PIECE_COUNTDOWN
 	sourceLayerIds: string[] | undefined
 }
 
@@ -94,6 +92,7 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	tags: string[] | undefined
 	displayStyle: PieceDisplayStyle
 	showThumbnailsInList: boolean
+	hideDuplicates: boolean
 	currentSegment: boolean
 	/**
 	 * true: include Rundown Baseline AdLib Pieces
@@ -125,7 +124,7 @@ export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
 	height: number
 }
 
-export interface DashboardLayoutPartCountdown extends RundownLayoutPartCountdown {
+export interface DashboardLayoutPartCountdown extends RundownLayoutPieceCountdown {
 	x: number
 	y: number
 	width: number

@@ -12,7 +12,7 @@ import { Bucket } from '../../../lib/collections/Buckets'
 import { unprotectString } from '../../../lib/lib'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
 import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
-import { PartCountdownPanel } from './PartCountdownPanel'
+import { Studio } from '../../../lib/collections/Studios'
 import { PieceCountdownPanel } from './PieceCountdownPanel'
 
 export interface IShelfDashboardLayoutProps {
@@ -22,6 +22,7 @@ export interface IShelfDashboardLayoutProps {
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	shouldQueue: boolean
+	studio: Studio
 	onChangeQueueAdLib: (isQueue: boolean, e: any) => void
 }
 
@@ -45,6 +46,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								showStyleBase={props.showStyleBase}
 								studioMode={props.studioMode}
 								shouldQueue={props.shouldQueue}
+								studio={props.studio}
 								selectedPiece={undefined}
 							/>
 						) : (
@@ -59,6 +61,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								showStyleBase={props.showStyleBase}
 								studioMode={props.studioMode}
 								shouldQueue={props.shouldQueue}
+								studio={props.studio}
 								selectedPiece={undefined}
 							/>
 						)
@@ -83,6 +86,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							showStyleBase={props.showStyleBase}
 							studioMode={props.studioMode}
 							selectedPiece={undefined}
+							studio={props.studio}
 							hotkeyGroup={panel.name.replace(/\W/, '_')}
 						/>
 					) : RundownLayoutsAPI.isKeyboardMap(panel) ? (
@@ -92,15 +96,6 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							showStyleBase={props.showStyleBase}
 							layout={rundownLayout}
 							panel={panel}
-						/>
-					) : RundownLayoutsAPI.isPartCountdown(panel) ? (
-						<PartCountdownPanel
-							key={panel._id}
-							panel={panel}
-							layout={rundownLayout}
-							playlist={props.playlist}
-							visible={true}
-							showStyleBase={props.showStyleBase}
 						/>
 					) : RundownLayoutsAPI.isPieceCountdown(panel) ? (
 						<PieceCountdownPanel

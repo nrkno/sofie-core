@@ -29,7 +29,6 @@ import {
 	fixValidPath,
 	saveIntoDb,
 	sumChanges,
-	normalizeArray,
 	protectString,
 	getRandomId,
 	unprotectString,
@@ -40,7 +39,7 @@ import {
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
-import { Timeline, TimelineObjGeneric, TimelineObjRundown, TimelineComplete } from '../../lib/collections/Timeline'
+import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
@@ -52,29 +51,23 @@ import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { AudioContent, getPieceGroupId, getPieceFirstObjectId, TSR } from 'tv-automation-sofie-blueprints-integration'
-import { MongoQuery, UserId } from '../../lib/typings/meteor'
+import { AudioContent } from '@sofie-automation/blueprints-integration'
+import { MongoQuery } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { importIngestRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import {
-	RundownPlaylists,
-	DBRundownPlaylist,
-	RundownPlaylistId,
-	RundownPlaylist,
-} from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, DBRundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { substituteObjectIds } from './playout/lib'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { PartInstances, PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInstances'
 import { makePlaylistFromRundown_1_0_0 } from '../migration/deprecatedDataTypes/1_0_1'
-import { OrganizationId, Organization } from '../../lib/collections/Organization'
+import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
-import { resolveCredentials, Credentials, isResolvedCredentials } from '../security/lib/credentials'
+import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
@@ -674,7 +667,9 @@ export function restoreFromRundownPlaylistSnapshot(
 	const partIdMap: { [key: string]: PartId } = {}
 	_.each(snapshot.parts, (part) => {
 		const oldId = part._id
-		partIdMap[unprotectString(oldId)] = part._id = getPartId(getNewRundownId(part.rundownId), part.externalId)
+		partIdMap[unprotectString(oldId)] = part._id = part.externalId
+			? getPartId(getNewRundownId(part.rundownId), part.externalId)
+			: getRandomId()
 	})
 	const partInstanceIdMap: { [key: string]: PartInstanceId } = {}
 	_.each(snapshot.partInstances, (partInstance) => {
@@ -705,10 +700,6 @@ export function restoreFromRundownPlaylistSnapshot(
 		pieceInstance.piece._id = pieceIdMap[unprotectString(pieceInstance.piece._id)] || getRandomId()
 		if (pieceInstance.infinite) {
 			pieceInstance.infinite.infinitePieceId = pieceIdMap[unprotectString(pieceInstance.infinite.infinitePieceId)]
-			if (pieceInstance.infinite.lastPartInstanceId) {
-				pieceInstance.infinite.lastPartInstanceId =
-					partInstanceIdMap[unprotectString(pieceInstance.infinite.lastPartInstanceId)]
-			}
 		}
 	})
 
@@ -853,6 +844,16 @@ export function internalStoreSystemSnapshot(
 export function storeRundownPlaylistSnapshot(context: MethodContext, playlistId: RundownPlaylistId, reason: string) {
 	check(playlistId, String)
 	const { organizationId } = OrganizationContentWriteAccess.snapshot(context)
+	return internalStoreRundownPlaylistSnapshot(organizationId, playlistId, reason)
+}
+/** Take and store a rundwon playlist snapshot. For internal use only, performs no access control. */
+export function internalStoreRundownPlaylistSnapshot(
+	organizationId: OrganizationId | null,
+	playlistId: RundownPlaylistId,
+	reason: string
+) {
+	check(playlistId, String)
+
 	let s = createRundownPlaylistSnapshot(playlistId, organizationId)
 	return storeSnaphot(s, organizationId, reason)
 }

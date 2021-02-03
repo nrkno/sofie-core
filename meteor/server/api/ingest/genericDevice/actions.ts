@@ -6,7 +6,7 @@ import { WrapAsyncCallback } from '../../../../lib/lib'
 import { logger } from '../../../logging'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import * as _ from 'underscore'
-import { IngestRundown, IngestSegment } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
 import { handleRemovedSegment, handleUpdatedSegment, handleUpdatedRundown } from '../rundownInput'
 import { Segment } from '../../../../lib/collections/Segments'
 

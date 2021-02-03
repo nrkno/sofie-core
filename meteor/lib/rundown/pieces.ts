@@ -2,15 +2,16 @@ import { DeepReadonly } from 'utility-types'
 import { PieceInstanceWithTimings } from './infinites'
 import {
 	TimelineObjRundown,
-	TimelineObjGroup,
 	TimelineContentTypeOther,
 	TimelineObjType,
 	TimelineObjGroupRundown,
+	OnGenerateTimelineObjExt,
 } from '../collections/Timeline'
-import { TSR, OnGenerateTimelineObj, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
+import { TSR } from '@sofie-automation/blueprints-integration'
 import { literal, unprotectString } from '../lib'
 import { clone } from 'underscore'
 import { PieceInstanceId } from '../collections/PieceInstances'
+import { getPieceGroupId } from './timeline'
 
 export interface PieceTimelineMetadata {
 	isPieceTimeline: boolean
@@ -23,16 +24,16 @@ export interface PieceGroupMetadata extends PieceTimelineMetadata {
 export function createPieceGroupAndCap(
 	pieceInstance: Pick<
 		DeepReadonly<PieceInstanceWithTimings>,
-		'_id' | 'rundownId' | 'piece' | 'infinite' | 'resolvedEndCap' | 'priority' | 'userDuration'
+		'_id' | 'rundownId' | 'piece' | 'infinite' | 'resolvedEndCap' | 'priority' | 'partInstanceId'
 	>,
 	partGroup?: TimelineObjRundown,
 	pieceEnable?: TSR.Timeline.TimelineEnable
 ): {
-	pieceGroup: TimelineObjGroupRundown & OnGenerateTimelineObj
-	capObjs: TimelineObjRundown[]
+	pieceGroup: TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceGroupMetadata>
+	capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt>
 } {
-	const pieceGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObj>({
-		id: getPieceGroupId(unprotectString(pieceInstance._id)),
+	const pieceGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceGroupMetadata>>({
+		id: getPieceGroupId(pieceInstance),
 		content: {
 			deviceType: TSR.DeviceType.ABSTRACT,
 			type: TimelineContentTypeOther.GROUP,
@@ -41,7 +42,8 @@ export function createPieceGroupAndCap(
 		inGroup: partGroup && partGroup.id,
 		isGroup: true,
 		pieceInstanceId: unprotectString(pieceInstance._id),
-		infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
+		infinitePieceInstanceId: pieceInstance.infinite?.infiniteInstanceId,
+		partInstanceId: pieceInstance.partInstanceId,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: clone<TimelineObjGroupRundown['enable']>(pieceEnable ?? pieceInstance.piece.enable),
 		layer: pieceInstance.piece.sourceLayerId,
@@ -52,13 +54,13 @@ export function createPieceGroupAndCap(
 		}),
 	})
 
-	const capObjs: TimelineObjRundown[] = []
+	const capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
-	let nowObj: TimelineObjRundown | undefined
+	let nowObj: (TimelineObjRundown & OnGenerateTimelineObjExt) | undefined
 	if (pieceInstance.resolvedEndCap === 'now') {
 		// TODO - there could already be a piece with a cap of 'now' that we could use as our end time
 		// As the cap is for 'now', rather than try to get tsr to understand `end: 'now'`, we can create a 'now' object to tranlate it
-		nowObj = literal<TimelineObjRundown>({
+		nowObj = literal<TimelineObjRundown & OnGenerateTimelineObjExt>({
 			objectType: TimelineObjType.RUNDOWN,
 			id: `${pieceGroup.id}_cap_now`,
 			enable: {
@@ -68,6 +70,7 @@ export function createPieceGroupAndCap(
 			content: {
 				deviceType: TSR.DeviceType.ABSTRACT,
 			},
+			partInstanceId: pieceGroup.partInstanceId,
 			metaData: literal<PieceTimelineMetadata>({
 				isPieceTimeline: true,
 			}),
@@ -89,12 +92,13 @@ export function createPieceGroupAndCap(
 					pieceInstance.resolvedEndCap
 				)
 				delete pieceGroup.enable.duration
+				updatedPieceGroup = true
 			}
 		}
 
 		if (!updatedPieceGroup && pieceInstance.resolvedEndCap !== undefined) {
 			// Create a wrapper group to apply the end cap
-			const pieceEndCapGroup = literal<TimelineObjGroupRundown>({
+			const pieceEndCapGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt>({
 				objectType: TimelineObjType.RUNDOWN,
 				id: `${pieceGroup.id}_cap`,
 				enable: {
@@ -109,6 +113,7 @@ export function createPieceGroupAndCap(
 				},
 				isGroup: true,
 				inGroup: partGroup && partGroup.id,
+				partInstanceId: pieceGroup.partInstanceId,
 				metaData: literal<PieceTimelineMetadata>({
 					isPieceTimeline: true,
 				}),

@@ -1,6 +1,14 @@
 import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { ClientAPI } from '../../../lib/api/client'
-import { getCurrentTime, waitForPromise, unprotectObjectArray, protectString, literal, clone } from '../../../lib/lib'
+import {
+	getCurrentTime,
+	waitForPromise,
+	unprotectObjectArray,
+	protectString,
+	literal,
+	clone,
+	getRandomId,
+} from '../../../lib/lib'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { Meteor } from 'meteor/meteor'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
@@ -10,20 +18,16 @@ import {
 	isTooCloseToAutonext,
 	getSegmentsAndPartsFromCache,
 	selectNextPart,
-	checkAccessAndGetPlaylist,
-	triggerGarbageCollection,
 	getAllPieceInstancesFromCache,
 } from './lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { updateTimeline } from './timeline'
 import { logger } from '../../logging'
-import { PartEndState, VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { PartEndState, ShowStyleBlueprintManifest, VTContent } from '@sofie-automation/blueprints-integration'
 import { getResolvedPieces } from './pieces'
-import { Part } from '../../../lib/collections/Parts'
 import * as _ from 'underscore'
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, PieceInstanceId, PieceInstanceInfiniteId } from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
@@ -32,9 +36,11 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartHasStarted } from '../asRunLog'
 import { MethodContext } from '../../../lib/api/methods'
 import { profiler } from '../profiler'
-import { ServerPlayoutAPI } from './playout'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { isAnySyncFunctionsRunning } from '../../codeControl'
+import { checkAccessAndGetPlaylist } from '../lib'
+import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 
 export function takeNextPartInner(
 	context: MethodContext,
@@ -89,22 +95,21 @@ export function takeNextPartInnerSync(
 	let pShowStyle = cache.activationCache.getShowStyleBase(currentRundown)
 	let pBlueprint = pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
 
-	const currentPart = currentPartInstance
-	if (currentPart) {
+	if (currentPartInstance) {
 		const allowTransition = previousPartInstance && !previousPartInstance.part.disableOutTransition
-		const start = currentPart.timings?.startedPlayback
+		const start = currentPartInstance.timings?.startedPlayback
 
 		// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
 		if (
 			allowTransition &&
-			currentPart.part.transitionDuration &&
+			currentPartInstance.part.transitionDuration &&
 			start &&
-			now < start + currentPart.part.transitionDuration
+			now < start + currentPartInstance.part.transitionDuration
 		) {
 			return ClientAPI.responseError('Cannot take during a transition')
 		}
 
-		if (isTooCloseToAutonext(currentPart, true)) {
+		if (isTooCloseToAutonext(currentPartInstance, true)) {
 			return ClientAPI.responseError('Cannot take shortly before an autoTake')
 		}
 	}
@@ -124,7 +129,7 @@ export function takeNextPartInnerSync(
 		return ClientAPI.responseSuccess(undefined)
 	}
 
-	let takePartInstance = nextPartInstance
+	const takePartInstance = nextPartInstance
 	if (!takePartInstance) throw new Meteor.Error(404, 'takePart not found!')
 	const takeRundown: Rundown | undefined = cache.Rundowns.findOne(takePartInstance.rundownId)
 	if (!takeRundown)
@@ -151,27 +156,9 @@ export function takeNextPartInnerSync(
 			logger.error(e)
 		}
 	}
-	// TODO - the state could change after this sampling point. This should be handled properly
-	let previousPartEndState: PartEndState | undefined = undefined
-	if (blueprint.getEndStateForPart && previousPartInstance) {
-		const time = getCurrentTime()
-		const showStyle = waitForPromise(pShowStyle)
-		if (showStyle) {
-			const resolvedPieces = getResolvedPieces(cache, showStyle, previousPartInstance)
 
-			const span = profiler.startSpan('blueprint.getEndStateForPart')
-			const context = new RundownContext(takeRundown, cache, undefined)
-			previousPartEndState = blueprint.getEndStateForPart(
-				context,
-				playlist.previousPersistentState,
-				previousPartInstance.previousPartEndState,
-				unprotectObjectArray(resolvedPieces),
-				time
-			)
-			if (span) span.end()
-			logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
-		}
-	}
+	updatePartInstanceOnTake(cache, playlist, pShowStyle, blueprint, takeRundown, takePartInstance, currentPartInstance)
+
 	const m: Partial<RundownPlaylist> = {
 		previousPartInstanceId: playlist.currentPartInstanceId,
 		currentPartInstanceId: takePartInstance._id,
@@ -185,23 +172,13 @@ export function takeNextPartInnerSync(
 		$set: m,
 	})
 
-	let partInstanceM: any = {
+	cache.PartInstances.update(takePartInstance._id, {
 		$set: {
 			isTaken: true,
 			'timings.take': now,
 			'timings.playOffset': timeOffset || 0,
 		},
-		$unset: {} as { string: 0 | 1 },
-	}
-	if (previousPartEndState) {
-		partInstanceM.$set.previousPartEndState = previousPartEndState
-	} else {
-		partInstanceM.$unset.previousPartEndState = 1
-	}
-	if (Object.keys(partInstanceM.$set).length === 0) delete partInstanceM.$set
-	if (Object.keys(partInstanceM.$unset).length === 0) delete partInstanceM.$unset
-
-	cache.PartInstances.update(takePartInstance._id, partInstanceM)
+	})
 
 	if (m.previousPartInstanceId) {
 		cache.PartInstances.update(m.previousPartInstanceId, {
@@ -285,6 +262,51 @@ export function takeNextPartInnerSync(
 	return ClientAPI.responseSuccess(undefined)
 }
 
+export function updatePartInstanceOnTake(
+	cache: CacheForRundownPlaylist,
+	playlist: RundownPlaylist,
+	pShowStyle: Promise<ShowStyleBase>,
+	blueprint: ShowStyleBlueprintManifest,
+	takeRundown: Rundown,
+	takePartInstance: PartInstance,
+	currentPartInstance: PartInstance | undefined
+): void {
+	// TODO - the state could change after this sampling point. This should be handled properly
+	let previousPartEndState: PartEndState | undefined = undefined
+	if (blueprint.getEndStateForPart && currentPartInstance) {
+		const time = getCurrentTime()
+		const showStyle = waitForPromise(pShowStyle)
+		if (showStyle) {
+			const resolvedPieces = getResolvedPieces(cache, showStyle, currentPartInstance)
+
+			const span = profiler.startSpan('blueprint.getEndStateForPart')
+			const context = new RundownContext(takeRundown, cache, undefined)
+			previousPartEndState = blueprint.getEndStateForPart(
+				context,
+				playlist.previousPersistentState,
+				currentPartInstance.previousPartEndState,
+				unprotectObjectArray(resolvedPieces),
+				time
+			)
+			if (span) span.end()
+			logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
+		}
+	}
+
+	let partInstanceM: any = {
+		$set: {
+			isTaken: true,
+			// set transition properties to what will be used to generate timeline later:
+			allowedToUseTransition: currentPartInstance && !currentPartInstance.part.disableOutTransition,
+		},
+	}
+	if (previousPartEndState) {
+		partInstanceM.$set.previousPartEndState = previousPartEndState
+	}
+
+	cache.PartInstances.update(takePartInstance._id, partInstanceM)
+}
+
 export function afterTake(
 	cache: CacheForRundownPlaylist,
 	studioId: StudioId,
@@ -335,10 +357,12 @@ function startHold(
 	const itemsToCopy = getAllPieceInstancesFromCache(cache, holdFromPartInstance).filter((pi) => pi.piece.extendOnHold)
 	itemsToCopy.forEach((instance) => {
 		if (!instance.infinite) {
+			const infiniteInstanceId: PieceInstanceInfiniteId = getRandomId()
 			// mark current one as infinite
 			cache.PieceInstances.update(instance._id, {
 				$set: {
 					infinite: {
+						infiniteInstanceId: infiniteInstanceId,
 						infinitePieceId: instance.piece._id,
 						fromPreviousPart: false,
 					},
@@ -357,6 +381,7 @@ function startHold(
 					extendOnHold: false,
 				},
 				infinite: {
+					infiniteInstanceId: infiniteInstanceId,
 					infinitePieceId: instance.piece._id,
 					fromPreviousPart: true,
 					fromHold: true,
@@ -403,4 +428,21 @@ function completeHold(
 	}
 
 	updateTimeline(cache, playlist.studioId)
+}
+
+export function triggerGarbageCollection() {
+	Meteor.setTimeout(() => {
+		// Trigger a manual garbage collection:
+		if (global.gc) {
+			// This is only avaialble of the flag --expose_gc
+			// This can be done in prod by: node --expose_gc main.js
+			// or when running Meteor in development, set set SERVER_NODE_OPTIONS=--expose_gc
+
+			if (!isAnySyncFunctionsRunning()) {
+				// by passing true, we're triggering the "full" collection
+				// @ts-ignore (typings not avaiable)
+				global.gc(true)
+			}
+		}
+	}, 500)
 }

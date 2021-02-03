@@ -11,7 +11,7 @@ import {
 	RundownLayoutAdLibRegion,
 	PieceDisplayStyle,
 	RundownLayoutKeyboardPreview,
-	RundownLayoutPartCountdown,
+	RundownLayoutPieceCountdown,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -55,11 +55,7 @@ export namespace RundownLayoutsAPI {
 		return element.type === RundownLayoutElementType.KEYBOARD_PREVIEW
 	}
 
-	export function isPartCountdown(element: RundownLayoutElementBase): element is RundownLayoutPartCountdown {
-		return element.type === RundownLayoutElementType.PART_COUNTDOWN
-	}
-
-	export function isPieceCountdown(element: RundownLayoutElementBase): element is RundownLayoutPartCountdown {
+	export function isPieceCountdown(element: RundownLayoutElementBase): element is RundownLayoutPieceCountdown {
 		return element.type === RundownLayoutElementType.PIECE_COUNTDOWN
 	}
 
@@ -75,6 +71,7 @@ export namespace RundownLayoutsAPI {
 			displayStyle: PieceDisplayStyle.BUTTONS,
 			currentSegment: false,
 			showThumbnailsInList: false,
+			hideDuplicates: false,
 		}
 	}
 }

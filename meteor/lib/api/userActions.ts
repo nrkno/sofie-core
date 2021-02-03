@@ -1,6 +1,6 @@
 import { Omit } from '../lib'
 import { ClientAPI } from '../api/client'
-import { MeteorCall, MethodContext } from './methods'
+import { MethodContext } from './methods'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { PartId } from '../collections/Parts'
 import { RundownId } from '../collections/Rundowns'
@@ -14,10 +14,10 @@ import { SnapshotId } from '../collections/Snapshots'
 import { SegmentId } from '../collections/Segments'
 import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
 import { BucketId, Bucket } from '../collections/Buckets'
-import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
+import { IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { BucketAdLib } from '../collections/BucketAdlibs'
-import { AdLibActionId } from '../collections/AdLibActions'
-import { ActionUserData } from 'tv-automation-sofie-blueprints-integration'
+import { AdLibActionId, AdLibActionCommon } from '../collections/AdLibActions'
+import { BucketAdLibAction } from '../collections/BucketAdlibActions'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -62,11 +62,6 @@ export interface NewUserActionAPI extends MethodContext {
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
-	reloadData(
-		userEvent: string,
-		rundownPlaylistId: RundownPlaylistId
-	): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
-	unsyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
 	disableNextPiece(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
@@ -90,7 +85,8 @@ export interface NewUserActionAPI extends MethodContext {
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
-		userData: ActionUserData
+		userData: ActionUserData,
+		triggerMode?: string
 	): Promise<ClientAPI.ClientResponse<void>>
 	segmentAdLibPieceStart(
 		userEvent: string,
@@ -149,6 +145,7 @@ export interface NewUserActionAPI extends MethodContext {
 	): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
 	removeRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
 	resyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
+	unsyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>> //
 	resyncSegment(
 		userEvent: string,
 		rundownId: RundownId,
@@ -178,17 +175,36 @@ export interface NewUserActionAPI extends MethodContext {
 		userId: string | null
 	): Promise<ClientAPI.ClientResponse<Bucket>>
 	bucketsRemoveBucketAdLib(userEvent: string, id: PieceId): Promise<ClientAPI.ClientResponse<void>>
+	bucketsRemoveBucketAdLibAction(userEvent: string, id: AdLibActionId): Promise<ClientAPI.ClientResponse<void>>
 	bucketsModifyBucketAdLib(
 		userEvent: string,
 		id: PieceId,
 		bucket: Partial<Omit<BucketAdLib, '_id'>>
 	): Promise<ClientAPI.ClientResponse<void>>
+	bucketsModifyBucketAdLibAction(
+		userEvent: string,
+		id: AdLibActionId,
+		action: Partial<Omit<BucketAdLibAction, '_id'>>
+	): Promise<ClientAPI.ClientResponse<void>>
+	bucketsSaveActionIntoBucket(
+		userEvent: string,
+		studioId: StudioId,
+		action: AdLibActionCommon | BucketAdLibAction,
+		bucketId: BucketId
+	): Promise<ClientAPI.ClientResponse<BucketAdLibAction>>
 	switchRouteSet(
 		userEvent: string,
 		studioId: StudioId,
 		routeSetId: string,
 		state: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
+	moveRundown(
+		userEvent: string,
+		rundownId: RundownId,
+		intoPlaylistId: RundownPlaylistId | null,
+		rundownsIdsInPlaylistInOrder: RundownId[]
+	): Promise<ClientAPI.ClientResponse<void>>
+	restoreRundownOrder(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -203,7 +219,6 @@ export enum UserActionAPIMethods {
 	'forceResetAndActivate' = 'userAction.forceResetAndActivate',
 	'activate' = 'userAction.activate',
 	'deactivate' = 'userAction.deactivate',
-	'reloadData' = 'userAction.reloadData',
 	'unsyncRundown' = 'userAction.unsyncRundown',
 
 	'disableNextPiece' = 'userAction.disableNextPiece',
@@ -219,7 +234,10 @@ export enum UserActionAPIMethods {
 	'bucketsEmptyBucket' = 'userAction.emptyBucket',
 	'bucketsModifyBucket' = 'userAction.modifyBucket',
 	'bucketsRemoveBucketAdLib' = 'userAction.removeBucketAdLib',
+	'bucketsRemoveBucketAdLibAction' = 'userAction.removeBucketAdLibAction',
 	'bucketsModifyBucketAdLib' = 'userAction.bucketsModifyBucketAdLib',
+	'bucketsModifyBucketAdLibAction' = 'userAction.bucketsModifyBucketAdLibAction',
+	'bucketsSaveActionIntoBucket' = 'userAction.bucketsSaveActionIntoBucket',
 
 	'segmentAdLibPieceStart' = 'userAction.segmentAdLibPieceStart',
 	'sourceLayerOnPartStop' = 'userAction.sourceLayerOnPartStop',
@@ -255,6 +273,8 @@ export enum UserActionAPIMethods {
 	'guiBlurred' = 'userAction.blurred',
 
 	'switchRouteSet' = 'userAction.switchRouteSet',
+	'moveRundown' = 'userAction.moveRundown',
+	'restoreRundownOrder' = 'userAction.restoreRundownOrder',
 }
 
 export interface ReloadRundownPlaylistResponse {

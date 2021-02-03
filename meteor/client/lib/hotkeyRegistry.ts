@@ -1,5 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import { ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { literal } from '../../lib/lib'
 
 export enum HotkeyAssignmentType {

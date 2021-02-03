@@ -1,7 +1,6 @@
 import * as _ from 'underscore'
 import * as objectPath from 'object-path'
 import {
-	OmitId,
 	trimIfString,
 	getHash,
 	unprotectObject,
@@ -23,7 +22,8 @@ import {
 	ShowStyleVariantPart,
 	IBlueprintShowStyleVariant,
 	TSR,
-} from 'tv-automation-sofie-blueprints-integration'
+	OmitId,
+} from '@sofie-automation/blueprints-integration'
 
 import {
 	ShowStyleVariants,

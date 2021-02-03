@@ -1002,31 +1002,14 @@ describe('Test recieved mos ingest payloads', () => {
 		const partToBeRemoved = rundown.getParts({ externalId: partExternalId })[0]
 		expect(partToBeRemoved).toBeTruthy()
 
-		Parts.update(
-			{
-				segmentId: partToBeRemoved.segmentId,
-			},
-			{
-				$set: {
-					aCheckToSeeThatThePartHasNotBeenRemoved: true,
-				},
-			},
-			{
-				multi: true,
-			}
-		)
-
 		const partsInSegmentBefore = rundown.getParts({ segmentId: partToBeRemoved.segmentId })
 		expect(partsInSegmentBefore).toHaveLength(3)
-
-		expect(partsInSegmentBefore[1]['aCheckToSeeThatThePartHasNotBeenRemoved']).toEqual(true)
-		expect(partsInSegmentBefore[2]['aCheckToSeeThatThePartHasNotBeenRemoved']).toEqual(true)
 
 		const action = literal<MOS.IMOSROAction>({
 			RunningOrderID: new MOS.MosString128(rundown.externalId),
 		})
 
-		// This should only remove the first part in the segment. No other parts should be affected
+		// This should only remove the first part in the segment. The other parts will be regenerated
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryDelete(device._id, device.token, action, [partExternalId]))
 
 		expect(Segments.findOne(partToBeRemoved.segmentId)).toBeFalsy()

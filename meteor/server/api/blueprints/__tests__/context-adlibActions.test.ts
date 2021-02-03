@@ -6,7 +6,7 @@ import {
 } from '../../../../__mocks__/helpers/database'
 import { protectString, unprotectString, waitForPromise, getRandomId, getCurrentTime } from '../../../../lib/lib'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
-import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { NotesContext, ActionExecutionContext, ActionPartChange } from '../context'
 import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../../lib/collections/PartInstances'
@@ -556,13 +556,13 @@ describe('Test blueprint api context', () => {
 
 					postProcessPiecesMock.mockImplementationOnce(() => [
 						{
-							_id: 'fake4',
+							_id: 'fake4', // Should be ignored
 						} as any,
 					])
 					innerStartAdLibPieceMock.mockImplementationOnce(innerStartAdLibPieceOrig)
 
 					const newPieceInstanceId = context.insertPiece('current', { externalId: 'input1' } as any)._id
-					expect(newPieceInstanceId).toMatch(/randomId([0-9]+)_part0_0_instance_fake4/)
+					expect(newPieceInstanceId).toMatch(/randomId([0-9]+)_part0_0_instance_randomId([0-9]+)/)
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
 					expect(postProcessPiecesMock).toHaveBeenCalledWith(
 						expect.anything(),

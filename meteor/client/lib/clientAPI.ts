@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import * as mousetrap from 'mousetrap'
 import { ClientAPI } from '../../lib/api/client'
 import { logger } from '../../lib/logging'
 import { PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -23,7 +24,10 @@ export function callPeripheralDeviceFunction(
 }
 
 export namespace PeripheralDevicesAPI {
-	export function restartDevice(dev: PeripheralDevice, e: Event | React.SyntheticEvent<object>): Promise<any> {
+	export function restartDevice(
+		dev: Pick<PeripheralDevice, '_id'>,
+		e: Event | React.SyntheticEvent<object>
+	): Promise<any> {
 		return callPeripheralDeviceFunction(e, dev._id, undefined, 'killProcess', 1)
 	}
 }
@@ -41,7 +45,7 @@ export function eventContextForLog(e: any): string {
 		str =
 			e.type + ': ' + e.currentTarget.localName + (e.currentTarget.id ? '#' + e.currentTarget.id : '') + contents
 	} else if (e.key && e.code) {
-		str = e.type + ': ' + keyboardEventToShortcut(e as ExtendedKeyboardEvent)
+		str = e.type + ': ' + keyboardEventToShortcut(e as mousetrap.ExtendedKeyboardEvent)
 	} else {
 		str = e.type
 	}
@@ -54,7 +58,7 @@ export function eventContextForLog(e: any): string {
 	return str
 }
 
-function keyboardEventToShortcut(e: ExtendedKeyboardEvent): string {
+function keyboardEventToShortcut(e: mousetrap.ExtendedKeyboardEvent): string {
 	const combo = _.compact([
 		e.ctrlKey ? 'ctrl' : undefined,
 		e.shiftKey ? 'shift' : undefined,

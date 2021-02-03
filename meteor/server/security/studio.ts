@@ -4,15 +4,13 @@ import { allowAccessToStudio } from './lib/security'
 import { StudioId, Studios, Studio } from '../../lib/collections/Studios'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
 import * as _ from 'underscore'
-import { logNotAllowed, rejectFields } from './lib/lib'
+import { logNotAllowed } from './lib/lib'
 import {
 	ExternalMessageQueue,
 	ExternalMessageQueueObjId,
 	ExternalMessageQueueObj,
 } from '../../lib/collections/ExternalMessageQueue'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
-import { MediaObjects } from '../../lib/collections/MediaObjects'
-import { Timeline } from '../../lib/collections/Timeline'
 import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Settings } from '../../lib/Settings'
 import { OrganizationId } from '../../lib/collections/Organization'
