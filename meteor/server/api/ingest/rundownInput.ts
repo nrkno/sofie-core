@@ -1828,7 +1828,7 @@ export function isUpdateAllowed(
 						if (currentPartInstance.segmentId === segment._id) {
 							// Don't allow removing segment with currently playing part
 							logger.warn(
-								`Not allowing removal of segment "${segment._id}" ("${segment.externalId}"), containing currently playing part "${currentPartInstance._id}" ("${currentPartInstance.part.externalId}, making rundown unsynced instead")`
+								`Not allowing removal of segment "${segment._id}" ("${segment.externalId}"), containing currently playing part "${currentPartInstance._id}" ("${currentPartInstance.part.externalId}), making rundown unsynced instead"`
 							)
 							allowed = false
 						}
