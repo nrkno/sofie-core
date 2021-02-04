@@ -395,4 +395,8 @@ body.tv2 {
 			}
 		}
 	}
+
+	.styled-timecode__hours.zero-hours {
+		display: none;
+	}
 }
