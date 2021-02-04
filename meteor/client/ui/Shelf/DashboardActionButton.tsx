@@ -6,10 +6,12 @@ import { DashboardLayoutActionButton, ActionButtonType } from '../../../lib/coll
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { rundownBaselineAdLibPieceStart } from '../../../server/api/userActions'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { CriticalIcon, WarningIcon } from '../../lib/ui/icons/notifications'
 
 export interface IDashboardButtonProps {
 	button: DashboardLayoutActionButton
 	playlist: RundownPlaylist
+	studioMode: boolean
 
 	onButtonDown: (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => void
 	onButtonUp: (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => void
@@ -98,7 +100,8 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 							'dashboard-panel__panel__button',
 							'dashboard-panel__panel__button--standalone',
 							`type--${button.type}`,
-							this.getSpecialClasses()
+							this.getSpecialClasses(),
+							{ uninteractive: !this.props.studioMode }
 						)}
 						onMouseDown={(e) => this.props.onButtonDown(button, e)}
 						onMouseUp={(e) => this.props.onButtonUp(button, e)}
