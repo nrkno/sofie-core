@@ -133,9 +133,11 @@ export class Part implements DBPart {
 			? [
 					{
 						type: NoteType.ERROR,
-						message:
-							this.invalidReason.title +
-							(this.invalidReason.description ? ': ' + this.invalidReason.description : ''),
+						message: {
+							key: `${this.invalidReason.title}${
+								this.invalidReason.description ? `: ${+this.invalidReason.description}` : ''
+							}`,
+						},
 						origin: {
 							name: this.title,
 						},
@@ -163,7 +165,9 @@ export class Part implements DBPart {
 							name: 'Media Check',
 							pieceId: piece._id,
 						},
-						message: st.message || '',
+						message: {
+							key: st.message || '',
+						},
 					})
 				}
 			}

@@ -1,5 +1,6 @@
 [*]
 indent_style = tab
+end_of_line = lf
 
 [*.{cs,js,ts,json}]
 indent_size = 4

@@ -42,7 +42,6 @@ import {
 	ExtendedIngestRundown,
 	BlueprintResultRundownPlaylist,
 } from '@sofie-automation/blueprints-integration'
-import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
@@ -76,12 +75,14 @@ import { updateRundownsInPlaylist } from './ingest/rundownInput'
 import { Mongo } from 'meteor/mongo'
 import { getPlaylistIdFromExternalId, removeEmptyPlaylists } from './rundownPlaylist'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
+import { StudioUserContext } from './blueprints/context'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
 
 export function selectShowStyleVariant(
-	studio: Studio,
+	context: StudioUserContext,
 	ingestRundown: ExtendedIngestRundown
 ): { variant: ShowStyleVariant; base: ShowStyleBase } | null {
+	const studio = context.getStudio()
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
 		return null
@@ -94,8 +95,6 @@ export function selectShowStyleVariant(
 		)
 		return null
 	}
-
-	const context = new StudioConfigContext(studio)
 
 	const studioBlueprint = loadStudioBlueprint(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
@@ -126,7 +125,6 @@ export function selectShowStyleVariant(
 
 	const variantId: ShowStyleVariantId | null = protectString(
 		showStyleBlueprint.blueprint.getShowStyleVariantId(
-			context,
 			unprotectObjectArray(showStyleVariants) as any,
 			ingestRundown
 		)
@@ -204,7 +202,17 @@ export function produceRundownPlaylistRanks(
 	const { rundowns } = getAllRundownsInPlaylist(existingPlaylist._id, existingPlaylist.externalId)
 
 	const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
-		? studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(rundowns))
+		? studioBlueprint.blueprint.getRundownPlaylistInfo(
+				// new StudioUserContext(
+				// 	{
+				// 		name: 'produceRundownPlaylistRanks',
+				// 		identifier: `studioId=${studio._id},playlistId=${unprotectString(playlistId)}`,
+				// 		tempSendUserNotesIntoBlackHole: true,
+				// 	},
+				// 	studio
+				// ),
+				unprotectObjectArray(rundowns)
+		  )
 		: null
 
 	if (playlistInfo) {
@@ -260,7 +268,19 @@ export function produceRundownPlaylistInfoFromRundown(
 			const rundowns = getAllRundownsInPlaylist2(playlistId, playlistExternalId)
 
 			const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
-				? studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(rundowns))
+				? studioBlueprint.blueprint.getRundownPlaylistInfo(
+						// new StudioUserContext(
+						// 	{
+						// 		name: 'produceRundownPlaylistInfoFromRundown',
+						// 		identifier: `studioId=${studio._id},playlistId=${unprotectString(
+						// 			playlistId
+						// 		)},rundownId=${currentRundown._id}`,
+						// 		tempSendUserNotesIntoBlackHole: true,
+						// 	},
+						// 	studio
+						// ),
+						unprotectObjectArray(rundowns)
+				  )
 				: null
 
 			if (playlistInfo) {

@@ -3,7 +3,11 @@ import { getCurrentTime, protectString, unprotectString, getRandomId, makePromis
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
-import { BlueprintManifestType, SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintManifestType,
+	SomeBlueprintManifest,
+	TranslationsBundle,
+} from '@sofie-automation/blueprints-integration'
 import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods } from '../../methods'
@@ -16,6 +20,7 @@ import { SystemWriteAccess } from '../../security/system'
 import { OrganizationId } from '../../../lib/collections/Organization'
 import { Credentials, isResolvedCredentials } from '../../security/lib/credentials'
 import { Settings } from '../../../lib/Settings'
+import { upsertBundles } from '../translationsBundles'
 
 export function insertBlueprint(
 	methodContext: MethodContext,
@@ -176,6 +181,21 @@ export function innerUploadBlueprint(
 	}
 	if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
 		newBlueprint.studioConfigManifest = blueprintManifest.studioConfigManifest
+	}
+
+	// check for translations on the manifest and store them if they exist
+	if (
+		'translations' in blueprintManifest &&
+		(blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE ||
+			blueprintManifest.blueprintType === BlueprintManifestType.STUDIO)
+	) {
+		// Because the translations is bundled as stringified JSON and that string has already been
+		// converted back to object form together with the rest of the manifest at this point
+		// the casting is actually necessary.
+		// Note that the type has to be string in the manifest interfaces to allow attaching the
+		// stringified JSON in the first place.
+		const translations = (blueprintManifest as any).translations as TranslationsBundle[]
+		upsertBundles(translations, newBlueprint.blueprintId)
 	}
 
 	// Parse the versions, just to verify that the format is correct:

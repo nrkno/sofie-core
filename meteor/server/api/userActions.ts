@@ -3,7 +3,7 @@ import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import { getCurrentTime, getHash, makePromise } from '../../lib/lib'
-import { Rundowns, RundownHoldState, RundownId, Rundown } from '../../lib/collections/Rundowns'
+import { Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { Parts, Part, PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout/playout'
@@ -21,7 +21,7 @@ import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDa
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { getActiveRundownPlaylistsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
-import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import {
 	PieceInstances,

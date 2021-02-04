@@ -7,7 +7,7 @@ import {
 import { protectString, unprotectString, waitForPromise, getRandomId, getCurrentTime } from '../../../../lib/lib'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { NotesContext, ActionExecutionContext, ActionPartChange } from '../context'
+import { ActionExecutionContext, ActionPartChange } from '../context'
 import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../../lib/collections/PartInstances'
 import {
@@ -119,14 +119,21 @@ describe('Test blueprint api context', () => {
 		const rundownIds = getRundownIDsFromCache(cache, playlist)
 		waitForPromise(cache.PieceInstances.fillWithDataFromDatabase({ rundownId: { $in: rundownIds } }))
 
-		const notesContext = new NotesContext('fakeContext', `fakeContext`, true)
-		const context = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
+		const context = new ActionExecutionContext(
+			{
+				name: 'fakeContext',
+				identifier: 'action',
+			},
+			cache,
+			studio,
+			playlist,
+			rundown
+		)
 		expect(context.getStudio()).toBeTruthy()
 
 		return {
 			playlist,
 			rundown,
-			notesContext,
 			context,
 			activationId,
 		}

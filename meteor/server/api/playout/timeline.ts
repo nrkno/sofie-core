@@ -305,7 +305,12 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 			const studioBlueprint = loadStudioBlueprint(studio)
 			if (studioBlueprint) {
 				const blueprint = studioBlueprint.blueprint
-				const baselineObjs = blueprint.getBaseline(new StudioContext(studio))
+
+				const context = new StudioContext(
+					{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
+					studio
+				)
+				const baselineObjs = blueprint.getBaseline(context)
 				studioBaseline = postProcessStudioBaselineObjects(studio, baselineObjs)
 
 				const id = `baseline_version`
