@@ -46,6 +46,15 @@ All notable changes to this project will be documented in this file. See [standa
 * update dockerfiles for meteor 1.12.1 ([10217a4](https://github.com/nrkno/tv-automation-server-core/commit/10217a4567282af08b9e9b9afc3470d5b8877b51))
 * using RundownViewEventBus for switching shelf tabs doesn't work ([cda34d8](https://github.com/nrkno/tv-automation-server-core/commit/cda34d8d9d7f7d3115024f2ca147cca09711a690))
 
+### [1.16.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.1...v1.16.2) (2021-02-04)
+
+
+### Bug Fixes
+
+* adlib partinstances wrong takeCount ([544817c](https://github.com/nrkno/tv-automation-server-core/commit/544817c0786f09d995ef7e1876cad5c8c50ecfb7))
+* bad merge ([f854bd7](https://github.com/nrkno/tv-automation-server-core/commit/f854bd7b12136c95cea80104c2a7a15b3b3fbb68))
+* if the currentPartInstance is dynamic, then don't check for matching ingest data when updating ([c1896fe](https://github.com/nrkno/tv-automation-server-core/commit/c1896fe6aba8130f03d5f39e63fa9d2bd235cbc3))
+
 ## [1.16.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.0-in-testing-R28.1...v1.16.0) (2021-01-19)
 
 
