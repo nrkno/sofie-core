@@ -352,6 +352,30 @@ body.tv2 {
 				box-shadow: inset 0 0 0 4px var(--general-live-color);
 			}
 		}
+
+		&.uninteractive {
+			background: gray;
+
+			&::after {
+				content: ' ';
+				display: block;
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				z-index: 1;
+				mix-blend-mode: overlay;
+				background-image: repeating-linear-gradient(
+					45deg,
+					transparent,
+					transparent 10px,
+					rgb(77, 75, 75) 15px,
+					rgb(78, 78, 78) 15px,
+					transparent 16px
+				);
+			}
+		}
 	}
 	.rundown-view {
 		.status-bar {

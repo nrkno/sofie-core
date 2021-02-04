@@ -121,6 +121,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 					onButtonDown={this.onButtonDown}
 					onButtonUp={this.onButtonUp}
 					button={button}
+					studioMode={this.props.studioMode}
 				/>
 			))
 		}
