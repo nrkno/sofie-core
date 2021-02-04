@@ -38,6 +38,7 @@ import {
 	LocalIngestSegment,
 	LocalIngestPart,
 	updateIngestRundownWithData,
+	tryLoadCachedRundownData,
 } from '../ingestCache'
 import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
 import { Studio } from '../../../../lib/collections/Studios'
@@ -54,6 +55,7 @@ import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../../D
 import { getSelectedPartInstancesFromCache } from '../../playout/lib'
 import { Settings } from '../../../../lib/Settings'
 import { profiler } from '../../profiler'
+import { Pieces } from '../../../../lib/collections/Pieces'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -150,28 +152,23 @@ export function handleMosRundownData(
 		const parts = _.compact(storiesToIngestParts(rundownId, mosRunningOrder.Stories || [], !createFresh, []))
 		const groupedStories = groupIngestParts(parts)
 
+		const oldRundownData = tryLoadCachedRundownData(rundownId)
+
 		// If this is a reload of a RO, then use cached data to make the change more seamless
-		if (!createFresh) {
-			const partIds = _.map(parts, (p) => p.partId)
-			const partCache = IngestDataCache.find({
-				rundownId: rundownId,
-				partId: { $in: partIds },
-				type: IngestCacheType.PART,
-			}).fetch()
-
-			const partCacheMap: { [id: string]: IngestPart } = {}
-			_.each(partCache, (p) => {
-				if (p.partId) {
-					partCacheMap[unprotectString(p.partId)] = p.data as IngestPart
+		if (!createFresh && oldRundownData) {
+			const partCacheMap = new Map<PartId, IngestPart>()
+			for (const segment of oldRundownData.segments) {
+				for (const part of segment.parts) {
+					partCacheMap.set(getPartId(rundownId, part.externalId), part)
 				}
-			})
+			}
 
-			_.each(parts, (s) => {
-				const cached = partCacheMap[unprotectString(s.partId)]
-				if (cached) {
-					s.ingest.payload = cached.payload
+			for (const annotatedPart of parts) {
+				const cached = partCacheMap.get(annotatedPart.partId)
+				if (cached && !annotatedPart.ingest.payload) {
+					annotatedPart.ingest.payload = cached.payload
 				}
-			})
+			}
 		}
 
 		const ingestSegments = groupedPartsToSegments(rundownId, groupedStories)
@@ -184,6 +181,11 @@ export function handleMosRundownData(
 			payload: mosRunningOrder,
 			modified: getCurrentTime(),
 		})
+
+		if (rundown && oldRundownData) {
+			// If we already have a rundown, update any modified segment ids
+			diffAndUpdateSegmentIds(rundown, oldRundownData, ingestSegments)
+		}
 
 		handleUpdatedRundownInner(
 			studio,
@@ -223,7 +225,6 @@ export function handleMosRundownMetadata(
 					`Failed to ShowStyleBase "${rundown.showStyleBaseId}" for rundown "${rundown._id}"`
 				)
 			}
-			const showStyleBlueprint = loadShowStyleBlueprint(showStyleBase)
 
 			// Load the cached RO Data
 			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
@@ -601,6 +602,85 @@ function groupPartsIntoIngestSegments(rundown: Rundown, newIngestParts: Annotate
 	return newIngestSegments
 }
 
+function diffAndUpdateSegmentIds(
+	rundown: Rundown,
+	oldIngestRundown: LocalIngestRundown,
+	newIngestSegments: LocalIngestSegment[]
+): DiffSegmentEntries {
+	const span = profiler.startSpan('mosDevice.ingest.diffAndApplyChanges')
+
+	// TODO this is a duplicate of a loop found in diffAndApplyChanges but modified to not run against a cache.
+	// This should be improved once the caches change, and we have access to one in time for this
+
+	// Fetch all existing segments:
+	const oldSegments = Segments.find({ rundownId: rundown._id }).fetch()
+
+	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
+	const newSegmentEntries = compileSegmentEntries(newIngestSegments)
+	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
+
+	const ps: Array<Promise<any>> = []
+
+	// Updated segments that has had their segment.externalId changed:
+	_.each(segmentDiff.externalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
+		const oldSegmentId = getSegmentId(rundown._id, oldSegmentExternalId)
+		const newSegmentId = getSegmentId(rundown._id, newSegmentExternalId)
+
+		ps.push(asyncCollectionUpdate(Segments, oldSegmentId, { $set: { segmentId: newSegmentId } }))
+
+		ps.push(
+			asyncCollectionUpdate(
+				Parts,
+				{
+					rundownId: rundown._id,
+					segmentId: oldSegmentId,
+				},
+				{
+					$set: {
+						segmentId: newSegmentId,
+					},
+				}
+			)
+		)
+
+		ps.push(
+			asyncCollectionUpdate(
+				Pieces,
+				{
+					startRundownId: rundown._id,
+					startSegmentId: oldSegmentId,
+				},
+				{
+					$set: {
+						startSegmentId: newSegmentId,
+					},
+				}
+			)
+		)
+
+		ps.push(
+			asyncCollectionUpdate(
+				PartInstances,
+				{
+					rundownId: rundown._id,
+					segmentId: oldSegmentId,
+				},
+				{
+					$set: {
+						segmentId: newSegmentId,
+						'part.segmentId': newSegmentId,
+					},
+				}
+			)
+		)
+	})
+
+	waitForPromiseAll(ps)
+
+	span?.end()
+	return segmentDiff
+}
+
 function diffAndApplyChanges(
 	cache: CacheForRundownPlaylist,
 	studio: Studio,
@@ -611,13 +691,6 @@ function diffAndApplyChanges(
 	// newIngestParts: AnnotatedIngestPart[]
 ) {
 	const span = profiler.startSpan('mosDevice.ingest.diffAndApplyChanges')
-
-	// Fetch all existing segments:
-	const oldSegments = cache.Segments.findFetch({ rundownId: rundown._id })
-
-	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
-	const newSegmentEntries = compileSegmentEntries(newIngestSegments)
-	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
 
 	// Check if operation affect currently playing Part:
 	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
@@ -657,6 +730,13 @@ function diffAndApplyChanges(
 		span?.end()
 	}
 
+	// Fetch all existing segments:
+	const oldSegments = cache.Segments.findFetch({ rundownId: rundown._id })
+
+	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
+	const newSegmentEntries = compileSegmentEntries(newIngestSegments)
+	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
+
 	// Save new cache
 	const newIngestRundown = updateIngestRundownWithData(oldIngestRundown, newIngestSegments)
 	saveRundownCache(rundown._id, newIngestRundown)
@@ -675,8 +755,9 @@ function diffAndApplyChanges(
 			}
 		)
 	})
+
 	// Updated segments that has had their segment.externalId changed:
-	_.each(segmentDiff.onlyExternalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
+	_.each(segmentDiff.externalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
 		const oldSegmentId = getSegmentId(rundown._id, oldSegmentExternalId)
 		const newSegmentId = getSegmentId(rundown._id, newSegmentExternalId)
 
@@ -693,6 +774,12 @@ function diffAndApplyChanges(
 				},
 			}
 		)
+
+		cache.Pieces.update((p) => p.startRundownId === rundown._id && p.startSegmentId === oldSegmentId, {
+			$set: {
+				startSegmentId: newSegmentId,
+			},
+		})
 
 		cache.PartInstances.update(
 			{
@@ -754,7 +841,7 @@ export interface DiffSegmentEntries {
 	onlyRankChanged: { [segmentExternalId: string]: number } // contains the new rank
 
 	/** Reference to segments which has been REMOVED, but it looks like there is an ADDED segment that is closely related to the removed one */
-	onlyExternalIdChanged: { [removedSegmentExternalId: string]: string } // contains the added segment's externalId
+	externalIdChanged: { [removedSegmentExternalId: string]: string } // contains the added segment's externalId
 }
 export function diffSegmentEntries(
 	oldSegmentEntries: SegmentEntries,
@@ -768,7 +855,7 @@ export function diffSegmentEntries(
 		unchanged: {},
 
 		onlyRankChanged: {},
-		onlyExternalIdChanged: {},
+		externalIdChanged: {},
 	}
 	const oldSegmentMap: { [externalId: string]: Segment } | null =
 		oldSegments === null ? null : normalizeArray(oldSegments, 'externalId')
@@ -834,7 +921,7 @@ export function diffSegmentEntries(
 			})
 		}
 		if (newSegmentEntry) {
-			diff.onlyExternalIdChanged[segmentExternalId] = newSegmentEntry.externalId
+			diff.externalIdChanged[segmentExternalId] = newSegmentEntry.externalId
 		}
 	})
 
