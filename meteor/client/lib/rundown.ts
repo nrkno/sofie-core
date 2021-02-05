@@ -247,6 +247,8 @@ export namespace RundownUtils {
 		segment: DBSegment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
 		orderedAllPartIds: PartId[],
+		currentPartInstance: PartInstance | undefined,
+		nextPartInstance: PartInstance | undefined,
 		pieceInstanceSimulation: boolean = false,
 		includeDisabledPieces: boolean = false
 	): {
@@ -291,7 +293,6 @@ export namespace RundownUtils {
 		// fetch all the parts for the segment
 		let partsE: Array<PartExtended> = []
 
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 		const segmentsAndParts = playlist.getSegmentsAndPartsSync(
 			{
 				_id: segment._id,
