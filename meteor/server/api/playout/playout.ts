@@ -136,13 +136,12 @@ export namespace ServerPlayoutAPI {
 				const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 				if (!dbPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 				if (dbPlaylist.activationId && !dbPlaylist.rehearsal && !Settings.allowRundownResetOnAir)
-					throw new Meteor.Error(401, `resetRundown can only be run in rehearsal!`)
+					throw new Meteor.Error(401, `resetRundownPlaylist can only be run in rehearsal!`)
 
 				const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist))
 
 				const playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
-				if (!playlist)
-					throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
+				if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${dbPlaylist._id}" not found in cache!`)
 
 				libResetRundownPlaylist(cache, playlist)
 
