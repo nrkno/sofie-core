@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as MOS from 'mos-connection'
 import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
@@ -17,8 +16,7 @@ import { RundownPlaylists, RundownPlaylist } from '../../../../../lib/collection
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections/IngestDataCache'
 import { getPartId } from '../../lib'
-import { PartInstance, PartInstances } from '../../../../../lib/collections/PartInstances'
-import { stringify } from 'query-string'
+import { PartInstance } from '../../../../../lib/collections/PartInstances'
 
 jest.mock('../../updateNext')
 
