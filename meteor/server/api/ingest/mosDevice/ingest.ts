@@ -758,6 +758,9 @@ function diffAndApplyChanges(
 	const newIngestRundown = updateIngestRundownWithData(oldIngestRundown, newIngestSegments)
 	saveRundownCache(rundown._id, newIngestRundown)
 
+	// TODO - do we need to do these 'clever' updates anymore? As we don't store any playout properties on the Parts, destroying and recreating won't have negative impacts?
+	// The one exception is PartInstances when the segmentId changes, so we can try and preserve their position as well as possible.
+
 	// Update segment ranks:
 	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
 		cache.Segments.update(

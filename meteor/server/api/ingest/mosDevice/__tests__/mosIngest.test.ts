@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as MOS from 'mos-connection'
 import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
-import { testInFiber } from '../../../../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../../../../__mocks__/helpers/jest'
 import { Rundowns, Rundown, DBRundown } from '../../../../../lib/collections/Rundowns'
 import { Segments, DBSegment, Segment, SegmentId } from '../../../../../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
@@ -16,10 +16,14 @@ import { Pieces } from '../../../../../lib/collections/Pieces'
 import { RundownPlaylists, RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections/IngestDataCache'
+import { getPartId } from '../../lib'
+import { PartInstance, PartInstances } from '../../../../../lib/collections/PartInstances'
+import { stringify } from 'query-string'
 
 jest.mock('../../updateNext')
 
 require('../../../peripheralDevice.ts') // include in order to create the Meteor methods needed
+require('../../../userActions.ts') // include in order to create the Meteor methods needed
 
 function getPartIdMap(segments: DBSegment[], parts: DBPart[]) {
 	const sortedParts = RundownPlaylist._sortPartsInner(parts, segments)
@@ -1009,5 +1013,143 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(partsInSegmentAfter[0]).toMatchObject(_.omit(partsInSegmentBefore[1], ['segmentId', '_rank']))
 
 		expect(partsInSegmentAfter[1]).toMatchObject(_.omit(partsInSegmentBefore[2], ['segmentId', '_rank']))
+	})
+
+	function replaceStory(runningOrderId: string, oldStoryId: string, newStoryId: string, newStoryName: string) {
+		waitForPromise(
+			MeteorCall.peripheralDevice.mosRoStoryReplace(
+				device._id,
+				device.token,
+				literal<MOS.IMOSStoryAction>({
+					RunningOrderID: new MOS.MosString128(runningOrderId),
+					StoryID: new MOS.MosString128(oldStoryId),
+				}),
+				literal<Array<MOS.IMOSROStory>>([
+					{
+						ID: new MOS.MosString128(newStoryId),
+						Slug: new MOS.MosString128(newStoryName),
+						Items: [],
+					},
+				])
+			)
+		)
+	}
+
+	function applySegmentChanges(
+		oldName: string,
+		newName: string,
+		oldSegments: Segment[],
+		newSegments: Segment[],
+		oldParts: Part[],
+		oldPartInstances: PartInstance[]
+	) {
+		for (const oldSegment of oldSegments) {
+			if (oldSegment.name === oldName) {
+				const newSegment = newSegments.find((s) => s.name === newName)
+				if (newSegment) {
+					const oldSegmentId = oldSegment._id
+					expect(oldSegmentId).not.toEqual(newSegment._id) // If the id doesn't change, then the whole test is invalid
+					oldSegment.name = newSegment.name
+					oldSegment._id = newSegment._id
+					oldSegment.externalId = newSegment.externalId
+
+					// update parts
+					for (const oldPart of oldParts) {
+						if (oldPart.segmentId === oldSegmentId) {
+							oldPart.segmentId = newSegment._id
+							oldPart.title = newSegment.name + ';' + oldPart.title.split(';')[1]
+							delete oldPart.metaData
+						}
+					}
+
+					// update partInstances
+					for (const oldPartInstance of oldPartInstances) {
+						if (oldPartInstance.segmentId === oldSegmentId) {
+							oldPartInstance.segmentId = newSegment._id
+							oldPartInstance.part.segmentId = newSegment._id
+						}
+					}
+
+					// Only the first matching segment
+					break
+				}
+			}
+		}
+	}
+
+	testInFiberOnly('Rename segment during update while on air', () => {
+		// Reset RO
+		waitForPromise(MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate()))
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		// activate and set on air
+		waitForPromise(MeteorCall.userAction.activate('', rundown.playlistId, true))
+		waitForPromise(MeteorCall.userAction.setNext('', rundown.playlistId, getPartId(rundown._id, 'ro1;s2;p1')))
+		waitForPromise(MeteorCall.userAction.take('', rundown.playlistId))
+
+		const partInstances0 = rundown.getAllPartInstances()
+		const { segments: segments0, parts: parts0 } = waitForPromise(rundown.getSegmentsAndParts())
+
+		replaceStory(rundown.externalId, 'ro1;s2;p1', 'ro1;s2;p1', 'SEGMENT2b;PART1')
+		replaceStory(rundown.externalId, 'ro1;s2;p2', 'ro1;s2;p2', 'SEGMENT2b;PART2')
+
+		const partInstances = rundown.getAllPartInstances()
+		const { segments, parts } = waitForPromise(rundown.getSegmentsAndParts())
+
+		// Update expected data, for just the segment name and ids changing
+		applySegmentChanges('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
+
+		expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0))
+		expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0))
+		expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0))
+	})
+
+	testInFiberOnly('Rename segment during resync while on air', () => {
+		const mosRO = mockRO.roCreate()
+
+		// Reset RO
+		waitForPromise(MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mosRO))
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+		expect(rundown.unsynced).toBeFalsy()
+
+		// activate and set on air
+		waitForPromise(MeteorCall.userAction.activate('', rundown.playlistId, true))
+		waitForPromise(MeteorCall.userAction.setNext('', rundown.playlistId, getPartId(rundown._id, 'ro1;s2;p1')))
+		waitForPromise(MeteorCall.userAction.take('', rundown.playlistId))
+
+		const partInstances0 = rundown.getAllPartInstances()
+		const { segments: segments0, parts: parts0 } = waitForPromise(rundown.getSegmentsAndParts())
+
+		// rename the segment
+		for (const story of mosRO.Stories) {
+			// mutate the slugs of the second segment
+			if (story.Slug && story.ID.toString().match(/;s2;/i)) {
+				story.Slug = new MOS.MosString128('SEGMENT2b;' + story.Slug.toString().split(';')[1])
+			}
+		}
+
+		// regenerate the rundown
+		waitForPromise(MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mosRO))
+
+		{
+			// still valid
+			const rundown = Rundowns.findOne() as Rundown
+			expect(rundown).toBeTruthy()
+			expect(rundown.unsynced).toBeFalsy()
+		}
+
+		const partInstances = rundown.getAllPartInstances()
+		const { segments, parts } = waitForPromise(rundown.getSegmentsAndParts())
+
+		// Update expected data, for just the segment name and ids changing
+		applySegmentChanges('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
+
+		expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0))
+		expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0))
+		expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0))
 	})
 })
