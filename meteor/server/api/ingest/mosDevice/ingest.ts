@@ -19,6 +19,8 @@ import {
 	waitForPromise,
 	getCurrentTime,
 	normalizeArray,
+	asyncCollectionInsert,
+	asyncCollectionRemove,
 } from '../../../../lib/lib'
 import { IngestPart, IngestSegment, IngestRundown } from '@sofie-automation/blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
@@ -181,6 +183,8 @@ export function handleMosRundownData(
 			payload: mosRunningOrder,
 			modified: getCurrentTime(),
 		})
+
+		if (!canBeUpdated(rundown)) return
 
 		if (rundown && oldRundownData) {
 			// If we already have a rundown, update any modified segment ids
@@ -626,7 +630,17 @@ function diffAndUpdateSegmentIds(
 		const oldSegmentId = getSegmentId(rundown._id, oldSegmentExternalId)
 		const newSegmentId = getSegmentId(rundown._id, newSegmentExternalId)
 
-		ps.push(asyncCollectionUpdate(Segments, oldSegmentId, { $set: { segmentId: newSegmentId } }))
+		const oldSegment = oldSegments.find((s) => s._id === oldSegmentId)
+		if (oldSegment) {
+			// Minimongo fails if an _id is updated, so we need to break the operation up
+			ps.push(
+				asyncCollectionInsert(Segments, {
+					...oldSegment,
+					_id: newSegmentId,
+				})
+			)
+			ps.push(asyncCollectionRemove(Segments, oldSegmentId))
+		}
 
 		ps.push(
 			asyncCollectionUpdate(
@@ -639,7 +653,8 @@ function diffAndUpdateSegmentIds(
 					$set: {
 						segmentId: newSegmentId,
 					},
-				}
+				},
+				{ multi: true }
 			)
 		)
 
@@ -654,7 +669,8 @@ function diffAndUpdateSegmentIds(
 					$set: {
 						startSegmentId: newSegmentId,
 					},
-				}
+				},
+				{ multi: true }
 			)
 		)
 
@@ -670,7 +686,8 @@ function diffAndUpdateSegmentIds(
 						segmentId: newSegmentId,
 						'part.segmentId': newSegmentId,
 					},
-				}
+				},
+				{ multi: true }
 			)
 		)
 	})
