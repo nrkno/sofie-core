@@ -4,5 +4,8 @@
     "node_modules/**",
     "src/**/*spec.ts",
     "src/**/__mocks__/*"
-  ]
+  ],
+  "compilerOptions": {
+    "declarationMap": true
+  }
 }
