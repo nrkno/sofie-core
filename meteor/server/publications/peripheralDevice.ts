@@ -247,7 +247,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 						studioId: studioId,
 					}).fetch()
 				}
-				if (!context.expectedPackages.length) return []
+				// if (!context.expectedPackages.length) return []
 
 				if (context.invalidateRundownPlaylist) {
 					context.invalidateRundownPlaylist = false
