@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as MOS from 'mos-connection'
 import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
-import { testInFiber, testInFiberOnly } from '../../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { Rundowns, Rundown, DBRundown } from '../../../../../lib/collections/Rundowns'
 import { Segments, DBSegment, Segment, SegmentId } from '../../../../../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
@@ -1077,7 +1077,7 @@ describe('Test recieved mos ingest payloads', () => {
 		}
 	}
 
-	testInFiberOnly('Rename segment during update while on air', () => {
+	testInFiber('Rename segment during update while on air', () => {
 		// Reset RO
 		waitForPromise(MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate()))
 
@@ -1106,7 +1106,7 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0))
 	})
 
-	testInFiberOnly('Rename segment during resync while on air', () => {
+	testInFiber('Rename segment during resync while on air', () => {
 		const mosRO = mockRO.roCreate()
 
 		// Reset RO
