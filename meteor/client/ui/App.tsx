@@ -155,8 +155,6 @@ export const App = translateWithTracker(() => {
 		}
 
 		componentDidMount() {
-			const { i18n } = this.props
-
 			// Global subscription of the currently logged in user:
 			this.subscribe(PubSub.loggedInUser, {})
 			this.autorun(() => {

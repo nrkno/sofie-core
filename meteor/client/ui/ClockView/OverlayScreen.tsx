@@ -114,12 +114,10 @@ export const OverlayScreen = withTranslation()(
 
 					if (playlist && this.props.playlistId && this.props.segments && showStyleBaseId) {
 						let currentPart: PartUi | undefined
-						let currentSegment: SegmentUi | undefined
 						for (const segment of segments) {
 							if (segment.items) {
 								for (const item of segment.items) {
 									if (item.instance._id === playlist.currentPartInstanceId) {
-										currentSegment = segment
 										currentPart = item
 									}
 								}
@@ -135,12 +133,10 @@ export const OverlayScreen = withTranslation()(
 						}
 
 						let nextPart: PartUi | undefined
-						let nextSegment: SegmentUi | undefined
 						for (const segment of segments) {
 							if (segment.items) {
 								for (const item of segment.items) {
 									if (item.instance._id === playlist.nextPartInstanceId) {
-										nextSegment = segment
 										nextPart = item
 									}
 								}

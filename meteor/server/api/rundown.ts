@@ -557,7 +557,7 @@ export function updatePartInstanceRanks(
 		}
 
 		const orphanedPartInstances = segmentPartInstances
-			.map((p, i) => ({ rank: p.part._rank, orphaned: p.orphaned, instanceId: p._id, id: p.part._id }))
+			.map((p) => ({ rank: p.part._rank, orphaned: p.orphaned, instanceId: p._id, id: p.part._id }))
 			.filter((p) => p.orphaned)
 
 		if (orphanedPartInstances.length === 0) {
