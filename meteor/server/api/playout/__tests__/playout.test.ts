@@ -188,7 +188,7 @@ describe('Playout API', () => {
 
 		expect(() => {
 			ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
-		}).toThrowError(/resetRundown can only be run in rehearsal/gi)
+		}).toThrowError(/resetRundownPlaylist can only be run in rehearsal!/gi)
 
 		// Deactivate rundown:
 		ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
