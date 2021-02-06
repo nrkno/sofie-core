@@ -3,7 +3,6 @@ import {
 	ProtectedString,
 	mongoWhere,
 	isProtectedString,
-	unprotectString,
 	getRandomId,
 	protectString,
 	clone,

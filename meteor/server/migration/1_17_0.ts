@@ -1,6 +1,4 @@
 import { addMigrationSteps } from './databaseMigration'
-import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { Studios } from '../../lib/collections/Studios'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { setExpectedVersion } from './lib'
 
