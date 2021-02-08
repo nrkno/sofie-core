@@ -1013,7 +1013,12 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(partsInSegmentAfter[1]).toMatchObject(_.omit(partsInSegmentBefore[2], ['segmentId', '_rank']))
 	})
 
-	function replaceStory(runningOrderId: string, oldStoryId: string, newStoryId: string, newStoryName: string) {
+	function mosReplaceBasicStory(
+		runningOrderId: string,
+		oldStoryId: string,
+		newStoryId: string,
+		newStoryName: string
+	) {
 		waitForPromise(
 			MeteorCall.peripheralDevice.mosRoStoryReplace(
 				device._id,
@@ -1033,7 +1038,7 @@ describe('Test recieved mos ingest payloads', () => {
 		)
 	}
 
-	function applySegmentChanges(
+	function applySegmentRenameToContents(
 		oldName: string,
 		newName: string,
 		oldSegments: Segment[],
@@ -1090,14 +1095,14 @@ describe('Test recieved mos ingest payloads', () => {
 		const partInstances0 = rundown.getAllPartInstances()
 		const { segments: segments0, parts: parts0 } = waitForPromise(rundown.getSegmentsAndParts())
 
-		replaceStory(rundown.externalId, 'ro1;s2;p1', 'ro1;s2;p1', 'SEGMENT2b;PART1')
-		replaceStory(rundown.externalId, 'ro1;s2;p2', 'ro1;s2;p2', 'SEGMENT2b;PART2')
+		mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p1', 'ro1;s2;p1', 'SEGMENT2b;PART1')
+		mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p2', 'ro1;s2;p2', 'SEGMENT2b;PART2')
 
 		const partInstances = rundown.getAllPartInstances()
 		const { segments, parts } = waitForPromise(rundown.getSegmentsAndParts())
 
 		// Update expected data, for just the segment name and ids changing
-		applySegmentChanges('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
+		applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
 
 		expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0))
 		expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0))
@@ -1144,7 +1149,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const { segments, parts } = waitForPromise(rundown.getSegmentsAndParts())
 
 		// Update expected data, for just the segment name and ids changing
-		applySegmentChanges('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
+		applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
 
 		expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0))
 		expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0))

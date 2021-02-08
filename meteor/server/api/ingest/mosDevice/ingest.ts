@@ -759,7 +759,7 @@ function diffAndApplyChanges(
 	saveRundownCache(rundown._id, newIngestRundown)
 
 	// TODO - do we need to do these 'clever' updates anymore? As we don't store any playout properties on the Parts, destroying and recreating won't have negative impacts?
-	// The one exception is PartInstances when the segmentId changes, so we can try and preserve their position as well as possible.
+	// The one exception is PartInstances when the segmentId changes, but that is handled by `updatePartInstancesBasicProperties()` as a general data integrity enforcement step
 
 	// Update segment ranks:
 	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
