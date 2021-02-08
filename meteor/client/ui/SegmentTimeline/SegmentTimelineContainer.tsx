@@ -150,7 +150,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}).fetch()
 
 		const [orderedAllPartIds, { currentPartInstance, nextPartInstance }] = slowDownReactivity(
-			(_playlistId: RundownPlaylistId) =>
+			() =>
 				[
 					memoizedIsolatedAutorun(
 						(_playlistId: RundownPlaylistId) =>
@@ -161,21 +161,23 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								},
 							}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]).map((part) => part._id),
 						'playlist.getAllOrderedParts',
-						_playlistId
+						props.playlist._id
 					),
 					memoizedIsolatedAutorun(
-						(_playlistId: RundownPlaylistId) => props.playlist.getSelectedPartInstances(),
+						(_playlistId: RundownPlaylistId, _currentPartInstanceId, _nextPartInstanceId) =>
+							props.playlist.getSelectedPartInstances(),
 						'playlist.getSelectedPartInstances',
-						_playlistId
+						props.playlist._id,
+						props.playlist.currentPartInstanceId,
+						props.playlist.nextPartInstanceId
 					),
-				] as [PartId[], { currentPartInstance: PartInstance; nextPartInstance: PartInstance }],
+				] as [PartId[], { currentPartInstance: PartInstance | undefined; nextPartInstance: PartInstance | undefined }],
 			// if the rundown isn't active, run the changes ASAP, we don't care if there's going to be jank
 			// if this is the current or next segment (will have those two properties defined), run the changes ASAP,
 			// otherwise, trigger the updates in a window of 500-2500 ms from change
 			props.playlist.activationId === undefined || props.ownCurrentPartInstance || props.ownNextPartInstance
 				? 0
-				: Math.random() * 2000 + 500,
-			props.playlist._id
+				: Math.random() * 2000 + 500
 		)
 
 		let o = RundownUtils.getResolvedSegment(
