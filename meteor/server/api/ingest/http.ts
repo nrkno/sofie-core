@@ -8,7 +8,7 @@ import { rundownIngestSyncFromStudioFunction } from './lib'
 import { protectString } from '../../../lib/lib'
 import { PickerPOST } from '../http'
 import { makeNewIngestRundown } from './ingestCache'
-import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown } from '@sofie-automation/blueprints-integration'
 
 PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	check(params.studioId, String)

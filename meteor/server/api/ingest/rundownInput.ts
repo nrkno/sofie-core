@@ -99,7 +99,11 @@ import {
 } from './lib'
 import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
-import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
+import {
+	rundownPlaylistPlayoutSyncFunction,
+	rundownPlaylistPlayoutSyncFunctionInner,
+	triggerUpdateTimelineAfterIngestData,
+} from '../playout/playout'
 import { PartNote, NoteType, SegmentNote, RundownNote } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 import { UpdateNext } from './updateNext'
@@ -146,16 +150,8 @@ export enum RundownSyncFunctionPriority {
 	/** Events initiated from playout-gateway callbacks */
 	CALLBACK_PLAYOUT = 20,
 }
-export function rundownPlaylistSyncFunction<T extends () => any>( // TODO - remove this
-	rundownPlaylistId: RundownPlaylistId,
-	priority: RundownSyncFunctionPriority,
-	context: string,
-	fcn: T
-): ReturnType<T> {
-	return syncFunction(fcn, context, `rundown_playlist_${rundownPlaylistId}`, undefined, priority)()
-}
 
-export function rundownPlaylistCustomSyncFunction<T>(
+export function rundownPlaylistNoCacheSyncFunction<T>(
 	context: string,
 	rundownPlaylistId: RundownPlaylistId,
 	priority: RundownSyncFunctionPriority,
@@ -1182,9 +1178,8 @@ export function prepareUpdateSegmentFromIngestData(
 	const { parts, segmentPieces, adlibPieces, adlibActions, newSegment } = generateSegmentContents(
 		cache,
 		showStyle,
+		wrappedBlueprint,
 		rundown,
-		wrappedBlueprint.blueprint,
-		wrappedBlueprint.blueprintId,
 		ingestSegment,
 		existingSegment,
 		existingParts
@@ -1336,10 +1331,10 @@ export function savePreparedSegmentChanges(
 function syncChangesToPartInstances(
 	cache: CacheForPlayout,
 	blueprint: ShowStyleBlueprintManifest,
-	playlist: RundownPlaylist,
-	rundown: Rundown
+	ingestCache: ReadOnlyCache<CacheForIngest>
 ) {
-	if (playlist.activationId) {
+	const rundown = ingestCache.Rundown.doc
+	if (cache.Playlist.doc.activationId && rundown) {
 		if (blueprint.syncIngestUpdateToPartInstance) {
 			const { previousPartInstance, currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
 				cache
@@ -1377,10 +1372,10 @@ function syncChangesToPartInstances(
 					}
 
 					const referencedAdlibIds = _.compact(pieceInstancesInPart.map((p) => p.adLibSourceId))
-					const referencedAdlibs = cache.AdLibPieces.findFetch({ _id: { $in: referencedAdlibIds } })
+					const referencedAdlibs = ingestCache.AdLibPieces.findFetch({ _id: { $in: referencedAdlibIds } })
 
-					const adlibPieces = cache.AdLibPieces.findFetch({ partId: partId })
-					const adlibActions = cache.AdLibActions.findFetch({ partId: partId })
+					const adlibPieces = ingestCache.AdLibPieces.findFetch({ partId: partId })
+					const adlibActions = ingestCache.AdLibActions.findFetch({ partId: partId })
 
 					const proposedPieceInstances = getPieceInstancesForPart(
 						cache,
@@ -1404,7 +1399,7 @@ function syncChangesToPartInstances(
 							name: `Update to ${newPart.externalId}`,
 							identifier: `rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
 						},
-						playlist.activationId,
+						cache.Playlist.doc.activationId,
 						rundown,
 						cache,
 						existingPartInstance,
@@ -1454,7 +1449,7 @@ function syncChangesToPartInstances(
 						})
 					}
 
-					if (existingPartInstance._id === playlist.currentPartInstanceId) {
+					if (existingPartInstance._id === cache.Playlist.doc.currentPartInstanceId) {
 						// This should be run after 'current', before 'next':
 						syncPlayheadInfinitesForNextPartInstance(cache)
 					}
@@ -1469,17 +1464,20 @@ function syncChangesToPartInstances(
 }
 
 export function afterIngestChangedData(
-	cache: CacheForIngest,
+	ingestCache: CacheForIngest,
 	playoutInfo: IngestPlayoutInfo,
 	changedSegments: ChangedSegmentsRankInfo
 ) {
 	// To be called after rundown has been changed
-	updateExpectedMediaItemsOnRundown(cache)
-	updateExpectedPlayoutItemsOnRundown(cache)
+	updateExpectedMediaItemsOnRundown(ingestCache)
+	updateExpectedPlayoutItemsOnRundown(ingestCache)
 
-	updatePartInstanceRanks(cache, playoutInfo, changedSegments)
+	// Lock the playlist and make sure it is updated
+	rundownPlaylistPlayoutSyncFunctionInner('afterIngestChangedData', playoutInfo.playlist, null, (cache) => {
+		updatePartInstanceRanks(cache, changedSegments)
 
-	syncChangesToPartInstances(cache, blueprint, playlist, rundown)
+		syncChangesToPartInstances(cache, blueprint, ingestCache)
+	})
 
 	triggerUpdateTimelineAfterIngestData(playoutInfo.playlist._id)
 }
@@ -1633,7 +1631,7 @@ function generateSegmentContents(
 	cache: ReadOnlyCache<CacheForIngest>,
 	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	blueprint: WrappedShowStyleBlueprint,
-	dbRundown: Rundown,
+	dbRundown: ReadonlyDeep<DBRundown>,
 	ingestSegment: IngestSegment,
 	existingSegment: DBSegment | undefined,
 	existingParts: DBPart[]

@@ -15,6 +15,7 @@ import { PartInstances, wrapPartToTemporaryInstance } from '../../../../../lib/c
 import _ from 'underscore'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { getOrderedPartsAfterPlayhead } from '../util'
+import { rundownPlaylistPlayoutSyncFunction } from '../../playout'
 
 describe('getOrderedPartsAfterPlayhead', () => {
 	let env: DefaultEnvironment
@@ -132,8 +133,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
 		expect(playlist).toBeTruthy()
 
-		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 100)
+		const parts = rundownPlaylistPlayoutSyncFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 100)
 		)
 		expect(parts.map((p) => p._id)).toEqual(partIds)
 	})
@@ -149,15 +150,15 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		const firstInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), firstPart))
 		playlist.nextPartInstanceId = firstInstanceId
 
-		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 100)
+		const parts = rundownPlaylistPlayoutSyncFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 100)
 		)
 		// Should not have the first
 		expect(parts.map((p) => p._id)).toEqual(partIds.slice(1))
 
 		// Try with a limit
-		const parts2 = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 5)
+		const parts2 = rundownPlaylistPlayoutSyncFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 5)
 		)
 		// Should not have the first
 		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(1, 6))
@@ -174,15 +175,15 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		const firstInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), firstPart))
 		playlist.currentPartInstanceId = firstInstanceId
 
-		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 100)
+		const parts = rundownPlaylistPlayoutSyncFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 100)
 		)
 		// Should not have the first
 		expect(parts.map((p) => p._id)).toEqual(partIds.slice(1))
 
 		// Try with a limit
-		const parts2 = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 5)
+		const parts2 = rundownPlaylistPlayoutSyncFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 5)
 		)
 		// Should not have the first
 		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(1, 6))
@@ -199,8 +200,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		const lastInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), lastPart))
 		playlist.currentPartInstanceId = lastInstanceId
 
-		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 100)
+		const parts = rundownPlaylistPlayoutSyncFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 100)
 		)
 		// Should be empty
 		expect(parts.map((p) => p._id)).toEqual([])
@@ -252,8 +253,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		const nextInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), nextPart))
 		playlist.currentPartInstanceId = nextInstanceId
 
-		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 5)
+		const parts = rundownPlaylistPlayoutSyncFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 5)
 		)
 		// Should not have the first
 		expect(parts.map((p) => p._id)).toEqual([partIds[5], partIds[6], partIds[8], partIds[9], partIds[10]])
@@ -272,8 +273,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 
 		// Change next segment
 		playlist.nextSegmentId = segmentId2
-		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 10)
+		const parts = rundownPlaylistPlayoutSyncFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 10)
 		)
 		expect(parts.map((p) => p._id)).toEqual([...partIds.slice(1, 5), ...partIds.slice(8)])
 
@@ -286,8 +287,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				$set: { invalid: true },
 			}
 		)
-		const parts2 = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 10)
+		const parts2 = rundownPlaylistPlayoutSyncFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 10)
 		)
 		expect(parts2.map((p) => p._id)).toEqual([...partIds.slice(1, 5), ...partIds.slice(9)])
 
@@ -300,8 +301,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				$set: { invalid: true },
 			}
 		)
-		const parts3 = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 10)
+		const parts3 = rundownPlaylistPlayoutSyncFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 10)
 		)
 		expect(parts3.map((p) => p._id)).toEqual(partIds.slice(1, 8))
 	})

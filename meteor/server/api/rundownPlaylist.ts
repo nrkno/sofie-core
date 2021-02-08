@@ -4,7 +4,7 @@ import { waitForPromiseAll, makePromise, waitForPromise, getHash, protectString 
 import * as _ from 'underscore'
 import {
 	studioSyncFunction,
-	rundownPlaylistCustomSyncFunction,
+	rundownPlaylistNoCacheSyncFunction,
 	RundownSyncFunctionPriority,
 } from './ingest/rundownInput'
 import { removeRundownPlaylistFromDb } from './playout/lib'
@@ -19,7 +19,7 @@ export function removeEmptyPlaylists(studioId: StudioId) {
 			playlists.map(async (playlist) =>
 				makePromise(() => {
 					// Take the playlist lock, to ensure we don't fight something else
-					rundownPlaylistCustomSyncFunction(
+					rundownPlaylistNoCacheSyncFunction(
 						'removeEmptyPlaylists',
 						playlist._id,
 						RundownSyncFunctionPriority.USER_INGEST,

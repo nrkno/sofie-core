@@ -15,7 +15,7 @@ import { parse as parseUrl } from 'url'
 import {
 	RundownInput,
 	studioSyncFunction,
-	rundownPlaylistCustomSyncFunction,
+	rundownPlaylistNoCacheSyncFunction,
 	RundownSyncFunctionPriority,
 } from './ingest/rundownInput'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
@@ -223,7 +223,7 @@ export namespace ServerPeripheralDeviceAPI {
 				if (activePlaylists.length === 1) {
 					const activePlaylist = activePlaylists[0]
 					const playlistId = activePlaylist._id
-					rundownPlaylistCustomSyncFunction(
+					rundownPlaylistNoCacheSyncFunction(
 						'timelineTriggerTime',
 						playlistId,
 						RundownSyncFunctionPriority.CALLBACK_PLAYOUT,

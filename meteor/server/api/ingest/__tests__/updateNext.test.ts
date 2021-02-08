@@ -334,7 +334,7 @@ describe('Test ingest update next part helpers', () => {
 		return rundown
 	}
 	function ensureNextPartIsValid() {
-		const ingestInfo = getIngestPlaylistInfoFromDb(getRundown())
+		const ingestInfo = waitForPromise(getIngestPlaylistInfoFromDb(getRundown()))
 		UpdateNext.ensureNextPartIsValid((null as unknown) as CacheForIngest, ingestInfo)
 	}
 

@@ -15,7 +15,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { unprotectString } from '../../../lib/lib'
-import { DeepReadonly } from 'utility-types'
+import { ReadonlyDeep } from 'type-fest'
 
 export const BLUEPRINT_CACHE_CONTROL = { disable: false }
 
@@ -52,7 +52,7 @@ export function loadSystemBlueprints(system: ICoreSystem): WrappedSystemBlueprin
 	}
 }
 
-export function loadStudioBlueprint(studio: DeepReadonly<Studio>): WrappedStudioBlueprint | undefined {
+export function loadStudioBlueprint(studio: ReadonlyDeep<Studio>): WrappedStudioBlueprint | undefined {
 	if (!studio.blueprintId) return undefined
 
 	const blueprintManifest = loadBlueprintById(studio.blueprintId)
@@ -76,7 +76,7 @@ export function loadStudioBlueprint(studio: DeepReadonly<Studio>): WrappedStudio
 	}
 }
 
-export function loadShowStyleBlueprint(showStyleBase: DeepReadonly<ShowStyleBase>): WrappedShowStyleBlueprint {
+export function loadShowStyleBlueprint(showStyleBase: ReadonlyDeep<ShowStyleBase>): WrappedShowStyleBlueprint {
 	if (!showStyleBase.blueprintId) {
 		throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" has no defined blueprint!`)
 	}

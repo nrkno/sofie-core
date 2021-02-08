@@ -15,16 +15,15 @@ import {
 	ShowStyleVariantId,
 	ShowStyleCompound,
 	ShowStyleVariant,
-	createShowStyleCompound,
 	ShowStyleVariants,
 } from '../../../lib/collections/ShowStyleVariants'
 import { protectString, objectPathGet, objectPathSet } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
-import { DeepReadonly } from 'utility-types'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './cache'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { BlueprintId, Blueprints } from '../../../lib/collections/Blueprints'
 import { CommonContext } from './context'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.
@@ -85,7 +84,7 @@ export namespace ConfigRef {
 	}
 }
 
-export function preprocessStudioConfig(studio: DeepReadonly<Studio>, blueprint?: StudioBlueprintManifest) {
+export function preprocessStudioConfig(studio: ReadonlyDeep<Studio>, blueprint?: StudioBlueprintManifest) {
 	let res: any = {}
 	if (blueprint && blueprint.studioConfigManifest !== undefined) {
 		applyToConfig(res, blueprint.studioConfigManifest, studio.blueprintConfig, `Studio ${studio._id}`)
@@ -107,7 +106,7 @@ export function preprocessStudioConfig(studio: DeepReadonly<Studio>, blueprint?:
 }
 
 export function preprocessShowStyleConfig(
-	showStyle: DeepReadonly<ShowStyleCompound>,
+	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	blueprint?: ShowStyleBlueprintManifest
 ) {
 	let res: any = {}
@@ -128,7 +127,7 @@ export function preprocessShowStyleConfig(
 
 export function findMissingConfigs(
 	manifest: ConfigManifestEntry[] | undefined,
-	config: DeepReadonly<IBlueprintConfig>
+	config: ReadonlyDeep<IBlueprintConfig>
 ) {
 	const missingKeys: string[] = []
 	if (manifest === undefined) {
@@ -146,7 +145,7 @@ export function findMissingConfigs(
 export function applyToConfig(
 	res: any,
 	configManifest: ConfigManifestEntry[],
-	blueprintConfig: DeepReadonly<IBlueprintConfig>,
+	blueprintConfig: ReadonlyDeep<IBlueprintConfig>,
 	source: string
 ) {
 	for (const val of configManifest) {
@@ -177,14 +176,14 @@ export function forceClearAllBlueprintConfigCaches() {
 	showStyleBlueprintConfigCache.clear()
 }
 
-export function resetStudioBlueprintConfig(studio: DeepReadonly<Studio>): void {
+export function resetStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): void {
 	for (const map of studioBlueprintConfigCache.values()) {
 		map.delete(studio._id)
 	}
 	getStudioBlueprintConfig(studio)
 }
 
-export function getStudioBlueprintConfig(studio: DeepReadonly<Studio>): unknown {
+export function getStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): unknown {
 	let blueprintConfigMap = studio.blueprintId ? studioBlueprintConfigCache.get(studio.blueprintId) : undefined
 	if (!blueprintConfigMap && studio.blueprintId) {
 		blueprintConfigMap = new Map()
@@ -213,13 +212,13 @@ export function getStudioBlueprintConfig(studio: DeepReadonly<Studio>): unknown 
 	return compiledConfig
 }
 
-export function resetShowStyleBlueprintConfig(showStyleCompound: DeepReadonly<ShowStyleCompound>): void {
+export function resetShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<ShowStyleCompound>): void {
 	for (const map of showStyleBlueprintConfigCache.values()) {
 		map.get(showStyleCompound._id)?.delete(showStyleCompound.showStyleVariantId)
 	}
 	getShowStyleBlueprintConfig(showStyleCompound)
 }
-export function getShowStyleBlueprintConfig(showStyleCompound: DeepReadonly<ShowStyleCompound>): unknown {
+export function getShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<ShowStyleCompound>): unknown {
 	let blueprintConfigMap = showStyleCompound.blueprintId
 		? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId)
 		: new Map()

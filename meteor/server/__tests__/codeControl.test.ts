@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import '../../__mocks__/_extendJest'
 import { testInFiber, runAllTimers, testInFiberOnly } from '../../__mocks__/helpers/jest'
 import { syncFunction, Callback, syncFunctionIgnore } from '../codeControl'
-import { RundownSyncFunctionPriority, rundownPlaylistSyncFunction } from '../api/ingest/rundownInput'
+import { RundownSyncFunctionPriority, rundownPlaylistNoCacheSyncFunction } from '../api/ingest/rundownInput'
 import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime, protectString } from '../../lib/lib'
 import { useControllableDefer, useNextTickDefer } from '../../__mocks__/meteor'
 
@@ -18,7 +18,7 @@ describe('codeControl rundown', () => {
 	})
 	testInFiber('rundownSyncFunction', () => {
 		let sync1 = (name: string, priority: RundownSyncFunctionPriority) => {
-			return rundownPlaylistSyncFunction(protectString('ro1'), priority, 'testRundownSyncFn', () =>
+			return rundownPlaylistNoCacheSyncFunction('testRundownSyncFn', protectString('ro1'), priority, () =>
 				takesALongTimeInner(name)
 			)
 		}

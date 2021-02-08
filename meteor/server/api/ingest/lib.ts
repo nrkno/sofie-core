@@ -31,7 +31,7 @@ import { Credentials } from '../../security/lib/credentials'
 import { IngestRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { syncFunction } from '../../codeControl'
-import { rundownPlaylistCustomSyncFunction, RundownSyncFunctionPriority } from './rundownInput'
+import { rundownPlaylistNoCacheSyncFunction, RundownSyncFunctionPriority } from './rundownInput'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestDataCacheObj, IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { DbCacheWriteCollection, DbCacheReadCollection } from '../../cache/lib'
@@ -175,8 +175,8 @@ export function rundownIngestSyncFunction<T>(
 	)
 }
 
-export function getIngestPlaylistInfoFromDb(rundown: ReadonlyDeep<Rundown>) {
-	const [playlist, rundowns] = waitForPromiseAll([
+export async function getIngestPlaylistInfoFromDb(rundown: ReadonlyDeep<Rundown>): Promise<IngestPlayoutInfo> {
+	const [playlist, rundowns] = await Promise.all([
 		asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId }),
 		asyncCollectionFindFetch(
 			Rundowns,
@@ -218,8 +218,8 @@ export function rundownIngestSyncFromStudioFunction<T>(
 	context: string,
 	studioId: StudioId,
 	rundownExternalId: string,
-	calcFcn: (cache: ReadOnlyCache<CacheForIngest>, ingestCache: RundownIngestDataCacheCollection) => T,
-	saveFcn: ((cache: CacheForIngest, playoutInfo: IngestPlayoutInfo, data: T) => void) | null,
+	calcFcn: (cache: ReadOnlyCache<CacheForIngest>, ingestCache: RundownIngestDataCacheCollection) => Promise<T> | T,
+	saveFcn: ((cache: CacheForIngest, playoutInfo: IngestPlayoutInfo, data: T) => Promise<void> | void) | null,
 	options?: { skipPlaylistLock?: boolean }
 ): void {
 	return syncFunction(
@@ -235,7 +235,7 @@ export function rundownIngestSyncFromStudioFunction<T>(
 			let saveIngestChanges: Promise<any> | undefined
 
 			try {
-				const val = calcFcn(cache, ingestObjCache)
+				const val = waitForPromise(calcFcn(cache, ingestObjCache))
 
 				// Start saving the ingest data
 				saveIngestChanges = ingestObjCache.updateDatabaseWithData()
@@ -245,9 +245,9 @@ export function rundownIngestSyncFromStudioFunction<T>(
 
 				function doPlaylistInner() {
 					if (saveFcn) {
-						const playoutInfo = getIngestPlaylistInfoFromDb(rundown)
+						const playoutInfo = waitForPromise(getIngestPlaylistInfoFromDb(rundown))
 
-						saveFcn(cache, playoutInfo, val)
+						waitForPromise(saveFcn(cache, playoutInfo, val))
 					}
 
 					// TODO-CACHE - does this need to be inside the sync-function if there was no save step, as it cant touch anything playlisty?
@@ -257,7 +257,7 @@ export function rundownIngestSyncFromStudioFunction<T>(
 				if (options?.skipPlaylistLock) {
 					doPlaylistInner()
 				} else {
-					rundownPlaylistCustomSyncFunction(
+					rundownPlaylistNoCacheSyncFunction(
 						context,
 						rundown.playlistId,
 						RundownSyncFunctionPriority.INGEST,

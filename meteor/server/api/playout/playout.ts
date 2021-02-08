@@ -57,10 +57,9 @@ import { sortPieceInstancesByStart } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { getActiveRundownPlaylistsInStudioFromDb } from './studio'
 import {
-	rundownPlaylistSyncFunction,
 	RundownSyncFunctionPriority,
 	studioSyncFunction,
-	rundownPlaylistCustomSyncFunction,
+	rundownPlaylistNoCacheSyncFunction,
 } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
@@ -126,7 +125,7 @@ export function rundownPlaylistPlayoutSyncFunctionInner<T>(
 	context: string,
 	tmpPlaylist: ReadonlyDeep<RundownPlaylist>,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => void),
-	fcn: (cache: CacheForPlayout) => T,
+	fcn: (cache: CacheForPlayout) => Promise<T> | T,
 	options?: { skipPlaylistLock?: boolean }
 ): T {
 	function doPlaylistInner() {
@@ -138,7 +137,7 @@ export function rundownPlaylistPlayoutSyncFunctionInner<T>(
 
 		waitForPromise(cache.initContent())
 
-		const res = fcn(cache)
+		const res = waitForPromise(fcn(cache))
 
 		waitForPromise(cache.saveAllToDatabase())
 
@@ -149,7 +148,7 @@ export function rundownPlaylistPlayoutSyncFunctionInner<T>(
 		// TODO-PartInstances remove this once new data flow
 		return doPlaylistInner()
 	} else {
-		return rundownPlaylistCustomSyncFunction(
+		return rundownPlaylistNoCacheSyncFunction(
 			context,
 			tmpPlaylist._id,
 			RundownSyncFunctionPriority.USER_PLAYOUT,
@@ -772,10 +771,10 @@ export namespace ServerPlayoutAPI {
 
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
-		return rundownPlaylistSyncFunction(
+		return rundownPlaylistNoCacheSyncFunction(
+			'onPiecePlaybackStarted',
 			rundownPlaylistId,
 			RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
-			'onPiecePlaybackStarted',
 			() => {
 				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
 				// This method is called when an auto-next event occurs
@@ -821,10 +820,10 @@ export namespace ServerPlayoutAPI {
 
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
-		return rundownPlaylistSyncFunction(
+		return rundownPlaylistNoCacheSyncFunction(
+			'onPiecePlaybackStopped',
 			rundownPlaylistId,
 			RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
-			'onPiecePlaybackStopped',
 			() => {
 				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
 
@@ -1029,10 +1028,10 @@ export namespace ServerPlayoutAPI {
 
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
-		return rundownPlaylistSyncFunction(
+		return rundownPlaylistNoCacheSyncFunction(
+			'onPartPlaybackStopped',
 			rundownPlaylistId,
 			RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
-			'onPartPlaybackStopped',
 			() => {
 				// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
 				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()

@@ -1,6 +1,5 @@
 import { clone } from 'underscore'
 import { ContextInfo, RundownContext } from './context'
-import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import {
 	IBlueprintPiece,
 	IBlueprintPieceInstance,
@@ -27,11 +26,13 @@ import {
 	normalizeArrayToMap,
 } from '../../../../lib/lib'
 import { Rundown } from '../../../../lib/collections/Rundowns'
-import { DbCacheWriteCollection } from '../../../DatabaseCache'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { Meteor } from 'meteor/meteor'
 import { INoteBase, NoteType } from '../../../../lib/api/notes'
 import { RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
+import { CacheForPlayout } from '../../../cache/DatabaseCaches'
+import { DbCacheWriteCollection } from '../../../cache/lib'
+import { ReadonlyDeep } from 'type-fest'
 
 export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 	implements ISyncIngestUpdateToPartInstanceContext {
@@ -44,14 +45,14 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 	constructor(
 		contextInfo: ContextInfo,
 		private readonly playlistActivationId: RundownPlaylistActivationId,
-		rundown: Rundown,
-		cache: ReadOnlyCacheForRundownPlaylist,
+		rundown: ReadonlyDeep<Rundown>,
+		cache: CacheForPlayout,
 		private partInstance: PartInstance,
 		pieceInstances: PieceInstance[],
 		proposedPieceInstances: PieceInstance[],
 		private playStatus: 'current' | 'next'
 	) {
-		super(contextInfo, rundown, cache)
+		super(contextInfo, cache.Studio.doc, rundown, cache)
 
 		// Create temporary cache databases
 		this._pieceInstanceCache = new DbCacheWriteCollection(PieceInstances)
@@ -90,7 +91,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		}
 	}
 
-	applyChangesToCache(cache: CacheForRundownPlaylist) {
+	applyChangesToCache(cache: CacheForPlayout) {
 		this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
 		this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
 	}
