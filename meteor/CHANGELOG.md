@@ -2,6 +2,61 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.17.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.2...v1.17.0) (2021-02-08)
+
+
+### Features
+
+* **Freeze frame:** new freeze frame indicator & icon next to the countdown ([e716b90](https://github.com/nrkno/tv-automation-server-core/commit/e716b90490e5057104927ce01e6739435f134981))
+* **freeze frame countdown:** some tweaks to the styling ([bc7abdf](https://github.com/nrkno/tv-automation-server-core/commit/bc7abdf43380faeead65e17f2b93a3f66b227a11))
+
+
+### Bug Fixes
+
+* activation ux ([e65090b](https://github.com/nrkno/tv-automation-server-core/commit/e65090b8b948f6d35646f75f293315fb6556ee2f))
+* pieces which have finished playback get extended when clearing the sourcelayer ([c398bb7](https://github.com/nrkno/tv-automation-server-core/commit/c398bb7065019ea5c023922d278befd847f68acc))
+* **freeze frame countdown:** some positioning problems ([15e0784](https://github.com/nrkno/tv-automation-server-core/commit/15e0784190c3d219a42eec5cbc9a57c663d25d30))
+* **freeze frame countdown:** some positioning problems, countdown wouldn't always show ([87cb61e](https://github.com/nrkno/tv-automation-server-core/commit/87cb61eecd09502a24b4fd3d901fdadc1d640d8f))
+* **NoraFloatingInspector:** IntersectionObserver instance could be undefined when used ([b45df6b](https://github.com/nrkno/tv-automation-server-core/commit/b45df6b23c39dbaa28a21a63f3078596ddb5ca6c))
+* **RundownView:** issue with VirtualElement when running with touch emulation turned on in Inspector ([3a6ef2c](https://github.com/nrkno/tv-automation-server-core/commit/3a6ef2c1bf94f59d2e975a9bde3d35530753e1ef))
+
+## [1.17.0-in-testing-R29.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.0-in-testing-R28.1...v1.17.0-in-testing-R29.1) (2021-01-15)
+
+
+### Features
+
+* add getPartInstanceForPreviousPiece method to ActionExecutionContext ([74f939e](https://github.com/nrkno/tv-automation-server-core/commit/74f939e4b18835d83f9fa84302ac6a8f73a764f3))
+* piece freeze frame countdown ([#426](https://github.com/nrkno/tv-automation-server-core/issues/426)) ([b5aefe3](https://github.com/nrkno/tv-automation-server-core/commit/b5aefe38da87b26c858ff5c8643779b6f3d21873))
+* special timeline class for when the first part hasn't been taken ([#421](https://github.com/nrkno/tv-automation-server-core/issues/421)) ([789f8cb](https://github.com/nrkno/tv-automation-server-core/commit/789f8cbdf9d9bcf1594d78090152659aa486cd79))
+* **AdLib panel:** clear focus off the search input on Escape key ([356a152](https://github.com/nrkno/tv-automation-server-core/commit/356a1521a6fde1165daa29da255f2d6f76674838))
+* add a presenters' countdown view that can be used as an overlay ([#414](https://github.com/nrkno/tv-automation-server-core/issues/414)) ([c15fc77](https://github.com/nrkno/tv-automation-server-core/commit/c15fc776557eb982e5390b1d8f4c98bdb51890e0))
+* meteor 1.12 & typescript 4.1.2 ([73fcc6f](https://github.com/nrkno/tv-automation-server-core/commit/73fcc6fa51372b1beaa6ba7490db8dba3380b4f2))
+* meteor 1.12.1 ([a62da84](https://github.com/nrkno/tv-automation-server-core/commit/a62da847e7716812a1ae56472f1fe7d1a194442a))
+* replace ts-essentials with type-fest ([c5c5613](https://github.com/nrkno/tv-automation-server-core/commit/c5c56135126c412257cd18a6359905ad3b219042))
+
+
+### Bug Fixes
+
+* **AdLibPanel:** an issue with showing hotkeys on segment adlibs ([d2daf2a](https://github.com/nrkno/tv-automation-server-core/commit/d2daf2a97e5581abbedb9e50b81c085711ab9d7d))
+* AdLibPanel doesn't show a sourceLayer and outputGroup for a global adLib ([b3ebeec](https://github.com/nrkno/tv-automation-server-core/commit/b3ebeecb22d3dbbc095214753ee5c37ed8215bb0))
+* downgrade viewport scrolling errors from console.error to console.warn ([37be2e5](https://github.com/nrkno/tv-automation-server-core/commit/37be2e539f1db020a10ee6b877742f055e5d5b1e))
+* ensure that an execute option is displayed on AdLib actions ([1e10ae8](https://github.com/nrkno/tv-automation-server-core/commit/1e10ae85891f9cf4bb46f8cd9c59433ac6b58852))
+* graphics hover preview stays in viewport ([#423](https://github.com/nrkno/tv-automation-server-core/issues/423)) ([790e718](https://github.com/nrkno/tv-automation-server-core/commit/790e718f1a6d6972ccd2eeb1924a0566537e208b))
+* if a syncFunction has waited too long for other syncFunction(s) to complete, a warning will be logged. ([226b5e7](https://github.com/nrkno/tv-automation-server-core/commit/226b5e7fce32f3f144fd9413ccd2bf6c8dabff2c))
+* incorrect mongo query typings ([43510d3](https://github.com/nrkno/tv-automation-server-core/commit/43510d36e02d0a22b4d45b3c47eda2a49694fcab))
+* move deferred functions into a cache.deferAfterSave ([77489ff](https://github.com/nrkno/tv-automation-server-core/commit/77489ffa3d7a6a3963de8ab1279074f8cca283f4))
+* overlay screen layout when an upcoming rundown is present ([4ea1b9c](https://github.com/nrkno/tv-automation-server-core/commit/4ea1b9ca1c7c9773d244ac4b7c376780c3683edf))
+* Piece end cap ([4b810ae](https://github.com/nrkno/tv-automation-server-core/commit/4b810ae78347ce8c476eb19598a6f91e93f47a7e))
+* Piece end cap tests ([31fd9d1](https://github.com/nrkno/tv-automation-server-core/commit/31fd9d1d535ee6eff8d0236ec971aa66282422a5))
+* refactor DatabaseCache to remove ts-ignores ([1074478](https://github.com/nrkno/tv-automation-server-core/commit/107447800b1300d8e4db01f48fac523079b176b1))
+* replace DatabaseCache documents contents 'removed' interface with null for simplicity ([231d84d](https://github.com/nrkno/tv-automation-server-core/commit/231d84d5918054d3746e2d325bcbdfc567e8558e))
+* show a line between sourceLayers in a collapsed group ([656a08a](https://github.com/nrkno/tv-automation-server-core/commit/656a08a431b6977184ebe2643dce34c2fd9416dd))
+* typings issue ([fd116d2](https://github.com/nrkno/tv-automation-server-core/commit/fd116d205b04f73c309c8d0eee7b911e9ed1237f))
+* update dockerfiles for meteor 1.12.1 ([10217a4](https://github.com/nrkno/tv-automation-server-core/commit/10217a4567282af08b9e9b9afc3470d5b8877b51))
+* using rundownId in Pieces mongo query ([ca0fdfb](https://github.com/nrkno/tv-automation-server-core/commit/ca0fdfb855083267b98c7bd102591b7e659fe853))
+* **SplitsSourceRenderer:** don't print label widths out to console ([884439d](https://github.com/nrkno/tv-automation-server-core/commit/884439ddb40a3bdd6c09dca9393726d4190c85f2))
+* using RundownViewEventBus for switching shelf tabs doesn't work ([cda34d8](https://github.com/nrkno/tv-automation-server-core/commit/cda34d8d9d7f7d3115024f2ca147cca09711a690))
+
 ## [1.17.0-in-testing-R29.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.0-in-testing-R28.1...v1.17.0-in-testing-R29.1) (2021-01-15)
 
 
