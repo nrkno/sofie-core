@@ -159,7 +159,6 @@ export function matchFilter(
 		// Hide duplicates
 		if (filter.hideDuplicates && uniquenessIds) {
 			const uniquenessId = item.uniquenessId || unprotectString(item._id)
-			console.log(uniquenessId)
 			if (uniquenessIds.has(uniquenessId)) {
 				return false
 			} else {
