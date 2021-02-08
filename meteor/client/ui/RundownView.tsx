@@ -1418,17 +1418,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun((_playlistId) => playlist.getRundowns(), 'playlist.getRundowns', playlistId)
-		// allParts = memoizedIsolatedAutorun(
-		// 	(_playlistId) =>
-		// 		(playlist.getAllOrderedParts(undefined, {
-		// 			fields: {
-		// 				segmentId: 1,
-		// 				_rank: 1,
-		// 			},
-		// 		}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]).map((part) => part._id),
-		// 	'playlist.getAllOrderedParts',
-		// 	playlistId
-		// )
 		;({ currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances())
 	}
 
