@@ -121,7 +121,7 @@ export function slowDownReactivity<T extends (...args: any) => any>(
 	dep.depend()
 
 	let result: ReturnType<T>
-	let invalidationTimeout: number
+	let invalidationTimeout: number | null = null
 	let parentInvalidated = false
 	const parentComputation = Tracker.currentComputation
 	const computation = Tracker.nonreactive(() => {
@@ -129,8 +129,10 @@ export function slowDownReactivity<T extends (...args: any) => any>(
 			result = fnc(...(params as any))
 		})
 		computation.onInvalidate(() => {
-			if (parentInvalidated === false) {
+			// if the parent hasn't been invalidated and there is no scheduled invalidation
+			if (parentInvalidated === false && invalidationTimeout === null) {
 				invalidationTimeout = Meteor.setTimeout(() => {
+					invalidationTimeout = null
 					dep.changed()
 				}, delay)
 			}
