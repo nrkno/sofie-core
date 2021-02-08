@@ -591,6 +591,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 				return segmentUi
 			})
 
+			const { currentPartInstance, nextPartInstance } = props.playlist.getSelectedPartInstances()
 			const partInstances = props.playlist.getActivePartInstancesMap()
 
 			props.playlist
@@ -606,16 +607,23 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 						segment.parts.push(partInstance)
 
 						uiPartSegmentMap.set(part._id, segment)
-
-						if (partInstance._id === currentPartInstanceId) {
-							segment.isLive = true
-							liveSegment = segment
-						}
-						if (partInstance._id === nextPartInstanceId) {
-							segment.isNext = true
-						}
 					}
 				})
+
+			if (currentPartInstance) {
+				const segment = uiSegmentMap.get(currentPartInstance.segmentId)
+				if (segment) {
+					liveSegment = segment
+					segment.isLive = true
+				}
+			}
+
+			if (nextPartInstance) {
+				const segment = uiSegmentMap.get(nextPartInstance.segmentId)
+				if (segment) {
+					segment.isNext = true
+				}
+			}
 
 			uiSegmentMap.forEach((segment) => {
 				// Sort parts by rank
