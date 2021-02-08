@@ -1,6 +1,7 @@
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Tracker } from 'meteor/tracker'
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../reactiveDataHelper'
+import { sleep } from '../../../../lib/lib'
 
 describe('client/lib/reactiveData/reactiveDataHelper', () => {
 	describe('memoizedIsolatedAutorun', () => {
@@ -118,11 +119,7 @@ describe('client/lib/reactiveData/reactiveDataHelper', () => {
 			expect(runCount).toBe(2)
 			expect(result).toBe('test2')
 		})
-		testInFiber("it invalidates the computation after a delay, if it's dependency changes", () => {
-			let resolve: (value?: unknown) => void
-			const testFinished = new Promise((promiseResolve) => {
-				resolve = promiseResolve
-			})
+		testInFiber("it invalidates the computation after a delay, if it's dependency changes", async () => {
 			let runCount = 0
 			const dep = new Tracker.Dependency()
 			Tracker.autorun(() => {
@@ -135,22 +132,43 @@ describe('client/lib/reactiveData/reactiveDataHelper', () => {
 			expect(runCount).toBe(1)
 			dep.changed()
 			expect(runCount).toBe(1)
-			setTimeout(() => {
-				expect(runCount).toBe(1)
 
-				setTimeout(() => {
-					expect(runCount).toBe(2)
-					resolve()
-				}, 200)
-			}, 100)
+			await sleep(100)
+			expect(runCount).toBe(1)
 
-			return testFinished
+			await sleep(200)
+			expect(runCount).toBe(2)
 		})
-		testInFiber('it cleans up after itself when parent computation is invalidated', () => {
-			let resolve: (value?: unknown) => void
-			const testFinished = new Promise((promiseResolve) => {
-				resolve = promiseResolve
-			})
+		testInFiber(
+			'it invalidates once after a delay, even when there are additional invalidations in the delay period',
+			async () => {
+				let runCount = 0
+				const dep = new Tracker.Dependency()
+				Tracker.autorun(() => {
+					runCount++
+					slowDownReactivity(() => {
+						dep.depend()
+					}, 200)
+				})
+
+				expect(runCount).toBe(1)
+				dep.changed()
+				expect(runCount).toBe(1)
+				await sleep(100)
+				expect(runCount).toBe(1)
+				dep.changed()
+
+				await sleep(50)
+				dep.changed()
+
+				await sleep(100)
+				expect(runCount).toBe(2)
+
+				await sleep(400)
+				expect(runCount).toBe(2)
+			}
+		)
+		testInFiber('it cleans up after itself when parent computation is invalidated', async () => {
 			let runCount0 = 0
 			let runCount1 = 0
 			const dep0 = new Tracker.Dependency()
@@ -178,26 +196,21 @@ describe('client/lib/reactiveData/reactiveDataHelper', () => {
 			expect(runCount0).toBe(1)
 			expect(runCount1).toBe(2)
 
-			setTimeout(() => {
-				// the inner autorun has run, but the outer one still hasn't been invalidated yet
-				expect(runCount0).toBe(1)
-				expect(runCount1).toBe(2)
+			await sleep(100)
+			// the inner autorun has run, but the outer one still hasn't been invalidated yet
+			expect(runCount0).toBe(1)
+			expect(runCount1).toBe(2)
 
-				// invalidate the outer dependency
-				dep0.changed()
-				// the outer autorun has run and the inner autorun has run as well
-				expect(runCount0).toBe(2)
-				expect(runCount1).toBe(3)
+			// invalidate the outer dependency
+			dep0.changed()
+			// the outer autorun has run and the inner autorun has run as well
+			expect(runCount0).toBe(2)
+			expect(runCount1).toBe(3)
 
-				setTimeout(() => {
-					// the original invalidation (set up in Point A) has been cancelled and did not cause an extra re-run
-					expect(runCount0).toBe(2)
-					expect(runCount1).toBe(3)
-					resolve()
-				}, 500)
-			}, 100)
-
-			return testFinished
+			await sleep(500)
+			// the original invalidation (set up in Point A) has been cancelled and did not cause an extra re-run
+			expect(runCount0).toBe(2)
+			expect(runCount1).toBe(3)
 		})
 	})
 })
