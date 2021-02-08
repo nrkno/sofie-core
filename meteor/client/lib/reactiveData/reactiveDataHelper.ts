@@ -74,15 +74,17 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 			const computation = Tracker.autorun(() => {
 				result = fnc(...(params as any))
 
-				if (!Tracker.currentComputation.firstRun) {
-					if (!_.isEqual(isolatedAutorunsMem[fId].value, result)) {
-						dep.changed()
-					}
-				}
+				const oldValue = isolatedAutorunsMem[fId] && isolatedAutorunsMem[fId].value
 
 				isolatedAutorunsMem[fId] = {
 					dependancy: dep,
 					value: result,
+				}
+
+				if (!Tracker.currentComputation.firstRun) {
+					if (!_.isEqual(oldValue, result)) {
+						dep.changed()
+					}
 				}
 			})
 			computation.onStop(() => {
@@ -90,9 +92,9 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 			})
 			return computation
 		})
-		let gc = setInterval(() => {
+		let gc = Meteor.setInterval(() => {
 			if (!dep.hasDependents()) {
-				clearInterval(gc)
+				Meteor.clearInterval(gc)
 				computation.stop()
 			}
 		}, 5000)
@@ -100,6 +102,49 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 		result = isolatedAutorunsMem[fId].value
 		isolatedAutorunsMem[fId].dependancy.depend()
 	}
+	// @ts-ignore
+	return result
+}
+
+export function slowDownReactivity<T extends (...args: any) => any>(
+	fnc: T,
+	delay: number,
+	...params: Parameters<T>
+): ReturnType<T> {
+	// if the delay is <= 0, call straight away and register a direct dependency
+	if (delay <= 0) {
+		return fnc(...(params as any))
+	}
+
+	// if the delay is > 0, slow down the reactivity
+	const dep = new Tracker.Dependency()
+	dep.depend()
+
+	let result: ReturnType<T>
+	let invalidationTimeout: number
+	let parentInvalidated = false
+	const parentComputation = Tracker.currentComputation
+	const computation = Tracker.nonreactive(() => {
+		const computation = Tracker.autorun(() => {
+			result = fnc(...(params as any))
+		})
+		computation.onInvalidate(() => {
+			if (parentInvalidated === false) {
+				invalidationTimeout = Meteor.setTimeout(() => {
+					dep.changed()
+				}, delay)
+			}
+		})
+		return computation
+	})
+	parentComputation?.onInvalidate(() => {
+		// stop the inner computation, if the parent computation has been invalidated
+		// and clean out any timeouts that may have been registered
+		parentInvalidated = true
+		computation.stop()
+		if (invalidationTimeout) Meteor.clearTimeout(invalidationTimeout)
+	})
+
 	// @ts-ignore
 	return result
 }
