@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.17.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.2...v1.17.0) (2021-02-08)
+
+## [1.17.0-in-testing-R29.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.0-in-testing-R28.1...v1.17.0-in-testing-R29.1) (2021-01-15)
+
+
+### Features
+
+* add getPartInstanceForPreviousPiece method to ActionExecutionContext ([74f939e](https://github.com/nrkno/tv-automation-server-core/commit/74f939e4b18835d83f9fa84302ac6a8f73a764f3))
+* special timeline class for when the first part hasn't been taken ([#421](https://github.com/nrkno/tv-automation-server-core/issues/421)) ([789f8cb](https://github.com/nrkno/tv-automation-server-core/commit/789f8cbdf9d9bcf1594d78090152659aa486cd79))
+
 ## [1.17.0-in-testing-R29.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.0-in-testing-R28.1...v1.17.0-in-testing-R29.1) (2021-01-15)
 
 
