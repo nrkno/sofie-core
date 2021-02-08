@@ -16,7 +16,7 @@ export namespace UpdateNext {
 		const { playlist, currentPartInstance, nextPartInstance } = playoutInfo
 
 		// Ensure the next-id is still valid
-		if (playlist.active && playlist.nextPartInstanceId) {
+		if (playlist.activationId && playlist.nextPartInstanceId) {
 			// Note: we have the playlist lock, so we can use the db directly
 			const allParts = playoutInfo.playlist.getAllOrderedParts()
 

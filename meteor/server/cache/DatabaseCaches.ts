@@ -458,13 +458,24 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		ps.push(this.Segments.prepareInit({ rundownId: { $in: rundownIds } }, true)) // TODO - omit if we cant or are unlikely to change the current part
 		ps.push(this.Parts.prepareInit({ rundownId: { $in: rundownIds } }, true)) // TODO - omit if we cant or are unlikely to change the current part
 
-		ps.push(this.PartInstances.prepareInit({ rundownId: { $in: rundownIds }, reset: { $ne: true } }, true))
+		ps.push(
+			this.PartInstances.prepareInit(
+				{
+					playlistActivationId: playlist.activationId,
+					rundownId: { $in: rundownIds },
+					reset: { $ne: true },
+				},
+				true
+			)
+		)
 
 		ps.push(
 			this.PieceInstances.prepareInit(
 				{
+					playlistActivationId: playlist.activationId,
 					rundownId: { $in: rundownIds },
 					partInstanceId: { $in: selectedPartInstanceIds },
+					reset: { $ne: true },
 				},
 				true
 			)

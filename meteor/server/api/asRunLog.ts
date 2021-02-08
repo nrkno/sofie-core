@@ -88,7 +88,16 @@ function handleAsRunEvent(event: AsRunLogEvent): void {
 				const { blueprint } = loadShowStyleBlueprint(showStyleCompound)
 
 				if (blueprint.onAsRunEvent) {
-					const context = new AsRunEventContext(studio, rundown, showStyleCompound, event)
+					const context = new AsRunEventContext(
+						{
+							name: rundown.name,
+							identifier: `rundownId=${rundown._id},eventId=${event._id}`,
+						},
+						studio,
+						rundown,
+						showStyleCompound,
+						event
+					)
 
 					Promise.resolve(blueprint.onAsRunEvent(context))
 						.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {

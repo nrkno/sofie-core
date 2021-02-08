@@ -28,7 +28,7 @@ interface IStateHeader {}
 export const ClockView = withTracker(function(props: IPropsHeader) {
 	let studioId = objectPathGet(props, 'match.params.studioId')
 	const playlist = RundownPlaylists.findOne({
-		active: true,
+		activationId: { $exists: true },
 		studioId: studioId,
 	})
 
@@ -42,7 +42,7 @@ export const ClockView = withTracker(function(props: IPropsHeader) {
 			let studioId = this.props.studioId
 			if (studioId) {
 				this.subscribe(PubSub.rundownPlaylists, {
-					active: true,
+					activationId: { exists: true },
 					studioId: studioId,
 				})
 			}
@@ -57,7 +57,7 @@ export const ClockView = withTracker(function(props: IPropsHeader) {
 								<PresenterScreen playlistId={this.props.playlist._id} />
 							</RundownTimingProvider>
 						) : (
-							<StudioScreenSaver studioId={this.props.studioId} />
+							<StudioScreenSaver studioId={this.props.studioId} ownBackground={true} />
 						)}
 					</Route>
 					<Route path="/countdowns/:studioId/overlay">

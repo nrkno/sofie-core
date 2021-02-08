@@ -51,7 +51,9 @@ describe('Timeline', () => {
 			return Rundowns.findOne(rundownId0) as Rundown
 		}
 		const getPlaylist0 = () => {
-			return RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+			const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+			playlist.activationId = playlist.activationId ?? undefined
+			return playlist
 		}
 		expect(getRundown0()).toBeTruthy()
 		expect(getPlaylist0()).toBeTruthy()
@@ -59,7 +61,7 @@ describe('Timeline', () => {
 		const parts = getRundown0().getParts()
 
 		expect(getPlaylist0()).toMatchObject({
-			active: false,
+			activationId: undefined,
 			rehearsal: false,
 		})
 
@@ -71,7 +73,7 @@ describe('Timeline', () => {
 			expect(nextPartInstance).toBeTruthy()
 			expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
 			expect(getPlaylist0()).toMatchObject({
-				active: true,
+				activationId: expect.stringMatching(/^randomId/),
 				rehearsal: false,
 				currentPartInstanceId: null,
 				// nextPartInstanceId: parts[0]._id,
@@ -109,7 +111,7 @@ describe('Timeline', () => {
 			// Deactivate rundown:
 			ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
 			expect(getPlaylist0()).toMatchObject({
-				active: false,
+				activationId: undefined,
 				currentPartInstanceId: null,
 				nextPartInstanceId: null,
 			})

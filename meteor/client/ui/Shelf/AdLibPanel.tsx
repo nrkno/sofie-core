@@ -155,7 +155,7 @@ export function matchFilter(
 		}
 	}
 	if (searchFilter) {
-		return uppercaseLabel.indexOf(searchFilter.toUpperCase()) >= 0
+		return uppercaseLabel.indexOf(searchFilter.trim().toUpperCase()) >= 0
 	} else {
 		return true
 	}
@@ -364,8 +364,6 @@ interface IToolbarStateHader {
 
 export const AdLibPanelToolbar = withTranslation()(
 	class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
-		searchInput: HTMLInputElement
-
 		constructor(props: Translated<IToolbarPropsHeader>) {
 			super(props)
 
@@ -374,29 +372,26 @@ export const AdLibPanelToolbar = withTranslation()(
 			}
 		}
 
-		setSearchInputRef = (el: HTMLInputElement) => {
-			this.searchInput = el
-		}
-
 		searchInputChanged = (e?: React.ChangeEvent<HTMLInputElement>) => {
+			const newValue = e?.target.value || ''
 			this.setState({
-				searchInputValue: this.searchInput.value,
+				searchInputValue: newValue,
 			})
 
 			this.props.onFilterChange &&
 				typeof this.props.onFilterChange === 'function' &&
-				this.props.onFilterChange(this.searchInput.value)
+				this.props.onFilterChange(newValue)
 		}
 
 		searchInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-			if (e.key === 'Escape') {
+			if (e.key === 'Escape' || e.key === 'Enter') {
 				document.querySelector('button')?.focus()
+			} else if (e.key.match(/^F\d+$/)) {
+				e.preventDefault()
 			}
 		}
 
 		clearSearchInput = () => {
-			this.searchInput.value = ''
-
 			this.searchInputChanged()
 		}
 
@@ -411,10 +406,10 @@ export const AdLibPanelToolbar = withTranslation()(
 						<input
 							className="adlib-panel__list-view__toolbar__filter__input"
 							type="text"
-							ref={this.setSearchInputRef}
 							placeholder={t('Search...')}
 							onChange={this.searchInputChanged}
 							onKeyDown={this.searchInputKeyDown}
+							value={this.state.searchInputValue}
 						/>
 						{this.state.searchInputValue !== '' && (
 							<div className="adlib-panel__list-view__toolbar__filter__clear" onClick={this.clearSearchInput}>

@@ -24,6 +24,7 @@ import { DeepReadonly } from 'utility-types'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './cache'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { BlueprintId, Blueprints } from '../../../lib/collections/Blueprints'
+import { CommonContext } from './context'
 
 /**
  * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.
@@ -96,6 +97,10 @@ export function preprocessStudioConfig(studio: DeepReadonly<Studio>, blueprint?:
 	res['SofieHostURL'] = studio.settings.sofieUrl
 
 	if (blueprint && blueprint.preprocessConfig) {
+		// const context = new CommonContext({
+		// 	name: `preprocessStudioConfig`,
+		// 	identifier: `studioId=${studio._id}`,
+		// })
 		res = blueprint.preprocessConfig(res)
 	}
 	return res
@@ -112,7 +117,11 @@ export function preprocessShowStyleConfig(
 		res = showStyle.blueprintConfig
 	}
 	if (blueprint && blueprint.preprocessConfig) {
-		res = blueprint.preprocessConfig(res)
+		const context = new CommonContext({
+			name: `preprocessShowStyleConfig`,
+			identifier: `showStyleBaseId=${showStyle._id},showStyleVariantId=${showStyle.showStyleVariantId}`,
+		})
+		res = blueprint.preprocessConfig(context, res)
 	}
 	return res
 }

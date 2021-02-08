@@ -36,7 +36,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 		studio = Studios.findOne(studioId)
 	}
 	const playlist = RundownPlaylists.findOne({
-		active: true,
+		activationId: { $exists: true },
 		studioId: studioId,
 	})
 
@@ -59,7 +59,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 				PubSub.rundownPlaylists,
 				_.extend(
 					{
-						active: true,
+						activationId: { exists: true },
 					},
 					this.props.studioId
 						? {

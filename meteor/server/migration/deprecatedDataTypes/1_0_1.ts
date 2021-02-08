@@ -1,4 +1,4 @@
-import { Time, literal, protectString } from '../../../lib/lib'
+import { Time, literal, protectString, getRandomId } from '../../../lib/lib'
 import { RundownImportVersions, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
 import { RundownNote } from '../../../lib/api/notes'
 import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
@@ -54,7 +54,7 @@ export function makePlaylistFromRundown_1_0_0(
 	const playlist = literal<DBRundownPlaylist>({
 		_id: newPlaylistId,
 		externalId: rundown.externalId,
-		active: rundown['active'],
+		activationId: rundown['active'] ? getRandomId() : undefined,
 		rehearsal: rundown['rehearsal'],
 		created: rundown.created,
 		currentPartInstanceId: null,

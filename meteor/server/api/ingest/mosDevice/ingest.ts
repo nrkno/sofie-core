@@ -676,9 +676,10 @@ function applyMosSegmentChanges(
 
 	// Check if operation affect currently playing Part:
 	if (
-		playoutInfo.playlist.active &&
+		playoutInfo.playlist.activationId &&
 		playoutInfo.currentPartInstance &&
-		playoutInfo.currentPartInstance.rundownId === rundown._id
+		playoutInfo.currentPartInstance.rundownId === rundown._id &&
+		!playoutInfo.currentPartInstance.orphaned
 	) {
 		const currentPartInstance = playoutInfo.currentPartInstance
 		let currentPart: LocalIngestPart | undefined = undefined

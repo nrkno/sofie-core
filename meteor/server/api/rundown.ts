@@ -41,7 +41,6 @@ import {
 	ExtendedIngestRundown,
 	BlueprintResultRundownPlaylist,
 } from '@sofie-automation/blueprints-integration'
-import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
@@ -70,13 +69,15 @@ import { updateRundownsInPlaylist } from './ingest/rundownInput'
 import { Mongo } from 'meteor/mongo'
 import { getPlaylistIdFromExternalId, removeEmptyPlaylists } from './rundownPlaylist'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
+import { StudioUserContext } from './blueprints/context'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
 import { ReadonlyDeep } from 'type-fest'
 
 export function selectShowStyleVariant(
-	studio: ReadonlyDeep<Studio>,
+	context: StudioUserContext,
 	ingestRundown: ExtendedIngestRundown
 ): { variant: ShowStyleVariant; base: ShowStyleBase; compound: ShowStyleCompound } | null {
+	const studio = context.getStudio()
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
 		return null
@@ -92,15 +93,13 @@ export function selectShowStyleVariant(
 		return null
 	}
 
-	const context = new StudioConfigContext(studio)
-
 	const studioBlueprint = loadStudioBlueprint(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
 	if (!studioBlueprint.blueprint.getShowStyleId)
 		throw new Meteor.Error(500, `Studio "${studio._id}" blueprint missing property getShowStyleId`)
 
-	const showStyleId: ShowStyleBaseId | null = protectString(
+	const showStyleId = protectString<ShowStyleBaseId>(
 		studioBlueprint.blueprint.getShowStyleId(context, unprotectObjectArray(showStyleBases) as any, ingestRundown)
 	)
 	if (showStyleId === null) {
@@ -123,7 +122,6 @@ export function selectShowStyleVariant(
 
 	const variantId: ShowStyleVariantId | null = protectString(
 		showStyleBlueprint.blueprint.getShowStyleVariantId(
-			context,
 			unprotectObjectArray(showStyleVariants) as any,
 			ingestRundown
 		)
@@ -157,7 +155,7 @@ export function allowedToMoveRundownOutOfPlaylist(playlist: RundownPlaylist, run
 		)
 
 	return !(
-		playlist.active &&
+		playlist.activationId &&
 		((currentPartInstance && currentPartInstance.rundownId === rundown._id) ||
 			(nextPartInstance && nextPartInstance.rundownId === rundown._id))
 	)
@@ -205,7 +203,17 @@ export function produceRundownPlaylistRanks(
 	const { rundowns } = getAllRundownsInPlaylist(existingPlaylist._id, existingPlaylist.externalId)
 
 	const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
-		? studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(rundowns))
+		? studioBlueprint.blueprint.getRundownPlaylistInfo(
+				// new StudioUserContext(
+				// 	{
+				// 		name: 'produceRundownPlaylistRanks',
+				// 		identifier: `studioId=${studio._id},playlistId=${unprotectString(playlistId)}`,
+				// 		tempSendUserNotesIntoBlackHole: true,
+				// 	},
+				// 	studio
+				// ),
+				unprotectObjectArray(rundowns)
+		  )
 		: null
 
 	if (playlistInfo) {
@@ -262,7 +270,19 @@ export function produceRundownPlaylistInfoFromRundown(
 			const rundowns = getAllRundownsInPlaylist2(playlistId, playlistExternalId)
 
 			const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
-				? studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(rundowns))
+				? studioBlueprint.blueprint.getRundownPlaylistInfo(
+						// new StudioUserContext(
+						// 	{
+						// 		name: 'produceRundownPlaylistInfoFromRundown',
+						// 		identifier: `studioId=${studio._id},playlistId=${unprotectString(
+						// 			playlistId
+						// 		)},rundownId=${currentRundown._id}`,
+						// 		tempSendUserNotesIntoBlackHole: true,
+						// 	},
+						// 	studio
+						// ),
+						unprotectObjectArray(rundowns)
+				  )
 				: null
 
 			if (playlistInfo) {
@@ -356,8 +376,10 @@ export function produceRundownPlaylistInfoFromRundown(
 		order: _.object(rundownsInOrder.map((i, index) => [i._id, index + 1])),
 	}
 }
-export function sortDefaultRundownInPlaylistOrder(rundowns: DBRundown[]): DBRundown[] {
-	return mongoFindOptions<DBRundown, DBRundown>(rundowns, {
+export function sortDefaultRundownInPlaylistOrder(
+	rundowns: Array<ReadonlyDeep<DBRundown>>
+): Array<ReadonlyDeep<DBRundown>> {
+	return mongoFindOptions<ReadonlyDeep<DBRundown>, ReadonlyDeep<DBRundown>>(rundowns, {
 		sort: {
 			expectedStart: 1,
 			name: 1,
@@ -366,8 +388,8 @@ export function sortDefaultRundownInPlaylistOrder(rundowns: DBRundown[]): DBRund
 	})
 }
 function defaultPlaylistForRundown(
-	rundown: DBRundown,
-	studio: Studio,
+	rundown: ReadonlyDeep<DBRundown>,
+	studio: ReadonlyDeep<Studio>,
 	existingPlaylist?: RundownPlaylist
 ): DBRundownPlaylist {
 	return {
@@ -723,7 +745,19 @@ export namespace ServerRundownAPI {
 
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${segment.rundownId}" not found!`)
 
-		return IngestActions.reloadSegment(rundown, segment)
+		const result = IngestActions.reloadSegment(rundown, segment)
+
+		// If the rundown source says the segment is missing, we should set the unsynced flag back, since it
+		// is not going to be resynced.
+		if (result === TriggerReloadDataResponse.MISSING) {
+			Segments.update(segment._id, {
+				$set: {
+					unsynced: true,
+				},
+			})
+		}
+
+		return result
 	}
 	export function unsyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId): void {
 		rundownContentAllowWrite(context.userId, { rundownId })
@@ -754,7 +788,19 @@ export namespace ServerRundownAPI {
 			},
 		})
 
-		return IngestActions.reloadRundown(rundown)
+		const result = IngestActions.reloadRundown(rundown)
+
+		// If the rundown source says the rundown is missing, we should set the unsynced flag back, since it
+		// is not going to be resynced.
+		if (result === TriggerReloadDataResponse.MISSING) {
+			Rundowns.update(rundown._id, {
+				$set: {
+					unsynced: true,
+				},
+			})
+		}
+
+		return result
 	}
 
 	export function unsyncSegmentInner(cache: CacheForIngest, segmentId: SegmentId): void {

@@ -121,7 +121,7 @@ if (!Settings.enableUserAccounts) {
 				(cache) => {
 					const playlist = cache.Playlist.doc
 
-					if (playlist.nextPartInstanceId && playlist.active) {
+					if (playlist.nextPartInstanceId && playlist.activationId) {
 						const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 						const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
 						if (part) {

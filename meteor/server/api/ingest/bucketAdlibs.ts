@@ -3,7 +3,6 @@ import { IBlueprintActionManifest, IBlueprintAdLibPiece, IngestAdlib } from '@so
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../lib/collections/Studios'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
-import { ShowStyleContext, NotesContext } from '../blueprints/context'
 import { postProcessBucketAction, postProcessBucketAdLib } from '../blueprints/postProcess'
 import { RundownImportVersions } from '../../../lib/collections/Rundowns'
 import { PackageInfo } from '../../coreSystem'
@@ -18,6 +17,7 @@ import {
 import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { asyncCollectionFindFetch, asyncCollectionRemove, waitForPromiseAll } from '../../../lib/lib'
 import { bucketSyncFunction } from '../buckets'
+import { ShowStyleContext, ShowStyleUserContext } from '../blueprints/context'
 
 function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
 	return !!(adlib as IBlueprintActionManifest).actionId
@@ -31,7 +31,16 @@ export function updateBucketAdlibFromIngestData(
 ): void {
 	const { blueprint, blueprintId } = loadShowStyleBlueprint(showStyle)
 
-	const context = new ShowStyleContext(studio, showStyle, new NotesContext('Bucket Ad-Lib', 'bucket-adlib', false))
+	const context = new ShowStyleUserContext(
+		{
+			name: `Bucket Ad-Lib`,
+			identifier: `studioId=${studio._id},showStyleBaseId=${showStyle._id},showStyleVariantId=${showStyle.showStyleVariantId}`,
+			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT
+		},
+		studio,
+		showStyle
+	)
+
 	if (!blueprint.getAdlibItem) throw new Meteor.Error(501, "This blueprint doesn't support ingest AdLibs")
 	const rawAdlib = blueprint.getAdlibItem(context, ingestData)
 

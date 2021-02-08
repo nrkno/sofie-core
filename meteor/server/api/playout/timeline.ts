@@ -34,7 +34,7 @@ import {
 	normalizeArray,
 	protectString,
 } from '../../../lib/lib'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs'
 import * as _ from 'underscore'
@@ -86,7 +86,9 @@ export function updateStudioTimeline(cache: CacheForStudio) {
 	const studioBlueprint = loadStudioBlueprint(studio)
 	if (studioBlueprint) {
 		const blueprint = studioBlueprint.blueprint
-		const baselineObjs = blueprint.getBaseline(new StudioContext(studio))
+		const baselineObjs = blueprint.getBaseline(
+			new StudioContext({ name: 'studioBaseline', identifier: `studioId=${studio._id}` }, studio)
+		)
 		studioBaseline = postProcessStudioBaselineObjects(studio, baselineObjs)
 
 		const id = `baseline_version`
@@ -125,6 +127,10 @@ export function updateStudioTimeline(cache: CacheForStudio) {
 export function updateTimeline(cache: CacheForPlayout, forceNowToTime?: Time) {
 	const span = profiler.startSpan('updateTimeline')
 	logger.debug('updateTimeline running...')
+
+	if (!cache.Playlist.doc.activationId) {
+		throw new Meteor.Error(500, `RundownPlaylist ("${cache.Playlist.doc._id}") is not active")`)
+	}
 
 	const timelineObjs: Array<TimelineObjGeneric> = [...getTimelineRundown(cache)]
 
@@ -216,7 +222,7 @@ function processAndSaveTimelineObjects(
 // export function getActiveRundownPlaylist(cache: CacheForStudioBase, studioId: StudioId): RundownPlaylist | undefined {
 // 	return cache.RundownPlaylists.findOne({
 // 		studioId: studioId,
-// 		active: true,
+// 		activationId: { $exists: true },
 // 	})
 // }
 
@@ -261,9 +267,6 @@ function getTimelineRundown(cache: CacheForPlayout): TimelineObjRundown[] {
 	try {
 		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObjExt> = []
 
-		const studio = cache.Studio.doc
-		const playlist = cache.Playlist.doc
-
 		const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 		const partForRundown = currentPartInstance || nextPartInstance
@@ -304,6 +307,7 @@ function getTimelineRundown(cache: CacheForPlayout): TimelineObjRundown[] {
 			if (showStyleBlueprintManifest.onTimelineGenerate) {
 				const context = new TimelineEventContext(
 					cache.Studio.doc,
+					cache.Playlist.doc,
 					activeRundown,
 					showStyleCompund,
 					previousPartInstance,
@@ -316,7 +320,7 @@ function getTimelineRundown(cache: CacheForPlayout): TimelineObjRundown[] {
 						showStyleBlueprintManifest.onTimelineGenerate(
 							context,
 							timelineObjs,
-							playlist.previousPersistentState,
+							cache.Playlist.doc.previousPersistentState,
 							currentPartInstance?.previousPartEndState,
 							unprotectObjectArray(resolvedPieces.pieces)
 						)

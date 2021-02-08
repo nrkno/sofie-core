@@ -77,7 +77,7 @@ describe('test peripheralDevice general API methods', () => {
 			currentPartInstanceId: null,
 			nextPartInstanceId: null,
 			previousPartInstanceId: null,
-			active: true,
+			activationId: protectString('active'),
 		})
 		Rundowns.insert({
 			_id: rundownID,
@@ -398,6 +398,7 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
+		expect(playlist?.activationId).toBeTruthy()
 		const studioTimeline = Timeline.findOne({
 			_id: env.studio._id,
 		})

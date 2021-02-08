@@ -117,8 +117,8 @@ export class ActivationCache {
 		this._persistant = false
 	}
 	async initialize(playlist: ReadonlyDeep<RundownPlaylist>, rundownsInPlaylist: Rundown[]) {
-		if (this._initialized && (!this._playlist || playlist.activeInstanceId !== this._playlist.activeInstanceId)) {
-			// activeInstanceId has changed, we should clear out the data because it might not be valid anymore
+		if (this._initialized && (!this._playlist || playlist.activationId !== this._playlist.activationId)) {
+			// activationId has changed, we should clear out the data because it might not be valid anymore
 			this._uninitialize()
 		}
 
@@ -132,7 +132,7 @@ export class ActivationCache {
 
 		const pStudio = asyncCollectionFindOne(Studios, this._playlist.studioId)
 
-		if (!playlist.active) {
+		if (!playlist.activationId) {
 			// If the playlist is not active we won't do the pre-loading now
 			// we're also not calling ourselves "persistant", so we won't be living longer than
 			this._persistant = false

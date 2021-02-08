@@ -247,7 +247,11 @@ export class DbCacheWriteCollection<
 				newDoc = this._transform(newDoc)
 
 				_.each(_.uniq([..._.keys(newDoc), ..._.keys(doc)]), (key) => {
-					doc[key] = newDoc[key]
+					if (newDoc[key] === undefined) {
+						delete doc[key]
+					} else {
+						doc[key] = newDoc[key]
+					}
 				})
 
 				const docEntry = this.documents.get(_id)

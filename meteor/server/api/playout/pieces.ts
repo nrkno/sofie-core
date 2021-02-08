@@ -28,7 +28,11 @@ import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache } from './lib'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylistActivationId,
+	RundownPlaylistId,
+} from '../../../lib/collections/RundownPlaylists'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
@@ -327,6 +331,7 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 }
 
 export function convertAdLibToPieceInstance(
+	playlistActivationId: RundownPlaylistActivationId,
 	adLibPiece: AdLibPiece | Piece | BucketAdLib | PieceInstancePiece,
 	partInstance: PartInstance,
 	queue: boolean
@@ -344,6 +349,7 @@ export function convertAdLibToPieceInstance(
 		_id: protectString(`${partInstance._id}_${newPieceId}`),
 		rundownId: partInstance.rundownId,
 		partInstanceId: partInstance._id,
+		playlistActivationId,
 		adLibSourceId: adLibPiece._id,
 		dynamicallyInserted: queue ? undefined : getCurrentTime(),
 		piece: literal<PieceInstancePiece>({

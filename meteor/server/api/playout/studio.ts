@@ -8,7 +8,7 @@ export function getActiveRundownPlaylistsInStudioFromDb(
 ): RundownPlaylist[] {
 	return RundownPlaylists.find({
 		studioId: studioId,
-		active: true,
+		activationId: { $exists: true },
 		_id: {
 			$ne: excludeRundownPlaylistId || protectString(''),
 		},

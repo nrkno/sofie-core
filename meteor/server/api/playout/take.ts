@@ -1,4 +1,4 @@
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistActivationId } from '../../../lib/collections/RundownPlaylists'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	getCurrentTime,
@@ -46,7 +46,7 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 	const span = profiler.startSpan('takeNextPartInner')
 
 	const playlist = cache.Playlist.doc
-	if (!playlist.active) throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" is not active!`)
+	if (!playlist.activationId) throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" is not active!`)
 	if (!playlist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
 
 	let timeOffset: number | null = playlist.nextTimeOffset || null
@@ -107,14 +107,14 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 	// beforeTake(rundown, previousPart || null, takePart)
 
 	const showStyle = waitForPromise(pShowStyle)
-	const { blueprint } = waitForPromise(pBlueprint)
+	const { blueprint, blueprintId } = waitForPromise(pBlueprint)
 	if (blueprint.onPreTake) {
 		const span = profiler.startSpan('blueprint.onPreTake')
 		try {
 			waitForPromise(
 				Promise.resolve(
 					blueprint.onPreTake(
-						new PartEventContext(cache.Studio.doc, takeRundown, showStyle, takePartInstance)
+						new PartEventContext('onPreTake', cache.Studio.doc, takeRundown, showStyle, takePartInstance)
 					)
 				).catch(logger.error)
 			)
@@ -163,7 +163,7 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 
 	// Setup the parts for the HOLD we are starting
 	if (updatedPlaylist.previousPartInstanceId && m.holdState === RundownHoldState.ACTIVE) {
-		startHold(cache, currentPartInstance, nextPartInstance)
+		startHold(cache, playlist.activationId, currentPartInstance, nextPartInstance)
 	}
 	afterTake(cache, takePartInstance, timeOffset)
 
@@ -200,7 +200,13 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 					waitForPromise(
 						Promise.resolve(
 							blueprint.onRundownFirstTake(
-								new PartEventContext(cache.Studio.doc, takeRundown, showStyle, takePartInstance)
+								new PartEventContext(
+									'onRundownFirstTake',
+									cache.Studio.doc,
+									takeRundown,
+									showStyle,
+									takePartInstance
+								)
 							)
 						).catch(logger.error)
 					)
@@ -213,7 +219,13 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 				waitForPromise(
 					Promise.resolve(
 						blueprint.onPostTake(
-							new PartEventContext(cache.Studio.doc, takeRundown, showStyle, takePartInstance)
+							new PartEventContext(
+								'onPostTake',
+								cache.Studio.doc,
+								takeRundown,
+								showStyle,
+								takePartInstance
+							)
 						)
 					).catch(logger.error)
 				)
@@ -243,7 +255,17 @@ export function updatePartInstanceOnTake(
 			const resolvedPieces = getResolvedPieces(cache, showStyle, currentPartInstance)
 
 			const span = profiler.startSpan('blueprint.getEndStateForPart')
-			const context = new RundownContext(cache.Studio.doc, takeRundown, showStyle, undefined)
+			const context = new RundownContext(
+				{
+					name: `${cache.Playlist.doc.name}`,
+					identifier: `playlist=${cache.Playlist.doc._id},currentPartInstance=${
+						currentPartInstance._id
+					},execution=${getRandomId()}`,
+				},
+				cache.Studio.doc,
+				takeRundown,
+				showStyle
+			)
 			previousPartEndState = blueprint.getEndStateForPart(
 				context,
 				cache.Playlist.doc.previousPersistentState,
@@ -308,6 +330,7 @@ export function afterTake(cache: CacheForPlayout, takePartInstance: PartInstance
  */
 function startHold(
 	cache: CacheForPlayout,
+	activationId: RundownPlaylistActivationId,
 	holdFromPartInstance: PartInstance | undefined,
 	holdToPartInstance: PartInstance | undefined
 ) {
@@ -334,6 +357,7 @@ function startHold(
 			// make the extension
 			const newInstance = literal<PieceInstance>({
 				_id: protectString<PieceInstanceId>(instance._id + '_hold'),
+				playlistActivationId: activationId,
 				rundownId: instance.rundownId,
 				partInstanceId: holdToPartInstance._id,
 				dynamicallyInserted: getCurrentTime(),

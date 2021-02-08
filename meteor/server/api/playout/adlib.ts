@@ -13,10 +13,10 @@ import {
 	getRank,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
-import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
+import { RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
 import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
 import { Part } from '../../../lib/collections/Parts'
 import {
@@ -24,7 +24,6 @@ import {
 	setNextPart,
 	getRundownIDsFromCache,
 	getSelectedPartInstancesFromCache,
-	removeDynamicallyInsertedPartsAfter,
 	getAllOrderedPartsFromPlayoutCache,
 	selectNextPart,
 } from './lib'
@@ -42,7 +41,7 @@ import {
 	PieceInstanceId,
 	rewrapPieceToInstance,
 } from '../../../lib/collections/PieceInstances'
-import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { CacheForPlayout } from '../../cache/DatabaseCaches'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { MongoQuery } from '../../../lib/typings/meteor'
@@ -67,13 +66,16 @@ export namespace ServerPlayoutAdLibAPI {
 			rundownPlaylistId,
 			(cache) => {
 				const playlist = cache.Playlist.doc
-				if (!playlist.active)
+				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
 				if (playlist.currentPartInstanceId !== partInstanceId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
 			},
 			(cache) => {
 				const playlist = cache.Playlist.doc
+				if (!playlist.activationId)
+					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
+
 				const rundownIds = getRundownIDsFromCache(cache)
 
 				// Note: Bypass the cache, as it could be from a far back instance
@@ -106,7 +108,12 @@ export namespace ServerPlayoutAdLibAPI {
 						`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS item!`
 					)
 
-				const newPieceInstance = convertAdLibToPieceInstance(pieceToCopy, partInstance, false)
+				const newPieceInstance = convertAdLibToPieceInstance(
+					playlist.activationId,
+					pieceToCopy,
+					partInstance,
+					false
+				)
 				if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
 					newPieceInstance.piece.content.timelineObjects = prefixAllObjectIds(
 						_.map(newPieceInstance.piece.content.timelineObjects, (obj) => {
@@ -176,7 +183,7 @@ export namespace ServerPlayoutAdLibAPI {
 			rundownPlaylistId,
 			(cache) => {
 				const playlist = cache.Playlist.doc
-				if (!playlist.active)
+				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
 				if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 					throw new Meteor.Error(403, `Part AdLib-pieces can not be used in combination with hold!`)
@@ -220,7 +227,7 @@ export namespace ServerPlayoutAdLibAPI {
 				logger.debug('rundownBaselineAdLibPieceStart')
 
 				const playlist = cache.Playlist.doc
-				if (!playlist.active)
+				if (!playlist.activationId)
 					throw new Meteor.Error(
 						403,
 						`Rundown Baseline AdLib-pieces can be only placed in an active rundown!`
@@ -259,6 +266,7 @@ export namespace ServerPlayoutAdLibAPI {
 		adLibPiece: AdLibPiece | BucketAdLib
 	) {
 		const playlist = cache.Playlist.doc
+		if (!playlist.activationId) throw new Meteor.Error(500, 'RundownPlaylist is not active')
 
 		const span = profiler.startSpan('innerStartOrQueueAdLibPiece')
 		if (queue || adLibPiece.toBeQueued) {
@@ -266,6 +274,7 @@ export namespace ServerPlayoutAdLibAPI {
 				_id: getRandomId(),
 				rundownId: rundown._id,
 				segmentId: currentPartInstance.segmentId,
+				playlistActivationId: playlist.activationId,
 				takeCount: currentPartInstance.takeCount + 1,
 				rehearsal: !!playlist.rehearsal,
 				orphaned: 'adlib-part',
@@ -280,12 +289,22 @@ export namespace ServerPlayoutAdLibAPI {
 					expectedDuration: adLibPiece.expectedDuration,
 				}),
 			})
-			const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, newPartInstance, queue)
+			const newPieceInstance = convertAdLibToPieceInstance(
+				playlist.activationId,
+				adLibPiece,
+				newPartInstance,
+				queue
+			)
 			innerStartQueuedAdLib(cache, rundown, currentPartInstance, newPartInstance, [newPieceInstance])
 
 			// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 		} else {
-			const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, currentPartInstance, queue)
+			const newPieceInstance = convertAdLibToPieceInstance(
+				playlist.activationId,
+				adLibPiece,
+				currentPartInstance,
+				queue
+			)
 			innerStartAdLibPiece(cache, rundown, currentPartInstance, newPieceInstance)
 
 			syncPlayheadInfinitesForNextPartInstance(cache)
@@ -308,7 +327,7 @@ export namespace ServerPlayoutAdLibAPI {
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
-				if (!playlist.active)
+				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
 				if (!playlist.currentPartInstanceId)
 					throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
@@ -362,6 +381,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 		const query = {
 			...customQuery,
+			playlistActivationId: cache.Playlist.doc.activationId,
 			rundownId: { $in: rundownIds },
 			'piece.sourceLayerId': sourceLayerId,
 			startedPlayback: {
@@ -404,7 +424,7 @@ export namespace ServerPlayoutAdLibAPI {
 		const followingPart = selectNextPart(
 			cache.Playlist.doc,
 			currentPartInstance,
-			getAllOrderedPartsFromCache(cache),
+			getAllOrderedPartsFromPlayoutCache(cache),
 			true
 		)
 		newPartInstance.part._rank = getRank(
@@ -548,6 +568,7 @@ export namespace ServerPlayoutAdLibAPI {
 										timelineObjects: [],
 									},
 								},
+								currentPartInstance.playlistActivationId,
 								currentPartInstance.rundownId,
 								currentPartInstance._id
 							),
@@ -588,7 +609,7 @@ export namespace ServerPlayoutAdLibAPI {
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-				if (!playlist.active)
+				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Bucket AdLib-pieces can be only placed in an active rundown!`)
 				if (!playlist.currentPartInstanceId)
 					throw new Meteor.Error(400, `A part needs to be active to use a bucket adlib`)

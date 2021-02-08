@@ -15,6 +15,8 @@ import {
 	buildPastInfinitePiecesForThisPartQuery,
 } from '../../../lib/rundown/infinites'
 import { profiler } from '../profiler'
+import { Meteor } from 'meteor/meteor'
+import { ReadonlyDeep } from 'type-fest'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -23,7 +25,7 @@ export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
  * We can only continue adlib onEnd infinites if we go forwards in the rundown. Any distance backwards will clear them.
  * */
 function canContinueAdlibOnEndInfinites(
-	playlist: RundownPlaylist,
+	playlist: ReadonlyDeep<RundownPlaylist>,
 	orderedParts: Part[],
 	previousPartInstance: PartInstance | undefined,
 	part: DBPart
@@ -126,6 +128,10 @@ function getPlayheadTrackingInfinitesForPart(
 	nextPartInstance: PartInstance
 ): PieceInstance[] {
 	const span = profiler.startSpan('getPlayheadTrackingInfinitesForPart')
+
+	if (!cache.Playlist.doc.activationId)
+		throw new Meteor.Error(500, `RundownPlaylist "${cache.Playlist.doc._id}" is not active`)
+
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, nextPartInstance.part)
 
 	const orderedParts = getAllOrderedPartsFromPlayoutCache(cache)
@@ -139,6 +145,7 @@ function getPlayheadTrackingInfinitesForPart(
 	const playingPieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
 
 	const res = libgetPlayheadTrackingInfinitesForPart(
+		cache.Playlist.doc.activationId,
 		new Set(partsBeforeThisInSegment),
 		new Set(segmentsBeforeThisInRundown),
 		playingPartInstance,
@@ -163,6 +170,9 @@ export function getPieceInstancesForPart(
 	const span = profiler.startSpan('getPieceInstancesForPart')
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
+	if (!cache.Playlist.doc.activationId)
+		throw new Meteor.Error(500, `RundownPlaylist "${cache.Playlist.doc._id}" is not active`)
+
 	const orderedParts = getAllOrderedPartsFromPlayoutCache(cache)
 	const playingPieceInstances = playingPartInstance
 		? cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
@@ -176,6 +186,7 @@ export function getPieceInstancesForPart(
 	)
 
 	const res = libgetPieceInstancesForPart(
+		cache.Playlist.doc.activationId,
 		playingPartInstance,
 		playingPieceInstances,
 		part,

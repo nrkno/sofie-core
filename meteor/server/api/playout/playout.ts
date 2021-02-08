@@ -31,7 +31,6 @@ import {
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
-import { NotesContext } from '../blueprints/context/context'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import { IngestActions } from '../ingest/actions'
 import { updateTimeline, updateStudioTimeline } from './timeline'
@@ -71,7 +70,7 @@ import { MethodContext } from '../../../lib/api/methods'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
 import { StudioContentWriteAccess } from '../../security/studio'
 import { CacheForPlayout, CacheForPlayoutPreInit, CacheForStudio, ReadOnlyCache } from '../../cache/DatabaseCaches'
-import { afterTake, takeNextPartInnerSync } from './take'
+import { afterTake, takeNextPartInnerSync, updatePartInstanceOnTake } from './take'
 import { syncPlayheadInfinitesForNextPartInstance, getPieceInstancesForPart } from './infinites'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { check, Match } from '../../../lib/check'
@@ -171,7 +170,7 @@ export namespace ServerPlayoutAPI {
 			rundownPlaylistId,
 			(cache) => {
 				const playlist = cache.Playlist.doc
-				if (playlist.active)
+				if (playlist.activationId)
 					throw new Meteor.Error(404, `rundownPrepareForBroadcast cannot be run on an active rundown!`)
 
 				const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
@@ -205,14 +204,17 @@ export namespace ServerPlayoutAPI {
 			rundownPlaylistId,
 			(cache) => {
 				const playlist = cache.Playlist.doc
-				if (playlist.active && !playlist.rehearsal && !Settings.allowRundownResetOnAir)
+				if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir)
 					throw new Meteor.Error(401, `resetRundown can only be run in rehearsal!`)
 			},
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				libResetRundownPlaylist(cache)
 
-				updateTimeline(cache)
+				if (playlist.activationId) {
+					// Only update the timeline if this is the active playlist
+					updateTimeline(cache)
+				}
 			}
 		)
 	}
@@ -231,7 +233,7 @@ export namespace ServerPlayoutAPI {
 			rundownPlaylistId,
 			(cache) => {
 				const playlist = cache.Playlist.doc
-				if (playlist.active && !playlist.rehearsal && !Settings.allowRundownResetOnAir)
+				if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir)
 					throw new Meteor.Error(402, `resetAndActivateRundownPlaylist cannot be run when active!`)
 			},
 			(cache) => {
@@ -386,7 +388,7 @@ export namespace ServerPlayoutAPI {
 	) {
 		const playlist = cache.Playlist.doc
 
-		if (!playlist.active) throw new Meteor.Error(501, `Rundown Playlist "${playlist._id}" is not active!`)
+		if (!playlist.activationId) throw new Meteor.Error(501, `Rundown Playlist "${playlist._id}" is not active!`)
 		if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE)
 			throw new Meteor.Error(501, `Rundown "${playlist._id}" cannot change next during hold!`)
 
@@ -428,7 +430,8 @@ export namespace ServerPlayoutAPI {
 					)
 
 				const playlist = cache.Playlist.doc
-				if (!playlist.active) throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" is not active!`)
+				if (!playlist.activationId)
+					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" is not active!`)
 
 				if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE)
 					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" cannot change next during hold!`)
@@ -553,7 +556,7 @@ export namespace ServerPlayoutAPI {
 			rundownPlaylistId,
 			(cache) => {
 				const playlist = cache.Playlist.doc
-				if (!playlist.active)
+				if (!playlist.activationId)
 					throw new Meteor.Error(501, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
 			},
 			(cache) => {
@@ -580,7 +583,7 @@ export namespace ServerPlayoutAPI {
 			rundownPlaylistId,
 			(cache) => {
 				const playlist = cache.Playlist.doc
-				if (!playlist.active)
+				if (!playlist.activationId)
 					throw new Meteor.Error(501, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
 
 				if (!playlist.currentPartInstanceId)
@@ -878,7 +881,7 @@ export namespace ServerPlayoutAPI {
 						`PeripheralDevice "${peripheralDevice._id}" cannot execute callbacks for RundownPlaylist "${rundownPlaylistId}" !`
 					)
 
-				if (!playlist.active)
+				if (!playlist.activationId)
 					throw new Meteor.Error(501, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
 			},
 			(cache) => {
@@ -977,13 +980,12 @@ export namespace ServerPlayoutAPI {
 							const currentRundown = currentPartInstance
 								? cache.Rundowns.findOne(currentPartInstance.rundownId)
 								: undefined
-							const pShowStyle = cache.activationCache.getShowStyleBase(currentRundown ?? rundown)
+							const pShowStyle = cache.activationCache.getShowStyleCompound(currentRundown ?? rundown)
 							const blueprint = waitForPromise(
 								pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
 							)
 							updatePartInstanceOnTake(
 								cache,
-								playlist,
 								pShowStyle,
 								blueprint.blueprint,
 								rundown,
@@ -1177,7 +1179,7 @@ export namespace ServerPlayoutAPI {
 			(cache) => {
 				const playlist = cache.Playlist.doc
 
-				if (!playlist.active)
+				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
 				if (!playlist.currentPartInstanceId)
 					throw new Meteor.Error(400, `A part needs to be active to execute an action`)
@@ -1198,14 +1200,17 @@ export namespace ServerPlayoutAPI {
 				if (!rundown)
 					throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
 
-				const notesContext = new NotesContext(
-					`${rundown.name}(${playlist.name})`,
-					`playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
-						currentPartInstance._id
-					},execution=${getRandomId()}`,
-					false
+				const actionContext = new ActionExecutionContext(
+					{
+						name: `${rundown.name}(${playlist.name})`,
+						identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
+							currentPartInstance._id
+						},execution=${getRandomId()}`,
+						tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
+					},
+					cache,
+					rundown
 				)
-				const actionContext = new ActionExecutionContext(cache, notesContext, rundown)
 
 				// If any action cannot be done due to timings, that needs to be rejected by the context
 				func(actionContext, cache, rundown, currentPartInstance)
@@ -1259,7 +1264,7 @@ export namespace ServerPlayoutAPI {
 			rundownPlaylistId,
 			(cache) => {
 				const playlist = cache.Playlist.doc
-				if (!playlist.active)
+				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
 				if (playlist.currentPartInstanceId !== partInstanceId)
 					throw new Meteor.Error(403, `Pieces can be only manipulated in a current part!`)
@@ -1421,7 +1426,7 @@ export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylist
 					const playlist = cache.Playlist.doc
 					//TODO-CACHE - pre init check?
 
-					if (playlist.active && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
+					if (playlist.activationId && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
 						const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 						if (!currentPartInstance?.timings?.startedPlayback) {
 							// HACK: The current PartInstance doesn't have a start time yet, so we know an updateTimeline is coming as part of onPartPlaybackStarted

@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal, protectString, waitForPromise } from '../../../../lib/lib'
+import { literal, protectString, unprotectString, waitForPromise } from '../../../../lib/lib'
 import { Studios, Studio } from '../../../../lib/collections/Studios'
 import {
 	postProcessStudioBaselineObjects,
@@ -10,13 +10,14 @@ import {
 	postProcessAdLibPieces,
 	postProcessPieces,
 } from '../postProcess'
-import { RundownContext, NotesContext } from '../context'
+import { RundownContext, CommonContext, StudioContext } from '../context'
 import {
 	IBlueprintPiece,
 	IBlueprintAdLibPiece,
 	TimelineObjectCoreExt,
 	TSR,
 	PieceLifespan,
+	IUserNotesContext,
 } from '@sofie-automation/blueprints-integration'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
@@ -76,8 +77,23 @@ describe('Test blueprint post-process', () => {
 		const studio = getStudio()
 		const showStyle = {} as ShowStyleCompound
 
-		const rundownNotesContext = new NotesContext(rundown.name, `rundownId=${rundown._id}`, true)
-		return new RundownContext(studio, rundown, showStyle, rundownNotesContext)
+		const context = new RundownContext(
+			{ name: rundown.name, identifier: `rundownId=${rundown._id}` },
+			studio,
+			rundown,
+			showStyle
+		)
+
+		// Make sure we arent an IUserNotesContext, as that means new work to handle those notes
+		expect(((context as unknown) as IUserNotesContext).notifyUserError).toBeUndefined()
+		return context
+	}
+	function getStudioContext(studio: Studio) {
+		const context = new StudioContext({ name: studio.name, identifier: `studioId=${studio._id}` }, studio)
+
+		// Make sure we arent an IUserNotesContext, as that means new work to handle those notes
+		expect(((context as unknown) as IUserNotesContext).notifyUserError).toBeUndefined()
+		return context
 	}
 
 	function ensureAllKeysDefined<T>(template: T, objects: T[]) {
@@ -97,6 +113,8 @@ describe('Test blueprint post-process', () => {
 	describe('postProcessStudioBaselineObjects', () => {
 		testInFiber('no objects', () => {
 			const studio = getStudio()
+			const context = getStudioContext(studio)
+			const blueprintId = protectString('blueprint0')
 
 			// Ensure that an empty array works ok
 			const res = postProcessStudioBaselineObjects(studio, [])
@@ -105,6 +123,8 @@ describe('Test blueprint post-process', () => {
 
 		testInFiber('some no ids', () => {
 			const studio = getStudio()
+			const context = getStudioContext(studio)
+			const blueprintId = protectString('blueprint0')
 
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
@@ -163,6 +183,8 @@ describe('Test blueprint post-process', () => {
 		})
 		testInFiber('duplicate ids', () => {
 			const studio = getStudio()
+			const context = getStudioContext(studio)
+			const blueprintId = protectString(unprotectString(studio.blueprintId)) // the unit could modify the value, so make a literal copy
 
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
@@ -204,7 +226,7 @@ describe('Test blueprint post-process', () => {
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
-					`[400] Error in blueprint "${studio.blueprintId}": ids of timelineObjs must be unique! ("testObj")`
+					`[400] Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
 				)
 			}
 		})
@@ -347,15 +369,19 @@ describe('Test blueprint post-process', () => {
 
 	describe('postProcessAdLibPieces', () => {
 		testInFiber('no pieces', () => {
-			const context = getContext()
+			const context = getStudioContext(getStudio())
+			const blueprintId = protectString('blueprint0')
+			const rundownId = protectString('rundown1')
 
 			// Ensure that an empty array works ok
-			const res = postProcessAdLibPieces(context, [], protectString('blueprint9'))
+			const res = postProcessAdLibPieces(context, blueprintId, rundownId, undefined, [])
 			expect(res).toHaveLength(0)
 		})
 
 		testInFiber('various pieces', () => {
-			const context = getContext()
+			const context = getStudioContext(getStudio())
+			const blueprintId = protectString('blueprint9')
+			const rundownId = protectString('rundown1')
 
 			const pieces = literal<IBlueprintAdLibPiece[]>([
 				{
@@ -396,7 +422,7 @@ describe('Test blueprint post-process', () => {
 			const expectedIds = _.clone(mockedIds)
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessAdLibPieces(context, pieces, protectString('blueprint9'))
+			const res = postProcessAdLibPieces(context, blueprintId, rundownId, undefined, pieces)
 			// expect(res).toHaveLength(3)
 			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')))
 
@@ -428,7 +454,9 @@ describe('Test blueprint post-process', () => {
 			expect(ids).toEqual(expectedIds.sort())
 		})
 		testInFiber('piece with content', () => {
-			const context = getContext()
+			const context = getStudioContext(getStudio())
+			const blueprintId = protectString('blueprint0')
+			const rundownId = protectString('rundown1')
 
 			const piece = literal<IBlueprintAdLibPiece>({
 				_rank: 9,
@@ -451,7 +479,7 @@ describe('Test blueprint post-process', () => {
 				lifespan: PieceLifespan.WithinPart,
 			})
 
-			const res = postProcessAdLibPieces(context, [piece], protectString('blueprint9'))
+			const res = postProcessAdLibPieces(context, blueprintId, rundownId, undefined, [piece])
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([piece])
 

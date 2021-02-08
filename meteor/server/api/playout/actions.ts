@@ -6,13 +6,14 @@ import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/Pe
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime, getRandomId, waitForPromise } from '../../../lib/lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
-import { RundownContext } from '../blueprints/context'
+import { RundownContext, RundownEventContext } from '../blueprints/context'
 import {
 	setNextPart,
 	onPartHasStoppedPlaying,
 	selectNextPart,
 	getSelectedPartInstancesFromCache,
 	getAllOrderedPartsFromPlayoutCache,
+	LOW_PRIO_DEFER_TIME,
 } from './lib'
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
@@ -51,6 +52,12 @@ export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boole
 		})
 	}
 
+	cache.Playlist.update({
+		$set: {
+			activationId: getRandomId(),
+			rehearsal: rehearsal,
+		},
+	})
 	const activePlaylist = cache.Playlist.doc
 
 	// Re-Initialize the ActivationCache now when the rundownPlaylist is active
@@ -72,7 +79,15 @@ export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boole
 			const showStyleCompound = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
 			const { blueprint } = loadShowStyleBlueprint(showStyleCompound)
 
-			const context = new RundownContext(cache.Studio.doc, rundown, showStyleCompound, undefined)
+			const context = new RundownContext(
+				{
+					name: `onRundownActivate`,
+					identifier: `playlist=${cache.Playlist.doc._id},rundown=${rundown._id}`,
+				},
+				cache.Studio.doc,
+				rundown,
+				showStyleCompound
+			)
 			context.wipeCache()
 
 			if (blueprint.onRundownActivate) {
@@ -94,7 +109,15 @@ export function deactivateRundownPlaylist(cache: CacheForPlayout): void {
 			const { blueprint } = loadShowStyleBlueprint(showStyleBase)
 
 			if (blueprint.onRundownDeActivate) {
-				const context = new RundownContext(cache.Studio.doc, rundown, showStyleBase, undefined)
+				const context = new RundownContext(
+					{
+						name: `onRundownDeActivate`,
+						identifier: `playlist=${cache.Playlist.doc._id},rundown=${rundown._id}`,
+					},
+					cache.Studio.doc,
+					rundown,
+					showStyleBase
+				)
 				Promise.resolve(blueprint.onRundownDeActivate(context)).catch(logger.error)
 			}
 		}
@@ -132,10 +155,12 @@ export function deactivateRundownPlaylistInner(cache: CacheForPlayout): Rundown 
 
 	cache.Playlist.update({
 		$set: {
-			active: false,
 			previousPartInstanceId: null,
 			currentPartInstanceId: null,
 			holdState: RundownHoldState.NONE,
+		},
+		$unset: {
+			activationId: 1,
 		},
 	})
 	setNextPart(cache, null)

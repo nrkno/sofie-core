@@ -7,7 +7,7 @@ import {
 import { protectString, unprotectString, waitForPromise, getRandomId, getCurrentTime } from '../../../../lib/lib'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { NotesContext, ActionExecutionContext, ActionPartChange } from '../context'
+import { ActionExecutionContext, ActionPartChange } from '../context'
 import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../../lib/collections/PartInstances'
 import {
@@ -17,8 +17,16 @@ import {
 	PieceInstances,
 } from '../../../../lib/collections/PieceInstances'
 import { CacheForPlayout } from '../../../cache/DatabaseCaches'
-import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
-import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
+import {
+	RundownPlaylist,
+	RundownPlaylistActivationId,
+	RundownPlaylists,
+} from '../../../../lib/collections/RundownPlaylists'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { isTooCloseToAutonext, getRundownIDsFromCache } from '../../playout/lib'
+import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { rundownPlaylistPlayoutSyncFunction } from '../../playout/playout'
+import { ReadonlyDeep } from 'type-fest'
 
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 ServerPlayoutAdLibAPI.innerStopPieces = jest.fn()
@@ -42,25 +50,24 @@ const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
 import { postProcessPieces } from '../postProcess'
-import { isTooCloseToAutonext, getRundownIDsFromCache } from '../../playout/lib'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { activateRundownPlaylist, deactivateRundownPlaylist } from '../../playout/actions'
-import { rundownPlaylistPlayoutSyncFunction } from '../../playout/playout'
-import { DndContext } from 'react-dnd'
-import { DeepReadonly } from 'utility-types'
+
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
 postProcessPiecesMock.mockImplementation(() => [])
 const { postProcessPieces: postProcessPiecesOrig } = jest.requireActual('../postProcess')
 
 describe('Test blueprint api context', () => {
-	function generateSparsePieceInstances(rundown: Rundown) {
+	function generateSparsePieceInstances(playlist: RundownPlaylist, rundown: Rundown) {
+		const activationId = playlist.activationId as RundownPlaylistActivationId
+		expect(activationId).toBeTruthy()
+
 		rundown.getParts().forEach((part, i) => {
 			// make into a partInstance
 			PartInstances.insert({
 				_id: protectString(`${part._id}_instance`),
 				rundownId: part.rundownId,
 				segmentId: part.segmentId,
+				playlistActivationId: activationId,
 				takeCount: i,
 				rehearsal: false,
 				part,
@@ -72,6 +79,7 @@ describe('Test blueprint api context', () => {
 					_id: protectString(`${part._id}_piece${i}`),
 					rundownId: rundown._id,
 					partInstanceId: protectString(`${part._id}_instance`),
+					playlistActivationId: activationId,
 					piece: {
 						_id: protectString(`${part._id}_piece_inner${i}`),
 						externalId: '-',
@@ -102,6 +110,9 @@ describe('Test blueprint api context', () => {
 		const rundown = cache.Rundowns.findOne({ playlistId: playlist._id }) as Rundown
 		expect(rundown).toBeTruthy()
 
+		const activationId = playlist.activationId as RundownPlaylistActivationId
+		expect(activationId).toBeTruthy()
+
 		const studio = Studios.findOne(playlist.studioId) as Studio
 		expect(studio).toBeTruthy()
 
@@ -109,27 +120,41 @@ describe('Test blueprint api context', () => {
 		const rundownIds = getRundownIDsFromCache(cache)
 		waitForPromise(cache.PieceInstances.fillWithDataFromDatabase({ rundownId: { $in: rundownIds } }))
 
-		const notesContext = new NotesContext('fakeContext', `fakeContext`, true)
-		const context = new ActionExecutionContext(cache, notesContext, rundown)
+		const context = new ActionExecutionContext(
+			{
+				name: 'fakeContext',
+				identifier: 'action',
+			},
+			cache,
+			rundown
+		)
 		expect(context.getStudio()).toBeTruthy()
 
 		return {
 			playlist,
 			rundown,
-			notesContext,
 			context,
+			activationId,
 		}
 	}
 
-	function wrapWithCache<T>(fcn: (cache: CacheForPlayout, playlist: DeepReadonly<RundownPlaylist>) => T) {
+	function wrapWithCache<T>(fcn: (cache: CacheForPlayout, playlist: ReadonlyDeep<RundownPlaylist>) => T) {
 		const defaultSetup = setupDefaultRundownPlaylist(env)
+
+		// Mark playlist as active
+		RundownPlaylists.update(defaultSetup.playlistId, {
+			$set: {
+				activationId: getRandomId(),
+			},
+		})
+
 		const tmpPlaylist = RundownPlaylists.findOne(defaultSetup.playlistId) as RundownPlaylist
 		expect(tmpPlaylist).toBeTruthy()
 
 		const rundown = Rundowns.findOne(defaultSetup.rundownId) as Rundown
 		expect(rundown).toBeTruthy()
 
-		generateSparsePieceInstances(rundown)
+		generateSparsePieceInstances(tmpPlaylist, rundown)
 
 		return rundownPlaylistPlayoutSyncFunction(null, 'test', tmpPlaylist._id, null, (cache) =>
 			fcn(cache, cache.Playlist.doc)
@@ -291,7 +316,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('basic and original only', () => {
 				wrapWithCache((cache) => {
-					const { context, rundown } = getActionExecutionContext(cache)
+					const { context, rundown, activationId } = getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -312,6 +337,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId0,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: activationId,
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -342,6 +368,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId1,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: activationId,
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -370,7 +397,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('excludeCurrentPart', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist, rundown } = getActionExecutionContext(cache)
+					const { context, playlist, rundown, activationId } = getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -393,6 +420,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId0,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: activationId,
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -416,6 +444,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId1,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[2]._id,
+						playlistActivationId: activationId,
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -449,7 +478,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('pieceMetaDataFilter', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist, rundown } = getActionExecutionContext(cache)
+					const { context, playlist, rundown, activationId } = getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -472,6 +501,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId0,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: activationId,
 						piece: {
 							_id: getRandomId(),
 							startPartId: partInstances[0].part._id,
@@ -494,6 +524,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId1,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[2]._id,
+						playlistActivationId: activationId,
 						piece: {
 							_id: getRandomId(),
 							startPartId: partInstances[2].part._id,

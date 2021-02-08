@@ -13,6 +13,7 @@ import {
 	protectString,
 	applyToArray,
 	asyncCollectionRemove,
+	getRandomId,
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import {
@@ -103,7 +104,14 @@ function resetRundownPlaylistPlayhead(cache: CacheForPlayout) {
 		}
 	)
 
-	if (cache.Playlist.doc.active) {
+	if (cache.Playlist.doc.activationId) {
+		// generate a new activationId
+		cache.Playlist.update({
+			$set: {
+				activationId: getRandomId(),
+			},
+		})
+
 		// put the first on queue:
 		const firstPart = selectNextPart(cache.Playlist.doc, null, getAllOrderedPartsFromPlayoutCache(cache))
 		setNextPart(cache, firstPart?.part ?? null)
@@ -217,6 +225,9 @@ export function setNextPart(
 	const oldNextPartInstance = !nextPartInstance?.isTaken ? nextPartInstance : undefined
 
 	if (newNextPart || newNextPartInstance) {
+		if (!cache.Playlist.doc.activationId)
+			throw new Meteor.Error(500, `RundownPlaylist "${cache.Playlist.doc._id}" is not active`)
+
 		if ((newNextPart && newNextPart.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
 		}
@@ -252,6 +263,7 @@ export function setNextPart(
 			cache.PartInstances.insert({
 				_id: newInstanceId,
 				takeCount: newTakeCount,
+				playlistActivationId: cache.Playlist.doc.activationId,
 				rundownId: nextPart.rundownId,
 				segmentId: nextPart.segmentId,
 				part: nextPart,

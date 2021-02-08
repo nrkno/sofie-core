@@ -54,7 +54,7 @@ describe('Expected Media Items', () => {
 			// currentPartInstanceId: protectString(''),
 			// previousPartInstanceId: protectString(''),
 			// nextPartInstanceId: protectString(''),
-			active: true,
+			activationId: protectString('active'),
 		})
 
 		Rundowns.insert(
