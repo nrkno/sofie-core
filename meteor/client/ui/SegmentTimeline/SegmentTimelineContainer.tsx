@@ -170,7 +170,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			// if the rundown isn't active, run the changes ASAP, we don't care if there's going to be jank
 			// if this is the current or next segment (will have those two properties defined), run the changes ASAP,
 			// otherwise, trigger the updates in a window of 500-2500 ms from change
-			props.playlist.activationId === undefined || props.ownCurrentPartInstance || props.ownNextPartInstance
+			!props.playlist.active || props.ownCurrentPartInstance || props.ownNextPartInstance
 				? 0
 				: Math.random() * 2000 + 500,
 			props.playlist._id
