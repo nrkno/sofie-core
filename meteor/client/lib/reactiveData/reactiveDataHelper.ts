@@ -74,15 +74,17 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 			const computation = Tracker.autorun(() => {
 				result = fnc(...(params as any))
 
-				if (!Tracker.currentComputation.firstRun) {
-					if (!_.isEqual(isolatedAutorunsMem[fId].value, result)) {
-						dep.changed()
-					}
-				}
+				const oldValue = isolatedAutorunsMem[fId] && isolatedAutorunsMem[fId].value
 
 				isolatedAutorunsMem[fId] = {
 					dependancy: dep,
 					value: result,
+				}
+
+				if (!Tracker.currentComputation.firstRun) {
+					if (!_.isEqual(oldValue, result)) {
+						dep.changed()
+					}
 				}
 			})
 			computation.onStop(() => {
@@ -135,7 +137,7 @@ export function slowDownReactivity<T extends (...args: any) => any>(
 		})
 		return computation
 	})
-	parentComputation.onInvalidate(() => {
+	parentComputation?.onInvalidate(() => {
 		// stop the inner computation, if the parent computation has been invalidated
 		// and clean out any timeouts that may have been registered
 		parentInvalidated = true
