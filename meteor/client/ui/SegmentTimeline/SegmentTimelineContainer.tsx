@@ -165,7 +165,11 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						'playlist.getAllOrderedParts',
 						_playlistId
 					),
-					props.playlist.getSelectedPartInstances(),
+					memoizedIsolatedAutorun(
+						(_playlistId: RundownPlaylistId) => props.playlist.getSelectedPartInstances(),
+						'playlist.getSelectedPartInstances',
+						_playlistId
+					),
 				] as [PartId[], { currentPartInstance: PartInstance; nextPartInstance: PartInstance }],
 			// if the rundown isn't active, run the changes ASAP, we don't care if there's going to be jank
 			// if this is the current or next segment (will have those two properties defined), run the changes ASAP,
