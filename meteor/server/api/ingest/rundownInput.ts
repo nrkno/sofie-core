@@ -35,7 +35,6 @@ import { logger } from '../../../lib/logging'
 import { StudioId } from '../../../lib/collections/Studios'
 import {
 	selectShowStyleVariant,
-	afterRemoveSegments,
 	afterRemoveParts,
 	ServerRundownAPI,
 	removeSegments,
@@ -46,6 +45,7 @@ import {
 	getAllRundownsInPlaylist,
 	sortDefaultRundownInPlaylistOrder,
 	ChangedSegmentsRankInfo,
+	updatePartInstancesBasicProperties,
 } from '../rundown'
 import { loadShowStyleBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
 import {
@@ -985,12 +985,6 @@ export function savePreparedRundownChanges(
 			afterRemove(segment) {
 				logger.info('removed segment ' + segment._id)
 			},
-			afterRemoveAll(segments) {
-				afterRemoveSegments(
-					cache,
-					segments.map((s) => s._id)
-				)
-			},
 		})
 	)
 
@@ -1474,6 +1468,8 @@ export function afterIngestChangedData(
 
 	// Lock the playlist and make sure it is updated
 	rundownPlaylistPlayoutSyncFunctionInner('afterIngestChangedData', playoutInfo.playlist, null, (cache) => {
+		updatePartInstancesBasicProperties(cache, rundown._id)
+
 		updatePartInstanceRanks(cache, changedSegments)
 
 		syncChangesToPartInstances(cache, blueprint, ingestCache)

@@ -34,6 +34,7 @@ import {
 	LocalIngestPart,
 	updateIngestRundownWithData,
 	RundownIngestDataCacheCollection,
+	tryLoadCachedRundownData,
 } from '../ingestCache'
 import { Rundown, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segment, SegmentId } from '../../../../lib/collections/Segments'
@@ -48,6 +49,7 @@ import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { loadShowStyleBlueprint } from '../../blueprints/cache'
 import { getShowStyleCompound2 } from '../../../../lib/collections/ShowStyleVariants'
 import { profiler } from '../../profiler'
+import { Pieces } from '../../../../lib/collections/Pieces'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -143,27 +145,23 @@ export function handleMosRundownData(
 			const parts = _.compact(storiesToIngestParts(rundownId, mosRunningOrder.Stories || [], !createFresh, []))
 			const groupedStories = groupIngestParts(parts)
 
+			const oldRundownData = tryLoadCachedRundownData(ingestDataCache)
+
 			// If this is a reload of a RO, then use cached data to make the change more seamless
-			if (!createFresh) {
-				const partIds = _.map(parts, (p) => p.partId)
-				const partCache = ingestDataCache.findFetch({
-					partId: { $in: partIds },
-					type: IngestCacheType.PART,
-				})
-
-				const partCacheMap: { [id: string]: IngestPart } = {}
-				_.each(partCache, (p) => {
-					if (p.partId) {
-						partCacheMap[unprotectString(p.partId)] = p.data as IngestPart
+			if (!createFresh && oldRundownData) {
+				const partCacheMap = new Map<PartId, IngestPart>()
+				for (const segment of oldRundownData.segments) {
+					for (const part of segment.parts) {
+						partCacheMap.set(getPartId(rundownId, part.externalId), part)
 					}
-				})
+				}
 
-				_.each(parts, (s) => {
-					const cached = partCacheMap[unprotectString(s.partId)]
-					if (cached) {
-						s.ingest.payload = cached.payload
+				for (const annotatedPart of parts) {
+					const cached = partCacheMap.get(annotatedPart.partId)
+					if (cached && !annotatedPart.ingest.payload) {
+						annotatedPart.ingest.payload = cached.payload
 					}
-				})
+				}
 			}
 
 			const ingestSegments = groupedPartsToSegments(rundownId, groupedStories)
@@ -176,6 +174,13 @@ export function handleMosRundownData(
 				payload: mosRunningOrder,
 				modified: getCurrentTime(),
 			})
+
+			if (!canBeUpdated(rundown)) return
+
+			if (rundown && oldRundownData) {
+				// If we already have a rundown, update any modified segment ids
+				diffAndUpdateSegmentIds(rundown, oldRundownData, ingestSegments)
+			}
 
 			return prepareUpdateRundownInner(
 				cache,
@@ -617,6 +622,99 @@ function groupPartsIntoIngestSegments(
 	return newIngestSegments
 }
 
+function diffAndUpdateSegmentIds(
+	rundown: Rundown,
+	oldIngestRundown: LocalIngestRundown,
+	newIngestSegments: LocalIngestSegment[]
+): DiffSegmentEntries {
+	const span = profiler.startSpan('mosDevice.ingest.diffAndApplyChanges')
+
+	// TODO this is a duplicate of a loop found in diffAndApplyChanges but modified to not run against a cache.
+	// This should be improved once the caches change, and we have access to one in time for this
+
+	// Fetch all existing segments:
+
+	const oldSegments = Segments.find({ rundownId: rundown._id }).fetch()
+
+	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
+	const newSegmentEntries = compileSegmentEntries(newIngestSegments)
+	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
+
+	const ps: Array<Promise<any>> = []
+
+	// Updated segments that has had their segment.externalId changed:
+	_.each(segmentDiff.externalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
+		const oldSegmentId = getSegmentId(rundown._id, oldSegmentExternalId)
+		const newSegmentId = getSegmentId(rundown._id, newSegmentExternalId)
+
+		const oldSegment = oldSegments.find((s) => s._id === oldSegmentId)
+		if (oldSegment) {
+			// Minimongo fails if an _id is updated, so we need to break the operation up
+			ps.push(
+				asyncCollectionInsert(Segments, {
+					...oldSegment,
+					_id: newSegmentId,
+				})
+			)
+			ps.push(asyncCollectionRemove(Segments, oldSegmentId))
+		}
+
+		ps.push(
+			asyncCollectionUpdate(
+				Parts,
+				{
+					rundownId: rundown._id,
+					segmentId: oldSegmentId,
+				},
+				{
+					$set: {
+						segmentId: newSegmentId,
+					},
+				},
+				{ multi: true }
+			)
+		)
+
+		ps.push(
+			asyncCollectionUpdate(
+				Pieces,
+				{
+					startRundownId: rundown._id,
+					startSegmentId: oldSegmentId,
+				},
+				{
+					$set: {
+						startSegmentId: newSegmentId,
+					},
+				},
+				{ multi: true }
+			)
+		)
+
+		ps.push(
+			asyncCollectionUpdate(
+				PartInstances,
+				{
+					rundownId: rundown._id,
+					segmentId: oldSegmentId,
+				},
+				{
+					$set: {
+						segmentId: newSegmentId,
+						'part.segmentId': newSegmentId,
+					},
+				},
+				{ multi: true }
+			)
+		)
+	})
+
+	waitForPromiseAll(ps)
+
+	span?.end()
+	return segmentDiff
+}
+
 function prepareMosSegmentChanges(
 	cache: ReadOnlyCache<CacheForIngest>,
 	ingestDataCache: RundownIngestDataCacheCollection,
@@ -710,6 +808,9 @@ function applyMosSegmentChanges(
 		}
 	}
 
+	// TODO - do we need to do these 'clever' updates anymore? As we don't store any playout properties on the Parts, destroying and recreating won't have negative impacts?
+	// The one exception is PartInstances when the segmentId changes, but that is handled by `updatePartInstancesBasicProperties()` as a general data integrity enforcement step
+
 	// Update segment ranks:
 	_.each(preparedChanges.segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
 		cache.Segments.update(
@@ -724,8 +825,9 @@ function applyMosSegmentChanges(
 			}
 		)
 	})
+
 	// Updated segments that has had their segment.externalId changed:
-	_.each(preparedChanges.segmentDiff.onlyExternalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
+	_.each(preparedChanges.segmentDiff.externalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
 		const oldSegmentId = getSegmentId(rundown._id, oldSegmentExternalId)
 		const newSegmentId = getSegmentId(rundown._id, newSegmentExternalId)
 
@@ -743,21 +845,7 @@ function applyMosSegmentChanges(
 			}
 		)
 
-		cache.defer(() => {
-			// TODO-PartInstance - pending new data flow
-			PartInstances.update(
-				{
-					rundownId: rundown._id,
-					segmentId: oldSegmentId,
-				},
-				{
-					$set: {
-						segmentId: newSegmentId,
-						'part.segmentId': newSegmentId,
-					},
-				}
-			)
-		})
+		// PartInstances get updater later by the call to afterIngestChangedData
 	})
 
 	// Remove old segments
@@ -811,7 +899,7 @@ export interface DiffSegmentEntries {
 	onlyRankChanged: { [segmentExternalId: string]: number } // contains the new rank
 
 	/** Reference to segments which has been REMOVED, but it looks like there is an ADDED segment that is closely related to the removed one */
-	onlyExternalIdChanged: { [removedSegmentExternalId: string]: string } // contains the added segment's externalId
+	externalIdChanged: { [removedSegmentExternalId: string]: string } // contains the added segment's externalId
 }
 export function diffSegmentEntries(
 	oldSegmentEntries: SegmentEntries,
@@ -825,7 +913,7 @@ export function diffSegmentEntries(
 		unchanged: {},
 
 		onlyRankChanged: {},
-		onlyExternalIdChanged: {},
+		externalIdChanged: {},
 	}
 	const oldSegmentMap: { [externalId: string]: Segment } | null =
 		oldSegments === null ? null : normalizeArray(oldSegments, 'externalId')
@@ -891,7 +979,7 @@ export function diffSegmentEntries(
 			})
 		}
 		if (newSegmentEntry) {
-			diff.onlyExternalIdChanged[segmentExternalId] = newSegmentEntry.externalId
+			diff.externalIdChanged[segmentExternalId] = newSegmentEntry.externalId
 		}
 	})
 

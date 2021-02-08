@@ -340,7 +340,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff.removed)).toEqual(['first'])
 			expect(_.keys(diff.unchanged)).toEqual(['second', 'third', 'fourth'])
 			expect(_.keys(diff.onlyRankChanged)).toHaveLength(0)
-			expect(diff.onlyExternalIdChanged).toEqual({
+			expect(diff.externalIdChanged).toEqual({
 				first: 'NEW',
 			})
 
@@ -355,7 +355,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff2.removed)).toEqual(['second'])
 			expect(_.keys(diff2.unchanged)).toEqual(['first', 'third', 'fourth'])
 			expect(_.keys(diff2.onlyRankChanged)).toHaveLength(0)
-			expect(diff2.onlyExternalIdChanged).toEqual({
+			expect(diff2.externalIdChanged).toEqual({
 				second: 'NEW',
 			})
 
@@ -370,7 +370,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff3.removed)).toEqual(['fourth'])
 			expect(_.keys(diff3.unchanged)).toEqual(['first', 'second', 'third'])
 			expect(_.keys(diff3.onlyRankChanged)).toHaveLength(0)
-			expect(diff3.onlyExternalIdChanged).toEqual({
+			expect(diff3.externalIdChanged).toEqual({
 				fourth: 'NEW',
 			})
 		})

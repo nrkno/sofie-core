@@ -186,7 +186,8 @@ export class DbCacheWriteCollection<
 		}
 		if (!doc._id) doc._id = getRandomId()
 		this.documents.set(doc._id, {
-			inserted: true,
+			inserted: existing !== null,
+			updated: existing === null,
 			document: this._transform(clone(doc)), // Unlinke a normal collection, this class stores the transformed objects
 		})
 		if (span) span.end()
@@ -395,9 +396,7 @@ export class DbCacheWriteCollection<
 				otherCache.remove(id)
 				this.documents.delete(id)
 			} else {
-				if (doc.inserted) {
-					otherCache.insert(doc.document)
-				} else if (doc.updated) {
+				if (doc.inserted || doc.updated) {
 					otherCache.upsert(id, doc.document, true)
 				}
 				delete doc.inserted

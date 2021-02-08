@@ -23,18 +23,18 @@ export type ReadOnlyRundownIngestDataCacheCollection = DbCacheReadCollection<Ing
 
 /** TODO-CACHE the `_id`s used here are consistent and predictable, so this should be rewritten to operate more directly on the cache with the ids instead */
 
-export function loadCachedRundownData(
-	cache: ReadOnlyRundownIngestDataCacheCollection,
-	rundownId: RundownId,
-	rundownExternalId: string
-): LocalIngestRundown {
+export function tryLoadCachedRundownData(
+	cache: ReadOnlyRundownIngestDataCacheCollection
+): LocalIngestRundown | undefined {
 	const span = profiler.startSpan('ingest.ingestCache.loadCachedRundownData')
 
 	const cacheEntries = cache.findFetch({})
 
 	const cachedRundown = cacheEntries.find((e) => e.type === IngestCacheType.RUNDOWN)
-	if (!cachedRundown)
-		throw new Meteor.Error(404, `Rundown "${rundownId}", (${rundownExternalId}) has no cached ingest data`)
+	if (!cachedRundown) {
+		span?.end()
+		return undefined
+	}
 
 	const ingestRundown = cachedRundown.data as LocalIngestRundown
 	ingestRundown.modified = cachedRundown.modified
@@ -63,6 +63,18 @@ export function loadCachedRundownData(
 	ingestRundown.segments = _.sortBy(ingestRundown.segments, (s) => s.rank)
 
 	span?.end()
+	return ingestRundown
+}
+
+export function loadCachedRundownData(
+	cache: ReadOnlyRundownIngestDataCacheCollection,
+	rundownId: RundownId,
+	rundownExternalId: string
+): LocalIngestRundown {
+	const ingestRundown = tryLoadCachedRundownData(cache)
+	if (!ingestRundown)
+		throw new Meteor.Error(404, `Rundown "${rundownId}", (${rundownExternalId}) has no cached ingest data`)
+
 	return ingestRundown
 }
 export function loadCachedIngestSegment(

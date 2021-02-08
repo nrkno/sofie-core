@@ -447,19 +447,41 @@ export function afterRemoveSegments(cache: CacheForIngest, segmentIds: SegmentId
 }
 
 /**
+ * Ensure some 'basic' PartInstances properties are in sync with their parts
+ */
+export function updatePartInstancesBasicProperties(cache: CacheForPlayout, rundownId: RundownId) {
+	const playlist = cache.Playlist.doc
+
+	const partInstances = cache.PartInstances.findFetch((p) => !p.reset && !p.orphaned && p.rundownId === rundownId)
+	for (const partInstance of partInstances) {
+		const part = cache.Parts.findOne(partInstance.part._id)
+		if (!part) {
+			// Part is deleted, so reset this instance if it isnt on-air
+			if (
+				playlist.currentPartInstanceId !== partInstance._id &&
+				playlist.nextPartInstanceId !== partInstance._id
+			) {
+				cache.PartInstances.update(partInstance._id, { $set: { reset: true } })
+			}
+		} else {
+			// part still exists, ensure the segmentId is up to date
+			cache.PartInstances.update(partInstance._id, {
+				$set: {
+					segmentId: part.segmentId,
+					'part.segmentId': part.segmentId,
+				},
+			})
+		}
+	}
+}
+
+/**
  * After Parts have been removed, handle the contents.
  * This will NOT trigger an update of the timeline
  * @param rundownId Id of the Rundown
  * @param removedParts The parts that have been removed
  */
 export function afterRemoveParts(cache: CacheForIngest, removedPartIds: PartId[]) {
-	// Ensure the partInstances which have no purpose are reset
-	const removePartInstanceIds = cache.PartInstances.findFetch({ 'part._id': { $in: removedPartIds } }).map(
-		(p) => p._id
-	)
-	cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
-	cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
-
 	// Clean up all the db items that belong to the removed Parts
 
 	cache.Pieces.remove({ startPartId: { $in: removedPartIds } })
