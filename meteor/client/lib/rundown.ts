@@ -459,6 +459,7 @@ export namespace RundownUtils {
 				}
 
 				const rawPieceInstances = getPieceInstancesForPartInstance(
+					playlist.activationId,
 					partInstance,
 					new Set(partIds.slice(0, itIndex)),
 					segmentsBeforeThisInRundownSet,

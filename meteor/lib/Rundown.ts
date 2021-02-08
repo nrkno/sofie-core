@@ -14,6 +14,7 @@ import {
 import { FindOptions } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
 import { getCurrentTime, protectString } from './lib'
+import { RundownPlaylistActivationId } from './collections/RundownPlaylists'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -109,6 +110,7 @@ const SIMULATION_INVALIDATION = 3000
  * @return {*}
  */
 export function getPieceInstancesForPartInstance(
+	playlistActivationId: RundownPlaylistActivationId | undefined,
 	partInstance: PartInstanceLimited,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
@@ -121,7 +123,7 @@ export function getPieceInstancesForPartInstance(
 ) {
 	if (partInstance.isTemporary) {
 		return getPieceInstancesForPart(
-			protectString(''),
+			playlistActivationId || protectString(''),
 			currentPartInstance,
 			currentPartInstancePieceInstances,
 			partInstance.part,
@@ -160,7 +162,7 @@ export function getPieceInstancesForPartInstance(
 			// make sure to invalidate the current computation after SIMULATION_INVALIDATION has passed
 			invalidateAfter(SIMULATION_INVALIDATION)
 			return getPieceInstancesForPart(
-				protectString(''),
+				playlistActivationId || protectString(''),
 				currentPartInstance,
 				currentPartInstancePieceInstances,
 				partInstance.part,
