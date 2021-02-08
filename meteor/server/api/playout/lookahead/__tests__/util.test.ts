@@ -13,7 +13,6 @@ import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { MappingsExt, Studios } from '../../../../../lib/collections/Studios'
 import { PartInstances, wrapPartToTemporaryInstance } from '../../../../../lib/collections/PartInstances'
 import _ from 'underscore'
-import { wrapWithCacheForRundownPlaylist } from '../../../../DatabaseCaches'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { getOrderedPartsAfterPlayhead } from '../util'
 

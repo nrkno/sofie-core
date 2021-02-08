@@ -23,9 +23,9 @@ import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
-import { DeepReadonly } from 'utility-types'
 import { registerIndex } from '../database'
 import { PieceInstanceInfiniteId } from './PieceInstances'
+import { ReadonlyDeep } from 'type-fest'
 
 /** A string, identifying a RundownPlaylist */
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
@@ -481,7 +481,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const instances = this.getActivePartInstances(selector, options)
 		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
 	}
-	static _sortSegments(segments: Segment[], rundowns: DeepReadonly<DBRundown>[]) {
+	static _sortSegments(segments: Segment[], rundowns: Array<ReadonlyDeep<DBRundown>>) {
 		const rundownsMap = normalizeArray(rundowns, '_id')
 		return segments.sort((a, b) => {
 			if (a.rundownId === b.rundownId) {
