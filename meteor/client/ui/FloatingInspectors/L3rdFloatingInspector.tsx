@@ -21,6 +21,7 @@ interface IProps {
 	content: NoraContent | undefined
 	floatingInspectorStyle: React.CSSProperties
 	typeClass?: string
+	displayOn?: 'document' | 'viewport'
 }
 
 type KeyValue = { key: string; value: string }
@@ -34,6 +35,7 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 	pieceRenderedIn,
 	pieceRenderedDuration,
 	typeClass,
+	displayOn,
 }) => {
 	const { t } = useTranslation()
 	const innerPiece = piece
@@ -73,10 +75,10 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 
 	return noraContent && noraContent.payload && noraContent.previewRenderer ? (
 		showMiniInspector && !!itemElement ? (
-			<NoraFloatingInspector noraContent={noraContent} style={floatingInspectorStyle} />
+			<NoraFloatingInspector noraContent={noraContent} style={floatingInspectorStyle} displayOn={displayOn} />
 		) : null
 	) : (
-		<FloatingInspector shown={showMiniInspector && !!itemElement}>
+		<FloatingInspector shown={showMiniInspector && !!itemElement} displayOn={displayOn}>
 			<div className={'segment-timeline__mini-inspector ' + typeClass} style={floatingInspectorStyle}>
 				{templateName && (
 					<div className="mini-inspector__header">

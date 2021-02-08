@@ -5,6 +5,7 @@ import Escape from 'react-escape'
 interface IPropsHeader {
 	noraContent: NoraContent | undefined
 	style: React.CSSProperties
+	displayOn?: 'document' | 'viewport'
 }
 
 interface IStateHeader extends IPropsHeader {
@@ -13,12 +14,13 @@ interface IStateHeader extends IPropsHeader {
 		x: boolean
 		y: boolean
 	}
+	displayOn: 'document' | 'viewport'
 }
 
 export const NoraFloatingInspector: React.FunctionComponent<IPropsHeader> = (props: IPropsHeader) => {
 	useEffect(() => {
 		if (props.noraContent) {
-			NoraPreviewRenderer.show(props.noraContent, props.style)
+			NoraPreviewRenderer.show(props.noraContent, props.style, props.displayOn || 'document')
 		}
 
 		return () => {
@@ -51,8 +53,8 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		| undefined
 	private _observer: IntersectionObserver | undefined
 
-	static show(noraContent: NoraContent, style: React.CSSProperties) {
-		NoraPreviewRenderer._singletonRef._show(noraContent, style)
+	static show(noraContent: NoraContent, style: React.CSSProperties, displayOn: 'document' | 'viewport') {
+		NoraPreviewRenderer._singletonRef._show(noraContent, style, displayOn)
 	}
 
 	static hide() {
@@ -70,6 +72,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 				x: false,
 				y: false,
 			},
+			displayOn: 'document',
 		}
 		NoraPreviewRenderer._singletonRef = this
 	}
@@ -103,7 +106,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		)
 	}
 
-	private _show(noraContent: NoraContent, style: React.CSSProperties) {
+	private _show(noraContent: NoraContent, style: React.CSSProperties, displayOn?: 'document' | 'viewport') {
 		if (JSON.stringify(this.state.noraContent) !== JSON.stringify(noraContent)) {
 			if (this.iframeElement && this.iframeElement.contentWindow) {
 				this.postNoraEvent(this.iframeElement.contentWindow, noraContent)
@@ -138,6 +141,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 				x,
 				y,
 			},
+			displayOn: displayOn || 'document',
 		})
 	}
 
@@ -201,11 +205,9 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	}
 
 	render() {
-		if (!this.state) return null
-
 		return (
 			<React.Fragment>
-				<Escape to="document">
+				<Escape to={this.state.displayOn}>
 					<div
 						className="segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics segment-timeline__mini-inspector--graphics--preview"
 						style={this.getElStyle()}>
