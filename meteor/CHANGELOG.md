@@ -5,10 +5,6 @@ All notable changes to this project will be documented in this file. See [standa
 ## [1.18.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.17.0...v1.18.0-0) (2021-02-09)
 
 
-### ⚠ BREAKING CHANGES
-
-* Notes now support parametrized strings (changes NotesContext#error/warning signatures)
-
 ### Features
 
 * activation pop-up when doing a take on an inactive rundown ([6dd6412](https://github.com/nrkno/tv-automation-server-core/commit/6dd64124b7e1d7ef961e0c265317a7834aa988ef))
@@ -24,7 +20,7 @@ All notable changes to this project will be documented in this file. See [standa
 * expose PartInstance.orphaned to blueprints [publish] ([e1dc02a](https://github.com/nrkno/tv-automation-server-core/commit/e1dc02acb73f86dc5f9979374973a2819cdafbc8))
 * extended i18n capabilities to include translations bundles from blueprints ([1e6312f](https://github.com/nrkno/tv-automation-server-core/commit/1e6312fe815e86305ef7d452bde6f658d0d0241a))
 * github actions ([5241061](https://github.com/nrkno/tv-automation-server-core/commit/52410614519234a31658ad7410b1a43e3772a739))
-* implment a method to fetch individual translation bundles ([835b14c](https://github.com/nrkno/tv-automation-server-core/commit/835b14c33c5a719a2698d9d2845b492a4d74dd8f))
+* implement a method to fetch individual translation bundles ([835b14c](https://github.com/nrkno/tv-automation-server-core/commit/835b14c33c5a719a2698d9d2845b492a4d74dd8f))
 * Layer Mappings defined by manifest ([63eb7b6](https://github.com/nrkno/tv-automation-server-core/commit/63eb7b6fe20c4768f584975054261a6bc34792e5))
 * Notes now support parametrized strings (changes NotesContext#error/warning signatures) ([cb4cb45](https://github.com/nrkno/tv-automation-server-core/commit/cb4cb452e7ab8197479f0922d59ddb0e0cbe1d6b))
 * option to go directly on-air from an inactive rundown ([3e17352](https://github.com/nrkno/tv-automation-server-core/commit/3e17352944b862a1be9c47a5e0f98b2d6ae05ae6))
@@ -40,6 +36,7 @@ All notable changes to this project will be documented in this file. See [standa
 * use a darker shade of green for Script source layer type ([d032c81](https://github.com/nrkno/tv-automation-server-core/commit/d032c81a40e228152331d225c915284abeb3bc57))
 * use parent blueprint as namespaces for translation bundles coming from blueprint uploads ([16471ca](https://github.com/nrkno/tv-automation-server-core/commit/16471ca37c3e49cd39e30b806f30ceb31e14d262))
 * working import and translations from blueprint content ([c957ec8](https://github.com/nrkno/tv-automation-server-core/commit/c957ec87cba4ac18e59aa2eec13b3f92d9af673d))
+* Adds support for multiple midi inputs ([c68d74c](https://github.com/nrkno/tv-automation-server-core/commit/c68d74ca06fd8dbe4c5545d651b76a9a8973769d))
 
 
 ### Bug Fixes
