@@ -66,7 +66,9 @@ export const DashboardPieceButtonSplitPreview = translateWithTracker<IProps, {},
 									},
 									{
 										second: array.length > 1 && index > 0 && item.type === array[index - 1].type,
-									}
+									},
+									{ upper: index >= array.length / 2 },
+									{ lower: index < array.length / 2 }
 								)}
 								key={item._id + '-preview'}
 								style={{

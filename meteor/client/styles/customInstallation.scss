@@ -24,6 +24,9 @@ body.tv2 {
 	--segment-layer-background-mic: #00a97f;
 	--segment-layer-background-guest: #00a97f;
 
+	--dve-upper: #00a99c;
+	--dve-lower: #265753;
+
 	.rundown-view {
 		padding-top: 60px;
 
@@ -243,6 +246,18 @@ body.tv2 {
 				}
 			}
 		}
+
+		.segment-timeline__piece {
+			&.splits {
+				.upper {
+					background-color: var(--dve-upper) !important;
+				}
+
+				.lower {
+					background-color: var(--dve-lower) !important;
+				}
+			}
+		}
 	}
 	.segment-timeline.next,
 	.segment-timeline.live {
@@ -374,6 +389,18 @@ body.tv2 {
 					rgb(78, 78, 78) 15px,
 					transparent 16px
 				);
+			}
+		}
+
+		&.splits {
+			.upper {
+				fill: var(--dve-upper) !important;
+				background: var(--dve-upper) !important;
+			}
+
+			.lower {
+				fill: var(--dve-lower) !important;
+				background: var(--dve-lower) !important;
 			}
 		}
 	}

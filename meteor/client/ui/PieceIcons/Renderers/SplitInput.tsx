@@ -70,8 +70,8 @@ export default class SplitInputIcon extends React.Component<{
 				viewBox="0 0 126.5 89"
 				xmlns="http://www.w3.org/2000/svg"
 				preserveAspectRatio="none">
-				<rect width="126.5" height="44.5" className={this.getLeftSourceType(this.props.piece)} />
-				<rect width="126.5" height="44.5" y="44.5" className={this.getRightSourceType(this.props.piece)} />
+				<rect width="126.5" height="44.5" className="upper" />
+				<rect width="126.5" height="44.5" y="44.5" className="lower" />
 				{!this.props.hideLabel && (
 					<text
 						x="9.6414976"
