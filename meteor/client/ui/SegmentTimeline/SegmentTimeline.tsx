@@ -927,17 +927,17 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						part={this.props.followingPart} />
 				</ErrorBoundary> */}
 				<ErrorBoundary>
-					{/* <VelocityReact.VelocityTransitionGroup
+					<VelocityReact.VelocityTransitionGroup
 						enter={{ animation: 'slideDown', easing: 'ease-out', duration: 250 }}
 						leave={{ animation: 'slideUp', easing: 'ease-in', duration: 250 }}>
-						{!this.props.showingAllSegment && ( */}
-					<SegmentTimelineZoom
-						onZoomDblClick={this.onZoomDblClick}
-						timelineWidth={this.state.timelineWidth}
-						{...this.props}
-					/>
-					{/* )} 
-					</VelocityReact.VelocityTransitionGroup> */}
+						{!this.props.isCollapsed && (
+							<SegmentTimelineZoom
+								onZoomDblClick={this.onZoomDblClick}
+								timelineWidth={this.state.timelineWidth}
+								{...this.props}
+							/>
+						)}
+					</VelocityReact.VelocityTransitionGroup>
 				</ErrorBoundary>
 			</div>
 		)
