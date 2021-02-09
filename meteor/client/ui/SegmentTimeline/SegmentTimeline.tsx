@@ -263,14 +263,14 @@ class SegmentTimelineZoomButtons extends React.Component<
 		return (
 			<div className="segment-timeline__timeline-zoom-buttons">
 				<button
-					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--all"
-					onClick={this.zoomNormalize}>
-					{t('Vis alt')}
-				</button>
-				<button
 					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
 					onClick={this.zoomOut}>
 					<ZoomOutIcon />
+				</button>
+				<button
+					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--all"
+					onClick={this.zoomNormalize}>
+					{t('Show All')}
 				</button>
 				<button
 					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--in"
@@ -927,17 +927,17 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						part={this.props.followingPart} />
 				</ErrorBoundary> */}
 				<ErrorBoundary>
-					<VelocityReact.VelocityTransitionGroup
+					{/* <VelocityReact.VelocityTransitionGroup
 						enter={{ animation: 'slideDown', easing: 'ease-out', duration: 250 }}
 						leave={{ animation: 'slideUp', easing: 'ease-in', duration: 250 }}>
-						{!this.props.showingAllSegment && (
-							<SegmentTimelineZoom
-								onZoomDblClick={this.onZoomDblClick}
-								timelineWidth={this.state.timelineWidth}
-								{...this.props}
-							/>
-						)}
-					</VelocityReact.VelocityTransitionGroup>
+						{!this.props.showingAllSegment && ( */}
+					<SegmentTimelineZoom
+						onZoomDblClick={this.onZoomDblClick}
+						timelineWidth={this.state.timelineWidth}
+						{...this.props}
+					/>
+					{/* )} 
+					</VelocityReact.VelocityTransitionGroup> */}
 				</ErrorBoundary>
 			</div>
 		)

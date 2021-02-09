@@ -761,10 +761,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				followLiveLine: state,
 				scrollLeft: Math.max(this.state.livePosition - this.props.liveLineHistorySize / this.state.timeScale, 0),
 			})
-
-			/* if (this.state.followLiveLine) {
-			this.debugDemoLiveLine()
-		} */
 		}
 
 		segmentRef = (el: SegmentTimelineClass, segmentId: SegmentId) => {
@@ -787,7 +783,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				newScale = Math.min(0.03, newScale)
 				this.onTimeScaleChange(newScale, true)
 			}
-			// if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 		}
 
 		onZoomChange = (newScale: number, e: any) => {
