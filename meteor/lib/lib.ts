@@ -903,7 +903,7 @@ export function waitForPromiseObj<T extends object>(obj: Promisify<T>): T {
  * Makes the Fiber wait for the promise to resolve, then return the value of the promise.
  * If the fiber rejects, the function in the Fiber will "throw"
  */
-export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function waitForPromises<T>(
+export const waitForPromise: <T>(p: Promise<T> | T) => T = Meteor.wrapAsync(function waitForPromises<T>(
 	p: Promise<T>,
 	cb: (err: any | null, result?: any) => T
 ) {

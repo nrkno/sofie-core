@@ -1,5 +1,5 @@
 import { RundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { asyncCollectionFindOne, ProtectedString, asyncCollectionFindFetch } from '../../lib/lib'
+import { asyncCollectionFindOne, ProtectedString, asyncCollectionFindFetch, clone } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
@@ -13,6 +13,7 @@ import {
 	RundownBaselineAdLibActions,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { ReadonlyDeep } from 'type-fest'
 
 export function getActivationCache(studioId: StudioId, playlistId: RundownPlaylistId): ActivationCache {
 	let activationCache = activationCaches.get(studioId)
@@ -110,7 +111,7 @@ export class ActivationCache {
 		this._initialized = false
 		this._persistant = false
 	}
-	async initialize(playlist: RundownPlaylist, rundownsInPlaylist: Rundown[]) {
+	async initialize(playlist: ReadonlyDeep<RundownPlaylist>, rundownsInPlaylist: Rundown[]) {
 		if (this._initialized && (!this._playlist || playlist.activationId !== this._playlist.activationId)) {
 			// activationId has changed, we should clear out the data because it might not be valid anymore
 			this._uninitialize()
@@ -122,7 +123,7 @@ export class ActivationCache {
 			throw new Error(
 				`ActivationCache.initialize playlist._id "${playlist._id}" not equal to this.playlistId "${this.playlistId}"`
 			)
-		this._playlist = playlist
+		this._playlist = clone<RundownPlaylist>(playlist)
 
 		const pStudio = asyncCollectionFindOne(Studios, this._playlist.studioId)
 
