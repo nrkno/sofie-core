@@ -34,7 +34,6 @@ import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { Mongo } from 'meteor/mongo'
 import { FindOptions } from '../../lib/typings/meteor'
-import { Meteor } from 'meteor/meteor'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
