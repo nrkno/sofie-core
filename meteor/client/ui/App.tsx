@@ -28,7 +28,7 @@ import { RundownView } from './RundownView'
 import { ActiveRundownView } from './ActiveRundownView'
 import { ClockView } from './ClockView/ClockView'
 import { ConnectionStatusNotification } from '../lib/ConnectionStatusNotification'
-import { BrowserRouter as Router, Route, Switch, Redirect, RouteComponentProps } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Switch, Redirect, RouteComponentProps, RouteProps } from 'react-router-dom'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './Prompter/PrompterView'
 import { ModalDialogGlobalContainer, doModalDialog } from '../lib/ModalDialog'
@@ -44,6 +44,7 @@ import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { DocumentTitleProvider } from '../lib/DocumentTitleProvider'
+import { Spinner } from '../lib/Spinner'
 
 const NullComponent = () => null
 
@@ -120,24 +121,27 @@ export const App = translateWithTracker(() => {
 			}
 
 			this.lastStart = Date.now()
-			this.protectedRoute = this.protectedRoute.bind(this)
 		}
-		private protectedRoute({ component: Component, ...args }: any) {
+
+		private protectedRoute = ({
+			component: Component,
+			...args
+		}: RouteProps & { component: React.ComponentType<any> }) => {
 			if (!Settings.enableUserAccounts) {
 				return <Route {...args} render={(props) => <Component {...props} />} />
 			} else {
 				// If not logged in, redirect to "/":
 				if (this.props.user || this.state.subscriptionsReady) {
-					console.log('redirecting', this.props.user)
 					return (
 						<Route {...args} render={(props) => (this.props.user ? <Component {...props} /> : <Redirect to="/" />)} />
 					)
 				} else {
-					return <div>Loading</div>
+					return <Spinner />
 				}
 			}
 		}
-		cronJob = () => {
+
+		private cronJob = () => {
 			const now = new Date()
 			const hour = now.getHours() + now.getMinutes() / 60
 			// if the time is between 3 and 5
@@ -156,8 +160,6 @@ export const App = translateWithTracker(() => {
 		}
 
 		componentDidMount() {
-			const { i18n } = this.props
-
 			// Global subscription of the currently logged in user:
 			this.subscribe(PubSub.loggedInUser, {})
 			this.autorun(() => {
@@ -281,7 +283,7 @@ export const App = translateWithTracker(() => {
 								<this.protectedRoute path="/countdowns/:studioId" component={ClockView} />
 								<this.protectedRoute path="/status" component={Status} />
 								<this.protectedRoute path="/settings" component={SettingsView} />
-								<Route path="/testTools" component={TestTools} />
+								<this.protectedRoute path="/testTools" component={TestTools} />
 								<Route>
 									<Redirect to="/" />
 								</Route>
