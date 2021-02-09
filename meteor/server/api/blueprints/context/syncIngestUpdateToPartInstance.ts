@@ -27,7 +27,7 @@ import {
 	normalizeArrayToMap,
 } from '../../../../lib/lib'
 import { Rundown } from '../../../../lib/collections/Rundowns'
-import { DbCacheWriteCollection } from '../../../cache/DatabaseCache'
+import { DbCacheWriteCollection } from '../../../cache/CacheCollection'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { Meteor } from 'meteor/meteor'
 import { INoteBase, NoteType } from '../../../../lib/api/notes'

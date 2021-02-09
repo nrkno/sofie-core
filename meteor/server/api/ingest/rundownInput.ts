@@ -121,7 +121,7 @@ import {
 import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../lib/api/methods'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../cache/DatabaseCaches'
-import { prepareSaveIntoCache, savePreparedChangesIntoCache } from '../../cache/DatabaseCache'
+import { prepareSaveIntoCache, savePreparedChangesIntoCache } from '../../cache/lib'
 import { reportRundownDataHasChanged } from '../asRunLog'
 import { Settings } from '../../../lib/Settings'
 import { AdLibAction } from '../../../lib/collections/AdLibActions'

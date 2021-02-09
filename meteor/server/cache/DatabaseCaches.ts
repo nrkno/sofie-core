@@ -7,12 +7,7 @@ import {
 	RundownPlaylistId,
 } from '../../lib/collections/RundownPlaylists'
 import { Meteor } from 'meteor/meteor'
-import {
-	DbCacheReadCollection,
-	isDbCacheReadCollection,
-	isDbCacheWriteCollection,
-	DbCacheWriteCollection,
-} from './DatabaseCache'
+import { isDbCacheReadCollection, isDbCacheWritable } from './lib'
 import { Segment, Segments, DBSegment } from '../../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
@@ -29,22 +24,28 @@ import { AdLibAction, AdLibActions } from '../../lib/collections/AdLibActions'
 import { isInTestWrite } from '../security/lib/securityVerify'
 import { ActivationCache, getActivationCache } from './ActivationCache'
 import { profiler } from '../api/profiler'
+import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection'
+import { DbCacheReadObject, DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
-type ReadOnlyCacheInner<T> = T extends DbCacheWriteCollection<infer A, infer B>
+type DbCacheWritable<T1, T2> = DbCacheWriteCollection<any, any> | DbCacheWriteObject<any, any>
+
+export type ReadOnlyCacheInner<T> = T extends DbCacheWriteCollection<infer A, infer B>
 	? DbCacheReadCollection<A, B>
-	: T extends DbCacheReadCollection<infer A, infer B>
-	? DbCacheReadCollection<A, B>
+	: T extends DbCacheWriteObject<infer A, infer B>
+	? DbCacheReadObject<A, B>
+	: T extends DbCacheWriteOptionalObject<infer A, infer B>
+	? DbCacheReadObject<A, B, true>
 	: T
-type IReadOnlyCache<T extends Cache> = Omit<
+export type ReadOnlyCache<T extends CacheBase> = Omit<
 	{ [K in keyof T]: ReadOnlyCacheInner<T[K]> },
 	'defer' | 'deferAfterSave' | 'saveAllToDatabase'
 >
 
 /** This cache contains data relevant in a studio */
-export class ReadOnlyCache {
-	protected _deferredFunctions: DeferredFunction<ReadOnlyCache>[] = []
+export abstract class ReadOnlyCacheBase {
+	protected _deferredFunctions: DeferredFunction<ReadOnlyCacheBase>[] = []
 	protected _deferredAfterSaveFunctions: (() => void)[] = []
 	private _activeTimeout: number | null = null
 
@@ -66,7 +67,7 @@ export class ReadOnlyCache {
 			Meteor.clearTimeout(this._activeTimeout)
 		}
 	}
-	_extendWithData(extendFromCache: Cache) {
+	_extendWithData(extendFromCache: CacheBase) {
 		extendFromCache._abortActiveTimeout()
 
 		_.each(extendFromCache as any, (their, key) => {
@@ -78,6 +79,29 @@ export class ReadOnlyCache {
 			}
 		})
 	}
+
+	protected getAllCollections() {
+		const highPrioDBs: DbCacheWritable<any, any>[] = []
+		const lowPrioDBs: DbCacheWritable<any, any>[] = []
+
+		_.map(_.keys(this), (key) => {
+			const db = this[key]
+			if (isDbCacheWritable(db)) {
+				if (key.match(/timeline/i)) {
+					highPrioDBs.push(db)
+				} else {
+					lowPrioDBs.push(db)
+				}
+			}
+		})
+
+		return {
+			allDBs: [...highPrioDBs, ...lowPrioDBs],
+			highPrioDBs,
+			lowPrioDBs,
+		}
+	}
+
 	async saveAllToDatabase() {
 		const span = profiler.startSpan('Cache.saveAllToDatabase')
 		this._abortActiveTimeout()
@@ -88,19 +112,7 @@ export class ReadOnlyCache {
 		}
 		this._deferredFunctions.length = 0 // clear the array
 
-		const highPrioDBs: DbCacheWriteCollection<any, any>[] = []
-		const lowPrioDBs: DbCacheWriteCollection<any, any>[] = []
-
-		_.map(_.keys(this), (key) => {
-			const db = this[key]
-			if (isDbCacheWriteCollection(db)) {
-				if (key.match(/timeline/i)) {
-					highPrioDBs.push(db)
-				} else {
-					lowPrioDBs.push(db)
-				}
-			}
-		})
+		const { highPrioDBs, lowPrioDBs } = this.getAllCollections()
 
 		if (highPrioDBs.length) {
 			const anyThingChanged = anythingChanged(
@@ -126,6 +138,22 @@ export class ReadOnlyCache {
 
 		if (span) span.end()
 	}
+
+	/**
+	 * Discard all changes to documents in the cache.
+	 * This essentially acts as rolling back this transaction, and lets the cache be reused for another operation instead
+	 */
+	discardChanges() {
+		const { allDBs } = this.getAllCollections()
+		for (const coll of allDBs) {
+			coll.discardChanges()
+		}
+
+		// Discard any hooks too
+		this._deferredAfterSaveFunctions.length = 0
+		this._deferredFunctions.length = 0
+	}
+
 	/**
 	 * Assert that no changes should have been made to the cache, will throw an Error otherwise. This can be used in
 	 * place of `saveAllToDatabase()`, when the code controlling the cache expects no changes to have been made and any
@@ -143,13 +171,7 @@ export class ReadOnlyCache {
 			}
 		}
 
-		const allDBs: DbCacheWriteCollection<any, any>[] = []
-		_.map(_.keys(this), (key) => {
-			const db = this[key]
-			if (isDbCacheWriteCollection(db)) {
-				allDBs.push(db)
-			}
-		})
+		const { allDBs } = this.getAllCollections()
 
 		if (this._deferredFunctions.length > 0)
 			logOrThrowError(
@@ -183,9 +205,9 @@ export class ReadOnlyCache {
 		if (span) span.end()
 	}
 }
-export class Cache extends ReadOnlyCache {
+export abstract class CacheBase extends ReadOnlyCacheBase {
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
-	defer(fcn: DeferredFunction<Cache>): void {
+	defer(fcn: DeferredFunction<CacheBase>): void {
 		this._deferredFunctions.push(fcn)
 	}
 	/** Defer provided function to after cache.saveAllToDatabase().
@@ -195,7 +217,7 @@ export class Cache extends ReadOnlyCache {
 		this._deferredAfterSaveFunctions.push(fcn)
 	}
 }
-export class CacheForStudioBase extends Cache {
+export class CacheForStudioBase extends CacheBase {
 	containsDataFromStudio: StudioId // Just to get the typings to alert on different cache types
 
 	/** Contains contents in the Studio */
@@ -219,7 +241,7 @@ export class CacheForStudioBase extends Cache {
 	}
 }
 /** Readonly version of CacheForStudioBase */
-export type ReadOnlyCacheForStudioBase = IReadOnlyCache<CacheForStudioBase>
+export type ReadOnlyCacheForStudioBase = ReadOnlyCache<CacheForStudioBase>
 
 export function convertReadOnlyCacheForStudioBase(cache: CacheForStudioBase): ReadOnlyCacheForStudioBase {
 	cache._abortActiveTimeout()
@@ -355,7 +377,7 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 	}
 }
 /** A read-only version of CacheForRundownPlaylist */
-export type ReadOnlyCacheForRundownPlaylist = IReadOnlyCache<CacheForRundownPlaylist>
+export type ReadOnlyCacheForRundownPlaylist = ReadOnlyCache<CacheForRundownPlaylist>
 
 export function convertReadOnlyCacheForRundownPlaylist(
 	cache: CacheForRundownPlaylist

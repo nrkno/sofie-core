@@ -62,7 +62,7 @@ import {
 	initCacheForRundownPlaylist,
 	initCacheForRundownPlaylistFromRundown,
 } from '../cache/DatabaseCaches'
-import { saveIntoCache } from '../cache/DatabaseCache'
+import { saveIntoCache } from '../cache/lib'
 import { removeRundownFromCache, removeRundownPlaylistFromCache, getAllOrderedPartsFromCache } from './playout/lib'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
 import { Settings } from '../../lib/Settings'
@@ -418,14 +418,14 @@ function defaultPlaylistForRundown(
 export function removeSegments(cache: CacheForRundownPlaylist, rundownId: RundownId, segmentIds: SegmentId[]): number {
 	logger.debug('removeSegments', rundownId, segmentIds)
 
-	const count = cache.Segments.remove({
+	const removedIds = cache.Segments.remove({
 		_id: { $in: segmentIds },
 		rundownId: rundownId,
 	})
-	if (count > 0) {
+	if (removedIds.length > 0) {
 		afterRemoveSegments(cache, rundownId, segmentIds)
 	}
-	return count
+	return removedIds.length
 }
 /**
  * After Segments have been removed, handle the contents.

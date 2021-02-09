@@ -118,6 +118,12 @@ export interface Changes {
 	updated: number
 	removed: number
 }
+export interface ChangedIds<T extends ProtectedString<any>> {
+	added: T[]
+	updated: T[]
+	removed: T[]
+}
+
 /**
  * Saves an array of data into a collection
  * No matter if the data needs to be created, updated or removed
@@ -327,7 +333,7 @@ export async function asyncCollectionBulkWrite<
 		}
 	}
 }
-export function sumChanges(...changes: (Changes | null)[]): Changes {
+export function sumChanges(...changes: (Changes | ChangedIds<any> | null)[]): Changes {
 	let change: Changes = {
 		added: 0,
 		updated: 0,
@@ -335,9 +341,9 @@ export function sumChanges(...changes: (Changes | null)[]): Changes {
 	}
 	_.each(changes, (c) => {
 		if (c) {
-			change.added += c.added
-			change.updated += c.updated
-			change.removed += c.removed
+			change.added += Array.isArray(c.added) ? c.added.length : c.added
+			change.updated += Array.isArray(c.updated) ? c.updated.length : c.updated
+			change.removed += Array.isArray(c.removed) ? c.removed.length : c.removed
 		}
 	})
 	return change
