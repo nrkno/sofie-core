@@ -44,12 +44,12 @@ export const OverlayScreen = withTranslation()(
 	)(
 		withTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation, RundownOverviewState>()(
 			class OverlayScreen extends PresenterScreenBase {
-				protected bodyClassList: string[] = ['dark', 'xdark']
+				protected bodyClassList: string[] = ['transparent']
 
 				render() {
-					const { playlist, segments, showStyleBaseId, t } = this.props
+					const { playlist, segments, showStyleBaseId, t, playlistId } = this.props
 
-					if (playlist && this.props.playlistId && this.props.segments && showStyleBaseId) {
+					if (playlist && playlistId && segments && showStyleBaseId) {
 						let currentPart: PartUi | undefined
 						let currentSegment: SegmentUi | undefined
 						for (const segment of segments) {

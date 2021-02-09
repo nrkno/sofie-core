@@ -183,9 +183,9 @@ export class PresenterScreenBase extends MeteorReactComponent<
 	}
 
 	render() {
-		const { playlist, segments, showStyleBaseId } = this.props
+		const { playlist, segments, showStyleBaseId, playlistId } = this.props
 
-		if (playlist && this.props.playlistId && this.props.segments && showStyleBaseId) {
+		if (playlist && playlistId && segments && showStyleBaseId) {
 			let currentPart: PartUi | undefined
 			let currentSegment: SegmentUi | undefined
 			for (const segment of segments) {
