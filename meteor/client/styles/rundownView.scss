@@ -76,6 +76,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	);
 	background-repeat: repeat-y;
 	background-size: 800px 1px;
+	border-radius: $segment-border-radius;
+	overflow: hidden;
 
 	animation-duration: 1s;
 	animation-fill-mode: forwards;

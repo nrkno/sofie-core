@@ -532,6 +532,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.pastInfinitesComp.invalidate()
 			}
 
+			if (!isLiveSegment && this.props.parts !== prevProps.parts && this.state.showingAllSegment) {
+				this.showEntireSegment()
+			}
+
 			this.setState({
 				isLiveSegment,
 				isNextSegment,
@@ -715,7 +719,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					this.playbackSimulationPercentage = Math.min(simulationPercentage + SIMULATED_PLAYBACK_CROSSFADE_STEP, 1)
 				}
 
-				//@ts-ignore
 				this.setState({
 					livePosition: newLivePosition,
 					scrollLeft: this.state.followLiveLine
@@ -767,11 +770,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			this.timelineDiv = el.timeline
 		}
 
-		onShowEntireSegment = (event: any, limitScale?: boolean) => {
-			this.setState({
-				scrollLeft: 0,
-				followLiveLine: this.state.isLiveSegment ? true : this.state.followLiveLine,
-			})
+		showEntireSegment = () => {
 			if (typeof this.onTimeScaleChange === 'function') {
 				let newScale =
 					(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
@@ -783,6 +782,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				newScale = Math.min(0.03, newScale)
 				this.onTimeScaleChange(newScale, true)
 			}
+		}
+
+		onShowEntireSegment = (event: any, limitScale?: boolean) => {
+			this.setState({
+				scrollLeft: 0,
+				followLiveLine: this.state.isLiveSegment ? true : this.state.followLiveLine,
+			})
+			this.showEntireSegment()
 		}
 
 		onZoomChange = (newScale: number, e: any) => {
