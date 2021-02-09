@@ -433,7 +433,7 @@ export function removeSegments(cache: CacheForRundownPlaylist, rundownId: Rundow
  * @param rundownId Id of the Rundown
  * @param segmentIds Id of the Segments
  */
-export function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: RundownId, segmentIds: SegmentId[]) {
+function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: RundownId, segmentIds: SegmentId[]) {
 	// Remove the parts:
 	saveIntoCache(
 		cache.Parts,
@@ -453,6 +453,37 @@ export function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: R
 }
 
 /**
+ * Ensure some 'basic' PartInstances properties are in sync with their parts
+ */
+export function updatePartInstancesBasicProperties(
+	cache: CacheForRundownPlaylist,
+	playlist: RundownPlaylist,
+	rundownId: RundownId
+) {
+	const partInstances = cache.PartInstances.findFetch((p) => !p.reset && !p.orphaned && p.rundownId === rundownId)
+	for (const partInstance of partInstances) {
+		const part = cache.Parts.findOne(partInstance.part._id)
+		if (!part) {
+			// Part is deleted, so reset this instance if it isnt on-air
+			if (
+				playlist.currentPartInstanceId !== partInstance._id &&
+				playlist.nextPartInstanceId !== partInstance._id
+			) {
+				cache.PartInstances.update(partInstance._id, { $set: { reset: true } })
+			}
+		} else {
+			// part still exists, ensure the segmentId is up to date
+			cache.PartInstances.update(partInstance._id, {
+				$set: {
+					segmentId: part.segmentId,
+					'part.segmentId': part.segmentId,
+				},
+			})
+		}
+	}
+}
+
+/**
  * After Parts have been removed, handle the contents.
  * This will NOT trigger an update of the timeline
  * @param rundownId Id of the Rundown
@@ -465,12 +496,6 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 		startRundownId: rundownId,
 		startPartId: { $in: removedPartIds },
 	})
-
-	const removePartInstanceIds = cache.PartInstances.findFetch({ 'part._id': { $in: removedPartIds } }).map(
-		(p) => p._id
-	)
-	cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
-	cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
 
 	cache.deferAfterSave(() => {
 		waitForPromiseAll([

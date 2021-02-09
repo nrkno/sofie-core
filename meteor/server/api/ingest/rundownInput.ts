@@ -35,7 +35,6 @@ import { logger } from '../../../lib/logging'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import {
 	selectShowStyleVariant,
-	afterRemoveSegments,
 	afterRemoveParts,
 	ServerRundownAPI,
 	removeSegments,
@@ -45,6 +44,7 @@ import {
 	getAllRundownsInPlaylist,
 	sortDefaultRundownInPlaylistOrder,
 	ChangedSegmentsRankInfo,
+	updatePartInstancesBasicProperties,
 } from '../rundown'
 import { loadShowStyleBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
 import {
@@ -996,13 +996,6 @@ function updateRundownFromIngestData(
 			afterRemove(segment) {
 				logger.info('removed segment ' + segment._id)
 			},
-			afterRemoveAll(segments) {
-				afterRemoveSegments(
-					cache,
-					rundownId,
-					_.map(segments, (s) => s._id)
-				)
-			},
 		})
 	)
 
@@ -1504,6 +1497,8 @@ function afterIngestChangedData(
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(cache, rundown._id)
 	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
+
+	updatePartInstancesBasicProperties(cache, playlist, rundown._id)
 
 	updatePartInstanceRanks(cache, playlist, changedSegments)
 
