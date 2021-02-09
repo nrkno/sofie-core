@@ -14,7 +14,7 @@ import { Studio, Studios } from '../../../lib/collections/Studios'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { waitForPromise } from '../../../lib/lib'
-import { initCacheForRundownPlaylist } from '../../DatabaseCaches'
+import { initCacheForRundownPlaylist } from '../../cache/DatabaseCaches'
 import { Segment } from '../../../lib/collections/Segments'
 import { GenericDeviceActions } from './genericDevice/actions'
 

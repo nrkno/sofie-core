@@ -61,8 +61,8 @@ import {
 	CacheForRundownPlaylist,
 	initCacheForRundownPlaylist,
 	initCacheForRundownPlaylistFromRundown,
-} from '../DatabaseCaches'
-import { saveIntoCache } from '../DatabaseCache'
+} from '../cache/DatabaseCaches'
+import { saveIntoCache } from '../cache/DatabaseCache'
 import { removeRundownFromCache, removeRundownPlaylistFromCache, getAllOrderedPartsFromCache } from './playout/lib'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
 import { Settings } from '../../lib/Settings'

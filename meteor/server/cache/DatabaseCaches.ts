@@ -1,11 +1,11 @@
 import * as _ from 'underscore'
-import { Rundown, Rundowns, DBRundown, RundownId } from '../lib/collections/Rundowns'
+import { Rundown, Rundowns, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import {
 	RundownPlaylist,
 	RundownPlaylists,
 	DBRundownPlaylist,
 	RundownPlaylistId,
-} from '../lib/collections/RundownPlaylists'
+} from '../../lib/collections/RundownPlaylists'
 import { Meteor } from 'meteor/meteor'
 import {
 	DbCacheReadCollection,
@@ -13,22 +13,22 @@ import {
 	isDbCacheWriteCollection,
 	DbCacheWriteCollection,
 } from './DatabaseCache'
-import { Segment, Segments, DBSegment } from '../lib/collections/Segments'
-import { Parts, DBPart, Part } from '../lib/collections/Parts'
-import { Piece, Pieces } from '../lib/collections/Pieces'
-import { PartInstances, DBPartInstance, PartInstance } from '../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../lib/collections/PieceInstances'
-import { Studio, Studios, StudioId } from '../lib/collections/Studios'
-import { Timeline, TimelineComplete } from '../lib/collections/Timeline'
-import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
-import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
-import { protectString, waitForPromise, makePromise, waitTime, sumChanges, anythingChanged } from '../lib/lib'
-import { logger } from './logging'
-import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
-import { AdLibAction, AdLibActions } from '../lib/collections/AdLibActions'
-import { isInTestWrite } from './security/lib/securityVerify'
+import { Segment, Segments, DBSegment } from '../../lib/collections/Segments'
+import { Parts, DBPart, Part } from '../../lib/collections/Parts'
+import { Piece, Pieces } from '../../lib/collections/Pieces'
+import { PartInstances, DBPartInstance, PartInstance } from '../../lib/collections/PartInstances'
+import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
+import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
+import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
+import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { protectString, waitForPromise, makePromise, waitTime, sumChanges, anythingChanged } from '../../lib/lib'
+import { logger } from '../logging'
+import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { AdLibAction, AdLibActions } from '../../lib/collections/AdLibActions'
+import { isInTestWrite } from '../security/lib/securityVerify'
 import { ActivationCache, getActivationCache } from './ActivationCache'
-import { profiler } from './api/profiler'
+import { profiler } from '../api/profiler'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 

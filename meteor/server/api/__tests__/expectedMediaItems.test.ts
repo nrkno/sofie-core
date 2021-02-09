@@ -11,7 +11,7 @@ import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { initCacheForRundownPlaylistFromRundown } from '../../DatabaseCaches'
+import { initCacheForRundownPlaylistFromRundown } from '../../cache/DatabaseCaches'
 import { removeRundownFromCache } from '../playout/lib'
 import {
 	defaultRundownPlaylist,

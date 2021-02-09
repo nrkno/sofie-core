@@ -46,7 +46,7 @@ import { SegmentId } from '../../../../lib/collections/Segments'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylists, ABSessionInfo } from '../../../../lib/collections/RundownPlaylists'
-import { initCacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { initCacheForRundownPlaylist } from '../../../cache/DatabaseCaches'
 import { generateFakeBlueprint } from './lib'
 import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
 

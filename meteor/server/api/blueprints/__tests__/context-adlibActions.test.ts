@@ -16,7 +16,7 @@ import {
 	PieceInstanceId,
 	PieceInstances,
 } from '../../../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { CacheForRundownPlaylist, wrapWithCacheForRundownPlaylist } from '../../../cache/DatabaseCaches'
 import {
 	RundownPlaylist,
 	RundownPlaylistActivationId,

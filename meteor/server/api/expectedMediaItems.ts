@@ -26,7 +26,7 @@ import { PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 import { StudioId } from '../../lib/collections/Studios'
-import { CacheForRundownPlaylist } from '../DatabaseCaches'
+import { CacheForRundownPlaylist } from '../cache/DatabaseCaches'
 import { AdLibAction, AdLibActionId, AdLibActions } from '../../lib/collections/AdLibActions'
 import {
 	IBlueprintActionManifestDisplayContent,

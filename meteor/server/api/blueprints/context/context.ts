@@ -62,7 +62,7 @@ import {
 import { unprotectPartInstance, PartInstance } from '../../../../lib/collections/PartInstances'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
-import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../cache/DatabaseCaches'
 import { ReadonlyDeep } from 'type-fest'
 import { Random } from 'meteor/random'
 import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'

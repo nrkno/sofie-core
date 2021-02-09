@@ -70,7 +70,7 @@ import {
 	initCacheForStudio,
 	initCacheForNoRundownPlaylist,
 	CacheForStudio,
-} from '../../DatabaseCaches'
+} from '../../cache/DatabaseCaches'
 import { takeNextPartInner, afterTake, takeNextPartInnerSync, updatePartInstanceOnTake } from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'

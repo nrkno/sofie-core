@@ -1,6 +1,6 @@
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
-import { initCacheForStudioBase, initCacheForStudio } from '../../DatabaseCaches'
+import { initCacheForStudioBase, initCacheForStudio } from '../../cache/DatabaseCaches'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { getRandomId, waitTime, protectString } from '../../../lib/lib'
 import { RundownPlaylistId, RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'

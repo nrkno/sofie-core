@@ -15,7 +15,7 @@ import {
 } from '../../../lib/lib'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { Meteor } from 'meteor/meteor'
-import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
 import {
 	setNextPart as libsetNextPart,
 	getSelectedPartInstancesFromCache,

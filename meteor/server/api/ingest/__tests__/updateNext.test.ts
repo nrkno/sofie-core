@@ -11,7 +11,10 @@ import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances'
 import { removeRundownFromCache } from '../../playout/lib'
-import { wrapWithCacheForRundownPlaylistFromRundown, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
+import {
+	wrapWithCacheForRundownPlaylistFromRundown,
+	wrapWithCacheForRundownPlaylist,
+} from '../../../cache/DatabaseCaches'
 import { Studios } from '../../../../lib/collections/Studios'
 jest.mock('../../playout/playout')
 

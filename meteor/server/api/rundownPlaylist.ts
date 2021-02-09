@@ -3,7 +3,7 @@ import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/Rundo
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { removeRundownPlaylistFromCache } from './playout/lib'
 import { waitForPromise, getHash, protectString } from '../../lib/lib'
-import { initCacheForRundownPlaylist } from '../DatabaseCaches'
+import { initCacheForRundownPlaylist } from '../cache/DatabaseCaches'
 import * as _ from 'underscore'
 
 export function removeEmptyPlaylists(studioId: StudioId) {

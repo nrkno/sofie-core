@@ -16,7 +16,7 @@ import { Piece, Pieces } from '../../../../lib/collections/Pieces'
 import { clone, asyncCollectionFindFetch } from '../../../../lib/lib'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { getRundownIDsFromCache } from '../lib'
-import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { CacheForRundownPlaylist } from '../../../cache/DatabaseCaches'
 import { profiler } from '../../profiler'
 import {
 	hasPieceInstanceDefinitelyEnded,

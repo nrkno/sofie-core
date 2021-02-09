@@ -16,7 +16,7 @@ import { updateRundownsInPlaylist } from '../ingest/rundownInput'
 import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import { Part, PartId, Parts } from '../../../lib/collections/Parts'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
-import { wrapWithCacheForRundownPlaylist } from '../../DatabaseCaches'
+import { wrapWithCacheForRundownPlaylist } from '../../cache/DatabaseCaches'
 
 require('../rundown') // include in order to create the Meteor methods needed
 

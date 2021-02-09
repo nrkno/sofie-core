@@ -1,15 +1,18 @@
-import { RundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
-import { asyncCollectionFindOne, ProtectedString, asyncCollectionFindFetch } from '../lib/lib'
+import { RundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { asyncCollectionFindOne, ProtectedString, asyncCollectionFindFetch } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { Studio, Studios, StudioId } from '../lib/collections/Studios'
-import { ShowStyleBase, ShowStyleBases } from '../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
-import { Rundown } from '../lib/collections/Rundowns'
-import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
-import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
-import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'
-import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
+import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
+import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { Rundown } from '../../lib/collections/Rundowns'
+import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
+import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import {
+	RundownBaselineAdLibAction,
+	RundownBaselineAdLibActions,
+} from '../../lib/collections/RundownBaselineAdLibActions'
+import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 
 export function getActivationCache(studioId: StudioId, playlistId: RundownPlaylistId): ActivationCache {
 	let activationCache = activationCaches.get(studioId)

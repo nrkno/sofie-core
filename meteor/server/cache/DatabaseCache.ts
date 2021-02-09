@@ -16,11 +16,11 @@ import {
 	asyncCollectionBulkWrite,
 	PreparedChanges,
 	Changes,
-} from '../lib/lib'
+} from '../../lib/lib'
 import * as _ from 'underscore'
-import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
+import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../../lib/typings/meteor'
 import { BulkWriteOperation } from 'mongodb'
-import { profiler } from './api/profiler'
+import { profiler } from '../api/profiler'
 
 export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)

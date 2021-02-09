@@ -3,7 +3,7 @@ import { Part } from '../../../../lib/collections/Parts'
 import { PieceInstance, PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { CacheForRundownPlaylist } from '../../../cache/DatabaseCaches'
 import { profiler } from '../../profiler'
 import { getAllOrderedPartsFromCache, getSelectedPartInstancesFromCache, selectNextPart } from '../lib'
 

@@ -15,7 +15,10 @@ import { unprotectString, protectString } from '../../../../lib/lib'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { getSegmentId } from '../lib'
 
-import { wrapWithCacheForRundownPlaylistFromRundown, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
+import {
+	wrapWithCacheForRundownPlaylistFromRundown,
+	wrapWithCacheForRundownPlaylist,
+} from '../../../cache/DatabaseCaches'
 import { removeRundownPlaylistFromCache } from '../../playout/lib'
 import { MethodContext } from '../../../../lib/api/methods'
 

@@ -15,7 +15,7 @@ import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { protectString, waitForPromise } from '../../../../lib/lib'
 import { MethodContext } from '../../../../lib/api/methods'
-import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylistFromStudio } from '../../../DatabaseCaches'
+import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylistFromStudio } from '../../../cache/DatabaseCaches'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 
 const DEFAULT_CONTEXT: MethodContext = {

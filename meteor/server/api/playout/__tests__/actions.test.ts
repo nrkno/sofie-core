@@ -23,7 +23,7 @@ import {
 	wrapWithCacheForRundownPlaylistFromRundown,
 	wrapWithCacheForRundownPlaylist,
 	wrapWithCacheForRundownPlaylistFromStudio,
-} from '../../../DatabaseCaches'
+} from '../../../cache/DatabaseCaches'
 
 // const Timeline = mockupCollection(OrgTimeline)
 

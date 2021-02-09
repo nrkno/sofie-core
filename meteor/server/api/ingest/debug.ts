@@ -7,7 +7,7 @@ import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '../../../lib/collections/Studios'
 
 import { Settings } from '../../../lib/Settings'
-import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
+import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist } from '../../cache/DatabaseCaches'
 import { waitForPromise } from '../../../lib/lib'
 import { SegmentId, Segments } from '../../../lib/collections/Segments'
 import { loadCachedIngestSegment } from './ingestCache'

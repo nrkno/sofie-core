@@ -1,6 +1,6 @@
 import { clone } from 'underscore'
 import { ContextInfo, RundownContext } from './context'
-import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../cache/DatabaseCaches'
 import {
 	IBlueprintPiece,
 	IBlueprintPieceInstance,
@@ -27,7 +27,7 @@ import {
 	normalizeArrayToMap,
 } from '../../../../lib/lib'
 import { Rundown } from '../../../../lib/collections/Rundowns'
-import { DbCacheWriteCollection } from '../../../DatabaseCache'
+import { DbCacheWriteCollection } from '../../../cache/DatabaseCache'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { Meteor } from 'meteor/meteor'
 import { INoteBase, NoteType } from '../../../../lib/api/notes'

@@ -6,7 +6,7 @@ import {
 	getSelectedPartInstancesFromCache,
 	getAllOrderedPartsFromCache,
 } from '../playout/lib'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
 import { profiler } from '../profiler'
 
 export namespace UpdateNext {

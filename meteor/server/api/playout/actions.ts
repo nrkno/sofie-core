@@ -20,7 +20,7 @@ import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
 import { getActiveRundownPlaylistsInStudio } from './studio'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
 import { profiler } from '../profiler'
 
 export function activateRundownPlaylist(
