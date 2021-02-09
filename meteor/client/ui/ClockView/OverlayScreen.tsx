@@ -14,7 +14,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
-import { getPresenterScreenReactive } from './PresenterScreen'
+import { getPresenterScreenReactive, PresenterScreenBase } from './PresenterScreen'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -43,71 +43,8 @@ export const OverlayScreen = withTranslation()(
 		getPresenterScreenReactive
 	)(
 		withTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation, RundownOverviewState>()(
-			class OverlayScreen extends MeteorReactComponent<
-				WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation>,
-				RundownOverviewState
-			> {
-				componentDidMount() {
-					document.body.classList.add('transparent')
-					this.autorun(() => {
-						let playlist = RundownPlaylists.findOne(this.props.playlistId, {
-							fields: {
-								_id: 1,
-							},
-						}) as Pick<RundownPlaylist, '_id' | 'getRundownIDs'> | undefined
-						if (playlist) {
-							this.subscribe(PubSub.rundowns, {
-								playlistId: playlist._id,
-							})
-
-							this.autorun(() => {
-								const rundownIds = playlist!.getRundownIDs()
-
-								this.subscribe(PubSub.segments, {
-									rundownId: { $in: rundownIds },
-								})
-								this.subscribe(PubSub.parts, {
-									rundownId: { $in: rundownIds },
-								})
-								this.subscribe(PubSub.partInstances, {
-									rundownId: { $in: rundownIds },
-									reset: { $ne: true },
-								})
-
-								this.autorun(() => {
-									let playlist = RundownPlaylists.findOne(this.props.playlistId, {
-										fields: {
-											_id: 1,
-											currentPartInstanceId: 1,
-											nextPartInstanceId: 1,
-											previousPartInstanceId: 1,
-										},
-									}) as
-										| Pick<
-												RundownPlaylist,
-												| '_id'
-												| 'currentPartInstanceId'
-												| 'nextPartInstanceId'
-												| 'previousPartInstanceId'
-												| 'getSelectedPartInstances'
-										  >
-										| undefined
-									const { nextPartInstance, currentPartInstance } = playlist!.getSelectedPartInstances()
-									this.subscribe(PubSub.pieceInstances, {
-										partInstanceId: {
-											$in: [currentPartInstance?._id, nextPartInstance?._id],
-										},
-									})
-								})
-							})
-						}
-					})
-				}
-
-				componentWillUnmount() {
-					super.componentWillUnmount()
-					document.body.classList.remove('transparent')
-				}
+			class OverlayScreen extends PresenterScreenBase {
+				protected bodyClassList: string[] = ['dark', 'xdark']
 
 				render() {
 					const { playlist, segments, showStyleBaseId, t } = this.props

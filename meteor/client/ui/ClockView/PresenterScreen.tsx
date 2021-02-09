@@ -110,6 +110,201 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps) => {
 	}
 }
 
+export class PresenterScreenBase extends MeteorReactComponent<
+	WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation>,
+	RundownOverviewState
+> {
+	protected bodyClassList: string[] = ['dark', 'xdark']
+
+	componentDidMount() {
+		document.body.classList.add(...this.bodyClassList)
+		this.subscribeToData()
+	}
+
+	protected subscribeToData() {
+		this.autorun(() => {
+			let playlist = RundownPlaylists.findOne(this.props.playlistId, {
+				fields: {
+					_id: 1,
+				},
+			}) as Pick<RundownPlaylist, '_id' | 'getRundownIDs'> | undefined
+			if (playlist) {
+				this.subscribe(PubSub.rundowns, {
+					playlistId: playlist._id,
+				})
+
+				this.autorun(() => {
+					const rundownIds = playlist!.getRundownIDs()
+
+					this.subscribe(PubSub.segments, {
+						rundownId: { $in: rundownIds },
+					})
+					this.subscribe(PubSub.parts, {
+						rundownId: { $in: rundownIds },
+					})
+					this.subscribe(PubSub.partInstances, {
+						rundownId: { $in: rundownIds },
+						reset: { $ne: true },
+					})
+
+					this.autorun(() => {
+						let playlist = RundownPlaylists.findOne(this.props.playlistId, {
+							fields: {
+								_id: 1,
+								currentPartInstanceId: 1,
+								nextPartInstanceId: 1,
+								previousPartInstanceId: 1,
+							},
+						}) as
+							| Pick<
+									RundownPlaylist,
+									| '_id'
+									| 'currentPartInstanceId'
+									| 'nextPartInstanceId'
+									| 'previousPartInstanceId'
+									| 'getSelectedPartInstances'
+							  >
+							| undefined
+						const { nextPartInstance, currentPartInstance } = playlist!.getSelectedPartInstances()
+						this.subscribe(PubSub.pieceInstances, {
+							partInstanceId: {
+								$in: [currentPartInstance?._id, nextPartInstance?._id],
+							},
+						})
+					})
+				})
+			}
+		})
+	}
+
+	componentWillUnmount() {
+		super.componentWillUnmount()
+		document.body.classList.remove(...this.bodyClassList)
+	}
+
+	render() {
+		const { playlist, segments, showStyleBaseId } = this.props
+
+		if (playlist && this.props.playlistId && this.props.segments && showStyleBaseId) {
+			let currentPart: PartUi | undefined
+			let currentSegment: SegmentUi | undefined
+			for (const segment of segments) {
+				if (segment.items) {
+					for (const item of segment.items) {
+						if (item.instance._id === playlist.currentPartInstanceId) {
+							currentSegment = segment
+							currentPart = item
+						}
+					}
+				}
+			}
+			let currentSegmentDuration = 0
+			if (currentPart) {
+				currentSegmentDuration += currentPart.renderedDuration || currentPart.instance.part.expectedDuration || 0
+				currentSegmentDuration += -1 * (currentPart.instance.timings?.duration || 0)
+				if (!currentPart.instance.timings?.duration && currentPart.instance.timings?.startedPlayback) {
+					currentSegmentDuration += -1 * (getCurrentTime() - currentPart.instance.timings.startedPlayback)
+				}
+			}
+
+			let nextPart: PartUi | undefined
+			let nextSegment: SegmentUi | undefined
+			for (const segment of segments) {
+				if (segment.items) {
+					for (const item of segment.items) {
+						if (item.instance._id === playlist.nextPartInstanceId) {
+							nextSegment = segment
+							nextPart = item
+						}
+					}
+				}
+			}
+
+			const overUnderClock = playlist.expectedDuration
+				? (this.props.timingDurations.asPlayedRundownDuration || 0) - playlist.expectedDuration
+				: (this.props.timingDurations.asPlayedRundownDuration || 0) -
+				  (this.props.timingDurations.totalRundownDuration || 0)
+
+			return (
+				<div className="clocks-full-screen">
+					<div className="clocks-half clocks-top">
+						{currentPart ? (
+							<React.Fragment>
+								<div className="clocks-part-icon clocks-current-segment-icon">
+									<PieceIconContainer
+										partInstanceId={currentPart.instance._id}
+										showStyleBaseId={showStyleBaseId}
+										rundownIds={this.props.rundownIds}
+									/>
+								</div>
+								<div className="clocks-part-title clocks-current-segment-title">{currentSegment!.name}</div>
+								<div className="clocks-part-title clocks-part-title clocks-current-segment-title">
+									<PieceNameContainer
+										partName={currentPart.instance.part.title}
+										partInstanceId={currentPart.instance._id}
+										showStyleBaseId={showStyleBaseId}
+										rundownIds={this.props.rundownIds}
+									/>
+								</div>
+								<div className="clocks-current-segment-countdown clocks-segment-countdown">
+									<Timediff time={currentSegmentDuration} />
+								</div>
+							</React.Fragment>
+						) : playlist.expectedStart ? (
+							<div className="clocks-rundown-countdown clocks-segment-countdown">
+								<Timediff time={playlist.expectedStart - getCurrentTime()} />
+							</div>
+						) : null}
+					</div>
+					<div className="clocks-half clocks-bottom clocks-top-bar">
+						<div className="clocks-part-icon">
+							{nextPart ? (
+								<PieceIconContainer
+									partInstanceId={nextPart.instance._id}
+									showStyleBaseId={showStyleBaseId}
+									rundownIds={this.props.rundownIds}
+								/>
+							) : null}
+						</div>
+						<div className="clocks-bottom-top">
+							<div className="clocks-part-title">
+								{currentPart && currentPart.instance.part.autoNext ? (
+									<div style={{ display: 'inline-block', height: '18vh' }}>
+										<img style={{ height: '12vh', paddingTop: '2vh' }} src="/icons/auto-presenter-screen.svg" />
+									</div>
+								) : null}
+								{nextSegment && nextSegment.name ? nextSegment.name.split(';')[0] : '_'}
+							</div>
+							<div className="clocks-part-title clocks-part-title">
+								{nextPart && nextPart.instance.part.title ? (
+									<PieceNameContainer
+										partName={nextPart.instance.part.title}
+										partInstanceId={nextPart.instance._id}
+										showStyleBaseId={showStyleBaseId}
+										rundownIds={this.props.rundownIds}
+									/>
+								) : (
+									'_'
+								)}
+							</div>
+						</div>
+						<div className="clocks-rundown-bottom-bar">
+							<div className="clocks-rundown-title">{playlist ? playlist.name : 'UNKNOWN'}</div>
+							<div
+								className={ClassNames('clocks-rundown-total', {
+									over: Math.floor(overUnderClock / 1000) >= 0,
+								})}>
+								{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true)}
+							</div>
+						</div>
+					</div>
+				</div>
+			)
+		}
+		return null
+	}
+}
+
 /**
  * This component renders a Countdown screen for a given playlist
  */
@@ -118,203 +313,7 @@ export const PresenterScreen = withTranslation()(
 		getPresenterScreenReactive
 	)(
 		withTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation, RundownOverviewState>()(
-			class PresenterScreen extends MeteorReactComponent<
-				WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation>,
-				RundownOverviewState
-			> {
-				componentDidMount() {
-					document.body.classList.add('dark', 'xdark')
-					this.autorun(() => {
-						let playlist = RundownPlaylists.findOne(this.props.playlistId, {
-							fields: {
-								_id: 1,
-							},
-						}) as Pick<RundownPlaylist, '_id' | 'getRundownIDs'> | undefined
-						if (playlist) {
-							this.subscribe(PubSub.rundowns, {
-								playlistId: playlist._id,
-							})
-
-							this.autorun(() => {
-								const rundownIds = playlist!.getRundownIDs()
-
-								this.subscribe(PubSub.segments, {
-									rundownId: { $in: rundownIds },
-								})
-								this.subscribe(PubSub.parts, {
-									rundownId: { $in: rundownIds },
-								})
-								this.subscribe(PubSub.partInstances, {
-									rundownId: { $in: rundownIds },
-									reset: { $ne: true },
-								})
-
-								this.autorun(() => {
-									let playlist = RundownPlaylists.findOne(this.props.playlistId, {
-										fields: {
-											_id: 1,
-											currentPartInstanceId: 1,
-											nextPartInstanceId: 1,
-											previousPartInstanceId: 1,
-										},
-									}) as
-										| Pick<
-												RundownPlaylist,
-												| '_id'
-												| 'currentPartInstanceId'
-												| 'nextPartInstanceId'
-												| 'previousPartInstanceId'
-												| 'getSelectedPartInstances'
-										  >
-										| undefined
-									const { nextPartInstance, currentPartInstance } = playlist!.getSelectedPartInstances()
-									this.subscribe(PubSub.pieceInstances, {
-										partInstanceId: {
-											$in: [currentPartInstance?._id, nextPartInstance?._id],
-										},
-									})
-								})
-							})
-						}
-					})
-				}
-
-				componentWillUnmount() {
-					super.componentWillUnmount()
-					document.body.classList.remove('dark', 'xdark')
-				}
-
-				render() {
-					const { playlist, segments, showStyleBaseId } = this.props
-
-					if (playlist && this.props.playlistId && this.props.segments && showStyleBaseId) {
-						let currentPart: PartUi | undefined
-						let currentSegment: SegmentUi | undefined
-						for (const segment of segments) {
-							if (segment.items) {
-								for (const item of segment.items) {
-									if (item.instance._id === playlist.currentPartInstanceId) {
-										currentSegment = segment
-										currentPart = item
-									}
-								}
-							}
-						}
-						let currentSegmentDuration = 0
-						if (currentPart) {
-							currentSegmentDuration += currentPart.renderedDuration || currentPart.instance.part.expectedDuration || 0
-							currentSegmentDuration += -1 * (currentPart.instance.timings?.duration || 0)
-							if (!currentPart.instance.timings?.duration && currentPart.instance.timings?.startedPlayback) {
-								currentSegmentDuration += -1 * (getCurrentTime() - currentPart.instance.timings.startedPlayback)
-							}
-						}
-
-						let nextPart: PartUi | undefined
-						let nextSegment: SegmentUi | undefined
-						for (const segment of segments) {
-							if (segment.items) {
-								for (const item of segment.items) {
-									if (item.instance._id === playlist.nextPartInstanceId) {
-										nextSegment = segment
-										nextPart = item
-									}
-								}
-							}
-						}
-
-						const overUnderClock = playlist.expectedDuration
-							? (this.props.timingDurations.asPlayedRundownDuration || 0) - playlist.expectedDuration
-							: (this.props.timingDurations.asPlayedRundownDuration || 0) -
-							  (this.props.timingDurations.totalRundownDuration || 0)
-
-						return (
-							<div className="clocks-full-screen">
-								<div className="clocks-half clocks-top">
-									{currentPart ? (
-										<React.Fragment>
-											<div className="clocks-part-icon clocks-current-segment-icon">
-												<PieceIconContainer
-													partInstanceId={currentPart.instance._id}
-													showStyleBaseId={showStyleBaseId}
-													rundownIds={this.props.rundownIds}
-												/>
-											</div>
-											<div className="clocks-part-title clocks-current-segment-title">{currentSegment!.name}</div>
-											<div className="clocks-part-title clocks-part-title clocks-current-segment-title">
-												<PieceNameContainer
-													partName={currentPart.instance.part.title}
-													partInstanceId={currentPart.instance._id}
-													showStyleBaseId={showStyleBaseId}
-													rundownIds={this.props.rundownIds}
-												/>
-											</div>
-											<div className="clocks-current-segment-countdown clocks-segment-countdown">
-												<Timediff time={currentSegmentDuration} />
-											</div>
-										</React.Fragment>
-									) : playlist.expectedStart ? (
-										<div className="clocks-rundown-countdown clocks-segment-countdown">
-											<Timediff time={playlist.expectedStart - getCurrentTime()} />
-										</div>
-									) : null}
-								</div>
-								<div className="clocks-half clocks-bottom clocks-top-bar">
-									<div className="clocks-part-icon">
-										{nextPart ? (
-											<PieceIconContainer
-												partInstanceId={nextPart.instance._id}
-												showStyleBaseId={showStyleBaseId}
-												rundownIds={this.props.rundownIds}
-											/>
-										) : null}
-									</div>
-									<div className="clocks-bottom-top">
-										<div className="clocks-part-title">
-											{currentPart && currentPart.instance.part.autoNext ? (
-												<div style={{ display: 'inline-block', height: '18vh' }}>
-													<img style={{ height: '12vh', paddingTop: '2vh' }} src="/icons/auto-presenter-screen.svg" />
-												</div>
-											) : null}
-											{nextSegment && nextSegment.name ? nextSegment.name.split(';')[0] : '_'}
-										</div>
-										<div className="clocks-part-title clocks-part-title">
-											{nextPart && nextPart.instance.part.title ? (
-												<PieceNameContainer
-													partName={nextPart.instance.part.title}
-													partInstanceId={nextPart.instance._id}
-													showStyleBaseId={showStyleBaseId}
-													rundownIds={this.props.rundownIds}
-												/>
-											) : (
-												'_'
-											)}
-										</div>
-									</div>
-									<div className="clocks-rundown-bottom-bar">
-										<div className="clocks-rundown-title">{playlist ? playlist.name : 'UNKNOWN'}</div>
-										<div
-											className={ClassNames('clocks-rundown-total', {
-												over: Math.floor(overUnderClock / 1000) >= 0,
-											})}>
-											{RundownUtils.formatDiffToTimecode(
-												overUnderClock,
-												true,
-												false,
-												true,
-												true,
-												true,
-												undefined,
-												true
-											)}
-										</div>
-									</div>
-								</div>
-							</div>
-						)
-					}
-					return null
-				}
-			}
+			PresenterScreenBase
 		)
 	)
 )

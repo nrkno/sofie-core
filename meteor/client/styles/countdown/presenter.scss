@@ -50,23 +50,17 @@
 		white-space: nowrap;
 		overflow: hidden;
 
-		font-weight: normal;
 		font-style: normal;
 		font-stretch: normal;
 		letter-spacing: normal;
 
-		padding-top: 2vh;
+		margin-top: -2.778vh;
+		font-weight: 300 !important;
+		padding-top: 1vh;
 	}
 
 	.clocks-part-title.clocks-current-segment-title {
 		font-weight: 500;
-	}
-
-	.clocks-part-title {
-		margin-top: -2.778vh;
-		font-weight: 300 !important;
-		padding-top: 1vh;
-		//margin-left: 35px;
 	}
 
 	.clocks-current-segment-title {
