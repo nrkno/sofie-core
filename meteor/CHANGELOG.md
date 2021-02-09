@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.17.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.17.0...v1.17.1) (2021-02-09)
+
+
+### Bug Fixes
+
+* use correct version of timeline-state-resolver-types (blueprints integration dependency) ([e0fe69b](https://github.com/nrkno/tv-automation-server-core/commit/e0fe69b1ebf9970e5647332d63a618147cdf7132))
+
 ## [1.17.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.2...v1.17.0) (2021-02-08)
 
 
