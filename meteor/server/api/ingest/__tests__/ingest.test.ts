@@ -11,14 +11,10 @@ import { ServerRundownAPI } from '../../rundown'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownInput } from '../rundownInput'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { unprotectString, protectString } from '../../../../lib/lib'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { getSegmentId } from '../lib'
 
-import {
-	wrapWithCacheForRundownPlaylistFromRundown,
-	wrapWithCacheForRundownPlaylist,
-} from '../../../cache/DatabaseCaches'
+import { wrapWithCacheForRundownPlaylist } from '../../../cache/DatabaseCaches'
 import { removeRundownPlaylistFromCache } from '../../playout/lib'
 import { MethodContext } from '../../../../lib/api/methods'
 

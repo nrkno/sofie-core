@@ -97,14 +97,14 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	if (!takeRundown)
 		throw new Meteor.Error(500, `takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
 
-	const { segments, parts: partsInOrder } = getSegmentsAndPartsFromCache(cache, cache.Playlist.doc)
+	const { parts: partsInOrder } = getSegmentsAndPartsFromCache(cache, cache.Playlist.doc)
 	// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
 	const nextPart = selectNextPart(cache.Playlist.doc, takePartInstance, partsInOrder)
 
 	// beforeTake(rundown, previousPart || null, takePart)
 
 	const showStyle = await pShowStyle
-	const { blueprint, blueprintId } = await pBlueprint
+	const { blueprint } = await pBlueprint
 	if (blueprint.onPreTake) {
 		const span = profiler.startSpan('blueprint.onPreTake')
 		try {

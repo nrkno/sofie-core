@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { DBObj, compareObjs, PreparedChanges, Changes, ChangedIds } from '../../lib/lib'
+import { DBObj, compareObjs, PreparedChanges, ChangedIds } from '../../lib/lib'
 import * as _ from 'underscore'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { profiler } from '../api/profiler'
@@ -137,9 +137,9 @@ export function savePreparedChangesIntoCache<DocClass extends DBInterface, DBInt
 	}
 	const options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
 
-	const newObjIds: { [identifier: string]: true } = {}
-	const checkInsertId = (id) => {
-		if (newObjIds[id]) {
+	const newObjIds = new Set<DBInterface['_id']>()
+	const checkInsertId = (id: DBInterface['_id']) => {
+		if (newObjIds.has(id)) {
 			throw new Meteor.Error(
 				500,
 				`savePreparedChangesIntoCache into collection "${
@@ -147,7 +147,7 @@ export function savePreparedChangesIntoCache<DocClass extends DBInterface, DBInt
 				}": Duplicate identifier "${id}"`
 			)
 		}
-		newObjIds[id] = true
+		newObjIds.add(id)
 	}
 
 	_.each(preparedChanges.changed || [], (oUpdate) => {

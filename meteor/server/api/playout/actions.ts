@@ -131,10 +131,10 @@ export function deactivateRundownPlaylistInner(cache: CacheForPlayout): Rundown 
 		cache.deferAfterSave(() => {
 			// This is low-prio, deferring
 			Meteor.setTimeout(() => {
-				const rundown = Rundowns.findOne(currentPartInstance.rundownId)
+				const currentRundown = Rundowns.findOne(currentPartInstance.rundownId)
 
-				if (rundown) {
-					IngestActions.notifyCurrentPlayingPart(rundown, null)
+				if (currentRundown) {
+					IngestActions.notifyCurrentPlayingPart(currentRundown, null)
 				} else {
 					logger.error(
 						`Could not find owner Rundown "${currentPartInstance.rundownId}" of PartInstance "${currentPartInstance._id}"`

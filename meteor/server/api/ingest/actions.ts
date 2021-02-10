@@ -159,7 +159,7 @@ export namespace IngestActions {
 						RundownSyncFunctionPriority.USER_INGEST,
 						'handleUpdatedRundown',
 						() => {
-							handleUpdatedRundownInner(studio, rundown._id, ingest, rundown.dataSource, undefined)
+							handleUpdatedRundownInner(studio, rundown._id, ingest, rundown.dataSource)
 						}
 					)
 				})

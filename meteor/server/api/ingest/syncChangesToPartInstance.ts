@@ -30,25 +30,25 @@ export function syncChangesToPartInstances(
 ) {
 	if (cache.Playlist.doc.activationId) {
 		if (blueprint.syncIngestUpdateToPartInstance) {
-			const { previousPartInstance, currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
-				cache
-			)
-			const instances: {
+			const playlistPartInstances = getSelectedPartInstancesFromCache(cache)
+			const instances: Array<{
 				existingPartInstance: PartInstance
 				previousPartInstance: PartInstance | undefined
 				playStatus: 'current' | 'next'
-			}[] = []
-			if (currentPartInstance)
+			}> = []
+			if (playlistPartInstances.currentPartInstance)
 				instances.push({
-					existingPartInstance: currentPartInstance,
-					previousPartInstance: previousPartInstance,
+					existingPartInstance: playlistPartInstances.currentPartInstance,
+					previousPartInstance: playlistPartInstances.previousPartInstance,
 					playStatus: 'current',
 				})
-			if (nextPartInstance)
+			if (playlistPartInstances.nextPartInstance)
 				instances.push({
-					existingPartInstance: nextPartInstance,
-					previousPartInstance: currentPartInstance,
-					playStatus: isTooCloseToAutonext(currentPartInstance, false) ? 'current' : 'next',
+					existingPartInstance: playlistPartInstances.nextPartInstance,
+					previousPartInstance: playlistPartInstances.currentPartInstance,
+					playStatus: isTooCloseToAutonext(playlistPartInstances.currentPartInstance, false)
+						? 'current'
+						: 'next',
 				})
 
 			for (const { existingPartInstance, previousPartInstance, playStatus } of instances) {

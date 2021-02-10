@@ -13,7 +13,7 @@ import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { MappingsExt, Studios } from '../../../../../lib/collections/Studios'
 import { PartInstances, wrapPartToTemporaryInstance } from '../../../../../lib/collections/PartInstances'
 import _ from 'underscore'
-import { testInFiber, testInFiberOnly } from '../../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { getOrderedPartsAfterPlayhead } from '../util'
 import { rundownPlaylistPlayoutLockFunction } from '../../syncFunction'
 

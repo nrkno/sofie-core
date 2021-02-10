@@ -122,14 +122,14 @@ describe('Lookahead', () => {
 	})
 
 	function expectLookaheadForLayerMock(
-		playlistId: RundownPlaylistId,
+		playlistId0: RundownPlaylistId,
 		partInstances: PartInstanceAndPieceInstances[],
 		previous: PartInstanceAndPieceInstances | undefined,
 		orderedPartsFollowingPlayhead: Part[],
 		piecesByPart: Map<PartId, Piece[]>,
 		extraParts: number = 0
 	) {
-		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
+		const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
 		expect(playlist).toBeTruthy()
 
 		const partCount = orderedPartsFollowingPlayhead.length + extraParts

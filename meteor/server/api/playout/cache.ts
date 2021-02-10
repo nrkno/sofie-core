@@ -179,7 +179,8 @@ export class ProxyCacheForPlayout extends CacheForPlayout {
 
 		newCache.origCache = origCache
 
-		newCache.Playlist._fromDoc(tmpPlaylist), (mutableCache.Rundowns = origCache.Rundowns)
+		newCache.Playlist._fromDoc(tmpPlaylist)
+		mutableCache.Rundowns = origCache.Rundowns
 
 		const rundowns = newCache.Rundowns.findFetch()
 		await newCache.activationCache.initialize(tmpPlaylist, rundowns)

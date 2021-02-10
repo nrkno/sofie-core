@@ -1,6 +1,6 @@
 import _ from 'underscore'
 import '../../../../__mocks__/_extendJest'
-import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { fixSnapshot } from '../../../../__mocks__/helpers/snapshot'
 import { mockupCollection, resetMockupCollection } from '../../../../__mocks__/helpers/lib'
 import {

@@ -1,7 +1,6 @@
 import { RundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { asyncCollectionFindOne, ProtectedString, asyncCollectionFindFetch, clone } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import {

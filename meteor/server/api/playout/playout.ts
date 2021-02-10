@@ -111,8 +111,6 @@ export namespace ServerPlayoutAPI {
 				}
 			},
 			async (cache) => {
-				const playlist = cache.Playlist.doc
-
 				libResetRundownPlaylist(cache)
 				await prepareStudioForBroadcast(cache, true)
 
@@ -217,11 +215,11 @@ export namespace ServerPlayoutAPI {
 					)
 					if (errors.length > 0) {
 						// Ok, something went wrong, but check if the active rundowns where deactivated?
-						const anyOtherActivePlaylists = await getActiveRundownPlaylistsInStudioFromDb(
+						const anyOtherActivePlaylistsStill = await getActiveRundownPlaylistsInStudioFromDb(
 							playlist.studioId,
 							playlist._id
 						)
-						if (anyOtherActivePlaylists.length) {
+						if (anyOtherActivePlaylistsStill.length) {
 							// No they weren't, we can't continue..
 							throw errors.join(',')
 						} else {
