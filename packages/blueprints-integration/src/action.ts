@@ -1,3 +1,4 @@
+import { ExpectedPackage, ListenToPackageUpdate } from './package'
 import { ConfigManifestEntry } from './config'
 import { SomeContent } from './content'
 
@@ -75,4 +76,10 @@ export interface IBlueprintActionManifest {
 
 	/** Optional ways of executing this action. The default option is computed from the display properties */
 	triggerModes?: IBlueprintActionTriggerMode[]
+
+	/**
+	 * An array of which Packages this Action uses. This is used by a Package Manager to ensure that the Package is in place for playout.
+	 */
+	expectedPackages?: ExpectedPackage.Any[]
+	listenToPackageInfoUpdates?: ListenToPackageUpdate[]
 }
