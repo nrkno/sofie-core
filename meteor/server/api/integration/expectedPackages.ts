@@ -11,7 +11,7 @@ import {
 	ExpectedPackageWorkStatuses,
 	ExpectedPackageWorkStatusId,
 } from '../../../lib/collections/ExpectedPackageWorkStatuses'
-import { getCurrentTime, literal, protectStringObject } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, protectStringObject } from '../../../lib/lib'
 import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatuses,
@@ -34,8 +34,9 @@ export namespace PackageManagerIntegration {
 		workStatusId: ExpectedPackageWorkStatusId,
 		workStatus0: ExpectedPackageStatusAPI.WorkStatus
 	): void {
+		type FromPackage = Omit<ExpectedPackageStatusAPI.WorkBaseInfoFromPackage, 'id'> & { id: ExpectedPackageId }
 		const workStatus = (workStatus0 as any) as Omit<ExpectedPackageStatusAPI.WorkStatus, 'fromPackages'> & {
-			fromPackages: { id: ExpectedPackageId; contentVersionHash: string }[]
+			fromPackages: FromPackage[]
 		}
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
@@ -71,11 +72,12 @@ export namespace PackageManagerIntegration {
 		workStatusId: ExpectedPackageWorkStatusId,
 		workStatus0: Partial<ExpectedPackageStatusAPI.WorkStatus>
 	): boolean {
+		type FromPackage = Omit<ExpectedPackageStatusAPI.WorkBaseInfoFromPackage, 'id'> & { id: ExpectedPackageId }
 		const workStatus = (workStatus0 as any) as Omit<
 			Partial<ExpectedPackageStatusAPI.WorkStatus>,
 			'fromPackages'
 		> & {
-			fromPackages?: { id: ExpectedPackageId; contentVersionHash: string }[]
+			fromPackages?: FromPackage[]
 		}
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)

@@ -238,15 +238,7 @@ export namespace ExpectedPackageStatusAPI {
 	export interface WorkStatus extends WorkBaseInfo, WorkStatusInfo {}
 	export interface WorkBaseInfo {
 		/** Which packages the WorkStatus belongs to */
-		fromPackages: {
-			/** Reference to the id of the Package */
-			id: string
-			/** Reference to the contentVersionHash of the ExpectedPackage, used to reference the expected content+version of the Package */
-			expectedContentVersionHash: string
-
-			/** Referring to the actual contentVersionHash of the Package, used to reference the exact content+version of the Package */
-			actualContentVersionHash: string
-		}[]
+		fromPackages: WorkBaseInfoFromPackage[]
 
 		/** Short Display label */
 		label: string
@@ -256,6 +248,15 @@ export namespace ExpectedPackageStatusAPI {
 		displayRank?: number
 		/** If the expectation is required to be fullfilled for playout */
 		requiredForPlayout?: boolean
+	}
+	export interface WorkBaseInfoFromPackage {
+		/** Reference to the id of the Package */
+		id: string
+		/** Reference to the contentVersionHash of the ExpectedPackage, used to reference the expected content+version of the Package */
+		expectedContentVersionHash: string
+
+		/** Referring to the actual contentVersionHash of the Package, used to reference the exact content+version of the Package */
+		actualContentVersionHash: string
 	}
 	export interface WorkStatusInfo {
 		/** Short description on what the current status is. Example "working", "fulfilled" */

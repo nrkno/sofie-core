@@ -17,17 +17,16 @@ export interface ExpectedPackageWorkStatus extends Omit<ExpectedPackageStatusAPI
 	_id: ExpectedPackageWorkStatusId
 
 	studioId: ExpectedPackageDBBase['studioId']
-	fromPackages: {
-		id: ExpectedPackageDBBase['_id']
-		contentVersionHash: string
-	}[]
-	// rundownId: ExpectedPackageDBBase['rundownId']
-	// pieceId: ExpectedPackageDBBase['pieceId']
+	fromPackages: ExpectedPackageWorkStatusFromPackage[]
 
 	/** Which PeripheralDevice this update came from */
 	deviceId: PeripheralDeviceId
 
 	modified: Time
+}
+export interface ExpectedPackageWorkStatusFromPackage
+	extends Omit<ExpectedPackageStatusAPI.WorkBaseInfoFromPackage, 'id'> {
+	id: ExpectedPackageDBBase['_id']
 }
 
 export const ExpectedPackageWorkStatuses: TransformedCollection<
