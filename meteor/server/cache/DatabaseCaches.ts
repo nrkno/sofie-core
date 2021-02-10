@@ -17,7 +17,7 @@ import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
 import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { waitForPromise, makePromise, waitTime, sumChanges, anythingChanged } from '../../lib/lib'
+import { waitForPromise, makePromise, waitTime, sumChanges, anythingChanged, ProtectedString } from '../../lib/lib'
 import { logger } from '../logging'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { AdLibAction, AdLibActions } from '../../lib/collections/AdLibActions'
@@ -29,7 +29,10 @@ import { DbCacheReadObject, DbCacheWriteObject, DbCacheWriteOptionalObject } fro
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
-type DbCacheWritable<T1, T2> = DbCacheWriteCollection<any, any> | DbCacheWriteObject<any, any>
+type DbCacheWritable<T1 extends T2, T2 extends { _id: ProtectedString<any> }> =
+	| DbCacheWriteCollection<T1, T2>
+	| DbCacheWriteObject<T1, T2>
+	| DbCacheWriteOptionalObject<T1, T2>
 
 export type ReadOnlyCacheInner<T> = T extends DbCacheWriteCollection<infer A, infer B>
 	? DbCacheReadCollection<A, B>

@@ -2,11 +2,19 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
 import { IBlueprintConfig, IBlueprintShowStyleVariant } from '@sofie-automation/blueprints-integration'
-import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
+import {
+	registerCollection,
+	applyClassToDocument,
+	ProtectedString,
+	ProtectedStringProperties,
+	asyncCollectionFindOne,
+} from '../lib'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import deepmerge from 'deepmerge'
 import { registerIndex } from '../database'
+import { ReadonlyDeep } from 'type-fest'
+import { DBRundown } from './Rundowns'
 
 /** A string, identifying a ShowStyleVariant */
 export type ShowStyleVariantId = ProtectedString<'ShowStyleVariantId'>
@@ -30,6 +38,30 @@ export function getShowStyleCompound(showStyleVariantId: ShowStyleVariantId): Sh
 	if (!showStyleBase) return undefined
 
 	return createShowStyleCompound(showStyleBase, showStyleVariant)
+}
+export async function getShowStyleCompound2(
+	rundown: Pick<ReadonlyDeep<DBRundown>, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>
+): Promise<ShowStyleCompound> {
+	const [showStyleBase, showStyleVariant] = await Promise.all([
+		asyncCollectionFindOne(ShowStyleBases, { _id: rundown.showStyleBaseId }),
+		asyncCollectionFindOne(ShowStyleVariants, { _id: rundown.showStyleVariantId }),
+	])
+	if (!showStyleBase)
+		throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" for Rundown "${rundown._id}" not found`)
+	if (!showStyleVariant)
+		throw new Meteor.Error(
+			404,
+			`ShowStyleVariant "${rundown.showStyleVariantId}" for Rundown "${rundown._id}" not found`
+		)
+
+	const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
+	if (!compound)
+		throw new Meteor.Error(
+			404,
+			`Failed to compile ShowStyleCompound for base "${rundown.showStyleBaseId}" and variant  "${rundown.showStyleVariantId}"`
+		)
+
+	return compound
 }
 
 export function createShowStyleCompound(

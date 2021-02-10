@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash, getCurrentTime, protectString, unprotectObject, clone } from '../../../lib/lib'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { getHash, getCurrentTime, protectString, unprotectObject, clone, isProtectedString } from '../../../lib/lib'
+import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
 	PeripheralDevices,
@@ -20,6 +20,8 @@ import { IngestRundown, ExtendedIngestRundown } from '@sofie-automation/blueprin
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
+import { ReadOnlyCache } from '../../cache/DatabaseCaches'
+import { CacheForIngest } from './cache'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -41,10 +43,10 @@ export function checkAccessAndGetPeripheralDevice(
 	return peripheralDevice
 }
 
-export function getRundownId(studio: Studio, rundownExternalId: string): RundownId {
+export function getRundownId(studio: ReadonlyDeep<Studio> | StudioId, rundownExternalId: string): RundownId {
 	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!')
 	if (!rundownExternalId) throw new Meteor.Error(401, 'getRundownId: rundownExternalId must be set!')
-	return protectString<RundownId>(getHash(`${studio._id}_${rundownExternalId}`))
+	return protectString<RundownId>(getHash(`${isProtectedString(studio) ? studio : studio._id}_${rundownExternalId}`))
 }
 export function getSegmentId(rundownId: RundownId, segmentExternalId: string): SegmentId {
 	if (!rundownId) throw new Meteor.Error(401, 'getSegmentId: rundownId must be set!')
@@ -92,6 +94,14 @@ export function getRundown(rundownId: RundownId, externalRundownId: string): Run
 	span?.end()
 	return rundown
 }
+export function getRundown2(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ReadonlyDeep<Rundown> {
+	const rundown = cache.Rundown.doc
+	if (!rundown) {
+		const rundownId = getRundownId(cache.Studio.doc, cache.RundownExternalId)
+		throw new Meteor.Error(404, `Rundown "${rundownId}" ("${cache.RundownExternalId}") not found`)
+	}
+	return rundown
+}
 export function getSegment(segmentId: SegmentId): Segment {
 	const segment = Segments.findOne(segmentId)
 	if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found`)
@@ -123,7 +133,7 @@ function updateDeviceLastDataReceived(deviceId: PeripheralDeviceId) {
 	})
 }
 
-export function canRundownBeUpdated(rundown: Rundown | undefined, isCreateAction: boolean): boolean {
+export function canRundownBeUpdated(rundown: ReadonlyDeep<Rundown> | undefined, isCreateAction: boolean): boolean {
 	if (!rundown) return true
 	if (rundown.orphaned && !isCreateAction) {
 		logger.info(`Rundown "${rundown._id}" has been unsynced and needs to be synced before it can be updated.`)
@@ -132,8 +142,8 @@ export function canRundownBeUpdated(rundown: Rundown | undefined, isCreateAction
 	return true
 }
 export function canSegmentBeUpdated(
-	rundown: Rundown | undefined,
-	segment: Segment | undefined,
+	rundown: ReadonlyDeep<Rundown> | undefined,
+	segment: ReadonlyDeep<Segment> | undefined,
 	isCreateAction: boolean
 ): boolean {
 	if (!canRundownBeUpdated(rundown, false)) {

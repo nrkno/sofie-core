@@ -20,7 +20,6 @@ import {
 import {
 	literal,
 	protectString,
-	unprotectString,
 	waitForPromise,
 	getCurrentTime,
 	normalizeArray,
@@ -30,20 +29,17 @@ import {
 	asyncCollectionUpdate,
 } from '../../../../lib/lib'
 import { IngestPart, IngestSegment } from '@sofie-automation/blueprints-integration'
-import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
 	rundownPlaylistSyncFunction,
 	RundownSyncFunctionPriority,
 	handleUpdatedRundownInner,
-	handleUpdatedPartInner,
 	updateSegmentsFromIngestData,
 	canRemoveSegment,
+	regenSegmentInner,
 } from '../rundownInput'
 import {
 	loadCachedRundownData,
 	saveRundownCache,
-	loadCachedIngestSegment,
-	loadIngestDataCachePart,
 	LocalIngestRundown,
 	LocalIngestSegment,
 	LocalIngestPart,
@@ -60,11 +56,10 @@ import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Parts, PartId } from '../../../../lib/collections/Parts'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../../cache/DatabaseCaches'
-import { getSelectedPartInstancesFromCache } from '../../playout/lib'
-import { Settings } from '../../../../lib/Settings'
 import { profiler } from '../../profiler'
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { Studio } from '../../../../lib/collections/Studios'
+import { ingestLockFunction } from '../syncFunction'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -264,45 +259,42 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 	const partId = getPartIdFromMosStory(rundownId, story.ID)
 
 	const playlistId = getRundown(rundownId, story.RunningOrderId.toString()).playlistId
+	const partExternalId = story.ID.toString()
+	const rundownExternalId = story.RunningOrderId.toString()
 
-	return rundownPlaylistSyncFunction(
-		studio._id,
-		playlistId,
-		RundownSyncFunctionPriority.INGEST,
+	return ingestLockFunction(
 		'handleMosFullStory',
-		() => {
-			const rundown = getRundown(rundownId, parseMosString(story.RunningOrderId))
-			const playlist = getRundownPlaylist(rundown)
-			// canBeUpdated is done inside handleUpdatedPartInner
+		studio._id,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				const ingestPart = ingestRundown.segments
+					.map((s) => s.parts)
+					.flat()
+					.find((p) => p.externalId === partExternalId)
+				if (!ingestPart) {
+					logger.warn(
+						`handleMosFullStory: Missing MOS Story "${partExternalId}" in Rundown ingest data for "${rundownExternalId}"`
+					)
+					return null
+				}
 
-			const cachedPartData = loadIngestDataCachePart(
-				rundownId,
-				parseMosString(story.RunningOrderId),
-				partId,
-				parseMosString(story.ID)
-			)
-			if (!cachedPartData.segmentId) {
-				throw new Meteor.Error(500, `SegmentId missing for part "${partId}" (MOSFullStory)`)
+				// TODO - can the name change during a fullStory? If so then we need to be sure to update the segment groupings too
+				// ingestPart.name = story.Slug ? parseMosString(story.Slug) : ''
+				ingestPart.payload = story
+
+				// We modify in-place
+				return ingestRundown
+			} else {
+				return null
 			}
-
-			const ingestSegment: IngestSegment = loadCachedIngestSegment(
-				rundownId,
-				parseMosString(story.RunningOrderId),
-				cachedPartData.segmentId,
-				unprotectString(cachedPartData.segmentId)
+		},
+		async (cache, ingestRundown) => {
+			const ingestSegment = ingestRundown.segments.find((s) =>
+				s.parts.find((p) => p.externalId === partExternalId)
 			)
-
-			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-			const ingestPart: IngestPart = cachedPartData.data
-			// TODO - can the name change during a fullStory? If so then we need to be sure to update the segment groupings too
-			// ingestPart.name = story.Slug ? parseMosString(story.Slug) : ''
-			ingestPart.payload = story
-
-			// Update db with the full story:
-			handleUpdatedPartInner(cache, studio, playlist, rundown, ingestSegment.externalId, ingestPart)
-			waitForPromise(cache.saveAllToDatabase())
-
-			span?.end()
+			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment for story "${partExternalId}" is missing!`)
+			return regenSegmentInner(cache, studio, ingestSegment, false)
 		}
 	)
 }

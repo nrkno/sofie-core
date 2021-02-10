@@ -11,7 +11,6 @@ import {
 	protectString,
 	asyncCollectionBulkWrite,
 	clone,
-	makePromise,
 } from '../../lib/lib'
 import { MongoQuery, TransformedCollection, FindOptions, MongoModifier } from '../../lib/typings/meteor'
 import _ from 'underscore'
@@ -55,7 +54,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	): Promise<void> {
 		this._initializer = initializer
 		if (initializeImmediately) {
-			return makePromise(() => this._initialize())
+			await this._initialize()
 		}
 	}
 	/** @deprecated this has risk to producing errors and is unnecessary once the rework has been completed */
@@ -63,17 +62,17 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		this._initialized = cacheCollection._initialized
 		this._initializer = cacheCollection._initializer
 
-		cacheCollection._initialize()
+		waitForPromise(cacheCollection._initialize())
 
 		cacheCollection.documents.forEach((doc, key) => {
 			if (!this.documents.has(key)) this.documents.set(key, doc)
 		})
 	}
 
-	public _initialize(): void {
+	public async _initialize(): Promise<void> {
 		if (this._initializing) {
 			// Only allow one fiber to run this at a time
-			waitForPromise(this._initializing)
+			await this._initializing
 		}
 
 		if (!this._initialized) {
@@ -83,7 +82,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 				} else {
 					this._initializing = this.fillWithDataFromDatabase(this._initializer)
 				}
-				waitForPromise(this._initializing)
+				await this._initializing
 				this._initializing = undefined
 			}
 			this._initialized = true
@@ -95,7 +94,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		options?: FindOptions<DBInterface>
 	): Class[] {
 		const span = profiler.startSpan(`DBCache.findFetch.${this.name}`)
-		this._initialize()
+		waitForPromise(this._initialize())
 
 		selector = selector || {}
 		if (isProtectedString(selector)) {
@@ -185,7 +184,7 @@ export class DbCacheWriteCollection<
 > extends DbCacheReadCollection<Class, DBInterface> {
 	insert(doc: DBInterface): DBInterface['_id'] {
 		const span = profiler.startSpan(`DBCache.insert.${this.name}`)
-		this._initialize()
+		waitForPromise(this._initialize())
 
 		const existing = doc._id && this.documents.get(doc._id)
 		if (existing) {
@@ -204,7 +203,7 @@ export class DbCacheWriteCollection<
 		selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>
 	): Array<DBInterface['_id']> {
 		const span = profiler.startSpan(`DBCache.remove.${this.name}`)
-		this._initialize()
+		waitForPromise(this._initialize())
 
 		let removedIds: DBInterface['_id'][] = []
 		if (isProtectedString(selector)) {
@@ -229,7 +228,7 @@ export class DbCacheWriteCollection<
 		forceUpdate?: boolean
 	): number {
 		const span = profiler.startSpan(`DBCache.update.${this.name}`)
-		this._initialize()
+		waitForPromise(this._initialize())
 
 		const selectorInModify: MongoQuery<DBInterface> = _.isFunction(selector)
 			? {}
@@ -276,7 +275,7 @@ export class DbCacheWriteCollection<
 	/** Returns true if a doc was replace, false if inserted */
 	replace(doc: DBInterface): boolean {
 		const span = profiler.startSpan(`DBCache.replace.${this.name}`)
-		this._initialize()
+		waitForPromise(this._initialize())
 
 		if (!doc._id) throw new Meteor.Error(500, `Error: The (immutable) field '_id' must be defined: "${doc._id}"`)
 		const _id = doc._id
@@ -305,7 +304,7 @@ export class DbCacheWriteCollection<
 		insertedId?: DBInterface['_id']
 	} {
 		const span = profiler.startSpan(`DBCache.upsert.${this.name}`)
-		this._initialize()
+		waitForPromise(this._initialize())
 
 		if (isProtectedString(selector)) {
 			selector = { _id: selector } as any

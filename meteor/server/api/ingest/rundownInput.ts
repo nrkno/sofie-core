@@ -34,13 +34,11 @@ import {
 	selectShowStyleVariant,
 	afterRemoveParts,
 	ServerRundownAPI,
-	updatePartInstanceRanks,
 	produceRundownPlaylistInfoFromRundown,
 	allowedToMoveRundownOutOfPlaylist,
 	getAllRundownsInPlaylist,
 	sortDefaultRundownInPlaylistOrder,
 	ChangedSegmentsRankInfo,
-	updatePartInstancesBasicProperties,
 	unsyncAndEmptySegment,
 	removeSegmentContents,
 } from '../rundown'
@@ -91,13 +89,11 @@ import {
 	checkAccessAndGetPeripheralDevice,
 	extendIngestRundownCore,
 	modifyPlaylistExternalId,
+	getRundown2,
 } from './lib'
 import { PackageInfo } from '../../coreSystem'
-import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
-import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { PartNote, NoteType, SegmentNote, RundownNote } from '../../../lib/api/notes'
 import { UpdateNext } from './updateNext'
-import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
 import {
 	RundownPlaylists,
 	DBRundownPlaylist,
@@ -123,11 +119,12 @@ import {
 import { removeEmptyPlaylists } from '../rundownPlaylist'
 import { profiler } from '../profiler'
 import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
-import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import { syncChangesToPartInstances } from './syncChangesToPartInstance'
-import { wrapWithProxyPlayoutCache } from '../playout/cache'
+import { getShowStyleCompound2, ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { playoutNoCacheFromStudioLockFunction } from '../playout/syncFunction'
 import { studioLockFunction } from '../studio/syncFunction'
+import { CommitIngestData, ingestLockFunction } from './syncFunction'
+import { CacheForIngest } from './cache'
+import { afterIngestChangedData } from './commit'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -1015,44 +1012,44 @@ export function handleRemovedSegment(
 	segmentExternalId: string
 ) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownId(studio, rundownExternalId)
-	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	return rundownPlaylistSyncFunction(
-		studio._id,
-		playlistId,
-		RundownSyncFunctionPriority.INGEST,
+	return ingestLockFunction(
 		'handleRemovedSegment',
-		() => {
-			const rundown = getRundown(rundownId, rundownExternalId)
-			const playlist = getRundownPlaylist(rundown)
+		studio._id,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				const oldSegmentsLength = ingestRundown.segments.length
+				ingestRundown.segments = ingestRundown.segments.filter((s) => s.externalId !== segmentExternalId)
+				ingestRundown.modified = getCurrentTime()
+
+				if (ingestRundown.segments.length === oldSegmentsLength) {
+					// Nothing was removed
+					return null
+				}
+
+				// We modify in-place
+				return ingestRundown
+			} else {
+				return null
+			}
+		},
+		async (cache) => {
+			const rundown = getRundown2(cache)
 			const segmentId = getSegmentId(rundown._id, segmentExternalId)
-
-			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-
-			const segment = cache.Segments.findOne(segmentId)
-			if (!segment) throw new Meteor.Error(404, `handleRemovedSegment: Segment "${segmentId}" not found`)
+			const segment = getSegment(segmentId)
 
 			if (!canSegmentBeUpdated(rundown, segment, false)) {
 				// segment has already been deleted
+				return null
 			} else {
-				if (!canRemoveSegment(cache, playlist, segment)) {
-					unsyncAndEmptySegment(cache, rundownId, segmentId)
-				} else {
-					cache.defer(() => {
-						IngestDataCache.remove({
-							segmentId: segmentId,
-							rundownId: rundownId,
-						})
-					})
+				return {
+					changedSegmentIds: [],
+					removedSegmentIds: [segmentId],
 
-					cache.Segments.remove(segmentId)
-					removeSegmentContents(cache, rundownId, [segmentId])
-
-					UpdateNext.ensureNextPartIsValid(cache, playlist)
+					showStyle: undefined,
+					blueprint: undefined,
 				}
-
-				waitForPromise(cache.saveAllToDatabase())
 			}
 		}
 	)
@@ -1060,52 +1057,33 @@ export function handleRemovedSegment(
 export function handleUpdatedSegment(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
-	ingestSegment: IngestSegment,
+	newIngestSegment: IngestSegment,
 	isCreateAction: boolean
 ) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownId(studio, rundownExternalId)
-	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	rundownPlaylistSyncFunction(
-		studio._id,
-		playlistId,
-		RundownSyncFunctionPriority.INGEST,
+	const segmentExternalId = newIngestSegment.externalId
+
+	return ingestLockFunction(
 		'handleUpdatedSegment',
-		() => {
-			const rundown = getRundown(rundownId, rundownExternalId)
-			const playlist = getRundownPlaylist(rundown)
+		studio._id,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				ingestRundown.segments = ingestRundown.segments.filter((s) => s.externalId !== segmentExternalId)
+				ingestRundown.segments.push(makeNewIngestSegment(newIngestSegment))
+				ingestRundown.modified = getCurrentTime()
 
-			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-
-			const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
-			const oldSegment = cache.Segments.findOne(segmentId)
-			if (!canSegmentBeUpdated(rundown, oldSegment, isCreateAction)) return
-
-			const localIngestSegment = makeNewIngestSegment(ingestSegment)
-			cache.defer(() => {
-				// can we do this?
-				saveSegmentCache(rundown._id, segmentId, localIngestSegment)
-			})
-
-			const showStyle = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
-			const blueprint = loadShowStyleBlueprint(showStyle)
-			const { segmentId: updatedSegmentId, oldPartIdsAndRanks } = updateSegmentFromIngestData(
-				cache,
-				studio,
-				showStyle,
-				blueprint,
-				playlist,
-				rundown,
-				localIngestSegment
-			)
-			if (updatedSegmentId) {
-				afterIngestChangedData(cache, showStyle, blueprint.blueprint, rundown, [
-					{ segmentId: updatedSegmentId, oldPartIdsAndRanks },
-				])
+				// We modify in-place
+				return ingestRundown
+			} else {
+				return null
 			}
-
-			waitForPromise(cache.saveAllToDatabase())
+		},
+		async (cache, ingestRundown) => {
+			const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segmentExternalId)
+			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segmentExternalId}" is missing!`)
+			return regenSegmentInner(cache, studio, ingestSegment, isCreateAction)
 		}
 	)
 }
@@ -1127,7 +1105,6 @@ export function updateSegmentsFromIngestData(
 				studio,
 				showStyle,
 				blueprint,
-				playlist,
 				rundown,
 				ingestSegment
 			)
@@ -1153,7 +1130,6 @@ function updateSegmentFromIngestData(
 	studio: Studio,
 	showStyle: ShowStyleCompound,
 	blueprint: WrappedShowStyleBlueprint,
-	playlist: RundownPlaylist,
 	rundown: Rundown,
 	ingestSegment: LocalIngestSegment
 ): {
@@ -1300,35 +1276,6 @@ function updateSegmentFromIngestData(
 	span?.end()
 	return { segmentId: anythingChanged(changes) ? segmentId : null, oldPartIdsAndRanks }
 }
-function afterIngestChangedData(
-	cache: CacheForRundownPlaylist,
-	showStyle: ShowStyleCompound,
-	blueprint: ShowStyleBlueprintManifest,
-	rundown: Rundown,
-	changedSegments: ChangedSegmentsRankInfo
-) {
-	const playlist = cache.RundownPlaylists.findOne({ _id: rundown.playlistId })
-	if (!playlist) {
-		throw new Meteor.Error(404, `Orphaned rundown ${rundown._id}`)
-	}
-
-	// To be called after rundown has been changed
-	updateExpectedMediaItemsOnRundown(cache, rundown._id)
-	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
-
-	updatePartInstancesBasicProperties(cache, playlist, rundown._id)
-
-	updatePartInstanceRanks(cache, changedSegments)
-
-	UpdateNext.ensureNextPartIsValid(cache, playlist)
-
-	wrapWithProxyPlayoutCache(cache, playlist, (playoutCache) => {
-		syncChangesToPartInstances(playoutCache, cache, showStyle, blueprint, rundown)
-	})
-
-	triggerUpdateTimelineAfterIngestData(rundown.playlistId)
-}
-
 export function handleRemovedPart(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
@@ -1336,55 +1283,39 @@ export function handleRemovedPart(
 	partExternalId: string
 ) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownId(studio, rundownExternalId)
-	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	return rundownPlaylistSyncFunction(
-		studio._id,
-		playlistId,
-		RundownSyncFunctionPriority.INGEST,
+	return ingestLockFunction(
 		'handleRemovedPart',
-		() => {
-			const rundown = getRundown(rundownId, rundownExternalId)
-			const playlist = getRundownPlaylist(rundown)
-			const segmentId = getSegmentId(rundown._id, segmentExternalId)
-			const segment = getSegment(segmentId)
+		studio._id,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segmentExternalId)
+				if (!ingestSegment) {
+					logger.warn(
+						`handleUpdatedPart: Missing Segment with externalId "${segmentExternalId}" in Rundown ingest data for "${rundownExternalId}"`
+					)
+					return null
+				}
+				const oldPartsLength = ingestSegment.parts.length
+				ingestSegment.parts = ingestSegment.parts.filter((p) => p.externalId !== partExternalId)
+				ingestSegment.modified = getCurrentTime()
 
-			if (!canSegmentBeUpdated(rundown, segment, false)) return
+				if (ingestSegment.parts.length === oldPartsLength) {
+					// Nothing was removed
+					return null
+				}
 
-			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-
-			// Blueprints will handle the deletion of the Part
-			const ingestSegment = loadCachedIngestSegment(rundown._id, rundownExternalId, segmentId, segmentExternalId)
-			const oldIngestPart = ingestSegment.parts.find((p) => p.externalId === partExternalId)
-			if (!oldIngestPart) throw new Meteor.Error(404, `IngestPart "${partExternalId}" not found`)
-
-			ingestSegment.parts = ingestSegment.parts.filter((p) => p.externalId !== partExternalId)
-			ingestSegment.modified = getCurrentTime()
-
-			cache.defer(() => {
-				saveSegmentCache(rundown._id, segmentId, ingestSegment)
-			})
-
-			const showStyle = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
-			const blueprint = loadShowStyleBlueprint(showStyle)
-
-			const { segmentId: updatedSegmentId, oldPartIdsAndRanks } = updateSegmentFromIngestData(
-				cache,
-				studio,
-				showStyle,
-				blueprint,
-				playlist,
-				rundown,
-				ingestSegment
-			)
-			if (updatedSegmentId) {
-				afterIngestChangedData(cache, showStyle, blueprint.blueprint, rundown, [
-					{ segmentId: updatedSegmentId, oldPartIdsAndRanks },
-				])
+				// We modify in-place
+				return ingestRundown
+			} else {
+				return null
 			}
-
-			waitForPromise(cache.saveAllToDatabase())
+		},
+		async (cache, ingestRundown) => {
+			const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segmentExternalId)
+			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segmentExternalId}" is missing!`)
+			return regenSegmentInner(cache, studio, ingestSegment, false)
 		}
 	)
 }
@@ -1395,59 +1326,55 @@ export function handleUpdatedPart(
 	ingestPart: IngestPart
 ) {
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownId(studio, rundownExternalId)
-	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	return rundownPlaylistSyncFunction(
-		studio._id,
-		playlistId,
-		RundownSyncFunctionPriority.INGEST,
+	return ingestLockFunction(
 		'handleUpdatedPart',
-		() => {
-			const rundown = getRundown(rundownId, rundownExternalId)
-			if (!rundown) return
+		studio._id,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segmentExternalId)
+				if (!ingestSegment) {
+					logger.warn(
+						`handleUpdatedPart: Missing Segment with externalId "${segmentExternalId}" in Rundown ingest data for "${rundownExternalId}"`
+					)
+					return null
+				}
+				ingestSegment.parts = ingestSegment.parts.filter((p) => p.externalId !== ingestPart.externalId)
+				ingestSegment.parts.push(makeNewIngestPart(ingestPart))
+				ingestSegment.modified = getCurrentTime()
 
-			const playlist = getRundownPlaylist(rundown)
-
-			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-			handleUpdatedPartInner(cache, studio, playlist, rundown, segmentExternalId, ingestPart)
-
-			waitForPromise(cache.saveAllToDatabase())
+				// We modify in-place
+				return ingestRundown
+			} else {
+				return null
+			}
+		},
+		async (cache, ingestRundown) => {
+			const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segmentExternalId)
+			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segmentExternalId}" is missing!`)
+			return regenSegmentInner(cache, studio, ingestSegment, false)
 		}
 	)
 }
-export function handleUpdatedPartInner(
-	cache: CacheForRundownPlaylist,
+
+export async function regenSegmentInner(
+	cache: CacheForIngest,
 	studio: Studio,
-	playlist: RundownPlaylist,
-	rundown: Rundown,
-	segmentExternalId: string,
-	ingestPart: IngestPart
-) {
+	ingestSegment: IngestSegment,
+	isNewSegment: boolean
+): Promise<CommitIngestData | null> {
 	const span = profiler.startSpan('ingest.rundownInput.handleUpdatedPartInner')
 
+	const rundown = getRundown2(cache)
+
 	// Updated OR created part
-	const segmentId = getSegmentId(rundown._id, segmentExternalId)
-	const segment = cache.Segments.findOne(segmentId)
-	if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found`)
-	if (!canSegmentBeUpdated(rundown, segment, false)) return
+	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
+	const segment = Segments.findOne(segmentId)
+	if (!isNewSegment && !segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found`)
+	if (!canSegmentBeUpdated(rundown, segment, isNewSegment)) return null
 
-	// Blueprints will handle the creation of the Part
-	const ingestSegment: LocalIngestSegment = loadCachedIngestSegment(
-		rundown._id,
-		rundown.externalId,
-		segmentId,
-		segmentExternalId
-	)
-	ingestSegment.parts = ingestSegment.parts.filter((p) => p.externalId !== ingestPart.externalId)
-	ingestSegment.parts.push(makeNewIngestPart(ingestPart))
-	ingestSegment.modified = getCurrentTime()
-
-	cache.defer(() => {
-		saveSegmentCache(rundown._id, segmentId, ingestSegment)
-	})
-
-	const showStyle = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
+	const showStyle = await getShowStyleCompound2(rundown)
 	const blueprint = loadShowStyleBlueprint(showStyle)
 
 	const { segmentId: updatedSegmentId, oldPartIdsAndRanks } = updateSegmentFromIngestData(
@@ -1455,17 +1382,18 @@ export function handleUpdatedPartInner(
 		studio,
 		showStyle,
 		blueprint,
-		playlist,
 		rundown,
 		ingestSegment
 	)
-	if (updatedSegmentId) {
-		afterIngestChangedData(cache, showStyle, blueprint.blueprint, rundown, [
-			{ segmentId: updatedSegmentId, oldPartIdsAndRanks },
-		])
-	}
 
 	span?.end()
+	return {
+		changedSegmentIds: _.compact([updatedSegmentId]),
+		removedSegmentIds: [],
+
+		showStyle,
+		blueprint,
+	}
 }
 
 function generateSegmentContents(

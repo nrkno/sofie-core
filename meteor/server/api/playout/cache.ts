@@ -72,7 +72,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	public readonly Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
 
 	public readonly Segments: DbCacheReadCollection<Segment, DBSegment>
-	public readonly Parts: DbCacheWriteCollection<Part, DBPart> // TODO DbCacheReadCollection
+	public readonly Parts: DbCacheReadCollection<Part, DBPart>
 	public readonly PartInstances: DbCacheWriteCollection<PartInstance, DBPartInstance>
 	public readonly PieceInstances: DbCacheWriteCollection<PieceInstance, PieceInstance>
 
@@ -82,7 +82,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		this.Timeline = new DbCacheWriteCollection<TimelineComplete, TimelineComplete>(Timeline)
 
 		this.Segments = new DbCacheReadCollection<Segment, DBSegment>(Segments)
-		this.Parts = new DbCacheWriteCollection<Part, DBPart>(Parts)
+		this.Parts = new DbCacheReadCollection<Part, DBPart>(Parts)
 
 		this.PartInstances = new DbCacheWriteCollection<PartInstance, DBPartInstance>(PartInstances)
 		this.PieceInstances = new DbCacheWriteCollection<PieceInstance, PieceInstance>(PieceInstances)

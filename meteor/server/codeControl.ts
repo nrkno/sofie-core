@@ -195,12 +195,12 @@ function evaluateFunctions() {
 		}
 	}
 }
-function isFunctionQueued(id: string): boolean {
-	let queued = _.find(syncFunctionFcns, (fcn) => {
-		return fcn.id === id && fcn.status === syncFunctionFcnStatus.WAITING
-	})
-	return !!queued
-}
+// function isFunctionQueued(id: string): boolean {
+// 	let queued = _.find(syncFunctionFcns, (fcn) => {
+// 		return fcn.id === id && fcn.status === syncFunctionFcnStatus.WAITING
+// 	})
+// 	return !!queued
+// }
 export function isAnySyncFunctionsRunning(): boolean {
 	let found = false
 	for (const fcn of syncFunctionFcns) {
@@ -223,57 +223,57 @@ export function getSyncFunctionsRunningOrWaiting(id: string): string[] {
 	}
 	return names
 }
-/**
- * like syncFunction, but ignores subsequent calls, if there is a function queued to be executed already
- * @param fcn
- * @param timeout
- */
-export function syncFunctionIgnore<A>(
-	fcn: (a: A) => any,
-	context: string,
-	id0?: string,
-	timeout?: number
-): (a: A) => void
-export function syncFunctionIgnore<A, B>(
-	fcn: (a: A, b: B) => any,
-	context: string,
-	id0?: string,
-	timeout?: number
-): (a: A, b: B) => void
-export function syncFunctionIgnore<A, B, C>(
-	fcn: (a: A, b: B, c: C) => any,
-	context: string,
-	id0?: string,
-	timeout?: number
-): (a: A, b: B, c: C) => void
-export function syncFunctionIgnore<A, B, C, D>(
-	fcn: (a: A, b: B, c: C, d: D) => any,
-	context: string,
-	id0?: string,
-	timeout?: number
-): (a: A, b: B, c: C, d: D) => void
-export function syncFunctionIgnore<T extends Function>(
-	fcn: T,
-	context: string,
-	id0?: string,
-	timeout: number = 10000
-): () => void {
-	let id1 = Random.id()
+// /**
+//  * like syncFunction, but ignores subsequent calls, if there is a function queued to be executed already
+//  * @param fcn
+//  * @param timeout
+//  */
+// export function syncFunctionIgnore<A>(
+// 	fcn: (a: A) => any,
+// 	context: string,
+// 	id0?: string,
+// 	timeout?: number
+// ): (a: A) => void
+// export function syncFunctionIgnore<A, B>(
+// 	fcn: (a: A, b: B) => any,
+// 	context: string,
+// 	id0?: string,
+// 	timeout?: number
+// ): (a: A, b: B) => void
+// export function syncFunctionIgnore<A, B, C>(
+// 	fcn: (a: A, b: B, c: C) => any,
+// 	context: string,
+// 	id0?: string,
+// 	timeout?: number
+// ): (a: A, b: B, c: C) => void
+// export function syncFunctionIgnore<A, B, C, D>(
+// 	fcn: (a: A, b: B, c: C, d: D) => any,
+// 	context: string,
+// 	id0?: string,
+// 	timeout?: number
+// ): (a: A, b: B, c: C, d: D) => void
+// export function syncFunctionIgnore<T extends Function>(
+// 	fcn: T,
+// 	context: string,
+// 	id0?: string,
+// 	timeout: number = 10000
+// ): () => void {
+// 	let id1 = Random.id()
 
-	let syncFcn = syncFunctionInner(id1, fcn, context, id0, timeout)
+// 	let syncFcn = syncFunctionInner(id1, fcn, context, id0, timeout)
 
-	return (...args) => {
-		let id = id0 ? getId(id0, args) : getHash(id1 + JSON.stringify(args.join()))
-		if (isFunctionQueued(id)) {
-			// If it's queued, its going to be run some time in the future
-			// Do nothing then...
-			const name = getFunctionName(context, fcn)
-			logger.debug('Function ' + (name || 'Anonymous') + ' is already queued to execute, ignoring call.')
-		} else {
-			syncFcn(...args)
-		}
-	}
-}
+// 	return (...args) => {
+// 		let id = id0 ? getId(id0, args) : getHash(id1 + JSON.stringify(args.join()))
+// 		if (isFunctionQueued(id)) {
+// 			// If it's queued, its going to be run some time in the future
+// 			// Do nothing then...
+// 			const name = getFunctionName(context, fcn)
+// 			logger.debug('Function ' + (name || 'Anonymous') + ' is already queued to execute, ignoring call.')
+// 		} else {
+// 			syncFcn(...args)
+// 		}
+// 	}
+// }
 function getId(id: string, args: Array<any>): string {
 	let str: string = id
 

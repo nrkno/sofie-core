@@ -4,12 +4,14 @@ import * as _ from 'underscore'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { profiler } from '../api/profiler'
 import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection'
-import { DbCacheWriteObject } from './CacheObject'
+import { DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
 
 export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)
 }
-export function isDbCacheWritable(o: any): o is DbCacheWriteCollection<any, any> | DbCacheWriteObject<any, any> {
+export function isDbCacheWritable(
+	o: any
+): o is DbCacheWriteCollection<any, any> | DbCacheWriteObject<any, any> | DbCacheWriteOptionalObject<any, any> {
 	return !!(o && typeof o === 'object' && o.updateDatabaseWithData)
 }
 /** Caches data, allowing reads from cache, but not writes */
