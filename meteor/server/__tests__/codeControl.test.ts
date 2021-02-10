@@ -1,10 +1,17 @@
 import { Meteor } from 'meteor/meteor'
 import '../../__mocks__/_extendJest'
-import { testInFiber, runAllTimers, testInFiberOnly } from '../../__mocks__/helpers/jest'
+import { testInFiber, runAllTimers, runTimersUntilNow } from '../../__mocks__/helpers/jest'
 import { syncFunction, Callback, syncFunctionIgnore } from '../codeControl'
-import { RundownSyncFunctionPriority, rundownPlaylistSyncFunction } from '../api/ingest/rundownInput'
-import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime, protectString } from '../../lib/lib'
+import { RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
+import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime } from '../../lib/lib'
 import { useControllableDefer, useNextTickDefer } from '../../__mocks__/meteor'
+import {
+	setupDefaultRundownPlaylist,
+	setupDefaultStudioEnvironment,
+	setupEmptyEnvironment,
+} from '../../__mocks__/helpers/database'
+import { playoutNoCacheFromStudioLockFunction } from '../api/playout/syncFunction'
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 
 const TIME_FUZZY = 200
 const takesALongTimeInner = Meteor.wrapAsync(function takesALongTime(name: string, cb: Callback) {
@@ -17,9 +24,18 @@ describe('codeControl rundown', () => {
 		jest.useFakeTimers()
 	})
 	testInFiber('rundownSyncFunction', () => {
+		const env = setupDefaultStudioEnvironment()
+		const { playlistId } = setupDefaultRundownPlaylist(env)
+		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
+		expect(playlist).toBeTruthy()
+
 		let sync1 = (name: string, priority: RundownSyncFunctionPriority) => {
-			return rundownPlaylistSyncFunction(protectString('ro1'), priority, 'testRundownSyncFn', () =>
-				takesALongTimeInner(name)
+			return playoutNoCacheFromStudioLockFunction(
+				'testRundownSyncFn',
+				{ _studioId: playlist.studioId },
+				playlist,
+				priority,
+				() => takesALongTimeInner(name)
 			)
 		}
 
@@ -35,16 +51,18 @@ describe('codeControl rundown', () => {
 		}, 50)
 
 		jest.advanceTimersByTime(350)
+		waitForPromise(runTimersUntilNow())
 		expect(res).toEqual(['result yo ingest0'])
 
 		jest.advanceTimersByTime(300)
+		waitForPromise(runTimersUntilNow())
 		expect(res).toEqual([
 			'result yo ingest0', // Pushed to queue first
 			'result yo playout0', // High priority bumps it above ingest1
 		])
 
 		jest.advanceTimersByTime(300)
-
+		waitForPromise(runTimersUntilNow())
 		expect(res).toEqual([
 			'result yo ingest0', // Pushed to queue first
 			'result yo playout0', // High priority bumps it above ingest1

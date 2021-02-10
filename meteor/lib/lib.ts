@@ -904,7 +904,7 @@ export function waitForPromiseObj<T extends object>(obj: Promisify<T>): T {
  * If the fiber rejects, the function in the Fiber will "throw"
  */
 export const waitForPromise: <T>(p: Promise<T> | T) => T = Meteor.wrapAsync(function waitForPromises<T>(
-	p: Promise<T>,
+	p: Promise<T> | T,
 	cb: (err: any | null, result?: any) => T
 ) {
 	if (Meteor.isClient) throw new Meteor.Error(500, `waitForPromise can't be used client-side`)

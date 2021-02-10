@@ -57,16 +57,16 @@ import { profiler } from '../profiler'
 import { getPartFirstObjectId, getPartGroupId, getPieceGroupId } from '../../../lib/rundown/timeline'
 import { TimelineObjClassesCore } from '@sofie-automation/blueprints-integration'
 import { CacheForStudio, CacheForStudioBase } from '../studio/cache'
-import { rundownPlaylistPlayoutFromStudioLockFunction } from './syncFunction'
+import { playoutWithCacheFromStudioLockFunction } from './syncFunction'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 
 export function updateStudioOrPlaylistTimeline(cache: CacheForStudio) {
 	const playlists = cache.getActiveRundownPlaylists()
 	if (playlists.length === 1) {
-		return rundownPlaylistPlayoutFromStudioLockFunction(
+		return playoutWithCacheFromStudioLockFunction(
 			'updateStudioOrPlaylistTimeline',
 			cache,
-			playlists[0]._id,
+			playlists[0],
 			null,
 			(playlistCache) => {
 				updateTimeline(playlistCache)

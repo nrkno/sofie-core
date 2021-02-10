@@ -25,7 +25,7 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
-import { rundownPlaylistPlayoutLockFunction } from '../../playout/syncFunction'
+import { playoutWithCacheLockFunction } from '../../playout/syncFunction'
 import { ReadonlyDeep } from 'type-fest'
 
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
@@ -160,7 +160,7 @@ describe('Test blueprint api context', () => {
 
 		generateSparsePieceInstances(tmpPlaylist, rundown)
 
-		return rundownPlaylistPlayoutLockFunction(null, 'test', tmpPlaylist._id, null, (cache) =>
+		return playoutWithCacheLockFunction(null, 'test', tmpPlaylist._id, null, (cache) =>
 			fcn(cache, cache.Playlist.doc)
 		)
 	}

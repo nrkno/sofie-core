@@ -17,7 +17,7 @@ import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselin
 import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { Segments } from '../../lib/collections/Segments'
 import { studioLockWithCacheFunction } from './studio/syncFunction'
-import { rundownPlaylistNoCacheLockFunction } from './playout/syncFunction'
+import { playoutNoCacheFromStudioLockFunction } from './playout/syncFunction'
 import { RundownSyncFunctionPriority } from './ingest/rundownInput'
 
 export function removeEmptyPlaylists(studioId: StudioId) {
@@ -29,9 +29,10 @@ export function removeEmptyPlaylists(studioId: StudioId) {
 			playlists.map(async (playlist) =>
 				makePromise(() => {
 					// Take the playlist lock, to ensure we don't fight something else
-					rundownPlaylistNoCacheLockFunction(
+					playoutNoCacheFromStudioLockFunction(
 						'removeEmptyPlaylists',
-						playlist._id,
+						cache,
+						playlist,
 						RundownSyncFunctionPriority.USER_INGEST,
 						() => {
 							// TODO - is this correct priority?

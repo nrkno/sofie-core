@@ -16,7 +16,7 @@ import { PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { updateTimeline } from '../api/playout/timeline'
 import { forceClearAllBlueprintConfigCaches } from '../api/blueprints/config'
-import { rundownPlaylistPlayoutLockFunction } from '../api/playout/syncFunction'
+import { playoutWithCacheLockFunction } from '../api/playout/syncFunction'
 import { getSelectedPartInstancesFromCache } from '../api/playout/cache'
 import { removeRundownPlaylistFromDb } from '../api/rundownPlaylist'
 import { initCacheForRundownPlaylistFromRundown } from '../cache/DatabaseCaches'
@@ -69,15 +69,9 @@ if (!Settings.enableUserAccounts) {
 		debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
 			logger.info(`syncPlayheadInfinitesForNextPartInstance ${id}`)
 
-			rundownPlaylistPlayoutLockFunction(
-				null,
-				'debug_syncPlayheadInfinitesForNextPartInstance',
-				id,
-				null,
-				(cache) => {
-					syncPlayheadInfinitesForNextPartInstance(cache)
-				}
-			)
+			playoutWithCacheLockFunction(null, 'debug_syncPlayheadInfinitesForNextPartInstance', id, null, (cache) => {
+				syncPlayheadInfinitesForNextPartInstance(cache)
+			})
 		},
 
 		debug_forceClearAllCaches() {
@@ -97,7 +91,7 @@ if (!Settings.enableUserAccounts) {
 		debug_regenerateNextPartInstance(id: RundownPlaylistId) {
 			logger.info('regenerateNextPartInstance')
 
-			rundownPlaylistPlayoutLockFunction(null, 'debug_regenerateNextPartInstance', id, null, (cache) => {
+			playoutWithCacheLockFunction(null, 'debug_regenerateNextPartInstance', id, null, (cache) => {
 				const playlist = cache.Playlist.doc
 				if (playlist.nextPartInstanceId && playlist.activationId) {
 					const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)

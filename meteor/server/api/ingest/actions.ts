@@ -14,7 +14,7 @@ import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { makePromise, waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { Segment } from '../../../lib/collections/Segments'
 import { GenericDeviceActions } from './genericDevice/actions'
-import { rundownPlaylistNoCacheLockFunction, rundownPlaylistPlayoutLockFunctionInner } from '../playout/syncFunction'
+import { playoutNoCacheLockFunction, playoutWithCacheFromStudioLockFunction } from '../playout/syncFunction'
 import { MethodContext } from '../../../lib/api/methods'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 
@@ -107,11 +107,12 @@ export namespace IngestActions {
 	) {
 		check(rundownPlaylistId, String)
 
-		const ingestData = rundownPlaylistNoCacheLockFunction(
+		const ingestData = playoutNoCacheLockFunction(
+			context,
 			'regenerateRundownPlaylist',
 			rundownPlaylistId,
 			RundownSyncFunctionPriority.USER_INGEST,
-			() => {
+			(playlistLock) => {
 				const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 				if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
 
@@ -132,12 +133,12 @@ export namespace IngestActions {
 				if (purgeExisting) {
 					waitForPromise(removeRundownsFromDb(rundowns.map((r) => r._id)))
 				} else {
-					rundownPlaylistPlayoutLockFunctionInner(
+					playoutWithCacheFromStudioLockFunction(
 						'regenerateRundownPlaylist:init',
+						playlistLock,
 						rundownPlaylist,
 						null,
-						(cache) => resetRundownPlaylist(cache),
-						{ skipPlaylistLock: true }
+						(cache) => resetRundownPlaylist(cache)
 					)
 				}
 
@@ -155,6 +156,7 @@ export namespace IngestActions {
 			ingestData.map(({ ingest, rundown, studio }) =>
 				makePromise(() => {
 					rundownPlaylistSyncFunction(
+						studio._id,
 						rundownPlaylistId,
 						RundownSyncFunctionPriority.USER_INGEST,
 						'handleUpdatedRundown',

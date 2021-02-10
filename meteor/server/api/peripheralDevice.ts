@@ -32,7 +32,7 @@ import { getValidActivationCache } from '../cache/ActivationCache'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceGroupMetadata } from '../../lib/rundown/pieces'
 import { studioLockWithCacheFunction } from './studio/syncFunction'
-import { rundownPlaylistNoCacheLockFunction } from './playout/syncFunction'
+import { playoutNoCacheFromStudioLockFunction } from './playout/syncFunction'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { CacheForStudio } from './studio/cache'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
@@ -220,9 +220,10 @@ export namespace ServerPeripheralDeviceAPI {
 				if (activePlaylists.length === 1) {
 					const activePlaylist = activePlaylists[0]
 					const playlistId = activePlaylist._id
-					rundownPlaylistNoCacheLockFunction(
+					playoutNoCacheFromStudioLockFunction(
 						'timelineTriggerTime',
-						playlistId,
+						studioCache,
+						activePlaylist,
 						RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
 						() => {
 							const rundownIDs = Rundowns.find({ playlistId }).map((r) => r._id)
