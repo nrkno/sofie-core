@@ -147,7 +147,6 @@ export function rundownPlaylistSyncFunction<T extends () => any>(
 	return studioLockFunction(context, studioId, (lock) =>
 		playoutNoCacheFromStudioLockFunction(context, lock, { _id: rundownPlaylistId, studioId } as any, priority, fcn)
 	)
-	// return playoutNoCacheLockFunction(null, context, rundownPlaylistId, priority, fcn)
 }
 
 interface SegmentChanges {
