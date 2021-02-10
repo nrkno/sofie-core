@@ -7,6 +7,8 @@ import { ResultingMappingRoutes, StudioId } from './Studios'
 import { PieceId } from './Pieces'
 import { registerIndex } from '../database'
 import { AdLibActionId } from './AdLibActions'
+import { BucketAdLibId } from './BucketAdlibs'
+import { BucketAdLibActionId } from './BucketAdlibActions'
 /*
  Expected Packages are created from Pieces in the rundown.
  A "Package" is a generic term for a "thing that can be played", such as media files, audio, graphics etc..
@@ -20,21 +22,21 @@ export type ExpectedPackageId = ProtectedString<'ExpectedPackageId'>
 
 export type ExpectedPackageDB =
 	| ExpectedPackageDBFromPiece
-	// | ExpectedPackageDBFromAdlibPiece
 	| ExpectedPackageDBFromAdLibAction
+	| ExpectedPackageDBFromBucketAdLib
+	| ExpectedPackageDBFromBucketAdLibAction
 
 export enum ExpectedPackageDBType {
 	PIECE = 'piece',
-	// ADLIB_PIECE = 'adlib_piece',
 	ADLIB_ACTION = 'adlib_action',
+	BUCKET_ADLIB = 'bucket_adlib',
+	BUCKET_ADLIB_ACTION = 'bucket_adlib_action',
 }
 export interface ExpectedPackageDBBase extends Omit<ExpectedPackage.Base, '_id'> {
 	_id: ExpectedPackageId
 
 	/** The studio of the Rundown of the Piece this package belongs to */
 	studioId: StudioId
-	/** The rundown of the Piece this package belongs to */
-	rundownId: RundownId
 
 	/** Hash that changes whenever the content or version changes. See getContentVersionHash() */
 	contentVersionHash: string
@@ -43,19 +45,29 @@ export interface ExpectedPackageDBBase extends Omit<ExpectedPackage.Base, '_id'>
 	fromPieceType: ExpectedPackageDBType
 }
 export interface ExpectedPackageDBFromPiece extends ExpectedPackageDBBase {
+	fromPieceType: ExpectedPackageDBType.PIECE
 	/** The Piece this package belongs to */
 	pieceId: PieceId
-	fromPieceType: ExpectedPackageDBType.PIECE
+	/** The rundown of the Piece this package belongs to */
+	rundownId: RundownId
 }
-// export interface ExpectedPackageDBFromAdlibPiece extends ExpectedPackageDBBase {
-// 	/** The Piece this package belongs to */
-// 	pieceId: AdlibPieceId
-// 	fromPieceType: ExpectedPackageDBType.ADLIB_PIECE
-// }
+
 export interface ExpectedPackageDBFromAdLibAction extends ExpectedPackageDBBase {
+	fromPieceType: ExpectedPackageDBType.ADLIB_ACTION
 	/** The Piece this package belongs to */
 	pieceId: AdLibActionId
-	fromPieceType: ExpectedPackageDBType.ADLIB_ACTION
+	/** The rundown of the Piece this package belongs to */
+	rundownId: RundownId
+}
+export interface ExpectedPackageDBFromBucketAdLib extends ExpectedPackageDBBase {
+	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB
+	/** The Bucket adlib this package belongs to */
+	pieceId: BucketAdLibId
+}
+export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageDBBase {
+	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION
+	/** The Bucket adlib-action this package belongs to */
+	pieceId: BucketAdLibActionId
 }
 export const ExpectedPackages: TransformedCollection<ExpectedPackageDB, ExpectedPackageDB> = createMongoCollection<
 	ExpectedPackageDB
@@ -64,8 +76,6 @@ registerCollection('ExpectedPackages', ExpectedPackages)
 
 registerIndex(ExpectedPackages, {
 	studioId: 1,
-	rundownId: 1,
-	pieceId: 1,
 })
 export function getContentVersionHash(expectedPackage: Omit<ExpectedPackage.Any, '_id'>): string {
 	return hashObj({

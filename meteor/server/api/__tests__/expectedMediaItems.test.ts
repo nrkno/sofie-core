@@ -2,11 +2,10 @@ import { Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundown
 import { literal, protectString, getRandomId, waitForPromise } from '../../../lib/lib'
 import { setupDefaultStudioEnvironment, LAYER_IDS } from '../../../__mocks__/helpers/database'
 import { DBPart, Parts, PartId } from '../../../lib/collections/Parts'
-import { VTContent, PieceLifespan, WithTimeline } from '@sofie-automation/blueprints-integration'
+import { VTContent, PieceLifespan, WithTimeline, ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { Segments, DBSegment } from '../../../lib/collections/Segments'
 import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
@@ -21,6 +20,8 @@ import {
 	defaultPiece,
 	defaultAdLibPiece,
 } from '../../../__mocks__/defaultCollectionObjects'
+import { updateExpectedPackagesOnRundown } from '../expectedPackages'
+import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
 describe('Expected Media Items', () => {
@@ -43,6 +44,26 @@ describe('Expected Media Items', () => {
 
 	const mockFlow0 = 'mockFlow0'
 	const mockFlow1 = 'mockFlow1'
+
+	const getExpectedPackage = (id: string, filePath: string) => {
+		return literal<ExpectedPackage.ExpectedPackageMediaFile>({
+			_id: id,
+			layer: 'layer0',
+			contentVersionHash: 'abc',
+			type: ExpectedPackage.PackageType.MEDIA_FILE,
+			content: {
+				filePath: filePath,
+			},
+			version: {},
+			sources: [
+				{
+					containerId: 'source0',
+					accessors: {},
+				},
+			],
+			sideEffect: {},
+		})
+	}
 
 	function setupRundown(rdId: RundownId, rplId: RundownPlaylistId) {
 		RundownPlaylists.insert({
@@ -101,6 +122,7 @@ describe('Expected Media Items', () => {
 					sourceDuration: 0,
 					timelineObjects: [],
 				}),
+				expectedPackages: [getExpectedPackage('id0', mockPath0), getExpectedPackage('id1', mockPath0)],
 			})
 		)
 		Parts.insert(
@@ -131,6 +153,7 @@ describe('Expected Media Items', () => {
 					sourceDuration: 0,
 					timelineObjects: [],
 				}),
+				expectedPackages: [getExpectedPackage('id0', mockPath1)],
 			})
 		)
 		AdLibPieces.insert(
@@ -154,6 +177,7 @@ describe('Expected Media Items', () => {
 					sourceDuration: 0,
 					timelineObjects: [],
 				}),
+				expectedPackages: [getExpectedPackage('id0', mockPath1)],
 			})
 		)
 	}
@@ -164,18 +188,25 @@ describe('Expected Media Items', () => {
 	})
 
 	describe('Based on a Rundown', () => {
-		testInFiber('Generates ExpectedMediaItems based on a Rundown', () => {
+		testInFiber('Generates ExpectedPackages based on a Rundown', () => {
 			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId0))
-			updateExpectedMediaItemsOnRundown(cache, rdId0)
+			updateExpectedPackagesOnRundown(cache, rdId0)
 			waitForPromise(cache.saveAllToDatabase())
 
+			const packages = ExpectedPackages.find({
+				rundownId: rdId0,
+				studioId: env.studio._id,
+			}).fetch()
+			expect(packages).toHaveLength(4)
+
+			// to be deprecated:
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId0,
 				studioId: env.studio._id,
 			}).fetch()
 			expect(items).toHaveLength(4)
 		})
-		testInFiber('Removes associated ExpectedMediaItems if a Rundown has been removed', () => {
+		testInFiber('Removes associated ExpectedPackages if a Rundown has been removed', () => {
 			const rd = Rundowns.findOne(rdId0)
 			if (!rd) {
 				fail()
@@ -183,9 +214,17 @@ describe('Expected Media Items', () => {
 			}
 			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId0))
 			removeRundownFromCache(cache, rd)
-			updateExpectedMediaItemsOnRundown(cache, rdId0)
+			updateExpectedPackagesOnRundown(cache, rdId0)
 
 			waitForPromise(cache.saveAllToDatabase())
+
+			const packages = ExpectedPackages.find({
+				rundownId: rdId0,
+				studioId: env.studio._id,
+			}).fetch()
+			expect(packages).toHaveLength(0)
+
+			// to be deprecated:
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId0,
 				studioId: env.studio._id,

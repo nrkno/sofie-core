@@ -20,8 +20,6 @@ import {
 	unprotectObject,
 	unprotectObjectArray,
 	clone,
-	asyncCollectionFindOne,
-	asyncCollectionFindFetch,
 	normalizeArrayToMap,
 } from '../../../lib/lib'
 import {
@@ -33,11 +31,9 @@ import {
 	BlueprintSyncIngestPartInstance,
 	ShowStyleBlueprintManifest,
 	BlueprintSyncIngestNewData,
-	ExpectedPackage,
-	IBlueprintPieceGeneric,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import {
 	selectShowStyleVariant,
 	afterRemoveSegments,
@@ -78,7 +74,7 @@ import {
 	RundownBaselineAdLibPieces,
 } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
-import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import {
 	saveRundownCache,
 	saveSegmentCache,
@@ -105,7 +101,6 @@ import {
 	modifyPlaylistExternalId,
 } from './lib'
 import { PackageInfo } from '../../coreSystem'
-import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { PartNote, NoteType, SegmentNote, RundownNote } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
@@ -129,7 +124,7 @@ import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../Data
 import { prepareSaveIntoCache, savePreparedChangesIntoCache } from '../../DatabaseCache'
 import { reportRundownDataHasChanged } from '../asRunLog'
 import { Settings } from '../../../lib/Settings'
-import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions'
+import { AdLibAction } from '../../../lib/collections/AdLibActions'
 import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
@@ -142,12 +137,7 @@ import {
 	syncPlayheadInfinitesForNextPartInstance,
 } from '../playout/infinites'
 import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
-import {
-	ExpectedPackageDB,
-	ExpectedPackageDBType,
-	ExpectedPackages,
-	getContentVersionHash,
-} from '../../../lib/collections/ExpectedPackages'
+import { updateExpectedPackagesOnRundown } from '../expectedPackages'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -1154,7 +1144,6 @@ export function handleUpdatedSegment(
 }
 export function updateSegmentsFromIngestData(
 	cache: CacheForRundownPlaylist,
-	studio: Studio,
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	ingestSegments: IngestSegment[]
@@ -1584,14 +1573,13 @@ export function handleUpdatedPart(
 		const playlist = getRundownPlaylist(rundown)
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-		handleUpdatedPartInner(cache, studio, playlist, rundown, segmentExternalId, ingestPart)
+		handleUpdatedPartInner(cache, playlist, rundown, segmentExternalId, ingestPart)
 
 		waitForPromise(cache.saveAllToDatabase())
 	})
 }
 export function handleUpdatedPartInner(
 	cache: CacheForRundownPlaylist,
-	studio: Studio,
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	segmentExternalId: string,
@@ -2065,94 +2053,4 @@ function unsyncSegmentOrRundown(cache: CacheForRundownPlaylist, rundownId: Rundo
 	} else {
 		ServerRundownAPI.unsyncRundownInner(cache, rundownId)
 	}
-}
-export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
-	check(rundownId, String)
-
-	// @todo: this call is for backwards compatibility and soon to be removed
-	updateExpectedMediaItemsOnRundown(cache, rundownId)
-
-	const rundown = cache.Rundowns.findOne(rundownId)
-	if (!rundown) {
-		cache.deferAfterSave(() => {
-			const removedItems = ExpectedPackages.remove({
-				rundownId: rundownId,
-			})
-			logger.info(`Removed ${removedItems} expected media items for deleted rundown "${rundownId}"`)
-		})
-		return
-	} else {
-		const studioId = rundown.studioId
-
-		cache.deferAfterSave(() => {
-			const pAdlibs = asyncCollectionFindFetch(AdLibPieces, { rundownId: rundown._id })
-			const pActions = asyncCollectionFindFetch(AdLibActions, { rundownId: rundown._id })
-			const pStudio = asyncCollectionFindOne(Studios, { _id: studioId })
-
-			const pieces = cache.Pieces.findFetch({
-				startRundownId: rundown._id,
-			})
-
-			const adlibs = waitForPromise(pAdlibs)
-			const actions = waitForPromise(pActions)
-			const studio = waitForPromise(pStudio)
-
-			// const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
-			// 	cache,
-			// 	playlist
-			// )
-
-			// todo: keep expectedPackage of the currently playing partInstance
-			if (!studio) throw new Error(`Studio "${studioId}" not found!`)
-
-			const expectedPackages: ExpectedPackageDB[] = [
-				...generateExpectedPackages(studio, rundownId, pieces, ExpectedPackageDBType.PIECE),
-				...generateExpectedPackages(studio, rundownId, adlibs, ExpectedPackageDBType.PIECE),
-				...generateExpectedPackages(studio, rundownId, actions, ExpectedPackageDBType.ADLIB_ACTION),
-			]
-
-			saveIntoDb<ExpectedPackageDB, ExpectedPackageDB>(
-				ExpectedPackages,
-				{
-					rundownId: rundown._id,
-				},
-				expectedPackages
-			)
-		})
-	}
-}
-function generateExpectedPackages(
-	studio: Studio,
-	rundownId: RundownId,
-	pieces: {
-		_id: ProtectedString<any>
-		expectedPackages?: IBlueprintPieceGeneric['expectedPackages']
-	}[],
-	pieceType: ExpectedPackageDBType
-): ExpectedPackageDB[] {
-	const packages: ExpectedPackageDB[] = []
-	for (const piece of pieces) {
-		if (piece.expectedPackages) {
-			let i = 0
-			for (const expectedPackage of piece.expectedPackages) {
-				let id = expectedPackage._id
-				if (!id) id = '__unnamed' + i++
-
-				packages.push({
-					...expectedPackage,
-					_id: protectString(`${piece._id}_${id}`),
-					contentVersionHash: getContentVersionHash(expectedPackage),
-					studioId: studio._id,
-					rundownId,
-					pieceId: piece._id,
-					fromPieceType: pieceType,
-					sideEffect: {
-						previewContainerId: studio.previewContainerIds[0], // just pick the first. Todo: something else?
-						thumbnailContainerId: studio.thumbnailContainerIds[0], // just pick the first. Todo: something else?
-					},
-				})
-			}
-		}
-	}
-	return packages
 }

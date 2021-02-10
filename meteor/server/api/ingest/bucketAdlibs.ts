@@ -9,7 +9,6 @@ import { RundownImportVersions } from '../../../lib/collections/Rundowns'
 import { PackageInfo } from '../../coreSystem'
 import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { BucketId } from '../../../lib/collections/Buckets'
-import { PieceId } from '../../../lib/collections/Pieces'
 import {
 	cleanUpExpectedMediaItemForBucketAdLibActions,
 	cleanUpExpectedMediaItemForBucketAdLibPiece,
@@ -25,6 +24,13 @@ import {
 } from '../../../lib/lib'
 import { syncFunction } from '../../codeControl'
 import { bucketSyncFunction } from '../buckets'
+import { ExpectedPackageDB } from '../../../lib/collections/ExpectedPackages'
+import {
+	cleanUpExpectedPackagesForBucketAdLibs,
+	cleanUpExpectedPackagesForBucketAdLibsActions,
+	updateExpectedPackagesForBucketAdLib,
+	updateExpectedPackagesForBucketAdLibAction,
+} from '../expectedPackages'
 
 function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
 	return !!(adlib as IBlueprintActionManifest).actionId
@@ -78,6 +84,8 @@ export function updateBucketAdlibFromIngestData(
 			waitForPromiseAll([
 				cleanUpExpectedMediaItemForBucketAdLibPiece(oldAdLibPieces.map((adlib) => adlib._id)),
 				cleanUpExpectedMediaItemForBucketAdLibActions(oldAdLibActions.map((adlib) => adlib._id)),
+				cleanUpExpectedPackagesForBucketAdLibs(oldAdLibPieces.map((adlib) => adlib._id)),
+				cleanUpExpectedPackagesForBucketAdLibsActions(oldAdLibActions.map((adlib) => adlib._id)),
 				oldAdLibPieces.length > 0
 					? asyncCollectionRemove(BucketAdLibs, {
 							_id: {
@@ -134,6 +142,9 @@ export function updateBucketAdlibFromIngestData(
 			let adlibIdsToRemove = oldAdLibPieces.map((p) => p._id)
 			let actionIdsToRemove = oldAdLibActions.map((p) => p._id)
 
+			// let expectedPackages: ExpectedPackageDB[] = []
+			// ...generateExpectedPackages(studio, rundownId, pieces, ExpectedPackageDBType.PIECE),
+
 			if (isAdlibAction(rawAdlib)) {
 				const action = postProcessBucketAction(
 					context,
@@ -155,6 +166,7 @@ export function updateBucketAdlibFromIngestData(
 				)
 
 				updateExpectedMediaItemForBucketAdLibAction(action._id)
+				updateExpectedPackagesForBucketAdLibAction(action._id)
 
 				// Preserve this one
 				actionIdsToRemove = actionIdsToRemove.filter((id) => id !== action._id)
@@ -179,6 +191,7 @@ export function updateBucketAdlibFromIngestData(
 				)
 
 				updateExpectedMediaItemForBucketAdLibPiece(adlib._id)
+				updateExpectedPackagesForBucketAdLib(adlib._id)
 
 				// Preserve this one
 				adlibIdsToRemove = adlibIdsToRemove.filter((id) => id !== adlib._id)
@@ -188,6 +201,8 @@ export function updateBucketAdlibFromIngestData(
 			waitForPromiseAll([
 				cleanUpExpectedMediaItemForBucketAdLibPiece(adlibIdsToRemove),
 				cleanUpExpectedMediaItemForBucketAdLibActions(actionIdsToRemove),
+				cleanUpExpectedPackagesForBucketAdLibs(adlibIdsToRemove),
+				cleanUpExpectedPackagesForBucketAdLibsActions(actionIdsToRemove),
 				asyncCollectionRemove(BucketAdLibs, { _id: { $in: adlibIdsToRemove } }),
 				asyncCollectionRemove(BucketAdLibActions, { _id: { $in: actionIdsToRemove } }),
 			])

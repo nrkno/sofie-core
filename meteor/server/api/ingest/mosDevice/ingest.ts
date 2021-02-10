@@ -281,7 +281,7 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 		ingestPart.payload = story
 
 		// Update db with the full story:
-		handleUpdatedPartInner(cache, studio, playlist, rundown, ingestSegment.externalId, ingestPart)
+		handleUpdatedPartInner(cache, playlist, rundown, ingestSegment.externalId, ingestPart)
 		waitForPromise(cache.saveAllToDatabase())
 
 		span?.end()
@@ -712,7 +712,6 @@ function diffAndApplyChanges(
 	// Create/Update segments
 	updateSegmentsFromIngestData(
 		cache,
-		studio,
 		playlist,
 		rundown,
 		_.sortBy([..._.values(segmentDiff.added), ..._.values(segmentDiff.changed)], (se) => se.rank)

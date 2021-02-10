@@ -29,6 +29,7 @@ import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBas
 import { Pieces } from '../../../lib/collections/Pieces'
 import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { profiler } from '../profiler'
+import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -671,6 +672,7 @@ export function removeRundownFromCache(cache: CacheForRundownPlaylist, rundown: 
 		AdLibPieces.remove({ rundownId: rundown._id })
 		ExpectedMediaItems.remove({ rundownId: rundown._id })
 		ExpectedPlayoutItems.remove({ rundownId: rundown._id })
+		ExpectedPackages.remove({ rundownId: rundown._id })
 		IngestDataCache.remove({ rundownId: rundown._id })
 		RundownBaselineAdLibPieces.remove({ rundownId: rundown._id })
 
