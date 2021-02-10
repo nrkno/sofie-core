@@ -10,7 +10,7 @@ import {
 	postProcessAdLibPieces,
 	postProcessPieces,
 } from '../postProcess'
-import { RundownContext, CommonContext, StudioContext } from '../context'
+import { RundownContext, StudioContext } from '../context'
 import {
 	IBlueprintPiece,
 	IBlueprintAdLibPiece,
@@ -23,7 +23,7 @@ import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { initCacheForRundownPlaylist } from '../../../cache/DatabaseCaches'
+import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 
 describe('Test blueprint post-process', () => {
 	let env: DefaultEnvironment
@@ -73,12 +73,15 @@ describe('Test blueprint post-process', () => {
 			nextPartInstanceId: null,
 			previousPartInstanceId: null,
 		})
-		let cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+
+		const studio = getStudio()
+		const showStyle = {} as ShowStyleCompound
 
 		const context = new RundownContext(
 			{ name: rundown.name, identifier: `rundownId=${rundown._id}` },
-			rundown,
-			cache
+			studio,
+			showStyle,
+			rundown
 		)
 
 		// Make sure we arent an IUserNotesContext, as that means new work to handle those notes

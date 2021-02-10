@@ -1,7 +1,6 @@
 import _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
-import { testInFiber, testInFiberOnly, runAllTimers } from '../../../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
 import { fixSnapshot } from '../../../../__mocks__/helpers/snapshot'
 import { mockupCollection, resetMockupCollection } from '../../../../__mocks__/helpers/lib'
 import {
@@ -15,7 +14,6 @@ import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import '../api'
 import { Timeline as OrgTimeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
-import { deactivate } from '../../userActions'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
@@ -29,7 +27,6 @@ import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { protectString } from '../../../../lib/lib'
 import { AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { IBlueprintAsRunLogEventContent } from '@sofie-automation/blueprints-integration'
-import { Random } from 'meteor/random'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import * as lib from '../../../../lib/lib'
 import { ClientAPI } from '../../../../lib/api/client'
@@ -131,6 +128,11 @@ describe('Playout API', () => {
 		expect(Timeline.update).not.toHaveBeenCalled()
 
 		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
+
+		expect(Timeline.insert).not.toHaveBeenCalled()
+		expect(Timeline.upsert).not.toHaveBeenCalled()
+		expect(Timeline.update).not.toHaveBeenCalled()
+
 		const orgRundownData = getAllRundownData(getRundown0())
 
 		{
@@ -158,7 +160,7 @@ describe('Playout API', () => {
 
 		expect(Timeline.insert).toHaveBeenCalled()
 		expect(Timeline.upsert).toHaveBeenCalled()
-		expect(Timeline.update).toHaveBeenCalled()
+		expect(Timeline.update).not.toHaveBeenCalled()
 		Timeline.mockClear()
 
 		{
@@ -410,10 +412,14 @@ describe('Playout API', () => {
 			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId1)
 
 			// should contain one not-reset taken instance
+			const playlist1 = getPlaylist1()
 			expect(
 				getAllPartInstances().filter(
 					(partInstance) =>
-						partInstance.rundownId === rundownId1 && !partInstance.reset && partInstance.isTaken
+						partInstance.rundownId === rundownId1 &&
+						!partInstance.reset &&
+						partInstance.isTaken &&
+						partInstance.playlistActivationId === playlist1.activationId
 				)
 			).toHaveLength(1)
 		}
@@ -488,7 +494,13 @@ describe('Playout API', () => {
 
 				// simulate TSR starting part playback
 				const currentPartInstanceId = currentPartInstance?._id || protectString('')
-				ServerPlayoutAPI.onPartPlaybackStarted(DEFAULT_CONTEXT, playlistId0, currentPartInstanceId, now)
+				ServerPlayoutAPI.onPartPlaybackStarted(
+					DEFAULT_CONTEXT,
+					playoutDevice,
+					playlistId0,
+					currentPartInstanceId,
+					now
+				)
 
 				// simulate TSR starting each piece
 				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstanceId)
@@ -587,7 +599,13 @@ describe('Playout API', () => {
 				const nextPartInstanceBeforeTakeId = nextPartInstanceBeforeTake?._id
 
 				now += currentPartInstanceBeforeTake?.part.expectedDuration!
-				ServerPlayoutAPI.onPartPlaybackStarted(DEFAULT_CONTEXT, playlistId0, nextPartInstanceBeforeTakeId!, now)
+				ServerPlayoutAPI.onPartPlaybackStarted(
+					DEFAULT_CONTEXT,
+					playoutDevice,
+					playlistId0,
+					nextPartInstanceBeforeTakeId!,
+					now
+				)
 				ServerPlayoutAPI.onPartPlaybackStopped(
 					DEFAULT_CONTEXT,
 					playlistId0,

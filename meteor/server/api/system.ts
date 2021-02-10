@@ -51,7 +51,7 @@ import { Snapshots } from '../../lib/collections/Snapshots'
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { getActiveRundownPlaylistsInStudio } from './playout/studio'
+import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { createMongoCollection } from '../../lib/collections/lib'
 import { getBundle as getTranslationBundleInner } from './translationsBundles'
@@ -84,7 +84,12 @@ function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
 				// The existing index does not exist in our specified list of indexes, and should be removed.
 				if (removeOldIndexes) {
 					logger.info(`Removing index: ${JSON.stringify(existingIndex.key)}`)
-					i.collection.rawCollection().dropIndex(existingIndex.name)
+					i.collection
+						.rawCollection()
+						.dropIndex(existingIndex.name)
+						.catch((e) => {
+							logger.warn(`Failed to drop index: ${JSON.stringify(existingIndex.key)}: ${e}`)
+						})
 				}
 			}
 		})
@@ -456,7 +461,7 @@ function isAllowedToRunCleanup(): string | void {
 
 	const studios = Studios.find().fetch()
 	for (const studio of studios) {
-		const activePlaylist: RundownPlaylist | undefined = getActiveRundownPlaylistsInStudio(null, studio._id)[0]
+		const activePlaylist: RundownPlaylist | undefined = getActiveRundownPlaylistsInStudioFromDb(studio._id)[0]
 		if (activePlaylist) {
 			return `There is an active RundownPlaylist: "${activePlaylist.name}" in studio "${studio.name}" (${activePlaylist._id}, ${studio._id})`
 		}

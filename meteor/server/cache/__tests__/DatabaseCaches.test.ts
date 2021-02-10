@@ -1,6 +1,6 @@
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
-import { initCacheForStudioBase, initCacheForStudio } from '../../cache/DatabaseCaches'
+import { initCacheForStudio } from '../DatabaseCaches'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { getRandomId, waitTime, protectString } from '../../../lib/lib'
 import { RundownPlaylistId, RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -14,7 +14,7 @@ describe('DatabaseCaches', () => {
 	beforeEach(() => {
 		setupDefaultStudioEnvironment()
 	})
-	describe('CacheForStudioBase', () => {
+	describe('CacheForStudio', () => {
 		testInFiber('Insert, update & remove', async () => {
 			const studio = Studios.findOne() as Studio
 			expect(studio).toBeTruthy()
@@ -30,7 +30,7 @@ describe('DatabaseCaches', () => {
 
 			let dbObj: RundownPlaylist | undefined
 			// const cache = new CacheForStudioBase()
-			const cache = await initCacheForStudioBase(studio._id)
+			const cache = await initCacheForStudio(studio._id)
 
 			const id: RundownPlaylistId = protectString('myPlaylist0')
 
@@ -102,7 +102,7 @@ describe('DatabaseCaches', () => {
 
 			let dbObj: RundownPlaylist | undefined
 			// const cache = new CacheForStudioBase()
-			const cache = await initCacheForStudioBase(studio._id)
+			const cache = await initCacheForStudio(studio._id)
 
 			const id: RundownPlaylistId = protectString('myPlaylist1')
 

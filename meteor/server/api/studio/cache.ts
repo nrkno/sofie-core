@@ -19,7 +19,7 @@ export interface CacheForStudioBase {
 	readonly Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
 }
 
-export class CacheForStudio extends CacheBase implements CacheForStudioBase {
+export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheForStudioBase {
 	public readonly isStudio = true
 
 	public readonly Studio: DbCacheReadObject<Studio, Studio>
@@ -41,12 +41,12 @@ export class CacheForStudio extends CacheBase implements CacheForStudioBase {
 	static async create(studioId: StudioId): Promise<CacheForStudio> {
 		const res = new CacheForStudio()
 
-		res.Studio._initialize(studioId)
+		await res.Studio._initialize(studioId)
 
-		await Promise.all([
+		await Promise.allSettled([
 			res.PeripheralDevices.prepareInit({ studioId }, true), // TODO - immediate?
 			res.RundownPlaylists.prepareInit({ studioId }, true), // TODO - immediate?
-			res.Timeline.prepareInit({ studioId }, true), // TODO - immediate?
+			res.Timeline.prepareInit({ _id: studioId }, true), // TODO - immediate?
 		])
 
 		return res
@@ -54,7 +54,7 @@ export class CacheForStudio extends CacheBase implements CacheForStudioBase {
 
 	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): RundownPlaylist[] {
 		return this.RundownPlaylists.findFetch({
-			active: true,
+			activationId: { $exists: true },
 			_id: {
 				$ne: excludeRundownPlaylistId || protectString(''),
 			},

@@ -83,15 +83,16 @@ class I18nContainer extends WithManagedTracker {
 			.use(LanguageDetector)
 			.use(initReactI18next)
 
-		this.i18nInstance.init(i18nOptions, (err: Error, t: TFunction) => {
-			if (err) {
-				console.error('Error initializing i18Next:', err)
-			} else {
+		this.i18nInstance
+			.init(i18nOptions)
+			.then((t: TFunction) => {
 				this.i18nTranslator = t
 				moment.locale(i18n.language)
 				document.documentElement.lang = i18n.language
-			}
-		})
+			})
+			.catch((err: Error) => {
+				console.error('Error initializing i18Next:', err)
+			})
 
 		this.subscribe(PubSub.translationsBundles, {})
 		this.autorun(() => {

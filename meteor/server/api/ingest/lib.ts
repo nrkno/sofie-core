@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash, getCurrentTime, protectString, unprotectObject } from '../../../lib/lib'
+import { getHash, getCurrentTime, protectString, unprotectObject, clone } from '../../../lib/lib'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
@@ -19,6 +19,7 @@ import { Credentials } from '../../security/lib/credentials'
 import { IngestRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
+import { ReadonlyDeep } from 'type-fest'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -140,11 +141,11 @@ export function canBeUpdated(rundown: Rundown | undefined, segment?: Segment, _p
 }
 export function extendIngestRundownCore(
 	ingestRundown: IngestRundown,
-	existingDbRundown: Rundown | undefined
+	existingDbRundown: ReadonlyDeep<Rundown> | undefined
 ): ExtendedIngestRundown {
 	const extendedIngestRundown: ExtendedIngestRundown = {
 		...ingestRundown,
-		coreData: unprotectObject(existingDbRundown),
+		coreData: unprotectObject(clone(existingDbRundown)),
 	}
 	return extendedIngestRundown
 }

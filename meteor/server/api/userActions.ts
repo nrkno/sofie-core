@@ -19,7 +19,7 @@ import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
-import { getActiveRundownPlaylistsInStudio } from './playout/studio'
+import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
@@ -213,7 +213,7 @@ export function prepareForBroadcast(
 		return ClientAPI.responseError(
 			'Rundown Playlist is active, please deactivate before preparing it for broadcast'
 		)
-	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
+	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(
 			409,
@@ -252,7 +252,7 @@ export function resetAndActivate(
 			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
 		)
 	}
-	const anyOtherActiveRundownPlaylists = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
+	const anyOtherActiveRundownPlaylists = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
 	if (anyOtherActiveRundownPlaylists.length) {
 		return ClientAPI.responseError(
 			409,
@@ -289,7 +289,7 @@ export function activate(
 	check(rehearsal, Boolean)
 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
+	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
 
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(
@@ -660,7 +660,7 @@ export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylis
 		return ClientAPI.responseError(`Rundown Playlist is active, please deactivate it before regenerating it.`)
 	}
 
-	return ClientAPI.responseSuccess(IngestActions.regenerateRundownPlaylist(rundownPlaylistId))
+	return ClientAPI.responseSuccess(IngestActions.regenerateRundownPlaylist(context, rundownPlaylistId))
 }
 
 export function bucketAdlibImport(
@@ -717,7 +717,6 @@ export function bucketAdlibStart(
 	bucketAdlibId: PieceId,
 	queue?: boolean
 ) {
-	RundownPlaylistContentWriteAccess.playout(context, rundownPlaylistId)
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
 	check(bucketAdlibId, String)
@@ -731,7 +730,7 @@ export function bucketAdlibStart(
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAdLibAPI.startBucketAdlibPiece(rundownPlaylistId, partInstanceId, bucketAdlibId, !!queue)
+		ServerPlayoutAdLibAPI.startBucketAdlibPiece(context, rundownPlaylistId, partInstanceId, bucketAdlibId, !!queue)
 	)
 }
 

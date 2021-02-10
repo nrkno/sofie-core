@@ -1,4 +1,4 @@
-import { ReadonlyDeep } from 'type-fest'
+import { Mutable, ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import { PartInstance, DBPartInstance, PartInstances } from '../../../lib/collections/PartInstances'
 import { Part, DBPart, Parts } from '../../../lib/collections/Parts'
@@ -14,17 +14,19 @@ import { Rundown, DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { Segment, DBSegment, Segments } from '../../../lib/collections/Segments'
 import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
-import { waitForPromise } from '../../../lib/lib'
+import { clone, waitForPromise } from '../../../lib/lib'
 import { ActivationCache, getActivationCache } from '../../cache/ActivationCache'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { DbCacheReadObject, DbCacheWriteObject } from '../../cache/CacheObject'
-import { CacheBase } from '../../cache/DatabaseCaches'
+import { CacheBase, CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
 import { profiler } from '../profiler'
 import { removeRundownPlaylistFromDb } from '../rundownPlaylist'
 import { CacheForStudioBase } from '../studio/cache'
+import { getRundownsSegmentsAndPartsFromCache } from './lib'
 
-export abstract class CacheForPlayoutPreInit extends CacheBase {
+export abstract class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 	public readonly isPlayout = true
+	public readonly PlaylistId: RundownPlaylistId
 
 	public readonly activationCache: ActivationCache
 
@@ -37,6 +39,7 @@ export abstract class CacheForPlayoutPreInit extends CacheBase {
 	protected constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
 		super()
 
+		this.PlaylistId = playlistId
 		this.activationCache = getActivationCache(studioId, playlistId)
 
 		this.Studio = new DbCacheReadObject(Studios, false)
@@ -47,7 +50,7 @@ export abstract class CacheForPlayoutPreInit extends CacheBase {
 	}
 
 	protected async preInit(tmpPlaylist: ReadonlyDeep<RundownPlaylist>) {
-		await Promise.all([
+		await Promise.allSettled([
 			this.Playlist._initialize(tmpPlaylist._id),
 			this.Rundowns.prepareInit({ playlistId: tmpPlaylist._id }, true),
 		])
@@ -56,10 +59,10 @@ export abstract class CacheForPlayoutPreInit extends CacheBase {
 		await this.activationCache.initialize(tmpPlaylist, rundowns)
 
 		this.Studio._fromDoc(this.activationCache.getStudio())
-		await this.PeripheralDevices.prepareInit(
-			() => waitForPromise(this.activationCache.getPeripheralDevices()),
-			true
-		)
+		await this.PeripheralDevices.prepareInit(async () => {
+			const data = await this.activationCache.getPeripheralDevices()
+			this.PeripheralDevices.fillWithDataFromArray(data)
+		}, true)
 	}
 }
 
@@ -73,7 +76,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	public readonly PartInstances: DbCacheWriteCollection<PartInstance, DBPartInstance>
 	public readonly PieceInstances: DbCacheWriteCollection<PieceInstance, PieceInstance>
 
-	private constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
+	protected constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
 		super(studioId, playlistId)
 
 		this.Timeline = new DbCacheWriteCollection<TimelineComplete, TimelineComplete>(Timeline)
@@ -132,11 +135,11 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			)
 		)
 
-		await Promise.all(ps)
+		await Promise.allSettled(ps)
 
 		// This will be needed later, but we will do some other processing first
-		// TODO-CACHE what happens if this errors? where should that go?
-		Promise.all([this.Timeline.prepareInit({ studioId: playlist.studioId }, true)])
+		// TODO-CACHE how can we reliably defer this and await it when it is needed?
+		await Promise.allSettled([this.Timeline.prepareInit({ _id: playlist.studioId }, true)])
 	}
 
 	removePlaylist() {
@@ -161,5 +164,107 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		} else {
 			return super.saveAllToDatabase()
 		}
+	}
+}
+
+export class ProxyCacheForPlayout extends CacheForPlayout {
+	private origCache: CacheForRundownPlaylist
+
+	static async createProxy(
+		origCache: CacheForRundownPlaylist,
+		tmpPlaylist: RundownPlaylist
+	): Promise<ProxyCacheForPlayout> {
+		const newCache = new ProxyCacheForPlayout(tmpPlaylist.studioId, tmpPlaylist._id)
+		const mutableCache: Mutable<ProxyCacheForPlayout> = newCache
+
+		newCache.origCache = origCache
+
+		newCache.Playlist._fromDoc(tmpPlaylist), (mutableCache.Rundowns = origCache.Rundowns)
+
+		const rundowns = newCache.Rundowns.findFetch()
+		await newCache.activationCache.initialize(tmpPlaylist, rundowns)
+
+		newCache.Studio._fromDoc(newCache.activationCache.getStudio())
+		await newCache.PeripheralDevices.prepareInit(async () => {
+			const data = await newCache.activationCache.getPeripheralDevices()
+			newCache.PeripheralDevices.fillWithDataFromArray(data)
+		}, true)
+
+		mutableCache.Timeline = origCache.Timeline
+
+		mutableCache.Segments = origCache.Segments
+		mutableCache.Parts = origCache.Parts
+		mutableCache.PartInstances = origCache.PartInstances
+		mutableCache.PieceInstances = origCache.PieceInstances
+
+		return newCache
+	}
+
+	async saveAllToDatabase() {
+		// Make sure it is all synced back to the original cache
+		// Most of the collections are identical, just a few need manual syncing
+
+		this.origCache.RundownPlaylists.upsert(this.Playlist.doc._id, clone<RundownPlaylist>(this.Playlist.doc))
+	}
+
+	async initContent(): Promise<void> {
+		// Override. Nothing to do
+	}
+}
+
+export function wrapWithProxyPlayoutCache<T>(
+	origCache: CacheForRundownPlaylist,
+	playlist: RundownPlaylist,
+	fcn: (cache: CacheForPlayout) => T
+): T {
+	const cache = waitForPromise(ProxyCacheForPlayout.createProxy(origCache, playlist))
+	const res = fcn(cache)
+	waitForPromise(cache.saveAllToDatabase())
+	return res
+}
+
+export function getOrderedSegmentsAndPartsFromPlayoutCache(
+	cache: CacheForPlayout
+): {
+	segments: Segment[]
+	parts: Part[]
+} {
+	const rundowns = cache.Rundowns.findFetch(
+		{},
+		{
+			sort: {
+				_rank: 1,
+				_id: 1,
+			},
+		}
+	)
+	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, rundowns)
+}
+export function getAllOrderedPartsFromPlayoutCache(cache: CacheForPlayout): Part[] {
+	const { parts } = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+	return parts
+}
+export function getRundownIDsFromCache(cache: CacheForPlayout) {
+	return cache.Rundowns.findFetch({}).map((r) => r._id)
+}
+export function getSelectedPartInstancesFromCache(
+	cache: CacheForPlayout
+): {
+	currentPartInstance: PartInstance | undefined
+	nextPartInstance: PartInstance | undefined
+	previousPartInstance: PartInstance | undefined
+} {
+	const playlist = cache.Playlist.doc
+
+	return {
+		currentPartInstance: playlist.currentPartInstanceId
+			? cache.PartInstances.findOne(playlist.currentPartInstanceId)
+			: undefined,
+		nextPartInstance: playlist.nextPartInstanceId
+			? cache.PartInstances.findOne(playlist.nextPartInstanceId)
+			: undefined,
+		previousPartInstance: playlist.previousPartInstanceId
+			? cache.PartInstances.findOne(playlist.previousPartInstanceId)
+			: undefined,
 	}
 }

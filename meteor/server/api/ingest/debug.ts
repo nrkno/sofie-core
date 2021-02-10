@@ -2,26 +2,25 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../../lib/check'
 import { IngestActions } from './actions'
-import { updateTimeline, getActiveRundownPlaylist } from '../playout/timeline'
+import { updateStudioOrPlaylistTimeline } from '../playout/timeline'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '../../../lib/collections/Studios'
 
 import { Settings } from '../../../lib/Settings'
-import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist } from '../../cache/DatabaseCaches'
-import { waitForPromise } from '../../../lib/lib'
 import { SegmentId, Segments } from '../../../lib/collections/Segments'
 import { loadCachedIngestSegment } from './ingestCache'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { handleUpdatedSegment } from './rundownInput'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { logger } from '../../logging'
+import { studioLockWithCacheFunction } from '../studio/syncFunction'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
 		debug_playlistRunBlueprints: (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) => {
 			try {
 				check(rundownPlaylistId, String)
-				IngestActions.regenerateRundownPlaylist(rundownPlaylistId, purgeExisting)
+				IngestActions.regenerateRundownPlaylist(null, rundownPlaylistId, purgeExisting)
 			} catch (e) {
 				logger.error(e)
 				throw e
@@ -48,17 +47,9 @@ if (!Settings.enableUserAccounts) {
 			try {
 				check(studioId, String)
 
-				const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
-
-				const activePlaylist = getActiveRundownPlaylist(cache, studioId)
-				if (activePlaylist) {
-					const cacheForPlaylist = waitForPromise(initCacheForRundownPlaylist(activePlaylist, cache))
-					updateTimeline(cacheForPlaylist, studioId)
-					waitForPromise(cacheForPlaylist.saveAllToDatabase())
-				} else {
-					updateTimeline(cache, studioId)
-					waitForPromise(cache.saveAllToDatabase())
-				}
+				studioLockWithCacheFunction('debug_updateTimeline', studioId, (cache) => {
+					updateStudioOrPlaylistTimeline(cache)
+				})
 			} catch (e) {
 				logger.error(e)
 				throw e

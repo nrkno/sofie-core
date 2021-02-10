@@ -5,19 +5,21 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
-import { getCurrentTime, waitForPromise } from '../../lib/lib'
+import { waitForPromise, waitForPromiseAll } from '../../lib/lib'
 import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
-import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { Settings } from '../../lib/Settings'
-import { initCacheForRundownPlaylistFromRundown, initCacheForRundownPlaylist } from '../cache/DatabaseCaches'
-import { removeRundownPlaylistFromCache, setNextPart, getSelectedPartInstancesFromCache } from '../api/playout/lib'
-import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
+import { setNextPart } from '../api/playout/lib'
 import { syncPlayheadInfinitesForNextPartInstance } from '../api/playout/infinites'
 import { forceClearAllActivationCaches } from '../cache/ActivationCache'
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { updateTimeline } from '../api/playout/timeline'
 import { forceClearAllBlueprintConfigCaches } from '../api/blueprints/config'
+import { rundownPlaylistPlayoutLockFunction } from '../api/playout/syncFunction'
+import { getSelectedPartInstancesFromCache } from '../api/playout/cache'
+import { removeRundownPlaylistFromDb } from '../api/rundownPlaylist'
+import { initCacheForRundownPlaylistFromRundown } from '../cache/DatabaseCaches'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -45,22 +47,13 @@ if (!Settings.enableUserAccounts) {
 		debug_removeRundown(id: RundownPlaylistId) {
 			logger.debug('Remove rundown "' + id + '"')
 
-			const playlist = RundownPlaylists.findOne(id)
-			if (playlist) {
-				const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-				removeRundownPlaylistFromCache(cache, playlist)
-				waitForPromise(cache.saveAllToDatabase())
-			}
+			waitForPromise(removeRundownPlaylistFromDb(id))
 		},
 
 		debug_removeAllRos() {
 			logger.debug('Remove all rundowns')
 
-			RundownPlaylists.find({}).forEach((playlist) => {
-				const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-				removeRundownPlaylistFromCache(cache, playlist)
-				waitForPromise(cache.saveAllToDatabase())
-			})
+			waitForPromiseAll(RundownPlaylists.find({}).map((playlist) => removeRundownPlaylistFromDb(playlist._id)))
 		},
 
 		debug_recreateExpectedMediaItems() {
@@ -76,17 +69,13 @@ if (!Settings.enableUserAccounts) {
 		debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
 			logger.info(`syncPlayheadInfinitesForNextPartInstance ${id}`)
 
-			rundownPlaylistSyncFunction(
-				id,
-				RundownSyncFunctionPriority.USER_PLAYOUT,
+			rundownPlaylistPlayoutLockFunction(
+				null,
 				'debug_syncPlayheadInfinitesForNextPartInstance',
-				() => {
-					const playlist = RundownPlaylists.findOne(id)
-					if (!playlist) throw new Meteor.Error(404, 'not found')
-
-					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-					syncPlayheadInfinitesForNextPartInstance(cache, playlist)
-					waitForPromise(cache.saveAllToDatabase())
+				id,
+				null,
+				(cache) => {
+					syncPlayheadInfinitesForNextPartInstance(cache)
 				}
 			)
 		},
@@ -108,31 +97,19 @@ if (!Settings.enableUserAccounts) {
 		debug_regenerateNextPartInstance(id: RundownPlaylistId) {
 			logger.info('regenerateNextPartInstance')
 
-			rundownPlaylistSyncFunction(
-				id,
-				RundownSyncFunctionPriority.USER_PLAYOUT,
-				'debug_regenerateNextPartInstance',
-				() => {
-					const playlist = RundownPlaylists.findOne(id)
-					if (!playlist) throw new Meteor.Error(404, 'not found')
+			rundownPlaylistPlayoutLockFunction(null, 'debug_regenerateNextPartInstance', id, null, (cache) => {
+				const playlist = cache.Playlist.doc
+				if (playlist.nextPartInstanceId && playlist.activationId) {
+					const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+					const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
+					if (part) {
+						setNextPart(cache, null)
+						setNextPart(cache, part)
 
-					if (playlist.nextPartInstanceId && playlist.activationId) {
-						const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-
-						const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
-						const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
-						if (part) {
-							setNextPart(cache, playlist, null)
-							const playlist2 = cache.RundownPlaylists.findOne(playlist._id) as RundownPlaylist
-							setNextPart(cache, playlist2, part)
-
-							updateTimeline(cache, playlist.studioId)
-						}
-
-						waitForPromise(cache.saveAllToDatabase())
+						updateTimeline(cache)
 					}
 				}
-			)
+			})
 		},
 	})
 }

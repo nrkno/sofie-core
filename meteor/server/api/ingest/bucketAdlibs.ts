@@ -38,10 +38,7 @@ export function updateBucketAdlibFromIngestData(
 			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT
 		},
 		studio,
-		undefined,
-		undefined,
-		showStyle._id,
-		showStyle.showStyleVariantId
+		showStyle
 	)
 	if (!blueprint.getAdlibItem) throw new Meteor.Error(501, "This blueprint doesn't support ingest AdLibs")
 	const rawAdlib = blueprint.getAdlibItem(context, ingestData)

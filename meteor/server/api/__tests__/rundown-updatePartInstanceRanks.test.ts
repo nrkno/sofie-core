@@ -11,7 +11,7 @@ import {
 import { protectString, literal, unprotectString } from '../../../lib/lib'
 import { Rundowns, Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { ChangedSegmentsRankInfo, produceRundownPlaylistInfoFromRundown, updatePartInstanceRanks } from '../rundown'
+import { updatePartInstanceRanks } from '../rundown'
 import { updateRundownsInPlaylist } from '../ingest/rundownInput'
 import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import { Part, PartId, Parts } from '../../../lib/collections/Parts'
@@ -122,7 +122,7 @@ describe('updatePartInstanceRanks', () => {
 		expect(initialInstanceRanks).toHaveLength(5)
 
 		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -171,7 +171,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartRank(initialInstanceRanks, 'part04', 2)
 
 		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -183,7 +183,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartRank(initialInstanceRanks, 'part05', 1)
 
 		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks2 = getPartInstanceRanks()
@@ -208,7 +208,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartRank(initialInstanceRanks, 'part03', 2.5)
 
 		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -252,7 +252,7 @@ describe('updatePartInstanceRanks', () => {
 		})
 
 		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -278,7 +278,7 @@ describe('updatePartInstanceRanks', () => {
 		}
 
 		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -298,7 +298,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartInstanceRank(initialInstanceRanks, 'part05', -1)
 
 		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks2 }])
+			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks2 }])
 		)
 
 		const newInstanceRanks2 = getPartInstanceRanks()
@@ -332,7 +332,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartInstanceRank(initialInstanceRanks, 'part05', -0.5)
 
 		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()

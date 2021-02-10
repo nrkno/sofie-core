@@ -24,6 +24,7 @@ import { Mongo } from 'meteor/mongo'
 import { ShowStyleBase } from '../collections/ShowStyleBases'
 import { getPieceGroupId } from './timeline'
 import { RundownPlaylistActivationId } from '../collections/RundownPlaylists'
+import { ReadonlyDeep } from 'type-fest'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
 	return { startPartId: part._id }
@@ -407,7 +408,7 @@ function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number
  * The stacking order of infinites is considered, to define the stop times
  */
 export function processAndPrunePieceInstanceTimings(
-	showStyle: ShowStyleBase,
+	showStyle: ReadonlyDeep<ShowStyleBase>,
 	pieces: PieceInstance[],
 	nowInPart: number,
 	keepDisabledPieces?: boolean

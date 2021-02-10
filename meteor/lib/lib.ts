@@ -529,12 +529,12 @@ export const Collections: { [name: string]: TransformedCollection<any, any> } = 
 export function registerCollection(name: string, collection: TransformedCollection<any, any>) {
 	Collections[name] = collection
 }
-export const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
-	function getCollectionIndexes(collection: TransformedCollection<any, any>, cb) {
-		let raw = collection.rawCollection()
-		raw.indexes(cb)
-	}
-)
+// export const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
+// 	function getCollectionIndexes(collection: TransformedCollection<any, any>, cb) {
+// 		let raw = collection.rawCollection()
+// 		raw.indexes(cb) // TODO - invalid
+// 	}
+// )
 export const getCollectionStats: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
 	function getCollectionStats(collection: TransformedCollection<any, any>, cb) {
 		let raw = collection.rawCollection()
@@ -984,7 +984,7 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 					} else if (_.has(s, '$nin')) {
 						ok = s.$nin.indexOf(oAttr) === -1
 					} else if (_.has(s, '$exists')) {
-						ok = key in o === !!s.$exists
+						ok = (o[key] !== undefined) === !!s.$exists
 					} else if (_.has(s, '$not')) {
 						let innerSelector: any = {}
 						innerSelector[key] = s.$not

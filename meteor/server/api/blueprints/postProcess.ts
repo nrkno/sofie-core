@@ -27,6 +27,7 @@ import { SegmentId } from '../../../lib/collections/Segments'
 import { profiler } from '../profiler'
 import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { CommonContext, ShowStyleContext } from './context'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  *
@@ -234,7 +235,10 @@ export function postProcessAdLibActions(
 	)
 }
 
-export function postProcessStudioBaselineObjects(studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
+export function postProcessStudioBaselineObjects(
+	studio: ReadonlyDeep<Studio>,
+	objs: TSR.TSRTimelineObjBase[]
+): TimelineObjRundown[] {
 	const context = new CommonContext({ identifier: 'studio', name: 'studio' })
 	return postProcessTimelineObjects(context, protectString('studio'), studio.blueprintId!, objs, false)
 }
@@ -260,12 +264,12 @@ export function postProcessBucketAdLib(
 		...itemOrig,
 		_id: protectString(
 			innerContext.getHashId(
-				`${innerContext.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${externalId}`
+				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${externalId}`
 			)
 		),
 		externalId,
 		studioId: innerContext.studioId,
-		showStyleVariantId: innerContext.showStyleVariantId,
+		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
 		_rank: rank || itemOrig._rank,
@@ -297,12 +301,12 @@ export function postProcessBucketAction(
 		...itemOrig,
 		_id: protectString(
 			innerContext.getHashId(
-				`${innerContext.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${externalId}`
+				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${externalId}`
 			)
 		),
 		externalId,
 		studioId: innerContext.studioId,
-		showStyleVariantId: innerContext.showStyleVariantId,
+		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
 		display: {

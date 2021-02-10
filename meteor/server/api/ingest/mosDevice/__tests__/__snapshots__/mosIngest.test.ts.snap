@@ -305,7 +305,7 @@ exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
-  "baselineModifyHash": "randomId11003",
+  "baselineModifyHash": "randomId11004",
   "created": 0,
   "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",

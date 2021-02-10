@@ -27,21 +27,17 @@ import { TimelineObjectCoreExt, TSR, PieceLifespan } from '@sofie-automation/blu
 import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
-import { prefixAllObjectIds, getSelectedPartInstancesFromCache } from './lib'
-import {
-	RundownPlaylist,
-	RundownPlaylistActivationId,
-	RundownPlaylistId,
-} from '../../../lib/collections/RundownPlaylists'
+import { prefixAllObjectIds } from './lib'
+import { RundownPlaylistActivationId, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
 import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap, PieceGroupMetadata, PieceTimelineMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { getPieceFirstObjectId } from '../../../lib/rundown/timeline'
+import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	const aStart = a.enable.start === 'now' ? nowInPart : a.enable.start
@@ -196,8 +192,8 @@ function resolvePieceTimeline(
 }
 
 export function getResolvedPieces(
-	cache: CacheForRundownPlaylist,
-	showStyleBase: ShowStyleBase,
+	cache: CacheForPlayout,
+	showStyleBase: ReadonlyDeep<ShowStyleBase>,
 	partInstance: PartInstance
 ): ResolvedPieceInstance[] {
 	const span = profiler.startSpan('getResolvedPieces')
@@ -243,8 +239,7 @@ export function getResolvedPieces(
 	return resolvedPieces
 }
 export function getResolvedPiecesFromFullTimeline(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
+	cache: CacheForPlayout,
 	allObjs: TimelineObjGeneric[]
 ): { pieces: ResolvedPieceInstance[]; time: number } {
 	const span = profiler.startSpan('getResolvedPiecesFromFullTimeline')
@@ -254,12 +249,11 @@ export function getResolvedPiecesFromFullTimeline(
 
 	const now = getCurrentTime()
 
-	const partInstanceIds = _.compact([playlist.previousPartInstanceId, playlist.currentPartInstanceId])
-	const pieceInstances: PieceInstance[] = cache.PieceInstances.findFetch(
-		(p) => partInstanceIds.indexOf(p.partInstanceId) !== -1
-	)
+	const playlist = cache.Playlist.doc
+	const partInstanceIds = new Set(_.compact([playlist.previousPartInstanceId, playlist.currentPartInstanceId]))
+	const pieceInstances: PieceInstance[] = cache.PieceInstances.findFetch((p) => partInstanceIds.has(p.partInstanceId))
 
-	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist) // todo: should these be passed as a parameter from getTimelineRundown?
+	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache) // todo: should these be passed as a parameter from getTimelineRundown?
 
 	if (currentPartInstance && currentPartInstance.part.autoNext && playlist.nextPartInstanceId) {
 		pieceInstances.push(...cache.PieceInstances.findFetch((p) => p.partInstanceId === playlist.nextPartInstanceId))

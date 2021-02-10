@@ -63,6 +63,8 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		this._initialized = cacheCollection._initialized
 		this._initializer = cacheCollection._initializer
 
+		cacheCollection._initialize()
+
 		cacheCollection.documents.forEach((doc, key) => {
 			if (!this.documents.has(key)) this.documents.set(key, doc)
 		})

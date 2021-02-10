@@ -13,9 +13,9 @@ import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { MappingsExt, Studios } from '../../../../../lib/collections/Studios'
 import { PartInstances, wrapPartToTemporaryInstance } from '../../../../../lib/collections/PartInstances'
 import _ from 'underscore'
-import { wrapWithCacheForRundownPlaylist } from '../../../../cache/DatabaseCaches'
-import { testInFiber } from '../../../../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../../../../__mocks__/helpers/jest'
 import { getOrderedPartsAfterPlayhead } from '../util'
+import { rundownPlaylistPlayoutLockFunction } from '../../syncFunction'
 
 describe('getOrderedPartsAfterPlayhead', () => {
 	let env: DefaultEnvironment
@@ -72,6 +72,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 					externalNRCSName: 'mock',
 				}
 				Rundowns.insert(rundown)
+				RundownPlaylists.update(playlistId, { $set: { activationId: protectString('active') } })
 
 				segmentId0 = Segments.insert({
 					_id: protectString(rundownId + '_segment0'),
@@ -133,110 +134,95 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
 		expect(playlist).toBeTruthy()
 
-		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 100)
+		const parts = rundownPlaylistPlayoutLockFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 100)
 		)
 		expect(parts.map((p) => p._id)).toEqual(partIds)
 	})
 
 	testInFiber('first part is next', () => {
-		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
-		expect(playlist).toBeTruthy()
-
 		const firstPart = Parts.findOne(partIds[0]) as Part
 		expect(firstPart).toBeTruthy()
 
 		// Convert to instance and set as next
 		const firstInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), firstPart))
-		playlist.nextPartInstanceId = firstInstanceId
+		RundownPlaylists.update(playlistId, { $set: { nextPartInstanceId: firstInstanceId } })
 
-		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 100)
+		const parts = rundownPlaylistPlayoutLockFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 100)
 		)
 		// Should not have the first
 		expect(parts.map((p) => p._id)).toEqual(partIds.slice(1))
 
 		// Try with a limit
-		const parts2 = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 5)
+		const parts2 = rundownPlaylistPlayoutLockFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 5)
 		)
 		// Should not have the first
 		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(1, 6))
 	})
 
 	testInFiber('first part is current', () => {
-		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
-		expect(playlist).toBeTruthy()
-
 		const firstPart = Parts.findOne(partIds[0]) as Part
 		expect(firstPart).toBeTruthy()
 
 		// Convert to instance and set as next
 		const firstInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), firstPart))
-		playlist.currentPartInstanceId = firstInstanceId
+		RundownPlaylists.update(playlistId, { $set: { nextPartInstanceId: firstInstanceId } })
 
-		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 100)
+		const parts = rundownPlaylistPlayoutLockFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 100)
 		)
 		// Should not have the first
 		expect(parts.map((p) => p._id)).toEqual(partIds.slice(1))
 
 		// Try with a limit
-		const parts2 = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 5)
+		const parts2 = rundownPlaylistPlayoutLockFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 5)
 		)
 		// Should not have the first
 		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(1, 6))
 	})
 
 	testInFiber('last part is next', () => {
-		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
-		expect(playlist).toBeTruthy()
-
 		const lastPart = Parts.findOne(_.last(partIds)) as Part
 		expect(lastPart).toBeTruthy()
 
 		// Convert to instance and set as next
 		const lastInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), lastPart))
-		playlist.currentPartInstanceId = lastInstanceId
+		RundownPlaylists.update(playlistId, { $set: { nextPartInstanceId: lastInstanceId } })
 
-		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 100)
+		const parts = rundownPlaylistPlayoutLockFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 100)
 		)
 		// Should be empty
 		expect(parts.map((p) => p._id)).toEqual([])
 
-		// TODO - fix looping
-		// // Playlist could loop
-		// playlist.loop = true
-		// const parts2 = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-		// 	getOrderedPartsAfterPlayhead(cache, playlist, 5)
-		// )
-		// // Should be empty
-		// expect(parts2.map((p) => p._id)).toEqual(['a'])
+		// Playlist could loop
+		RundownPlaylists.update(playlistId, { $set: { loop: true } })
+		const parts2 = rundownPlaylistPlayoutLockFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 5)
+		)
+		// Should be empty
+		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(0, 5))
 
-		// // TODO - filter unplayable
-
-		// // Set some parts as unplayable
-		// Parts.update(
-		// 	{
-		// 		_id: { $in: [partIds[1], partIds[4]] },
-		// 	},
-		// 	{
-		// 		$set: { invalid: true },
-		// 	}
-		// )
-		// const parts3 = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-		// 	getOrderedPartsAfterPlayhead(cache, playlist, 5)
-		// )
-		// // Should be empty
-		// expect(parts3.map((p) => p._id)).toEqual(['a'])
+		// Set some parts as unplayable
+		Parts.update(
+			{
+				_id: { $in: [partIds[1], partIds[4]] },
+			},
+			{
+				$set: { invalid: true },
+			}
+		)
+		const parts3 = rundownPlaylistPlayoutLockFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 5)
+		)
+		// Should be empty
+		expect(parts3.map((p) => p._id)).toEqual([partIds[0], ...partIds.slice(2, 4), ...partIds.slice(5, 7)])
 	})
 
 	testInFiber('filter unplayable part is current', () => {
-		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
-		expect(playlist).toBeTruthy()
-
 		const nextPart = Parts.findOne(partIds[3]) as Part
 		expect(nextPart).toBeTruthy()
 
@@ -251,30 +237,27 @@ describe('getOrderedPartsAfterPlayhead', () => {
 
 		// Convert to instance and set as next
 		const nextInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), nextPart))
-		playlist.currentPartInstanceId = nextInstanceId
+		RundownPlaylists.update(playlistId, { $set: { nextPartInstanceId: nextInstanceId } })
 
-		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 5)
+		const parts = rundownPlaylistPlayoutLockFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 5)
 		)
 		// Should not have the first
 		expect(parts.map((p) => p._id)).toEqual([partIds[5], partIds[6], partIds[8], partIds[9], partIds[10]])
 	})
 
 	testInFiber('filter unplayable part is current', () => {
-		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
-		expect(playlist).toBeTruthy()
-
 		const firstPart = Parts.findOne(partIds[0]) as Part
 		expect(firstPart).toBeTruthy()
 
 		// Convert to instance and set as next
 		const nextInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), firstPart))
-		playlist.currentPartInstanceId = nextInstanceId
+		RundownPlaylists.update(playlistId, { $set: { currentPartInstanceId: nextInstanceId } })
 
 		// Change next segment
-		playlist.nextSegmentId = segmentId2
-		const parts = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 10)
+		RundownPlaylists.update(playlistId, { $set: { nextSegmentId: segmentId2 } })
+		const parts = rundownPlaylistPlayoutLockFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 10)
 		)
 		expect(parts.map((p) => p._id)).toEqual([...partIds.slice(1, 5), ...partIds.slice(8)])
 
@@ -287,8 +270,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				$set: { invalid: true },
 			}
 		)
-		const parts2 = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 10)
+		const parts2 = rundownPlaylistPlayoutLockFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 10)
 		)
 		expect(parts2.map((p) => p._id)).toEqual([...partIds.slice(1, 5), ...partIds.slice(9)])
 
@@ -301,8 +284,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				$set: { invalid: true },
 			}
 		)
-		const parts3 = wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			getOrderedPartsAfterPlayhead(cache, playlist, 10)
+		const parts3 = rundownPlaylistPlayoutLockFunction(null, 'test', playlistId, null, (cache) =>
+			getOrderedPartsAfterPlayhead(cache, 10)
 		)
 		expect(parts3.map((p) => p._id)).toEqual(partIds.slice(1, 8))
 	})

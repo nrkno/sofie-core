@@ -8,6 +8,7 @@ import {
 } from '../playout/lib'
 import { CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
 import { profiler } from '../profiler'
+import { wrapWithProxyPlayoutCache } from '../playout/cache'
 
 export namespace UpdateNext {
 	export function ensureNextPartIsValid(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
@@ -42,12 +43,16 @@ export namespace UpdateNext {
 
 				if (newNextPart?.part?._id !== nextPartInstance.part._id || !nextPartInstance.part.isPlayable()) {
 					// The 'new' next part is before the current next, so move the next point
-					ServerPlayoutAPI.setNextPartInner(cache, playlist, newNextPart.part)
+					wrapWithProxyPlayoutCache(cache, playlist, (playoutCache) => {
+						ServerPlayoutAPI.setNextPartInner(playoutCache, newNextPart.part)
+					})
 				}
 			} else if (!nextPartInstance) {
 				// Don't have a currentPart or a nextPart, so set next to first in the show
 				const newNextPart = selectNextPart(playlist, currentPartInstance ?? null, allParts)
-				ServerPlayoutAPI.setNextPartInner(cache, playlist, newNextPart?.part ?? null)
+				wrapWithProxyPlayoutCache(cache, playlist, (playoutCache) => {
+					ServerPlayoutAPI.setNextPartInner(playoutCache, newNextPart?.part ?? null)
+				})
 			}
 		}
 

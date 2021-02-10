@@ -2,14 +2,11 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
-import { Part, DBPart, PartId } from '../../lib/collections/Parts'
-import { Piece, Pieces } from '../../lib/collections/Pieces'
-import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
+import { DBPart, PartId } from '../../lib/collections/Parts'
+import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { Segments, SegmentId } from '../../lib/collections/Segments'
 import {
-	saveIntoDb,
 	getCurrentTime,
-	getHash,
 	waitForPromise,
 	unprotectObjectArray,
 	protectString,
@@ -24,6 +21,7 @@ import {
 	waitForPromiseAll,
 	asyncCollectionRemove,
 	normalizeArrayToMap,
+	clone,
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
@@ -33,10 +31,11 @@ import {
 	ShowStyleVariant,
 	ShowStyleVariantId,
 	createShowStyleCompound,
+	ShowStyleCompound,
 } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { Studios, Studio, StudioId } from '../../lib/collections/Studios'
+import { Studios, Studio } from '../../lib/collections/Studios'
 import {
 	BlueprintResultOrderedRundowns,
 	ExtendedIngestRundown,
@@ -55,20 +54,19 @@ import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
-import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
-import { RundownPlaylistContentWriteAccess, RundownPlaylistReadAccess } from '../security/rundownPlaylist'
+import { StudioContentWriteAccess } from '../security/studio'
+import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import {
 	CacheForRundownPlaylist,
 	initCacheForRundownPlaylist,
 	initCacheForRundownPlaylistFromRundown,
 } from '../cache/DatabaseCaches'
 import { saveIntoCache } from '../cache/lib'
-import { removeRundownFromCache, removeRundownPlaylistFromCache, getAllOrderedPartsFromCache } from './playout/lib'
+import { removeRundownFromCache, removeRundownPlaylistFromCache } from './playout/lib'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
 import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
-import { modifyPlaylistExternalId } from './ingest/lib'
 import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
 import { profiler } from './profiler'
 import { updateRundownsInPlaylist } from './ingest/rundownInput'
@@ -77,17 +75,20 @@ import { getPlaylistIdFromExternalId, removeEmptyPlaylists } from './rundownPlay
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { StudioUserContext } from './blueprints/context'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
+import { CacheForPlayout } from './playout/cache'
 
 export function selectShowStyleVariant(
 	context: StudioUserContext,
 	ingestRundown: ExtendedIngestRundown
-): { variant: ShowStyleVariant; base: ShowStyleBase } | null {
-	const studio = context.getStudio()
+): { variant: ShowStyleVariant; base: ShowStyleBase; compound: ShowStyleCompound } | null {
+	const studio = context.studio
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
 		return null
 	}
-	const showStyleBases = ShowStyleBases.find({ _id: { $in: studio.supportedShowStyleBase } }).fetch()
+	const showStyleBases = ShowStyleBases.find({
+		_id: { $in: clone<Array<ShowStyleBaseId>>(studio.supportedShowStyleBase) },
+	}).fetch()
 	let showStyleBase = _.first(showStyleBases)
 	if (!showStyleBase) {
 		logger.debug(
@@ -137,9 +138,13 @@ export function selectShowStyleVariant(
 		if (!showStyleVariant)
 			throw new Meteor.Error(404, `Blueprint returned variantId "${variantId}", which was not found!`)
 
+		const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
+		if (!compound) throw new Meteor.Error(404, `no showStyleCompound for "${showStyleVariant._id}"`)
+
 		return {
 			variant: showStyleVariant,
 			base: showStyleBase,
+			compound,
 		}
 	}
 }
@@ -530,8 +535,7 @@ export type ChangedSegmentsRankInfo = Array<{
  * Orphaned PartInstances get ranks interpolated based on what they were ranked between before the ingest update
  */
 export function updatePartInstanceRanks(
-	cache: CacheForRundownPlaylist,
-	_playlist: RundownPlaylist,
+	cache: CacheForRundownPlaylist | CacheForPlayout,
 	changedSegments: ChangedSegmentsRankInfo
 ) {
 	const groupedPartInstances = _.groupBy(

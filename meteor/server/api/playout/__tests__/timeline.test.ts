@@ -13,10 +13,9 @@ import { Timeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
 import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { protectString, waitForPromise } from '../../../../lib/lib'
 import { MethodContext } from '../../../../lib/api/methods'
-import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylistFromStudio } from '../../../cache/DatabaseCaches'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+import { rundownPlaylistPlayoutLockFunction } from '../syncFunction'
 
 const DEFAULT_CONTEXT: MethodContext = {
 	userId: null,
@@ -42,13 +41,6 @@ describe('Timeline', () => {
 			PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			env.studio
 		)
-	})
-	testInFiber('non-existing studio', () => {
-		expect(() => {
-			const studioId = protectString('asdf')
-			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
-			updateTimeline(cache, protectString('asdf'))
-		}).toThrowError(/not found/i)
 	})
 	testInFiber('Basic rundown', () => {
 		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
@@ -102,18 +94,16 @@ describe('Timeline', () => {
 			// })
 		}
 
-		let cache = waitForPromise(initCacheForRundownPlaylistFromStudio(getRundown0().studioId))
-
-		updateTimeline(cache, getRundown0().studioId)
-		waitForPromise(cache.saveAllToDatabase())
+		rundownPlaylistPlayoutLockFunction(null, 'updateTimeline', getRundown0().playlistId, null, (cache) => {
+			updateTimeline(cache)
+		})
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 
-		cache = waitForPromise(initCacheForRundownPlaylistFromStudio(getRundown0().studioId))
-
-		const currentTime = 100 * 1000
-		updateTimeline(cache, getRundown0().studioId, currentTime)
-		waitForPromise(cache.saveAllToDatabase())
+		rundownPlaylistPlayoutLockFunction(null, 'updateTimeline', getRundown0().playlistId, null, (cache) => {
+			const currentTime = 100 * 1000
+			updateTimeline(cache, currentTime)
+		})
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 

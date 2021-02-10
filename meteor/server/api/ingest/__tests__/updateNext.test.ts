@@ -345,8 +345,7 @@ describe('Test ingest update next part helpers', () => {
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
-			expect.anything(),
-			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ PlaylistId: rundownPlaylistId }),
 			expect.objectContaining({ _id: 'mock_part1' })
 		)
 	})
@@ -357,8 +356,7 @@ describe('Test ingest update next part helpers', () => {
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
-			expect.anything(),
-			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ PlaylistId: rundownPlaylistId }),
 			expect.objectContaining({ _id: 'mock_part4' })
 		)
 
@@ -385,8 +383,7 @@ describe('Test ingest update next part helpers', () => {
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
-			expect.anything(),
-			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ PlaylistId: rundownPlaylistId }),
 			expect.objectContaining({ _id: 'mock_part1' })
 		)
 	})
@@ -411,8 +408,7 @@ describe('Test ingest update next part helpers', () => {
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
-			expect.anything(),
-			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ PlaylistId: rundownPlaylistId }),
 			expect.objectContaining({ _id: 'mock_part4' })
 		)
 	})
@@ -423,8 +419,7 @@ describe('Test ingest update next part helpers', () => {
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
-			expect.anything(),
-			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ PlaylistId: rundownPlaylistId }),
 			expect.objectContaining({ _id: 'mock_part4' })
 		)
 	})
@@ -435,8 +430,7 @@ describe('Test ingest update next part helpers', () => {
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
-			expect.anything(),
-			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ PlaylistId: rundownPlaylistId }),
 			expect.objectContaining({ _id: 'mock_part9' })
 		)
 	})
@@ -447,8 +441,7 @@ describe('Test ingest update next part helpers', () => {
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
-			expect.anything(),
-			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ PlaylistId: rundownPlaylistId }),
 			expect.objectContaining({ _id: 'mock_part9' })
 		)
 	})
