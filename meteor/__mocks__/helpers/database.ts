@@ -476,7 +476,6 @@ export function setupDefaultRundown(
 			core: '',
 		},
 
-		dataSource: 'mock',
 		externalNRCSName: 'mock',
 	}
 	Rundowns.insert(rundown)

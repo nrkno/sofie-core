@@ -22,8 +22,6 @@ import { TriggerReloadDataResponse } from '../../../../../lib/api/userActions'
 require('../../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
 describe('Test sending mos actions', () => {
-	// TODO - these tests are strangely slow
-
 	let device: PeripheralDevice
 	let observer: Meteor.LiveQueryHandle | null = null
 	beforeAll(() => {
