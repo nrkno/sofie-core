@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { MethodContext } from '../../../lib/api/methods'
 import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { protectString, waitForPromise } from '../../../lib/lib'
+import { waitForPromise } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/DatabaseCaches'
 import { syncFunction } from '../../codeControl'
 import { RundownSyncFunctionPriority } from '../ingest/rundownInput'
@@ -170,25 +170,25 @@ function playoutLockFunctionInner<T>(
 	fcn: (cache: CacheForPlayout) => Promise<T> | T,
 	options?: PlayoutLockOptions
 ): T {
-	function doPlaylistInner() {
-		const cache = waitForPromise(CacheForPlayout.create(tmpPlaylist))
+	async function doPlaylistInner() {
+		const cache = await CacheForPlayout.create(tmpPlaylist)
 
 		if (preInitFcn) {
-			waitForPromise(preInitFcn(cache))
+			await preInitFcn(cache)
 		}
 
-		waitForPromise(cache.initContent())
+		await cache.initContent()
 
-		const res = waitForPromise(fcn(cache))
+		const res = await fcn(cache)
 
-		waitForPromise(cache.saveAllToDatabase())
+		await cache.saveAllToDatabase()
 
 		return res
 	}
 
 	if (options?.skipPlaylistLock) {
 		// TODO-PartInstances remove this once new data flow
-		return doPlaylistInner()
+		return waitForPromise(doPlaylistInner())
 	} else {
 		return playoutNoCacheFromStudioLockFunction(
 			context,

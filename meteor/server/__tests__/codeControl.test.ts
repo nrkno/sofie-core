@@ -5,11 +5,7 @@ import { syncFunction, Callback, syncFunctionIgnore } from '../codeControl'
 import { RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
 import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime } from '../../lib/lib'
 import { useControllableDefer, useNextTickDefer } from '../../__mocks__/meteor'
-import {
-	setupDefaultRundownPlaylist,
-	setupDefaultStudioEnvironment,
-	setupEmptyEnvironment,
-} from '../../__mocks__/helpers/database'
+import { setupDefaultRundownPlaylist, setupDefaultStudioEnvironment } from '../../__mocks__/helpers/database'
 import { playoutNoCacheFromStudioLockFunction } from '../api/playout/syncFunction'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 

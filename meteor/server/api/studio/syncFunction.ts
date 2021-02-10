@@ -2,7 +2,7 @@ import { StudioId } from '../../../lib/collections/Studios'
 import { waitForPromise } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/DatabaseCaches'
 import { syncFunction } from '../../codeControl'
-import { CacheForStudio, CacheForStudioBase } from './cache'
+import { CacheForStudio } from './cache'
 
 export interface StudioLock {
 	readonly _studioId: StudioId

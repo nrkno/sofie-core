@@ -54,7 +54,6 @@ import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylists, ABSessionInfo } from '../../../../lib/collections/RundownPlaylists'
 import { generateFakeBlueprint } from './lib'
 import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
-import { Mutable } from 'type-fest'
 
 describe('Test blueprint api context', () => {
 	function generateSparsePieceInstances(rundown: Rundown) {
