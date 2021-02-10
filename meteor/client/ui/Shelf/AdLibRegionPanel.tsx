@@ -24,7 +24,6 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { MeteorCall } from '../../../lib/api/methods'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
-import { PieceExtended } from '../../../lib/Rundown'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -41,7 +40,7 @@ interface IAdLibRegionPanelProps {
 }
 
 interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {
-	piece: PieceUi | undefined
+	piece?: PieceUi | undefined
 	layer?: ISourceLayer
 	isLiveLine: boolean
 }
@@ -235,7 +234,7 @@ export const AdLibRegionPanel = translateWithTracker<
 			? nextThumbnail ?? currentThumbnail
 			: currentThumbnail ?? nextThumbnail
 
-		const pieceExtended: PieceExtended | undefined = thumbnailPiece
+		const pieceUi: PieceUi | undefined = thumbnailPiece
 			? {
 					instance: thumbnailPiece,
 					renderedInPoint: null,
@@ -249,8 +248,8 @@ export const AdLibRegionPanel = translateWithTracker<
 
 		return Object.assign({}, fetchAndFilter(props), {
 			studio,
-			piece: pieceExtended,
-			sourceLayer,
+			piece: pieceUi,
+			layer: sourceLayer,
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,
