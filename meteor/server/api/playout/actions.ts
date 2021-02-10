@@ -19,7 +19,10 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 	rehearsal = !!rehearsal
 	// if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(403, `Rundown "${rundown._id}" is active and not in rehersal, cannot reactivate!`)
 
-	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(cache.Studio.doc._id, cache.Playlist.doc._id)
+	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
+		cache.Studio.doc._id,
+		cache.Playlist.doc._id
+	)
 	if (anyOtherActiveRundowns.length) {
 		// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
 		const otherActiveIds = anyOtherActiveRundowns.map((playlist) => playlist._id)

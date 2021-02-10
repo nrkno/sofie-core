@@ -92,18 +92,21 @@ export namespace ServerPlayoutAPI {
 			'prepareRundownPlaylistForBroadcast',
 			rundownPlaylistId,
 			// RundownSyncFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (playlist.activationId)
 					throw new Meteor.Error(404, `rundownPrepareForBroadcast cannot be run on an active rundown!`)
 
-				const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
+				const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
+					playlist.studioId,
+					playlist._id
+				)
 				if (anyOtherActiveRundowns.length) {
 					// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
 					throw new Meteor.Error(
 						409,
 						'Only one rundown can be active at the same time. Active rundowns: ' +
-							_.map(anyOtherActiveRundowns, (rundown) => rundown._id)
+							anyOtherActiveRundowns.map((rundown) => rundown._id)
 					)
 				}
 			},
@@ -187,7 +190,10 @@ export namespace ServerPlayoutAPI {
 			async (cache) => {
 				const playlist = cache.Playlist.doc
 
-				const anyOtherActivePlaylists = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
+				const anyOtherActivePlaylists = await getActiveRundownPlaylistsInStudioFromDb(
+					playlist.studioId,
+					playlist._id
+				)
 				if (anyOtherActivePlaylists.length > 0) {
 					const errors: any[] = []
 					// Try deactivating everything in parallel, although there should only ever be one active
@@ -211,7 +217,7 @@ export namespace ServerPlayoutAPI {
 					)
 					if (errors.length > 0) {
 						// Ok, something went wrong, but check if the active rundowns where deactivated?
-						const anyOtherActivePlaylists = getActiveRundownPlaylistsInStudioFromDb(
+						const anyOtherActivePlaylists = await getActiveRundownPlaylistsInStudioFromDb(
 							playlist.studioId,
 							playlist._id
 						)

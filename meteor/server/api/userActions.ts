@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
-import { getCurrentTime, getHash, makePromise } from '../../lib/lib'
+import { getCurrentTime, getHash, makePromise, waitForPromise } from '../../lib/lib'
 import { Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { Parts, Part, PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
@@ -213,7 +213,9 @@ export function prepareForBroadcast(
 		return ClientAPI.responseError(
 			'Rundown Playlist is active, please deactivate before preparing it for broadcast'
 		)
-	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
+	const anyOtherActiveRundowns = waitForPromise(
+		getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
+	)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(
 			409,
@@ -252,7 +254,9 @@ export function resetAndActivate(
 			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
 		)
 	}
-	const anyOtherActiveRundownPlaylists = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
+	const anyOtherActiveRundownPlaylists = waitForPromise(
+		getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
+	)
 	if (anyOtherActiveRundownPlaylists.length) {
 		return ClientAPI.responseError(
 			409,
@@ -289,7 +293,9 @@ export function activate(
 	check(rehearsal, Boolean)
 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
+	const anyOtherActiveRundowns = waitForPromise(
+		getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
+	)
 
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(

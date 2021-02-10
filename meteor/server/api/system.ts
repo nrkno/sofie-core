@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { makePromise, ProtectedString, getCurrentTime, waitTime } from '../../lib/lib'
+import { makePromise, ProtectedString, getCurrentTime, waitTime, waitForPromise } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import {
@@ -461,7 +461,9 @@ function isAllowedToRunCleanup(): string | void {
 
 	const studios = Studios.find().fetch()
 	for (const studio of studios) {
-		const activePlaylist: RundownPlaylist | undefined = getActiveRundownPlaylistsInStudioFromDb(studio._id)[0]
+		const activePlaylist: RundownPlaylist | undefined = waitForPromise(
+			getActiveRundownPlaylistsInStudioFromDb(studio._id)
+		)[0]
 		if (activePlaylist) {
 			return `There is an active RundownPlaylist: "${activePlaylist.name}" in studio "${studio.name}" (${activePlaylist._id}, ${studio._id})`
 		}
