@@ -10,6 +10,7 @@ import {
 	literal,
 	asyncCollectionFindOne,
 	asyncCollectionRemove,
+	waitForPromiseAll,
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { CacheForRundownPlaylist } from '../DatabaseCaches'
@@ -19,6 +20,7 @@ import {
 	ExpectedPackageDB,
 	ExpectedPackageDBBase,
 	ExpectedPackageDBFromAdLibAction,
+	ExpectedPackageDBFromBaselineAdLibAction,
 	ExpectedPackageDBFromBucketAdLib,
 	ExpectedPackageDBFromBucketAdLibAction,
 	ExpectedPackageDBFromPiece,
@@ -32,6 +34,11 @@ import { Piece, PieceId } from '../../lib/collections/Pieces'
 import { BucketAdLibAction, BucketAdLibActionId, BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
 import { Meteor } from 'meteor/meteor'
 import { BucketAdLib, BucketAdLibId, BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import {
+	RundownBaselineAdLibAction,
+	RundownBaselineAdLibActions,
+} from '../../lib/collections/RundownBaselineAdLibActions'
 
 export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
 	check(rundownId, String)
@@ -56,18 +63,20 @@ export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, 
 			const pActions = asyncCollectionFindFetch(AdLibActions, { rundownId: rundown._id })
 			const pStudio = asyncCollectionFindOne(Studios, { _id: studioId })
 
+			const pBaselineAdlibs = asyncCollectionFindFetch(RundownBaselineAdLibPieces, { rundownId: rundown._id })
+			const pBaselineActions = asyncCollectionFindFetch(RundownBaselineAdLibActions, { rundownId: rundown._id })
+
 			const pieces = cache.Pieces.findFetch({
 				startRundownId: rundown._id,
 			})
 
-			const adlibs = waitForPromise(pAdlibs)
-			const actions = waitForPromise(pActions)
-			const studio = waitForPromise(pStudio)
-
-			// const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
-			// 	cache,
-			// 	playlist
-			// )
+			const [adlibs, actions, studio, baselineAdlibs, baselineActions] = waitForPromiseAll([
+				pAdlibs,
+				pActions,
+				pStudio,
+				pBaselineAdlibs,
+				pBaselineActions,
+			])
 
 			// todo: keep expectedPackage of the currently playing partInstance
 			if (!studio) throw new Error(`Studio "${studioId}" not found!`)
@@ -76,6 +85,9 @@ export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, 
 				...generateExpectedPackagesForPiece(studio, rundownId, pieces),
 				...generateExpectedPackagesForPiece(studio, rundownId, adlibs),
 				...generateExpectedPackagesForAdlibAction(studio, rundownId, actions),
+
+				...generateExpectedPackagesForPiece(studio, rundownId, baselineAdlibs),
+				...generateExpectedPackagesForBaselineAdlibAction(studio, rundownId, baselineActions),
 			]
 
 			saveIntoDb<ExpectedPackageDB, ExpectedPackageDB>(
@@ -116,6 +128,27 @@ function generateExpectedPackagesForAdlibAction(studio: Studio, rundownId: Rundo
 					rundownId,
 					pieceId: action._id,
 					fromPieceType: ExpectedPackageDBType.ADLIB_ACTION,
+				})
+			}
+		}
+	}
+	return packages
+}
+function generateExpectedPackagesForBaselineAdlibAction(
+	studio: Studio,
+	rundownId: RundownId,
+	actions: RundownBaselineAdLibAction[]
+) {
+	const packages: ExpectedPackageDBFromBaselineAdLibAction[] = []
+	for (const action of actions) {
+		if (action.expectedPackages) {
+			const bases = generateExpectedPackageBases(studio, action._id, action.expectedPackages)
+			for (const base of bases) {
+				packages.push({
+					...base,
+					rundownId,
+					pieceId: action._id,
+					fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_ACTION,
 				})
 			}
 		}

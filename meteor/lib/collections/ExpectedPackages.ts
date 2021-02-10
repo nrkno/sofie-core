@@ -9,6 +9,7 @@ import { registerIndex } from '../database'
 import { AdLibActionId } from './AdLibActions'
 import { BucketAdLibId } from './BucketAdlibs'
 import { BucketAdLibActionId } from './BucketAdlibActions'
+import { RundownBaselineAdLibActionId } from './RundownBaselineAdLibActions'
 /*
  Expected Packages are created from Pieces in the rundown.
  A "Package" is a generic term for a "thing that can be played", such as media files, audio, graphics etc..
@@ -23,12 +24,14 @@ export type ExpectedPackageId = ProtectedString<'ExpectedPackageId'>
 export type ExpectedPackageDB =
 	| ExpectedPackageDBFromPiece
 	| ExpectedPackageDBFromAdLibAction
+	| ExpectedPackageDBFromBaselineAdLibAction
 	| ExpectedPackageDBFromBucketAdLib
 	| ExpectedPackageDBFromBucketAdLibAction
 
 export enum ExpectedPackageDBType {
 	PIECE = 'piece',
 	ADLIB_ACTION = 'adlib_action',
+	BASELINE_ADLIB_ACTION = 'baseline_adlib_action',
 	BUCKET_ADLIB = 'bucket_adlib',
 	BUCKET_ADLIB_ACTION = 'bucket_adlib_action',
 }
@@ -56,6 +59,13 @@ export interface ExpectedPackageDBFromAdLibAction extends ExpectedPackageDBBase 
 	fromPieceType: ExpectedPackageDBType.ADLIB_ACTION
 	/** The Piece this package belongs to */
 	pieceId: AdLibActionId
+	/** The rundown of the Piece this package belongs to */
+	rundownId: RundownId
+}
+export interface ExpectedPackageDBFromBaselineAdLibAction extends ExpectedPackageDBBase {
+	fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_ACTION
+	/** The Piece this package belongs to */
+	pieceId: RundownBaselineAdLibActionId
 	/** The rundown of the Piece this package belongs to */
 	rundownId: RundownId
 }
