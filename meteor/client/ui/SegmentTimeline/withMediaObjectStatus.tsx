@@ -139,7 +139,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 								}
 							}
 						}
-					} else {
+					} else if (piece && !(piece.sourceLayer || layer)) {
 						console.error(`Piece has no sourceLayer:`, piece)
 					}
 
