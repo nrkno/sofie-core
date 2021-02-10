@@ -10,8 +10,9 @@ import { BucketId } from './Buckets'
 import { registerIndex } from '../database'
 import { AdLibActionId } from './AdLibActions'
 
+export type BucketAdLibActionId = AdLibActionId
 export interface BucketAdLibAction extends Omit<IBlueprintActionManifest, 'partId'> {
-	_id: AdLibActionId
+	_id: BucketAdLibActionId
 	bucketId: BucketId
 
 	externalId: string
