@@ -891,6 +891,19 @@ export const caught: <T>(v: Promise<T>) => Promise<T> = ((f) => (p) => (p.catch(
 /**
  * Blocks the fiber until all the Promises have resolved
  */
+export function waitForPromiseAll<T1, T2, T3, T4, T5, T6>(
+	ps: [
+		T1 | PromiseLike<T1>,
+		T2 | PromiseLike<T2>,
+		T3 | PromiseLike<T3>,
+		T4 | PromiseLike<T4>,
+		T5 | PromiseLike<T5>,
+		T6 | PromiseLike<T6>
+	]
+): [T1, T2, T3, T4, T5, T6]
+export function waitForPromiseAll<T1, T2, T3, T4, T5>(
+	ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>, T4 | PromiseLike<T4>, T5 | PromiseLike<T5>]
+): [T1, T2, T3, T4, T5]
 export function waitForPromiseAll<T1, T2, T3, T4>(
 	ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>, T4 | PromiseLike<T4>]
 ): [T1, T2, T3, T4]
