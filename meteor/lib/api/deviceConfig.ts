@@ -9,6 +9,10 @@
  * options. A table type is rendered as an actual table in core, where the rows
  * are instances of a certain type or are all the same. Manifests entries can
  * describe some properties to be rendered inside this table
+ *
+ * IMPORTANT - any updates done to this file should also be changed in
+ * @tv-automation/server-core-integration, such that the gateways can actually
+ * implement it in the manifests.
  */
 
 export interface DeviceConfigManifest {
@@ -21,6 +25,10 @@ export interface DeviceConfigManifest {
 	 * getting an authentication token go in here
 	 */
 	deviceOAuthFlow?: DeviceOAuthFlow
+	/**
+	 * A description of the layer mapping config fields
+	 */
+	layerMappings?: MappingsManifest
 }
 
 export interface DeviceOAuthFlow {
@@ -49,6 +57,7 @@ export interface ConfigManifestEntryBase {
 	type: ConfigManifestEntryType
 	values?: any // for enum
 	placeholder?: string
+	hint?: string
 }
 export interface ConfigManifestEnumEntry extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.ENUM
@@ -82,4 +91,11 @@ export interface TableConfigManifestEntry extends ConfigManifestEntryBase {
 	typeField?: string
 	/** Only one type means that the type option will not be present */
 	config: { [type: string]: TableEntryConfigManifestEntry[] }
+}
+
+export type MappingsManifest = Record<string, MappingManifestEntry[]>
+
+export interface MappingManifestEntry extends ConfigManifestEntryBase {
+	optional?: boolean
+	includeInSummary?: boolean
 }

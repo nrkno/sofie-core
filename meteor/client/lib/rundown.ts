@@ -22,7 +22,7 @@ import {
 import { DBSegment, Segment, SegmentId } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { literal, normalizeArray, getCurrentTime, applyToArray, unprotectString } from '../../lib/lib'
+import { literal, normalizeArray, getCurrentTime, applyToArray, unprotectString, protectString } from '../../lib/lib'
 import { PartInstance, wrapPartToTemporaryInstance } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
@@ -34,7 +34,6 @@ import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { Mongo } from 'meteor/mongo'
 import { FindOptions } from '../../lib/typings/meteor'
-import { Meteor } from 'meteor/meteor'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
@@ -237,6 +236,7 @@ export namespace RundownUtils {
 			partsOptions
 		)
 		const rawPartInstances = playlist.getActivePartInstances(partInstancesQuery, partInstancesOptions)
+		const playlistActivationId = playlist.activationId ?? protectString('')
 
 		const partsBySegment = _.groupBy(rawParts, (p) => p.segmentId)
 		const partInstancesBySegment = _.groupBy(rawPartInstances, (p) => p.segmentId)
@@ -248,7 +248,7 @@ export namespace RundownUtils {
 			if (segmentPartInstances.length === 0) {
 				return {
 					segment,
-					partInstances: segmentParts.map(wrapPartToTemporaryInstance),
+					partInstances: segmentParts.map((p) => wrapPartToTemporaryInstance(playlistActivationId, p)),
 				}
 			} else if (segmentParts.length === 0) {
 				return {
@@ -257,7 +257,8 @@ export namespace RundownUtils {
 				}
 			} else {
 				const partInstanceMap = new Map<PartId, PartInstance>()
-				for (const part of segmentParts) partInstanceMap.set(part._id, wrapPartToTemporaryInstance(part))
+				for (const part of segmentParts)
+					partInstanceMap.set(part._id, wrapPartToTemporaryInstance(playlistActivationId, part))
 				for (const partInstance of segmentPartInstances) {
 					// Check what we already have in the map for this PartId. If the map returns the currentPartInstance then we keep that, otherwise replace with this partInstance
 					const currentValue = partInstanceMap.get(partInstance.part._id)

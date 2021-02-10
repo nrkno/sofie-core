@@ -121,6 +121,10 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 					opacity: 0.7;
 				}
 			}
+
+			> .adlib-panel__list-view__toolbar__filter__input:focus + .adlib-panel__list-view__toolbar__filter__clear {
+				color: #000;
+			}
 		}
 
 		> .adlib-panel__list-view__toolbar__buttons {

@@ -497,15 +497,20 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 
 			// rewind all scrollLeft's to 0 on rundown activate
-			if (this.props.playlist && this.props.playlist.active && prevProps.playlist && !prevProps.playlist.active) {
+			if (
+				this.props.playlist &&
+				this.props.playlist.activationId &&
+				prevProps.playlist &&
+				!prevProps.playlist.activationId
+			) {
 				this.setState({
 					scrollLeft: 0,
 				})
 			} else if (
 				this.props.playlist &&
-				!this.props.playlist.active &&
+				!this.props.playlist.activationId &&
 				prevProps.playlist &&
-				prevProps.playlist.active
+				prevProps.playlist.activationId
 			) {
 				this.setState({
 					livePosition: 0,

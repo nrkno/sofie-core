@@ -71,7 +71,6 @@ body.transparent {
 		white-space: nowrap;
 		overflow: hidden;
 
-		font-weight: normal;
 		font-style: normal;
 		font-stretch: normal;
 		letter-spacing: normal;
@@ -100,11 +99,13 @@ body.transparent {
 		font-weight: 100;
 		text-align: center;
 		min-width: 3em;
+		color: $general-countdown-to-next-color;
 	}
 
 	.clock-segment-countdown-next {
 		font-weight: 500;
 		text-transform: uppercase;
+		color: #ffffff;
 	}
 
 	.clocks-rundown-countdown {
@@ -116,7 +117,7 @@ body.transparent {
 	}
 
 	.clocks-segment-countdown-red {
-		color: red;
+		color: $general-late-color;
 	}
 
 	.clocks-counter-heavy {
@@ -125,9 +126,6 @@ body.transparent {
 
 	.clocks-counter-normal {
 		font-weight: 300;
-	}
-
-	.clocks-title-small {
 	}
 
 	.clocks-rundown-bottom-bar {

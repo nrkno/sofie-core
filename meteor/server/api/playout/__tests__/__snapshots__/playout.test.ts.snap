@@ -168,8 +168,6 @@ Array [
 exports[`Playout API Basic rundown control 4`] = `
 Object {
   "_id": "playlist_randomId9002",
-  "active": false,
-  "activeInstanceId": "randomId9008",
   "created": 0,
   "currentPartInstanceId": null,
   "externalId": "MOCK_RUNDOWNPLAYLIST",

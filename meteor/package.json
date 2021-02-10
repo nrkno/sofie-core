@@ -100,7 +100,7 @@
 		"react-timer-hoc": "^2.3.0",
 		"semver": "^7.3.4",
 		"soap": "^0.35.0",
-		"superfly-timeline": "^8.1.2",
+		"superfly-timeline": "^8.2.0",
 		"timecode": "0.0.4",
 		"type-fest": "^0.20.2",
 		"underscore": "^1.12.0",

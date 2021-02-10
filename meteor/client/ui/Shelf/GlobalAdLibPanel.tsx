@@ -5,17 +5,11 @@ import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { withTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Segment } from '../../../lib/collections/Segments'
-import { Part, Parts } from '../../../lib/collections/Parts'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
-
-import { faTh, faList, faTimes } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { RundownViewKbdShortcuts } from '../RundownView'
 
@@ -24,21 +18,19 @@ import { literal, normalizeArray, unprotectString, protectString } from '../../.
 import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { PieceGeneric } from '../../../lib/collections/Pieces'
 import {
 	IOutputLayer,
 	ISourceLayer,
-	SomeContent,
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
 	SomeTimelineContent,
 } from '@sofie-automation/blueprints-integration'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { PartInstances } from '../../../lib/collections/PartInstances'
-import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
+import { AdlibSegmentUi, AdLibPieceUi, AdLibPanelToolbar } from './AdLibPanel'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
@@ -155,7 +147,7 @@ const AdLibListView = withTranslation()(
 									item.isSticky &&
 									item.sourceLayer &&
 									(!this.props.searchFilter ||
-										item.name.toUpperCase().indexOf(this.props.searchFilter.toUpperCase()) >= 0)
+										item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0)
 								) {
 									return (
 										<AdLibListItem
@@ -178,7 +170,7 @@ const AdLibListView = withTranslation()(
 									item.sourceLayer &&
 									item.outputLayer &&
 									(!this.props.searchFilter ||
-										item.name.toUpperCase().indexOf(this.props.searchFilter.toUpperCase()) >= 0)
+										item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0)
 								) {
 									return (
 										<AdLibListItem
@@ -199,7 +191,7 @@ const AdLibListView = withTranslation()(
 									)
 								} else if (
 									!this.props.searchFilter ||
-									item.name.toUpperCase().indexOf(this.props.searchFilter.toUpperCase()) >= 0
+									item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0
 								) {
 									return (
 										<AdLibListItem
@@ -239,78 +231,6 @@ const AdLibListView = withTranslation()(
 					<table className="adlib-panel__list-view__list__table" ref={this.setTableRef}>
 						{this.renderGlobalAdLibs()}
 					</table>
-				</div>
-			)
-		}
-	}
-)
-
-interface IToolbarPropsHeader {
-	onFilterChange?: (newFilter: string | undefined) => void
-}
-
-interface IToolbarStateHader {
-	searchInputValue: string
-}
-
-const AdLibPanelToolbar = withTranslation()(
-	class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
-		searchInput: HTMLInputElement
-
-		constructor(props: Translated<IToolbarPropsHeader>) {
-			super(props)
-
-			this.state = {
-				searchInputValue: '',
-			}
-		}
-
-		setSearchInputRef = (el: HTMLInputElement) => {
-			this.searchInput = el
-		}
-
-		searchInputChanged = (e?: React.ChangeEvent<HTMLInputElement>) => {
-			this.setState({
-				searchInputValue: this.searchInput.value,
-			})
-
-			this.props.onFilterChange &&
-				typeof this.props.onFilterChange === 'function' &&
-				this.props.onFilterChange(this.searchInput.value)
-		}
-
-		clearSearchInput = () => {
-			this.searchInput.value = ''
-
-			this.searchInputChanged()
-		}
-
-		render() {
-			const { t } = this.props
-			return (
-				<div className="adlib-panel__list-view__toolbar adlib-panel__list-view__toolbar--no-segments">
-					<div className="adlib-panel__list-view__toolbar__filter">
-						<input
-							className="adlib-panel__list-view__toolbar__filter__input"
-							type="text"
-							ref={this.setSearchInputRef}
-							placeholder={t('Search...')}
-							onChange={this.searchInputChanged}
-						/>
-						{this.state.searchInputValue !== '' && (
-							<div className="adlib-panel__list-view__toolbar__filter__clear" onClick={this.clearSearchInput}>
-								<FontAwesomeIcon icon={faTimes} />
-							</div>
-						)}
-					</div>
-					<div className="adlib-panel__list-view__toolbar__buttons" style={{ display: 'none' }}>
-						<button className="action-btn">
-							<FontAwesomeIcon icon={faList} />
-						</button>
-						<button className="action-btn">
-							<FontAwesomeIcon icon={faTh} />
-						</button>
-					</div>
 				</div>
 			)
 		}
@@ -616,7 +536,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		onToggleSticky = (sourceLayerId: string, e: any) => {
-			if (this.props.currentRundown && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
+			if (this.props.currentRundown && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
 				const { t } = this.props
 				doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
 					MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId)
@@ -736,7 +656,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		renderListView() {
 			return (
 				<React.Fragment>
-					<AdLibPanelToolbar onFilterChange={this.onFilterChange} />
+					<AdLibPanelToolbar onFilterChange={this.onFilterChange} noSegments={true} />
 					<AdLibListView
 						onSelectAdLib={this.onSelectAdLib}
 						onToggleAdLib={this.onToggleAdLib}

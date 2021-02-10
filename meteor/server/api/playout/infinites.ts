@@ -15,6 +15,7 @@ import {
 	buildPastInfinitePiecesForThisPartQuery,
 } from '../../../lib/rundown/infinites'
 import { profiler } from '../profiler'
+import { Meteor } from 'meteor/meteor'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -137,6 +138,9 @@ function getPlayheadTrackingInfinitesForPart(
 	nextPartInstance: PartInstance
 ): PieceInstance[] {
 	const span = profiler.startSpan('getPlayheadTrackingInfinitesForPart')
+
+	if (!playlist.activationId) throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is not active`)
+
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, nextPartInstance.part)
 
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
@@ -150,6 +154,7 @@ function getPlayheadTrackingInfinitesForPart(
 	const playingPieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
 
 	const res = libgetPlayheadTrackingInfinitesForPart(
+		playlist.activationId,
 		new Set(partsBeforeThisInSegment),
 		new Set(segmentsBeforeThisInRundown),
 		playingPartInstance,
@@ -175,6 +180,8 @@ export function getPieceInstancesForPart(
 	const span = profiler.startSpan('getPieceInstancesForPart')
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
+	if (!playlist.activationId) throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is not active`)
+
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
 	const playingPieceInstances = playingPartInstance
 		? cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
@@ -183,6 +190,7 @@ export function getPieceInstancesForPart(
 	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(playlist, orderedParts, playingPartInstance, part)
 
 	const res = libgetPieceInstancesForPart(
+		playlist.activationId,
 		playingPartInstance,
 		playingPieceInstances,
 		part,

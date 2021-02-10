@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/server-core-integration",
-	"version": "1.18.0-in-development-R30",
+	"version": "1.18.0-0-in-testing-R30",
 	"description": "Library for connecting to Core",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -93,7 +93,7 @@
 		"open-cli": "^6.0.1",
 		"standard-version": "^9.0.0",
 		"trash-cli": "^4.0.0",
-		"ts-jest": "^26.4.4",
+		"ts-jest": "^26.5.0",
 		"tslint": "^6.1.3",
 		"tslint-config-standard": "^9.0.0",
 		"typescript": "~4.0"

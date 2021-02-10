@@ -6,6 +6,7 @@ import { Part, DBPart } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { PieceInstance } from '../../lib/collections/PieceInstances'
+import { PartInstance } from '../../lib/collections/PartInstances'
 const cloneOrg = require('fast-clone')
 
 // About snapshot testing: https://jestjs.io/docs/en/snapshot-testing
@@ -20,6 +21,7 @@ type Data =
 	| DBPart
 	| Piece
 	| PieceInstance
+	| PartInstance
 /**
  * Remove certain fields from data that change often, so that it can be used in snapshots
  * @param data

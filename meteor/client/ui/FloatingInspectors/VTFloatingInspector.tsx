@@ -27,6 +27,7 @@ interface IProps {
 	contentPackageInfos: ScanInfoForPackages | undefined
 	expectedPackages: ExpectedPackage.Any[] | undefined
 	studioPackageContainers: Studio['packageContainers'] | undefined
+	displayOn?: 'document' | 'viewport'
 }
 
 function getPackagePreviewUrl(
@@ -136,7 +137,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 		: getMediaPreviewUrl(props.contentMetaData, props.mediaPreviewUrl) // Fallback, media objects
 
 	return (
-		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined}>
+		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
 			{previewUrl ? (
 				<div
 					className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"

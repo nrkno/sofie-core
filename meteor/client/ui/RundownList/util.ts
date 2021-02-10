@@ -8,6 +8,7 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { TFunction } from 'i18next'
+import { handleRundownReloadResponse } from '../RundownView'
 
 export function getRundownPlaylistLink(rundownPlaylistId: RundownPlaylistId): string {
 	// double encoding so that "/" are handled correctly
@@ -67,7 +68,17 @@ export function confirmReSyncRundown(rundown: Rundown, t: TFunction): void {
 		yes: t('Re-Sync'),
 		no: t('Cancel'),
 		onAccept: (e) => {
-			doUserAction(t, e, UserAction.RESYNC_RUNDOWN, (e) => MeteorCall.userAction.resyncRundown(e, rundown._id))
+			doUserAction(
+				t,
+				e,
+				UserAction.RESYNC_RUNDOWN,
+				(e) => MeteorCall.userAction.resyncRundown(e, rundown._id),
+				(err, res) => {
+					if (!err && res) {
+						return handleRundownReloadResponse(t, rundown._id, res)
+					}
+				}
+			)
 		},
 		message: t('Are you sure you want to re-sync the "{{name}}" rundown?', {
 			name: rundown.name,

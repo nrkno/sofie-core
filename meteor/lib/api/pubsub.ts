@@ -43,6 +43,7 @@ export enum PubSub {
 	organization = 'organization',
 	buckets = 'buckets',
 	bucketAdLibPieces = 'bucketAdLibPieces',
+	translationsBundles = 'translationsBundles',
 	bucketAdLibActions = 'bucketAdLibActions',
 	expectedPackages = 'expectedPackages',
 	expectedPackageWorkStatuses = 'expectedPackageWorkStatuses',

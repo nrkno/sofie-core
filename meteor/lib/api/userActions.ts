@@ -271,6 +271,8 @@ export enum UserActionAPIMethods {
 	'guiFocused' = 'userAction.focused',
 	'guiBlurred' = 'userAction.blurred',
 
+	'getTranslationBundle' = 'userAction.getTranslationBundle',
+
 	'switchRouteSet' = 'userAction.switchRouteSet',
 	'moveRundown' = 'userAction.moveRundown',
 	'restoreRundownOrder' = 'userAction.restoreRundownOrder',

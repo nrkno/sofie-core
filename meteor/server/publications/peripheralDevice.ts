@@ -176,7 +176,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 							fields: {
 								// It should be enough to watch these fields for changes
 								_id: 1,
-								active: 1,
+								activationId: 1,
 								rehearsal: 1,
 								currentPartInstanceId: 1,
 							},
@@ -411,7 +411,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 						activeplaylist: context.activePlaylist
 							? {
 									_id: context.activePlaylist._id,
-									active: context.activePlaylist.active,
+									active: !!context.activePlaylist.activationId,
 									rehearsal: context.activePlaylist.rehearsal,
 							  }
 							: undefined,

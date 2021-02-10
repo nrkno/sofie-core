@@ -40,31 +40,16 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
-import {
-	mappingIsAbstract,
-	mappingIsCasparCG,
-	mappingIsAtem,
-	mappingIsLawo,
-	mappingIsPanasonicPtz,
-	mappingIsHTTPSend,
-	mappingIsHyperdeck,
-	mappingIsPharos,
-	mappingIsOSC,
-	mappingIsQuantel,
-	mappingIsSisyfos,
-	mappingIsTCPSend,
-	mappingIsSisyfosChannel,
-} from '../../../lib/api/studios'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { unprotectString, protectString } from '../../../lib/lib'
-import { PlayoutAPIMethods } from '../../../lib/api/playout'
 import { MeteorCall } from '../../../lib/api/methods'
 import { TransformedCollection } from '../../../lib/typings/meteor'
 import { doUserAction, UserAction } from '../../lib/userAction'
-import { Settings } from '../../../lib/Settings'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
+import { MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
+import { renderEditAttribute } from './components/ConfigManifestEntryComponent'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -211,6 +196,7 @@ interface IDeviceMappingSettingsProps {
 	mapping: MappingExt
 	attribute: string
 	showOptional?: boolean
+	manifest: MappingsManifest
 }
 
 const DeviceMappingSettings = withTranslation()(
@@ -230,290 +216,37 @@ const DeviceMappingSettings = withTranslation()(
 			)
 		}
 
-		renderCasparCGMappingSettings(attribute: string, showOptional?: boolean) {
-			const { t } = this.props
+		renderManifestEntry(attribute: string, manifest: MappingManifestEntry[], showOptional?: boolean) {
 			return (
 				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('CasparCG Channel')}
-							{showOptional && this.renderOptionalInput(attribute + '.channel', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={attribute + '.channel'}
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-							<span className="text-s dimmed">{t('The CasparCG channel to use (1 is the first)')}</span>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('CasparCG Layer')}
-							{showOptional && this.renderOptionalInput(attribute + '.layer', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={attribute + '.layer'}
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-							<span className="text-s dimmed">{t('The layer in a channel to use')}</span>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Preview when not on air')}
-							{showOptional && this.renderOptionalInput(attribute + '.previewWhenNotOnAir', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={attribute + '.previewWhenNotOnAir'}
-								obj={this.props.studio}
-								type="checkbox"
-								collection={Studios}
-								className="input"></EditAttribute>
-							<span className="text-s dimmed">{t('Whether to load to first frame')}</span>
-						</label>
-					</div>
+					{manifest.map((m) => (
+						<div className="mod mvs mhs" key={m.id}>
+							<label className="field">
+								{m.name}
+								{showOptional && this.renderOptionalInput(attribute + '.' + m.id, this.props.studio, Studios)}
+								{renderEditAttribute(Studios, m as any, this.props.studio, attribute + '.')}
+								{m.hint && <span className="text-s dimmed">{m.hint}</span>}
+							</label>
+						</div>
+					))}
 				</React.Fragment>
 			)
 		}
 
-		renderAtemMappingSettings(attribute: string, showOptional?: boolean) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Mapping type')}
-							{showOptional && this.renderOptionalInput(attribute + '.mappingType', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={attribute + '.mappingType'}
-								obj={this.props.studio}
-								type="dropdown"
-								options={TSR.MappingAtemType}
-								optionsAreNumbers={true}
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Index')}
-							{showOptional && this.renderOptionalInput(attribute + '.index', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={attribute + '.index'}
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-				</React.Fragment>
-			)
-		}
-		renderLawoMappingSettings(attribute: string, showOptional?: boolean) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Mapping type')}
-							{showOptional && this.renderOptionalInput(attribute + '.mappingType', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={attribute + '.mappingType'}
-								obj={this.props.studio}
-								type="dropdown"
-								options={TSR.MappingLawoType}
-								optionsAreNumbers={false}
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Identifier')}
-							{showOptional && this.renderOptionalInput(attribute + '.identifier', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={attribute + '.identifier'}
-								obj={this.props.studio}
-								type="text"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Priority')}
-							{showOptional && this.renderOptionalInput(attribute + '.priority', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={attribute + '.priority'}
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-				</React.Fragment>
-			)
-		}
-		renderPanasonicPTZSettings(attribute: string, showOptional?: boolean) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Mapping type')}
-							{showOptional && this.renderOptionalInput(attribute + '.mappingType', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={attribute + '.mappingType'}
-								obj={this.props.studio}
-								type="dropdown"
-								options={TSR.MappingPanasonicPtzType}
-								optionsAreNumbers={false}
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-				</React.Fragment>
-			)
-		}
-		renderTCPSendSettings(attribute: string, _showOptional?: boolean) {
-			const { t } = this.props
-			return <React.Fragment></React.Fragment>
-		}
-
-		renderHyperdeckMappingSettings(attribute: string, showOptional?: boolean) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Mapping type')}
-							{showOptional && this.renderOptionalInput(attribute + '.mappingType', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={attribute + '.mappingType'}
-								obj={this.props.studio}
-								type="dropdown"
-								options={TSR.MappingHyperdeckType}
-								optionsAreNumbers={false}
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-				</React.Fragment>
-			)
-		}
-		renderPharosMappingSettings(attribute: string, _showOptional?: boolean) {
-			return <React.Fragment></React.Fragment>
-		}
-		renderSisyfosMappingSettings(prefix: string, showOptional?: boolean) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Sisyfos Channel')}
-							{showOptional && this.renderOptionalInput(prefix + '.channel', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={prefix + '.channel'}
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-				</React.Fragment>
-			)
-		}
-		renderQuantelMappingSettings(attribute: string, showOptional?: boolean) {
-			const { t } = this.props
-
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Quantel Port ID')}
-							{showOptional && this.renderOptionalInput(attribute + '.portId', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={attribute + '.portId'}
-								obj={this.props.studio}
-								type="text"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-							<span className="text-s dimmed">{t("The name you'd like the port to have")}</span>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Quantel Channel ID')}
-							{showOptional && this.renderOptionalInput(attribute + '.channelId', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={attribute + '.channelId'}
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-							<span className="text-s dimmed">{t('The channel to use for output (0 is the first one)')}</span>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Mode')}
-							{showOptional && this.renderOptionalInput(attribute + '.mode', this.props.studio, Studios)}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={attribute + '.mode'}
-								obj={this.props.studio}
-								type="dropdown"
-								options={TSR.QuantelControlMode}
-								optionsAreNumbers={false}
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-				</React.Fragment>
-			)
-		}
 		render() {
 			const { mapping, attribute, showOptional } = this.props
+			const manifest = this.props.manifest[mapping.device]
 
-			return mappingIsCasparCG(mapping)
-				? this.renderCasparCGMappingSettings(attribute, showOptional)
-				: mappingIsAtem(mapping)
-				? this.renderAtemMappingSettings(attribute, showOptional)
-				: mappingIsLawo(mapping)
-				? this.renderLawoMappingSettings(attribute, showOptional)
-				: mappingIsPanasonicPtz(mapping)
-				? this.renderPanasonicPTZSettings(attribute, showOptional)
-				: mappingIsTCPSend(mapping)
-				? this.renderTCPSendSettings(attribute, showOptional)
-				: mappingIsHyperdeck(mapping)
-				? this.renderHyperdeckMappingSettings(attribute, showOptional)
-				: mappingIsPharos(mapping)
-				? this.renderPharosMappingSettings(attribute, showOptional)
-				: mappingIsSisyfos(mapping)
-				? this.renderSisyfosMappingSettings(attribute, showOptional)
-				: mappingIsQuantel(mapping)
-				? this.renderQuantelMappingSettings(attribute, showOptional)
-				: null
+			if (manifest) return this.renderManifestEntry(attribute, manifest, showOptional)
+
+			return null
 		}
 	}
 )
 
 interface IStudioMappingsProps {
 	studio: Studio
+	manifest?: MappingsManifest
 }
 interface IStudioMappingsState {
 	editedMappings: Array<string>
@@ -616,7 +349,30 @@ const StudioMappings = withTranslation()(
 			this.editItem(newLayerId)
 		}
 
-		renderMappings() {
+		renderSummary(manifest: MappingsManifest, mapping: MappingExt) {
+			const m = manifest[mapping.device]
+			if (m) {
+				return (
+					<span>
+						{m
+							.filter((entry) => entry.includeInSummary)
+							.map(
+								(entry) =>
+									entry.name +
+									': ' +
+									(entry.values && entry.values[mapping[entry.id]]
+										? entry.values[mapping[entry.id]]
+										: mapping[entry.id])
+							)
+							.join(' - ')}
+					</span>
+				)
+			} else {
+				return <span>-</span>
+			}
+		}
+
+		renderMappings(manifest: MappingsManifest) {
 			const { t } = this.props
 
 			const activeRoutes = getActiveRoutes(this.props.studio)
@@ -643,53 +399,7 @@ const StudioMappings = withTranslation()(
 							</th>
 							<td className="settings-studio-device__id c2">{TSR.DeviceType[mapping.device]}</td>
 							<td className="settings-studio-device__id c2">{mapping.deviceId}</td>
-							<td className="settings-studio-device__id c4">
-								{(mappingIsAbstract(mapping) && <span>-</span>) ||
-									(mappingIsCasparCG(mapping) && (
-										<span>
-											{mapping.channel} - {mapping.layer}
-										</span>
-									)) ||
-									(mappingIsAtem(mapping) && (
-										<span>
-											{TSR.MappingAtemType[mapping.mappingType]} {mapping.index}
-										</span>
-									)) ||
-									(mappingIsLawo(mapping) && (
-										<span>
-											{TSR.MappingLawoType[mapping.mappingType]} {mapping.identifier}
-										</span>
-									)) ||
-									(mappingIsPanasonicPtz(mapping) && (
-										<span>
-											{mapping.mappingType === TSR.MappingPanasonicPtzType.PRESET
-												? t('Preset')
-												: mapping.mappingType === TSR.MappingPanasonicPtzType.PRESET_SPEED
-												? t('Preset Transition Speed')
-												: mapping.mappingType === TSR.MappingPanasonicPtzType.ZOOM
-												? t('Zoom')
-												: mapping.mappingType === TSR.MappingPanasonicPtzType.ZOOM_SPEED
-												? t('Zoom Speed')
-												: t('Unknown Mapping')}
-										</span>
-									)) ||
-									(mappingIsHTTPSend(mapping) && <span>-</span>) ||
-									(mappingIsHyperdeck(mapping) && <span>{mapping.mappingType}</span>) ||
-									(mappingIsPharos(mapping) && <span>-</span>) ||
-									(mappingIsOSC(mapping) && <span>-</span>) ||
-									(mappingIsSisyfos(mapping) && mappingIsSisyfosChannel(mapping) ? (
-										<span>{t('Channel: {{channel}}', { channel: mapping.channel })}</span>
-									) : (
-										''
-									)) ||
-									(mappingIsQuantel(mapping) && (
-										<span>
-											{t('Port: {{port}}, Channel: {{channel}}', { port: mapping.portId, channel: mapping.channelId })}
-										</span>
-									)) || (
-										<span>{t('Unknown device type: {{device}}', { device: TSR.DeviceType[mapping.device] })} </span>
-									)}
-							</td>
+							<td className="settings-studio-device__id c4">{this.renderSummary(manifest, mapping)}</td>
 
 							<td className="settings-studio-device__actions table-item-actions c3">
 								<button className="action-btn" onClick={(e) => this.editItem(layerId)}>
@@ -791,6 +501,7 @@ const StudioMappings = withTranslation()(
 											mapping={mapping}
 											studio={this.props.studio}
 											attribute={'mappings.' + layerId}
+											manifest={manifest}
 										/>
 									</div>
 									<div className="mod alright">
@@ -811,14 +522,21 @@ const StudioMappings = withTranslation()(
 			return (
 				<div>
 					<h2 className="mhn">{t('Layer Mappings')}</h2>
-					<table className="expando settings-studio-mappings-table">
-						<tbody>{this.renderMappings()}</tbody>
-					</table>
-					<div className="mod mhs">
-						<button className="btn btn-primary" onClick={(e) => this.addNewLayer()}>
-							<FontAwesomeIcon icon={faPlus} />
-						</button>
-					</div>
+					{!this.props.manifest && (
+						<span>{t('Add a playout device to the studio in order to edit the layer mappings')}</span>
+					)}
+					{this.props.manifest && (
+						<React.Fragment>
+							<table className="expando settings-studio-mappings-table">
+								<tbody>{this.renderMappings(this.props.manifest)}</tbody>
+							</table>
+							<div className="mod mhs">
+								<button className="btn btn-primary" onClick={(e) => this.addNewLayer()}>
+									<FontAwesomeIcon icon={faPlus} />
+								</button>
+							</div>
+						</React.Fragment>
+					)}
 				</div>
 			)
 		}
@@ -827,6 +545,7 @@ const StudioMappings = withTranslation()(
 
 interface IStudioRoutingsProps {
 	studio: Studio
+	manifest?: MappingsManifest
 }
 interface IStudioRoutingsState {
 	editedItems: Array<string>
@@ -1066,7 +785,7 @@ const StudioRoutings = withTranslation()(
 			)
 		}
 
-		renderRoutes(routeSet: StudioRouteSet, routeSetId: string) {
+		renderRoutes(routeSet: StudioRouteSet, routeSetId: string, manifest: MappingsManifest) {
 			const { t } = this.props
 
 			return (
@@ -1170,6 +889,7 @@ const StudioRoutings = withTranslation()(
 												studio={this.props.studio}
 												attribute={`routeSets.${routeSetId}.routes.${index}.remapping`}
 												showOptional={true}
+												manifest={manifest}
 											/>
 										</>
 									) : null}
@@ -1269,7 +989,7 @@ const StudioRoutings = withTranslation()(
 			)
 		}
 
-		renderRouteSets() {
+		renderRouteSets(manifest: MappingsManifest) {
 			const { t } = this.props
 
 			const DEFAULT_ACTIVE_OPTIONS = {
@@ -1415,7 +1135,7 @@ const StudioRoutings = withTranslation()(
 											</label>
 										</div>
 									</div>
-									{this.renderRoutes(routeSet, routeId)}
+									{this.renderRoutes(routeSet, routeId, manifest)}
 									<div className="mod">
 										<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(routeId)}>
 											<FontAwesomeIcon icon={faCheck} />
@@ -1437,29 +1157,36 @@ const StudioRoutings = withTranslation()(
 			return (
 				<div>
 					<h2 className="mhn mbs">{t('Route Sets')}</h2>
-					<p className="mhn mvs text-s dimmed">
-						{t(
-							'Controls for exposed Route Sets will be displayed to the producer within the Rundown View in the Switchboard.'
-						)}
-					</p>
-					<h3 className="mhn">{t('Exclusivity Groups')}</h3>
-					<table className="expando settings-studio-mappings-table">
-						<tbody>{this.renderExclusivityGroups()}</tbody>
-					</table>
-					<div className="mod mhs">
-						<button className="btn btn-primary" onClick={(e) => this.addNewExclusivityGroup()}>
-							<FontAwesomeIcon icon={faPlus} />
-						</button>
-					</div>
-					<h3 className="mhn">{t('Route Sets')}</h3>
-					<table className="expando settings-studio-mappings-table">
-						<tbody>{this.renderRouteSets()}</tbody>
-					</table>
-					<div className="mod mhs">
-						<button className="btn btn-primary" onClick={(e) => this.addNewRouteSet()}>
-							<FontAwesomeIcon icon={faPlus} />
-						</button>
-					</div>
+					{!this.props.manifest && (
+						<span>{t('Add a playout device to the studio in order to configure the route sets')}</span>
+					)}
+					{this.props.manifest && (
+						<React.Fragment>
+							<p className="mhn mvs text-s dimmed">
+								{t(
+									'Controls for exposed Route Sets will be displayed to the producer within the Rundown View in the Switchboard.'
+								)}
+							</p>
+							<h3 className="mhn">{t('Exclusivity Groups')}</h3>
+							<table className="expando settings-studio-mappings-table">
+								<tbody>{this.renderExclusivityGroups()}</tbody>
+							</table>
+							<div className="mod mhs">
+								<button className="btn btn-primary" onClick={(e) => this.addNewExclusivityGroup()}>
+									<FontAwesomeIcon icon={faPlus} />
+								</button>
+							</div>
+							<h3 className="mhn">{t('Route Sets')}</h3>
+							<table className="expando settings-studio-mappings-table">
+								<tbody>{this.renderRouteSets(this.props.manifest)}</tbody>
+							</table>
+							<div className="mod mhs">
+								<button className="btn btn-primary" onClick={(e) => this.addNewRouteSet()}>
+									<FontAwesomeIcon icon={faPlus} />
+								</button>
+							</div>
+						</React.Fragment>
+					)}
 				</div>
 			)
 		}
@@ -2204,6 +1931,7 @@ interface IStudioSettingsTrackedProps {
 	}>
 	availableDevices: Array<PeripheralDevice>
 	blueprintConfigManifest: ConfigManifestEntry[]
+	layerMappingsManifest: MappingsManifest | undefined
 }
 
 interface IStudioBaselineStatusProps {
@@ -2360,6 +2088,25 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				}
 			).fetch(),
 			blueprintConfigManifest: blueprint ? blueprint.studioConfigManifest || [] : [],
+			// TODO - these should come from the device the mapping is targeting but for now this will catch 99% of expected use cases
+			layerMappingsManifest: PeripheralDevices.findOne(
+				{
+					studioId: {
+						$eq: props.match.params.studioId,
+					},
+					parentDeviceId: {
+						$exists: false,
+					},
+					type: {
+						$eq: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+					},
+				},
+				{
+					sort: {
+						lastConnected: -1,
+					},
+				}
+			)?.configManifest?.layerMappings,
 		}
 	}
 )(
@@ -2621,12 +2368,12 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					</div>
 					<div className="row">
 						<div className="col c12 r1-c12">
-							<StudioMappings studio={this.props.studio} />
+							<StudioMappings studio={this.props.studio} manifest={this.props.layerMappingsManifest} />
 						</div>
 					</div>
 					<div className="row">
 						<div className="col c12 r1-c12">
-							<StudioRoutings studio={this.props.studio} />
+							<StudioRoutings studio={this.props.studio} manifest={this.props.layerMappingsManifest} />
 						</div>
 					</div>
 					<div className="row">
