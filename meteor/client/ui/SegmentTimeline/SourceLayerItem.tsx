@@ -19,7 +19,7 @@ import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
-import { Studio, StudioPackageContainers } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 

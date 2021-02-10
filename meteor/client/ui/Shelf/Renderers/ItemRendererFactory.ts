@@ -7,7 +7,7 @@ import { DefaultListItemRenderer } from './DefaultListItemRenderer'
 import { VTListItemRenderer } from './VTListItemRenderer'
 import { L3rdListItemRenderer } from './L3rdListItemRenderer'
 import { ScanInfoForPackages } from '../../../../lib/mediaObjects'
-import { StudioPackageContainers } from '../../../../lib/collections/Studios'
+import { Studio } from '../../../../lib/collections/Studios'
 
 export interface ILayerItemRendererProps {
 	adLibListItem: IAdLibListItem
@@ -19,7 +19,7 @@ export interface ILayerItemRendererProps {
 	metadata?: MediaObject | null
 	mediaPreviewUrl: string | undefined
 	packageInfos: ScanInfoForPackages | undefined
-	studioPackageContainers: StudioPackageContainers | undefined
+	studioPackageContainers: Studio['packageContainers'] | undefined
 }
 
 export default function renderItem(props: ILayerItemRendererProps): JSX.Element {

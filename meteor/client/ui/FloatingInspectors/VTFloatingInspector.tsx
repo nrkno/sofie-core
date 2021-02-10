@@ -9,7 +9,7 @@ import { Accessor, ExpectedPackage, VTContent } from '@sofie-automation/blueprin
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { StyledTimecode } from '../../lib/StyledTimecode'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
-import { StudioPackageContainers } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 
 interface IProps {
 	mediaPreviewUrl?: string
@@ -26,12 +26,12 @@ interface IProps {
 
 	contentPackageInfos: ScanInfoForPackages | undefined
 	expectedPackages: ExpectedPackage.Any[] | undefined
-	studioPackageContainers: StudioPackageContainers | undefined
+	studioPackageContainers: Studio['packageContainers'] | undefined
 }
 
 function getPackagePreviewUrl(
 	expectedPackages: ExpectedPackage.Any[],
-	studioPackageContainers: StudioPackageContainers
+	studioPackageContainers: Studio['packageContainers']
 ): string | undefined {
 	// use Expected packages:
 	// Just use the first one we find.

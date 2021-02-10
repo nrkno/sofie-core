@@ -88,25 +88,17 @@ export interface DBStudio {
 
 	_rundownVersionHash: string
 
-	routeSets: StudioRouteSets
+	routeSets: Record<string, StudioRouteSet>
+	routeSetExclusivityGroups: Record<string, StudioRouteSetExclusivityGroup>
 
-	routeSetExclusivityGroups: StudioRouteSetExclusivityGroups
-
-	packageContainers: StudioPackageContainers
+	/** Contains settings for which Package Containers are present in the studio.
+	 * (These are used by the Package Manager and the Expected Packages)
+	 */
+	packageContainers: Record<string, StudioPackageContainer>
 	/** Which package containers is used for media previews in GUI */
 	previewContainerIds: string[]
 	thumbnailContainerIds: string[]
 }
-export interface StudioRouteSets {
-	[id: string]: StudioRouteSet
-}
-export interface StudioRouteSetExclusivityGroups {
-	[id: string]: StudioRouteSetExclusivityGroup
-}
-export interface StudioPackageContainers {
-	[id: string]: StudioPackageContainer
-}
-
 export interface StudioPackageContainer {
 	/** List of which peripheraldevices uses this packageContainer */
 	deviceIds: string[]
@@ -276,9 +268,9 @@ export class Studio implements DBStudio {
 
 	public _rundownVersionHash: string
 
-	public routeSets: StudioRouteSets
-	public routeSetExclusivityGroups: StudioRouteSetExclusivityGroups
-	public packageContainers: StudioPackageContainers
+	public routeSets: Record<string, StudioRouteSet>
+	public routeSetExclusivityGroups: Record<string, StudioRouteSetExclusivityGroup>
+	public packageContainers: Record<string, StudioPackageContainer>
 	public previewContainerIds: string[]
 	public thumbnailContainerIds: string[]
 
