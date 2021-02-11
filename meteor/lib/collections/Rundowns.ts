@@ -237,13 +237,6 @@ export class Rundown implements DBRundown {
 			)
 		).fetch()
 	}
-	touch() {
-		if (getCurrentTime() - this.modified > 3600 * 1000) {
-			const m = getCurrentTime()
-			this.modified = m
-			Rundowns.update(this._id, { $set: { modified: m } })
-		}
-	}
 	appendNote(note: RundownNote): void {
 		Rundowns.update(this._id, {
 			$push: {

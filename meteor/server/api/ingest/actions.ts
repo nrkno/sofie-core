@@ -5,9 +5,8 @@ import { Meteor } from 'meteor/meteor'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { Part } from '../../../lib/collections/Parts'
 import { check } from '../../../lib/check'
-import { loadCachedRundownData } from './ingestCache'
 import { resetRundownPlaylist } from '../playout/lib'
-import { RundownSyncFunctionPriority, rundownPlaylistSyncFunction, handleUpdatedRundownInner } from './rundownInput'
+import { RundownSyncFunctionPriority, regenerateRundown } from './rundownInput'
 import { logger } from '../../logging'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
@@ -145,26 +144,17 @@ export namespace IngestActions {
 
 				// exit the sync function, so the cache is written back
 				return rundowns.map((rundown) => ({
-					rundown,
+					rundownExternalId: rundown.externalId,
 					studio,
-					ingest: loadCachedRundownData(rundown._id, rundown.externalId),
 				}))
 			}
 		)
 
 		// Fire off all the updates in parallel, in their own low-priority tasks
 		waitForPromiseAll(
-			ingestData.map(({ ingest, rundown, studio }) =>
+			ingestData.map(({ rundownExternalId, studio }) =>
 				makePromise(() => {
-					rundownPlaylistSyncFunction(
-						studio._id,
-						rundownPlaylistId,
-						RundownSyncFunctionPriority.USER_INGEST,
-						'handleUpdatedRundown',
-						() => {
-							handleUpdatedRundownInner(studio, rundown._id, ingest, true)
-						}
-					)
+					regenerateRundown(studio, rundownExternalId)
 				})
 			)
 		)

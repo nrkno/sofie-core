@@ -38,7 +38,7 @@ import {
 	getPartId,
 	extendIngestRundownCore,
 	modifyPlaylistExternalId,
-	getRundown2,
+	getRundown,
 	canSegmentBeUpdated,
 } from './lib'
 import { CommitIngestData } from './syncFunction'
@@ -327,7 +327,7 @@ export async function updateSegmentFromIngestData(
 ): Promise<CommitIngestData | null> {
 	const span = profiler.startSpan('ingest.rundownInput.handleUpdatedPartInner')
 
-	const rundown = getRundown2(cache)
+	const rundown = getRundown(cache)
 
 	// Updated OR created part
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)

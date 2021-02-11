@@ -6,7 +6,7 @@ import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { ChangedSegmentsRankInfo, updatePartInstanceRanks } from '../rundown'
 import { CacheForIngest } from './cache'
 import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
-import { getRundown2 } from './lib'
+import { getRundown } from './lib'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { CommitIngestData, IngestPlayoutInfo } from './syncFunction'
 import { UpdateNext } from './updateNext'
@@ -22,7 +22,7 @@ export async function CommitIngestOperation(
 	playoutInfo: IngestPlayoutInfo | undefined,
 	data: CommitIngestData
 ): Promise<void> {
-	const rundown = getRundown2(ingestCache)
+	const rundown = getRundown(ingestCache)
 
 	const showStyle = data.showStyle ?? (await getShowStyleCompound2(rundown))
 	const blueprint = (data.showStyle ? data.blueprint : undefined) ?? loadShowStyleBlueprint(showStyle)
@@ -128,12 +128,6 @@ export async function CommitIngestOperation(
 	// if (canRemoveSegment(cache, playlist, segment)) {
 	// 	cache.Segments.remove(segmentId)
 	// }
-	// // Mark all the instances as deleted
-	// cache.PartInstances.update((p) => !p.reset && p.segmentId === segmentId && !p.orphaned, {
-	// 	$set: {
-	// 		orphaned: 'deleted',
-	// 	},
-	// })
 
 	// TODO - existingRundownParts needs to be generated before the calcFcn
 	// const changedSegments = newSegments.map((s) => ({

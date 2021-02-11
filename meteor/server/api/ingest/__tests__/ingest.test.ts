@@ -16,6 +16,7 @@ import { getSegmentId } from '../lib'
 import { wrapWithCacheForRundownPlaylist } from '../../../cache/DatabaseCaches'
 import { removeRundownPlaylistFromCache } from '../../playout/lib'
 import { MethodContext } from '../../../../lib/api/methods'
+import { Studio, Studios } from '../../../../lib/collections/Studios'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -105,7 +106,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: rundownData.externalId,
 			playlistId: rundownPlaylist._id,
 		})
-		expect(typeof rundown.touch).toEqual('function')
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		expect(segments).toHaveLength(2)
@@ -170,7 +170,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			name: rundownData.name,
 			playlistId: rundownPlaylist._id,
 		})
-		expect(typeof rundown.touch).toEqual('function')
 		expect(Rundowns.find().count()).toBe(1)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
@@ -239,7 +238,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
 		})
-		expect(typeof rundown.touch).toEqual('function')
 		expect(Rundowns.find().count()).toBe(1)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
@@ -322,7 +320,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
 		})
-		expect(typeof rundown.touch).toEqual('function')
 		expect(Rundowns.find().count()).toBe(1)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
@@ -389,7 +386,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
 		})
-		expect(typeof rundown.touch).toEqual('function')
 		expect(Rundowns.find().count()).toBe(1)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
@@ -441,7 +437,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
 		})
-		expect(typeof rundown.touch).toEqual('function')
 		expect(Rundowns.find().count()).toBe(1)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
@@ -1157,7 +1152,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 					// This is expected
 
 					// Force the regeneration from cached data
-					regenerateRundown(rundown._id)
+					const studio = Studios.findOne(rundown.studioId) as Studio
+					regenerateRundown(studio, rundown.externalId)
 					return
 				}
 				throw e

@@ -6,48 +6,6 @@ import { IngestDataCache, IngestCacheType } from '../../../lib/collections/Inges
 import { logger } from '../../../lib/logging'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { profiler } from '../profiler'
-
-export function loadCachedRundownData(rundownId: RundownId, rundownExternalId: string): LocalIngestRundown {
-	const span = profiler.startSpan('ingest.ingestCache.loadCachedRundownData')
-
-	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
-
-	const cachedRundown = cacheEntries.find((e) => e.type === IngestCacheType.RUNDOWN)
-	if (!cachedRundown) {
-		span?.end()
-		throw new Meteor.Error(404, `Rundown "${rundownId}", (${rundownExternalId}) has no cached ingest data`)
-	}
-
-	const ingestRundown = cachedRundown.data as LocalIngestRundown
-	ingestRundown.modified = cachedRundown.modified
-
-	const segmentMap = _.groupBy(cacheEntries, (e) => e.segmentId)
-	_.each(segmentMap, (objs) => {
-		const segmentEntry = objs.find((e) => e.type === IngestCacheType.SEGMENT)
-		if (segmentEntry) {
-			const ingestSegment = segmentEntry.data as LocalIngestSegment
-			ingestSegment.modified = segmentEntry.modified
-
-			_.each(objs, (entry) => {
-				if (entry.type === IngestCacheType.PART) {
-					const ingestPart = entry.data as LocalIngestPart
-					ingestPart.modified = entry.modified
-
-					ingestSegment.parts.push(ingestPart)
-				}
-			})
-
-			ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
-			ingestRundown.segments.push(ingestSegment)
-		}
-	})
-
-	ingestRundown.segments = _.sortBy(ingestRundown.segments, (s) => s.rank)
-
-	span?.end()
-	return ingestRundown
-}
 
 export function loadCachedIngestSegment(
 	rundownId: RundownId,

@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 
-import { diffSegmentEntries, compileSegmentEntries } from '../ingest'
+import { diffSegmentEntries, compileSegmentEntries } from '../diff'
 import { IngestSegment } from '@sofie-automation/blueprints-integration'
 import { LocalIngestSegment } from '../../ingestCache'
 

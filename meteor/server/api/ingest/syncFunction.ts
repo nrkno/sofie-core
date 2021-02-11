@@ -24,7 +24,7 @@ import { CacheForIngest } from './cache'
 import { CommitIngestOperation } from './commit'
 import { LocalIngestRundown } from './ingestCache'
 import { loadCachedRundownData, saveRundownCache } from './ingestCache2'
-import { getRundown2, getRundownId } from './lib'
+import { getRundown, getRundownId } from './lib'
 import { RundownSyncFunctionPriority } from './rundownInput'
 
 export interface IngestPlayoutInfo {
@@ -116,7 +116,7 @@ export function ingestLockFunction(
 			waitForPromise(ingestObjCache.prepareInit({ rundownId }, true))
 
 			// Recalculate the ingest data
-			const oldIngestRundown = loadCachedRundownData(ingestObjCache)
+			const oldIngestRundown = waitForPromise(loadCachedRundownData(ingestObjCache, rundownId))
 			const newIngestRundown = updateCacheFcn(clone(oldIngestRundown))
 			if (newIngestRundown === null) {
 				// Reject change
@@ -139,7 +139,7 @@ export function ingestLockFunction(
 					// The change is accepted
 
 					// Get the rundown. This assumes one is defined by now which it should be
-					const rundown = getRundown2(ingestCache)
+					const rundown = getRundown(ingestCache)
 
 					function doPlaylistInner() {
 						const playoutInfo = waitForPromise(getIngestPlaylistInfoFromDb(rundown))

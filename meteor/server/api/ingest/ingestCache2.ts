@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { protectString, unprotectString } from '../../../lib/lib'
+import { asyncCollectionFindFetch, protectString, unprotectString } from '../../../lib/lib'
 import {
 	IngestDataCacheObj,
 	IngestCacheType,
@@ -7,6 +7,7 @@ import {
 	IngestDataCacheObjRundown,
 	IngestDataCacheObjSegment,
 	IngestDataCacheObjId,
+	IngestDataCache,
 } from '../../../lib/collections/IngestDataCache'
 import { getSegmentId, getPartId } from './lib'
 import { RundownId } from '../../../lib/collections/Rundowns'
@@ -21,10 +22,14 @@ export type ReadOnlyRundownIngestDataCacheCollection = DbCacheReadCollection<Ing
 
 /** TODO-CACHE the `_id`s used here are consistent and predictable, so this should be rewritten to operate more directly on the cache with the ids instead */
 
-export function loadCachedRundownData(cache: ReadOnlyRundownIngestDataCacheCollection): LocalIngestRundown | undefined {
+export async function loadCachedRundownData(
+	cache: ReadOnlyRundownIngestDataCacheCollection | null,
+	rundownId: RundownId
+): Promise<LocalIngestRundown | undefined> {
 	const span = profiler.startSpan('ingest.ingestCache.loadCachedRundownData')
 
-	const cacheEntries = cache.findFetch({})
+	const cacheEntries =
+		cache?.findFetch({}) ?? (await asyncCollectionFindFetch(IngestDataCache, { rundownId: rundownId }))
 
 	const cachedRundown = cacheEntries.find((e) => e.type === IngestCacheType.RUNDOWN)
 	if (!cachedRundown) {

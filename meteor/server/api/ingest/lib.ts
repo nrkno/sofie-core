@@ -7,10 +7,9 @@ import {
 	getStudioIdFromDevice,
 	PeripheralDeviceId,
 } from '../../../lib/collections/PeripheralDevices'
-import { Rundowns, Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { SegmentId, Segment, Segments } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
@@ -73,39 +72,13 @@ export function getStudioFromDevice(peripheralDevice: PeripheralDevice): Studio 
 	span?.end()
 	return studio
 }
-export function getRundownPlaylist(rundown: Rundown): RundownPlaylist {
-	const span = profiler.startSpan('mosDevice.lib.getRundownPlaylist')
-
-	const playlist = RundownPlaylists.findOne(rundown.playlistId)
-	if (!playlist)
-		throw new Meteor.Error(500, `Rundown playlist "${rundown.playlistId}" of rundown "${rundown._id}" not found!`)
-	playlist.touch()
-
-	span?.end()
-	return playlist
-}
-export function getRundown(rundownId: RundownId, externalRundownId: string): Rundown {
-	const span = profiler.startSpan('mosDevice.lib.getRundown')
-
-	const rundown = Rundowns.findOne(rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" ("${externalRundownId}") not found`)
-	rundown.touch()
-
-	span?.end()
-	return rundown
-}
-export function getRundown2(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ReadonlyDeep<Rundown> {
+export function getRundown(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ReadonlyDeep<Rundown> {
 	const rundown = cache.Rundown.doc
 	if (!rundown) {
 		const rundownId = getRundownId(cache.Studio.doc, cache.RundownExternalId)
 		throw new Meteor.Error(404, `Rundown "${rundownId}" ("${cache.RundownExternalId}") not found`)
 	}
 	return rundown
-}
-export function getSegment(segmentId: SegmentId): Segment {
-	const segment = Segments.findOne(segmentId)
-	if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found`)
-	return segment
 }
 export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevice {
 	if (!rundown.peripheralDeviceId)

@@ -5,7 +5,7 @@ import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/P
 import { Rundowns, DBRundown } from '../../../lib/collections/Rundowns'
 import { DBPart } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
-import { saveIntoDb, getCurrentTime, unprotectString, PreparedChanges } from '../../../lib/lib'
+import { saveIntoDb, getCurrentTime, unprotectString, PreparedChanges, waitForPromise } from '../../../lib/lib'
 import {
 	IngestRundown,
 	IngestSegment,
@@ -13,13 +13,12 @@ import {
 	BlueprintResultOrderedRundowns,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { Studio, StudioId } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 import { getAllRundownsInPlaylist, sortDefaultRundownInPlaylistOrder } from '../rundown'
 import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import {
 	loadCachedIngestSegment,
-	loadCachedRundownData,
 	LocalIngestRundown,
 	makeNewIngestSegment,
 	makeNewIngestPart,
@@ -30,17 +29,15 @@ import {
 	getStudioFromDevice,
 	canRundownBeUpdated,
 	canSegmentBeUpdated,
-	getSegment,
 	checkAccessAndGetPeripheralDevice,
-	getRundown2,
+	getRundown,
 } from './lib'
-import { DBRundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MethodContext } from '../../../lib/api/methods'
-import { playoutNoCacheFromStudioLockFunction } from '../playout/syncFunction'
-import { studioLockFunction } from '../studio/syncFunction'
 import { CommitIngestData, ingestLockFunction } from './syncFunction'
 import { CacheForIngest } from './cache'
 import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
+import { loadCachedRundownData } from './ingestCache2'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -52,18 +49,6 @@ export enum RundownSyncFunctionPriority {
 	USER_PLAYOUT = 10,
 	/** Events initiated from playout-gateway callbacks */
 	CALLBACK_PLAYOUT = 20,
-}
-/** @deprecated */
-export function rundownPlaylistSyncFunction<T extends () => any>(
-	studioId: StudioId,
-	rundownPlaylistId: RundownPlaylistId,
-	priority: RundownSyncFunctionPriority,
-	context: string,
-	fcn: T
-): ReturnType<T> {
-	return studioLockFunction(context, studioId, (lock) =>
-		playoutNoCacheFromStudioLockFunction(context, lock, { _id: rundownPlaylistId, studioId } as any, priority, fcn)
-	)
 }
 
 interface SegmentChanges {
@@ -236,7 +221,10 @@ function getIngestRundown(peripheralDevice: PeripheralDevice, rundownExternalId:
 		throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`)
 	}
 
-	return loadCachedRundownData(rundown._id, rundown.externalId)
+	const ingestData = waitForPromise(loadCachedRundownData(null, rundown._id))
+	if (!ingestData)
+		throw new Meteor.Error(404, `Rundown "${rundown._id}", (${rundownExternalId}) has no cached ingest data`)
+	return ingestData
 }
 function getIngestSegment(
 	peripheralDevice: PeripheralDevice,
@@ -286,7 +274,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 			}
 		},
 		async (cache) => {
-			const rundown = getRundown2(cache)
+			const rundown = getRundown(cache)
 
 			return {
 				changedSegmentIds: [],
@@ -453,9 +441,9 @@ export function handleRemovedSegment(
 			}
 		},
 		async (cache) => {
-			const rundown = getRundown2(cache)
+			const rundown = getRundown(cache)
 			const segmentId = getSegmentId(rundown._id, segmentExternalId)
-			const segment = getSegment(segmentId)
+			const segment = cache.Segments.findOne(segmentId)
 
 			if (!canSegmentBeUpdated(rundown, segment, false)) {
 				// segment has already been deleted
