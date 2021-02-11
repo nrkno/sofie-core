@@ -35,6 +35,16 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		'_process',
 		'1.16.0-release30.1'
 	),
-	// setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
-	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
+	setExpectedVersion(
+		'expectedVersion.mosDevice',
+		PeripheralDeviceAPI.DeviceType.MOS,
+		'_process',
+		'1.9.0-release30.1'
+	),
+	setExpectedVersion(
+		'expectedVersion.mediaManager',
+		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+		'_process',
+		'1.5.0-release30.2'
+	),
 ])
