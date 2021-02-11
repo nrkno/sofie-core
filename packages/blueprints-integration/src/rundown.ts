@@ -248,6 +248,9 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	adlibDisableOutTransition?: boolean
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
+
+	/** HACK: Some pieces have side effects on other pieces, and pruning them when they have finished playback will cause playout glitches. This will tell core to not always preserve it */
+	hasSideEffects?: boolean
 }
 
 export interface ExpectedPlayoutItemGeneric {
