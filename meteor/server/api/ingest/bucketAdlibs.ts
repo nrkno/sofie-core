@@ -13,7 +13,7 @@ import {
 	cleanUpExpectedMediaItemForBucketAdLibPiece,
 	updateExpectedMediaItemForBucketAdLibAction,
 	updateExpectedMediaItemForBucketAdLibPiece,
-} from '../expectedMediaItems'
+} from './expectedMediaItems'
 import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { asyncCollectionFindFetch, asyncCollectionRemove, waitForPromiseAll } from '../../../lib/lib'
 import { bucketSyncFunction } from '../buckets'

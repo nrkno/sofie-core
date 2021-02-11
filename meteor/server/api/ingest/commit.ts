@@ -4,7 +4,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { getShowStyleCompound2, ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
-import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
+import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
 import { wrapWithProxyPlayoutCache } from '../playout/cache'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { ChangedSegmentsRankInfo, updatePartInstancesBasicProperties, updatePartInstanceRanks } from '../rundown'
@@ -24,6 +24,18 @@ export async function CommitIngestOperation(
 
 	const showStyle = data.showStyle ?? (await getShowStyleCompound2(rundown))
 	const blueprint = (data.showStyle ? data.blueprint : undefined) ?? loadShowStyleBlueprint(showStyle)
+
+	// Removing rundown
+	// if (!allowedToMoveRundownOutOfPlaylist(playlist, rundown)) {
+	// 	// Don't allow removing currently playing rundown playlists:
+	// 	logger.warn(
+	// 		`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`
+	// 	)
+	// 	ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+	// } else {
+	// 	logger.info(`Removing rundown "${rundown._id}"`)
+	// 	removeRundownFromCache(cache, rundown)
+	// }
 
 	// Removing segment
 	// if (!canRemoveSegment(cache, playlist, segment)) {

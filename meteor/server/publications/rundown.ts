@@ -76,7 +76,7 @@ meteorPublish(PubSub.parts, function(selector: MongoQuery<DBPart>, token?: strin
 	}
 	return null
 })
-meteorPublish(PubSub.partInstances, function(selector: MongoQuery<PartInstance>, token?: string) {
+meteorPublish(PubSub.partInstances, function(selector: MongoQuery<DBPartInstance>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBPartInstance> = {
 		fields: {

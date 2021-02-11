@@ -66,7 +66,6 @@ import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segment
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import {
 	saveRundownCache,
-	saveSegmentCache,
 	loadCachedIngestSegment,
 	loadCachedRundownData,
 	LocalIngestRundown,
@@ -81,10 +80,8 @@ import {
 	getSegmentId,
 	getPartId,
 	getStudioFromDevice,
-	getRundown,
 	canRundownBeUpdated,
 	canSegmentBeUpdated,
-	getRundownPlaylist,
 	getSegment,
 	checkAccessAndGetPeripheralDevice,
 	extendIngestRundownCore,
@@ -93,7 +90,6 @@ import {
 } from './lib'
 import { PackageInfo } from '../../coreSystem'
 import { PartNote, NoteType, SegmentNote, RundownNote } from '../../../lib/api/notes'
-import { UpdateNext } from './updateNext'
 import {
 	RundownPlaylists,
 	DBRundownPlaylist,
@@ -104,7 +100,6 @@ import {
 	isTooCloseToAutonext,
 	getSelectedPartInstancesFromCache,
 	getRundownsSegmentsAndPartsFromCache,
-	removeRundownFromCache,
 } from '../playout/lib'
 import { MethodContext } from '../../../lib/api/methods'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../cache/DatabaseCaches'
@@ -118,7 +113,6 @@ import {
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { removeEmptyPlaylists } from '../rundownPlaylist'
 import { profiler } from '../profiler'
-import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { getShowStyleCompound2, ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { playoutNoCacheFromStudioLockFunction } from '../playout/syncFunction'
 import { studioLockFunction } from '../studio/syncFunction'
@@ -355,38 +349,31 @@ function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
 }
 
 export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string) {
-	const span = profiler.startSpan('rundownInput.handleRemovedRundown')
-
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownId(studio, rundownExternalId)
-	const rundownPlaylistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	rundownPlaylistSyncFunction(
-		studio._id,
-		rundownPlaylistId,
-		RundownSyncFunctionPriority.INGEST,
+	return ingestLockFunction(
 		'handleRemovedRundown',
-		() => {
-			const rundown = getRundown(rundownId, rundownExternalId)
-			const playlist = getRundownPlaylist(rundown)
-
-			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-
-			if (!canRundownBeUpdated(rundown, false)) {
-				// Rundown is already deleted
-			} else if (!allowedToMoveRundownOutOfPlaylist(playlist, rundown)) {
-				// Don't allow removing currently playing rundown playlists:
-				logger.warn(
-					`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`
-				)
-				ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+		studio._id,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				// Remove it
+				return undefined
 			} else {
-				logger.info(`Removing rundown "${rundown._id}"`)
-				removeRundownFromCache(cache, rundown)
+				return null
 			}
+		},
+		async (cache) => {
+			const rundown = getRundown2(cache)
 
-			waitForPromise(cache.saveAllToDatabase())
-			span?.end()
+			return {
+				changedSegmentIds: [],
+				removedSegmentIds: [],
+				removeRundown: canRundownBeUpdated(rundown, false),
+
+				showStyle: undefined,
+				blueprint: undefined,
+			}
 		}
 	)
 }
@@ -394,108 +381,106 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 export function handleUpdatedRundown(
 	studio0: Studio | undefined,
 	peripheralDevice: PeripheralDevice | undefined,
-	ingestRundown: IngestRundown,
+	newIngestRundown: IngestRundown,
 	isCreateAction: boolean
 ) {
-	if (!peripheralDevice && !studio0) {
+	const studioId = peripheralDevice?.studioId ?? studio0?._id
+	if ((!peripheralDevice && !studio0) || !studioId) {
 		throw new Meteor.Error(500, `A PeripheralDevice or Studio is required to update a rundown`)
 	}
 
-	const studio = studio0 ?? getStudioFromDevice(peripheralDevice as PeripheralDevice)
-	const rundownId = getRundownId(studio, ingestRundown.externalId)
-	if (peripheralDevice && peripheralDevice.studioId !== studio._id) {
+	if (peripheralDevice && studio0 && peripheralDevice.studioId !== studio0._id) {
 		throw new Meteor.Error(
 			500,
-			`PeripheralDevice "${peripheralDevice._id}" does not belong to studio "${studio._id}"`
+			`PeripheralDevice "${peripheralDevice._id}" does not belong to studio "${studio0._id}"`
 		)
 	}
 
-	// Lock behind a playlist if it exists
-	const existingRundown = Rundowns.findOne(rundownId)
-	const playlistId = existingRundown ? existingRundown.playlistId : protectString('newPlaylist')
-	return rundownPlaylistSyncFunction(
-		studio._id,
-		playlistId,
-		RundownSyncFunctionPriority.INGEST,
+	const rundownExternalId = newIngestRundown.externalId
+	return ingestLockFunction(
 		'handleUpdatedRundown',
-		() =>
-			handleUpdatedRundownInner(
-				studio,
-				rundownId,
-				makeNewIngestRundown(ingestRundown),
-				isCreateAction,
-				peripheralDevice
-			)
-	)
-}
-export function handleUpdatedRundownInner(
-	studio: Studio,
-	rundownId: RundownId,
-	ingestRundown: IngestRundown | LocalIngestRundown,
-	isCreateAction: boolean,
-	peripheralDevice?: PeripheralDevice
-) {
-	const existingDbRundown = Rundowns.findOne(rundownId)
-	if (!canRundownBeUpdated(existingDbRundown, isCreateAction)) return
+		studioId,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown || isCreateAction) {
+				// We want to regenerate unmodified
+				return makeNewIngestRundown(newIngestRundown)
+			} else {
+				return null
+			}
+		},
+		async (cache, ingestRundown) => {
+			const rundown = getRundown2(cache)
 
-	logger.info((existingDbRundown ? 'Updating' : 'Adding') + ' rundown ' + rundownId)
+			if (!ingestRundown) throw new Meteor.Error(`regenerateRundown lost the IngestRundown...`)
 
-	const newIngestRundown = isLocalIngestRundown(ingestRundown) ? ingestRundown : makeNewIngestRundown(ingestRundown)
+			handleUpdatedRundownInner(cache, ingestRundown, isCreateAction, peripheralDevice)
 
-	saveRundownCache(rundownId, newIngestRundown)
+			return {
+				changedSegmentIds: [], // TODO - set this!
+				removedSegmentIds: [], // TODO - set this!
+				removeRundown: false,
 
-	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, peripheralDevice)
-}
-export function regenerateRundown(rundownId: RundownId) {
-	const span = profiler.startSpan('ingest.rundownInput.regenerateRundown')
-
-	logger.info(`Regenerating rundown ${rundownId}`)
-	const existingDbRundown = Rundowns.findOne(rundownId)
-	if (!existingDbRundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
-
-	const studio = Studios.findOne(existingDbRundown.studioId)
-	if (!studio) throw new Meteor.Error(404, `Studio "${existingDbRundown.studioId}" not found`)
-
-	return rundownPlaylistSyncFunction(
-		existingDbRundown.studioId,
-		existingDbRundown.playlistId,
-		RundownSyncFunctionPriority.INGEST,
-		'handleUpdatedRundown',
-		() => {
-			// Reload to ensure it isnt stale
-			const existingDbRundown2 = Rundowns.findOne(rundownId)
-			if (!existingDbRundown2) throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
-
-			const ingestRundown = loadCachedRundownData(rundownId, existingDbRundown2.externalId)
-
-			updateRundownFromIngestData(studio, existingDbRundown2, ingestRundown, undefined)
-
-			span?.end()
+				showStyle: undefined,
+				blueprint: undefined,
+			}
 		}
 	)
 }
-function updateRundownFromIngestData(
-	studio: Studio,
-	existingDbRundown: Rundown | undefined,
-	ingestRundown: IngestRundown,
+export async function handleUpdatedRundownInner(
+	cache: CacheForIngest,
+	ingestRundown: LocalIngestRundown,
+	isCreateAction: boolean,
+	peripheralDevice?: PeripheralDevice // TODO - to cache?
+): Promise<CommitIngestData | null> {
+	if (!canRundownBeUpdated(cache.Rundown.doc, isCreateAction)) return null
+
+	logger.info(`${cache.Rundown.doc ? 'Updating' : 'Adding'} rundown ${cache.RundownId}`)
+
+	return updateRundownFromIngestData(cache, ingestRundown, peripheralDevice)
+}
+export function regenerateRundown(studio: Studio, rundownExternalId: string) {
+	return ingestLockFunction(
+		'regenerateRundown',
+		studio._id,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				// We want to regenerate unmodified
+				return ingestRundown
+			} else {
+				return null
+			}
+		},
+		async (cache, ingestRundown) => {
+			// If the rundown is orphaned, then we can't regenerate as there wont be any data to use!
+			if (!ingestRundown || !canRundownBeUpdated(cache.Rundown.doc, false)) return null
+
+			return updateRundownFromIngestData(cache, ingestRundown, undefined)
+		}
+	)
+}
+async function updateRundownFromIngestData(
+	cache: CacheForIngest,
+	ingestRundown: LocalIngestRundown,
 	peripheralDevice: PeripheralDevice | undefined
-): boolean {
+): Promise<CommitIngestData | null> {
 	const span = profiler.startSpan('ingest.rundownInput.updateRundownFromIngestData')
 
-	// canBeUpdated is run by the callers
+	// canBeUpdated is to be run by the callers
 
-	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, existingDbRundown)
-	const rundownId = getRundownId(studio, ingestRundown.externalId)
+	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, cache.Rundown.doc)
 
 	const selectShowStyleContext = new StudioUserContext(
 		{
 			name: 'selectShowStyleVariant',
-			identifier: `studioId=${studio._id},rundownId=${existingDbRundown?._id},ingestRundownId=${ingestRundown.externalId}`,
+			identifier: `studioId=${cache.Studio.doc._id},rundownId=${cache.RundownId},ingestRundownId=${cache.RundownExternalId}`,
 			tempSendUserNotesIntoBlackHole: true,
 		},
-		studio
+		cache.Studio.doc
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
+	// TODO - better caching here!
 	const showStyle = selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
@@ -509,7 +494,7 @@ function updateRundownFromIngestData(
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,
 			identifier: `showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
 		},
-		studio,
+		cache.Studio.doc,
 		showStyle.compound
 	)
 	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, extendedIngestRundown)
@@ -518,12 +503,12 @@ function updateRundownFromIngestData(
 	if (showStyleBlueprint.blueprintId) {
 		translationNamespaces.push(showStyleBlueprint.blueprintId)
 	}
-	if (studio.blueprintId) {
-		translationNamespaces.push(unprotectString(studio.blueprintId))
+	if (cache.Studio.doc.blueprintId) {
+		translationNamespaces.push(unprotectString(cache.Studio.doc.blueprintId))
 	}
 
 	// Ensure the ids in the notes are clean
-	const rundownNotes = _.map(blueprintContext.notes, (note) =>
+	const rundownNotes = blueprintContext.notes.map((note) =>
 		literal<RundownNote>({
 			type: note.type,
 			message: {
@@ -1047,6 +1032,8 @@ export function handleRemovedSegment(
 					changedSegmentIds: [],
 					removedSegmentIds: [segmentId],
 
+					removeRundown: false,
+
 					showStyle: undefined,
 					blueprint: undefined,
 				}
@@ -1081,7 +1068,7 @@ export function handleUpdatedSegment(
 			}
 		},
 		async (cache, ingestRundown) => {
-			const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segmentExternalId)
+			const ingestSegment = ingestRundown?.segments.find((s) => s.externalId === segmentExternalId)
 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segmentExternalId}" is missing!`)
 			return regenSegmentInner(cache, studio, ingestSegment, isCreateAction)
 		}
@@ -1313,7 +1300,7 @@ export function handleRemovedPart(
 			}
 		},
 		async (cache, ingestRundown) => {
-			const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segmentExternalId)
+			const ingestSegment = ingestRundown?.segments.find((s) => s.externalId === segmentExternalId)
 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segmentExternalId}" is missing!`)
 			return regenSegmentInner(cache, studio, ingestSegment, false)
 		}
@@ -1351,7 +1338,7 @@ export function handleUpdatedPart(
 			}
 		},
 		async (cache, ingestRundown) => {
-			const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segmentExternalId)
+			const ingestSegment = ingestRundown?.segments.find((s) => s.externalId === segmentExternalId)
 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segmentExternalId}" is missing!`)
 			return regenSegmentInner(cache, studio, ingestSegment, false)
 		}
@@ -1370,7 +1357,7 @@ export async function regenSegmentInner(
 
 	// Updated OR created part
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
-	const segment = Segments.findOne(segmentId)
+	const segment = cache.Segments.findOne(segmentId)
 	if (!isNewSegment && !segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found`)
 	if (!canSegmentBeUpdated(rundown, segment, isNewSegment)) return null
 
@@ -1390,6 +1377,8 @@ export async function regenSegmentInner(
 	return {
 		changedSegmentIds: _.compact([updatedSegmentId]),
 		removedSegmentIds: [],
+
+		removeRundown: false,
 
 		showStyle,
 		blueprint,

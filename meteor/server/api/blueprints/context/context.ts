@@ -148,7 +148,7 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 	public readonly notes: INoteBase[] = []
 	private readonly tempSendNotesIntoBlackHole: boolean
 
-	constructor(contextInfo: UserContextInfo, studio: Studio) {
+	constructor(contextInfo: UserContextInfo, studio: ReadonlyDeep<Studio>) {
 		super(contextInfo, studio)
 		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
 	}

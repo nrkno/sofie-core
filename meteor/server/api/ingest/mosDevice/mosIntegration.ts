@@ -287,7 +287,7 @@ export namespace MosIntegration {
 					airStatus: Action.Status,
 				},
 			})
-			regenerateRundown(rundown._id)
+			regenerateRundown(studio, rundown.externalId)
 		}
 
 		transaction?.end()

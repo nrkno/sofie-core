@@ -9,6 +9,7 @@ import {
 	getRundown,
 	getRundownPlaylist,
 	getPartId,
+	getRundown2,
 } from '../lib'
 import {
 	getRundownIdFromMosRO,
@@ -140,33 +141,31 @@ function groupedPartsToSegments(
 export function handleMosRundownData(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrder: MOS.IMOSRunningOrder,
-	createFresh: boolean
+	isCreateAction: boolean
 ) {
 	const span = profiler.startSpan('ingest.handleMosRundownData')
 
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, mosRunningOrder.ID)
+	const rundownExternalId = mosRunningOrder.ID.toString()
 
 	const rundown = Rundowns.findOne(rundownId)
 	const playlistId = rundown ? rundown.playlistId : protectString('newPlaylist')
 
 	// Create or update a rundown (ie from rundownCreate or rundownList)
 
-	return rundownPlaylistSyncFunction(
-		studio._id,
-		playlistId,
-		RundownSyncFunctionPriority.INGEST,
+	return ingestLockFunction(
 		'handleMosRundownData',
-		() => {
-			const parts = _.compact(storiesToIngestParts(rundownId, mosRunningOrder.Stories || [], !createFresh, []))
+		studio._id,
+		rundownExternalId,
+		(ingestRundown) => {
+			const parts = _.compact(storiesToIngestParts(rundownId, mosRunningOrder.Stories || [], !isCreateAction, []))
 			const groupedStories = groupIngestParts(parts)
 
-			const oldRundownData = tryLoadCachedRundownData(rundownId)
-
 			// If this is a reload of a RO, then use cached data to make the change more seamless
-			if (!createFresh && oldRundownData) {
+			if (!isCreateAction && ingestRundown) {
 				const partCacheMap = new Map<PartId, IngestPart>()
-				for (const segment of oldRundownData.segments) {
+				for (const segment of ingestRundown.segments) {
 					for (const part of segment.parts) {
 						partCacheMap.set(getPartId(rundownId, part.externalId), part)
 					}
@@ -182,7 +181,7 @@ export function handleMosRundownData(
 
 			const ingestSegments = groupedPartsToSegments(rundownId, groupedStories)
 
-			const ingestRundown = literal<LocalIngestRundown>({
+			return literal<LocalIngestRundown>({
 				externalId: parseMosString(mosRunningOrder.ID),
 				name: parseMosString(mosRunningOrder.Slug),
 				type: 'mos',
@@ -190,17 +189,19 @@ export function handleMosRundownData(
 				payload: mosRunningOrder,
 				modified: getCurrentTime(),
 			})
+		},
+		async (cache, ingestRundown) => {
+			if (!ingestRundown) throw new Meteor.Error(`handleMosRundownData lost the IngestRundown...`)
 
-			if (!canRundownBeUpdated(rundown, createFresh)) return
+			if (!canRundownBeUpdated(cache.Rundown.doc, isCreateAction)) return null
 
-			if (rundown && oldRundownData) {
+			if (cache.Rundown.doc && oldRundownData) {
 				// If we already have a rundown, update any modified segment ids
 				diffAndUpdateSegmentIds(rundown, oldRundownData, ingestSegments)
+				// TODO - this should return something, that gets combined with the overall result...
 			}
 
-			handleUpdatedRundownInner(studio, rundownId, ingestRundown, createFresh, peripheralDevice)
-
-			span?.end()
+			return handleUpdatedRundownInner(studio, cache.RundownId, ingestRundown, isCreateAction, peripheralDevice)
 		}
 	)
 }

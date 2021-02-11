@@ -13,6 +13,7 @@ import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { syncFunction } from '../../codeControl'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { PlaylistLock, playoutNoCacheLockFunction } from '../playout/syncFunction'
+import { profiler } from '../profiler'
 import { CacheForIngest } from './cache'
 import { CommitIngestOperation } from './commit'
 import { LocalIngestRundown } from './ingestCache'
@@ -66,6 +67,9 @@ export interface CommitIngestData {
 	/** Segments to be removed or orphaned */
 	removedSegmentIds: SegmentId[]
 
+	/** Whether the rundown should be removed or orphaned */
+	removeRundown: boolean
+
 	/** ShowStyle, if loaded to reuse */
 	showStyle: ShowStyleCompound | undefined
 	/** Blueprint, if loaded to reuse */
@@ -76,12 +80,14 @@ export function ingestLockFunction(
 	context: string,
 	studioId: StudioId,
 	rundownExternalId: string,
-	updateCacheFcn: (oldIngestRundown: LocalIngestRundown | undefined) => LocalIngestRundown | null,
-	calcFcn: (cache: CacheForIngest, ingestRundown: IngestRundown) => Promise<CommitIngestData | null>,
+	updateCacheFcn: (oldIngestRundown: LocalIngestRundown | undefined) => LocalIngestRundown | null | undefined,
+	calcFcn: (cache: CacheForIngest, ingestRundown: LocalIngestRundown | undefined) => Promise<CommitIngestData | null>,
 	playlistLock?: PlaylistLock
 ): void {
 	return syncFunction(
 		() => {
+			const span = profiler.startSpan(`ingestLockFunction.${context}`)
+
 			if (playlistLock && playlistLock._studioId !== studioId)
 				throw new Meteor.Error(
 					500,
@@ -99,8 +105,11 @@ export function ingestLockFunction(
 			if (newIngestRundown === null) {
 				// Reject change
 				return
+			} else if (newIngestRundown === undefined) {
+				ingestObjCache.remove({})
+			} else {
+				saveRundownCache(ingestObjCache, rundownId, newIngestRundown)
 			}
-			saveRundownCache(ingestObjCache, rundownId, newIngestRundown)
 			// Start saving the ingest data
 			const pSaveIngestChanges = ingestObjCache.updateDatabaseWithData()
 
@@ -109,6 +118,7 @@ export function ingestLockFunction(
 			try {
 				const commitData = waitForPromise(calcFcn(ingestCache, newIngestRundown))
 				if (commitData) {
+					const commitData0 = commitData
 					// TODO - is this valid? can we not trust the ingest data and either update or not? Having both calcFcn and updateCacheFcn be able to reject is excessive
 					// The change is accepted
 
@@ -118,7 +128,7 @@ export function ingestLockFunction(
 					function doPlaylistInner() {
 						const playoutInfo = waitForPromise(getIngestPlaylistInfoFromDb(rundown))
 
-						waitForPromise(CommitIngestOperation(ingestCache, playoutInfo, commitData))
+						waitForPromise(CommitIngestOperation(ingestCache, playoutInfo, commitData0))
 
 						// Update modified time
 						if (getCurrentTime() - rundown.modified > 3600 * 1000) {
@@ -146,6 +156,8 @@ export function ingestLockFunction(
 			} finally {
 				// Ensure we save the ingest data
 				waitForPromise(pSaveIngestChanges)
+
+				span?.end()
 			}
 		},
 		context,

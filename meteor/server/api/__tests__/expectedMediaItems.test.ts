@@ -6,7 +6,7 @@ import { VTContent, PieceLifespan, WithTimeline } from '@sofie-automation/bluepr
 import { Segments, DBSegment } from '../../../lib/collections/Segments'
 import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
+import { updateExpectedMediaItemsOnRundown } from '../ingest/expectedMediaItems'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'

@@ -20,7 +20,7 @@ import {
 	cleanUpExpectedMediaItemForBucketAdLibPiece,
 	updateExpectedMediaItemForBucketAdLibAction,
 	updateExpectedMediaItemForBucketAdLibPiece,
-} from './expectedMediaItems'
+} from './ingest/expectedMediaItems'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 

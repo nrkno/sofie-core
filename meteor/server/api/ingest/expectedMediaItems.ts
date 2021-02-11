@@ -1,4 +1,4 @@
-import { check } from '../../lib/check'
+import { check } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import {
 	ExpectedMediaItems,
@@ -8,10 +8,10 @@ import {
 	ExpectedMediaItemBucketAction,
 	ExpectedMediaItemBase,
 	ExpectedMediaItemRundown,
-} from '../../lib/collections/ExpectedMediaItems'
-import { RundownId } from '../../lib/collections/Rundowns'
-import { Piece, PieceId } from '../../lib/collections/Pieces'
-import { AdLibPiece } from '../../lib/collections/AdLibPieces'
+} from '../../../lib/collections/ExpectedMediaItems'
+import { RundownId } from '../../../lib/collections/Rundowns'
+import { Piece, PieceId } from '../../../lib/collections/Pieces'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import {
 	saveIntoDb,
 	getCurrentTime,
@@ -21,18 +21,18 @@ import {
 	waitForPromise,
 	Subtract,
 	ProtectedString,
-} from '../../lib/lib'
-import { logger } from '../logging'
-import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
-import { StudioId } from '../../lib/collections/Studios'
-import { CacheForRundownPlaylist } from '../cache/DatabaseCaches'
-import { AdLibAction, AdLibActionId } from '../../lib/collections/AdLibActions'
+} from '../../../lib/lib'
+import { logger } from '../../logging'
+import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
+import { StudioId } from '../../../lib/collections/Studios'
+import { CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
+import { AdLibAction, AdLibActionId } from '../../../lib/collections/AdLibActions'
 import {
 	IBlueprintActionManifestDisplayContent,
 	SomeContent,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
-import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
+import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 
 export enum PieceType {
 	PIECE = 'piece',
