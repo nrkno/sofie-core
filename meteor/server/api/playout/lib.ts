@@ -24,7 +24,7 @@ import {
 import { Segments, Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
+import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
 import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
@@ -47,7 +47,7 @@ import {
 	getSelectedPartInstancesFromCache as getSelectedPartInstancesFromCache2,
 } from './cache'
 import { Settings } from '../../../lib/Settings'
-import { removeSegmentContents } from '../rundown'
+import { removeSegmentContents } from '../ingest/cleanup'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 

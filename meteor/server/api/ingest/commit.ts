@@ -1,15 +1,21 @@
 import { getShowStyleCompound2 } from '../../../lib/collections/ShowStyleVariants'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
-import { wrapWithProxyPlayoutCache } from '../playout/cache'
+import { getSelectedPartInstancesFromCache, wrapWithProxyPlayoutCache } from '../playout/cache'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
-import { ChangedSegmentsRankInfo, updatePartInstancesBasicProperties, updatePartInstanceRanks } from '../rundown'
+import { ChangedSegmentsRankInfo, updatePartInstanceRanks } from '../rundown'
 import { CacheForIngest } from './cache'
 import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
 import { getRundown2 } from './lib'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { CommitIngestData, IngestPlayoutInfo } from './syncFunction'
 import { UpdateNext } from './updateNext'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBSegment } from '../../../lib/collections/Segments'
+import { CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
+import { logger } from '../../logging'
+import { isTooCloseToAutonext } from '../playout/lib'
+import { RundownId } from '../../../lib/collections/Rundowns'
 
 export async function CommitIngestOperation(
 	ingestCache: CacheForIngest,
@@ -116,6 +122,15 @@ export async function CommitIngestOperation(
 	//     UpdateNext.ensureNextPartIsValid(cache, playlist)
 	// }
 
+	// TODO - existingRundownParts needs to be generated before the calcFcn
+	// const changedSegments = newSegments.map((s) => ({
+	// 			segmentId: s._id,
+	// 			oldPartIdsAndRanks: (existingRundownParts[unprotectString(s._id)] || []).map((p) => ({
+	// 				id: p._id,
+	// 				rank: p._rank,
+	// 			})),
+	// 		}))
+
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(cache, rundown._id)
 	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
@@ -131,4 +146,54 @@ export async function CommitIngestOperation(
 	})
 
 	triggerUpdateTimelineAfterIngestData(rundown.playlistId)
+}
+
+export function canRemoveSegment(
+	cache: CacheForRundownPlaylist,
+	rundownPlaylist: RundownPlaylist,
+	segment: DBSegment | undefined
+): boolean {
+	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
+	if (
+		segment &&
+		(currentPartInstance?.segmentId === segment._id ||
+			(nextPartInstance?.segmentId === segment._id && isTooCloseToAutonext(currentPartInstance, false)))
+	) {
+		// Don't allow removing an active rundown
+		logger.warn(`Not allowing removal of current playing segment "${segment._id}", making segment unsynced instead`)
+		return false
+	}
+
+	return true
+}
+
+/**
+ * Ensure some 'basic' PartInstances properties are in sync with their parts
+ */
+function updatePartInstancesBasicProperties(
+	cache: CacheForRundownPlaylist,
+	playlist: RundownPlaylist,
+	rundownId: RundownId
+) {
+	const partInstances = cache.PartInstances.findFetch((p) => !p.reset && !p.orphaned && p.rundownId === rundownId)
+	for (const partInstance of partInstances) {
+		const part = cache.Parts.findOne(partInstance.part._id)
+		if (!part) {
+			// Part is deleted, so reset this instance if it isnt on-air
+			if (
+				playlist.currentPartInstanceId !== partInstance._id &&
+				playlist.nextPartInstanceId !== partInstance._id
+			) {
+				cache.PartInstances.update(partInstance._id, { $set: { reset: true } })
+			}
+		} else {
+			// part still exists, ensure the segmentId is up to date
+			cache.PartInstances.update(partInstance._id, {
+				$set: {
+					segmentId: part.segmentId,
+					'part.segmentId': part.segmentId,
+				},
+			})
+		}
+	}
 }

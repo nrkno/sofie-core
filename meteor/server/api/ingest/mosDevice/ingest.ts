@@ -29,14 +29,7 @@ import {
 	asyncCollectionUpdate,
 } from '../../../../lib/lib'
 import { IngestPart, IngestSegment } from '@sofie-automation/blueprints-integration'
-import {
-	rundownPlaylistSyncFunction,
-	RundownSyncFunctionPriority,
-	handleUpdatedRundownInner,
-	updateSegmentsFromIngestData,
-	canRemoveSegment,
-	regenSegmentInner,
-} from '../rundownInput'
+import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority, handleUpdatedRundownInner } from '../rundownInput'
 import {
 	loadCachedRundownData,
 	saveRundownCache,
@@ -48,7 +41,6 @@ import {
 import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Segment, Segments } from '../../../../lib/collections/Segments'
-import { unsyncAndEmptySegment } from '../../rundown'
 import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
@@ -59,6 +51,9 @@ import { profiler } from '../../profiler'
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { Studio } from '../../../../lib/collections/Studios'
 import { ingestLockFunction } from '../syncFunction'
+import { calculateSegmentsFromIngestData, saveSegmentChangesToCache, updateSegmentFromIngestData } from '../generation'
+import { unsyncAndEmptySegment } from '../cleanup'
+import { canRemoveSegment } from '../commit'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -293,7 +288,7 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 				s.parts.find((p) => p.externalId === partExternalId)
 			)
 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment for story "${partExternalId}" is missing!`)
-			return regenSegmentInner(cache, ingestSegment, false)
+			return updateSegmentFromIngestData(cache, ingestSegment, false)
 		}
 	)
 }
@@ -785,7 +780,7 @@ function diffAndApplyChanges(
 		// TODO ORPHAN - can this be done in a more generic way?
 
 		// Move over those parts to the new segmentId.
-		// These parts will be orphaned temporarily, but will be picked up inside of updateSegmentsFromIngestData later
+		// These parts will be orphaned temporarily, but will be picked up inside of calculateSegmentsFromIngestData later
 		cache.Parts.update(
 			{
 				rundownId: rundown._id,
@@ -831,7 +826,7 @@ function diffAndApplyChanges(
 	}
 
 	// Create/Update segments
-	updateSegmentsFromIngestData(
+	calculateSegmentsFromIngestData(
 		cache,
 		studio,
 		playlist,
