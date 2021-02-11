@@ -344,12 +344,16 @@ body.tv2 {
 		}
 
 		&.list {
-			&.selected > .dashboard-panel__panel__button__content {
-				box-shadow: inset 0 0 0 4px var(--general-next-color);
+			&.selected {
+				box-shadow: inset 0 0 0 2px var(--general-next-color), 2px 2px 0 var(--general-next-color),
+					-2px -2px 0 var(--general-next-color), -2px 2px 0 var(--general-next-color),
+					2px -2px 0 var(--general-next-color);
 			}
 
-			&.live > .dashboard-panel__panel__button__content {
-				box-shadow: inset 0 0 0 4px var(--general-live-color);
+			&.live {
+				box-shadow: inset 0 0 0 2px var(--general-live-color), 2px 2px 0 var(--general-live-color),
+					-2px -2px 0 var(--general-live-color), -2px 2px 0 var(--general-live-color),
+					2px -2px 0 var(--general-live-color);
 			}
 		}
 
