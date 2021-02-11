@@ -30,4 +30,4 @@
  * 1.17.0: Release 29  (2021-02-08)
  * 1.18.0: Release 30
  */
-export const CURRENT_SYSTEM_VERSION = '1.18.0'
+export const CURRENT_SYSTEM_VERSION = '1.18.0-0-in-testing-R30'
