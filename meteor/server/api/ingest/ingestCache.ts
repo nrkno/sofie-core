@@ -18,7 +18,7 @@ import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { profiler } from '../profiler'
 
-export function tryLoadCachedRundownData(rundownId: RundownId): LocalIngestRundown | undefined {
+export function loadCachedRundownData(rundownId: RundownId, rundownExternalId: string): LocalIngestRundown {
 	const span = profiler.startSpan('ingest.ingestCache.loadCachedRundownData')
 
 	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
@@ -26,7 +26,7 @@ export function tryLoadCachedRundownData(rundownId: RundownId): LocalIngestRundo
 	const cachedRundown = cacheEntries.find((e) => e.type === IngestCacheType.RUNDOWN)
 	if (!cachedRundown) {
 		span?.end()
-		return undefined
+		throw new Meteor.Error(404, `Rundown "${rundownId}", (${rundownExternalId}) has no cached ingest data`)
 	}
 
 	const ingestRundown = cachedRundown.data as LocalIngestRundown
@@ -59,13 +59,6 @@ export function tryLoadCachedRundownData(rundownId: RundownId): LocalIngestRundo
 	return ingestRundown
 }
 
-export function loadCachedRundownData(rundownId: RundownId, rundownExternalId: string): LocalIngestRundown {
-	const ingestRundown = tryLoadCachedRundownData(rundownId)
-	if (!ingestRundown)
-		throw new Meteor.Error(404, `Rundown "${rundownId}", (${rundownExternalId}) has no cached ingest data`)
-
-	return ingestRundown
-}
 export function loadCachedIngestSegment(
 	rundownId: RundownId,
 	rundownExternalId: string,

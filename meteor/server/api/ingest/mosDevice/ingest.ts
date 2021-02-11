@@ -9,7 +9,6 @@ import {
 	getRundown,
 	getRundownPlaylist,
 	getPartId,
-	getRundown2,
 } from '../lib'
 import {
 	getRundownIdFromMosRO,
@@ -45,7 +44,6 @@ import {
 	LocalIngestSegment,
 	LocalIngestPart,
 	updateIngestRundownWithData,
-	tryLoadCachedRundownData,
 } from '../ingestCache'
 import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
@@ -295,7 +293,7 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 				s.parts.find((p) => p.externalId === partExternalId)
 			)
 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment for story "${partExternalId}" is missing!`)
-			return regenSegmentInner(cache, studio, ingestSegment, false)
+			return regenSegmentInner(cache, ingestSegment, false)
 		}
 	)
 }
@@ -840,6 +838,7 @@ function diffAndApplyChanges(
 		rundown,
 		_.sortBy([..._.values(segmentDiff.added), ..._.values(segmentDiff.changed)], (se) => se.rank)
 	)
+	saveSegmentChangesToCache(cache)
 
 	span?.end()
 }

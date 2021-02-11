@@ -419,24 +419,14 @@ function defaultPlaylistForRundown(
 export function removeSegmentContents(
 	cache: CacheForRundownPlaylist,
 	rundownId: RundownId,
-	segmentIds: SegmentId[]
+	segmentIds0: SegmentId[]
 ): void {
-	// Remove the parts:
-	const changes = saveIntoCache(
-		cache.Parts,
-		{
-			rundownId: rundownId,
-			segmentId: { $in: segmentIds },
-		},
-		[],
-		{
-			afterRemoveAll(parts) {
-				removeSegmentsParts(cache, rundownId, parts)
-			},
-		}
-	)
+	const segmentIds = new Set(segmentIds0)
+	const removedPartIds = cache.Parts.remove((p) => segmentIds.has(p.segmentId))
 
-	if (changes.removed.length > 0) {
+	if (removedPartIds.length > 0) {
+		removeSegmentsParts(cache, rundownId, removedPartIds)
+
 		triggerUpdateTimelineAfterIngestData(cache.containsDataFromPlaylist)
 	}
 }
@@ -497,9 +487,8 @@ export function updatePartInstancesBasicProperties(
  * @param rundownId Id of the Rundown
  * @param removedParts The parts that have been removed
  */
-function removeSegmentsParts(cache: CacheForRundownPlaylist, rundownId: RundownId, removedParts: DBPart[]) {
+function removeSegmentsParts(cache: CacheForRundownPlaylist, rundownId: RundownId, removedPartIds: PartId[]) {
 	// Clean up all the db items that belong to the removed Parts
-	const removedPartIds = removedParts.map((p) => p._id)
 	cache.Pieces.remove({
 		startRundownId: rundownId,
 		startPartId: { $in: removedPartIds },
