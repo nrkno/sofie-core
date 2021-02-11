@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { saveIntoDb, getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
+import { getCurrentTime, protectString, unprotectString, clone } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import {
 	IngestDataCacheObj,
@@ -15,8 +15,8 @@ import { getSegmentId, getPartId } from './lib'
 import { logger } from '../../../lib/logging'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { PartId } from '../../../lib/collections/Parts'
 import { profiler } from '../profiler'
+import { ReadonlyDeep } from 'type-fest'
 
 export function loadCachedRundownData(rundownId: RundownId, rundownExternalId: string): LocalIngestRundown {
 	const span = profiler.startSpan('ingest.ingestCache.loadCachedRundownData')
@@ -100,59 +100,7 @@ export function loadCachedIngestSegment(
 
 	return ingestSegment
 }
-export function loadIngestDataCachePart(
-	rundownId: RundownId,
-	rundownExternalId: string,
-	partId: PartId,
-	partExternalId: string
-): IngestDataCacheObjPart {
-	const cacheEntries = IngestDataCache.find({
-		rundownId: rundownId,
-		partId: partId,
-		type: IngestCacheType.PART,
-	}).fetch()
-	if (cacheEntries.length > 1)
-		logger.warn(
-			`There are multiple parts (${cacheEntries.length}) in IngestDataCache for rundownId: "${rundownExternalId}", partId: "${partExternalId}"`
-		)
 
-	const partEntry = cacheEntries[0]
-	if (!partEntry)
-		throw new Meteor.Error(
-			404,
-			`Part "${partExternalId}" in rundown "${rundownExternalId}" is missing cached ingest data`
-		)
-	if (partEntry.type !== IngestCacheType.PART) throw new Meteor.Error(500, 'Wrong type on cached part')
-	return partEntry
-}
-
-export function saveRundownCache(rundownId: RundownId, ingestRundown: LocalIngestRundown) {
-	// cache the Data:
-	const cacheEntries: IngestDataCacheObj[] = generateCacheForRundown(rundownId, ingestRundown)
-	saveIntoDb<IngestDataCacheObj, IngestDataCacheObj>(
-		IngestDataCache,
-		{
-			rundownId: rundownId,
-		},
-		cacheEntries
-	)
-}
-export function saveSegmentCache(rundownId: RundownId, segmentId: SegmentId, ingestSegment: LocalIngestSegment) {
-	const span = profiler.startSpan('ingest.ingestCache.saveSegmentCache')
-
-	// cache the Data:
-	const cacheEntries: IngestDataCacheObj[] = generateCacheForSegment(rundownId, ingestSegment)
-	saveIntoDb<IngestDataCacheObj, IngestDataCacheObj>(
-		IngestDataCache,
-		{
-			rundownId: rundownId,
-			segmentId: segmentId,
-		},
-		cacheEntries
-	)
-
-	span?.end()
-}
 interface LocalIngestBase {
 	modified: number
 }
@@ -182,78 +130,4 @@ export function makeNewIngestSegment(ingestSegment: IngestSegment): LocalIngestS
 }
 export function makeNewIngestPart(ingestPart: IngestPart): LocalIngestPart {
 	return { ...ingestPart, modified: getCurrentTime() }
-}
-
-export function updateIngestRundownWithData(
-	oldIngestRundown: LocalIngestRundown,
-	newIngestSegments: LocalIngestSegment[]
-): LocalIngestRundown {
-	const newIngestRundown = _.clone(oldIngestRundown) as LocalIngestRundown
-	newIngestRundown.segments = newIngestSegments as LocalIngestSegment[]
-	_.each(newIngestRundown.segments, (newIngestSegment) => {
-		const oldIngestSegment = oldIngestRundown.segments.find((s) => s.externalId === newIngestSegment.externalId)
-		if (oldIngestSegment) {
-			newIngestSegment.modified = Math.max(newIngestSegment.modified, oldIngestSegment.modified)
-		} else {
-			newIngestSegment.modified = getCurrentTime()
-		}
-	})
-	return newIngestRundown
-}
-
-function generateCacheForRundown(rundownId: RundownId, ingestRundown: LocalIngestRundown): IngestDataCacheObj[] {
-	// cache the Data
-	const cacheEntries: IngestDataCacheObj[] = []
-	const rundown: IngestDataCacheObjRundown = {
-		_id: protectString<IngestDataCacheObjId>(unprotectString(rundownId)),
-		type: IngestCacheType.RUNDOWN,
-		rundownId: rundownId,
-		modified: ingestRundown.modified,
-		data: {
-			..._.omit(ingestRundown, 'modified'),
-			segments: [], // omit the segments, they come as separate objects
-		},
-	}
-	cacheEntries.push(rundown)
-	_.each(ingestRundown.segments, (segment) => cacheEntries.push(...generateCacheForSegment(rundownId, segment)))
-	return cacheEntries
-}
-function generateCacheForSegment(rundownId: RundownId, ingestSegment: LocalIngestSegment): IngestDataCacheObj[] {
-	const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
-	const cacheEntries: Array<IngestDataCacheObjSegment | IngestDataCacheObjPart> = []
-
-	const segment: IngestDataCacheObjSegment = {
-		_id: protectString<IngestDataCacheObjId>(`${rundownId}_${segmentId}`),
-		type: IngestCacheType.SEGMENT,
-		rundownId: rundownId,
-		segmentId: segmentId,
-		modified: ingestSegment.modified,
-		data: {
-			..._.omit(ingestSegment, 'modified'),
-			parts: [], // omit the parts, they come as separate objects
-		},
-	}
-	cacheEntries.push(segment)
-
-	_.each(ingestSegment.parts, (part) => {
-		cacheEntries.push(generateCacheForPart(rundownId, segmentId, part))
-	})
-
-	return cacheEntries
-}
-function generateCacheForPart(
-	rundownId: RundownId,
-	segmentId: SegmentId,
-	part: LocalIngestPart
-): IngestDataCacheObjPart {
-	const partId = getPartId(rundownId, part.externalId)
-	return {
-		_id: protectString<IngestDataCacheObjId>(`${rundownId}_${partId}`),
-		type: IngestCacheType.PART,
-		rundownId: rundownId,
-		segmentId: segmentId,
-		partId: partId,
-		modified: part.modified,
-		data: _.omit(part, 'modified'),
-	}
 }

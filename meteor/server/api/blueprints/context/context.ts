@@ -21,14 +21,12 @@ import {
 	IStudioUserContext,
 	BlueprintMappings,
 	IBlueprintSegmentDB,
-	IngestPart,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
 	IBlueprintPartDB,
 	IBlueprintRundownDB,
 	IBlueprintAsRunLogEvent,
 	IBlueprintExternalMessageQueueObj,
-	ExtendedIngestRundown,
 	IShowStyleContext,
 	IRundownContext,
 	IEventContext,
@@ -49,7 +47,6 @@ import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { NoteType, INoteBase } from '../../../../lib/api/notes'
-import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
 import { RundownPlaylistId, ABSessionInfo, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import {
 	PieceInstances,
@@ -58,7 +55,6 @@ import {
 } from '../../../../lib/collections/PieceInstances'
 import { unprotectPartInstance, PartInstance } from '../../../../lib/collections/PartInstances'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
-import { extendIngestRundownCore } from '../../ingest/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { Random } from 'meteor/random'
 import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'

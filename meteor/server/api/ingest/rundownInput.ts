@@ -332,8 +332,6 @@ export function handleUpdatedRundown(
 			}
 		},
 		async (cache, ingestRundown) => {
-			const rundown = getRundown2(cache)
-
 			if (!ingestRundown) throw new Meteor.Error(`regenerateRundown lost the IngestRundown...`)
 
 			handleUpdatedRundownInner(cache, ingestRundown, isCreateAction, peripheralDevice)
@@ -511,7 +509,7 @@ export function handleUpdatedSegment(
 			}
 		},
 		async (cache, ingestRundown) => {
-			const ingestSegment = ingestRundown?.segments.find((s) => s.externalId === segmentExternalId)
+			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segmentExternalId)
 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segmentExternalId}" is missing!`)
 			return updateSegmentFromIngestData(cache, ingestSegment, isCreateAction)
 		}
@@ -555,7 +553,7 @@ export function handleRemovedPart(
 			}
 		},
 		async (cache, ingestRundown) => {
-			const ingestSegment = ingestRundown?.segments.find((s) => s.externalId === segmentExternalId)
+			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segmentExternalId)
 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segmentExternalId}" is missing!`)
 			return updateSegmentFromIngestData(cache, ingestSegment, false)
 		}
@@ -593,7 +591,7 @@ export function handleUpdatedPart(
 			}
 		},
 		async (cache, ingestRundown) => {
-			const ingestSegment = ingestRundown?.segments.find((s) => s.externalId === segmentExternalId)
+			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segmentExternalId)
 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segmentExternalId}" is missing!`)
 			return updateSegmentFromIngestData(cache, ingestSegment, false)
 		}

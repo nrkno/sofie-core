@@ -7,8 +7,9 @@ import {
 	getSegmentId,
 	canRundownBeUpdated,
 	getRundown,
-	getRundownPlaylist,
 	getPartId,
+	getRundownId,
+	getRundown2,
 } from '../lib'
 import {
 	getRundownIdFromMosRO,
@@ -20,40 +21,31 @@ import {
 import {
 	literal,
 	protectString,
-	waitForPromise,
 	getCurrentTime,
 	normalizeArray,
 	asyncCollectionInsert,
 	asyncCollectionRemove,
 	waitForPromiseAll,
 	asyncCollectionUpdate,
+	clone,
 } from '../../../../lib/lib'
 import { IngestPart, IngestSegment } from '@sofie-automation/blueprints-integration'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority, handleUpdatedRundownInner } from '../rundownInput'
-import {
-	loadCachedRundownData,
-	saveRundownCache,
-	LocalIngestRundown,
-	LocalIngestSegment,
-	LocalIngestPart,
-	updateIngestRundownWithData,
-} from '../ingestCache'
+import { loadCachedRundownData, LocalIngestRundown, LocalIngestSegment, LocalIngestPart } from '../ingestCache'
 import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Segment, Segments } from '../../../../lib/collections/Segments'
-import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Parts, PartId } from '../../../../lib/collections/Parts'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
-import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../../cache/DatabaseCaches'
 import { profiler } from '../../profiler'
 import { Pieces } from '../../../../lib/collections/Pieces'
-import { Studio } from '../../../../lib/collections/Studios'
-import { ingestLockFunction } from '../syncFunction'
+import { CommitIngestData, ingestLockFunction } from '../syncFunction'
 import { calculateSegmentsFromIngestData, saveSegmentChangesToCache, updateSegmentFromIngestData } from '../generation'
 import { unsyncAndEmptySegment } from '../cleanup'
 import { canRemoveSegment } from '../commit'
+import { ReadonlyDeep } from 'type-fest'
+import { CacheForIngest } from '../cache'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -284,7 +276,7 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 			}
 		},
 		async (cache, ingestRundown) => {
-			const ingestSegment = ingestRundown.segments.find((s) =>
+			const ingestSegment = ingestRundown?.segments?.find((s) =>
 				s.parts.find((p) => p.externalId === partExternalId)
 			)
 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment for story "${partExternalId}" is missing!`)
@@ -299,60 +291,48 @@ export function handleMosDeleteStory(
 ) {
 	if (stories.length === 0) return
 
-	// no point in measuring a simple prop check => return
-	const span = profiler.startSpan('mosDevice.ingest.handleMosDeleteStory')
-
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 
-	const playlistId = getRundown(rundownId, runningOrderMosId.toString()).playlistId
-
-	return rundownPlaylistSyncFunction(
-		studio._id,
-		playlistId,
-		RundownSyncFunctionPriority.INGEST,
+	const rundownExternalId = parseMosString(runningOrderMosId)
+	const rundownId = getRundownId(studio, rundownExternalId)
+	return ingestLockFunction(
 		'handleMosDeleteStory',
-		() => {
-			const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
-			if (!canRundownBeUpdated(rundown, false)) {
-				span?.end()
-				return
+		studio._id,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				const ingestParts = getAnnotatedIngestParts(ingestRundown)
+				const ingestPartIds = ingestParts.map((part) => part.externalId)
+
+				const storyIds = stories.map(parseMosString)
+
+				logger.debug(`handleMosDeleteStory storyIds: [${storyIds.join(',')}]`)
+
+				const missingIds = storyIds.filter((id) => ingestPartIds.indexOf(id) === -1)
+				if (missingIds.length > 0) {
+					throw new Meteor.Error(
+						404,
+						`Parts ${missingIds.join(', ')} in rundown ${rundownExternalId} were not found`
+					)
+				}
+
+				ingestRundown.segments = makeChangeToIngestParts(rundownId, ingestParts, (ingestParts) => {
+					const filteredParts = ingestParts.filter((p) => storyIds.indexOf(p.externalId) === -1)
+					// if (filteredParts.length === ingestParts.length) return // Nothing was removed
+					logger.debug(
+						`handleMosDeleteStory, new part count ${filteredParts.length} (was ${ingestParts.length})`
+					)
+
+					return filteredParts
+				})
+
+				// We modify in-place
+				return ingestRundown
+			} else {
+				return null
 			}
-
-			const playlist = getRundownPlaylist(rundown)
-
-			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
-			const ingestParts = getAnnotatedIngestParts(ingestRundown)
-			const ingestPartIds = ingestParts.map((part) => part.externalId)
-
-			const storyIds = stories.map(parseMosString)
-
-			logger.debug(`handleMosDeleteStory storyIds: [${storyIds.join(',')}]`)
-
-			const missingIds = storyIds.filter((id) => ingestPartIds.indexOf(id) === -1)
-			if (missingIds.length > 0) {
-				throw new Meteor.Error(
-					404,
-					`Parts ${missingIds.join(', ')} in rundown ${rundown.externalId} were not found`
-				)
-			}
-
-			const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestParts) => {
-				const filteredParts = ingestParts.filter((p) => storyIds.indexOf(p.externalId) === -1)
-				// if (filteredParts.length === ingestParts.length) return // Nothing was removed
-				logger.debug(`handleMosDeleteStory, new part count ${filteredParts.length} (was ${ingestParts.length})`)
-
-				return filteredParts
-			})
-
-			// TODO ORPHAN is this guarded correctly?
-			const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
-			diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
-			UpdateNext.ensureNextPartIsValid(cache, playlist)
-			waitForPromise(cache.saveAllToDatabase())
-
-			span?.end()
-		}
+		},
+		diffAndApplyChanges
 	)
 }
 
@@ -373,7 +353,7 @@ function getAnnotatedIngestParts(ingestRundown: LocalIngestRundown): AnnotatedIn
 	span?.end()
 	return ingestParts
 }
-export function handleInsertParts(
+export function handleMosInsertParts(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	insertBeforeStoryId: MOS.MosString128 | null,
@@ -382,85 +362,76 @@ export function handleInsertParts(
 ) {
 	// inserts stories and all of their defined items before the referenced story in a Running Order
 	// ...and roStoryReplace message replaces the referenced story with another story or stories
-	const span = profiler.startSpan('mosDevice.ingest.handleInsertParts')
 
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 
-	const playlistId = getRundown(rundownId, runningOrderMosId.toString()).playlistId
-
-	return rundownPlaylistSyncFunction(
+	const rundownExternalId = parseMosString(runningOrderMosId)
+	const rundownId = getRundownId(studio, rundownExternalId)
+	return ingestLockFunction(
+		'handleMosInsertParts',
 		studio._id,
-		playlistId,
-		RundownSyncFunctionPriority.INGEST,
-		'handleInsertParts',
-		() => {
-			const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
-			if (!canRundownBeUpdated(rundown, false)) return
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
-			const existingPlaylist = getRundownPlaylist(rundown)
-
-			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
-			const ingestParts = getAnnotatedIngestParts(ingestRundown)
-
-			// The part of which we are about to insert stories after
-			const insertBeforePartExternalId = insertBeforeStoryId ? parseMosString(insertBeforeStoryId) || '' : ''
-			const insertIndex = !insertBeforePartExternalId // insert last
-				? ingestParts.length
-				: ingestParts.findIndex((p) => p.externalId === insertBeforePartExternalId)
-			if (insertIndex === -1) {
-				throw new Meteor.Error(
-					404,
-					`Part ${insertBeforePartExternalId} in rundown ${rundown.externalId} not found`
-				)
-			}
-
-			const newParts = storiesToIngestParts(rundown._id, newStories || [], true, ingestParts).filter(
-				(p): p is AnnotatedIngestPart => !!p // remove falsy values from array
-			)
-			const newPartExtenalIds = newParts.map((part) => part.externalId)
-
-			const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestPartsToModify) => {
-				const modifiedIngestParts = [...ingestPartsToModify] // clone
-
-				if (removePrevious) {
-					modifiedIngestParts.splice(insertIndex, 1) // Replace the previous part with new parts
-				}
-
-				const collidingPartIds = modifiedIngestParts
-					.filter((part) => newPartExtenalIds.indexOf(part.externalId) > -1)
-					.map((part) => part.externalId)
-
-				if (collidingPartIds.length > 0) {
+				// The part of which we are about to insert stories after
+				const insertBeforePartExternalId = insertBeforeStoryId ? parseMosString(insertBeforeStoryId) || '' : ''
+				const insertIndex = !insertBeforePartExternalId // insert last
+					? ingestParts.length
+					: ingestParts.findIndex((p) => p.externalId === insertBeforePartExternalId)
+				if (insertIndex === -1) {
 					throw new Meteor.Error(
-						500,
-						`Parts ${collidingPartIds.join(', ')} already exist in rundown ${rundown.externalId}`
+						404,
+						`Part ${insertBeforePartExternalId} in rundown ${rundownExternalId} not found`
 					)
 				}
-				// Update parts list
-				modifiedIngestParts.splice(insertIndex, 0, ...newParts)
 
-				return modifiedIngestParts
-			})
+				const newParts = storiesToIngestParts(rundownId, newStories || [], true, ingestParts).filter(
+					(p): p is AnnotatedIngestPart => !!p // remove falsy values from array
+				)
+				const newPartExtenalIds = newParts.map((part) => part.externalId)
 
-			const cache = waitForPromise(initCacheForRundownPlaylist(existingPlaylist)) // todo: change this
-			diffAndApplyChanges(cache, studio, existingPlaylist, rundown, ingestRundown, newIngestSegments)
-			waitForPromise(cache.saveAllToDatabase())
+				ingestRundown.segments = makeChangeToIngestParts(rundownId, ingestParts, (ingestPartsToModify) => {
+					const modifiedIngestParts = [...ingestPartsToModify] // clone
 
-			span?.end()
-		}
+					if (removePrevious) {
+						modifiedIngestParts.splice(insertIndex, 1) // Replace the previous part with new parts
+					}
+
+					const collidingPartIds = modifiedIngestParts
+						.filter((part) => newPartExtenalIds.indexOf(part.externalId) > -1)
+						.map((part) => part.externalId)
+
+					if (collidingPartIds.length > 0) {
+						throw new Meteor.Error(
+							500,
+							`Parts ${collidingPartIds.join(', ')} already exist in rundown ${rundownExternalId}`
+						)
+					}
+					// Update parts list
+					modifiedIngestParts.splice(insertIndex, 0, ...newParts)
+
+					return modifiedIngestParts
+				})
+
+				// We modify in-place
+				return ingestRundown
+			} else {
+				return null
+			}
+		},
+		diffAndApplyChanges
 	)
 }
-export function handleSwapStories(
+
+export function handleMosSwapStories(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	story0: MOS.MosString128,
 	story1: MOS.MosString128
 ) {
-	const span = profiler.startSpan('mosDevice.ingest.handleSwapStories')
-
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 
 	const story0Str = parseMosString(story0)
 	const story1Str = parseMosString(story1)
@@ -471,130 +442,118 @@ export function handleSwapStories(
 		)
 	}
 
-	const playlistId = getRundown(rundownId, runningOrderMosId.toString()).playlistId
-
-	return rundownPlaylistSyncFunction(
+	const rundownExternalId = parseMosString(runningOrderMosId)
+	const rundownId = getRundownId(studio, rundownExternalId)
+	return ingestLockFunction(
+		'handleMosSwapStories',
 		studio._id,
-		playlistId,
-		RundownSyncFunctionPriority.INGEST,
-		'handleSwapStories',
-		() => {
-			const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
-			if (!canRundownBeUpdated(rundown, false)) return
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
-			const playlist = getRundownPlaylist(rundown)
+				ingestRundown.segments = makeChangeToIngestParts(rundownId, ingestParts, (ingestParts) => {
+					const story0Index = ingestParts.findIndex((p) => p.externalId === story0Str)
+					if (story0Index === -1) {
+						throw new Meteor.Error(
+							404,
+							`Story ${story0} not found in rundown ${parseMosString(runningOrderMosId)}`
+						)
+					}
+					const story1Index = ingestParts.findIndex((p) => p.externalId === story1Str)
+					if (story1Index === -1) {
+						throw new Meteor.Error(
+							404,
+							`Story ${story1} not found in rundown ${parseMosString(runningOrderMosId)}`
+						)
+					}
+					const tmp = ingestParts[story0Index]
+					ingestParts[story0Index] = ingestParts[story1Index]
+					ingestParts[story1Index] = tmp
 
-			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
-			const ingestParts = getAnnotatedIngestParts(ingestRundown)
+					return ingestParts
+				})
 
-			const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestParts) => {
-				const story0Index = ingestParts.findIndex((p) => p.externalId === story0Str)
-				if (story0Index === -1) {
-					throw new Meteor.Error(
-						404,
-						`Story ${story0} not found in rundown ${parseMosString(runningOrderMosId)}`
-					)
-				}
-				const story1Index = ingestParts.findIndex((p) => p.externalId === story1Str)
-				if (story1Index === -1) {
-					throw new Meteor.Error(
-						404,
-						`Story ${story1} not found in rundown ${parseMosString(runningOrderMosId)}`
-					)
-				}
-				const tmp = ingestParts[story0Index]
-				ingestParts[story0Index] = ingestParts[story1Index]
-				ingestParts[story1Index] = tmp
-
-				return ingestParts
-			})
-
-			const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
-			diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
-			UpdateNext.ensureNextPartIsValid(cache, playlist)
-			waitForPromise(cache.saveAllToDatabase())
-
-			span?.end()
-		}
+				// We modify in-place
+				return ingestRundown
+			} else {
+				return null
+			}
+		},
+		diffAndApplyChanges
 	)
 }
-export function handleMoveStories(
+export function handleMosMoveStories(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	insertBeforeStoryId: MOS.MosString128 | null,
 	stories: MOS.MosString128[]
 ) {
-	const span = profiler.startSpan('mosDevice.ingest.handleMoveStories')
-
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
-	const playlistId = getRundown(rundownId, runningOrderMosId.toString()).playlistId
 
-	return rundownPlaylistSyncFunction(
+	const rundownExternalId = parseMosString(runningOrderMosId)
+	const rundownId = getRundownId(studio, rundownExternalId)
+	return ingestLockFunction(
+		'handleMosMoveStories',
 		studio._id,
-		playlistId,
-		RundownSyncFunctionPriority.INGEST,
-		'handleMoveStories',
-		() => {
-			const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
-			if (!canRundownBeUpdated(rundown, false)) return
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
-			const playlist = getRundownPlaylist(rundown)
+				// Get story data
+				const storyIds = stories.map(parseMosString)
 
-			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
-			const ingestParts = getAnnotatedIngestParts(ingestRundown)
-
-			// Get story data
-			const storyIds = stories.map(parseMosString)
-
-			const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestParts) => {
-				// Extract the parts-to-be-moved:
-				const movingParts = _.sortBy(
-					ingestParts.filter((p) => storyIds.indexOf(p.externalId) !== -1),
-					(p) => storyIds.indexOf(p.externalId)
-				)
-				const filteredParts = ingestParts.filter((p) => storyIds.indexOf(p.externalId) === -1)
-
-				// Ensure all stories to move were found
-				const movingIds = _.map(movingParts, (p) => p.externalId)
-				const missingIds = _.filter(storyIds, (id) => movingIds.indexOf(id) === -1)
-				if (missingIds.length > 0) {
-					throw new Meteor.Error(
-						404,
-						`Parts ${missingIds.join(', ')} were not found in rundown ${rundown.externalId}`
+				ingestRundown.segments = makeChangeToIngestParts(rundownId, ingestParts, (ingestParts) => {
+					// Extract the parts-to-be-moved:
+					const movingParts = _.sortBy(
+						ingestParts.filter((p) => storyIds.indexOf(p.externalId) !== -1),
+						(p) => storyIds.indexOf(p.externalId)
 					)
-				}
+					const filteredParts = ingestParts.filter((p) => storyIds.indexOf(p.externalId) === -1)
 
-				// Find insert point
-				const insertBeforePartExternalId = insertBeforeStoryId ? parseMosString(insertBeforeStoryId) || '' : ''
-				const insertIndex = !insertBeforePartExternalId // insert last
-					? filteredParts.length
-					: filteredParts.findIndex((p) => p.externalId === insertBeforePartExternalId)
-				if (insertIndex === -1) {
-					throw new Meteor.Error(
-						404,
-						`Part ${insertBeforeStoryId} was not found in rundown ${rundown.externalId}`
-					)
-				}
+					// Ensure all stories to move were found
+					const movingIds = _.map(movingParts, (p) => p.externalId)
+					const missingIds = _.filter(storyIds, (id) => movingIds.indexOf(id) === -1)
+					if (missingIds.length > 0) {
+						throw new Meteor.Error(
+							404,
+							`Parts ${missingIds.join(', ')} were not found in rundown ${rundownExternalId}`
+						)
+					}
 
-				// Reinsert parts
-				filteredParts.splice(insertIndex, 0, ...movingParts)
+					// Find insert point
+					const insertBeforePartExternalId = insertBeforeStoryId
+						? parseMosString(insertBeforeStoryId) || ''
+						: ''
+					const insertIndex = !insertBeforePartExternalId // insert last
+						? filteredParts.length
+						: filteredParts.findIndex((p) => p.externalId === insertBeforePartExternalId)
+					if (insertIndex === -1) {
+						throw new Meteor.Error(
+							404,
+							`Part ${insertBeforeStoryId} was not found in rundown ${rundownExternalId}`
+						)
+					}
 
-				return filteredParts
-			})
+					// Reinsert parts
+					filteredParts.splice(insertIndex, 0, ...movingParts)
 
-			const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
-			diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
-			UpdateNext.ensureNextPartIsValid(cache, playlist)
-			waitForPromise(cache.saveAllToDatabase())
+					return filteredParts
+				})
 
-			span?.end()
-		}
+				// We modify in-place
+				return ingestRundown
+			} else {
+				return null
+			}
+		},
+		diffAndApplyChanges
 	)
 }
 /** Takes a list of ingestParts, modify it, then output them grouped together into ingestSegments, keeping track of the modified property */
 function makeChangeToIngestParts(
-	rundown: Rundown,
+	rundownId: RundownId,
 	ingestParts: AnnotatedIngestPart[],
 	modifyFunction: (ingestParts: AnnotatedIngestPart[]) => AnnotatedIngestPart[]
 ): LocalIngestSegment[] {
@@ -602,12 +561,12 @@ function makeChangeToIngestParts(
 
 	// Before making the modification to ingestParts, create a list of segments from the original data, to use for calculating the
 	// .modified property below.
-	const referenceIngestSegments = groupPartsIntoIngestSegments(rundown, ingestParts)
+	const referenceIngestSegments = groupPartsIntoIngestSegments(rundownId, ingestParts)
 
 	const modifiedParts = modifyFunction(ingestParts)
 
 	// Compare to reference, to make sure that ingestSegment.modified is updated in case of a change
-	const newIngestSegments = groupPartsIntoIngestSegments(rundown, modifiedParts)
+	const newIngestSegments = groupPartsIntoIngestSegments(rundownId, modifiedParts)
 
 	_.each(newIngestSegments, (ingestSegment) => {
 		if (!ingestSegment.modified) {
@@ -632,16 +591,20 @@ function makeChangeToIngestParts(
 	span?.end()
 	return newIngestSegments
 }
-function groupPartsIntoIngestSegments(rundown: Rundown, newIngestParts: AnnotatedIngestPart[]): LocalIngestSegment[] {
+function groupPartsIntoIngestSegments(
+	rundownId: RundownId,
+	newIngestParts: AnnotatedIngestPart[]
+): LocalIngestSegment[] {
 	// Group the parts and make them into Segments:
 	const newGroupedParts = groupIngestParts(newIngestParts)
-	const newIngestSegments = groupedPartsToSegments(rundown._id, newGroupedParts)
+	const newIngestSegments = groupedPartsToSegments(rundownId, newGroupedParts)
 
 	return newIngestSegments
 }
 
 function diffAndUpdateSegmentIds(
-	rundown: Rundown,
+	cache: CacheForIngest,
+	rundown: ReadonlyDeep<Rundown>,
 	oldIngestRundown: LocalIngestRundown,
 	newIngestSegments: LocalIngestSegment[]
 ): DiffSegmentEntries {
@@ -732,27 +695,26 @@ function diffAndUpdateSegmentIds(
 	return segmentDiff
 }
 
-function diffAndApplyChanges(
-	cache: CacheForRundownPlaylist,
-	studio: Studio,
-	playlist: RundownPlaylist,
-	rundown: Rundown,
-	oldIngestRundown: LocalIngestRundown,
-	newIngestSegments: LocalIngestSegment[]
+async function diffAndApplyChanges(
+	cache: CacheForIngest,
+	oldIngestRundown: ReadonlyDeep<LocalIngestRundown> | undefined,
+	newIngestRundown: ReadonlyDeep<LocalIngestRundown> | undefined
 	// newIngestParts: AnnotatedIngestPart[]
-) {
+): Promise<CommitIngestData | null> {
+	if (!newIngestRundown) throw new Meteor.Error(`handleMosDeleteStory lost the new IngestRundown...`)
+	if (!oldIngestRundown) throw new Meteor.Error(`handleMosDeleteStory lost the old IngestRundown...`)
+
+	const rundown = getRundown2(cache)
+	// const newIngestRundown = updateIngestRundownWithData(oldIngestRundown, newIngestSegments)
+
 	const span = profiler.startSpan('mosDevice.ingest.diffAndApplyChanges')
 
 	// Fetch all existing segments:
 	const oldSegments = cache.Segments.findFetch({ rundownId: rundown._id })
 
 	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
-	const newSegmentEntries = compileSegmentEntries(newIngestSegments)
+	const newSegmentEntries = compileSegmentEntries(newIngestRundown.segments)
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
-
-	// Save new cache
-	const newIngestRundown = updateIngestRundownWithData(oldIngestRundown, newIngestSegments)
-	saveRundownCache(rundown._id, newIngestRundown)
 
 	// TODO - do we need to do these 'clever' updates anymore? As we don't store any playout properties on the Parts, destroying and recreating won't have negative impacts?
 	// The one exception is PartInstances when the segmentId changes, but that is handled by `updatePartInstancesBasicProperties()` as a general data integrity enforcement step
@@ -838,21 +800,19 @@ function diffAndApplyChanges(
 	span?.end()
 }
 
-export interface SegmentEntries {
-	[segmentExternalId: string]: LocalIngestSegment
-}
-export function compileSegmentEntries(ingestSegments: LocalIngestSegment[]): SegmentEntries {
-	let segmentEntries: SegmentEntries = {}
+export type SegmentEntries = { [segmentExternalId: string]: LocalIngestSegment }
+export function compileSegmentEntries(ingestSegments: ReadonlyDeep<Array<LocalIngestSegment>>): SegmentEntries {
+	const segmentEntries: SegmentEntries = {}
 
-	_.each(ingestSegments, (ingestSegment: LocalIngestSegment, rank: number) => {
+	for (const ingestSegment of ingestSegments) {
 		if (segmentEntries[ingestSegment.externalId]) {
 			throw new Meteor.Error(
 				500,
 				`compileSegmentEntries: Non-unique segment external ID: "${ingestSegment.externalId}"`
 			)
 		}
-		segmentEntries[ingestSegment.externalId] = _.clone(ingestSegment)
-	})
+		segmentEntries[ingestSegment.externalId] = clone<LocalIngestSegment>(ingestSegment)
+	}
 
 	return segmentEntries
 }

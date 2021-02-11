@@ -8,7 +8,13 @@ import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { StudioId } from '../../../lib/collections/Studios'
-import { waitForPromise, asyncCollectionFindFetch, asyncCollectionFindOne, getCurrentTime } from '../../../lib/lib'
+import {
+	waitForPromise,
+	asyncCollectionFindFetch,
+	asyncCollectionFindOne,
+	getCurrentTime,
+	clone,
+} from '../../../lib/lib'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { syncFunction } from '../../codeControl'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
@@ -61,7 +67,6 @@ export async function getIngestPlaylistInfoFromDb(
 }
 
 export interface CommitIngestData {
-	// TODO
 	/** Segment Ids which had any changes */
 	changedSegmentIds: SegmentId[]
 	/** Segments to be removed or orphaned */
@@ -81,7 +86,11 @@ export function ingestLockFunction(
 	studioId: StudioId,
 	rundownExternalId: string,
 	updateCacheFcn: (oldIngestRundown: LocalIngestRundown | undefined) => LocalIngestRundown | null | undefined,
-	calcFcn: (cache: CacheForIngest, ingestRundown: LocalIngestRundown | undefined) => Promise<CommitIngestData | null>,
+	calcFcn: (
+		cache: CacheForIngest,
+		newIngestRundown: LocalIngestRundown | undefined,
+		oldIngestRundown: LocalIngestRundown | undefined
+	) => Promise<CommitIngestData | null>,
 	playlistLock?: PlaylistLock
 ): void {
 	return syncFunction(
@@ -101,7 +110,8 @@ export function ingestLockFunction(
 			waitForPromise(ingestObjCache.prepareInit({ rundownId }, true))
 
 			// Recalculate the ingest data
-			const newIngestRundown = updateCacheFcn(loadCachedRundownData(ingestObjCache))
+			const oldIngestRundown = loadCachedRundownData(ingestObjCache)
+			const newIngestRundown = updateCacheFcn(clone(oldIngestRundown))
 			if (newIngestRundown === null) {
 				// Reject change
 				return
@@ -116,7 +126,7 @@ export function ingestLockFunction(
 			const ingestCache = waitForPromise(pIngestCache)
 
 			try {
-				const commitData = waitForPromise(calcFcn(ingestCache, newIngestRundown))
+				const commitData = waitForPromise(calcFcn(ingestCache, newIngestRundown, oldIngestRundown))
 				if (commitData) {
 					const commitData0 = commitData
 					// TODO - is this valid? can we not trust the ingest data and either update or not? Having both calcFcn and updateCacheFcn be able to reject is excessive
