@@ -525,8 +525,6 @@ async function updateRundownFromIngestData(
 		showStyle.base
 	)
 
-	const showStyleBlueprintDb = (Blueprints.findOne(showStyle.base.blueprintId) as Blueprint) || {}
-
 	const dbRundownData: DBRundown = _.extend(
 		_.clone(existingDbRundown) || {},
 		_.omit(
@@ -545,7 +543,7 @@ async function updateRundownFromIngestData(
 					studio: studio._rundownVersionHash,
 					showStyleBase: showStyle.base._rundownVersionHash,
 					showStyleVariant: showStyle.variant._rundownVersionHash,
-					blueprint: showStyleBlueprintDb.blueprintVersion,
+					blueprint: showStyleBlueprint.blueprintVersion,
 					core: PackageInfo.versionExtended || PackageInfo.version,
 				},
 

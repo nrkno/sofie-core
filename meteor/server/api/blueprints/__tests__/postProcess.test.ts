@@ -64,7 +64,6 @@ describe('Test blueprint post-process', () => {
 			externalId: '',
 			organizationId: protectString(''),
 			studioId: env.studio._id,
-			peripheralDeviceId: protectString(''),
 			name: 'playlistmock',
 			created: 0,
 			modified: 0,

@@ -21,7 +21,6 @@ export function defaultRundownPlaylist(
 		_id: _id,
 
 		externalId: 'MOCK_RUNDOWNPLAYLIST',
-		peripheralDeviceId: ingestDeviceId,
 		organizationId: null,
 		studioId: studioId,
 

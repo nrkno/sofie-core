@@ -48,7 +48,6 @@ function createMockRO() {
 		externalId: 'mock_rpl',
 		name: 'Mock',
 		studioId: protectString('mock_studio'),
-		peripheralDeviceId: protectString(''),
 		created: 0,
 		modified: 0,
 		currentPartInstanceId: null,

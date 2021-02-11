@@ -19,8 +19,7 @@ import { Segments, Segment, DBSegment, SegmentId } from './Segments'
 import { Parts, Part, DBPart, PartId } from './Parts'
 import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
-import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
-import { PeripheralDeviceId } from './PeripheralDevices'
+import { TrackedNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
@@ -56,8 +55,6 @@ export interface DBRundownPlaylist {
 	organizationId?: OrganizationId | null
 	/** Studio that this playlist is assigned to */
 	studioId: StudioId
-	/** The source of the playlist */
-	peripheralDeviceId: PeripheralDeviceId
 
 	restoredFromSnapshotId?: RundownPlaylistId
 
@@ -115,7 +112,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public externalId: string
 	public organizationId: OrganizationId
 	public studioId: StudioId
-	public peripheralDeviceId: PeripheralDeviceId
 	public restoredFromSnapshotId?: RundownPlaylistId
 	public name: string
 	public created: Time

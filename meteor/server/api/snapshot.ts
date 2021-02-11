@@ -598,7 +598,6 @@ export function restoreFromRundownPlaylistSnapshot(
 
 	const playlistId = (snapshot.playlist._id = getRandomId())
 	snapshot.playlist.restoredFromSnapshotId = snapshot.playlistId
-	snapshot.playlist.peripheralDeviceId = protectString('')
 	delete snapshot.playlist.activationId
 	snapshot.playlist.currentPartInstanceId = null
 	snapshot.playlist.nextPartInstanceId = null
@@ -610,7 +609,7 @@ export function restoreFromRundownPlaylistSnapshot(
 
 		rd.playlistId = playlistId
 		rd.restoredFromSnapshotId = rd._id
-		rd.peripheralDeviceId = snapshot.playlist.peripheralDeviceId
+		delete rd.peripheralDeviceId
 		rd.studioId = snapshot.playlist.studioId
 		rd.notifiedCurrentPlayingPartExternalId = undefined
 

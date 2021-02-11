@@ -6,33 +6,22 @@ import {
 	registerCollection,
 	asyncCollectionFindFetch,
 	ProtectedString,
-	ProtectId,
 	ProtectedStringProperties,
 } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
 import { Studios, Studio, StudioId } from './Studios'
-import { Pieces } from './Pieces'
 import { Meteor } from 'meteor/meteor'
-import { AdLibPieces, AdLibPiece } from './AdLibPieces'
-import { RundownBaselineObjs } from './RundownBaselineObjs'
-import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from './RundownBaselineAdLibPieces'
 import { IBlueprintRundownDB } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariantId, ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
-import { IngestDataCache } from './IngestDataCache'
-import { ExpectedMediaItems } from './ExpectedMediaItems'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownPlaylists'
 import { createMongoCollection } from './lib'
-import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
 import { PartInstances, PartInstance, DBPartInstance } from './PartInstances'
-import { PieceInstances } from './PieceInstances'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { OrganizationId } from './Organization'
-import { AdLibActions } from './AdLibActions'
-import { RundownBaselineAdLibActions } from './RundownBaselineAdLibActions'
 import { registerIndex } from '../database'
 
 export enum RundownHoldState {
@@ -64,7 +53,7 @@ export interface DBRundown
 	/** The ShowStyleBase this Rundown uses (its the parent of the showStyleVariant) */
 	showStyleBaseId: ShowStyleBaseId
 	/** The peripheral device the rundown originates from */
-	peripheralDeviceId: PeripheralDeviceId
+	peripheralDeviceId?: PeripheralDeviceId
 	restoredFromSnapshotId?: RundownId
 	created: Time
 	modified: Time
@@ -115,7 +104,7 @@ export class Rundown implements DBRundown {
 	// From DBRundown:
 	public studioId: StudioId
 	public showStyleBaseId: ShowStyleBaseId
-	public peripheralDeviceId: PeripheralDeviceId
+	public peripheralDeviceId?: PeripheralDeviceId
 	public restoredFromSnapshotId?: RundownId
 	public created: Time
 	public modified: Time

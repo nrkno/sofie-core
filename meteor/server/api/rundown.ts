@@ -314,12 +314,6 @@ export function produceRundownPlaylistInfoFromRundown(
 					outOfOrderTiming: playlistInfo.playlist.outOfOrderTiming,
 
 					modified: getCurrentTime(),
-
-					peripheralDeviceId: peripheralDevice
-						? peripheralDevice._id
-						: existingPlaylist
-						? existingPlaylist.peripheralDeviceId
-						: protectString(''),
 				}
 
 				let order: BlueprintResultOrderedRundowns | null = playlistInfo.order
@@ -414,8 +408,6 @@ function defaultPlaylistForRundown(
 		expectedDuration: rundown.expectedDuration,
 
 		modified: getCurrentTime(),
-
-		peripheralDeviceId: rundown.peripheralDeviceId,
 	}
 }
 
