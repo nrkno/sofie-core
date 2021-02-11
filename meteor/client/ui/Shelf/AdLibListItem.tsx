@@ -26,7 +26,7 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { Studio } from '../../../lib/collections/Studios'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
-import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { contextMenuHoldToDisplayTime, ensureHasTrailingSlash } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
 
 export interface IAdLibListItem extends AdLibPieceUi {
@@ -94,7 +94,7 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						status: this.props.piece.status,
 						message: this.props.piece.message,
 						metadata: this.props.piece.contentMetaData,
-						mediaPreviewUrl: this.props.studio.settings.mediaPreviewsUrl,
+						mediaPreviewUrl: ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl) || '',
 					})}
 				</ContextMenuTrigger>
 			)

@@ -27,6 +27,7 @@ import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ensureHasTrailingSlash } from '../../lib/lib'
 
 interface IState {}
 
@@ -146,7 +147,11 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		const { piece } = this.props
 		const { mediaPreviewsUrl } = this.props.studio.settings
 		if (piece && piece.contentMetaData && piece.contentMetaData.previewPath && mediaPreviewsUrl) {
-			return mediaPreviewsUrl + 'media/thumbnail/' + encodeURIComponent(piece.contentMetaData.mediaId)
+			return (
+				ensureHasTrailingSlash(mediaPreviewsUrl) +
+				'/media/thumbnail/' +
+				encodeURIComponent(piece.contentMetaData.mediaId)
+			)
 		}
 		return undefined
 	}
