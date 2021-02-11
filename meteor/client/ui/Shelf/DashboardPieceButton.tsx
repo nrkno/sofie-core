@@ -32,10 +32,11 @@ import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspect
 import { protectString } from '../../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
+import { ensureHasTrailingSlash } from '../../lib/lib'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
-	studio: Studio | undefined
+	studio: Studio
 	layer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, e: any) => void
@@ -96,10 +97,14 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	getThumbnailUrl = (): string | undefined => {
 		const { piece } = this.props
-		if (this.props.mediaPreviewUrl && piece.contentMetaData) {
-			if (piece.contentMetaData && piece.contentMetaData.previewPath && this.props.mediaPreviewUrl) {
-				return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(piece.contentMetaData.mediaId)
-			}
+		const { mediaPreviewsUrl } = this.props.studio.settings
+
+		if (piece && piece.contentMetaData && piece.contentMetaData.previewPath && mediaPreviewsUrl) {
+			return (
+				ensureHasTrailingSlash(mediaPreviewsUrl) +
+				'media/thumbnail/' +
+				encodeURIComponent(piece.contentMetaData.mediaId)
+			)
 		}
 		return undefined
 	}
