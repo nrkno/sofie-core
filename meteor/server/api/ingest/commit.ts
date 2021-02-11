@@ -122,6 +122,19 @@ export async function CommitIngestOperation(
 	//     UpdateNext.ensureNextPartIsValid(cache, playlist)
 	// }
 
+	// Cleanup removed segments
+	// // Remove it too, if it can be removed
+	// const segment = cache.Segments.findOne(segmentId)
+	// if (canRemoveSegment(cache, playlist, segment)) {
+	// 	cache.Segments.remove(segmentId)
+	// }
+	// // Mark all the instances as deleted
+	// cache.PartInstances.update((p) => !p.reset && p.segmentId === segmentId && !p.orphaned, {
+	// 	$set: {
+	// 		orphaned: 'deleted',
+	// 	},
+	// })
+
 	// TODO - existingRundownParts needs to be generated before the calcFcn
 	// const changedSegments = newSegments.map((s) => ({
 	// 			segmentId: s._id,
@@ -130,6 +143,9 @@ export async function CommitIngestOperation(
 	// 				rank: p._rank,
 	// 			})),
 	// 		}))
+
+	// If anything changed?
+	// triggerUpdateTimelineAfterIngestData(cache.containsDataFromPlaylist)
 
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(cache, rundown._id)
@@ -185,6 +201,8 @@ function updatePartInstancesBasicProperties(
 				playlist.nextPartInstanceId !== partInstance._id
 			) {
 				cache.PartInstances.update(partInstance._id, { $set: { reset: true } })
+			} else {
+				cache.PartInstances.update(partInstance._id, { $set: { orphaned: 'deleted' } })
 			}
 		} else {
 			// part still exists, ensure the segmentId is up to date

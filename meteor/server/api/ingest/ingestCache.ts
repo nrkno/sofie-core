@@ -1,22 +1,12 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { getCurrentTime, protectString, unprotectString, clone } from '../../../lib/lib'
+import { getCurrentTime } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
-import {
-	IngestDataCacheObj,
-	IngestDataCache,
-	IngestCacheType,
-	IngestDataCacheObjPart,
-	IngestDataCacheObjRundown,
-	IngestDataCacheObjSegment,
-	IngestDataCacheObjId,
-} from '../../../lib/collections/IngestDataCache'
-import { getSegmentId, getPartId } from './lib'
+import { IngestDataCache, IngestCacheType } from '../../../lib/collections/IngestDataCache'
 import { logger } from '../../../lib/logging'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { profiler } from '../profiler'
-import { ReadonlyDeep } from 'type-fest'
 
 export function loadCachedRundownData(rundownId: RundownId, rundownExternalId: string): LocalIngestRundown {
 	const span = profiler.startSpan('ingest.ingestCache.loadCachedRundownData')

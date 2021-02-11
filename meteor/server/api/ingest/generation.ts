@@ -32,7 +32,6 @@ import {
 import { profiler } from '../profiler'
 import { selectShowStyleVariant } from '../rundown'
 import { CacheForIngest } from './cache'
-import { afterRemoveParts } from './cleanup'
 import { LocalIngestRundown, LocalIngestSegment } from './ingestCache'
 import {
 	getSegmentId,
@@ -298,7 +297,7 @@ export async function saveSegmentChangesToCache(
 			},
 		}
 	)
-	const partChanges = saveIntoCache<Part, DBPart>(
+	saveIntoCache<Part, DBPart>(
 		cache.Parts,
 		isWholeRundownUpdate ? {} : { segmentId: { $in: newSegmentIds } },
 		data.parts,
@@ -314,11 +313,6 @@ export async function saveSegmentChangesToCache(
 			},
 		}
 	)
-
-	// Cleanup any items belonging to the removed parts
-	if (partChanges.removed.length > 0) {
-		afterRemoveParts(cache, partChanges.removed)
-	}
 
 	// Update Segments: Only update, never remove
 	for (const segment of data.segments) {
@@ -348,6 +342,7 @@ export async function updateSegmentFromIngestData(
 	return {
 		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
 		removedSegmentIds: [],
+		renamedSegments: [],
 
 		removeRundown: false,
 
@@ -514,33 +509,6 @@ export async function updateRundownFromIngestData(
 
 	/** Don't remove segments for now, orphan them instead. The 'commit' phase will clean them up if possible */
 	const removedSegments = cache.Segments.findFetch({ _id: { $nin: segmentChanges.segments.map((s) => s._id) } })
-	orphanRemovedSegments(
-		cache,
-		removedSegments.map((s) => s._id),
-		segmentChanges
-	)
-
-	await saveSegmentChangesToCache(cache, segmentChanges, true)
-
-	logger.info(`Rundown ${dbRundown._id} update complete`)
-
-	span?.end()
-	return literal<CommitIngestData>({
-		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
-		removedSegmentIds: removedSegments.map((s) => s._id),
-
-		removeRundown: false,
-
-		showStyle: showStyle.compound,
-		blueprint: showStyleBlueprint,
-	})
-}
-
-export function orphanRemovedSegments(
-	cache: ReadOnlyCache<CacheForIngest>,
-	removedSegmentIds: SegmentId[],
-	segmentChanges: UpdateSegmentsResult
-): void {
 	for (const oldSegment of removedSegments) {
 		segmentChanges.segments.push({
 			...oldSegment,
@@ -561,4 +529,20 @@ export function orphanRemovedSegments(
 		segmentChanges.adlibPieces.push(...cache.AdLibPieces.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
 		segmentChanges.adlibActions.push(...cache.AdLibActions.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
 	}
+
+	await saveSegmentChangesToCache(cache, segmentChanges, true)
+
+	logger.info(`Rundown ${dbRundown._id} update complete`)
+
+	span?.end()
+	return literal<CommitIngestData>({
+		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
+		removedSegmentIds: removedSegments.map((s) => s._id),
+		renamedSegments: [],
+
+		removeRundown: false,
+
+		showStyle: showStyle.compound,
+		blueprint: showStyleBlueprint,
+	})
 }

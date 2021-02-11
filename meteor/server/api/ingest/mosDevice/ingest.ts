@@ -2,15 +2,7 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import {
-	getStudioFromDevice,
-	getSegmentId,
-	canRundownBeUpdated,
-	getRundown,
-	getPartId,
-	getRundownId,
-	getRundown2,
-} from '../lib'
+import { getStudioFromDevice, getSegmentId, canRundownBeUpdated, getPartId, getRundownId, getRundown2 } from '../lib'
 import {
 	getRundownIdFromMosRO,
 	getPartIdFromMosStory,
@@ -25,16 +17,14 @@ import {
 	normalizeArray,
 	asyncCollectionInsert,
 	asyncCollectionRemove,
-	waitForPromiseAll,
 	asyncCollectionUpdate,
 	clone,
 } from '../../../../lib/lib'
 import { IngestPart, IngestSegment } from '@sofie-automation/blueprints-integration'
-import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority, handleUpdatedRundownInner } from '../rundownInput'
-import { loadCachedRundownData, LocalIngestRundown, LocalIngestSegment, LocalIngestPart } from '../ingestCache'
-import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
-import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { Segment, Segments } from '../../../../lib/collections/Segments'
+import { handleUpdatedRundownInner } from '../rundownInput'
+import { LocalIngestRundown, LocalIngestSegment, LocalIngestPart } from '../ingestCache'
+import { Rundown, RundownId } from '../../../../lib/collections/Rundowns'
+import { Segment, SegmentId, Segments } from '../../../../lib/collections/Segments'
 import { logger } from '../../../../lib/logging'
 import { Parts, PartId } from '../../../../lib/collections/Parts'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
@@ -42,10 +32,10 @@ import { profiler } from '../../profiler'
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { CommitIngestData, ingestLockFunction } from '../syncFunction'
 import { calculateSegmentsFromIngestData, saveSegmentChangesToCache, updateSegmentFromIngestData } from '../generation'
-import { unsyncAndEmptySegment } from '../cleanup'
-import { canRemoveSegment } from '../commit'
+import { removeSegmentContents } from '../cleanup'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForIngest } from '../cache'
+import { Settings } from '../../../../lib/Settings'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -128,14 +118,9 @@ export function handleMosRundownData(
 	mosRunningOrder: MOS.IMOSRunningOrder,
 	isCreateAction: boolean
 ) {
-	const span = profiler.startSpan('ingest.handleMosRundownData')
-
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, mosRunningOrder.ID)
-	const rundownExternalId = mosRunningOrder.ID.toString()
-
-	const rundown = Rundowns.findOne(rundownId)
-	const playlistId = rundown ? rundown.playlistId : protectString('newPlaylist')
+	const rundownExternalId = parseMosString(mosRunningOrder.ID)
 
 	// Create or update a rundown (ie from rundownCreate or rundownList)
 
@@ -175,18 +160,26 @@ export function handleMosRundownData(
 				modified: getCurrentTime(),
 			})
 		},
-		async (cache, ingestRundown) => {
-			if (!ingestRundown) throw new Meteor.Error(`handleMosRundownData lost the IngestRundown...`)
+		async (cache, newIngestRundown, oldIngestRundown) => {
+			if (!newIngestRundown) throw new Meteor.Error(`handleMosRundownData lost the IngestRundown...`)
 
 			if (!canRundownBeUpdated(cache.Rundown.doc, isCreateAction)) return null
 
-			if (cache.Rundown.doc && oldRundownData) {
+			let renamedSegments: CommitIngestData['renamedSegments'] = []
+			if (cache.Rundown.doc && oldIngestRundown) {
 				// If we already have a rundown, update any modified segment ids
-				diffAndUpdateSegmentIds(rundown, oldRundownData, ingestSegments)
-				// TODO - this should return something, that gets combined with the overall result...
+				renamedSegments = diffAndUpdateSegmentIds(cache, oldIngestRundown, newIngestRundown)
 			}
 
-			return handleUpdatedRundownInner(studio, cache.RundownId, ingestRundown, isCreateAction, peripheralDevice)
+			const res = await handleUpdatedRundownInner(cache, newIngestRundown, isCreateAction, peripheralDevice)
+			if (res) {
+				return {
+					...res,
+					renamedSegments: renamedSegments,
+				}
+			} else {
+				return null
+			}
 		}
 	)
 }
@@ -194,41 +187,29 @@ export function handleMosRundownMetadata(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
 ) {
-	const span = profiler.startSpan('mosDevice.ingest.handleMosRundownMetadata')
-
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownIdFromMosRO(studio, mosRunningOrderBase.ID)
 
-	const playlistId = getRundown(rundownId, mosRunningOrderBase.ID.toString()).playlistId
+	const rundownExternalId = parseMosString(mosRunningOrderBase.ID)
 
-	return rundownPlaylistSyncFunction(
-		studio._id,
-		playlistId,
-		RundownSyncFunctionPriority.INGEST,
+	return ingestLockFunction(
 		'handleMosRundownMetadata',
-		() => {
-			const rundown = getRundown(rundownId, parseMosString(mosRunningOrderBase.ID))
-			if (!canRundownBeUpdated(rundown, false)) return
+		studio._id,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				ingestRundown.payload = _.extend(ingestRundown.payload, mosRunningOrderBase)
+				ingestRundown.modified = getCurrentTime()
 
-			// Load the blueprint to process the data
-			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
-			if (!showStyleBase) {
-				throw new Meteor.Error(
-					500,
-					`Failed to ShowStyleBase "${rundown.showStyleBaseId}" for rundown "${rundown._id}"`
-				)
+				// We modify in-place
+				return ingestRundown
+			} else {
+				return null
 			}
+		},
+		async (cache, ingestRundown) => {
+			if (!ingestRundown) throw new Meteor.Error(`handleMosRundownMetadata lost the IngestRundown...`)
 
-			// Load the cached RO Data
-			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
-			ingestRundown.payload = _.extend(ingestRundown.payload, mosRunningOrderBase)
-			ingestRundown.modified = getCurrentTime()
-			// TODO - verify this doesn't lose data, it was doing more work before
-
-			// TODO - make this more lightweight?
-			handleUpdatedRundownInner(studio, rundownId, ingestRundown, false, peripheralDevice)
-
-			span?.end()
+			return handleUpdatedRundownInner(cache, ingestRundown, false, peripheralDevice)
 		}
 	)
 }
@@ -241,12 +222,9 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 	// logger.debug(story)
 
 	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownIdFromMosRO(studio, story.RunningOrderId)
-	const partId = getPartIdFromMosStory(rundownId, story.ID)
 
-	const playlistId = getRundown(rundownId, story.RunningOrderId.toString()).playlistId
-	const partExternalId = story.ID.toString()
-	const rundownExternalId = story.RunningOrderId.toString()
+	const partExternalId = parseMosString(story.ID)
+	const rundownExternalId = parseMosString(story.RunningOrderId)
 
 	return ingestLockFunction(
 		'handleMosFullStory',
@@ -604,95 +582,65 @@ function groupPartsIntoIngestSegments(
 
 function diffAndUpdateSegmentIds(
 	cache: CacheForIngest,
-	rundown: ReadonlyDeep<Rundown>,
-	oldIngestRundown: LocalIngestRundown,
-	newIngestSegments: LocalIngestSegment[]
-): DiffSegmentEntries {
+	oldIngestRundown: ReadonlyDeep<LocalIngestRundown>,
+	newIngestRundown: ReadonlyDeep<LocalIngestRundown>
+): CommitIngestData['renamedSegments'] {
 	const span = profiler.startSpan('mosDevice.ingest.diffAndApplyChanges')
 
 	// TODO this is a duplicate of a loop found in diffAndApplyChanges but modified to not run against a cache.
 	// This should be improved once the caches change, and we have access to one in time for this
 
-	// Fetch all existing segments:
-	const oldSegments = Segments.find({ rundownId: rundown._id }).fetch()
-
+	const oldSegments = cache.Segments.findFetch()
 	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
-	const newSegmentEntries = compileSegmentEntries(newIngestSegments)
+	const newSegmentEntries = compileSegmentEntries(newIngestRundown.segments)
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
 
-	const ps: Array<Promise<any>> = []
-
 	// Updated segments that has had their segment.externalId changed:
-	_.each(segmentDiff.externalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
-		const oldSegmentId = getSegmentId(rundown._id, oldSegmentExternalId)
-		const newSegmentId = getSegmentId(rundown._id, newSegmentExternalId)
-
-		const oldSegment = oldSegments.find((s) => s._id === oldSegmentId)
-		if (oldSegment) {
-			// Minimongo fails if an _id is updated, so we need to break the operation up
-			ps.push(
-				asyncCollectionInsert(Segments, {
-					...oldSegment,
-					_id: newSegmentId,
-				})
-			)
-			ps.push(asyncCollectionRemove(Segments, oldSegmentId))
-		}
-
-		ps.push(
-			asyncCollectionUpdate(
-				Parts,
-				{
-					rundownId: rundown._id,
-					segmentId: oldSegmentId,
-				},
-				{
-					$set: {
-						segmentId: newSegmentId,
-					},
-				},
-				{ multi: true }
-			)
-		)
-
-		ps.push(
-			asyncCollectionUpdate(
-				Pieces,
-				{
-					startRundownId: rundown._id,
-					startSegmentId: oldSegmentId,
-				},
-				{
-					$set: {
-						startSegmentId: newSegmentId,
-					},
-				},
-				{ multi: true }
-			)
-		)
-
-		ps.push(
-			asyncCollectionUpdate(
-				PartInstances,
-				{
-					rundownId: rundown._id,
-					segmentId: oldSegmentId,
-				},
-				{
-					$set: {
-						segmentId: newSegmentId,
-						'part.segmentId': newSegmentId,
-					},
-				},
-				{ multi: true }
-			)
-		)
-	})
-
-	waitForPromiseAll(ps)
+	const renamedSegments = applyExternalIdDiff(cache, segmentDiff)
 
 	span?.end()
-	return segmentDiff
+	return renamedSegments
+}
+
+function applyExternalIdDiff(
+	cache: CacheForIngest,
+	segmentDiff: DiffSegmentEntries
+): CommitIngestData['renamedSegments'] {
+	// Updated segments that has had their segment.externalId changed:
+	const renamedSegments: Array<[SegmentId, SegmentId]> = []
+	_.each(segmentDiff.externalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
+		const oldSegmentId = getSegmentId(cache.RundownId, oldSegmentExternalId)
+		const newSegmentId = getSegmentId(cache.RundownId, newSegmentExternalId)
+
+		// Some data will be orphaned temporarily, but will be picked up/cleaned up before the cache gets saved
+
+		// TODO ORPHAN - can this be done in a more generic way?
+
+		const oldSegment = cache.Segments.findOne(oldSegmentId)
+		renamedSegments.push([oldSegmentId, newSegmentId])
+		if (oldSegment) {
+			cache.Segments.remove(oldSegmentId)
+			cache.Segments.insert({
+				...oldSegment,
+				_id: newSegmentId,
+			})
+		}
+
+		// Move over those parts to the new segmentId.
+		cache.Parts.update((p) => p.segmentId === oldSegmentId, {
+			$set: {
+				segmentId: newSegmentId,
+			},
+		})
+
+		cache.Pieces.update((p) => p.startRundownId === cache.RundownId && p.startSegmentId === oldSegmentId, {
+			$set: {
+				startSegmentId: newSegmentId,
+			},
+		})
+	})
+
+	return renamedSegments
 }
 
 async function diffAndApplyChanges(
@@ -705,6 +653,8 @@ async function diffAndApplyChanges(
 	if (!oldIngestRundown) throw new Meteor.Error(`handleMosDeleteStory lost the old IngestRundown...`)
 
 	const rundown = getRundown2(cache)
+
+	// TODO - this has been removed, are the modified times being updated correctly???
 	// const newIngestRundown = updateIngestRundownWithData(oldIngestRundown, newIngestSegments)
 
 	const span = profiler.startSpan('mosDevice.ingest.diffAndApplyChanges')
@@ -721,83 +671,50 @@ async function diffAndApplyChanges(
 
 	// Update segment ranks:
 	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
-		cache.Segments.update(
-			{
-				rundownId: rundown._id,
-				_id: getSegmentId(rundown._id, segmentExternalId),
+		cache.Segments.update(getSegmentId(rundown._id, segmentExternalId), {
+			$set: {
+				_rank: newRank,
 			},
-			{
-				$set: {
-					_rank: newRank,
-				},
-			}
-		)
+		})
 	})
 
 	// Updated segments that has had their segment.externalId changed:
-	_.each(segmentDiff.externalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
-		const oldSegmentId = getSegmentId(rundown._id, oldSegmentExternalId)
-		const newSegmentId = getSegmentId(rundown._id, newSegmentExternalId)
-
-		// TODO ORPHAN - can this be done in a more generic way?
-
-		// Move over those parts to the new segmentId.
-		// These parts will be orphaned temporarily, but will be picked up inside of calculateSegmentsFromIngestData later
-		cache.Parts.update(
-			{
-				rundownId: rundown._id,
-				segmentId: oldSegmentId,
-			},
-			{
-				$set: {
-					segmentId: newSegmentId,
-				},
-			}
-		)
-
-		cache.Pieces.update((p) => p.startRundownId === rundown._id && p.startSegmentId === oldSegmentId, {
-			$set: {
-				startSegmentId: newSegmentId,
-			},
-		})
-
-		cache.PartInstances.update(
-			{
-				rundownId: rundown._id,
-				segmentId: oldSegmentId,
-			},
-			{
-				$set: {
-					segmentId: newSegmentId,
-					'part.segmentId': newSegmentId,
-				},
-			}
-		)
-	})
-
-	// Remove/orphan old segments
-	for (const segmentExternalId of Object.keys(segmentDiff.removed)) {
-		const segmentId = getSegmentId(rundown._id, segmentExternalId)
-		unsyncAndEmptySegment(cache, rundown._id, segmentId)
-
-		// Remove it too, if it can be removed
-		const segment = cache.Segments.findOne(segmentId)
-		if (canRemoveSegment(cache, playlist, segment)) {
-			cache.Segments.remove(segmentId)
-		}
-	}
+	const renamedSegments = applyExternalIdDiff(cache, segmentDiff)
 
 	// Create/Update segments
-	calculateSegmentsFromIngestData(
+	const segmentChanges = await calculateSegmentsFromIngestData(
 		cache,
-		studio,
-		playlist,
 		rundown,
-		_.sortBy([..._.values(segmentDiff.added), ..._.values(segmentDiff.changed)], (se) => se.rank)
+		_.sortBy([...Object.values(segmentDiff.added), ...Object.values(segmentDiff.changed)], (se) => se.rank)
 	)
-	saveSegmentChangesToCache(cache)
+
+	// Remove/orphan old segments
+	const segmentIdsToRemove = new Set(Object.keys(segmentDiff.removed).map((id) => getSegmentId(rundown._id, id)))
+	// We orphan it and queue for deletion. the commit phase will complete if possible
+	cache.Segments.update((s) => segmentIdsToRemove.has(s._id), {
+		$set: {
+			orphaned: 'deleted',
+		},
+	})
+
+	if (!Settings.allowUnsyncedSegments) {
+		// Remove everything inside the segment
+		removeSegmentContents(cache, segmentIdsToRemove)
+	}
+
+	await saveSegmentChangesToCache(cache, segmentChanges, false)
 
 	span?.end()
+	return literal<CommitIngestData>({
+		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
+		removedSegmentIds: Array.from(segmentIdsToRemove),
+		renamedSegments: renamedSegments,
+
+		removeRundown: false,
+
+		showStyle: segmentChanges.showStyle,
+		blueprint: segmentChanges.blueprint,
+	})
 }
 
 export type SegmentEntries = { [segmentExternalId: string]: LocalIngestSegment }

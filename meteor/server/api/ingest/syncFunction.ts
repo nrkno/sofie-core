@@ -71,6 +71,12 @@ export interface CommitIngestData {
 	changedSegmentIds: SegmentId[]
 	/** Segments to be removed or orphaned */
 	removedSegmentIds: SegmentId[]
+	/**
+	 * Segments that had their ids changed. This helps then be orphaned in the correct place
+	 * eg, whole segment is renamed and middle part deleted
+	 * Note: Only supported for MOS, not 'normal' ingest operations
+	 */
+	renamedSegments: Array<[SegmentId, SegmentId]>
 
 	/** Whether the rundown should be removed or orphaned */
 	removeRundown: boolean

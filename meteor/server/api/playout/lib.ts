@@ -396,7 +396,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 		cache.PartInstances.findFetch((p) => orphanedSegmentIds.has(p.segmentId)),
 		(p) => p.segmentId
 	)
-	const removeSegmentIds: SegmentId[] = []
+	const removeSegmentIds = new Set<SegmentId>()
 	for (const segment of segments) {
 		const partInstances = groupedPartInstances[unprotectString(segment._id)]
 		const partInstanceIds = new Set(partInstances.map((p) => p._id))
@@ -407,23 +407,22 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 			(!playlist.nextPartInstanceId || !partInstanceIds.has(playlist.nextPartInstanceId))
 		) {
 			// The segment is finished with
-			removeSegmentIds.push(segment._id)
+			removeSegmentIds.add(segment._id)
 			cache.Segments.remove(segment._id)
 		}
 	}
-	if (removeSegmentIds.length > 0) {
+	if (removeSegmentIds.size > 0) {
 		if (Settings.allowUnsyncedSegments) {
 			// Ensure there are no contents left behind
 			for (const rundownId of rundownIds) {
 				// TODO - in future we could make this more lightweight by checking if there are any parts in the segment first, as that can be done with the cache
-				removeSegmentContents(cache, rundownId, removeSegmentIds)
+				removeSegmentContents(cache, removeSegmentIds)
 			}
 		}
 
 		// Ensure any PartInstances are reset
-		const removeSegmentIds2 = new Set(removeSegmentIds)
 		removePartInstanceIds.push(
-			...cache.PartInstances.findFetch((p) => removeSegmentIds2.has(p.segmentId) && !p.reset).map((p) => p._id)
+			...cache.PartInstances.findFetch((p) => removeSegmentIds.has(p.segmentId) && !p.reset).map((p) => p._id)
 		)
 	}
 

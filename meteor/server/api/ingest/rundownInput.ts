@@ -291,6 +291,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 			return {
 				changedSegmentIds: [],
 				removedSegmentIds: [],
+				renamedSegments: [],
 				removeRundown: canRundownBeUpdated(rundown, false),
 
 				showStyle: undefined,
@@ -334,16 +335,7 @@ export function handleUpdatedRundown(
 		async (cache, ingestRundown) => {
 			if (!ingestRundown) throw new Meteor.Error(`regenerateRundown lost the IngestRundown...`)
 
-			handleUpdatedRundownInner(cache, ingestRundown, isCreateAction, peripheralDevice)
-
-			return {
-				changedSegmentIds: [], // TODO - set this!
-				removedSegmentIds: [], // TODO - set this!
-				removeRundown: false,
-
-				showStyle: undefined,
-				blueprint: undefined,
-			}
+			return handleUpdatedRundownInner(cache, ingestRundown, isCreateAction, peripheralDevice)
 		}
 	)
 }
@@ -472,6 +464,7 @@ export function handleRemovedSegment(
 				return {
 					changedSegmentIds: [],
 					removedSegmentIds: [segmentId],
+					renamedSegments: [],
 
 					removeRundown: false,
 
