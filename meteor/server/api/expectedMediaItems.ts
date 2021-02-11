@@ -75,6 +75,7 @@ function generateExpectedMediaItems<T extends ExpectedMediaItemBase>(
 				mediaFlowId: flow,
 				path: pieceContent.fileName,
 				url: pieceContent.path,
+				previewFrame: pieceContent.previewFrame,
 			}
 			result.push({
 				...commonProps,

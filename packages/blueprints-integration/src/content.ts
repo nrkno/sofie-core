@@ -72,6 +72,8 @@ export interface VTContent extends BaseContent {
 	loop?: boolean
 	sourceDuration?: number
 	objectDuration?: number
+	/** Frame that media manager should grab for thumbnail preview */
+	previewFrame?: number
 	metadata?: MetadataElement[]
 	timelineObjects: TimelineObjectCoreExt[]
 	mediaFlowIds?: string[]
