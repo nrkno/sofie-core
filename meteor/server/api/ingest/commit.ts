@@ -1,4 +1,4 @@
-import { getShowStyleCompound2, ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
+import { getShowStyleCompoundForRundown, ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import {
 	loadShowStyleBlueprint,
 	loadStudioBlueprint,
@@ -12,7 +12,6 @@ import {
 	allowedToMoveRundownOutOfPlaylist,
 	ChangedSegmentsRankInfo,
 	RundownPlaylistAndOrder,
-	ServerRundownAPI,
 	sortDefaultRundownInPlaylistOrder,
 	updatePartInstanceRanks,
 } from '../rundown'
@@ -63,7 +62,8 @@ export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: num
  * Post-process some ingest changes.
  * This is designed to be the same block of code after any ingest change. The aim is to be able to run it once after a batch of ingest changes
  * @param ingestCache The cache for the rundown that has been changed
- * @param playoutInfo NOPE..
+ * @param beforeRundown The rundown before the batch of ingest operations
+ * @param beforePartMap The segments and partIds before the batch of ingest operations
  * @param data Information about the ingest changes performed
  */
 export async function CommitIngestOperation(
@@ -80,12 +80,8 @@ export async function CommitIngestOperation(
 		return
 	}
 
-	const showStyle = data.showStyle ?? (await getShowStyleCompound2(rundown))
+	const showStyle = data.showStyle ?? (await getShowStyleCompoundForRundown(rundown))
 	const blueprint = (data.showStyle ? data.blueprint : undefined) ?? loadShowStyleBlueprint(showStyle)
-
-	// Regenerate the full list of expected*
-	updateExpectedMediaItemsOnRundown(ingestCache)
-	updateExpectedPlayoutItemsOnRundown(ingestCache)
 
 	const targetPlaylistId =
 		(beforeRundown?.playlistIdIsSetInSofie ? beforeRundown.playlistId : undefined) ??
@@ -121,14 +117,15 @@ export async function CommitIngestOperation(
 						},
 					})
 
-					// TODO - finish this
 					if (data.removeRundown) {
+						// Orphan the deleted rundown
 						ingestCache.Rundown.update({
 							$set: {
 								orphaned: 'deleted',
 							},
 						})
 					} else {
+						// The rundown is still synced, but is in the wrong playlist. Notify the user
 						ingestCache.Rundown.update({
 							$set: {
 								notes: [
@@ -193,7 +190,7 @@ export async function CommitIngestOperation(
 	// Rundown needs to be removed, and has been removed its old playlist, so we can now do the discard
 	if (data.removeRundown && !trappedInPlaylistId) {
 		ingestCache.discardChanges()
-		removeRundownsFromDb([ingestCache.RundownId])
+		await removeRundownsFromDb([ingestCache.RundownId])
 		return
 	}
 
@@ -243,6 +240,10 @@ export async function CommitIngestOperation(
 					ingestCache.Segments.remove((s) => purgeSegmentIds.has(s._id))
 				}
 			}
+
+			// Regenerate the full list of expected*Items
+			updateExpectedMediaItemsOnRundown(ingestCache)
+			updateExpectedPlayoutItemsOnRundown(ingestCache)
 
 			// Save the rundowns
 			// This will reorder the rundowns a little before the playlist and the contents, but that is ok

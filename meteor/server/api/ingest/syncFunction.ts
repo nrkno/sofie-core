@@ -171,7 +171,7 @@ export function ingestRundownOnlyLockFunction(
 		const beforeRundown = getRundown(ingestCache)
 
 		// Do the function
-		fcn(ingestCache)
+		await fcn(ingestCache)
 
 		// Check the change isn't making a mess
 		const afterRundown = getRundown(ingestCache)

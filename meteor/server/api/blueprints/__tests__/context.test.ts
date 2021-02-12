@@ -5,7 +5,7 @@ import {
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 } from '../../../../__mocks__/helpers/database'
-import { getHash, protectString, unprotectObject, unprotectString } from '../../../../lib/lib'
+import { getHash, protectString, unprotectString, waitForPromise } from '../../../../lib/lib'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import {
 	LookaheadMode,
@@ -31,7 +31,7 @@ import { ConfigRef } from '../config'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import {
 	createShowStyleCompound,
-	getShowStyleCompound,
+	getShowStyleCompoundForRundown,
 	ShowStyleCompound,
 	ShowStyleVariant,
 	ShowStyleVariants,
@@ -39,11 +39,9 @@ import {
 import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
 import { DBPart, PartId } from '../../../../lib/collections/Parts'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
-import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
 	wrapPartToTemporaryInstance,
 	PartInstances,
-	unprotectPartInstance,
 	PartInstanceId,
 	PartInstance,
 } from '../../../../lib/collections/PartInstances'
@@ -457,7 +455,7 @@ describe('Test blueprint api context', () => {
 			const studio = Studios.findOne(rundown.studioId) as Studio
 			expect(studio).toBeTruthy()
 
-			const showStyle = getShowStyleCompound(rundown.showStyleVariantId) as ShowStyleCompound
+			const showStyle = waitForPromise(getShowStyleCompoundForRundown(rundown)) as ShowStyleCompound
 			expect(showStyle).toBeTruthy()
 
 			const mockPart = {
@@ -490,7 +488,7 @@ describe('Test blueprint api context', () => {
 			const studio = Studios.findOne(rundown.studioId) as Studio
 			expect(studio).toBeTruthy()
 
-			const showStyle = getShowStyleCompound(rundown.showStyleVariantId) as ShowStyleCompound
+			const showStyle = waitForPromise(getShowStyleCompoundForRundown(rundown)) as ShowStyleCompound
 			expect(showStyle).toBeTruthy()
 
 			return new AsRunEventContext(
@@ -515,7 +513,7 @@ describe('Test blueprint api context', () => {
 			const studio = Studios.findOne(rundown.studioId) as Studio
 			expect(studio).toBeTruthy()
 
-			const showStyle = getShowStyleCompound(rundown.showStyleVariantId) as ShowStyleCompound
+			const showStyle = waitForPromise(getShowStyleCompoundForRundown(rundown)) as ShowStyleCompound
 			expect(showStyle).toBeTruthy()
 
 			const mockEvent: AsRunLogEvent = {
@@ -933,7 +931,7 @@ describe('Test blueprint api context', () => {
 			const studio = Studios.findOne(rundown.studioId) as Studio
 			expect(studio).toBeTruthy()
 
-			const showStyle = getShowStyleCompound(rundown.showStyleVariantId) as ShowStyleCompound
+			const showStyle = waitForPromise(getShowStyleCompoundForRundown(rundown)) as ShowStyleCompound
 			expect(showStyle).toBeTruthy()
 
 			const context = new TimelineEventContext(

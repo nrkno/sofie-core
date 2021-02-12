@@ -27,7 +27,7 @@ import { PartInstance, PartInstances } from '../../lib/collections/PartInstances
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 import { profiler } from './profiler'
 import { CacheForPlayout } from './playout/cache'
-import { getShowStyleCompound } from '../../lib/collections/ShowStyleVariants'
+import { getShowStyleCompoundForRundown } from '../../lib/collections/ShowStyleVariants'
 import { Studios } from '../../lib/collections/Studios'
 import { ReadonlyDeep } from 'type-fest'
 
@@ -72,7 +72,7 @@ function handleAsRunEvent(event: AsRunLogEvent): void {
 				const rundown = Rundowns.findOne(event.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${event.rundownId}" not found!`)
 
-				const showStyle = getShowStyleCompound(rundown.showStyleVariantId)
+				const showStyle = waitForPromise(getShowStyleCompoundForRundown(rundown))
 				if (!showStyle) throw new Meteor.Error(404, `ShowStyle "${rundown.showStyleVariantId}" not found!`)
 
 				const studio = Studios.findOne(rundown.studioId)

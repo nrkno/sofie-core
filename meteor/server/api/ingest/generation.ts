@@ -13,7 +13,7 @@ import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaseli
 import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
 import { DBRundown, Rundown } from '../../../lib/collections/Rundowns'
 import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
-import { ShowStyleCompound, getShowStyleCompound2 } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleCompound, getShowStyleCompoundForRundown } from '../../../lib/collections/ShowStyleVariants'
 import { anythingChanged, getCurrentTime, literal, protectString, sumChanges, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { ReadOnlyCache } from '../../cache/CacheBase'
@@ -77,7 +77,7 @@ export async function calculateSegmentsFromIngestData(
 	}
 
 	if (ingestSegments.length > 0) {
-		const showStyle = await getShowStyleCompound2(rundown)
+		const showStyle = await getShowStyleCompoundForRundown(rundown)
 		const blueprint = loadShowStyleBlueprint(showStyle)
 
 		const changedSegmentIds: SegmentId[] = []

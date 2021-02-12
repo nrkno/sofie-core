@@ -396,13 +396,13 @@ export namespace ServerRundownAPI {
 			'removeRundownPlaylist',
 			playlistId,
 			RundownSyncFunctionPriority.USER_PLAYOUT,
-			(_lock, tmpPlaylist) => {
+			async (_lock, tmpPlaylist) => {
 				logger.info('removeRundownPlaylist ' + playlistId)
 
 				if (tmpPlaylist.activationId)
 					throw new Meteor.Error(400, `Not allowed to remove an active RundownPlaylist "${playlistId}".`)
 
-				removeRundownPlaylistFromDb(playlistId)
+				await removeRundownPlaylistFromDb(playlistId)
 			}
 		)
 	}

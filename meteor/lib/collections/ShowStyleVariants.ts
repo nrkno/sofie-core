@@ -39,7 +39,7 @@ export function getShowStyleCompound(showStyleVariantId: ShowStyleVariantId): Sh
 
 	return createShowStyleCompound(showStyleBase, showStyleVariant)
 }
-export async function getShowStyleCompound2(
+export async function getShowStyleCompoundForRundown(
 	rundown: Pick<ReadonlyDeep<DBRundown>, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>
 ): Promise<ShowStyleCompound> {
 	const [showStyleBase, showStyleVariant] = await Promise.all([
