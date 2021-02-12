@@ -1,22 +1,18 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import '../../../__mocks__/_extendJest'
-import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 	setupDefaultRundown,
 } from '../../../__mocks__/helpers/database'
-import { protectString, literal, unprotectString } from '../../../lib/lib'
-import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
-import { Response as MockResponse, Request as MockRequest } from 'mock-http'
-import { RundownLayoutType, RundownLayouts, RundownLayout } from '../../../lib/collections/RundownLayouts'
+import { protectString } from '../../../lib/lib'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { produceRundownPlaylistInfoFromRundown } from '../rundown'
 import { updateRundownsInPlaylist } from '../ingest/rundownInput'
+import { produceRundownPlaylistInfoFromRundown } from '../ingest/commit'
 
 require('../client') // include in order to create the Meteor methods needed
 require('../rundown') // include in order to create the Meteor methods needed

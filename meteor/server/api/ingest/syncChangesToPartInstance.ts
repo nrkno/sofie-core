@@ -24,7 +24,7 @@ import { CacheForIngest } from './cache'
 
 export function syncChangesToPartInstances(
 	cache: CacheForPlayout,
-	ingestCache: ReadOnlyCache<CacheForIngest>,
+	ingestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'>,
 	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	blueprint: ReadonlyDeep<ShowStyleBlueprintManifest>,
 	rundown: ReadonlyDeep<Rundown>

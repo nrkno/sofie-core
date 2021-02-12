@@ -25,11 +25,11 @@ import { AsRunEventContext } from './blueprints/context'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist } from '../cache/DatabaseCaches'
 import { profiler } from './profiler'
 import { CacheForPlayout } from './playout/cache'
 import { getShowStyleCompound } from '../../lib/collections/ShowStyleVariants'
 import { Studios } from '../../lib/collections/Studios'
+import { ReadonlyDeep } from 'type-fest'
 
 const EVENT_WAIT_TIME = 500
 
@@ -144,11 +144,7 @@ export function reportRundownHasStarted(cache: CacheForPlayout, rundown: Rundown
 	}
 }
 
-export function reportRundownDataHasChanged(
-	_cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
-	rundown: Rundown
-) {
+export function reportRundownDataHasChanged(playlist: ReadonlyDeep<RundownPlaylist>, rundown: ReadonlyDeep<Rundown>) {
 	// Called when the data in rundown is changed
 
 	if (!rundown) {

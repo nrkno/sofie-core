@@ -6,7 +6,7 @@ import {
 	WrappedStudioBlueprint,
 } from '../blueprints/cache'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
-import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
+import { CacheForPlayout } from '../playout/cache'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import {
 	allowedToMoveRundownOutOfPlaylist,
@@ -22,7 +22,7 @@ import { getRundown } from './lib'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { CommitIngestData } from './syncFunction'
 import { UpdateNext } from './updateNext'
-import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
+import { SegmentId } from '../../../lib/collections/Segments'
 import { logger } from '../../logging'
 import { isTooCloseToAutonext } from '../playout/lib'
 import { DBRundown, Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
@@ -37,18 +37,26 @@ import {
 } from '../../../lib/collections/RundownPlaylists'
 import { getPlaylistIdFromExternalId, removeRundownsFromDb } from '../rundownPlaylist'
 import {
-	asyncCollectionFindFetch,
 	asyncCollectionFindOne,
 	asyncCollectionRemove,
 	clone,
 	getCurrentTime,
 	makePromise,
+	max,
 	protectString,
 	unprotectObjectArray,
 } from '../../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import _ from 'underscore'
 import { ReadOnlyCache } from '../../cache/DatabaseCaches'
+import { reportRundownDataHasChanged } from '../asRunLog'
+import { removeSegmentContents } from './cleanup'
+import { Settings } from '../../../lib/Settings'
+import { DbCacheWriteCollection } from '../../cache/CacheCollection'
+import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartId } from '../../../lib/collections/Parts'
+
+export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
 /**
  * Post-process some ingest changes.
@@ -60,6 +68,7 @@ import { ReadOnlyCache } from '../../cache/DatabaseCaches'
 export async function CommitIngestOperation(
 	ingestCache: CacheForIngest,
 	beforeRundown: ReadonlyDeep<Rundown> | undefined,
+	beforePartMap: BeforePartMap,
 	// playoutInfo: IngestPlayoutInfo | undefined,
 	data: ReadonlyDeep<CommitIngestData>
 ): Promise<void> {
@@ -74,87 +83,7 @@ export async function CommitIngestOperation(
 	const showStyle = data.showStyle ?? (await getShowStyleCompound2(rundown))
 	const blueprint = (data.showStyle ? data.blueprint : undefined) ?? loadShowStyleBlueprint(showStyle)
 
-	// TODO - Process updates
-	// const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(studio, dbRundownData, peripheralDevice)
-	// dbRundownData.playlistId = rundownPlaylistInfo.rundownPlaylist._id
-	// const playlistChanges = saveIntoDb(
-	// 	RundownPlaylists,
-	// 	{
-	// 		_id: rundownPlaylistInfo.rundownPlaylist._id,
-	// 	},
-	// 	[rundownPlaylistInfo.rundownPlaylist],
-	// 	{
-	// 		beforeInsert: (o) => {
-	// 			o.created = getCurrentTime()
-	// 			o.modified = getCurrentTime()
-	// 			o.previousPartInstanceId = null
-	// 			o.currentPartInstanceId = null
-	// 			o.nextPartInstanceId = null
-	// 			return o
-	// 		},
-	// 		beforeUpdate: (o) => {
-	// 			o.modified = getCurrentTime()
-	// 			return o
-	// 		},
-	// 	}
-	// )
-	// updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, dbRundown)
-	// cache.deferAfterSave(() => {
-	// 	const studioId = cache.Studio.doc._id
-	// 	Meteor.defer(() => {
-	// 		// It needs to lock every playlist, and we are already inside one of the locks it needs
-	// 		removeEmptyPlaylists(studioId)
-	// 	})
-	// })
-
-	// Rundown changed
-	// cache.defer((cache) => {
-	// 	reportRundownDataHasChanged(cache, dbPlaylist, dbRundown)
-	// })
-
-	// Removing rundown
-	// if (!allowedToMoveRundownOutOfPlaylist(playlist, rundown)) {
-	// 	// Don't allow removing currently playing rundown playlists:
-	// 	logger.warn(
-	// 		`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`
-	// 	)
-	// 	ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
-	// } else {
-	// 	logger.info(`Removing rundown "${rundown._id}"`)
-	// 	removeRundownFromCache(cache, rundown)
-	// }
-
-	// Removing segment
-	// if (!canRemoveSegment(cache, playlist, segment)) {
-	//     unsyncAndEmptySegment(cache, rundownId, segmentId)
-	// } else {
-
-	//     cache.Segments.remove(segmentId)
-	//     removeSegmentContents(cache, rundownId, [segmentId])
-
-	//     UpdateNext.ensureNextPartIsValid(cache, playlist)
-	// }
-
-	// Cleanup removed segments
-	// // Remove it too, if it can be removed
-	// const segment = cache.Segments.findOne(segmentId)
-	// if (canRemoveSegment(cache, playlist, segment)) {
-	// 	cache.Segments.remove(segmentId)
-	// }
-
-	// TODO - existingRundownParts needs to be generated before the calcFcn
-	// const changedSegments = newSegments.map((s) => ({
-	// 			segmentId: s._id,
-	// 			oldPartIdsAndRanks: (existingRundownParts[unprotectString(s._id)] || []).map((p) => ({
-	// 				id: p._id,
-	// 				rank: p._rank,
-	// 			})),
-	// 		}))
-
-	// If anything changed?
-	// triggerUpdateTimelineAfterIngestData(cache.containsDataFromPlaylist)
-
-	// To be called after rundown has been changed
+	// Regenerate the full list of expected*
 	updateExpectedMediaItemsOnRundown(ingestCache)
 	updateExpectedPlayoutItemsOnRundown(ingestCache)
 
@@ -163,7 +92,7 @@ export async function CommitIngestOperation(
 		getPlaylistIdFromExternalId(ingestCache.Studio.doc._id, rundown.playlistExternalId ?? rundown.externalId)
 
 	// Free the rundown from its old playlist, if it is moving
-	let trappedInPlaylistId: RundownPlaylistId | undefined
+	let trappedInPlaylistId: [RundownPlaylistId, string] | undefined
 	if (beforeRundown?.playlistId && beforeRundown.playlistId !== targetPlaylistId) {
 		const beforePlaylistId = beforeRundown.playlistId
 		playoutNoCacheLockFunction(
@@ -184,7 +113,7 @@ export async function CommitIngestOperation(
 					)
 
 					// Discard proposed playlistId changes
-					trappedInPlaylistId = playlist._id
+					trappedInPlaylistId = [playlist._id, playlist.externalId]
 					ingestCache.Rundown.update({
 						$set: {
 							playlistId: playlist._id,
@@ -236,10 +165,11 @@ export async function CommitIngestOperation(
 									applyChangesToPlayout(
 										playoutCache,
 										null,
-										ingestCache.RundownId,
+										rundown,
 										showStyle,
 										blueprint,
-										new Map()
+										new Map(),
+										[]
 									)
 								}
 							}
@@ -262,25 +192,84 @@ export async function CommitIngestOperation(
 	playoutNoCacheLockFunction(
 		null,
 		'ingest.commit.saveRundownToPlaylist',
-		newPlaylistId,
+		newPlaylistId[0],
 		RundownSyncFunctionPriority.INGEST,
 		async (lock) => {
 			// Ensure the rundown has the correct playlistId
-			ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId } })
+			ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId[0] } })
+
+			const [newPlaylist, rundownsCollection] = await generatePlaylistAndRundownsCollection(
+				ingestCache,
+				newPlaylistId[0],
+				newPlaylistId[1]
+			)
+
+			// Do the segment removals
+			if (data.removedSegmentIds.length > 0) {
+				const { currentPartInstance, nextPartInstance } = newPlaylist.getSelectedPartInstances()
+
+				const purgeSegmentIds = new Set<SegmentId>()
+				const orphanSegmentIds = new Set<SegmentId>()
+				for (const segmentId of data.removedSegmentIds) {
+					if (canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+						purgeSegmentIds.add(segmentId)
+					} else {
+						orphanSegmentIds.add(segmentId)
+					}
+				}
+
+				const emptySegmentIds = Settings.allowUnsyncedSegments
+					? purgeSegmentIds
+					: new Set([...purgeSegmentIds.values(), ...orphanSegmentIds.values()])
+				removeSegmentContents(ingestCache, emptySegmentIds)
+				if (orphanSegmentIds.size) {
+					ingestCache.Segments.update((s) => orphanSegmentIds.has(s._id), {
+						$set: {
+							orphaned: 'deleted',
+						},
+					})
+				}
+				if (purgeSegmentIds.size) {
+					ingestCache.Segments.remove((s) => purgeSegmentIds.has(s._id))
+				}
+			}
+
+			// Save the rundowns
+			// This will reorder the rundowns a little before the playlist and the contents, but that is ok
+			await rundownsCollection.updateDatabaseWithData()
+
+			// Create the full playout cache, now we have the rundowns and playlist updated
+			const playoutCache = await CacheForPlayout.from(newPlaylist, rundownsCollection.findFetch({}))
+			// TODO - this will be ignoring the updated rundown!!!!
 
 			// Start the save
 			const pSave = ingestCache.saveAllToDatabase()
 
 			try {
-				regenerateAndUpdatePlaylist(
+				// Get the final copy of the rundown
+				const newRundown = getRundown(ingestCache)
+
+				// Update the playout to use the updated rundown
+				const changedSegmentsInfo = data.changedSegmentIds.map((id) => ({
+					segmentId: id,
+					oldPartIdsAndRanks: beforePartMap.get(id) ?? [],
+				}))
+				applyChangesToPlayout(
+					playoutCache,
 					ingestCache,
-					newPlaylistId,
-					'TODO', // TODO
-					beforeRundown,
+					newRundown,
 					showStyle,
 					blueprint,
-					data
+					data.renamedSegments,
+					changedSegmentsInfo
 				)
+
+				playoutCache.deferAfterSave(() => {
+					reportRundownDataHasChanged(playoutCache.Playlist.doc, newRundown)
+				})
+
+				// wait for it all to save in parallel
+				await Promise.all([pSave, playoutCache.saveAllToDatabase()])
 			} finally {
 				// Wait for the save to complete. We need it to be completed, otherwise the rundown will be in a broken state
 				await pSave
@@ -289,89 +278,89 @@ export async function CommitIngestOperation(
 	)
 }
 
-async function regenerateAndUpdatePlaylist(
-	ingestCache: ReadOnlyCache<CacheForIngest>,
+async function generatePlaylistAndRundownsCollection(
+	ingestCache: CacheForIngest,
 	newPlaylistId: RundownPlaylistId,
-	newPlaylistExternalId: string,
-	beforeRundown: ReadonlyDeep<Rundown> | undefined,
-	showStyle: ReadonlyDeep<ShowStyleCompound>,
-	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
-	data: ReadonlyDeep<CommitIngestData>
-): Promise<void> {
-	const newRundown = getRundown(ingestCache)
-
-	// Regenerate playlist
-	const [existingPlaylist, existingRundowns, studioBlueprint] = await Promise.all([
+	newPlaylistExternalId: string
+): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown, DBRundown>]> {
+	// Load existing playout data
+	const finalRundown = getRundown(ingestCache)
+	const rundownsCollection = new DbCacheWriteCollection(Rundowns)
+	const [existingPlaylist, studioBlueprint] = await Promise.all([
 		asyncCollectionFindOne(RundownPlaylists, newPlaylistId),
-		asyncCollectionFindFetch(Rundowns, {
-			playlistId: newPlaylistId,
-			_id: { $ne: ingestCache.RundownId },
-		}),
 		makePromise(() => loadStudioBlueprint(ingestCache.Studio.doc)),
+		rundownsCollection.prepareInit({ playlistId: newPlaylistId }, true),
 	])
-	const newRundowns = [...existingRundowns, newRundown]
-	const { rundownPlaylist: newPlaylist, order: newRundownOrder } = produceRundownPlaylistInfoFromRundown(
+	rundownsCollection.replace(finalRundown)
+
+	// Generate the new playlist, and ranks for the rundowns
+	const { rundownPlaylist: newPlaylist0, order: newRundownOrder } = produceRundownPlaylistInfoFromRundown(
 		ingestCache.Studio.doc,
 		studioBlueprint,
 		existingPlaylist,
 		newPlaylistId,
 		newPlaylistExternalId,
-		newRundowns
+		rundownsCollection.findFetch({})
 	)
+	const newPlaylist = new RundownPlaylist(newPlaylist0)
 
-	// Load the playout cache for the 'new' playlist
-	// TODO - use the in-memory data for the current rundown..
-	const playoutCache = await CacheForPlayout.from(new RundownPlaylist(newPlaylist), newRundowns)
-
+	// Update the ranks of the rundowns
 	if (!newPlaylist.rundownRanksAreSetInSofie) {
-		// TODO - this needs to not be done on the cache, as that collection should be readonly
 		// Update the rundown ranks
 		for (const [id, rank] of Object.entries(newRundownOrder)) {
-			playoutCache.Rundowns.update(protectString(id), { $set: { _rank: rank } })
+			const id2 = protectString(id)
+			rundownsCollection.update(id2, { $set: { _rank: rank } })
+			if (id2 === ingestCache.RundownId) {
+				// Update the ingestCache to keep them in sync
+				ingestCache.Rundown.update({ $set: { _rank: rank } })
+			}
 		}
-	} else if (beforeRundown) {
+	} else {
 		// This rundown is new, so push to the end of the manually ordered playlist
-		// const last = existingRundowns.length > 0? _.max(existingRundowns, r => r._rank) : 0
-		// TODO - this is fiddly to store..
+		const otherRundowns = rundownsCollection.findFetch((r) => r._id !== ingestCache.RundownId)
+		const last = max(otherRundowns, (r) => r._rank)?._rank ?? -1
+		rundownsCollection.update(ingestCache.RundownId, { $set: { _rank: last + 1 } })
+		// Update the ingestCache to keep them in sync
+		ingestCache.Rundown.update({ $set: { _rank: last + 1 } })
 	}
-	// TODO
 
-	// Update the playout to use the updated rundown
-	applyChangesToPlayout(playoutCache, ingestCache, ingestCache.RundownId, showStyle, blueprint, data.renamedSegments)
+	return [newPlaylist, rundownsCollection]
 }
 
 function applyChangesToPlayout(
 	playoutCache: CacheForPlayout,
-	ingestCache: ReadOnlyCache<CacheForIngest> | null,
-	rundownId: RundownId,
+	ingestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'> | null,
+	newRundown: ReadonlyDeep<Rundown>,
 	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
-	renamedSegments: ReadonlyMap<SegmentId, SegmentId>
+	renamedSegments: ReadonlyMap<SegmentId, SegmentId>,
+	changedSegmentsInfo: ChangedSegmentsRankInfo
 ) {
-	updatePartInstancesBasicProperties(playoutCache, rundownId, renamedSegments)
+	updatePartInstancesBasicProperties(playoutCache, newRundown._id, renamedSegments)
 
-	updatePartInstanceRanks(playoutCache, changedSegments)
+	updatePartInstanceRanks(playoutCache, changedSegmentsInfo)
 
 	UpdateNext.ensureNextPartIsValid(playoutCache)
 
 	if (ingestCache) {
 		// If we have updated the rundown, then sync to the selected partInstances
-		const rundown = getRundown(ingestCache)
-		syncChangesToPartInstances(playoutCache, ingestCache, showStyle, blueprint.blueprint, rundown)
+		syncChangesToPartInstances(playoutCache, ingestCache, showStyle, blueprint.blueprint, newRundown)
 	}
 
 	triggerUpdateTimelineAfterIngestData(playoutCache.PlaylistId)
 }
 
-function canRemoveSegment(cache: CacheForPlayout, segment: DBSegment | undefined): boolean {
-	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+function canRemoveSegment(
+	currentPartInstance: ReadonlyDeep<PartInstance> | undefined,
+	nextPartInstance: ReadonlyDeep<PartInstance> | undefined,
+	segmentId: SegmentId
+): boolean {
 	if (
-		segment &&
-		(currentPartInstance?.segmentId === segment._id ||
-			(nextPartInstance?.segmentId === segment._id && isTooCloseToAutonext(currentPartInstance, false)))
+		currentPartInstance?.segmentId === segmentId ||
+		(nextPartInstance?.segmentId === segmentId && isTooCloseToAutonext(currentPartInstance, false))
 	) {
 		// Don't allow removing an active rundown
-		logger.warn(`Not allowing removal of current playing segment "${segment._id}", making segment unsynced instead`)
+		logger.warn(`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`)
 		return false
 	}
 

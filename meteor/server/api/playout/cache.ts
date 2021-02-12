@@ -55,10 +55,6 @@ export abstract class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> 
 			this.Rundowns.prepareInit({ playlistId: tmpPlaylist._id }, true),
 		])
 
-		await this.preInit2()
-	}
-
-	protected async preInit2() {
 		const rundowns = this.Rundowns.findFetch()
 		await this.activationCache.initialize(this.Playlist.doc, rundowns)
 
@@ -100,6 +96,19 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		return res
 	}
 
+	// static async createForIngest(studioId: StudioId, playlistId: RundownPlaylistId): Promise<[CacheForPlayout]> {
+	// 	// TODO - this is quite a hack...
+	// 	const res: Mutable<CacheForPlayout> = new CacheForPlayout(studioId, playlistId)
+
+	// 	res.Playlist = new DbCacheWriteOptionalObject(RundownPlaylists)
+
+	// 	//
+
+	// 	return [
+	// 		res
+	// 	]
+	// }
+
 	static async from(
 		newPlaylist: ReadonlyDeep<RundownPlaylist>,
 		newRundowns: ReadonlyDeep<Array<Rundown>>
@@ -111,7 +120,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			res.Rundowns.fillWithDataFromArray(newRundowns)
 		}, true)
 
-		await res.preInit2()
+		await res.preInit(res.Playlist.doc)
 
 		await res.initContent()
 

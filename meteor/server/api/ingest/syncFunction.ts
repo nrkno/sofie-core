@@ -1,8 +1,10 @@
 import { IngestRundown } from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
+import _ from 'underscore'
 import { IngestDataCache, IngestDataCacheObj } from '../../../lib/collections/IngestDataCache'
 import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartId } from '../../../lib/collections/Parts'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
@@ -14,10 +16,13 @@ import {
 	asyncCollectionFindOne,
 	getCurrentTime,
 	clone,
+	protectString,
 } from '../../../lib/lib'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
+import { ReadOnlyCache } from '../../cache/DatabaseCaches'
 import { syncFunction } from '../../codeControl'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
+import { getRundownsSegmentsAndPartsFromCache } from '../playout/lib'
 import { PlaylistLock, playoutNoCacheLockFunction } from '../playout/syncFunction'
 import { profiler } from '../profiler'
 import { CacheForIngest } from './cache'
@@ -142,6 +147,7 @@ export function ingestLockFunction(
 
 		// Load any 'before' data for the commit
 		const beforeRundown = ingestCache.Rundown.doc
+		const beforePartMap = generatePartMap(ingestCache)
 
 		try {
 			const commitData = await calcFcn(ingestCache, newIngestRundown, oldIngestRundown)
@@ -153,7 +159,7 @@ export function ingestLockFunction(
 				// Get the rundown. This assumes one is defined by now which it should be
 				// const rundown = getRundown(ingestCache)
 
-				await CommitIngestOperation(ingestCache, beforeRundown, commitData0)
+				await CommitIngestOperation(ingestCache, beforeRundown, beforePartMap, commitData0)
 
 				// async function doPlaylistInner() {
 				// 	// const playoutInfo = await getIngestPlaylistInfoFromDb(rundown)
@@ -254,4 +260,21 @@ function ingestLockFunctionInner(context: string, rundownExternalId: string, fcn
 		context,
 		`rundown_ingest_${rundownExternalId}`
 	)()
+}
+
+function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): ReadonlyMap<SegmentId, PartId[]> {
+	const rundown = cache.Rundown.doc
+	if (!rundown) return new Map()
+
+	const segmentsAndParts = getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, [rundown])
+	const existingRundownParts = _.groupBy(segmentsAndParts.parts, (part) => part.segmentId)
+
+	const res = new Map<SegmentId, PartId[]>()
+	for (const [segmentId, parts] of Object.entries(existingRundownParts)) {
+		res.set(
+			protectString(segmentId),
+			parts.map((p) => p._id)
+		)
+	}
+	return res
 }

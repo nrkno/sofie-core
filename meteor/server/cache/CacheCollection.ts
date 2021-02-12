@@ -53,6 +53,8 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		initializer: MongoQuery<DBInterface> | (() => Promise<void>),
 		initializeImmediately: boolean
 	): Promise<void> {
+		if (this.initialized) return
+
 		this._initializer = initializer
 		if (initializeImmediately) {
 			await this._initialize()
@@ -274,7 +276,7 @@ export class DbCacheWriteCollection<
 	}
 
 	/** Returns true if a doc was replace, false if inserted */
-	replace(doc: DBInterface): boolean {
+	replace(doc: DBInterface | ReadonlyDeep<DBInterface>): boolean {
 		const span = profiler.startSpan(`DBCache.replace.${this.name}`)
 		waitForPromise(this._initialize())
 
@@ -284,11 +286,11 @@ export class DbCacheWriteCollection<
 		const oldDoc = this.documents.get(_id)
 		if (oldDoc) {
 			oldDoc.updated = true
-			oldDoc.document = this._transform(doc)
+			oldDoc.document = this._transform(clone(doc))
 		} else {
 			this.documents.set(_id, {
 				inserted: true,
-				document: this._transform(doc),
+				document: this._transform(clone(doc)),
 			})
 		}
 
