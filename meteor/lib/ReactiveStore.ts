@@ -1,7 +1,8 @@
 import { Meteor } from 'meteor/meteor'
+import { Random } from 'meteor/random'
 import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
-import { ProtectedString } from './lib'
+import { lazyIgnore, ProtectedString } from './lib'
 
 /** The ReactiveStore is a Reactive key-value store.
  * Keeps track of when the reactive values aren't in use anymore and automatically cleans them up.
@@ -15,6 +16,15 @@ export class ReactiveStore<Key extends ProtectedString<any> | string, Value> {
 			value: Value
 		}
 	> = {}
+	private _depsToBatchInvalidate: Tracker.Dependency[] = []
+	private _name = Random.id()
+
+	constructor(
+		private options: {
+			/** Delays all Reactive updates with this time [ms] */
+			delayUpdateTime?: number
+		} = {}
+	) {}
 	/**
 	 * Retrieves a value from the store.
 	 * @param key Key to fetch the value from
@@ -50,7 +60,7 @@ export class ReactiveStore<Key extends ProtectedString<any> | string, Value> {
 							if (!_.isEqual(o.value, newValue)) {
 								o.value = newValue
 								// Invaludate the dependency:
-								o.dep.changed()
+								this.invalidateDependency(o.dep)
 							}
 						}
 					})
@@ -90,6 +100,24 @@ export class ReactiveStore<Key extends ProtectedString<any> | string, Value> {
 		if (o) {
 			o.computation?.stop()
 			delete this._store[key0]
+		}
+	}
+	private invalidateDependency(dep: Tracker.Dependency) {
+		if (this.options.delayUpdateTime) {
+			// Delay and batch-invalidate all changes that might have come in until then:
+			this._depsToBatchInvalidate.push(dep)
+			lazyIgnore(
+				this._name,
+				() => {
+					for (const dep of this._depsToBatchInvalidate) {
+						dep.changed()
+					}
+					this._depsToBatchInvalidate = []
+				},
+				this.options.delayUpdateTime
+			)
+		} else {
+			dep.changed()
 		}
 	}
 	clear() {
