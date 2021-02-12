@@ -484,23 +484,3 @@ export async function initCacheForRundownPlaylistFromRundown(rundownId: RundownI
 	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundown.playlistId}" not found!`)
 	return initCacheForRundownPlaylist(playlist)
 }
-
-/** Initialize a cache, run the function, then store the cache */
-export function wrapWithCacheForRundownPlaylist<T>(
-	playlist: RundownPlaylist,
-	fcn: (cache: CacheForRundownPlaylist) => T
-): T {
-	const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-	const r = fcn(cache)
-	waitForPromise(cache.saveAllToDatabase())
-	return r
-}
-export function wrapWithCacheForRundownPlaylistFromRundown<T>(
-	rundownId: RundownId,
-	fcn: (cache: CacheForRundownPlaylist) => T
-): T {
-	const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
-	const r = fcn(cache)
-	waitForPromise(cache.saveAllToDatabase())
-	return r
-}

@@ -19,8 +19,7 @@ import { forceClearAllBlueprintConfigCaches } from '../api/blueprints/config'
 import { playoutWithCacheLockFunction } from '../api/playout/syncFunction'
 import { getSelectedPartInstancesFromCache } from '../api/playout/cache'
 import { removeRundownPlaylistFromDb } from '../api/rundownPlaylist'
-import { initCacheForRundownPlaylistFromRundown } from '../cache/DatabaseCaches'
-import { ingestLockFunction } from '../api/ingest/syncFunction'
+import { ingestRundownOnlyLockFunction } from '../api/ingest/syncFunction'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -60,10 +59,10 @@ if (!Settings.enableUserAccounts) {
 		debug_recreateExpectedMediaItems() {
 			const rundowns = Rundowns.find().fetch()
 
-			rundowns.map((i) => {
-				const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(i._id)) // todo: is this correct? - what if rundown has no playlist?
-				updateExpectedMediaItemsOnRundown(cache, i._id)
-				waitForPromise(cache.saveAllToDatabase())
+			rundowns.map((rundown) => {
+				ingestRundownOnlyLockFunction('', rundown.studioId, rundown.externalId, async (cache) =>
+					updateExpectedMediaItemsOnRundown(cache)
+				)
 			})
 		},
 

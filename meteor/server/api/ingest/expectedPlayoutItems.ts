@@ -11,6 +11,7 @@ import { saveIntoDb, protectString, unprotectString } from '../../../lib/lib'
 import { CacheForIngest } from './cache'
 import { ReadonlyDeep } from 'type-fest'
 import { saveIntoCache } from '../../cache/lib'
+import { StudioId } from '../../../lib/collections/Studios'
 
 interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
 	partId?: PartId
@@ -38,20 +39,21 @@ function extractExpectedPlayoutItems(
 }
 
 function wrapExpectedPlayoutItems(
-	rundown: ReadonlyDeep<Rundown>,
+	studioId: StudioId,
+	rundownId: RundownId,
 	items: ExpectedPlayoutItemGenericWithPiece[]
 ): ExpectedPlayoutItem[] {
 	return items.map((item, i) => {
 		return {
 			_id: protectString(item.pieceId + '_' + i),
-			studioId: rundown.studioId,
-			rundownId: rundown._id,
+			studioId: studioId,
+			rundownId: rundownId,
 			...item,
 		}
 	})
 }
 
-export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest, rundown: ReadonlyDeep<Rundown>): void {
+export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest): void {
 	const intermediaryItems: ExpectedPlayoutItemGenericWithPiece[] = []
 
 	const piecesStartingInThisRundown = cache.Pieces.findFetch({})
@@ -67,7 +69,7 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest, rundo
 		)
 	}
 
-	const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)
+	const expectedPlayoutItems = wrapExpectedPlayoutItems(cache.Studio.doc._id, cache.RundownId, intermediaryItems)
 
 	saveIntoCache<ExpectedPlayoutItem, ExpectedPlayoutItem>(cache.ExpectedPlayoutItems, {}, expectedPlayoutItems)
 }

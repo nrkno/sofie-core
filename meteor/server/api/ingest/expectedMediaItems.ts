@@ -222,11 +222,11 @@ export function updateExpectedMediaItemForBucketAdLibAction(actionId: AdLibActio
 	)
 }
 
-export function updateExpectedMediaItemsOnRundown(cache: CacheForIngest, rundown: ReadonlyDeep<Rundown>): void {
+export function updateExpectedMediaItemsOnRundown(cache: CacheForIngest): void {
 	const pieces = cache.Pieces.findFetch({})
 	const adlibs = cache.AdLibPieces.findFetch({})
 	const actions = cache.AdLibActions.findFetch({})
 
-	const eMIs = generateExpectedMediaItemsFull(cache.Studio.doc._id, rundown._id, pieces, adlibs, actions)
+	const eMIs = generateExpectedMediaItemsFull(cache.Studio.doc._id, cache.RundownId, pieces, adlibs, actions)
 	saveIntoCache<ExpectedMediaItem, ExpectedMediaItem>(cache.ExpectedMediaItems, {}, eMIs)
 }

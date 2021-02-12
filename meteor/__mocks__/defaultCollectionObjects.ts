@@ -1,4 +1,4 @@
-import { getCurrentTime } from '../lib/lib'
+import { getCurrentTime, unprotectObject, unprotectString } from '../lib/lib'
 import { StudioId } from '../lib/collections/Studios'
 import { DBRundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
 import { PeripheralDeviceId } from '../lib/collections/PeripheralDevices'
@@ -55,7 +55,7 @@ export function defaultRundown(
 		_rank: 0,
 
 		_id: _id,
-		externalId: 'MOCK_RUNDOWN',
+		externalId: unprotectString(_id),
 		name: 'Default Rundown',
 
 		created: getCurrentTime(),
@@ -76,7 +76,7 @@ export function defaultSegment(_id: SegmentId, rundownId: RundownId): DBSegment 
 	return {
 		_id: _id,
 		_rank: 0,
-		externalId: 'MOCK_SEGMENT',
+		externalId: unprotectString(_id),
 		rundownId: rundownId,
 		name: 'Default Segment',
 		externalModified: 1,
@@ -89,7 +89,7 @@ export function defaultPart(_id: PartId, rundownId: RundownId, segmentId: Segmen
 		rundownId: rundownId,
 		segmentId: segmentId,
 		_rank: 0,
-		externalId: 'MOCK_PART',
+		externalId: unprotectString(_id),
 		title: 'Default Part',
 	}
 }
