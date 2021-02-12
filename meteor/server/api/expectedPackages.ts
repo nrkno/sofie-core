@@ -39,12 +39,14 @@ import {
 	RundownBaselineAdLibAction,
 	RundownBaselineAdLibActions,
 } from '../../lib/collections/RundownBaselineAdLibActions'
+import { updateExpectedPlayoutItemsOnRundown } from './ingest/expectedPlayoutItems'
 
 export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
 	check(rundownId, String)
 
 	// @todo: this call is for backwards compatibility and soon to be removed
 	updateExpectedMediaItemsOnRundown(cache, rundownId)
+	updateExpectedPlayoutItemsOnRundown(cache, rundownId)
 
 	const rundown = cache.Rundowns.findOne(rundownId)
 	if (!rundown) {

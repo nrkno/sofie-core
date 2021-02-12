@@ -104,7 +104,6 @@ import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { PartNote, NoteType, SegmentNote, RundownNote } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 import { UpdateNext } from './updateNext'
-import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
 import {
 	RundownPlaylists,
 	DBRundownPlaylist,
@@ -1495,7 +1494,6 @@ function afterIngestChangedData(
 
 	// To be called after rundown has been changed
 	updateExpectedPackagesOnRundown(cache, rundown._id)
-	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
 
 	updatePartInstancesBasicProperties(cache, playlist, rundown._id)
 
