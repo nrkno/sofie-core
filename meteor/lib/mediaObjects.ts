@@ -8,32 +8,19 @@ import {
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
 import * as i18next from 'i18next'
-import {
-	getActiveRoutes,
-	getRoutedMappings,
-	IStudioSettings,
-	routeExpectedPackages,
-	Studio,
-	StudioId,
-} from './collections/Studios'
+import { IStudioSettings, routeExpectedPackages, Studio } from './collections/Studios'
 import { NoteType } from './api/notes'
-import {
-	getPackageContainerPackageId,
-	PackageContainerPackageStatuses,
-	PackageContainerPackageStatusStatus,
-} from './collections/PackageContainerPackageStatus'
+import { PackageContainerPackageStatusStatus } from './collections/PackageContainerPackageStatus'
 import {
 	FFProbeDeepScan,
 	FFProbeScanStream,
-	PackageInfoDB,
 	PackageInfoDBType,
 	PackageInfoFFProbeDeepScan,
 	PackageInfoFFProbeScan,
 	PackageInfos,
 } from './collections/PackageInfos'
 import { protectString, unprotectString } from './lib'
-import { ExpectedPackageDB } from './collections/ExpectedPackages'
-import { PeripheralDeviceId, PeripheralDevices } from './collections/PeripheralDevices'
+import { getPackageContainerPackageStatus } from './globalStores'
 
 /**d
  * Take properties from the mediainfo / medistream and transform into a
@@ -232,9 +219,11 @@ export function checkPieceContentStatus(
 							packageSource.containerId
 						}
 
-						const packageOnPackageContainer = PackageContainerPackageStatuses.findOne({
-							_id: getPackageContainerPackageId(studio._id, packageContainerId, expectedPackage._id),
-						})
+						const packageOnPackageContainer = getPackageContainerPackageStatus(
+							studio._id,
+							packageContainerId,
+							expectedPackage._id
+						)
 						const packageName =
 							// @ts-expect-error hack
 							expectedPackage.content.filePath ||
