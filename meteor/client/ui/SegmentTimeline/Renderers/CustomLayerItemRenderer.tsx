@@ -11,7 +11,6 @@ import { Studio } from '../../../../lib/collections/Studios'
 
 export interface ICustomLayerItemProps {
 	mediaPreviewUrl?: string
-	studioPackageContainers: Studio['packageContainers'] | undefined
 	typeClass?: string
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi

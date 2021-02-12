@@ -586,7 +586,6 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
-							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>
@@ -600,7 +599,6 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
-							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>
@@ -615,7 +613,6 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
-							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>
@@ -629,7 +626,6 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
-							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>
@@ -645,7 +641,6 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
-							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>
@@ -660,7 +655,6 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
-							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>
@@ -674,7 +668,6 @@ export const SourceLayerItem = withTranslation()(
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
-							studioPackageContainers={this.props.studio?.packageContainers}
 							{...this.props}
 							{...this.state}
 						/>

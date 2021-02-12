@@ -20,8 +20,12 @@ import { ScanInfoForPackages } from '../../../../lib/mediaObjects'
 import { clone } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
+import StudioPackageContainersContext from '../../RundownView/StudioPackageContainersContext'
+import { Studio } from '../../../../lib/collections/Studios'
 
-interface IProps extends ICustomLayerItemProps {}
+interface IProps extends ICustomLayerItemProps {
+	studioPackageContainers: Studio['packageContainers'] | undefined
+}
 interface IState {
 	scenes?: Array<number>
 	blacks?: Array<Anomaly>
@@ -638,4 +642,13 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	}
 }
 
-export const VTSourceRenderer = withTranslation()(VTSourceRendererBase)
+export const VTSourceRenderer = withTranslation()(
+	// withStudioPackageContainers<IProps & WithTranslation, {}>()(VTSourceRendererBase)
+	(props: Omit<IProps, 'studioPackageContainers'> & WithTranslation) => (
+		<StudioPackageContainersContext.Consumer>
+			{(studioPackageContainers) => (
+				<VTSourceRendererBase {...props} studioPackageContainers={studioPackageContainers} />
+			)}
+		</StudioPackageContainersContext.Consumer>
+	)
+)
