@@ -65,8 +65,10 @@ export class Part implements DBPart {
 	public displayDuration?: number
 	public invalid?: boolean
 	public invalidReason?: {
-		title: string
-		description?: string
+		message: {
+			key: string
+			args?: { [key: string]: any }
+		}
 		color?: string
 	}
 	public floated?: boolean
@@ -133,11 +135,7 @@ export class Part implements DBPart {
 			? [
 					{
 						type: NoteType.ERROR,
-						message: {
-							key: `${this.invalidReason.title}${
-								this.invalidReason.description ? `: ${+this.invalidReason.description}` : ''
-							}`,
-						},
+						message: this.invalidReason.message,
 						origin: {
 							name: this.title,
 						},

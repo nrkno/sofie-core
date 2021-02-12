@@ -142,15 +142,19 @@ export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatable
 	 * Color needs to be in #xxxxxx RGB hexadecimal format.
 	 *
 	 * @type {{
-	 * 		title: string,
-	 * 		description?: string
+	 * 		message: {
+	 * 			key: string,
+	 * 			args?: { [key: string]: any }
+	 * 		},
 	 * 		color?: string
 	 * 	}}
 	 * @memberof IBlueprintPart
 	 */
 	invalidReason?: {
-		title: string
-		description?: string
+		message: {
+			key: string
+			args?: { [key: string]: any }
+		}
 		color?: string
 	}
 
