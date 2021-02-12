@@ -28,6 +28,7 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	tags: [],
 	expectedPackages: [],
 	listenToPackageInfoUpdates: [],
+	hasSideEffects: false,
 }
 // Compile a list of the keys which are allowed to be set
 export const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof IBlueprintPiece>
