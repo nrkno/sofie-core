@@ -62,6 +62,8 @@ export namespace ExpectedPackage {
 	export interface SideEffectThumbnailSettings {
 		/** What the thumbnails package filePath is going to be */
 		path: string
+		/** What time to pick the thumbnail from [ms] */
+		seekTime?: number
 	}
 
 	export interface ExpectedPackageMediaFile extends Base {
