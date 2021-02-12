@@ -25,8 +25,8 @@ import { CacheForIngest } from './cache'
 export function syncChangesToPartInstances(
 	cache: CacheForPlayout,
 	ingestCache: ReadOnlyCache<CacheForIngest>,
-	showStyle: ShowStyleCompound,
-	blueprint: ShowStyleBlueprintManifest,
+	showStyle: ReadonlyDeep<ShowStyleCompound>,
+	blueprint: ReadonlyDeep<ShowStyleBlueprintManifest>,
 	rundown: ReadonlyDeep<Rundown>
 ) {
 	if (cache.Playlist.doc.activationId) {

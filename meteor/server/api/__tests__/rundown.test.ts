@@ -71,7 +71,7 @@ describe('Rundown', () => {
 		expect(rundown00.playlistId).toEqual(playlistId0)
 
 		// This should set the default sorting of the rundowns in the plylist:
-		let rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(env.studio, rundown00, undefined)
+		let rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(env.studio, rundown00)
 		updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundown00)
 
 		// Expect the rundowns to be in the right order:
@@ -85,7 +85,7 @@ describe('Rundown', () => {
 		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown02', 'rundown00'])
 
 		// This should do no change, since rank is now controlled by Sofie:
-		rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(env.studio, rundown00, undefined)
+		rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(env.studio, rundown00)
 		updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundown00)
 		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown02', 'rundown00'])
 

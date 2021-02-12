@@ -55,8 +55,12 @@ export abstract class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> 
 			this.Rundowns.prepareInit({ playlistId: tmpPlaylist._id }, true),
 		])
 
+		await this.preInit2()
+	}
+
+	protected async preInit2() {
 		const rundowns = this.Rundowns.findFetch()
-		await this.activationCache.initialize(tmpPlaylist, rundowns)
+		await this.activationCache.initialize(this.Playlist.doc, rundowns)
 
 		this.Studio._fromDoc(this.activationCache.getStudio())
 		await this.PeripheralDevices.prepareInit(async () => {
@@ -92,6 +96,24 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		const res = new CacheForPlayout(tmpPlaylist.studioId, tmpPlaylist._id)
 
 		await res.preInit(tmpPlaylist)
+
+		return res
+	}
+
+	static async from(
+		newPlaylist: ReadonlyDeep<RundownPlaylist>,
+		newRundowns: ReadonlyDeep<Array<Rundown>>
+	): Promise<CacheForPlayout> {
+		const res = new CacheForPlayout(newPlaylist.studioId, newPlaylist._id)
+
+		res.Playlist._fromDoc(newPlaylist)
+		await res.Rundowns.prepareInit(async () => {
+			res.Rundowns.fillWithDataFromArray(newRundowns)
+		}, true)
+
+		await res.preInit2()
+
+		await res.initContent()
 
 		return res
 	}
@@ -143,6 +165,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	}
 
 	removePlaylist() {
+		// TODO - check if active
 		this.toBeRemoved = true
 	}
 

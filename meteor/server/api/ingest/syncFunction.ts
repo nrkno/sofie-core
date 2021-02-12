@@ -27,44 +27,44 @@ import { loadCachedRundownData, saveRundownCache } from './ingestCache2'
 import { getRundown, getRundownId } from './lib'
 import { RundownSyncFunctionPriority } from './rundownInput'
 
-export interface IngestPlayoutInfo {
-	readonly playlist: ReadonlyDeep<RundownPlaylist>
-	readonly rundowns: ReadonlyDeep<Array<Rundown>>
-	readonly currentPartInstance: ReadonlyDeep<PartInstance> | undefined
-	readonly nextPartInstance: ReadonlyDeep<PartInstance> | undefined
-}
+// export interface IngestPlayoutInfo {
+// 	readonly playlist: ReadonlyDeep<RundownPlaylist>
+// 	readonly rundowns: ReadonlyDeep<Array<Rundown>>
+// 	readonly currentPartInstance: ReadonlyDeep<PartInstance> | undefined
+// 	readonly nextPartInstance: ReadonlyDeep<PartInstance> | undefined
+// }
 
-export async function getIngestPlaylistInfoFromDb(
-	rundown: ReadonlyDeep<Rundown>
-): Promise<IngestPlayoutInfo | undefined> {
-	const [playlist, rundowns] = await Promise.all([
-		asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId }),
-		asyncCollectionFindFetch(
-			Rundowns,
-			{
-				playlistId: rundown.playlistId,
-			},
-			{
-				sort: {
-					_rank: 1,
-					_id: 1,
-				},
-			}
-		),
-	])
+// export async function getIngestPlaylistInfoFromDb(
+// 	rundown: ReadonlyDeep<Rundown>
+// ): Promise<IngestPlayoutInfo | undefined> {
+// 	const [playlist, rundowns] = await Promise.all([
+// 		asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId }),
+// 		asyncCollectionFindFetch(
+// 			Rundowns,
+// 			{
+// 				playlistId: rundown.playlistId,
+// 			},
+// 			{
+// 				sort: {
+// 					_rank: 1,
+// 					_id: 1,
+// 				},
+// 			}
+// 		),
+// 	])
 
-	if (!playlist) return undefined
+// 	if (!playlist) return undefined
 
-	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances(rundowns.map((r) => r._id))
+// 	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances(rundowns.map((r) => r._id))
 
-	const playoutInfo: IngestPlayoutInfo = {
-		playlist,
-		rundowns,
-		currentPartInstance,
-		nextPartInstance,
-	}
-	return playoutInfo
-}
+// 	const playoutInfo: IngestPlayoutInfo = {
+// 		playlist,
+// 		rundowns,
+// 		currentPartInstance,
+// 		nextPartInstance,
+// 	}
+// 	return playoutInfo
+// }
 
 export interface CommitIngestData {
 	/** Segment Ids which had any changes */
@@ -140,6 +140,9 @@ export function ingestLockFunction(
 
 		const ingestCache = await pIngestCache
 
+		// Load any 'before' data for the commit
+		const beforeRundown = ingestCache.Rundown.doc
+
 		try {
 			const commitData = await calcFcn(ingestCache, newIngestRundown, oldIngestRundown)
 			if (commitData) {
@@ -148,35 +151,40 @@ export function ingestLockFunction(
 				// The change is accepted
 
 				// Get the rundown. This assumes one is defined by now which it should be
-				const rundown = getRundown(ingestCache)
+				// const rundown = getRundown(ingestCache)
 
-				async function doPlaylistInner() {
-					const playoutInfo = await getIngestPlaylistInfoFromDb(rundown)
+				await CommitIngestOperation(ingestCache, beforeRundown, commitData0)
 
-					await CommitIngestOperation(ingestCache, playoutInfo, commitData0)
+				// async function doPlaylistInner() {
+				// 	// const playoutInfo = await getIngestPlaylistInfoFromDb(rundown)
 
-					// Update modified time
-					if (getCurrentTime() - rundown.modified > 3600 * 1000) {
-						const m = getCurrentTime()
-						ingestCache.Rundown.update({ $set: { modified: m } })
-					}
+				// 	await CommitIngestOperation(ingestCache, playoutInfo, commitData0)
 
-					// This needs to be inside the playout lock to ensure that a take doesnt happen mid update
-					await ingestCache.saveAllToDatabase()
-				}
+				// 	// Update modified time
+				// 	if (getCurrentTime() - rundown.modified > 3600 * 1000) {
+				// 		const m = getCurrentTime()
+				// 		ingestCache.Rundown.update({ $set: { modified: m } })
+				// 	}
 
-				if (playlistLock?._playlistId === rundown.playlistId) {
-					// We already hold the playlist lock, so reuse it
-					await doPlaylistInner()
-				} else {
-					playoutNoCacheLockFunction(
-						null,
-						context,
-						rundown.playlistId,
-						RundownSyncFunctionPriority.INGEST,
-						doPlaylistInner
-					)
-				}
+				// 	// This needs to be inside the playout lock to ensure that a take doesnt happen mid update
+				// 	await ingestCache.saveAllToDatabase()
+				// }
+
+				// if (playlistLock?._playlistId === rundown.playlistId) {
+				// 	// We already hold the playlist lock, so reuse it
+				// 	await doPlaylistInner()
+				// } else {
+				// 	playoutNoCacheLockFunction(
+				// 		null,
+				// 		context,
+				// 		rundown.playlistId,
+				// 		RundownSyncFunctionPriority.INGEST,
+				// 		doPlaylistInner
+				// 	)
+				// }
+			} else {
+				// Should be no changes
+				ingestCache.assertNoChanges()
 			}
 		} finally {
 			// Ensure we save the ingest data

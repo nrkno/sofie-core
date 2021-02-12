@@ -17,6 +17,7 @@ import _ from 'underscore'
 import { profiler } from '../api/profiler'
 import { Meteor } from 'meteor/meteor'
 import { BulkWriteOperation } from 'mongodb'
+import { ReadonlyDeep } from 'type-fest'
 
 type SelectorFunction<DBInterface> = (doc: DBInterface) => boolean
 type DbCacheCollectionDocument<Class> = {
@@ -30,7 +31,7 @@ type DbCacheCollectionDocument<Class> = {
 /** Caches data, allowing reads from cache, but not writes */
 export class DbCacheReadCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }> {
 	documents = new Map<DBInterface['_id'], DbCacheCollectionDocument<Class>>()
-	protected originalDocuments: Array<Class> = []
+	protected originalDocuments: ReadonlyDeep<Array<Class>> = []
 
 	private _initialized: boolean = false
 	private _initializer?: MongoQuery<DBInterface> | (() => Promise<void>) = undefined
@@ -147,7 +148,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	async fillWithDataFromDatabase(selector: MongoQuery<DBInterface>): Promise<number> {
 		const docs = await asyncCollectionFindFetch(this._collection, selector)
 
-		this.fillWithDataFromArray(docs)
+		this.fillWithDataFromArray(docs as any)
 		return docs.length
 	}
 	/**
@@ -155,7 +156,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	 * Note: this wipes the current collection first
 	 * @param documents The documents to store
 	 */
-	fillWithDataFromArray(documents: Class[]) {
+	fillWithDataFromArray(documents: ReadonlyDeep<Array<Class>>) {
 		this.originalDocuments = documents
 		this.documents = new Map()
 		_.each(documents, (doc) => {
@@ -167,7 +168,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 				)
 			}
 
-			this.documents.set(id, { document: doc })
+			this.documents.set(id, { document: clone(doc) })
 		})
 	}
 	protected _transform(doc: DBInterface): Class {

@@ -1016,13 +1016,12 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 	return ok
 }
 export function mongoFindOptions<Class extends DBInterface, DBInterface extends { _id?: ProtectedString<any> }>(
-	docs: Class[],
+	docs0: ReadonlyArray<Class>,
 	options?: FindOptions<DBInterface>
 ): Class[] {
+	let docs = [...docs0] // Shallow clone it
 	if (options) {
 		if (options.sort) {
-			docs = [...docs] // Shallow clone it
-
 			// Underscore doesnt support desc order, or multiple fields, so we have to do it manually
 			const keys = _.keys(options.sort).filter((k) => options.sort)
 			const doSort = (a: any, b: any, i: number): number => {

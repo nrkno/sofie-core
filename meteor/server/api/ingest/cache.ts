@@ -125,6 +125,8 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	discardChanges() {
 		this.toBeRemoved = false
 		super.discardChanges()
+
+		this.assertNoChanges()
 	}
 
 	async saveAllToDatabase() {

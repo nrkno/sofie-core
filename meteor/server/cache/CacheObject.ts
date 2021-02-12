@@ -52,12 +52,12 @@ export class DbCacheReadObject<
 		}
 	}
 
-	_fromDoc(doc: Class) {
+	_fromDoc(doc: ReadonlyDeep<Class>) {
 		if (this._initialized) {
 			throw new Meteor.Error(500, `DbCacheReadObject population for "${this.name}" failed. Already initialized`)
 		}
 
-		this._document = doc
+		this._document = clone(doc)
 		this._rawDocument = clone(doc)
 		this._initialized = true
 	}
