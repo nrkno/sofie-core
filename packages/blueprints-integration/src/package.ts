@@ -182,14 +182,8 @@ export namespace Accessor {
 		/** Base url (url to the host), for example http://myhost.com/fileShare/ */
 		baseUrl: string
 
-		/** Type of request. Defaults to 'get' */
-		method?: 'get' | 'post' | string
-
 		/** Any headers to send along with the request */
-		headers?: { [name: string]: any }
-
-		/** Body parameters to send along with the request (for POST-requests). */
-		requestBody?: unknown
+		// headers?: { [name: string]: any } // Not implemented (yet)
 
 		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible*/
 		networkId?: string
