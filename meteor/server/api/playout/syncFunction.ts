@@ -3,7 +3,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { MethodContext } from '../../../lib/api/methods'
 import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { waitForPromise } from '../../../lib/lib'
-import { ReadOnlyCache } from '../../cache/DatabaseCaches'
+import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
 import { RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { checkAccessAndGetPlaylist } from '../lib'
@@ -71,7 +71,7 @@ export function playoutNoCacheLockFunction<T>(
 	contextStr: string,
 	rundownPlaylistId: RundownPlaylistId,
 	priority: RundownSyncFunctionPriority,
-	fcn: (lock: PlaylistLock) => Promise<T> | T
+	fcn: (lock: PlaylistLock, tmpPlaylist: ReadonlyDeep<RundownPlaylist>) => Promise<T> | T
 ): T {
 	let tmpPlaylist: RundownPlaylist
 	if (context) {
@@ -83,7 +83,7 @@ export function playoutNoCacheLockFunction<T>(
 	}
 
 	return studioLockFunction(contextStr, tmpPlaylist.studioId, (lock) =>
-		playoutNoCacheFromStudioLockFunction(contextStr, lock, tmpPlaylist, priority, fcn)
+		playoutNoCacheFromStudioLockFunction(contextStr, lock, tmpPlaylist, priority, (lock) => fcn(lock, tmpPlaylist))
 	)
 }
 

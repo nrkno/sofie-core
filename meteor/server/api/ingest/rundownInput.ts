@@ -13,7 +13,7 @@ import {
 	BlueprintResultOrderedRundowns,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { Studio } from '../../../lib/collections/Studios'
+import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { getAllRundownsInPlaylist, sortDefaultRundownInPlaylistOrder } from '../rundown'
 import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
@@ -261,9 +261,12 @@ function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
 export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
 
+	return handleRemovedRundownFromStudio(studio._id, rundownExternalId)
+}
+export function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: string) {
 	return ingestLockFunction(
 		'handleRemovedRundown',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {

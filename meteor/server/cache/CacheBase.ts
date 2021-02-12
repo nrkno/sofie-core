@@ -1,0 +1,203 @@
+import * as _ from 'underscore'
+import { Meteor } from 'meteor/meteor'
+import { isDbCacheReadCollection, isDbCacheWritable } from './lib'
+import { waitTime, sumChanges, anythingChanged, ProtectedString } from '../../lib/lib'
+import { logger } from '../logging'
+import { isInTestWrite } from '../security/lib/securityVerify'
+import { profiler } from '../api/profiler'
+import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection'
+import { DbCacheReadObject, DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
+
+type DeferredFunction<Cache> = (cache: Cache) => void
+
+type DbCacheWritable<T1 extends T2, T2 extends { _id: ProtectedString<any> }> =
+	| DbCacheWriteCollection<T1, T2>
+	| DbCacheWriteObject<T1, T2>
+	| DbCacheWriteOptionalObject<T1, T2>
+
+export type ReadOnlyCacheInner<T> = T extends DbCacheWriteCollection<infer A, infer B>
+	? DbCacheReadCollection<A, B>
+	: T extends DbCacheWriteObject<infer A, infer B>
+	? DbCacheReadObject<A, B>
+	: T extends DbCacheWriteOptionalObject<infer A, infer B>
+	? DbCacheReadObject<A, B, true>
+	: T
+export type ReadOnlyCache<T extends CacheBase<any>> = Omit<
+	{ [K in keyof T]: ReadOnlyCacheInner<T[K]> },
+	'defer' | 'deferAfterSave' | 'saveAllToDatabase'
+>
+
+/** This cache contains data relevant in a studio */
+export abstract class ReadOnlyCacheBase {
+	protected _deferredFunctions: DeferredFunction<ReadOnlyCacheBase>[] = []
+	protected _deferredAfterSaveFunctions: (() => void)[] = []
+	private _activeTimeout: number | null = null
+
+	constructor() {
+		if (!Meteor.isProduction) {
+			// When this is set up, we expect saveAllToDatabase() to have been called at the end, otherwise something is wrong
+			if (!isInTestWrite()) {
+				const futureError = new Meteor.Error(500, `saveAllToDatabase never called`)
+				this._activeTimeout = Meteor.setTimeout(() => {
+					logger.error(futureError)
+					logger.error(futureError.stack)
+				}, 2000)
+			}
+		}
+	}
+
+	_abortActiveTimeout() {
+		if (this._activeTimeout) {
+			Meteor.clearTimeout(this._activeTimeout)
+		}
+	}
+	_extendWithData(extendFromCache: CacheBase<any>) {
+		extendFromCache._abortActiveTimeout()
+
+		_.each(extendFromCache as any, (their, key) => {
+			const our = this[key]
+			if (isDbCacheReadCollection(their)) {
+				if (isDbCacheReadCollection(our)) {
+					our.extendWithData(their)
+				}
+			}
+		})
+	}
+
+	protected getAllCollections() {
+		const highPrioDBs: DbCacheWritable<any, any>[] = []
+		const lowPrioDBs: DbCacheWritable<any, any>[] = []
+
+		_.map(_.keys(this), (key) => {
+			const db = this[key]
+			if (isDbCacheWritable(db)) {
+				if (key.match(/timeline/i)) {
+					highPrioDBs.push(db)
+				} else {
+					lowPrioDBs.push(db)
+				}
+			}
+		})
+
+		return {
+			allDBs: [...highPrioDBs, ...lowPrioDBs],
+			highPrioDBs,
+			lowPrioDBs,
+		}
+	}
+
+	async saveAllToDatabase() {
+		const span = profiler.startSpan('Cache.saveAllToDatabase')
+		this._abortActiveTimeout()
+
+		// Execute cache.defer()'s
+		for (let i = 0; i < this._deferredFunctions.length; i++) {
+			this._deferredFunctions[i](this)
+		}
+		this._deferredFunctions.length = 0 // clear the array
+
+		const { highPrioDBs, lowPrioDBs } = this.getAllCollections()
+
+		if (highPrioDBs.length) {
+			const anyThingChanged = anythingChanged(
+				sumChanges(...(await Promise.all(highPrioDBs.map((db) => db.updateDatabaseWithData()))))
+			)
+			if (anyThingChanged) {
+				// Wait a little bit before saving the rest.
+				// The idea is that this allows for the high priority publications to update (such as the Timeline),
+				// sending the updated timeline to Playout-gateway
+				waitTime(2)
+			}
+		}
+
+		if (lowPrioDBs.length) {
+			await Promise.all(lowPrioDBs.map((db) => db.updateDatabaseWithData()))
+		}
+
+		// Execute cache.deferAfterSave()'s
+		for (let i = 0; i < this._deferredAfterSaveFunctions.length; i++) {
+			this._deferredAfterSaveFunctions[i]()
+		}
+		this._deferredAfterSaveFunctions.length = 0 // clear the array
+
+		if (span) span.end()
+	}
+
+	/**
+	 * Discard all changes to documents in the cache.
+	 * This essentially acts as rolling back this transaction, and lets the cache be reused for another operation instead
+	 */
+	discardChanges() {
+		const { allDBs } = this.getAllCollections()
+		for (const coll of allDBs) {
+			coll.discardChanges()
+		}
+
+		// Discard any hooks too
+		this._deferredAfterSaveFunctions.length = 0
+		this._deferredFunctions.length = 0
+	}
+
+	/**
+	 * Assert that no changes should have been made to the cache, will throw an Error otherwise. This can be used in
+	 * place of `saveAllToDatabase()`, when the code controlling the cache expects no changes to have been made and any
+	 * changes made are an error and will cause issues.
+	 */
+	assertNoChanges() {
+		const span = profiler.startSpan('Cache.assertNoChanges')
+
+		function logOrThrowError(error: Meteor.Error) {
+			if (!Meteor.isProduction) {
+				throw error
+			} else {
+				logger.error(error)
+				logger.error(error.stack)
+			}
+		}
+
+		const { allDBs } = this.getAllCollections()
+
+		if (this._deferredFunctions.length > 0)
+			logOrThrowError(
+				new Meteor.Error(
+					500,
+					`Failed no changes in cache assertion, there were ${this._deferredFunctions.length} deferred functions`
+				)
+			)
+
+		if (this._deferredAfterSaveFunctions.length > 0)
+			logOrThrowError(
+				new Meteor.Error(
+					500,
+					`Failed no changes in cache assertion, there were ${this._deferredAfterSaveFunctions.length} after-save deferred functions`
+				)
+			)
+
+		_.map(allDBs, (db) => {
+			if (db.isModified()) {
+				logOrThrowError(
+					new Meteor.Error(
+						500,
+						`Failed no changes in cache assertion, cache was modified: collection: ${db.name}`
+					)
+				)
+			}
+		})
+
+		this._abortActiveTimeout()
+
+		if (span) span.end()
+	}
+}
+export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheBase {
+	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
+	defer(fcn: DeferredFunction<T>): void {
+		this._deferredFunctions.push(fcn)
+	}
+	/** Defer provided function to after cache.saveAllToDatabase().
+	 * Note that at the time of execution, the cache is no longer available.
+	 * */
+	deferAfterSave(fcn: () => void) {
+		this._deferredAfterSaveFunctions.push(fcn)
+	}
+}

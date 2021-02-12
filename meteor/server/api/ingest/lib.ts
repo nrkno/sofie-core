@@ -19,7 +19,7 @@ import { IngestRundown, ExtendedIngestRundown } from '@sofie-automation/blueprin
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
-import { ReadOnlyCache } from '../../cache/DatabaseCaches'
+import { ReadOnlyCache } from '../../cache/CacheBase'
 import { CacheForIngest } from './cache'
 
 /** Check Access and return PeripheralDevice, throws otherwise */

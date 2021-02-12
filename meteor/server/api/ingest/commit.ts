@@ -48,13 +48,14 @@ import {
 } from '../../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import _ from 'underscore'
-import { ReadOnlyCache } from '../../cache/DatabaseCaches'
+import { ReadOnlyCache } from '../../cache/CacheBase'
 import { reportRundownDataHasChanged } from '../asRunLog'
 import { removeSegmentContents } from './cleanup'
 import { Settings } from '../../../lib/Settings'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PartId } from '../../../lib/collections/Parts'
+import { NoteType, RundownNote } from '../../../lib/api/notes'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -69,7 +70,6 @@ export async function CommitIngestOperation(
 	ingestCache: CacheForIngest,
 	beforeRundown: ReadonlyDeep<Rundown> | undefined,
 	beforePartMap: BeforePartMap,
-	// playoutInfo: IngestPlayoutInfo | undefined,
 	data: ReadonlyDeep<CommitIngestData>
 ): Promise<void> {
 	const rundown = getRundown(ingestCache)
@@ -123,20 +123,30 @@ export async function CommitIngestOperation(
 
 					// TODO - finish this
 					if (data.removeRundown) {
-						ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+						ingestCache.Rundown.update({
+							$set: {
+								orphaned: 'deleted',
+							},
+						})
 					} else {
-						// TODO?
-						// if (!dbRundownData.notes) dbRundownData.notes = []
-						// dbRundownData.notes.push({
-						// 	type: NoteType.WARNING,
-						// 	message: {
-						// 		key:
-						// 			'The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.',
-						// 	},
-						// 	origin: {
-						// 		name: 'Data update',
-						// 	},
-						// })
+						ingestCache.Rundown.update({
+							$set: {
+								notes: [
+									...clone<RundownNote[]>(rundown.notes ?? []),
+									{
+										type: NoteType.WARNING,
+										message: {
+											// TODO - translate
+											key:
+												'The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.',
+										},
+										origin: {
+											name: 'Data update',
+										},
+									},
+								],
+							},
+						})
 					}
 				} else {
 					// The rundown is safe to simply move or remove

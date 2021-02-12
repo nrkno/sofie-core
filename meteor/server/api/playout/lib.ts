@@ -26,7 +26,6 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
 import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
@@ -567,52 +566,6 @@ export function getRundownsFromCache(cache: CacheForPlayout, playlist: ReadonlyD
 			},
 		}
 	)
-}
-
-export function removeRundownPlaylistFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-	const allRundowns = cache.Rundowns.findFetch({ playlistId: playlist._id })
-	allRundowns.forEach((rundown) => removeRundownFromCache(cache, rundown))
-
-	cache.RundownPlaylists.remove(playlist._id)
-}
-export function removeRundownFromCache(cache: CacheForRundownPlaylist, rundown: Rundown) {
-	cache.Rundowns.remove(rundown._id)
-	if (rundown.playlistId) {
-		// Check if any other rundowns in the playlist are left
-		if (
-			cache.Rundowns.findFetch({
-				playlistId: rundown.playlistId,
-			}).length === 0
-		) {
-			// No other rundowns left, remove the playlist as well then:
-			cache.RundownPlaylists.remove(rundown.playlistId)
-		}
-	}
-	cache.Segments.remove({ rundownId: rundown._id })
-	cache.Parts.remove({ rundownId: rundown._id })
-	cache.PartInstances.remove({ rundownId: rundown._id })
-	cache.Pieces.remove({ startRundownId: rundown._id })
-	cache.PieceInstances.remove({ rundownId: rundown._id })
-	cache.RundownBaselineObjs.remove({ rundownId: rundown._id })
-
-	cache.defer(() => {
-		// These are not present in the cache because they do not directly affect output.
-		AdLibActions.remove({ rundownId: rundown._id })
-		AdLibPieces.remove({ rundownId: rundown._id })
-		ExpectedMediaItems.remove({ rundownId: rundown._id })
-		ExpectedPlayoutItems.remove({ rundownId: rundown._id })
-		IngestDataCache.remove({ rundownId: rundown._id })
-		RundownBaselineAdLibPieces.remove({ rundownId: rundown._id })
-
-		// These might only partly be present in the cache, this should make sure they are properly removed:
-		Segments.remove({ rundownId: rundown._id })
-		Parts.remove({ rundownId: rundown._id })
-		PartInstances.remove({ rundownId: rundown._id })
-		Pieces.remove({ startRundownId: rundown._id })
-		PieceInstances.remove({ rundownId: rundown._id })
-		RundownBaselineAdLibActions.remove({ rundownId: rundown._id })
-		RundownBaselineObjs.remove({ rundownId: rundown._id })
-	})
 }
 
 export function getRundownsSegmentsAndPartsFromCache(

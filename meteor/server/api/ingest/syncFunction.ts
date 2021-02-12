@@ -1,75 +1,24 @@
-import { IngestRundown } from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
-import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import { IngestDataCache, IngestDataCacheObj } from '../../../lib/collections/IngestDataCache'
-import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PartId } from '../../../lib/collections/Parts'
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { StudioId } from '../../../lib/collections/Studios'
-import {
-	waitForPromise,
-	asyncCollectionFindFetch,
-	asyncCollectionFindOne,
-	getCurrentTime,
-	clone,
-	protectString,
-} from '../../../lib/lib'
+import { waitForPromise, clone, protectString } from '../../../lib/lib'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
-import { ReadOnlyCache } from '../../cache/DatabaseCaches'
+import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { getRundownsSegmentsAndPartsFromCache } from '../playout/lib'
 import { PlaylistLock, playoutNoCacheLockFunction } from '../playout/syncFunction'
 import { profiler } from '../profiler'
 import { CacheForIngest } from './cache'
-import { CommitIngestOperation } from './commit'
+import { BeforePartMap, CommitIngestOperation } from './commit'
 import { LocalIngestRundown } from './ingestCache'
 import { loadCachedRundownData, saveRundownCache } from './ingestCache2'
 import { getRundown, getRundownId } from './lib'
 import { RundownSyncFunctionPriority } from './rundownInput'
-
-// export interface IngestPlayoutInfo {
-// 	readonly playlist: ReadonlyDeep<RundownPlaylist>
-// 	readonly rundowns: ReadonlyDeep<Array<Rundown>>
-// 	readonly currentPartInstance: ReadonlyDeep<PartInstance> | undefined
-// 	readonly nextPartInstance: ReadonlyDeep<PartInstance> | undefined
-// }
-
-// export async function getIngestPlaylistInfoFromDb(
-// 	rundown: ReadonlyDeep<Rundown>
-// ): Promise<IngestPlayoutInfo | undefined> {
-// 	const [playlist, rundowns] = await Promise.all([
-// 		asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId }),
-// 		asyncCollectionFindFetch(
-// 			Rundowns,
-// 			{
-// 				playlistId: rundown.playlistId,
-// 			},
-// 			{
-// 				sort: {
-// 					_rank: 1,
-// 					_id: 1,
-// 				},
-// 			}
-// 		),
-// 	])
-
-// 	if (!playlist) return undefined
-
-// 	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances(rundowns.map((r) => r._id))
-
-// 	const playoutInfo: IngestPlayoutInfo = {
-// 		playlist,
-// 		rundowns,
-// 		currentPartInstance,
-// 		nextPartInstance,
-// 	}
-// 	return playoutInfo
-// }
 
 export interface CommitIngestData {
 	/** Segment Ids which had any changes */
@@ -262,18 +211,18 @@ function ingestLockFunctionInner(context: string, rundownExternalId: string, fcn
 	)()
 }
 
-function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): ReadonlyMap<SegmentId, PartId[]> {
+function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {
 	const rundown = cache.Rundown.doc
 	if (!rundown) return new Map()
 
 	const segmentsAndParts = getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, [rundown])
 	const existingRundownParts = _.groupBy(segmentsAndParts.parts, (part) => part.segmentId)
 
-	const res = new Map<SegmentId, PartId[]>()
+	const res = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
 	for (const [segmentId, parts] of Object.entries(existingRundownParts)) {
 		res.set(
 			protectString(segmentId),
-			parts.map((p) => p._id)
+			parts.map((p) => ({ id: p._id, rank: p._rank }))
 		)
 	}
 	return res

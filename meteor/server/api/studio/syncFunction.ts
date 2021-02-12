@@ -1,6 +1,6 @@
 import { StudioId } from '../../../lib/collections/Studios'
 import { waitForPromise } from '../../../lib/lib'
-import { ReadOnlyCache } from '../../cache/DatabaseCaches'
+import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
 import { CacheForStudio } from './cache'
 
