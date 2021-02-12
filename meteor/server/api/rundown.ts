@@ -2,8 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
-import { DBPart, PartId } from '../../lib/collections/Parts'
-import { AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { PartId } from '../../lib/collections/Parts'
 import { Segments, SegmentId } from '../../lib/collections/Segments'
 import {
 	getCurrentTime,
@@ -18,8 +17,6 @@ import {
 	getRandomId,
 	mongoFindOptions,
 	getRank,
-	waitForPromiseAll,
-	asyncCollectionRemove,
 	normalizeArrayToMap,
 	clone,
 } from '../../lib/lib'
@@ -50,7 +47,6 @@ import {
 	RundownPlaylistId,
 	RundownPlaylist,
 } from '../../lib/collections/RundownPlaylists'
-import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
@@ -61,25 +57,17 @@ import {
 	initCacheForRundownPlaylist,
 	initCacheForRundownPlaylistFromRundown,
 } from '../cache/DatabaseCaches'
-import { saveIntoCache } from '../cache/lib'
-import {
-	getSelectedPartInstancesFromCache,
-	removeRundownFromCache,
-	removeRundownPlaylistFromCache,
-} from './playout/lib'
-import { AdLibActions } from '../../lib/collections/AdLibActions'
-import { Settings } from '../../lib/Settings'
+import { removeRundownFromCache, removeRundownPlaylistFromCache } from './playout/lib'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
-import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
 import { profiler } from './profiler'
 import { updateRundownsInPlaylist } from './ingest/rundownInput'
 import { Mongo } from 'meteor/mongo'
 import { getPlaylistIdFromExternalId, removeEmptyPlaylists } from './rundownPlaylist'
-import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { StudioUserContext } from './blueprints/context'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
 import { CacheForPlayout } from './playout/cache'
+import { ReadonlyDeep } from 'type-fest'
 
 export function selectShowStyleVariant(
 	context: StudioUserContext,
@@ -153,7 +141,10 @@ export function selectShowStyleVariant(
 	}
 }
 /** Return true if the rundown is allowed to be moved out of that playlist */
-export function allowedToMoveRundownOutOfPlaylist(playlist: RundownPlaylist, rundown: DBRundown) {
+export function allowedToMoveRundownOutOfPlaylist(
+	playlist: ReadonlyDeep<RundownPlaylist>,
+	rundown: ReadonlyDeep<DBRundown>
+) {
 	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 
 	if (rundown.playlistId !== playlist._id)
@@ -421,10 +412,7 @@ export type ChangedSegmentsRankInfo = Array<{
  * Syncs the ranks from matching Parts to PartInstances.
  * Orphaned PartInstances get ranks interpolated based on what they were ranked between before the ingest update
  */
-export function updatePartInstanceRanks(
-	cache: CacheForRundownPlaylist | CacheForPlayout,
-	changedSegments: ChangedSegmentsRankInfo
-) {
+export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments: ChangedSegmentsRankInfo) {
 	const groupedPartInstances = _.groupBy(
 		cache.PartInstances.findFetch({
 			reset: { $ne: true },

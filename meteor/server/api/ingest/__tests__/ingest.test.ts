@@ -13,10 +13,9 @@ import { regenerateRundown, RundownInput } from '../rundownInput'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { getSegmentId } from '../lib'
-import { wrapWithCacheForRundownPlaylist } from '../../../cache/DatabaseCaches'
-import { removeRundownPlaylistFromCache } from '../../playout/lib'
 import { MethodContext } from '../../../../lib/api/methods'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
+import { removeRundownPlaylistFromDb } from '../../rundownPlaylist'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -1088,11 +1087,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 	testInFiber('unsyncing of rundown', () => {
 		// Cleanup any rundowns / playlists
+
 		RundownPlaylists.find()
 			.fetch()
-			.forEach((playlist) =>
-				wrapWithCacheForRundownPlaylist(playlist, (cache) => removeRundownPlaylistFromCache(cache, playlist))
-			)
+			.forEach((playlist) => removeRundownPlaylistFromDb(playlist._id))
 
 		const rundownData: IngestRundown = {
 			externalId: externalId,

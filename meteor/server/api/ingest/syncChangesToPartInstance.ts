@@ -3,14 +3,14 @@ import {
 	BlueprintSyncIngestPartInstance,
 	BlueprintSyncIngestNewData,
 } from '@sofie-automation/blueprints-integration'
+import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
-import { clone } from 'underscore'
 import { PartNote, SegmentNote } from '../../../lib/api/notes'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import { unprotectObject, unprotectObjectArray, waitForPromise, literal } from '../../../lib/lib'
-import { CacheForRundownPlaylist, ReadOnlyCache } from '../../cache/DatabaseCaches'
+import { unprotectObject, unprotectObjectArray, waitForPromise, literal, clone } from '../../../lib/lib'
+import { ReadOnlyCache } from '../../cache/DatabaseCaches'
 import { logger } from '../../logging'
 import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
@@ -20,13 +20,14 @@ import {
 	syncPlayheadInfinitesForNextPartInstance,
 } from '../playout/infinites'
 import { isTooCloseToAutonext } from '../playout/lib'
+import { CacheForIngest } from './cache'
 
 export function syncChangesToPartInstances(
 	cache: CacheForPlayout,
-	ingestCache: ReadOnlyCache<CacheForRundownPlaylist>,
+	ingestCache: ReadOnlyCache<CacheForIngest>,
 	showStyle: ShowStyleCompound,
 	blueprint: ShowStyleBlueprintManifest,
-	rundown: Rundown
+	rundown: ReadonlyDeep<Rundown>
 ) {
 	if (cache.Playlist.doc.activationId) {
 		if (blueprint.syncIngestUpdateToPartInstance) {

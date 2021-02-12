@@ -114,7 +114,7 @@ function applyExternalIdDiff(
 	segmentDiff: DiffSegmentEntries
 ): CommitIngestData['renamedSegments'] {
 	// Updated segments that has had their segment.externalId changed:
-	const renamedSegments: Array<[SegmentId, SegmentId]> = []
+	const renamedSegments = new Map<SegmentId, SegmentId>()
 	_.each(segmentDiff.externalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
 		const oldSegmentId = getSegmentId(cache.RundownId, oldSegmentExternalId)
 		const newSegmentId = getSegmentId(cache.RundownId, newSegmentExternalId)
@@ -124,7 +124,7 @@ function applyExternalIdDiff(
 		// TODO ORPHAN - can this be done in a more generic way?
 
 		const oldSegment = cache.Segments.findOne(oldSegmentId)
-		renamedSegments.push([oldSegmentId, newSegmentId])
+		renamedSegments.set(oldSegmentId, newSegmentId)
 		if (oldSegment) {
 			cache.Segments.remove(oldSegmentId)
 			cache.Segments.insert({

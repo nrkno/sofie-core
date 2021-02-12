@@ -279,7 +279,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 			return {
 				changedSegmentIds: [],
 				removedSegmentIds: [],
-				renamedSegments: [],
+				renamedSegments: new Map(),
 				removeRundown: canRundownBeUpdated(rundown, false),
 
 				showStyle: undefined,
@@ -452,7 +452,7 @@ export function handleRemovedSegment(
 				return {
 					changedSegmentIds: [],
 					removedSegmentIds: [segmentId],
-					renamedSegments: [],
+					renamedSegments: new Map(),
 
 					removeRundown: false,
 

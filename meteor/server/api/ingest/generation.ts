@@ -342,7 +342,7 @@ export async function updateSegmentFromIngestData(
 	return {
 		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
 		removedSegmentIds: [],
-		renamedSegments: [],
+		renamedSegments: new Map(),
 
 		removeRundown: false,
 
@@ -538,7 +538,7 @@ export async function updateRundownFromIngestData(
 	return literal<CommitIngestData>({
 		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
 		removedSegmentIds: removedSegments.map((s) => s._id),
-		renamedSegments: [],
+		renamedSegments: new Map(),
 
 		removeRundown: false,
 

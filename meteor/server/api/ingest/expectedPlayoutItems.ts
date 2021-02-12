@@ -3,12 +3,14 @@ import { check } from '../../../lib/check'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
-import { DBRundown, RundownId } from '../../../lib/collections/Rundowns'
+import { DBRundown, Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { logger } from '../../logging'
 import { PartId, DBPart } from '../../../lib/collections/Parts'
 import { saveIntoDb, protectString, unprotectString } from '../../../lib/lib'
-import { CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
+import { CacheForIngest } from './cache'
+import { ReadonlyDeep } from 'type-fest'
+import { saveIntoCache } from '../../cache/lib'
 
 interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
 	partId?: PartId
@@ -36,7 +38,7 @@ function extractExpectedPlayoutItems(
 }
 
 function wrapExpectedPlayoutItems(
-	rundown: DBRundown,
+	rundown: ReadonlyDeep<Rundown>,
 	items: ExpectedPlayoutItemGenericWithPiece[]
 ): ExpectedPlayoutItem[] {
 	return items.map((item, i) => {
@@ -49,48 +51,23 @@ function wrapExpectedPlayoutItems(
 	})
 }
 
-export function updateExpectedPlayoutItemsOnRundown(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
-	check(rundownId, String)
-
-	const rundown = cache.Rundowns.findOne(rundownId)
-	if (!rundown) {
-		cache.deferAfterSave(() => {
-			const removedItems = ExpectedPlayoutItems.remove({
-				rundownId: rundownId,
-			})
-			logger.info(`Removed ${removedItems} expected playout items for deleted rundown "${rundownId}"`)
-		})
-		return
-	}
-
+export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest, rundown: ReadonlyDeep<Rundown>): void {
 	const intermediaryItems: ExpectedPlayoutItemGenericWithPiece[] = []
 
-	const piecesStartingInThisRundown = cache.Pieces.findFetch({
-		startRundownId: rundown._id,
-	})
+	const piecesStartingInThisRundown = cache.Pieces.findFetch({})
 	const piecesGrouped = _.groupBy(piecesStartingInThisRundown, 'startPartId')
 
-	const adlibPiecesInThisRundown = cache.AdLibPieces.findFetch({
-		rundownId: rundown._id,
-	})
+	const adlibPiecesInThisRundown = cache.AdLibPieces.findFetch({})
 	const adlibPiecesGrouped = _.groupBy(adlibPiecesInThisRundown, 'partId')
 
-	for (const part of cache.Parts.findFetch({ rundownId: rundown._id })) {
+	for (const part of cache.Parts.findFetch({})) {
 		intermediaryItems.push(...extractExpectedPlayoutItems(part, piecesGrouped[unprotectString(part._id)] || []))
 		intermediaryItems.push(
 			...extractExpectedPlayoutItems(part, adlibPiecesGrouped[unprotectString(part._id)] || [])
 		)
 	}
 
-	cache.deferAfterSave(() => {
-		const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)
+	const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)
 
-		saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(
-			ExpectedPlayoutItems,
-			{
-				rundownId: rundownId,
-			},
-			expectedPlayoutItems
-		)
-	})
+	saveIntoCache<ExpectedPlayoutItem, ExpectedPlayoutItem>(cache.ExpectedPlayoutItems, {}, expectedPlayoutItems)
 }

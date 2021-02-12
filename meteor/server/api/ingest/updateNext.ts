@@ -1,22 +1,20 @@
 import { ServerPlayoutAPI } from '../playout/playout'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import {
-	selectNextPart,
-	isTooCloseToAutonext,
-	getSelectedPartInstancesFromCache,
-	getAllOrderedPartsFromCache,
-} from '../playout/lib'
-import { CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
+import { selectNextPart, isTooCloseToAutonext } from '../playout/lib'
 import { profiler } from '../profiler'
-import { wrapWithProxyPlayoutCache } from '../playout/cache'
+import {
+	CacheForPlayout,
+	getAllOrderedPartsFromPlayoutCache,
+	getSelectedPartInstancesFromCache,
+} from '../playout/cache'
 
 export namespace UpdateNext {
-	export function ensureNextPartIsValid(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
+	export function ensureNextPartIsValid(cache: CacheForPlayout) {
 		const span = profiler.startSpan('api.ingest.ensureNextPartIsValid')
 
 		// Ensure the next-id is still valid
+		const playlist = cache.Playlist.doc
 		if (playlist && playlist.activationId) {
-			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 			if (playlist.nextPartManual && nextPartInstance?.part?.isPlayable()) {
 				// Manual next part is always valid. This includes orphaned (adlib-part) partinstances
@@ -30,7 +28,7 @@ export namespace UpdateNext {
 				return
 			}
 
-			const allParts = getAllOrderedPartsFromCache(cache, playlist)
+			const allParts = getAllOrderedPartsFromPlayoutCache(cache)
 
 			if (currentPartInstance && nextPartInstance) {
 				// Check if the part is the same
@@ -43,16 +41,12 @@ export namespace UpdateNext {
 
 				if (newNextPart?.part?._id !== nextPartInstance.part._id || !nextPartInstance.part.isPlayable()) {
 					// The 'new' next part is before the current next, so move the next point
-					wrapWithProxyPlayoutCache(cache, playlist, (playoutCache) => {
-						ServerPlayoutAPI.setNextPartInner(playoutCache, newNextPart.part)
-					})
+					ServerPlayoutAPI.setNextPartInner(cache, newNextPart.part)
 				}
 			} else if (!nextPartInstance) {
 				// Don't have a currentPart or a nextPart, so set next to first in the show
 				const newNextPart = selectNextPart(playlist, currentPartInstance ?? null, allParts)
-				wrapWithProxyPlayoutCache(cache, playlist, (playoutCache) => {
-					ServerPlayoutAPI.setNextPartInner(playoutCache, newNextPart?.part ?? null)
-				})
+				ServerPlayoutAPI.setNextPartInner(cache, newNextPart?.part ?? null)
 			}
 		}
 

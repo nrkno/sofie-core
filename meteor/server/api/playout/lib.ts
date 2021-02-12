@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
-import { DBRundown, Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
+import { DBRundown, Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
 import {
 	getCurrentTime,
@@ -33,7 +33,6 @@ import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
-import { MongoQuery } from '../../../lib/typings/meteor'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
@@ -120,7 +119,7 @@ export interface SelectNextPartResult {
 
 export function selectNextPart(
 	rundownPlaylist: Pick<RundownPlaylist, 'nextSegmentId' | 'loop'>,
-	previousPartInstance: PartInstance | null,
+	previousPartInstance: ReadonlyDeep<PartInstance> | null,
 	parts: Part[],
 	ignoreUnplayabale = true
 ): SelectNextPartResult | undefined {
@@ -521,7 +520,7 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric>(
 const AUTOTAKE_UPDATE_DEBOUNCE = 5000
 const AUTOTAKE_TAKE_DEBOUNCE = 1000
 
-export function isTooCloseToAutonext(currentPartInstance: PartInstance | undefined, isTake?: boolean) {
+export function isTooCloseToAutonext(currentPartInstance: ReadonlyDeep<PartInstance> | undefined, isTake?: boolean) {
 	if (!currentPartInstance || !currentPartInstance.part.autoNext) return false
 
 	const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
@@ -542,7 +541,7 @@ export function isTooCloseToAutonext(currentPartInstance: PartInstance | undefin
 }
 
 export function getSegmentsAndPartsFromCache(
-	cache: CacheForRundownPlaylist | CacheForPlayout,
+	cache: CacheForPlayout,
 	playlist: ReadonlyDeep<RundownPlaylist>
 ): {
 	segments: Segment[]
@@ -551,18 +550,12 @@ export function getSegmentsAndPartsFromCache(
 	const rundowns = getRundownsFromCache(cache, playlist)
 	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, rundowns)
 }
-export function getAllOrderedPartsFromCache(
-	cache: CacheForRundownPlaylist | CacheForPlayout,
-	playlist: ReadonlyDeep<RundownPlaylist>
-): Part[] {
+export function getAllOrderedPartsFromCache(cache: CacheForPlayout, playlist: ReadonlyDeep<RundownPlaylist>): Part[] {
 	const { parts } = getSegmentsAndPartsFromCache(cache, playlist)
 	return parts
 }
 /** Get all rundowns in a playlist */
-export function getRundownsFromCache(
-	cache: CacheForRundownPlaylist | CacheForPlayout,
-	playlist: ReadonlyDeep<RundownPlaylist>
-) {
+export function getRundownsFromCache(cache: CacheForPlayout, playlist: ReadonlyDeep<RundownPlaylist>) {
 	return cache.Rundowns.findFetch(
 		{
 			playlistId: playlist._id,
@@ -574,50 +567,6 @@ export function getRundownsFromCache(
 			},
 		}
 	)
-}
-export function getRundownIDsFromCacheOld(cache: CacheForRundownPlaylist | CacheForPlayout, playlist: RundownPlaylist) {
-	const span = profiler.startSpan('playout.getRundownIDsFromCache')
-
-	const ids = getRundownsFromCache(cache, playlist).map((r) => r._id)
-
-	span?.end()
-	return ids
-}
-export function getSelectedPartInstancesFromCache(
-	cache: CacheForRundownPlaylist | CacheForPlayout,
-	playlist: RundownPlaylist,
-	rundownIds?: RundownId[]
-): {
-	currentPartInstance: PartInstance | undefined
-	nextPartInstance: PartInstance | undefined
-	previousPartInstance: PartInstance | undefined
-} {
-	const span = profiler.startSpan('playout.getSelectedPartInstancesFromCache')
-
-	if (!rundownIds) {
-		rundownIds = getRundownIDsFromCacheOld(cache, playlist)
-	}
-
-	const selector: MongoQuery<DBPartInstance> = {
-		rundownId: { $in: rundownIds },
-	}
-
-	const currentPartInstance = playlist.currentPartInstanceId
-		? cache.PartInstances.findOne({ _id: playlist.currentPartInstanceId, ...selector })
-		: undefined
-	const nextPartInstance = playlist.nextPartInstanceId
-		? cache.PartInstances.findOne({ _id: playlist.nextPartInstanceId, ...selector })
-		: undefined
-	const previousPartInstance = playlist.previousPartInstanceId
-		? cache.PartInstances.findOne({ _id: playlist.previousPartInstanceId, ...selector })
-		: undefined
-
-	span?.end()
-	return {
-		currentPartInstance,
-		nextPartInstance,
-		previousPartInstance,
-	}
 }
 
 export function removeRundownPlaylistFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {

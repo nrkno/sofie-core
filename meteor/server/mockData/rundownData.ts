@@ -20,6 +20,7 @@ import { playoutWithCacheLockFunction } from '../api/playout/syncFunction'
 import { getSelectedPartInstancesFromCache } from '../api/playout/cache'
 import { removeRundownPlaylistFromDb } from '../api/rundownPlaylist'
 import { initCacheForRundownPlaylistFromRundown } from '../cache/DatabaseCaches'
+import { ingestLockFunction } from '../api/ingest/syncFunction'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data

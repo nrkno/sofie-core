@@ -150,7 +150,7 @@ export function handleMosRundownData(
 
 			if (!canRundownBeUpdated(cache.Rundown.doc, isCreateAction)) return null
 
-			let renamedSegments: CommitIngestData['renamedSegments'] = []
+			let renamedSegments: CommitIngestData['renamedSegments'] = new Map()
 			if (cache.Rundown.doc && oldIngestRundown) {
 				// If we already have a rundown, update any modified segment ids
 				renamedSegments = diffAndUpdateSegmentIds(cache, oldIngestRundown, newIngestRundown)

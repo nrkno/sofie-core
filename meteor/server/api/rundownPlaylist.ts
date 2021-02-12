@@ -60,6 +60,8 @@ export async function removeRundownPlaylistFromDb(playlistId: RundownPlaylistId)
 	// We assume we have the master lock at this point
 	const rundownIds = Rundowns.find({ playlistId }, { fields: { _id: 1 } }).map((r) => r._id)
 
+	// TODO - check and reject if active
+
 	await Promise.allSettled([
 		asyncCollectionRemove(RundownPlaylists, { _id: playlistId }),
 		removeRundownsFromDb(rundownIds),
