@@ -383,8 +383,12 @@ async function fillCacheForRundownPlaylistWithData(
 	ps.push(makePromise(() => cache.Pieces.prepareInit({ startRundownId: { $in: rundownIds } }, false)))
 
 	ps.push(
-		makePromise(() => cache.PartInstances.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately))
-		// TODO - should this only load the non-reset?
+		makePromise(() =>
+			cache.PartInstances.prepareInit(
+				{ rundownId: { $in: rundownIds }, reset: { $ne: true } },
+				initializeImmediately
+			)
+		)
 	)
 
 	ps.push(

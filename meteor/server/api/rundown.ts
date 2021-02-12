@@ -475,6 +475,8 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 		}
 	)
 
+	cache.PartInstances.update({ 'part._id': { $in: _.map(removedParts, (p) => p._id) } }, { $set: { reset: true } })
+
 	afterRemovePartsAuxiliary(cache, rundownId, removedParts)
 
 	_.each(removedParts, (part) => {
