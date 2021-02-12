@@ -69,7 +69,7 @@ if (!Settings.enableUserAccounts) {
 			const rundowns = Rundowns.find().fetch()
 
 			rundowns.map((i) => {
-				const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(i._id)) // todo: is this correct? - what if rundown has no playlist?
+				const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(i._id))
 				updateExpectedPackagesOnRundown(cache, i._id)
 				waitForPromise(cache.saveAllToDatabase())
 			})
@@ -78,7 +78,7 @@ if (!Settings.enableUserAccounts) {
 			const rundowns = Rundowns.find().fetch()
 
 			rundowns.map((i) => {
-				const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(i._id)) // todo: is this correct? - what if rundown has no playlist?
+				const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(i._id))
 				updateExpectedMediaItemsOnRundown(cache, i._id)
 				waitForPromise(cache.saveAllToDatabase())
 			})
@@ -87,7 +87,7 @@ if (!Settings.enableUserAccounts) {
 			const rundowns = Rundowns.find().fetch()
 
 			rundowns.map((i) => {
-				const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(i._id)) // todo: is this correct? - what if rundown has no playlist?
+				const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(i._id))
 				updateExpectedPackagesOnRundown(cache, i._id)
 				waitForPromise(cache.saveAllToDatabase())
 			})
