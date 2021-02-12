@@ -94,3 +94,37 @@ export function getContentVersionHash(expectedPackage: Omit<ExpectedPackage.Any,
 		// todo: should expectedPackage.sources.containerId be here as well?
 	})
 }
+export function getPreviewPackageSettings(
+	expectedPackage: ExpectedPackage.Any
+): ExpectedPackage.SideEffectPreviewSettings | undefined {
+	let packagePath: string | undefined
+
+	if (expectedPackage.type === ExpectedPackage.PackageType.MEDIA_FILE) {
+		packagePath = expectedPackage.content.filePath
+	} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
+		packagePath = expectedPackage.content.guid || expectedPackage.content.title
+	}
+	if (packagePath) {
+		return {
+			path: packagePath + '_preview.webm',
+		}
+	}
+	return undefined
+}
+export function getThumbnailPackageSettings(
+	expectedPackage: ExpectedPackage.Any
+): ExpectedPackage.SideEffectThumbnailSettings | undefined {
+	let packagePath: string | undefined
+
+	if (expectedPackage.type === ExpectedPackage.PackageType.MEDIA_FILE) {
+		packagePath = expectedPackage.content.filePath
+	} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
+		packagePath = expectedPackage.content.guid || expectedPackage.content.title
+	}
+	if (packagePath) {
+		return {
+			path: packagePath + '_thumbnail.png',
+		}
+	}
+	return undefined
+}

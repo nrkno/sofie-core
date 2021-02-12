@@ -33,6 +33,7 @@ import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspect
 import { protectString } from '../../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
+import { getThumbnailPackageSettings } from '../../../lib/collections/ExpectedPackages'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
@@ -106,19 +107,19 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			// use Expected packages:
 			// Just use the first one we find.
 			// TODO: support multiple expected packages?
-			let packagePath: string | undefined
 			let thumbnailContainerId: string | undefined
+			let packageThumbnailPath: string | undefined
 			for (const expectedPackage of piece.expectedPackages) {
-				if (expectedPackage.type === ExpectedPackage.PackageType.MEDIA_FILE) {
-					packagePath = expectedPackage.content.filePath
-					thumbnailContainerId = expectedPackage.sideEffect.thumbnailContainerId
-				} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
-					packagePath = expectedPackage.content.guid || expectedPackage.content.title
-					thumbnailContainerId = expectedPackage.sideEffect.thumbnailContainerId
-					break
+				const sideEffect =
+					expectedPackage.sideEffect.thumbnailPackageSettings || getThumbnailPackageSettings(expectedPackage)
+				packageThumbnailPath = sideEffect?.path
+				thumbnailContainerId = expectedPackage.sideEffect.thumbnailContainerId
+
+				if (packageThumbnailPath && thumbnailContainerId) {
+					break // don't look further
 				}
 			}
-			if (packagePath && thumbnailContainerId) {
+			if (packageThumbnailPath && thumbnailContainerId) {
 				const packageContainer = this.props.studio?.packageContainers[thumbnailContainerId]
 				if (packageContainer) {
 					// Look up an accessor we can use:
@@ -128,9 +129,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							return [
 								accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
 								encodeURIComponent(
-									packagePath
-										.replace(/^\//, '') // trim leading slash
-										.replace(/(\.[^.]+$)/, '.png') // replace file extension with png
+									packageThumbnailPath.replace(/^\//, '') // trim leading slash
 								),
 							].join('/')
 						}

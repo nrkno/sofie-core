@@ -25,7 +25,12 @@ import {
 	Studios,
 } from '../../lib/collections/Studios'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
-import { ExpectedPackageDB, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import {
+	ExpectedPackageDB,
+	ExpectedPackages,
+	getPreviewPackageSettings,
+	getThumbnailPackageSettings,
+} from '../../lib/collections/ExpectedPackages'
 import _, { map } from 'underscore'
 import {
 	ExpectedPackage,
@@ -378,6 +383,16 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 								}
 
 								if (combinedSources.length && combinedTargets.length) {
+									if (!expectedPackage.sideEffect.previewPackageSettings)
+										expectedPackage.sideEffect.previewPackageSettings = getPreviewPackageSettings(
+											expectedPackage as ExpectedPackage.Any
+										)
+
+									if (!expectedPackage.sideEffect.thumbnailPackageSettings)
+										expectedPackage.sideEffect.thumbnailPackageSettings = getThumbnailPackageSettings(
+											expectedPackage as ExpectedPackage.Any
+										)
+
 									routedExpectedPackages.push({
 										expectedPackage: unprotectObject(expectedPackage),
 										sources: combinedSources,

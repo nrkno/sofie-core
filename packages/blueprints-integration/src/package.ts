@@ -48,9 +48,20 @@ export namespace ExpectedPackage {
 		sideEffect: {
 			/** Which container previews are to be put into */
 			previewContainerId?: string
+			previewPackageSettings?: SideEffectPreviewSettings
+
 			/** Which container thumbnails are to be put into */
 			thumbnailContainerId?: string
+			thumbnailPackageSettings?: SideEffectThumbnailSettings
 		}
+	}
+	export interface SideEffectPreviewSettings {
+		/** What the preview package filePath is going to be */
+		path: string
+	}
+	export interface SideEffectThumbnailSettings {
+		/** What the thumbnails package filePath is going to be */
+		path: string
 	}
 
 	export interface ExpectedPackageMediaFile extends Base {
@@ -74,11 +85,6 @@ export namespace ExpectedPackage {
 					| AccessorOnPackage.HTTP
 			}
 		}[]
-
-		sideEffect: {
-			previewContainerId?: string
-			thumbnailContainerId?: string
-		}
 	}
 	export interface ExpectedPackageQuantelClip extends Base {
 		type: PackageType.QUANTEL_CLIP
@@ -93,11 +99,6 @@ export namespace ExpectedPackage {
 			containerId: string
 			accessors: { [accessorId: string]: AccessorOnPackage.Quantel }
 		}[]
-
-		sideEffect: {
-			previewContainerId?: string
-			thumbnailContainerId?: string
-		}
 	}
 }
 

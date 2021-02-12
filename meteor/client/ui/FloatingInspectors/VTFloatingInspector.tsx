@@ -10,6 +10,7 @@ import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { StyledTimecode } from '../../lib/StyledTimecode'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { Studio } from '../../../lib/collections/Studios'
+import { getPreviewPackageSettings } from '../../../lib/collections/ExpectedPackages'
 
 interface IProps {
 	mediaPreviewUrl?: string
@@ -37,19 +38,18 @@ function getPackagePreviewUrl(
 	// use Expected packages:
 	// Just use the first one we find.
 	// TODO: support multiple expected packages?
-	let packagePath: string | undefined
+	let packagePreviewPath: string | undefined
 	let previewContainerId: string | undefined
 	for (const expectedPackage of expectedPackages) {
-		if (expectedPackage.type === ExpectedPackage.PackageType.MEDIA_FILE) {
-			packagePath = expectedPackage.content.filePath
-			previewContainerId = expectedPackage.sideEffect.previewContainerId
-		} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
-			packagePath = expectedPackage.content.guid || expectedPackage.content.title
-			previewContainerId = expectedPackage.sideEffect.previewContainerId
-			break
+		const sideEffect = expectedPackage.sideEffect.previewPackageSettings || getPreviewPackageSettings(expectedPackage)
+		packagePreviewPath = sideEffect?.path
+		previewContainerId = expectedPackage.sideEffect.previewContainerId
+
+		if (packagePreviewPath && previewContainerId) {
+			break // don't look further
 		}
 	}
-	if (packagePath && previewContainerId) {
+	if (packagePreviewPath && previewContainerId) {
 		const packageContainer = studioPackageContainers[previewContainerId]
 		if (packageContainer) {
 			// Look up an accessor we can use:
@@ -59,9 +59,7 @@ function getPackagePreviewUrl(
 					return [
 						accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
 						encodeURIComponent(
-							packagePath
-								.replace(/^\//, '') // trim leading slash
-								.replace(/(\.[^.]+$)/, '.webm') // replace file extension with webm
+							packagePreviewPath.replace(/^\//, '') // trim leading slash
 						),
 					].join('/')
 				}
