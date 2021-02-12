@@ -49,7 +49,7 @@ export function getHash(str: string): string {
 		.digest('base64')
 		.replace(/[\+\/\=]/g, '_') // remove +/= from strings, because they cause troubles
 }
-/** Returns a string that'll change whenever the content of the object changes (excluding ordering of properties) */
+/** Creates a hash based on the object properties (excluding ordering of properties) */
 export function hashObj(obj: any): string {
 	if (typeof obj === 'object') {
 		const keys = Object.keys(obj).sort((a, b) => {

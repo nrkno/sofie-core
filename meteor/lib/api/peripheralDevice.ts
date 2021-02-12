@@ -14,10 +14,7 @@ import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { TimelineHash } from '../collections/Timeline'
 import { ExpectedPackageId } from '../collections/ExpectedPackages'
 import { ExpectedPackageWorkStatusId } from '../collections/ExpectedPackageWorkStatuses'
-import {
-	PackageContainerPackageStatus,
-	PackageContainerPackageStatuses,
-} from '../collections/PackageContainerPackageStatus'
+import { PackageContainerPackageStatus } from '../collections/PackageContainerPackageStatus'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
 

@@ -1,3 +1,9 @@
+/**
+ * An ExpectedPackage is sent from Core to the Package Manager, to signal that a Package (ie a Media file) should be copied to a playout-device.
+ * It used by core to describe what Packages are needed on various sources.
+ * Example: A piece uses a media file for playout in CasparCG. The media file will then be an ExpectedPackage, which the Package Manager
+ *   will fetch from a MAM and copy to the media-folder of CasparCG.
+ */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ExpectedPackage {
 	export type Any = ExpectedPackageMediaFile | ExpectedPackageQuantelClip
@@ -11,6 +17,7 @@ export namespace ExpectedPackage {
 		// VIZ_GFX = 'viz_gfx'
 	}
 
+	/** Generic (used in extends) */
 	export interface Base {
 		/** Unique id of the expectedPackage */
 		_id: string
@@ -45,6 +52,7 @@ export namespace ExpectedPackage {
 			accessors: { [accessorId: string]: AccessorOnPackage.Any }
 		}[]
 
+		/** The sideEffect is used by the Package Manager to generate extra artifacts, such as thumbnails & previews */
 		sideEffect: {
 			/** Which container previews are to be put into */
 			previewContainerId?: string
@@ -135,13 +143,14 @@ export namespace Accessor {
 		CORE_PACKAGE_INFO = 'core_package_info',
 	}
 
+	/** Generic (used in extends) */
 	export interface Base {
 		type: AccessType
 		label: string
 		allowRead: boolean
 		allowWrite: boolean
 	}
-	/** Defines acess to a local folder */
+	/** Defines access to a local folder */
 	export interface LocalFolder extends Base {
 		type: AccessType.LOCAL_FOLDER
 
