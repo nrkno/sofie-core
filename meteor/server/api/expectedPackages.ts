@@ -204,11 +204,6 @@ function generateExpectedPackageBases(
 			_id: protectString(`${ownerId}_${id}`),
 			contentVersionHash: getContentVersionHash(expectedPackage),
 			studioId: studio._id,
-			sideEffect: {
-				...expectedPackage.sideEffect,
-				previewContainerId: studio.previewContainerIds[0], // just pick the first. Todo: something else?
-				thumbnailContainerId: studio.thumbnailContainerIds[0], // just pick the first. Todo: something else?
-			},
 		})
 	}
 	return bases

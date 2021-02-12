@@ -383,15 +383,20 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 								}
 
 								if (combinedSources.length && combinedTargets.length) {
-									if (!expectedPackage.sideEffect.previewPackageSettings)
-										expectedPackage.sideEffect.previewPackageSettings = getPreviewPackageSettings(
-											expectedPackage as ExpectedPackage.Any
-										)
-
-									if (!expectedPackage.sideEffect.thumbnailPackageSettings)
-										expectedPackage.sideEffect.thumbnailPackageSettings = getThumbnailPackageSettings(
-											expectedPackage as ExpectedPackage.Any
-										)
+									expectedPackage.sideEffect = deepExtend(
+										{},
+										literal<ExpectedPackage.Base['sideEffect']>({
+											previewContainerId: studio.previewContainerIds[0], // just pick the first. Todo: something else?
+											thumbnailContainerId: studio.thumbnailContainerIds[0], // just pick the first. Todo: something else?
+											previewPackageSettings: getPreviewPackageSettings(
+												expectedPackage as ExpectedPackage.Any
+											),
+											thumbnailPackageSettings: getThumbnailPackageSettings(
+												expectedPackage as ExpectedPackage.Any
+											),
+										}),
+										expectedPackage.sideEffect
+									)
 
 									routedExpectedPackages.push({
 										expectedPackage: unprotectObject(expectedPackage),
