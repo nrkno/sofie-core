@@ -1,11 +1,10 @@
 import { parseMosPluginMessageXml, fixMosData, generateMosPluginItemXml } from '../mosXml2Js'
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import * as parser from 'xml2json'
 import * as _ from 'underscore'
 
-const mosReqAppInfoXmlString = readFileSync(join(__dirname, './mosReqAppInfo.xml'), 'utf-8')
-const domParser = new DOMParser()
+// const mosReqAppInfoXmlString = readFileSync(join(__dirname, './mosReqAppInfo.xml'), 'utf-8')
+// const domParser = new DOMParser()
 
 function stripEmptyStrings(obj: any) {
 	if (_.isObject(obj)) {

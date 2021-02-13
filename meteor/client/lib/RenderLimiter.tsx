@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 
 type IWrappedComponent<IProps, IState> = new (props: IProps, state: IState) => React.Component<IProps, IState>
 

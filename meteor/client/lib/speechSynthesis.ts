@@ -1,5 +1,3 @@
-import * as _ from 'underscore'
-
 const speechSynthesis = window.speechSynthesis
 
 const VOICE_PREFERENCE = [

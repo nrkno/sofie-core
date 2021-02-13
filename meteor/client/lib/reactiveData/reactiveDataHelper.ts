@@ -3,7 +3,6 @@ import { ReactiveVar } from 'meteor/reactive-var'
 import { Tracker } from 'meteor/tracker'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Meteor } from 'meteor/meteor'
-import { getHash } from '../../../lib/lib'
 
 export namespace ReactiveDataHelper {
 	const rVarCache: _.Dictionary<ReactiveVar<any>> = {}
@@ -66,7 +65,6 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 
 	let result: ReturnType<T>
 	const fId = hashFncAndParams(functionName, params)
-	const parentComputation = Tracker.currentComputation
 	if (isolatedAutorunsMem[fId] === undefined) {
 		const dep = new Tracker.Dependency()
 		dep.depend()

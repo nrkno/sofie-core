@@ -2,7 +2,7 @@ import { ControllerAbstract } from './lib'
 import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 import Spline from 'cubic-spline'
 
-import webmidi, { Input, InputEventControlchange, WebMidi } from 'webmidi'
+import webmidi, { Input, InputEventControlchange } from 'webmidi'
 
 const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
 

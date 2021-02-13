@@ -1,16 +1,11 @@
 import * as _ from 'underscore'
-import * as Velocity from 'velocity-animate'
 
 import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
 import { Parts, PartId } from '../../lib/collections/Parts'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { SegmentId } from '../../lib/collections/Segments'
 import { isProtectedString } from '../../lib/lib'
-import RundownViewEventBus, {
-	RundownViewEvents,
-	GoToPartEvent,
-	GoToPartInstanceEvent,
-} from '../ui/RundownView/RundownViewEventBus'
+import RundownViewEventBus, { RundownViewEvents } from '../ui/RundownView/RundownViewEventBus'
 import { Settings } from '../../lib/Settings'
 
 let focusInterval: NodeJS.Timer | undefined
