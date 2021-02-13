@@ -65,11 +65,12 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 
 	let result: ReturnType<T>
 	const fId = hashFncAndParams(functionName, params)
+	const parentComputation = Tracker.currentComputation
 	if (isolatedAutorunsMem[fId] === undefined) {
 		const dep = new Tracker.Dependency()
 		dep.depend()
-		const computationNonreactive = Tracker.nonreactive(() => {
-			const computationAutorun = Tracker.autorun(() => {
+		const computation = Tracker.nonreactive(() => {
+			const computation = Tracker.autorun(() => {
 				result = fnc(...(params as any))
 
 				if (!Tracker.currentComputation.firstRun) {
@@ -83,15 +84,15 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 					value: result,
 				}
 			})
-			computationAutorun.onStop(() => {
+			computation.onStop(() => {
 				delete isolatedAutorunsMem[fId]
 			})
-			return computationAutorun
+			return computation
 		})
 		let gc = setInterval(() => {
 			if (!dep.hasDependents()) {
 				clearInterval(gc)
-				computationNonreactive.stop()
+				computation.stop()
 			}
 		}, 5000)
 	} else {
