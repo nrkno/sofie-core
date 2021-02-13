@@ -92,7 +92,6 @@ export function createPieceGroupAndCap(
 					pieceInstance.resolvedEndCap
 				)
 				delete pieceGroup.enable.duration
-				updatedPieceGroup = true
 			}
 		}
 

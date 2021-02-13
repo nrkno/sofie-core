@@ -1,9 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../lib/collections/ExternalMessageQueue'
 import { ExternalMessageQueueObjSOAP } from '@sofie-automation/blueprints-integration'
-// Cyclic dependency issues with import of throwFatalError
-// import { throwFatalError } from '../server/api/ExternalMessageQueue'
-import { Fiber } from './Fibers'
 
 export function throwFatalError(msg: ExternalMessageQueueObj, e: Meteor.Error) {
 	ExternalMessageQueue.update(msg._id, {

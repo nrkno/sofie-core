@@ -10,7 +10,7 @@ import {
 	postProcessAdLibPieces,
 	postProcessPieces,
 } from '../postProcess'
-import { RundownContext, CommonContext, StudioContext } from '../context'
+import { RundownContext, StudioContext } from '../context'
 import {
 	IBlueprintPiece,
 	IBlueprintAdLibPiece,
@@ -110,8 +110,6 @@ describe('Test blueprint post-process', () => {
 	describe('postProcessStudioBaselineObjects', () => {
 		testInFiber('no objects', () => {
 			const studio = getStudio()
-			const context = getStudioContext(studio)
-			const blueprintId = protectString('blueprint0')
 
 			// Ensure that an empty array works ok
 			const res = postProcessStudioBaselineObjects(studio, [])
@@ -120,8 +118,6 @@ describe('Test blueprint post-process', () => {
 
 		testInFiber('some no ids', () => {
 			const studio = getStudio()
-			const context = getStudioContext(studio)
-			const blueprintId = protectString('blueprint0')
 
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
@@ -180,7 +176,6 @@ describe('Test blueprint post-process', () => {
 		})
 		testInFiber('duplicate ids', () => {
 			const studio = getStudio()
-			const context = getStudioContext(studio)
 			const blueprintId = protectString(unprotectString(studio.blueprintId)) // the unit could modify the value, so make a literal copy
 
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([

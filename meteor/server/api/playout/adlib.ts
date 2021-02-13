@@ -23,7 +23,6 @@ import {
 	prefixAllObjectIds,
 	setNextPart,
 	getRundownIDsFromCache,
-	getSelectedPartInstancesFromCache,
 	selectNextPart,
 	getAllOrderedPartsFromCache,
 } from './lib'

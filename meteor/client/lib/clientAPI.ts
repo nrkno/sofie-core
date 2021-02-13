@@ -1,7 +1,5 @@
-import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import * as mousetrap from 'mousetrap'
-import { ClientAPI } from '../../lib/api/client'
 import { logger } from '../../lib/logging'
 import { PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MeteorCall } from '../../lib/api/methods'

@@ -1,5 +1,4 @@
 import React from 'react'
-import * as _ from 'underscore'
 import Escape from 'react-escape'
 
 interface IProps {

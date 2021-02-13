@@ -1,5 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
-import { ensureCollectionProperty, setExpectedVersion } from './lib'
+import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 /*

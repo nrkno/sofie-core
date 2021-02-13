@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import * as React from 'react'
 
 import { Lottie } from '@crello/react-lottie'

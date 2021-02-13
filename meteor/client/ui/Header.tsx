@@ -10,7 +10,6 @@ import * as VelocityReact from 'velocity-react'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
-import { UserId } from '../../lib/collections/Users'
 import { Settings } from '../../lib/Settings'
 
 interface IPropsHeader {

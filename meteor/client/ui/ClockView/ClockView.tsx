@@ -1,7 +1,6 @@
 import React from 'react'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import * as _ from 'underscore'
 
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
