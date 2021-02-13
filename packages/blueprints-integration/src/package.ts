@@ -242,6 +242,7 @@ export interface PackageContainerOnPackage extends Omit<PackageContainer, 'acces
 export namespace ExpectedPackageStatusAPI {
 	/** Information about the status of some work being performed with regards to an Expected Package */
 	export interface WorkStatus extends WorkBaseInfo, WorkStatusInfo {}
+
 	export interface WorkBaseInfo {
 		/** Which packages the WorkStatus belongs to */
 		fromPackages: WorkBaseInfoFromPackage[]
@@ -264,6 +265,7 @@ export namespace ExpectedPackageStatusAPI {
 		/** Referring to the actual contentVersionHash of the Package, used to reference the exact content+version of the Package */
 		actualContentVersionHash: string
 	}
+	/** The stat */
 	export interface WorkStatusInfo {
 		/** Short description on what the current status is. Example "working", "fulfilled" */
 		status: string
@@ -274,6 +276,35 @@ export namespace ExpectedPackageStatusAPI {
 		progress?: number
 		/** Calculated time left of this step */
 		expectedLeft?: number
+	}
+
+	/** Describes the status of a Package in a PackageContainer */
+	export interface PackageContainerPackageStatus extends Omit<WorkStatusInfo, 'status'> {
+		status: PackageContainerPackageStatusStatus
+		/** Indicates that the Package is a Placehodler / Is NOT ready to be played out */
+		isPlaceholder: boolean
+
+		contentVersionHash: string
+
+		/* Progress (0-1), used when status = TRANSFERRING_* */
+		progress: number
+		/** Calculated time left, used when status = TRANSFERRING_* */
+		expectedLeft?: number
+
+		/** Longer reason as to why the status is what it is */
+		statusReason: string
+	}
+	export enum PackageContainerPackageStatusStatus {
+		/** The Package source isn't found at all */
+		NOT_FOUND = 'not_found',
+		/** The Package source is found, but not able to be transferred */
+		NOT_READY = 'not_ready',
+		/** The Package is currently transferring, but can be played out */
+		TRANSFERRING_READY = 'transferring_ready',
+		/** The Package is currently transferring, and is not ready to be played out */
+		TRANSFERRING_NOT_READY = 'transferring_not_ready',
+		/** All good, the package is in place and ready to play*/
+		READY = 'ready',
 	}
 }
 

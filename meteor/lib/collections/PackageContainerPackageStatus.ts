@@ -4,7 +4,7 @@ import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { registerIndex } from '../database'
 import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
-import { ExpectedPackageDB, ExpectedPackageId } from './ExpectedPackages'
+import { ExpectedPackageId } from './ExpectedPackages'
 
 /**
  * The PackageContainerPackageStatuses-collection contains statuses about "a Package on a specific PackageContainer"
@@ -31,28 +31,9 @@ export interface PackageContainerPackageStatusDB {
 	packageId: string
 
 	/** The status of the Package */
-	status: PackageContainerPackageStatus
+	status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
 
 	modified: Time
-}
-
-export interface PackageContainerPackageStatus extends Omit<ExpectedPackageStatusAPI.WorkStatusInfo, 'status'> {
-	status: PackageContainerPackageStatusStatus
-
-	contentVersionHash: string
-
-	/* Progress (0-1), used when status = TRANSFERRING */
-	progress: number
-	/** Calculated time left, used when status = TRANSFERRING */
-	expectedLeft?: number
-
-	/** Longer reason as to why the status is what it is */
-	statusReason: string
-}
-export enum PackageContainerPackageStatusStatus {
-	NOT_READY = 'not_ready',
-	TRANSFERRING = 'transferring',
-	READY = 'ready',
 }
 
 export const PackageContainerPackageStatuses: TransformedCollection<
