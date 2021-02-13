@@ -19,17 +19,17 @@ import { OverlayScreenSaver } from './OverlayScreenSaver'
 
 interface IPropsHeader {
 	key: string
-	playlist: RundownPlaylist
+	playlist: RundownPlaylist | undefined
 	studioId: StudioId
 }
 
 interface IStateHeader {}
 
 export const ClockView = withTracker(function(props: IPropsHeader) {
-	let studioId = objectPathGet(props, 'match.params.studioId')
+	const studioId = objectPathGet(props, 'match.params.studioId')
 	const playlist = RundownPlaylists.findOne({
 		activationId: { $exists: true },
-		studioId: studioId,
+		studioId,
 	})
 
 	return {
@@ -39,11 +39,11 @@ export const ClockView = withTracker(function(props: IPropsHeader) {
 })(
 	class ClockView extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 		componentDidMount() {
-			let studioId = this.props.studioId
+			const { studioId } = this.props
 			if (studioId) {
 				this.subscribe(PubSub.rundownPlaylists, {
-					activationId: { exists: true },
-					studioId: studioId,
+					activationId: { $exists: true },
+					studioId,
 				})
 			}
 		}
