@@ -14,7 +14,6 @@ import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { TimelineHash } from '../collections/Timeline'
 import { ExpectedPackageId } from '../collections/ExpectedPackages'
 import { ExpectedPackageWorkStatusId } from '../collections/ExpectedPackageWorkStatuses'
-import { PackageContainerPackageStatus } from '../collections/PackageContainerPackageStatus'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
 
@@ -296,7 +295,7 @@ export interface NewPeripheralDeviceAPI {
 		deviceToken: string,
 		containerId: string,
 		packageId: string,
-		packageStatus: PackageContainerPackageStatus | null
+		packageStatus: ExpectedPackageStatusAPI.PackageContainerPackageStatus | null
 	): Promise<void>
 
 	fetchPackageInfoMetadata(
@@ -453,6 +452,7 @@ export namespace PeripheralDeviceAPI {
 		INGEST = 'ingest',
 		PLAYOUT = 'playout',
 		MEDIA_MANAGER = 'media_manager',
+		PACKAGE_MANAGER = 'package_manager',
 	}
 	export enum DeviceType {
 		// Ingest devices:
@@ -463,6 +463,8 @@ export namespace PeripheralDeviceAPI {
 		PLAYOUT = 'playout',
 		// Media-manager devices:
 		MEDIA_MANAGER = 'media_manager',
+		// Package_manager devices:
+		PACKAGE_MANAGER = 'package_manager',
 	}
 	export type DeviceSubType = SUBTYPE_PROCESS | TSR.DeviceType | MOS_DeviceType | Spreadsheet_DeviceType
 
@@ -592,5 +594,23 @@ export namespace PeripheralDeviceAPI {
 		...args: any[]
 	) {
 		return executeFunctionWithCustomTimeout(deviceId, cb, undefined, functionName, ...args)
+	}
+	/** Same as executeFunction, but returns a promise instead */
+	export function executeFunctionAsync(
+		deviceId: PeripheralDeviceId,
+		functionName: string,
+		...args: any[]
+	): Promise<any> {
+		return new Promise<any>((resolve, reject) => {
+			executeFunction(
+				deviceId,
+				(err, result) => {
+					if (err) reject(err)
+					else resolve(result)
+				},
+				functionName,
+				...args
+			)
+		})
 	}
 }

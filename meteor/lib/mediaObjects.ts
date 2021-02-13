@@ -4,13 +4,13 @@ import {
 	SourceLayerType,
 	ISourceLayer,
 	IBlueprintPieceGeneric,
+	ExpectedPackageStatusAPI,
 } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
 import * as i18next from 'i18next'
 import { IStudioSettings, routeExpectedPackages, Studio } from './collections/Studios'
 import { NoteType } from './api/notes'
-import { PackageContainerPackageStatusStatus } from './collections/PackageContainerPackageStatus'
 import {
 	FFProbeDeepScan,
 	FFProbeScanStream,
@@ -242,7 +242,8 @@ export function checkPieceContentStatus(
 								)
 							)
 						} else if (
-							packageOnPackageContainer.status.status === PackageContainerPackageStatusStatus.NOT_READY
+							packageOnPackageContainer.status.status ===
+							ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_READY
 						) {
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 							messages.push(
@@ -251,7 +252,10 @@ export function checkPieceContentStatus(
 								})
 							)
 						} else if (
-							packageOnPackageContainer.status.status === PackageContainerPackageStatusStatus.TRANSFERRING
+							packageOnPackageContainer.status.status ===
+								ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.TRANSFERRING_READY ||
+							packageOnPackageContainer.status.status ===
+								ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.TRANSFERRING_NOT_READY
 						) {
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 							messages.push(

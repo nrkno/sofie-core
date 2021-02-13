@@ -516,6 +516,9 @@
 					}
 					> .package__statuses__status__status {
 					}
+					> .package__statuses__status__actions {
+						flex: 0.5 0;
+					}
 				}
 				> .package__statuses__status__descriptions {
 					display: flex;

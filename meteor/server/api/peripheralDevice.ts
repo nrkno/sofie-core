@@ -43,7 +43,6 @@ import { PieceGroupMetadata } from '../../lib/rundown/pieces'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPackageWorkStatuses'
-import { PackageContainerPackageStatus } from '../../lib/collections/PackageContainerPackageStatus'
 import { PackageInfoDBType } from '../../lib/collections/PackageInfos'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
@@ -1124,7 +1123,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		deviceToken: string,
 		containerId: string,
 		packageId: string,
-		packageStatus: PackageContainerPackageStatus | null
+		packageStatus: ExpectedPackageStatusAPI.PackageContainerPackageStatus | null
 	) {
 		return makePromise(() =>
 			PackageManagerIntegration.updatePackageContainerPackageStatus(

@@ -11,12 +11,11 @@ import {
 	ExpectedPackageWorkStatuses,
 	ExpectedPackageWorkStatusId,
 } from '../../../lib/collections/ExpectedPackageWorkStatuses'
-import { getCurrentTime, literal, protectString, protectStringObject } from '../../../lib/lib'
+import { getCurrentTime, literal } from '../../../lib/lib'
 import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatuses,
 	PackageContainerPackageStatusDB,
-	PackageContainerPackageStatus,
 } from '../../../lib/collections/PackageContainerPackageStatus'
 import {
 	getPackageInfoId,
@@ -130,7 +129,7 @@ export namespace PackageManagerIntegration {
 		deviceToken: string,
 		containerId: string,
 		packageId: string,
-		packageStatus: PackageContainerPackageStatus | null
+		packageStatus: ExpectedPackageStatusAPI.PackageContainerPackageStatus | null
 	): void {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		if (!peripheralDevice.studioId)

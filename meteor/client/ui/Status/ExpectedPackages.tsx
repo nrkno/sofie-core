@@ -9,7 +9,13 @@ import {
 } from '../../../lib/collections/ExpectedPackageWorkStatuses'
 import { unprotectString } from '../../../lib/lib'
 import { ExpectedPackageDB, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
-import * as VelocityReact from 'velocity-react'
+import Tooltip from 'rc-tooltip'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faRedo, faStopCircle } from '@fortawesome/free-solid-svg-icons'
+import { MeteorCall } from '../../../lib/api/methods'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { Studios } from '../../../lib/collections/Studios'
+import { Meteor } from 'meteor/meteor'
 
 interface IExpectedPackagesStatusProps {}
 
@@ -18,7 +24,7 @@ interface IIExpectedPackagesStatusTrackedProps {
 	expectedPackages: ExpectedPackageDB[]
 }
 
-interface IMediaManagerStatusState {
+interface IPackageManagerStatusState {
 	expanded: {
 		[expectedPackaStatuseId: string]: boolean
 	}
@@ -34,9 +40,9 @@ export const ExpectedPackagesStatus = translateWithTracker<
 		expectedPackages: ExpectedPackages.find({}).fetch(),
 	}
 })(
-	class MediaManagerStatus extends MeteorReactComponent<
+	class PackageManagerStatus extends MeteorReactComponent<
 		Translated<IExpectedPackagesStatusProps & IIExpectedPackagesStatusTrackedProps>,
-		IMediaManagerStatusState
+		IPackageManagerStatusState
 	> {
 		constructor(props) {
 			super(props)
@@ -105,64 +111,12 @@ export const ExpectedPackagesStatus = translateWithTracker<
 					<div key={packageId} className="package mbs">
 						{p.package ? (
 							<div className="package__header">
-								<div className="workflow__header__progress">
-									{/* <VelocityReact.VelocityComponent
-										animation={finishedOK ? iconEnterAnimation : iconLeaveAnimation}
-										duration={300}
-										easing="easeIn">
-										<div className="big-status ok">
-											<FontAwesomeIcon icon={faCheck} />
-										</div>
-									</VelocityReact.VelocityComponent>
-									<VelocityReact.VelocityComponent
-										animation={finishedError ? iconEnterAnimation : iconLeaveAnimation}
-										duration={300}
-										easing="easeIn">
-										<div className="big-status error">
-											<WarningIcon />
-										</div>
-									</VelocityReact.VelocityComponent>
-									<VelocityReact.VelocityComponent
-										animation={!finishedOK && !finishedError ? iconEnterAnimation : iconLeaveAnimation}
-										duration={300}
-										easing="easeIn">
-										<CircularProgressbar
-											value={progress * 100} // TODO: initialAnimation={true} removed, make the animation other way if needed
-											text={Math.round(progress * 100) + '%'}
-											strokeWidth={10}
-											styles={{
-												path: { stroke: `#1769ff`, strokeLinecap: 'round' },
-												trail: { stroke: '#E0E3E4' },
-												text: { fill: '#252627', fontSize: '170%', transform: 'translate(0, 8%)', textAnchor: 'middle' },
-											}}
-										/>
-									</VelocityReact.VelocityComponent>
-									<VelocityReact.VelocityComponent
-										animation={!finishedOK && !finishedError && keyFinishedOK ? subIconEnterAnimation : subIconLeaveAnimation}
-										duration={300}
-										easing="easeIn">
-										<div className="big-status sub-icon ok">
-											<FontAwesomeIcon icon={faCheck} />
-										</div>
-									</VelocityReact.VelocityComponent> */}
-								</div>
 								<div className="package__header__summary">
 									<div className="package__header__name">
 										<div className="package__header__name__name">{p.package._id}</div>
 										<div className="package__header__name__content">{JSON.stringify(p.package.content)}</div>
 										<div className="package__header__name__version">{JSON.stringify(p.package.version)}</div>
 									</div>
-									{/* <div>Package: </div>
-									<br />
-									<div>
-										Content: <pre>{}</pre>
-									</div>
-									<div>
-										Version: <pre>{JSON.stringify(p.package.version)}</pre>
-									</div>
-									<div>
-										Sources <pre>{JSON.stringify(p.package.sources)}</pre>
-									</div> */}
 								</div>
 							</div>
 						) : (
@@ -183,6 +137,21 @@ export const ExpectedPackagesStatus = translateWithTracker<
 													: '-'}
 											</div>
 											<div className="package__statuses__status__status">{status.status}</div>
+											<div className="package__statuses__status__actions">
+												<Tooltip overlay={t('Restart')} placement="top">
+													<button className="action-btn" onClick={(e) => this.restartExpectation(e, status)}>
+														<FontAwesomeIcon icon={faRedo} />
+													</button>
+												</Tooltip>
+												<Tooltip overlay={t('Abort')} placement="top">
+													<button
+														className="action-btn"
+														// disabled={status.status !== 'fullfilled'}
+														onClick={(e) => this.abortExpectation(e, status)}>
+														<FontAwesomeIcon icon={faStopCircle} />
+													</button>
+												</Tooltip>
+											</div>
 										</div>
 										<div className="package__statuses__status__descriptions">
 											<div className="package__statuses__status__description">{status.description}</div>
@@ -196,6 +165,24 @@ export const ExpectedPackagesStatus = translateWithTracker<
 				)
 			})
 		}
+		restartExpectation(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, status: ExpectedPackageWorkStatus): void {
+			doUserAction(this.props.t, e, UserAction.PACKAGE_MANAGER_RESTART_WORK, (e) =>
+				MeteorCall.userAction.packageManagerRestartExpectation(e, status.deviceId, unprotectString(status._id))
+			)
+		}
+		restartAllExpectations(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+			const studio = Studios.findOne()
+			if (!studio) throw new Meteor.Error(404, `No studio found!`)
+
+			doUserAction(this.props.t, e, UserAction.PACKAGE_MANAGER_RESTART_WORK, (e) =>
+				MeteorCall.userAction.packageManagerRestartAllExpectations(e, studio._id)
+			)
+		}
+		abortExpectation(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, status: ExpectedPackageWorkStatus): void {
+			doUserAction(this.props.t, e, UserAction.PACKAGE_MANAGER_RESTART_WORK, (e) =>
+				MeteorCall.userAction.packageManagerAbortExpectation(e, status.deviceId, unprotectString(status._id))
+			)
+		}
 
 		render() {
 			const { t } = this.props
@@ -205,6 +192,11 @@ export const ExpectedPackagesStatus = translateWithTracker<
 					<header className="mbs">
 						<h1>{t('Package Status')}</h1>
 					</header>
+					<div className="mod mvl alright">
+						<button className="btn btn-secondary mls" onClick={(e) => this.restartAllExpectations(e)}>
+							{t('Restart All')}
+						</button>
+					</div>
 					<div className="mod mvl">{this.renderExpectedPackageStatuses()}</div>
 				</div>
 			)

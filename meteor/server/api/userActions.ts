@@ -50,6 +50,8 @@ import { profiler } from './profiler'
 import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { checkAccessAndGetPlaylist, checkAccessAndGetRundown } from './lib'
+import { PackageManagerAPI } from './packageManager'
+import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -594,6 +596,18 @@ export function mediaAbortAllWorkflows(context: MethodContext) {
 	const access = OrganizationContentWriteAccess.anyContent(context)
 	return ClientAPI.responseSuccess(MediaManagerAPI.abortAllWorkflows(context, access.organizationId))
 }
+export function packageManagerRestartExpectation(context: MethodContext, deviceId: PeripheralDeviceId, workId: string) {
+	const access = OrganizationContentWriteAccess.anyContent(context)
+	return ClientAPI.responseSuccess(PackageManagerAPI.restartExpectation(context, deviceId, workId))
+}
+export function packageManagerRestartAllExpectations(context: MethodContext, studioId: StudioId) {
+	const access = OrganizationContentWriteAccess.anyContent(context)
+	return ClientAPI.responseSuccess(PackageManagerAPI.restartAllExpectationsInStudio(context, studioId))
+}
+export function packageManagerAbortExpectation(context: MethodContext, deviceId: PeripheralDeviceId, workId: string) {
+	const access = OrganizationContentWriteAccess.anyContent(context)
+	return ClientAPI.responseSuccess(PackageManagerAPI.abortExpectation(context, deviceId, workId))
+}
 export function bucketsRemoveBucket(context: MethodContext, id: BucketId) {
 	check(id, String)
 
@@ -1043,6 +1057,15 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	}
 	mediaAbortAllWorkflows(_userEvent: string) {
 		return makePromise(() => mediaAbortAllWorkflows(this))
+	}
+	packageManagerRestartExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
+		return makePromise(() => packageManagerRestartExpectation(this, deviceId, workId))
+	}
+	packageManagerRestartAllExpectations(_userEvent: string, studioId: StudioId) {
+		return makePromise(() => packageManagerRestartAllExpectations(this, studioId))
+	}
+	packageManagerAbortExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
+		return makePromise(() => packageManagerAbortExpectation(this, deviceId, workId))
 	}
 	regenerateRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
 		return traceAction(UserActionAPIMethods.regenerateRundownPlaylist, regenerateRundownPlaylist, this, playlistId)
