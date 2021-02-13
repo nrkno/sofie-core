@@ -70,8 +70,8 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 	if (isolatedAutorunsMem[fId] === undefined) {
 		const dep = new Tracker.Dependency()
 		dep.depend()
-		const computation = Tracker.nonreactive(() => {
-			const computation = Tracker.autorun(() => {
+		const computationNonreactive = Tracker.nonreactive(() => {
+			const computationAutorun = Tracker.autorun(() => {
 				result = fnc(...(params as any))
 
 				if (!Tracker.currentComputation.firstRun) {
@@ -85,15 +85,15 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 					value: result,
 				}
 			})
-			computation.onStop(() => {
+			computationAutorun.onStop(() => {
 				delete isolatedAutorunsMem[fId]
 			})
-			return computation
+			return computationAutorun
 		})
 		let gc = setInterval(() => {
 			if (!dep.hasDependents()) {
 				clearInterval(gc)
-				computation.stop()
+				computationNonreactive.stop()
 			}
 		}, 5000)
 	} else {

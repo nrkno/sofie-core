@@ -60,7 +60,7 @@ class SpeechSynthesisClass {
 			} else {
 				if (this._queue.length && textCommand.category) {
 					// filter out queued ones of the same category:
-					this._queue = this._queue.filter((c) => !(c.category === textCommand.category))
+					this._queue = this._queue.filter((c) => c.category !== textCommand.category)
 				}
 				this._queue.push(textCommand)
 			}
