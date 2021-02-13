@@ -2,15 +2,13 @@ import React from 'react'
 import Moment from 'react-moment'
 import { DBSegment } from '../../../lib/collections/Segments'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
+import { withTiming } from '../RundownView/RundownTiming/withTiming'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { getCurrentTime } from '../../../lib/lib'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { PubSub } from '../../../lib/api/pubsub'
 import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
@@ -51,12 +49,10 @@ export const OverlayScreen = withTranslation()(
 
 					if (playlist && playlistId && segments && showStyleBaseId) {
 						let currentPart: PartUi | undefined
-						let currentSegment: SegmentUi | undefined
 						for (const segment of segments) {
 							if (segment.items) {
 								for (const item of segment.items) {
 									if (item.instance._id === playlist.currentPartInstanceId) {
-										currentSegment = segment
 										currentPart = item
 									}
 								}
@@ -72,12 +68,10 @@ export const OverlayScreen = withTranslation()(
 						}
 
 						let nextPart: PartUi | undefined
-						let nextSegment: SegmentUi | undefined
 						for (const segment of segments) {
 							if (segment.items) {
 								for (const item of segment.items) {
 									if (item.instance._id === playlist.nextPartInstanceId) {
-										nextSegment = segment
 										nextPart = item
 									}
 								}
@@ -103,11 +97,11 @@ export const OverlayScreen = withTranslation()(
 											<span className="clock-segment-countdown-next">{t('Next')}</span>
 										)}
 									</div>
-									{/* 
+									{/*
 									// An Auto-Next is something we may want to introduce in this view after we have
 									// some feedback from the users and they say it may be useful.
 									// -- Jan Starzak, 2020/12/16
-									
+
 									{currentPart && currentPart.instance.part.autoNext ? (
 										<div style={{ display: 'inline-block', height: '0.5em' }}>
 											<img style={{ height: '0.5em', verticalAlign: 'top' }} src="/icons/auto-presenter-screen.svg" />

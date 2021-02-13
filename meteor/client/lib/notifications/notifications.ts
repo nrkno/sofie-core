@@ -301,9 +301,9 @@ class NotificationCenter0 {
 		let n = this.getNotifications()
 		if (filters && filters.length) {
 			const matchers = filters.map((filter) => _.matches(filter))
-			n = n.filter((value, index, array) =>
+			n = n.filter((v, _index, _array) =>
 				_.reduce(
-					matchers.map((m) => m(value)),
+					matchers.map((m) => m(v)),
 					(value, memo) => value || memo,
 					false
 				)

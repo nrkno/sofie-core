@@ -1,5 +1,4 @@
-import { TSR } from '@sofie-automation/blueprints-integration'
-import { MappingExt, StudioId } from '../collections/Studios'
+import { StudioId } from '../collections/Studios'
 
 export interface NewStudiosAPI {
 	insertStudio(): Promise<StudioId>

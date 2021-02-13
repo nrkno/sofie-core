@@ -3,7 +3,6 @@ import * as _ from 'underscore'
 import { withTracker } from './ReactMeteorData/react-meteor-data'
 import { faCheckSquare, faSquare } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Mongo } from 'meteor/mongo'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
 import { TransformedCollection } from '../../lib/typings/meteor'
@@ -127,16 +126,16 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 			editing: false,
 		})
 	}
-	deepAttribute(obj, attr): any {
+	deepAttribute(obj0: any, attr0: string | undefined): any {
 		// Returns a value deep inside an object
 		// Example: deepAttribute(company,"ceo.address.street");
 
-		const f = (obj, attr) => {
+		const f = (obj: any, attr: string) => {
 			if (obj) {
 				let attributes = attr.split('.')
 
 				if (attributes.length > 1) {
-					let outerAttr = attributes.shift()
+					let outerAttr = attributes.shift() as string
 					let innerAttrs = attributes.join('.')
 
 					return f(obj[outerAttr], innerAttrs)
@@ -147,7 +146,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 				return obj
 			}
 		}
-		return f(obj, attr || '')
+		return f(obj0, attr0 || '')
 	}
 	getAttribute() {
 		let v = null

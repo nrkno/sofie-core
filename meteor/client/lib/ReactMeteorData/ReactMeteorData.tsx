@@ -7,7 +7,6 @@ import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
-import * as _ from 'underscore'
 import { PubSub } from '../../../lib/api/pubsub'
 import { stringifyObjects } from '../../../lib/lib'
 

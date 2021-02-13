@@ -133,7 +133,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		newState: Partial<IState>,
 		itemElement: HTMLElement | null
 	): Partial<IState> {
-		const { relative: relativeRendering, isLiveLine, outputLayer, livePosition } = props
+		const { relative: relativeRendering, isLiveLine, outputLayer } = props
 		if (
 			this.countdownContainer &&
 			!this.state.sourceEndCountdownAppendage &&

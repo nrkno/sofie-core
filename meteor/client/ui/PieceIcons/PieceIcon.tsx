@@ -2,8 +2,6 @@ import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as React from 'react'
 import { SourceLayerType, ISourceLayer, CameraContent, RemoteContent } from '@sofie-automation/blueprints-integration'
-import * as _ from 'underscore'
-
 import CamInputIcon from './Renderers/CamInput'
 import VTInputIcon from './Renderers/VTInput'
 import SplitInputIcon from './Renderers/SplitInput'

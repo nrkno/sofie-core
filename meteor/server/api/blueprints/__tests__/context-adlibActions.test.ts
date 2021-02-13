@@ -22,7 +22,7 @@ import {
 	RundownPlaylistActivationId,
 	RundownPlaylists,
 } from '../../../../lib/collections/RundownPlaylists'
-import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 ServerPlayoutAdLibAPI.innerStopPieces = jest.fn()
