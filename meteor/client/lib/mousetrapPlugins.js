@@ -77,7 +77,6 @@ import Mousetrap from 'mousetrap'
 
 		if (!e.repeat) {
 			_shouldAbortNextCombo = _downKeys.length > 1
-			_comboTriggered = false
 		}
 
 		e.preventDefault()
