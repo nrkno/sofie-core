@@ -6,6 +6,7 @@ $piece-countdown-timecode-color: #ffff00;
 	position: absolute;
 	user-select: none;
 	text-align: center;
+	margin: 0.625rem;
 
 	.piece-countdown-panel__timecode {
 		color: $piece-countdown-timecode-color;
