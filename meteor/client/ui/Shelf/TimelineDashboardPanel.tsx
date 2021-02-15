@@ -133,6 +133,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 													widthScale={filter.buttonWidthScale}
 													heightScale={filter.buttonHeightScale}
 													displayStyle={filter.displayStyle}
+													canOverflowHorizontally={filter.overflowHorizontally}
 													showThumbnailsInList={filter.showThumbnailsInList}>
 													{adLibListItem.name}
 												</DashboardPieceButton>
@@ -185,6 +186,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 														widthScale={filter.buttonWidthScale}
 														heightScale={filter.buttonHeightScale}
 														showThumbnailsInList={filter.showThumbnailsInList}
+														canOverflowHorizontally={filter.overflowHorizontally}
 														displayStyle={filter.displayStyle}>
 														{adLibListItem.name}
 													</DashboardPieceButton>
