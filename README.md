@@ -96,7 +96,7 @@ Then submit this as a PR.
 
 ## Version numbering scheme
 
-This project does not follow semver. We believe that semver does not make sense for this system as there are so many moving parts that a majority releases could be considered breaking in some way.
+This project does not follow semver. We believe that semver does not make sense for this system as there are so many moving parts that a majority of releases could be considered breaking in some way.
 
 Instead of semver, the Major number gets incremented whenever we feel like Sofie has evolved enough to warrant the change. The minor number gets incremented for each iteration of the development cycle, with the digit matching the cycle number. The patch number gets incremented for patch releases as expected.
 
