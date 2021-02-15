@@ -87,10 +87,13 @@ export interface StudioBlueprintManifest extends BlueprintManifestBase {
 	) => string | null
 
 	/** Returns information about the playlist this rundown is a part of, return null to not make it a part of a playlist */
-	getRundownPlaylistInfo?: (rundowns: IBlueprintRundownDB[]) => BlueprintResultRundownPlaylist | null
+	getRundownPlaylistInfo?: (
+		context: IStudioUserContext,
+		rundowns: IBlueprintRundownDB[]
+	) => BlueprintResultRundownPlaylist | null
 
 	/** Preprocess config before storing it by core to later be returned by context's getStudioConfig. If not provided, getStudioConfig will return unprocessed blueprint config */
-	preprocessConfig?: (config: IBlueprintConfig) => unknown
+	preprocessConfig?: (context: ICommonContext, config: IBlueprintConfig) => unknown
 }
 
 export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
@@ -109,6 +112,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 
 	/** Returns the id of the show style variant to use for a rundown, return null to ignore that rundown */
 	getShowStyleVariantId: (
+		context: IStudioUserContext,
 		showStyleVariants: IBlueprintShowStyleVariant[],
 		ingestRundown: ExtendedIngestRundown
 	) => string | null
