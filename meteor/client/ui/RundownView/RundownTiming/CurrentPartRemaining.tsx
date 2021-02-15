@@ -89,10 +89,12 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 				switch (displayTime) {
 					case 0:
 						navigator.vibrate([500])
+						break
 					case -1:
 					case -2:
 					case -3:
 						navigator.vibrate([250])
+						break
 				}
 			}
 		}
