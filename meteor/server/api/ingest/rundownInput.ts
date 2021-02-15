@@ -1751,6 +1751,15 @@ function generateSegmentContents(
 			segmentId: newSegment._id,
 			_rank: i, // This gets updated to a rank unique within its segment in a later step
 			notes: notes,
+			invalidReason: blueprintPart.part.invalidReason
+				? {
+						...blueprintPart.part.invalidReason,
+						message: {
+							...blueprintPart.part.invalidReason.message,
+							namespaces: [unprotectString(blueprintId)],
+						},
+				  }
+				: undefined,
 		})
 		parts.push(part)
 

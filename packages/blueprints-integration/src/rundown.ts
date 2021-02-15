@@ -1,6 +1,7 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContentVizMSE } from 'timeline-state-resolver-types'
 import { Time } from './common'
 import { SomeTimelineContent } from './content'
+import { ITranslatableMessage } from './translations'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -144,19 +145,13 @@ export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatable
 	 * Color needs to be in #xxxxxx RGB hexadecimal format.
 	 *
 	 * @type {{
-	 * 		message: {
-	 * 			key: string,
-	 * 			args?: { [key: string]: any }
-	 * 		},
+	 * 		message: ITranslatableMessage,
 	 * 		color?: string
 	 * 	}}
 	 * @memberof IBlueprintPart
 	 */
 	invalidReason?: {
-		message: {
-			key: string
-			args?: { [key: string]: any }
-		}
+		message: ITranslatableMessage
 		color?: string
 	}
 
