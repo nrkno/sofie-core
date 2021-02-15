@@ -76,6 +76,11 @@ export interface RundownLayoutPieceCountdown extends RundownLayoutElementBase {
 	sourceLayerIds: string[] | undefined
 }
 
+export interface RundownLayoutPieceCountdown extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PIECE_COUNTDOWN
+	sourceLayerIds: string[] | undefined
+}
+
 /**
  * A filter to be applied against the AdLib Pieces. If a member is undefined, the pool is not tested
  * against that filter. A member must match all of the sub-filters to be included in a filter view
@@ -124,11 +129,11 @@ export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
 	height: number
 }
 
-export interface DashboardLayoutPartCountdown extends RundownLayoutPieceCountdown {
+export interface DashboardLayoutPieceCountdown extends RundownLayoutPieceCountdown {
 	x: number
 	y: number
 	width: number
-	height: number
+	scale: number
 }
 
 export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
