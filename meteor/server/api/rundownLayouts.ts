@@ -45,6 +45,7 @@ export function createRundownLayout(
 			iconColor: '#ffffff',
 			openByDefault: openByDefault ?? false,
 			showBuckets: showBuckets === undefined ? true : showBuckets,
+			disableContextMenu: false,
 		})
 	)
 	return id
