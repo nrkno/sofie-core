@@ -825,6 +825,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 					rundownBaselineAdLibs = rundownBaselineAdLibs
 						.concat(globalAdLibActions)
+						.sort((a, b) => a._rank - b._rank)
 						.map((item) => {
 							// automatically assign hotkeys based on adLibItem index
 							const uiAdLib: AdLibPieceUi = _.clone(item)
@@ -851,7 +852,6 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 							// always add them to the list
 							return uiAdLib
 						})
-						.sort((a, b) => a._rank - b._rank)
 
 					return rundownBaselineAdLibs.sort((a, b) => a._rank - b._rank)
 				},
