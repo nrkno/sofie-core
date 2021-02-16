@@ -12,8 +12,8 @@ import {
 import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
 import {
-	EventContext as IEventContext,
-	ActionExecutionContext as IActionExecutionContext,
+	IEventContext,
+	IActionExecutionContext,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
 	IBlueprintPiece,
@@ -30,7 +30,7 @@ import { PartInstanceId, PartInstance, PartInstances } from '../../../../lib/col
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { NotesContext, ShowStyleContext } from './context'
+import { ShowStyleUserContext, UserContextInfo } from './context'
 import { getRundownIDsFromCache, isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
@@ -44,7 +44,7 @@ export enum ActionPartChange {
 }
 
 /** Actions */
-export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
+export class ActionExecutionContext extends ShowStyleUserContext implements IActionExecutionContext, IEventContext {
 	private readonly _cache: CacheForRundownPlaylist
 	private readonly rundownPlaylist: RundownPlaylist
 	private readonly rundown: Rundown
@@ -57,13 +57,13 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	public takeAfterExecute: boolean
 
 	constructor(
+		contextInfo: UserContextInfo,
 		cache: CacheForRundownPlaylist,
-		notesContext: NotesContext,
 		studio: Studio,
 		rundownPlaylist: RundownPlaylist,
 		rundown: Rundown
 	) {
-		super(studio, cache, rundown, rundown.showStyleBaseId, rundown.showStyleVariantId, notesContext)
+		super(contextInfo, studio, cache, rundown, rundown.showStyleBaseId, rundown.showStyleVariantId)
 		this._cache = cache
 		this.rundownPlaylist = rundownPlaylist
 		this.rundown = rundown
@@ -316,7 +316,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			rundownId: currentPartInstance.rundownId,
 			segmentId: currentPartInstance.segmentId,
 			playlistActivationId: this.playlistActivationId,
-			takeCount: -1, // Filled in later
+			takeCount: currentPartInstance.takeCount + 1,
 			rehearsal: currentPartInstance.rehearsal,
 			part: new Part({
 				...rawPart,

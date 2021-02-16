@@ -126,6 +126,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					piece={{ ...adLib, enable: { start: 0 }, startPartId: protectString(''), invalid: false }}
 					pieceRenderedDuration={adLib.expectedDuration || null}
 					pieceRenderedIn={null}
+					displayOn="viewport"
 				/>
 			</>
 		)
@@ -169,6 +170,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							: null
 					}
 					mediaPreviewUrl={this.props.mediaPreviewUrl}
+					displayOn="viewport"
 				/>
 			</>
 		)

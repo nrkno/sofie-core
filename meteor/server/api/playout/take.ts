@@ -148,14 +148,16 @@ export function takeNextPartInnerSync(
 
 	// beforeTake(rundown, previousPart || null, takePart)
 
-	const { blueprint } = waitForPromise(pBlueprint)
+	const { blueprint, blueprintId } = waitForPromise(pBlueprint)
 	if (blueprint.onPreTake) {
 		const span = profiler.startSpan('blueprint.onPreTake')
 		try {
 			waitForPromise(
-				Promise.resolve(blueprint.onPreTake(new PartEventContext(takeRundown, cache, takePartInstance))).catch(
-					logger.error
-				)
+				Promise.resolve(
+					blueprint.onPreTake(
+						new PartEventContext('onPreTake', blueprintId, takeRundown, cache, takePartInstance)
+					)
+				).catch(logger.error)
 			)
 			if (span) span.end()
 		} catch (e) {
@@ -245,7 +247,15 @@ export function takeNextPartInnerSync(
 					const span = profiler.startSpan('blueprint.onRundownFirstTake')
 					waitForPromise(
 						Promise.resolve(
-							blueprint.onRundownFirstTake(new PartEventContext(takeRundown, cache, takePartInstance))
+							blueprint.onRundownFirstTake(
+								new PartEventContext(
+									'onRundownFirstTake',
+									blueprintId,
+									takeRundown,
+									cache,
+									takePartInstance
+								)
+							)
 						).catch(logger.error)
 					)
 					if (span) span.end()
@@ -256,7 +266,9 @@ export function takeNextPartInnerSync(
 				const span = profiler.startSpan('blueprint.onPostTake')
 				waitForPromise(
 					Promise.resolve(
-						blueprint.onPostTake(new PartEventContext(takeRundown, cache, takePartInstance))
+						blueprint.onPostTake(
+							new PartEventContext('onPostTake', blueprintId, takeRundown, cache, takePartInstance)
+						)
 					).catch(logger.error)
 				)
 				if (span) span.end()
@@ -287,7 +299,16 @@ export function updatePartInstanceOnTake(
 			const resolvedPieces = getResolvedPieces(cache, showStyle, currentPartInstance)
 
 			const span = profiler.startSpan('blueprint.getEndStateForPart')
-			const context = new RundownContext(takeRundown, cache, undefined)
+			const context = new RundownContext(
+				{
+					name: `${playlist.name}`,
+					identifier: `playlist=${playlist._id},currentPartInstance=${
+						currentPartInstance._id
+					},execution=${getRandomId()}`,
+				},
+				takeRundown,
+				cache
+			)
 			previousPartEndState = blueprint.getEndStateForPart(
 				context,
 				playlist.previousPersistentState,

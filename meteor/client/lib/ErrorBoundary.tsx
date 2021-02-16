@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 
 interface IState {
 	hasError: boolean

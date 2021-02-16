@@ -28,7 +28,6 @@ import {
 	IngestRundown,
 	IngestSegment,
 	IngestPart,
-	BlueprintResultSegment,
 	BlueprintResultOrderedRundowns,
 	BlueprintSyncIngestPartInstance,
 	ShowStyleBlueprintManifest,
@@ -48,14 +47,15 @@ import {
 	ChangedSegmentsRankInfo,
 	removeSegmentContents,
 	unsyncAndEmptySegment,
+	updatePartInstancesBasicProperties,
 } from '../rundown'
 import { loadShowStyleBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
 import {
-	ShowStyleContext,
-	RundownContext,
-	SegmentContext,
-	NotesContext,
 	SyncIngestUpdateToPartInstanceContext,
+	StudioUserContext,
+	ShowStyleUserContext,
+	CommonContext,
+	SegmentUserContext,
 } from '../blueprints/context'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
@@ -487,33 +487,52 @@ function updateRundownFromIngestData(
 	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, existingDbRundown)
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 
-	const showStyle = selectShowStyleVariant(studio, extendedIngestRundown)
+	const selectShowStyleContext = new StudioUserContext(
+		{
+			name: 'selectShowStyleVariant',
+			identifier: `studioId=${studio._id},rundownId=${existingDbRundown?._id},ingestRundownId=${ingestRundown.externalId}`,
+			tempSendUserNotesIntoBlackHole: true,
+		},
+		studio
+	)
+	// TODO-CONTEXT save any user notes from selectShowStyleContext
+	const showStyle = selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
 	}
 
 	const showStyleBlueprint = loadShowStyleBlueprint(showStyle.base).blueprint
-	const notesContext = new NotesContext(
-		`${showStyle.base.name}-${showStyle.variant.name}`,
-		`showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
-		true
-	)
-	const blueprintContext = new ShowStyleContext(
+	// const notesContext = new NotesContext(true)
+	const blueprintContext = new ShowStyleUserContext(
+		{
+			name: `${showStyle.base.name}-${showStyle.variant.name}`,
+			identifier: `showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
+		},
 		studio,
 		undefined,
 		undefined,
 		showStyle.base._id,
-		showStyle.variant._id,
-		notesContext
+		showStyle.variant._id
 	)
 	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, extendedIngestRundown)
 
+	const translationNamespaces: string[] = []
+	if (showStyleBlueprint.blueprintId) {
+		translationNamespaces.push(showStyleBlueprint.blueprintId)
+	}
+	if (studio.blueprintId) {
+		translationNamespaces.push(unprotectString(studio.blueprintId))
+	}
+
 	// Ensure the ids in the notes are clean
-	const rundownNotes = _.map(notesContext.getNotes(), (note) =>
+	const rundownNotes = _.map(blueprintContext.notes, (note) =>
 		literal<RundownNote>({
 			type: note.type,
-			message: note.message,
+			message: {
+				...note.message,
+				namespaces: translationNamespaces,
+			},
 			origin: {
 				name: `${showStyle.base.name}-${showStyle.variant.name}`,
 			},
@@ -584,7 +603,10 @@ function updateRundownFromIngestData(
 				if (!dbRundownData.notes) dbRundownData.notes = []
 				dbRundownData.notes.push({
 					type: NoteType.WARNING,
-					message: `The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.`,
+					message: {
+						key:
+							'The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.',
+					},
 					origin: {
 						name: 'Data update',
 					},
@@ -656,8 +678,10 @@ function updateRundownFromIngestData(
 	const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist))
 
 	// Save the baseline
-	const rundownNotesContext = new NotesContext(dbRundown.name, `rundownId=${dbRundown._id}`, true)
-	const blueprintRundownContext = new RundownContext(dbRundown, cache, rundownNotesContext)
+	const blueprintRundownContext = new CommonContext({
+		name: dbRundown.name,
+		identifier: `rundownId=${dbRundown._id}`,
+	})
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)
 	logger.info(`... got ${rundownRes.baseline.length} objects from baseline.`)
 
@@ -674,14 +698,17 @@ function updateRundownFromIngestData(
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
 	const baselineAdlibPieces = postProcessAdLibPieces(
 		blueprintRundownContext,
-		rundownRes.globalAdLibPieces,
-		showStyle.base.blueprintId
+		showStyle.base.blueprintId,
+		rundownId,
+		undefined,
+		rundownRes.globalAdLibPieces
 	)
 	logger.info(`... got ${(rundownRes.globalActions || []).length} adLib actions from baseline.`)
 	const baselineAdlibActions = postProcessGlobalAdLibActions(
 		blueprintRundownContext,
-		rundownRes.globalActions || [],
-		showStyle.base.blueprintId
+		showStyle.base.blueprintId,
+		rundownId,
+		rundownRes.globalActions || []
 	)
 
 	// TODO - store notes from rundownNotesContext
@@ -697,6 +724,7 @@ function updateRundownFromIngestData(
 	const newAdlibActions: AdLibAction[] = []
 
 	const { blueprint, blueprintId } = loadShowStyleBlueprint(showStyle.base)
+	// translationNamespaces.add(unprotectString(blueprintId))
 
 	_.each(ingestRundown.segments, (ingestSegment: LocalIngestSegment) => {
 		const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
@@ -708,17 +736,14 @@ function updateRundownFromIngestData(
 
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, (part) => part.rank)
 
-		const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundownId},segmentId=${segmentId}`, true)
-		const context = new SegmentContext(dbRundown, cache, notesContext)
-		const res = blueprint.getSegment(context, ingestSegment)
-
 		const segmentContents = generateSegmentContents(
-			context,
+			cache,
+			dbRundown,
+			blueprint,
 			blueprintId,
 			ingestSegment,
 			existingSegment,
-			existingParts,
-			res
+			existingParts
 		)
 
 		newSegments.push(segmentContents.newSegment)
@@ -1121,17 +1146,14 @@ function updateSegmentFromIngestData(
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 
-	const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundown._id},segmentId=${segmentId}`, true)
-	const context = new SegmentContext(rundown, cache, notesContext)
-	const blueprintSegment = blueprint.blueprint.getSegment(context, ingestSegment)
-
 	const { parts, segmentPieces, adlibPieces, adlibActions, newSegment } = generateSegmentContents(
-		context,
+		cache,
+		rundown,
+		blueprint.blueprint,
 		blueprint.blueprintId,
 		ingestSegment,
 		existingSegment,
-		existingParts,
-		blueprintSegment
+		existingParts
 	)
 
 	const prepareSaveParts = prepareSaveIntoCache<Part, DBPart>(
@@ -1317,14 +1339,13 @@ function syncChangesToPartInstances(
 					}
 
 					const syncContext = new SyncIngestUpdateToPartInstanceContext(
+						{
+							name: `Update to ${newPart.externalId}`,
+							identifier: `rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
+						},
 						playlist.activationId,
 						rundown,
 						cache,
-						new NotesContext(
-							`Update to ${newPart.externalId}`,
-							`rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
-							true
-						),
 						existingPartInstance,
 						pieceInstancesInPart,
 						proposedPieceInstances,
@@ -1350,7 +1371,7 @@ function syncChangesToPartInstances(
 					if (!existingPartInstance.part.notes) existingPartInstance.part.notes = []
 					const notes: PartNote[] = existingPartInstance.part.notes
 					let changed = false
-					for (const note of syncContext.notesContext.getNotes()) {
+					for (const note of syncContext.notes) {
 						changed = true
 						notes.push(
 							literal<SegmentNote>({
@@ -1399,6 +1420,8 @@ function afterIngestChangedData(
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(cache, rundown._id)
 	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
+
+	updatePartInstancesBasicProperties(cache, playlist, rundown._id)
 
 	updatePartInstanceRanks(cache, playlist, changedSegments)
 
@@ -1530,29 +1553,44 @@ export function handleUpdatedPartInner(
 }
 
 function generateSegmentContents(
-	context: SegmentContext,
+	cache: CacheForRundownPlaylist,
+	dbRundown: Rundown,
+	blueprint: ShowStyleBlueprintManifest,
 	blueprintId: BlueprintId,
 	ingestSegment: LocalIngestSegment,
 	existingSegment: DBSegment | undefined,
-	existingParts: DBPart[],
-	blueprintRes: BlueprintResultSegment
+	existingParts: DBPart[]
 ) {
 	const span = profiler.startSpan('ingest.rundownInput.generateSegmentContents')
 
-	const rundownId = context._rundown._id
+	const rundownId = dbRundown._id
 	const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
-	const rawNotes = context.notesContext.getNotes()
+
+	// const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundownId},segmentId=${segmentId}`, true)
+	const context = new SegmentUserContext(
+		{
+			name: `getSegment=${ingestSegment.name}`,
+			identifier: `rundownId=${rundownId},segmentId=${segmentId}`,
+		},
+		dbRundown,
+		cache
+	)
+
+	const blueprintRes = blueprint.getSegment(context, ingestSegment)
 
 	// Ensure all parts have a valid externalId set on them
-	const knownPartIds = blueprintRes.parts.map((p) => p.part.externalId)
+	const knownPartExternalIds = blueprintRes.parts.map((p) => p.part.externalId)
 
 	const segmentNotes: SegmentNote[] = []
-	for (const note of rawNotes) {
-		if (!note.trackingId || knownPartIds.indexOf(note.trackingId) === -1) {
+	for (const note of context.notes) {
+		if (!note.partExternalId || knownPartExternalIds.indexOf(note.partExternalId) === -1) {
 			segmentNotes.push(
 				literal<SegmentNote>({
 					type: note.type,
-					message: note.message,
+					message: {
+						...note.message,
+						namespaces: [unprotectString(blueprintId)],
+					},
 					origin: {
 						name: '', // TODO
 					},
@@ -1583,12 +1621,15 @@ function generateSegmentContents(
 
 		const notes: PartNote[] = []
 
-		for (const note of rawNotes) {
-			if (note.trackingId === blueprintPart.part.externalId) {
+		for (const note of context.notes) {
+			if (note.partExternalId === blueprintPart.part.externalId) {
 				notes.push(
 					literal<PartNote>({
 						type: note.type,
-						message: note.message,
+						message: {
+							...note.message,
+							namespaces: [unprotectString(blueprintId)],
+						},
 						origin: {
 							name: '', // TODO
 						},
@@ -1607,6 +1648,15 @@ function generateSegmentContents(
 			segmentId: newSegment._id,
 			_rank: i, // This gets updated to a rank unique within its segment in a later step
 			notes: notes,
+			invalidReason: blueprintPart.part.invalidReason
+				? {
+						...blueprintPart.part.invalidReason,
+						message: {
+							...blueprintPart.part.invalidReason.message,
+							namespaces: [unprotectString(blueprintId)],
+						},
+				  }
+				: undefined,
 		})
 		parts.push(part)
 
@@ -1629,8 +1679,12 @@ function generateSegmentContents(
 				part.invalid
 			)
 		)
-		adlibPieces.push(...postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id))
-		adlibActions.push(...postProcessAdLibActions(context, blueprintPart.actions || [], blueprintId, part._id))
+		adlibPieces.push(
+			...postProcessAdLibPieces(context, blueprintId, rundownId, part._id, blueprintPart.adLibPieces)
+		)
+		adlibActions.push(
+			...postProcessAdLibActions(context, blueprintId, rundownId, part._id, blueprintPart.actions || [])
+		)
 	})
 
 	// If the segment has no parts, then hide it

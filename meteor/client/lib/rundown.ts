@@ -34,7 +34,6 @@ import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { Mongo } from 'meteor/mongo'
 import { FindOptions } from '../../lib/typings/meteor'
-import { Meteor } from 'meteor/meteor'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
@@ -76,7 +75,7 @@ export namespace RundownUtils {
 			timecode: (milliseconds * Settings.frameRate) / 1000,
 			drop_frame: !Number.isInteger(Settings.frameRate),
 		})
-		const timeCodeString: String = tc.toString()
+		const timeCodeString: string = tc.toString()
 		return sign + (hideFrames ? timeCodeString.substr(0, timeCodeString.length - 3) : timeCodeString)
 	}
 

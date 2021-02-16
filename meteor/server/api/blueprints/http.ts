@@ -12,6 +12,7 @@ import { PickerPOST } from '../http'
 
 PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
+	logger.debug(`/blueprints/restore/:${params?.blueprintId}`)
 
 	let content = ''
 	try {

@@ -1,18 +1,15 @@
 import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
 import '../../../__mocks__/_extendJest'
-import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
-	setupDefaultRundown,
 } from '../../../__mocks__/helpers/database'
-import { protectString, literal, unprotectString } from '../../../lib/lib'
-import { Rundowns, Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { protectString } from '../../../lib/lib'
+import { RundownId } from '../../../lib/collections/Rundowns'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { ChangedSegmentsRankInfo, produceRundownPlaylistInfoFromRundown, updatePartInstanceRanks } from '../rundown'
-import { updateRundownsInPlaylist } from '../ingest/rundownInput'
+import { updatePartInstanceRanks } from '../rundown'
 import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import { Part, PartId, Parts } from '../../../lib/collections/Parts'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'

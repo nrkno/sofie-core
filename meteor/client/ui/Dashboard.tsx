@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Meteor } from 'meteor/meteor'
 import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
 import { withTranslation } from 'react-i18next'
 

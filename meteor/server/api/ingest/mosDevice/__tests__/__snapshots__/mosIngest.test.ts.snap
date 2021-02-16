@@ -2579,6 +2579,7 @@ Array [
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
+    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   Object {
@@ -2870,6 +2871,7 @@ Array [
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
+    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   Object {
@@ -3719,6 +3721,7 @@ Array [
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
+    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   Object {
@@ -4037,6 +4040,7 @@ Array [
     "notes": Array [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
+    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   Object {

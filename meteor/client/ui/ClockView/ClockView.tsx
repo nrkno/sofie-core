@@ -1,7 +1,6 @@
 import React from 'react'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import * as _ from 'underscore'
 
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
@@ -19,17 +18,17 @@ import { OverlayScreenSaver } from './OverlayScreenSaver'
 
 interface IPropsHeader {
 	key: string
-	playlist: RundownPlaylist
+	playlist: RundownPlaylist | undefined
 	studioId: StudioId
 }
 
 interface IStateHeader {}
 
 export const ClockView = withTracker(function(props: IPropsHeader) {
-	let studioId = objectPathGet(props, 'match.params.studioId')
+	const studioId = objectPathGet(props, 'match.params.studioId')
 	const playlist = RundownPlaylists.findOne({
 		activationId: { $exists: true },
-		studioId: studioId,
+		studioId,
 	})
 
 	return {
@@ -39,11 +38,11 @@ export const ClockView = withTracker(function(props: IPropsHeader) {
 })(
 	class ClockView extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 		componentDidMount() {
-			let studioId = this.props.studioId
+			const { studioId } = this.props
 			if (studioId) {
 				this.subscribe(PubSub.rundownPlaylists, {
-					activationId: { exists: true },
-					studioId: studioId,
+					activationId: { $exists: true },
+					studioId,
 				})
 			}
 		}

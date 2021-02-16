@@ -2,6 +2,7 @@
 export interface DeviceConfigManifest {
 	deviceConfig: ConfigManifestEntry[]
 	deviceOAuthFlow?: DeviceOAuthFlow
+	layerMappings?: MappingsManifest
 }
 
 export interface SubDeviceConfigManifest {
@@ -35,6 +36,7 @@ export interface ConfigManifestEntryBase {
 	type: ConfigManifestEntryType
 	values?: any // for enum
 	placeholder?: string
+	hint?: string
 }
 export interface ConfigManifestEnumEntry {
 	type: ConfigManifestEntryType.ENUM
@@ -56,4 +58,11 @@ export interface TableConfigManifestEntry extends ConfigManifestEntryBase {
 	typeField?: string
 	/** Only one type means that the option will not be present */
 	config: { [type: string]: ConfigManifestEntry[] }
+}
+
+export type MappingsManifest = Record<string, MappingManifestEntry[]>
+
+export interface MappingManifestEntry extends ConfigManifestEntryBase {
+	optional?: boolean
+	includeInSummary?: boolean
 }

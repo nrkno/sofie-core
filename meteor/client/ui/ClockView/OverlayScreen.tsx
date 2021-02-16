@@ -2,19 +2,17 @@ import React from 'react'
 import Moment from 'react-moment'
 import { DBSegment } from '../../../lib/collections/Segments'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
+import { withTiming } from '../RundownView/RundownTiming/withTiming'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { getCurrentTime } from '../../../lib/lib'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { PubSub } from '../../../lib/api/pubsub'
 import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
-import { getPresenterScreenReactive } from './PresenterScreen'
+import { getPresenterScreenReactive, PresenterScreenBase } from './PresenterScreen'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -43,83 +41,18 @@ export const OverlayScreen = withTranslation()(
 		getPresenterScreenReactive
 	)(
 		withTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation, RundownOverviewState>()(
-			class OverlayScreen extends MeteorReactComponent<
-				WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation>,
-				RundownOverviewState
-			> {
-				componentDidMount() {
-					document.body.classList.add('transparent')
-					this.autorun(() => {
-						let playlist = RundownPlaylists.findOne(this.props.playlistId, {
-							fields: {
-								_id: 1,
-							},
-						}) as Pick<RundownPlaylist, '_id' | 'getRundownIDs'> | undefined
-						if (playlist) {
-							this.subscribe(PubSub.rundowns, {
-								playlistId: playlist._id,
-							})
-
-							this.autorun(() => {
-								const rundownIds = playlist!.getRundownIDs()
-
-								this.subscribe(PubSub.segments, {
-									rundownId: { $in: rundownIds },
-								})
-								this.subscribe(PubSub.parts, {
-									rundownId: { $in: rundownIds },
-								})
-								this.subscribe(PubSub.partInstances, {
-									rundownId: { $in: rundownIds },
-									reset: { $ne: true },
-								})
-
-								this.autorun(() => {
-									let playlist = RundownPlaylists.findOne(this.props.playlistId, {
-										fields: {
-											_id: 1,
-											currentPartInstanceId: 1,
-											nextPartInstanceId: 1,
-											previousPartInstanceId: 1,
-										},
-									}) as
-										| Pick<
-												RundownPlaylist,
-												| '_id'
-												| 'currentPartInstanceId'
-												| 'nextPartInstanceId'
-												| 'previousPartInstanceId'
-												| 'getSelectedPartInstances'
-										  >
-										| undefined
-									const { nextPartInstance, currentPartInstance } = playlist!.getSelectedPartInstances()
-									this.subscribe(PubSub.pieceInstances, {
-										partInstanceId: {
-											$in: [currentPartInstance?._id, nextPartInstance?._id],
-										},
-									})
-								})
-							})
-						}
-					})
-				}
-
-				componentWillUnmount() {
-					super.componentWillUnmount()
-					document.body.classList.remove('transparent')
-				}
+			class OverlayScreen extends PresenterScreenBase {
+				protected bodyClassList: string[] = ['transparent']
 
 				render() {
-					const { playlist, segments, showStyleBaseId, t } = this.props
+					const { playlist, segments, showStyleBaseId, t, playlistId } = this.props
 
-					if (playlist && this.props.playlistId && this.props.segments && showStyleBaseId) {
+					if (playlist && playlistId && segments && showStyleBaseId) {
 						let currentPart: PartUi | undefined
-						let currentSegment: SegmentUi | undefined
 						for (const segment of segments) {
 							if (segment.items) {
 								for (const item of segment.items) {
 									if (item.instance._id === playlist.currentPartInstanceId) {
-										currentSegment = segment
 										currentPart = item
 									}
 								}
@@ -135,12 +68,10 @@ export const OverlayScreen = withTranslation()(
 						}
 
 						let nextPart: PartUi | undefined
-						let nextSegment: SegmentUi | undefined
 						for (const segment of segments) {
 							if (segment.items) {
 								for (const item of segment.items) {
 									if (item.instance._id === playlist.nextPartInstanceId) {
-										nextSegment = segment
 										nextPart = item
 									}
 								}
@@ -166,11 +97,11 @@ export const OverlayScreen = withTranslation()(
 											<span className="clock-segment-countdown-next">{t('Next')}</span>
 										)}
 									</div>
-									{/* 
+									{/*
 									// An Auto-Next is something we may want to introduce in this view after we have
 									// some feedback from the users and they say it may be useful.
 									// -- Jan Starzak, 2020/12/16
-									
+
 									{currentPart && currentPart.instance.part.autoNext ? (
 										<div style={{ display: 'inline-block', height: '0.5em' }}>
 											<img style={{ height: '0.5em', verticalAlign: 'top' }} src="/icons/auto-presenter-screen.svg" />

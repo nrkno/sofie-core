@@ -19,6 +19,7 @@ import { createMongoCollection } from './lib'
 import { Studio } from './Studios'
 import { ShowStyleBase } from './ShowStyleBases'
 import { registerIndex } from '../database'
+import { ITranslatableMessage } from '../api/TranslatableMessage'
 
 /** A string, identifying a Part */
 export type PartId = ProtectedString<'PartId'>
@@ -37,6 +38,12 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
+
+	/** Holds the user-facing explanation for why the part is invalid */
+	invalidReason?: {
+		message: ITranslatableMessage
+		color?: string
+	}
 
 	/** Human readable unqiue identifier of the part */
 	identifier?: string
@@ -65,8 +72,7 @@ export class Part implements DBPart {
 	public displayDuration?: number
 	public invalid?: boolean
 	public invalidReason?: {
-		title: string
-		description?: string
+		message: ITranslatableMessage
 		color?: string
 	}
 	public floated?: boolean
@@ -133,9 +139,7 @@ export class Part implements DBPart {
 			? [
 					{
 						type: NoteType.ERROR,
-						message:
-							this.invalidReason.title +
-							(this.invalidReason.description ? ': ' + this.invalidReason.description : ''),
+						message: this.invalidReason.message,
 						origin: {
 							name: this.title,
 						},
@@ -163,7 +167,9 @@ export class Part implements DBPart {
 							name: 'Media Check',
 							pieceId: piece._id,
 						},
-						message: st.message || '',
+						message: {
+							key: st.message || '',
+						},
 					})
 				}
 			}

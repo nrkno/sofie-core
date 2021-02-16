@@ -326,8 +326,8 @@ class ModalDialogGlobalContainer0 extends React.Component<
 	renderString = (str: string) => {
 		let lines = (str || '').split('\n')
 
-		return _.map(lines, (str: string, i) => {
-			return <p key={i}>{str.trim()}</p>
+		return _.map(lines, (line: string, i) => {
+			return <p key={i}>{line.trim()}</p>
 		})
 	}
 	render() {

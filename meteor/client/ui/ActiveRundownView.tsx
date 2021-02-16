@@ -3,7 +3,6 @@ import * as _ from 'underscore'
 import { Route, Switch } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { Studios, Studio, StudioId } from '../../lib/collections/Studios'
 
 import { Spinner } from '../lib/Spinner'
