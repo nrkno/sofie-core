@@ -53,6 +53,7 @@ export interface IDashboardButtonProps {
 	showThumbnailsInList?: boolean
 	editableName?: boolean
 	onNameChanged?: (e: any, value: string) => void
+	lineBreak?: string
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
@@ -365,7 +366,18 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 								onBlur={this.onRenameTextBoxBlur}
 								ref={this.onRenameTextBoxShow}></textarea>
 						) : (
-							<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
+							<span className="dashboard-panel__panel__button__label">
+								{this.props.lineBreak && this.state.label.includes(this.props.lineBreak!)
+									? this.state.label.split(this.props.lineBreak!).map((line, index) => {
+											return (
+												<span key={index}>
+													{line}
+													<br />
+												</span>
+											)
+									  })
+									: this.state.label}
+							</span>
 						)}
 					</div>
 				</div>
