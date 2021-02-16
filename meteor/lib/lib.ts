@@ -17,6 +17,7 @@ import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-i
 import * as crypto from 'crypto'
 import { ReadonlyDeep, PartialDeep } from 'type-fest'
 import { BulkWriteOperation } from 'mongodb'
+import { ITranslatableMessage } from './api/TranslatableMessage'
 
 const cloneOrg = require('fast-clone')
 
@@ -1498,4 +1499,12 @@ export function equalArrays<T>(a: T[], b: T[]): boolean {
 		if (b[i] !== a[i]) return false
 	}
 	return true
+}
+
+/** Generate the translation for a string, to be applied later when it gets rendered */
+export function generateTranslation(key: string, args?: { [k: string]: any }): ITranslatableMessage {
+	return {
+		key,
+		args,
+	}
 }
