@@ -179,6 +179,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		} else return doc as Class
 	}
 }
+/** Caches data, allowing writes that will later be committed to mongo */
 export class DbCacheWriteCollection<
 	Class extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> }

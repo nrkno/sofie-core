@@ -69,6 +69,10 @@ export function forceClearAllActivationCaches() {
 const activationCaches = new Map<StudioId, ActivationCache>()
 
 type InternalCache<T> = { modifiedHash: string; value: T }
+/**
+ * The ActivationCache is designed to be generated once (or very few times) during the playout of a rundown.
+ * It is generated upon activation and preserves various documents in memory that should never change during playout of a rundown
+ */
 export class ActivationCache {
 	private _expires: number
 	private _initialized: boolean = false

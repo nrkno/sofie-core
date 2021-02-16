@@ -42,7 +42,7 @@ import { RundownAPI } from '../../../lib/api/rundown'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { getPieceInstancesForPart } from './infinites'
-import { playoutWithCacheLockFunction } from './syncFunction'
+import { runPlayoutOperationWithCache } from './syncFunction'
 import { MethodContext } from '../../../lib/api/methods'
 import {
 	CacheForPlayout,
@@ -59,7 +59,7 @@ export namespace ServerPlayoutAdLibAPI {
 		partInstanceId: PartInstanceId,
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
 	) {
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'pieceTakeNow',
 			rundownPlaylistId,
@@ -175,7 +175,7 @@ export namespace ServerPlayoutAdLibAPI {
 		adLibPieceId: PieceId,
 		queue: boolean
 	) {
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'segmentAdLibPieceStart',
 			rundownPlaylistId,
@@ -218,7 +218,7 @@ export namespace ServerPlayoutAdLibAPI {
 		baselineAdLibPieceId: PieceId,
 		queue: boolean
 	) {
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'rundownBaselineAdLibPieceStart',
 			rundownPlaylistId,
@@ -320,7 +320,7 @@ export namespace ServerPlayoutAdLibAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		sourceLayerId: string
 	) {
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'sourceLayerStickyPieceStart',
 			rundownPlaylistId,
@@ -602,7 +602,7 @@ export namespace ServerPlayoutAdLibAPI {
 		const bucketAdlib = BucketAdLibs.findOne(bucketAdlibId)
 		if (!bucketAdlib) throw new Meteor.Error(404, `Bucket Adlib "${bucketAdlibId}" not found!`)
 
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'startBucketAdlibPiece',
 			rundownPlaylistId,

@@ -15,6 +15,10 @@ import _ from 'underscore'
 import { profiler } from '../api/profiler'
 import { ReadonlyDeep } from 'type-fest'
 
+/**
+ * Caches a single object, allowing reads from cache, but not writes
+ * This should be used when the cache can only have one of something, and that must exist
+ */
 export class DbCacheReadObject<
 	Class extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> },
@@ -67,6 +71,10 @@ export class DbCacheReadObject<
 	}
 }
 
+/**
+ * Caches a single object, allowing reads and writes that will be later committed back to mongo
+ * This should be used when the cache can only have one of something, and that must exist
+ */
 export class DbCacheWriteObject<
 	Class extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> },
@@ -151,6 +159,10 @@ export class DbCacheWriteObject<
 	}
 }
 
+/**
+ * Caches a single object, allowing reads and writes that will be later committed back to mongo. This variant allows the object to start off undefined
+ * This should be used when the cache can only have one of something, and that must exist
+ */
 export class DbCacheWriteOptionalObject<
 	Class extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> }

@@ -19,6 +19,9 @@ export interface CacheForStudioBase {
 	readonly Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
 }
 
+/**
+ * This is a cache used for studio operations.
+ */
 export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheForStudioBase {
 	public readonly isStudio = true
 

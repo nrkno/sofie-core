@@ -24,6 +24,10 @@ import { removeRundownPlaylistFromDb } from '../rundownPlaylist'
 import { CacheForStudioBase } from '../studio/cache'
 import { getRundownsSegmentsAndPartsFromCache } from './lib'
 
+/**
+ * This is a cache used for playout operations.
+ * It is intentionally very lightweight, with the intention of it to be used only for some initial verification that a playout operation can be performed.
+ */
 export abstract class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 	public readonly isPlayout = true
 	public readonly PlaylistId: RundownPlaylistId
@@ -66,6 +70,11 @@ export abstract class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> 
 	}
 }
 
+/**
+ * This is a cache used for playout operations.
+ * It contains everything that is needed to generate the timeline, and everything except for pieces needed to update the partinstances.
+ * Anything not in this cache should not be needed often, and only for specific operations (eg, AdlibActions needed to run one).
+ */
 export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForStudioBase {
 	private toBeRemoved: boolean = false
 
@@ -213,6 +222,7 @@ export class ProxyCacheForPlayout extends CacheForPlayout {
 	}
 }
 
+/** A hack to convert the legacy CacheForRundownPlaylist into a CacheForPlayout until the ingest code is using a new cache type */
 export function wrapWithProxyPlayoutCache<T>(
 	origCache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,

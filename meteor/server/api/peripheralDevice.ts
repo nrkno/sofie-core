@@ -31,8 +31,8 @@ import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { getValidActivationCache } from '../cache/ActivationCache'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceGroupMetadata } from '../../lib/rundown/pieces'
-import { studioLockWithCacheFunction } from './studio/syncFunction'
-import { playoutNoCacheFromStudioLockFunction } from './playout/syncFunction'
+import { runStudioOperationWithCache } from './studio/syncFunction'
+import { runPlayoutOperationWithLockFromStudioOperation } from './playout/syncFunction'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { CacheForStudio } from './studio/cache'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
@@ -214,13 +214,13 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 
 		if (results.length > 0) {
-			studioLockWithCacheFunction('timelineTriggerTime', studioId, (studioCache) => {
+			runStudioOperationWithCache('timelineTriggerTime', studioId, (studioCache) => {
 				const activePlaylists = studioCache.getActiveRundownPlaylists()
 
 				if (activePlaylists.length === 1) {
 					const activePlaylist = activePlaylists[0]
 					const playlistId = activePlaylist._id
-					playoutNoCacheFromStudioLockFunction(
+					runPlayoutOperationWithLockFromStudioOperation(
 						'timelineTriggerTime',
 						studioCache,
 						activePlaylist,

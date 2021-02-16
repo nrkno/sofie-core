@@ -122,8 +122,8 @@ import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { wrapWithProxyPlayoutCache } from '../playout/cache'
-import { playoutNoCacheFromStudioLockFunction } from '../playout/syncFunction'
-import { studioLockFunction } from '../studio/syncFunction'
+import { runPlayoutOperationWithLockFromStudioOperation } from '../playout/syncFunction'
+import { runStudioOperationWithLock } from '../studio/syncFunction'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -144,10 +144,16 @@ export function rundownPlaylistSyncFunction<T extends () => any>(
 	context: string,
 	fcn: T
 ): ReturnType<T> {
-	return studioLockFunction(context, studioId, (lock) =>
-		playoutNoCacheFromStudioLockFunction(context, lock, { _id: rundownPlaylistId, studioId } as any, priority, fcn)
+	return runStudioOperationWithLock(context, studioId, (lock) =>
+		runPlayoutOperationWithLockFromStudioOperation(
+			context,
+			lock,
+			{ _id: rundownPlaylistId, studioId } as any,
+			priority,
+			fcn
+		)
 	)
-	// return playoutNoCacheLockFunction(null, context, rundownPlaylistId, priority, fcn)
+	// return runPlayoutOperationWithLock(null, context, rundownPlaylistId, priority, fcn)
 }
 
 interface SegmentChanges {
