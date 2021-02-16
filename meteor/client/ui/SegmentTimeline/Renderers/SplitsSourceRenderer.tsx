@@ -126,7 +126,9 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 							RundownUtils.getSourceLayerClassName(item.type),
 							{
 								second: array.length > 1 && index > 0 && item.type === array[index - 1].type,
-							}
+							},
+							{ upper: index >= array.length / 2 },
+							{ lower: index < array.length / 2 }
 						)}></div>
 				)
 			})
