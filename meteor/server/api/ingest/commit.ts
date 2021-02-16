@@ -26,7 +26,6 @@ import { logger } from '../../logging'
 import { isTooCloseToAutonext } from '../playout/lib'
 import { DBRundown, Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { ReadonlyDeep } from 'type-fest'
-import { playoutNoCacheLockFunction, playoutWithCacheFromStudioLockFunction } from '../playout/syncFunction'
 import { RundownSyncFunctionPriority } from './rundownInput'
 import {
 	DBRundownPlaylist,
@@ -55,6 +54,12 @@ import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PartId } from '../../../lib/collections/Parts'
 import { NoteType, RundownNote } from '../../../lib/api/notes'
+import { StudioUserContext } from '../blueprints/context'
+import {
+	runPlayoutOperationWithCacheFromStudioOperation,
+	runPlayoutOperationWithLock,
+	runPlayoutOperationWithLockFromStudioOperation,
+} from '../playout/syncFunction'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -91,7 +96,7 @@ export async function CommitIngestOperation(
 	let trappedInPlaylistId: [RundownPlaylistId, string] | undefined
 	if (beforeRundown?.playlistId && beforeRundown.playlistId !== targetPlaylistId) {
 		const beforePlaylistId = beforeRundown.playlistId
-		playoutNoCacheLockFunction(
+		runPlayoutOperationWithLock(
 			null,
 			'ingest.commit.removeRundownFromOldPlaylist',
 			beforePlaylistId,
@@ -159,7 +164,7 @@ export async function CommitIngestOperation(
 
 					if (playlist) {
 						// ensure the 'old' playout is updated to remove any references to the rundown
-						playoutWithCacheFromStudioLockFunction(
+						runPlayoutOperationWithCacheFromStudioOperation(
 							'',
 							oldPlaylistLock,
 							playlist,
@@ -196,7 +201,7 @@ export async function CommitIngestOperation(
 
 	// Adopt the rundown into its new/retained playlist
 	const newPlaylistId = trappedInPlaylistId ?? targetPlaylistId
-	playoutNoCacheLockFunction(
+	runPlayoutOperationWithLock(
 		null,
 		'ingest.commit.saveRundownToPlaylist',
 		newPlaylistId[0],
@@ -425,16 +430,16 @@ export function produceRundownPlaylistInfoFromRundown(
 ): RundownPlaylistAndOrder {
 	const playlistInfo = studioBlueprint?.blueprint?.getRundownPlaylistInfo
 		? studioBlueprint.blueprint.getRundownPlaylistInfo(
-				// new StudioUserContext(
-				// 	{
-				// 		name: 'produceRundownPlaylistInfoFromRundown',
-				// 		identifier: `studioId=${studio._id},playlistId=${unprotectString(
-				// 			playlistId
-				// 		)},rundownId=${currentRundown._id}`,
-				// 		tempSendUserNotesIntoBlackHole: true,
-				// 	},
-				// 	studio
-				// ),
+				new StudioUserContext(
+					{
+						name: 'produceRundownPlaylistInfoFromRundown',
+						identifier: `studioId=${studio._id},playlistId=${playlistId},rundownIds=${rundowns
+							.map((r) => r._id)
+							.join(',')}`,
+						tempSendUserNotesIntoBlackHole: true,
+					},
+					studio
+				),
 				unprotectObjectArray(clone<Array<Rundown>>(rundowns))
 		  )
 		: null

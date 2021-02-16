@@ -13,7 +13,7 @@ import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { makePromise, waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { Segment } from '../../../lib/collections/Segments'
 import { GenericDeviceActions } from './genericDevice/actions'
-import { playoutNoCacheLockFunction, playoutWithCacheFromStudioLockFunction } from '../playout/syncFunction'
+import { runPlayoutOperationWithLock, runPlayoutOperationWithCacheFromStudioOperation } from '../playout/syncFunction'
 import { MethodContext } from '../../../lib/api/methods'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 
@@ -107,7 +107,7 @@ export namespace IngestActions {
 	) {
 		check(rundownPlaylistId, String)
 
-		const ingestData = playoutNoCacheLockFunction(
+		const ingestData = runPlayoutOperationWithLock(
 			context,
 			'regenerateRundownPlaylist',
 			rundownPlaylistId,
@@ -133,7 +133,7 @@ export namespace IngestActions {
 				if (purgeExisting) {
 					waitForPromise(removeRundownsFromDb(rundowns.map((r) => r._id)))
 				} else {
-					playoutWithCacheFromStudioLockFunction(
+					runPlayoutOperationWithCacheFromStudioOperation(
 						'regenerateRundownPlaylist:init',
 						playlistLock,
 						rundownPlaylist,

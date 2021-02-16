@@ -161,6 +161,15 @@ export async function calculateSegmentsFromIngestData(
 					segmentId: newSegment._id,
 					_rank: i, // This gets updated to a rank unique within its segment in a later step
 					notes: notes,
+					invalidReason: blueprintPart.part.invalidReason
+						? {
+								...blueprintPart.part.invalidReason,
+								message: {
+									...blueprintPart.part.invalidReason.message,
+									namespaces: [unprotectString(blueprint.blueprintId)],
+								},
+						  }
+						: undefined,
 
 					// Preserve:
 					status: existingPart?.status, // This property is 'owned' by core and updated via its own flow

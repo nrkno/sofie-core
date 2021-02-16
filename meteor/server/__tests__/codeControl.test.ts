@@ -6,7 +6,7 @@ import { RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
 import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime } from '../../lib/lib'
 import { useControllableDefer, useNextTickDefer } from '../../__mocks__/meteor'
 import { setupDefaultRundownPlaylist, setupDefaultStudioEnvironment } from '../../__mocks__/helpers/database'
-import { playoutNoCacheFromStudioLockFunction } from '../api/playout/syncFunction'
+import { runPlayoutOperationWithLockFromStudioOperation } from '../api/playout/syncFunction'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 
 const TIME_FUZZY = 200
@@ -26,7 +26,7 @@ describe('codeControl rundown', () => {
 		expect(playlist).toBeTruthy()
 
 		let sync1 = (name: string, priority: RundownSyncFunctionPriority) => {
-			return playoutNoCacheFromStudioLockFunction(
+			return runPlayoutOperationWithLockFromStudioOperation(
 				'testRundownSyncFn',
 				{ _studioId: playlist.studioId },
 				playlist,

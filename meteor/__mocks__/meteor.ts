@@ -149,8 +149,8 @@ export namespace MeteorMock {
 			return `[${this.error}] ${this.reason}` // TODO: This should be changed to "${this.reason} [${this.error}]"
 		}
 	}
-	export function methods(methods: { [name: string]: Function }) {
-		Object.assign(mockMethods, methods)
+	export function methods(addMethods: { [name: string]: Function }) {
+		Object.assign(mockMethods, addMethods)
 	}
 	export function call(methodName: string, ...args: any[]) {
 		const fcn: Function = mockMethods[methodName]
@@ -167,8 +167,7 @@ export namespace MeteorMock {
 
 			this.defer(() => {
 				try {
-					const result = fcn.call(getMethodContext(), ...args)
-					Promise.resolve(result)
+					Promise.resolve(fcn.call(getMethodContext(), ...args))
 						.then((result) => {
 							callback(undefined, result)
 						})

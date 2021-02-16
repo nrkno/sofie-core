@@ -1,4 +1,4 @@
-export { TranslationsBundle, TranslationsBundleType, I18NextData }
+export { TranslationsBundle, TranslationsBundleType, I18NextData, ITranslatableMessage }
 
 enum TranslationsBundleType {
 	/** i18next JSON data */
@@ -22,4 +22,9 @@ interface TranslationsBundle {
 	encoding?: string
 	/** the actual translations as key/value pairs */
 	data: I18NextData
+}
+
+interface ITranslatableMessage {
+	key: string
+	args?: { [key: string]: any }
 }

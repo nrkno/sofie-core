@@ -13,7 +13,7 @@ import { Rundowns } from '../../../lib/collections/Rundowns'
 import { handleUpdatedSegment } from './rundownInput'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { logger } from '../../logging'
-import { studioLockWithCacheFunction } from '../studio/syncFunction'
+import { runStudioOperationWithCache } from '../studio/syncFunction'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
@@ -52,7 +52,7 @@ if (!Settings.enableUserAccounts) {
 			try {
 				check(studioId, String)
 
-				studioLockWithCacheFunction('debug_updateTimeline', studioId, (cache) => {
+				runStudioOperationWithCache('debug_updateTimeline', studioId, (cache) => {
 					updateStudioOrPlaylistTimeline(cache)
 				})
 			} catch (e) {

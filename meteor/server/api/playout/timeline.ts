@@ -57,13 +57,13 @@ import { profiler } from '../profiler'
 import { getPartFirstObjectId, getPartGroupId, getPieceGroupId } from '../../../lib/rundown/timeline'
 import { TimelineObjClassesCore } from '@sofie-automation/blueprints-integration'
 import { CacheForStudio, CacheForStudioBase } from '../studio/cache'
-import { playoutWithCacheFromStudioLockFunction } from './syncFunction'
+import { runPlayoutOperationWithCacheFromStudioOperation } from './syncFunction'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 
 export function updateStudioOrPlaylistTimeline(cache: CacheForStudio) {
 	const playlists = cache.getActiveRundownPlaylists()
 	if (playlists.length === 1) {
-		return playoutWithCacheFromStudioLockFunction(
+		return runPlayoutOperationWithCacheFromStudioOperation(
 			'updateStudioOrPlaylistTimeline',
 			cache,
 			playlists[0],
@@ -811,6 +811,7 @@ export function hasPieceInstanceDefinitelyEnded(
 	nowInPart: number
 ): boolean {
 	if (nowInPart <= 0) return false
+	if (pieceInstance.piece.hasSideEffects) return false
 
 	let relativeEnd: number | undefined
 	if (typeof pieceInstance.resolvedEndCap === 'number') {

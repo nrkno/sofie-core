@@ -16,12 +16,12 @@ import { RundownBaselineAdLibActions } from '../../lib/collections/RundownBaseli
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { Segments } from '../../lib/collections/Segments'
-import { studioLockWithCacheFunction } from './studio/syncFunction'
-import { playoutNoCacheFromStudioLockFunction } from './playout/syncFunction'
+import { runStudioOperationWithCache } from './studio/syncFunction'
+import { runPlayoutOperationWithLockFromStudioOperation } from './playout/syncFunction'
 import { RundownSyncFunctionPriority } from './ingest/rundownInput'
 
 export function removeEmptyPlaylists(studioId: StudioId) {
-	studioLockWithCacheFunction('removeEmptyPlaylists', studioId, async (cache) => {
+	runStudioOperationWithCache('removeEmptyPlaylists', studioId, async (cache) => {
 		const playlists = cache.RundownPlaylists.findFetch()
 
 		// We want to run them all in parallel fibers
@@ -29,7 +29,7 @@ export function removeEmptyPlaylists(studioId: StudioId) {
 			playlists.map(async (playlist) =>
 				makePromise(() => {
 					// Take the playlist lock, to ensure we don't fight something else
-					playoutNoCacheFromStudioLockFunction(
+					runPlayoutOperationWithLockFromStudioOperation(
 						'removeEmptyPlaylists',
 						cache,
 						playlist,

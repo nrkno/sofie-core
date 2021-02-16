@@ -13,7 +13,7 @@ import { updatePartInstanceRanks } from '../rundown'
 import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import { Part, PartId, Parts } from '../../../lib/collections/Parts'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
-import { playoutWithCacheLockFunction } from '../playout/syncFunction'
+import { runPlayoutOperationWithCache } from '../playout/syncFunction'
 
 require('../rundown') // include in order to create the Meteor methods needed
 
@@ -111,7 +111,7 @@ describe('updatePartInstanceRanks', () => {
 		const initialInstanceRanks = getPartInstanceRanks()
 		expect(initialInstanceRanks).toHaveLength(5)
 
-		playoutWithCacheLockFunction(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
+		runPlayoutOperationWithCache(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
 			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
@@ -158,7 +158,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartRank(initialInstanceRanks, 'part03', 4)
 		updatePartRank(initialInstanceRanks, 'part04', 2)
 
-		playoutWithCacheLockFunction(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
+		runPlayoutOperationWithCache(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
 			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
@@ -170,7 +170,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartRank(initialInstanceRanks, 'part02', 0)
 		updatePartRank(initialInstanceRanks, 'part05', 1)
 
-		playoutWithCacheLockFunction(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
+		runPlayoutOperationWithCache(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
 			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
@@ -193,7 +193,7 @@ describe('updatePartInstanceRanks', () => {
 		Parts.remove(protectString('part03'))
 		updatePartRank(initialInstanceRanks, 'part03', 2.5)
 
-		playoutWithCacheLockFunction(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
+		runPlayoutOperationWithCache(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
 			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
@@ -236,7 +236,7 @@ describe('updatePartInstanceRanks', () => {
 			rank: 2.666666666666667,
 		})
 
-		playoutWithCacheLockFunction(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
+		runPlayoutOperationWithCache(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
 			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
@@ -260,7 +260,7 @@ describe('updatePartInstanceRanks', () => {
 			e.orphaned = 'deleted'
 		}
 
-		playoutWithCacheLockFunction(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
+		runPlayoutOperationWithCache(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
 			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
@@ -280,7 +280,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartInstanceRank(initialInstanceRanks, 'part04', -2)
 		updatePartInstanceRank(initialInstanceRanks, 'part05', -1)
 
-		playoutWithCacheLockFunction(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
+		runPlayoutOperationWithCache(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
 			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks2 }])
 		)
 
@@ -312,7 +312,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartInstanceRank(initialInstanceRanks, 'part04', -1.5)
 		updatePartInstanceRank(initialInstanceRanks, 'part05', -0.5)
 
-		playoutWithCacheLockFunction(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
+		runPlayoutOperationWithCache(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
 			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 

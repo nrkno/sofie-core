@@ -11,7 +11,7 @@ import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { getRundownsSegmentsAndPartsFromCache } from '../playout/lib'
-import { PlaylistLock, playoutNoCacheLockFunction } from '../playout/syncFunction'
+import { PlaylistLock, runPlayoutOperationWithLock } from '../playout/syncFunction'
 import { profiler } from '../profiler'
 import { CacheForIngest } from './cache'
 import { BeforePartMap, CommitIngestOperation } from './commit'
@@ -129,7 +129,7 @@ export function ingestLockFunction(
 				// 	// We already hold the playlist lock, so reuse it
 				// 	await doPlaylistInner()
 				// } else {
-				// 	playoutNoCacheLockFunction(
+				// 	runPlayoutOperationWithLock(
 				// 		null,
 				// 		context,
 				// 		rundown.playlistId,
@@ -190,7 +190,7 @@ export function ingestRundownOnlyLockFunction(
 			// We already hold the playlist lock, so reuse it
 			await doPlaylistInner()
 		} else {
-			playoutNoCacheLockFunction(
+			runPlayoutOperationWithLock(
 				null,
 				context,
 				beforeRundown.playlistId,

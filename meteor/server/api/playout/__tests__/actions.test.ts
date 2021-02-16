@@ -15,7 +15,7 @@ import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { protectString, waitForPromise } from '../../../../lib/lib'
-import { playoutWithCacheLockFunction } from '../syncFunction'
+import { runPlayoutOperationWithCache } from '../syncFunction'
 import { removeRundownsFromDb } from '../../rundownPlaylist'
 
 // const Timeline = mockupCollection(OrgTimeline)
@@ -66,7 +66,7 @@ describe('Playout Actions', () => {
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 		// Activating a rundown, to rehearsal
 		let playlist = getPlaylist0()
-		playoutWithCacheLockFunction(
+		runPlayoutOperationWithCache(
 			null,
 			'activateRundownPlaylist',
 			playlist._id,
@@ -77,7 +77,7 @@ describe('Playout Actions', () => {
 
 		// Activating a rundown
 		playlist = getPlaylist0()
-		playoutWithCacheLockFunction(
+		runPlayoutOperationWithCache(
 			null,
 			'activateRundownPlaylist',
 			playlist._id,
@@ -88,7 +88,7 @@ describe('Playout Actions', () => {
 
 		// Activating a rundown, back to rehearsal
 		playlist = getPlaylist0()
-		playoutWithCacheLockFunction(
+		runPlayoutOperationWithCache(
 			null,
 			'activateRundownPlaylist',
 			playlist._id,
@@ -100,7 +100,7 @@ describe('Playout Actions', () => {
 		// Activating another rundown
 		expect(() => {
 			const playlist = getPlaylist1()
-			playoutWithCacheLockFunction(
+			runPlayoutOperationWithCache(
 				null,
 				'activateRundownPlaylist',
 				playlist._id,
@@ -120,7 +120,7 @@ describe('Playout Actions', () => {
 
 		// prepareStudioForBroadcast
 		const okToDestroyStuff = true
-		playoutWithCacheLockFunction(null, 'activateRundownPlaylist', playlist._id, null, (cache) =>
+		runPlayoutOperationWithCache(null, 'activateRundownPlaylist', playlist._id, null, (cache) =>
 			prepareStudioForBroadcast(cache, okToDestroyStuff)
 		)
 

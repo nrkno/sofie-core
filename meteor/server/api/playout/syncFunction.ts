@@ -8,7 +8,12 @@ import { syncFunction } from '../../codeControl'
 import { RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { checkAccessAndGetPlaylist } from '../lib'
 import { CacheForStudio } from '../studio/cache'
-import { getStudioIdFromCacheOrLock, isStudioLock, StudioLock, studioLockFunction } from '../studio/syncFunction'
+import {
+	getStudioIdFromCacheOrLock,
+	isStudioLock,
+	StudioLock,
+	runStudioOperationWithLock,
+} from '../studio/syncFunction'
 import { CacheForPlayout, CacheForPlayoutPreInit } from './cache'
 
 export interface PlaylistLock extends StudioLock {
@@ -36,7 +41,7 @@ export function getPlaylistIdFromCacheOrLock(cacheOrLock: any): RundownPlaylistI
  * @param rundownPlaylistId Id of the playlist to lock
  * @param fcn Function to run while holding the lock
  */
-export function playoutWithCacheLockFunction<T>(
+export function runPlayoutOperationWithCache<T>(
 	context: MethodContext | null,
 	contextStr: string,
 	rundownPlaylistId: RundownPlaylistId,
@@ -52,7 +57,7 @@ export function playoutWithCacheLockFunction<T>(
 		tmpPlaylist = pl
 	}
 
-	return studioLockFunction(contextStr, tmpPlaylist.studioId, (lock) =>
+	return runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, (lock) =>
 		playoutLockFunctionInner(contextStr, lock, tmpPlaylist, preInitFcn, fcn)
 	)
 }
@@ -66,7 +71,7 @@ export function playoutWithCacheLockFunction<T>(
  * @param priority Priority of function execution
  * @param fcn Function to run while holding the lock
  */
-export function playoutNoCacheLockFunction<T>(
+export function runPlayoutOperationWithLock<T>(
 	context: MethodContext | null,
 	contextStr: string,
 	rundownPlaylistId: RundownPlaylistId,
@@ -82,8 +87,10 @@ export function playoutNoCacheLockFunction<T>(
 		tmpPlaylist = pl
 	}
 
-	return studioLockFunction(contextStr, tmpPlaylist.studioId, (lock) =>
-		playoutNoCacheFromStudioLockFunction(contextStr, lock, tmpPlaylist, priority, (lock) => fcn(lock, tmpPlaylist))
+	return runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, (lock) =>
+		runPlayoutOperationWithLockFromStudioOperation(contextStr, lock, tmpPlaylist, priority, (lock) =>
+			fcn(lock, tmpPlaylist)
+		)
 	)
 }
 
@@ -95,7 +102,7 @@ export function playoutNoCacheLockFunction<T>(
  * @param rundownPlaylistId Id of the playlist to lock
  * @param fcn Function to run while holding the lock
  */
-export function playoutWithCacheFromStudioLockFunction<T>(
+export function runPlayoutOperationWithCacheFromStudioOperation<T>(
 	context: string,
 	cacheOrLock: ReadOnlyCache<CacheForStudio> | ReadOnlyCache<CacheForPlayoutPreInit> | StudioLock | PlaylistLock, // Important to verify correct lock is held
 	tmpPlaylist: ReadonlyDeep<RundownPlaylist>,
@@ -126,7 +133,7 @@ export function playoutWithCacheFromStudioLockFunction<T>(
  * @param priority Priority of function execution
  * @param fcn Function to run while holding the lock
  */
-export function playoutNoCacheFromStudioLockFunction<T>(
+export function runPlayoutOperationWithLockFromStudioOperation<T>(
 	context: string,
 	studioCacheOrLock: StudioLock | ReadOnlyCache<CacheForStudio>,
 	tmpPlaylist: ReadonlyDeep<RundownPlaylist>,
@@ -190,7 +197,7 @@ function playoutLockFunctionInner<T>(
 		// TODO-PartInstances remove this once new data flow
 		return waitForPromise(doPlaylistInner())
 	} else {
-		return playoutNoCacheFromStudioLockFunction(
+		return runPlayoutOperationWithLockFromStudioOperation(
 			context,
 			lock,
 			tmpPlaylist,

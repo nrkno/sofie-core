@@ -1,4 +1,4 @@
-import { TranslationsBundles, TranslationsBundle } from '../../lib/collections/TranslationsBundles'
+import { TranslationsBundles } from '../../lib/collections/TranslationsBundles'
 
 export namespace TranslationsBundlesSecurity {
 	export function allowReadAccess(selector: object, token: string, context: any): boolean {

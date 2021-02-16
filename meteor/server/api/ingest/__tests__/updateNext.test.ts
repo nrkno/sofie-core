@@ -10,7 +10,7 @@ import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../.
 import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances'
 import { Studios } from '../../../../lib/collections/Studios'
 import { removeRundownsFromDb } from '../../rundownPlaylist'
-import { playoutWithCacheLockFunction } from '../../playout/syncFunction'
+import { runPlayoutOperationWithCache } from '../../playout/syncFunction'
 jest.mock('../../playout/playout')
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
@@ -319,7 +319,7 @@ describe('Test ingest update next part helpers', () => {
 		})
 	}
 	function ensureNextPartIsValid() {
-		return playoutWithCacheLockFunction(null, 'ensureNextPartIsValid', rundownPlaylistId, null, (cache) =>
+		return runPlayoutOperationWithCache(null, 'ensureNextPartIsValid', rundownPlaylistId, null, (cache) =>
 			UpdateNext.ensureNextPartIsValid(cache)
 		)
 	}

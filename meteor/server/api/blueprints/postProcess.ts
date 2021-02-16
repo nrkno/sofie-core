@@ -15,7 +15,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
-import { RundownImportVersions, Rundown } from '../../../lib/collections/Rundowns'
+import { RundownImportVersions } from '../../../lib/collections/Rundowns'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PartId } from '../../../lib/collections/Parts'
 import { BucketId } from '../../../lib/collections/Buckets'

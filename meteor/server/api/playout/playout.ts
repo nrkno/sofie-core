@@ -62,9 +62,9 @@ import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { checkAccessAndGetPlaylist } from '../lib'
 import {
-	playoutNoCacheLockFunction,
-	playoutWithCacheFromStudioLockFunction,
-	playoutWithCacheLockFunction,
+	runPlayoutOperationWithLock,
+	runPlayoutOperationWithCacheFromStudioOperation,
+	runPlayoutOperationWithCache,
 } from './syncFunction'
 import {
 	CacheForPlayout,
@@ -73,7 +73,7 @@ import {
 	getSelectedPartInstancesFromCache,
 } from './cache'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
-import { studioLockWithCacheFunction } from '../studio/syncFunction'
+import { runStudioOperationWithCache } from '../studio/syncFunction'
 import { CacheForStudio } from '../studio/cache'
 
 /**
@@ -87,7 +87,7 @@ export namespace ServerPlayoutAPI {
 	 * To be triggered well before the broadcast, since it may take time and cause outputs to flicker
 	 */
 	export function prepareRundownPlaylistForBroadcast(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'prepareRundownPlaylistForBroadcast',
 			rundownPlaylistId,
@@ -123,7 +123,7 @@ export namespace ServerPlayoutAPI {
 	 * The User might have run through the rundown and wants to start over and try again
 	 */
 	export function resetRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId): void {
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'resetRundownPlaylist',
 			rundownPlaylistId,
@@ -152,7 +152,7 @@ export namespace ServerPlayoutAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal?: boolean
 	) {
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'resetAndActivateRundownPlaylist',
 			rundownPlaylistId,
@@ -180,7 +180,7 @@ export namespace ServerPlayoutAPI {
 		rehearsal: boolean
 	) {
 		check(rehearsal, Boolean)
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'forceResetAndActivateRundownPlaylist',
 			rundownPlaylistId,
@@ -199,7 +199,7 @@ export namespace ServerPlayoutAPI {
 						anyOtherActivePlaylists.map((otherRundownPlaylist) =>
 							makePromise(() => {
 								try {
-									playoutWithCacheFromStudioLockFunction(
+									runPlayoutOperationWithCacheFromStudioOperation(
 										'forceResetAndActivateRundownPlaylist',
 										cache,
 										otherRundownPlaylist,
@@ -248,7 +248,7 @@ export namespace ServerPlayoutAPI {
 		rehearsal: boolean
 	) {
 		check(rehearsal, Boolean)
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'activateRundownPlaylist',
 			rundownPlaylistId,
@@ -265,7 +265,7 @@ export namespace ServerPlayoutAPI {
 	 * Deactivate the rundown
 	 */
 	export function deactivateRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'deactivateRundownPlaylist',
 			rundownPlaylistId,
@@ -289,7 +289,7 @@ export namespace ServerPlayoutAPI {
 
 		const now = getCurrentTime()
 
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'takeNextPartInner',
 			rundownPlaylistId,
@@ -311,7 +311,7 @@ export namespace ServerPlayoutAPI {
 		check(rundownPlaylistId, String)
 		if (nextPartId) check(nextPartId, String)
 
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'setNextPart',
 			rundownPlaylistId,
@@ -369,7 +369,7 @@ export namespace ServerPlayoutAPI {
 		if (!horizontalDelta && !verticalDelta)
 			throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${horizontalDelta}, ${verticalDelta})`)
 
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'moveNextPart',
 			rundownPlaylistId,
@@ -492,7 +492,7 @@ export namespace ServerPlayoutAPI {
 		check(rundownPlaylistId, String)
 		if (nextSegmentId) check(nextSegmentId, String)
 
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'setNextSegment',
 			rundownPlaylistId,
@@ -522,7 +522,7 @@ export namespace ServerPlayoutAPI {
 		check(rundownPlaylistId, String)
 		logger.debug('rundownActivateHold')
 
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'activateHold',
 			rundownPlaylistId,
@@ -575,7 +575,7 @@ export namespace ServerPlayoutAPI {
 		check(rundownPlaylistId, String)
 		logger.debug('deactivateHold')
 
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'deactivateHold',
 			rundownPlaylistId,
@@ -600,7 +600,7 @@ export namespace ServerPlayoutAPI {
 	): ClientAPI.ClientResponse<void> {
 		check(rundownPlaylistId, String)
 
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'disableNextPiece',
 			rundownPlaylistId,
@@ -726,7 +726,7 @@ export namespace ServerPlayoutAPI {
 
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
-		return playoutNoCacheLockFunction(
+		return runPlayoutOperationWithLock(
 			context,
 			'onPiecePlaybackStarted',
 			rundownPlaylistId,
@@ -776,7 +776,7 @@ export namespace ServerPlayoutAPI {
 
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
-		return playoutNoCacheLockFunction(
+		return runPlayoutOperationWithLock(
 			context,
 			'onPiecePlaybackStopped',
 			rundownPlaylistId,
@@ -826,7 +826,7 @@ export namespace ServerPlayoutAPI {
 
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			null, // TODO?
 			'onPartPlaybackStarted',
 			rundownPlaylistId,
@@ -985,7 +985,7 @@ export namespace ServerPlayoutAPI {
 
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
-		return playoutNoCacheLockFunction(
+		return runPlayoutOperationWithLock(
 			context,
 			'onPartPlaybackStopped',
 			rundownPlaylistId,
@@ -1128,7 +1128,7 @@ export namespace ServerPlayoutAPI {
 	) {
 		const now = getCurrentTime()
 
-		playoutWithCacheLockFunction(
+		runPlayoutOperationWithCache(
 			context,
 			'executeActionInner',
 			rundownPlaylistId,
@@ -1214,7 +1214,7 @@ export namespace ServerPlayoutAPI {
 
 		if (sourceLayerIds.length === 0) return
 
-		return playoutWithCacheLockFunction(
+		return runPlayoutOperationWithCache(
 			context,
 			'sourceLayerOnPartStop',
 			rundownPlaylistId,
@@ -1259,7 +1259,7 @@ export namespace ServerPlayoutAPI {
 
 		check(studioId, String)
 
-		return studioLockWithCacheFunction('updateStudioBaseline', studioId, async (cache) => {
+		return runStudioOperationWithCache('updateStudioBaseline', studioId, async (cache) => {
 			const activePlaylists = cache.getActiveRundownPlaylists()
 
 			if (activePlaylists.length === 0) {
@@ -1276,7 +1276,7 @@ export namespace ServerPlayoutAPI {
 
 		check(studioId, String)
 
-		return studioLockWithCacheFunction('updateStudioBaseline', studioId, async (cache) => {
+		return runStudioOperationWithCache('updateStudioBaseline', studioId, async (cache) => {
 			return shouldUpdateStudioBaselineInner(cache)
 		})
 	}
@@ -1371,7 +1371,7 @@ export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylist
 
 	data.timeout = Meteor.setTimeout(() => {
 		if (updateTimelineFromIngestDataTimeouts.delete(playlistId)) {
-			return playoutWithCacheLockFunction(
+			return runPlayoutOperationWithCache(
 				null,
 				'triggerUpdateTimelineAfterIngestData',
 				playlistId,

@@ -1,5 +1,4 @@
 import { addMigrationSteps } from './databaseMigration'
-import { Studios } from '../../lib/collections/Studios'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import * as semver from 'semver'
 import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/X_X_X'

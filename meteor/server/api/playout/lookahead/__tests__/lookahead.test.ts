@@ -18,7 +18,7 @@ import { PartInstanceAndPieceInstances } from '../util'
 import { getLookeaheadObjects } from '..'
 import { SelectedPartInstancesTimelineInfo } from '../../timeline'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
-import { playoutWithCacheLockFunction } from '../../syncFunction'
+import { runPlayoutOperationWithCache } from '../../syncFunction'
 
 jest.mock('../findForLayer')
 type TfindLookaheadForLayer = jest.MockedFunction<typeof findLookaheadForLayer>
@@ -169,7 +169,7 @@ describe('Lookahead', () => {
 		getOrderedPartsAfterPlayheadMock.mockReturnValueOnce(fakeParts)
 
 		const res = waitForPromise(
-			playoutWithCacheLockFunction(null, 'test', playlistId, null, (cache) =>
+			runPlayoutOperationWithCache(null, 'test', playlistId, null, (cache) =>
 				getLookeaheadObjects(cache, partInstancesInfo)
 			)
 		)
@@ -214,7 +214,7 @@ describe('Lookahead', () => {
 			}))
 
 		const res = waitForPromise(
-			playoutWithCacheLockFunction(null, 'test', playlistId, null, (cache) =>
+			runPlayoutOperationWithCache(null, 'test', playlistId, null, (cache) =>
 				getLookeaheadObjects(cache, partInstancesInfo)
 			)
 		)
@@ -236,7 +236,7 @@ describe('Lookahead', () => {
 		env.studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = 0
 		env.studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 0
 		waitForPromise(
-			playoutWithCacheLockFunction(null, 'test', playlistId, null, (cache) =>
+			runPlayoutOperationWithCache(null, 'test', playlistId, null, (cache) =>
 				getLookeaheadObjects(cache, partInstancesInfo)
 			)
 		)
@@ -248,7 +248,7 @@ describe('Lookahead', () => {
 		env.studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = -1
 		env.studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 2000
 		waitForPromise(
-			playoutWithCacheLockFunction(null, 'test', playlistId, null, (cache) =>
+			runPlayoutOperationWithCache(null, 'test', playlistId, null, (cache) =>
 				getLookeaheadObjects(cache, partInstancesInfo)
 			)
 		)
@@ -260,7 +260,7 @@ describe('Lookahead', () => {
 		env.studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = undefined
 		env.studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = -1
 		waitForPromise(
-			playoutWithCacheLockFunction(null, 'test', playlistId, null, (cache) =>
+			runPlayoutOperationWithCache(null, 'test', playlistId, null, (cache) =>
 				getLookeaheadObjects(cache, partInstancesInfo)
 			)
 		)
@@ -288,7 +288,7 @@ describe('Lookahead', () => {
 
 		// With a previous
 		waitForPromise(
-			playoutWithCacheLockFunction(null, 'test', playlistId, null, (cache) =>
+			runPlayoutOperationWithCache(null, 'test', playlistId, null, (cache) =>
 				getLookeaheadObjects(cache, partInstancesInfo)
 			)
 		)
@@ -307,7 +307,7 @@ describe('Lookahead', () => {
 			allPieces: partInstancesInfo.current!.pieceInstances,
 		}
 		waitForPromise(
-			playoutWithCacheLockFunction(null, 'test', playlistId, null, (cache) =>
+			runPlayoutOperationWithCache(null, 'test', playlistId, null, (cache) =>
 				getLookeaheadObjects(cache, partInstancesInfo)
 			)
 		)
@@ -326,7 +326,7 @@ describe('Lookahead', () => {
 			allPieces: partInstancesInfo.next!.pieceInstances,
 		}
 		waitForPromise(
-			playoutWithCacheLockFunction(null, 'test', playlistId, null, (cache) =>
+			runPlayoutOperationWithCache(null, 'test', playlistId, null, (cache) =>
 				getLookeaheadObjects(cache, partInstancesInfo)
 			)
 		)
@@ -343,7 +343,7 @@ describe('Lookahead', () => {
 		partInstancesInfo.current.partInstance.part.autoNext = true
 		expectedNext.onTimeline = true
 		waitForPromise(
-			playoutWithCacheLockFunction(null, 'test', playlistId, null, (cache) =>
+			runPlayoutOperationWithCache(null, 'test', playlistId, null, (cache) =>
 				getLookeaheadObjects(cache, partInstancesInfo)
 			)
 		)

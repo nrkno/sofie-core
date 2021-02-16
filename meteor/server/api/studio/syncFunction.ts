@@ -29,12 +29,12 @@ export function getStudioIdFromCacheOrLock(
  * @param studioId Id of the studio to lock
  * @param fcn Function to run while holding the lock
  */
-export function studioLockWithCacheFunction<T>(
+export function runStudioOperationWithCache<T>(
 	context: string,
 	studioId: StudioId,
 	fcn: (cache: CacheForStudio) => Promise<T> | T
 ): T {
-	return studioLockFunction(context, studioId, async () => {
+	return runStudioOperationWithLock(context, studioId, async () => {
 		const cache = await CacheForStudio.create(studioId)
 
 		const res = await fcn(cache)
@@ -51,7 +51,7 @@ export function studioLockWithCacheFunction<T>(
  * @param studioId Id of the studio to lock
  * @param fcn Function to run while holding the lock
  */
-export function studioLockFunction<T>(
+export function runStudioOperationWithLock<T>(
 	context: string,
 	studioId: StudioId,
 	fcn: (lock: StudioLock) => Promise<T> | T

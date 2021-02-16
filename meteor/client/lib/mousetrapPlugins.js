@@ -1,4 +1,4 @@
-import { mousetrapHelper } from './mousetrapHelper'
+// import { mousetrapHelper } from './mousetrapHelper'
 import Mousetrap from 'mousetrap'
 ;(function(Mousetrap) {
 	var _globalCallbacks = {}
@@ -77,7 +77,6 @@ import Mousetrap from 'mousetrap'
 
 		if (!e.repeat) {
 			_shouldAbortNextCombo = _downKeys.length > 1
-			_comboTriggered = false
 		}
 
 		e.preventDefault()
