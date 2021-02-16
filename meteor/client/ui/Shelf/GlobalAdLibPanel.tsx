@@ -80,7 +80,7 @@ const AdLibListView = withTranslation()(
 			}
 		}
 
-		static getDerivedStateFromProps(props: IListViewPropsHeader, state) {
+		static getDerivedStateFromProps(props: IListViewPropsHeader) {
 			let tOLayers: {
 				[key: string]: IOutputLayer
 			} = {}
@@ -263,7 +263,7 @@ interface ITrackedProps {
 
 export const GlobalAdLibHotkeyUseMap = new ReactiveMap<number>()
 
-export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
+export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
@@ -612,7 +612,6 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
-			const { t } = this.props
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				const { t } = this.props
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId

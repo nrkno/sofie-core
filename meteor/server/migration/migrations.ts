@@ -83,3 +83,10 @@ addSteps1_16_0()
 
 import { addSteps as addSteps1_17_0 } from './1_17_0'
 addSteps1_17_0()
+
+import { addSteps as addSteps1_18_0 } from './1_18_0'
+addSteps1_18_0()
+
+// Migrations for the in-development release:
+import { addSteps as addStepsX_X_X } from './X_X_X'
+addStepsX_X_X()

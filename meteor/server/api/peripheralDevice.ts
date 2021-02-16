@@ -625,56 +625,52 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 }
 
-PickerPOST.route(
-	'/devices/:deviceId/:token/uploadCredentials',
-	(params, req: IncomingMessage, res: ServerResponse, next) => {
-		res.setHeader('Content-Type', 'text/plain')
+PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse, next) => {
+	res.setHeader('Content-Type', 'text/plain')
 
-		let content = ''
-		try {
-			let deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
-			let token: string = decodeURIComponent(params.token) // TODO: verify that this works
+	let content = ''
+	try {
+		let deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
+		check(deviceId, String)
 
-			if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
-			if (!token) throw new Meteor.Error(400, `parameter token is missing`)
+		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
 
-			const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, { userId: null })
+		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
-			let url = parseUrl(req.url || '', true)
+		let url = parseUrl(req.url || '', true)
 
-			let fileNames = url.query['name'] || undefined
-			let fileName: string = (_.isArray(fileNames) ? fileNames[0] : fileNames) || ''
+		let fileNames = url.query['name'] || undefined
+		let fileName: string = (_.isArray(fileNames) ? fileNames[0] : fileNames) || ''
 
-			check(deviceId, String)
-			check(fileName, String)
+		check(fileName, String)
 
-			const body = (req as any).body
-			if (!body) throw new Meteor.Error(400, 'Upload credentials: Missing request body')
+		const body = (req as any).body
+		if (!body) throw new Meteor.Error(400, 'Upload credentials: Missing request body')
 
-			if (typeof body !== 'string' || body.length < 10)
-				throw new Meteor.Error(400, 'Upload credentials: Invalid request body')
+		if (typeof body !== 'string' || body.length < 10)
+			throw new Meteor.Error(400, 'Upload credentials: Invalid request body')
 
-			logger.info('Upload credentails, ' + body.length + ' bytes')
+		logger.info('Upload credentails, ' + body.length + ' bytes')
 
-			const credentials = JSON.parse(body)
+		const credentials = JSON.parse(body)
 
-			PeripheralDevices.update(peripheralDevice._id, {
-				$set: {
-					'secretSettings.credentials': credentials,
-					'settings.secretCredentials': true,
-				},
-			})
+		PeripheralDevices.update(peripheralDevice._id, {
+			$set: {
+				'secretSettings.credentials': credentials,
+				'settings.secretCredentials': true,
+			},
+		})
 
-			res.statusCode = 200
-		} catch (e) {
-			res.statusCode = 500
-			content = e + ''
-			logger.error('Upload credentials failed: ' + e)
-		}
-
-		res.end(content)
+		res.statusCode = 200
+	} catch (e) {
+		res.statusCode = 500
+		content = e + ''
+		logger.error('Upload credentials failed: ' + e)
 	}
-)
+
+	res.end(content)
+})
 
 /** WHen a device has executed a PeripheralDeviceCommand, it will reply to this endpoint with the result */
 function functionReply(

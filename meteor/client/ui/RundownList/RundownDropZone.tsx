@@ -1,7 +1,6 @@
 import React from 'react'
 import {
 	ConnectDropTarget,
-	DragElementWrapper,
 	DropTarget,
 	DropTargetCollector,
 	DropTargetConnector,

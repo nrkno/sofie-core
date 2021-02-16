@@ -126,7 +126,8 @@ export function selectShowStyleVariant(
 
 	const variantId: ShowStyleVariantId | null = protectString(
 		showStyleBlueprint.blueprint.getShowStyleVariantId(
-			unprotectObjectArray(showStyleVariants) as any,
+			context,
+			unprotectObjectArray(showStyleVariants),
 			ingestRundown
 		)
 	)
@@ -208,14 +209,14 @@ export function produceRundownPlaylistRanks(
 
 	const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
 		? studioBlueprint.blueprint.getRundownPlaylistInfo(
-				// new StudioUserContext(
-				// 	{
-				// 		name: 'produceRundownPlaylistRanks',
-				// 		identifier: `studioId=${studio._id},playlistId=${unprotectString(playlistId)}`,
-				// 		tempSendUserNotesIntoBlackHole: true,
-				// 	},
-				// 	studio
-				// ),
+				new StudioUserContext(
+					{
+						name: 'produceRundownPlaylistRanks',
+						identifier: `studioId=${studio._id},playlistId=${unprotectString(playlistId)}`,
+						tempSendUserNotesIntoBlackHole: true,
+					},
+					studio
+				),
 				unprotectObjectArray(rundowns)
 		  )
 		: null
@@ -274,16 +275,16 @@ export function produceRundownPlaylistInfoFromRundown(
 
 			const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
 				? studioBlueprint.blueprint.getRundownPlaylistInfo(
-						// new StudioUserContext(
-						// 	{
-						// 		name: 'produceRundownPlaylistInfoFromRundown',
-						// 		identifier: `studioId=${studio._id},playlistId=${unprotectString(
-						// 			playlistId
-						// 		)},rundownId=${currentRundown._id}`,
-						// 		tempSendUserNotesIntoBlackHole: true,
-						// 	},
-						// 	studio
-						// ),
+						new StudioUserContext(
+							{
+								name: 'produceRundownPlaylistInfoFromRundown',
+								identifier: `studioId=${studio._id},playlistId=${unprotectString(
+									playlistId
+								)},rundownId=${currentRundown._id}`,
+								tempSendUserNotesIntoBlackHole: true,
+							},
+							studio
+						),
 						unprotectObjectArray(rundowns)
 				  )
 				: null
@@ -590,7 +591,7 @@ export function updatePartInstanceRanks(
 		}
 
 		const orphanedPartInstances = segmentPartInstances
-			.map((p, i) => ({ rank: p.part._rank, orphaned: p.orphaned, instanceId: p._id, id: p.part._id }))
+			.map((p) => ({ rank: p.part._rank, orphaned: p.orphaned, instanceId: p._id, id: p.part._id }))
 			.filter((p) => p.orphaned)
 
 		if (orphanedPartInstances.length === 0) {
