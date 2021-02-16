@@ -70,13 +70,17 @@ export function takeNextPartInnerSync(
 	existingCache?: CacheForRundownPlaylist
 ) {
 	const span = profiler.startSpan('takeNextPartInner')
-	const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!dbPlaylist.active) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
-	if (!dbPlaylist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
-	const cache = existingCache ?? waitForPromise(initCacheForRundownPlaylist(dbPlaylist, undefined, true))
+	let cache: CacheForRundownPlaylist | undefined = existingCache
 
-	let playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
+	if (!cache) {
+		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+		cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist, undefined, true))
+	}
+
+	let playlist = cache.RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
+	if (!playlist.active) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
+	if (!playlist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
 
 	let timeOffset: number | null = playlist.nextTimeOffset || null
 	let firstTake = !playlist.startedPlayback
