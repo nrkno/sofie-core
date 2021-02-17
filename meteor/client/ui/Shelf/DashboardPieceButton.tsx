@@ -370,7 +370,9 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				<div className="dashboard-panel__panel__button__content">
 					{!this.props.layer
 						? null
-						: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
+						: this.props.layer.type === SourceLayerType.VT ||
+						  this.props.layer.type === SourceLayerType.LIVE_SPEAK ||
+						  this.props.layer.type === SourceLayerType.TRANSITION
 						? // VT should have thumbnails in "Button" layout.
 						  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
 						: this.props.layer.type === SourceLayerType.SPLITS
