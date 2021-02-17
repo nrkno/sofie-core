@@ -47,13 +47,15 @@ if (!Settings.enableUserAccounts) {
 		debug_removeRundown(id: RundownPlaylistId) {
 			logger.debug('Remove rundown "' + id + '"')
 
-			waitForPromise(removeRundownPlaylistFromDb(id))
+			const playlist = RundownPlaylists.findOne(id)
+			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${id}" not found`)
+			waitForPromise(removeRundownPlaylistFromDb(playlist))
 		},
 
 		debug_removeAllRos() {
 			logger.debug('Remove all rundowns')
 
-			waitForPromiseAll(RundownPlaylists.find({}).map((playlist) => removeRundownPlaylistFromDb(playlist._id)))
+			waitForPromiseAll(RundownPlaylists.find({}).map((playlist) => removeRundownPlaylistFromDb(playlist)))
 		},
 
 		debug_recreateExpectedMediaItems() {

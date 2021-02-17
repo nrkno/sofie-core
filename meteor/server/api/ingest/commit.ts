@@ -1,20 +1,9 @@
 import { getShowStyleCompoundForRundown, ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import {
-	loadShowStyleBlueprint,
-	loadStudioBlueprint,
-	WrappedShowStyleBlueprint,
-	WrappedStudioBlueprint,
-} from '../blueprints/cache'
+import { loadShowStyleBlueprint, loadStudioBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
-import { CacheForPlayout } from '../playout/cache'
+import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
-import {
-	allowedToMoveRundownOutOfPlaylist,
-	ChangedSegmentsRankInfo,
-	RundownPlaylistAndOrder,
-	sortDefaultRundownInPlaylistOrder,
-	updatePartInstanceRanks,
-} from '../rundown'
+import { allowedToMoveRundownOutOfPlaylist, ChangedSegmentsRankInfo, updatePartInstanceRanks } from '../rundown'
 import { CacheForIngest } from './cache'
 import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
 import { getRundown } from './lib'
@@ -27,24 +16,13 @@ import { isTooCloseToAutonext } from '../playout/lib'
 import { DBRundown, Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { ReadonlyDeep } from 'type-fest'
 import { RundownSyncFunctionPriority } from './rundownInput'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import {
-	DBRundownPlaylist,
-	RundownPlaylist,
-	RundownPlaylistId,
-	RundownPlaylists,
-} from '../../../lib/collections/RundownPlaylists'
-import { getPlaylistIdFromExternalId, removeRundownsFromDb } from '../rundownPlaylist'
-import {
-	asyncCollectionFindOne,
-	asyncCollectionRemove,
-	clone,
-	getCurrentTime,
-	makePromise,
-	max,
-	protectString,
-	unprotectObjectArray,
-} from '../../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
+	getPlaylistIdFromExternalId,
+	produceRundownPlaylistInfoFromRundown,
+	removeRundownsFromDb,
+} from '../rundownPlaylist'
+import { asyncCollectionFindOne, asyncCollectionRemove, clone, makePromise, max, protectString } from '../../../lib/lib'
 import _ from 'underscore'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { reportRundownDataHasChanged } from '../asRunLog'
@@ -54,12 +32,12 @@ import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PartId } from '../../../lib/collections/Parts'
 import { NoteType, RundownNote } from '../../../lib/api/notes'
-import { StudioUserContext } from '../blueprints/context'
 import {
+	PlaylistLock,
 	runPlayoutOperationWithCacheFromStudioOperation,
 	runPlayoutOperationWithLock,
-	runPlayoutOperationWithLockFromStudioOperation,
 } from '../playout/syncFunction'
+import { getSyntheticTrailingComments } from 'typescript'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -155,6 +133,7 @@ export async function CommitIngestOperation(
 					trappedInPlaylistId = undefined
 
 					// Quickly move the rundown out of the playlist, so we an free the lock sooner
+					// TODO - if we instead took the studio lock a bit earler on, we could hold that and know we had exclusive ownership
 					Rundowns.update(ingestCache.RundownId, {
 						$set: {
 							playlistId: protectString('__TMP__'),
@@ -164,27 +143,12 @@ export async function CommitIngestOperation(
 
 					if (playlist) {
 						// ensure the 'old' playout is updated to remove any references to the rundown
-						runPlayoutOperationWithCacheFromStudioOperation(
-							'',
-							oldPlaylistLock,
+						updatePlayoutAfterChangingRundownInPlaylist(
 							playlist,
+							oldPlaylistLock,
 							null,
-							async (playoutCache) => {
-								if (playoutCache.Rundowns.documents.size === 0) {
-									// Remove an empty playlist
-									await asyncCollectionRemove(RundownPlaylists, { _id: playoutCache.PlaylistId })
-								} else {
-									applyChangesToPlayout(
-										playoutCache,
-										null,
-										rundown,
-										showStyle,
-										blueprint,
-										new Map(),
-										[]
-									)
-								}
-							}
+							showStyle,
+							blueprint
 						)
 					}
 				}
@@ -346,19 +310,22 @@ async function generatePlaylistAndRundownsCollection(
 function applyChangesToPlayout(
 	playoutCache: CacheForPlayout,
 	ingestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'> | null,
-	newRundown: ReadonlyDeep<Rundown>,
+	newRundown: ReadonlyDeep<Rundown> | null,
 	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	renamedSegments: ReadonlyMap<SegmentId, SegmentId>,
 	changedSegmentsInfo: ChangedSegmentsRankInfo
 ) {
-	updatePartInstancesBasicProperties(playoutCache, newRundown._id, renamedSegments)
+	if (newRundown) {
+		// If a rundown has changes, ensure instances are updated
+		updatePartInstancesBasicProperties(playoutCache, newRundown._id, renamedSegments)
+	}
 
 	updatePartInstanceRanks(playoutCache, changedSegmentsInfo)
 
 	UpdateNext.ensureNextPartIsValid(playoutCache)
 
-	if (ingestCache) {
+	if (ingestCache && newRundown) {
 		// If we have updated the rundown, then sync to the selected partInstances
 		syncChangesToPartInstances(playoutCache, ingestCache, showStyle, blueprint.blueprint, newRundown)
 	}
@@ -420,91 +387,31 @@ function updatePartInstancesBasicProperties(
 	}
 }
 
-export function produceRundownPlaylistInfoFromRundown(
-	studio: ReadonlyDeep<Studio>,
-	studioBlueprint: WrappedStudioBlueprint | undefined,
-	existingPlaylist: RundownPlaylist | undefined,
-	playlistId: RundownPlaylistId,
-	playlistExternalId: string,
-	rundowns: ReadonlyDeep<Array<Rundown>>
-): RundownPlaylistAndOrder {
-	const playlistInfo = studioBlueprint?.blueprint?.getRundownPlaylistInfo
-		? studioBlueprint.blueprint.getRundownPlaylistInfo(
-				new StudioUserContext(
-					{
-						name: 'produceRundownPlaylistInfoFromRundown',
-						identifier: `studioId=${studio._id},playlistId=${playlistId},rundownIds=${rundowns
-							.map((r) => r._id)
-							.join(',')}`,
-						tempSendUserNotesIntoBlackHole: true,
-					},
-					studio
-				),
-				unprotectObjectArray(clone<Array<Rundown>>(rundowns))
-		  )
-		: null
+export function updatePlayoutAfterChangingRundownInPlaylist(
+	playlist: RundownPlaylist,
+	playlistLock: PlaylistLock,
+	newRundown: ReadonlyDeep<Rundown> | null,
+	showStyle: ReadonlyDeep<ShowStyleCompound> | undefined,
+	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint> | undefined
+) {
+	// ensure the 'old' playout is updated to remove any references to the rundown
+	runPlayoutOperationWithCacheFromStudioOperation('', playlistLock, playlist, null, async (playoutCache) => {
+		if (playoutCache.Rundowns.documents.size === 0) {
+			// Remove an empty playlist
+			// TODO - shouldnt this flag on the cache and return?
+			await asyncCollectionRemove(RundownPlaylists, { _id: playoutCache.PlaylistId })
+		} else if (playoutCache.Playlist.doc.activationId) {
+			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(playoutCache)
+			const targetRundownId = currentPartInstance?.rundownId ?? nextPartInstance?.rundownId
 
-	const rundownsInDefaultOrder = sortDefaultRundownInPlaylistOrder(rundowns)
+			// Find the active rundown, or just the first
+			const rundown2 = playoutCache.Rundowns.findOne(targetRundownId)
+			if (rundown2) {
+				const showStyle2 = showStyle ?? (await playoutCache.activationCache.getShowStyleCompound(rundown2))
+				const blueprint2 = (showStyle && blueprint ? blueprint : null) ?? loadShowStyleBlueprint(showStyle2)
 
-	let newPlaylist: DBRundownPlaylist
-	if (playlistInfo) {
-		newPlaylist = {
-			created: getCurrentTime(),
-			currentPartInstanceId: null,
-			nextPartInstanceId: null,
-			previousPartInstanceId: null,
-
-			...existingPlaylist,
-
-			_id: playlistId,
-			externalId: playlistExternalId,
-			organizationId: studio.organizationId,
-			studioId: studio._id,
-			name: playlistInfo.playlist.name,
-			expectedStart: playlistInfo.playlist.expectedStart,
-			expectedDuration: playlistInfo.playlist.expectedDuration,
-
-			loop: playlistInfo.playlist.loop,
-
-			outOfOrderTiming: playlistInfo.playlist.outOfOrderTiming,
-
-			modified: getCurrentTime(),
+				applyChangesToPlayout(playoutCache, null, newRundown, showStyle2, blueprint2, new Map(), [])
+			}
 		}
-	} else {
-		newPlaylist = {
-			...defaultPlaylistForRundown(rundownsInDefaultOrder[0], studio, existingPlaylist),
-			_id: playlistId,
-			externalId: playlistExternalId,
-		}
-	}
-
-	// If no order is provided, fall back to default sorting:
-	const order = playlistInfo?.order ?? _.object(rundownsInDefaultOrder.map((i, index) => [i._id, index + 1]))
-
-	return {
-		rundownPlaylist: newPlaylist,
-		order: order, // Note: if playlist.rundownRanksAreSetInSofie is set, this order should be ignored later
-	}
-}
-function defaultPlaylistForRundown(
-	rundown: ReadonlyDeep<DBRundown>,
-	studio: ReadonlyDeep<Studio>,
-	existingPlaylist?: RundownPlaylist
-): Omit<DBRundownPlaylist, '_id' | 'externalId'> {
-	return {
-		created: getCurrentTime(),
-		currentPartInstanceId: null,
-		nextPartInstanceId: null,
-		previousPartInstanceId: null,
-
-		...existingPlaylist,
-
-		organizationId: studio.organizationId,
-		studioId: studio._id,
-		name: rundown.name,
-		expectedStart: rundown.expectedStart,
-		expectedDuration: rundown.expectedDuration,
-
-		modified: getCurrentTime(),
-	}
+	})
 }

@@ -2,19 +2,13 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
-import { Rundowns, DBRundown } from '../../../lib/collections/Rundowns'
+import { Rundowns } from '../../../lib/collections/Rundowns'
 import { DBPart } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
-import { saveIntoDb, getCurrentTime, unprotectString, PreparedChanges, waitForPromise } from '../../../lib/lib'
-import {
-	IngestRundown,
-	IngestSegment,
-	IngestPart,
-	BlueprintResultOrderedRundowns,
-} from '@sofie-automation/blueprints-integration'
+import { getCurrentTime, PreparedChanges, waitForPromise } from '../../../lib/lib'
+import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
-import { getAllRundownsInPlaylist, sortDefaultRundownInPlaylistOrder } from '../rundown'
 import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import {
@@ -32,7 +26,6 @@ import {
 	checkAccessAndGetPeripheralDevice,
 	getRundown,
 } from './lib'
-import { DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MethodContext } from '../../../lib/api/methods'
 import { CommitIngestData, ingestLockFunction } from './syncFunction'
 import { CacheForIngest } from './cache'
@@ -362,57 +355,6 @@ export function regenerateRundown(studio: Studio, rundownExternalId: string) {
 			return updateRundownFromIngestData(cache, ingestRundown, undefined)
 		}
 	)
-}
-
-/** Set _rank and playlistId of rundowns in a playlist */
-export function updateRundownsInPlaylist(
-	playlist: DBRundownPlaylist,
-	rundownRanks: BlueprintResultOrderedRundowns,
-	currentRundown?: DBRundown
-) {
-	const { rundowns, selector } = getAllRundownsInPlaylist(playlist._id, playlist.externalId)
-
-	let maxRank: number = Number.NEGATIVE_INFINITY
-	let currentRundownUpdated: DBRundown | undefined
-	rundowns.forEach((rundown) => {
-		rundown.playlistId = playlist._id
-
-		if (!playlist.rundownRanksAreSetInSofie) {
-			const rundownRank = rundownRanks[unprotectString(rundown._id)]
-			if (rundownRank !== undefined) {
-				rundown._rank = rundownRank
-			}
-		}
-		if (!_.isNaN(Number(rundown._rank))) {
-			maxRank = Math.max(maxRank, rundown._rank)
-		}
-		if (currentRundown && rundown._id === currentRundown._id) currentRundownUpdated = rundown
-		return rundown
-	})
-	if (playlist.rundownRanksAreSetInSofie) {
-		// Place new rundowns at the end:
-
-		const unrankedRundowns = sortDefaultRundownInPlaylistOrder(rundowns.filter((r) => r._rank === undefined))
-
-		unrankedRundowns.forEach((rundown) => {
-			if (rundown._rank === undefined) {
-				rundown._rank = ++maxRank
-			}
-		})
-	}
-	if (currentRundown && !currentRundownUpdated) {
-		throw new Meteor.Error(
-			500,
-			`updateRundownsInPlaylist: Rundown "${currentRundown._id}" is not a part of rundowns`
-		)
-	}
-	if (currentRundown && currentRundownUpdated) {
-		// Apply to in-memory copy:
-		currentRundown.playlistId = currentRundownUpdated.playlistId
-		currentRundown._rank = currentRundownUpdated._rank
-	}
-
-	saveIntoDb(Rundowns, selector, rundowns)
 }
 
 export function handleRemovedSegment(

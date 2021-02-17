@@ -199,7 +199,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 			// TODO - run any of the defers?
 
-			waitForPromise(removeRundownPlaylistFromDb(this.Playlist.doc._id))
+			waitForPromise(removeRundownPlaylistFromDb(this.Playlist.doc))
 
 			span?.end()
 		} else {

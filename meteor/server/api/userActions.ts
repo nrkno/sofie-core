@@ -50,6 +50,7 @@ import { profiler } from './profiler'
 import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { checkAccessAndGetPlaylist, checkAccessAndGetRundown } from './lib'
+import { moveRundown as moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from './rundownPlaylist'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -794,7 +795,7 @@ export function moveRundown(
 	if (intoPlaylistId) check(intoPlaylistId, String)
 
 	return ClientAPI.responseSuccess(
-		ServerRundownAPI.moveRundown(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
+		moveRundownIntoPlaylist(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 	)
 }
 export function restoreRundownOrder(
@@ -803,7 +804,7 @@ export function restoreRundownOrder(
 ): ClientAPI.ClientResponse<void> {
 	check(playlistId, String)
 
-	return ClientAPI.responseSuccess(ServerRundownAPI.restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
+	return ClientAPI.responseSuccess(restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
 }
 
 export function traceAction<T extends (...args: any[]) => any>(
