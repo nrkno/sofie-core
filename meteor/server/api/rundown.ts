@@ -229,8 +229,7 @@ export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments:
 			continue
 		}
 
-		const oldPartIdsAndRanks =
-			oldPartIdsAndRanks0 ?? cache.Parts.findFetch({ segmentId }).map((p) => ({ id: p._id, rank: p._rank }))
+		const oldPartIdsAndRanks = oldPartIdsAndRanks0 ?? newParts.map((p) => ({ id: p._id, rank: p._rank }))
 
 		const preservedPreviousParts = oldPartIdsAndRanks.filter((p) => newPartsMap.has(p.id))
 
@@ -253,7 +252,8 @@ export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments:
 			const remainingPreviousParts = _.sortBy(Array.from(allParts.values()), (p) => p.rank).filter(
 				(p) => p.instanceId || newPartsMap.has(p.id)
 			)
-			for (let i = 0; i < remainingPreviousParts.length - 1; ) {
+
+			for (let i = -1; i < remainingPreviousParts.length - 1; ) {
 				// Find the range to process this iteration
 				const beforePartIndex = i
 				const afterPartIndex = remainingPreviousParts.findIndex((p, o) => o > i && !p.instanceId)
@@ -275,7 +275,8 @@ export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments:
 
 				// Calculate the rank change per part
 				const dynamicPartCount = lastDynamicIndex - firstDynamicIndex + 1
-				const basePartRank = newPartsMap.get(remainingPreviousParts[beforePartIndex].id)?._rank!
+				const basePartRank =
+					beforePartIndex === -1 ? -1 : newPartsMap.get(remainingPreviousParts[beforePartIndex].id)?._rank!
 				const afterPartRank =
 					afterPartIndex === -1
 						? basePartRank + 1

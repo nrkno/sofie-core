@@ -524,56 +524,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	}
 }
 
-export function getAllNotesForSegmentAndParts(segments: DBSegment[], parts: Part[]): Array<TrackedNote> {
-	let notes: Array<TrackedNote> = []
-
-	const segmentNotes = _.object<{ [key: string]: { notes: TrackedNote[]; rank: number; name: string } }>(
-		segments.map((segment) => [
-			segment._id,
-			{
-				rank: segment._rank,
-				notes: segment.notes
-					? segment.notes.map((note) => ({
-							...note,
-							origin: {
-								...note.origin,
-								segmentId: segment._id,
-								rundownId: segment.rundownId,
-								name: note.origin.name || segment.name,
-							},
-					  }))
-					: undefined,
-				name: segment.name,
-			},
-		])
-	)
-	parts.forEach((part) => {
-		const newNotes = (part.notes || []).concat(part.getInvalidReasonNotes())
-		if (newNotes.length > 0) {
-			const segNotes = segmentNotes[unprotectString(part.segmentId)]
-			if (segNotes) {
-				segNotes.notes.push(
-					...newNotes.map((n) => ({
-						...n,
-						rank: segNotes.rank,
-						origin: {
-							...n.origin,
-							segmentId: part.segmentId,
-							partId: part._id,
-							rundownId: part.rundownId,
-							segmentName: segNotes.name,
-							name: n.origin.name || part.title,
-						},
-					}))
-				)
-			}
-		}
-	})
-	notes = notes.concat(_.flatten(_.map(segmentNotes, (o) => o.notes)))
-
-	return notes
-}
-
 export const RundownPlaylists: TransformedCollection<RundownPlaylist, DBRundownPlaylist> = createMongoCollection<
 	RundownPlaylist
 >('rundownPlaylists', { transform: (doc) => applyClassToDocument(RundownPlaylist, doc) })

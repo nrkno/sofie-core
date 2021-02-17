@@ -201,6 +201,33 @@ describe('updatePartInstanceRanks', () => {
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
 	})
 
+	testInFiber('sync from parts: missing first part', () => {
+		const playlist = getPlaylist()
+
+		const initialRanks = getPartRanks()
+		expect(initialRanks).toHaveLength(5)
+
+		insertAllPartInstances()
+
+		const initialInstanceRanks = getPartInstanceRanks()
+		expect(initialInstanceRanks).toHaveLength(5)
+
+		// remove one and offset the others
+		updatePartRank(initialInstanceRanks, 'part02', 1)
+		updatePartRank(initialInstanceRanks, 'part03', 2)
+		updatePartRank(initialInstanceRanks, 'part04', 3)
+		updatePartRank(initialInstanceRanks, 'part05', 4)
+		Parts.remove(protectString('part01'))
+		updatePartRank(initialInstanceRanks, 'part01', 0)
+
+		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
+			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+		)
+
+		const newInstanceRanks = getPartInstanceRanks()
+		expect(newInstanceRanks).toEqual(initialInstanceRanks)
+	})
+
 	testInFiber('sync from parts: adlib part after missing part', () => {
 		const initialRanks = getPartRanks()
 		expect(initialRanks).toHaveLength(5)

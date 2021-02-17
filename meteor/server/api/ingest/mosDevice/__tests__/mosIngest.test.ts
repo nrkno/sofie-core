@@ -6,25 +6,21 @@ import { Rundowns, Rundown, DBRundown } from '../../../../../lib/collections/Run
 import { Segments, DBSegment, SegmentId, Segment } from '../../../../../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
-import { literal, waitForPromise, protectString, unprotectString } from '../../../../../lib/lib'
+import { literal, waitForPromise, protectString } from '../../../../../lib/lib'
 
 import { mockRO } from './mock-mos-data'
 import { fixSnapshot } from '../../../../../__mocks__/helpers/snapshot'
 import { Pieces } from '../../../../../lib/collections/Pieces'
 import { RundownPlaylists, RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../../../lib/api/methods'
-import {
-	IngestDataCache,
-	IngestCacheType,
-	IngestDataCacheObjId,
-	IngestDataCacheObjRundown,
-} from '../../../../../lib/collections/IngestDataCache'
+import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections/IngestDataCache'
 import { getPartId } from '../../lib'
 import { PartInstance } from '../../../../../lib/collections/PartInstances'
 import { resetRandomId, restartRandomId } from '../../../../../__mocks__/random'
 
 jest.mock('../../updateNext')
 import { ensureNextPartIsValid } from '../../updateNext'
+import { UserActionsLog } from '../../../../../lib/collections/UserActionsLog'
 type TensureNextPartIsValid = jest.MockedFunction<typeof ensureNextPartIsValid>
 const ensureNextPartIsValidMock = ensureNextPartIsValid as TensureNextPartIsValid
 
@@ -59,6 +55,7 @@ describe('Test recieved mos ingest payloads', () => {
 		restartRandomId()
 
 		ensureNextPartIsValidMock.mockClear()
+		UserActionsLog.remove({})
 	})
 
 	function resetOrphanedRundown() {
