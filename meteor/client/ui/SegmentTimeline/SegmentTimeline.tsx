@@ -49,7 +49,7 @@ import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../Rundo
 
 import * as VelocityReact from 'velocity-react'
 import { TFunction } from 'i18next'
-import { ZoomInIcon, ZoomOutIcon } from '../../lib/segmentZoomIcon'
+import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
 
 interface IProps {
 	id: string
@@ -211,7 +211,10 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 
 	render() {
 		return (
-			<div className="segment-timeline__zoom-area-container">
+			<div
+				className={ClassNames('segment-timeline__zoom-area-container', {
+					hidden: this.props.scrollLeft === 0 && this.props.showingAllSegment && !this.props.isLiveSegment,
+				})}>
 				<div className="segment-timeline__zoom-area" onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
 					<div className="segment-timeline__timeline">{this.renderZoomTimeline()}</div>
 					<SegmentTimelineZoomControls
@@ -270,7 +273,7 @@ class SegmentTimelineZoomButtons extends React.Component<
 				<button
 					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--all"
 					onClick={this.zoomNormalize}>
-					{t('Show All')}
+					<ZoomShowAll />
 				</button>
 				<button
 					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--in"

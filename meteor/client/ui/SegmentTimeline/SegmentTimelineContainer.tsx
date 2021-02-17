@@ -45,7 +45,9 @@ export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
 const SIMULATED_PLAYBACK_CROSSFADE_STEP = 0.02
 
-const TIMELINE_RIGHT_PADDING = 20
+export const LIVE_LINE_TIME_PADDING = 150
+const LIVELINE_HISTORY_SIZE = 100
+const TIMELINE_RIGHT_PADDING = LIVELINE_HISTORY_SIZE + LIVE_LINE_TIME_PADDING
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -80,7 +82,6 @@ interface IProps {
 	showStyleBase: ShowStyleBase
 	playlist: RundownPlaylist
 	timeScale: number
-	liveLineHistorySize: number
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	// onTimeScaleChange?: (timeScaleVal: number) => void
@@ -196,7 +197,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		// Check obvious primitive changes
 		if (
 			props.followLiveSegments !== nextProps.followLiveSegments ||
-			props.liveLineHistorySize !== nextProps.liveLineHistorySize ||
 			props.onContextMenu !== nextProps.onContextMenu ||
 			props.onSegmentScroll !== nextProps.onSegmentScroll ||
 			// props.onTimeScaleChange !== nextProps.onTimeScaleChange ||
@@ -722,7 +722,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.setState({
 					livePosition: newLivePosition,
 					scrollLeft: this.state.followLiveLine
-						? Math.max(newLivePosition - this.props.liveLineHistorySize / this.state.timeScale, 0)
+						? Math.max(newLivePosition - LIVELINE_HISTORY_SIZE / this.state.timeScale, 0)
 						: this.state.scrollLeft,
 				})
 			}
@@ -762,7 +762,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		onFollowLiveLine = (state: boolean, event: any) => {
 			this.setState({
 				followLiveLine: state,
-				scrollLeft: Math.max(this.state.livePosition - this.props.liveLineHistorySize / this.state.timeScale, 0),
+				scrollLeft: Math.max(this.state.livePosition - LIVELINE_HISTORY_SIZE / this.state.timeScale, 0),
 			})
 		}
 
@@ -826,7 +826,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						autoNextPart={this.state.autoNextPart}
 						hasAlreadyPlayed={this.props.hasAlreadyPlayed}
 						followLiveLine={this.state.followLiveLine}
-						liveLineHistorySize={this.props.liveLineHistorySize}
+						liveLineHistorySize={LIVELINE_HISTORY_SIZE}
 						livePosition={this.state.livePosition}
 						onContextMenu={this.props.onContextMenu}
 						onFollowLiveLine={this.onFollowLiveLine}

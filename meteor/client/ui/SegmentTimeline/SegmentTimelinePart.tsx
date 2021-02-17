@@ -6,7 +6,14 @@ import * as _ from 'underscore'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
-import { SegmentUi, PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './SegmentTimelineContainer'
+import {
+	SegmentUi,
+	PartUi,
+	IOutputLayerUi,
+	ISourceLayerUi,
+	PieceUi,
+	LIVE_LINE_TIME_PADDING,
+} from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { WithTiming, withTiming } from '../RundownView/RundownTiming/withTiming'
 import { RundownTiming } from '../RundownView/RundownTiming/RundownTiming'
@@ -408,8 +415,6 @@ interface IState {
 	isInsideViewport: boolean
 	highlight: boolean
 }
-
-const LIVE_LINE_TIME_PADDING = 150
 
 const CARRIAGE_RETURN_ICON = (
 	<div className="segment-timeline__part__nextline__label__carriage-return">

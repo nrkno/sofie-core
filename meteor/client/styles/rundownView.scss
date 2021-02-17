@@ -753,18 +753,16 @@ svg.icon {
 		grid-row: header / end;
 		align-items: flex-end;
 		justify-content: space-between;
-		padding: 0 0.4em 0.1em;
+		padding: 0 10px 0.05em 20px;
 
 		> .segment-timeline__timeline-zoom-buttons__button {
 			min-width: 22px;
 			min-height: 22px;
 			max-height: 22px;
+			border: none;
 			background: transparent;
-			transition: 0.3s background-color ease-in-out;
-			border: 1px solid $segment-title-background-color;
-			border-radius: 0.3em;
 			overflow: visible;
-			font-size: 0.7em;
+			font-size: 1em;
 			padding: 0;
 
 			color: #dddddd;
@@ -774,20 +772,32 @@ svg.icon {
 			}
 
 			> svg {
-				height: 2em;
-				width: 2em;
+				height: 22px;
+				width: 22px;
 				margin-top: -0.05em;
+
+				.btn-bkg {
+					transition: 0.3s fill;
+				}
 			}
 
 			&:hover {
-				background: $segment-title-background-color-has-played;
-				transition: 0s background-color;
+				> svg {
+					.btn-bkg {
+						fill: #8c8c8c;
+						transition: 0s fill;
+					}
+				}
 			}
 
 			&:active {
-				background: $ui-button-primary;
-				border-color: $ui-button-primary;
-				transition: 0s background-color;
+				> svg {
+					.btn-bkg {
+						fill: $ui-button-primary;
+						border-color: $ui-button-primary;
+						transition: 0s fill;
+					}
+				}
 			}
 		}
 	}
@@ -814,13 +824,21 @@ svg.icon {
 	.segment-timeline__zoom-area-container {
 		grid-column: timeline / end;
 		grid-row: zoom-area / end;
+
+		transition: 0.3s opacity, 0s visibility;
+
+		&.hidden {
+			opacity: 0;
+			transition: 0.3s opacity, 0s visibility 0.3s;
+			visibility: hidden;
+		}
 	}
 
 	// The area controlling the zoom at the bottom of the segment
 	.segment-timeline__zoom-area {
 		position: relative;
 		max-height: 4em;
-		margin: 0.2em 0.2em 0em 0;
+		margin: 0.2em 1em 0em 0;
 		padding: 1px 0;
 
 		transition: $output-layer-group-collapse-animation-duration max-height ease-in-out,
@@ -947,9 +965,10 @@ svg.icon {
 				top: 0;
 				bottom: 0;
 				width: 250px;
-				cursor: move;
-				cursor: -webkit-grab;
-				background: rgba(255, 255, 255, 0.6);
+				cursor: ew-resize;
+				cursor: url(/images/zoom_area_move.png), ew-resize;
+				cursor: url(/images/zoom_area_move.png) 23 17, ew-resize;
+				background: rgba(255, 255, 255, 0.4);
 				box-shadow: 0 0 6px rgba(255, 255, 255, 1);
 			}
 		}
