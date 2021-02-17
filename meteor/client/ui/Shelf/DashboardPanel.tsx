@@ -618,6 +618,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 												displayStyle={filter.displayStyle}
 												showThumbnailsInList={filter.showThumbnailsInList}
 												canOverflowHorizontally={filter.overflowHorizontally}
+												lineBreak={filter.lineBreak}
 												isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}>
 												{adLibPiece.name}
 											</DashboardPieceButton>

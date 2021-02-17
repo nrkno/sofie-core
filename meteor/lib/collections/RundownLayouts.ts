@@ -153,6 +153,10 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	hide?: boolean
 	displayTakeButtons?: boolean
 	queueAllAdlibs?: boolean
+	/**
+	 * character or sequence that will be replaced with line break in buttons
+	 */
+	lineBreak?: string
 }
 
 /** A string, identifying a RundownLayout */
