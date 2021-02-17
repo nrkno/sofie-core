@@ -103,7 +103,7 @@ export function getMediaObjectMediaId(piece: Pick<IBlueprintPieceGeneric, 'conte
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
-			// case SourceLayerType.TRANSITION:
+		case SourceLayerType.TRANSITION:
 			return (piece.content as VTContent)?.fileName?.toUpperCase()
 		case SourceLayerType.GRAPHICS:
 			return (piece.content as GraphicsContent)?.fileName?.toUpperCase()
@@ -133,7 +133,7 @@ export function checkPieceContentStatus(
 		switch (sourceLayer.type) {
 			case SourceLayerType.VT:
 			case SourceLayerType.LIVE_SPEAK:
-				// case SourceLayerType.TRANSITION:
+			case SourceLayerType.TRANSITION:
 				// If the fileName is not set...
 				if (!fileName) {
 					newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
