@@ -142,7 +142,12 @@ export namespace MongoMock {
 		findOne(query, options?: Omit<FindOptions<T>, 'limit'>) {
 			return this.find(query, options).fetch()[0]
 		}
-		update(query: any, modifier, options?: UpdateOptions, cb?: Function) {
+		update(
+			query: any,
+			modifier,
+			options?: UpdateOptions,
+			cb?: (err: any, affectedCount: number | undefined) => void
+		) {
 			try {
 				const unimplementedUsedOptions = _.without(_.keys(options), 'multi')
 				if (unimplementedUsedOptions.length > 0) {
@@ -182,7 +187,7 @@ export namespace MongoMock {
 				else throw error
 			}
 		}
-		insert(doc: T, cb?: Function) {
+		insert(doc: T, cb?: (err: any, idInserted: T['_id'] | undefined) => void) {
 			try {
 				const d = _.clone(doc)
 				if (!d._id) d._id = protectString(RandomMock.id())
@@ -217,16 +222,38 @@ export namespace MongoMock {
 				else throw error
 			}
 		}
-		upsert(query: any, modifier, options?: UpsertOptions, cb?: Function) {
+		upsert(
+			query: any,
+			modifier,
+			options?: UpsertOptions,
+			cb?: (
+				err: any,
+				result: { numberAffected: number | undefined; insertedId: T['_id'] | undefined } | undefined
+			) => void
+		) {
 			let id = _.isString(query) ? query : query._id
 
 			const docs = this.find(id)._fetchRaw()
 
 			if (docs.length) {
-				this.update(docs[0]._id, modifier, options, cb)
+				this.update(
+					docs[0]._id,
+					modifier,
+					options,
+					cb
+						? (err, count) =>
+								err ? cb(err, undefined) : cb(null, { insertedId: undefined, numberAffected: count })
+						: undefined
+				)
 			} else {
 				const doc = mongoModify(query, { _id: id }, modifier)
-				this.insert(doc, cb)
+				this.insert(
+					doc,
+					cb
+						? (err, id) =>
+								err ? cb(err, undefined) : cb(null, { insertedId: id, numberAffected: undefined })
+						: undefined
+				)
 			}
 		}
 		remove(query: any, cb?: Function) {

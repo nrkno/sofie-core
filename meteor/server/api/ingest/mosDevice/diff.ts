@@ -10,7 +10,7 @@ import { CacheForIngest } from '../cache'
 import { removeSegmentContents } from '../cleanup'
 import { calculateSegmentsFromIngestData, saveSegmentChangesToCache } from '../generation'
 import { LocalIngestRundown, LocalIngestSegment } from '../ingestCache'
-import { getRundown, getSegmentId } from '../lib'
+import { canRundownBeUpdated, getRundown, getSegmentId } from '../lib'
 import { CommitIngestData } from '../syncFunction'
 
 export function diffAndUpdateSegmentIds(
@@ -37,17 +37,15 @@ export function diffAndUpdateSegmentIds(
 
 export async function diffAndApplyChanges(
 	cache: CacheForIngest,
-	oldIngestRundown: ReadonlyDeep<LocalIngestRundown> | undefined,
-	newIngestRundown: ReadonlyDeep<LocalIngestRundown> | undefined
+	newIngestRundown: ReadonlyDeep<LocalIngestRundown> | undefined,
+	oldIngestRundown: ReadonlyDeep<LocalIngestRundown> | undefined
 	// newIngestParts: AnnotatedIngestPart[]
 ): Promise<CommitIngestData | null> {
 	if (!newIngestRundown) throw new Meteor.Error(`handleMosDeleteStory lost the new IngestRundown...`)
 	if (!oldIngestRundown) throw new Meteor.Error(`handleMosDeleteStory lost the old IngestRundown...`)
 
 	const rundown = getRundown(cache)
-
-	// TODO - this has been removed, are the modified times being updated correctly???
-	// const newIngestRundown = updateIngestRundownWithData(oldIngestRundown, newIngestSegments)
+	if (!canRundownBeUpdated(rundown, false)) return null
 
 	const span = profiler.startSpan('mosDevice.ingest.diffAndApplyChanges')
 

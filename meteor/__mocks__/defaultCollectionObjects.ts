@@ -11,6 +11,7 @@ import { RundownAPI } from '../lib/api/rundown'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PieceId, Piece } from '../lib/collections/Pieces'
 import { AdLibPiece } from '../lib/collections/AdLibPieces'
+import { getRundownId } from '../server/api/ingest/lib'
 
 export function defaultRundownPlaylist(
 	_id: RundownPlaylistId,
@@ -36,7 +37,7 @@ export function defaultRundownPlaylist(
 	}
 }
 export function defaultRundown(
-	_id: RundownId,
+	externalId: string,
 	studioId: StudioId,
 	ingestDeviceId: PeripheralDeviceId,
 	playlistId: RundownPlaylistId,
@@ -54,8 +55,8 @@ export function defaultRundown(
 		playlistId: playlistId,
 		_rank: 0,
 
-		_id: _id,
-		externalId: unprotectString(_id),
+		_id: getRundownId(studioId, externalId),
+		externalId: externalId,
 		name: 'Default Rundown',
 
 		created: getCurrentTime(),

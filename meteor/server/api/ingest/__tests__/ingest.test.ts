@@ -1151,7 +1151,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 					// Force the regeneration from cached data
 					const studio = Studios.findOne(rundown.studioId) as Studio
-					regenerateRundown(studio, rundown.externalId)
+					regenerateRundown(studio, rundown.externalId, undefined)
 					return
 				}
 				throw e

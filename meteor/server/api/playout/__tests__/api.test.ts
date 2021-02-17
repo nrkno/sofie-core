@@ -303,7 +303,7 @@ describe('Playout API', () => {
 		).fetch()
 		expect(globalAdLibs).toHaveLength(2)
 
-		const adLibs = AdLibPieces.find({ partId: parts[0]._id })
+		const adLibs = AdLibPieces.find({ partId: parts[0]._id }).fetch()
 		expect(adLibs).toHaveLength(1)
 
 		expect(() => {

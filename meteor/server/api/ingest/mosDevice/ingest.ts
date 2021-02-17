@@ -222,10 +222,10 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 					.flat()
 					.find((p) => p.externalId === partExternalId)
 				if (!ingestPart) {
-					logger.warn(
+					throw new Meteor.Error(
+						500,
 						`handleMosFullStory: Missing MOS Story "${partExternalId}" in Rundown ingest data for "${rundownExternalId}"`
 					)
-					return null
 				}
 
 				// TODO - can the name change during a fullStory? If so then we need to be sure to update the segment groupings too
@@ -235,7 +235,7 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 				// We modify in-place
 				return ingestRundown
 			} else {
-				return null
+				throw new Meteor.Error(500, `handleMosFullStory: Missing MOS Rundown "${rundownExternalId}"`)
 			}
 		},
 		async (cache, ingestRundown) => {
@@ -537,7 +537,7 @@ function makeChangeToIngestParts(
 		} else {
 			const ref = referenceIngestSegments.find((s) => s.externalId === ingestSegment.externalId)
 			if (ref) {
-				if (ref.parts.length === ingestSegment.parts.length) {
+				if (ref.parts.length !== ingestSegment.parts.length) {
 					// A part has been added, or removed
 					ingestSegment.modified = getCurrentTime()
 				} else {

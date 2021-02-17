@@ -4,7 +4,7 @@ import { Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segments, DBSegment } from '../../../../lib/collections/Segments'
 import { Parts, DBPart } from '../../../../lib/collections/Parts'
 import { literal, saveIntoDb, protectString, waitForPromise } from '../../../../lib/lib'
-import { UpdateNext } from '../updateNext'
+import { ensureNextPartIsValid as ensureNextPartIsValidRaw } from '../updateNext'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances'
@@ -320,7 +320,7 @@ describe('Test ingest update next part helpers', () => {
 	}
 	function ensureNextPartIsValid() {
 		return runPlayoutOperationWithCache(null, 'ensureNextPartIsValid', rundownPlaylistId, null, (cache) =>
-			UpdateNext.ensureNextPartIsValid(cache)
+			ensureNextPartIsValidRaw(cache)
 		)
 	}
 

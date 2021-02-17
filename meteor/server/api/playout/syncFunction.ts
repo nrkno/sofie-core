@@ -136,7 +136,7 @@ export function runPlayoutOperationWithCacheFromStudioOperation<T>(
 export function runPlayoutOperationWithLockFromStudioOperation<T>(
 	context: string,
 	studioCacheOrLock: StudioLock | ReadOnlyCache<CacheForStudio>,
-	tmpPlaylist: ReadonlyDeep<RundownPlaylist>,
+	tmpPlaylist: Pick<ReadonlyDeep<RundownPlaylist>, '_id' | 'studioId'>,
 	priority: RundownSyncFunctionPriority,
 	fcn: (lock: PlaylistLock) => Promise<T> | T
 ): T {

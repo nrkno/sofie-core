@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
-import { DBRundown, Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
+import { DBRundown, Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
 import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
 import {
 	getCurrentTime,
@@ -46,6 +46,7 @@ import {
 } from './cache'
 import { Settings } from '../../../lib/Settings'
 import { removeSegmentContents } from '../ingest/cleanup'
+import { ingestLockFunction } from '../ingest/syncFunction'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -382,19 +383,18 @@ export function setNextSegment(cache: CacheForPlayout, nextSegment: Segment | nu
  */
 function cleanupOrphanedItems(cache: CacheForPlayout) {
 	const playlist = cache.Playlist.doc
-	const rundownIds = getRundownIDsFromCache(cache)
 	const selectedPartInstanceIds = _.compact([playlist.currentPartInstanceId, playlist.nextPartInstanceId])
 
 	const removePartInstanceIds: PartInstanceId[] = []
 
 	// Cleanup any orphaned segments once they are no longer being played
-	const segments = cache.Segments.findFetch((s) => s.orphaned === 'deleted' && rundownIds.includes(s.rundownId))
+	const segments = cache.Segments.findFetch((s) => s.orphaned === 'deleted')
 	const orphanedSegmentIds = new Set(segments.map((s) => s._id))
 	const groupedPartInstances = _.groupBy(
 		cache.PartInstances.findFetch((p) => orphanedSegmentIds.has(p.segmentId)),
 		(p) => p.segmentId
 	)
-	const removeSegmentIds = new Set<SegmentId>()
+	const removeSegmentsFromRundowns = new Map<RundownId, SegmentId[]>()
 	for (const segment of segments) {
 		const partInstances = groupedPartInstances[unprotectString(segment._id)]
 		const partInstanceIds = new Set(partInstances.map((p) => p._id))
@@ -404,24 +404,47 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 			(!playlist.currentPartInstanceId || !partInstanceIds.has(playlist.currentPartInstanceId)) &&
 			(!playlist.nextPartInstanceId || !partInstanceIds.has(playlist.nextPartInstanceId))
 		) {
-			// The segment is finished with
-			removeSegmentIds.add(segment._id)
-			cache.Segments.remove(segment._id)
-		}
-	}
-	if (removeSegmentIds.size > 0) {
-		if (Settings.allowUnsyncedSegments) {
-			// Ensure there are no contents left behind
-			for (const rundownId of rundownIds) {
-				// TODO - in future we could make this more lightweight by checking if there are any parts in the segment first, as that can be done with the cache
-				removeSegmentContents(cache, removeSegmentIds)
+			// The segment is finished with. Queue it for attempted removal
+			const existing = removeSegmentsFromRundowns.get(segment.rundownId)
+			if (existing) {
+				existing.push(segment._id)
+			} else {
+				removeSegmentsFromRundowns.set(segment.rundownId, [segment._id])
 			}
 		}
+	}
 
-		// Ensure any PartInstances are reset
-		removePartInstanceIds.push(
-			...cache.PartInstances.findFetch((p) => removeSegmentIds.has(p.segmentId) && !p.reset).map((p) => p._id)
-		)
+	// We need to run this outside of the current lock, and within an ingest lock, so defer to the work queue
+	for (const [rundownId, candidateSegmentIds] of removeSegmentsFromRundowns) {
+		const rundown = cache.Rundowns.findOne(rundownId)
+		if (rundown) {
+			Meteor.defer(() => {
+				ingestLockFunction(
+					'cleanupOrphanedItems:defer',
+					rundown.studioId,
+					rundown.externalId,
+					(ingestRundown) => ingestRundown,
+					async (ingestCache) => {
+						// Find the segments that are still orphaned (in case they have resynced before this executes)
+						// We flag them for deletion again, and they will either be kept if they are someone playing, or purged if they are not
+						const stillOrphanedSegments = ingestCache.Segments.findFetch(
+							(s) => s.orphaned === 'deleted' && candidateSegmentIds.includes(s._id)
+						)
+
+						return {
+							changedSegmentIds: [],
+							removedSegmentIds: stillOrphanedSegments.map((s) => s._id),
+							renamedSegments: new Map(),
+
+							removeRundown: false,
+
+							showStyle: undefined,
+							blueprint: undefined,
+						}
+					}
+				)
+			})
+		}
 	}
 
 	// Cleanup any orphaned partinstances once they are no longer being played (and the segment isnt orphaned)

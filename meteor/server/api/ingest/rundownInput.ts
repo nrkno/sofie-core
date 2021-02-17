@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import * as _ from 'underscore'
-import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { DBPart } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
@@ -261,13 +261,9 @@ export function handleRemovedRundownFromStudio(studioId: StudioId, rundownExtern
 		'handleRemovedRundown',
 		studioId,
 		rundownExternalId,
-		(ingestRundown) => {
-			if (ingestRundown) {
-				// Remove it
-				return undefined
-			} else {
-				return null
-			}
+		() => {
+			// Remove it
+			return undefined
 		},
 		async (cache) => {
 			const rundown = getRundown(cache)
@@ -335,7 +331,11 @@ export async function handleUpdatedRundownInner(
 
 	return updateRundownFromIngestData(cache, ingestRundown, peripheralDevice)
 }
-export function regenerateRundown(studio: Studio, rundownExternalId: string) {
+export function regenerateRundown(
+	studio: Studio,
+	rundownExternalId: string,
+	peripheralDevice0: PeripheralDevice | undefined
+) {
 	return ingestLockFunction(
 		'regenerateRundown',
 		studio._id,
@@ -352,7 +352,17 @@ export function regenerateRundown(studio: Studio, rundownExternalId: string) {
 			// If the rundown is orphaned, then we can't regenerate as there wont be any data to use!
 			if (!ingestRundown || !canRundownBeUpdated(cache.Rundown.doc, false)) return null
 
-			return updateRundownFromIngestData(cache, ingestRundown, undefined)
+			// Try and find the stored peripheralDevice
+			const peripheralDevice =
+				peripheralDevice0 ??
+				(cache.Rundown.doc?.peripheralDeviceId
+					? PeripheralDevices.findOne({
+							_id: cache.Rundown.doc.peripheralDeviceId,
+							studioId: cache.Studio.doc._id,
+					  })
+					: undefined)
+
+			return updateRundownFromIngestData(cache, ingestRundown, peripheralDevice)
 		}
 	)
 }

@@ -10,7 +10,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "mockDevice5",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -20,11 +19,7 @@ exports[`Test recieved mos ingest payloads mosRoCreate 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId10004",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -301,7 +296,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "mockDevice5",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -311,11 +305,7 @@ exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId11005",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -591,7 +581,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "mockDevice5",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -602,11 +591,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId29004",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -895,7 +880,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -906,11 +890,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId16003",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -1188,7 +1168,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "mockDevice5",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -1198,11 +1177,7 @@ exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId14004",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -1480,7 +1455,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "mockDevice5",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -1491,11 +1465,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId27004",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -1738,7 +1708,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -1749,11 +1718,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId16003",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -2043,7 +2008,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -2054,11 +2018,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId16003",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -2357,7 +2317,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "mockDevice5",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -2368,11 +2327,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId39004",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -2653,7 +2608,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "mockDevice5",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -2664,11 +2618,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId38004",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -2949,7 +2899,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "mockDevice5",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -2960,11 +2909,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId25004",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -3239,11 +3184,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId16003",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -3524,7 +3465,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "mockDevice5",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -3535,11 +3475,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId36004",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -3811,7 +3747,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "mockDevice5",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -3822,11 +3757,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId37004",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -4134,7 +4065,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "mockDevice5",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -4145,11 +4075,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId33004",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -4430,7 +4356,6 @@ Object {
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "organizationId": null,
-  "peripheralDeviceId": "mockDevice5",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -4441,11 +4366,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-<<<<<<< HEAD
-  "baselineModifyHash": "randomId32004",
-=======
-  "baselineModifyHash": "randomId9003",
->>>>>>> feat/allow-playing-part-to-be-removed
+  "baselineModifyHash": "randomId9002",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",

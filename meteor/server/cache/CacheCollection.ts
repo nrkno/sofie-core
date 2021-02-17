@@ -168,7 +168,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 				)
 			}
 
-			this.documents.set(id, { document: clone(doc) })
+			this.documents.set(id, { document: this._transform(clone(doc)) })
 		})
 	}
 	protected _transform(doc: DBInterface): Class {

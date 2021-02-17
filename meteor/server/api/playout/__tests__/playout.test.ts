@@ -1,6 +1,6 @@
 import _ from 'underscore'
 import '../../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { runTimersUntilNow, testInFiber } from '../../../../__mocks__/helpers/jest'
 import { fixSnapshot } from '../../../../__mocks__/helpers/snapshot'
 import { mockupCollection, resetMockupCollection } from '../../../../__mocks__/helpers/lib'
 import {
@@ -24,13 +24,15 @@ import { MethodContext } from '../../../../lib/api/methods'
 import { PartInstances, PartInstanceId } from '../../../../lib/collections/PartInstances'
 import { IngestActions } from '../../ingest/actions'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
-import { protectString } from '../../../../lib/lib'
+import { protectString, waitForPromise } from '../../../../lib/lib'
 import { AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { IBlueprintAsRunLogEventContent } from '@sofie-automation/blueprints-integration'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import * as lib from '../../../../lib/lib'
 import { ClientAPI } from '../../../../lib/api/client'
 import { ServerRundownAPI } from '../../rundown'
+import { getRundownId } from '../../ingest/lib'
+import { consoleTestResultHandler } from 'tslint/lib/test'
 
 const DEFAULT_CONTEXT: MethodContext = {
 	userId: null,

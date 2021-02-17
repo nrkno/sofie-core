@@ -40,7 +40,11 @@ import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
 import { handleRemovedRundownFromStudio, RundownSyncFunctionPriority } from './ingest/rundownInput'
-import { moveRundown, removeRundownPlaylistFromDb, restoreRundownsInPlaylistToDefaultOrder } from './rundownPlaylist'
+import {
+	moveRundownIntoPlaylist,
+	removeRundownPlaylistFromDb,
+	restoreRundownsInPlaylistToDefaultOrder,
+} from './rundownPlaylist'
 import { StudioUserContext } from './blueprints/context'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
 import { CacheForPlayout } from './playout/cache'
@@ -551,7 +555,7 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 		intoPlaylistId: RundownPlaylistId | null,
 		rundownsIdsInPlaylistInOrder: RundownId[]
 	) {
-		return makePromise(() => moveRundown(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder))
+		return makePromise(() => moveRundownIntoPlaylist(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder))
 	}
 	restoreRundownsInPlaylistToDefaultOrder(playlistId: RundownPlaylistId) {
 		return makePromise(() => restoreRundownsInPlaylistToDefaultOrder(this, playlistId))

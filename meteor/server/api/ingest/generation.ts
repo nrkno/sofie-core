@@ -16,7 +16,6 @@ import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound, getShowStyleCompoundForRundown } from '../../../lib/collections/ShowStyleVariants'
 import { anythingChanged, getCurrentTime, literal, protectString, sumChanges, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
-import { ReadOnlyCache } from '../../cache/CacheBase'
 import { saveIntoCache } from '../../cache/lib'
 import { PackageInfo } from '../../coreSystem'
 import { logger } from '../../logging'
@@ -84,8 +83,6 @@ export async function calculateSegmentsFromIngestData(
 		for (let ingestSegment of ingestSegments) {
 			const segmentId = getSegmentId(cache.RundownId, ingestSegment.externalId)
 			changedSegmentIds.push(segmentId)
-
-			const existingSegment = cache.Segments.findOne(segmentId)
 
 			const context = new SegmentUserContext(
 				{
@@ -308,7 +305,7 @@ export async function saveSegmentChangesToCache(
 	)
 	saveIntoCache<Part, DBPart>(
 		cache.Parts,
-		isWholeRundownUpdate ? {} : { segmentId: { $in: newSegmentIds } },
+		isWholeRundownUpdate ? {} : { $or: [{ segmentId: { $in: newSegmentIds } }, { _id: { $in: newPartIds } }] },
 		data.parts,
 		{
 			afterInsert(part) {
@@ -454,7 +451,17 @@ export async function updateRundownFromIngestData(
 		// validated later
 		playlistId: protectString(''),
 		_rank: 0,
-		...(cache.Rundown.doc ? _.pick(cache.Rundown.doc, 'startedPlayback', 'playlistId', '_rank') : {}),
+		...(cache.Rundown.doc
+			? _.pick(
+					cache.Rundown.doc,
+					'startedPlayback',
+					'playlistId',
+					'_rank',
+					'baselineModifyHash',
+					'airStatus',
+					'status'
+			  )
+			: {}),
 	})
 	const dbRundown = cache.Rundown.replace(dbRundownData)
 

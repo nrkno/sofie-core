@@ -49,7 +49,6 @@ export interface CommitIngestData {
  * @param rundownExternalId ExternalId of the rundown to lock
  * @param updateCacheFcn Function to mutate the ingestData. Return null to indicate no change was made. Return undefined to indicate the ingestData should be deleted
  * @param calcFcn Function to run to update the Rundown. Return the blob of data about the change to help the post-update perform its duties. Return null to indicate that nothing changed
- * @param playlistLock If the playlist lock is already held, supply it here to avoid trying to reaquire the lock
  */
 export function ingestLockFunction(
 	context: string,
@@ -60,17 +59,10 @@ export function ingestLockFunction(
 		cache: CacheForIngest,
 		newIngestRundown: LocalIngestRundown | undefined,
 		oldIngestRundown: LocalIngestRundown | undefined
-	) => Promise<CommitIngestData | null>,
-	playlistLock?: PlaylistLock
+	) => Promise<CommitIngestData | null>
 ): void {
 	return ingestLockFunctionInner(context, rundownExternalId, async () => {
 		const span = profiler.startSpan(`ingestLockFunction.${context}`)
-
-		if (playlistLock && playlistLock._studioId !== studioId)
-			throw new Meteor.Error(
-				500,
-				`ingestLockFunction called for Studio "${studioId}", with playlist lock from "${playlistLock._studioId}"`
-			)
 
 		// Load the old ingest data
 		const rundownId = getRundownId(studioId, rundownExternalId)
@@ -103,40 +95,9 @@ export function ingestLockFunction(
 			if (commitData) {
 				const commitData0 = commitData
 				// TODO - is this valid? can we not trust the ingest data and either update or not? Having both calcFcn and updateCacheFcn be able to reject is excessive
-				// The change is accepted
 
-				// Get the rundown. This assumes one is defined by now which it should be
-				// const rundown = getRundown(ingestCache)
-
+				// The change is accepted. Perform some playout calculations and save it all
 				await CommitIngestOperation(ingestCache, beforeRundown, beforePartMap, commitData0)
-
-				// async function doPlaylistInner() {
-				// 	// const playoutInfo = await getIngestPlaylistInfoFromDb(rundown)
-
-				// 	await CommitIngestOperation(ingestCache, playoutInfo, commitData0)
-
-				// 	// Update modified time
-				// 	if (getCurrentTime() - rundown.modified > 3600 * 1000) {
-				// 		const m = getCurrentTime()
-				// 		ingestCache.Rundown.update({ $set: { modified: m } })
-				// 	}
-
-				// 	// This needs to be inside the playout lock to ensure that a take doesnt happen mid update
-				// 	await ingestCache.saveAllToDatabase()
-				// }
-
-				// if (playlistLock?._playlistId === rundown.playlistId) {
-				// 	// We already hold the playlist lock, so reuse it
-				// 	await doPlaylistInner()
-				// } else {
-				// 	runPlayoutOperationWithLock(
-				// 		null,
-				// 		context,
-				// 		rundown.playlistId,
-				// 		RundownSyncFunctionPriority.INGEST,
-				// 		doPlaylistInner
-				// 	)
-				// }
 			} else {
 				// Should be no changes
 				ingestCache.assertNoChanges()

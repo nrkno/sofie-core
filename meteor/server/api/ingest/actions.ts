@@ -154,7 +154,7 @@ export namespace IngestActions {
 		waitForPromiseAll(
 			ingestData.map(({ rundownExternalId, studio }) =>
 				makePromise(() => {
-					regenerateRundown(studio, rundownExternalId)
+					regenerateRundown(studio, rundownExternalId, undefined)
 				})
 			)
 		)

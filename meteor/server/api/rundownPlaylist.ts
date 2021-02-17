@@ -16,7 +16,6 @@ import {
 	getCurrentTime,
 	unprotectObjectArray,
 	getRank,
-	saveIntoDb,
 	unprotectString,
 	asyncCollectionFindOne,
 	mongoFindOptions,
@@ -45,10 +44,10 @@ import { allowedToMoveRundownOutOfPlaylist } from './rundown'
 import { Meteor } from 'meteor/meteor'
 import { BlueprintResultOrderedRundowns } from '@sofie-automation/blueprints-integration'
 import { MethodContext } from '../../lib/api/methods'
-import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
+import { Random } from 'meteor/random'
 
 export function removeEmptyPlaylists(studioId: StudioId) {
 	runStudioOperationWithCache('removeEmptyPlaylists', studioId, async (cache) => {
@@ -252,7 +251,7 @@ export function updateRundownsInPlaylist(
 	}
 }
 /** Move a rundown manually (by a user in Sofie)  */
-export function moveRundown(
+export function moveRundownIntoPlaylist(
 	context: MethodContext,
 	/** The rundown to be moved */
 	rundownId: RundownId,
@@ -317,22 +316,11 @@ export function moveRundown(
 						$set: { playlistId: protectString('__TMP__'), playlistIdIsSetInSofie: true },
 					})
 
-					if (playlist.activationId) {
-						// ensure the 'old' playout is updated to remove any references to the rundown
-						updatePlayoutAfterChangingRundownInPlaylist(
-							playlist,
-							oldPlaylistLock,
-							null,
-							undefined,
-							undefined
-						)
-					}
+					// ensure the 'old' playout is updated to remove any references to the rundown
+					updatePlayoutAfterChangingRundownInPlaylist(playlist, oldPlaylistLock, null, undefined, undefined)
 				}
 			)
 		}
-
-		const peripheralDevice: PeripheralDevice | undefined =
-			rundown.peripheralDeviceId && PeripheralDevices.findOne(rundown.peripheralDeviceId)
 
 		if (intoPlaylist) {
 			// Move into an existing playlist:
@@ -368,8 +356,10 @@ export function moveRundown(
 						const rundownIdBefore: RundownId | undefined = rundownsIdsInPlaylistInOrder[i - 1]
 						const rundownIdAfter: RundownId | undefined = rundownsIdsInPlaylistInOrder[i + 1]
 
-						const rundownBefore: Rundown | undefined = rundownIdBefore && Rundowns.findOne(rundownIdBefore)
-						const rundownAfter: Rundown | undefined = rundownIdAfter && Rundowns.findOne(rundownIdAfter)
+						const rundownBefore: Rundown | undefined =
+							rundownIdBefore && rundownsCollection.findOne(rundownIdBefore)
+						const rundownAfter: Rundown | undefined =
+							rundownIdAfter && rundownsCollection.findOne(rundownIdAfter)
 
 						let newRank: number | undefined = getRank(rundownBefore, rundownAfter)
 
@@ -404,33 +394,23 @@ export function moveRundown(
 						rundown.playlistIdIsSetInSofie = true
 
 						// When updating the rundowns in the playlist, the newly moved rundown will be given it's proper _rank:
-						const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(
-							studio,
-							undefined,
-							playlist,
-							playlist._id,
-							playlist.externalId,
-							rundownsCollection.findFetch({})
-						)
 						updateRundownsInPlaylist(
-							rundownPlaylistInfo.rundownPlaylist,
-							rundownPlaylistInfo.order,
+							playlist,
+							_.object(rundownsIdsInPlaylistInOrder.map((id, index) => [id, index + 1])),
 							rundownsCollection
 						)
 					}
 
 					await rundownsCollection.updateDatabaseWithData()
 
-					if (playlist.activationId) {
-						// If the playlist is active this could have changed lookahead
-						updatePlayoutAfterChangingRundownInPlaylist(
-							playlist,
-							intoPlaylistLock,
-							rundown,
-							undefined,
-							undefined
-						)
-					}
+					// If the playlist is active this could have changed lookahead
+					updatePlayoutAfterChangingRundownInPlaylist(
+						playlist,
+						intoPlaylistLock,
+						rundown,
+						undefined,
+						undefined
+					)
 				}
 			)
 		} else {
@@ -438,10 +418,11 @@ export function moveRundown(
 
 			// No point locking, as we are creating something fresh and unique here
 
+			const externalId = Random.id()
 			const playlist: DBRundownPlaylist = {
 				...defaultPlaylistForRundown(rundown, studio),
-				externalId: rundown.externalId,
-				_id: getPlaylistIdFromExternalId(studio._id, rundown.externalId),
+				externalId: externalId,
+				_id: getPlaylistIdFromExternalId(studio._id, externalId),
 			}
 			RundownPlaylists.insert(playlist)
 
@@ -497,10 +478,8 @@ export function restoreRundownsInPlaylistToDefaultOrder(context: MethodContext, 
 
 			await rundownsCollection.updateDatabaseWithData()
 
-			if (newPlaylist.activationId) {
-				// If the playlist is active this could have changed lookahead
-				updatePlayoutAfterChangingRundownInPlaylist(newPlaylist, playlistLock, null, undefined, undefined)
-			}
+			// If the playlist is active this could have changed lookahead
+			updatePlayoutAfterChangingRundownInPlaylist(newPlaylist, playlistLock, null, undefined, undefined)
 		}
 	)
 }

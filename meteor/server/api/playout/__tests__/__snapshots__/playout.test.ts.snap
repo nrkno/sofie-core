@@ -177,7 +177,6 @@ Object {
   "nextPartManual": false,
   "nextTimeOffset": null,
   "organizationId": null,
-  "peripheralDeviceId": "mockDevice5",
   "previousPartInstanceId": null,
   "rehearsal": false,
   "studioId": "mockStudio4",
