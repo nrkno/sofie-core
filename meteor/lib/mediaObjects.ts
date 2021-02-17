@@ -133,7 +133,6 @@ export function checkPieceContentStatus(
 		switch (sourceLayer.type) {
 			case SourceLayerType.VT:
 			case SourceLayerType.LIVE_SPEAK:
-			case SourceLayerType.TRANSITION:
 				// If the fileName is not set...
 				if (!fileName) {
 					newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
@@ -286,6 +285,7 @@ export function checkPieceContentStatus(
 					break
 				}
 				break
+			case SourceLayerType.TRANSITION:
 			case SourceLayerType.GRAPHICS:
 				if (fileName) {
 					const mediaObject = MediaObjects.findOne({
