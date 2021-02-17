@@ -4,16 +4,15 @@ import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { Segment, Segments } from '../../../../lib/collections/Segments'
+import { Segment, SegmentId, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { ServerRundownAPI } from '../../rundown'
 import { ServerPlayoutAPI } from '../../playout/playout'
-import { RundownInput } from '../rundownInput'
+import { regenerateRundown, RundownInput } from '../rundownInput'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { getSegmentId } from '../lib'
-
 import { wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { removeRundownPlaylistFromCache } from '../../playout/lib'
 import { MethodContext } from '../../../../lib/api/methods'
@@ -61,25 +60,21 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: externalId,
 			name: 'MyMockRundown',
 			type: 'mock',
-			// payload: {},
 			segments: [
 				{
 					externalId: 'segment0',
 					name: 'Segment 0',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part0',
 							name: 'Part 0',
 							rank: 0,
-							// payload?: any,
 						},
 						{
 							externalId: 'part1',
 							name: 'Part 1',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -87,13 +82,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 					externalId: 'segment1',
 					name: 'Segment 1',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part2',
 							name: 'Part 2',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -130,25 +123,21 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: externalId,
 			name: 'MyMockRundownRenamed',
 			type: 'mock',
-			// payload: {},
 			segments: [
 				{
 					externalId: 'segment0',
 					name: 'Segment 0',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part0',
 							name: 'Part 0',
 							rank: 0,
-							// payload?: any,
 						},
 						{
 							externalId: 'part1',
 							name: 'Part 1',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -156,13 +145,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 					externalId: 'segment1',
 					name: 'Segment 1',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part2',
 							name: 'Part 2',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -202,25 +189,21 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: externalId,
 			name: 'MyMockRundown',
 			type: 'mock',
-			// payload: {},
 			segments: [
 				{
 					externalId: 'segment0',
 					name: 'Segment 0',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part0',
 							name: 'Part 0',
 							rank: 0,
-							// payload?: any,
 						},
 						{
 							externalId: 'part1',
 							name: 'Part 1',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -228,13 +211,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 					externalId: 'segment1',
 					name: 'Segment 1',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part2',
 							name: 'Part 2',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -242,13 +223,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 					externalId: 'segment2',
 					name: 'Segment 2',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part3',
 							name: 'Part 3',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -282,25 +261,21 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: externalId,
 			name: 'MyMockRundown',
 			type: 'mock',
-			// payload: {},
 			segments: [
 				{
 					externalId: 'segment0',
 					name: 'Segment 0',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part0',
 							name: 'Part 0',
 							rank: 0,
-							// payload?: any,
 						},
 						{
 							externalId: 'part1',
 							name: 'Part 1',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -308,13 +283,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 					externalId: 'segment1',
 					name: 'Segment 1',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part2',
 							name: 'Part 2',
 							rank: 0,
-							// payload?: any,
 						},
 						{
 							externalId: 'partZ',
@@ -327,13 +300,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 					externalId: 'segment2',
 					name: 'Segment 2',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part3',
 							name: 'Part 3',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -374,25 +345,21 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: externalId,
 			name: 'MyMockRundown',
 			type: 'mock',
-			// payload: {},
 			segments: [
 				{
 					externalId: 'segment0',
 					name: 'Segment 0',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part0',
 							name: 'Part 0',
 							rank: 0,
-							// payload?: any,
 						},
 						{
 							externalId: 'part1',
 							name: 'Part 1',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -400,13 +367,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 					externalId: 'segment2',
 					name: 'Segment 2',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part3',
 							name: 'Part 3',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -443,19 +408,16 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: externalId,
 			name: 'MyMockRundown',
 			type: 'mock',
-			// payload: {},
 			segments: [
 				{
 					externalId: 'segment0',
 					name: 'Segment 0',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part1',
 							name: 'Part 1',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -463,13 +425,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 					externalId: 'segment2',
 					name: 'Segment 2',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part3',
 							name: 'Part 3',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -542,19 +502,16 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: externalId,
 			name: 'MyMockRundown',
 			type: 'mock',
-			// payload: {},
 			segments: [
 				{
 					externalId: 'segment0',
 					name: 'Segment 0',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part1',
 							name: 'Part 1',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -562,13 +519,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 					externalId: 'segment2',
 					name: 'Segment 2',
 					rank: 0,
-					// payload?: any,
 					parts: [
 						{
 							externalId: 'part3',
 							name: 'Part 3',
 							rank: 0,
-							// payload?: any,
 						},
 					],
 				},
@@ -578,15 +533,117 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Rundowns.findOne()).toBeTruthy()
 	})
 
-	testInFiber('dataSegmentCreate', () => {
+	testInFiber('dataRundownUpdate fail when rundown is orphaned', () => {
 		expect(Rundowns.findOne()).toBeTruthy()
+		Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		const rundown0 = Rundowns.findOne() as Rundown
+		expect(rundown0.orphaned).toEqual('deleted')
+		expect(Segments.find({ rundownId: rundown0._id }).count()).toBe(2)
+
+		const rundownData: IngestRundown = {
+			externalId: externalId,
+			name: 'MyMockRundown',
+			type: 'mock',
+			segments: [
+				{
+					externalId: 'segment0',
+					name: 'Segment 0',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part1',
+							name: 'Part 1',
+							rank: 0,
+						},
+					],
+				},
+				{
+					externalId: 'segment2',
+					name: 'Segment 2',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part3',
+							name: 'Part 3',
+							rank: 0,
+						},
+					],
+				},
+			],
+		}
+		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown.orphaned).toEqual('deleted')
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
+	})
+
+	testInFiber('dataRundownCreate replace orphaned rundown', () => {
+		expect(Rundowns.find({ orphaned: 'deleted' }).count()).toEqual(1)
+
+		const rundownData: IngestRundown = {
+			externalId: externalId,
+			name: 'MyMockRundown',
+			type: 'mock',
+			segments: [
+				{
+					externalId: 'segment0',
+					name: 'Segment 0',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part1',
+							name: 'Part 1',
+							rank: 0,
+						},
+					],
+				},
+				{
+					externalId: 'segment2',
+					name: 'Segment 2',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part3',
+							name: 'Part 3',
+							rank: 0,
+						},
+					],
+				},
+			],
+		}
+		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
+		expect(Rundowns.find({ orphaned: 'deleted' }).count()).toEqual(0)
+	})
+
+	testInFiber('dataSegmentCreate in deleted rundown', () => {
+		expect(Rundowns.findOne()).toBeTruthy()
+		Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
 		const ingestSegment: IngestSegment = {
 			externalId: segExternalId,
 			name: 'MyMockSegment',
 			rank: 0,
-			// payload?: any;
+			parts: [],
+		}
+		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token, externalId, ingestSegment)
+
+		const segment = Segments.find({ externalId: segExternalId }).fetch()
+		expect(segment).toHaveLength(0)
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
+	})
+
+	testInFiber('dataSegmentCreate', () => {
+		expect(Rundowns.findOne()).toBeTruthy()
+		Rundowns.update({}, { $unset: { orphaned: 1 } })
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
+		const ingestSegment: IngestSegment = {
+			externalId: segExternalId,
+			name: 'MyMockSegment',
+			rank: 0,
 			parts: [],
 		}
 		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token, externalId, ingestSegment)
@@ -595,22 +652,47 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(segment).toHaveLength(1)
 		expect(segment[0]).toMatchObject({
 			externalId: ingestSegment.externalId,
-			name: 'MyMockSegment', // fails here because name is set to segments externalId instead
+			name: 'MyMockSegment',
 		})
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		expect(segments).toHaveLength(3)
 	})
 
+	testInFiber('dataSegmentCreate replace deleted segment', () => {
+		expect(Rundowns.findOne()).toBeTruthy()
+		Rundowns.update({}, { $unset: { orphaned: 1 } })
+
+		const segment0 = Segments.find({ externalId: segExternalId }).fetch()
+		expect(segment0).toHaveLength(1)
+		Segments.update(segment0[0]._id, { $set: { orphaned: 'deleted' } })
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
+		const ingestSegment: IngestSegment = {
+			externalId: segExternalId,
+			name: 'MyMockSegment2',
+			rank: 0,
+			parts: [],
+		}
+		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token, externalId, ingestSegment)
+
+		const segment = Segments.find({ externalId: segExternalId }).fetch()
+		expect(segment).toHaveLength(1)
+		expect(segment[0]).toMatchObject({
+			name: 'MyMockSegment2',
+		})
+	})
+
 	testInFiber('dataSegmentUpdate add a part', () => {
 		const rundown = Rundowns.findOne() as Rundown
+		Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
 
 		const ingestSegment: IngestSegment = {
 			externalId: segExternalId,
 			name: 'MyMockSegment',
 			rank: 0,
-			// payload?: any;
 			parts: [
 				{
 					externalId: 'part42',
@@ -632,12 +714,66 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 	})
 
+	testInFiber('dataSegmentUpdate deleted segment', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
+
+		Segments.update({ rundownId: rundown._id }, { $set: { orphaned: 'deleted' } })
+		const segmentBefore = Segments.findOne({ externalId: segExternalId }) as Segment
+
+		const ingestSegment: IngestSegment = {
+			externalId: segExternalId,
+			name: 'MyMockSegment2',
+			rank: 0,
+			parts: [
+				{
+					externalId: 'part423',
+					name: 'Part 423',
+					rank: 0,
+				},
+			],
+		}
+		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentUpdate, device._id, device.token, externalId, ingestSegment)
+
+		const segments = Segments.find({ rundownId: rundown._id }).fetch()
+		expect(segments).toHaveLength(3)
+		// Ensure no changes
+		expect(Segments.findOne({ externalId: segExternalId })).toMatchObject(segmentBefore)
+	})
+
+	testInFiber('dataSegmentUpdate deleted rundown', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
+
+		const segmentBefore = Segments.findOne({ externalId: segExternalId }) as Segment
+
+		const ingestSegment: IngestSegment = {
+			externalId: segExternalId,
+			name: 'MyMockSegment2',
+			rank: 0,
+			parts: [
+				{
+					externalId: 'part423',
+					name: 'Part 423',
+					rank: 0,
+				},
+			],
+		}
+		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentUpdate, device._id, device.token, externalId, ingestSegment)
+
+		const segments = Segments.find({ rundownId: rundown._id }).fetch()
+		expect(segments).toHaveLength(3)
+		// Ensure no changes
+		expect(Segments.findOne({ externalId: segExternalId })).toMatchObject(segmentBefore)
+	})
+
 	testInFiber('dataSegmentUpdate non-existant rundown', () => {
 		const ingestSegment: IngestSegment = {
 			externalId: segExternalId,
 			name: 'MyMockSegment',
 			rank: 0,
-			// payload?: any;
 			parts: [],
 		}
 
@@ -651,13 +787,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 	testInFiber('dataSegmentUpdate no change', () => {
 		const rundown = Rundowns.findOne() as Rundown
+		Rundowns.update({}, { $unset: { orphaned: 1 } })
+		Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
 
 		const ingestSegment: IngestSegment = {
 			externalId: segExternalId,
 			name: 'MyMockSegment',
 			rank: 0,
-			// payload?: any;
 			parts: [
 				{
 					externalId: 'part42',
@@ -687,7 +824,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: segExternalId,
 			name: 'MyMockSegment',
 			rank: 0,
-			// payload?: any;
 			parts: [],
 		}
 		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentUpdate, device._id, device.token, externalId, ingestSegment)
@@ -706,7 +842,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: '',
 			name: 'MyMockSegment',
 			rank: 0,
-			// payload?: any;
 			parts: [],
 		}
 		try {
@@ -723,9 +858,42 @@ describe('Test ingest actions for rundowns and segments', () => {
 		}
 	})
 
+	testInFiber('dataSegmentDelete already orphaned segment', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		expect(Segments.find({ rundownId: rundown._id, externalId: segExternalId }).count()).toBe(1)
+
+		Rundowns.update({}, { $unset: { orphaned: 1 } })
+		Segments.update({ rundownId: rundown._id, externalId: segExternalId }, { $set: { orphaned: 'deleted' } })
+
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
+
+		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentDelete, device._id, device.token, externalId, segExternalId)
+
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
+		expect(Segments.findOne({ externalId: segExternalId })).toBeTruthy()
+	})
+
+	testInFiber('dataSegmentDelete in deleted rundown', () => {
+		const rundown = Rundowns.findOne() as Rundown
+		expect(Segments.find({ rundownId: rundown._id, externalId: segExternalId }).count()).toBe(1)
+
+		Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
+
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
+
+		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentDelete, device._id, device.token, externalId, segExternalId)
+
+		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
+		expect(Segments.findOne({ externalId: segExternalId })).toBeTruthy()
+	})
+
 	testInFiber('dataSegmentDelete', () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
+
+		Rundowns.update({}, { $unset: { orphaned: 1 } })
+		Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
 
 		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentDelete, device._id, device.token, externalId, segExternalId)
 
@@ -775,7 +943,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: segExternalId,
 			name: 'MyMockSegment',
 			rank: 0,
-			// payload?: any;
 			parts: [],
 		}
 		try {
@@ -855,7 +1022,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: 'party',
 			name: 'Part Y',
 			rank: 0,
-			// payload: any?
 		}
 
 		Meteor.call(
@@ -885,7 +1051,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: 'party',
 			name: 'Part Z',
 			rank: 0,
-			// payload: any?
 		}
 
 		Meteor.call(
@@ -983,12 +1148,16 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
 		const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
+		const getSegment = (id: SegmentId) => Segments.findOne(id) as Segment
 		const resyncRundown = () => {
 			try {
 				ServerRundownAPI.resyncRundown(DEFAULT_CONTEXT, rundown._id)
 			} catch (e) {
 				if (e.toString().match(/does not support the method "reloadRundown"/)) {
 					// This is expected
+
+					// Force the regeneration from cached data
+					regenerateRundown(rundown._id)
 					return
 				}
 				throw e
@@ -1003,18 +1172,19 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		// Activate the rundown, make data updates and verify that it gets unsynced properly
 		ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, playlist._id, true)
-		expect(getRundown().unsynced).toEqual(false)
+		expect(getRundown().orphaned).toBeUndefined()
 
 		RundownInput.dataRundownDelete(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId)
-		expect(getRundown().unsynced).toEqual(true)
+		expect(getRundown().orphaned).toEqual('deleted')
 
 		resyncRundown()
-		expect(getRundown().unsynced).toEqual(false)
+		expect(getRundown().orphaned).toBeUndefined()
 
 		ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlist._id)
 		const partInstance = PartInstances.find({ 'part._id': parts[0]._id }).fetch()
 		expect(partInstance).toHaveLength(1)
 		expect(getPlaylist().currentPartInstanceId).toEqual(partInstance[0]._id)
+		expect(partInstance[0].segmentId).toEqual(segments[0]._id)
 
 		RundownInput.dataSegmentDelete(
 			DEFAULT_CONTEXT,
@@ -1023,10 +1193,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rundownData.externalId,
 			segments[0].externalId
 		)
-		expect(getRundown().unsynced).toEqual(true)
+		expect(getRundown().orphaned).toBeUndefined()
+		expect(getSegment(segments[0]._id).orphaned).toEqual('deleted')
 
 		resyncRundown()
-		expect(getRundown().unsynced).toEqual(false)
+		expect(getRundown().orphaned).toBeUndefined()
+		expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
 
 		RundownInput.dataPartDelete(
 			DEFAULT_CONTEXT,
@@ -1036,9 +1208,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segments[0].externalId,
 			parts[0].externalId
 		)
-		expect(getRundown().unsynced).toEqual(true)
+		expect(getRundown().orphaned).toBeUndefined()
+		expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
 
 		resyncRundown()
-		expect(getRundown().unsynced).toEqual(false)
+		expect(getRundown().orphaned).toBeUndefined()
+		expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
 	})
 })

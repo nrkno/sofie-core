@@ -87,7 +87,7 @@ describe('updatePartInstanceRanks', () => {
 		}))
 	}
 
-	function insertPartInstance(part: Part): PartInstanceId {
+	function insertPartInstance(part: Part, orphaned?: PartInstance['orphaned']): PartInstanceId {
 		const id: PartInstanceId = protectString(`${part._id}_instance`)
 		PartInstances.insert({
 			_id: id,
@@ -97,6 +97,7 @@ describe('updatePartInstanceRanks', () => {
 			segmentId,
 			playlistActivationId: protectString('active'),
 			part,
+			orphaned: orphaned,
 		})
 		return id
 	}
@@ -134,7 +135,7 @@ describe('updatePartInstanceRanks', () => {
 			if (e.partId === partId) {
 				e.rank = newRank
 				if (updated === 0) {
-					e.orphaned = 'adlib-part' // Future: 'deleted'
+					e.orphaned = 'deleted'
 				}
 			}
 		}
@@ -212,6 +213,33 @@ describe('updatePartInstanceRanks', () => {
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
 	})
 
+	testInFiber('sync from parts: missing first part', () => {
+		const playlist = getPlaylist()
+
+		const initialRanks = getPartRanks()
+		expect(initialRanks).toHaveLength(5)
+
+		insertAllPartInstances()
+
+		const initialInstanceRanks = getPartInstanceRanks()
+		expect(initialInstanceRanks).toHaveLength(5)
+
+		// remove one and offset the others
+		updatePartRank(initialInstanceRanks, 'part02', 1)
+		updatePartRank(initialInstanceRanks, 'part03', 2)
+		updatePartRank(initialInstanceRanks, 'part04', 3)
+		updatePartRank(initialInstanceRanks, 'part05', 4)
+		Parts.remove(protectString('part01'))
+		updatePartRank(initialInstanceRanks, 'part01', 0)
+
+		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
+			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+		)
+
+		const newInstanceRanks = getPartInstanceRanks()
+		expect(newInstanceRanks).toEqual(initialInstanceRanks)
+	})
+
 	testInFiber('sync from parts: adlib part after missing part', () => {
 		const playlist = getPlaylist()
 
@@ -233,7 +261,8 @@ describe('updatePartInstanceRanks', () => {
 				segmentId,
 				externalId: adlibId,
 				title: adlibId,
-			})
+			}),
+			'adlib-part'
 		)
 
 		// remove one and offset the others
@@ -271,7 +300,7 @@ describe('updatePartInstanceRanks', () => {
 		Parts.remove({ segmentId })
 		for (const e of initialInstanceRanks) {
 			e.rank-- // Offset to match the generated order
-			e.orphaned = 'adlib-part' // Future: 'deleted'
+			e.orphaned = 'deleted'
 		}
 
 		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
@@ -316,7 +345,7 @@ describe('updatePartInstanceRanks', () => {
 		// Delete the segment
 		Parts.remove({ segmentId })
 		for (const e of initialInstanceRanks) {
-			e.orphaned = 'adlib-part' // Future: 'deleted'
+			e.orphaned = 'deleted'
 		}
 		// Insert new segment
 		insertPart('part10', 0.5)
