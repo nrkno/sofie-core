@@ -33,6 +33,7 @@ import { protectString } from '../../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { ensureHasTrailingSlash } from '../../lib/lib'
+import { isTouchDevice } from '../../lib/lib'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
@@ -245,7 +246,10 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	private handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
-		this.handleOnMouseLeave(e)
+		if (isTouchDevice()) {
+			// hide the hoverscrub
+			this.handleOnMouseLeave(e)
+		}
 	}
 
 	private onNameChanged = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
