@@ -152,7 +152,10 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 			return (
 				ensureHasTrailingSlash(mediaPreviewsUrl) +
 				'/media/thumbnail/' +
-				encodeURIComponent(piece.contentMetaData.mediaId)
+				piece.contentMetaData.mediaId
+					.split('/')
+					.map((id) => encodeURIComponent(id))
+					.join('/')
 			)
 		}
 		return undefined
