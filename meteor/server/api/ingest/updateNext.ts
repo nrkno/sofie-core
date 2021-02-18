@@ -1,5 +1,5 @@
 import { ServerPlayoutAPI } from '../playout/playout'
-import { selectNextPart, isTooCloseToAutonext } from '../playout/lib'
+import { selectNextPart, isTooCloseToAutonext, getSegmentsAndPartsFromCache } from '../playout/lib'
 import { profiler } from '../profiler'
 import {
 	CacheForPlayout,
@@ -27,11 +27,11 @@ export function ensureNextPartIsValid(cache: CacheForPlayout) {
 			return
 		}
 
-		const allParts = getAllOrderedPartsFromPlayoutCache(cache)
+		const allPartsAndSegments = getSegmentsAndPartsFromCache(cache, playlist)
 
 		if (currentPartInstance && nextPartInstance) {
 			// Check if the part is the same
-			const newNextPart = selectNextPart(playlist, currentPartInstance, allParts)
+			const newNextPart = selectNextPart(playlist, currentPartInstance, allPartsAndSegments)
 			if (!newNextPart) {
 				// No new next, so leave as is
 				span?.end()
@@ -44,7 +44,7 @@ export function ensureNextPartIsValid(cache: CacheForPlayout) {
 			}
 		} else if (!nextPartInstance) {
 			// Don't have a currentPart or a nextPart, so set next to first in the show
-			const newNextPart = selectNextPart(playlist, currentPartInstance ?? null, allParts)
+			const newNextPart = selectNextPart(playlist, currentPartInstance ?? null, allPartsAndSegments)
 			ServerPlayoutAPI.setNextPartInner(cache, newNextPart?.part ?? null)
 		}
 	}

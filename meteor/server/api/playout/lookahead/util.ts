@@ -4,7 +4,7 @@ import { PieceInstance, PieceInstancePiece } from '../../../../lib/collections/P
 import { Piece } from '../../../../lib/collections/Pieces'
 import { profiler } from '../../profiler'
 import { CacheForPlayout, getAllOrderedPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from '../cache'
-import { selectNextPart } from '../lib'
+import { getSegmentsAndPartsFromCache, selectNextPart } from '../lib'
 
 export interface PartInstanceAndPieceInstances {
 	part: PartInstance
@@ -32,7 +32,7 @@ export function getOrderedPartsAfterPlayhead(cache: CacheForPlayout, partCount: 
 	const span = profiler.startSpan('getOrderedPartsAfterPlayhead')
 
 	const playlist = cache.Playlist.doc
-	const orderedParts = getAllOrderedPartsFromPlayoutCache(cache)
+	const partsAndSegments = getSegmentsAndPartsFromCache(cache, playlist)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	// If the nextPartInstance consumes the
@@ -43,13 +43,17 @@ export function getOrderedPartsAfterPlayhead(cache: CacheForPlayout, partCount: 
 		nextSegmentId: alreadyConsumedNextSegmentId ? undefined : playlist.nextSegmentId,
 		loop: playlist.loop,
 	}
-	const nextNextPart = selectNextPart(strippedPlaylist, nextPartInstance ?? currentPartInstance ?? null, orderedParts)
+	const nextNextPart = selectNextPart(
+		strippedPlaylist,
+		nextPartInstance ?? currentPartInstance ?? null,
+		partsAndSegments
+	)
 	if (!nextNextPart) {
 		// We don't know where to begin searching, so we can't do anything
 		return []
 	}
 
-	const playablePartsSlice = orderedParts.slice(nextNextPart.index).filter((p) => p.isPlayable())
+	const playablePartsSlice = partsAndSegments.parts.slice(nextNextPart.index).filter((p) => p.isPlayable())
 
 	const res: Part[] = []
 
@@ -74,7 +78,7 @@ export function getOrderedPartsAfterPlayhead(cache: CacheForPlayout, partCount: 
 
 	if (res.length < partCount && playlist.loop) {
 		// The rundown would loop here, so lets run with that
-		const playableParts = orderedParts.filter((p) => p.isPlayable())
+		const playableParts = partsAndSegments.parts.filter((p) => p.isPlayable())
 		// Note: We only add it once, as lookahead is unlikely to show anything new in a second pass
 		res.push(...playableParts)
 

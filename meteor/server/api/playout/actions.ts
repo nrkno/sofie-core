@@ -6,12 +6,18 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime, getRandomId, makePromise, waitForPromise } from '../../../lib/lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownEventContext } from '../blueprints/context'
-import { setNextPart, onPartHasStoppedPlaying, selectNextPart, LOW_PRIO_DEFER_TIME } from './lib'
+import {
+	setNextPart,
+	onPartHasStoppedPlaying,
+	selectNextPart,
+	LOW_PRIO_DEFER_TIME,
+	getSegmentsAndPartsFromCache,
+} from './lib'
 import { updateStudioTimeline, updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
 import { profiler } from '../profiler'
-import { CacheForPlayout, getAllOrderedPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
+import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 
 export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boolean): Promise<void> {
 	logger.info('Activating rundown ' + cache.Playlist.doc._id + (rehearsal ? ' (Rehearsal)' : ''))
@@ -57,7 +63,11 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 		})
 
 		// If we are not playing anything, then regenerate the next part
-		const firstPart = selectNextPart(cache.Playlist.doc, null, getAllOrderedPartsFromPlayoutCache(cache))
+		const firstPart = selectNextPart(
+			cache.Playlist.doc,
+			null,
+			getSegmentsAndPartsFromCache(cache, cache.Playlist.doc)
+		)
 		setNextPart(cache, firstPart?.part ?? null)
 	} else {
 		// Otherwise preserve the active partInstances
