@@ -31,6 +31,7 @@ import { RundownDropZone } from './RundownList/RundownDropZone'
 import { RundownListFooter } from './RundownList/RundownListFooter'
 import RundownPlaylistDragLayer from './RundownList/RundownPlaylistDragLayer'
 import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
+import { doUserAction, UserAction } from '../lib/userAction'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -235,7 +236,10 @@ export const RundownList = translateWithTracker(() => {
 			}
 
 			private handleRundownDrop(rundownId: RundownId) {
-				MeteorCall.userAction.moveRundown('drag&drop in dropzone', rundownId, null, [rundownId])
+				const { t } = this.props
+				doUserAction(t, 'drag&drop in dropzone', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
+					MeteorCall.userAction.moveRundown(e, rundownId, null, [rundownId])
+				)
 			}
 
 			renderRundownPlaylists(list: RundownPlaylistUi[]) {
