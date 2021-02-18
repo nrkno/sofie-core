@@ -1424,6 +1424,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
+							{t('Disable Context Menu')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'disableContextMenu'}
+								obj={item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
 							{t('Expose layout as a standalone page')}
 							<EditAttribute
 								modifiedClassName="bghl"

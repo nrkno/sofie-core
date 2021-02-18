@@ -69,6 +69,7 @@ describe('Rundown Layouts', () => {
 				iconColor: '',
 				showBuckets: true,
 				openByDefault: false,
+				disableContextMenu: true,
 			})
 			return { rundownLayout: mockLayout, rundownLayoutId }
 		}

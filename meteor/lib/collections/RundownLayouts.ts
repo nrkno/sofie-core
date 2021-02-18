@@ -184,6 +184,7 @@ export interface RundownLayoutBase {
 	openByDefault: boolean
 	startingHeight?: number
 	showBuckets: boolean
+	disableContextMenu: boolean
 }
 
 export interface RundownLayout extends RundownLayoutBase {

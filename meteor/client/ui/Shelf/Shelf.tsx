@@ -437,7 +437,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					moving: this.state.moving,
 				})}
 				style={fullViewport ? undefined : this.getStyle()}>
-				<ShelfContextMenu />
+				{!this.props.rundownLayout?.disableContextMenu && <ShelfContextMenu />}
 				{!fullViewport && (
 					<div
 						className="rundown-view__shelf__handle dark"
