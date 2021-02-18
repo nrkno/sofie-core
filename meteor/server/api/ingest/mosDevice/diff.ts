@@ -11,7 +11,7 @@ import { removeSegmentContents } from '../cleanup'
 import { calculateSegmentsFromIngestData, saveSegmentChangesToCache } from '../generation'
 import { LocalIngestRundown, LocalIngestSegment } from '../ingestCache'
 import { canRundownBeUpdated, getRundown, getSegmentId } from '../lib'
-import { CommitIngestData } from '../syncFunction'
+import { CommitIngestData } from '../lockFunction'
 
 export function diffAndUpdateSegmentIds(
 	cache: CacheForIngest,

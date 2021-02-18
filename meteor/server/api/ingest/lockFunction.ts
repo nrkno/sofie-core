@@ -54,7 +54,8 @@ export enum UpdateIngestRundownAction {
  * @param updateCacheFcn Function to mutate the ingestData. Throw if the requested change is not valid. Return undefined to indicate the ingestData should be deleted
  * @param calcFcn Function to run to update the Rundown. Return the blob of data about the change to help the post-update perform its duties. Return null to indicate that nothing changed
  */
-export function ingestLockFunction(
+// runPlayoutOperationWithCacheFromStudioOperation
+export function runIngestOperationWithCache(
 	context: string,
 	studioId: StudioId,
 	rundownExternalId: string,
@@ -132,7 +133,7 @@ export function ingestLockFunction(
  * @param fcn Function to run while holding the lock
  * @param playlistLock If the playlist lock is already held, supply it here to avoid trying to reaquire the lock
  */
-export function ingestRundownOnlyLockFunction(
+export function runIngestOperationWithLock(
 	context: string,
 	studioId: StudioId,
 	rundownExternalId: string,

@@ -19,7 +19,7 @@ import {
 	defaultPiece,
 	defaultAdLibPiece,
 } from '../../../../__mocks__/defaultCollectionObjects'
-import { ingestRundownOnlyLockFunction } from '../syncFunction'
+import { runIngestOperationWithLock } from '../lockFunction'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
 describe('Expected Media Items', () => {
@@ -166,7 +166,7 @@ describe('Expected Media Items', () => {
 
 	describe('Based on a Rundown', () => {
 		testInFiber('Generates ExpectedMediaItems based on a Rundown', () => {
-			ingestRundownOnlyLockFunction('test', env.studio._id, rdExtId0, async (cache) =>
+			runIngestOperationWithLock('test', env.studio._id, rdExtId0, async (cache) =>
 				updateExpectedMediaItemsOnRundown(cache)
 			)
 

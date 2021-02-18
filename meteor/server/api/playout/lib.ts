@@ -46,7 +46,7 @@ import {
 } from './cache'
 import { Settings } from '../../../lib/Settings'
 import { removeSegmentContents } from '../ingest/cleanup'
-import { ingestLockFunction, UpdateIngestRundownAction } from '../ingest/syncFunction'
+import { runIngestOperationWithCache, UpdateIngestRundownAction } from '../ingest/lockFunction'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -419,7 +419,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 		const rundown = cache.Rundowns.findOne(rundownId)
 		if (rundown) {
 			Meteor.defer(() => {
-				ingestLockFunction(
+				runIngestOperationWithCache(
 					'cleanupOrphanedItems:defer',
 					rundown.studioId,
 					rundown.externalId,

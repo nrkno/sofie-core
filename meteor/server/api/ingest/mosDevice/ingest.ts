@@ -18,7 +18,7 @@ import { RundownId } from '../../../../lib/collections/Rundowns'
 import { logger } from '../../../../lib/logging'
 import { PartId } from '../../../../lib/collections/Parts'
 import { profiler } from '../../profiler'
-import { CommitIngestData, ingestLockFunction } from '../syncFunction'
+import { CommitIngestData, runIngestOperationWithCache } from '../lockFunction'
 import { updateSegmentFromIngestData } from '../generation'
 import { diffAndApplyChanges, diffAndUpdateSegmentIds } from './diff'
 
@@ -109,7 +109,7 @@ export function handleMosRundownData(
 
 	// Create or update a rundown (ie from rundownCreate or rundownList)
 
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'handleMosRundownData',
 		studio._id,
 		rundownExternalId,
@@ -176,7 +176,7 @@ export function handleMosRundownMetadata(
 
 	const rundownExternalId = parseMosString(mosRunningOrderBase.ID)
 
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'handleMosRundownMetadata',
 		studio._id,
 		rundownExternalId,
@@ -211,7 +211,7 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 	const partExternalId = parseMosString(story.ID)
 	const rundownExternalId = parseMosString(story.RunningOrderId)
 
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'handleMosFullStory',
 		studio._id,
 		rundownExternalId,
@@ -258,7 +258,7 @@ export function handleMosDeleteStory(
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
 	const rundownId = getRundownId(studio, rundownExternalId)
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'handleMosDeleteStory',
 		studio._id,
 		rundownExternalId,
@@ -330,7 +330,7 @@ export function handleMosInsertParts(
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
 	const rundownId = getRundownId(studio, rundownExternalId)
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'handleMosInsertParts',
 		studio._id,
 		rundownExternalId,
@@ -407,7 +407,7 @@ export function handleMosSwapStories(
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
 	const rundownId = getRundownId(studio, rundownExternalId)
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'handleMosSwapStories',
 		studio._id,
 		rundownExternalId,
@@ -456,7 +456,7 @@ export function handleMosMoveStories(
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
 	const rundownId = getRundownId(studio, rundownExternalId)
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'handleMosMoveStories',
 		studio._id,
 		rundownExternalId,

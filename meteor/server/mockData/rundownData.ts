@@ -19,7 +19,7 @@ import { forceClearAllBlueprintConfigCaches } from '../api/blueprints/config'
 import { runPlayoutOperationWithCache } from '../api/playout/syncFunction'
 import { getSelectedPartInstancesFromCache } from '../api/playout/cache'
 import { removeRundownPlaylistFromDb } from '../api/rundownPlaylist'
-import { ingestRundownOnlyLockFunction } from '../api/ingest/syncFunction'
+import { runIngestOperationWithLock } from '../api/ingest/lockFunction'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -62,7 +62,7 @@ if (!Settings.enableUserAccounts) {
 			const rundowns = Rundowns.find().fetch()
 
 			rundowns.map((rundown) => {
-				ingestRundownOnlyLockFunction('', rundown.studioId, rundown.externalId, async (cache) =>
+				runIngestOperationWithLock('', rundown.studioId, rundown.externalId, async (cache) =>
 					updateExpectedMediaItemsOnRundown(cache)
 				)
 			})

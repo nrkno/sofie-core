@@ -27,7 +27,7 @@ import {
 	getRundown,
 } from './lib'
 import { MethodContext } from '../../../lib/api/methods'
-import { CommitIngestData, ingestLockFunction, UpdateIngestRundownAction } from './syncFunction'
+import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownAction } from './lockFunction'
 import { CacheForIngest } from './cache'
 import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
 import { loadCachedRundownData } from './ingestCache2'
@@ -257,7 +257,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 	return handleRemovedRundownFromStudio(studio._id, rundownExternalId)
 }
 export function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: string) {
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'handleRemovedRundown',
 		studioId,
 		rundownExternalId,
@@ -300,7 +300,7 @@ export function handleUpdatedRundown(
 	}
 
 	const rundownExternalId = newIngestRundown.externalId
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'handleUpdatedRundown',
 		studioId,
 		rundownExternalId,
@@ -336,7 +336,7 @@ export function regenerateRundown(
 	rundownExternalId: string,
 	peripheralDevice0: PeripheralDevice | undefined
 ) {
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'regenerateRundown',
 		studio._id,
 		rundownExternalId,
@@ -374,7 +374,7 @@ export function handleRemovedSegment(
 ) {
 	const studio = getStudioFromDevice(peripheralDevice)
 
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'handleRemovedSegment',
 		studio._id,
 		rundownExternalId,
@@ -430,7 +430,7 @@ export function handleUpdatedSegment(
 
 	const segmentExternalId = newIngestSegment.externalId
 
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'handleUpdatedSegment',
 		studio._id,
 		rundownExternalId,
@@ -462,7 +462,7 @@ export function handleRemovedPart(
 ) {
 	const studio = getStudioFromDevice(peripheralDevice)
 
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'handleRemovedPart',
 		studio._id,
 		rundownExternalId,
@@ -505,7 +505,7 @@ export function handleUpdatedPart(
 ) {
 	const studio = getStudioFromDevice(peripheralDevice)
 
-	return ingestLockFunction(
+	return runIngestOperationWithCache(
 		'handleUpdatedPart',
 		studio._id,
 		rundownExternalId,

@@ -40,7 +40,7 @@ import {
 	getRundown,
 	canSegmentBeUpdated,
 } from './lib'
-import { CommitIngestData } from './syncFunction'
+import { CommitIngestData } from './lockFunction'
 
 export interface UpdateSegmentsResult {
 	segments: DBSegment[]

@@ -50,7 +50,7 @@ import { PartInstanceId } from '../../lib/collections/PartInstances'
 import { CacheForPlayout } from './playout/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { runPlayoutOperationWithLock } from './playout/syncFunction'
-import { ingestRundownOnlyLockFunction } from './ingest/syncFunction'
+import { runIngestOperationWithLock } from './ingest/lockFunction'
 import { getRundown } from './ingest/lib'
 
 export function selectShowStyleVariant(
@@ -328,7 +328,7 @@ export namespace ServerRundownAPI {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 
-		ingestRundownOnlyLockFunction(
+		runIngestOperationWithLock(
 			'unsyncRundown',
 			access.rundown.studioId,
 			access.rundown.externalId,
