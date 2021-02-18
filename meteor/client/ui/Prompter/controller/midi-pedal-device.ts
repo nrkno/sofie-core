@@ -12,6 +12,7 @@ const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
 export class MidiPedalController extends ControllerAbstract {
 	private prompterView: PrompterViewInner
 	private midiInputs: Input[] = []
+	private idleMidiInputs: { [midiId: string]: boolean} = {}
 
 	private rangeRevMin = 0 // pedal "all back" position, the max-reverse-position
 	private rangeNeutralMin = 35 // pedal "back" position where reverse-range transistions to the neutral range
@@ -134,6 +135,12 @@ export class MidiPedalController extends ControllerAbstract {
 			this.lastSpeed = Math.round(this.reverseSpeedSpline.at(inputValue)) * -1
 		} else if (inputValue >= rangeNeutralMin && inputValue <= rangeNeutralMax) {
 			// 2) we're in the neutral zone
+
+			// check if the input is already idle, ignore successive idle commands
+			if(this.idleMidiInputs[e?.target?.id] === true) {
+				return
+			}
+
 			this.lastSpeed = 0
 		} else if (inputValue >= rangeNeutralMax && inputValue <= rangeFwdMax) {
 			// 3) Use the speed spline to find the expected speed at this point
@@ -142,6 +149,18 @@ export class MidiPedalController extends ControllerAbstract {
 			// 4) we should never be able to hit this due to validation above
 			console.error(`Illegal input value ${inputValue}`)
 			return
+		}
+
+		// update idle status for this input
+		if (this.lastSpeed === 0) {
+			// add input as idle
+			this.idleMidiInputs[e?.target?.id] = true
+		} else if(this.idleMidiInputs[e?.target?.id]) {
+			// reset the idle state
+
+			// the logic fails if you have two non-idle inputs at the same time
+			// we assume that only one pedal i sending non-idle data at the time
+			delete this.idleMidiInputs[e?.target?.id]
 		}
 
 		this.updateScrollPosition()
