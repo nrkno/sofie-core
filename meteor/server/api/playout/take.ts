@@ -10,13 +10,7 @@ import {
 	getRandomId,
 } from '../../../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import {
-	setNextPart as libsetNextPart,
-	isTooCloseToAutonext,
-	getSegmentsAndPartsFromCache,
-	selectNextPart,
-	LOW_PRIO_DEFER_TIME,
-} from './lib'
+import { setNextPart as libsetNextPart, isTooCloseToAutonext, selectNextPart, LOW_PRIO_DEFER_TIME } from './lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { updateTimeline } from './timeline'
@@ -34,7 +28,7 @@ import { profiler } from '../profiler'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { isAnySyncFunctionsRunning } from '../../codeControl'
-import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
+import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 
 export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
@@ -101,7 +95,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	const nextPart = selectNextPart(
 		cache.Playlist.doc,
 		takePartInstance,
-		getSegmentsAndPartsFromCache(cache, cache.Playlist.doc)
+		getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 	)
 
 	// beforeTake(rundown, previousPart || null, takePart)

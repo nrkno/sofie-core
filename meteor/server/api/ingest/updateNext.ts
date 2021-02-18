@@ -1,9 +1,9 @@
 import { ServerPlayoutAPI } from '../playout/playout'
-import { selectNextPart, isTooCloseToAutonext, getSegmentsAndPartsFromCache } from '../playout/lib'
+import { selectNextPart, isTooCloseToAutonext } from '../playout/lib'
 import { profiler } from '../profiler'
 import {
 	CacheForPlayout,
-	getAllOrderedPartsFromPlayoutCache,
+	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getSelectedPartInstancesFromCache,
 } from '../playout/cache'
 
@@ -27,7 +27,7 @@ export function ensureNextPartIsValid(cache: CacheForPlayout) {
 			return
 		}
 
-		const allPartsAndSegments = getSegmentsAndPartsFromCache(cache, playlist)
+		const allPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 
 		if (currentPartInstance && nextPartInstance) {
 			// Check if the part is the same

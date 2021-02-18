@@ -3,8 +3,12 @@ import { Part } from '../../../../lib/collections/Parts'
 import { PieceInstance, PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { profiler } from '../../profiler'
-import { CacheForPlayout, getAllOrderedPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from '../cache'
-import { getSegmentsAndPartsFromCache, selectNextPart } from '../lib'
+import {
+	CacheForPlayout,
+	getOrderedSegmentsAndPartsFromPlayoutCache,
+	getSelectedPartInstancesFromCache,
+} from '../cache'
+import { selectNextPart } from '../lib'
 
 export interface PartInstanceAndPieceInstances {
 	part: PartInstance
@@ -32,7 +36,7 @@ export function getOrderedPartsAfterPlayhead(cache: CacheForPlayout, partCount: 
 	const span = profiler.startSpan('getOrderedPartsAfterPlayhead')
 
 	const playlist = cache.Playlist.doc
-	const partsAndSegments = getSegmentsAndPartsFromCache(cache, playlist)
+	const partsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	// If the nextPartInstance consumes the

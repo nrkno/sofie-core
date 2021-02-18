@@ -30,6 +30,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { DbCacheReadCollection } from '../../cache/CacheCollection'
 import {
 	CacheForPlayout,
+	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getRundownIDsFromCache,
 	getSelectedPartInstancesFromCache as getSelectedPartInstancesFromCache2,
 } from './cache'
@@ -92,11 +93,7 @@ export function resetRundownPlaylist(cache: CacheForPlayout): void {
 		})
 
 		// put the first on queue:
-		const firstPart = selectNextPart(
-			cache.Playlist.doc,
-			null,
-			getSegmentsAndPartsFromCache(cache, cache.Playlist.doc)
-		)
+		const firstPart = selectNextPart(cache.Playlist.doc, null, getOrderedSegmentsAndPartsFromPlayoutCache(cache))
 		setNextPart(cache, firstPart ? firstPart.part : null)
 	} else {
 		setNextPart(cache, null)
@@ -580,31 +577,6 @@ export function isTooCloseToAutonext(currentPartInstance: ReadonlyDeep<PartInsta
 	}
 
 	return false
-}
-
-export function getSegmentsAndPartsFromCache(
-	cache: CacheForPlayout,
-	playlist: ReadonlyDeep<RundownPlaylist>
-): {
-	segments: Segment[]
-	parts: Part[]
-} {
-	const rundowns = getRundownsFromCache(cache, playlist)
-	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, rundowns)
-}
-/** Get all rundowns in a playlist */
-export function getRundownsFromCache(cache: CacheForPlayout, playlist: ReadonlyDeep<RundownPlaylist>) {
-	return cache.Rundowns.findFetch(
-		{
-			playlistId: playlist._id,
-		},
-		{
-			sort: {
-				_rank: 1,
-				_id: 1,
-			},
-		}
-	)
 }
 
 export function getRundownsSegmentsAndPartsFromCache(

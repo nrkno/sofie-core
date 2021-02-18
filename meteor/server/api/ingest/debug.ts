@@ -13,9 +13,7 @@ import { handleUpdatedSegment } from './rundownInput'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { logger } from '../../logging'
 import { runStudioOperationWithCache } from '../studio/syncFunction'
-import { UpdateNext } from './updateNext'
-import { waitForPromise } from '../../../lib/lib'
-import { initCacheForRundownPlaylist } from '../../cache/DatabaseCaches'
+import { ensureNextPartIsValid } from './updateNext'
 import { runPlayoutOperationWithCacheFromStudioOperation } from '../playout/syncFunction'
 
 if (!Settings.enableUserAccounts) {
@@ -64,32 +62,31 @@ if (!Settings.enableUserAccounts) {
 				throw e
 			}
 		},
-		// debug_updateNext: (studioId: StudioId) => {
-		// 	try {
-		// 		check(studioId, String)
-		// 		logger.info(`debug_updateNext: "${studioId}"`)
+		debug_updateNext: (studioId: StudioId) => {
+			try {
+				check(studioId, String)
+				logger.info(`debug_updateNext: "${studioId}"`)
 
-		// 		runStudioOperationWithCache('debug_updateTimeline', studioId, (cache) => {
-		// 			const playlists = cache.getActiveRundownPlaylists()
-		// 			if (playlists.length === 1) {
-		// 				return runPlayoutOperationWithCacheFromStudioOperation(
-		// 					'updateStudioOrPlaylistTimeline',
-		// 					cache,
-		// 					playlists[0],
-		// 					null,
-		// 					(playlistCache) => {
-		// 						UpdateNext.ensureNextPartIsValid(playlistCache)
-		// 					}
-		// 				)
-		// 			} else {
-		// 				throw new Error('No playlist active')
-		// 			}
-		// 		})
-
-		// 	} catch (e) {
-		// 		logger.error(e)
-		// 		throw e
-		// 	}
-		// },
+				runStudioOperationWithCache('debug_updateTimeline', studioId, (cache) => {
+					const playlists = cache.getActiveRundownPlaylists()
+					if (playlists.length === 1) {
+						return runPlayoutOperationWithCacheFromStudioOperation(
+							'updateStudioOrPlaylistTimeline',
+							cache,
+							playlists[0],
+							null,
+							(playlistCache) => {
+								ensureNextPartIsValid(playlistCache)
+							}
+						)
+					} else {
+						throw new Error('No playlist active')
+					}
+				})
+			} catch (e) {
+				logger.error(e)
+				throw e
+			}
+		},
 	})
 }

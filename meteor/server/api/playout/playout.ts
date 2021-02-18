@@ -37,7 +37,6 @@ import {
 	setNextSegment as libSetNextSegment,
 	onPartHasStoppedPlaying,
 	selectNextPart,
-	getSegmentsAndPartsFromCache,
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -67,12 +66,7 @@ import {
 	runPlayoutOperationWithCacheFromStudioOperation,
 	runPlayoutOperationWithCache,
 } from './syncFunction'
-import {
-	CacheForPlayout,
-	getAllOrderedPartsFromPlayoutCache,
-	getOrderedSegmentsAndPartsFromPlayoutCache,
-	getSelectedPartInstancesFromCache,
-} from './cache'
+import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { runStudioOperationWithCache } from '../studio/syncFunction'
 import { CacheForStudio } from '../studio/cache'
@@ -928,7 +922,7 @@ export namespace ServerPlayoutAPI {
 						const nextPart = selectNextPart(
 							playlist,
 							playingPartInstance,
-							getSegmentsAndPartsFromCache(cache, playlist)
+							getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 						)
 						libsetNextPart(cache, nextPart?.part ?? null)
 					} else {
@@ -954,7 +948,7 @@ export namespace ServerPlayoutAPI {
 							const nextPart = selectNextPart(
 								playlist,
 								playingPartInstance,
-								getSegmentsAndPartsFromCache(cache, playlist)
+								getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 							)
 							libsetNextPart(cache, nextPart?.part ?? null)
 						}

@@ -18,7 +18,7 @@ import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
 import { Part } from '../../../lib/collections/Parts'
-import { prefixAllObjectIds, setNextPart, selectNextPart, getSegmentsAndPartsFromCache } from './lib'
+import { prefixAllObjectIds, setNextPart, selectNextPart } from './lib'
 import {
 	convertAdLibToPieceInstance,
 	getResolvedPieces,
@@ -46,7 +46,7 @@ import { runPlayoutOperationWithCache } from './syncFunction'
 import { MethodContext } from '../../../lib/api/methods'
 import {
 	CacheForPlayout,
-	getAllOrderedPartsFromPlayoutCache,
+	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getRundownIDsFromCache,
 	getSelectedPartInstancesFromCache,
 } from './cache'
@@ -426,7 +426,7 @@ export namespace ServerPlayoutAdLibAPI {
 		const followingPart = selectNextPart(
 			cache.Playlist.doc,
 			currentPartInstance,
-			getSegmentsAndPartsFromCache(cache, cache.Playlist.doc),
+			getOrderedSegmentsAndPartsFromPlayoutCache(cache),
 			true
 		)
 		newPartInstance.part._rank = getRank(

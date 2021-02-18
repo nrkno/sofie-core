@@ -5,7 +5,7 @@ import { asyncCollectionFindFetch } from '../../../lib/lib'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { getSegmentsAndPartsFromCache, PartsAndSegments, selectNextPart } from './lib'
+import { PartsAndSegments, selectNextPart } from './lib'
 import { saveIntoCache } from '../../cache/lib'
 import {
 	getPieceInstancesForPart as libgetPieceInstancesForPart,
@@ -15,7 +15,7 @@ import {
 } from '../../../lib/rundown/infinites'
 import { profiler } from '../profiler'
 import { Meteor } from 'meteor/meteor'
-import { CacheForPlayout, getAllOrderedPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
+import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { ReadonlyDeep } from 'type-fest'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
@@ -116,7 +116,7 @@ export function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout)
 			nextPartInstance.part
 		)
 
-		const orderedPartsAndSegments = getSegmentsAndPartsFromCache(cache, playlist)
+		const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 
 		const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
 			playlist,
@@ -166,7 +166,7 @@ export function getPieceInstancesForPart(
 	const playlist = cache.Playlist.doc
 	if (!playlist.activationId) throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is not active`)
 
-	const orderedPartsAndSegments = getSegmentsAndPartsFromCache(cache, playlist)
+	const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 	const playingPieceInstances = playingPartInstance
 		? cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
 		: []
