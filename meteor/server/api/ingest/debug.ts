@@ -41,7 +41,12 @@ if (!Settings.enableUserAccounts) {
 				segment.externalId
 			)
 
-			handleUpdatedSegment({ studioId: rundown.studioId } as PeripheralDevice, rundown.externalId, ingestSegment)
+			handleUpdatedSegment(
+				{ studioId: rundown.studioId } as PeripheralDevice,
+				rundown.externalId,
+				ingestSegment,
+				true
+			)
 		},
 		debug_updateTimeline: (studioId: StudioId) => {
 			try {

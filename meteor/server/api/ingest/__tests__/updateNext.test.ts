@@ -65,7 +65,6 @@ function createMockRO() {
 		showStyleBaseId: protectString(''),
 		showStyleVariantId: protectString(''),
 		peripheralDeviceId: protectString(''),
-		dataSource: 'mock',
 		created: 0,
 		modified: 0,
 		importVersions: {} as any,

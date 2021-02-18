@@ -79,15 +79,10 @@ export interface DBRundown
 	startedPlayback?: Time
 
 	/** Is the rundown in an unsynced (has been unpublished from ENPS) state? */
-	unsynced?: boolean
-	/** Timestamp of when rundown was unsynced */
-	unsyncedTime?: Time
+	orphaned?: 'deleted' | 'from-snapshot'
 
 	/** Last sent storyStatus to ingestDevice (MOS) */
 	notifiedCurrentPlayingPartExternalId?: string
-
-	/** What the source of the data was */
-	dataSource: string
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
 	notes?: Array<RundownNote>
@@ -113,9 +108,7 @@ export class Rundown implements DBRundown {
 	public description?: string
 	public expectedStart?: Time
 	public expectedDuration?: number
-	public metaData?: {
-		[key: string]: any
-	}
+	public metaData?: unknown
 	// From IBlueprintRundownDB:
 	public _id: RundownId
 	public showStyleVariantId: ShowStyleVariantId
@@ -129,11 +122,9 @@ export class Rundown implements DBRundown {
 	public importVersions: RundownImportVersions
 	public status?: string
 	public airStatus?: string
-	public unsynced?: boolean
-	public unsyncedTime?: Time
+	public orphaned?: 'deleted'
 	public startedPlayback?: Time
 	public notifiedCurrentPlayingPartExternalId?: string
-	public dataSource: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
 	public externalNRCSName: string
@@ -155,13 +146,6 @@ export class Rundown implements DBRundown {
 			return pls
 		} else throw new Meteor.Error(404, `Rundown Playlist "${this.playlistId}" not found!`)
 	}
-	// getShowStyleCompound(): ShowStyleCompound {
-	// 	if (!this.showStyleVariantId) throw new Meteor.Error(500, 'Rundown has no show style attached!')
-	// 	let ss = getShowStyleCompound(this.showStyleVariantId)
-	// 	if (ss) {
-	// 		return ss
-	// 	} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
-	// }
 	getShowStyleVariant(): ShowStyleVariant {
 		let showStyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
 		if (!showStyleVariant) throw new Meteor.Error(404, `ShowStyleVariant "${this.showStyleVariantId}" not found!`)
@@ -246,24 +230,6 @@ export class Rundown implements DBRundown {
 			parts: RundownPlaylist._sortPartsInner(await pParts, segments),
 		}
 	}
-	getGlobalAdLibPieces(selector?: MongoQuery<AdLibPiece>, options?: FindOptions<RundownBaselineAdLibItem>) {
-		selector = selector || {}
-		options = options || {}
-		return RundownBaselineAdLibPieces.find(
-			_.extend(
-				{
-					rundownId: this._id,
-				},
-				selector
-			),
-			_.extend(
-				{
-					sort: { _rank: 1 },
-				},
-				options
-			)
-		).fetch()
-	}
 	getAllPartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<DBPartInstance>) {
 		selector = selector || {}
 		options = options || {}
@@ -281,40 +247,6 @@ export class Rundown implements DBRundown {
 				options
 			)
 		).fetch()
-	}
-	getActivePartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<DBPartInstance>) {
-		const newSelector = {
-			...selector,
-			reset: { $ne: true },
-		}
-		return this.getAllPartInstances(newSelector, options)
-	}
-	removeTOBEREMOVED() {
-		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
-		Rundowns.remove(this._id)
-		if (this.playlistId) {
-			// Check if any other members of the playlist are left
-			if (
-				Rundowns.find({
-					playlistId: this.playlistId,
-				}).count() === 0
-			) {
-				RundownPlaylists.remove(this.playlistId)
-			}
-		}
-		Segments.remove({ rundownId: this._id })
-		Parts.remove({ rundownId: this._id })
-		PartInstances.remove({ rundownId: this._id })
-		Pieces.remove({ rundownId: this._id })
-		PieceInstances.remove({ rundownId: this._id })
-		AdLibPieces.remove({ rundownId: this._id })
-		AdLibActions.remove({ rundownId: this._id })
-		RundownBaselineObjs.remove({ rundownId: this._id })
-		RundownBaselineAdLibPieces.remove({ rundownId: this._id })
-		RundownBaselineAdLibActions.remove({ rundownId: this._id })
-		IngestDataCache.remove({ rundownId: this._id })
-		ExpectedMediaItems.remove({ rundownId: this._id })
-		ExpectedPlayoutItems.remove({ rundownId: this._id })
 	}
 	touch() {
 		if (getCurrentTime() - this.modified > 3600 * 1000) {

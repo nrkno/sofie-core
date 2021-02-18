@@ -88,7 +88,7 @@ describe('updatePartInstanceRanks', () => {
 		}))
 	}
 
-	function insertPartInstance(part: Part): PartInstanceId {
+	function insertPartInstance(part: Part, orphaned?: PartInstance['orphaned']): PartInstanceId {
 		const id: PartInstanceId = protectString(`${part._id}_instance`)
 		PartInstances.insert({
 			_id: id,
@@ -98,6 +98,7 @@ describe('updatePartInstanceRanks', () => {
 			segmentId,
 			playlistActivationId: protectString('active'),
 			part,
+			orphaned: orphaned,
 		})
 		return id
 	}
@@ -135,7 +136,7 @@ describe('updatePartInstanceRanks', () => {
 			if (e.partId === partId) {
 				e.rank = newRank
 				if (updated === 0) {
-					e.orphaned = 'adlib-part' // Future: 'deleted'
+					e.orphaned = 'deleted'
 				}
 			}
 		}
@@ -234,7 +235,8 @@ describe('updatePartInstanceRanks', () => {
 				segmentId,
 				externalId: adlibId,
 				title: adlibId,
-			})
+			}),
+			'adlib-part'
 		)
 
 		// remove one and offset the others
@@ -272,7 +274,7 @@ describe('updatePartInstanceRanks', () => {
 		Parts.remove({ segmentId })
 		for (const e of initialInstanceRanks) {
 			e.rank-- // Offset to match the generated order
-			e.orphaned = 'adlib-part' // Future: 'deleted'
+			e.orphaned = 'deleted'
 		}
 
 		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
@@ -317,7 +319,7 @@ describe('updatePartInstanceRanks', () => {
 		// Delete the segment
 		Parts.remove({ segmentId })
 		for (const e of initialInstanceRanks) {
-			e.orphaned = 'adlib-part' // Future: 'deleted'
+			e.orphaned = 'deleted'
 		}
 		// Insert new segment
 		insertPart('part10', 0.5)

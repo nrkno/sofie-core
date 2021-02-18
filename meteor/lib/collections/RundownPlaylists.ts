@@ -191,9 +191,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			},
 		}).map((i) => i._id)
 	}
-	getRundownsMap(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): { [key: string]: Rundown } {
-		return normalizeArray(this.getRundowns(selector, options), '_id')
-	}
 	touch() {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		if (getCurrentTime() - this.modified > 3600 * 1000) {
@@ -201,14 +198,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			this.modified = m
 			RundownPlaylists.update(this._id, { $set: { modified: m } })
 		}
-	}
-	/** Remove this RundownPlaylist and all its contents */
-	removeTOBEREMOVED() {
-		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
-		const allRundowns = this.getRundowns()
-		allRundowns.forEach((i) => i.removeTOBEREMOVED())
-
-		RundownPlaylists.remove(this._id)
 	}
 	/** Return the studio for this RundownPlaylist */
 	getStudio(): Studio {
@@ -536,31 +525,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				return segA - segB
 			}
 		})
-	}
-
-	getAllStoredNotes(): Array<GenericNote & { rank: number }> {
-		const rundownNotes: RundownNote[] = _.flatten(
-			_.compact(
-				this.getRundowns(
-					{},
-					{
-						fields: {
-							notes: 1,
-						},
-					}
-				).map((r) => r.notes)
-			)
-		)
-
-		let notes: Array<TrackedNote> = []
-		notes = notes.concat(rundownNotes.map((note) => _.extend(note, { rank: 0 })))
-
-		const segments = this.getSegments()
-		const parts = this.getUnorderedParts()
-
-		notes = notes.concat(getAllNotesForSegmentAndParts(segments, parts))
-
-		return notes
 	}
 }
 

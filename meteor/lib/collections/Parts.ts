@@ -92,12 +92,6 @@ export class Part implements DBPart {
 			this[key] = value
 		}
 	}
-	getRundown() {
-		return Rundowns.findOne(this.rundownId)
-	}
-	getSegment() {
-		return Segments.findOne(this.segmentId)
-	}
 	getPieces(selector?: MongoQuery<Piece>, options?: FindOptions<Piece>) {
 		selector = selector || {}
 		options = options || {}
@@ -116,24 +110,6 @@ export class Part implements DBPart {
 		return this.getPieces()
 	}
 
-	getAdLibPieces(selector?: MongoQuery<AdLibPiece>, options?: FindOptions<AdLibPiece>) {
-		selector = selector || {}
-		options = options || {}
-		return AdLibPieces.find(
-			{
-				rundownId: this.rundownId,
-				partId: this._id,
-				...selector,
-			},
-			{
-				...options,
-				sort: { _rank: 1, name: 1, ...options?.sort },
-			}
-		).fetch()
-	}
-	getAllAdLibPieces() {
-		return this.getAdLibPieces()
-	}
 	getInvalidReasonNotes(): Array<PartNote> {
 		return this.invalidReason
 			? [
