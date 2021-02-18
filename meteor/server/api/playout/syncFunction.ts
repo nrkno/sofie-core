@@ -184,7 +184,7 @@ function playoutLockFunctionInner<T>(
 			await preInitFcn(cache)
 		}
 
-		await cache.initContent()
+		await cache.initContent(null)
 
 		const res = await fcn(cache)
 

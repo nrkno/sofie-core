@@ -248,8 +248,11 @@ export async function CommitIngestOperation(
 				])
 
 				// Create the full playout cache, now we have the rundowns and playlist updated
-				const playoutCache = await CacheForPlayout.from(newPlaylist, rundownsCollection.findFetch({}))
-				// TODO - this will be ignoring the updated contents of the rundown!!!!
+				const playoutCache = await CacheForPlayout.from(
+					newPlaylist,
+					rundownsCollection.findFetch({}),
+					ingestCache
+				)
 
 				// Start the save
 				const pSave = ingestCache.saveAllToDatabase()

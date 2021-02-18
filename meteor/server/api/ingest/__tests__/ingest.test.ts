@@ -1261,9 +1261,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				if (e.toString().match(/does not support the method "reloadRundown"/)) {
 					// This is expected
 
-					// Force the regeneration from cached data
-					const studio = Studios.findOne(rundown.studioId) as Studio
-					regenerateRundown(studio, rundown.externalId, undefined)
+					Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device2._id, device2.token, rundownData)
 					return
 				}
 				throw e

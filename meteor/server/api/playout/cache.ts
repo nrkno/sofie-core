@@ -18,11 +18,13 @@ import { waitForPromise } from '../../../lib/lib'
 import { ActivationCache, getActivationCache } from '../../cache/ActivationCache'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { DbCacheReadObject, DbCacheWriteObject } from '../../cache/CacheObject'
-import { CacheBase } from '../../cache/CacheBase'
+import { CacheBase, ReadOnlyCache } from '../../cache/CacheBase'
 import { profiler } from '../profiler'
 import { removeRundownPlaylistFromDb } from '../rundownPlaylist'
 import { CacheForStudioBase } from '../studio/cache'
 import { getRundownsSegmentsAndPartsFromCache } from './lib'
+import { CacheForIngest } from '../ingest/cache'
+import { getRundown } from '../ingest/lib'
 
 /**
  * This is a cache used for playout operations.
@@ -120,23 +122,29 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 	static async from(
 		newPlaylist: ReadonlyDeep<RundownPlaylist>,
-		newRundowns: ReadonlyDeep<Array<Rundown>>
+		newRundowns: ReadonlyDeep<Array<Rundown>>,
+		ingestCache: ReadOnlyCache<CacheForIngest>
 	): Promise<CacheForPlayout> {
 		const res = new CacheForPlayout(newPlaylist.studioId, newPlaylist._id)
 
 		res.Playlist._fromDoc(newPlaylist)
 		await res.Rundowns.prepareInit(async () => {
+			// newRundowns should already contain the update Rundown from ingestCache
 			res.Rundowns.fillWithDataFromArray(newRundowns)
 		}, true)
 
 		await res.preInit(res.Playlist.doc)
 
-		await res.initContent()
+		await res.initContent(ingestCache)
 
 		return res
 	}
 
-	async initContent(): Promise<void> {
+	/**
+	 * Intitialise the full content of the cache
+	 * @param ingestCache A CacheForIngest that is pending saving, if this is following an ingest operation
+	 */
+	async initContent(ingestCache: ReadOnlyCache<CacheForIngest> | null): Promise<void> {
 		const playlist = this.Playlist.doc
 
 		const ps: Promise<any>[] = []
@@ -149,8 +157,10 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			playlist.previousPartInstanceId,
 		])
 
-		ps.push(this.Segments.prepareInit({ rundownId: { $in: rundownIds } }, true)) // TODO - omit if we cant or are unlikely to change the current part
-		ps.push(this.Parts.prepareInit({ rundownId: { $in: rundownIds } }, true)) // TODO - omit if we cant or are unlikely to change the current part
+		// If there is an ingestCache, then avoid loading some bits from the db for that rundown
+		const loadRundownIds = ingestCache ? rundownIds.filter((id) => id !== ingestCache.RundownId) : rundownIds
+		ps.push(this.Segments.prepareInit({ rundownId: { $in: loadRundownIds } }, true)) // TODO - omit if we cant or are unlikely to change the current part
+		ps.push(this.Parts.prepareInit({ rundownId: { $in: loadRundownIds } }, true)) // TODO - omit if we cant or are unlikely to change the current part
 
 		ps.push(
 			this.PartInstances.prepareInit(
@@ -176,6 +186,12 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		)
 
 		await Promise.allSettled(ps)
+
+		if (ingestCache) {
+			// Populate the collections with the cached data instead
+			this.Segments.fillWithDataFromArray(ingestCache.Segments.findFetch())
+			this.Parts.fillWithDataFromArray(ingestCache.Parts.findFetch())
+		}
 
 		// This will be needed later, but we will do some other processing first
 		// TODO-CACHE how can we reliably defer this and await it when it is needed?
