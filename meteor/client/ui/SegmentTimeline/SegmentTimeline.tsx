@@ -873,10 +873,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						</div>
 					)}
 				</ContextMenuTrigger>
-				<div
-					className="segment-timeline__duration"
-					tabIndex={0}
-					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
+				<div className="segment-timeline__duration" tabIndex={0}>
 					{this.props.playlist &&
 						this.props.parts &&
 						this.props.parts.length > 0 &&
@@ -884,9 +881,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							<SegmentDuration parts={this.props.parts} />
 						)}
 				</div>
-				<div
-					className="segment-timeline__timeUntil"
-					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
+				<div className="segment-timeline__timeUntil">
 					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (
 						<PartCountdown partId={countdownToPartId} hideOnZero={true} />
 					)}

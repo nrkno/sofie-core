@@ -34,6 +34,7 @@ import { CSSProperties } from '../../styles/_cssVariables'
 import { ISourceLayerExtended } from '../../../lib/Rundown'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
+import { SegmentEnd } from '../../lib/ui/icons/segment'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -895,8 +896,20 @@ export const SegmentTimelinePart = withTranslation()(
 										})}>
 										{innerPart.autoNext && t('Auto') + ' '}
 										{this.state.isLive && t('Next')}
-										{!isEndOfShow && !isEndOfLoopingShow && CARRIAGE_RETURN_ICON}
 										{isEndOfLoopingShow && <LoopingIcon />}
+									</div>
+								</div>
+							)}
+							{!isEndOfShow && this.props.isLastInSegment && (
+								<div
+									className={ClassNames('segment-timeline__part__segment-end', {
+										'is-next':
+											this.state.isLive &&
+											((!this.props.isLastSegment && !this.props.isLastInSegment) ||
+												!!this.props.playlist.nextPartInstanceId),
+									})}>
+									<div className="segment-timeline__part__segment-end__label">
+										<SegmentEnd />
 									</div>
 								</div>
 							)}

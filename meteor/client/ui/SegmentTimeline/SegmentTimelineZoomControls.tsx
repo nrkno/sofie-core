@@ -3,6 +3,7 @@ import ClassNames from 'classnames'
 import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { onElementResize, offElementResize } from '../../lib/resizeObserver'
+import { LeftArrow, RightArrow } from '../../lib/ui/icons/segment'
 
 interface IPropsHeader {
 	scrollLeft: number
@@ -305,7 +306,9 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 					ref={this.setSelAreaRef}
 					onMouseDown={(e) => this.zoomAreaBeginMove(e)}
 					onTouchStart={(e) => this.zoomAreaBeginMove(e, true)}>
+					<LeftArrow className="segment-timeline__zoom-area__controls__selected-area__left-arrow" />
 					<div className="segment-timeline__zoom-area__controls__selected-area__center-handle"></div>
+					<RightArrow className="segment-timeline__zoom-area__controls__selected-area__right-arrow" />
 				</div>
 			</div>
 		)

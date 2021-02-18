@@ -708,15 +708,11 @@ svg.icon {
 		grid-column: segment-name / segment-group-controls;
 		grid-row: header / main-view;
 
-		cursor: pointer;
-
 		font-size: 1em;
 		line-height: 2.45em;
-		padding-left: 25px;
+		// padding-left: 25px;
 		margin-left: 0.4em;
 		letter-spacing: 1px;
-
-		@include collapse-triangle();
 
 		> span.negative {
 			color: $general-late-color;
@@ -732,8 +728,6 @@ svg.icon {
 
 		grid-column: segment-name / segment-group-controls;
 		grid-row: header / main-view;
-
-		cursor: pointer;
 
 		font-size: 1.3em;
 		font-weight: 400;
@@ -970,6 +964,20 @@ svg.icon {
 				cursor: url(/images/zoom_area_move.png) 23 17, ew-resize;
 				background: rgba(255, 255, 255, 0.4);
 				box-shadow: 0 0 6px rgba(255, 255, 255, 1);
+
+				.segment-timeline__zoom-area__controls__selected-area__left-arrow {
+					position: absolute;
+					top: 50%;
+					left: 3px;
+					transform: translate(0, -50%);
+				}
+
+				.segment-timeline__zoom-area__controls__selected-area__right-arrow {
+					position: absolute;
+					top: 50%;
+					right: 3px;
+					transform: translate(0, -50%);
+				}
 			}
 		}
 		.segment-timeline__part {
@@ -1394,6 +1402,34 @@ svg.icon {
 
 				&.loop {
 					border-left: 0;
+				}
+			}
+
+			.segment-timeline__part__segment-end {
+				position: absolute;
+				top: -13px;
+				left: 100%;
+				white-space: nowrap;
+				bottom: -1.3rem;
+				margin-left: 2px;
+				padding-left: 0.5em;
+				text-transform: uppercase;
+				font-size: 0.9em;
+
+				.segment-timeline__part__segment-end__label {
+					position: absolute;
+					top: 50%;
+					transform: translateY(calc(-50% - 6px));
+
+					> svg > path {
+						stroke: $part-start-color;
+					}
+				}
+
+				&.is-next {
+					.segment-timeline__part__segment-end__label > svg > path {
+						stroke: $general-next-color;
+					}
 				}
 			}
 
