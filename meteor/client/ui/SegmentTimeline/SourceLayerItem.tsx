@@ -657,7 +657,7 @@ export const SourceLayerItem = withTranslation()(
 
 				case SourceLayerType.TRANSITION:
 					return (
-						<TransitionSourceRenderer
+						<VTSourceRenderer
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
