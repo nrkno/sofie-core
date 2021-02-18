@@ -43,7 +43,6 @@ import {
 	getRundownIDsFromCache,
 	getRundownsFromCache,
 	getStudioFromCache,
-	getAllOrderedPartsFromCache,
 	getAllPieceInstancesFromCache,
 } from './lib'
 import {
@@ -960,7 +959,7 @@ export namespace ServerPlayoutAPI {
 							const nextPart = selectNextPart(
 								playlist,
 								playingPartInstance,
-								getAllOrderedPartsFromCache(cache, playlist)
+								getSegmentsAndPartsFromCache(cache, playlist)
 							)
 							libsetNextPart(cache, playlist, nextPart ? nextPart.part : null)
 						} else {
@@ -986,7 +985,7 @@ export namespace ServerPlayoutAPI {
 								const nextPart = selectNextPart(
 									playlist,
 									playingPartInstance,
-									getAllOrderedPartsFromCache(cache, playlist)
+									getSegmentsAndPartsFromCache(cache, playlist)
 								)
 								libsetNextPart(cache, playlist, nextPart ? nextPart.part : null)
 							}

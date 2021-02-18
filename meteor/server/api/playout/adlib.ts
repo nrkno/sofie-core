@@ -24,7 +24,7 @@ import {
 	setNextPart,
 	getRundownIDsFromCache,
 	selectNextPart,
-	getAllOrderedPartsFromCache,
+	getSegmentsAndPartsFromCache,
 } from './lib'
 import {
 	convertAdLibToPieceInstance,
@@ -433,7 +433,7 @@ export namespace ServerPlayoutAdLibAPI {
 		const followingPart = selectNextPart(
 			rundownPlaylist,
 			currentPartInstance,
-			getAllOrderedPartsFromCache(cache, rundownPlaylist),
+			getSegmentsAndPartsFromCache(cache, rundownPlaylist),
 			true
 		)
 		newPartInstance.part._rank = getRank(

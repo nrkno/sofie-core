@@ -5,7 +5,6 @@ import { IngestActions } from './actions'
 import { updateTimeline, getActiveRundownPlaylist } from '../playout/timeline'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '../../../lib/collections/Studios'
-
 import { Settings } from '../../../lib/Settings'
 import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
 import { waitForPromise } from '../../../lib/lib'
@@ -15,6 +14,7 @@ import { Rundowns } from '../../../lib/collections/Rundowns'
 import { handleUpdatedSegment } from './rundownInput'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { logger } from '../../logging'
+import { UpdateNext } from './updateNext'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
@@ -52,6 +52,7 @@ if (!Settings.enableUserAccounts) {
 		debug_updateTimeline: (studioId: StudioId) => {
 			try {
 				check(studioId, String)
+				logger.info(`debug_updateTimeline: "${studioId}"`)
 
 				const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
 
@@ -63,6 +64,26 @@ if (!Settings.enableUserAccounts) {
 				} else {
 					updateTimeline(cache, studioId)
 					waitForPromise(cache.saveAllToDatabase())
+				}
+			} catch (e) {
+				logger.error(e)
+				throw e
+			}
+		},
+		debug_updateNext: (studioId: StudioId) => {
+			try {
+				check(studioId, String)
+				logger.info(`debug_updateNext: "${studioId}"`)
+
+				const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
+
+				const activePlaylist = getActiveRundownPlaylist(cache, studioId)
+				if (activePlaylist) {
+					const cacheForPlaylist = waitForPromise(initCacheForRundownPlaylist(activePlaylist, cache))
+					UpdateNext.ensureNextPartIsValid(cacheForPlaylist, activePlaylist)
+					waitForPromise(cacheForPlaylist.saveAllToDatabase())
+				} else {
+					throw new Error('No playlist active')
 				}
 			} catch (e) {
 				logger.error(e)
