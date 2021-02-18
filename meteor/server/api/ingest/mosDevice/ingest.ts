@@ -584,7 +584,7 @@ function makeChangeToIngestParts(
 		} else {
 			const ref = referenceIngestSegments.find((s) => s.externalId === ingestSegment.externalId)
 			if (ref) {
-				if (ref.parts.length === ingestSegment.parts.length) {
+				if (ref.parts.length !== ingestSegment.parts.length) {
 					// A part has been added, or removed
 					ingestSegment.modified = getCurrentTime()
 				} else {
