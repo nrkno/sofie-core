@@ -58,17 +58,6 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 			await this._initialize()
 		}
 	}
-	/** @deprecated this has risk to producing errors and is unnecessary once the rework has been completed */
-	extendWithData(cacheCollection: DbCacheReadCollection<Class, DBInterface>) {
-		this._initialized = cacheCollection._initialized
-		this._initializer = cacheCollection._initializer
-
-		waitForPromise(cacheCollection._initialize())
-
-		cacheCollection.documents.forEach((doc, key) => {
-			if (!this.documents.has(key)) this.documents.set(key, doc)
-		})
-	}
 
 	public async _initialize(): Promise<void> {
 		if (this._initializing) {

@@ -24,7 +24,6 @@ import { removeRundownPlaylistFromDb } from '../rundownPlaylist'
 import { CacheForStudioBase } from '../studio/cache'
 import { getRundownsSegmentsAndPartsFromCache } from './lib'
 import { CacheForIngest } from '../ingest/cache'
-import { getRundown } from '../ingest/lib'
 
 /**
  * This is a cache used for playout operations.
@@ -40,7 +39,7 @@ export abstract class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> 
 	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice, PeripheralDevice>
 
 	public readonly Playlist: DbCacheWriteObject<RundownPlaylist, DBRundownPlaylist>
-	public readonly Rundowns: DbCacheWriteCollection<Rundown, DBRundown> // TODO DbCacheReadCollection??
+	public readonly Rundowns: DbCacheReadCollection<Rundown, DBRundown> // TODO DbCacheReadCollection??
 
 	protected constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
 		super()

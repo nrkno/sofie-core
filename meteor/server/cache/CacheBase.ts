@@ -51,18 +51,6 @@ export abstract class ReadOnlyCacheBase {
 			Meteor.clearTimeout(this._activeTimeout)
 		}
 	}
-	_extendWithData(extendFromCache: CacheBase<any>) {
-		extendFromCache._abortActiveTimeout()
-
-		_.each(extendFromCache as any, (their, key) => {
-			const our = this[key]
-			if (isDbCacheReadCollection(their)) {
-				if (isDbCacheReadCollection(our)) {
-					our.extendWithData(their)
-				}
-			}
-		})
-	}
 
 	protected getAllCollections() {
 		const highPrioDBs: DbCacheWritable<any, any>[] = []
