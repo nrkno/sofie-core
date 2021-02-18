@@ -11,6 +11,7 @@ interface IPropsHeader {
 	segmentDuration: number
 	liveLineHistorySize: number
 	timeScale: number
+	maxTimeScale: number
 	onScroll: (scrollLeft: number, event: MouseEvent) => void
 	onZoomChange: (newScale: number, event: MouseEvent) => void
 }

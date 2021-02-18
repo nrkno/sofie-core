@@ -61,6 +61,7 @@ interface IProps {
 	parts: Array<PartUi>
 	segmentNotes: Array<SegmentNote>
 	timeScale: number
+	maxTimeScale: number
 	showingAllSegment: boolean
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
 	collapsedOutputs: {
@@ -213,7 +214,10 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		return (
 			<div
 				className={ClassNames('segment-timeline__zoom-area-container', {
-					hidden: this.props.scrollLeft === 0 && this.props.showingAllSegment && !this.props.isLiveSegment,
+					hidden:
+						this.props.scrollLeft === 0 &&
+						(this.props.showingAllSegment || this.props.timeScale === this.props.maxTimeScale) &&
+						!this.props.isLiveSegment,
 				})}>
 				<div className="segment-timeline__zoom-area" onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
 					<div className="segment-timeline__timeline">{this.renderZoomTimeline()}</div>
@@ -224,6 +228,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 						segmentDuration={this.getSegmentDuration()}
 						liveLineHistorySize={this.props.liveLineHistorySize}
 						timeScale={this.props.timeScale}
+						maxTimeScale={this.props.maxTimeScale}
 						onZoomChange={this.props.onZoomChange}
 					/>
 					{this.renderMiniLiveLine()}
@@ -233,18 +238,8 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 	}
 }
 
-class SegmentTimelineZoomButtons extends React.Component<
-	IProps & {
-		onTimelineDoubleClick(e: React.MouseEvent<HTMLElement>)
-		t: TFunction
-	}
-> {
-	constructor(
-		props: IProps & {
-			onTimelineDoubleClick(e: React.MouseEvent<HTMLElement>)
-			t: TFunction
-		}
-	) {
+class SegmentTimelineZoomButtons extends React.Component<IProps> {
+	constructor(props: IProps) {
 		super(props)
 	}
 
@@ -253,21 +248,20 @@ class SegmentTimelineZoomButtons extends React.Component<
 	}
 
 	zoomOut = (e: React.MouseEvent<HTMLElement>) => {
-		this.props.onZoomChange(this.props.timeScale * 0.5, e)
+		this.props.onZoomChange(Math.max(this.props.timeScale * 0.5, this.props.maxTimeScale), e)
 	}
 
 	zoomNormalize = (e: React.MouseEvent<HTMLElement>) => {
-		// this.props.onZoomChange(MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale, e)
-		this.props.onTimelineDoubleClick && this.props.onTimelineDoubleClick(e)
+		this.props.onZoomChange(this.props.maxTimeScale, e)
 	}
 
 	render() {
-		const { t } = this.props
 		return (
 			<div className="segment-timeline__timeline-zoom-buttons">
 				<button
 					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
-					onClick={this.zoomOut}>
+					onClick={this.zoomOut}
+					disabled={this.props.timeScale <= this.props.maxTimeScale}>
 					<ZoomOutIcon />
 				</button>
 				<button
@@ -375,7 +369,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		})
 	}
 
-	onZoomDblClick = (e) => {
+	onZoomNormalize = (e) => {
 		if (this.props.onShowEntireSegment) {
 			this.props.onShowEntireSegment(e)
 		}
@@ -913,7 +907,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					{this.renderLiveLine()}
 				</div>
 				<ErrorBoundary>
-					<SegmentTimelineZoomButtons {...this.props} onTimelineDoubleClick={this.onZoomDblClick} />
+					<SegmentTimelineZoomButtons {...this.props} />
 				</ErrorBoundary>
 				{/* <ErrorBoundary>
 					<SegmentNextPreview
@@ -930,7 +924,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						leave={{ animation: 'slideUp', easing: 'ease-in', duration: 250 }}>
 						{!this.props.isCollapsed && (
 							<SegmentTimelineZoom
-								onZoomDblClick={this.onZoomDblClick}
+								onZoomDblClick={this.onZoomNormalize}
 								timelineWidth={this.state.timelineWidth}
 								{...this.props}
 							/>

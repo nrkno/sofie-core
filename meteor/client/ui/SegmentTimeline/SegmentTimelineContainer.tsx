@@ -110,6 +110,7 @@ interface IState {
 	currentNextPart: PartUi | undefined
 	autoNextPart: boolean
 	timeScale: number
+	maxTimeScale: number
 	showingAllSegment: boolean
 }
 interface ITrackedProps {
@@ -286,6 +287,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				currentLivePart: undefined,
 				currentNextPart: undefined,
 				timeScale: props.timeScale,
+				maxTimeScale: props.timeScale,
 				showingAllSegment: true,
 			}
 
@@ -536,6 +538,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.showEntireSegment()
 			}
 
+			if (!isLiveSegment && this.props.parts !== prevProps.parts) {
+				this.updateMaxTimeScale()
+			}
+
 			this.setState({
 				isLiveSegment,
 				isNextSegment,
@@ -604,12 +610,12 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
-		onTimeScaleChange = (timeScaleVal: number, showingAllSegment: boolean = false) => {
+		onTimeScaleChange = (timeScaleVal: number) => {
 			if (Number.isFinite(timeScaleVal) && timeScaleVal > 0) {
-				this.setState({
+				this.setState((state) => ({
 					timeScale: timeScaleVal,
-					showingAllSegment,
-				})
+					showingAllSegment: timeScaleVal === state.maxTimeScale,
+				}))
 			}
 		}
 
@@ -770,18 +776,26 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			this.timelineDiv = el.timeline
 		}
 
+		getShowAllTimeScale = () => {
+			let newScale =
+				(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
+				(computeSegmentDuration(
+					this.context.durations,
+					this.props.parts.map((i) => i.instance.part._id),
+					true
+				) || 1)
+			newScale = Math.min(0.03, newScale)
+			return newScale
+		}
+
+		updateMaxTimeScale = () => {
+			this.setState({
+				maxTimeScale: this.getShowAllTimeScale(),
+			})
+		}
+
 		showEntireSegment = () => {
-			if (typeof this.onTimeScaleChange === 'function') {
-				let newScale =
-					(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
-					(computeSegmentDuration(
-						this.context.durations,
-						this.props.parts.map((i) => i.instance.part._id),
-						true
-					) || 1)
-				newScale = Math.min(0.03, newScale)
-				this.onTimeScaleChange(newScale, true)
-			}
+			this.onTimeScaleChange(this.getShowAllTimeScale())
 		}
 
 		onShowEntireSegment = (event: any, limitScale?: boolean) => {
@@ -793,7 +807,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		onZoomChange = (newScale: number, e: any) => {
-			this.onTimeScaleChange && this.onTimeScaleChange(newScale)
+			this.onTimeScaleChange(newScale)
 		}
 
 		render() {
@@ -808,6 +822,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						parts={this.props.parts}
 						segmentNotes={this.props.segmentNotes}
 						timeScale={this.state.timeScale}
+						maxTimeScale={this.state.maxTimeScale}
 						showingAllSegment={this.state.showingAllSegment}
 						onItemClick={this.props.onPieceClick}
 						onItemDoubleClick={this.props.onPieceDoubleClick}

@@ -758,12 +758,9 @@ svg.icon {
 			overflow: visible;
 			font-size: 1em;
 			padding: 0;
+			transition: 0.2s opacity;
 
 			color: #dddddd;
-
-			&.segment-timeline__timeline-zoom-buttons__button--all {
-				padding: 0 0.3em;
-			}
 
 			> svg {
 				height: 22px;
@@ -775,21 +772,27 @@ svg.icon {
 				}
 			}
 
-			&:hover {
-				> svg {
-					.btn-bkg {
-						fill: #8c8c8c;
-						transition: 0s fill;
-					}
-				}
+			&:disabled {
+				opacity: 0.5;
 			}
 
-			&:active {
-				> svg {
-					.btn-bkg {
-						fill: $ui-button-primary;
-						border-color: $ui-button-primary;
-						transition: 0s fill;
+			&:not(:disabled) {
+				&:hover {
+					> svg {
+						.btn-bkg {
+							fill: #8c8c8c;
+							transition: 0s fill;
+						}
+					}
+				}
+
+				&:active {
+					> svg {
+						.btn-bkg {
+							fill: $ui-button-primary;
+							border-color: $ui-button-primary;
+							transition: 0s fill;
+						}
 					}
 				}
 			}
