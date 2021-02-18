@@ -4,7 +4,7 @@ import {
 	selectNextPart,
 	isTooCloseToAutonext,
 	getSelectedPartInstancesFromCache,
-	getAllOrderedPartsFromCache,
+	getSegmentsAndPartsFromCache,
 } from '../playout/lib'
 import { CacheForRundownPlaylist } from '../../cache/DatabaseCaches'
 import { profiler } from '../profiler'
@@ -30,11 +30,11 @@ export namespace UpdateNext {
 				return
 			}
 
-			const allParts = getAllOrderedPartsFromCache(cache, playlist)
+			const allPartsAndSegments = getSegmentsAndPartsFromCache(cache, playlist)
 
 			if (currentPartInstance && nextPartInstance) {
 				// Check if the part is the same
-				const newNextPart = selectNextPart(playlist, currentPartInstance, allParts)
+				const newNextPart = selectNextPart(playlist, currentPartInstance, allPartsAndSegments)
 				if (!newNextPart) {
 					// No new next, so leave as is
 					span?.end()
@@ -49,7 +49,7 @@ export namespace UpdateNext {
 				}
 			} else if (!nextPartInstance) {
 				// Don't have a currentPart or a nextPart, so set next to first in the show
-				const newNextPart = selectNextPart(playlist, currentPartInstance ?? null, allParts)
+				const newNextPart = selectNextPart(playlist, currentPartInstance ?? null, allPartsAndSegments)
 				wrapWithProxyPlayoutCache(cache, playlist, (playoutCache) => {
 					ServerPlayoutAPI.setNextPartInner(playoutCache, newNextPart?.part ?? null)
 				})

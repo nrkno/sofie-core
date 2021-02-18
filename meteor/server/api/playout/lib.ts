@@ -48,6 +48,7 @@ import {
 } from './cache'
 import { Settings } from '../../../lib/Settings'
 import { removeSegmentContents } from '../rundown'
+import { consoleTestResultHandler } from 'tslint/lib/test'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -105,7 +106,11 @@ export function resetRundownPlaylist(cache: CacheForPlayout): void {
 		})
 
 		// put the first on queue:
-		const firstPart = selectNextPart(cache.Playlist.doc, null, getAllOrderedPartsFromPlayoutCache(cache))
+		const firstPart = selectNextPart(
+			cache.Playlist.doc,
+			null,
+			getSegmentsAndPartsFromCache(cache, cache.Playlist.doc)
+		)
 		setNextPart(cache, firstPart ? firstPart.part : null)
 	} else {
 		setNextPart(cache, null)
@@ -117,11 +122,15 @@ export interface SelectNextPartResult {
 	index: number
 	consumesNextSegmentId?: boolean
 }
+export interface PartsAndSegments {
+	segments: DBSegment[]
+	parts: Part[]
+}
 
 export function selectNextPart(
 	rundownPlaylist: Pick<RundownPlaylist, 'nextSegmentId' | 'loop'>,
 	previousPartInstance: PartInstance | null,
-	parts: Part[],
+	{ parts, segments }: PartsAndSegments,
 	ignoreUnplayabale = true
 ): SelectNextPartResult | undefined {
 	const span = profiler.startSpan('selectNextPart')
@@ -146,31 +155,58 @@ export function selectNextPart(
 		return undefined
 	}
 
-	let offset = 0
+	let searchFromIndex = 0
 	if (previousPartInstance) {
 		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
 		if (currentIndex !== -1) {
 			// Start looking at the next part
-			offset = currentIndex + 1
+			searchFromIndex = currentIndex + 1
 		} else {
-			// Look for other parts in the segment to reference
-			let segmentStartIndex: number | undefined
-			let nextInSegmentIndex: number | undefined
+			const segmentStarts = new Map<SegmentId, number>()
 			parts.forEach((p, i) => {
-				if (p.segmentId === previousPartInstance.segmentId) {
-					if (segmentStartIndex === undefined) segmentStartIndex = i
+				if (!segmentStarts.has(p.segmentId)) {
+					segmentStarts.set(p.segmentId, i)
+				}
+			})
 
-					if (p._rank <= previousPartInstance.part._rank) {
+			// Look for other parts in the segment to reference
+			const segmentStartIndex = segmentStarts.get(previousPartInstance.segmentId)
+			if (segmentStartIndex !== undefined) {
+				let nextInSegmentIndex: number | undefined
+				for (let i = segmentStartIndex; i < parts.length; i++) {
+					const part = parts[i]
+					if (part.segmentId !== previousPartInstance.segmentId) break
+					if (part._rank <= previousPartInstance.part._rank) {
 						nextInSegmentIndex = i + 1
 					}
 				}
-			})
-			offset = nextInSegmentIndex ?? segmentStartIndex ?? offset
+
+				searchFromIndex = nextInSegmentIndex ?? segmentStartIndex
+			} else {
+				// If we didn't find the segment in the list of parts, then look for segments after this one.
+				const segmentIndex = segments.findIndex((s) => s._id === previousPartInstance.segmentId)
+				let followingSegmentStart: number | undefined
+				if (segmentIndex !== -1) {
+					// Find the first segment with parts that lies after this
+					for (let i = segmentIndex + 1; i < segments.length; i++) {
+						const segmentStart = segmentStarts.get(segments[i]._id)
+						if (segmentStart !== undefined) {
+							followingSegmentStart = segmentStart
+							break
+						}
+					}
+
+					// Either there is a segment after, or we are at the end of the rundown
+					searchFromIndex = followingSegmentStart ?? parts.length + 1
+				} else {
+					// Somehow we cannot place the segment, so the start of the playlist is better than nothing
+				}
+			}
 		}
 	}
 
 	// Filter to after and find the first playabale
-	let nextPart = findFirstPlayablePart(offset)
+	let nextPart = findFirstPlayablePart(searchFromIndex)
 
 	if (rundownPlaylist.nextSegmentId) {
 		// No previous part, or segment has changed
@@ -189,11 +225,8 @@ export function selectNextPart(
 
 	// if playlist should loop, check from 0 to currentPart
 	if (rundownPlaylist.loop && !nextPart && previousPartInstance) {
-		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
-		// TODO - choose something better for next?
-		if (currentIndex !== -1) {
-			nextPart = findFirstPlayablePart(0, undefined, currentIndex)
-		}
+		// Search up until the current part
+		nextPart = findFirstPlayablePart(0, undefined, searchFromIndex - 1)
 	}
 
 	if (span) span.end()
@@ -551,13 +584,6 @@ export function getSegmentsAndPartsFromCache(
 } {
 	const rundowns = getRundownsFromCache(cache, playlist)
 	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, rundowns)
-}
-export function getAllOrderedPartsFromCache(
-	cache: CacheForRundownPlaylist | CacheForPlayout,
-	playlist: ReadonlyDeep<RundownPlaylist>
-): Part[] {
-	const { parts } = getSegmentsAndPartsFromCache(cache, playlist)
-	return parts
 }
 /** Get all rundowns in a playlist */
 export function getRundownsFromCache(

@@ -37,6 +37,7 @@ import {
 	setNextSegment as libSetNextSegment,
 	onPartHasStoppedPlaying,
 	selectNextPart,
+	getSegmentsAndPartsFromCache,
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -927,7 +928,7 @@ export namespace ServerPlayoutAPI {
 						const nextPart = selectNextPart(
 							playlist,
 							playingPartInstance,
-							getAllOrderedPartsFromPlayoutCache(cache)
+							getSegmentsAndPartsFromCache(cache, playlist)
 						)
 						libsetNextPart(cache, nextPart?.part ?? null)
 					} else {
@@ -953,7 +954,7 @@ export namespace ServerPlayoutAPI {
 							const nextPart = selectNextPart(
 								playlist,
 								playingPartInstance,
-								getAllOrderedPartsFromPlayoutCache(cache)
+								getSegmentsAndPartsFromCache(cache, playlist)
 							)
 							libsetNextPart(cache, nextPart?.part ?? null)
 						}

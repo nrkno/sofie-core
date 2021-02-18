@@ -5,7 +5,7 @@ import { asyncCollectionFindFetch } from '../../../lib/lib'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { getAllOrderedPartsFromCache, selectNextPart } from './lib'
+import { getSegmentsAndPartsFromCache, PartsAndSegments, selectNextPart } from './lib'
 import { saveIntoCache } from '../../cache/lib'
 import {
 	getPieceInstancesForPart as libgetPieceInstancesForPart,
@@ -26,7 +26,7 @@ export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
  * */
 function canContinueAdlibOnEndInfinites(
 	playlist: ReadonlyDeep<RundownPlaylist>,
-	orderedParts: Part[],
+	orderedPartsAndSegments: PartsAndSegments,
 	previousPartInstance: PartInstance | undefined,
 	part: DBPart
 ): boolean {
@@ -34,13 +34,13 @@ function canContinueAdlibOnEndInfinites(
 		const span = profiler.startSpan('canContinueAdlibOnEndInfinites')
 		// TODO - if we don't have an index for previousPartInstance, what should we do?
 
-		const expectedNextPart = selectNextPart(playlist, previousPartInstance, orderedParts)
+		const expectedNextPart = selectNextPart(playlist, previousPartInstance, orderedPartsAndSegments)
 		if (expectedNextPart) {
 			if (expectedNextPart.part._id === part._id) {
 				// Next part is what we expect, so take it
 				return true
 			} else {
-				const partIndex = orderedParts.findIndex((p) => p._id === part._id)
+				const partIndex = orderedPartsAndSegments.parts.findIndex((p) => p._id === part._id)
 				if (partIndex >= expectedNextPart.index) {
 					if (span) span.end()
 					// Somewhere after the auto-next part, so we can use that
@@ -116,11 +116,11 @@ export function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout)
 			nextPartInstance.part
 		)
 
-		const orderedParts = getAllOrderedPartsFromPlayoutCache(cache)
+		const orderedPartsAndSegments = getSegmentsAndPartsFromCache(cache, playlist)
 
 		const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
 			playlist,
-			orderedParts,
+			orderedPartsAndSegments,
 			currentPartInstance,
 			nextPartInstance.part
 		)
@@ -166,12 +166,17 @@ export function getPieceInstancesForPart(
 	const playlist = cache.Playlist.doc
 	if (!playlist.activationId) throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is not active`)
 
-	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
+	const orderedPartsAndSegments = getSegmentsAndPartsFromCache(cache, playlist)
 	const playingPieceInstances = playingPartInstance
 		? cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
 		: []
 
-	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(playlist, orderedParts, playingPartInstance, part)
+	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
+		playlist,
+		orderedPartsAndSegments,
+		playingPartInstance,
+		part
+	)
 
 	const res = libgetPieceInstancesForPart(
 		playlist.activationId,
@@ -181,7 +186,7 @@ export function getPieceInstancesForPart(
 		new Set(partsBeforeThisInSegment),
 		new Set(segmentsBeforeThisInRundown),
 		possiblePieces,
-		orderedParts.map((part) => part._id),
+		orderedPartsAndSegments.parts.map((part) => part._id),
 		newInstanceId,
 		canContinueAdlibOnEnds,
 		isTemporary

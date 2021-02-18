@@ -18,6 +18,7 @@ import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections
 import { getPartId } from '../../lib'
 import { PartInstance } from '../../../../../lib/collections/PartInstances'
 import { resetRandomId, restartRandomId } from '../../../../../__mocks__/random'
+import { UserActionsLog } from '../../../../../lib/collections/UserActionsLog'
 
 jest.mock('../../updateNext')
 
@@ -50,6 +51,7 @@ describe('Test recieved mos ingest payloads', () => {
 	})
 	beforeEach(() => {
 		restartRandomId()
+		UserActionsLog.remove({})
 	})
 
 	testInFiber('mosRoCreate', () => {

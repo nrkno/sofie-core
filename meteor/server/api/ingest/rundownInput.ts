@@ -837,7 +837,7 @@ function updateRundownFromIngestData(
 		saveIntoCache<Piece, Piece>(
 			cache.Pieces,
 			{
-				rundownId: rundownId,
+				startRundownId: rundownId,
 			},
 			newPieces,
 			{
