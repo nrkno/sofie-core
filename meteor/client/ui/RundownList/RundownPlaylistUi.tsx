@@ -35,6 +35,7 @@ import { RundownUtils } from '../../lib/rundown'
 import PlaylistRankMethodToggle from './PlaylistRankMethodToggle'
 import JonasFormattedTime from './JonasFormattedTime'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
+import { doUserAction, UserAction } from '../../lib/userAction'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
@@ -136,35 +137,32 @@ export const RundownPlaylistUi = DropTarget(
 			}
 
 			private handleRundownDrop(rundownId: RundownId): void {
-				const { playlist } = this.props
+				const { playlist, t } = this.props
 				const playlistId = this.props.playlist._id
 				const rundownOrder = this.state.rundownOrder.slice()
 
 				if (playlist.rundowns.findIndex((rundown) => rundownId === rundown._id) > -1) {
 					// finalize order from component state
-					MeteorCall.userAction.moveRundown(
-						'Drag and drop rundown playlist reorder',
-						rundownId,
-						playlistId,
-						rundownOrder
+					doUserAction(t, 'Drag and drop rundown playlist reorder', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
+						MeteorCall.userAction.moveRundown(e, rundownId, playlistId, rundownOrder)
 					)
 				} else {
 					// add rundown to playlist
 					rundownOrder.push(rundownId)
 
-					MeteorCall.userAction.moveRundown(
-						'Drag and drop add rundown to playlist',
-						rundownId,
-						playlistId,
-						rundownOrder
+					doUserAction(t, 'Drag and drop add rundown to playlist', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
+						MeteorCall.userAction.moveRundown(e, rundownId, playlistId, rundownOrder)
 					)
 				}
 			}
 
 			private handleResetRundownOrderClick() {
-				MeteorCall.userAction.restoreRundownOrder(
+				const { t } = this.props
+				doUserAction(
+					t,
 					'User clicked the playlist rundown order toggle to reset',
-					this.props.playlist._id
+					UserAction.RUNDOWN_ORDER_RESET,
+					(e) => MeteorCall.userAction.restoreRundownOrder(e, this.props.playlist._id)
 				)
 			}
 

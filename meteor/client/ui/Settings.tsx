@@ -182,7 +182,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					</React.Fragment>
 				),
 				onAccept: () => {
-					MeteorCall.studio.removeStudio(studio._id)
+					MeteorCall.studio.removeStudio(studio._id).catch(console.error)
 				},
 			})
 		}
@@ -203,7 +203,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					</React.Fragment>
 				),
 				onAccept: () => {
-					MeteorCall.showstyles.removeShowStyleBase(item._id)
+					MeteorCall.showstyles.removeShowStyleBase(item._id).catch(console.error)
 				},
 			})
 		}
@@ -224,7 +224,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					</React.Fragment>
 				),
 				onAccept: () => {
-					MeteorCall.blueprint.removeBlueprint(blueprint._id)
+					MeteorCall.blueprint.removeBlueprint(blueprint._id).catch(console.error)
 				},
 			})
 		}
