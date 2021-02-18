@@ -27,7 +27,7 @@ import {
 	getRundown,
 } from './lib'
 import { MethodContext } from '../../../lib/api/methods'
-import { CommitIngestData, ingestLockFunction } from './syncFunction'
+import { CommitIngestData, ingestLockFunction, UpdateIngestRundownAction } from './syncFunction'
 import { CacheForIngest } from './cache'
 import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
 import { loadCachedRundownData } from './ingestCache2'
@@ -263,7 +263,7 @@ export function handleRemovedRundownFromStudio(studioId: StudioId, rundownExtern
 		rundownExternalId,
 		() => {
 			// Remove it
-			return undefined
+			return UpdateIngestRundownAction.DELETE
 		},
 		async (cache) => {
 			const rundown = getRundown(cache)

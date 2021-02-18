@@ -14,7 +14,7 @@ import { getRundownsSegmentsAndPartsFromCache } from '../playout/lib'
 import { PlaylistLock, runPlayoutOperationWithLock } from '../playout/syncFunction'
 import { profiler } from '../profiler'
 import { CacheForIngest } from './cache'
-import { BeforePartMap, CommitIngestOperation } from './commit'
+import { BeforePartMap, CommitIngestOperation, updatePlayoutAfterChangingRundownInPlaylist } from './commit'
 import { LocalIngestRundown } from './ingestCache'
 import { loadCachedRundownData, saveRundownCache } from './ingestCache2'
 import { getRundown, getRundownId } from './lib'
@@ -41,6 +41,10 @@ export interface CommitIngestData {
 	blueprint: WrappedShowStyleBlueprint | undefined
 }
 
+export enum UpdateIngestRundownAction {
+	DELETE = 'delete',
+}
+
 /**
  * Perform an ingest update operation on a rundown
  * This will automatically do some post-update data changes, to ensure the playout side (partinstances etc) is updated with the changes
@@ -54,7 +58,9 @@ export function ingestLockFunction(
 	context: string,
 	studioId: StudioId,
 	rundownExternalId: string,
-	updateCacheFcn: (oldIngestRundown: LocalIngestRundown | undefined) => LocalIngestRundown | undefined,
+	updateCacheFcn: (
+		oldIngestRundown: LocalIngestRundown | undefined
+	) => LocalIngestRundown | UpdateIngestRundownAction,
 	calcFcn: (
 		cache: CacheForIngest,
 		newIngestRundown: LocalIngestRundown | undefined,
@@ -72,14 +78,20 @@ export function ingestLockFunction(
 
 		// Recalculate the ingest data
 		const oldIngestRundown = await loadCachedRundownData(ingestObjCache, rundownId)
-		const newIngestRundown = updateCacheFcn(clone(oldIngestRundown))
-		if (newIngestRundown === null) {
-			// Reject change
-			return
-		} else if (newIngestRundown === undefined) {
-			ingestObjCache.remove({})
-		} else {
-			saveRundownCache(ingestObjCache, rundownId, newIngestRundown)
+		const updatedIngestRundown = updateCacheFcn(clone(oldIngestRundown))
+		let newIngestRundown: LocalIngestRundown | undefined
+		switch (updatedIngestRundown) {
+			// case UpdateIngestRundownAction.REJECT:
+			// 	// Reject change
+			// 	return
+			case UpdateIngestRundownAction.DELETE:
+				ingestObjCache.remove({})
+				newIngestRundown = undefined
+				break
+			default:
+				saveRundownCache(ingestObjCache, rundownId, updatedIngestRundown)
+				newIngestRundown = updatedIngestRundown
+				break
 		}
 		// Start saving the ingest data
 		const pSaveIngestChanges = ingestObjCache.updateDatabaseWithData()

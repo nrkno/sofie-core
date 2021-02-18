@@ -46,7 +46,7 @@ import {
 } from './cache'
 import { Settings } from '../../../lib/Settings'
 import { removeSegmentContents } from '../ingest/cleanup'
-import { ingestLockFunction } from '../ingest/syncFunction'
+import { ingestLockFunction, UpdateIngestRundownAction } from '../ingest/syncFunction'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -423,7 +423,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 					'cleanupOrphanedItems:defer',
 					rundown.studioId,
 					rundown.externalId,
-					(ingestRundown) => ingestRundown,
+					(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
 					async (ingestCache) => {
 						// Find the segments that are still orphaned (in case they have resynced before this executes)
 						// We flag them for deletion again, and they will either be kept if they are someone playing, or purged if they are not
