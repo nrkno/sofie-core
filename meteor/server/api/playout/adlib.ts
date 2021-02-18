@@ -51,6 +51,7 @@ import {
 	getSelectedPartInstancesFromCache,
 } from './cache'
 import { ReadonlyDeep } from 'type-fest'
+import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow(
@@ -248,9 +249,10 @@ export namespace ServerPlayoutAdLibAPI {
 				const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
 
-				const adLibPiece = (await cache.activationCache.getRundownBaselineAdLibPieces(rundown)).find(
-					(adlib) => adlib._id === baselineAdLibPieceId
-				)
+				const adLibPiece = RundownBaselineAdLibPieces.findOne({
+					_id: baselineAdLibPieceId,
+					rundownId: partInstance.rundownId,
+				})
 				if (!adLibPiece)
 					throw new Meteor.Error(404, `Rundown Baseline Ad Lib Item "${baselineAdLibPieceId}" not found!`)
 

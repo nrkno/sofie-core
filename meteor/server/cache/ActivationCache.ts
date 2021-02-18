@@ -83,8 +83,6 @@ export class ActivationCache {
 	private _showStyleBases: { [id: string]: InternalCache<ShowStyleBase> } = {}
 	private _showStyleVariants: { [id: string]: InternalCache<ShowStyleVariant> } = {}
 	private _rundownBaselineObjs: { [id: string]: InternalCache<RundownBaselineObj[]> } = {}
-	private _rundownBaselineAdLibPieces: { [id: string]: InternalCache<RundownBaselineAdLibItem[]> } = {}
-	private _rundownBaselineAdLibActions: { [id: string]: InternalCache<RundownBaselineAdLibAction[]> } = {}
 	private _peripheralDevices: { [id: string]: InternalCache<PeripheralDevice[]> } = {}
 
 	constructor(private _playlistId: RundownPlaylistId) {
@@ -112,8 +110,6 @@ export class ActivationCache {
 		this._showStyleBases = {}
 		this._showStyleVariants = {}
 		this._rundownBaselineObjs = {}
-		this._rundownBaselineAdLibPieces = {}
-		this._rundownBaselineAdLibActions = {}
 		this._peripheralDevices = {}
 
 		this._initialized = false
@@ -158,8 +154,6 @@ export class ActivationCache {
 				ps.push(this._getShowStyleBase(rundown).catch(ignoreError))
 				ps.push(this._getShowStyleVariant(rundown).catch(ignoreError))
 				ps.push(this._getRundownBaselineObjs(rundown))
-				ps.push(this._getRundownBaselineAdLibPieces(rundown))
-				ps.push(this._getRundownBaselineAdLibActions(rundown))
 			}
 			ps.push(this._getPeripheralDevices())
 
@@ -217,14 +211,6 @@ export class ActivationCache {
 		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
 		return this._getRundownBaselineObjs(rundown)
 	}
-	async getRundownBaselineAdLibPieces(rundown: Rundown): Promise<RundownBaselineAdLibItem[]> {
-		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
-		return this._getRundownBaselineAdLibPieces(rundown)
-	}
-	async getRundownBaselineAdLibActions(rundown: Rundown): Promise<RundownBaselineAdLibAction[]> {
-		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
-		return this._getRundownBaselineAdLibActions(rundown)
-	}
 	async getPeripheralDevices(): Promise<PeripheralDevice[]> {
 		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
 		return this._getPeripheralDevices()
@@ -253,32 +239,6 @@ export class ActivationCache {
 			async (id) => {
 				const rundownBaselineObjs = await asyncCollectionFindFetch(RundownBaselineObjs, { rundownId: id })
 				return rundownBaselineObjs
-			}
-		)
-	}
-	private async _getRundownBaselineAdLibPieces(rundown: Rundown): Promise<RundownBaselineAdLibItem[]> {
-		return this._getFromCache(
-			this._rundownBaselineAdLibPieces,
-			rundown._id,
-			rundown.baselineModifyHash || '',
-			async (id) => {
-				const rundownBaselineAdLibPieces = await asyncCollectionFindFetch(RundownBaselineAdLibPieces, {
-					rundownId: id,
-				})
-				return rundownBaselineAdLibPieces
-			}
-		)
-	}
-	private async _getRundownBaselineAdLibActions(rundown: Rundown): Promise<RundownBaselineAdLibAction[]> {
-		return this._getFromCache(
-			this._rundownBaselineAdLibActions,
-			rundown._id,
-			rundown.baselineModifyHash || '',
-			async (id) => {
-				const rundownBaselineAdLibActions = await asyncCollectionFindFetch(RundownBaselineAdLibActions, {
-					rundownId: id,
-				})
-				return rundownBaselineAdLibActions
 			}
 		)
 	}
