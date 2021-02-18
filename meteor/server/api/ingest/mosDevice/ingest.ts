@@ -188,7 +188,7 @@ export function handleMosRundownMetadata(
 				// We modify in-place
 				return ingestRundown
 			} else {
-				return null
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 			}
 		},
 		async (cache, ingestRundown) => {
@@ -292,7 +292,7 @@ export function handleMosDeleteStory(
 				// We modify in-place
 				return ingestRundown
 			} else {
-				return null
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 			}
 		},
 		diffAndApplyChanges
@@ -381,7 +381,7 @@ export function handleMosInsertParts(
 				// We modify in-place
 				return ingestRundown
 			} else {
-				return null
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 			}
 		},
 		diffAndApplyChanges
@@ -440,7 +440,7 @@ export function handleMosSwapStories(
 				// We modify in-place
 				return ingestRundown
 			} else {
-				return null
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 			}
 		},
 		diffAndApplyChanges
@@ -508,7 +508,7 @@ export function handleMosMoveStories(
 				// We modify in-place
 				return ingestRundown
 			} else {
-				return null
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 			}
 		},
 		diffAndApplyChanges

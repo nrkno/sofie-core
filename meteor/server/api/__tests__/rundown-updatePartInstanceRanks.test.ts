@@ -31,6 +31,8 @@ describe('updatePartInstanceRanks', () => {
 		const playlist0 = RundownPlaylists.findOne(info.playlistId) as RundownPlaylist
 		expect(playlist0).toBeTruthy()
 
+		RundownPlaylists.update(info.playlistId, { $set: { activationId: protectString('active') } })
+
 		playlistId = info.playlistId
 		rundownId = info.rundownId
 
@@ -202,8 +204,6 @@ describe('updatePartInstanceRanks', () => {
 	})
 
 	testInFiber('sync from parts: missing first part', () => {
-		const playlist = getPlaylist()
-
 		const initialRanks = getPartRanks()
 		expect(initialRanks).toHaveLength(5)
 
@@ -220,8 +220,8 @@ describe('updatePartInstanceRanks', () => {
 		Parts.remove(protectString('part01'))
 		updatePartRank(initialInstanceRanks, 'part01', 0)
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+		runPlayoutOperationWithCache(null, 'updatePartInstanceRanks', playlistId, null, (cache) =>
+			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()

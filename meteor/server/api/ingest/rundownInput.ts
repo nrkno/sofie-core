@@ -211,7 +211,7 @@ function getIngestRundown(peripheralDevice: PeripheralDevice, rundownExternalId:
 		externalId: rundownExternalId,
 	})
 	if (!rundown) {
-		throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`)
+		throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 	}
 
 	const ingestData = waitForPromise(loadCachedRundownData(null, rundown._id))
@@ -229,7 +229,7 @@ function getIngestSegment(
 		externalId: rundownExternalId,
 	})
 	if (!rundown) {
-		throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`)
+		throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 	}
 
 	const segment = Segments.findOne({
@@ -238,7 +238,7 @@ function getIngestSegment(
 	})
 
 	if (!segment) {
-		throw new Meteor.Error(404, `Segment ${segmentExternalId} does not exist in rundown ${rundownExternalId}`)
+		throw new Meteor.Error(404, `Segment ${segmentExternalId} not found in rundown ${rundownExternalId}`)
 	}
 
 	return loadCachedIngestSegment(rundown._id, rundown.externalId, segment._id, segment.externalId)
@@ -309,7 +309,7 @@ export function handleUpdatedRundown(
 				// We want to regenerate unmodified
 				return makeNewIngestRundown(newIngestRundown)
 			} else {
-				return null
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 			}
 		},
 		async (cache, ingestRundown) => {
@@ -345,7 +345,7 @@ export function regenerateRundown(
 				// We want to regenerate unmodified
 				return ingestRundown
 			} else {
-				return null
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 			}
 		},
 		async (cache, ingestRundown) => {
@@ -385,14 +385,16 @@ export function handleRemovedSegment(
 				ingestRundown.modified = getCurrentTime()
 
 				if (ingestRundown.segments.length === oldSegmentsLength) {
-					// Nothing was removed
-					return null
+					throw new Meteor.Error(
+						404,
+						`Rundown "${rundownExternalId}" does not have a Segment "${segmentExternalId}" to remove`
+					)
 				}
 
 				// We modify in-place
 				return ingestRundown
 			} else {
-				return null
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 			}
 		},
 		async (cache) => {
@@ -441,7 +443,7 @@ export function handleUpdatedSegment(
 				// We modify in-place
 				return ingestRundown
 			} else {
-				return null
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 			}
 		},
 		async (cache, ingestRundown) => {
@@ -468,24 +470,24 @@ export function handleRemovedPart(
 			if (ingestRundown) {
 				const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segmentExternalId)
 				if (!ingestSegment) {
-					logger.warn(
-						`handleUpdatedPart: Missing Segment with externalId "${segmentExternalId}" in Rundown ingest data for "${rundownExternalId}"`
+					throw new Meteor.Error(
+						404,
+						`Rundown "${rundownExternalId}" does not have a Segment "${segmentExternalId}" to update`
 					)
-					return null
 				}
 				const oldPartsLength = ingestSegment.parts.length
 				ingestSegment.parts = ingestSegment.parts.filter((p) => p.externalId !== partExternalId)
 				ingestSegment.modified = getCurrentTime()
 
-				if (ingestSegment.parts.length === oldPartsLength) {
-					// Nothing was removed
-					return null
-				}
+				// if (ingestSegment.parts.length === oldPartsLength) {
+				// 	// Nothing was removed
+				// 	return null
+				// }
 
 				// We modify in-place
 				return ingestRundown
 			} else {
-				return null
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 			}
 		},
 		async (cache, ingestRundown) => {
@@ -511,10 +513,10 @@ export function handleUpdatedPart(
 			if (ingestRundown) {
 				const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segmentExternalId)
 				if (!ingestSegment) {
-					logger.warn(
-						`handleUpdatedPart: Missing Segment with externalId "${segmentExternalId}" in Rundown ingest data for "${rundownExternalId}"`
+					throw new Meteor.Error(
+						404,
+						`Rundown "${rundownExternalId}" does not have a Segment "${segmentExternalId}" to update`
 					)
-					return null
 				}
 				ingestSegment.parts = ingestSegment.parts.filter((p) => p.externalId !== ingestPart.externalId)
 				ingestSegment.parts.push(makeNewIngestPart(ingestPart))
@@ -523,7 +525,7 @@ export function handleUpdatedPart(
 				// We modify in-place
 				return ingestRundown
 			} else {
-				return null
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 			}
 		},
 		async (cache, ingestRundown) => {

@@ -47,14 +47,14 @@ export interface CommitIngestData {
  * @param context Contextual information for the call to this function. to aid debugging
  * @param studioId Id of the studio the rundown belongs to
  * @param rundownExternalId ExternalId of the rundown to lock
- * @param updateCacheFcn Function to mutate the ingestData. Return null to indicate no change was made. Return undefined to indicate the ingestData should be deleted
+ * @param updateCacheFcn Function to mutate the ingestData. Throw if the requested change is not valid. Return undefined to indicate the ingestData should be deleted
  * @param calcFcn Function to run to update the Rundown. Return the blob of data about the change to help the post-update perform its duties. Return null to indicate that nothing changed
  */
 export function ingestLockFunction(
 	context: string,
 	studioId: StudioId,
 	rundownExternalId: string,
-	updateCacheFcn: (oldIngestRundown: LocalIngestRundown | undefined) => LocalIngestRundown | null | undefined,
+	updateCacheFcn: (oldIngestRundown: LocalIngestRundown | undefined) => LocalIngestRundown | undefined,
 	calcFcn: (
 		cache: CacheForIngest,
 		newIngestRundown: LocalIngestRundown | undefined,

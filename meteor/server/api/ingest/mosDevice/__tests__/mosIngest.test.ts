@@ -1226,7 +1226,7 @@ describe('Test recieved mos ingest payloads', () => {
 		}
 	}
 
-	testInFiberOnly('Rename segment during update while on air', () => {
+	testInFiber('Rename segment during update while on air', () => {
 		resetOrphanedRundown()
 
 		const rundown = Rundowns.findOne() as Rundown
