@@ -12,7 +12,7 @@ const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
 export class MidiPedalController extends ControllerAbstract {
 	private prompterView: PrompterViewInner
 	private midiInputs: Input[] = []
-	private idleMidiInputs: { [midiId: string]: boolean} = {}
+	private idleMidiInputs: { [midiId: string]: boolean } = {}
 
 	private rangeRevMin = 0 // pedal "all back" position, the max-reverse-position
 	private rangeNeutralMin = 35 // pedal "back" position where reverse-range transistions to the neutral range
@@ -137,7 +137,7 @@ export class MidiPedalController extends ControllerAbstract {
 			// 2) we're in the neutral zone
 
 			// check if the input is already idle, ignore successive idle commands
-			if(this.idleMidiInputs[e?.target?.id] === true) {
+			if (this.idleMidiInputs[e?.target?.id] === true) {
 				return
 			}
 
@@ -155,7 +155,7 @@ export class MidiPedalController extends ControllerAbstract {
 		if (this.lastSpeed === 0) {
 			// add input as idle
 			this.idleMidiInputs[e?.target?.id] = true
-		} else if(this.idleMidiInputs[e?.target?.id]) {
+		} else if (this.idleMidiInputs[e?.target?.id]) {
 			// reset the idle state
 
 			// the logic fails if you have two non-idle inputs at the same time
