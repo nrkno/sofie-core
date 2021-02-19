@@ -105,7 +105,7 @@ export async function fetchPiecesThatMayBeActiveForPart(cache: CacheForPlayout, 
 }
 
 export function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout): void {
-	const span = profiler.startSpan('syncPlayheadInfinitesForNextPartInstanceOld')
+	const span = profiler.startSpan('syncPlayheadInfinitesForNextPartInstance')
 	const { nextPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 	if (nextPartInstance && currentPartInstance) {
 		const playlist = cache.Playlist.doc

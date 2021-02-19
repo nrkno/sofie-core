@@ -123,6 +123,7 @@ export interface ChangedIds<T extends ProtectedString<any>> {
 	added: T[]
 	updated: T[]
 	removed: T[]
+	unchanged: T[]
 }
 
 /**

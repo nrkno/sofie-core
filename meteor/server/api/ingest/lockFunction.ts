@@ -93,13 +93,13 @@ export function runIngestOperationWithCache(
 		// Start saving the ingest data
 		const pSaveIngestChanges = ingestObjCache.saveToDatabase()
 
-		const ingestCache = await pIngestCache
-
-		// Load any 'before' data for the commit
-		const beforeRundown = ingestCache.Rundown.doc
-		const beforePartMap = generatePartMap(ingestCache)
-
 		try {
+			const ingestCache = await pIngestCache
+
+			// Load any 'before' data for the commit
+			const beforeRundown = ingestCache.Rundown.doc
+			const beforePartMap = generatePartMap(ingestCache)
+
 			const commitData = await calcFcn(ingestCache, newIngestRundown, oldIngestRundown)
 			if (commitData) {
 				const commitData0 = commitData
@@ -133,8 +133,7 @@ export function runIngestOperationWithLock(
 	context: string,
 	studioId: StudioId,
 	rundownExternalId: string,
-	fcn: (ingestCache: CacheForIngest) => Promise<void>,
-	playlistLock?: PlaylistLock
+	fcn: (ingestCache: CacheForIngest) => Promise<void>
 ): void {
 	return ingestLockFunctionInner(context, rundownExternalId, async () => {
 		const ingestCache = await CacheForIngest.create(studioId, rundownExternalId)
@@ -151,23 +150,16 @@ export function runIngestOperationWithLock(
 				`RundownPlaylist id for Rundown "${ingestCache.RundownId}" cannot be changed during a ingestRundownOnlyLockFunction`
 			)
 
-		async function doPlaylistInner() {
-			// This needs to be inside the playout lock to ensure that a take doesnt happen mid update
-			await ingestCache.saveAllToDatabase()
-		}
-
-		if (playlistLock?._playlistId === afterRundown.playlistId) {
-			// We already hold the playlist lock, so reuse it
-			await doPlaylistInner()
-		} else {
-			runPlayoutOperationWithLock(
-				null,
-				context,
-				beforeRundown.playlistId,
-				RundownSyncFunctionPriority.INGEST,
-				doPlaylistInner
-			)
-		}
+		runPlayoutOperationWithLock(
+			null,
+			context,
+			beforeRundown.playlistId,
+			RundownSyncFunctionPriority.INGEST,
+			async () => {
+				// This needs to be inside the playout lock to ensure that a take doesnt happen mid update
+				await ingestCache.saveAllToDatabase()
+			}
+		)
 	})
 }
 

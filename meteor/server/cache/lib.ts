@@ -33,170 +33,94 @@ export function saveIntoCache<DocClass extends DBInterface, DBInterface extends 
 	collection: DbCacheWriteCollection<DocClass, DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
-	options?: SaveIntoDbOptions<DocClass, DBInterface>
+	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
 ): ChangedIds<DBInterface['_id']> {
 	const span = profiler.startSpan(`DBCache.saveIntoCache.${collection.name}`)
-	const preparedChanges = prepareSaveIntoCache(collection, filter, newData, options)
 
-	if (span)
-		span.addLabels({
-			prepInsert: preparedChanges.inserted.length,
-			prepChanged: preparedChanges.changed.length,
-			prepRemoved: preparedChanges.removed.length,
-			prepUnchanged: preparedChanges.unchanged.length,
-		})
-
-	const changes = savePreparedChangesIntoCache(preparedChanges, collection, options)
-
-	if (span) span.addLabels(changes as any)
-	if (span) span.end()
-	return changes
-}
-export function prepareSaveIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
-	collection: DbCacheWriteCollection<DocClass, DBInterface>,
-	filter: MongoQuery<DBInterface>,
-	newData: Array<DBInterface>,
-	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
-): PreparedChanges<DBInterface> {
-	const span = profiler.startSpan(`DBCache.prepareSaveIntoCache.${collection.name}`)
-
-	let preparedChanges: PreparedChanges<DBInterface> = {
-		inserted: [],
-		changed: [],
+	const changes: ChangedIds<DBInterface['_id']> = {
+		added: [],
+		updated: [],
 		removed: [],
 		unchanged: [],
 	}
 
 	const options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
 
-	const identifier = '_id'
-
-	const newObjIds: { [identifier: string]: true } = {}
+	const newObjIds = new Set<DBInterface['_id']>()
 	_.each(newData, (o) => {
-		if (newObjIds[o[identifier] as any]) {
+		if (newObjIds.has(o._id)) {
 			throw new Meteor.Error(
 				500,
-				`prepareSaveIntoCache into collection "${collection.name}": Duplicate identifier ${identifier}: "${o[identifier]}"`
+				`saveIntoCache into collection "${collection.name}": Duplicate identifier _id: "${o._id}"`
 			)
 		}
-		newObjIds[o[identifier] as any] = true
+		newObjIds.add(o._id)
 	})
 
 	const oldObjs: Array<DocClass> = collection.findFetch(filter)
 
-	const removeObjs: { [id: string]: DocClass } = {}
-	_.each(oldObjs, (o: DocClass) => {
-		if (removeObjs['' + o[identifier]]) {
-			// duplicate id:
-			preparedChanges.removed.push(o)
-		} else {
-			removeObjs['' + o[identifier]] = o
-		}
-	})
+	const objectsToRemove = new Map<DBInterface['_id'], DocClass>()
+	for (const o of oldObjs) {
+		objectsToRemove.set(o._id, o)
+	}
 
-	_.each(newData, function(o) {
-		const oldObj = removeObjs['' + o[identifier]]
+	for (const o of newData) {
+		const oldObj = objectsToRemove.get(o._id)
 
 		if (oldObj) {
 			const o2 = options.beforeDiff ? options.beforeDiff(o, oldObj) : o
 			const eql = compareObjs(oldObj, o2)
 
 			if (!eql) {
-				let oUpdate = options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o
-				preparedChanges.changed.push(oUpdate)
+				const oUpdate = options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o
+				if (options.update) {
+					options.update(oUpdate)
+				} else {
+					collection.replace(oUpdate)
+				}
+				if (options.afterUpdate) options.afterUpdate(oUpdate)
+				changes.updated.push(oUpdate._id)
 			} else {
-				preparedChanges.unchanged.push(oldObj)
+				if (options.unchanged) options.unchanged(o)
+				changes.unchanged.push(oldObj._id)
 			}
 		} else {
 			if (!_.isNull(oldObj)) {
-				let oInsert = options.beforeInsert ? options.beforeInsert(o) : o
-				preparedChanges.inserted.push(oInsert)
+				const oInsert = options.beforeInsert ? options.beforeInsert(o) : o
+				if (options.insert) {
+					options.insert(oInsert)
+				} else {
+					collection.insert(oInsert)
+				}
+				if (options.afterInsert) options.afterInsert(oInsert)
+				changes.added.push(oInsert._id)
 			}
 		}
-		delete removeObjs['' + o[identifier]]
-	})
-	_.each(removeObjs, function(obj: DocClass) {
+		objectsToRemove.delete(o._id)
+	}
+	for (const obj of objectsToRemove.values()) {
 		if (obj) {
-			let oRemove: DBInterface = options.beforeRemove ? options.beforeRemove(obj) : obj
-			preparedChanges.removed.push(oRemove)
+			const oRemove = options.beforeRemove ? options.beforeRemove(obj) : obj
+
+			if (options.remove) {
+				options.remove(oRemove)
+			} else {
+				collection.remove(oRemove._id)
+			}
+
+			if (options.afterRemove) options.afterRemove(oRemove)
+			changes.removed.push(oRemove._id)
 		}
-	})
-
-	span?.end()
-	return preparedChanges
-}
-export function savePreparedChangesIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
-	preparedChanges: PreparedChanges<DBInterface>,
-	collection: DbCacheWriteCollection<DocClass, DBInterface>,
-	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
-): ChangedIds<DBInterface['_id']> {
-	const span = profiler.startSpan(`DBCache.savePreparedChangesIntoCache.${collection.name}`)
-
-	let change: ChangedIds<DBInterface['_id']> = {
-		added: [],
-		updated: [],
-		removed: [],
-	}
-	const options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
-
-	const newObjIds = new Set<DBInterface['_id']>()
-	const checkInsertId = (id: DBInterface['_id']) => {
-		if (newObjIds.has(id)) {
-			throw new Meteor.Error(
-				500,
-				`savePreparedChangesIntoCache into collection "${
-					(collection as any)._name
-				}": Duplicate identifier "${id}"`
-			)
-		}
-		newObjIds.add(id)
-	}
-
-	_.each(preparedChanges.changed || [], (oUpdate) => {
-		checkInsertId(oUpdate._id)
-		if (options.update) {
-			options.update(oUpdate)
-		} else {
-			collection.replace(oUpdate)
-		}
-		if (options.afterUpdate) options.afterUpdate(oUpdate)
-		change.updated.push(oUpdate._id)
-	})
-
-	_.each(preparedChanges.inserted || [], (oInsert) => {
-		checkInsertId(oInsert._id)
-		if (options.insert) {
-			options.insert(oInsert)
-		} else {
-			collection.insert(oInsert)
-		}
-		if (options.afterInsert) options.afterInsert(oInsert)
-		change.added.push(oInsert._id)
-	})
-
-	_.each(preparedChanges.removed || [], (oRemove) => {
-		if (options.remove) {
-			options.remove(oRemove)
-		} else {
-			collection.remove(oRemove._id)
-		}
-
-		if (options.afterRemove) options.afterRemove(oRemove)
-		change.removed.push(oRemove._id)
-	})
-	if (options.unchanged) {
-		_.each(preparedChanges.unchanged || [], (o) => {
-			if (options.unchanged) options.unchanged(o)
-		})
 	}
 
 	if (options.afterRemoveAll) {
-		const objs = _.compact(preparedChanges.removed || [])
+		const objs = _.compact(Array.from(objectsToRemove.values()))
 		if (objs.length > 0) {
 			options.afterRemoveAll(objs)
 		}
 	}
 
+	span?.addLabels(changes as any)
 	span?.end()
-	return change
+	return changes
 }

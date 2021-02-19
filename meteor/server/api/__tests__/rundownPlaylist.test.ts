@@ -137,25 +137,25 @@ describe('Rundown', () => {
 		expect(newPlaylist).toBeTruthy()
 		expect(newPlaylist.getRundowns().map((r) => r._id)).toEqual(['rundown02'])
 
-		// // Move the last rundown into another playlist:
-		// Meteor.call(RundownAPIMethods.moveRundown, rundownId02, null, [])
-		// expect(RundownPlaylists.find().count()).toEqual(3) // A new playlist has been created, and an old one was removed
-		// const newPlaylist2 = RundownPlaylists.findOne({
-		// 	_id: { $nin: [playlistId0, playlistId1, newPlaylist._id] },
-		// }) as RundownPlaylist
-		// expect(newPlaylist2).toBeTruthy()
-		// expect(newPlaylist2.getRundowns().map((r) => r._id)).toEqual(['rundown02'])
+		// Move the last rundown into another playlist:
+		Meteor.call(RundownAPIMethods.moveRundown, rundownId02, null, [])
+		expect(RundownPlaylists.find().count()).toEqual(3) // A new playlist has been created, and an old one was removed
+		const newPlaylist2 = RundownPlaylists.findOne({
+			_id: { $nin: [playlistId0, playlistId1, newPlaylist._id] },
+		}) as RundownPlaylist
+		expect(newPlaylist2).toBeTruthy()
+		expect(newPlaylist2.getRundowns().map((r) => r._id)).toEqual(['rundown02'])
 
-		// // Move the rundown back into a playlist:
-		// expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown00'])
-		// // Note: the order here will be ignored, new rundowns are placed last:
-		// Meteor.call(RundownAPIMethods.moveRundown, rundownId02, playlist0, ['rundown01', 'rundown02', 'rundown00'])
-		// expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown00', 'rundown02'])
-		// expect(playlist1.getRundowns().map((r) => r._id)).toEqual(['rundown10'])
-		// expect(RundownPlaylists.find().count()).toEqual(2) // A playlist was removed
+		// Move the rundown back into a playlist:
+		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown00'])
+		// Note: the order here will be ignored, new rundowns are placed last:
+		Meteor.call(RundownAPIMethods.moveRundown, rundownId02, playlist0, ['rundown01', 'rundown02', 'rundown00'])
+		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown00', 'rundown02'])
+		expect(playlist1.getRundowns().map((r) => r._id)).toEqual(['rundown10'])
+		expect(RundownPlaylists.find().count()).toEqual(2) // A playlist was removed
 
-		// // Restore the order:
-		// Meteor.call(RundownAPIMethods.restoreRundownsInPlaylistToDefaultOrder, playlist0)
-		// expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown00', 'rundown01', 'rundown02'])
+		// Restore the order:
+		Meteor.call(RundownAPIMethods.restoreRundownsInPlaylistToDefaultOrder, playlist0)
+		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown00', 'rundown01', 'rundown02'])
 	})
 })
