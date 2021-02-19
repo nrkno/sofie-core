@@ -12,7 +12,7 @@ import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import {
-	loadCachedIngestSegment,
+	RundownIngestDataCache,
 	LocalIngestRundown,
 	makeNewIngestSegment,
 	makeNewIngestPart,
@@ -30,7 +30,6 @@ import { MethodContext } from '../../../lib/api/methods'
 import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownAction } from './lockFunction'
 import { CacheForIngest } from './cache'
 import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
-import { loadCachedRundownData } from './ingestCache2'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -214,7 +213,8 @@ function getIngestRundown(peripheralDevice: PeripheralDevice, rundownExternalId:
 		throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 	}
 
-	const ingestData = waitForPromise(loadCachedRundownData(null, rundown._id))
+	const ingestCache = waitForPromise(RundownIngestDataCache.create(rundown._id))
+	const ingestData = ingestCache.fetchRundown()
 	if (!ingestData)
 		throw new Meteor.Error(404, `Rundown "${rundown._id}", (${rundownExternalId}) has no cached ingest data`)
 	return ingestData
@@ -241,7 +241,14 @@ function getIngestSegment(
 		throw new Meteor.Error(404, `Segment ${segmentExternalId} not found in rundown ${rundownExternalId}`)
 	}
 
-	return loadCachedIngestSegment(rundown._id, rundown.externalId, segment._id, segment.externalId)
+	const ingestCache = waitForPromise(RundownIngestDataCache.create(rundown._id))
+	const ingestData = ingestCache.fetchSegment(segment._id)
+	if (!ingestData)
+		throw new Meteor.Error(
+			404,
+			`Rundown "${rundown._id}", (${rundownExternalId}) has no cached segment "${segment._id}" ingest data`
+		)
+	return ingestData
 }
 function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
 	const rundowns = Rundowns.find({

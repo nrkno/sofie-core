@@ -140,6 +140,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 				await removeRundownsFromDb([this.Rundown.doc._id])
 			}
 
+			super.assertNoChanges()
 			span?.end()
 		} else {
 			await super.saveAllToDatabase()

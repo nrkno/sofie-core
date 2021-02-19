@@ -7,7 +7,7 @@ import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '../../../lib/collections/Studios'
 import { Settings } from '../../../lib/Settings'
 import { SegmentId, Segments } from '../../../lib/collections/Segments'
-import { loadCachedIngestSegment } from './ingestCache'
+import { RundownIngestDataCache } from './ingestCache'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { handleUpdatedSegment } from './rundownInput'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
@@ -15,6 +15,7 @@ import { logger } from '../../logging'
 import { runStudioOperationWithCache } from '../studio/syncFunction'
 import { ensureNextPartIsValid } from './updateNext'
 import { runPlayoutOperationWithCacheFromStudioOperation } from '../playout/syncFunction'
+import { waitForPromise } from '../../../lib/lib'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
@@ -35,12 +36,9 @@ if (!Settings.enableUserAccounts) {
 			const rundown = Rundowns.findOne(segment.rundownId)
 			if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
-			const ingestSegment = loadCachedIngestSegment(
-				rundown._id,
-				rundown.externalId,
-				segment._id,
-				segment.externalId
-			)
+			const ingestCache = waitForPromise(RundownIngestDataCache.create(rundown._id))
+			const ingestSegment = ingestCache.fetchSegment(segment._id)
+			if (!ingestSegment) throw new Meteor.Error(404, 'Segment ingest data not found')
 
 			handleUpdatedSegment(
 				{ studioId: rundown.studioId } as PeripheralDevice,

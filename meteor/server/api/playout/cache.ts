@@ -14,7 +14,6 @@ import { Rundown, DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { Segment, DBSegment, Segments } from '../../../lib/collections/Segments'
 import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
-import { waitForPromise } from '../../../lib/lib'
 import { ActivationCache, getActivationCache } from '../../cache/ActivationCache'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { DbCacheReadObject, DbCacheWriteObject } from '../../cache/CacheObject'
@@ -39,7 +38,7 @@ export abstract class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> 
 	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice, PeripheralDevice>
 
 	public readonly Playlist: DbCacheWriteObject<RundownPlaylist, DBRundownPlaylist>
-	public readonly Rundowns: DbCacheReadCollection<Rundown, DBRundown> // TODO DbCacheReadCollection??
+	public readonly Rundowns: DbCacheWriteCollection<Rundown, DBRundown> // TODO DbCacheReadCollection??
 
 	protected constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
 		super()
@@ -214,8 +213,9 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 			// TODO - run any of the defers?
 
-			waitForPromise(removeRundownPlaylistFromDb(this.Playlist.doc))
+			await removeRundownPlaylistFromDb(this.Playlist.doc)
 
+			super.assertNoChanges()
 			span?.end()
 		} else {
 			return super.saveAllToDatabase()

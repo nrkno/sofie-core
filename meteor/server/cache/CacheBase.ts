@@ -41,7 +41,7 @@ export abstract class ReadOnlyCacheBase {
 				this._activeTimeout = Meteor.setTimeout(() => {
 					logger.error(futureError)
 					logger.error(futureError.stack)
-				}, 2000)
+				}, 5000)
 			}
 		}
 	}

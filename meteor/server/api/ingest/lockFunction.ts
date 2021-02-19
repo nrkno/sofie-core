@@ -1,12 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
-import { IngestDataCache, IngestDataCacheObj } from '../../../lib/collections/IngestDataCache'
 import { PartId } from '../../../lib/collections/Parts'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { StudioId } from '../../../lib/collections/Studios'
 import { waitForPromise, clone, protectString } from '../../../lib/lib'
-import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
@@ -15,8 +13,7 @@ import { PlaylistLock, runPlayoutOperationWithLock } from '../playout/syncFuncti
 import { profiler } from '../profiler'
 import { CacheForIngest } from './cache'
 import { BeforePartMap, CommitIngestOperation, updatePlayoutAfterChangingRundownInPlaylist } from './commit'
-import { LocalIngestRundown } from './ingestCache'
-import { loadCachedRundownData, saveRundownCache } from './ingestCache2'
+import { LocalIngestRundown, RundownIngestDataCache } from './ingestCache'
 import { getRundown, getRundownId } from './lib'
 import { RundownSyncFunctionPriority } from './rundownInput'
 
@@ -73,12 +70,11 @@ export function runIngestOperationWithCache(
 
 		// Load the old ingest data
 		const rundownId = getRundownId(studioId, rundownExternalId)
-		const ingestObjCache = new DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>(IngestDataCache)
 		const pIngestCache = CacheForIngest.create(studioId, rundownExternalId)
-		await ingestObjCache.prepareInit({ rundownId }, true)
+		const ingestObjCache = await RundownIngestDataCache.create(rundownId)
 
 		// Recalculate the ingest data
-		const oldIngestRundown = await loadCachedRundownData(ingestObjCache, rundownId)
+		const oldIngestRundown = ingestObjCache.fetchRundown()
 		const updatedIngestRundown = updateCacheFcn(clone(oldIngestRundown))
 		let newIngestRundown: LocalIngestRundown | undefined
 		switch (updatedIngestRundown) {
@@ -86,16 +82,16 @@ export function runIngestOperationWithCache(
 			// 	// Reject change
 			// 	return
 			case UpdateIngestRundownAction.DELETE:
-				ingestObjCache.remove({})
+				ingestObjCache.delete()
 				newIngestRundown = undefined
 				break
 			default:
-				saveRundownCache(ingestObjCache, rundownId, updatedIngestRundown)
+				ingestObjCache.update(updatedIngestRundown)
 				newIngestRundown = updatedIngestRundown
 				break
 		}
 		// Start saving the ingest data
-		const pSaveIngestChanges = ingestObjCache.updateDatabaseWithData()
+		const pSaveIngestChanges = ingestObjCache.saveToDatabase()
 
 		const ingestCache = await pIngestCache
 
