@@ -3,8 +3,9 @@
 	"workspaces": {
 		"packages": [
 			"*-integration",
+			"*-gateway",
 			"corelib",
-			"*-gateway"
+      		"job-worker"
 		],
 		"nohoist": [
 			"**/timeline-state-resolver-types"
