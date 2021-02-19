@@ -13,7 +13,7 @@ import {
 	isStudioLock,
 	StudioLock,
 	runStudioOperationWithLock,
-} from '../studio/syncFunction'
+} from '../studio/lockFunction'
 import { CacheForPlayout, CacheForPlayoutPreInit } from './cache'
 
 export interface PlaylistLock extends StudioLock {

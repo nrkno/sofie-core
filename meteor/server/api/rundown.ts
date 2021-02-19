@@ -49,7 +49,7 @@ import { StudioUserContext } from './blueprints/context'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
 import { CacheForPlayout } from './playout/cache'
 import { ReadonlyDeep } from 'type-fest'
-import { runPlayoutOperationWithLock } from './playout/syncFunction'
+import { runPlayoutOperationWithLock } from './playout/lockFunction'
 import { runIngestOperationWithLock } from './ingest/lockFunction'
 import { getRundown } from './ingest/lib'
 

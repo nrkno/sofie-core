@@ -15,7 +15,7 @@ import { PartInstances, wrapPartToTemporaryInstance } from '../../../../../lib/c
 import _ from 'underscore'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { getOrderedPartsAfterPlayhead } from '../util'
-import { runPlayoutOperationWithCache } from '../../syncFunction'
+import { runPlayoutOperationWithCache } from '../../lockFunction'
 
 describe('getOrderedPartsAfterPlayhead', () => {
 	let env: DefaultEnvironment

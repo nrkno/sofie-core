@@ -13,7 +13,7 @@ import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { makePromise, waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { Segment } from '../../../lib/collections/Segments'
 import { GenericDeviceActions } from './genericDevice/actions'
-import { runPlayoutOperationWithLock, runPlayoutOperationWithCacheFromStudioOperation } from '../playout/syncFunction'
+import { runPlayoutOperationWithLock, runPlayoutOperationWithCacheFromStudioOperation } from '../playout/lockFunction'
 import { MethodContext } from '../../../lib/api/methods'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 

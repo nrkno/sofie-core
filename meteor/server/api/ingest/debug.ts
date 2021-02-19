@@ -12,9 +12,9 @@ import { Rundowns } from '../../../lib/collections/Rundowns'
 import { handleUpdatedSegment } from './rundownInput'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { logger } from '../../logging'
-import { runStudioOperationWithCache } from '../studio/syncFunction'
+import { runStudioOperationWithCache } from '../studio/lockFunction'
 import { ensureNextPartIsValid } from './updateNext'
-import { runPlayoutOperationWithCacheFromStudioOperation } from '../playout/syncFunction'
+import { runPlayoutOperationWithCacheFromStudioOperation } from '../playout/lockFunction'
 import { waitForPromise } from '../../../lib/lib'
 
 if (!Settings.enableUserAccounts) {

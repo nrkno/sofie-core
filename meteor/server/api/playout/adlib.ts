@@ -42,7 +42,7 @@ import { RundownAPI } from '../../../lib/api/rundown'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { getPieceInstancesForPart } from './infinites'
-import { runPlayoutOperationWithCache } from './syncFunction'
+import { runPlayoutOperationWithCache } from './lockFunction'
 import { MethodContext } from '../../../lib/api/methods'
 import {
 	CacheForPlayout,

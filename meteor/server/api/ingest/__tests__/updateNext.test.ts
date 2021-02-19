@@ -10,7 +10,7 @@ import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../.
 import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances'
 import { Studios } from '../../../../lib/collections/Studios'
 import { removeRundownsFromDb } from '../../rundownPlaylist'
-import { runPlayoutOperationWithCache } from '../../playout/syncFunction'
+import { runPlayoutOperationWithCache } from '../../playout/lockFunction'
 jest.mock('../../playout/playout')
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed

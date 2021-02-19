@@ -15,7 +15,7 @@ import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { MethodContext } from '../../../../lib/api/methods'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import { runPlayoutOperationWithCache } from '../syncFunction'
+import { runPlayoutOperationWithCache } from '../lockFunction'
 
 const DEFAULT_CONTEXT: MethodContext = {
 	userId: null,

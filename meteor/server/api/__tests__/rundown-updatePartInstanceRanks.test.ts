@@ -13,7 +13,7 @@ import { updatePartInstanceRanks } from '../rundown'
 import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import { Part, PartId, Parts } from '../../../lib/collections/Parts'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
-import { runPlayoutOperationWithCache } from '../playout/syncFunction'
+import { runPlayoutOperationWithCache } from '../playout/lockFunction'
 
 require('../rundown') // include in order to create the Meteor methods needed
 

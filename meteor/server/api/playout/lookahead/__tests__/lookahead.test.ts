@@ -18,7 +18,7 @@ import { PartInstanceAndPieceInstances } from '../util'
 import { getLookeaheadObjects } from '..'
 import { SelectedPartInstancesTimelineInfo } from '../../timeline'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
-import { runPlayoutOperationWithCache } from '../../syncFunction'
+import { runPlayoutOperationWithCache } from '../../lockFunction'
 
 jest.mock('../findForLayer')
 type TfindLookaheadForLayer = jest.MockedFunction<typeof findLookaheadForLayer>

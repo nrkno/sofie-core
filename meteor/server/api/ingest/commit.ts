@@ -46,9 +46,9 @@ import {
 	runPlayoutOperationWithCacheFromStudioOperation,
 	runPlayoutOperationWithLock,
 	runPlayoutOperationWithLockFromStudioOperation,
-} from '../playout/syncFunction'
+} from '../playout/lockFunction'
 import { Meteor } from 'meteor/meteor'
-import { runStudioOperationWithLock } from '../studio/syncFunction'
+import { runStudioOperationWithLock } from '../studio/lockFunction'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 

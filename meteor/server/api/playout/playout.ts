@@ -65,10 +65,10 @@ import {
 	runPlayoutOperationWithLock,
 	runPlayoutOperationWithCacheFromStudioOperation,
 	runPlayoutOperationWithCache,
-} from './syncFunction'
+} from './lockFunction'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
-import { runStudioOperationWithCache } from '../studio/syncFunction'
+import { runStudioOperationWithCache } from '../studio/lockFunction'
 import { CacheForStudio } from '../studio/cache'
 
 /**

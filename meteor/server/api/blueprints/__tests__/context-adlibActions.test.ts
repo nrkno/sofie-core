@@ -25,7 +25,7 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
-import { runPlayoutOperationWithCache } from '../../playout/syncFunction'
+import { runPlayoutOperationWithCache } from '../../playout/lockFunction'
 import { ReadonlyDeep } from 'type-fest'
 
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
