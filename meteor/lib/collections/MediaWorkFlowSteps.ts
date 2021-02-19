@@ -1,4 +1,3 @@
-import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { MediaManagerAPI } from '../api/mediaManager'
 import { registerIndex } from '../database'
@@ -8,6 +7,7 @@ import {
 	PeripheralDeviceId,
 	MediaWorkFlowId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 export { MediaWorkFlowStepId }
 
 export abstract class MediaWorkFlowStep {
@@ -31,8 +31,9 @@ export abstract class MediaWorkFlowStep {
 	expectedLeft?: number
 }
 
-export const MediaWorkFlowSteps = createMongoCollection<MediaWorkFlowStep, MediaWorkFlowStep>('mediaWorkFlowSteps')
-registerCollection('MediaWorkFlowSteps', MediaWorkFlowSteps)
+export const MediaWorkFlowSteps = createMongoCollection<MediaWorkFlowStep, MediaWorkFlowStep>(
+	CollectionName.MediaWorkFlowSteps
+)
 
 registerIndex(MediaWorkFlowSteps, {
 	deviceId: 1,

@@ -1,8 +1,8 @@
-import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { registerIndex } from '../database'
 import { BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 export { BucketId }
 
 /**
@@ -28,8 +28,7 @@ export interface Bucket {
 	buttonWidthScale: number
 	buttonHeightScale: number
 }
-export const Buckets = createMongoCollection<Bucket, Bucket>('buckets')
-registerCollection('Buckets', Buckets)
+export const Buckets = createMongoCollection<Bucket, Bucket>(CollectionName.Buckets)
 
 registerIndex(Buckets, {
 	studioId: 1,

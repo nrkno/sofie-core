@@ -2,14 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
-import {
-	Time,
-	applyClassToDocument,
-	registerCollection,
-	normalizeArray,
-	normalizeArrayFunc,
-	unprotectString,
-} from '../lib'
+import { Time, applyClassToDocument, normalizeArray, normalizeArrayFunc, unprotectString } from '../lib'
 import { Rundowns, Rundown, DBRundown } from './Rundowns'
 import { Studio, Studios } from './Studios'
 import { Segments, Segment, DBSegment } from './Segments'
@@ -30,6 +23,7 @@ import {
 	RundownId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { RundownPlaylistId, ActiveInstanceId, RundownPlaylistActivationId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import {
 	DBRundownPlaylist,
@@ -398,10 +392,12 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	}
 }
 
-export const RundownPlaylists = createMongoCollection<RundownPlaylist, DBRundownPlaylist>('rundownPlaylists', {
-	transform: (doc) => applyClassToDocument(RundownPlaylist, doc),
-})
-registerCollection('RundownPlaylists', RundownPlaylists)
+export const RundownPlaylists = createMongoCollection<RundownPlaylist, DBRundownPlaylist>(
+	CollectionName.RundownPlaylists,
+	{
+		transform: (doc) => applyClassToDocument(RundownPlaylist, doc),
+	}
+)
 
 registerIndex(RundownPlaylists, {
 	studioId: 1,

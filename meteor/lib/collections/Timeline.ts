@@ -1,8 +1,8 @@
-import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { ResultingMappingRoutes } from './Studios'
 import { TimelineObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { TimelineObjId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import {
 	TimelineComplete,
@@ -50,8 +50,7 @@ export function getRoutedTimeline(
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')
-export const Timeline = createMongoCollection<TimelineComplete, TimelineComplete>('timeline')
-registerCollection('Timeline', Timeline)
+export const Timeline = createMongoCollection<TimelineComplete, TimelineComplete>(CollectionName.Timelines)
 
 // Note: this index is always created by default, so it's not needed.
 // registerIndex(Timeline, {

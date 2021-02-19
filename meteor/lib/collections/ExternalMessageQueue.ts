@@ -1,11 +1,12 @@
-import { Time, registerCollection, ProtectedStringProperties } from '../lib'
+import { Time, ProtectedStringProperties } from '../lib'
 import {
 	IBlueprintExternalMessageQueueObj,
 	IBlueprintExternalMessageQueueType,
 } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { ExternalMessageQueueObjId, StudioId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExternalMessageQueueObjId, RundownId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 export { ExternalMessageQueueObjId }
 
 export interface ExternalMessageQueueObj extends ProtectedStringProperties<IBlueprintExternalMessageQueueObj, '_id'> {
@@ -53,9 +54,8 @@ export interface ExternalMessageQueueObj extends ProtectedStringProperties<IBlue
 }
 
 export const ExternalMessageQueue = createMongoCollection<ExternalMessageQueueObj, ExternalMessageQueueObj>(
-	'externalMessageQueue'
+	CollectionName.ExternalMessageQueue
 )
-registerCollection('ExternalMessageQueue', ExternalMessageQueue)
 
 registerIndex(ExternalMessageQueue, {
 	studioId: 1,

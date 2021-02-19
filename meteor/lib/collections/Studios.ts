@@ -1,4 +1,4 @@
-import { registerCollection, omit, unprotectObject } from '../lib'
+import { omit, unprotectObject } from '../lib'
 import * as _ from 'underscore'
 import { LookaheadMode, ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
@@ -7,6 +7,7 @@ import { registerIndex } from '../database'
 import { ExpectedPackageDB } from './ExpectedPackages'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { StudioId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { ResultingMappingRoutes, DBStudio, MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 export * from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -119,8 +120,7 @@ export function routeExpectedPackages(
 }
 
 export type Studio = DBStudio
-export const Studios = createMongoCollection<Studio, DBStudio>('studios')
-registerCollection('Studios', Studios)
+export const Studios = createMongoCollection<Studio, DBStudio>(CollectionName.Studios)
 
 registerIndex(Studios, {
 	organizationId: 1,

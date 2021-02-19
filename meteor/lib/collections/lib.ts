@@ -9,10 +9,11 @@ import {
 	UpdateOptions,
 	UpsertOptions,
 } from '../typings/meteor'
-import { stringifyObjects, getHash, ProtectedString, makePromise, sleep } from '../lib'
+import { stringifyObjects, getHash, ProtectedString, makePromise, sleep, registerCollection } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import { BulkWriteOperation, Collection as RawCollection } from 'mongodb'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 const ObserveChangeBufferTimeout = 2000
 
@@ -73,7 +74,7 @@ export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: Protected
 }
 
 export function createMongoCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
-	name: string | null,
+	name: CollectionName | null,
 	options?: {
 		connection?: Object | null
 		idGeneration?: string
@@ -82,17 +83,24 @@ export function createMongoCollection<Class extends DBInterface, DBInterface ext
 ): AsyncTransformedCollection<Class, DBInterface> {
 	const collection: TransformedCollection<Class, DBInterface> = new Mongo.Collection<Class>(name, options) as any
 
+	let collection2: AsyncTransformedCollection<Class, DBInterface>
 	if ((collection as any)._isMock) {
-		return new WrappedMockCollection(collection, name)
+		collection2 = new WrappedMockCollection(collection, name)
 	} else {
 		// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
-		return new WrappedAsyncTransformedCollection(collection, name)
+		collection2 = new WrappedAsyncTransformedCollection(collection, name)
 	}
+
+	if (name) {
+		registerCollection(name, collection2)
+	}
+
+	return collection2
 }
 
 export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: Mongo.Collection<DBInterface>,
-	name: string
+	name: CollectionName
 ): AsyncTransformedCollection<DBInterface, DBInterface> {
 	return new WrappedAsyncTransformedCollection<DBInterface, DBInterface>(collection as any, name)
 }

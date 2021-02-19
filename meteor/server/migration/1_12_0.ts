@@ -10,14 +10,15 @@ import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Timeline } from '../../lib/collections/Timeline'
 import { ensureCollectionProperty, removeCollectionProperty } from './lib'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 // Release 24
 export const addSteps = addMigrationSteps('1.12.0', [
-	ensureCollectionProperty('Studios', {}, 'routeSets', {}, undefined),
-	ensureCollectionProperty('Studios', {}, 'organizationId', null, undefined),
-	ensureCollectionProperty('PeripheralDevices', {}, 'organizationId', null, undefined),
-	ensureCollectionProperty('ShowStyleBases', {}, 'organizationId', null, undefined),
-	removeCollectionProperty('ShowStyleBases', {}, 'runtimeArguments'),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'routeSets', {}, undefined),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'organizationId', null, undefined),
+	ensureCollectionProperty(CollectionName.PeripheralDevices, {}, 'organizationId', null, undefined),
+	ensureCollectionProperty(CollectionName.ShowStyleBases, {}, 'organizationId', null, undefined),
+	removeCollectionProperty(CollectionName.ShowStyleBases, {}, 'runtimeArguments'),
 
 	{
 		id: 'Pieces properties',

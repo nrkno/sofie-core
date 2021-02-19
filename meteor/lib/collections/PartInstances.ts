@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { applyClassToDocument, registerCollection, protectString, unprotectString } from '../lib'
+import { applyClassToDocument, protectString, unprotectString } from '../lib'
 import { PartEndState } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { DBPart, Part } from './Parts'
@@ -13,6 +13,7 @@ import {
 	RundownId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { PartInstanceId, SegmentPlayoutId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { DBPartInstance, PartInstanceTimings } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 export * from '@sofie-automation/corelib/dist/dataModel/PartInstance'
@@ -87,10 +88,10 @@ export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance
 	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(protectString(''), part) as T)
 }
 
-export const PartInstances = createMongoCollection<PartInstance, DBPartInstance>('partInstances', {
+export const PartInstances = createMongoCollection<PartInstance, DBPartInstance>(CollectionName.PartInstances, {
 	transform: (doc) => applyClassToDocument(PartInstance, doc),
 })
-registerCollection('PartInstances', PartInstances)
+
 registerIndex(PartInstances, {
 	rundownId: 1,
 	segmentId: 1,

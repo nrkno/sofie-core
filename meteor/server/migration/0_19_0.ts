@@ -11,6 +11,7 @@ import * as _ from 'underscore'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { getRandomId, protectString } from '../../lib/lib'
 import { Studio as Studio_1_10_0 } from './deprecatedDataTypes/1_10_0'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 /**
  * This file contains system specific migration steps.
@@ -93,8 +94,8 @@ export const addSteps = addMigrationSteps('0.19.0', [
 			}
 		},
 	},
-	ensureCollectionProperty('ShowStyleBases', {}, 'outputLayers', []),
-	ensureCollectionProperty('ShowStyleBases', {}, 'sourceLayers', []),
+	ensureCollectionProperty(CollectionName.ShowStyleBases, {}, 'outputLayers', []),
+	ensureCollectionProperty(CollectionName.ShowStyleBases, {}, 'sourceLayers', []),
 	{
 		id: 'Remove runtimeArguments from Studio',
 		canBeRunAutomatically: true,
@@ -170,7 +171,7 @@ export const addSteps = addMigrationSteps('0.19.0', [
 		},
 	},
 
-	ensureCollectionProperty('Studios', {}, 'settings', {}),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'settings', {}),
 
 	{
 		// migrate from config.media_previews_url to settings.mediaPreviewsUrl
@@ -250,9 +251,9 @@ export const addSteps = addMigrationSteps('0.19.0', [
 			})
 		},
 	},
-	ensureCollectionProperty('Studios', {}, 'supportedShowStyleBase', []),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'supportedShowStyleBase', []),
 	ensureCollectionPropertyManual(
-		'Studios',
+		CollectionName.Studios,
 		{},
 		'settings.mediaPreviewsUrl',
 		'text',
@@ -262,7 +263,7 @@ export const addSteps = addMigrationSteps('0.19.0', [
 		'studio.settings.mediaPreviewsUrl from config'
 	),
 	ensureCollectionPropertyManual(
-		'Studios',
+		CollectionName.Studios,
 		{},
 		'settings.sofieUrl',
 		'text',

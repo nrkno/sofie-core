@@ -1,14 +1,15 @@
-import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { IngestDataCacheObjId, RundownId, SegmentId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { IngestDataCacheObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { IngestDataCacheObjId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 export * from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
-export const IngestDataCache = createMongoCollection<IngestDataCacheObj, IngestDataCacheObj>('ingestDataCache')
-registerCollection('IngestDataCache', IngestDataCache)
+export const IngestDataCache = createMongoCollection<IngestDataCacheObj, IngestDataCacheObj>(
+	CollectionName.IngestDataCache
+)
 
 registerIndex(IngestDataCache, {
 	rundownId: 1,

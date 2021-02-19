@@ -1,5 +1,5 @@
 import { FindOptions } from '../typings/meteor'
-import { registerCollection, protectString } from '../lib'
+import { protectString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import * as semver from 'semver'
@@ -7,6 +7,7 @@ import { createMongoCollection } from './lib'
 import _ from 'underscore'
 import { StatusCode } from '../api/systemStatus'
 import { CoreSystemId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 export { CoreSystemId }
 
 export const SYSTEM_ID: CoreSystemId = protectString('core')
@@ -105,8 +106,7 @@ export const GENESIS_SYSTEM_VERSION = '0.0.0'
 // The CoreSystem collection will contain one (exactly 1) object.
 // This represents the "system"
 
-export const CoreSystem = createMongoCollection<ICoreSystem, ICoreSystem>('coreSystem')
-registerCollection('CoreSystem', CoreSystem)
+export const CoreSystem = createMongoCollection<ICoreSystem, ICoreSystem>(CollectionName.CoreSystem)
 
 export function getCoreSystem(): ICoreSystem | undefined {
 	return CoreSystem.findOne(SYSTEM_ID)

@@ -1,7 +1,8 @@
-import { registerCollection, Time } from '../lib'
+import { Time } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { MediaWorkFlowId, StudioId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 export { MediaWorkFlowId }
 
 export interface MediaWorkFlow {
@@ -28,8 +29,8 @@ export interface MediaWorkFlow {
 	success: boolean
 }
 
-export const MediaWorkFlows = createMongoCollection<MediaWorkFlow, MediaWorkFlow>('mediaWorkFlows')
-registerCollection('MediaWorkFlows', MediaWorkFlows)
+export const MediaWorkFlows = createMongoCollection<MediaWorkFlow, MediaWorkFlow>(CollectionName.MediaWorkFlows)
+
 registerIndex(MediaWorkFlows, {
 	// TODO: add deviceId: 1,
 	mediaObjectId: 1,

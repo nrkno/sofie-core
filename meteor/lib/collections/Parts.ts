@@ -1,4 +1,5 @@
-import { applyClassToDocument, registerCollection } from '../lib'
+import * as _ from 'underscore'
+import { applyClassToDocument } from '../lib'
 import { PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { PartNote } from '../api/notes'
 import { createMongoCollection } from './lib'
@@ -6,6 +7,7 @@ import { registerIndex } from '../database'
 import { ITranslatableMessage } from '../api/TranslatableMessage'
 import { PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { PartId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 export * from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -64,10 +66,9 @@ export function isPartPlayable(part: DBPart) {
 	return !part.invalid && !part.floated
 }
 
-export const Parts = createMongoCollection<Part, DBPart>('parts', {
+export const Parts = createMongoCollection<Part, DBPart>(CollectionName.Parts, {
 	transform: (doc) => applyClassToDocument(Part, doc),
 })
-registerCollection('Parts', Parts)
 
 registerIndex(Parts, {
 	rundownId: 1,

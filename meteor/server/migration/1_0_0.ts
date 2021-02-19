@@ -3,6 +3,7 @@ import * as _ from 'underscore'
 import { Studios } from '../../lib/collections/Studios'
 import { ensureCollectionPropertyManual } from './lib'
 import { Studio as Studio_1_10_0 } from './deprecatedDataTypes/1_10_0'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 // 1.0.0 (Release 12)
 export const addSteps = addMigrationSteps('1.0.0', [
@@ -55,7 +56,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		},
 	},
 	ensureCollectionPropertyManual(
-		'Studios',
+		CollectionName.Studios,
 		{},
 		'settings.slackEvaluationUrls',
 		'text',
@@ -105,7 +106,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		},
 	},
 	ensureCollectionPropertyManual(
-		'Studios',
+		CollectionName.Studios,
 		{},
 		'settings.supportedMediaFormats',
 		'text',

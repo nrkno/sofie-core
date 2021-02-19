@@ -1,5 +1,4 @@
-import { UserId } from '../typings/meteor'
-import { Time, registerCollection } from '../lib'
+import { Time } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import {
@@ -8,7 +7,9 @@ import {
 	RundownPlaylistId,
 	SnapshotId,
 	OrganizationId,
+	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 export { EvaluationId }
 
 export interface Evaluation extends EvaluationBase {
@@ -26,8 +27,7 @@ export interface EvaluationBase {
 	snapshots?: Array<SnapshotId>
 }
 
-export const Evaluations = createMongoCollection<Evaluation, Evaluation>('evaluations')
-registerCollection('Evaluations', Evaluations)
+export const Evaluations = createMongoCollection<Evaluation, Evaluation>(CollectionName.Evaluations)
 
 registerIndex(Evaluations, {
 	organizationId: 1,

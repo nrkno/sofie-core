@@ -510,7 +510,7 @@ let mongoTest: TransformedCollection<any, any> | undefined = undefined
 /** Runs a set of system benchmarks, that are designed to test various aspects of the hardware-performance on the server */
 async function doSystemBenchmarkInner() {
 	if (!mongoTest) {
-		mongoTest = createMongoCollection<any, any>('benchmark-test')
+		mongoTest = createMongoCollection<any, any>('benchmark-test' as any)
 		mongoTest._ensureIndex({
 			indexedProp: 1,
 		})

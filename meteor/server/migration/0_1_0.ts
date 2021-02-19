@@ -6,6 +6,7 @@ import { ensureCollectionProperty, ensureCollectionPropertyManual } from './lib'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { protectString } from '../../lib/lib'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 /**
  * This file contains system specific migration steps.
@@ -45,14 +46,14 @@ export const addSteps = addMigrationSteps('0.1.0', [
 		},
 	},
 	ensureCollectionPropertyManual(
-		'Studios',
+		CollectionName.Studios,
 		{},
 		'name',
 		'text',
 		'Studio $id: Name',
 		'Enter the Name of the Studio "$id"'
 	),
-	ensureCollectionProperty('Studios', {}, 'mappings', {}),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'mappings', {}),
 
 	{
 		id: 'Assign devices to studio',

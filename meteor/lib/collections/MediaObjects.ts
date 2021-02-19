@@ -1,9 +1,9 @@
-import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 
 import { MediaObjId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 export { MediaObjId }
 
 export interface MediaObject0 {
@@ -121,8 +121,8 @@ export interface MediaStreamCodec {
 	is_avc?: string
 }
 
-export const MediaObjects = createMongoCollection<MediaObject, MediaObject>('mediaObjects')
-registerCollection('MediaObjects', MediaObjects)
+export const MediaObjects = createMongoCollection<MediaObject, MediaObject>(CollectionName.MediaObjects)
+
 registerIndex(MediaObjects, {
 	studioId: 1,
 	collectionId: 1,

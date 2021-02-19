@@ -13,9 +13,6 @@ export type SystemInstanceId = ProtectedString<'SystemInstanceId'>
 /** A string, identifying an AdLibActionId */
 export type AdLibActionId = ProtectedString<'AdLibActionId'>
 
-/** A string, identifying a AsRunLogEvent */
-export type AsRunLogEventId = ProtectedString<'AsRunLogEventId'>
-
 /** A string, identifying a Blueprint */
 export type BlueprintId = ProtectedString<'BlueprintId'>
 

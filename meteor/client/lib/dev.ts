@@ -5,12 +5,14 @@ import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
 import { MeteorCall } from '../../lib/api/methods'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { TransformedCollection } from '../../lib/typings/meteor'
 
 // Note: These things are convenience functions to be used during development:
 
 Meteor.startup(() => {
-	_.each(Collections, (val, key) => {
-		window[key] = val
+	Collections.forEach((val, key) => {
+		;(window as any)[key] = val
 	})
 })
 
@@ -23,7 +25,7 @@ window['Session'] = Session
 function setDebugData() {
 	Tracker.autorun(() => {
 		const stats: any = {}
-		_.each(Collections, (collection: any, name: string) => {
+		Collections.forEach((collection: TransformedCollection<any, any>, name: CollectionName) => {
 			stats[name] = collection.find().count()
 		})
 		console.log(

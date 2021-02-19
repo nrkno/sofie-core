@@ -1,6 +1,6 @@
-import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 export { OrganizationId }
 
 /** An organization is the entity that owns data (studios, rundowns, etc..) in Sofie */
@@ -37,5 +37,4 @@ export interface UserRoles {
 
 export type Organization = DBOrganization // to be replaced by a class some time later?
 
-export const Organizations = createMongoCollection<Organization, DBOrganization>('organizations')
-registerCollection('Organizations', Organizations)
+export const Organizations = createMongoCollection<Organization, DBOrganization>(CollectionName.Organizations)

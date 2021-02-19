@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, registerCollection } from '../lib'
+import { Time, applyClassToDocument } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { FindOptions, MongoQuery } from '../typings/meteor'
@@ -19,6 +19,7 @@ import {
 	PeripheralDeviceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { RundownId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 export { RundownHoldState }
@@ -163,10 +164,9 @@ export class Rundown implements DBRundown {
 }
 
 // export const Rundowns = createMongoCollection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
-export const Rundowns = createMongoCollection<Rundown, DBRundown>('rundowns', {
+export const Rundowns = createMongoCollection<Rundown, DBRundown>(CollectionName.Rundowns, {
 	transform: (doc) => applyClassToDocument(Rundown, doc),
 })
-registerCollection('Rundowns', Rundowns)
 
 registerIndex(Rundowns, {
 	playlistId: 1,

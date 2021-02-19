@@ -12,6 +12,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { ITranslatableMessage } from './api/TranslatableMessage'
 import { AsyncTransformedCollection } from './collections/lib'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 // Legacy compatability
 export * from '@sofie-automation/corelib/dist/protectedString'
@@ -262,9 +263,10 @@ export function stringifyObjects(objs: any): string {
 		return objs + ''
 	}
 }
-export const Collections: { [name: string]: AsyncTransformedCollection<any, any> } = {}
-export function registerCollection(name: string, collection: AsyncTransformedCollection<any, any>) {
-	Collections[name] = collection
+export const Collections = new Map<CollectionName, AsyncTransformedCollection<any, any>>()
+export function registerCollection(name: CollectionName, collection: AsyncTransformedCollection<any, any>) {
+	if (Collections.has(name)) throw new Meteor.Error(`Cannot re-register collection "${name}"`)
+	Collections.set(name, collection)
 }
 // export const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
 // 	function getCollectionIndexes(collection: TransformedCollection<any, any>, cb) {

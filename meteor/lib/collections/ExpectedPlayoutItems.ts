@@ -1,17 +1,16 @@
-import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { ExpectedPlayoutItemId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { ExpectedPlayoutItemId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { ExpectedPlayoutItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 export * from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 
 /** @deprecated */
 export const ExpectedPlayoutItems = createMongoCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>(
-	'expectedPlayoutItems'
+	CollectionName.ExpectedPlayoutItems
 )
-registerCollection('ExpectedPlayoutItems', ExpectedPlayoutItems)
 
 registerIndex(ExpectedPlayoutItems, {
 	studioId: 1,

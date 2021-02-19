@@ -1,8 +1,8 @@
-import { registerCollection } from '../lib'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { RundownLayoutId, UserId, ShowStyleBaseId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 export { RundownLayoutId }
 
 /**
@@ -194,8 +194,7 @@ export interface DashboardLayout extends RundownLayoutBase {
 	actionButtons?: DashboardLayoutActionButton[]
 }
 
-export const RundownLayouts = createMongoCollection<RundownLayoutBase, RundownLayoutBase>('rundownLayouts')
-registerCollection('RundownLayouts', RundownLayouts)
+export const RundownLayouts = createMongoCollection<RundownLayoutBase, RundownLayoutBase>(CollectionName.RundownLayouts)
 
 // addIndex(RundownLayouts, {
 // 	studioId: 1,

@@ -1,7 +1,7 @@
-import { registerCollection } from '../lib'
 import { TranslationsBundleType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { TranslationsBundleId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 export { TranslationsBundleId }
 
 export type Translation = { original: string; translation: string }
@@ -39,5 +39,6 @@ export interface TranslationsBundle {
 	data: Translation[]
 }
 
-export const TranslationsBundles = createMongoCollection<TranslationsBundle, TranslationsBundle>('translationsBundles')
-registerCollection('TranslationsBundles', TranslationsBundles)
+export const TranslationsBundles = createMongoCollection<TranslationsBundle, TranslationsBundle>(
+	CollectionName.TranslationsBundles
+)

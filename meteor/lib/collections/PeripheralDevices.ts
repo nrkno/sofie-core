@@ -1,15 +1,17 @@
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
-import { registerCollection, assertNever } from '../lib'
+import { assertNever } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { PeripheralDeviceId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 export * from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
-export const PeripheralDevices = createMongoCollection<PeripheralDevice, PeripheralDevice>('peripheralDevices')
-registerCollection('PeripheralDevices', PeripheralDevices)
+export const PeripheralDevices = createMongoCollection<PeripheralDevice, PeripheralDevice>(
+	CollectionName.PeripheralDevices
+)
 
 registerIndex(PeripheralDevices, {
 	organizationId: 1,
