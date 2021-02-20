@@ -26,9 +26,13 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
+// @ts-ignore
 export interface FindOptions<T> {
 	// TODO
 }
+
+export type MongoQuery<TDoc> = FilterQuery<TDoc>
+export type MongoModifier<TDoc> = UpdateQuery<TDoc>
 
 export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	readonly name: string
@@ -43,7 +47,7 @@ export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	replace(doc: TDoc | ReadonlyDeep<TDoc>): Promise<boolean>
 }
 
-export interface DirectCollections {
+export interface IDirectCollections {
 	AdLibActions: ICollection<AdLibAction>
 	AdLibPieces: ICollection<AdLibPiece>
 	Blueprints: ICollection<Blueprint>

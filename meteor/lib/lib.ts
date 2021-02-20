@@ -18,14 +18,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 export * from '@sofie-automation/corelib/dist/protectedString'
 export * from '@sofie-automation/corelib/dist/lib'
 
-const cloneOrg = require('fast-clone')
-
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
-/** Deep clones a value */
-export function clone<T>(o: ReadonlyDeep<T> | Readonly<T> | T): T {
-	// Use this instead of fast-clone directly, as this retains the type
-	return cloneOrg(o)
-}
 
 export function flatten<T>(vals: Array<T[] | undefined>): T[] {
 	return _.flatten(
@@ -88,10 +81,6 @@ export function hashObj(obj: any): string {
 	return obj + ''
 }
 
-export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
-	return Random.id(numberOfChars) as any
-}
-
 export function applyToArray<T>(arr: T | T[], func: (val: T) => void) {
 	if (Array.isArray(arr)) {
 		for (const val of arr) {
@@ -140,9 +129,6 @@ export interface DBObj {
 	[key: string]: any
 }
 
-export function literal<T>(o: T) {
-	return o
-}
 export type Partial<T> = {
 	[P in keyof T]?: T[P]
 }

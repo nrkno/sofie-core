@@ -1,4 +1,4 @@
-import { IBlueprintPartDB,  } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPartDB } from '@sofie-automation/blueprints-integration'
 import { ITranslatableMessage } from '../lib'
 import { ProtectedStringProperties } from '../protectedString'
 import { PartId, RundownId, SegmentId } from './Ids'
@@ -27,4 +27,8 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 
 	/** Human readable unqiue identifier of the part */
 	identifier?: string
+}
+
+export function isPartPlayable(part: DBPart) {
+	return !part.invalid && !part.floated
 }

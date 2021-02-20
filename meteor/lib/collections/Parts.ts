@@ -9,7 +9,7 @@ import { PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dat
 export { PartId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 export * from '@sofie-automation/corelib/dist/dataModel/Part'
 
 export class Part implements DBPart {
@@ -60,10 +60,6 @@ export class Part implements DBPart {
 	isPlayable() {
 		return isPartPlayable(this)
 	}
-}
-
-export function isPartPlayable(part: DBPart) {
-	return !part.invalid && !part.floated
 }
 
 export const Parts = createMongoCollection<Part, DBPart>(CollectionName.Parts, {
