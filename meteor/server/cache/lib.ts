@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { DBObj, compareObjs, PreparedChanges, ChangedIds } from '../../lib/lib'
+import { DBObj, ChangedIds } from '../../lib/lib'
 import * as _ from 'underscore'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { profiler } from '../api/profiler'
@@ -69,7 +69,7 @@ export function saveIntoCache<DocClass extends DBInterface, DBInterface extends 
 
 		if (oldObj) {
 			const o2 = options.beforeDiff ? options.beforeDiff(o, oldObj) : o
-			const eql = compareObjs(oldObj, o2)
+			const eql = _.isEqual(oldObj, o2)
 
 			if (!eql) {
 				const oUpdate = options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o

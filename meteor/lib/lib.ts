@@ -201,7 +201,7 @@ function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 		const oldObj = removeObjs['' + o[identifier]]
 		if (oldObj) {
 			const o2 = options.beforeDiff ? options.beforeDiff(o, oldObj) : o
-			const eql = compareObjs(oldObj, o2)
+			const eql = _.isEqual(oldObj, o2)
 
 			if (!eql) {
 				let oUpdate = options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o
@@ -354,53 +354,6 @@ export function sumChanges(...changes: (Changes | ChangedIds<any> | null)[]): Ch
 export function anythingChanged(changes: Changes): boolean {
 	return !!(changes.added || changes.removed || changes.updated)
 }
-/**
- * Deep comparison of objects, returns true if equal
- * @param a
- * @param b
- * @param onlyKeysFromA If true, only uses the keys of (a) for comparison
- * @param omit Array of keys to omit in the comparison
- */
-export function compareObjs(a: any, b: any, onlyKeysFromA?: boolean, omit?: Array<string>): boolean {
-	// let omit = ['_id','type','created','owner','OP','disabled']
-	omit = omit || []
-
-	let a0 = _.omit(a, omit)
-	let b0 = _.omit(b, omit)
-
-	let simpleCompare = (a: any, b: any, trace?: string) => {
-		if (!trace) trace = ''
-		let different: boolean | string = false
-
-		if (_.isObject(a)) {
-			if (_.isObject(b)) {
-				let keys = onlyKeysFromA ? _.keys(a) : _.union(_.keys(a), _.keys(b))
-
-				_.each(keys, (key) => {
-					if (different === false) {
-						different = simpleCompare(a[key], b[key], trace + '.' + key)
-					}
-				})
-			} else different = trace + '>object'
-		} else if (_.isArray(a)) {
-			if (_.isArray(b) && a.length === b.length) {
-				_.each(a, (val0, key) => {
-					if (different === false) {
-						different = simpleCompare(a[key], b[key], trace + '[' + key + ']')
-					}
-				})
-			} else different = trace + '>array'
-		} else {
-			if (a !== b) different = trace + '(' + a + '!==' + b + ')'
-		}
-
-		return different
-	}
-
-	let diff = simpleCompare(a0, b0)
-
-	return !diff
-}
 export function literal<T>(o: T) {
 	return o
 }
@@ -544,48 +497,6 @@ export const getCollectionStats: (collection: TransformedCollection<any, any>) =
 		raw.stats(cb)
 	}
 )
-// export function fetchBefore<T>(
-// 	collection: TransformedCollection<T, any>,
-// 	selector: MongoQuery<T> = {},
-// 	rank: number = Number.POSITIVE_INFINITY
-// ): T {
-// 	return collection
-// 		.find(
-// 			_.extend(selector, {
-// 				_rank: { $lt: rank },
-// 			}),
-// 			{
-// 				sort: {
-// 					_rank: -1,
-// 					_id: -1,
-// 				},
-// 				limit: 1,
-// 			}
-// 		)
-// 		.fetch()[0]
-// }
-// export function fetchNext<T extends { _id: ProtectedString<any> }>(
-// 	values: Array<T>,
-// 	currentValue: T | undefined
-// ): T | undefined {
-// 	if (!currentValue) return values[0]
-
-// 	let nextValue: T | undefined
-// 	let found: boolean = false
-// 	return _.find(values, (value) => {
-// 		if (found) {
-// 			nextValue = value
-// 			return true
-// 		}
-
-// 		if (currentValue._id) {
-// 			found = currentValue._id === value._id
-// 		} else {
-// 			found = currentValue === value
-// 		}
-// 		return false
-// 	})
-// }
 
 /**
  * Returns a rank number, to be used to insert new objects in a ranked list
