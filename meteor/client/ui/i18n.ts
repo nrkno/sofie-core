@@ -132,7 +132,9 @@ class I18nContainer extends WithManagedTracker {
 							console.error(`Failed to fetch translations bundle "${bundleMetadata._id}": `, reason)
 						})
 				)
-			)
+			).catch((reason) => {
+				console.error(`One of the translation bundles failed to load: `, reason)
+			})
 		})
 	}
 
