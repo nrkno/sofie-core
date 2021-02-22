@@ -27,9 +27,9 @@ import {
 	protectString,
 	mongoFindOptions,
 	ProtectedString,
-	SaveIntoDbOptions,
 	equalSets,
 	equivalentArrays,
+	SaveIntoDbHooks,
 } from '../lib'
 import { Timeline, TimelineObjType, TimelineObjGeneric, TimelineComplete } from '../collections/Timeline'
 import { TSR } from '@sofie-automation/blueprints-integration'
@@ -119,7 +119,7 @@ describe('lib/lib', () => {
 			timeline: mystudio2Objs,
 		})
 
-		const options: SaveIntoDbOptions<any, any> = {
+		const options: SaveIntoDbHooks<any, any> = {
 			beforeInsert: jest.fn((o) => o),
 			beforeUpdate: jest.fn((o, pre) => o),
 			beforeRemove: jest.fn((o) => o),
@@ -127,15 +127,15 @@ describe('lib/lib', () => {
 			// insert: jest.fn((o) => o),
 			// update: jest.fn((id, o,) => { return undefined }),
 			// remove: jest.fn((o) => { return undefined }),
-			// afterInsert: jest.fn((o) => {
-			// 	return undefined
-			// }),
-			// afterUpdate: jest.fn((o) => {
-			// 	return undefined
-			// }),
-			// afterRemove: jest.fn((o) => {
-			// 	return undefined
-			// }),
+			afterInsert: jest.fn((o) => {
+				return undefined
+			}),
+			afterUpdate: jest.fn((o) => {
+				return undefined
+			}),
+			afterRemove: jest.fn((o) => {
+				return undefined
+			}),
 		}
 
 		const changes = saveIntoDb(
@@ -197,7 +197,7 @@ describe('lib/lib', () => {
 		// expect(options.update).toHaveBeenCalledTimes(1)
 		// expect(options.remove).toHaveBeenCalledTimes(1)
 		// expect(options.afterInsert).toHaveBeenCalledTimes(1)
-		// expect(options.afterUpdate).toHaveBeenCalledTimes(1)
+		expect(options.afterUpdate).toHaveBeenCalledTimes(1)
 		// expect(options.afterRemove).toHaveBeenCalledTimes(1)
 
 		expect(changes).toMatchObject({

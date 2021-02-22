@@ -18,6 +18,7 @@ import * as crypto from 'crypto'
 import { ReadonlyDeep, PartialDeep } from 'type-fest'
 import { BulkWriteOperation } from 'mongodb'
 import { ITranslatableMessage } from './api/TranslatableMessage'
+import { profiler } from '../server/api/profiler'
 
 const cloneOrg = require('fast-clone')
 
@@ -100,20 +101,6 @@ export interface DBObj {
 	_id: ProtectedString<any>
 	[key: string]: any
 }
-export interface SaveIntoDbOptions<DocClass, DBInterface> {
-	beforeInsert?: (o: DBInterface) => DBInterface
-	beforeUpdate?: (o: DBInterface, pre?: DocClass) => DBInterface
-	beforeRemove?: (o: DocClass) => DBInterface
-	beforeDiff?: (o: DBInterface, oldObj: DocClass) => DBInterface
-	// insert?: (o: DBInterface) => void
-	// update?: (id: ProtectedString<any>, o: DBInterface) => void
-	// remove?: (o: DBInterface) => void
-	unchanged?: (o: DBInterface) => void
-	// afterInsert?: (o: DBInterface) => void
-	// afterUpdate?: (o: DBInterface) => void
-	// afterRemove?: (o: DBInterface) => void
-	afterRemoveAll?: (o: Array<DBInterface>) => void
-}
 export interface Changes {
 	added: number
 	updated: number
@@ -137,11 +124,11 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	collection: TransformedCollection<DocClass, DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
-	options?: SaveIntoDbOptions<DocClass, DBInterface>
+	options?: SaveIntoDbHooks<DocClass, DBInterface>
 ): Changes {
 	const preparedChanges = prepareSaveIntoDb(collection, filter, newData, options)
 
-	const changes = savePreparedChanges(preparedChanges, collection, options)
+	const changes = savePreparedChanges(preparedChanges, collection, options ?? {})
 
 	return waitForPromise(changes)
 }
@@ -157,86 +144,40 @@ function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	collection: TransformedCollection<DocClass, DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
-	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
+	optionsOrg?: SaveIntoDbHooks<DocClass, DBInterface>
 ): PreparedChanges<DBInterface> {
-	let preparedChanges: PreparedChanges<DBInterface> = {
+	const preparedChanges: PreparedChanges<DBInterface> = {
 		inserted: [],
 		changed: [],
 		removed: [],
 		unchanged: [],
 	}
 
-	const options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
-
-	const identifier = '_id'
-
-	const pOldObjs = asyncCollectionFindFetch(collection, filter)
-
-	const newObjIds: { [identifier: string]: true } = {}
-	_.each(newData, (o) => {
-		if (newObjIds[o[identifier] as any]) {
-			throw new Meteor.Error(
-				500,
-				`prepareSaveIntoDb into collection "${
-					(collection as any)._name
-				}": Duplicate identifier ${identifier}: "${o[identifier]}"`
-			)
-		}
-		newObjIds[o[identifier] as any] = true
+	saveIntoBase((collection as any)._name, collection.find(filter).fetch(), newData, {
+		...optionsOrg,
+		insert: (doc) => preparedChanges.inserted.push(doc),
+		update: (doc) => preparedChanges.changed.push(doc),
+		remove: (doc) => preparedChanges.removed.push(doc),
+		unchanged: (doc) => preparedChanges.unchanged.push(doc),
+		// supress hooks that are for the save phase
+		afterInsert: undefined,
+		afterRemove: undefined,
+		afterRemoveAll: undefined,
+		afterUpdate: undefined,
 	})
 
-	const oldObjs: Array<DocClass> = waitForPromise(pOldObjs)
-
-	const removeObjs: { [id: string]: DocClass } = {}
-	_.each(oldObjs, (o: DocClass) => {
-		if (removeObjs['' + o[identifier]]) {
-			// duplicate id:
-			preparedChanges.removed.push(o)
-		} else {
-			removeObjs['' + o[identifier]] = o
-		}
-	})
-
-	_.each(newData, function(o) {
-		const oldObj = removeObjs['' + o[identifier]]
-		if (oldObj) {
-			const o2 = options.beforeDiff ? options.beforeDiff(o, oldObj) : o
-			const eql = _.isEqual(oldObj, o2)
-
-			if (!eql) {
-				let oUpdate = options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o
-				preparedChanges.changed.push(oUpdate)
-			} else {
-				preparedChanges.unchanged.push(oldObj)
-			}
-		} else {
-			if (!_.isNull(oldObj)) {
-				let oInsert = options.beforeInsert ? options.beforeInsert(o) : o
-				preparedChanges.inserted.push(oInsert)
-			}
-		}
-		delete removeObjs['' + o[identifier]]
-	})
-	_.each(removeObjs, function(obj: DocClass) {
-		if (obj) {
-			let oRemove: DBInterface = options.beforeRemove ? options.beforeRemove(obj) : obj
-			preparedChanges.removed.push(oRemove)
-		}
-	})
 	return preparedChanges
 }
 async function savePreparedChanges<DocClass extends DBInterface, DBInterface extends DBObj>(
 	preparedChanges: PreparedChanges<DBInterface>,
 	collection: TransformedCollection<DocClass, DBInterface>,
-	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
+	options: SaveIntoDbHooks<DocClass, DBInterface>
 ): Promise<Changes> {
 	let change: Changes = {
 		added: 0,
 		updated: 0,
 		removed: 0,
 	}
-	const options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
-
 	const newObjIds: { [identifier: string]: true } = {}
 	const checkInsertId = (id) => {
 		if (newObjIds[id]) {
@@ -262,6 +203,7 @@ async function savePreparedChanges<DocClass extends DBInterface, DBInterface ext
 			},
 		})
 		change.updated++
+		if (options.afterUpdate) options.afterUpdate(oUpdate)
 	})
 
 	_.each(preparedChanges.inserted || [], (oInsert) => {
@@ -276,11 +218,13 @@ async function savePreparedChanges<DocClass extends DBInterface, DBInterface ext
 			},
 		})
 		change.added++
+		if (options.afterInsert) options.afterInsert(oInsert)
 	})
 
 	_.each(preparedChanges.removed || [], (oRemove) => {
 		removedDocs.push(oRemove._id)
 		change.removed++
+		if (options.afterRemove) options.afterRemove(oRemove)
 	})
 	if (removedDocs.length) {
 		updates.push({
@@ -294,12 +238,6 @@ async function savePreparedChanges<DocClass extends DBInterface, DBInterface ext
 
 	const pBulkWriteResult = asyncCollectionBulkWrite(collection, updates)
 
-	if (options.unchanged) {
-		_.each(preparedChanges.unchanged || [], (o) => {
-			if (options.unchanged) options.unchanged(o)
-		})
-	}
-
 	await pBulkWriteResult
 
 	if (options.afterRemoveAll) {
@@ -311,6 +249,99 @@ async function savePreparedChanges<DocClass extends DBInterface, DBInterface ext
 
 	return change
 }
+
+export interface SaveIntoDbHooks<DocClass, DBInterface> {
+	beforeInsert?: (o: DBInterface) => DBInterface
+	beforeUpdate?: (o: DBInterface, pre?: DocClass) => DBInterface
+	beforeRemove?: (o: DocClass) => DBInterface
+	beforeDiff?: (o: DBInterface, oldObj: DocClass) => DBInterface
+	afterInsert?: (o: DBInterface) => void
+	afterUpdate?: (o: DBInterface) => void
+	afterRemove?: (o: DBInterface) => void
+	afterRemoveAll?: (o: Array<DBInterface>) => void
+}
+
+interface SaveIntoDbHandlers<DBInterface> {
+	insert: (o: DBInterface) => void
+	update: (o: DBInterface) => void
+	remove: (o: DBInterface) => void
+	unchanged?: (o: DBInterface) => void
+}
+export function saveIntoBase<DocClass extends DBInterface, DBInterface extends DBObj>(
+	collectionName: string,
+	oldDocs: DocClass[],
+	newData: Array<DBInterface>,
+	options: SaveIntoDbHooks<DocClass, DBInterface> & SaveIntoDbHandlers<DBInterface>
+): ChangedIds<DBInterface['_id']> {
+	const span = profiler.startSpan(`DBCache.saveIntoBase.${collectionName}`)
+
+	const changes: ChangedIds<DBInterface['_id']> = {
+		added: [],
+		updated: [],
+		removed: [],
+		unchanged: [],
+	}
+
+	const newObjIds = new Set<DBInterface['_id']>()
+	_.each(newData, (o) => {
+		if (newObjIds.has(o._id)) {
+			throw new Meteor.Error(
+				500,
+				`saveIntoBase into collection "${collectionName}": Duplicate identifier _id: "${o._id}"`
+			)
+		}
+		newObjIds.add(o._id)
+	})
+
+	const objectsToRemove = normalizeArrayToMap(oldDocs, '_id')
+
+	for (const o of newData) {
+		const oldObj = objectsToRemove.get(o._id)
+
+		if (oldObj) {
+			const o2 = options.beforeDiff ? options.beforeDiff(o, oldObj) : o
+			const eql = _.isEqual(oldObj, o2)
+
+			if (!eql) {
+				const oUpdate = options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o
+				options.update(oUpdate)
+				if (options.afterUpdate) options.afterUpdate(oUpdate)
+				changes.updated.push(oUpdate._id)
+			} else {
+				if (options.unchanged) options.unchanged(o)
+				changes.unchanged.push(oldObj._id)
+			}
+		} else {
+			const oInsert = options.beforeInsert ? options.beforeInsert(o) : o
+			options.insert(oInsert)
+			if (options.afterInsert) options.afterInsert(oInsert)
+			changes.added.push(oInsert._id)
+		}
+		objectsToRemove.delete(o._id)
+	}
+	for (const obj of objectsToRemove.values()) {
+		if (obj) {
+			const oRemove = options.beforeRemove ? options.beforeRemove(obj) : obj
+
+			options.remove(oRemove)
+
+			if (options.afterRemove) options.afterRemove(oRemove)
+			changes.removed.push(oRemove._id)
+		}
+	}
+
+	if (options.afterRemoveAll) {
+		const objs = _.compact(Array.from(objectsToRemove.values()))
+		if (objs.length > 0) {
+			options.afterRemoveAll(objs)
+		}
+	}
+
+	span?.addLabels(changes as any)
+	span?.end()
+	return changes
+}
+
 export async function asyncCollectionBulkWrite<
 	DocClass extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> }
