@@ -248,11 +248,18 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 	}
 
 	zoomOut = (e: React.MouseEvent<HTMLElement>) => {
-		this.props.onZoomChange(Math.max(this.props.timeScale * 0.5, this.props.maxTimeScale), e)
+		const targetTimeScale = Math.max(this.props.timeScale * 0.5, this.props.maxTimeScale)
+		this.props.onZoomChange(targetTimeScale, e)
+		if (targetTimeScale === this.props.maxTimeScale && !this.props.isLiveSegment) {
+			this.props.onScroll(0, e)
+		}
 	}
 
 	zoomNormalize = (e: React.MouseEvent<HTMLElement>) => {
 		this.props.onZoomChange(this.props.maxTimeScale, e)
+		if (!this.props.isLiveSegment) {
+			this.props.onScroll(0, e)
+		}
 	}
 
 	render() {

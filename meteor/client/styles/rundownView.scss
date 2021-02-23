@@ -822,11 +822,11 @@ svg.icon {
 		grid-column: timeline / end;
 		grid-row: zoom-area / end;
 
-		transition: 0.3s opacity, 0s visibility;
+		transition: 1s opacity, 0s visibility;
 
 		&.hidden {
 			opacity: 0;
-			transition: 0.3s opacity, 0s visibility 0.3s;
+			transition: 1s opacity, 0s visibility 1s;
 			visibility: hidden;
 		}
 	}
@@ -965,7 +965,7 @@ svg.icon {
 				cursor: ew-resize;
 				cursor: url(/images/zoom_area_move.png), ew-resize;
 				cursor: url(/images/zoom_area_move.png) 23 17, ew-resize;
-				background: rgba(255, 255, 255, 0.4);
+				background: rgba(255, 255, 255, 0.2);
 				box-shadow: 0 0 6px rgba(255, 255, 255, 1);
 
 				.segment-timeline__zoom-area__controls__selected-area__left-arrow {
