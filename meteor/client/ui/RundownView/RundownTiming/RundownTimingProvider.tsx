@@ -311,6 +311,8 @@ export const RundownTimingProvider = withTracker<
 
 					// This is where we actually calculate all the various variants of duration of a part
 					if (lastStartedPlayback && !partInstance.timings?.duration) {
+						// if duration isn't available, check if `takeOut` has already been set and use the difference
+						// between startedPlayback and takeOut as a temporary duration
 						const duration =
 							partInstance.timings?.duration ||
 							(partInstance.timings?.takeOut ? lastStartedPlayback - partInstance.timings?.takeOut : undefined)
