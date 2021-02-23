@@ -67,6 +67,12 @@ export function activateRundownPlaylist(
 	if (!rundownPlaylist.nextPartInstanceId) {
 		const firstPart = selectNextPart(rundownPlaylist, null, getAllOrderedPartsFromCache(cache, rundownPlaylist))
 		setNextPart(cache, rundownPlaylist, firstPart ? firstPart.part : null)
+		if (rundownPlaylist.nextPartInstanceId) {
+			const nextPartInstance = cache.PartInstances.findOne(rundownPlaylist.nextPartInstanceId)
+			if (nextPartInstance) {
+				rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
+			}
+		}
 	} else {
 		const nextPartInstance = cache.PartInstances.findOne(rundownPlaylist.nextPartInstanceId)
 		if (!nextPartInstance)
