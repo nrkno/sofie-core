@@ -311,23 +311,23 @@ export const RundownTimingProvider = withTracker<
 
 					// This is where we actually calculate all the various variants of duration of a part
 					if (lastStartedPlayback && !partInstance.timings?.duration) {
+						const duration =
+							partInstance.timings?.duration ||
+							(partInstance.timings?.takeOut ? lastStartedPlayback - partInstance.timings?.takeOut : undefined)
 						currentRemaining = Math.max(
 							0,
-							(partInstance.timings?.duration ||
+							(duration ||
 								(memberOfDisplayDurationGroup ? displayDurationFromGroup : partInstance.part.expectedDuration) ||
 								0) -
 								(now - lastStartedPlayback)
 						)
 						partDuration =
-							Math.max(
-								partInstance.timings?.duration || partInstance.part.expectedDuration || 0,
-								now - lastStartedPlayback
-							) - playOffset
+							Math.max(duration || partInstance.part.expectedDuration || 0, now - lastStartedPlayback) - playOffset
 						// because displayDurationGroups have no actual timing on them, we need to have a copy of the
 						// partDisplayDuration, but calculated as if it's not playing, so that the countdown can be
 						// calculated
 						partDisplayDurationNoPlayback =
-							partInstance.timings?.duration ||
+							duration ||
 							(memberOfDisplayDurationGroup ? displayDurationFromGroup : partInstance.part.expectedDuration) ||
 							this.props.defaultDuration ||
 							Settings.defaultDisplayDuration
@@ -390,7 +390,7 @@ export const RundownTimingProvider = withTracker<
 						partInstance.part.displayDurationGroup &&
 						!partInstance.part.floated &&
 						!partInstance.part.invalid &&
-						(partInstance.timings?.duration || partCounts)
+						(partInstance.timings?.duration || partInstance.timings?.takeOut || partCounts)
 					) {
 						this.displayDurationGroups[partInstance.part.displayDurationGroup] =
 							this.displayDurationGroups[partInstance.part.displayDurationGroup] - partDisplayDuration
