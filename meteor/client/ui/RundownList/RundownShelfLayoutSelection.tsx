@@ -5,16 +5,16 @@ import { Link } from 'react-router-dom'
 import { SplitDropdown } from '../../lib/SplitDropdown'
 import { getRundownPlaylistLink, getRundownWithLayoutLink, getShelfLink } from './util'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { RundownLayoutBase, RundownLayouts } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import { withTranslation } from 'react-i18next'
+import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 
 interface IRundownShelfLayoutSelectionProps {
-	rundown: Rundown
-}
-
-interface IRundownShelfLayoutSelectionTrackedProps {
+	playlistId: RundownPlaylistId
+	rundowns: Rundown[]
 	rundownLayouts: RundownLayoutBase[]
 }
 
@@ -22,36 +22,21 @@ interface IRundownShelfLayoutSelectionState {
 	selectedView: string
 }
 
-export const RundownShelfLayoutSelection = translateWithTracker<
-	IRundownShelfLayoutSelectionProps,
-	IRundownShelfLayoutSelectionState,
-	IRundownShelfLayoutSelectionTrackedProps
->((props: IRundownShelfLayoutSelectionProps) => {
-	const rundownLayouts = RundownLayouts.find({ showStyleBaseId: props.rundown.showStyleBaseId }).fetch()
-
-	return {
-		...props,
-		rundownLayouts,
-	}
-})(
+export const RundownShelfLayoutSelection = withTranslation()(
 	class RundownShelfLayoutSelection extends React.Component<
-		Translated<IRundownShelfLayoutSelectionProps & IRundownShelfLayoutSelectionTrackedProps>,
+		Translated<IRundownShelfLayoutSelectionProps>,
 		IRundownShelfLayoutSelectionState
 	> {
 		constructor(props) {
 			super(props)
 
 			this.state = {
-				selectedView: UIStateStorage.getItemString(
-					`rundownList.${this.props.rundown.studioId}`,
-					'defaultView',
-					'default'
-				),
+				selectedView: UIStateStorage.getItemString(`rundownList.${this.props.playlistId}`, 'defaultView', 'default'),
 			}
 		}
 
 		private saveViewChoice(key: string) {
-			UIStateStorage.setItem(`rundownList.${this.props.rundown.studioId}`, 'defaultView', key)
+			UIStateStorage.setItem(`rundownList.${this.props.playlistId}`, 'defaultView', key)
 		}
 
 		private renderLinkItem(layout: RundownLayoutBase, link: string, key: string) {
@@ -72,44 +57,41 @@ export const RundownShelfLayoutSelection = translateWithTracker<
 		render() {
 			const { t } = this.props
 
-			const standaloneLayouts = this.props.rundownLayouts
+			const showstylesInPlaylist = this.props.rundowns.map((r) => r.showStyleBaseId)
+			const layoutsInRundown = this.props.rundownLayouts.filter((layout) =>
+				showstylesInPlaylist.includes(layout.showStyleBaseId)
+			)
+
+			const standaloneLayouts = layoutsInRundown
 				.filter((layout) => layout.exposeAsStandalone)
 				.map((layout) => {
-					return this.renderLinkItem(
-						layout,
-						getShelfLink(this.props.rundown.playlistId, layout._id),
-						`standalone${layout._id}`
-					)
+					return this.renderLinkItem(layout, getShelfLink(this.props.playlistId, layout._id), `standalone${layout._id}`)
 				})
-			const shelfLayouts = this.props.rundownLayouts
+			const shelfLayouts = layoutsInRundown
 				.filter((layout) => layout.exposeAsShelf)
 				.map((layout) => {
 					return this.renderLinkItem(
 						layout,
-						getRundownWithLayoutLink(this.props.rundown.playlistId, layout._id),
+						getRundownWithLayoutLink(this.props.playlistId, layout._id),
 						`shelf${layout._id}`
 					)
 				})
-			const allElements = [
-				<div className="expco-header" key={'separator0'}>
-					Standalone shelfs
-				</div>,
-				...standaloneLayouts,
-				<div className="expco-header" key={'separator1'}>
-					Rundown + Shelf
-				</div>,
-				...shelfLayouts,
-				<div className="expco-separator" key={'separator2'}></div>,
-				<Link
-					to={getRundownPlaylistLink(this.props.rundown.playlistId)}
-					onClick={() => this.saveViewChoice('default')}
-					key={'default'}>
-					<div className="action-btn expco-item">Default</div>
-				</Link>,
-			]
+
 			return shelfLayouts.length > 0 || standaloneLayouts.length > 0 ? (
 				<React.Fragment>
-					<SplitDropdown selectedKey={this.state.selectedView}>{allElements}</SplitDropdown>
+					<SplitDropdown selectedKey={this.state.selectedView}>
+						<div className="expco-header">Standalone Shelfs</div>
+						{standaloneLayouts}
+						<div className="expco-header">Rundown + Shelf</div>
+						{shelfLayouts}
+						<div className="expco-separator"></div>
+						<Link
+							to={getRundownPlaylistLink(this.props.playlistId)}
+							onClick={() => this.saveViewChoice('default')}
+							key={'default'}>
+							<div className="action-btn expco-item">Default</div>
+						</Link>
+					</SplitDropdown>
 				</React.Fragment>
 			) : (
 				<span className="dimmed">{t('Default')}</span>

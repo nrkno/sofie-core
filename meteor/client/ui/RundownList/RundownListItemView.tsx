@@ -12,6 +12,7 @@ import JonasFormattedTime from './JonasFormattedTime'
 import { EyeIcon } from '../../lib/ui/icons/rundownList'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
 import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
+import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
@@ -20,6 +21,7 @@ interface IRundownListItemViewProps {
 	connectDragSource: (content: ReactElement) => ReactElement | null
 	rundownViewUrl?: string
 	rundown: Rundown
+	rundownLayouts: Array<RundownLayoutBase>
 	showStyleBaseURL?: string
 	showStyleName: string | undefined
 	confirmReSyncRundownHandler?: () => void
@@ -40,6 +42,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		showStyleBaseURL,
 		showStyleName,
 		rundown,
+		rundownLayouts,
 		confirmReSyncRundownHandler,
 		confirmDeleteRundownHandler,
 	} = props
@@ -111,9 +114,15 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			<span className="rundown-list-item__text">
 				<JonasFormattedTime timestamp={rundown.modified} t={t} />
 			</span>
-			<span className="rundown-list-item__text">
-				<RundownShelfLayoutSelection rundown={props.rundown} />
-			</span>
+			{rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
+				<span className="rundown-list-item__text">
+					<RundownShelfLayoutSelection
+						rundowns={[rundown]}
+						rundownLayouts={rundownLayouts}
+						playlistId={rundown.playlistId}
+					/>
+				</span>
+			)}
 			<span className="rundown-list-item__actions">
 				{confirmReSyncRundownHandler ? (
 					<Tooltip

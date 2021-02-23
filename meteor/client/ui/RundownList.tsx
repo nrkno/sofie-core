@@ -297,7 +297,9 @@ export const RundownList = translateWithTracker(() => {
 											<span>{t('On Air Start Time')}</span>
 											<span>{t('Duration')}</span>
 											<span>{t('Last updated')}</span>
-											<span>{t('Shelf Layout')}</span>
+											{this.props.rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
+												<span>{t('Shelf Layout')}</span>
+											)}
 											<span>&nbsp;</span>
 										</header>
 										{this.renderRundownPlaylists(rundownPlaylists)}

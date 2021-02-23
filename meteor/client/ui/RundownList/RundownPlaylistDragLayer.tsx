@@ -50,6 +50,7 @@ function RundownPlaylistDragLayer(props) {
 						isActive={false}
 						renderTooltips={false}
 						rundown={rundown!}
+						rundownLayouts={item.rundownLayouts}
 						classNames={classNames}
 						connectDragSource={(props) => props}
 						connectDropTarget={(props) => props}
