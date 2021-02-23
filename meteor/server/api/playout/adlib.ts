@@ -364,7 +364,7 @@ export namespace ServerPlayoutAdLibAPI {
 				const lastPieceInstance = innerFindLastPieceOnLayer(
 					cache,
 					playlist,
-					sourceLayer._id,
+					[sourceLayer._id],
 					sourceLayer.stickyOriginalOnly || false
 				)
 
@@ -381,7 +381,7 @@ export namespace ServerPlayoutAdLibAPI {
 	export function innerFindLastPieceOnLayer(
 		cache: CacheForRundownPlaylist,
 		rundownPlaylist: RundownPlaylist,
-		sourceLayerId: string,
+		sourceLayerId: string[],
 		originalOnly: boolean,
 		customQuery?: MongoQuery<PieceInstance>
 	) {
@@ -392,7 +392,7 @@ export namespace ServerPlayoutAdLibAPI {
 			...customQuery,
 			playlistActivationId: rundownPlaylist.activationId,
 			rundownId: { $in: rundownIds },
-			'piece.sourceLayerId': sourceLayerId,
+			'piece.sourceLayerId': { $in: sourceLayerId },
 			startedPlayback: {
 				$exists: true,
 			},
