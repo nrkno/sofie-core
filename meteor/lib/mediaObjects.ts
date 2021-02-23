@@ -221,7 +221,7 @@ export function checkPieceContentStatus(
 										t: i18next.TFunction
 									) => {
 										if (arr.length === 1) {
-											const frames = Math.round((arr[0].duration * 1000) / timebase)
+											const frames = Math.ceil((arr[0].duration * 1000) / timebase)
 											if (arr[0].start === 0) {
 												messages.push(
 													t('Clip starts with {{frames}} {{type}} frame', {
@@ -254,7 +254,7 @@ export function checkPieceContentStatus(
 											}
 										} else if (arr.length > 0) {
 											const dur = arr.map((b) => b.duration).reduce((a, b) => a + b, 0)
-											const frames = Math.round((dur * 1000) / timebase)
+											const frames = Math.ceil((dur * 1000) / timebase)
 											messages.push(
 												t('{{frames}} {{type}} frame detected in clip', {
 													frames,
@@ -265,10 +265,10 @@ export function checkPieceContentStatus(
 										}
 									}
 									if (mediaObject.mediainfo.blacks) {
-										addFrameWarning(mediaObject.mediainfo.blacks, 'black', t)
+										addFrameWarning(mediaObject.mediainfo.blacks, t('black'), t)
 									}
 									if (mediaObject.mediainfo.freezes) {
-										addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
+										addFrameWarning(mediaObject.mediainfo.freezes, t('freeze'), t)
 									}
 								}
 							}
