@@ -218,6 +218,10 @@ $segment-layer-background-guest: #008a92;
 	&.mic {
 		background: var(--segment-layer-background-guest);
 	}
+
+	&.transition {
+		background: var(--segment-layer-background-unknown);
+	}
 }
 
 @mixin item-type-borders {
@@ -256,6 +260,10 @@ $segment-layer-background-guest: #008a92;
 	&.mic {
 		border-color: var(--segment-layer-background-mic);
 	}
+
+	&.transition {
+		border-color: var(--segment-layer-background-unknown);
+	}
 }
 
 @mixin item-type-before-background {
@@ -290,6 +298,10 @@ $segment-layer-background-guest: #008a92;
 	&.mic::before {
 		background: var(--segment-layer-background-mic);
 	}
+
+	&.transition::before {
+		background: var(--segment-layer-background-unknown);
+	}
 }
 
 @mixin item-type-colors-svg {
@@ -323,6 +335,10 @@ $segment-layer-background-guest: #008a92;
 		&.second {
 			fill: var(--segment-layer-background-vt--second);
 		}
+	}
+
+	&.transition {
+		fill: var(--segment-layer-background-unknown);
 	}
 
 	&.remote {
