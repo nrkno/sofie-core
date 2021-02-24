@@ -16,6 +16,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { Studios } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
+import ClassNames from 'classnames'
 
 interface IExpectedPackagesStatusProps {}
 
@@ -165,6 +166,87 @@ export const ExpectedPackagesStatus = translateWithTracker<
 				)
 			})
 		}
+		renderExpectedPackageStatusesSummary() {
+			const { t } = this.props
+
+			const packageRef: { [packageId: string]: ExpectedPackageDB } = {}
+			for (const expPackage of this.props.expectedPackages) {
+				packageRef[unprotectString(expPackage._id)] = expPackage
+			}
+
+			const packagesWithWorkStatuses: {
+				[packageId: string]: {
+					package: ExpectedPackageDB | undefined
+					statuses: ExpectedPackageWorkStatus[]
+				}
+			} = {}
+			for (const work of this.props.expectedPackageWorkStatuses) {
+				// todo: make this better:
+				const packageId = unprotectString(work.fromPackages[0]?.id) || 'N/A'
+				const referencedPackage = packageRef[packageId]
+				let packageWithWorkStatus = packagesWithWorkStatuses[packageId]
+				if (!packageWithWorkStatus) {
+					packagesWithWorkStatuses[packageId] = packageWithWorkStatus = {
+						package: packageRef[packageId] || undefined,
+						statuses: [],
+					}
+				}
+				packageWithWorkStatus.statuses.push(work)
+			}
+
+			for (const id of Object.keys(packagesWithWorkStatuses)) {
+				packagesWithWorkStatuses[id].statuses.sort((a, b) => {
+					if ((a.displayRank || 0) > (b.displayRank || 0)) return 1
+					if ((a.displayRank || 0) < (b.displayRank || 0)) return -1
+
+					if (a.requiredForPlayout && !b.requiredForPlayout) return 1
+					if (!a.requiredForPlayout && b.requiredForPlayout) return -1
+
+					if (a.label > b.label) return 1
+					if (a.label < b.label) return -1
+
+					return 0
+				})
+			}
+
+			return Object.keys(packagesWithWorkStatuses).map((packageId) => {
+				const p = packagesWithWorkStatuses[packageId]
+				const name = p.package
+					? JSON.stringify(p.package.content) + ', ' + JSON.stringify(p.package.version)
+					: `Unknown package "${packageId}"`
+				return (
+					<div key={packageId} className="package-summary">
+						<div className="package-summary__name">
+							<Tooltip overlay={name} placement="top">
+								<div>{name}</div>
+							</Tooltip>
+						</div>
+
+						<div className="package-summary__statuses">
+							{p.statuses.map((status) => {
+								return (
+									<div key={unprotectString(status._id)} className={'package-summary__statuses__status'}>
+										<Tooltip overlay={status.statusReason} placement="top">
+											<div
+												className={ClassNames('status', `status-${status.status}`)}
+												style={
+													status.status === 'working' && status.progress
+														? {
+																height: `${Math.round(status.progress * 100)}%`,
+														  }
+														: {}
+												}
+											/>
+										</Tooltip>
+										<div className="package-summary__statuses__status__reason">{status.statusReason}</div>
+									</div>
+								)
+							})}
+						</div>
+					</div>
+				)
+			})
+		}
 		restartExpectation(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, status: ExpectedPackageWorkStatus): void {
 			doUserAction(this.props.t, e, UserAction.PACKAGE_MANAGER_RESTART_WORK, (e) =>
 				MeteorCall.userAction.packageManagerRestartExpectation(e, status.deviceId, unprotectString(status._id))
@@ -197,6 +279,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 							{t('Restart All')}
 						</button>
 					</div>
+					<div className="mod mvl">{this.renderExpectedPackageStatusesSummary()}</div>
 					<div className="mod mvl">{this.renderExpectedPackageStatuses()}</div>
 				</div>
 			)
