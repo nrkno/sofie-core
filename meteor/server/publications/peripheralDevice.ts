@@ -131,6 +131,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 	filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
 	token: string
 ) {
+	logger.info(`Pub.expectedPackagesForDevice: publication`)
 	if (PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })) {
 		let peripheralDevice = PeripheralDevices.findOne(deviceId)
 
@@ -472,6 +473,8 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 		pub.onStop(() => {
 			observer.stop()
 		})
+	} else {
+		logger.warn(`Pub.expectedPackagesForDevice: Not allowed: "${deviceId}"`)
 	}
 })
 
