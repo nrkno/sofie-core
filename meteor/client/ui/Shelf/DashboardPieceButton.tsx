@@ -125,20 +125,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				{thumbnailUrl && renderThumbnail && (
 					<img src={thumbnailUrl} className="dashboard-panel__panel__button__thumbnail" />
 				)}
-				<L3rdFloatingInspector
-					showMiniInspector={this.state.isHovered}
-					content={noraContent}
-					floatingInspectorStyle={{
-						top: this.positionAndSize?.top + 'px',
-						left: this.positionAndSize?.left + 'px',
-						transform: 'translate(0, -100%)',
-					}}
-					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
-					itemElement={this.element}
-					piece={{ ...adLib, enable: { start: 0 }, startPartId: protectString(''), invalid: false }}
-					pieceRenderedDuration={adLib.expectedDuration || null}
-					pieceRenderedIn={null}
-				/>
 			</>
 		)
 	}
