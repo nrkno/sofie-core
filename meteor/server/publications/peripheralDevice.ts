@@ -143,7 +143,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 		}
 
 		const observer = setUpOptimizedObserver(
-			`pub_${PubSub.mappingsForDevice}_${studioId}`,
+			`pub_${PubSub.expectedPackagesForDevice}_${studioId}`,
 			(triggerUpdate) => {
 				// Set up observers:
 				return [
