@@ -138,7 +138,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 
 		const studioId = peripheralDevice.studioId
 		if (!studioId) {
-			logger.debug(`Pub.expectedPackagesForDevice: device "${peripheralDevice._id}" has no studioId`)
+			logger.warn(`Pub.expectedPackagesForDevice: device "${peripheralDevice._id}" has no studioId`)
 			return []
 		}
 
@@ -243,7 +243,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					invalidateRoutedExpectedPackages = true
 					context.studio = Studios.findOne(context.studioId)
 					if (!context.studio) {
-						logger.debug(`Pub.expectedPackagesForDevice: studio "${context.studioId}" not found!`)
+						logger.warn(`Pub.expectedPackagesForDevice: studio "${context.studioId}" not found!`)
 					}
 				}
 				if (!context.studio) {
@@ -261,7 +261,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 						studioId: studioId,
 					}).fetch()
 					if (!context.expectedPackages.length) {
-						logger.debug(
+						logger.info(
 							`Pub.expectedPackagesForDevice: no ExpectedPackages for studio "${context.studioId}" found`
 						)
 					}
@@ -292,7 +292,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					const routedMappingsWithPackages = routeExpectedPackages(studio, context.expectedPackages)
 
 					if (!Object.keys(routedMappingsWithPackages).length) {
-						logger.debug(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
+						logger.info(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
 					}
 
 					// Filter, keep only the routed mappings for this device:
@@ -353,7 +353,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 										}
 										combinedSources.push(combinedSource)
 									} else {
-										logger.debug(
+										logger.warn(
 											`Pub.expectedPackagesForDevice: Source package container "${packageSource.containerId}" not found`
 										)
 									}
@@ -374,7 +374,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 									}
 								}
 								if (!packageContainerId) {
-									logger.debug(
+									logger.warn(
 										`Pub.expectedPackagesForDevice: No package container found for "${mappingDeviceId}"`
 									)
 								}
@@ -415,12 +415,12 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 											playoutDeviceId: mapping.deviceId,
 										})
 									} else {
-										logger.debug(
+										logger.warn(
 											`Pub.expectedPackagesForDevice: No targets found for "${expectedPackage._id}"`
 										)
 									}
 								} else {
-									logger.debug(
+									logger.warn(
 										`Pub.expectedPackagesForDevice: No sources found for "${expectedPackage._id}"`
 									)
 								}
