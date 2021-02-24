@@ -45,6 +45,7 @@ import { clone, DBObj, literal, omit, protectString, unprotectObject, unprotectS
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import deepExtend from 'deep-extend'
+import { logger } from '../logging'
 
 function checkAccess(cred: Credentials | ResolvedCredentials, selector) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -136,7 +137,10 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
 		const studioId = peripheralDevice.studioId
-		if (!studioId) return []
+		if (!studioId) {
+			logger.debug(`Pub.expectedPackagesForDevice: device "${peripheralDevice._id}" has no studioId`)
+			return []
+		}
 
 		const observer = setUpOptimizedObserver(
 			`pub_${PubSub.mappingsForDevice}_${studioId}`,
@@ -238,8 +242,13 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					context.invalidateStudio = false
 					invalidateRoutedExpectedPackages = true
 					context.studio = Studios.findOne(context.studioId)
+					if (!context.studio) {
+						logger.debug(`Pub.expectedPackagesForDevice: studio "${context.studioId}" not found!`)
+					}
 				}
-				if (!context.studio) return []
+				if (!context.studio) {
+					return []
+				}
 
 				if (context.invalidatePeripheralDevices) {
 					context.invalidatePeripheralDevices = false
@@ -251,6 +260,11 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					context.expectedPackages = ExpectedPackages.find({
 						studioId: studioId,
 					}).fetch()
+					if (!context.expectedPackages.length) {
+						logger.debug(
+							`Pub.expectedPackagesForDevice: no ExpectedPackages for studio "${context.studioId}" found`
+						)
+					}
 				}
 				// if (!context.expectedPackages.length) return []
 
@@ -276,6 +290,10 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 				if (invalidateRoutedExpectedPackages) {
 					// Map the expectedPackages onto their specified layer:
 					const routedMappingsWithPackages = routeExpectedPackages(studio, context.expectedPackages)
+
+					if (!Object.keys(routedMappingsWithPackages).length) {
+						logger.debug(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
+					}
 
 					// Filter, keep only the routed mappings for this device:
 					const routedExpectedPackages: ResultingExpectedPackage[] = []
@@ -333,25 +351,11 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 												) as AccessorOnPackage.Any
 											}
 										}
-
-										// for (const [packageAccessorId, packageAccessor] of Object.entries(
-										// 	packageSource.accessors
-										// )) {
-										// 	const sourceAccessor = lookedUpSource.container.accessors[
-										// 		packageAccessorId
-										// 	] as Accessor.Any | undefined
-
-										// 	if (sourceAccessor && sourceAccessor.type === packageAccessor.type) {
-										// 		combinedSource.accessors[packageAccessorId] = deepExtend(
-										// 			{},
-										// 			sourceAccessor,
-										// 			packageAccessor
-										// 		)
-										// 	} else {
-										// 		combinedSource.accessors[packageAccessorId] = packageAccessor
-										// 	}
-										// }
 										combinedSources.push(combinedSource)
+									} else {
+										logger.debug(
+											`Pub.expectedPackagesForDevice: Source package container "${packageSource.containerId}" not found`
+										)
 									}
 								}
 
@@ -369,6 +373,11 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 										break // just picking the first one found, for now
 									}
 								}
+								if (!packageContainerId) {
+									logger.debug(
+										`Pub.expectedPackagesForDevice: No package container found for "${mappingDeviceId}"`
+									)
+								}
 
 								const combinedTargets: PackageContainerOnPackage[] = []
 								if (packageContainerId) {
@@ -382,28 +391,38 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 									}
 								}
 
-								if (combinedSources.length && combinedTargets.length) {
-									expectedPackage.sideEffect = deepExtend(
-										{},
-										literal<ExpectedPackage.Base['sideEffect']>({
-											previewContainerId: studio.previewContainerIds[0], // just pick the first. Todo: something else?
-											thumbnailContainerId: studio.thumbnailContainerIds[0], // just pick the first. Todo: something else?
-											previewPackageSettings: getPreviewPackageSettings(
-												expectedPackage as ExpectedPackage.Any
-											),
-											thumbnailPackageSettings: getThumbnailPackageSettings(
-												expectedPackage as ExpectedPackage.Any
-											),
-										}),
-										expectedPackage.sideEffect
-									)
+								if (combinedSources.length) {
+									if (combinedTargets.length) {
+										expectedPackage.sideEffect = deepExtend(
+											{},
+											literal<ExpectedPackage.Base['sideEffect']>({
+												previewContainerId: studio.previewContainerIds[0], // just pick the first. Todo: something else?
+												thumbnailContainerId: studio.thumbnailContainerIds[0], // just pick the first. Todo: something else?
+												previewPackageSettings: getPreviewPackageSettings(
+													expectedPackage as ExpectedPackage.Any
+												),
+												thumbnailPackageSettings: getThumbnailPackageSettings(
+													expectedPackage as ExpectedPackage.Any
+												),
+											}),
+											expectedPackage.sideEffect
+										)
 
-									routedExpectedPackages.push({
-										expectedPackage: unprotectObject(expectedPackage),
-										sources: combinedSources,
-										targets: combinedTargets,
-										playoutDeviceId: mapping.deviceId,
-									})
+										routedExpectedPackages.push({
+											expectedPackage: unprotectObject(expectedPackage),
+											sources: combinedSources,
+											targets: combinedTargets,
+											playoutDeviceId: mapping.deviceId,
+										})
+									} else {
+										logger.debug(
+											`Pub.expectedPackagesForDevice: No targets found for "${expectedPackage._id}"`
+										)
+									}
+								} else {
+									logger.debug(
+										`Pub.expectedPackagesForDevice: No sources found for "${expectedPackage._id}"`
+									)
 								}
 							}
 						}
