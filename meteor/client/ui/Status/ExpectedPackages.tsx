@@ -224,9 +224,14 @@ export const ExpectedPackagesStatus = translateWithTracker<
 
 						<div className="package-summary__statuses">
 							{p.statuses.map((status) => {
+								const progressStr =
+									status.status === 'working' && status.progress ? ` ${Math.round(status.progress * 100)}%` : ''
+
+								const reason = `${status.label}: ${status.status}${progressStr}, ${status.statusReason}`
+
 								return (
 									<div key={unprotectString(status._id)} className={'package-summary__statuses__status'}>
-										<Tooltip overlay={status.statusReason} placement="top">
+										<Tooltip overlay={reason} placement="top">
 											<div
 												className={ClassNames('status', `status-${status.status}`)}
 												style={
@@ -238,7 +243,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 												}
 											/>
 										</Tooltip>
-										<div className="package-summary__statuses__status__reason">{status.statusReason}</div>
+										<div className="package-summary__statuses__status__reason">{reason}</div>
 									</div>
 								)
 							})}
