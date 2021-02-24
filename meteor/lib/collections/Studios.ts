@@ -24,6 +24,7 @@ import { ShowStyleBaseId } from './ShowStyleBases'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 import { ExpectedPackageDB } from './ExpectedPackages'
+import { RundownId } from './Rundowns'
 
 export interface MappingsExt {
 	[layerName: string]: MappingExt
@@ -225,7 +226,7 @@ export function getRoutedMappings<M extends MappingExt>(
 }
 
 export type MappingsExtWithPackage = {
-	[layerName: string]: MappingExt & { expectedPackages: ExpectedPackage.Base[] }
+	[layerName: string]: MappingExt & { expectedPackages: (ExpectedPackage.Base & { rundownId?: string })[] }
 }
 export function routeExpectedPackages(
 	studio: Studio,

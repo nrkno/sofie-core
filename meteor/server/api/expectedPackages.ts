@@ -40,6 +40,8 @@ import {
 	RundownBaselineAdLibActions,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { updateExpectedPlayoutItemsOnRundown } from './ingest/expectedPlayoutItems'
+import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
+import { PieceInstances } from '../../lib/collections/PieceInstances'
 
 export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
 	check(rundownId, String)
@@ -101,6 +103,37 @@ export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, 
 			)
 		})
 	}
+}
+export function generateExpectedPackagesForPartInstance(
+	studio: Studio,
+	rundownId: RundownId,
+	partInstance: PartInstance
+) {
+	const packages: ExpectedPackageDBFromPiece[] = []
+
+	const pieceInstances = PieceInstances.find({
+		rundownId: rundownId,
+		partInstanceId: partInstance._id,
+	}).fetch()
+
+	for (const pieceInstance of pieceInstances) {
+		if (pieceInstance.piece.expectedPackages) {
+			const bases = generateExpectedPackageBases(
+				studio,
+				pieceInstance.piece._id,
+				pieceInstance.piece.expectedPackages
+			)
+			for (const base of bases) {
+				packages.push({
+					...base,
+					rundownId,
+					pieceId: pieceInstance.piece._id,
+					fromPieceType: ExpectedPackageDBType.PIECE,
+				})
+			}
+		}
+	}
+	return packages
 }
 function generateExpectedPackagesForPiece(studio: Studio, rundownId: RundownId, pieces: (Piece | AdLibPiece)[]) {
 	const packages: ExpectedPackageDBFromPiece[] = []

@@ -18,6 +18,7 @@ import {
 	getRoutedMappings,
 	MappingExt,
 	MappingsExt,
+	MappingsExtWithPackage,
 	routeExpectedPackages,
 	Studio,
 	StudioId,
@@ -27,6 +28,7 @@ import {
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
 import {
 	ExpectedPackageDB,
+	ExpectedPackageId,
 	ExpectedPackages,
 	getPreviewPackageSettings,
 	getThumbnailPackageSettings,
@@ -46,6 +48,8 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import deepExtend from 'deep-extend'
 import { logger } from '../logging'
+import { generateExpectedPackagesForPartInstance } from '../api/expectedPackages'
+import { PartInstance } from '../../lib/collections/PartInstances'
 
 function checkAccess(cred: Credentials | ResolvedCredentials, selector) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -189,6 +193,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 								activationId: 1,
 								rehearsal: 1,
 								currentPartInstanceId: 1,
+								nextPartInstanceId: 1,
 							},
 						}
 					).observe({
@@ -213,8 +218,11 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 					studio: undefined,
 					expectedPackages: [],
 					routedExpectedPackages: [],
+					routedPlayoutExpectedPackages: [],
 					activePlaylist: undefined,
 					activeRundowns: [],
+					currentPartInstance: undefined,
+					nextPartInstance: undefined,
 				}
 			},
 			(context: {
@@ -232,12 +240,16 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 				studio: Studio | undefined
 				expectedPackages: ExpectedPackageDB[]
 				routedExpectedPackages: ResultingExpectedPackage[]
+				routedPlayoutExpectedPackages: ResultingExpectedPackage[]
 				activePlaylist: DBRundownPlaylist | undefined
 				activeRundowns: DBRundown[]
+				currentPartInstance: PartInstance | undefined
+				nextPartInstance: PartInstance | undefined
 			}) => {
 				// Prepare data for publication:
 
 				let invalidateRoutedExpectedPackages = false
+				let invalidateRoutedPlayoutExpectedPackages = false
 
 				if (context.invalidateStudio) {
 					context.invalidateStudio = false
@@ -254,10 +266,13 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 				if (context.invalidatePeripheralDevices) {
 					context.invalidatePeripheralDevices = false
 					invalidateRoutedExpectedPackages = true
+					invalidateRoutedPlayoutExpectedPackages = true
 				}
 				if (context.invalidateExpectedPackages) {
 					context.invalidateExpectedPackages = false
 					invalidateRoutedExpectedPackages = true
+					invalidateRoutedPlayoutExpectedPackages = true
+
 					context.expectedPackages = ExpectedPackages.find({
 						studioId: studioId,
 					}).fetch()
@@ -267,19 +282,25 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 						)
 					}
 				}
-				// if (!context.expectedPackages.length) return []
 
 				if (context.invalidateRundownPlaylist) {
 					context.invalidateRundownPlaylist = false
-					context.activePlaylist = RundownPlaylists.findOne({
+					const activePlaylist = RundownPlaylists.findOne({
 						studioId: studioId,
 						active: true,
 					})
+					context.activePlaylist = activePlaylist
 					context.activeRundowns = context.activePlaylist
 						? Rundowns.find({
 								playlistId: context.activePlaylist._id,
 						  }).fetch()
 						: []
+
+					const selectPartInstances = activePlaylist?.getSelectedPartInstances()
+					context.nextPartInstance = selectPartInstances?.nextPartInstance
+					context.currentPartInstance = selectPartInstances?.currentPartInstance
+
+					invalidateRoutedPlayoutExpectedPackages = true
 				}
 
 				const studio: Studio = context.studio
@@ -296,139 +317,46 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 						logger.info(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
 					}
 
-					// Filter, keep only the routed mappings for this device:
-					const routedExpectedPackages: ResultingExpectedPackage[] = []
+					context.routedExpectedPackages = generateExpectedPackages(
+						context.studio,
+						filterPlayoutDeviceIds,
+						routedMappingsWithPackages,
+						1
+					)
+				}
+				if (invalidateRoutedPlayoutExpectedPackages) {
+					// Use the expectedPackages of the Current and Next Parts:
+					const playoutExpectedPackages: ExpectedPackageDB[] = [
+						...(context.nextPartInstance
+							? generateExpectedPackagesForPartInstance(
+									context.studio,
+									context.nextPartInstance.rundownId,
+									context.nextPartInstance
+							  )
+							: []),
+						...(context.currentPartInstance
+							? generateExpectedPackagesForPartInstance(
+									context.studio,
+									context.currentPartInstance.rundownId,
+									context.currentPartInstance
+							  )
+							: []),
+					]
 
-					for (const layerName of Object.keys(routedMappingsWithPackages)) {
-						const mapping = routedMappingsWithPackages[layerName]
+					// Map the expectedPackages onto their specified layer:
+					const routedMappingsWithPackages = routeExpectedPackages(studio, playoutExpectedPackages)
 
-						if (!filterPlayoutDeviceIds || filterPlayoutDeviceIds.includes(mapping.deviceId)) {
-							for (const expectedPackage of mapping.expectedPackages) {
-								// Lookup Package sources:
-								const combinedSources: PackageContainerOnPackage[] = []
-
-								for (const packageSource of expectedPackage.sources) {
-									const lookedUpSource = context.studio?.packageContainers[packageSource.containerId]
-									if (lookedUpSource) {
-										// We're going to combine the accessor attributes set on the Package with the ones defined on the source
-										const combinedSource: PackageContainerOnPackage = {
-											...omit(clone(lookedUpSource.container), 'accessors'),
-											accessors: {},
-											containerId: packageSource.containerId,
-										}
-
-										const accessorIds = _.uniq(
-											Object.keys(lookedUpSource.container.accessors).concat(
-												Object.keys(packageSource.accessors)
-											)
-										)
-
-										for (const accessorId of accessorIds) {
-											const sourceAccessor = lookedUpSource.container.accessors[accessorId] as
-												| Accessor.Any
-												| undefined
-
-											const packageAccessor = packageSource.accessors[accessorId] as
-												| AccessorOnPackage.Any
-												| undefined
-
-											if (
-												packageAccessor &&
-												sourceAccessor &&
-												packageAccessor.type === sourceAccessor.type
-											) {
-												combinedSource.accessors[accessorId] = deepExtend(
-													{},
-													sourceAccessor,
-													packageAccessor
-												)
-											} else if (packageAccessor) {
-												combinedSource.accessors[accessorId] = clone<AccessorOnPackage.Any>(
-													packageAccessor
-												)
-											} else if (sourceAccessor) {
-												combinedSource.accessors[accessorId] = clone<Accessor.Any>(
-													sourceAccessor
-												) as AccessorOnPackage.Any
-											}
-										}
-										combinedSources.push(combinedSource)
-									} else {
-										logger.warn(
-											`Pub.expectedPackagesForDevice: Source package container "${packageSource.containerId}" not found`
-										)
-									}
-								}
-
-								// Lookup Package targets:
-
-								const mappingDeviceId = unprotectString(mapping.deviceId)
-
-								let packageContainerId: string | undefined
-								for (const [containerId, packageContainer] of Object.entries(
-									studio.packageContainers
-								)) {
-									if (packageContainer.deviceIds.includes(mappingDeviceId)) {
-										// TODO: how to handle if a device has multiple containers?
-										packageContainerId = containerId
-										break // just picking the first one found, for now
-									}
-								}
-								if (!packageContainerId) {
-									logger.warn(
-										`Pub.expectedPackagesForDevice: No package container found for "${mappingDeviceId}"`
-									)
-								}
-
-								const combinedTargets: PackageContainerOnPackage[] = []
-								if (packageContainerId) {
-									const lookedUpTarget = context.studio?.packageContainers[packageContainerId]
-									if (lookedUpTarget) {
-										// Todo: should the be any combination of properties here?
-										combinedTargets.push({
-											...(lookedUpTarget.container as PackageContainerOnPackage),
-											containerId: packageContainerId,
-										})
-									}
-								}
-
-								if (combinedSources.length) {
-									if (combinedTargets.length) {
-										expectedPackage.sideEffect = deepExtend(
-											{},
-											literal<ExpectedPackage.Base['sideEffect']>({
-												previewContainerId: studio.previewContainerIds[0], // just pick the first. Todo: something else?
-												thumbnailContainerId: studio.thumbnailContainerIds[0], // just pick the first. Todo: something else?
-												previewPackageSettings: getPreviewPackageSettings(
-													expectedPackage as ExpectedPackage.Any
-												),
-												thumbnailPackageSettings: getThumbnailPackageSettings(
-													expectedPackage as ExpectedPackage.Any
-												),
-											}),
-											expectedPackage.sideEffect
-										)
-
-										routedExpectedPackages.push({
-											expectedPackage: unprotectObject(expectedPackage),
-											sources: combinedSources,
-											targets: combinedTargets,
-											playoutDeviceId: mapping.deviceId,
-										})
-									} else {
-										logger.warn(
-											`Pub.expectedPackagesForDevice: No targets found for "${expectedPackage._id}"`
-										)
-									}
-								} else {
-									logger.warn(
-										`Pub.expectedPackagesForDevice: No sources found for "${expectedPackage._id}"`
-									)
-								}
-							}
-						}
+					if (!Object.keys(routedMappingsWithPackages).length) {
+						logger.info(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
 					}
-					context.routedExpectedPackages = routedExpectedPackages
+
+					// Filter, keep only the routed mappings for this device:
+					context.routedPlayoutExpectedPackages = generateExpectedPackages(
+						context.studio,
+						filterPlayoutDeviceIds,
+						routedMappingsWithPackages,
+						0
+					)
 				}
 
 				const packageContainers: { [containerId: string]: PackageContainer } = {}
@@ -442,6 +370,17 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 						type: 'expected_packages',
 						studioId: studioId,
 						expectedPackages: context.routedExpectedPackages,
+					},
+					{
+						_id: protectString(`${deviceId}_playoutExpectedPackages`),
+						type: 'expected_packages',
+						studioId: studioId,
+						expectedPackages: context.routedPlayoutExpectedPackages,
+					},
+					{
+						_id: protectString(`${deviceId}_packageContainers`),
+						type: 'package_containers',
+						studioId: studioId,
 						packageContainers: packageContainers,
 					},
 					{
@@ -479,8 +418,132 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 })
 
 interface ResultingExpectedPackage {
-	expectedPackage: ExpectedPackage.Base
+	expectedPackage: ExpectedPackage.Base & { rundownId?: string }
+	/** Lower should be done first */
+	priority: number
 	sources: PackageContainerOnPackage[]
 	targets: PackageContainerOnPackage[]
 	playoutDeviceId: PeripheralDeviceId
+}
+
+function generateExpectedPackages(
+	studio: Studio,
+	filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
+	routedMappingsWithPackages: MappingsExtWithPackage,
+	priority: number
+) {
+	const routedExpectedPackages: ResultingExpectedPackage[] = []
+
+	for (const layerName of Object.keys(routedMappingsWithPackages)) {
+		const mapping = routedMappingsWithPackages[layerName]
+
+		// Filter, keep only the routed mappings for this device:
+		if (!filterPlayoutDeviceIds || filterPlayoutDeviceIds.includes(mapping.deviceId)) {
+			for (const expectedPackage of mapping.expectedPackages) {
+				// Lookup Package sources:
+				const combinedSources: PackageContainerOnPackage[] = []
+
+				for (const packageSource of expectedPackage.sources) {
+					const lookedUpSource = studio.packageContainers[packageSource.containerId]
+					if (lookedUpSource) {
+						// We're going to combine the accessor attributes set on the Package with the ones defined on the source
+						const combinedSource: PackageContainerOnPackage = {
+							...omit(clone(lookedUpSource.container), 'accessors'),
+							accessors: {},
+							containerId: packageSource.containerId,
+						}
+
+						const accessorIds = _.uniq(
+							Object.keys(lookedUpSource.container.accessors).concat(Object.keys(packageSource.accessors))
+						)
+
+						for (const accessorId of accessorIds) {
+							const sourceAccessor = lookedUpSource.container.accessors[accessorId] as
+								| Accessor.Any
+								| undefined
+
+							const packageAccessor = packageSource.accessors[accessorId] as
+								| AccessorOnPackage.Any
+								| undefined
+
+							if (packageAccessor && sourceAccessor && packageAccessor.type === sourceAccessor.type) {
+								combinedSource.accessors[accessorId] = deepExtend({}, sourceAccessor, packageAccessor)
+							} else if (packageAccessor) {
+								combinedSource.accessors[accessorId] = clone<AccessorOnPackage.Any>(packageAccessor)
+							} else if (sourceAccessor) {
+								combinedSource.accessors[accessorId] = clone<Accessor.Any>(
+									sourceAccessor
+								) as AccessorOnPackage.Any
+							}
+						}
+						combinedSources.push(combinedSource)
+					} else {
+						logger.warn(
+							`Pub.expectedPackagesForDevice: Source package container "${packageSource.containerId}" not found`
+						)
+					}
+				}
+
+				// Lookup Package targets:
+
+				const mappingDeviceId = unprotectString(mapping.deviceId)
+
+				let packageContainerId: string | undefined
+				for (const [containerId, packageContainer] of Object.entries(studio.packageContainers)) {
+					if (packageContainer.deviceIds.includes(mappingDeviceId)) {
+						// TODO: how to handle if a device has multiple containers?
+						packageContainerId = containerId
+						break // just picking the first one found, for now
+					}
+				}
+				if (!packageContainerId) {
+					logger.warn(`Pub.expectedPackagesForDevice: No package container found for "${mappingDeviceId}"`)
+				}
+
+				const combinedTargets: PackageContainerOnPackage[] = []
+				if (packageContainerId) {
+					const lookedUpTarget = studio.packageContainers[packageContainerId]
+					if (lookedUpTarget) {
+						// Todo: should the be any combination of properties here?
+						combinedTargets.push({
+							...(lookedUpTarget.container as PackageContainerOnPackage),
+							containerId: packageContainerId,
+						})
+					}
+				}
+
+				if (combinedSources.length) {
+					if (combinedTargets.length) {
+						expectedPackage.sideEffect = deepExtend(
+							{},
+							literal<ExpectedPackage.Base['sideEffect']>({
+								previewContainerId: studio.previewContainerIds[0], // just pick the first. Todo: something else?
+								thumbnailContainerId: studio.thumbnailContainerIds[0], // just pick the first. Todo: something else?
+								previewPackageSettings: getPreviewPackageSettings(
+									expectedPackage as ExpectedPackage.Any
+								),
+								thumbnailPackageSettings: getThumbnailPackageSettings(
+									expectedPackage as ExpectedPackage.Any
+								),
+							}),
+							expectedPackage.sideEffect
+						)
+
+						routedExpectedPackages.push({
+							expectedPackage: unprotectObject(expectedPackage),
+							priority: priority,
+							sources: combinedSources,
+							targets: combinedTargets,
+							playoutDeviceId: mapping.deviceId,
+						})
+					} else {
+						logger.warn(`Pub.expectedPackagesForDevice: No targets found for "${expectedPackage._id}"`)
+					}
+				} else {
+					logger.warn(`Pub.expectedPackagesForDevice: No sources found for "${expectedPackage._id}"`)
+				}
+			}
+		}
+	}
+	return routedExpectedPackages
 }
