@@ -311,7 +311,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'setNextPart',
 			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT, // TODO-CACHE remove or reimplement these
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
@@ -832,7 +832,7 @@ export namespace ServerPlayoutAPI {
 			null, // TODO: should security be done?
 			'onPartPlaybackStarted',
 			rundownPlaylistId,
-			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT, // TODO-CACHE
+			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (playlist.studioId !== peripheralDevice.studioId)
@@ -1366,9 +1366,10 @@ export namespace ServerPlayoutAPI {
 }
 
 function setRundownStartedPlayback(cache: CacheForPlayout, rundown: Rundown, startedPlayback: Time) {
-	if (!rundown.startedPlayback) {
+	const playlist = cache.Playlist.doc
+	if (!playlist.rundownsStartedPlayback || !playlist.rundownsStartedPlayback[unprotectString(rundown._id)]) {
 		// Set startedPlayback on the rundown if this is the first item to be played
-		reportRundownHasStarted(cache, rundown, startedPlayback)
+		reportRundownHasStarted(cache, rundown._id, startedPlayback)
 	}
 }
 

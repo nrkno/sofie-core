@@ -12,8 +12,10 @@ import {
 	asyncCollectionUpsert,
 	getHash,
 	protectString,
+	unprotectObject,
+	unprotectString,
 } from '../../lib/lib'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
+import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import { logger } from '../../lib/logging'
 import {
 	IBlueprintExternalMessageQueueObj,
@@ -109,31 +111,24 @@ function handleAsRunEvent(event: AsRunLogEvent): void {
 }
 
 // Convenience functions:
-export function reportRundownHasStarted(cache: CacheForPlayout, rundown: Rundown, timestamp?: Time) {
+export function reportRundownHasStarted(cache: CacheForPlayout, rundownId: RundownId, timestamp: Time) {
 	const playlist = cache.Playlist.doc
 	// Called when the first part in rundown starts playing
 
-	if (!rundown) {
+	if (!rundownId) {
 		logger.error(`rundown argument missing in reportRundownHasStarted`)
 	} else {
-		cache.Rundowns.update(rundown._id, {
-			$set: {
-				startedPlayback: timestamp,
-			},
+		cache.Playlist.update((pl) => {
+			if (!pl.rundownsStartedPlayback) pl.rundownsStartedPlayback = {}
+			pl.rundownsStartedPlayback[unprotectString(rundownId)] = timestamp
+			if (!pl.startedPlayback) pl.startedPlayback = timestamp
+			return pl
 		})
-
-		if (!playlist.startedPlayback) {
-			cache.Playlist.update({
-				$set: {
-					startedPlayback: timestamp,
-				},
-			})
-		}
 
 		const event = pushAsRunLog(
 			{
-				studioId: rundown.studioId,
-				rundownId: rundown._id,
+				studioId: cache.Studio.doc._id,
+				rundownId: rundownId,
 				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 'rundown',
 			},

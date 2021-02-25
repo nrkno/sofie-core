@@ -64,9 +64,6 @@ export interface DBRundown
 	status?: string
 	// There should be something like a Owner user here somewhere?
 
-	/** Actual time of playback starting */
-	startedPlayback?: Time
-
 	/** Is the rundown in an unsynced (has been unpublished from ENPS) state? */
 	orphaned?: 'deleted' | 'from-snapshot'
 
@@ -112,7 +109,6 @@ export class Rundown implements DBRundown {
 	public status?: string
 	public airStatus?: string
 	public orphaned?: 'deleted'
-	public startedPlayback?: Time
 	public notifiedCurrentPlayingPartExternalId?: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
@@ -121,7 +117,6 @@ export class Rundown implements DBRundown {
 	public playlistIdIsSetInSofie?: boolean
 	public _rank: number
 	public baselineModifyHash?: string
-	_: any
 
 	constructor(document: DBRundown) {
 		for (let [key, value] of Object.entries(document)) {

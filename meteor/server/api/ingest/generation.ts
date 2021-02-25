@@ -451,15 +451,7 @@ export async function updateRundownFromIngestData(
 		playlistId: protectString(''),
 		_rank: 0,
 		...(cache.Rundown.doc
-			? _.pick(
-					cache.Rundown.doc,
-					'startedPlayback',
-					'playlistId',
-					'_rank',
-					'baselineModifyHash',
-					'airStatus',
-					'status'
-			  )
+			? _.pick(cache.Rundown.doc, 'playlistId', '_rank', 'baselineModifyHash', 'airStatus', 'status')
 			: {}),
 	})
 	const dbRundown = cache.Rundown.replace(dbRundownData)

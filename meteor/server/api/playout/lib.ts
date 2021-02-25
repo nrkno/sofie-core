@@ -70,19 +70,11 @@ export function resetRundownPlaylist(cache: CacheForPlayout): void {
 		},
 		$unset: {
 			startedPlayback: 1,
+			rundownsStartedPlayback: 1,
 			previousPersistentState: 1,
 			trackedAbSessions: 1,
 		},
 	})
-
-	cache.Rundowns.update(
-		{},
-		{
-			$unset: {
-				startedPlayback: 1,
-			},
-		}
-	)
 
 	if (cache.Playlist.doc.activationId) {
 		// generate a new activationId

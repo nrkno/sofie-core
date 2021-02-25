@@ -97,6 +97,8 @@ export interface DBRundownPlaylist {
 	startedPlayback?: Time
 	/** Timestamp for the last time an incorrect part was reported as started */
 	lastIncorrectPartPlaybackReported?: Time
+	/** Actual time of each rundown starting playback */
+	rundownsStartedPlayback?: Record<string, Time>
 
 	/** If the _rank of rundowns in this playlist has ben set manually by a user in Sofie */
 	rundownRanksAreSetInSofie?: boolean
@@ -118,6 +120,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public modified: Time
 	public startedPlayback?: Time
 	public lastIncorrectPartPlaybackReported?: Time
+	public rundownsStartedPlayback?: Record<string, Time>
 	public expectedStart?: Time
 	public expectedDuration?: number
 	public rehearsal?: boolean

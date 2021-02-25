@@ -39,7 +39,7 @@ export abstract class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> 
 	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice, PeripheralDevice>
 
 	public readonly Playlist: DbCacheWriteObject<RundownPlaylist, DBRundownPlaylist>
-	public readonly Rundowns: DbCacheWriteCollection<Rundown, DBRundown> // TODO-CACHE DbCacheReadCollection??
+	public readonly Rundowns: DbCacheReadCollection<Rundown, DBRundown>
 
 	protected constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
 		super()
@@ -51,7 +51,7 @@ export abstract class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> 
 		this.PeripheralDevices = new DbCacheReadCollection(PeripheralDevices)
 
 		this.Playlist = new DbCacheWriteObject(RundownPlaylists, false)
-		this.Rundowns = new DbCacheWriteCollection(Rundowns)
+		this.Rundowns = new DbCacheReadCollection(Rundowns)
 	}
 
 	protected async preInit(tmpPlaylist: ReadonlyDeep<RundownPlaylist>) {
