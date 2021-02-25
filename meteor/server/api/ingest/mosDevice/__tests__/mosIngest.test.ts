@@ -999,7 +999,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(ensureNextPartIsValid).toHaveBeenCalledTimes(1)
 
-		const { segments, parts } = waitForPromise(playlist.getSegmentsAndParts())
+		const { segments, parts } = playlist.getSegmentsAndPartsSync()
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].parts[1] = 'ro1;s1;p3'
 		partMap[0].parts[2] = 'ro1;s1;p2'
@@ -1035,7 +1035,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(ensureNextPartIsValid).toHaveBeenCalledTimes(1)
 
-		const { segments, parts } = waitForPromise(playlist.getSegmentsAndParts())
+		const { segments, parts } = playlist.getSegmentsAndPartsSync()
 		const partMap = mockRO.segmentIdMap()
 		const old = partMap.splice(0, 1)
 		partMap.splice(3, 0, ...old)
@@ -1238,13 +1238,13 @@ describe('Test recieved mos ingest payloads', () => {
 		waitForPromise(MeteorCall.userAction.take('', rundown.playlistId))
 
 		const partInstances0 = rundown.getAllPartInstances()
-		const { segments: segments0, parts: parts0 } = waitForPromise(rundown.getSegmentsAndParts())
+		const { segments: segments0, parts: parts0 } = rundown.getSegmentsAndPartsSync()
 
 		mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p1', 'ro1;s2;p1', 'SEGMENT2b;PART1')
 		mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p2', 'ro1;s2;p2', 'SEGMENT2b;PART2')
 
 		const partInstances = rundown.getAllPartInstances()
-		const { segments, parts } = waitForPromise(rundown.getSegmentsAndParts())
+		const { segments, parts } = rundown.getSegmentsAndPartsSync()
 
 		// Update expected data, for just the segment name and ids changing
 		applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
@@ -1269,7 +1269,7 @@ describe('Test recieved mos ingest payloads', () => {
 		waitForPromise(MeteorCall.userAction.take('', rundown.playlistId))
 
 		const partInstances0 = rundown.getAllPartInstances()
-		const { segments: segments0, parts: parts0 } = waitForPromise(rundown.getSegmentsAndParts())
+		const { segments: segments0, parts: parts0 } = rundown.getSegmentsAndPartsSync()
 
 		// rename the segment
 		for (const story of mosRO.Stories) {
@@ -1290,7 +1290,7 @@ describe('Test recieved mos ingest payloads', () => {
 		}
 
 		const partInstances = rundown.getAllPartInstances()
-		const { segments, parts } = waitForPromise(rundown.getSegmentsAndParts())
+		const { segments, parts } = rundown.getSegmentsAndPartsSync()
 
 		// Update expected data, for just the segment name and ids changing
 		applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)

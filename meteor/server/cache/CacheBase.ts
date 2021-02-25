@@ -1,12 +1,13 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { isDbCacheReadCollection, isDbCacheWritable } from './lib'
-import { waitTime, sumChanges, anythingChanged, ProtectedString } from '../../lib/lib'
+import { isDbCacheWritable } from './lib'
+import { waitTime, ProtectedString } from '../../lib/lib'
 import { logger } from '../logging'
 import { isInTestWrite } from '../security/lib/securityVerify'
 import { profiler } from '../api/profiler'
 import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection'
 import { DbCacheReadObject, DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
+import { anythingChanged, sumChanges } from '../lib/database'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
@@ -32,6 +33,7 @@ export abstract class ReadOnlyCacheBase {
 	protected _deferredFunctions: DeferredFunction<ReadOnlyCacheBase>[] = []
 	protected _deferredAfterSaveFunctions: (() => void)[] = []
 	private _activeTimeout: number | null = null
+	private _hasTimedOut = false
 
 	constructor() {
 		if (!Meteor.isProduction) {
@@ -39,6 +41,7 @@ export abstract class ReadOnlyCacheBase {
 			if (!isInTestWrite()) {
 				const futureError = new Meteor.Error(500, `saveAllToDatabase never called`)
 				this._activeTimeout = Meteor.setTimeout(() => {
+					this._hasTimedOut = true
 					logger.error(futureError)
 					logger.error(futureError.stack)
 				}, 5000)
@@ -49,6 +52,12 @@ export abstract class ReadOnlyCacheBase {
 	_abortActiveTimeout() {
 		if (this._activeTimeout) {
 			Meteor.clearTimeout(this._activeTimeout)
+		}
+
+		if (this._hasTimedOut) {
+			const err = new Meteor.Error(500, `saveAllToDatabase called after timeout`)
+			logger.warn(err)
+			logger.warn(err.stack)
 		}
 	}
 

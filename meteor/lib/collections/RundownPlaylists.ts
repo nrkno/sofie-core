@@ -8,7 +8,6 @@ import {
 	registerCollection,
 	normalizeArray,
 	getCurrentTime,
-	asyncCollectionFindFetch,
 	normalizeArrayFunc,
 	ProtectedString,
 	unprotectString,
@@ -19,7 +18,6 @@ import { Segments, Segment, DBSegment, SegmentId } from './Segments'
 import { Parts, Part, DBPart, PartId } from './Parts'
 import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
-import { TrackedNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
@@ -302,58 +300,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		).fetch()
 		return parts
 	}
-	/**
-	 * Return ordered lists of all Segments and Parts of the rundowns
-	 */
-	async getSegmentsAndParts(rundowns0?: DBRundown[]): Promise<{ segments: Segment[]; parts: Part[] }> {
-		let rundowns = rundowns0
-		if (!rundowns) {
-			rundowns = this.getRundowns(undefined, {
-				fields: {
-					_id: 1,
-					_rank: 1,
-					name: 1,
-				},
-			})
-		}
-		const rundownIds = rundowns.map((i) => i._id)
-
-		const pSegments = asyncCollectionFindFetch(
-			Segments,
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
-			},
-			{
-				sort: {
-					rundownId: 1,
-					_rank: 1,
-				},
-			}
-		)
-
-		const pParts = asyncCollectionFindFetch(
-			Parts,
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
-			},
-			{
-				sort: {
-					rundownId: 1,
-					_rank: 1,
-				},
-			}
-		)
-
-		const segments = RundownPlaylist._sortSegments(await pSegments, rundowns)
-		return {
-			segments: segments,
-			parts: RundownPlaylist._sortPartsInner(await pParts, segments),
-		}
-	}
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
 	getSegmentsAndPartsSync(
 		segmentsQuery?: Mongo.Query<DBSegment>,
@@ -421,7 +367,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const sortedSegments = RundownPlaylist._sortSegments(segments, rundowns)
 		return {
 			segments: sortedSegments,
-			parts: RundownPlaylist._sortPartsInner(parts, segments),
+			parts: RundownPlaylist._sortPartsInner(parts, sortedSegments),
 		}
 	}
 	getSelectedPartInstances(rundownIds0?: RundownId[]) {

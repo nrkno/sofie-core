@@ -15,9 +15,10 @@ import {
 	updateExpectedMediaItemForBucketAdLibPiece,
 } from './expectedMediaItems'
 import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
-import { asyncCollectionFindFetch, asyncCollectionRemove, waitForPromiseAll } from '../../../lib/lib'
+import { waitForPromiseAll } from '../../../lib/lib'
 import { bucketSyncFunction } from '../buckets'
 import { ShowStyleUserContext } from '../blueprints/context'
+import { asyncCollectionFindFetch, asyncCollectionRemove } from '../../lib/database'
 
 function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
 	return !!(adlib as IBlueprintActionManifest).actionId

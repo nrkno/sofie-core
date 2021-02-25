@@ -13,7 +13,7 @@ import {
 } from '../../../../lib/collections/Timeline'
 import { PartId } from '../../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../../lib/collections/Pieces'
-import { clone, asyncCollectionFindFetch } from '../../../../lib/lib'
+import { clone } from '../../../../lib/lib'
 import { profiler } from '../../profiler'
 import {
 	hasPieceInstanceDefinitelyEnded,
@@ -24,6 +24,7 @@ import { Mongo } from 'meteor/mongo'
 import { getOrderedPartsAfterPlayhead, PartInstanceAndPieceInstances } from './util'
 import { findLookaheadForLayer, LookaheadResult } from './findForLayer'
 import { CacheForPlayout, getRundownIDsFromCache } from '../cache'
+import { asyncCollectionFindFetch } from '../../../lib/database'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 

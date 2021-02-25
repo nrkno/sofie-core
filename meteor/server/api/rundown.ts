@@ -10,7 +10,6 @@ import {
 	unprotectString,
 	makePromise,
 	waitForPromiseObj,
-	asyncCollectionFindFetch,
 	normalizeArray,
 	normalizeArrayToMap,
 	clone,
@@ -52,6 +51,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithLock } from './playout/lockFunction'
 import { runIngestOperationWithLock } from './ingest/lockFunction'
 import { getRundown } from './ingest/lib'
+import { asyncCollectionFindFetch } from '../lib/database'
 
 export function selectShowStyleVariant(
 	context: StudioUserContext,

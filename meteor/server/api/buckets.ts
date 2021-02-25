@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import { Buckets, Bucket, BucketId } from '../../lib/collections/Buckets'
-import { asyncCollectionRemove, literal, protectString, waitForPromise, waitForPromiseAll } from '../../lib/lib'
+import { literal, protectString, waitForPromise, waitForPromiseAll } from '../../lib/lib'
 import { BucketSecurity } from '../security/buckets'
 import { BucketAdLibs, BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
@@ -21,6 +21,7 @@ import {
 	updateExpectedMediaItemForBucketAdLibAction,
 	updateExpectedMediaItemForBucketAdLibPiece,
 } from './ingest/expectedMediaItems'
+import { asyncCollectionRemove } from '../lib/database'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 

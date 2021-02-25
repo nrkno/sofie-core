@@ -9,14 +9,12 @@ import { DBRundown, Rundown, RundownId, Rundowns } from '../../lib/collections/R
 import {
 	getHash,
 	protectString,
-	asyncCollectionRemove,
 	makePromise,
 	clone,
 	getCurrentTime,
 	unprotectObjectArray,
 	getRank,
 	unprotectString,
-	asyncCollectionFindOne,
 	mongoFindOptions,
 } from '../../lib/lib'
 import * as _ from 'underscore'
@@ -54,6 +52,7 @@ import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { Random } from 'meteor/random'
+import { asyncCollectionRemove, asyncCollectionFindOne } from '../lib/database'
 
 export function removeEmptyPlaylists(studioId: StudioId) {
 	runStudioOperationWithCache('removeEmptyPlaylists', studioId, StudioLockFunctionPriority.MISC, async (cache) => {

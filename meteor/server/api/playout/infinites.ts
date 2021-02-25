@@ -1,7 +1,6 @@
 import * as _ from 'underscore'
-import { DBPart, Part } from '../../../lib/collections/Parts'
+import { DBPart } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { asyncCollectionFindFetch } from '../../../lib/lib'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -17,6 +16,7 @@ import { profiler } from '../profiler'
 import { Meteor } from 'meteor/meteor'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { ReadonlyDeep } from 'type-fest'
+import { asyncCollectionFindFetch } from '../../lib/database'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000

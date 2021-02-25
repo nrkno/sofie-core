@@ -3,7 +3,7 @@ import { testInFiber, beforeAllInFiber } from '../../../../__mocks__/helpers/jes
 import { Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segments, DBSegment } from '../../../../lib/collections/Segments'
 import { Parts, DBPart } from '../../../../lib/collections/Parts'
-import { literal, saveIntoDb, protectString, waitForPromise } from '../../../../lib/lib'
+import { literal, protectString, waitForPromise } from '../../../../lib/lib'
 import { ensureNextPartIsValid as ensureNextPartIsValidRaw } from '../updateNext'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
@@ -11,6 +11,7 @@ import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartI
 import { Studios } from '../../../../lib/collections/Studios'
 import { removeRundownsFromDb } from '../../rundownPlaylist'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../../playout/lockFunction'
+import { saveIntoDb } from '../../../lib/database'
 jest.mock('../../playout/playout')
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed

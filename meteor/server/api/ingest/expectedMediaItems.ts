@@ -12,16 +12,7 @@ import {
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import {
-	saveIntoDb,
-	getCurrentTime,
-	getHash,
-	protectString,
-	asyncCollectionRemove,
-	waitForPromise,
-	Subtract,
-	ProtectedString,
-} from '../../../lib/lib'
+import { getCurrentTime, getHash, protectString, waitForPromise, Subtract, ProtectedString } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { StudioId } from '../../../lib/collections/Studios'
@@ -34,6 +25,7 @@ import {
 import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { CacheForIngest } from './cache'
 import { saveIntoCache } from '../../cache/lib'
+import { asyncCollectionRemove, saveIntoDb } from '../../lib/database'
 
 export enum PieceType {
 	PIECE = 'piece',

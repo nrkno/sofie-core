@@ -27,8 +27,6 @@ import {
 	Time,
 	formatDateTime,
 	fixValidPath,
-	saveIntoDb,
-	sumChanges,
 	protectString,
 	getRandomId,
 	unprotectString,
@@ -81,6 +79,7 @@ import {
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
 import { AsRunLogEvent, AsRunLog } from '../../lib/collections/AsRunLog'
+import { saveIntoDb, sumChanges } from '../lib/database'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists

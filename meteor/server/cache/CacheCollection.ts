@@ -4,12 +4,9 @@ import {
 	isProtectedString,
 	mongoWhere,
 	mongoFindOptions,
-	asyncCollectionFindFetch,
 	getRandomId,
 	mongoModify,
-	Changes,
 	protectString,
-	asyncCollectionBulkWrite,
 	clone,
 } from '../../lib/lib'
 import { MongoQuery, TransformedCollection, FindOptions, MongoModifier } from '../../lib/typings/meteor'
@@ -19,6 +16,7 @@ import { Meteor } from 'meteor/meteor'
 import { BulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../logging'
+import { asyncCollectionFindFetch, Changes, asyncCollectionBulkWrite } from '../lib/database'
 
 type SelectorFunction<DBInterface> = (doc: DBInterface) => boolean
 type DbCacheCollectionDocument<Class> = {

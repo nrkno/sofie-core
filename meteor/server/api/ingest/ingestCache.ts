@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { Changes, getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
+import { getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import {
 	IngestDataCache,
@@ -18,6 +18,7 @@ import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { saveIntoCache } from '../../cache/lib'
 import { profiler } from '../profiler'
 import { getSegmentId, getPartId } from './lib'
+import { Changes } from '../../lib/database'
 
 interface LocalIngestBase {
 	modified: number

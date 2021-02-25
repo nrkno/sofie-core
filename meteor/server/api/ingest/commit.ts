@@ -21,16 +21,7 @@ import {
 	produceRundownPlaylistInfoFromRundown,
 	removeRundownsFromDb,
 } from '../rundownPlaylist'
-import {
-	asyncCollectionFindOne,
-	asyncCollectionRemove,
-	asyncCollectionUpsert,
-	clone,
-	makePromise,
-	max,
-	protectString,
-	unprotectString,
-} from '../../../lib/lib'
+import { clone, makePromise, max, protectString, unprotectString } from '../../../lib/lib'
 import _, { pluck } from 'underscore'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { reportRundownDataHasChanged } from '../asRunLog'
@@ -50,6 +41,7 @@ import {
 import { Meteor } from 'meteor/meteor'
 import { runStudioOperationWithLock, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { getTranslatedMessage, ServerTranslatedMesssages } from '../../../lib/rundownNotifications'
+import { asyncCollectionUpsert, asyncCollectionFindOne, asyncCollectionRemove } from '../../lib/database'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 

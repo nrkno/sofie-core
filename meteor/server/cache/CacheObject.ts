@@ -1,20 +1,11 @@
-import {
-	ProtectedString,
-	asyncCollectionFindOne,
-	mongoModify,
-	unprotectString,
-	Changes,
-	asyncCollectionUpdate,
-	getRandomId,
-	asyncCollectionUpsert,
-	clone,
-} from '../../lib/lib'
+import { ProtectedString, mongoModify, unprotectString, getRandomId, clone } from '../../lib/lib'
 import { TransformedCollection, MongoModifier } from '../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { profiler } from '../api/profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../logging'
+import { asyncCollectionFindOne, Changes, asyncCollectionUpdate, asyncCollectionUpsert } from '../lib/database'
 
 /**
  * Caches a single object, allowing reads from cache, but not writes

@@ -1,6 +1,7 @@
 import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '../../../lib/collections/Studios'
-import { asyncCollectionFindFetch, protectString } from '../../../lib/lib'
+import { protectString } from '../../../lib/lib'
+import { asyncCollectionFindFetch } from '../../lib/database'
 
 export function getActiveRundownPlaylistsInStudioFromDb(
 	studioId: StudioId,

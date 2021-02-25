@@ -4,7 +4,7 @@ import { renamePropertiesInCollection, setExpectedVersion } from './lib'
 import * as semver from 'semver'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/0_25_0'
-import { asyncCollectionInsertIgnore, waitForPromiseAll } from '../../lib/lib'
+import { waitForPromiseAll } from '../../lib/lib'
 import { AsRunLog } from '../../lib/collections/AsRunLog'
 import { Evaluations } from '../../lib/collections/Evaluations'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
@@ -27,6 +27,7 @@ import { Studios } from '../../lib/collections/Studios'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { TimelineObjGeneric as TimelineObjGeneric_1_11_0 } from './deprecatedDataTypes/1_12_0'
 import { TransformedCollection } from '../../lib/typings/meteor'
+import { asyncCollectionInsertIgnore } from '../lib/database'
 
 // 0.25.0 (Release 10) // This is a big refactoring, with a LOT of renamings
 export const addSteps = addMigrationSteps('0.25.0', [

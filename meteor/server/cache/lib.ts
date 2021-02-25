@@ -1,8 +1,9 @@
-import { DBObj, ChangedIds, saveIntoBase, SaveIntoDbHooks } from '../../lib/lib'
+import { DBObj } from '../../lib/lib'
 import * as _ from 'underscore'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection'
 import { DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
+import { SaveIntoDbHooks, ChangedIds, saveIntoBase } from '../lib/database'
 
 export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)

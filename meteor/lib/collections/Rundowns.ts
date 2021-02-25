@@ -1,13 +1,5 @@
 import * as _ from 'underscore'
-import {
-	Time,
-	applyClassToDocument,
-	getCurrentTime,
-	registerCollection,
-	asyncCollectionFindFetch,
-	ProtectedString,
-	ProtectedStringProperties,
-} from '../lib'
+import { Time, applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
@@ -188,30 +180,25 @@ export class Rundown implements DBRundown {
 		}
 		return parts
 	}
-	/**
-	 * Return ordered lists of all Segments and Parts in the rundown
-	 */
-	async getSegmentsAndParts(): Promise<{ segments: Segment[]; parts: Part[] }> {
-		const pSegments = asyncCollectionFindFetch(
-			Segments,
+	/** Synchronous version of getSegmentsAndParts, to be used client-side */
+	getSegmentsAndPartsSync(): { segments: Segment[]; parts: Part[] } {
+		const segments = Segments.find(
 			{
 				rundownId: this._id,
 			},
 			{ sort: { _rank: 1 } }
-		)
+		).fetch()
 
-		const pParts = asyncCollectionFindFetch(
-			Parts,
+		const parts = Parts.find(
 			{
 				rundownId: this._id,
 			},
 			{ sort: { _rank: 1 } }
-		)
+		).fetch()
 
-		const segments = await pSegments
 		return {
 			segments: segments,
-			parts: RundownPlaylist._sortPartsInner(await pParts, segments),
+			parts: RundownPlaylist._sortPartsInner(parts, segments),
 		}
 	}
 	getAllPartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<DBPartInstance>) {
