@@ -20,9 +20,6 @@ export function diffAndUpdateSegmentIds(
 ): CommitIngestData['renamedSegments'] {
 	const span = profiler.startSpan('mosDevice.ingest.diffAndApplyChanges')
 
-	// TODO this is a duplicate of a loop found in diffAndApplyChanges but modified to not run against a cache.
-	// This should be improved once the caches change, and we have access to one in time for this
-
 	const oldSegments = cache.Segments.findFetch()
 	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
 	const newSegmentEntries = compileSegmentEntries(newIngestRundown.segments)
@@ -56,7 +53,7 @@ export async function diffAndApplyChanges(
 	const newSegmentEntries = compileSegmentEntries(newIngestRundown.segments)
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
 
-	// TODO - do we need to do these 'clever' updates anymore? As we don't store any playout properties on the Parts, destroying and recreating won't have negative impacts?
+	// TODO-CACHE - do we need to do these 'clever' updates anymore? As we don't store any playout properties on the Parts, destroying and recreating won't have negative impacts?
 	// The one exception is PartInstances when the segmentId changes, but that is handled by `updatePartInstancesBasicProperties()` as a general data integrity enforcement step
 
 	// Update segment ranks:
@@ -74,7 +71,6 @@ export async function diffAndApplyChanges(
 	// Create/Update segments
 	const segmentChanges = await calculateSegmentsFromIngestData(
 		cache,
-		rundown,
 		_.sortBy([...Object.values(segmentDiff.added), ...Object.values(segmentDiff.changed)], (se) => se.rank)
 	)
 
@@ -119,8 +115,6 @@ function applyExternalIdDiff(
 
 		// Some data will be orphaned temporarily, but will be picked up/cleaned up before the cache gets saved
 
-		// TODO ORPHAN - can this be done in a more generic way?
-
 		const oldSegment = cache.Segments.findOne(oldSegmentId)
 		renamedSegments.set(oldSegmentId, newSegmentId)
 		if (oldSegment) {
@@ -131,6 +125,8 @@ function applyExternalIdDiff(
 			})
 		}
 
+		// TODO-CACHE avoid the multiple iterations. build a map of the renames and apply them each time
+
 		// Move over those parts to the new segmentId.
 		cache.Parts.update((p) => p.segmentId === oldSegmentId, {
 			$set: {
@@ -138,7 +134,7 @@ function applyExternalIdDiff(
 			},
 		})
 
-		cache.Pieces.update((p) => p.startRundownId === cache.RundownId && p.startSegmentId === oldSegmentId, {
+		cache.Pieces.update((p) => p.startSegmentId === oldSegmentId, {
 			$set: {
 				startSegmentId: newSegmentId,
 			},

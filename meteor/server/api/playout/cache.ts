@@ -23,6 +23,7 @@ import { removeRundownPlaylistFromDb } from '../rundownPlaylist'
 import { CacheForStudioBase } from '../studio/cache'
 import { getRundownsSegmentsAndPartsFromCache } from './lib'
 import { CacheForIngest } from '../ingest/cache'
+import { Meteor } from 'meteor/meteor'
 
 /**
  * This is a cache used for playout operations.
@@ -38,7 +39,7 @@ export abstract class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> 
 	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice, PeripheralDevice>
 
 	public readonly Playlist: DbCacheWriteObject<RundownPlaylist, DBRundownPlaylist>
-	public readonly Rundowns: DbCacheWriteCollection<Rundown, DBRundown> // TODO DbCacheReadCollection??
+	public readonly Rundowns: DbCacheWriteCollection<Rundown, DBRundown> // TODO-CACHE DbCacheReadCollection??
 
 	protected constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
 		super()
@@ -105,19 +106,6 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		return res
 	}
 
-	// static async createForIngest(studioId: StudioId, playlistId: RundownPlaylistId): Promise<[CacheForPlayout]> {
-	// 	// TODO - this is quite a hack...
-	// 	const res: Mutable<CacheForPlayout> = new CacheForPlayout(studioId, playlistId)
-
-	// 	res.Playlist = new DbCacheWriteOptionalObject(RundownPlaylists)
-
-	// 	//
-
-	// 	return [
-	// 		res
-	// 	]
-	// }
-
 	static async from(
 		newPlaylist: ReadonlyDeep<RundownPlaylist>,
 		newRundowns: ReadonlyDeep<Array<Rundown>>,
@@ -157,8 +145,8 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 		// If there is an ingestCache, then avoid loading some bits from the db for that rundown
 		const loadRundownIds = ingestCache ? rundownIds.filter((id) => id !== ingestCache.RundownId) : rundownIds
-		ps.push(this.Segments.prepareInit({ rundownId: { $in: loadRundownIds } }, true)) // TODO - omit if we cant or are unlikely to change the current part
-		ps.push(this.Parts.prepareInit({ rundownId: { $in: loadRundownIds } }, true)) // TODO - omit if we cant or are unlikely to change the current part
+		ps.push(this.Segments.prepareInit({ rundownId: { $in: loadRundownIds } }, true))
+		ps.push(this.Parts.prepareInit({ rundownId: { $in: loadRundownIds } }, true))
 
 		ps.push(
 			this.PartInstances.prepareInit(
@@ -197,8 +185,12 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	}
 
 	removePlaylist() {
-		// TODO - check if active
+		if (this.Playlist.doc.activationId) {
+			throw new Meteor.Error(500, 'Cannot remove the active RundownPlaylist')
+		}
 		this.toBeRemoved = true
+
+		super.markCollectionsForRemoval()
 	}
 
 	discardChanges() {

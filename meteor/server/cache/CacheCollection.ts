@@ -18,6 +18,7 @@ import { profiler } from '../api/profiler'
 import { Meteor } from 'meteor/meteor'
 import { BulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
+import { logger } from '../logging'
 
 type SelectorFunction<DBInterface> = (doc: DBInterface) => boolean
 type DbCacheCollectionDocument<Class> = {
@@ -36,6 +37,9 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	private _initialized: boolean = false
 	private _initializer?: MongoQuery<DBInterface> | (() => Promise<void>) = undefined
 	private _initializing: Promise<any> | undefined
+
+	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
+	protected isToBeRemoved = false
 
 	constructor(protected _collection: TransformedCollection<Class, DBInterface>) {
 		//
@@ -167,13 +171,33 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 			return transform(doc)
 		} else return doc as Class
 	}
+
+	/** Called by the Cache when the Cache is marked as to be removed. The collection is emptied and marked to reject any further updates */
+	markForRemoval() {
+		this.isToBeRemoved = true
+		this.documents = new Map()
+		this.originalDocuments = []
+	}
 }
 /** Caches data, allowing writes that will later be committed to mongo */
 export class DbCacheWriteCollection<
 	Class extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> }
 > extends DbCacheReadCollection<Class, DBInterface> {
+	protected assertNotToBeRemoved(methodName: string): void {
+		if (this.isToBeRemoved) {
+			const msg = `DbCacheWriteCollection: got call to "${methodName} when cache has been flagged for removal"`
+			if (Meteor.isProduction) {
+				logger.warn(msg)
+			} else {
+				throw new Meteor.Error(500, msg)
+			}
+		}
+	}
+
 	insert(doc: DBInterface): DBInterface['_id'] {
+		this.assertNotToBeRemoved('insert')
+
 		const span = profiler.startSpan(`DBCache.insert.${this.name}`)
 		waitForPromise(this._initialize())
 
@@ -193,6 +217,8 @@ export class DbCacheWriteCollection<
 	remove(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>
 	): Array<DBInterface['_id']> {
+		this.assertNotToBeRemoved('remove')
+
 		const span = profiler.startSpan(`DBCache.remove.${this.name}`)
 		waitForPromise(this._initialize())
 
@@ -218,6 +244,8 @@ export class DbCacheWriteCollection<
 		modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface> = {},
 		forceUpdate?: boolean
 	): number {
+		this.assertNotToBeRemoved('update')
+
 		const span = profiler.startSpan(`DBCache.update.${this.name}`)
 		waitForPromise(this._initialize())
 
@@ -265,6 +293,8 @@ export class DbCacheWriteCollection<
 
 	/** Returns true if a doc was replace, false if inserted */
 	replace(doc: DBInterface | ReadonlyDeep<DBInterface>): boolean {
+		this.assertNotToBeRemoved('repolace')
+
 		const span = profiler.startSpan(`DBCache.replace.${this.name}`)
 		waitForPromise(this._initialize())
 
@@ -294,6 +324,8 @@ export class DbCacheWriteCollection<
 		numberAffected?: number
 		insertedId?: DBInterface['_id']
 	} {
+		this.assertNotToBeRemoved('upsert')
+
 		const span = profiler.startSpan(`DBCache.upsert.${this.name}`)
 		waitForPromise(this._initialize())
 
@@ -330,6 +362,11 @@ export class DbCacheWriteCollection<
 			added: 0,
 			updated: 0,
 			removed: 0,
+		}
+
+		if (this.isToBeRemoved) {
+			// Nothing to save
+			return changes
 		}
 
 		const updates: BulkWriteOperation<DBInterface>[] = []

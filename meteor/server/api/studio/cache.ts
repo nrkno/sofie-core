@@ -47,9 +47,9 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 		await res.Studio._initialize(studioId)
 
 		await Promise.allSettled([
-			res.PeripheralDevices.prepareInit({ studioId }, true), // TODO - immediate?
-			res.RundownPlaylists.prepareInit({ studioId }, true), // TODO - immediate?
-			res.Timeline.prepareInit({ _id: studioId }, true), // TODO - immediate?
+			res.PeripheralDevices.prepareInit({ studioId }, true),
+			res.RundownPlaylists.prepareInit({ studioId }, true),
+			res.Timeline.prepareInit({ _id: studioId }, true),
 		])
 
 		return res

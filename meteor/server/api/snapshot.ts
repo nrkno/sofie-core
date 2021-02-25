@@ -569,7 +569,7 @@ export function restoreFromRundownPlaylistSnapshot(
 		const studios = Studios.find().fetch()
 		const snapshotStudioExists = studios.find((studio) => studio._id === snapshot.playlist.studioId)
 		if (studios.length >= 1 && !snapshotStudioExists) {
-			// TODO Choose better than just the fist
+			// TODO Choose better than just the first
 			snapshot.playlist.studioId = studios[0]._id
 		}
 	} else {
@@ -599,7 +599,7 @@ export function restoreFromRundownPlaylistSnapshot(
 		)
 		if (!showStyleId) {
 			if (showStyleVariants.length >= 1 && !snapshotShowStyleVariantExists) {
-				// TODO Choose better than just the fist
+				// TODO Choose better than just the first
 				rd.showStyleBaseId = showStyleVariants[0].showStyleBaseId
 				rd.showStyleVariantId = showStyleVariants[0]._id
 			}

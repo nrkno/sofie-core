@@ -126,6 +126,14 @@ export abstract class ReadOnlyCacheBase {
 		this._deferredFunctions.length = 0
 	}
 
+	/** Inform all the collections of the intention for the Cache to be removed. The collections are emptied and marked to reject any further updates */
+	protected markCollectionsForRemoval(): void {
+		const { allDBs } = this.getAllCollections()
+		for (const coll of allDBs) {
+			coll.markForRemoval()
+		}
+	}
+
 	/**
 	 * Assert that no changes should have been made to the cache, will throw an Error otherwise. This can be used in
 	 * place of `saveAllToDatabase()`, when the code controlling the cache expects no changes to have been made and any

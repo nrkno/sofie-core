@@ -99,8 +99,6 @@ export async function CommitIngestOperation(
 			async (oldPlaylistLock) => {
 				// Aquire the playout lock so we can safely modify the playlist contents
 
-				// TODO - use the CacheForPlayoutPreInit here instead??
-
 				const playlist = RundownPlaylists.findOne(beforePlaylistId)
 				if (playlist && !allowedToMoveRundownOutOfPlaylist(playlist, rundown)) {
 					// Don't allow removing currently playing rundown playlists:
@@ -113,7 +111,6 @@ export async function CommitIngestOperation(
 					ingestCache.Rundown.update({
 						$set: {
 							playlistId: playlist._id,
-							playlistExternalId: playlist.externalId, // TODO - is this correct?
 						},
 					})
 
@@ -133,7 +130,7 @@ export async function CommitIngestOperation(
 									{
 										type: NoteType.WARNING,
 										message: {
-											// TODO - translate
+											// TODO-CACHE - translate
 											key:
 												'The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.',
 										},
@@ -149,12 +146,10 @@ export async function CommitIngestOperation(
 					// The rundown is safe to simply move or remove
 					trappedInPlaylistId = undefined
 
-					// Quickly move the rundown out of the playlist, so we an free the lock sooner
-					// TODO - if we instead took the studio lock a bit earler on, we could hold that and know we had exclusive ownership
+					// Quickly move the rundown out of the playlist, so we an free the old playlist lock sooner
 					Rundowns.update(ingestCache.RundownId, {
 						$set: {
 							playlistId: protectString('__TMP__'),
-							playlistExternalId: '__TMP__',
 						},
 					})
 

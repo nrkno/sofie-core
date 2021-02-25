@@ -241,8 +241,6 @@ export namespace ServerPeripheralDeviceAPI {
 						}
 					)
 				} else {
-					// TODO - technically this could still be a race condition, but the chances of it colliding with another cache write
-					// are slim and need larger changes to avoid. Also, using a `start: 'now'` in a studio baseline would be weird
 					timelineTriggerTimeInner(studioCache, results, undefined, undefined)
 				}
 			})
@@ -278,7 +276,7 @@ export namespace ServerPeripheralDeviceAPI {
 				})
 
 				// TODO - we should do the same for the partInstance.
-				// Or we should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
+				// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
 
 				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
 				if (objPieceId && activePlaylist && pieceInstanceCache) {

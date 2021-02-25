@@ -220,7 +220,7 @@ interface IConfigManifestSettingsProps<
 
 	collection: TCol
 	object: DBInterface
-	configPath: string // KeysByType<DBInterface, Array<IConfigItem>> TODO
+	configPath: string
 
 	layerMappings?: { [key: string]: MappingsExt }
 	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>

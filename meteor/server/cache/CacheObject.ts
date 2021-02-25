@@ -14,6 +14,7 @@ import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { profiler } from '../api/profiler'
 import { ReadonlyDeep } from 'type-fest'
+import { logger } from '../logging'
 
 /**
  * Caches a single object, allowing reads from cache, but not writes
@@ -27,6 +28,9 @@ export class DbCacheReadObject<
 	protected _document: Class
 	protected _rawDocument: Class
 	private _initialized = false
+
+	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
+	protected isToBeRemoved = false
 
 	constructor(
 		protected readonly _collection: TransformedCollection<Class, DBInterface>,
@@ -69,6 +73,11 @@ export class DbCacheReadObject<
 	get doc(): DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class> {
 		return this._document as any
 	}
+
+	/** Called by the Cache when the Cache is marked as to be removed. The collection is emptied and marked to reject any further updates */
+	markForRemoval() {
+		this.isToBeRemoved = true
+	}
 }
 
 /**
@@ -86,7 +95,20 @@ export class DbCacheWriteObject<
 		super(collection, optional)
 	}
 
+	protected assertNotToBeRemoved(methodName: string): void {
+		if (this.isToBeRemoved) {
+			const msg = `DbCacheWriteObject: got call to "${methodName} when cache has been flagged for removal"`
+			if (Meteor.isProduction) {
+				logger.warn(msg)
+			} else {
+				throw new Meteor.Error(500, msg)
+			}
+		}
+	}
+
 	update(modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface>): boolean {
+		this.assertNotToBeRemoved('update')
+
 		const localDoc: ReadonlyDeep<Class> | undefined = this.doc
 		if (!localDoc) throw new Meteor.Error(404, `Error: The document does not yet exist`)
 
@@ -116,7 +138,7 @@ export class DbCacheWriteObject<
 	}
 
 	async updateDatabaseWithData(): Promise<Changes> {
-		if (this._updated) {
+		if (this._updated && !this.isToBeRemoved) {
 			const span = profiler.startSpan(`DbCacheWriteObject.updateDatabaseWithData.${this.name}`)
 
 			const pUpdate = await asyncCollectionUpdate(this._collection, this._document._id, this._document)
@@ -174,6 +196,8 @@ export class DbCacheWriteOptionalObject<
 	}
 
 	replace(doc: DBInterface): ReadonlyDeep<Class> {
+		this.assertNotToBeRemoved('replace')
+
 		this._inserted = true
 
 		if (!doc._id) doc._id = getRandomId()
@@ -184,7 +208,7 @@ export class DbCacheWriteOptionalObject<
 	}
 
 	async updateDatabaseWithData(): Promise<Changes> {
-		if (this._inserted) {
+		if (this._inserted && !this.isToBeRemoved) {
 			const span = profiler.startSpan(`DbCacheWriteOptionalObject.updateDatabaseWithData.${this.name}`)
 
 			await asyncCollectionUpsert(this._collection, this._document._id, this._document)

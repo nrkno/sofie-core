@@ -49,6 +49,7 @@ import { updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { Random } from 'meteor/random'
 
+// TODO-CACHE this needs to be called from somewhere
 export function removeEmptyPlaylists(studioId: StudioId) {
 	runStudioOperationWithCache('removeEmptyPlaylists', studioId, async (cache) => {
 		const playlists = cache.RundownPlaylists.findFetch()
@@ -62,10 +63,8 @@ export function removeEmptyPlaylists(studioId: StudioId) {
 						'removeEmptyPlaylists',
 						cache,
 						playlist,
-						RundownSyncFunctionPriority.USER_INGEST,
+						RundownSyncFunctionPriority.INGEST,
 						() => {
-							// TODO - is this correct priority?
-
 							const playlists = Rundowns.find({ playlistId: playlist._id }).count()
 							if (playlists === 0) {
 								waitForPromise(removeRundownPlaylistFromDb(playlist))
@@ -77,6 +76,7 @@ export function removeEmptyPlaylists(studioId: StudioId) {
 		)
 	})
 }
+
 /**
  * Convert the playlistExternalId into a playlistId.
  * When we've received an externalId for a playlist, that can directly be used to reference a playlistId

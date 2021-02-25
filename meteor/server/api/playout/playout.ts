@@ -289,7 +289,7 @@ export namespace ServerPlayoutAPI {
 			'takeNextPartInner',
 			rundownPlaylistId,
 			// RundownSyncFunctionPriority.USER_PLAYOUT,
-			null, // TODO?
+			null,
 			async (cache) => {
 				return takeNextPartInnerSync(cache, now)
 			}
@@ -822,10 +822,10 @@ export namespace ServerPlayoutAPI {
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
 		return runPlayoutOperationWithCache(
-			null, // TODO?
+			null, // TODO: should security be doen?
 			'onPartPlaybackStarted',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
+			// RundownSyncFunctionPriority.CALLBACK_PLAYOUT, // TODO-CACHE
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (playlist.studioId !== peripheralDevice.studioId)
@@ -1374,7 +1374,6 @@ export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylist
 				null,
 				(cache) => {
 					const playlist = cache.Playlist.doc
-					//TODO-CACHE - pre init check?
 
 					if (playlist.activationId && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
 						const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)

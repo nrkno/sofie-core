@@ -102,11 +102,8 @@ export function runIngestOperationWithCache(
 
 			const commitData = await calcFcn(ingestCache, newIngestRundown, oldIngestRundown)
 			if (commitData) {
-				const commitData0 = commitData
-				// TODO - is this valid? can we not trust the ingest data and either update or not? Having both calcFcn and updateCacheFcn be able to reject is excessive
-
 				// The change is accepted. Perform some playout calculations and save it all
-				await CommitIngestOperation(ingestCache, beforeRundown, beforePartMap, commitData0)
+				await CommitIngestOperation(ingestCache, beforeRundown, beforePartMap, commitData)
 			} else {
 				// Should be no changes
 				ingestCache.assertNoChanges()

@@ -200,8 +200,6 @@ export function handleMosRundownMetadata(
 }
 
 export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MOS.IMOSROFullStory) {
-	const span = profiler.startSpan('mosDevice.ingest.handleMosFullStory')
-
 	fixIllegalObject(story)
 	// @ts-ignore
 	// logger.debug(story)

@@ -86,8 +86,6 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 			res.Rundown._initialize(getRundownId(studioId, rundownExternalId)),
 		])
 
-		// TODO - we need to ensure to not wipe playout changes to Rundown when saving
-
 		const rundownId = res.Rundown.doc?._id ?? protectString('')
 		await Promise.all([
 			res.Segments.prepareInit({ rundownId: rundownId }, true),
@@ -119,7 +117,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	removeRundown() {
 		this.toBeRemoved = true
 
-		// TODO - iterate over collections and wipe them?
+		super.markCollectionsForRemoval()
 	}
 
 	discardChanges() {
@@ -134,7 +132,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 			const span = profiler.startSpan('CacheForIngest.saveAllToDatabase')
 			this._abortActiveTimeout()
 
-			// TODO - run any of the defers?
+			// TODO-CACHE - run any of the defers?
 
 			if (this.Rundown.doc) {
 				await removeRundownsFromDb([this.Rundown.doc._id])

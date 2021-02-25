@@ -62,10 +62,11 @@ export interface UpdateSegmentsResult {
  */
 export async function calculateSegmentsFromIngestData(
 	cache: CacheForIngest,
-	rundown: ReadonlyDeep<Rundown>, // TODO?
 	ingestSegments: LocalIngestSegment[]
 ): Promise<UpdateSegmentsResult> {
 	const span = profiler.startSpan('ingest.rundownInput.calculateSegmentsFromIngestData')
+
+	const rundown = getRundown(cache)
 
 	const res: Omit<UpdateSegmentsResult, 'showStyle' | 'blueprint'> = {
 		segments: [],
@@ -341,7 +342,7 @@ export async function updateSegmentFromIngestData(
 	if (!isNewSegment && !segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found`)
 	if (!canSegmentBeUpdated(rundown, segment, isNewSegment)) return null
 
-	const segmentChanges = await calculateSegmentsFromIngestData(cache, rundown, [ingestSegment])
+	const segmentChanges = await calculateSegmentsFromIngestData(cache, [ingestSegment])
 	await saveSegmentChangesToCache(cache, segmentChanges, false)
 
 	span?.end()
@@ -361,7 +362,7 @@ export async function updateRundownFromIngestData(
 	cache: CacheForIngest,
 	ingestRundown: LocalIngestRundown,
 	peripheralDevice: PeripheralDevice | undefined
-): Promise<CommitIngestData | null> {
+): Promise<CommitIngestData> {
 	const span = profiler.startSpan('ingest.rundownInput.updateRundownFromIngestData')
 
 	// canBeUpdated is to be run by the callers
@@ -377,7 +378,7 @@ export async function updateRundownFromIngestData(
 		cache.Studio.doc
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
-	// TODO - better caching here!
+	// TODO-CACHE - better caching here!
 	const showStyle = selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
@@ -444,7 +445,6 @@ export async function updateRundownFromIngestData(
 		created: cache.Rundown.doc?.created ?? getCurrentTime(),
 		modified: getCurrentTime(),
 
-		// TODO - these should be preserved during a regenerateRundown
 		peripheralDeviceId: peripheralDevice?._id,
 		externalNRCSName: getExternalNRCSName(peripheralDevice),
 
@@ -521,7 +521,7 @@ export async function updateRundownFromIngestData(
 
 	// TODO - store notes from rundownNotesContext
 
-	const segmentChanges = await calculateSegmentsFromIngestData(cache, dbRundown, ingestRundown.segments)
+	const segmentChanges = await calculateSegmentsFromIngestData(cache, ingestRundown.segments)
 
 	/** Don't remove segments for now, orphan them instead. The 'commit' phase will clean them up if possible */
 	const removedSegments = cache.Segments.findFetch({ _id: { $nin: segmentChanges.segments.map((s) => s._id) } })
@@ -532,7 +532,7 @@ export async function updateRundownFromIngestData(
 		})
 	}
 
-	// TODO - rename this setting
+	// TODO-CACHE - rename this setting
 	if (Settings.allowUnsyncedSegments && removedSegments.length > 0) {
 		// Preserve any old content, unless the part is referenced in another segment
 		const retainSegments = new Set(removedSegments.map((s) => s._id))
