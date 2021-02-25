@@ -118,7 +118,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	}
 
 	findLastPieceOnLayer(
-		sourceLayerId: string,
+		sourceLayerId0: string | string[],
 		options?: {
 			excludeCurrentPart?: boolean
 			originalOnly?: boolean
@@ -137,6 +137,8 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInstanceId) {
 			query['partInstanceId'] = { $ne: this._cache.Playlist.doc.currentPartInstanceId }
 		}
+
+		const sourceLayerId = Array.isArray(sourceLayerId0) ? sourceLayerId0 : [sourceLayerId0]
 
 		const lastPieceInstance = ServerPlayoutAdLibAPI.innerFindLastPieceOnLayer(
 			this._cache,

@@ -123,7 +123,7 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 	getResolvedPieceInstances(part: 'current' | 'next'): IBlueprintResolvedPieceInstance[]
 	/** Get the last active piece on given layer */
 	findLastPieceOnLayer(
-		sourceLayerId: string,
+		sourceLayerId: string | string[],
 		options?: {
 			excludeCurrentPart?: boolean
 			originalOnly?: boolean

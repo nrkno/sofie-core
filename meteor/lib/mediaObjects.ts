@@ -132,7 +132,7 @@ export function checkPieceContentStatus(
 				// If the fileName is not set...
 				if (!fileName) {
 					newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-					messages.push(t("Clip can't be played because the filename is missing"))
+					messages.push(t('{{sourceLayer}} is missing a file path', { sourceLayer: sourceLayer.name }))
 				} else {
 					const mediaObject = MediaObjects.findOne({
 						mediaId: fileName,
@@ -141,8 +141,8 @@ export function checkPieceContentStatus(
 					if (!mediaObject) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 						messages.push(
-							t("Clip can't be played because it isn't present on the playout system", {
-								fileName: displayName,
+							t('{{sourceLayer}} is not yet ready on the playout system', {
+								sourceLayer: sourceLayer.name,
 							})
 						)
 						// All VT content should have at least two streams
@@ -154,7 +154,11 @@ export function checkPieceContentStatus(
 							if (mediaObject.mediainfo.streams) {
 								if (mediaObject.mediainfo.streams.length < 2) {
 									newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-									messages.push(t("Clip doesn't have audio & video", { fileName: displayName }))
+									messages.push(
+										t("{{sourceLayer}} doesn't have both audio & video", {
+											sourceLayer: sourceLayer.name,
+										})
+									)
 								}
 								const formats = getAcceptedFormats(settings)
 								const audioConfig = settings ? settings.supportedAudioStreams : ''
@@ -180,7 +184,8 @@ export function checkPieceContentStatus(
 										const format = buildFormatString(mediaObject.mediainfo, stream)
 										if (!acceptFormat(format, formats)) {
 											messages.push(
-												t('Clip format ({{format}}) is not in one of the accepted formats', {
+												t('{{sourceLayer}} has the wrong format: {{format}}', {
+													sourceLayer: sourceLayer.name,
 													format,
 												})
 											)
@@ -201,7 +206,12 @@ export function checkPieceContentStatus(
 									(!expectedAudioStreams.has(audioStreams.toString()) ||
 										(isStereo && !expectedAudioStreams.has('stereo')))
 								) {
-									messages.push(t('Clip has {{audioStreams}} audio streams', { audioStreams }))
+									messages.push(
+										t('{{sourceLayer}} has {{audioStreams}} audio streams', {
+											sourceLayer: sourceLayer.name,
+											audioStreams,
+										})
+									)
 								}
 								if (timebase) {
 									// check for black/freeze frames
@@ -211,7 +221,7 @@ export function checkPieceContentStatus(
 										t: i18next.TFunction
 									) => {
 										if (arr.length === 1) {
-											const frames = Math.round((arr[0].duration * 1000) / timebase)
+											const frames = Math.ceil((arr[0].duration * 1000) / timebase)
 											if (arr[0].start === 0) {
 												messages.push(
 													t('Clip starts with {{frames}} {{type}} frame', {
@@ -244,7 +254,7 @@ export function checkPieceContentStatus(
 											}
 										} else if (arr.length > 0) {
 											const dur = arr.map((b) => b.duration).reduce((a, b) => a + b, 0)
-											const frames = Math.round((dur * 1000) / timebase)
+											const frames = Math.ceil((dur * 1000) / timebase)
 											messages.push(
 												t('{{frames}} {{type}} frame detected in clip', {
 													frames,
@@ -255,15 +265,19 @@ export function checkPieceContentStatus(
 										}
 									}
 									if (mediaObject.mediainfo.blacks) {
-										addFrameWarning(mediaObject.mediainfo.blacks, 'black', t)
+										addFrameWarning(mediaObject.mediainfo.blacks, t('black'), t)
 									}
 									if (mediaObject.mediainfo.freezes) {
-										addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
+										addFrameWarning(mediaObject.mediainfo.freezes, t('freeze'), t)
 									}
 								}
 							}
 						} else {
-							messages.push(t('Clip is being ingested', { fileName: displayName }))
+							messages.push(
+								t('{{sourceLayer}} is being ingested', {
+									sourceLayer: sourceLayer.name,
+								})
+							)
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 						}
 
