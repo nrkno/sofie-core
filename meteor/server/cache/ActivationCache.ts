@@ -3,17 +3,13 @@ import { ProtectedString, clone } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import {
-	createShowStyleCompound,
-	ShowStyleCompound,
-	ShowStyleVariant,
-	ShowStyleVariants,
-} from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleCompound, ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ReadonlyDeep } from 'type-fest'
 import { asyncCollectionFindOne, asyncCollectionFindFetch } from '../lib/database'
+import { createShowStyleCompound } from '../api/showStyles'
 
 export function getActivationCache(studioId: StudioId, playlistId: RundownPlaylistId): ActivationCache {
 	let activationCache = activationCaches.get(studioId)

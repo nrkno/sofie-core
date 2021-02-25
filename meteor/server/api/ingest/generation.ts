@@ -13,7 +13,7 @@ import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaseli
 import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
 import { DBRundown } from '../../../lib/collections/Rundowns'
 import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
-import { ShowStyleCompound, getShowStyleCompoundForRundown } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { getCurrentTime, literal, protectString, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { saveIntoCache } from '../../cache/lib'
@@ -31,6 +31,7 @@ import {
 } from '../blueprints/postProcess'
 import { profiler } from '../profiler'
 import { selectShowStyleVariant } from '../rundown'
+import { getShowStyleCompoundForRundown } from '../showStyles'
 import { CacheForIngest } from './cache'
 import { LocalIngestRundown, LocalIngestSegment } from './ingestCache'
 import {

@@ -1,4 +1,4 @@
-import { getShowStyleCompoundForRundown, ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { loadShowStyleBlueprint, loadStudioBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
@@ -42,6 +42,7 @@ import { Meteor } from 'meteor/meteor'
 import { runStudioOperationWithLock, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { getTranslatedMessage, ServerTranslatedMesssages } from '../../../lib/rundownNotifications'
 import { asyncCollectionUpsert, asyncCollectionFindOne, asyncCollectionRemove } from '../../lib/database'
+import { getShowStyleCompoundForRundown } from '../showStyles'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 

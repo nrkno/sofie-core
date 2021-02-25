@@ -21,7 +21,6 @@ import {
 	ShowStyleVariants,
 	ShowStyleVariant,
 	ShowStyleVariantId,
-	createShowStyleCompound,
 	ShowStyleCompound,
 } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
@@ -52,6 +51,7 @@ import { PlayoutLockFunctionPriority, runPlayoutOperationWithLock } from './play
 import { runIngestOperationWithLock } from './ingest/lockFunction'
 import { getRundown } from './ingest/lib'
 import { asyncCollectionFindFetch } from '../lib/database'
+import { createShowStyleCompound } from './showStyles'
 
 export function selectShowStyleVariant(
 	context: StudioUserContext,

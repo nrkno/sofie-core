@@ -11,20 +11,19 @@ import {
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
-	getShowStyleCompound,
 	ShowStyleVariantId,
 	ShowStyleCompound,
 	ShowStyleVariant,
-	createShowStyleCompound,
 	ShowStyleVariants,
 } from '../../../lib/collections/ShowStyleVariants'
 import { protectString, objectPathGet, objectPathSet } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './cache'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { BlueprintId, Blueprints } from '../../../lib/collections/Blueprints'
 import { CommonContext } from './context'
 import { ReadonlyDeep } from 'type-fest'
+import { getShowStyleCompound } from '../showStyles'
 
 /**
  * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.

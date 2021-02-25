@@ -29,13 +29,7 @@ import {
 } from '../context'
 import { ConfigRef } from '../config'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import {
-	createShowStyleCompound,
-	getShowStyleCompoundForRundown,
-	ShowStyleCompound,
-	ShowStyleVariant,
-	ShowStyleVariants,
-} from '../../../../lib/collections/ShowStyleVariants'
+import { ShowStyleCompound, ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
 import { DBPart, PartId } from '../../../../lib/collections/Parts'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
@@ -52,6 +46,7 @@ import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylists, ABSessionInfo } from '../../../../lib/collections/RundownPlaylists'
 import { generateFakeBlueprint } from './lib'
 import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
+import { createShowStyleCompound, getShowStyleCompoundForRundown } from '../../showStyles'
 
 describe('Test blueprint api context', () => {
 	function generateSparsePieceInstances(rundown: Rundown) {

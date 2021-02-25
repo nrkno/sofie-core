@@ -8,7 +8,7 @@ import { BucketAdLibs, BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { PieceId } from '../../lib/collections/Pieces'
 import { StudioId, Studios } from '../../lib/collections/Studios'
-import { ShowStyleVariants, getShowStyleCompoundForRundown } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { AdLibActionId, AdLibAction, AdLibActionCommon } from '../../lib/collections/AdLibActions'
@@ -22,6 +22,7 @@ import {
 	updateExpectedMediaItemForBucketAdLibPiece,
 } from './ingest/expectedMediaItems'
 import { asyncCollectionRemove } from '../lib/database'
+import { getShowStyleCompoundForRundown } from './showStyles'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 

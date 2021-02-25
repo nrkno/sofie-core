@@ -25,10 +25,10 @@ import { PartInstance, PartInstances } from '../../lib/collections/PartInstances
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 import { profiler } from './profiler'
 import { CacheForPlayout } from './playout/cache'
-import { getShowStyleCompoundForRundown } from '../../lib/collections/ShowStyleVariants'
 import { Studios } from '../../lib/collections/Studios'
 import { ReadonlyDeep } from 'type-fest'
 import { asyncCollectionUpsert, asyncCollectionFindOne, asyncCollectionUpdate } from '../lib/database'
+import { getShowStyleCompoundForRundown } from './showStyles'
 
 const EVENT_WAIT_TIME = 500
 
