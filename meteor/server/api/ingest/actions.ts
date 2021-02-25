@@ -6,14 +6,18 @@ import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { Part } from '../../../lib/collections/Parts'
 import { check } from '../../../lib/check'
 import { resetRundownPlaylist } from '../playout/lib'
-import { RundownSyncFunctionPriority, regenerateRundown } from './rundownInput'
+import { regenerateRundown } from './rundownInput'
 import { logger } from '../../logging'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { makePromise, waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { Segment } from '../../../lib/collections/Segments'
 import { GenericDeviceActions } from './genericDevice/actions'
-import { runPlayoutOperationWithLock, runPlayoutOperationWithCacheFromStudioOperation } from '../playout/lockFunction'
+import {
+	runPlayoutOperationWithLock,
+	runPlayoutOperationWithCacheFromStudioOperation,
+	PlayoutLockFunctionPriority,
+} from '../playout/lockFunction'
 import { MethodContext } from '../../../lib/api/methods'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 
@@ -111,7 +115,7 @@ export namespace IngestActions {
 			context,
 			'regenerateRundownPlaylist',
 			rundownPlaylistId,
-			RundownSyncFunctionPriority.USER_INGEST,
+			PlayoutLockFunctionPriority.MISC,
 			(playlistLock) => {
 				const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 				if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
@@ -137,6 +141,7 @@ export namespace IngestActions {
 						'regenerateRundownPlaylist:init',
 						playlistLock,
 						rundownPlaylist,
+						PlayoutLockFunctionPriority.MISC,
 						null,
 						(cache) => resetRundownPlaylist(cache)
 					)

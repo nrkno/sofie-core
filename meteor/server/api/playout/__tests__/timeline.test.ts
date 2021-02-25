@@ -15,7 +15,7 @@ import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { MethodContext } from '../../../../lib/api/methods'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import { runPlayoutOperationWithCache } from '../lockFunction'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
 
 const DEFAULT_CONTEXT: MethodContext = {
 	userId: null,
@@ -94,16 +94,30 @@ describe('Timeline', () => {
 			// })
 		}
 
-		runPlayoutOperationWithCache(null, 'updateTimeline', getRundown0().playlistId, null, (cache) => {
-			updateTimeline(cache)
-		})
+		runPlayoutOperationWithCache(
+			null,
+			'updateTimeline',
+			getRundown0().playlistId,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => {
+				updateTimeline(cache)
+			}
+		)
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 
-		runPlayoutOperationWithCache(null, 'updateTimeline', getRundown0().playlistId, null, (cache) => {
-			const currentTime = 100 * 1000
-			updateTimeline(cache, currentTime)
-		})
+		runPlayoutOperationWithCache(
+			null,
+			'updateTimeline',
+			getRundown0().playlistId,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => {
+				const currentTime = 100 * 1000
+				updateTimeline(cache, currentTime)
+			}
+		)
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 

@@ -15,7 +15,6 @@ import { logger } from '../../logging'
 import { isTooCloseToAutonext } from '../playout/lib'
 import { DBRundown, Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { ReadonlyDeep } from 'type-fest'
-import { RundownSyncFunctionPriority } from './rundownInput'
 import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import {
 	getPlaylistIdFromExternalId,
@@ -32,7 +31,7 @@ import {
 	protectString,
 	unprotectString,
 } from '../../../lib/lib'
-import _ from 'underscore'
+import _, { pluck } from 'underscore'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { reportRundownDataHasChanged } from '../asRunLog'
 import { removeSegmentContents } from './cleanup'
@@ -43,12 +42,14 @@ import { PartId } from '../../../lib/collections/Parts'
 import { NoteType, RundownNote } from '../../../lib/api/notes'
 import {
 	PlaylistLock,
+	PlayoutLockFunctionPriority,
 	runPlayoutOperationWithCacheFromStudioOperation,
 	runPlayoutOperationWithLock,
 	runPlayoutOperationWithLockFromStudioOperation,
 } from '../playout/lockFunction'
 import { Meteor } from 'meteor/meteor'
-import { runStudioOperationWithLock } from '../studio/lockFunction'
+import { runStudioOperationWithLock, StudioLockFunctionPriority } from '../studio/lockFunction'
+import { getTranslatedMessage, ServerTranslatedMesssages } from '../../../lib/rundownNotifications'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -95,7 +96,7 @@ export async function CommitIngestOperation(
 			null,
 			'ingest.commit.removeRundownFromOldPlaylist',
 			beforePlaylistId,
-			RundownSyncFunctionPriority.INGEST,
+			PlayoutLockFunctionPriority.MISC,
 			async (oldPlaylistLock) => {
 				// Aquire the playout lock so we can safely modify the playlist contents
 
@@ -129,11 +130,9 @@ export async function CommitIngestOperation(
 									...clone<RundownNote[]>(rundown.notes ?? []),
 									{
 										type: NoteType.WARNING,
-										message: {
-											// TODO-CACHE - translate
-											key:
-												'The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.',
-										},
+										message: getTranslatedMessage(
+											ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN
+										),
 										origin: {
 											name: 'Data update',
 										},
@@ -184,105 +183,109 @@ export async function CommitIngestOperation(
 		if (tmpNewPlaylist.studioId !== ingestCache.Studio.doc._id)
 			throw new Meteor.Error(404, `Rundown Playlist "${newPlaylistId[0]}" exists but belongs to another studio!`)
 	}
-	runStudioOperationWithLock('ingest.commit.saveRundownToPlaylist', ingestCache.Studio.doc._id, (studioLock) =>
-		runPlayoutOperationWithLockFromStudioOperation(
-			'ingest.commit.saveRundownToPlaylist',
-			studioLock,
-			{ _id: newPlaylistId[0], studioId: studioLock._studioId },
-			RundownSyncFunctionPriority.INGEST,
-			async (lock) => {
-				//
-				// Ensure the rundown has the correct playlistId
-				ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId[0] } })
+	runStudioOperationWithLock(
+		'ingest.commit.saveRundownToPlaylist',
+		ingestCache.Studio.doc._id,
+		StudioLockFunctionPriority.MISC,
+		(studioLock) =>
+			runPlayoutOperationWithLockFromStudioOperation(
+				'ingest.commit.saveRundownToPlaylist',
+				studioLock,
+				{ _id: newPlaylistId[0], studioId: studioLock._studioId },
+				PlayoutLockFunctionPriority.MISC,
+				async (lock) => {
+					//
+					// Ensure the rundown has the correct playlistId
+					ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId[0] } })
 
-				const [newPlaylist, rundownsCollection] = await generatePlaylistAndRundownsCollection(
-					ingestCache,
-					newPlaylistId[0],
-					newPlaylistId[1]
-				)
+					const [newPlaylist, rundownsCollection] = await generatePlaylistAndRundownsCollection(
+						ingestCache,
+						newPlaylistId[0],
+						newPlaylistId[1]
+					)
 
-				// Do the segment removals
-				if (data.removedSegmentIds.length > 0) {
-					const { currentPartInstance, nextPartInstance } = newPlaylist.getSelectedPartInstances()
+					// Do the segment removals
+					if (data.removedSegmentIds.length > 0) {
+						const { currentPartInstance, nextPartInstance } = newPlaylist.getSelectedPartInstances()
 
-					const purgeSegmentIds = new Set<SegmentId>()
-					const orphanSegmentIds = new Set<SegmentId>()
-					for (const segmentId of data.removedSegmentIds) {
-						if (canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
-							purgeSegmentIds.add(segmentId)
-						} else {
-							orphanSegmentIds.add(segmentId)
+						const purgeSegmentIds = new Set<SegmentId>()
+						const orphanSegmentIds = new Set<SegmentId>()
+						for (const segmentId of data.removedSegmentIds) {
+							if (canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+								purgeSegmentIds.add(segmentId)
+							} else {
+								orphanSegmentIds.add(segmentId)
+							}
+						}
+
+						const emptySegmentIds = Settings.preserveUnsyncedPlayingSegmentContents
+							? purgeSegmentIds
+							: new Set([...purgeSegmentIds.values(), ...orphanSegmentIds.values()])
+						removeSegmentContents(ingestCache, emptySegmentIds)
+						if (orphanSegmentIds.size) {
+							ingestCache.Segments.update((s) => orphanSegmentIds.has(s._id), {
+								$set: {
+									orphaned: 'deleted',
+								},
+							})
+						}
+						if (purgeSegmentIds.size) {
+							ingestCache.Segments.remove((s) => purgeSegmentIds.has(s._id))
 						}
 					}
 
-					const emptySegmentIds = Settings.preserveUnsyncedPlayingSegmentContents
-						? purgeSegmentIds
-						: new Set([...purgeSegmentIds.values(), ...orphanSegmentIds.values()])
-					removeSegmentContents(ingestCache, emptySegmentIds)
-					if (orphanSegmentIds.size) {
-						ingestCache.Segments.update((s) => orphanSegmentIds.has(s._id), {
-							$set: {
-								orphaned: 'deleted',
-							},
-						})
-					}
-					if (purgeSegmentIds.size) {
-						ingestCache.Segments.remove((s) => purgeSegmentIds.has(s._id))
-					}
-				}
+					// Regenerate the full list of expected*Items
+					updateExpectedMediaItemsOnRundown(ingestCache)
+					updateExpectedPlayoutItemsOnRundown(ingestCache)
 
-				// Regenerate the full list of expected*Items
-				updateExpectedMediaItemsOnRundown(ingestCache)
-				updateExpectedPlayoutItemsOnRundown(ingestCache)
+					// Save the rundowns
+					// This will reorder the rundowns a little before the playlist and the contents, but that is ok
+					await Promise.all([
+						rundownsCollection.updateDatabaseWithData(),
+						asyncCollectionUpsert(RundownPlaylists, newPlaylist._id, newPlaylist),
+					])
 
-				// Save the rundowns
-				// This will reorder the rundowns a little before the playlist and the contents, but that is ok
-				await Promise.all([
-					rundownsCollection.updateDatabaseWithData(),
-					asyncCollectionUpsert(RundownPlaylists, newPlaylist._id, newPlaylist),
-				])
-
-				// Create the full playout cache, now we have the rundowns and playlist updated
-				const playoutCache = await CacheForPlayout.from(
-					newPlaylist,
-					rundownsCollection.findFetch({}),
-					ingestCache
-				)
-
-				// Start the save
-				const pSave = ingestCache.saveAllToDatabase()
-
-				try {
-					// Get the final copy of the rundown
-					const newRundown = getRundown(ingestCache)
-
-					// Update the playout to use the updated rundown
-					const changedSegmentsInfo = data.changedSegmentIds.map((id) => ({
-						segmentId: id,
-						oldPartIdsAndRanks: beforePartMap.get(id) ?? [],
-					}))
-					applyChangesToPlayout(
-						playoutCache,
-						ingestCache,
-						newRundown,
-						showStyle,
-						blueprint,
-						data.renamedSegments,
-						changedSegmentsInfo
+					// Create the full playout cache, now we have the rundowns and playlist updated
+					const playoutCache = await CacheForPlayout.from(
+						newPlaylist,
+						rundownsCollection.findFetch({}),
+						ingestCache
 					)
 
-					playoutCache.deferAfterSave(() => {
-						reportRundownDataHasChanged(playoutCache.Playlist.doc, newRundown)
-					})
+					// Start the save
+					const pSave = ingestCache.saveAllToDatabase()
 
-					// wait for it all to save in parallel
-					await Promise.all([pSave, playoutCache.saveAllToDatabase()])
-				} finally {
-					// Wait for the save to complete. We need it to be completed, otherwise the rundown will be in a broken state
-					await pSave
+					try {
+						// Get the final copy of the rundown
+						const newRundown = getRundown(ingestCache)
+
+						// Update the playout to use the updated rundown
+						const changedSegmentsInfo = data.changedSegmentIds.map((id) => ({
+							segmentId: id,
+							oldPartIdsAndRanks: beforePartMap.get(id) ?? [],
+						}))
+						applyChangesToPlayout(
+							playoutCache,
+							ingestCache,
+							newRundown,
+							showStyle,
+							blueprint,
+							data.renamedSegments,
+							changedSegmentsInfo
+						)
+
+						playoutCache.deferAfterSave(() => {
+							reportRundownDataHasChanged(playoutCache.Playlist.doc, newRundown)
+						})
+
+						// wait for it all to save in parallel
+						await Promise.all([pSave, playoutCache.saveAllToDatabase()])
+					} finally {
+						// Wait for the save to complete. We need it to be completed, otherwise the rundown will be in a broken state
+						await pSave
+					}
 				}
-			}
-		)
+			)
 	)
 }
 
@@ -427,6 +430,7 @@ export function updatePlayoutAfterChangingRundownInPlaylist(
 		'updatePlayoutAfterChangingRundownInPlaylist',
 		playlistLock,
 		playlist,
+		PlayoutLockFunctionPriority.USER_PLAYOUT,
 		null,
 		async (playoutCache) => {
 			if (playoutCache.Rundowns.documents.size === 0) {

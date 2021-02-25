@@ -42,7 +42,7 @@ import { RundownAPI } from '../../../lib/api/rundown'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { getPieceInstancesForPart } from './infinites'
-import { runPlayoutOperationWithCache } from './lockFunction'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from './lockFunction'
 import { MethodContext } from '../../../lib/api/methods'
 import {
 	CacheForPlayout,
@@ -64,7 +64,7 @@ export namespace ServerPlayoutAdLibAPI {
 			context,
 			'pieceTakeNow',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
@@ -180,7 +180,7 @@ export namespace ServerPlayoutAdLibAPI {
 			context,
 			'segmentAdLibPieceStart',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
@@ -223,7 +223,7 @@ export namespace ServerPlayoutAdLibAPI {
 			context,
 			'rundownBaselineAdLibPieceStart',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				logger.debug('rundownBaselineAdLibPieceStart')
 
@@ -326,7 +326,7 @@ export namespace ServerPlayoutAdLibAPI {
 			context,
 			'sourceLayerStickyPieceStart',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
@@ -608,7 +608,7 @@ export namespace ServerPlayoutAdLibAPI {
 			context,
 			'startBucketAdlibPiece',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)

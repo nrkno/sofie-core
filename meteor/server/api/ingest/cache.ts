@@ -114,10 +114,19 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 		])
 	}
 
+	/**
+	 * Remove the rundown when this cache is saved.
+	 * The cache is cleared of any documents, and any deferred functions are discarded
+	 * Note: any deferred functions that get added after this will be ignoted
+	 */
 	removeRundown() {
 		this.toBeRemoved = true
 
 		super.markCollectionsForRemoval()
+
+		// Discard any hooks too
+		this._deferredAfterSaveFunctions.length = 0
+		this._deferredFunctions.length = 0
 	}
 
 	discardChanges() {
@@ -132,7 +141,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 			const span = profiler.startSpan('CacheForIngest.saveAllToDatabase')
 			this._abortActiveTimeout()
 
-			// TODO-CACHE - run any of the defers?
+			// Ignoring any deferred functions
 
 			if (this.Rundown.doc) {
 				await removeRundownsFromDb([this.Rundown.doc._id])

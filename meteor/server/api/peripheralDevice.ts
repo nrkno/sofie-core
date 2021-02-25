@@ -12,7 +12,7 @@ import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
 import { parse as parseUrl } from 'url'
-import { RundownInput, RundownSyncFunctionPriority } from './ingest/rundownInput'
+import { RundownInput } from './ingest/rundownInput'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
@@ -31,8 +31,8 @@ import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { getValidActivationCache } from '../cache/ActivationCache'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceGroupMetadata } from '../../lib/rundown/pieces'
-import { runStudioOperationWithCache } from './studio/lockFunction'
-import { runPlayoutOperationWithLockFromStudioOperation } from './playout/lockFunction'
+import { runStudioOperationWithCache, StudioLockFunctionPriority } from './studio/lockFunction'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithLockFromStudioOperation } from './playout/lockFunction'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { CacheForStudio } from './studio/cache'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
@@ -214,36 +214,41 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 
 		if (results.length > 0) {
-			runStudioOperationWithCache('timelineTriggerTime', studioId, (studioCache) => {
-				const activePlaylists = studioCache.getActiveRundownPlaylists()
+			runStudioOperationWithCache(
+				'timelineTriggerTime',
+				studioId,
+				StudioLockFunctionPriority.CALLBACK_PLAYOUT,
+				(studioCache) => {
+					const activePlaylists = studioCache.getActiveRundownPlaylists()
 
-				if (activePlaylists.length === 1) {
-					const activePlaylist = activePlaylists[0]
-					const playlistId = activePlaylist._id
-					runPlayoutOperationWithLockFromStudioOperation(
-						'timelineTriggerTime',
-						studioCache,
-						activePlaylist,
-						RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
-						() => {
-							const rundownIDs = Rundowns.find({ playlistId }).map((r) => r._id)
+					if (activePlaylists.length === 1) {
+						const activePlaylist = activePlaylists[0]
+						const playlistId = activePlaylist._id
+						runPlayoutOperationWithLockFromStudioOperation(
+							'timelineTriggerTime',
+							studioCache,
+							activePlaylist,
+							PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
+							() => {
+								const rundownIDs = Rundowns.find({ playlistId }).map((r) => r._id)
 
-							// We only need the PieceInstances, so load just them
-							const pieceInstanceCache = new DbCacheWriteCollection<PieceInstance, PieceInstance>(
-								PieceInstances
-							)
-							waitForPromise(
-								pieceInstanceCache.fillWithDataFromDatabase({ rundownId: { $in: rundownIDs } })
-							)
+								// We only need the PieceInstances, so load just them
+								const pieceInstanceCache = new DbCacheWriteCollection<PieceInstance, PieceInstance>(
+									PieceInstances
+								)
+								waitForPromise(
+									pieceInstanceCache.fillWithDataFromDatabase({ rundownId: { $in: rundownIDs } })
+								)
 
-							// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
-							timelineTriggerTimeInner(studioCache, results, pieceInstanceCache, activePlaylist)
-						}
-					)
-				} else {
-					timelineTriggerTimeInner(studioCache, results, undefined, undefined)
+								// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
+								timelineTriggerTimeInner(studioCache, results, pieceInstanceCache, activePlaylist)
+							}
+						)
+					} else {
+						timelineTriggerTimeInner(studioCache, results, undefined, undefined)
+					}
 				}
-			})
+			)
 		}
 	}
 

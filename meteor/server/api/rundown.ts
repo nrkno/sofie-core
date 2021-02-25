@@ -39,7 +39,7 @@ import { StudioContentWriteAccess } from '../security/studio'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
-import { handleRemovedRundownFromStudio, RundownSyncFunctionPriority } from './ingest/rundownInput'
+import { handleRemovedRundownFromStudio } from './ingest/rundownInput'
 import {
 	moveRundownIntoPlaylist,
 	removeRundownPlaylistFromDb,
@@ -49,7 +49,7 @@ import { StudioUserContext } from './blueprints/context'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
 import { CacheForPlayout } from './playout/cache'
 import { ReadonlyDeep } from 'type-fest'
-import { runPlayoutOperationWithLock } from './playout/lockFunction'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithLock } from './playout/lockFunction'
 import { runIngestOperationWithLock } from './ingest/lockFunction'
 import { getRundown } from './ingest/lib'
 
@@ -308,7 +308,7 @@ export namespace ServerRundownAPI {
 			context,
 			'removeRundownPlaylist',
 			playlistId,
-			RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			async (_lock, tmpPlaylist) => {
 				logger.info('removeRundownPlaylist ' + playlistId)
 

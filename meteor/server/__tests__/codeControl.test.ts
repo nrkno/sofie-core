@@ -2,11 +2,13 @@ import { Meteor } from 'meteor/meteor'
 import '../../__mocks__/_extendJest'
 import { testInFiber, runAllTimers, runTimersUntilNow } from '../../__mocks__/helpers/jest'
 import { syncFunction, Callback } from '../codeControl'
-import { RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
 import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime } from '../../lib/lib'
 import { useControllableDefer, useNextTickDefer } from '../../__mocks__/meteor'
 import { setupDefaultRundownPlaylist, setupDefaultStudioEnvironment } from '../../__mocks__/helpers/database'
-import { runPlayoutOperationWithLockFromStudioOperation } from '../api/playout/lockFunction'
+import {
+	PlayoutLockFunctionPriority,
+	runPlayoutOperationWithLockFromStudioOperation,
+} from '../api/playout/lockFunction'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 
 const TIME_FUZZY = 200
@@ -25,7 +27,7 @@ describe('codeControl rundown', () => {
 		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
 		expect(playlist).toBeTruthy()
 
-		let sync1 = (name: string, priority: RundownSyncFunctionPriority) => {
+		let sync1 = (name: string, priority: PlayoutLockFunctionPriority) => {
 			return runPlayoutOperationWithLockFromStudioOperation(
 				'testRundownSyncFn',
 				{ _studioId: playlist.studioId },
@@ -37,13 +39,13 @@ describe('codeControl rundown', () => {
 
 		let res: any[] = []
 		Meteor.setTimeout(() => {
-			res.push(sync1('ingest0', RundownSyncFunctionPriority.INGEST))
+			res.push(sync1('ingest0', PlayoutLockFunctionPriority.MISC))
 		}, 10)
 		Meteor.setTimeout(() => {
-			res.push(sync1('ingest1', RundownSyncFunctionPriority.INGEST))
+			res.push(sync1('ingest1', PlayoutLockFunctionPriority.MISC))
 		}, 30)
 		Meteor.setTimeout(() => {
-			res.push(sync1('playout0', RundownSyncFunctionPriority.USER_PLAYOUT))
+			res.push(sync1('playout0', PlayoutLockFunctionPriority.USER_PLAYOUT))
 		}, 50)
 
 		jest.advanceTimersByTime(350)

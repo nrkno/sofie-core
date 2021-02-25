@@ -15,7 +15,7 @@ import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { protectString, waitForPromise } from '../../../../lib/lib'
-import { runPlayoutOperationWithCache } from '../lockFunction'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
 import { removeRundownsFromDb } from '../../rundownPlaylist'
 
 // const Timeline = mockupCollection(OrgTimeline)
@@ -70,6 +70,7 @@ describe('Playout Actions', () => {
 			null,
 			'activateRundownPlaylist',
 			playlist._id,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
 			async (cache) => await activateRundownPlaylist(cache, true)
 		)
@@ -81,6 +82,7 @@ describe('Playout Actions', () => {
 			null,
 			'activateRundownPlaylist',
 			playlist._id,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
 			async (cache) => await activateRundownPlaylist(cache, false)
 		)
@@ -92,6 +94,7 @@ describe('Playout Actions', () => {
 			null,
 			'activateRundownPlaylist',
 			playlist._id,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
 			async (cache) => await activateRundownPlaylist(cache, true)
 		)
@@ -104,6 +107,7 @@ describe('Playout Actions', () => {
 				null,
 				'activateRundownPlaylist',
 				playlist._id,
+				PlayoutLockFunctionPriority.USER_PLAYOUT,
 				null,
 				async (cache) => await activateRundownPlaylist(cache, false)
 			)
@@ -120,8 +124,13 @@ describe('Playout Actions', () => {
 
 		// prepareStudioForBroadcast
 		const okToDestroyStuff = true
-		runPlayoutOperationWithCache(null, 'activateRundownPlaylist', playlist._id, null, (cache) =>
-			prepareStudioForBroadcast(cache, okToDestroyStuff)
+		runPlayoutOperationWithCache(
+			null,
+			'activateRundownPlaylist',
+			playlist._id,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => prepareStudioForBroadcast(cache, okToDestroyStuff)
 		)
 
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(1)

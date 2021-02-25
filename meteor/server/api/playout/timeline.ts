@@ -57,7 +57,7 @@ import { profiler } from '../profiler'
 import { getPartFirstObjectId, getPartGroupId, getPieceGroupId } from '../../../lib/rundown/timeline'
 import { TimelineObjClassesCore } from '@sofie-automation/blueprints-integration'
 import { CacheForStudio, CacheForStudioBase } from '../studio/cache'
-import { runPlayoutOperationWithCacheFromStudioOperation } from './lockFunction'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithCacheFromStudioOperation } from './lockFunction'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 
 export function updateStudioOrPlaylistTimeline(cache: CacheForStudio) {
@@ -67,6 +67,7 @@ export function updateStudioOrPlaylistTimeline(cache: CacheForStudio) {
 			'updateStudioOrPlaylistTimeline',
 			cache,
 			playlists[0],
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
 			(playlistCache) => {
 				updateTimeline(playlistCache)

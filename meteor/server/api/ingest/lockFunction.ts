@@ -9,13 +9,12 @@ import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { getRundownsSegmentsAndPartsFromCache } from '../playout/lib'
-import { PlaylistLock, runPlayoutOperationWithLock } from '../playout/lockFunction'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithLock } from '../playout/lockFunction'
 import { profiler } from '../profiler'
 import { CacheForIngest } from './cache'
-import { BeforePartMap, CommitIngestOperation, updatePlayoutAfterChangingRundownInPlaylist } from './commit'
+import { BeforePartMap, CommitIngestOperation } from './commit'
 import { LocalIngestRundown, RundownIngestDataCache } from './ingestCache'
 import { getRundown, getRundownId } from './lib'
-import { RundownSyncFunctionPriority } from './rundownInput'
 
 export interface CommitIngestData {
 	/** Segment Ids which had any changes */
@@ -151,7 +150,7 @@ export function runIngestOperationWithLock(
 			null,
 			context,
 			beforeRundown.playlistId,
-			RundownSyncFunctionPriority.INGEST,
+			PlayoutLockFunctionPriority.MISC,
 			async () => {
 				// This needs to be inside the playout lock to ensure that a take doesnt happen mid update
 				await ingestCache.saveAllToDatabase()

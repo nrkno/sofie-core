@@ -34,9 +34,16 @@ import { RundownBaselineAdLibActions } from '../../lib/collections/RundownBaseli
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { Segments } from '../../lib/collections/Segments'
-import { runStudioOperationWithCache, runStudioOperationWithLock } from './studio/lockFunction'
-import { runPlayoutOperationWithLock, runPlayoutOperationWithLockFromStudioOperation } from './playout/lockFunction'
-import { RundownSyncFunctionPriority } from './ingest/rundownInput'
+import {
+	runStudioOperationWithCache,
+	runStudioOperationWithLock,
+	StudioLockFunctionPriority,
+} from './studio/lockFunction'
+import {
+	PlayoutLockFunctionPriority,
+	runPlayoutOperationWithLock,
+	runPlayoutOperationWithLockFromStudioOperation,
+} from './playout/lockFunction'
 import { ReadonlyDeep } from 'type-fest'
 import { WrappedStudioBlueprint } from './blueprints/cache'
 import { StudioUserContext } from './blueprints/context'
@@ -51,7 +58,7 @@ import { Random } from 'meteor/random'
 
 // TODO-CACHE this needs to be called from somewhere
 export function removeEmptyPlaylists(studioId: StudioId) {
-	runStudioOperationWithCache('removeEmptyPlaylists', studioId, async (cache) => {
+	runStudioOperationWithCache('removeEmptyPlaylists', studioId, StudioLockFunctionPriority.MISC, async (cache) => {
 		const playlists = cache.RundownPlaylists.findFetch()
 
 		// We want to run them all in parallel fibers
@@ -63,11 +70,11 @@ export function removeEmptyPlaylists(studioId: StudioId) {
 						'removeEmptyPlaylists',
 						cache,
 						playlist,
-						RundownSyncFunctionPriority.INGEST,
-						() => {
+						PlayoutLockFunctionPriority.MISC,
+						async () => {
 							const playlists = Rundowns.find({ playlistId: playlist._id }).count()
 							if (playlists === 0) {
-								waitForPromise(removeRundownPlaylistFromDb(playlist))
+								await removeRundownPlaylistFromDb(playlist)
 							}
 						}
 					)
@@ -272,7 +279,7 @@ export function moveRundownIntoPlaylist(
 			`moveRundown: rundown.playlistId "${rundown.playlistId}" is not equal to oldPlaylist._id "${oldPlaylist._id}"`
 		)
 
-	runStudioOperationWithLock('moveRundown', rundown.studioId, (lock) => {
+	runStudioOperationWithLock('moveRundown', rundown.studioId, StudioLockFunctionPriority.MISC, (lock) => {
 		let intoPlaylist: RundownPlaylist | null = null
 		if (intoPlaylistId) {
 			const access2 = RundownPlaylistContentWriteAccess.anyContent(context, intoPlaylistId)
@@ -297,7 +304,7 @@ export function moveRundownIntoPlaylist(
 				'moveRundown: remove from old playlist',
 				lock,
 				oldPlaylist,
-				RundownSyncFunctionPriority.USER_INGEST,
+				PlayoutLockFunctionPriority.MISC,
 				(oldPlaylistLock) => {
 					// Reload playlist to ensure it is up-to-date
 					const playlist = RundownPlaylists.findOne(oldPlaylist._id)
@@ -329,7 +336,7 @@ export function moveRundownIntoPlaylist(
 				'moveRundown: add into existing playlist',
 				lock,
 				intoPlaylist,
-				RundownSyncFunctionPriority.USER_INGEST,
+				PlayoutLockFunctionPriority.MISC,
 				async (intoPlaylistLock) => {
 					const rundownsCollection = new DbCacheWriteCollection(Rundowns)
 					const [playlist] = await Promise.all([
@@ -442,7 +449,7 @@ export function restoreRundownsInPlaylistToDefaultOrder(context: MethodContext, 
 		context,
 		'restoreRundownsInPlaylistToDefaultOrder',
 		playlistId,
-		RundownSyncFunctionPriority.USER_INGEST,
+		PlayoutLockFunctionPriority.MISC,
 		async (playlistLock, tmpPlaylist) => {
 			const rundownsCollection = new DbCacheWriteCollection(Rundowns)
 			const [studio] = await Promise.all([

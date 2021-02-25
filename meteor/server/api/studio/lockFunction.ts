@@ -4,6 +4,15 @@ import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
 import { CacheForStudio } from './cache'
 
+/** Priority for handling of synchronous events. Higher value means higher priority */
+export enum StudioLockFunctionPriority {
+	MISC = 0,
+	/** Events initiated from user, for playout */
+	USER_PLAYOUT = 10,
+	/** Events initiated from playout-gateway callbacks */
+	CALLBACK_PLAYOUT = 20,
+}
+
 export interface StudioLock {
 	readonly _studioId: StudioId
 }
@@ -32,9 +41,10 @@ export function getStudioIdFromCacheOrLock(
 export function runStudioOperationWithCache<T>(
 	context: string,
 	studioId: StudioId,
+	priority: StudioLockFunctionPriority,
 	fcn: (cache: CacheForStudio) => Promise<T> | T
 ): T {
-	return runStudioOperationWithLock(context, studioId, async () => {
+	return runStudioOperationWithLock(context, studioId, priority, async () => {
 		const cache = await CacheForStudio.create(studioId)
 
 		const res = await fcn(cache)
@@ -54,7 +64,14 @@ export function runStudioOperationWithCache<T>(
 export function runStudioOperationWithLock<T>(
 	context: string,
 	studioId: StudioId,
+	priority: StudioLockFunctionPriority,
 	fcn: (lock: StudioLock) => Promise<T> | T
 ): T {
-	return syncFunction(() => waitForPromise(fcn({ _studioId: studioId })), context, `studio_${studioId}`)()
+	return syncFunction(
+		() => waitForPromise(fcn({ _studioId: studioId })),
+		context,
+		`studio_${studioId}`,
+		undefined,
+		priority
+	)()
 }

@@ -183,6 +183,11 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		}
 	}
 
+	/**
+	 * Remove the playlist when this cache is saved.
+	 * The cache is cleared of any documents, and any deferred functions are discarded
+	 * Note: any deferred functions that get added after this will be ignoted
+	 */
 	removePlaylist() {
 		if (this.Playlist.doc.activationId) {
 			throw new Meteor.Error(500, 'Cannot remove the active RundownPlaylist')
@@ -195,6 +200,10 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	discardChanges() {
 		this.toBeRemoved = false
 		super.discardChanges()
+
+		// Discard any hooks too
+		this._deferredAfterSaveFunctions.length = 0
+		this._deferredFunctions.length = 0
 	}
 
 	async saveAllToDatabase() {
@@ -202,7 +211,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			const span = profiler.startSpan('CacheForPlayout.saveAllToDatabase')
 			this._abortActiveTimeout()
 
-			// TODO - run any of the defers?
+			// Ignoring any deferred functions
 
 			await removeRundownPlaylistFromDb(this.Playlist.doc)
 

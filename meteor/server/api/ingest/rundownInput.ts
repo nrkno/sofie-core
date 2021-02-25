@@ -3,14 +3,11 @@ import { check } from '../../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDevice, PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../../lib/collections/Rundowns'
-import { DBPart } from '../../../lib/collections/Parts'
-import { Piece } from '../../../lib/collections/Pieces'
-import { getCurrentTime, PreparedChanges, waitForPromise } from '../../../lib/lib'
+import { getCurrentTime, waitForPromise } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
-import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { Segments } from '../../../lib/collections/Segments'
 import {
 	RundownIngestDataCache,
 	LocalIngestRundown,
@@ -30,26 +27,6 @@ import { MethodContext } from '../../../lib/api/methods'
 import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownAction } from './lockFunction'
 import { CacheForIngest } from './cache'
 import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
-
-/** Priority for handling of synchronous events. Lower means higher priority */
-export enum RundownSyncFunctionPriority {
-	/** Events initiated from external (ingest) devices */
-	INGEST = 0,
-	/** Events initiated from user, for triggering ingest actions */
-	USER_INGEST = 9,
-	/** Events initiated from user, for playout */
-	USER_PLAYOUT = 10,
-	/** Events initiated from playout-gateway callbacks */
-	CALLBACK_PLAYOUT = 20,
-}
-
-interface SegmentChanges {
-	segmentId: SegmentId
-	segment: PreparedChanges<DBSegment>
-	parts: PreparedChanges<DBPart>
-	pieces: PreparedChanges<Piece>
-	adlibPieces: PreparedChanges<AdLibPiece>
-}
 
 export namespace RundownInput {
 	// Get info on the current rundowns from this device:

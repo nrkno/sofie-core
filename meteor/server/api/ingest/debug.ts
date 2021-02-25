@@ -12,9 +12,9 @@ import { Rundowns } from '../../../lib/collections/Rundowns'
 import { handleUpdatedSegment } from './rundownInput'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { logger } from '../../logging'
-import { runStudioOperationWithCache } from '../studio/lockFunction'
+import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { ensureNextPartIsValid } from './updateNext'
-import { runPlayoutOperationWithCacheFromStudioOperation } from '../playout/lockFunction'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithCacheFromStudioOperation } from '../playout/lockFunction'
 import { waitForPromise } from '../../../lib/lib'
 
 if (!Settings.enableUserAccounts) {
@@ -52,9 +52,14 @@ if (!Settings.enableUserAccounts) {
 				check(studioId, String)
 				logger.info(`debug_updateTimeline: "${studioId}"`)
 
-				runStudioOperationWithCache('debug_updateTimeline', studioId, (cache) => {
-					updateStudioOrPlaylistTimeline(cache)
-				})
+				runStudioOperationWithCache(
+					'debug_updateTimeline',
+					studioId,
+					StudioLockFunctionPriority.USER_PLAYOUT,
+					(cache) => {
+						updateStudioOrPlaylistTimeline(cache)
+					}
+				)
 			} catch (e) {
 				logger.error(e)
 				throw e
@@ -65,22 +70,28 @@ if (!Settings.enableUserAccounts) {
 				check(studioId, String)
 				logger.info(`debug_updateNext: "${studioId}"`)
 
-				runStudioOperationWithCache('debug_updateTimeline', studioId, (cache) => {
-					const playlists = cache.getActiveRundownPlaylists()
-					if (playlists.length === 1) {
-						return runPlayoutOperationWithCacheFromStudioOperation(
-							'updateStudioOrPlaylistTimeline',
-							cache,
-							playlists[0],
-							null,
-							(playlistCache) => {
-								ensureNextPartIsValid(playlistCache)
-							}
-						)
-					} else {
-						throw new Error('No playlist active')
+				runStudioOperationWithCache(
+					'debug_updateNext',
+					studioId,
+					StudioLockFunctionPriority.USER_PLAYOUT,
+					(cache) => {
+						const playlists = cache.getActiveRundownPlaylists()
+						if (playlists.length === 1) {
+							return runPlayoutOperationWithCacheFromStudioOperation(
+								'updateStudioOrPlaylistTimeline',
+								cache,
+								playlists[0],
+								PlayoutLockFunctionPriority.USER_PLAYOUT,
+								null,
+								(playlistCache) => {
+									ensureNextPartIsValid(playlistCache)
+								}
+							)
+						} else {
+							throw new Error('No playlist active')
+						}
 					}
-				})
+				)
 			} catch (e) {
 				logger.error(e)
 				throw e

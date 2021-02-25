@@ -2,10 +2,9 @@ import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { MethodContext } from '../../../lib/api/methods'
 import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { waitForPromise } from '../../../lib/lib'
+import { assertNever, waitForPromise } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
-import { RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { checkAccessAndGetPlaylist } from '../lib'
 import { CacheForStudio } from '../studio/cache'
 import {
@@ -13,8 +12,32 @@ import {
 	isStudioLock,
 	StudioLock,
 	runStudioOperationWithLock,
+	StudioLockFunctionPriority,
 } from '../studio/lockFunction'
 import { CacheForPlayout, CacheForPlayoutPreInit } from './cache'
+
+/** Priority for handling of synchronous events. Higher value means higher priority */
+export enum PlayoutLockFunctionPriority {
+	MISC = 0,
+	/** Events initiated from user, for playout */
+	USER_PLAYOUT = 10,
+	/** Events initiated from playout-gateway callbacks */
+	CALLBACK_PLAYOUT = 20,
+}
+
+function playoutToStudioLockPriority(priority: PlayoutLockFunctionPriority): StudioLockFunctionPriority {
+	switch (priority) {
+		case PlayoutLockFunctionPriority.CALLBACK_PLAYOUT:
+			return StudioLockFunctionPriority.CALLBACK_PLAYOUT
+		case PlayoutLockFunctionPriority.USER_PLAYOUT:
+			return StudioLockFunctionPriority.USER_PLAYOUT
+		case PlayoutLockFunctionPriority.MISC:
+			return StudioLockFunctionPriority.MISC
+		default:
+			assertNever(priority)
+			return StudioLockFunctionPriority.MISC
+	}
+}
 
 export interface PlaylistLock extends StudioLock {
 	readonly _playlistId: RundownPlaylistId
@@ -45,6 +68,7 @@ export function runPlayoutOperationWithCache<T>(
 	context: MethodContext | null,
 	contextStr: string,
 	rundownPlaylistId: RundownPlaylistId,
+	priority: PlayoutLockFunctionPriority,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
 	fcn: (cache: CacheForPlayout) => Promise<T> | T
 ): T {
@@ -57,8 +81,8 @@ export function runPlayoutOperationWithCache<T>(
 		tmpPlaylist = pl
 	}
 
-	return runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, (lock) =>
-		playoutLockFunctionInner(contextStr, lock, tmpPlaylist, preInitFcn, fcn)
+	return runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, playoutToStudioLockPriority(priority), (lock) =>
+		playoutLockFunctionInner(contextStr, lock, tmpPlaylist, priority, preInitFcn, fcn)
 	)
 }
 
@@ -75,7 +99,7 @@ export function runPlayoutOperationWithLock<T>(
 	context: MethodContext | null,
 	contextStr: string,
 	rundownPlaylistId: RundownPlaylistId,
-	priority: RundownSyncFunctionPriority,
+	priority: PlayoutLockFunctionPriority,
 	fcn: (lock: PlaylistLock, tmpPlaylist: ReadonlyDeep<RundownPlaylist>) => Promise<T> | T
 ): T {
 	let tmpPlaylist: RundownPlaylist
@@ -87,7 +111,7 @@ export function runPlayoutOperationWithLock<T>(
 		tmpPlaylist = pl
 	}
 
-	return runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, (lock) =>
+	return runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, playoutToStudioLockPriority(priority), (lock) =>
 		runPlayoutOperationWithLockFromStudioOperation(contextStr, lock, tmpPlaylist, priority, (lock) =>
 			fcn(lock, tmpPlaylist)
 		)
@@ -106,6 +130,7 @@ export function runPlayoutOperationWithCacheFromStudioOperation<T>(
 	context: string,
 	cacheOrLock: ReadOnlyCache<CacheForStudio> | ReadOnlyCache<CacheForPlayoutPreInit> | StudioLock | PlaylistLock, // Important to verify correct lock is held
 	tmpPlaylist: ReadonlyDeep<RundownPlaylist>,
+	priority: PlayoutLockFunctionPriority,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
 	fcn: (cache: CacheForPlayout) => Promise<T> | T
 ): T {
@@ -121,7 +146,15 @@ export function runPlayoutOperationWithCacheFromStudioOperation<T>(
 			`Tried to lock Playlist "${tmpPlaylist._id}" for Studio "${lockStudioId}" but it belongs to "${tmpPlaylist.studioId}"`
 		)
 
-	return playoutLockFunctionInner(context, { _studioId: lockStudioId }, tmpPlaylist, preInitFcn, fcn, options)
+	return playoutLockFunctionInner(
+		context,
+		{ _studioId: lockStudioId },
+		tmpPlaylist,
+		priority,
+		preInitFcn,
+		fcn,
+		options
+	)
 }
 
 /**
@@ -137,7 +170,7 @@ export function runPlayoutOperationWithLockFromStudioOperation<T>(
 	context: string,
 	studioCacheOrLock: StudioLock | ReadOnlyCache<CacheForStudio>,
 	tmpPlaylist: Pick<ReadonlyDeep<RundownPlaylist>, '_id' | 'studioId'>,
-	priority: RundownSyncFunctionPriority,
+	priority: PlayoutLockFunctionPriority,
 	fcn: (lock: PlaylistLock) => Promise<T> | T
 ): T {
 	const lockStudioId = getStudioIdFromCacheOrLock(studioCacheOrLock)
@@ -173,6 +206,7 @@ function playoutLockFunctionInner<T>(
 	context: string,
 	lock: StudioLock,
 	tmpPlaylist: ReadonlyDeep<RundownPlaylist>,
+	priority: PlayoutLockFunctionPriority,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
 	fcn: (cache: CacheForPlayout) => Promise<T> | T,
 	options?: PlayoutLockOptions
@@ -197,12 +231,6 @@ function playoutLockFunctionInner<T>(
 		// TODO-PartInstances remove this once new data flow
 		return waitForPromise(doPlaylistInner())
 	} else {
-		return runPlayoutOperationWithLockFromStudioOperation(
-			context,
-			lock,
-			tmpPlaylist,
-			RundownSyncFunctionPriority.USER_PLAYOUT,
-			doPlaylistInner
-		)
+		return runPlayoutOperationWithLockFromStudioOperation(context, lock, tmpPlaylist, priority, doPlaylistInner)
 	}
 }

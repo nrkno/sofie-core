@@ -178,18 +178,16 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 			})
 
 			// Simulate playout, if no gateway
-			if (takePartInstance) {
-				const playoutDevices = waitForPromise(cache.activationCache.getPeripheralDevices()).filter(
-					(d) => d.studioId === takeRundown.studioId && d.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
+			const playoutDevices = cache.PeripheralDevices.findFetch(
+				(d) => d.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
+			)
+			if (playoutDevices.length === 0) {
+				logger.info(
+					`No Playout gateway attached to studio, reporting PartInstance "${
+						takePartInstance._id
+					}" to have started playback on timestamp ${new Date(takeDoneTime).toISOString()}`
 				)
-				if (playoutDevices.length === 0) {
-					logger.info(
-						`No Playout gateway attached to studio, reporting PartInstance "${
-							takePartInstance._id
-						}" to have started playback on timestamp ${new Date(takeDoneTime).toISOString()}`
-					)
-					reportPartHasStarted(cache, takePartInstance, takeDoneTime)
-				}
+				reportPartHasStarted(cache, takePartInstance, takeDoneTime)
 			}
 
 			// let bp = getBlueprintOfRundown(rundown)

@@ -48,7 +48,6 @@ import {
 import { sortPieceInstancesByStart } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
-import { RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
@@ -65,10 +64,11 @@ import {
 	runPlayoutOperationWithLock,
 	runPlayoutOperationWithCacheFromStudioOperation,
 	runPlayoutOperationWithCache,
+	PlayoutLockFunctionPriority,
 } from './lockFunction'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
-import { runStudioOperationWithCache } from '../studio/lockFunction'
+import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { CacheForStudio } from '../studio/cache'
 
 /**
@@ -86,7 +86,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'prepareRundownPlaylistForBroadcast',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (playlist.activationId)
@@ -122,7 +122,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'resetRundownPlaylist',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir)
@@ -151,7 +151,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'resetAndActivateRundownPlaylist',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir)
@@ -179,7 +179,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'forceResetAndActivateRundownPlaylist',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			async (cache) => {
 				const playlist = cache.Playlist.doc
 
@@ -198,6 +198,7 @@ export namespace ServerPlayoutAPI {
 										'forceResetAndActivateRundownPlaylist',
 										cache,
 										otherRundownPlaylist,
+										PlayoutLockFunctionPriority.USER_PLAYOUT,
 										null,
 										(otherCache) => {
 											deactivateRundownPlaylistInner(otherCache)
@@ -247,7 +248,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'activateRundownPlaylist',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
 			async (cache) => {
 				await prepareStudioForBroadcast(cache, true)
@@ -264,7 +265,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'deactivateRundownPlaylist',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
 			async (cache) => {
 				await standDownStudio(cache, true)
@@ -288,7 +289,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'takeNextPartInner',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
 			async (cache) => {
 				return takeNextPartInnerSync(cache, now)
@@ -310,7 +311,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'setNextPart',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT, // TODO-CACHE remove or reimplement these
+			PlayoutLockFunctionPriority.USER_PLAYOUT, // TODO-CACHE remove or reimplement these
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
@@ -374,7 +375,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'moveNextPart',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
@@ -497,7 +498,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'setNextSegment',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
@@ -527,7 +528,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'activateHold',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
@@ -580,7 +581,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'deactivateHold',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 
@@ -605,7 +606,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'disableNextPiece',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.currentPartInstanceId) throw new Meteor.Error(401, `No current part!`)
@@ -731,7 +732,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'onPiecePlaybackStarted',
 			rundownPlaylistId,
-			RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
+			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
 			() => {
 				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
 				// This method is called when an auto-next event occurs
@@ -781,7 +782,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'onPiecePlaybackStopped',
 			rundownPlaylistId,
-			RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
+			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
 			() => {
 				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
 
@@ -828,10 +829,10 @@ export namespace ServerPlayoutAPI {
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
 		return runPlayoutOperationWithCache(
-			null, // TODO: should security be doen?
+			null, // TODO: should security be done?
 			'onPartPlaybackStarted',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.CALLBACK_PLAYOUT, // TODO-CACHE
+			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT, // TODO-CACHE
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (playlist.studioId !== peripheralDevice.studioId)
@@ -990,7 +991,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'onPartPlaybackStopped',
 			rundownPlaylistId,
-			RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
+			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
 			() => {
 				// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
 				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
@@ -1133,7 +1134,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'executeActionInner',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 
@@ -1219,7 +1220,7 @@ export namespace ServerPlayoutAPI {
 			context,
 			'sourceLayerOnPartStop',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
@@ -1260,16 +1261,21 @@ export namespace ServerPlayoutAPI {
 
 		check(studioId, String)
 
-		return runStudioOperationWithCache('updateStudioBaseline', studioId, async (cache) => {
-			const activePlaylists = cache.getActiveRundownPlaylists()
+		return runStudioOperationWithCache(
+			'updateStudioBaseline',
+			studioId,
+			StudioLockFunctionPriority.USER_PLAYOUT,
+			async (cache) => {
+				const activePlaylists = cache.getActiveRundownPlaylists()
 
-			if (activePlaylists.length === 0) {
-				updateStudioTimeline(cache)
-				return shouldUpdateStudioBaselineInner(cache)
-			} else {
-				return shouldUpdateStudioBaselineInner(cache)
+				if (activePlaylists.length === 0) {
+					updateStudioTimeline(cache)
+					return shouldUpdateStudioBaselineInner(cache)
+				} else {
+					return shouldUpdateStudioBaselineInner(cache)
+				}
 			}
-		})
+		)
 	}
 
 	export function shouldUpdateStudioBaseline(context: MethodContext, studioId: StudioId) {
@@ -1277,9 +1283,14 @@ export namespace ServerPlayoutAPI {
 
 		check(studioId, String)
 
-		return runStudioOperationWithCache('updateStudioBaseline', studioId, async (cache) => {
-			return shouldUpdateStudioBaselineInner(cache)
-		})
+		return runStudioOperationWithCache(
+			'updateStudioBaseline',
+			studioId,
+			StudioLockFunctionPriority.MISC,
+			async (cache) => {
+				return shouldUpdateStudioBaselineInner(cache)
+			}
+		)
 	}
 	function shouldUpdateStudioBaselineInner(cache: CacheForStudio): string | false {
 		const studio = cache.Studio.doc
@@ -1376,7 +1387,7 @@ export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylist
 				null,
 				'triggerUpdateTimelineAfterIngestData',
 				playlistId,
-				// RundownSyncFunctionPriority.USER_PLAYOUT,
+				PlayoutLockFunctionPriority.USER_PLAYOUT,
 				null,
 				(cache) => {
 					const playlist = cache.Playlist.doc
