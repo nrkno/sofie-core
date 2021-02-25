@@ -7,7 +7,6 @@ import {
 } from '../../lib/collections/RundownPlaylists'
 import { DBRundown, Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import {
-	waitForPromise,
 	getHash,
 	protectString,
 	asyncCollectionRemove,
@@ -56,10 +55,10 @@ import { updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { Random } from 'meteor/random'
 
-// TODO-CACHE this needs to be called from somewhere
 export function removeEmptyPlaylists(studioId: StudioId) {
 	runStudioOperationWithCache('removeEmptyPlaylists', studioId, StudioLockFunctionPriority.MISC, async (cache) => {
-		const playlists = cache.RundownPlaylists.findFetch()
+		// Skip any playlists which are active
+		const playlists = cache.RundownPlaylists.findFetch({ activationId: { $exists: false } })
 
 		// We want to run them all in parallel fibers
 		await Promise.allSettled(
