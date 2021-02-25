@@ -88,10 +88,10 @@ export const SegmentContextMenu = withTranslation()(
 										)}
 									</>
 								)}
-								{Settings.allowUnsyncedSegments && this.menuItemResyncSegment(t, segment)}
+								{Settings.preserveUnsyncedPlayingSegmentContents && this.menuItemResyncSegment(t, segment)}
 							</>
 						) : (
-							Settings.allowUnsyncedSegments && this.menuItemResyncSegment(t, segment)
+							Settings.preserveUnsyncedPlayingSegmentContents && this.menuItemResyncSegment(t, segment)
 						)}
 					</ContextMenu>
 				</Escape>

@@ -310,10 +310,16 @@ export namespace ServerPlayoutAPI {
 			context,
 			'setNextPart',
 			rundownPlaylistId,
-			// RundownSyncFunctionPriority.USER_PLAYOUT,
-			null,
+			// RundownSyncFunctionPriority.USER_PLAYOUT, // TODO-CACHE remove or reimplement these
 			(cache) => {
-				// TODO-CACHE - preinit step?
+				const playlist = cache.Playlist.doc
+				if (!playlist.activationId)
+					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" is not active!`)
+
+				if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE)
+					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" cannot change next during hold!`)
+			},
+			(cache) => {
 				setNextPartInner(cache, nextPartId, setManually, nextTimeOffset)
 
 				return ClientAPI.responseSuccess(undefined)

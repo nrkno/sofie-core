@@ -467,7 +467,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 	// Cleanup any orphaned partinstances once they are no longer being played (and the segment isnt orphaned)
 	const orphanedInstances = cache.PartInstances.findFetch((p) => p.orphaned === 'deleted' && !p.reset)
 	for (const partInstance of orphanedInstances) {
-		if (Settings.allowUnsyncedSegments && orphanedSegmentIds.has(partInstance.segmentId)) {
+		if (Settings.preserveUnsyncedPlayingSegmentContents && orphanedSegmentIds.has(partInstance.segmentId)) {
 			// If the segment is also orphaned, then don't delete it until it is clear
 			continue
 		}

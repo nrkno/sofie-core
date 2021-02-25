@@ -215,7 +215,7 @@ export async function CommitIngestOperation(
 						}
 					}
 
-					const emptySegmentIds = Settings.allowUnsyncedSegments
+					const emptySegmentIds = Settings.preserveUnsyncedPlayingSegmentContents
 						? purgeSegmentIds
 						: new Set([...purgeSegmentIds.values(), ...orphanSegmentIds.values()])
 					removeSegmentContents(ingestCache, emptySegmentIds)

@@ -2,6 +2,7 @@ import { IngestSegment } from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
+import { callPeripheralDeviceFunction } from '../../../../client/lib/clientAPI'
 import { SegmentId, Segment } from '../../../../lib/collections/Segments'
 import { clone, literal, normalizeArray } from '../../../../lib/lib'
 import { Settings } from '../../../../lib/Settings'
@@ -53,8 +54,7 @@ export async function diffAndApplyChanges(
 	const newSegmentEntries = compileSegmentEntries(newIngestRundown.segments)
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
 
-	// TODO-CACHE - do we need to do these 'clever' updates anymore? As we don't store any playout properties on the Parts, destroying and recreating won't have negative impacts?
-	// The one exception is PartInstances when the segmentId changes, but that is handled by `updatePartInstancesBasicProperties()` as a general data integrity enforcement step
+	// TODO: We may not need to do some of these quick updates anymore, but they are cheap so can stay for now
 
 	// Update segment ranks:
 	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
@@ -83,7 +83,7 @@ export async function diffAndApplyChanges(
 		},
 	})
 
-	if (!Settings.allowUnsyncedSegments) {
+	if (!Settings.preserveUnsyncedPlayingSegmentContents) {
 		// Remove everything inside the segment
 		removeSegmentContents(cache, segmentIdsToRemove)
 	}
@@ -124,22 +124,23 @@ function applyExternalIdDiff(
 				_id: newSegmentId,
 			})
 		}
-
-		// TODO-CACHE avoid the multiple iterations. build a map of the renames and apply them each time
-
-		// Move over those parts to the new segmentId.
-		cache.Parts.update((p) => p.segmentId === oldSegmentId, {
-			$set: {
-				segmentId: newSegmentId,
-			},
-		})
-
-		cache.Pieces.update((p) => p.startSegmentId === oldSegmentId, {
-			$set: {
-				startSegmentId: newSegmentId,
-			},
-		})
 	})
+
+	// Move over those parts to the new segmentId.
+	for (const part of cache.Parts.findFetch()) {
+		const newSegmentId = renamedSegments.get(part.segmentId)
+		if (newSegmentId) {
+			part.segmentId = newSegmentId
+			cache.Parts.replace(part)
+		}
+	}
+	for (const piece of cache.Pieces.findFetch()) {
+		const newSegmentId = renamedSegments.get(piece.startSegmentId)
+		if (newSegmentId) {
+			piece.startSegmentId = newSegmentId
+			cache.Pieces.replace(piece)
+		}
+	}
 
 	return renamedSegments
 }

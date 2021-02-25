@@ -378,7 +378,6 @@ export async function updateRundownFromIngestData(
 		cache.Studio.doc
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
-	// TODO-CACHE - better caching here!
 	const showStyle = selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
@@ -532,8 +531,7 @@ export async function updateRundownFromIngestData(
 		})
 	}
 
-	// TODO-CACHE - rename this setting
-	if (Settings.allowUnsyncedSegments && removedSegments.length > 0) {
+	if (Settings.preserveUnsyncedPlayingSegmentContents && removedSegments.length > 0) {
 		// Preserve any old content, unless the part is referenced in another segment
 		const retainSegments = new Set(removedSegments.map((s) => s._id))
 		const newPartIds = new Set(segmentChanges.parts.map((p) => p._id))

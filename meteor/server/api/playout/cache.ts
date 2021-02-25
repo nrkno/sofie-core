@@ -171,6 +171,9 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			)
 		)
 
+		// TODO: This could be defered until we get to updateTimeline. It could be a small performance boost
+		ps.push(this.Timeline.prepareInit({ _id: playlist.studioId }, true))
+
 		await Promise.allSettled(ps)
 
 		if (ingestCache) {
@@ -178,10 +181,6 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			this.Segments.fillWithDataFromArray(ingestCache.Segments.findFetch())
 			this.Parts.fillWithDataFromArray(ingestCache.Parts.findFetch())
 		}
-
-		// This will be needed later, but we will do some other processing first
-		// TODO-CACHE how can we reliably defer this and await it when it is needed?
-		await Promise.allSettled([this.Timeline.prepareInit({ _id: playlist.studioId }, true)])
 	}
 
 	removePlaylist() {
