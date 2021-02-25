@@ -2,9 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../../lib/check'
 import { IngestActions } from './actions'
-import { updateStudioOrPlaylistTimeline } from '../playout/timeline'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { StudioId } from '../../../lib/collections/Studios'
 import { Settings } from '../../../lib/Settings'
 import { SegmentId, Segments } from '../../../lib/collections/Segments'
 import { RundownIngestDataCache } from './ingestCache'
@@ -12,10 +10,9 @@ import { Rundowns } from '../../../lib/collections/Rundowns'
 import { handleUpdatedSegment } from './rundownInput'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { logger } from '../../logging'
-import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
-import { ensureNextPartIsValid } from './updateNext'
-import { PlayoutLockFunctionPriority, runPlayoutOperationWithCacheFromStudioOperation } from '../playout/lockFunction'
 import { waitForPromise } from '../../../lib/lib'
+import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
+import { runIngestOperationWithLock } from './lockFunction'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
@@ -47,55 +44,14 @@ if (!Settings.enableUserAccounts) {
 				true
 			)
 		},
-		debug_updateTimeline: (studioId: StudioId) => {
-			try {
-				check(studioId, String)
-				logger.info(`debug_updateTimeline: "${studioId}"`)
+		debug_recreateExpectedMediaItems() {
+			const rundowns = Rundowns.find().fetch()
 
-				runStudioOperationWithCache(
-					'debug_updateTimeline',
-					studioId,
-					StudioLockFunctionPriority.USER_PLAYOUT,
-					(cache) => {
-						updateStudioOrPlaylistTimeline(cache)
-					}
+			rundowns.map((rundown) => {
+				runIngestOperationWithLock('', rundown.studioId, rundown.externalId, async (cache) =>
+					updateExpectedMediaItemsOnRundown(cache)
 				)
-			} catch (e) {
-				logger.error(e)
-				throw e
-			}
-		},
-		debug_updateNext: (studioId: StudioId) => {
-			try {
-				check(studioId, String)
-				logger.info(`debug_updateNext: "${studioId}"`)
-
-				runStudioOperationWithCache(
-					'debug_updateNext',
-					studioId,
-					StudioLockFunctionPriority.USER_PLAYOUT,
-					(cache) => {
-						const playlists = cache.getActiveRundownPlaylists()
-						if (playlists.length === 1) {
-							return runPlayoutOperationWithCacheFromStudioOperation(
-								'updateStudioOrPlaylistTimeline',
-								cache,
-								playlists[0],
-								PlayoutLockFunctionPriority.USER_PLAYOUT,
-								null,
-								(playlistCache) => {
-									ensureNextPartIsValid(playlistCache)
-								}
-							)
-						} else {
-							throw new Error('No playlist active')
-						}
-					}
-				)
-			} catch (e) {
-				logger.error(e)
-				throw e
-			}
+			})
 		},
 	})
 }
