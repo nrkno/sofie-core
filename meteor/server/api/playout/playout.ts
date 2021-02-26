@@ -144,7 +144,9 @@ export namespace ServerPlayoutAPI {
 
 				libResetRundownPlaylist(cache, playlist)
 
-				updateTimeline(cache, playlist.studioId)
+				if (playlist.activationId) {
+					updateTimeline(cache, playlist.studioId)
+				}
 
 				waitForPromise(cache.saveAllToDatabase())
 			}
