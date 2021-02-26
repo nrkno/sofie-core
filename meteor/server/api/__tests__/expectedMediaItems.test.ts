@@ -48,7 +48,7 @@ describe('Expected Media Items', () => {
 	const getExpectedPackage = (id: string, filePath: string) => {
 		return literal<ExpectedPackage.ExpectedPackageMediaFile>({
 			_id: id,
-			layer: 'layer0',
+			layers: ['layer0'],
 			contentVersionHash: 'abc',
 			type: ExpectedPackage.PackageType.MEDIA_FILE,
 			content: {

@@ -235,17 +235,18 @@ export function routeExpectedPackages(
 	// Map the expectedPackages onto their specified layer:
 	const mappingsWithPackages: MappingsExtWithPackage = {}
 	for (const expectedPackage of expectedPackages) {
-		const layerName = expectedPackage.layer
-		const mapping = studio.mappings[layerName]
+		for (const layerName of expectedPackage.layers) {
+			const mapping = studio.mappings[layerName]
 
-		if (mapping) {
-			if (!mappingsWithPackages[layerName]) {
-				mappingsWithPackages[layerName] = {
-					...mapping,
-					expectedPackages: [],
+			if (mapping) {
+				if (!mappingsWithPackages[layerName]) {
+					mappingsWithPackages[layerName] = {
+						...mapping,
+						expectedPackages: [],
+					}
 				}
+				mappingsWithPackages[layerName].expectedPackages.push(unprotectObject(expectedPackage))
 			}
-			mappingsWithPackages[layerName].expectedPackages.push(unprotectObject(expectedPackage))
 		}
 	}
 

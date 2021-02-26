@@ -21,10 +21,10 @@ export namespace ExpectedPackage {
 	export interface Base {
 		/** Unique id of the expectedPackage */
 		_id: string
-		/** Reference to which timeline-layer the Package is going to be used in.
+		/** Reference to which timeline-layer(s) the Package is going to be used in.
 		 * (Used to route the package to the right playout-device (targets))
 		 */
-		layer: string
+		layers: string[]
 
 		/** What type of package it is */
 		type: PackageType
