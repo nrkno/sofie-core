@@ -2245,7 +2245,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												segmentId={segment._id}
 												playlist={this.props.playlist}
 												timeScale={this.state.timeScale}
-												// onTimeScaleChange={this.onTimeScaleChange}
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
 												orderedAllPartIds={this.props.orderedPartsIds}

@@ -84,7 +84,6 @@ interface IProps {
 	timeScale: number
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	// onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onSegmentScroll?: () => void
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteType) => void
@@ -200,7 +199,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.followLiveSegments !== nextProps.followLiveSegments ||
 			props.onContextMenu !== nextProps.onContextMenu ||
 			props.onSegmentScroll !== nextProps.onSegmentScroll ||
-			// props.onTimeScaleChange !== nextProps.onTimeScaleChange ||
 			props.segmentId !== nextProps.segmentId ||
 			props.segmentRef !== nextProps.segmentRef ||
 			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
