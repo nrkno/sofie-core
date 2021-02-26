@@ -144,7 +144,7 @@ meteorCustomPublishArray(PubSub.expectedPackagesForDevice, 'deviceExpectedPackag
 		const studioId = peripheralDevice.studioId
 		if (!studioId) {
 			logger.warn(`Pub.expectedPackagesForDevice: device "${peripheralDevice._id}" has no studioId`)
-			return []
+			return this.ready()
 		}
 
 		const observer = setUpOptimizedObserver(
