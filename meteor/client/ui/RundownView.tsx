@@ -2923,8 +2923,8 @@ export function handleRundownReloadResponse(
 		const notificationHandle = NotificationCenter.push(notification)
 
 		if (rundown) {
-			// This allows the semi-modal dialog above to be closed automatically, once the rundown stops existing for whatever reason
-			console.log(Tracker.currentComputation)
+			// This allows the semi-modal dialog above to be closed automatically, once the rundown stops existing
+			// for whatever reason
 			const comp = Tracker.autorun(() => {
 				const rundown = Rundowns.findOne(rundownId, {
 					fields: {
@@ -2932,12 +2932,14 @@ export function handleRundownReloadResponse(
 						unsynced: 1,
 					},
 				})
+				// we should hide the message
 				if (!rundown || !rundown.unsynced) {
 					notificationHandle.stop()
 				}
 			})
 			notification.on('dropped', () => {
-				// clean up the reactive computation above
+				// clean up the reactive computation above when the notification is closed. Will be also executed by
+				// the notificationHandle.stop() above, so the Tracker.autorun will clean up after itself as well.
 				comp.stop()
 			})
 		}
