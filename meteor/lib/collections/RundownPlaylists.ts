@@ -74,7 +74,7 @@ export interface DBRundownPlaylist {
 	rehearsal?: boolean
 	/** Playout hold state */
 	holdState?: RundownHoldState
-	/** Is the playlist currently active in the studio */
+	/** Truthy when the playlist is currently active in the studio. This is regenerated upon each activation/reset. */
 	activationId?: RundownPlaylistActivationId
 	/** Should the playlist loop at the end */
 	loop?: boolean
