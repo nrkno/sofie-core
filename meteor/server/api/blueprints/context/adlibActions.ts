@@ -40,6 +40,7 @@ import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { MediaObjects } from '../../../../lib/collections/MediaObjects'
+import { Piece } from '../../../../lib/collections/Pieces'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -153,6 +154,43 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		return clone(unprotectObject(lastPieceInstance))
 	}
+
+	findLastScriptedPieceOnLayer(
+		sourceLayerId: string,
+		options?: {
+			excludeCurrentPart?: boolean
+			pieceMetaDataFilter?: any
+		}
+	): IBlueprintPiece | undefined {
+		const query: MongoQuery<Piece> = {}
+		if (options && options.pieceMetaDataFilter) {
+			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
+				// TODO do we need better validation here?
+				// It should be pretty safe as we are working with the cache version (for now)
+				query[`piece.metaData.${key}`] = value
+			}
+		}
+
+		if (options && options.excludeCurrentPart && this.rundownPlaylist.currentPartInstanceId) {
+			const currentPartInstance = this._cache.PartInstances.findOne(
+				(p) => p._id === this.rundownPlaylist.currentPartInstanceId
+			)
+
+			if (currentPartInstance) {
+				query['startPartId'] = { $ne: currentPartInstance.part._id }
+			}
+		}
+
+		const lastPiece = ServerPlayoutAdLibAPI.innerFindLastScriptedPieceOnLayer(
+			this._cache,
+			this.rundownPlaylist,
+			sourceLayerId,
+			query
+		)
+
+		return clone(unprotectObject(lastPiece))
+	}
+
 	insertPiece(part: 'current' | 'next', rawPiece: IBlueprintPiece): IBlueprintPieceInstance {
 		const partInstanceId = this._getPartInstanceId(part)
 		if (!partInstanceId) {

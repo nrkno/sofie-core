@@ -17,7 +17,7 @@ import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Ti
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
-import { Part } from '../../../lib/collections/Parts'
+import { Part, Parts } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache, getSelectedPartInstancesFromCache } from './lib'
 import {
 	convertAdLibToPieceInstance,
@@ -393,6 +393,47 @@ export namespace ServerPlayoutAdLibAPI {
 				startedPlayback: -1,
 			},
 		})
+	}
+
+	export function innerFindLastScriptedPieceOnLayer(
+		cache: CacheForRundownPlaylist,
+		rundownPlaylist: RundownPlaylist,
+		sourceLayerId: string,
+		customQuery?: MongoQuery<Piece>
+	) {
+		const span = profiler.startSpan('innerFindLastScriptedPieceOnLayer')
+		const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
+
+		if (!rundownPlaylist.currentPartInstanceId) {
+			return
+		}
+
+		const currentPartInstance = cache.PartInstances.findOne({ _id: rundownPlaylist.currentPartInstanceId })
+
+		if (!currentPartInstance) {
+			return
+		}
+
+		const query = {
+			...customQuery,
+			startRundownId: { $in: rundownIds },
+			'piece.sourceLayerId': sourceLayerId,
+		}
+
+		if (span) span.end()
+
+		const pieces = Pieces.find(query).fetch()
+
+		const part = Parts.findOne(
+			{ _id: { $in: pieces.map((p) => p.startPartId) }, _rank: { $lte: currentPartInstance.part._rank } },
+			{ sort: { _rank: -1 } }
+		)
+
+		if (!part) {
+			return
+		}
+
+		return pieces.find((p) => p.startPartId === part._id)
 	}
 
 	export function innerStartQueuedAdLib(
