@@ -397,7 +397,6 @@ describe('Test blueprint cache', () => {
 					showStyleBaseId: protectString(''),
 					showStyleVariantId: protectString('variant0'),
 					peripheralDeviceId: protectString(''),
-					dataSource: '',
 					created: 0,
 					modified: 0,
 					importVersions: {} as any,

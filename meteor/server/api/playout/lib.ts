@@ -3,7 +3,7 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
-import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
+import { Parts, Part } from '../../../lib/collections/Parts'
 import {
 	getCurrentTime,
 	Time,
@@ -13,6 +13,7 @@ import {
 	protectString,
 	applyToArray,
 	getRandomId,
+	unprotectString,
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import {
@@ -20,7 +21,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { Segments, Segment } from '../../../lib/collections/Segments'
+import { Segments, Segment, SegmentId, DBSegment } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
@@ -31,13 +32,15 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
-import { saveIntoCache } from '../../DatabaseCache'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { profiler } from '../profiler'
+import { Settings } from '../../../lib/Settings'
+import { removeSegmentContents } from '../rundown'
+import { consoleTestResultHandler } from 'tslint/lib/test'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -164,7 +167,7 @@ function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPla
 		})
 
 		// put the first on queue:
-		const firstPart = selectNextPart(rundownPlaylist, null, getAllOrderedPartsFromCache(cache, rundownPlaylist))
+		const firstPart = selectNextPart(rundownPlaylist, null, getSegmentsAndPartsFromCache(cache, rundownPlaylist))
 		setNextPart(cache, rundownPlaylist, firstPart ? firstPart.part : null)
 	} else {
 		setNextPart(cache, rundownPlaylist, null)
@@ -176,11 +179,15 @@ export interface SelectNextPartResult {
 	index: number
 	consumesNextSegmentId?: boolean
 }
+export interface PartsAndSegments {
+	segments: DBSegment[]
+	parts: Part[]
+}
 
 export function selectNextPart(
 	rundownPlaylist: Pick<RundownPlaylist, 'nextSegmentId' | 'loop'>,
 	previousPartInstance: PartInstance | null,
-	parts: Part[],
+	{ parts, segments }: PartsAndSegments,
 	ignoreUnplayabale = true
 ): SelectNextPartResult | undefined {
 	const span = profiler.startSpan('selectNextPart')
@@ -205,31 +212,58 @@ export function selectNextPart(
 		return undefined
 	}
 
-	let offset = 0
+	let searchFromIndex = 0
 	if (previousPartInstance) {
 		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
 		if (currentIndex !== -1) {
 			// Start looking at the next part
-			offset = currentIndex + 1
+			searchFromIndex = currentIndex + 1
 		} else {
-			// Look for other parts in the segment to reference
-			let segmentStartIndex: number | undefined
-			let nextInSegmentIndex: number | undefined
+			const segmentStarts = new Map<SegmentId, number>()
 			parts.forEach((p, i) => {
-				if (p.segmentId === previousPartInstance.segmentId) {
-					if (segmentStartIndex === undefined) segmentStartIndex = i
+				if (!segmentStarts.has(p.segmentId)) {
+					segmentStarts.set(p.segmentId, i)
+				}
+			})
 
-					if (p._rank <= previousPartInstance.part._rank) {
+			// Look for other parts in the segment to reference
+			const segmentStartIndex = segmentStarts.get(previousPartInstance.segmentId)
+			if (segmentStartIndex !== undefined) {
+				let nextInSegmentIndex: number | undefined
+				for (let i = segmentStartIndex; i < parts.length; i++) {
+					const part = parts[i]
+					if (part.segmentId !== previousPartInstance.segmentId) break
+					if (part._rank <= previousPartInstance.part._rank) {
 						nextInSegmentIndex = i + 1
 					}
 				}
-			})
-			offset = nextInSegmentIndex ?? segmentStartIndex ?? offset
+
+				searchFromIndex = nextInSegmentIndex ?? segmentStartIndex
+			} else {
+				// If we didn't find the segment in the list of parts, then look for segments after this one.
+				const segmentIndex = segments.findIndex((s) => s._id === previousPartInstance.segmentId)
+				let followingSegmentStart: number | undefined
+				if (segmentIndex !== -1) {
+					// Find the first segment with parts that lies after this
+					for (let i = segmentIndex + 1; i < segments.length; i++) {
+						const segmentStart = segmentStarts.get(segments[i]._id)
+						if (segmentStart !== undefined) {
+							followingSegmentStart = segmentStart
+							break
+						}
+					}
+
+					// Either there is a segment after, or we are at the end of the rundown
+					searchFromIndex = followingSegmentStart ?? parts.length + 1
+				} else {
+					// Somehow we cannot place the segment, so the start of the playlist is better than nothing
+				}
+			}
 		}
 	}
 
 	// Filter to after and find the first playabale
-	let nextPart = findFirstPlayablePart(offset)
+	let nextPart = findFirstPlayablePart(searchFromIndex)
 
 	if (rundownPlaylist.nextSegmentId) {
 		// No previous part, or segment has changed
@@ -248,11 +282,8 @@ export function selectNextPart(
 
 	// if playlist should loop, check from 0 to currentPart
 	if (rundownPlaylist.loop && !nextPart && previousPartInstance) {
-		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
-		// TODO - choose something better for next?
-		if (currentIndex !== -1) {
-			nextPart = findFirstPlayablePart(0, undefined, currentIndex)
-		}
+		// Search up until the current part
+		nextPart = findFirstPlayablePart(0, undefined, searchFromIndex - 1)
 	}
 
 	if (span) span.end()
@@ -395,6 +426,7 @@ export function setNextPart(
 				nextTimeOffset: null,
 			}),
 		})
+		rundownPlaylist.nextPartInstanceId = null
 	}
 
 	// Remove any instances which havent been taken
@@ -419,6 +451,8 @@ export function setNextPart(
 		})
 		// delete rundownPlaylist.nextSegmentId
 	}
+
+	cleanupOrphanedItems(cache, rundownPlaylist)
 
 	if (span) span.end()
 }
@@ -456,6 +490,75 @@ export function setNextSegment(
 		})
 	}
 	if (span) span.end()
+}
+
+/**
+ * Cleanup any orphaned (deleted) segments and partinstances once they are no longer being played
+ * @param cache
+ * @param playlist
+ */
+function cleanupOrphanedItems(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
+	const rundownIds = getRundownIDsFromCache(cache, playlist)
+	const selectedPartInstanceIds = _.compact([playlist.currentPartInstanceId, playlist.nextPartInstanceId])
+
+	const removePartInstanceIds: PartInstanceId[] = []
+
+	// Cleanup any orphaned segments once they are no longer being played
+	const segments = cache.Segments.findFetch((s) => s.orphaned === 'deleted' && rundownIds.includes(s.rundownId))
+	const orphanedSegmentIds = new Set(segments.map((s) => s._id))
+	const groupedPartInstances = _.groupBy(
+		cache.PartInstances.findFetch((p) => orphanedSegmentIds.has(p.segmentId)),
+		(p) => p.segmentId
+	)
+	const removeSegmentIds: SegmentId[] = []
+	for (const segment of segments) {
+		const partInstances = groupedPartInstances[unprotectString(segment._id)]
+		const partInstanceIds = new Set(partInstances.map((p) => p._id))
+
+		// Not in current or next. Previous can be reset as it will still be in the db, but not shown in the ui
+		if (
+			(!playlist.currentPartInstanceId || !partInstanceIds.has(playlist.currentPartInstanceId)) &&
+			(!playlist.nextPartInstanceId || !partInstanceIds.has(playlist.nextPartInstanceId))
+		) {
+			// The segment is finished with
+			removeSegmentIds.push(segment._id)
+			cache.Segments.remove(segment._id)
+		}
+	}
+	if (removeSegmentIds.length > 0) {
+		if (Settings.allowUnsyncedSegments) {
+			// Ensure there are no contents left behind
+			for (const rundownId of rundownIds) {
+				// TODO - in future we could make this more lightweight by checking if there are any parts in the segment first, as that can be done with the cache
+				removeSegmentContents(cache, rundownId, removeSegmentIds)
+			}
+		}
+
+		// Ensure any PartInstances are reset
+		const removeSegmentIds2 = new Set(removeSegmentIds)
+		removePartInstanceIds.push(
+			...cache.PartInstances.findFetch((p) => removeSegmentIds2.has(p.segmentId) && !p.reset).map((p) => p._id)
+		)
+	}
+
+	// Cleanup any orphaned partinstances once they are no longer being played (and the segment isnt orphaned)
+	const orphanedInstances = cache.PartInstances.findFetch((p) => p.orphaned === 'deleted' && !p.reset)
+	for (const partInstance of orphanedInstances) {
+		if (Settings.allowUnsyncedSegments && orphanedSegmentIds.has(partInstance.segmentId)) {
+			// If the segment is also orphaned, then don't delete it until it is clear
+			continue
+		}
+
+		if (!selectedPartInstanceIds.includes(partInstance._id)) {
+			removePartInstanceIds.push(partInstance._id)
+		}
+	}
+
+	// Cleanup any instances from above
+	if (removePartInstanceIds.length > 0) {
+		cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+		cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+	}
 }
 
 export function onPartHasStoppedPlaying(
@@ -566,10 +669,6 @@ export function getSegmentsAndPartsFromCache(
 } {
 	const rundowns = getRundownsFromCache(cache, playlist)
 	return getRundownsSegmentsAndPartsFromCache(cache, rundowns)
-}
-export function getAllOrderedPartsFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist): Part[] {
-	const { parts } = getSegmentsAndPartsFromCache(cache, playlist)
-	return parts
 }
 /** Get all rundowns in a playlist */
 export function getRundownsFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {

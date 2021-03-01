@@ -126,7 +126,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		newState: Partial<IState>,
 		itemElement: HTMLElement | null
 	): Partial<IState> {
-		const { relative: relativeRendering, isLiveLine, outputLayer, livePosition } = props
+		const { relative: relativeRendering, isLiveLine, outputLayer } = props
 		if (
 			this.countdownContainer &&
 			!this.state.sourceEndCountdownAppendage &&
@@ -332,7 +332,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				}
 			}
 			// @todo: hardcoded 25fps
-			if (tot > 0) msgBlacks = `${Math.round(tot / timebase)} black frame${tot > timebase ? 's' : ''} in clip`
+			if (tot > 0) msgBlacks = `${Math.ceil(tot / timebase)} black frame${tot > timebase ? 's' : ''} in clip`
 		}
 		if (this.state.freezes) {
 			let tot = 0
@@ -349,7 +349,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				}
 			}
 			// @todo: hardcoded 25fps
-			if (tot > 0) msgFreezes += `${Math.round(tot / timebase)} freeze\n frame${tot > timebase ? 's' : ''} in clip`
+			if (tot > 0) msgFreezes += `${Math.ceil(tot / timebase)} freeze\n frame${tot > timebase ? 's' : ''} in clip`
 		}
 		if (show) {
 			return (

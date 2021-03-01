@@ -35,6 +35,7 @@ import { RundownUtils } from '../../lib/rundown'
 import PlaylistRankMethodToggle from './PlaylistRankMethodToggle'
 import JonasFormattedTime from './JonasFormattedTime'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
+import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
@@ -238,7 +239,7 @@ export const RundownPlaylistUi = DropTarget(
 			}
 
 			render() {
-				const { playlist, connectDropTarget, t, isActiveDropZone } = this.props
+				const { playlist, connectDropTarget, t, isActiveDropZone, rundownLayouts } = this.props
 
 				if (playlist.rundowns.length === 0) {
 					console.debug(`Playlist ${playlist._id} has no rundowns, aborting render`)
@@ -265,6 +266,7 @@ export const RundownPlaylistUi = DropTarget(
 								key={unprotectString(playlist.rundowns[0]._id)}
 								rundown={playlist.rundowns[0]}
 								rundownViewUrl={playlistViewURL}
+								rundownLayouts={rundownLayouts}
 								swapRundownOrder={handleRundownSwap}
 								playlistId={playlist._id}
 							/>
@@ -281,6 +283,7 @@ export const RundownPlaylistUi = DropTarget(
 							isActive={!!playlist.activationId}
 							key={unprotectString(rundown._id)}
 							rundown={rundown}
+							rundownLayouts={rundownLayouts}
 							swapRundownOrder={handleRundownSwap}
 							playlistId={playlist._id}
 						/>
@@ -325,6 +328,15 @@ export const RundownPlaylistUi = DropTarget(
 							<span className="rundown-list-item__text">
 								<JonasFormattedTime timestamp={playlist.modified} t={t} />
 							</span>
+							{rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
+								<span className="rundown-list-item__text">
+									<RundownShelfLayoutSelection
+										rundowns={[playlist.rundowns]}
+										rundownLayouts={rundownLayouts}
+										playlistId={playlist._id}
+									/>
+								</span>
+							)}
 							<span className="rundown-list-item__actions"></span>
 						</header>
 						<ol className="rundown-playlist__rundowns">{rundownComponents}</ol>

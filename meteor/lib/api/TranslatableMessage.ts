@@ -1,13 +1,10 @@
 import { TFunction } from 'i18next'
+import { ITranslatableMessage as IBlueprintTranslatableMessage } from '@sofie-automation/blueprints-integration'
 
 /**
  * @enum - A translatable message (i18next)
  */
-export interface ITranslatableMessage {
-	/** the message key (we use literal strings in English as keys for now) */
-	key: string
-	/** arguments for the message template */
-	args?: { [key: string]: any }
+export interface ITranslatableMessage extends IBlueprintTranslatableMessage {
 	/** namespace used */
 	namespaces?: Array<string>
 }

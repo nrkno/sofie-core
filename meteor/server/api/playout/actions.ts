@@ -7,14 +7,14 @@ import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/Pe
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime, getRandomId, waitForPromise } from '../../../lib/lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
-import { RundownContext, RundownEventContext } from '../blueprints/context'
+import { RundownEventContext } from '../blueprints/context'
 import {
 	setNextPart,
 	onPartHasStoppedPlaying,
 	selectNextPart,
 	getSelectedPartInstancesFromCache,
-	getAllOrderedPartsFromCache,
 	LOW_PRIO_DEFER_TIME,
+	getSegmentsAndPartsFromCache,
 } from './lib'
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
@@ -66,7 +66,7 @@ export function activateRundownPlaylist(
 	let rundown: Rundown | undefined
 
 	if (!rundownPlaylist.nextPartInstanceId) {
-		const firstPart = selectNextPart(rundownPlaylist, null, getAllOrderedPartsFromCache(cache, rundownPlaylist))
+		const firstPart = selectNextPart(rundownPlaylist, null, getSegmentsAndPartsFromCache(cache, rundownPlaylist))
 		setNextPart(cache, rundownPlaylist, firstPart ? firstPart.part : null)
 	} else {
 		const nextPartInstance = cache.PartInstances.findOne(rundownPlaylist.nextPartInstanceId)

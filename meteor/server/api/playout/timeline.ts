@@ -72,7 +72,10 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 	const activePlaylist = getActiveRundownPlaylist(cache, studioId)
 
 	if (activePlaylist && cache.containsDataFromPlaylist !== activePlaylist._id) {
-		throw new Meteor.Error(500, `Active rundownPlaylist is not in cache`)
+		throw new Meteor.Error(
+			500,
+			`Active rundownPlaylist ("${activePlaylist._id}") is not in cache ("${cache.containsDataFromPlaylist}")`
+		)
 	}
 
 	if (!studio) throw new Meteor.Error(404, 'studio "' + studioId + '" not found!')
@@ -794,6 +797,7 @@ export function hasPieceInstanceDefinitelyEnded(
 	nowInPart: number
 ): boolean {
 	if (nowInPart <= 0) return false
+	if (pieceInstance.piece.hasSideEffects) return false
 
 	let relativeEnd: number | undefined
 	if (typeof pieceInstance.resolvedEndCap === 'number') {

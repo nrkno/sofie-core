@@ -2710,7 +2710,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					)
 				} else if (this.props.playlist && this.props.studio && this.props.showStyleBase && this.props.onlyShelf) {
 					return (
-						<>
+						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
 							<ErrorBoundary>
 								<NoraPreviewRenderer />
 							</ErrorBoundary>
@@ -2732,7 +2732,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									bucketDisplayFilter={this.props.bucketDisplayFilter}
 								/>
 							</ErrorBoundary>
-						</>
+						</RundownTimingProvider>
 					)
 				} else {
 					return (

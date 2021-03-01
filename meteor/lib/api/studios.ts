@@ -1,4 +1,3 @@
-import { TSR } from '@sofie-automation/blueprints-integration'
 import { StudioId } from '../collections/Studios'
 
 export interface NewStudiosAPI {

@@ -142,9 +142,8 @@ export function takeNextPartInnerSync(
 	if (!takeRundown)
 		throw new Meteor.Error(500, `takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
 
-	const { segments, parts: partsInOrder } = getSegmentsAndPartsFromCache(cache, playlist)
 	// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
-	const nextPart = selectNextPart(playlist, takePartInstance, partsInOrder)
+	const nextPart = selectNextPart(playlist, takePartInstance, getSegmentsAndPartsFromCache(cache, playlist))
 
 	// beforeTake(rundown, previousPart || null, takePart)
 

@@ -12,6 +12,7 @@ interface IProps {
 	itemElement: HTMLDivElement | null
 	floatingInspectorStyle: React.CSSProperties
 	content: SplitsContent
+	displayOn?: 'document' | 'viewport'
 }
 
 const RenderSplitPreview = memo(function RenderSplitPreview({ subItems }: { subItems: SplitSubItem[] }) {
@@ -57,7 +58,7 @@ export const SplitsFloatingInspector: React.FunctionComponent<IProps> = (props) 
 	])
 
 	return (
-		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined}>
+		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
 			<div
 				className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
 				style={props.floatingInspectorStyle}>

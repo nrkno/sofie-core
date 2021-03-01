@@ -5,17 +5,11 @@ import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { withTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Segment } from '../../../lib/collections/Segments'
-import { Part, Parts } from '../../../lib/collections/Parts'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
-
-import { faTh, faList, faTimes } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { RundownViewKbdShortcuts } from '../RundownView'
 
@@ -24,17 +18,15 @@ import { literal, normalizeArray, unprotectString, protectString } from '../../.
 import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { PieceGeneric } from '../../../lib/collections/Pieces'
 import {
 	IOutputLayer,
 	ISourceLayer,
-	SomeContent,
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
 	SomeTimelineContent,
 } from '@sofie-automation/blueprints-integration'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { PartInstances } from '../../../lib/collections/PartInstances'
@@ -88,7 +80,7 @@ const AdLibListView = withTranslation()(
 			}
 		}
 
-		static getDerivedStateFromProps(props: IListViewPropsHeader, state) {
+		static getDerivedStateFromProps(props: IListViewPropsHeader) {
 			let tOLayers: {
 				[key: string]: IOutputLayer
 			} = {}
@@ -271,7 +263,7 @@ interface ITrackedProps {
 
 export const GlobalAdLibHotkeyUseMap = new ReactiveMap<number>()
 
-export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
+export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
@@ -620,7 +612,6 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
-			const { t } = this.props
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				const { t } = this.props
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId

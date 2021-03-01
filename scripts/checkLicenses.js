@@ -1,46 +1,68 @@
-console.log('Checking used licenses...');
+const legally = require('../meteor/node_modules/legally')
 
-// Legally only writes it's analysis to console and it's API has no way to reuse it,
-// so we need to parse it's text output
-console.write = console.log;
-let consoleBuffer = ''
-console.log = (...args) => {
-	consoleBuffer += args.map(arg => `${arg }`).join(', ') + '\n';
-	console.write(...args);
-};
-console.flush = () => {
-	consoleBuffer = '';
-};
+// Usage: node checkLicenses.js --allowed=MIT,ISC --excludePackages=badPackageWhoDoesntSpeficyLicense
 
-const legally = require('../meteor/node_modules/legally');
-const proc = require('process');
+let validLicenses = []
+let excludePackages = []
 
-let done = false;
-let exitCode = 0;
-(function wait () {
-	// the analysis is async as well, but run after the original legally() promise is already
-	// resolved, so we need to make sure that the consoleBuffer already contains the Report
-	// to be parsed
-	if (!done || consoleBuffer.indexOf('Reports') === -1) {
-		setTimeout(wait, 1000);
-	} else {
-		const m = consoleBuffer.match(/\s+([\d\.\,]+)\% of the dependencies are not/mi)
-		if (!m) {
-			console.error('Analysis for the licenses not found.');
-			exitCode = 10;
-		} else if (!m[1] || parseFloat(m[1]) > 0) {
-			console.error('Unapproved licenses used.')
-			exitCode = 20;
-		}
-		console.log = console.write;
-		proc.exitCode = exitCode;
+process.argv.forEach((argString) => {
+	let m
+	m = argString.match(/--allowed=["']([^"']*)["']/)
+	if (!m) m = argString.match(/--allowed=(.*)/)
+	if (m) {
+		const strs = m[1].split(',')
+		console.log(`Valid licenses: ${strs.join(', ')}`)
+		validLicenses = strs.map(str => new RegExp(str), 'i')
 	}
-})();
 
-legally().then(() => {
-	done = true;
-}).catch((e) => {
-	console.error(e);
-	exitCode = 100;
-	done = true;
-});
+	m = argString.match(/--excludePackages=(.*)/)
+	if (m) {
+		excludePackages = m[1].split(',')
+		console.log(`Excluding packages: ${excludePackages.join(', ')}`)
+	}
+})
+
+if (!validLicenses.length) {
+	throw 'usage: node checkLicenses.js --allowed=MIT,ISC --excludePackages=badPackageWhoDoesntSpeficyLicense'
+}
+
+console.log('Checking used licenses...')
+
+legally()
+	.then((licenses) => {
+		let ok = true
+
+		for (const [package, info] of Object.entries(licenses)) {
+			let exclude = false
+			for (const excludePackage of excludePackages) {
+				if (package.match(new RegExp(`^${excludePackage}@`))) {
+					exclude = true
+				}
+			}
+			if (exclude) continue
+
+			let foundApproved = false
+			for (const license of info.package) {
+				for (const validLicense of validLicenses) {
+					if (license.match(validLicense)) {
+						foundApproved = true
+						break
+					}
+				}
+			}
+			if (!foundApproved) {
+				console.log(`Unapproved License: "${info.package}" in ${package}`)
+				ok = false
+			}
+		}
+
+		if (ok) {
+			console.log('All is well :)')
+			process.exit(0)
+		} else {
+			process.exit(100)
+		}
+	}).catch((e) => {
+		console.error(e)
+		process.exit(100)
+	})

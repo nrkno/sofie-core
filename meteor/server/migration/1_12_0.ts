@@ -1,6 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
 import { Studios } from '../../lib/collections/Studios'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Pieces } from '../../lib/collections/Pieces'
 import { Part, Parts } from '../../lib/collections/Parts'
@@ -9,7 +8,7 @@ import { unprotectString, ProtectedString, objectPathSet } from '../../lib/lib'
 import { TransformedCollection } from '../../lib/typings/meteor'
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
+import { Timeline } from '../../lib/collections/Timeline'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ensureCollectionProperty, removeCollectionProperty, setExpectedVersion } from './lib'
 
@@ -132,12 +131,14 @@ export function migrateConfigToBlueprintConfigOnObject<
 		blueprintConfig?: IBlueprintConfig
 	}
 >(document: DBInterface): DBInterface {
-	document.blueprintConfig = {}
-	// @ts-ignore old typing
-	const oldConfig = document.config as any
-	if (oldConfig) {
-		for (const item of oldConfig) {
-			objectPathSet(document.blueprintConfig, item._id, item.value)
+	if (!document.blueprintConfig) {
+		document.blueprintConfig = {}
+		// @ts-ignore old typing
+		const oldConfig = document.config as any
+		if (oldConfig) {
+			for (const item of oldConfig) {
+				objectPathSet(document.blueprintConfig, item._id, item.value)
+			}
 		}
 	}
 	// @ts-ignore old typing
