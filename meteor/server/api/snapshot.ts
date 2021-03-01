@@ -51,7 +51,7 @@ import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { AudioContent } from '@sofie-automation/blueprints-integration'
+import { VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
@@ -192,15 +192,9 @@ function createRundownPlaylistSnapshot(
 	const adLibActions = AdLibActions.find({ rundownId: { $in: rundownIds } }).fetch()
 	const baselineAdLibActions = RundownBaselineAdLibActions.find({ rundownId: { $in: rundownIds } }).fetch()
 	const mediaObjectIds: Array<string> = [
-		...pieces
-			.filter((piece) => piece.content && piece.content.fileName)
-			.map((piece) => (piece.content as AudioContent).fileName),
-		...adLibPieces
-			.filter((adLibPiece) => adLibPiece.content && adLibPiece.content.fileName)
-			.map((adLibPiece) => (adLibPiece.content as AudioContent).fileName),
-		...baselineAdlibs
-			.filter((adLibPiece) => adLibPiece.content && adLibPiece.content.fileName)
-			.map((adLibPiece) => (adLibPiece.content as AudioContent).fileName),
+		..._.compact(pieces.map((piece) => (piece.content as VTContent | undefined)?.fileName)),
+		..._.compact(adLibPieces.map((adLibPiece) => (adLibPiece.content as VTContent | undefined)?.fileName)),
+		..._.compact(baselineAdlibs.map((adLibPiece) => (adLibPiece.content as VTContent | undefined)?.fileName)),
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
 	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map((i) => i._id) } }).fetch()
@@ -351,7 +345,7 @@ function createDebugSnapshot(studioId: StudioId, organizationId: OrganizationId 
 
 	let activePlaylists = RundownPlaylists.find({
 		studioId: studio._id,
-		active: true,
+		activationId: { $exists: true },
 	}).fetch()
 
 	let activePlaylistSnapshots = _.map(activePlaylists, (playlist) => {
@@ -605,14 +599,13 @@ export function restoreFromRundownPlaylistSnapshot(
 	const playlistId = (snapshot.playlist._id = getRandomId())
 	snapshot.playlist.restoredFromSnapshotId = snapshot.playlistId
 	snapshot.playlist.peripheralDeviceId = protectString('')
-	snapshot.playlist.active = false
+	delete snapshot.playlist.activationId
 	snapshot.playlist.currentPartInstanceId = null
 	snapshot.playlist.nextPartInstanceId = null
 
 	snapshot.rundowns.forEach((rd) => {
-		if (!rd.unsynced) {
-			rd.unsynced = true
-			rd.unsyncedTime = getCurrentTime()
+		if (!rd.orphaned) {
+			rd.orphaned = 'from-snapshot'
 		}
 
 		rd.playlistId = playlistId
@@ -643,11 +636,12 @@ export function restoreFromRundownPlaylistSnapshot(
 		partSegmentIds[unprotectString(part._id)] = part.segmentId
 	})
 	_.each(snapshot.pieces, (piece) => {
-		const pieceOld = (piece as any) as Piece_1_11_0
+		const pieceOld = (piece as any) as Partial<Piece_1_11_0>
 		if (pieceOld.rundownId) {
 			piece.startRundownId = pieceOld.rundownId
 			delete pieceOld.rundownId
-
+		}
+		if (pieceOld.partId) {
 			piece.startPartId = pieceOld.partId
 			delete pieceOld.partId
 			piece.startSegmentId = partSegmentIds[unprotectString(piece.startPartId)]

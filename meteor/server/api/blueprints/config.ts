@@ -23,6 +23,7 @@ import { logger } from '../../../lib/logging'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './cache'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { BlueprintId, Blueprints } from '../../../lib/collections/Blueprints'
+import { CommonContext } from './context'
 
 /**
  * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.
@@ -95,7 +96,11 @@ export function preprocessStudioConfig(studio: Studio, blueprint?: StudioBluepri
 	res['SofieHostURL'] = studio.settings.sofieUrl
 
 	if (blueprint && blueprint.preprocessConfig) {
-		res = blueprint.preprocessConfig(res)
+		const context = new CommonContext({
+			name: `preprocessStudioConfig`,
+			identifier: `studioId=${studio._id}`,
+		})
+		res = blueprint.preprocessConfig(context, res)
 	}
 	return res
 }
@@ -108,7 +113,11 @@ export function preprocessShowStyleConfig(showStyle: ShowStyleCompound, blueprin
 		res = showStyle.blueprintConfig
 	}
 	if (blueprint && blueprint.preprocessConfig) {
-		res = blueprint.preprocessConfig(res)
+		const context = new CommonContext({
+			name: `preprocessShowStyleConfig`,
+			identifier: `showStyleBaseId=${showStyle._id},showStyleVariantId=${showStyle.showStyleVariantId}`,
+		})
+		res = blueprint.preprocessConfig(context, res)
 	}
 	return res
 }

@@ -7,14 +7,14 @@ $segment-layer-background-lower-third: #ff6f00;
 $segment-layer-background-lower-third--second: darken($segment-layer-background-lower-third, 10%);
 $segment-layer-background-graphics: #ef6800;
 $segment-layer-background-graphics--second: darken($segment-layer-background-graphics, 10%);
-$segment-layer-background-live-speak: #00c800;
+$segment-layer-background-live-speak: #1e6820;
 $segment-layer-background-remote: #e80064;
 $segment-layer-background-remote--second: darken($segment-layer-background-remote, 10%);
 $segment-layer-background-vt: #1769ff;
 $segment-layer-background-vt--second: darken($segment-layer-background-vt, 10%);
 $segment-layer-background-local: #8d1010;
 $segment-layer-background-local--second: darken($segment-layer-background-local, 10%);
-$segment-layer-background-script: #005a25;
+$segment-layer-background-script: #003600;
 $segment-layer-background-mic: #1e6820;
 $segment-layer-background-guest: #008a92;
 
@@ -183,7 +183,7 @@ $segment-layer-background-guest: #008a92;
 		background: linear-gradient(
 			to bottom,
 			var(--segment-layer-background-vt) 50%,
-			var(--segment-layer-background-camera) 50.0001%
+			var(--segment-layer-background-live-speak) 50.0001%
 		);
 	}
 

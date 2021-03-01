@@ -19,13 +19,13 @@ import { createMongoCollection } from './lib'
 import { Studio } from './Studios'
 import { ShowStyleBase } from './ShowStyleBases'
 import { registerIndex } from '../database'
+import { ITranslatableMessage } from '../api/TranslatableMessage'
 
 /** A string, identifying a Part */
 export type PartId = ProtectedString<'PartId'>
 
 /** A "Line" in NRK Lingo. */
-export interface DBPart
-	extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'> {
+export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
 	_id: PartId
 	/** Position inside the segment */
 	_rank: number
@@ -38,8 +38,12 @@ export interface DBPart
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
-	/** if the part is inserted after another (for adlibbing) */
-	dynamicallyInsertedAfterPartId?: PartId
+
+	/** Holds the user-facing explanation for why the part is invalid */
+	invalidReason?: {
+		message: ITranslatableMessage
+		color?: string
+	}
 
 	/** Human readable unqiue identifier of the part */
 	identifier?: string
@@ -68,8 +72,7 @@ export class Part implements DBPart {
 	public displayDuration?: number
 	public invalid?: boolean
 	public invalidReason?: {
-		title: string
-		description?: string
+		message: ITranslatableMessage
 		color?: string
 	}
 	public floated?: boolean
@@ -82,7 +85,6 @@ export class Part implements DBPart {
 	public rundownId: RundownId
 	public status?: string
 	public notes?: Array<PartNote>
-	public dynamicallyInsertedAfterPartId?: PartId
 	public identifier?: string
 
 	constructor(document: DBPart) {
@@ -137,9 +139,7 @@ export class Part implements DBPart {
 			? [
 					{
 						type: NoteType.ERROR,
-						message:
-							this.invalidReason.title +
-							(this.invalidReason.description ? ': ' + this.invalidReason.description : ''),
+						message: this.invalidReason.message,
 						origin: {
 							name: this.title,
 						},
@@ -167,7 +167,9 @@ export class Part implements DBPart {
 							name: 'Media Check',
 							pieceId: piece._id,
 						},
-						message: st.message || '',
+						message: {
+							key: st.message || '',
+						},
 					})
 				}
 			}

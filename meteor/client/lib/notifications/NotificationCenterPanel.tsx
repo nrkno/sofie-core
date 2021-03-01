@@ -9,8 +9,10 @@ import { ContextMenuTrigger, ContextMenu, MenuItem } from '@jstarpl/react-contex
 import * as _ from 'underscore'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
+import { translateMessage, isTranslatableMessage } from '../../../lib/api/TranslatableMessage'
 import { CriticalIcon, WarningIcon, CollapseChevrons, InformationIcon } from '../ui/icons/notifications'
 import update from 'immutability-helper'
+import { i18nTranslator } from '../../ui/i18n'
 
 interface IPopUpProps {
 	id?: string
@@ -41,11 +43,13 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 	render() {
 		const { item } = this.props
 
-		const defaultActions: NotificationAction[] = _.filter(item.actions || [], (i) => i.type === 'default')
 		const allActions: NotificationAction[] = item.actions || []
+		const defaultActions: NotificationAction[] = allActions.filter((action) => action.type === 'default')
 
 		const defaultAction: NotificationAction | undefined =
 			defaultActions.length === 1 && allActions.length === 1 ? defaultActions[0] : undefined
+
+		const message = isTranslatableMessage(item.message) ? translateMessage(item.message, i18nTranslator) : item.message
 
 		return (
 			<div
@@ -74,7 +78,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 					)}
 				</div>
 				<div className="notification-pop-up__contents">
-					{item.message}
+					{message}
 					{defaultAction || allActions.length ? (
 						<div className="notification-pop-up__actions">
 							{defaultAction ? (
@@ -368,15 +372,23 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		}
 
 		private notificationKey = (item: Notification) => {
-			return item.id
-				? item.id
-				: item.created +
-						(typeof item.message === 'string'
-							? item.message
-							: item.message === null
-							? 'null'
-							: `jsx_${btoa(JSON.stringify(item.message))}`
-						).toString()
+			if (item.id) {
+				return item.id
+			}
+
+			if (item.message === null) {
+				return `${item.created}null`
+			}
+
+			if (typeof item.message === 'string') {
+				return `${item.created}${item.message}`
+			}
+
+			if (isTranslatableMessage(item.message)) {
+				return `${item.created}${translateMessage(item.message, this.props.t)}`
+			}
+
+			return `${item.created}$jsx_${btoa(JSON.stringify(item.message))}`
 		}
 
 		render() {

@@ -366,7 +366,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelineTouchEnd = (e: React.TouchEvent<HTMLDivElement> & any) => {
+	onTimelineTouchEnd = (e: TouchEvent) => {
 		if (e.touches.length === 0) {
 			document.removeEventListener('touchmove', this.onTimelineTouchMove)
 			document.removeEventListener('touchend', this.onTimelineTouchEnd)
@@ -374,7 +374,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelineTouchMove = (e: React.TouchEvent<HTMLDivElement> & any) => {
+	onTimelineTouchMove = (e: TouchEvent) => {
 		if (e.touches.length === 2) {
 			let newSize = e.touches[1].clientX - e.touches[0].clientX
 			let prop = newSize / this._touchSize
@@ -873,7 +873,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (
 						<PartCountdown partId={countdownToPartId} hideOnZero={true} />
 					)}
-					{Settings.allowUnsyncedSegments && this.props.segment.unsynced && (
+					{Settings.allowUnsyncedSegments && this.props.segment.orphaned && (
 						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 					)}
 				</div>

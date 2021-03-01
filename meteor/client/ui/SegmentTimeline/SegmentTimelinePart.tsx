@@ -26,6 +26,7 @@ import { IContextMenuContext } from '../RundownView'
 import { CSSProperties } from '../../styles/_cssVariables'
 import { ISourceLayerExtended } from '../../../lib/Rundown'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import { LoopingIcon } from '../../lib/ui/icons/looping'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -40,6 +41,7 @@ interface ISourceLayerPropsBase {
 	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
+	expectedDuration: number
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
@@ -117,6 +119,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 							part={this.props.part}
 							partStartsAt={this.props.startsAt}
 							partDuration={this.props.duration}
+							partExpectedDuration={this.props.expectedDuration}
 							timeScale={this.props.timeScale}
 							relative={this.props.relative}
 							autoNextPart={this.props.autoNextPart}
@@ -196,6 +199,7 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 								part={this.props.part}
 								partStartsAt={this.props.startsAt}
 								partDuration={this.props.duration}
+								partExpectedDuration={this.props.expectedDuration}
 								timeScale={this.props.timeScale}
 								relative={this.props.relative}
 								autoNextPart={this.props.autoNextPart}
@@ -236,6 +240,7 @@ interface IOutputGroupProps {
 	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
+	expectedDuration: number
 	timeScale: number
 	collapsedOutputs: {
 		[key: string]: boolean
@@ -275,6 +280,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 							part={this.props.part}
 							startsAt={this.props.startsAt}
 							duration={this.props.duration}
+							expectedDuration={this.props.expectedDuration}
 							timeScale={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
 							liveLinePadding={this.props.liveLinePadding}
@@ -308,6 +314,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 						part={this.props.part}
 						startsAt={this.props.startsAt}
 						duration={this.props.duration}
+						expectedDuration={this.props.expectedDuration}
 						timeScale={this.props.timeScale}
 						autoNextPart={this.props.autoNextPart}
 						liveLinePadding={this.props.liveLinePadding}
@@ -482,7 +489,7 @@ export const SegmentTimelinePart = withTranslation()(
 				const startedPlayback = nextProps.part.instance.timings?.startedPlayback
 
 				const isDurationSettling =
-					!!nextProps.playlist.active &&
+					!!nextProps.playlist.activationId &&
 					isPrevious &&
 					!isLive &&
 					!!startedPlayback &&
@@ -628,6 +635,16 @@ export const SegmentTimelinePart = withTranslation()(
 				}
 			}
 
+			static getPartExpectedDuration(props: WithTiming<IProps>): number {
+				return (
+					props.part.instance.timings?.duration ||
+					(props.timingDurations.partDisplayDurations &&
+						props.timingDurations.partDisplayDurations[unprotectString(props.part.instance.part._id)]) ||
+					props.part.renderedDuration ||
+					0
+				)
+			}
+
 			static getPartDuration(props: WithTiming<IProps>, liveDuration: number): number {
 				// const part = this.props.part
 
@@ -639,10 +656,6 @@ export const SegmentTimelinePart = withTranslation()(
 						props.part.renderedDuration ||
 						0
 				)
-
-				/* return part.duration !== undefined ? part.duration : Math.max(
-			((this.props.timingDurations.partDurations && this.props.timingDurations.partDurations[unprotectString(part._id)]) || 0),
-			this.props.part.renderedDuration || 0, this.state.liveDuration, 0) */
 			}
 
 			static getPartStartsAt(props: WithTiming<IProps>): number {
@@ -697,6 +710,7 @@ export const SegmentTimelinePart = withTranslation()(
 										studio={this.props.studio}
 										startsAt={SegmentTimelinePart0.getPartStartsAt(this.props) || this.props.part.startsAt || 0}
 										duration={SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration)}
+										expectedDuration={SegmentTimelinePart0.getPartExpectedDuration(this.props)}
 										isLiveLine={this.props.playlist.currentPartInstanceId === part.instance._id}
 										isNextLine={this.props.playlist.nextPartInstanceId === part.instance._id}
 										timeScale={this.props.timeScale}
@@ -747,6 +761,7 @@ export const SegmentTimelinePart = withTranslation()(
 					this.props.isLastSegment &&
 					this.props.isLastInSegment &&
 					(!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartInstanceId))
+				const isEndOfLoopingShow = this.props.isLastSegment && this.props.isLastInSegment && this.props.playlist.loop
 				let invalidReasonColorVars: CSSProperties | undefined = undefined
 				if (innerPart.invalidReason && innerPart.invalidReason.color) {
 					const invalidColor = SegmentTimelinePart0.convertHexToRgba(innerPart.invalidReason.color)
@@ -802,7 +817,8 @@ export const SegmentTimelinePart = withTranslation()(
 											{(this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive) && t('Next')}
 										</React.Fragment>
 									)}
-									{this.props.isAfterLastValidInSegmentAndItsLive && CARRIAGE_RETURN_ICON}
+									{this.props.isAfterLastValidInSegmentAndItsLive && !this.props.playlist.loop && CARRIAGE_RETURN_ICON}
+									{this.props.isAfterLastValidInSegmentAndItsLive && this.props.playlist.loop && <LoopingIcon />}
 								</div>
 								{!this.props.relative && this.props.part.instance.part.identifier && (
 									<div className="segment-timeline__identifier">{this.props.part.instance.part.identifier}</div>
@@ -874,13 +890,19 @@ export const SegmentTimelinePart = withTranslation()(
 										})}>
 										{innerPart.autoNext && t('Auto') + ' '}
 										{this.state.isLive && t('Next')}
-										{!isEndOfShow && CARRIAGE_RETURN_ICON}
+										{!isEndOfShow && !isEndOfLoopingShow && CARRIAGE_RETURN_ICON}
+										{isEndOfLoopingShow && <LoopingIcon />}
 									</div>
 								</div>
 							)}
-							{isEndOfShow && (
+							{isEndOfShow && !this.props.playlist.loop && (
 								<div className="segment-timeline__part__show-end">
 									<div className="segment-timeline__part__show-end__label">{t('Show End')}</div>
+								</div>
+							)}
+							{isEndOfShow && this.props.playlist.loop && (
+								<div className="segment-timeline__part__show-end loop">
+									<div className="segment-timeline__part__show-end__label">{t('Loops to top')}</div>
 								</div>
 							)}
 						</div>

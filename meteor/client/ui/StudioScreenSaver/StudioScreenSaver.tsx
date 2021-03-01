@@ -14,6 +14,8 @@ import { Countdown } from './Countdown'
 interface IProps {
 	// the studio to be displayed in the screen saver
 	studioId: StudioId
+
+	ownBackground?: boolean
 }
 
 interface ITrackedProps {
@@ -35,11 +37,7 @@ interface IState {
 	subsReady: boolean
 }
 
-/**
- * This component renders a **nice**, animated screen saver with information about upcoming
- * shows planned in the studio and the time remaining to the expectedStart time of said show.
- */
-export const StudioScreenSaver = translateWithTracker((props: IProps) => {
+export const findNextPlaylist = (props: IProps) => {
 	invalidateAfter(5000)
 	const now = getCurrentTime()
 
@@ -82,7 +80,13 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				return false
 			}),
 	}
-})(
+}
+
+/**
+ * This component renders a **nice**, animated screen saver with information about upcoming
+ * shows planned in the studio and the time remaining to the expectedStart time of said show.
+ */
+export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 	class StudioScreenSaver extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		private _nextAnimationFrameRequest: number | undefined
 		private readonly SPEED = 0.5 // non-unit value
@@ -120,6 +124,10 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				studioId: this.props.studioId,
 			})
 
+			if (this.props.ownBackground) {
+				document.body.classList.add('dark', 'xdark')
+			}
+
 			window.addEventListener('resize', this.measureElement)
 
 			this.autorun(() => {
@@ -144,6 +152,11 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 
 		componentWillUnmount() {
 			super.componentWillUnmount()
+
+			if (this.props.ownBackground) {
+				document.body.classList.remove('dark', 'xdark')
+			}
+
 			this._nextAnimationFrameRequest && window.cancelAnimationFrame(this._nextAnimationFrameRequest)
 			window.removeEventListener('resize', this.measureElement)
 		}

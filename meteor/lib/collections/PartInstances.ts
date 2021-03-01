@@ -7,7 +7,6 @@ import {
 	ProtectedStringProperties,
 	protectString,
 	unprotectString,
-	Omit,
 } from '../lib'
 import {
 	IBlueprintPartInstance,
@@ -16,19 +15,17 @@ import {
 	IBlueprintPartInstanceTimings,
 } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { DBPart, Part } from './Parts'
+import { DBPart, Part, PartId } from './Parts'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 import { registerIndex } from '../database'
+import { RundownPlaylistActivationId } from './RundownPlaylists'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
 export interface InternalIBlueprintPartInstance
 	extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
-	part: ProtectedStringProperties<
-		IBlueprintPartInstance['part'],
-		'_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'
-	>
+	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>
 }
 export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance {
 	return partInstance as any
@@ -37,6 +34,9 @@ export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPar
 export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	_id: PartInstanceId
 	rundownId: RundownId
+
+	/** The id of the playlist activation session */
+	playlistActivationId: RundownPlaylistActivationId
 
 	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	reset?: boolean
@@ -77,6 +77,7 @@ export class PartInstance implements DBPartInstance {
 	/** Whether this PartInstance is a temprorary wrapping of a Part */
 	public readonly isTemporary: boolean
 
+	public playlistActivationId: RundownPlaylistActivationId
 	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	public reset?: boolean
 	public takeCount: number
@@ -95,6 +96,8 @@ export class PartInstance implements DBPartInstance {
 
 	public allowedToUseTransition?: boolean
 
+	public orphaned?: 'adlib-part' | 'deleted'
+
 	constructor(document: DBPartInstance, isTemporary?: boolean) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
@@ -104,12 +107,16 @@ export class PartInstance implements DBPartInstance {
 	}
 }
 
-export function wrapPartToTemporaryInstance(part: DBPart): PartInstance {
+export function wrapPartToTemporaryInstance(
+	playlistActivationId: RundownPlaylistActivationId,
+	part: DBPart
+): PartInstance {
 	return new PartInstance(
 		{
 			_id: protectString(`${part._id}_tmp_instance`),
 			rundownId: part.rundownId,
 			segmentId: part.segmentId,
+			playlistActivationId,
 			takeCount: -1,
 			rehearsal: false,
 			part: new Part(part),
@@ -118,11 +125,18 @@ export function wrapPartToTemporaryInstance(part: DBPart): PartInstance {
 	)
 }
 
+export function findPartInstanceInMapOrWrapToTemporary<T extends Partial<PartInstance>>(
+	partInstancesMap: Map<PartId, T>,
+	part: DBPart
+): T {
+	return partInstancesMap.get(part._id) || (wrapPartToTemporaryInstance(protectString(''), part) as T)
+}
+
 export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance>>(
 	partInstances: { [partId: string]: T | undefined },
 	part: DBPart
 ): T {
-	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(part) as T)
+	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(protectString(''), part) as T)
 }
 
 export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> = createMongoCollection<PartInstance>(
@@ -134,14 +148,17 @@ registerIndex(PartInstances, {
 	rundownId: 1,
 	segmentId: 1,
 	takeCount: 1,
+	reset: 1,
 })
 registerIndex(PartInstances, {
 	rundownId: 1,
 	takeCount: 1,
+	reset: 1,
 })
 registerIndex(PartInstances, {
 	rundownId: 1,
 	// @ts-ignore deep property
 	'part._id': 1,
 	takeCount: 1,
+	reset: 1,
 })

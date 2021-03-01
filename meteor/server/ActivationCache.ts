@@ -67,7 +67,7 @@ export class ActivationCache {
 	private _persistant: boolean = false
 
 	private _playlist: RundownPlaylist | undefined
-	private _studio: Studio
+	private _studio: Studio | undefined
 	private _showStyleBases: { [id: string]: InternalCache<ShowStyleBase> } = {}
 	private _showStyleVariants: { [id: string]: InternalCache<ShowStyleVariant> } = {}
 	private _rundownBaselineObjs: { [id: string]: InternalCache<RundownBaselineObj[]> } = {}
@@ -108,8 +108,8 @@ export class ActivationCache {
 		this._persistant = false
 	}
 	async initialize(playlist: RundownPlaylist, rundownsInPlaylist: Rundown[]) {
-		if (this._initialized && (!this._playlist || playlist.activeInstanceId !== this._playlist.activeInstanceId)) {
-			// activeInstanceId has changed, we should clear out the data because it might not be valid anymore
+		if (this._initialized && (!this._playlist || playlist.activationId !== this._playlist.activationId)) {
+			// activationId has changed, we should clear out the data because it might not be valid anymore
 			this._uninitialize()
 		}
 
@@ -123,7 +123,7 @@ export class ActivationCache {
 
 		const pStudio = asyncCollectionFindOne(Studios, this._playlist.studioId)
 
-		if (!playlist.active) {
+		if (!playlist.activationId) {
 			// If the playlist is not active we won't do the pre-loading now
 			// we're also not calling ourselves "persistant", so we won't be living longer than
 			this._persistant = false
@@ -180,7 +180,7 @@ export class ActivationCache {
 		return this._playlist
 	}
 	getStudio(): Studio {
-		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
+		if (!this._initialized || !this._studio) throw new Meteor.Error(`ActivationCache is not initialized`)
 		return this._studio
 	}
 	async getShowStyleBase(rundown: Rundown): Promise<ShowStyleBase> {
@@ -261,17 +261,15 @@ export class ActivationCache {
 		)
 	}
 	private async _getPeripheralDevices(): Promise<PeripheralDevice[]> {
-		return this._getFromCache(
-			this._peripheralDevices,
-			this._playlist?.studioId ?? this._studio._id,
-			'',
-			async (id) => {
-				const devices = await asyncCollectionFindFetch(PeripheralDevices, {
-					studioId: id,
-				})
-				return devices
-			}
-		)
+		const studioId = this._playlist?.studioId ?? this._studio?._id
+		if (!studioId) return []
+
+		return this._getFromCache(this._peripheralDevices, studioId, '', async (id) => {
+			const devices = await asyncCollectionFindFetch(PeripheralDevices, {
+				studioId: id,
+			})
+			return devices
+		})
 	}
 	private _updateExpires() {
 		const TTL = 30 * 60 * 1000 // 30 minutes

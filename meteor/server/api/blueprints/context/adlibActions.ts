@@ -12,8 +12,8 @@ import {
 import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
 import {
-	EventContext as IEventContext,
-	ActionExecutionContext as IActionExecutionContext,
+	IEventContext,
+	IActionExecutionContext,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
 	IBlueprintPiece,
@@ -24,18 +24,19 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Rundown } from '../../../../lib/collections/Rundowns'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
 import { PieceInstance, wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
-import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { NotesContext, ShowStyleContext } from './context'
-import { isTooCloseToAutonext } from '../../playout/lib'
+import { ShowStyleUserContext, UserContextInfo } from './context'
+import { getRundownIDsFromCache, isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
 import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'
+import { Meteor } from 'meteor/meteor'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -43,10 +44,11 @@ export enum ActionPartChange {
 }
 
 /** Actions */
-export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
+export class ActionExecutionContext extends ShowStyleUserContext implements IActionExecutionContext, IEventContext {
 	private readonly _cache: CacheForRundownPlaylist
 	private readonly rundownPlaylist: RundownPlaylist
 	private readonly rundown: Rundown
+	private readonly playlistActivationId: RundownPlaylistActivationId
 
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
 	public currentPartState: ActionPartChange = ActionPartChange.NONE
@@ -55,17 +57,21 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	public takeAfterExecute: boolean
 
 	constructor(
+		contextInfo: UserContextInfo,
 		cache: CacheForRundownPlaylist,
-		notesContext: NotesContext,
 		studio: Studio,
 		rundownPlaylist: RundownPlaylist,
 		rundown: Rundown
 	) {
-		super(studio, cache, rundown, rundown.showStyleBaseId, rundown.showStyleVariantId, notesContext)
+		super(contextInfo, studio, cache, rundown, rundown.showStyleBaseId, rundown.showStyleVariantId)
 		this._cache = cache
 		this.rundownPlaylist = rundownPlaylist
 		this.rundown = rundown
 		this.takeAfterExecute = false
+
+		if (!this.rundownPlaylist.activationId)
+			throw new Meteor.Error(500, `RundownPlaylist "${this.rundownPlaylist._id}" is not active`)
+		this.playlistActivationId = this.rundownPlaylist.activationId
 	}
 
 	private _getPartInstanceId(part: 'current' | 'next'): PartInstanceId | null {
@@ -119,7 +125,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	}
 
 	findLastPieceOnLayer(
-		sourceLayerId: string,
+		sourceLayerId0: string | string[],
 		options?: {
 			excludeCurrentPart?: boolean
 			originalOnly?: boolean
@@ -139,6 +145,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			query['partInstanceId'] = { $ne: this.rundownPlaylist.currentPartInstanceId }
 		}
 
+		const sourceLayerId = Array.isArray(sourceLayerId0) ? sourceLayerId0 : [sourceLayerId0]
+
 		const lastPieceInstance = ServerPlayoutAdLibAPI.innerFindLastPieceOnLayer(
 			this._cache,
 			this.rundownPlaylist,
@@ -149,6 +157,31 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		return clone(unprotectObject(lastPieceInstance))
 	}
+	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance {
+		const pieceExt = (piece as unknown) as Partial<PieceInstance> | undefined
+		const partInstanceId = pieceExt?.partInstanceId
+		if (!partInstanceId) {
+			throw new Error('Cannot find PartInstance from invalid PieceInstance')
+		}
+
+		const cached = this._cache.PartInstances.findOne(partInstanceId)
+		if (cached) {
+			return clone(unprotectObject(cached))
+		}
+
+		// It might be reset and so not in the cache
+		const rundownIds = getRundownIDsFromCache(this._cache, this.rundownPlaylist)
+		const oldInstance = PartInstances.findOne({
+			_id: partInstanceId,
+			rundownId: { $in: rundownIds },
+		})
+		if (oldInstance) {
+			return unprotectObject(oldInstance)
+		} else {
+			throw new Error('Cannot find PartInstance for PieceInstance')
+		}
+	}
+
 	insertPiece(part: 'current' | 'next', rawPiece: IBlueprintPiece): IBlueprintPieceInstance {
 		const partInstanceId = this._getPartInstanceId(part)
 		if (!partInstanceId) {
@@ -178,7 +211,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			true
 		)[0]
 		piece._id = getRandomId() // Make id random, as postProcessPieces is too predictable (for ingest)
-		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
+		const newPieceInstance = wrapPieceToInstance(piece, this.playlistActivationId, partInstance._id)
 
 		// Do the work
 		ServerPlayoutAdLibAPI.innerStartAdLibPiece(
@@ -284,14 +317,15 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			_id: getRandomId(),
 			rundownId: currentPartInstance.rundownId,
 			segmentId: currentPartInstance.segmentId,
-			takeCount: -1, // Filled in later
+			playlistActivationId: this.playlistActivationId,
+			takeCount: currentPartInstance.takeCount + 1,
 			rehearsal: currentPartInstance.rehearsal,
 			part: new Part({
 				...rawPart,
 				_id: getRandomId(),
 				rundownId: currentPartInstance.rundownId,
 				segmentId: currentPartInstance.segmentId,
-				_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
+				_rank: 99999, // Corrected in innerStartQueuedAdLib
 				notes: [],
 				invalid: false,
 				invalidReason: undefined,
@@ -311,7 +345,9 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			newPartInstance.segmentId,
 			newPartInstance.part._id
 		)
-		const newPieceInstances = pieces.map((piece) => wrapPieceToInstance(piece, newPartInstance._id))
+		const newPieceInstances = pieces.map((piece) =>
+			wrapPieceToInstance(piece, this.playlistActivationId, newPartInstance._id)
+		)
 
 		// Do the work
 		ServerPlayoutAdLibAPI.innerStartQueuedAdLib(

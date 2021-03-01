@@ -27,7 +27,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { unprotectString, equalSets, equivalentArrays, equalArrays } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
-import { RundownId } from '../../../lib/collections/Rundowns'
+import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { Parts, PartId } from '../../../lib/collections/Parts'
@@ -40,6 +40,7 @@ import RundownViewEventBus, {
 	GoToPartEvent,
 	GoToPartInstanceEvent,
 } from '../RundownView/RundownViewEventBus'
+import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -133,6 +134,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
+		const rundownNrcsName = Rundowns.findOne(segment.rundownId, { fields: { externalNRCSName: 1 } })?.externalNRCSName
+
 		// This registers a reactive dependency on infinites-capping pieces, so that the segment can be
 		// re-evaluated when a piece like that appears.
 		const infinitesEndingPieces = PieceInstances.find({
@@ -158,14 +161,15 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			true,
 			true
 		)
-		let notes: Array<SegmentNote> = []
+		const notes: Array<SegmentNote> = getBasicNotesForSegment(
+			segment,
+			rundownNrcsName ?? 'NRCS',
+			o.parts.map((p) => p.instance.part),
+			o.parts.map((p) => p.instance)
+		)
 		o.parts.forEach((part) => {
-			notes = notes.concat(
-				part.instance.part.getMinimumReactiveNotes(props.studio, props.showStyleBase),
-				part.instance.part.getInvalidReasonNotes()
-			)
+			notes.push(...part.instance.part.getMinimumReactiveNotes(props.studio, props.showStyleBase))
 		})
-		notes = notes.concat(segment.notes || [])
 
 		let lastValidPartIndex = o.parts.length - 1
 
@@ -368,7 +372,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.mountedTime = Date.now()
 				if (this.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
 					scrollToSegment(this.props.segmentId, true).catch((error) => {
-						if (!error.toString().match(/another scroll/)) console.error(error)
+						if (!error.toString().match(/another scroll/)) console.warn(error)
 					})
 				}
 			})
@@ -429,8 +433,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.stopLive()
 				if (Settings.autoRewindLeavingSegment) this.onRewindSegment()
 
-				if (this.props.segmentui && this.props.segmentui.unsynced) {
+				if (this.props.segmentui && this.props.segmentui.orphaned) {
 					const { t } = this.props
+					// TODO ORPHAN
 					// TODO: This doesn't seem right? componentDidUpdate can be triggered in a lot of different ways.
 					// What is this supposed to do?
 					doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, (e) =>
@@ -495,15 +500,20 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 
 			// rewind all scrollLeft's to 0 on rundown activate
-			if (this.props.playlist && this.props.playlist.active && prevProps.playlist && !prevProps.playlist.active) {
+			if (
+				this.props.playlist &&
+				this.props.playlist.activationId &&
+				prevProps.playlist &&
+				!prevProps.playlist.activationId
+			) {
 				this.setState({
 					scrollLeft: 0,
 				})
 			} else if (
 				this.props.playlist &&
-				!this.props.playlist.active &&
+				!this.props.playlist.activationId &&
 				prevProps.playlist &&
-				prevProps.playlist.active
+				prevProps.playlist.activationId
 			) {
 				this.setState({
 					livePosition: 0,

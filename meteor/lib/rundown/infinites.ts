@@ -23,6 +23,7 @@ import {
 import { Mongo } from 'meteor/mongo'
 import { ShowStyleBase } from '../collections/ShowStyleBases'
 import { getPieceGroupId } from './timeline'
+import { RundownPlaylistActivationId } from '../collections/RundownPlaylists'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
 	return { startPartId: part._id }
@@ -66,6 +67,7 @@ export function buildPastInfinitePiecesForThisPartQuery(
 }
 
 export function getPlayheadTrackingInfinitesForPart(
+	playlistActivationId: RundownPlaylistActivationId,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
 	currentPartInstance: PartInstance,
@@ -155,7 +157,13 @@ export function getPlayheadTrackingInfinitesForPart(
 
 	const rewrapInstance = (p: PieceInstance | undefined): PieceInstance | undefined => {
 		if (p) {
-			const instance = rewrapPieceToInstance(p.piece, part.rundownId, newInstanceId, isTemporary)
+			const instance = rewrapPieceToInstance(
+				p.piece,
+				playlistActivationId,
+				part.rundownId,
+				newInstanceId,
+				isTemporary
+			)
 			instance._id = protectString(`${instance._id}_continue`)
 
 			if (p.infinite) {
@@ -247,6 +255,7 @@ export function isPiecePotentiallyActiveInPart(
 }
 
 export function getPieceInstancesForPart(
+	playlistActivationId: RundownPlaylistActivationId,
 	playingPartInstance: PartInstance | undefined,
 	playingPieceInstances: PieceInstance[] | undefined,
 	part: DBPart,
@@ -312,6 +321,7 @@ export function getPieceInstancesForPart(
 	// OnChange infinites take priority over onEnd, as they travel with the playhead
 	const infinitesFromPrevious = playingPartInstance
 		? getPlayheadTrackingInfinitesForPart(
+				playlistActivationId,
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
 				playingPartInstance,
@@ -330,7 +340,7 @@ export function getPieceInstancesForPart(
 	)
 
 	const wrapPiece = (p: PieceInstancePiece) => {
-		const instance = rewrapPieceToInstance(p, part.rundownId, newInstanceId, isTemporary)
+		const instance = rewrapPieceToInstance(p, playlistActivationId, part.rundownId, newInstanceId, isTemporary)
 
 		if (!instance.infinite && instance.piece.lifespan !== PieceLifespan.WithinPart) {
 			const existingPiece = playingPieceInstancesMap[unprotectString(instance.piece._id)]

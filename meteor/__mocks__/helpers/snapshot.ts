@@ -6,6 +6,7 @@ import { Part, DBPart } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { PieceInstance } from '../../lib/collections/PieceInstances'
+import { PartInstance } from '../../lib/collections/PartInstances'
 const cloneOrg = require('fast-clone')
 
 // About snapshot testing: https://jestjs.io/docs/en/snapshot-testing
@@ -20,6 +21,7 @@ type Data =
 	| DBPart
 	| Piece
 	| PieceInstance
+	| PartInstance
 /**
  * Remove certain fields from data that change often, so that it can be used in snapshots
  * @param data
@@ -61,18 +63,19 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 				}
 			})
 		} else if (isPlaylist(o)) {
-			delete o['created']
-			delete o['modified']
+			o['created'] = 0
+			o['modified'] = 0
 		} else if (isRundown(o)) {
-			delete o['created']
-			delete o['modified']
+			o['created'] = 0
+			o['modified'] = 0
 			if (o.importVersions.core) {
 				// re-write the core version so something static, so tests won't fail just because the version has changed
 				o.importVersions.core = '0.0.0-test'
 			}
 			// } else if (isPiece(o)) {
 			// } else if (isPart(o)) {
-			// } else if (isSegment(o)) {
+		} else if (isSegment(o)) {
+			if (o.externalModified) o.externalModified = 0
 			// } else if (isPieceInstance(o)) {
 		}
 		return o

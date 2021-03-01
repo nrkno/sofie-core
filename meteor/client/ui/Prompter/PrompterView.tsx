@@ -3,8 +3,6 @@ import * as _ from 'underscore'
 import Velocity from 'velocity-animate'
 import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
-import { Tracker } from 'meteor/tracker'
-import { Random } from 'meteor/random'
 import { Route } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
@@ -173,7 +171,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			})
 
 			this.subscribe(PubSub.rundownPlaylists, {
-				active: true,
+				activationId: { $exists: true },
 				studioId: this.props.studioId,
 			})
 		}
@@ -182,7 +180,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			let playlist = RundownPlaylists.findOne(
 				{
 					studioId: this.props.studioId,
-					active: true,
+					activationId: { $exists: true },
 				},
 				{
 					fields: {
@@ -467,6 +465,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			marginBottom: this.configOptions.margin ? `${this.configOptions.margin}vh` : undefined,
 			marginRight: this.configOptions.margin ? `${this.configOptions.margin}vw` : undefined,
 			marginLeft: this.configOptions.margin ? `${this.configOptions.margin}vw` : undefined,
+			fontSize: (this.configOptions.fontSize ?? 0) > 12 ? `12vmin` : undefined,
 		}
 
 		return (
@@ -511,7 +510,7 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	const studio = studioId ? Studios.findOne(studioId) : undefined
 
 	const rundownPlaylist = RundownPlaylists.findOne({
-		active: true,
+		activationId: { $exists: true },
 		studioId: studioId,
 	})
 
@@ -726,6 +725,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 									marginTop: this.props.config.margin ? `${this.props.config.margin}vh` : undefined,
 									marginLeft: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
 									marginRight: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
+									fontSize: (this.props.config.fontSize ?? 0) > 12 ? `12vmin` : undefined,
 								}}>
 								<div className="take-indicator hidden"></div>
 								<div className="next-indicator hidden"></div>

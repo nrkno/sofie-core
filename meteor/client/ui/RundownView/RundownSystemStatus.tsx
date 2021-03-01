@@ -5,18 +5,13 @@ import * as _ from 'underscore'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
-import { Segments } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Parts } from '../../../lib/collections/Parts'
-import { scrollToSegment } from '../../lib/viewPort'
-import { PartNote, NoteType, GenericNote, TrackedNote } from '../../../lib/api/notes'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PubSub } from '../../../lib/api/pubsub'
-import { Settings } from '../../../lib/Settings'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -70,9 +65,6 @@ interface IProps {
 interface IState {
 	mosDiff: OnLineOffLineList
 	playoutDiff: OnLineOffLineList
-	displayNotes: boolean
-	forceHideNotification: boolean
-	displayNotification: boolean
 }
 
 interface OnLineOffLineList {
@@ -172,9 +164,6 @@ export const RundownSystemStatus = translateWithTracker(
 	}
 )(
 	class RundownSystemStatus extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-		private notificationTimeout: number
-		private STATE_CHANGE_NOTIFICATION_DURATION = 7000
-
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 
@@ -187,9 +176,6 @@ export const RundownSystemStatus = translateWithTracker(
 					onLine: [],
 					offLine: props.playoutDevices.offLine,
 				},
-				displayNotes: false,
-				forceHideNotification: false,
-				displayNotification: false,
 			}
 		}
 
@@ -201,63 +187,18 @@ export const RundownSystemStatus = translateWithTracker(
 
 		componentWillUnmount() {
 			super.componentWillUnmount()
-
-			if (this.notificationTimeout) Meteor.clearTimeout(this.notificationTimeout)
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps) {
 			if (prevProps !== this.props) {
-				if (this.notificationTimeout) Meteor.clearTimeout(this.notificationTimeout)
-
 				const mosDiff = diffOnLineOffLineList(prevProps.mosDevices, this.props.mosDevices)
 				const playoutDiff = diffOnLineOffLineList(prevProps.playoutDevices, this.props.playoutDevices)
 
 				this.setState({
 					mosDiff,
 					playoutDiff,
-					forceHideNotification: false,
-					displayNotification:
-						mosDiff.offLine.length !== 0 ||
-						playoutDiff.offLine.length !== 0 ||
-						mosDiff.onLine.length !== 0 ||
-						playoutDiff.onLine.length !== 0,
-				})
-
-				this.notificationTimeout = Meteor.setTimeout(() => {
-					this.setState({
-						displayNotification: false,
-					})
-				}, this.STATE_CHANGE_NOTIFICATION_DURATION)
-			}
-		}
-		clickNote(e, note: TrackedNote) {
-			e.preventDefault()
-
-			let segmentId = note.origin.segmentId
-
-			if (!segmentId) {
-				if (note.origin.partId) {
-					let part = Parts.findOne(note.origin.partId)
-					if (part) {
-						segmentId = part.segmentId
-					}
-				}
-			}
-			if (segmentId) {
-				scrollToSegment(segmentId).catch((error) => {
-					if (!error.toString().match(/another scroll/)) console.error(error)
 				})
 			}
-		}
-		clickNotes() {
-			this.setState({
-				displayNotes: !this.state.displayNotes,
-			})
-		}
-		forceHideNotification = () => {
-			this.setState({
-				forceHideNotification: true,
-			})
 		}
 		render() {
 			const { t } = this.props

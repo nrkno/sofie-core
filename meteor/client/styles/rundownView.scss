@@ -27,7 +27,7 @@ $segment-nextline-shade-fill: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0
 $rundown-divider-color: #000000;
 $rundown-divider-background-color: #dddddd;
 
-$liveline-timecode-color: #ffff00; //$general-live-color;
+$liveline-timecode-color: $general-countdown-to-next-color; //$general-live-color;
 $hold-status-color: $liveline-timecode-color;
 
 $previewline-color: rgb(38, 137, 186);
@@ -270,11 +270,10 @@ body.no-overflow {
 			position: relative;
 			margin-right: 1em;
 			font-family: 'Roboto', Helvetica Neue, Arial, sans-serif;
-			font-weight: normal;
+			font-weight: 100;
 			color: $general-clock;
 			font-size: 1.5em;
 			margin-top: 0.8em;
-			font-weight: 100;
 			word-break: keep-all;
 			white-space: nowrap;
 
@@ -473,6 +472,11 @@ body.no-overflow {
 	width: auto;
 }
 
+svg.icon {
+	margin-top: -0.2em;
+	position: relative;
+}
+
 // A component for displaying the segments (ENPS Stories/NKR Titles)
 .segment-timeline {
 	display: grid;
@@ -493,6 +497,8 @@ body.no-overflow {
 	-webkit-box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
 	-moz-box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
 	box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
+
+	--segment-layer-height: #{$segment-layer-height};
 
 	// padding has to be the same on both of these elements so that the layers and their controls line up
 	.segment-timeline__output-layers,
@@ -1114,6 +1120,30 @@ body.no-overflow {
 			}
 		}
 
+		.segment-timeline__liveline__appendage {
+			position: absolute;
+			margin-left: 5px;
+			margin-top: 0.1em;
+
+			&.segment-timeline__liveline__appendage--piece-countdown {
+				color: $liveline-timecode-color;
+				font-weight: 400;
+				text-shadow: -1px -1px 1px #000, 1px -1px 1px #000, -1px 1px 1px #000, 1px 1px 1px #000, 2px 2px 5px #000;
+
+				white-space: nowrap;
+
+				> .segment-timeline__liveline__appendage--piece-countdown__content {
+					line-height: 1em;
+					font-size: 1.2em;
+				}
+
+				> .segment-timeline__liveline__appendage--piece-countdown__icon {
+					margin-left: 0.2em;
+					filter: drop-shadow(1px 1px 0px #000) drop-shadow(0px 0px 5px #000);
+				}
+			}
+		}
+
 		.segment-timeline__liveline__status {
 			position: absolute;
 			border-radius: 2em;
@@ -1150,8 +1180,6 @@ body.no-overflow {
 
 			--invalid-reason-color-opaque: rgba(0, 0, 0, 1);
 			--invalid-reason-color-transparent: rgba(0, 0, 0, 0);
-
-			--segment-layer-height: #{$segment-layer-height};
 
 			* {
 				backface-visibility: hidden;
@@ -1198,7 +1226,6 @@ body.no-overflow {
 
 				.segment-timeline__part__nextline__label {
 					display: none;
-					text-transform: uppercase;
 					position: absolute;
 					top: -2px;
 					left: 2px;
@@ -1380,6 +1407,10 @@ body.no-overflow {
 					position: absolute;
 					top: 50%;
 					transform: translateY(calc(-50% - 6px));
+				}
+
+				&.loop {
+					border-left: 0;
 				}
 			}
 
@@ -1595,13 +1626,11 @@ body.no-overflow {
 							top: 0;
 							right: 0;
 							bottom: 0;
-							background: repeating-linear-gradient(
-								to right,
-								$segment-timeline-background-color 0,
-								$segment-timeline-background-color 5px,
-								transparent 5.1px,
-								transparent 10px
-							);
+							background-image: url('/images/freeze-frame-icicle.svg');
+							background-position: top left;
+							background-repeat: repeat-x;
+							background-size: auto 1em;
+							background-color: rgba(0, 0, 0, 0.6);
 							z-index: 2;
 						}
 
@@ -1678,7 +1707,11 @@ body.no-overflow {
 						.segment-timeline__layer {
 							// min-height: 0 causes the layers to collapse and divide the output-group min-height amongst themselves
 							min-height: 0;
-							border-bottom: 0px solid $segment-layer-separator-color;
+							border-bottom: 0.5px solid $segment-layer-separator-color;
+
+							&:last-child {
+								border-bottom-width: 0;
+							}
 
 							.segment-timeline__piece {
 								.segment-timeline__piece__label {
@@ -2268,6 +2301,8 @@ body.no-overflow {
 	border: 1px black solid;
 	max-width: 26em;
 
+	--popdown: 2em;
+
 	&.segment-timeline__mini-inspector--sub-inspector {
 		transform: none;
 		bottom: 100%;
@@ -2342,7 +2377,7 @@ body.no-overflow {
 	}
 
 	&.segment-timeline__mini-inspector--pop-down {
-		transform: translate(-50%, 2em);
+		transform: translate(-50%, var(--popdown));
 	}
 
 	&.segment-timeline__mini-inspector--graphics {

@@ -1,4 +1,4 @@
-import { mousetrapHelper } from './mousetrapHelper'
+// import { mousetrapHelper } from './mousetrapHelper'
 import Mousetrap from 'mousetrap'
 ;(function(Mousetrap) {
 	var _globalCallbacks = {}
@@ -77,7 +77,6 @@ import Mousetrap from 'mousetrap'
 
 		if (!e.repeat) {
 			_shouldAbortNextCombo = _downKeys.length > 1
-			_comboTriggered = false
 		}
 
 		e.preventDefault()
@@ -99,7 +98,7 @@ import Mousetrap from 'mousetrap'
 })(Mousetrap)
 
 // Disable default browser action for alt keys - focus window menu
-;(function() {
+;(function(Mousetrap) {
 	Mousetrap.init()
 
 	function preventDefault(e) {

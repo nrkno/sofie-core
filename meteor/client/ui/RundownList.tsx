@@ -114,7 +114,7 @@ export const RundownList = translateWithTracker(() => {
 					airStatuses.push(String(rundown.airStatus))
 					statuses.push(String(rundown.status))
 
-					if (rundown.unsynced) {
+					if (rundown.orphaned) {
 						playlist.unsyncedRundowns.push(rundown)
 					}
 
@@ -210,7 +210,7 @@ export const RundownList = translateWithTracker(() => {
 
 				this.autorun(() => {
 					let subsReady = this.subscriptionsReady()
-					if (subsReady !== this.state.subsReady) {
+					if (subsReady !== this.state.subsReady && !this.state.subsReady) {
 						this.setState({
 							subsReady: subsReady,
 						})

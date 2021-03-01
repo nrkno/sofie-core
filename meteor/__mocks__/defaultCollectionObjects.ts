@@ -29,7 +29,7 @@ export function defaultRundownPlaylist(
 		created: getCurrentTime(),
 		modified: getCurrentTime(),
 
-		active: false,
+		// activationId: undefined,
 		rehearsal: false,
 		currentPartInstanceId: null,
 		nextPartInstanceId: null,
@@ -69,7 +69,6 @@ export function defaultRundown(
 			core: '',
 		},
 
-		dataSource: 'mock',
 		externalNRCSName: 'mock',
 	}
 }
@@ -111,6 +110,7 @@ export function defaultPiece(_id: PieceId, rundownId: RundownId, segmentId: Segm
 		},
 		sourceLayerId: '',
 		outputLayerId: '',
+		content: { timelineObjects: [] },
 	}
 }
 export function defaultAdLibPiece(_id: PieceId, rundownId: RundownId, partId: PartId): AdLibPiece {
@@ -125,5 +125,6 @@ export function defaultAdLibPiece(_id: PieceId, rundownId: RundownId, partId: Pa
 		lifespan: PieceLifespan.WithinPart,
 		sourceLayerId: '',
 		outputLayerId: '',
+		content: { timelineObjects: [] },
 	}
 }

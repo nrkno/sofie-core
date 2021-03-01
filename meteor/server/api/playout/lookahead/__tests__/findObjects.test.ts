@@ -31,6 +31,7 @@ describe('findLookaheadObjectsForPart', () => {
 	const defaultPieceInstanceProps: Omit<PieceInstance, 'rundownId'> = {
 		_id: protectString('piece0_instance'),
 		partInstanceId: protectString('partInstance0'),
+		playlistActivationId: protectString('active'),
 		piece: {
 			_id: protectString('piece0'),
 			startPartId: protectString('part0'),
@@ -42,6 +43,9 @@ describe('findLookaheadObjectsForPart', () => {
 			lifespan: PieceLifespan.WithinPart,
 			sourceLayerId: '',
 			outputLayerId: '',
+			content: {
+				timelineObjects: [],
+			},
 		},
 	}
 

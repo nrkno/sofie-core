@@ -14,6 +14,8 @@ import { IBlueprintAsRunLogEventContent, TSR } from '@sofie-automation/blueprint
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { setupDefaultStudioEnvironment } from '../../__mocks__/helpers/database'
+import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
 
 // Set up mocks for tests in this suite
@@ -24,6 +26,27 @@ jest.mock('../logging')
 import '../cronjobs'
 
 describe('cronjobs', () => {
+	beforeEach(() => {
+		// cannot use setupDefaultStudioEnvironment or setupMockCore because MeteorMock.mockRunMeteorStartup
+		// causes updateServerTime to pollute the log
+		const defaultCore: ICoreSystem = {
+			_id: SYSTEM_ID,
+			name: 'mock Core',
+			created: 0,
+			modified: 0,
+			version: '0.0.0',
+			previousVersion: '0.0.0',
+			storePath: '',
+			serviceMessages: {},
+			cron: {
+				casparCGRestart: {
+					enabled: true,
+				},
+			},
+		}
+		CoreSystem.remove(SYSTEM_ID)
+		CoreSystem.insert(defaultCore)
+	})
 	beforeAllInFiber(() => {
 		jest.useFakeTimers()
 		// set time to 2020/07/19 00:00 Local Time
@@ -38,6 +61,7 @@ describe('cronjobs', () => {
 	afterAll(() => {
 		//@ts-ignore Return getCurrentTime to orig
 		lib.getCurrentTime = origGetCurrentTime
+		CoreSystem.remove(SYSTEM_ID)
 	})
 	describe('Runs at the appropriate time', () => {
 		testInFiber("Doesn't run during the day", () => {
@@ -97,7 +121,6 @@ describe('cronjobs', () => {
 				_rank: 0,
 				created: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
 				organizationId: null,
-				dataSource: '',
 				externalId: '',
 				importVersions: {
 					blueprint: '',
@@ -254,7 +277,7 @@ describe('cronjobs', () => {
 			})
 			expect(Snapshots.findOne(snapshot1)).toBeUndefined()
 		})
-		testInFiber('Attempts to restart CasparCG', async () => {
+		testInFiber('Attempts to restart CasparCG when job is enabled', async () => {
 			const mockPlayoutGw = protectString<PeripheralDeviceId>(Random.id())
 			PeripheralDevices.insert({
 				_id: mockPlayoutGw,
@@ -334,6 +357,95 @@ describe('cronjobs', () => {
 				deviceId: mockCasparCg,
 				functionName: 'restartCasparCG',
 			})
+
+			await runAllTimers()
+			// make sure that the cronjob ends
+			expect(logger.info).toHaveBeenLastCalledWith('Nightly cronjob: done')
+		})
+		testInFiber('Does not attempt to restart CasparCG when job is disabled', async () => {
+			const mockPlayoutGw = protectString<PeripheralDeviceId>(Random.id())
+			PeripheralDevices.insert({
+				_id: mockPlayoutGw,
+				organizationId: null,
+				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				configManifest: {
+					deviceConfig: [],
+				},
+				connected: true,
+				connectionId: '',
+				created: 0,
+				lastConnected: 0,
+				lastSeen: 0,
+				name: 'Playout gateway',
+				status: {
+					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+				},
+				subType: TSR.DeviceType.ABSTRACT,
+				token: '',
+			})
+			const mockCasparCg = protectString<PeripheralDeviceId>(Random.id())
+			PeripheralDevices.insert({
+				_id: mockCasparCg,
+				organizationId: null,
+				parentDeviceId: mockPlayoutGw,
+				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				subType: TSR.DeviceType.CASPARCG,
+				configManifest: {
+					deviceConfig: [],
+				},
+				connected: true,
+				connectionId: '',
+				created: 0,
+				lastConnected: 0,
+				lastSeen: 0,
+				name: 'CasparCG',
+				status: {
+					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+				},
+				token: '',
+			})
+			const mockATEM = protectString<PeripheralDeviceId>(Random.id())
+			PeripheralDevices.insert({
+				_id: mockATEM,
+				organizationId: null,
+				parentDeviceId: mockPlayoutGw,
+				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				subType: TSR.DeviceType.ATEM,
+				configManifest: {
+					deviceConfig: [],
+				},
+				connected: true,
+				connectionId: '',
+				created: 0,
+				lastConnected: 0,
+				lastSeen: 0,
+				name: 'ATEM',
+				status: {
+					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+				},
+				token: '',
+			})
+			CoreSystem.update(
+				{},
+				{
+					$set: {
+						'cron.casparCGRestart.enabled': false,
+					},
+				}
+			)
+			;(logger.info as jest.Mock).mockClear()
+			// set time to 2020/07/{date} 04:05 Local Time, should be more than 24 hours after 2020/07/19 00:00 UTC
+			mockCurrentTime = new Date(2020, 6, date++, 4, 5, 0).getTime()
+			// cronjob is checked every 5 minutes, so advance 6 minutes
+			jest.advanceTimersByTime(6 * 60 * 1000)
+			jest.runOnlyPendingTimers()
+
+			// check if the no PeripheralDevice command have been issued
+			const pendingCommands = PeripheralDeviceCommands.find({}).fetch()
+			expect(pendingCommands).toHaveLength(0)
 
 			await runAllTimers()
 			// make sure that the cronjob ends

@@ -70,7 +70,7 @@ var parserOptions = {
 		list: ['data-i18n', 'i18nKey'],
 	},
 	func: {
-		list: ['i18next.t', 'i18n.t', 't'],
+		list: ['i18next.t', 'i18n.t', 't', 'generateTranslation'],
 	},
 	// Make sure common separators don't break the string
 	keySeparator: args.keySeparator || '°°°°°°.°°°°°°',

@@ -46,7 +46,7 @@ export default class SplitInputIcon extends React.Component<{
 	getLeftSourceType(piece: PieceGeneric | undefined): string {
 		if (piece && piece.content) {
 			let c = piece.content as SplitsContent
-			const left = (c.boxSourceConfiguration[0] || {}).type || SourceLayerType.CAMERA
+			const left = (c.boxSourceConfiguration && c.boxSourceConfiguration[0])?.type || SourceLayerType.CAMERA
 			return this.getSourceType(left)
 		}
 		return 'camera'
@@ -55,7 +55,7 @@ export default class SplitInputIcon extends React.Component<{
 	getRightSourceType(piece: PieceGeneric | undefined): string {
 		if (piece && piece.content) {
 			let c = piece.content as SplitsContent
-			const right = (c.boxSourceConfiguration[1] || {}).type || SourceLayerType.REMOTE
+			const right = (c.boxSourceConfiguration && c.boxSourceConfiguration[1])?.type || SourceLayerType.REMOTE
 			const sourceType = this.getSourceType(right)
 			return sourceType + (this.getLeftSourceType(piece) === sourceType ? ' second' : '')
 		}

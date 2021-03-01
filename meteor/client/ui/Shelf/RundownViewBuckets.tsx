@@ -570,7 +570,7 @@ export const RundownViewBuckets = withTranslation()(
 											className: 'buckets',
 										}}
 										collect={() =>
-											new Promise((resolve) => {
+											new Promise<void>((resolve) => {
 												setShelfContextMenuContext({
 													type: MenuContextType.BUCKET,
 													details: {
@@ -599,6 +599,7 @@ export const RundownViewBuckets = withTranslation()(
 												findBucket={this.findBucket}
 												onBucketReorder={this.onBucketReorder}
 												onAdLibContext={this.onAdLibContext}
+												onSelectAdlib={this.props.onSelectPiece}
 												selectedPiece={this.props.selectedPiece}
 												hotkeyGroup={bucket.name.replace(/\W/, '_') + 'BucketPanel'}
 											/>

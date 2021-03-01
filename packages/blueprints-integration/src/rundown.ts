@@ -1,6 +1,7 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContentVizMSE } from 'timeline-state-resolver-types'
 import { Time } from './common'
-import { SomeContent } from './content'
+import { SomeTimelineContent } from './content'
+import { ITranslatableMessage } from './translations'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -137,20 +138,20 @@ export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatable
 	 */
 	invalid?: boolean
 	/**
-	 * Provide additional information about the reason a part is invalid. The title should be a single, short sentence describing the reason. Additional
-	 * information can be provided in the description property. The blueprints can also provide a color hint that the UI can use when displaying the part.
+	 * Provide additional information about the reason a part is invalid. The `key` is the string key from blueprints
+	 * translations. Args will be used to replace placeholders within the translated file. If `key` is not found in the
+	 * translation, it will be interpollated using the `args` and used as the string to be displayed.
+	 * The blueprints can also provide a color hint that the UI can use when displaying the part.
 	 * Color needs to be in #xxxxxx RGB hexadecimal format.
 	 *
 	 * @type {{
-	 * 		title: string,
-	 * 		description?: string
+	 * 		message: ITranslatableMessage,
 	 * 		color?: string
 	 * 	}}
 	 * @memberof IBlueprintPart
 	 */
 	invalidReason?: {
-		title: string
-		description?: string
+		message: ITranslatableMessage
 		color?: string
 	}
 
@@ -165,9 +166,6 @@ export interface IBlueprintPartDB<TMetadata = unknown> extends IBlueprintPart<TM
 	_id: string
 	/** The segment ("Title") this line belongs to */
 	segmentId: string
-
-	/** if the part was dunamically inserted (adlib) */
-	dynamicallyInsertedAfterPartId?: string
 }
 /** The Part instance sent from Core */
 export interface IBlueprintPartInstance<TMetadata = unknown> {
@@ -175,7 +173,10 @@ export interface IBlueprintPartInstance<TMetadata = unknown> {
 	/** The segment ("Title") this line belongs to */
 	segmentId: string
 
-	part: IBlueprintPartDB<TMetadata> // TODO - omit some duplicated fields?
+	part: IBlueprintPartDB<TMetadata>
+
+	/** Whether the PartInstance is an orphan (the Part referenced does not exist). Indicates the reason it is orphaned */
+	orphaned?: 'adlib-part' | 'deleted'
 }
 
 export interface IBlueprintPartInstanceTimings {
@@ -224,7 +225,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** Layer output this piece belongs to */
 	outputLayerId: string
 	/** The object describing the item in detail */
-	content?: SomeContent
+	content: SomeTimelineContent
 
 	/** The transition used by this piece to transition to and from the piece */
 	transitions?: {
@@ -248,6 +249,9 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	adlibDisableOutTransition?: boolean
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
+
+	/** HACK: Some pieces have side effects on other pieces, and pruning them when they have finished playback will cause playout glitches. This will tell core to not always preserve it */
+	hasSideEffects?: boolean
 }
 
 export interface ExpectedPlayoutItemGeneric {

@@ -1,4 +1,8 @@
-import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylistId,
+	RundownPlaylist,
+	RundownPlaylistActivationId,
+} from '../../../lib/collections/RundownPlaylists'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	getCurrentTime,
@@ -19,6 +23,7 @@ import {
 	getSegmentsAndPartsFromCache,
 	selectNextPart,
 	getAllPieceInstancesFromCache,
+	LOW_PRIO_DEFER_TIME,
 } from './lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
@@ -71,12 +76,14 @@ export function takeNextPartInnerSync(
 ) {
 	const span = profiler.startSpan('takeNextPartInner')
 	const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!dbPlaylist.active) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
+	if (!dbPlaylist.activationId) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
 	if (!dbPlaylist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
 	const cache = existingCache ?? waitForPromise(initCacheForRundownPlaylist(dbPlaylist, undefined, true))
 
 	let playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
+	if (!playlist.activationId) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
+	const playlistActivationId = playlist.activationId
 
 	let timeOffset: number | null = playlist.nextTimeOffset || null
 	let firstTake = !playlist.startedPlayback
@@ -135,20 +142,21 @@ export function takeNextPartInnerSync(
 	if (!takeRundown)
 		throw new Meteor.Error(500, `takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
 
-	const { segments, parts: partsInOrder } = getSegmentsAndPartsFromCache(cache, playlist)
 	// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
-	const nextPart = selectNextPart(playlist, takePartInstance, partsInOrder)
+	const nextPart = selectNextPart(playlist, takePartInstance, getSegmentsAndPartsFromCache(cache, playlist))
 
 	// beforeTake(rundown, previousPart || null, takePart)
 
-	const { blueprint } = waitForPromise(pBlueprint)
+	const { blueprint, blueprintId } = waitForPromise(pBlueprint)
 	if (blueprint.onPreTake) {
 		const span = profiler.startSpan('blueprint.onPreTake')
 		try {
 			waitForPromise(
-				Promise.resolve(blueprint.onPreTake(new PartEventContext(takeRundown, cache, takePartInstance))).catch(
-					logger.error
-				)
+				Promise.resolve(
+					blueprint.onPreTake(
+						new PartEventContext('onPreTake', blueprintId, takeRundown, cache, takePartInstance)
+					)
+				).catch(logger.error)
 			)
 			if (span) span.end()
 		} catch (e) {
@@ -202,7 +210,7 @@ export function takeNextPartInnerSync(
 
 	// Setup the parts for the HOLD we are starting
 	if (playlist.previousPartInstanceId && m.holdState === RundownHoldState.ACTIVE) {
-		startHold(cache, currentPartInstance, nextPartInstance)
+		startHold(cache, playlistActivationId, currentPartInstance, nextPartInstance)
 	}
 	afterTake(cache, playlist.studioId, takePartInstance, timeOffset)
 
@@ -238,7 +246,15 @@ export function takeNextPartInnerSync(
 					const span = profiler.startSpan('blueprint.onRundownFirstTake')
 					waitForPromise(
 						Promise.resolve(
-							blueprint.onRundownFirstTake(new PartEventContext(takeRundown, cache, takePartInstance))
+							blueprint.onRundownFirstTake(
+								new PartEventContext(
+									'onRundownFirstTake',
+									blueprintId,
+									takeRundown,
+									cache,
+									takePartInstance
+								)
+							)
 						).catch(logger.error)
 					)
 					if (span) span.end()
@@ -249,7 +265,9 @@ export function takeNextPartInnerSync(
 				const span = profiler.startSpan('blueprint.onPostTake')
 				waitForPromise(
 					Promise.resolve(
-						blueprint.onPostTake(new PartEventContext(takeRundown, cache, takePartInstance))
+						blueprint.onPostTake(
+							new PartEventContext('onPostTake', blueprintId, takeRundown, cache, takePartInstance)
+						)
 					).catch(logger.error)
 				)
 				if (span) span.end()
@@ -280,7 +298,16 @@ export function updatePartInstanceOnTake(
 			const resolvedPieces = getResolvedPieces(cache, showStyle, currentPartInstance)
 
 			const span = profiler.startSpan('blueprint.getEndStateForPart')
-			const context = new RundownContext(takeRundown, cache, undefined)
+			const context = new RundownContext(
+				{
+					name: `${playlist.name}`,
+					identifier: `playlist=${playlist._id},currentPartInstance=${
+						currentPartInstance._id
+					},execution=${getRandomId()}`,
+				},
+				takeRundown,
+				cache
+			)
 			previousPartEndState = blueprint.getEndStateForPart(
 				context,
 				playlist.previousPersistentState,
@@ -323,19 +350,23 @@ export function afterTake(
 	// or after a new part has started playing
 	updateTimeline(cache, studioId, forceNowTime)
 
-	// defer these so that the playout gateway has the chance to learn about the changes
-	Meteor.setTimeout(() => {
-		// todo
-		if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
-			const currentRundown = Rundowns.findOne(takePartInstance.rundownId)
-			if (!currentRundown)
-				throw new Meteor.Error(
-					404,
-					`Rundown "${takePartInstance.rundownId}" of partInstance "${takePartInstance._id}" not found`
-				)
-			IngestActions.notifyCurrentPlayingPart(currentRundown, takePartInstance.part)
-		}
-	}, 40)
+	cache.deferAfterSave(() => {
+		Meteor.setTimeout(() => {
+			// This is low-prio, defer so that it's executed well after publications has been updated,
+			// so that the playout gateway has haf the chance to learn about the timeline changes
+
+			// todo
+			if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
+				const currentRundown = Rundowns.findOne(takePartInstance.rundownId)
+				if (!currentRundown)
+					throw new Meteor.Error(
+						404,
+						`Rundown "${takePartInstance.rundownId}" of partInstance "${takePartInstance._id}" not found`
+					)
+				IngestActions.notifyCurrentPlayingPart(currentRundown, takePartInstance.part)
+			}
+		}, LOW_PRIO_DEFER_TIME)
+	})
 
 	triggerGarbageCollection()
 	if (span) span.end()
@@ -346,6 +377,7 @@ export function afterTake(
  */
 function startHold(
 	cache: CacheForRundownPlaylist,
+	activationId: RundownPlaylistActivationId,
 	holdFromPartInstance: PartInstance | undefined,
 	holdToPartInstance: PartInstance | undefined
 ) {
@@ -372,6 +404,7 @@ function startHold(
 			// make the extension
 			const newInstance = literal<PieceInstance>({
 				_id: protectString<PieceInstanceId>(instance._id + '_hold'),
+				playlistActivationId: activationId,
 				rundownId: instance.rundownId,
 				partInstanceId: holdToPartInstance._id,
 				dynamicallyInserted: getCurrentTime(),

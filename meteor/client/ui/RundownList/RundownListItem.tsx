@@ -1,5 +1,4 @@
 import React from 'react'
-import { withTranslation } from 'react-i18next'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Studio } from '../../../lib/collections/Studios'
@@ -38,7 +37,7 @@ import RundownListItemView from './RundownListItemView'
 import { Settings } from '../../../lib/Settings'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { ShowStyleCompound, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 
 export const HTML_ID_PREFIX = 'rundown-'
 
@@ -268,7 +267,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 
 					const classNames: string[] = []
 					if (isDragging) classNames.push('dragging')
-					if (rundown.unsynced) classNames.push('unsynced')
+					if (rundown.orphaned) classNames.push('unsynced')
 
 					// rundown ids can start with digits, which is illegal for HTML id attributes
 					const htmlElementId = `${HTML_ID_PREFIX}${unprotectString(rundown._id)}`
@@ -297,12 +296,12 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 							showStyleName={showStyleLabel}
 							showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
 							confirmDeleteRundownHandler={
-								(rundown.unsynced && getAllowStudio()) || userCanConfigure || getAllowService()
+								(rundown.orphaned && getAllowStudio()) || userCanConfigure || getAllowService()
 									? () => confirmDeleteRundown(rundown, t)
 									: undefined
 							}
 							confirmReSyncRundownHandler={
-								rundown.unsynced && getAllowStudio() ? () => confirmReSyncRundown(rundown, t) : undefined
+								rundown.orphaned && getAllowStudio() ? () => confirmReSyncRundown(rundown, t) : undefined
 							}
 						/>
 					)

@@ -26,7 +26,11 @@ import { RundownViewBuckets, BucketAdLibItem } from './RundownViewBuckets'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ShelfInspector } from './Inspector/ShelfInspector'
 import { Studio } from '../../../lib/collections/Studios'
-import RundownViewEventBus, { RundownViewEvents, SelectPieceEvent } from '../RundownView/RundownViewEventBus'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	SelectPieceEvent,
+	SwitchToShelfTabEvent,
+} from '../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
 import ShelfContextMenu from './ShelfContextMenu'
 
@@ -393,11 +397,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		})
 	}
 
-	onSwitchShelfTab = (e: any) => {
-		const tab = e.detail && e.detail.tab
-
-		if (tab) {
-			this.switchTab(tab)
+	onSwitchShelfTab = (e: SwitchToShelfTabEvent) => {
+		if (e.tab) {
+			this.switchTab(e.tab)
 		}
 	}
 
@@ -474,6 +476,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 										studioMode={this.props.studioMode}
 										rundownLayout={this.props.rundownLayout}
 										shouldQueue={this.state.shouldQueue}
+										selectedPiece={this.state.selectedPiece}
+										onSelectPiece={this.selectPiece}
 										onChangeQueueAdLib={this.changeQueueAdLib}
 										studio={this.props.studio}
 									/>

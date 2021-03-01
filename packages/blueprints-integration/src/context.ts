@@ -1,5 +1,4 @@
 import { IBlueprintAsRunLogEvent } from './asRunLog'
-import { IngestPart, ExtendedIngestRundown } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
 import {
 	IBlueprintPart,
@@ -26,51 +25,94 @@ export interface ICommonContext {
 	getHashId: (originString: string, originIsNotUnique?: boolean) => string
 	/** Un-hash, is return the string that created the hash */
 	unhashId: (hash: string) => string
+
+	/** Log a message to the sofie log with level 'debug' */
+	logDebug: (message: string) => void
+	/** Log a message to the sofie log with level 'info' */
+	logInfo: (message: string) => void
+	/** Log a message to the sofie log with level 'warn' */
+	logWarning: (message: string) => void
+	/** Log a message to the sofie log with level 'error' */
+	logError: (message: string) => void
 }
 
-export interface NotesContext extends ICommonContext {
-	error: (message: string) => void
-	warning: (message: string) => void
+export function isCommonContext(obj: unknown): obj is ICommonContext {
+	if (!obj || typeof obj !== 'object') {
+		return false
+	}
+
+	const { getHashId, unhashId, logDebug, logInfo, logWarning, logError } = obj as any
+
+	return (
+		typeof getHashId === 'function' &&
+		typeof unhashId === 'function' &&
+		typeof logDebug === 'function' &&
+		typeof logInfo === 'function' &&
+		typeof logWarning === 'function' &&
+		typeof logError === 'function'
+	)
+}
+
+export interface IUserNotesContext extends ICommonContext {
+	/** Display a notification to the user of an error */
+	notifyUserError(message: string, params?: { [key: string]: any }): void
+	/** Display a notification to the user of an warning */
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void
+}
+
+export function isUserNotesContext(obj: unknown): obj is IUserNotesContext {
+	if (!isCommonContext(obj)) {
+		return false
+	}
+
+	const { notifyUserError, notifyUserWarning } = obj as any
+
+	return typeof notifyUserError === 'function' && typeof notifyUserWarning === 'function'
 }
 
 /** Studio */
 
-export interface IStudioConfigContext {
+export interface IStudioContext extends ICommonContext {
 	/** Returns the Studio blueprint config. If StudioBlueprintManifest.preprocessConfig is provided, a config preprocessed by that function is returned, otherwise it is returned unprocessed */
 	getStudioConfig: () => unknown
 	/** Returns a reference to a studio config value, that can later be resolved in Core */
 	getStudioConfigRef(configKey: string): string
-}
-export interface IStudioContext extends IStudioConfigContext {
+
 	/** Get the mappings for the studio */
 	getStudioMappings: () => Readonly<BlueprintMappings>
 }
 
+export interface IStudioUserContext extends IUserNotesContext, IStudioContext {}
+
 /** Show Style Variant */
 
-export interface IShowStyleConfigContext {
+export interface IShowStyleContext extends ICommonContext, IStudioContext {
 	/** Returns a ShowStyle blueprint config. If ShowStyleBlueprintManifest.preprocessConfig is provided, a config preprocessed by that function is returned, otherwise it is returned unprocessed */
 	getShowStyleConfig: () => unknown
 	/** Returns a reference to a showStyle config value, that can later be resolved in Core */
 	getShowStyleConfigRef(configKey: string): string
 }
 
-export interface ShowStyleContext extends NotesContext, IStudioContext, IShowStyleConfigContext {}
+export interface IShowStyleUserContext extends IUserNotesContext, IShowStyleContext {}
 
 /** Rundown */
 
-export interface RundownContext extends ShowStyleContext {
+export interface IRundownContext extends IShowStyleContext {
 	readonly rundownId: string
 	readonly rundown: Readonly<IBlueprintRundownDB>
 }
 
-export interface SegmentContext extends RundownContext {
-	error: (message: string, partExternalId?: string) => void
-	warning: (message: string, partExternalId?: string) => void
+export interface IRundownUserContext extends IUserNotesContext, IRundownContext {}
+
+export interface ISegmentUserContext extends IUserNotesContext, IRundownContext {
+	/** Display a notification to the user of an error */
+	notifyUserError: (message: string, params?: { [key: string]: any }, partExternalId?: string) => void
+	/** Display a notification to the user of an warning */
+	notifyUserWarning: (message: string, params?: { [key: string]: any }, partExternalId?: string) => void
 }
 
 /** Actions */
-export interface ActionExecutionContext extends ShowStyleContext {
+export interface IActionExecutionContext extends IShowStyleUserContext, IEventContext {
 	/** Data fetching */
 	// getIngestRundown(): IngestRundown // TODO - for which part?
 	/** Get a PartInstance which can be modified */
@@ -81,13 +123,15 @@ export interface ActionExecutionContext extends ShowStyleContext {
 	getResolvedPieceInstances(part: 'current' | 'next'): IBlueprintResolvedPieceInstance[]
 	/** Get the last active piece on given layer */
 	findLastPieceOnLayer(
-		sourceLayerId: string,
+		sourceLayerId: string | string[],
 		options?: {
 			excludeCurrentPart?: boolean
 			originalOnly?: boolean
 			pieceMetaDataFilter?: any // Mongo query against properties inside of piece.metaData
 		}
 	): IBlueprintPieceInstance | undefined
+	/** Gets the PartInstance for a PieceInstane retrieved from findLastPieceOnLayer. This primarily allows for accessing metadata of the PartInstance */
+	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance
 	/** Fetch the showstyle config for the specified part */
 	// getNextShowStyleConfig(): Readonly<{ [key: string]: ConfigItemValue }>
 
@@ -119,7 +163,7 @@ export interface ActionExecutionContext extends ShowStyleContext {
 }
 
 /** Actions */
-export interface SyncIngestUpdateToPartInstanceContext extends RundownContext {
+export interface ISyncIngestUpdateToPartInstanceContext extends IRundownUserContext {
 	/** Sync a pieceInstance. Inserts the pieceInstance if new, updates if existing. Optionally pass in a mutated Piece, to change the content of the instance */
 	syncPieceInstance(
 		pieceInstanceId: string,
@@ -155,11 +199,11 @@ export interface SyncIngestUpdateToPartInstanceContext extends RundownContext {
 
 /** Events */
 
-export interface EventContext {
+export interface IEventContext {
 	getCurrentTime(): number
 }
 
-export interface TimelineEventContext extends EventContext, RundownContext {
+export interface ITimelineEventContext extends IEventContext, IRundownContext {
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
 	readonly nextPartInstance: Readonly<IBlueprintPartInstance> | undefined
 
@@ -175,11 +219,11 @@ export interface TimelineEventContext extends EventContext, RundownContext {
 	getTimelineObjectAbSessionId(obj: OnGenerateTimelineObj, sessionName: string): string | undefined
 }
 
-export interface PartEventContext extends EventContext, RundownContext {
+export interface IPartEventContext extends IEventContext, IRundownContext {
 	readonly part: Readonly<IBlueprintPartInstance>
 }
 
-export interface AsRunEventContext extends RundownContext {
+export interface IAsRunEventContext extends IEventContext, IRundownContext {
 	readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
 
 	formatDateAsTimecode(time: number): string
@@ -221,15 +265,4 @@ export interface AsRunEventContext extends RundownContext {
 	 * @param id Id of partInstance to fetch items in
 	 */
 	getPieceInstances(partInstanceId: string): Readonly<IBlueprintPieceInstance[]>
-
-	/** Ingest Data */
-
-	/** Get the ingest data related to the rundown */
-	getIngestDataForRundown(): Readonly<ExtendedIngestRundown> | undefined
-
-	/** Get the ingest data related to a part */
-	getIngestDataForPart(part: Readonly<IBlueprintPartDB>): Readonly<IngestPart> | undefined
-
-	/** Get the ingest data related to a partInstance */
-	getIngestDataForPartInstance(partInstance: Readonly<IBlueprintPartInstance>): Readonly<IngestPart> | undefined
 }

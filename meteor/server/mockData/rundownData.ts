@@ -5,7 +5,7 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
-import { getCurrentTime, waitForPromise } from '../../lib/lib'
+import { waitForPromise } from '../../lib/lib'
 import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
 import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Settings } from '../../lib/Settings'
@@ -17,7 +17,6 @@ import { forceClearAllActivationCaches } from '../ActivationCache'
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { updateTimeline } from '../api/playout/timeline'
-import { getActiveRundownPlaylistsInStudio } from '../api/playout/studio'
 import { forceClearAllBlueprintConfigCaches } from '../api/blueprints/config'
 
 if (!Settings.enableUserAccounts) {
@@ -41,19 +40,6 @@ if (!Settings.enableUserAccounts) {
 
 		debug_purgeMediaDB() {
 			MediaObjects.remove({})
-		},
-
-		debug_rundownSetStarttimeSoon() {
-			let rundown = Rundowns.findOne({
-				active: true,
-			})
-			if (rundown) {
-				Rundowns.update(rundown._id, {
-					$set: {
-						expectedStart: getCurrentTime() + 70 * 1000,
-					},
-				})
-			}
 		},
 
 		debug_removeRundown(id: RundownPlaylistId) {
@@ -130,7 +116,7 @@ if (!Settings.enableUserAccounts) {
 					const playlist = RundownPlaylists.findOne(id)
 					if (!playlist) throw new Meteor.Error(404, 'not found')
 
-					if (playlist.nextPartInstanceId && playlist.active) {
+					if (playlist.nextPartInstanceId && playlist.activationId) {
 						const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
 						const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)

@@ -1,7 +1,7 @@
 /* tslint:disable:no-use-before-declare */
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import * as _ from 'underscore'
-import { DeepReadonly } from 'utility-types'
+import { ReadonlyDeep } from 'type-fest'
 import { Piece } from '../../../lib/collections/Pieces'
 import {
 	literal,
@@ -28,13 +28,17 @@ import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache } from './lib'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylistActivationId,
+	RundownPlaylistId,
+} from '../../../lib/collections/RundownPlaylists'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
-import { createPieceGroupAndCap, PieceGroupMetadata } from '../../../lib/rundown/pieces'
+import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { createPieceGroupAndCap, PieceGroupMetadata, PieceTimelineMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { getPieceFirstObjectId } from '../../../lib/rundown/timeline'
@@ -75,7 +79,7 @@ export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[
 
 export function createPieceGroupFirstObject(
 	playlistId: RundownPlaylistId,
-	pieceInstance: DeepReadonly<PieceInstance>,
+	pieceInstance: ReadonlyDeep<PieceInstance>,
 	pieceGroup: TimelineObjRundown & OnGenerateTimelineObjExt,
 	firstObjClasses?: string[]
 ): TimelineObjPieceAbstract & OnGenerateTimelineObjExt {
@@ -205,7 +209,11 @@ export function getResolvedPieces(
 	const partStarted = partInstance.timings?.startedPlayback
 	const nowInPart = now - (partStarted ?? 0)
 
-	const preprocessedPieces = processAndPrunePieceInstanceTimings(showStyleBase, pieceInstances, nowInPart)
+	const preprocessedPieces: ReadonlyDeep<PieceInstanceWithTimings[]> = processAndPrunePieceInstanceTimings(
+		showStyleBase,
+		pieceInstances,
+		nowInPart
+	)
 
 	const objs = flatten(
 		preprocessedPieces.map((piece) => {
@@ -241,11 +249,7 @@ export function getResolvedPiecesFromFullTimeline(
 ): { pieces: ResolvedPieceInstance[]; time: number } {
 	const span = profiler.startSpan('getResolvedPiecesFromFullTimeline')
 	const objs = clone(
-		allObjs.filter(
-			(o) =>
-				o.isGroup &&
-				((o as any).isPartGroup || (o.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
-		)
+		allObjs.filter((o) => (o.metaData as Partial<PieceTimelineMetadata> | undefined)?.isPieceTimeline)
 	)
 
 	const now = getCurrentTime()
@@ -327,6 +331,7 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 }
 
 export function convertAdLibToPieceInstance(
+	playlistActivationId: RundownPlaylistActivationId,
 	adLibPiece: AdLibPiece | Piece | BucketAdLib | PieceInstancePiece,
 	partInstance: PartInstance,
 	queue: boolean
@@ -344,6 +349,7 @@ export function convertAdLibToPieceInstance(
 		_id: protectString(`${partInstance._id}_${newPieceId}`),
 		rundownId: partInstance.rundownId,
 		partInstanceId: partInstance._id,
+		playlistActivationId,
 		adLibSourceId: adLibPiece._id,
 		dynamicallyInserted: queue ? undefined : getCurrentTime(),
 		piece: literal<PieceInstancePiece>({

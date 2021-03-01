@@ -97,8 +97,8 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	}
 
 	updateAnchoredElsWidths = () => {
-		const leftLabelWidth = getElementWidth(this.leftLabel)
-		const rightLabelWidth = getElementWidth(this.rightLabel)
+		const leftLabelWidth = this.leftLabel ? Math.max(0, getElementWidth(this.leftLabel) - 2) : 0
+		const rightLabelWidth = this.rightLabel ? Math.max(0, getElementWidth(this.rightLabel) - 2) : 0
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
@@ -150,7 +150,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 					className="segment-timeline__piece__label right-side"
 					ref={this.setRightLabelRef}
 					style={this.getItemLabelOffsetRight()}>
-					<span className="segment-timeline__piece__label last-words">{end}</span>
+					{end && <span className="segment-timeline__piece__label last-words">{end}</span>}
 					{this.renderInfiniteIcon()}
 					{this.renderOverflowTimeLabel()}
 				</span>

@@ -1,6 +1,6 @@
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { protectString, unprotectString, Omit, literal } from '../../../lib/lib'
+import { protectString, unprotectString, literal } from '../../../lib/lib'
 import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
@@ -8,14 +8,13 @@ import {
 	TimelineObjectCoreExt,
 	IBlueprintPiece,
 	IBlueprintAdLibPiece,
-	RundownContext,
 	TSR,
 	IBlueprintActionManifest,
-	NotesContext as INotesContext,
+	ICommonContext,
+	IShowStyleContext,
 } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
-import { ShowStyleContext, NotesContext } from './context'
 import { RundownImportVersions } from '../../../lib/collections/Rundowns'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PartId } from '../../../lib/collections/Parts'
@@ -27,6 +26,7 @@ import { prefixAllObjectIds } from '../playout/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { profiler } from '../profiler'
 import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
+import { CommonContext, ShowStyleContext } from './context'
 
 /**
  *
@@ -34,7 +34,7 @@ import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
  * prefixAllTimelineObjects: Add a prefix to the timeline object ids, to ensure duplicate ids don't occur when inserting a copy of a piece
  */
 export function postProcessPieces(
-	innerContext: ShowStyleContext,
+	innerContext: IShowStyleContext,
 	pieces: IBlueprintPiece[],
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
@@ -105,7 +105,7 @@ function isNow(enable: TSR.TSRTimelineObjBase['enable']): boolean {
 }
 
 export function postProcessTimelineObjects(
-	innerContext: INotesContext,
+	innerContext: ICommonContext,
 	pieceId: PieceId,
 	blueprintId: BlueprintId,
 	timelineObjects: TSR.TSRTimelineObjBase[],
@@ -148,10 +148,11 @@ export function postProcessTimelineObjects(
 }
 
 export function postProcessAdLibPieces(
-	innerContext: RundownContext,
-	adLibPieces: IBlueprintAdLibPiece[],
+	innerContext: ICommonContext,
 	blueprintId: BlueprintId,
-	partId?: PartId
+	rundownId: RundownId,
+	partId: PartId | undefined,
+	adLibPieces: IBlueprintAdLibPiece[]
 ): AdLibPiece[] {
 	const span = profiler.startSpan('blueprints.postProcess.postProcessAdLibPieces')
 
@@ -167,7 +168,7 @@ export function postProcessAdLibPieces(
 			_id: protectString(
 				innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${orgAdlib.externalId}_${i}`)
 			),
-			rundownId: protectString(innerContext.rundown._id),
+			rundownId: rundownId,
 			partId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
 		}
@@ -199,45 +200,47 @@ export function postProcessAdLibPieces(
 }
 
 export function postProcessGlobalAdLibActions(
-	innerContext: RundownContext,
-	adlibActions: IBlueprintActionManifest[],
-	blueprintId: BlueprintId
+	innerContext: ICommonContext,
+	blueprintId: BlueprintId,
+	rundownId: RundownId,
+	adlibActions: IBlueprintActionManifest[]
 ): RundownBaselineAdLibAction[] {
 	return adlibActions.map((action, i) =>
 		literal<RundownBaselineAdLibAction>({
 			...action,
 			actionId: action.actionId,
 			_id: protectString(innerContext.getHashId(`${blueprintId}_global_adlib_action_${i}`)),
-			rundownId: protectString(innerContext.rundownId),
+			rundownId: rundownId,
 			partId: undefined,
 		})
 	)
 }
 
 export function postProcessAdLibActions(
-	innerContext: RundownContext,
-	adlibActions: IBlueprintActionManifest[],
+	innerContext: ICommonContext,
 	blueprintId: BlueprintId,
-	partId: PartId
+	rundownId: RundownId,
+	partId: PartId,
+	adlibActions: IBlueprintActionManifest[]
 ): AdLibAction[] {
 	return adlibActions.map((action, i) =>
 		literal<AdLibAction>({
 			...action,
 			actionId: action.actionId,
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_action_${i}`)),
-			rundownId: protectString(innerContext.rundownId),
+			rundownId: rundownId,
 			partId: partId,
 		})
 	)
 }
 
 export function postProcessStudioBaselineObjects(studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
-	const context = new NotesContext('studio', 'studio', false)
+	const context = new CommonContext({ identifier: 'studio', name: 'studio' })
 	return postProcessTimelineObjects(context, protectString('studio'), studio.blueprintId!, objs, false)
 }
 
 export function postProcessRundownBaselineItems(
-	innerContext: RundownContext,
+	innerContext: ICommonContext,
 	blueprintId: BlueprintId,
 	baselineItems: TSR.TSRTimelineObjBase[]
 ): TimelineObjGeneric[] {

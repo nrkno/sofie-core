@@ -33,6 +33,9 @@ Array [
         "isGroup": true,
         "isPartGroup": true,
         "layer": "",
+        "metaData": Object {
+          "isPieceTimeline": true,
+        },
         "objectType": "rundown",
         "priority": 5,
       },
@@ -70,10 +73,34 @@ Array [
         "isGroup": true,
         "layer": "vt0",
         "metaData": Object {
+          "isPieceTimeline": true,
           "pieceId": "randomId9002_part0_0_randomId9007_randomId9002_piece001",
         },
         "objectType": "rundown",
         "priority": 5,
+      },
+      Object {
+        "classes": Array [
+          "current_part",
+        ],
+        "content": Object {
+          "callBack": "piecePlaybackStarted",
+          "callBackData": Object {
+            "dynamicallyInserted": false,
+            "pieceInstanceId": "randomId9002_part0_0_randomId9007_randomId9002_piece001",
+            "rundownPlaylistId": "playlist_randomId9002",
+          },
+          "callBackStopped": "piecePlaybackStopped",
+          "deviceType": 0,
+          "type": "callback",
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "piece_group_firstobject_randomId9002_part0_0_randomId9007_randomId9002_piece001",
+        "inGroup": "piece_group_randomId9002_part0_0_randomId9007_randomId9002_piece001",
+        "layer": "vt0_firstobject",
+        "objectType": "rundown",
       },
     ],
     "timelineHash": "randomId9012",
@@ -115,6 +142,9 @@ Array [
         "isGroup": true,
         "isPartGroup": true,
         "layer": "",
+        "metaData": Object {
+          "isPieceTimeline": true,
+        },
         "objectType": "rundown",
         "priority": 5,
       },
@@ -152,10 +182,34 @@ Array [
         "isGroup": true,
         "layer": "vt0",
         "metaData": Object {
+          "isPieceTimeline": true,
           "pieceId": "randomId9002_part0_0_randomId9007_randomId9002_piece001",
         },
         "objectType": "rundown",
         "priority": 5,
+      },
+      Object {
+        "classes": Array [
+          "current_part",
+        ],
+        "content": Object {
+          "callBack": "piecePlaybackStarted",
+          "callBackData": Object {
+            "dynamicallyInserted": false,
+            "pieceInstanceId": "randomId9002_part0_0_randomId9007_randomId9002_piece001",
+            "rundownPlaylistId": "playlist_randomId9002",
+          },
+          "callBackStopped": "piecePlaybackStopped",
+          "deviceType": 0,
+          "type": "callback",
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "piece_group_firstobject_randomId9002_part0_0_randomId9007_randomId9002_piece001",
+        "inGroup": "piece_group_randomId9002_part0_0_randomId9007_randomId9002_piece001",
+        "layer": "vt0_firstobject",
+        "objectType": "rundown",
       },
     ],
     "timelineHash": "randomId9013",

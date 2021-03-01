@@ -16,7 +16,7 @@ export function getActiveRundownPlaylistsInStudio(
 ): RundownPlaylist[] {
 	const q: MongoQuery<DBRundownPlaylist> = {
 		studioId: studioId,
-		active: true,
+		activationId: { $exists: true },
 		_id: {
 			$ne: excludeRundownPlaylistId || protectString(''),
 		},

@@ -30,6 +30,8 @@ import { PieceInstanceInfiniteId } from './PieceInstances'
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
 /** A string, identifying an activation of a playlist */
 export type ActiveInstanceId = ProtectedString<'ActiveInstanceId'>
+/** A string, identifying an activation of a playlist */
+export type RundownPlaylistActivationId = ProtectedString<'RundownPlaylistActivationId'>
 
 /** Details of an ab-session requested by the blueprints in onTimelineGenerate */
 export interface ABSessionInfo {
@@ -72,10 +74,8 @@ export interface DBRundownPlaylist {
 	rehearsal?: boolean
 	/** Playout hold state */
 	holdState?: RundownHoldState
-	/** Is the playlist currently active in the studio */
-	active?: boolean
-	/** This is set to a random string when the rundown is activated */
-	activeInstanceId?: ActiveInstanceId
+	/** Truthy when the playlist is currently active in the studio. This is regenerated upon each activation/reset. */
+	activationId?: RundownPlaylistActivationId
 	/** Should the playlist loop at the end */
 	loop?: boolean
 
@@ -124,9 +124,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public expectedStart?: Time
 	public expectedDuration?: number
 	public rehearsal?: boolean
-	public activeInstanceId?: ActiveInstanceId
 	public holdState?: RundownHoldState
-	public active?: boolean
+	public activationId?: RundownPlaylistActivationId
 	public currentPartInstanceId: PartInstanceId | null
 	public nextPartInstanceId: PartInstanceId | null
 	public nextSegmentId?: SegmentId
@@ -368,8 +367,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	}
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
 	getSegmentsAndPartsSync(
-		segmentsQuery?: Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>,
-		partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>,
+		segmentsQuery?: Mongo.Query<DBSegment>,
+		partsQuery?: Mongo.Query<DBPart>,
 		segmentsOptions?: FindOptions<DBSegment>,
 		partsOptions?: FindOptions<DBPart>
 	): { segments: Segment[]; parts: Part[] } {
@@ -537,81 +536,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			}
 		})
 	}
-
-	getAllStoredNotes(): Array<GenericNote & { rank: number }> {
-		const rundownNotes: RundownNote[] = _.flatten(
-			_.compact(
-				this.getRundowns(
-					{},
-					{
-						fields: {
-							notes: 1,
-						},
-					}
-				).map((r) => r.notes)
-			)
-		)
-
-		let notes: Array<TrackedNote> = []
-		notes = notes.concat(rundownNotes.map((note) => _.extend(note, { rank: 0 })))
-
-		const segments = this.getSegments()
-		const parts = this.getUnorderedParts()
-
-		notes = notes.concat(getAllNotesForSegmentAndParts(segments, parts))
-
-		return notes
-	}
-}
-
-export function getAllNotesForSegmentAndParts(segments: DBSegment[], parts: Part[]): Array<TrackedNote> {
-	let notes: Array<TrackedNote> = []
-
-	const segmentNotes = _.object<{ [key: string]: { notes: TrackedNote[]; rank: number; name: string } }>(
-		segments.map((segment) => [
-			segment._id,
-			{
-				rank: segment._rank,
-				notes: segment.notes
-					? segment.notes.map((note) => ({
-							...note,
-							origin: {
-								...note.origin,
-								segmentId: segment._id,
-								rundownId: segment.rundownId,
-								name: note.origin.name || segment.name,
-							},
-					  }))
-					: undefined,
-				name: segment.name,
-			},
-		])
-	)
-	parts.map((part) => {
-		const newNotes = (part.notes || []).concat(part.getInvalidReasonNotes())
-		if (newNotes.length > 0) {
-			const segNotes = segmentNotes[unprotectString(part.segmentId)]
-			if (segNotes) {
-				segNotes.notes.push(
-					...newNotes.map((n) => ({
-						...n,
-						rank: segNotes.rank,
-						origin: {
-							...n.origin,
-							segmentId: part.segmentId,
-							partId: part._id,
-							rundownId: part.rundownId,
-							segmentName: segNotes.name,
-							name: n.origin.name || part.title,
-						},
-					}))
-				)
-			}
-		}
-	})
-	notes = notes.concat(_.flatten(_.map(segmentNotes, (o) => o.notes)))
-
-	return notes
 }
 
 export const RundownPlaylists: TransformedCollection<RundownPlaylist, DBRundownPlaylist> = createMongoCollection<
@@ -621,5 +545,5 @@ registerCollection('RundownPlaylists', RundownPlaylists)
 
 registerIndex(RundownPlaylists, {
 	studioId: 1,
-	active: 1,
+	activationId: 1,
 })

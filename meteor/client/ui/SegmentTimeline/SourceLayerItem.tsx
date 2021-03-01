@@ -30,6 +30,7 @@ export interface ISourceLayerItemProps {
 	part: PartUi
 	partStartsAt: number
 	partDuration: number
+	partExpectedDuration: number
 	piece: PieceUi
 	timeScale: number
 	isLiveLine: boolean
@@ -46,7 +47,6 @@ export interface ISourceLayerItemProps {
 	scrollLeft: number
 	scrollWidth: number
 	liveLinePadding: number
-	renderToTimeline: (render: JSX.Element | null) => void
 	layerIndex: number
 }
 interface ISourceLayerItemState {

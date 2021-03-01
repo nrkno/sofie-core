@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import { Random } from 'meteor/random'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { StatusCode } from '../../server/systemStatus/systemStatus'
@@ -11,18 +10,13 @@ import {
 	SourceLayerType,
 	StudioBlueprintManifest,
 	BlueprintManifestType,
-	IStudioContext,
-	IStudioConfigContext,
-	IBlueprintShowStyleBase,
 	IngestRundown,
 	BlueprintManifestBase,
 	ShowStyleBlueprintManifest,
-	IBlueprintShowStyleVariant,
-	ShowStyleContext,
+	IShowStyleContext,
 	BlueprintResultRundown,
 	BlueprintResultSegment,
 	IngestSegment,
-	SegmentContext,
 	IBlueprintAdLibPiece,
 	IBlueprintRundown,
 	IBlueprintSegment,
@@ -38,7 +32,6 @@ import {
 	ShowStyleVariants,
 	ShowStyleVariantId,
 } from '../../lib/collections/ShowStyleVariants'
-import { CURRENT_SYSTEM_VERSION } from '../../server/migration/currentSystemVersion'
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
@@ -48,12 +41,7 @@ import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { RundownAPI } from '../../lib/api/rundown'
-import {
-	DBRundownPlaylist,
-	RundownPlaylist,
-	RundownPlaylists,
-	RundownPlaylistId,
-} from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { restartRandomId } from '../random'
@@ -273,14 +261,10 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 
 				studioConfigManifest: [],
 				studioMigrations: [],
-				getBaseline: (context: IStudioContext): TSR.TSRTimelineObjBase[] => {
+				getBaseline: (): TSR.TSRTimelineObjBase[] => {
 					return []
 				},
-				getShowStyleId: (
-					context: IStudioConfigContext,
-					showStyles: Array<IBlueprintShowStyleBase>,
-					ingestRundown: IngestRundown
-				): string | null => {
+				getShowStyleId: (): string | null => {
 					return SHOW_STYLE_ID
 				},
 			}
@@ -315,14 +299,10 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 
 				showStyleConfigManifest: [],
 				showStyleMigrations: [],
-				getShowStyleVariantId: (
-					context: IStudioConfigContext,
-					showStyleVariants: Array<IBlueprintShowStyleVariant>,
-					ingestRundown: IngestRundown
-				): string | null => {
+				getShowStyleVariantId: (): string | null => {
 					return SHOW_STYLE_VARIANT_ID
 				},
-				getRundown: (context: ShowStyleContext, ingestRundown: IngestRundown): BlueprintResultRundown => {
+				getRundown: (context: IShowStyleContext, ingestRundown: IngestRundown): BlueprintResultRundown => {
 					const rundown: IBlueprintRundown = {
 						externalId: ingestRundown.externalId,
 						name: ingestRundown.name,
@@ -336,7 +316,7 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 						baseline: [],
 					}
 				},
-				getSegment: (context: SegmentContext, ingestSegment: IngestSegment): BlueprintResultSegment => {
+				getSegment: (context: unknown, ingestSegment: IngestSegment): BlueprintResultSegment => {
 					const segment: IBlueprintSegment = {
 						name: ingestSegment.name ? ingestSegment.name : ingestSegment.externalId,
 						metaData: ingestSegment.payload,
@@ -496,7 +476,6 @@ export function setupDefaultRundown(
 			core: '',
 		},
 
-		dataSource: 'mock',
 		externalNRCSName: 'mock',
 	}
 	Rundowns.insert(rundown)
@@ -537,6 +516,9 @@ export function setupDefaultRundown(
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
 	}
 	Pieces.insert(piece000)
 
@@ -555,6 +537,9 @@ export function setupDefaultRundown(
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
 	}
 	Pieces.insert(piece001)
 
@@ -570,6 +555,9 @@ export function setupDefaultRundown(
 		name: 'AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	AdLibPieces.insert(adLibPiece000)
@@ -599,6 +587,9 @@ export function setupDefaultRundown(
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
 	}
 	Pieces.insert(piece010)
 
@@ -662,6 +653,9 @@ export function setupDefaultRundown(
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	const globalAdLib1: RundownBaselineAdLibItem = {
@@ -674,6 +668,9 @@ export function setupDefaultRundown(
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	RundownBaselineAdLibPieces.insert(globalAdLib0)
@@ -812,6 +809,9 @@ export function setupRundownWithAutoplayPart0(
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	const globalAdLib1: RundownBaselineAdLibItem = {
@@ -824,6 +824,9 @@ export function setupRundownWithAutoplayPart0(
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	RundownBaselineAdLibPieces.insert(globalAdLib0)

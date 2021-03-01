@@ -15,13 +15,15 @@ import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-integration'
 import * as crypto from 'crypto'
-import { DeepReadonly, DeepPartial } from 'utility-types'
+import { ReadonlyDeep, PartialDeep } from 'type-fest'
 import { BulkWriteOperation } from 'mongodb'
-import { _DeepPartialObject } from 'utility-types/dist/mapped-types'
+import { ITranslatableMessage } from './api/TranslatableMessage'
 
 const cloneOrg = require('fast-clone')
 
-export function clone<T>(o: DeepReadonly<T> | Readonly<T> | T): T {
+export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
+
+export function clone<T>(o: ReadonlyDeep<T> | Readonly<T> | T): T {
 	// Use this instead of fast-clone directly, as this retains the type
 	return cloneOrg(o)
 }
@@ -134,8 +136,28 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 	const changes = savePreparedChanges(preparedChanges, collection, options)
 
+	return waitForPromise(changes)
+}
+/**
+ * Saves an array of data into a collection
+ * No matter if the data needs to be created, updated or removed
+ * @param collection The collection to be updated
+ * @param filter The filter defining the data subset to be affected in db
+ * @param newData The new data
+ */
+export function asyncSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj>(
+	collection: TransformedCollection<DocClass, DBInterface>,
+	filter: MongoQuery<DBInterface>,
+	newData: Array<DBInterface>,
+	options?: SaveIntoDbOptions<DocClass, DBInterface>
+): Promise<Changes> {
+	const preparedChanges = prepareSaveIntoDb(collection, filter, newData, options)
+
+	const changes = savePreparedChanges(preparedChanges, collection, options)
+
 	return changes
 }
+
 export interface PreparedChanges<T> {
 	inserted: T[]
 	changed: T[]
@@ -215,11 +237,11 @@ export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface exte
 	})
 	return preparedChanges
 }
-export function savePreparedChanges<DocClass extends DBInterface, DBInterface extends DBObj>(
+export async function savePreparedChanges<DocClass extends DBInterface, DBInterface extends DBObj>(
 	preparedChanges: PreparedChanges<DBInterface>,
 	collection: TransformedCollection<DocClass, DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
-) {
+): Promise<Changes> {
 	let change: Changes = {
 		added: 0,
 		updated: 0,
@@ -290,7 +312,7 @@ export function savePreparedChanges<DocClass extends DBInterface, DBInterface ex
 		})
 	}
 
-	waitForPromise(pBulkWriteResult)
+	await pBulkWriteResult
 
 	if (options.afterRemoveAll) {
 		const objs = _.compact(preparedChanges.removed || [])
@@ -400,7 +422,6 @@ export type Partial<T> = {
 export function partial<T>(o: Partial<T>) {
 	return o
 }
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 export interface IDObj {
 	_id: ProtectedString<any>
 }
@@ -591,8 +612,8 @@ export function getRank<T extends { _rank: number }>(
 	i: number = 0,
 	count: number = 1
 ): number {
-	let newRankMax
-	let newRankMin
+	let newRankMax: number
+	let newRankMin: number
 
 	if (after) {
 		if (before) {
@@ -775,7 +796,7 @@ export function asyncCollectionFindFetch<
 }
 export function asyncCollectionFindOne<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | string
+	selector: MongoQuery<DBInterface> | DBInterface['_id']
 ): Promise<DocClass | undefined> {
 	return asyncCollectionFindFetch(collection, selector, { limit: 1 }).then((arr) => {
 		return arr[0]
@@ -927,6 +948,11 @@ export function makePromise<T>(fcn: () => T): Promise<T> {
 }
 
 export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
+	if (typeof selector !== 'object') {
+		// selector must be an object
+		return false
+	}
+
 	let ok = true
 	_.each(selector, (s: any, key: string) => {
 		if (!ok) return
@@ -1411,13 +1437,9 @@ export function isStringOrProtectedString<T extends ProtectedString<any>>(val: a
 	return _.isString(val)
 }
 
-export function unpartialString<T extends ProtectedString<any>>(obj: T | _DeepPartialObject<T>): T
-export function unpartialString<T extends ProtectedString<any>>(
-	str: T | _DeepPartialObject<T> | undefined
-): T | undefined
-export function unpartialString<T extends ProtectedString<any>>(
-	str: T | _DeepPartialObject<T> | undefined
-): T | undefined {
+export function unpartialString<T extends ProtectedString<any>>(obj: T | PartialDeep<T>): T
+export function unpartialString<T extends ProtectedString<any>>(str: T | PartialDeep<T> | undefined): T | undefined
+export function unpartialString<T extends ProtectedString<any>>(str: T | PartialDeep<T> | undefined): T | undefined {
 	return str as any
 }
 
@@ -1477,4 +1499,12 @@ export function equalArrays<T>(a: T[], b: T[]): boolean {
 		if (b[i] !== a[i]) return false
 	}
 	return true
+}
+
+/** Generate the translation for a string, to be applied later when it gets rendered */
+export function generateTranslation(key: string, args?: { [k: string]: any }): ITranslatableMessage {
+	return {
+		key,
+		args,
+	}
 }

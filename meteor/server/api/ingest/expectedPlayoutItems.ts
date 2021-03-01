@@ -9,7 +9,6 @@ import { logger } from '../../logging'
 import { PartId, DBPart } from '../../../lib/collections/Parts'
 import { saveIntoDb, protectString, unprotectString } from '../../../lib/lib'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { getAllPiecesFromCache, getAllAdLibPiecesFromCache } from '../playout/lib'
 
 interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
 	partId?: PartId
@@ -90,55 +89,6 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForRundownPlayli
 			ExpectedPlayoutItems,
 			{
 				rundownId: rundownId,
-			},
-			expectedPlayoutItems
-		)
-	})
-}
-
-export function updateExpectedPlayoutItemsOnPart(
-	cache: CacheForRundownPlaylist,
-	rundownId: RundownId,
-	partId: PartId
-): void {
-	check(rundownId, String)
-	check(partId, String)
-
-	const rundown = cache.Rundowns.findOne(rundownId)
-	if (!rundown) {
-		cache.deferAfterSave(() => {
-			const removedItems = ExpectedPlayoutItems.remove({
-				rundownId: rundownId,
-			})
-			logger.info(`Removed ${removedItems} expected playout items for deleted rundown "${rundownId}"`)
-		})
-		return
-	}
-
-	const part = cache.Parts.findOne(partId)
-	if (!part) {
-		cache.deferAfterSave(() => {
-			const removedItems = ExpectedPlayoutItems.remove({
-				rundownId: rundownId,
-				partId: partId,
-			})
-			logger.info(`Removed ${removedItems} expected playout items for deleted part "${partId}"`)
-		})
-		return
-	}
-
-	cache.deferAfterSave(() => {
-		const intermediaryItems = extractExpectedPlayoutItems(part, [
-			...getAllPiecesFromCache(cache, part),
-			...getAllAdLibPiecesFromCache(cache, part),
-		])
-		const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)
-
-		saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(
-			ExpectedPlayoutItems,
-			{
-				rundownId: rundownId,
-				partId: part._id,
 			},
 			expectedPlayoutItems
 		)

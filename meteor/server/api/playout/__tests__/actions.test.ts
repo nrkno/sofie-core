@@ -82,17 +82,17 @@ describe('Playout Actions', () => {
 		// Activating a rundown, to rehearsal
 		let playlist = getPlaylist0()
 		wrapWithCacheForRundownPlaylist(playlist, (cache) => activateRundownPlaylist(cache, playlist, true))
-		expect(getPlaylist0()).toMatchObject({ active: true, rehearsal: true })
+		expect(getPlaylist0()).toMatchObject({ activationId: expect.stringMatching(/^randomId/), rehearsal: true })
 
 		// Activating a rundown
 		playlist = getPlaylist0()
 		wrapWithCacheForRundownPlaylist(playlist, (cache) => activateRundownPlaylist(cache, playlist, false))
-		expect(getPlaylist0()).toMatchObject({ active: true, rehearsal: false })
+		expect(getPlaylist0()).toMatchObject({ activationId: expect.stringMatching(/^randomId/), rehearsal: false })
 
 		// Activating a rundown, back to rehearsal
 		playlist = getPlaylist0()
 		wrapWithCacheForRundownPlaylist(playlist, (cache) => activateRundownPlaylist(cache, playlist, true))
-		expect(getPlaylist0()).toMatchObject({ active: true, rehearsal: true })
+		expect(getPlaylist0()).toMatchObject({ activationId: expect.stringMatching(/^randomId/), rehearsal: true })
 
 		// Activating another rundown
 		expect(() => {
