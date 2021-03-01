@@ -34,7 +34,7 @@
 		clip-path: polygon(-20% -20%, 120% -20%, 120% 50%, -20% 50%);
 		-webkit-clip-path: polygon(-20% -20%, 120% -20%, 120% 50%, -20% 50%);
 		box-shadow: 0 0 20px #000;
-		cursor: grab;
+		cursor: row-resize;
 		touch-action: none;
 
 		text-align: center;
@@ -50,7 +50,7 @@
 
 	&.moving {
 		.rundown-view__shelf__handle {
-			cursor: grabbing;
+			cursor: row-resize;
 		}
 	}
 
