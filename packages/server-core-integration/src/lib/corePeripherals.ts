@@ -136,6 +136,7 @@ export enum methods {
 	'dataSegmentDelete'	= 'peripheralDevice.rundown.segmentDelete',
 	'dataSegmentCreate'	= 'peripheralDevice.rundown.segmentCreate',
 	'dataSegmentUpdate'	= 'peripheralDevice.rundown.segmentUpdate',
+	'dataSegmentRanksUpdate' = 'peripheralDevice.rundown.segmentRanksUpdate',
 	'dataPartDelete'	= 'peripheralDevice.rundown.partDelete',
 	'dataPartCreate'	= 'peripheralDevice.rundown.partCreate',
 	'dataPartUpdate'	= 'peripheralDevice.rundown.partUpdate',

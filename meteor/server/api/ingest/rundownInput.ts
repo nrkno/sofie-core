@@ -275,6 +275,19 @@ export namespace RundownInput {
 		check(ingestSegment, Object)
 		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment, false)
 	}
+	export function dataSegmentRanksUpdate(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		rundownExternalId: string,
+		newRanks: { [segmentExternalId: string]: number }
+	) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		logger.info('dataSegmentRanksUpdate', rundownExternalId, Object.keys(newRanks))
+		check(rundownExternalId, String)
+		check(newRanks, Object)
+		handleUpdatedSegmentRanks(peripheralDevice, rundownExternalId, newRanks)
+	}
 	// Delete, Create & Update Part:
 	export function dataPartDelete(
 		context: MethodContext,
@@ -1430,6 +1443,47 @@ function afterIngestChangedData(
 	syncChangesToPartInstances(cache, blueprint, playlist, rundown)
 
 	triggerUpdateTimelineAfterIngestData(rundown.playlistId)
+}
+
+export function handleUpdatedSegmentRanks(
+	peripheralDevice: PeripheralDevice,
+	rundownExternalId: string,
+	newRanks: { [segmentExternalId: string]: number }
+) {
+	const studio = getStudioFromDevice(peripheralDevice)
+	const rundownId = getRundownId(studio, rundownExternalId)
+	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
+
+	return rundownPlaylistSyncFunction(
+		playlistId,
+		RundownSyncFunctionPriority.INGEST,
+		'handleUpdatedSegmentRanks',
+		() => {
+			const rundown = getRundown(rundownId, rundownExternalId)
+			const playlist = getRundownPlaylist(rundown)
+			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+
+			for (const [externalId, rank] of Object.entries(newRanks)) {
+				const changed = cache.Segments.update(
+					{
+						externalId,
+						rundownId,
+					},
+					{
+						$set: {
+							_rank: rank,
+						},
+					}
+				)
+
+				if (changed === 0) {
+					logger.warn(`Failed to update rank of segment "${externalId}" (${rundownExternalId})`)
+				}
+			}
+
+			waitForPromise(cache.saveAllToDatabase())
+		}
+	)
 }
 
 export function handleRemovedPart(
