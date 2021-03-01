@@ -27,8 +27,6 @@ import {
 	Time,
 	formatDateTime,
 	fixValidPath,
-	saveIntoDb,
-	sumChanges,
 	protectString,
 	getRandomId,
 	unprotectString,
@@ -81,6 +79,7 @@ import {
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
 import { AsRunLogEvent, AsRunLog } from '../../lib/collections/AsRunLog'
+import { saveIntoDb, sumChanges } from '../lib/database'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
@@ -553,26 +552,6 @@ export function restoreFromRundownPlaylistSnapshot(
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
 
-	// // TODO: Import old snapshot - development only
-	// if (!playlistId && (snapshot as any).rundownId) {
-	// 	const rundownId = (snapshot as any).rundownId
-	// 	saveIntoDb(Rundowns, { _id: rundownId }, [ (snapshot as any).rundown ])
-	// 	saveIntoDb(IngestDataCache, { rundownId }, snapshot.ingestData)
-	// 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
-	// 	saveIntoDb(RundownBaselineObjs, { rundownId }, snapshot.baselineObjs)
-	// 	saveIntoDb(RundownBaselineAdLibPieces, { rundownId }, snapshot.baselineAdlibs)
-	// 	saveIntoDb(Segments, { rundownId }, snapshot.segments)
-	// 	saveIntoDb(Parts, { rundownId }, snapshot.parts)
-	// 	saveIntoDb(Pieces, { rundownId }, snapshot.pieces)
-	// 	saveIntoDb(AdLibPieces, { rundownId }, snapshot.adLibPieces)
-	// 	saveIntoDb(MediaObjects, { _id: { $in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id) } }, snapshot.mediaObjects)
-	// 	saveIntoDb(ExpectedMediaItems, { partId: { $in: snapshot.parts.map(i => i._id) } }, snapshot.expectedMediaItems)
-
-	// 	logger.info('Restore single rundown done')
-
-	// 	return
-	// }
-
 	if (oldPlaylistId !== snapshot.playlist._id)
 		throw new Meteor.Error(
 			500,
@@ -589,7 +568,7 @@ export function restoreFromRundownPlaylistSnapshot(
 		const studios = Studios.find().fetch()
 		const snapshotStudioExists = studios.find((studio) => studio._id === snapshot.playlist.studioId)
 		if (studios.length >= 1 && !snapshotStudioExists) {
-			// TODO Choose better than just the fist
+			// TODO Choose better than just the first
 			snapshot.playlist.studioId = studios[0]._id
 		}
 	} else {
@@ -598,7 +577,6 @@ export function restoreFromRundownPlaylistSnapshot(
 
 	const playlistId = (snapshot.playlist._id = getRandomId())
 	snapshot.playlist.restoredFromSnapshotId = snapshot.playlistId
-	snapshot.playlist.peripheralDeviceId = protectString('')
 	delete snapshot.playlist.activationId
 	snapshot.playlist.currentPartInstanceId = null
 	snapshot.playlist.nextPartInstanceId = null
@@ -610,7 +588,7 @@ export function restoreFromRundownPlaylistSnapshot(
 
 		rd.playlistId = playlistId
 		rd.restoredFromSnapshotId = rd._id
-		rd.peripheralDeviceId = snapshot.playlist.peripheralDeviceId
+		delete rd.peripheralDeviceId
 		rd.studioId = snapshot.playlist.studioId
 		rd.notifiedCurrentPlayingPartExternalId = undefined
 
@@ -620,7 +598,7 @@ export function restoreFromRundownPlaylistSnapshot(
 		)
 		if (!showStyleId) {
 			if (showStyleVariants.length >= 1 && !snapshotShowStyleVariantExists) {
-				// TODO Choose better than just the fist
+				// TODO Choose better than just the first
 				rd.showStyleBaseId = showStyleVariants[0].showStyleBaseId
 				rd.showStyleVariantId = showStyleVariants[0]._id
 			}

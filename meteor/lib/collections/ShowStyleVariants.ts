@@ -3,9 +3,8 @@ import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
 import { IBlueprintConfig, IBlueprintShowStyleVariant } from '@sofie-automation/blueprints-integration'
 import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
+import { ShowStyleBase, ShowStyleBaseId } from './ShowStyleBases'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
-import deepmerge from 'deepmerge'
 import { registerIndex } from '../database'
 
 /** A string, identifying a ShowStyleVariant */
@@ -22,34 +21,6 @@ export interface DBShowStyleVariant extends ProtectedStringProperties<IBlueprint
 export interface ShowStyleCompound extends ShowStyleBase {
 	showStyleVariantId: ShowStyleVariantId
 	_rundownVersionHashVariant: string
-}
-export function getShowStyleCompound(showStyleVariantId: ShowStyleVariantId): ShowStyleCompound | undefined {
-	const showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
-	if (!showStyleVariant) return undefined
-	const showStyleBase = ShowStyleBases.findOne(showStyleVariant.showStyleBaseId)
-	if (!showStyleBase) return undefined
-
-	return createShowStyleCompound(showStyleBase, showStyleVariant)
-}
-
-export function createShowStyleCompound(
-	showStyleBase: ShowStyleBase,
-	showStyleVariant: ShowStyleVariant
-): ShowStyleCompound | undefined {
-	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
-
-	let configs = deepmerge(showStyleBase.blueprintConfig, showStyleVariant.blueprintConfig, {
-		arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
-	})
-
-	return {
-		...showStyleBase,
-		showStyleVariantId: showStyleVariant._id,
-		name: `${showStyleBase.name}-${showStyleVariant.name}`,
-		blueprintConfig: configs,
-		_rundownVersionHash: showStyleBase._rundownVersionHash,
-		_rundownVersionHashVariant: showStyleVariant._rundownVersionHash,
-	}
 }
 
 export class ShowStyleVariant implements DBShowStyleVariant {

@@ -2,7 +2,15 @@ import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
 import { NoteType, TrackedNote } from './api/notes'
 import { Segments, Segment, DBSegment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
-import { unprotectString, makePromise, waitForPromise, literal, generateTranslation, normalizeArrayToMap } from './lib'
+import {
+	unprotectString,
+	makePromise,
+	waitForPromise,
+	literal,
+	generateTranslation,
+	normalizeArrayToMap,
+	assertNever,
+} from './lib'
 import * as _ from 'underscore'
 import { Pieces } from './collections/Pieces'
 import { ShowStyleBases, ShowStyleBase } from './collections/ShowStyleBases'
@@ -13,6 +21,7 @@ import { IMediaObjectIssue } from './api/rundownNotifications'
 import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
 import { MongoFieldSpecifierOnes } from './typings/meteor'
 import { RundownPlaylist, RundownPlaylists } from './collections/RundownPlaylists'
+import { ITranslatableMessage } from './api/TranslatableMessage'
 
 export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 	const rundowns = Rundowns.find(
@@ -300,4 +309,24 @@ export function getMediaObjectIssues(rundownIds: RundownId[]): IMediaObjectIssue
 	const allStatus = waitForPromise(p)
 
 	return _.flatten(allStatus)
+}
+
+export enum ServerTranslatedMesssages {
+	PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN,
+}
+export function getTranslatedMessage(
+	key: ServerTranslatedMesssages,
+	args?: { [key: string]: any }
+): ITranslatableMessage {
+	switch (key) {
+		case ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN:
+			return generateTranslation(
+				'The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.',
+				args
+			)
+
+		default:
+			assertNever(key)
+			return { key, args }
+	}
 }

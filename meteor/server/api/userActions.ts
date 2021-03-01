@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
-import { getCurrentTime, getHash, makePromise } from '../../lib/lib'
+import { getCurrentTime, getHash, makePromise, waitForPromise } from '../../lib/lib'
 import { Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { Parts, Part, PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
@@ -19,7 +19,7 @@ import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
-import { getActiveRundownPlaylistsInStudio } from './playout/studio'
+import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
@@ -35,11 +35,10 @@ import { ServerClientAPI } from './client'
 import { SegmentId, Segment, Segments } from '../../lib/collections/Segments'
 import { Settings } from '../../lib/Settings'
 import { OrganizationContentWriteAccess } from '../security/organization'
-import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { syncFunction } from '../codeControl'
-import { getShowStyleCompound, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { BucketId, Buckets, Bucket } from '../../lib/collections/Buckets'
 import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs'
 import { ServerPlayoutAdLibAPI } from './playout/adlib'
@@ -50,6 +49,8 @@ import { profiler } from './profiler'
 import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { checkAccessAndGetPlaylist, checkAccessAndGetRundown } from './lib'
+import { moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from './rundownPlaylist'
+import { getShowStyleCompound } from './showStyles'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -213,7 +214,9 @@ export function prepareForBroadcast(
 		return ClientAPI.responseError(
 			'Rundown Playlist is active, please deactivate before preparing it for broadcast'
 		)
-	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
+	const anyOtherActiveRundowns = waitForPromise(
+		getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
+	)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(
 			409,
@@ -252,7 +255,9 @@ export function resetAndActivate(
 			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
 		)
 	}
-	const anyOtherActiveRundownPlaylists = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
+	const anyOtherActiveRundownPlaylists = waitForPromise(
+		getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
+	)
 	if (anyOtherActiveRundownPlaylists.length) {
 		return ClientAPI.responseError(
 			409,
@@ -289,7 +294,9 @@ export function activate(
 	check(rehearsal, Boolean)
 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
+	const anyOtherActiveRundowns = waitForPromise(
+		getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
+	)
 
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(
@@ -660,7 +667,7 @@ export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylis
 		return ClientAPI.responseError(`Rundown Playlist is active, please deactivate it before regenerating it.`)
 	}
 
-	return ClientAPI.responseSuccess(IngestActions.regenerateRundownPlaylist(rundownPlaylistId))
+	return ClientAPI.responseSuccess(IngestActions.regenerateRundownPlaylist(context, rundownPlaylistId))
 }
 
 export function bucketAdlibImport(
@@ -717,7 +724,6 @@ export function bucketAdlibStart(
 	bucketAdlibId: PieceId,
 	queue?: boolean
 ) {
-	RundownPlaylistContentWriteAccess.playout(context, rundownPlaylistId)
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
 	check(bucketAdlibId, String)
@@ -731,7 +737,7 @@ export function bucketAdlibStart(
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAdLibAPI.startBucketAdlibPiece(rundownPlaylistId, partInstanceId, bucketAdlibId, !!queue)
+		ServerPlayoutAdLibAPI.startBucketAdlibPiece(context, rundownPlaylistId, partInstanceId, bucketAdlibId, !!queue)
 	)
 }
 
@@ -789,7 +795,7 @@ export function moveRundown(
 	if (intoPlaylistId) check(intoPlaylistId, String)
 
 	return ClientAPI.responseSuccess(
-		ServerRundownAPI.moveRundown(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
+		moveRundownIntoPlaylist(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 	)
 }
 export function restoreRundownOrder(
@@ -798,7 +804,7 @@ export function restoreRundownOrder(
 ): ClientAPI.ClientResponse<void> {
 	check(playlistId, String)
 
-	return ClientAPI.responseSuccess(ServerRundownAPI.restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
+	return ClientAPI.responseSuccess(restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
 }
 
 export function traceAction<T extends (...args: any[]) => any>(

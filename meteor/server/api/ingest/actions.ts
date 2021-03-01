@@ -1,22 +1,25 @@
-import { getRundown, getPeripheralDeviceFromRundown } from './lib'
+import { getPeripheralDeviceFromRundown } from './lib'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { MOSDeviceActions } from './mosDevice/actions'
 import { Meteor } from 'meteor/meteor'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { Part } from '../../../lib/collections/Parts'
 import { check } from '../../../lib/check'
-import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { loadCachedRundownData } from './ingestCache'
-import { resetRundown, removeRundownFromCache } from '../playout/lib'
-import { RundownSyncFunctionPriority, rundownPlaylistSyncFunction, handleUpdatedRundownInner } from './rundownInput'
+import { resetRundownPlaylist } from '../playout/lib'
+import { regenerateRundown } from './rundownInput'
 import { logger } from '../../logging'
-import { Studio, Studios } from '../../../lib/collections/Studios'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
-import { waitForPromise } from '../../../lib/lib'
-import { initCacheForRundownPlaylist } from '../../DatabaseCaches'
+import { makePromise, waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { Segment } from '../../../lib/collections/Segments'
 import { GenericDeviceActions } from './genericDevice/actions'
+import {
+	runPlayoutOperationWithLock,
+	runPlayoutOperationWithCacheFromStudioOperation,
+	PlayoutLockFunctionPriority,
+} from '../playout/lockFunction'
+import { MethodContext } from '../../../lib/api/methods'
+import { removeRundownsFromDb } from '../rundownPlaylist'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -101,59 +104,64 @@ export namespace IngestActions {
 	/**
 	 * Run the cached data through blueprints in order to re-generate the Rundown
 	 */
-	export function regenerateRundownPlaylist(rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) {
+	export function regenerateRundownPlaylist(
+		context: MethodContext | null,
+		rundownPlaylistId: RundownPlaylistId,
+		purgeExisting?: boolean
+	) {
 		check(rundownPlaylistId, String)
 
-		const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
-		if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
-
-		logger.info(`Regenerating rundown playlist ${rundownPlaylist.name} (${rundownPlaylist._id})`)
-
-		const cache = waitForPromise(initCacheForRundownPlaylist(rundownPlaylist))
-
-		const studio = cache.activationCache.getStudio()
-		if (!studio) {
-			throw new Meteor.Error(
-				404,
-				`Studios "${rundownPlaylist.studioId}" was not found for Rundown Playlist "${rundownPlaylist._id}"`
-			)
-		}
-
-		return rundownPlaylistSyncFunction(
-			rundownPlaylistId,
-			RundownSyncFunctionPriority.INGEST,
+		const ingestData = runPlayoutOperationWithLock(
+			context,
 			'regenerateRundownPlaylist',
-			() => {
-				cache.Rundowns.findFetch({ playlistId: rundownPlaylist._id }).forEach((rundown) => {
-					if (rundown.studioId !== studio._id) {
-						logger.warning(
-							`Rundown "${rundown._id}" does not belong to the same studio as its playlist "${rundownPlaylist._id}"`
-						)
-					}
-					const peripheralDevice = waitForPromise(cache.activationCache.getPeripheralDevices()).find(
-						(d) => d._id === rundown.peripheralDeviceId
+			rundownPlaylistId,
+			PlayoutLockFunctionPriority.MISC,
+			(playlistLock) => {
+				const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+				if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
+
+				const studio = rundownPlaylist.getStudio()
+				if (!studio) {
+					throw new Meteor.Error(
+						404,
+						`Studios "${rundownPlaylist.studioId}" was not found for Rundown Playlist "${rundownPlaylist._id}"`
 					)
-					if (!peripheralDevice) {
-						logger.info(
-							`Rundown "${rundown._id}" has no valid PeripheralDevices. Running regenerate without`
-						)
-					}
+				}
 
-					const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
-					if (purgeExisting) {
-						removeRundownFromCache(cache, rundown)
-					} else {
-						// Reset the rundown (remove adlibs, etc):
-						resetRundown(cache, rundown)
-					}
+				logger.info(`Regenerating rundown playlist ${rundownPlaylist.name} (${rundownPlaylist._id})`)
 
-					waitForPromise(cache.saveAllToDatabase())
+				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
+				if (rundowns.length === 0) return []
 
-					handleUpdatedRundownInner(studio, rundown._id, ingestRundown, true, peripheralDevice)
-				})
+				// Cleanup old state
+				if (purgeExisting) {
+					waitForPromise(removeRundownsFromDb(rundowns.map((r) => r._id)))
+				} else {
+					runPlayoutOperationWithCacheFromStudioOperation(
+						'regenerateRundownPlaylist:init',
+						playlistLock,
+						rundownPlaylist,
+						PlayoutLockFunctionPriority.MISC,
+						null,
+						(cache) => resetRundownPlaylist(cache)
+					)
+				}
 
-				waitForPromise(cache.saveAllToDatabase())
+				// exit the sync function, so the cache is written back
+				return rundowns.map((rundown) => ({
+					rundownExternalId: rundown.externalId,
+					studio,
+				}))
 			}
+		)
+
+		// Fire off all the updates in parallel, in their own low-priority tasks
+		waitForPromiseAll(
+			ingestData.map(({ rundownExternalId, studio }) =>
+				makePromise(() => {
+					regenerateRundown(studio, rundownExternalId, undefined)
+				})
+			)
 		)
 	}
 }

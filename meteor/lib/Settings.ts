@@ -29,8 +29,8 @@ export interface ISettings {
 	allowGrabbingTimeline: boolean
 	/** If true, enables security measures, access control and user accounts. */
 	enableUserAccounts: boolean
-	/** Allow Segments to become unsynced, rather than the entire rundown */
-	allowUnsyncedSegments: boolean
+	/** Preserve unsynced segment contents when the playing segment is removed, rather than removing all but the playing part */
+	preserveUnsyncedPlayingSegmentContents: boolean
 	/** Allow resets while a rundown is on-air */
 	allowRundownResetOnAir: boolean
 	/** Default duration to use to render parts when no duration is provided */
@@ -55,7 +55,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
 	enableUserAccounts: false,
-	allowUnsyncedSegments: false,
+	preserveUnsyncedPlayingSegmentContents: false,
 	allowRundownResetOnAir: false,
 	defaultDisplayDuration: 3000,
 	allowMultiplePlaylistsInGUI: false,
@@ -66,4 +66,10 @@ Settings = _.clone(DEFAULT_SETTINGS)
 
 Meteor.startup(() => {
 	Settings = _.extend(Settings, Meteor.settings.public)
+
+	// Translate old Settings names which solve a similar problem but with a different approach
+	const settingsOld = Settings
+	if ('allowUnsyncedSegments' in settingsOld && settingsOld['preserveUnsyncedPlayingSegmentContents']) {
+		Settings.preserveUnsyncedPlayingSegmentContents = settingsOld['preserveUnsyncedPlayingSegmentContents']
+	}
 })

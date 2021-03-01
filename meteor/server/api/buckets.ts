@@ -2,13 +2,13 @@ import * as _ from 'underscore'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import { Buckets, Bucket, BucketId } from '../../lib/collections/Buckets'
-import { asyncCollectionRemove, literal, protectString, waitForPromiseAll } from '../../lib/lib'
+import { literal, protectString, waitForPromise, waitForPromiseAll } from '../../lib/lib'
 import { BucketSecurity } from '../security/buckets'
 import { BucketAdLibs, BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { PieceId } from '../../lib/collections/Pieces'
 import { StudioId, Studios } from '../../lib/collections/Studios'
-import { ShowStyleVariants, getShowStyleCompound } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { AdLibActionId, AdLibAction, AdLibActionCommon } from '../../lib/collections/AdLibActions'
@@ -20,7 +20,9 @@ import {
 	cleanUpExpectedMediaItemForBucketAdLibPiece,
 	updateExpectedMediaItemForBucketAdLibAction,
 	updateExpectedMediaItemForBucketAdLibPiece,
-} from './expectedMediaItems'
+} from './ingest/expectedMediaItems'
+import { asyncCollectionRemove } from '../lib/database'
+import { getShowStyleCompoundForRundown } from './showStyles'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 
@@ -238,7 +240,7 @@ export namespace BucketsAPI {
 				)
 			}
 
-			const showStyleCompound = getShowStyleCompound(rundown.showStyleVariantId)
+			const showStyleCompound = waitForPromise(getShowStyleCompoundForRundown(rundown))
 			if (!showStyleCompound)
 				throw new Meteor.Error(404, `ShowStyle Variant "${rundown.showStyleVariantId}" not found`)
 

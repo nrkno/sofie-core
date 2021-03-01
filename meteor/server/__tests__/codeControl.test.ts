@@ -1,10 +1,15 @@
 import { Meteor } from 'meteor/meteor'
 import '../../__mocks__/_extendJest'
-import { testInFiber, runAllTimers, testInFiberOnly } from '../../__mocks__/helpers/jest'
-import { syncFunction, Callback, syncFunctionIgnore } from '../codeControl'
-import { RundownSyncFunctionPriority, rundownPlaylistSyncFunction } from '../api/ingest/rundownInput'
-import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime, protectString } from '../../lib/lib'
+import { testInFiber, runAllTimers, runTimersUntilNow } from '../../__mocks__/helpers/jest'
+import { syncFunction, Callback } from '../codeControl'
+import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime } from '../../lib/lib'
 import { useControllableDefer, useNextTickDefer } from '../../__mocks__/meteor'
+import { setupDefaultRundownPlaylist, setupDefaultStudioEnvironment } from '../../__mocks__/helpers/database'
+import {
+	PlayoutLockFunctionPriority,
+	runPlayoutOperationWithLockFromStudioOperation,
+} from '../api/playout/lockFunction'
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 
 const TIME_FUZZY = 200
 const takesALongTimeInner = Meteor.wrapAsync(function takesALongTime(name: string, cb: Callback) {
@@ -17,34 +22,45 @@ describe('codeControl rundown', () => {
 		jest.useFakeTimers()
 	})
 	testInFiber('rundownSyncFunction', () => {
-		let sync1 = (name: string, priority: RundownSyncFunctionPriority) => {
-			return rundownPlaylistSyncFunction(protectString('ro1'), priority, 'testRundownSyncFn', () =>
-				takesALongTimeInner(name)
+		const env = setupDefaultStudioEnvironment()
+		const { playlistId } = setupDefaultRundownPlaylist(env)
+		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
+		expect(playlist).toBeTruthy()
+
+		let sync1 = (name: string, priority: PlayoutLockFunctionPriority) => {
+			return runPlayoutOperationWithLockFromStudioOperation(
+				'testRundownSyncFn',
+				{ _studioId: playlist.studioId },
+				playlist,
+				priority,
+				() => takesALongTimeInner(name)
 			)
 		}
 
 		let res: any[] = []
 		Meteor.setTimeout(() => {
-			res.push(sync1('ingest0', RundownSyncFunctionPriority.INGEST))
+			res.push(sync1('ingest0', PlayoutLockFunctionPriority.MISC))
 		}, 10)
 		Meteor.setTimeout(() => {
-			res.push(sync1('ingest1', RundownSyncFunctionPriority.INGEST))
+			res.push(sync1('ingest1', PlayoutLockFunctionPriority.MISC))
 		}, 30)
 		Meteor.setTimeout(() => {
-			res.push(sync1('playout0', RundownSyncFunctionPriority.USER_PLAYOUT))
+			res.push(sync1('playout0', PlayoutLockFunctionPriority.USER_PLAYOUT))
 		}, 50)
 
 		jest.advanceTimersByTime(350)
+		waitForPromise(runTimersUntilNow())
 		expect(res).toEqual(['result yo ingest0'])
 
 		jest.advanceTimersByTime(300)
+		waitForPromise(runTimersUntilNow())
 		expect(res).toEqual([
 			'result yo ingest0', // Pushed to queue first
 			'result yo playout0', // High priority bumps it above ingest1
 		])
 
 		jest.advanceTimersByTime(300)
-
+		waitForPromise(runTimersUntilNow())
 		expect(res).toEqual([
 			'result yo ingest0', // Pushed to queue first
 			'result yo playout0', // High priority bumps it above ingest1
@@ -65,10 +81,6 @@ describe('codeControl', () => {
 	const takesALongTime = syncFunction((name: string) => {
 		return takesALongTimeInner(name)
 	}, 'takesALongTime')
-	const takesALongTimeIgnore = syncFunctionIgnore((name: string) => {
-		const a = takesALongTimeInner(name)
-		return a
-	}, 'takesALongTimeIgnore')
 
 	testInFiber('syncFunction, 1 queue', () => {
 		// Running a syncFunction in a queue
@@ -135,51 +147,6 @@ describe('codeControl', () => {
 
 		jest.advanceTimersByTime(300)
 		expect(res).toMatchObject(['result yo run0', 'result yo run1', 'result yo run0', 'result yo run1'])
-	})
-	testInFiber('takesALongTimeIgnore, 2 queues', () => {
-		// Running in two parallel queues, run0 and run1:
-
-		// First, just run them sequentially
-		const res: any[] = []
-		Meteor.setTimeout(() => {
-			res.push(takesALongTimeIgnore('run0'))
-			res.push(takesALongTimeIgnore('run0'))
-		}, 10)
-
-		jest.advanceTimersByTime(350)
-		expect(res).toHaveLength(1)
-		jest.advanceTimersByTime(300)
-		expect(res).toHaveLength(2)
-
-		Meteor.setTimeout(() => {
-			res.push(takesALongTimeIgnore('run1'))
-			res.push(takesALongTimeIgnore('run1'))
-		}, 10)
-
-		jest.advanceTimersByTime(600)
-		expect(res).toHaveLength(4)
-
-		// Run them in parallell, the 2 queues should kick in now:
-		res.length = 0
-
-		let ps
-		Meteor.setTimeout(() => {
-			ps = [
-				makePromise(() => res.push(takesALongTimeIgnore('run0'))),
-				makePromise(() => res.push(takesALongTimeIgnore('run0'))),
-				makePromise(() => res.push(takesALongTimeIgnore('run0'))),
-				makePromise(() => res.push(takesALongTimeIgnore('run1'))),
-				makePromise(() => res.push(takesALongTimeIgnore('run1'))),
-				makePromise(() => res.push(takesALongTimeIgnore('run1'))),
-			]
-		}, 10)
-		jest.advanceTimersByTime(0)
-		expect(res).toHaveLength(0)
-
-		jest.advanceTimersByTime(600)
-		waitForPromiseAll(ps)
-
-		expect(res).toMatchObject([undefined, undefined, undefined, undefined, undefined, undefined])
 	})
 	describe('waitTime', () => {
 		let $nowOriginal

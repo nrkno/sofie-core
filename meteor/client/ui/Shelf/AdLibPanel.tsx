@@ -569,8 +569,6 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					...segment,
 					parts: [],
 					pieces: [],
-					status: undefined,
-					expanded: undefined,
 					isLive: false,
 					isNext: false,
 				})

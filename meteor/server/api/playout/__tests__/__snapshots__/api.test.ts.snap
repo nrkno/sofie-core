@@ -3,9 +3,9 @@
 exports[`Playout API Global and Part Ad-Libs 1`] = `
 Array [
   Object {
-    "_id": "randomId9002_part0_0_randomId9007_randomId9002_piece000",
+    "_id": "randomId9002_part0_0_randomId9010_randomId9002_piece000",
     "isTemporary": false,
-    "partInstanceId": "randomId9002_part0_0_randomId9007",
+    "partInstanceId": "randomId9002_part0_0_randomId9010",
     "piece": Object {
       "_id": "randomId9002_piece000",
       "content": Object {
@@ -25,13 +25,13 @@ Array [
       "startSegmentId": "randomId9002_segment0",
       "status": 0,
     },
-    "playlistActivationId": "randomId9006",
+    "playlistActivationId": "randomId9009",
     "rundownId": "randomId9002",
   },
   Object {
-    "_id": "randomId9002_part0_0_randomId9007_randomId9002_piece001",
+    "_id": "randomId9002_part0_0_randomId9010_randomId9002_piece001",
     "isTemporary": false,
-    "partInstanceId": "randomId9002_part0_0_randomId9007",
+    "partInstanceId": "randomId9002_part0_0_randomId9010",
     "piece": Object {
       "_id": "randomId9002_piece001",
       "content": Object {
@@ -51,21 +51,21 @@ Array [
       "startSegmentId": "randomId9002_segment0",
       "status": 0,
     },
-    "playlistActivationId": "randomId9006",
+    "playlistActivationId": "randomId9009",
     "rundownId": "randomId9002",
   },
   Object {
-    "_id": "randomId9002_part0_0_randomId9007_randomId9014",
+    "_id": "randomId9002_part0_0_randomId9010_randomId9020",
     "adLibSourceId": "randomId9002_globalAdLib0",
     "dynamicallyInserted": 1000,
     "infinite": Object {
       "fromPreviousPart": false,
-      "infiniteInstanceId": "randomId9016",
-      "infinitePieceId": "randomId9014",
+      "infiniteInstanceId": "randomId9022",
+      "infinitePieceId": "randomId9020",
     },
-    "partInstanceId": "randomId9002_part0_0_randomId9007",
+    "partInstanceId": "randomId9002_part0_0_randomId9010",
     "piece": Object {
-      "_id": "randomId9014",
+      "_id": "randomId9020",
       "content": Object {
         "timelineObjects": Array [],
       },
@@ -80,7 +80,7 @@ Array [
       "startPartId": "randomId9002_part0_0",
       "status": -1,
     },
-    "playlistActivationId": "randomId9006",
+    "playlistActivationId": "randomId9009",
     "rundownId": "randomId9002",
   },
 ]
@@ -89,9 +89,9 @@ Array [
 exports[`Playout API Global and Part Ad-Libs 2`] = `
 Array [
   Object {
-    "_id": "randomId9002_part0_0_randomId9007_randomId9002_piece000",
+    "_id": "randomId9002_part0_0_randomId9010_randomId9002_piece000",
     "isTemporary": false,
-    "partInstanceId": "randomId9002_part0_0_randomId9007",
+    "partInstanceId": "randomId9002_part0_0_randomId9010",
     "piece": Object {
       "_id": "randomId9002_piece000",
       "content": Object {
@@ -111,13 +111,13 @@ Array [
       "startSegmentId": "randomId9002_segment0",
       "status": 0,
     },
-    "playlistActivationId": "randomId9006",
+    "playlistActivationId": "randomId9009",
     "rundownId": "randomId9002",
   },
   Object {
-    "_id": "randomId9002_part0_0_randomId9007_randomId9002_piece001",
+    "_id": "randomId9002_part0_0_randomId9010_randomId9002_piece001",
     "isTemporary": false,
-    "partInstanceId": "randomId9002_part0_0_randomId9007",
+    "partInstanceId": "randomId9002_part0_0_randomId9010",
     "piece": Object {
       "_id": "randomId9002_piece001",
       "content": Object {
@@ -137,21 +137,21 @@ Array [
       "startSegmentId": "randomId9002_segment0",
       "status": 0,
     },
-    "playlistActivationId": "randomId9006",
+    "playlistActivationId": "randomId9009",
     "rundownId": "randomId9002",
   },
   Object {
-    "_id": "randomId9002_part0_0_randomId9007_randomId9014",
+    "_id": "randomId9002_part0_0_randomId9010_randomId9020",
     "adLibSourceId": "randomId9002_globalAdLib0",
     "dynamicallyInserted": 1000,
     "infinite": Object {
       "fromPreviousPart": false,
-      "infiniteInstanceId": "randomId9016",
-      "infinitePieceId": "randomId9014",
+      "infiniteInstanceId": "randomId9022",
+      "infinitePieceId": "randomId9020",
     },
-    "partInstanceId": "randomId9002_part0_0_randomId9007",
+    "partInstanceId": "randomId9002_part0_0_randomId9010",
     "piece": Object {
-      "_id": "randomId9014",
+      "_id": "randomId9020",
       "content": Object {
         "timelineObjects": Array [],
       },
@@ -166,16 +166,16 @@ Array [
       "startPartId": "randomId9002_part0_0",
       "status": -1,
     },
-    "playlistActivationId": "randomId9006",
+    "playlistActivationId": "randomId9009",
     "rundownId": "randomId9002",
   },
   Object {
-    "_id": "randomId9002_part0_0_randomId9007_randomId9019",
+    "_id": "randomId9002_part0_0_randomId9010_randomId9026",
     "adLibSourceId": "randomId9002_adLib000",
     "dynamicallyInserted": 3000,
-    "partInstanceId": "randomId9002_part0_0_randomId9007",
+    "partInstanceId": "randomId9002_part0_0_randomId9010",
     "piece": Object {
-      "_id": "randomId9019",
+      "_id": "randomId9026",
       "content": Object {
         "timelineObjects": Array [],
       },
@@ -191,7 +191,7 @@ Array [
       "startPartId": "randomId9002_part0_0",
       "status": -1,
     },
-    "playlistActivationId": "randomId9006",
+    "playlistActivationId": "randomId9009",
     "rundownId": "randomId9002",
   },
 ]

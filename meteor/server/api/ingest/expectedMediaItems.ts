@@ -1,4 +1,4 @@
-import { check } from '../../lib/check'
+import { check } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import {
 	ExpectedMediaItems,
@@ -8,31 +8,24 @@ import {
 	ExpectedMediaItemBucketAction,
 	ExpectedMediaItemBase,
 	ExpectedMediaItemRundown,
-} from '../../lib/collections/ExpectedMediaItems'
-import { RundownId } from '../../lib/collections/Rundowns'
-import { Piece, PieceId } from '../../lib/collections/Pieces'
-import { AdLibPiece } from '../../lib/collections/AdLibPieces'
-import {
-	saveIntoDb,
-	getCurrentTime,
-	getHash,
-	protectString,
-	asyncCollectionRemove,
-	waitForPromise,
-	Subtract,
-	ProtectedString,
-} from '../../lib/lib'
-import { logger } from '../logging'
-import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
-import { StudioId } from '../../lib/collections/Studios'
-import { CacheForRundownPlaylist } from '../DatabaseCaches'
-import { AdLibAction, AdLibActionId } from '../../lib/collections/AdLibActions'
+} from '../../../lib/collections/ExpectedMediaItems'
+import { RundownId } from '../../../lib/collections/Rundowns'
+import { Piece, PieceId } from '../../../lib/collections/Pieces'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { getCurrentTime, getHash, protectString, waitForPromise, Subtract, ProtectedString } from '../../../lib/lib'
+import { logger } from '../../logging'
+import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
+import { StudioId } from '../../../lib/collections/Studios'
+import { AdLibAction, AdLibActionId } from '../../../lib/collections/AdLibActions'
 import {
 	IBlueprintActionManifestDisplayContent,
 	SomeContent,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
-import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
+import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
+import { CacheForIngest } from './cache'
+import { saveIntoCache } from '../../cache/lib'
+import { asyncCollectionRemove, saveIntoDb } from '../../lib/database'
 
 export enum PieceType {
 	PIECE = 'piece',
@@ -220,42 +213,11 @@ export function updateExpectedMediaItemForBucketAdLibAction(actionId: AdLibActio
 	)
 }
 
-export function updateExpectedMediaItemsOnRundown(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
-	check(rundownId, String)
+export function updateExpectedMediaItemsOnRundown(cache: CacheForIngest): void {
+	const pieces = cache.Pieces.findFetch({})
+	const adlibs = cache.AdLibPieces.findFetch({})
+	const actions = cache.AdLibActions.findFetch({})
 
-	const rundown = cache.Rundowns.findOne(rundownId)
-	if (!rundown) {
-		cache.deferAfterSave(() => {
-			const removedItems = ExpectedMediaItems.remove({
-				rundownId: rundownId,
-			})
-			logger.info(`Removed ${removedItems} expected media items for deleted rundown "${rundownId}"`)
-		})
-		return
-	}
-	const studioId = rundown.studioId
-
-	cache.deferAfterSave(() => {
-		const pieces = cache.Pieces.findFetch({
-			startRundownId: rundown._id,
-		})
-
-		const adlibs = cache.AdLibPieces.findFetch({
-			rundownId: rundown._id,
-		})
-
-		const actions = cache.AdLibActions.findFetch({
-			rundownId: rundown._id,
-		})
-
-		const eMIs = generateExpectedMediaItemsFull(studioId, rundownId, pieces, adlibs, actions)
-
-		saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(
-			ExpectedMediaItems,
-			{
-				rundownId: rundown._id,
-			},
-			eMIs
-		)
-	})
+	const eMIs = generateExpectedMediaItemsFull(cache.Studio.doc._id, cache.RundownId, pieces, adlibs, actions)
+	saveIntoCache<ExpectedMediaItem, ExpectedMediaItem>(cache.ExpectedMediaItems, {}, eMIs)
 }

@@ -11,6 +11,8 @@ import '../api'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
+import { RundownBaselineAdLibPieces } from '../../../../lib/collections/RundownBaselineAdLibPieces'
+import { AdLibPieces } from '../../../../lib/collections/AdLibPieces'
 
 namespace PlayoutAPI {
 	// Using our own method definition, to catch external API changes
@@ -291,10 +293,17 @@ describe('Playout API', () => {
 		expect(getPlaylist0()).toBeTruthy()
 
 		const parts = getRundown0().getParts()
-		const globalAdLibs = getRundown0().getGlobalAdLibPieces()
+		const globalAdLibs = RundownBaselineAdLibPieces.find(
+			{
+				rundownId: getRundown0()._id,
+			},
+			{
+				sort: { _rank: 1 },
+			}
+		).fetch()
 		expect(globalAdLibs).toHaveLength(2)
 
-		const adLibs = parts[0].getAdLibPieces()
+		const adLibs = AdLibPieces.find({ partId: parts[0]._id }).fetch()
 		expect(adLibs).toHaveLength(1)
 
 		expect(() => {

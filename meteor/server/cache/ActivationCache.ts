@@ -1,15 +1,15 @@
-import { RundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
-import { asyncCollectionFindOne, ProtectedString, asyncCollectionFindFetch } from '../lib/lib'
+import { RundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { ProtectedString, clone } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import { Studio, Studios, StudioId } from '../lib/collections/Studios'
-import { ShowStyleBase, ShowStyleBases } from '../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
-import { Rundown } from '../lib/collections/Rundowns'
-import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
-import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
-import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'
-import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
+import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
+import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleCompound, ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { Rundown } from '../../lib/collections/Rundowns'
+import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
+import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { ReadonlyDeep } from 'type-fest'
+import { asyncCollectionFindOne, asyncCollectionFindFetch } from '../lib/database'
+import { createShowStyleCompound } from '../api/showStyles'
 
 export function getActivationCache(studioId: StudioId, playlistId: RundownPlaylistId): ActivationCache {
 	let activationCache = activationCaches.get(studioId)
@@ -61,6 +61,10 @@ export function forceClearAllActivationCaches() {
 const activationCaches = new Map<StudioId, ActivationCache>()
 
 type InternalCache<T> = { modifiedHash: string; value: T }
+/**
+ * The ActivationCache is designed to be generated once (or very few times) during the playout of a rundown.
+ * It is generated upon activation and preserves various documents in memory that should never change during playout of a rundown
+ */
 export class ActivationCache {
 	private _expires: number
 	private _initialized: boolean = false
@@ -71,8 +75,6 @@ export class ActivationCache {
 	private _showStyleBases: { [id: string]: InternalCache<ShowStyleBase> } = {}
 	private _showStyleVariants: { [id: string]: InternalCache<ShowStyleVariant> } = {}
 	private _rundownBaselineObjs: { [id: string]: InternalCache<RundownBaselineObj[]> } = {}
-	private _rundownBaselineAdLibPieces: { [id: string]: InternalCache<RundownBaselineAdLibItem[]> } = {}
-	private _rundownBaselineAdLibActions: { [id: string]: InternalCache<RundownBaselineAdLibAction[]> } = {}
 	private _peripheralDevices: { [id: string]: InternalCache<PeripheralDevice[]> } = {}
 
 	constructor(private _playlistId: RundownPlaylistId) {
@@ -100,14 +102,12 @@ export class ActivationCache {
 		this._showStyleBases = {}
 		this._showStyleVariants = {}
 		this._rundownBaselineObjs = {}
-		this._rundownBaselineAdLibPieces = {}
-		this._rundownBaselineAdLibActions = {}
 		this._peripheralDevices = {}
 
 		this._initialized = false
 		this._persistant = false
 	}
-	async initialize(playlist: RundownPlaylist, rundownsInPlaylist: Rundown[]) {
+	async initialize(playlist: ReadonlyDeep<RundownPlaylist>, rundownsInPlaylist: Rundown[]) {
 		if (this._initialized && (!this._playlist || playlist.activationId !== this._playlist.activationId)) {
 			// activationId has changed, we should clear out the data because it might not be valid anymore
 			this._uninitialize()
@@ -119,7 +119,7 @@ export class ActivationCache {
 			throw new Error(
 				`ActivationCache.initialize playlist._id "${playlist._id}" not equal to this.playlistId "${this.playlistId}"`
 			)
-		this._playlist = playlist
+		this._playlist = clone<RundownPlaylist>(playlist)
 
 		const pStudio = asyncCollectionFindOne(Studios, this._playlist.studioId)
 
@@ -146,12 +146,10 @@ export class ActivationCache {
 				ps.push(this._getShowStyleBase(rundown).catch(ignoreError))
 				ps.push(this._getShowStyleVariant(rundown).catch(ignoreError))
 				ps.push(this._getRundownBaselineObjs(rundown))
-				ps.push(this._getRundownBaselineAdLibPieces(rundown))
-				ps.push(this._getRundownBaselineAdLibActions(rundown))
 			}
 			ps.push(this._getPeripheralDevices())
 
-			await Promise.all(ps)
+			await Promise.allSettled(ps)
 		}
 		const studio = await pStudio
 		if (!studio) {
@@ -191,17 +189,19 @@ export class ActivationCache {
 		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
 		return this._getShowStyleVariant(rundown)
 	}
+	async getShowStyleCompound(rundown: Rundown): Promise<ShowStyleCompound> {
+		const [base, variant] = await Promise.all([this.getShowStyleBase(rundown), this.getShowStyleVariant(rundown)])
+		const compound = createShowStyleCompound(base, variant)
+		if (!compound)
+			throw new Meteor.Error(
+				404,
+				`Unable to compile ShowStyleCompound for variant "${rundown.showStyleVariantId}"`
+			)
+		return compound
+	}
 	async getRundownBaselineObjs(rundown: Rundown): Promise<RundownBaselineObj[]> {
 		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
 		return this._getRundownBaselineObjs(rundown)
-	}
-	async getRundownBaselineAdLibPieces(rundown: Rundown): Promise<RundownBaselineAdLibItem[]> {
-		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
-		return this._getRundownBaselineAdLibPieces(rundown)
-	}
-	async getRundownBaselineAdLibActions(rundown: Rundown): Promise<RundownBaselineAdLibAction[]> {
-		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
-		return this._getRundownBaselineAdLibActions(rundown)
 	}
 	async getPeripheralDevices(): Promise<PeripheralDevice[]> {
 		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
@@ -231,32 +231,6 @@ export class ActivationCache {
 			async (id) => {
 				const rundownBaselineObjs = await asyncCollectionFindFetch(RundownBaselineObjs, { rundownId: id })
 				return rundownBaselineObjs
-			}
-		)
-	}
-	private async _getRundownBaselineAdLibPieces(rundown: Rundown): Promise<RundownBaselineAdLibItem[]> {
-		return this._getFromCache(
-			this._rundownBaselineAdLibPieces,
-			rundown._id,
-			rundown.baselineModifyHash || '',
-			async (id) => {
-				const rundownBaselineAdLibPieces = await asyncCollectionFindFetch(RundownBaselineAdLibPieces, {
-					rundownId: id,
-				})
-				return rundownBaselineAdLibPieces
-			}
-		)
-	}
-	private async _getRundownBaselineAdLibActions(rundown: Rundown): Promise<RundownBaselineAdLibAction[]> {
-		return this._getFromCache(
-			this._rundownBaselineAdLibActions,
-			rundown._id,
-			rundown.baselineModifyHash || '',
-			async (id) => {
-				const rundownBaselineAdLibActions = await asyncCollectionFindFetch(RundownBaselineAdLibActions, {
-					rundownId: id,
-				})
-				return rundownBaselineAdLibActions
 			}
 		)
 	}

@@ -2,26 +2,24 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../../lib/check'
 import { IngestActions } from './actions'
-import { updateTimeline, getActiveRundownPlaylist } from '../playout/timeline'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { StudioId } from '../../../lib/collections/Studios'
 import { Settings } from '../../../lib/Settings'
-import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
-import { waitForPromise } from '../../../lib/lib'
 import { SegmentId, Segments } from '../../../lib/collections/Segments'
-import { loadCachedIngestSegment } from './ingestCache'
+import { RundownIngestDataCache } from './ingestCache'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { handleUpdatedSegment } from './rundownInput'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { logger } from '../../logging'
-import { UpdateNext } from './updateNext'
+import { waitForPromise } from '../../../lib/lib'
+import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
+import { runIngestOperationWithLock } from './lockFunction'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
 		debug_playlistRunBlueprints: (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) => {
 			try {
 				check(rundownPlaylistId, String)
-				IngestActions.regenerateRundownPlaylist(rundownPlaylistId, purgeExisting)
+				IngestActions.regenerateRundownPlaylist(null, rundownPlaylistId, purgeExisting)
 			} catch (e) {
 				logger.error(e)
 				throw e
@@ -35,12 +33,9 @@ if (!Settings.enableUserAccounts) {
 			const rundown = Rundowns.findOne(segment.rundownId)
 			if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
-			const ingestSegment = loadCachedIngestSegment(
-				rundown._id,
-				rundown.externalId,
-				segment._id,
-				segment.externalId
-			)
+			const ingestCache = waitForPromise(RundownIngestDataCache.create(rundown._id))
+			const ingestSegment = ingestCache.fetchSegment(segment._id)
+			if (!ingestSegment) throw new Meteor.Error(404, 'Segment ingest data not found')
 
 			handleUpdatedSegment(
 				{ studioId: rundown.studioId } as PeripheralDevice,
@@ -49,46 +44,14 @@ if (!Settings.enableUserAccounts) {
 				true
 			)
 		},
-		debug_updateTimeline: (studioId: StudioId) => {
-			try {
-				check(studioId, String)
-				logger.info(`debug_updateTimeline: "${studioId}"`)
+		debug_recreateExpectedMediaItems() {
+			const rundowns = Rundowns.find().fetch()
 
-				const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
-
-				const activePlaylist = getActiveRundownPlaylist(cache, studioId)
-				if (activePlaylist) {
-					const cacheForPlaylist = waitForPromise(initCacheForRundownPlaylist(activePlaylist, cache))
-					updateTimeline(cacheForPlaylist, studioId)
-					waitForPromise(cacheForPlaylist.saveAllToDatabase())
-				} else {
-					updateTimeline(cache, studioId)
-					waitForPromise(cache.saveAllToDatabase())
-				}
-			} catch (e) {
-				logger.error(e)
-				throw e
-			}
-		},
-		debug_updateNext: (studioId: StudioId) => {
-			try {
-				check(studioId, String)
-				logger.info(`debug_updateNext: "${studioId}"`)
-
-				const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
-
-				const activePlaylist = getActiveRundownPlaylist(cache, studioId)
-				if (activePlaylist) {
-					const cacheForPlaylist = waitForPromise(initCacheForRundownPlaylist(activePlaylist, cache))
-					UpdateNext.ensureNextPartIsValid(cacheForPlaylist, activePlaylist)
-					waitForPromise(cacheForPlaylist.saveAllToDatabase())
-				} else {
-					throw new Error('No playlist active')
-				}
-			} catch (e) {
-				logger.error(e)
-				throw e
-			}
+			rundowns.map((rundown) => {
+				runIngestOperationWithLock('', rundown.studioId, rundown.externalId, async (cache) =>
+					updateExpectedMediaItemsOnRundown(cache)
+				)
+			})
 		},
 	})
 }

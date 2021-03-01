@@ -6,14 +6,12 @@ import {
 	Time,
 	waitForPromise,
 	waitForPromiseAll,
-	asyncCollectionFindOne,
-	asyncCollectionUpdate,
 	extendMandadory,
-	asyncCollectionUpsert,
 	getHash,
 	protectString,
+	unprotectString,
 } from '../../lib/lib'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
+import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import { logger } from '../../lib/logging'
 import {
 	IBlueprintExternalMessageQueueObj,
@@ -25,9 +23,12 @@ import { AsRunEventContext } from './blueprints/context'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, initReadOnlyCacheForRundownPlaylist } from '../DatabaseCaches'
 import { profiler } from './profiler'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { CacheForPlayout } from './playout/cache'
+import { Studios } from '../../lib/collections/Studios'
+import { ReadonlyDeep } from 'type-fest'
+import { asyncCollectionUpsert, asyncCollectionFindOne, asyncCollectionUpdate } from '../lib/database'
+import { getShowStyleCompoundForRundown } from './showStyles'
 
 const EVENT_WAIT_TIME = 500
 
@@ -70,26 +71,26 @@ function handleAsRunEvent(event: AsRunLogEvent): void {
 				const rundown = Rundowns.findOne(event.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${event.rundownId}" not found!`)
 
-				const pShowStyleBase = asyncCollectionFindOne(ShowStyleBases, rundown.showStyleBaseId)
+				const showStyle = waitForPromise(getShowStyleCompoundForRundown(rundown))
+				if (!showStyle) throw new Meteor.Error(404, `ShowStyle "${rundown.showStyleVariantId}" not found!`)
+
+				const studio = Studios.findOne(rundown.studioId)
+				if (!studio) throw new Meteor.Error(404, `Studio "${rundown.studioId}" not found!`)
 
 				const playlist = RundownPlaylists.findOne(rundown.playlistId)
 				if (!playlist) throw new Meteor.Error(404, `Playlist "${rundown.playlistId}" not found!`)
 
-				const showStyleBase = waitForPromise(pShowStyleBase)
-				if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${rundown.showStyleBaseId}" not found!`)
-
-				const { blueprint } = loadShowStyleBlueprint(showStyleBase)
+				const { blueprint } = loadShowStyleBlueprint(showStyle)
 
 				if (blueprint.onAsRunEvent) {
-					const cache = waitForPromise(initReadOnlyCacheForRundownPlaylist(playlist))
-
 					const context = new AsRunEventContext(
 						{
 							name: rundown.name,
 							identifier: `rundownId=${rundown._id},eventId=${event._id}`,
 						},
+						studio,
+						showStyle,
 						rundown,
-						cache,
 						event
 					)
 
@@ -107,37 +108,24 @@ function handleAsRunEvent(event: AsRunLogEvent): void {
 }
 
 // Convenience functions:
-export function reportRundownHasStarted(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
-	rundown: Rundown,
-	timestamp?: Time
-) {
+export function reportRundownHasStarted(cache: CacheForPlayout, rundownId: RundownId, timestamp: Time) {
+	const playlist = cache.Playlist.doc
 	// Called when the first part in rundown starts playing
 
-	if (!rundown) {
+	if (!rundownId) {
 		logger.error(`rundown argument missing in reportRundownHasStarted`)
-	} else if (!playlist) {
-		logger.error(`playlist argument missing in reportRundownHasStarted`)
 	} else {
-		cache.Rundowns.update(rundown._id, {
-			$set: {
-				startedPlayback: timestamp,
-			},
+		cache.Playlist.update((pl) => {
+			if (!pl.rundownsStartedPlayback) pl.rundownsStartedPlayback = {}
+			pl.rundownsStartedPlayback[unprotectString(rundownId)] = timestamp
+			if (!pl.startedPlayback) pl.startedPlayback = timestamp
+			return pl
 		})
-
-		if (!playlist.startedPlayback) {
-			cache.RundownPlaylists.update(playlist._id, {
-				$set: {
-					startedPlayback: timestamp,
-				},
-			})
-		}
 
 		const event = pushAsRunLog(
 			{
-				studioId: rundown.studioId,
-				rundownId: rundown._id,
+				studioId: cache.Studio.doc._id,
+				rundownId: rundownId,
 				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 'rundown',
 			},
@@ -148,11 +136,7 @@ export function reportRundownHasStarted(
 	}
 }
 
-export function reportRundownDataHasChanged(
-	_cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
-	rundown: Rundown
-) {
+export function reportRundownDataHasChanged(playlist: ReadonlyDeep<RundownPlaylist>, rundown: ReadonlyDeep<Rundown>) {
 	// Called when the data in rundown is changed
 
 	if (!rundown) {
@@ -176,7 +160,7 @@ export function reportRundownDataHasChanged(
 	}
 }
 
-export function reportPartHasStarted(cache: CacheForRundownPlaylist, partInstance: PartInstance, timestamp: Time) {
+export function reportPartHasStarted(cache: CacheForPlayout, partInstance: PartInstance, timestamp: Time) {
 	if (partInstance) {
 		const span = profiler.startSpan('reportPartHasStarted')
 		cache.PartInstances.update(partInstance._id, {
@@ -186,26 +170,20 @@ export function reportPartHasStarted(cache: CacheForRundownPlaylist, partInstanc
 			},
 		})
 
-		const playlist = cache.RundownPlaylists.findOne(cache.containsDataFromPlaylist)
-		if (playlist) {
-			let event = pushAsRunLog(
-				{
-					studioId: playlist.studioId,
-					rundownId: partInstance.rundownId,
-					segmentId: partInstance.segmentId,
-					partInstanceId: partInstance._id,
-					content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-					content2: 'part',
-				},
-				!!playlist.rehearsal,
-				timestamp
-			)
-			if (event) handleAsRunEvent(event)
-		} else {
-			logger.error(
-				`RundownPlaylist "${cache.containsDataFromPlaylist}" not found in reportPartHasStarted "${partInstance._id}"`
-			)
-		}
+		const playlist = cache.Playlist.doc
+		let event = pushAsRunLog(
+			{
+				studioId: playlist.studioId,
+				rundownId: partInstance.rundownId,
+				segmentId: partInstance.segmentId,
+				partInstanceId: partInstance._id,
+				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
+				content2: 'part',
+			},
+			!!playlist.rehearsal,
+			timestamp
+		)
+		if (event) handleAsRunEvent(event)
 		if (span) span.end()
 	}
 }

@@ -873,7 +873,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (
 						<PartCountdown partId={countdownToPartId} hideOnZero={true} />
 					)}
-					{Settings.allowUnsyncedSegments && this.props.segment.orphaned && (
+					{Settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
 						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 					)}
 				</div>

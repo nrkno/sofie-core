@@ -65,7 +65,6 @@ export function makePlaylistFromRundown_1_0_0(
 		name: rundown.name,
 		nextPartManual: rundown.nextPartManual,
 		nextTimeOffset: rundown.nextTimeOffset,
-		peripheralDeviceId: rundown.peripheralDeviceId,
 		previousPartInstanceId: null,
 		startedPlayback: rundown.startedPlayback,
 		studioId: rundown.studioId,

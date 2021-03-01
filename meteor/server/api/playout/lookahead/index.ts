@@ -5,7 +5,7 @@ import {
 	Timeline as TimelineTypes,
 	OnGenerateTimelineObj,
 } from '@sofie-automation/blueprints-integration'
-import { Studio, MappingExt } from '../../../../lib/collections/Studios'
+import { MappingExt } from '../../../../lib/collections/Studios'
 import {
 	OnGenerateTimelineObjExt,
 	TimelineObjRundown,
@@ -13,10 +13,7 @@ import {
 } from '../../../../lib/collections/Timeline'
 import { PartId } from '../../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../../lib/collections/Pieces'
-import { clone, asyncCollectionFindFetch } from '../../../../lib/lib'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { getRundownIDsFromCache } from '../lib'
-import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { clone } from '../../../../lib/lib'
 import { profiler } from '../../profiler'
 import {
 	hasPieceInstanceDefinitelyEnded,
@@ -26,6 +23,8 @@ import {
 import { Mongo } from 'meteor/mongo'
 import { getOrderedPartsAfterPlayhead, PartInstanceAndPieceInstances } from './util'
 import { findLookaheadForLayer, LookaheadResult } from './findForLayer'
+import { CacheForPlayout, getRundownIDsFromCache } from '../cache'
+import { asyncCollectionFindFetch } from '../../../lib/database'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -36,13 +35,11 @@ function findLargestLookaheadDistance(mappings: Array<[string, MappingExt]>): nu
 }
 
 export async function getLookeaheadObjects(
-	cache: CacheForRundownPlaylist,
-	studio: Studio,
-	playlist: RundownPlaylist,
+	cache: CacheForPlayout,
 	partInstancesInfo0: SelectedPartInstancesTimelineInfo
 ): Promise<Array<TimelineObjRundown & OnGenerateTimelineObjExt>> {
 	const span = profiler.startSpan('getLookeaheadObjects')
-	const mappingsToConsider = Object.entries(studio.mappings ?? {}).filter(
+	const mappingsToConsider = Object.entries(cache.Studio.doc.mappings ?? {}).filter(
 		([id, map]) => map.lookahead !== LookaheadMode.NONE && map.lookahead !== undefined
 	)
 	if (mappingsToConsider.length === 0) {
@@ -51,16 +48,14 @@ export async function getLookeaheadObjects(
 	}
 
 	const maxLookaheadDistance = findLargestLookaheadDistance(mappingsToConsider)
-	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(cache, playlist, maxLookaheadDistance)
+	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(cache, maxLookaheadDistance)
 
 	const piecesToSearchQuery: Mongo.Query<Piece> = {
 		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
-		startRundownId: { $in: getRundownIDsFromCache(cache, playlist) },
+		startRundownId: { $in: getRundownIDsFromCache(cache) },
 		invalid: { $ne: true },
 	}
-	const pPiecesToSearch = cache.Pieces.initialized
-		? Promise.resolve(cache.Pieces.findFetch(piecesToSearchQuery))
-		: asyncCollectionFindFetch(Pieces, piecesToSearchQuery)
+	const pPiecesToSearch = asyncCollectionFindFetch(Pieces, piecesToSearchQuery)
 
 	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
 		if (!info.partInstance.timings?.startedPlayback) {
@@ -122,7 +117,7 @@ export async function getLookeaheadObjects(
 				: futurePartCount
 
 		const lookaheadObjs = findLookaheadForLayer(
-			playlist.currentPartInstanceId,
+			cache.Playlist.doc.currentPartInstanceId,
 			partInstancesInfo,
 			previousPartInfo,
 			orderedPartsFollowingPlayhead,
