@@ -12,6 +12,7 @@ import { Bucket } from '../../../lib/collections/Buckets'
 import { unprotectString } from '../../../lib/lib'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
 import { Studio } from '../../../lib/collections/Studios'
+import { PieceCountdownPanel } from './PieceCountdownPanel'
 import { BucketAdLibItem } from './RundownViewBuckets'
 import { IAdLibListItem } from './AdLibListItem'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
@@ -96,6 +97,14 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							onSelectPiece={props.onSelectPiece}
 							studio={props.studio}
 							hotkeyGroup={panel.name.replace(/\W/, '_')}
+						/>
+					) : RundownLayoutsAPI.isPieceCountdown(panel) ? (
+						<PieceCountdownPanel
+							key={panel._id}
+							panel={panel}
+							layout={rundownLayout}
+							playlist={props.playlist}
+							visible={true}
 						/>
 					) : (
 						undefined
