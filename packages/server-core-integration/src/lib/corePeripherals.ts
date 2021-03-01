@@ -14,7 +14,7 @@ export enum StatusCode {
 	GOOD = 1,
 	/** Everything is not OK, but normal operation should not be affected. An optional/backup service might be offline, etc. */
 	WARNING_MINOR = 2,
-	/** Everything is not OK, operation might be affected. Like when having switched to a backup, or have taken action to fix an error. */
+	/** Everything is not OK, operation might be affected. Like when having switched to a backup, or have taken action to fix an error. Sofie will show a restart device button for this and all higher severity warnings. */
 	WARNING_MAJOR = 3,
 	/** Not good. Operation is affected. Will be able to recover on it's own when the situation changes. */
 	BAD = 4,
