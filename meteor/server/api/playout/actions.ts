@@ -13,8 +13,8 @@ import {
 	onPartHasStoppedPlaying,
 	selectNextPart,
 	getSelectedPartInstancesFromCache,
-	getAllOrderedPartsFromCache,
 	LOW_PRIO_DEFER_TIME,
+	getSegmentsAndPartsFromCache,
 } from './lib'
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
@@ -66,7 +66,7 @@ export function activateRundownPlaylist(
 	let rundown: Rundown | undefined
 
 	if (!rundownPlaylist.nextPartInstanceId) {
-		const firstPart = selectNextPart(rundownPlaylist, null, getAllOrderedPartsFromCache(cache, rundownPlaylist))
+		const firstPart = selectNextPart(rundownPlaylist, null, getSegmentsAndPartsFromCache(cache, rundownPlaylist))
 		setNextPart(cache, rundownPlaylist, firstPart ? firstPart.part : null)
 	} else {
 		const nextPartInstance = cache.PartInstances.findOne(rundownPlaylist.nextPartInstanceId)

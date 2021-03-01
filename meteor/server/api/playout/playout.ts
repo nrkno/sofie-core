@@ -43,7 +43,6 @@ import {
 	getRundownIDsFromCache,
 	getRundownsFromCache,
 	getStudioFromCache,
-	getAllOrderedPartsFromCache,
 	getAllPieceInstancesFromCache,
 } from './lib'
 import {
@@ -145,7 +144,9 @@ export namespace ServerPlayoutAPI {
 
 				libResetRundownPlaylist(cache, playlist)
 
-				updateTimeline(cache, playlist.studioId)
+				if (playlist.activationId) {
+					updateTimeline(cache, playlist.studioId)
+				}
 
 				waitForPromise(cache.saveAllToDatabase())
 			}
@@ -960,7 +961,7 @@ export namespace ServerPlayoutAPI {
 							const nextPart = selectNextPart(
 								playlist,
 								playingPartInstance,
-								getAllOrderedPartsFromCache(cache, playlist)
+								getSegmentsAndPartsFromCache(cache, playlist)
 							)
 							libsetNextPart(cache, playlist, nextPart ? nextPart.part : null)
 						} else {
@@ -986,7 +987,7 @@ export namespace ServerPlayoutAPI {
 								const nextPart = selectNextPart(
 									playlist,
 									playingPartInstance,
-									getAllOrderedPartsFromCache(cache, playlist)
+									getSegmentsAndPartsFromCache(cache, playlist)
 								)
 								libsetNextPart(cache, playlist, nextPart ? nextPart.part : null)
 							}

@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.19.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0-1-in-testing-R30...v1.19.0-in-testing.0) (2021-02-27)
+
+
+### Features
+
+* allow searching multiple sourcelayers at once in AdlibActionContext.findLastPieceOnLayer [publish] ([7b31a5b](https://github.com/nrkno/tv-automation-server-core/commit/7b31a5b7b74e6142f4cb330eb74b217e3f797500))
+* remove getIngestDataFor* methods from AsRunEventContext ([97e5632](https://github.com/nrkno/tv-automation-server-core/commit/97e563250056a011e6c94ab81fa81fc041b8bcc1))
+* remove or reset orphaned once they are no longer current or nexted ([8823fe4](https://github.com/nrkno/tv-automation-server-core/commit/8823fe460b34443e91f538ef3490ed5b5fecfc5e))
+* rename unsynced to orphaned ([ae29442](https://github.com/nrkno/tv-automation-server-core/commit/ae29442518382c84a039733f49b8b1d25f328539))
+* show note when the segment is orphaned, or any of the partinstances are orphaned ([e91d3b3](https://github.com/nrkno/tv-automation-server-core/commit/e91d3b3709283bdc754c865a24433ade79b86ece))
+
+
+### Bug Fixes
+
+* 0 freeze frame detected within the clip ([75c0427](https://github.com/nrkno/tv-automation-server-core/commit/75c042705454c850605c28cc3cffd64a53cac884))
+* add missing contexts to blueprint api methods [publish] ([#454](https://github.com/nrkno/tv-automation-server-core/issues/454)) ([2cef36c](https://github.com/nrkno/tv-automation-server-core/commit/2cef36c3f2e70ee722b5b890f5619d36fb7fa36d))
+* better notifications for unavailable clips ([2200fd7](https://github.com/nrkno/tv-automation-server-core/commit/2200fd723a666a38c855ae623fda6c9be5b16fcf))
+* display duration group display duration instability after a take ([#466](https://github.com/nrkno/tv-automation-server-core/issues/466)) ([494c33e](https://github.com/nrkno/tv-automation-server-core/commit/494c33ef21fd560f802770ac65ef3a9af88b277f))
+* Dont call updateTimeline in resetRundownPlaylist if the playlist isn't active (as this causes an error in getActiveRundownPlaylist) ([9ab1ac2](https://github.com/nrkno/tv-automation-server-core/commit/9ab1ac21aa2d9248434a586cb8f38ca8185b5dad))
+* invalidReason translation ([#459](https://github.com/nrkno/tv-automation-server-core/issues/459)) [publish] ([5bd01d4](https://github.com/nrkno/tv-automation-server-core/commit/5bd01d4660e9e76b07a2a3e02e8a4bc7ffd8a5f6))
+* Presenter screen not working ([#465](https://github.com/nrkno/tv-automation-server-core/issues/465)) ([90a0d08](https://github.com/nrkno/tv-automation-server-core/commit/90a0d08ccb389edd73ff49c663ad8a5dd6a505c3))
+* **Midi:** Filtering of idle information in multi-pedal setups ([dd1fa79](https://github.com/nrkno/tv-automation-server-core/commit/dd1fa7981d3163f5fa3a7aa1733e44e8a7b6610d))
+* expectedMediaItems should use adlibs from the cache, not the db ([61e6257](https://github.com/nrkno/tv-automation-server-core/commit/61e62573c7c4f689cc4ce368aae33d8567446205))
+* orphaned segment would result in an incorrect next point ([b95783f](https://github.com/nrkno/tv-automation-server-core/commit/b95783f1dc9e4cae8e35d524220fa923901c8006))
+* ranks not updating when first part is orphaned ([7035b56](https://github.com/nrkno/tv-automation-server-core/commit/7035b56175078d812af209a861af3a5a3b25afbe))
+* regenerateRundown not using syncFunction ([b3fad26](https://github.com/nrkno/tv-automation-server-core/commit/b3fad26e534b11724383ff1b0a8b1306c3adec06))
+* reject ingest updates when rundown or segment are orphaned ([4a65e44](https://github.com/nrkno/tv-automation-server-core/commit/4a65e442b044d03882a0646b30b2965daa7e4346))
+* save rundown baseline changes in parallel ([2d00df5](https://github.com/nrkno/tv-automation-server-core/commit/2d00df5eca3cbf93fea27d1955a18164bd1ee389))
+* some ingest bugs ([4f67718](https://github.com/nrkno/tv-automation-server-core/commit/4f67718abb6a8b88b529739c54c89a64c4b9f155))
+* theoretical segment unsyncing for mos ([5c353cd](https://github.com/nrkno/tv-automation-server-core/commit/5c353cd3dcca67b5c17dd61c055d8e84f6cf98d7))
+* vibrate on supported devices ([d5ab1f0](https://github.com/nrkno/tv-automation-server-core/commit/d5ab1f0b7bf60ab4d522e26ec7f1c2d42ea1bf31))
+
 ## [1.18.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.17.0...v1.18.0-0) (2021-02-09)
 
 

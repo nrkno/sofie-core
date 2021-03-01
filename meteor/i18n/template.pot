@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-01-07T09:15:46.298Z\n"
-"PO-Revision-Date: 2021-01-07T09:15:46.298Z\n"
+"POT-Creation-Date: 2021-02-22T10:33:55.670Z\n"
+"PO-Revision-Date: 2021-02-22T10:33:55.670Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -2278,19 +2278,19 @@ msgstr ""
 msgid "Stop"
 msgstr ""
 
-msgid "Clip can't be played because the filename is missing"
+msgid "{{sourceLayer}} is missing a file path"
 msgstr ""
 
-msgid "Clip can't be played because it isn't present on the playout system"
+msgid "{{sourceLayer}} is not yet ready on the playout system"
 msgstr ""
 
-msgid "Clip doesn't have audio & video"
+msgid "{{sourceLayer}} doesn't have both audio & video"
 msgstr ""
 
-msgid "Clip format ({{format}}) is not in one of the accepted formats"
+msgid "{{sourceLayer}} has the wrong format: {{format}}"
 msgstr ""
 
-msgid "Clip has {{audioStreams}} audio streams"
+msgid "{{sourceLayer}} has {{audioStreams}} audio streams"
 msgstr ""
 
 msgid "Clip starts with {{frames}} {{type}} frame"
