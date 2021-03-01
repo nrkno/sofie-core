@@ -21,6 +21,7 @@ interface IRundownListItemViewProps {
 	connectDragSource: (content: ReactElement) => ReactElement | null
 	rundownViewUrl?: string
 	rundown: Rundown
+	rundownLayouts: Array<RundownLayoutBase>
 	showStyleBaseURL?: string
 	showStyleName: string | undefined
 	confirmReSyncRundownHandler?: () => void
@@ -41,6 +42,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		showStyleBaseURL,
 		showStyleName,
 		rundown,
+		rundownLayouts,
 		confirmReSyncRundownHandler,
 		confirmDeleteRundownHandler,
 	} = props

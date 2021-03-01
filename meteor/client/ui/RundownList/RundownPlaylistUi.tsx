@@ -245,7 +245,7 @@ export const RundownPlaylistUi = DropTarget(
 			}
 
 			render() {
-				const { playlist, connectDropTarget, t, isActiveDropZone } = this.props
+				const { playlist, connectDropTarget, t, isActiveDropZone, rundownLayouts } = this.props
 
 				if (playlist.rundowns.length === 0) {
 					console.debug(`Playlist ${playlist._id} has no rundowns, aborting render`)
@@ -272,6 +272,7 @@ export const RundownPlaylistUi = DropTarget(
 								key={unprotectString(playlist.rundowns[0]._id)}
 								rundown={playlist.rundowns[0]}
 								rundownViewUrl={playlistViewURL}
+								rundownLayouts={rundownLayouts}
 								swapRundownOrder={handleRundownSwap}
 								playlistId={playlist._id}
 							/>
@@ -288,6 +289,7 @@ export const RundownPlaylistUi = DropTarget(
 							isActive={playlist.active === true}
 							key={unprotectString(rundown._id)}
 							rundown={rundown}
+							rundownLayouts={rundownLayouts}
 							swapRundownOrder={handleRundownSwap}
 							playlistId={playlist._id}
 						/>

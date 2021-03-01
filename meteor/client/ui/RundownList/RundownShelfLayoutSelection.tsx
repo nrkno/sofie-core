@@ -14,10 +14,8 @@ import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 interface IRundownShelfLayoutSelectionProps {
-	rundown: Rundown
-}
-
-interface IRundownShelfLayoutSelectionTrackedProps {
+	playlistId: RundownPlaylistId
+	rundowns: Rundown[]
 	rundownLayouts: RundownLayoutBase[]
 }
 
@@ -25,36 +23,21 @@ interface IRundownShelfLayoutSelectionState {
 	selectedView: string
 }
 
-export const RundownShelfLayoutSelection = translateWithTracker<
-	IRundownShelfLayoutSelectionProps,
-	IRundownShelfLayoutSelectionState,
-	IRundownShelfLayoutSelectionTrackedProps
->((props: IRundownShelfLayoutSelectionProps) => {
-	const rundownLayouts = RundownLayouts.find({ showStyleBaseId: props.rundown.showStyleBaseId }).fetch()
-
-	return {
-		...props,
-		rundownLayouts,
-	}
-})(
+export const RundownShelfLayoutSelection = withTranslation()(
 	class RundownShelfLayoutSelection extends React.Component<
-		Translated<IRundownShelfLayoutSelectionProps & IRundownShelfLayoutSelectionTrackedProps>,
+		Translated<IRundownShelfLayoutSelectionProps>,
 		IRundownShelfLayoutSelectionState
 	> {
 		constructor(props) {
 			super(props)
 
 			this.state = {
-				selectedView: UIStateStorage.getItemString(
-					`rundownList.${this.props.rundown.studioId}`,
-					'defaultView',
-					'default'
-				),
+				selectedView: UIStateStorage.getItemString(`rundownList.${this.props.playlistId}`, 'defaultView', 'default'),
 			}
 		}
 
 		private saveViewChoice(key: string) {
-			UIStateStorage.setItem(`rundownList.${this.props.rundown.studioId}`, 'defaultView', key)
+			UIStateStorage.setItem(`rundownList.${this.props.playlistId}`, 'defaultView', key)
 		}
 
 		private renderLinkItem(layout: RundownLayoutBase, link: string, key: string) {
@@ -83,11 +66,7 @@ export const RundownShelfLayoutSelection = translateWithTracker<
 			const standaloneLayouts = layoutsInRundown
 				.filter((layout) => RundownLayoutsAPI.IsLayoutForShelf(layout) && layout.exposeAsStandalone)
 				.map((layout) => {
-					return this.renderLinkItem(
-						layout,
-						getShelfLink(this.props.rundown.playlistId, layout._id),
-						`standalone${layout._id}`
-					)
+					return this.renderLinkItem(layout, getShelfLink(this.props.playlistId, layout._id), `standalone${layout._id}`)
 				})
 			const shelfLayouts = layoutsInRundown
 				.filter((layout) => RundownLayoutsAPI.IsLayoutForShelf(layout) && layout.exposeAsShelf)
@@ -109,7 +88,7 @@ export const RundownShelfLayoutSelection = translateWithTracker<
 				...shelfLayouts,
 				<div className="expco-separator" key={'separator2'}></div>,
 				<Link
-					to={getRundownPlaylistLink(this.props.rundown.playlistId)}
+					to={getRundownPlaylistLink(this.props.playlistId)}
 					onClick={() => this.saveViewChoice('default')}
 					key={'default'}>
 					<div className="action-btn expco-item">Default</div>
