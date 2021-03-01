@@ -1392,6 +1392,7 @@ interface ITrackedProps {
 	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
 	rundownLayoutId?: RundownLayoutId
+	orderedPartsIds: PartId[]
 	shelfDisplayOptions: {
 		buckets: boolean
 		layout: boolean
@@ -1412,12 +1413,24 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	const playlist = RundownPlaylists.findOne(playlistId)
 	let rundowns: Rundown[] = []
 	let studio: Studio | undefined
+	let allParts: PartId[] = []
 	let currentPartInstance: PartInstance | undefined
 	let nextPartInstance: PartInstance | undefined
 
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun((_playlistId) => playlist.getRundowns(), 'playlist.getRundowns', playlistId)
+		allParts = memoizedIsolatedAutorun(
+			(_playlistId) =>
+				(playlist.getAllOrderedParts(undefined, {
+					fields: {
+						segmentId: 1,
+						_rank: 1,
+					},
+				}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]).map((part) => part._id),
+			'playlist.getAllOrderedParts',
+			playlistId
+		)
 		;({ currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances())
 	}
 
@@ -1485,6 +1498,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}).fetch()) ||
 			undefined,
 		rundownLayoutId: protectString((params['layout'] as string) || ''),
+		orderedPartsIds: allParts,
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
 			layout: displayOptions.includes('layout'),
@@ -2237,6 +2251,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												onTimeScaleChange={this.onTimeScaleChange}
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
+												orderedAllPartIds={this.props.orderedPartsIds}
 												segmentsIdsBefore={rundownAndSegments.segmentIdsBeforeEachSegment[segmentIndex]}
 												isLastSegment={
 													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1

@@ -4,7 +4,7 @@ import { InView } from 'react-intersection-observer'
 export interface IProps {
 	initialShow?: boolean
 	placeholderHeight?: number
-	_debug?: boolean
+	debug?: boolean
 	placeholderClassName?: string
 	width?: string | number
 	margin?: string
@@ -23,7 +23,10 @@ declare global {
 	}
 }
 
-interface IElementMeasurements {
+interface IState {
+	inView: boolean
+	isMeasured: boolean
+
 	width: string | number
 	clientHeight: number
 	marginLeft: string | number | undefined
@@ -33,20 +36,7 @@ interface IElementMeasurements {
 	id: string | undefined
 }
 
-interface IState extends IElementMeasurements {
-	inView: boolean
-	isMeasured: boolean
-}
-
 const OPTIMIZE_PERIOD = 5000
-/**
- * This is a component that allows optimizing the amount of elements present in the DOM through replacing them
- * with placeholders when they aren't visible in the viewport.
- *
- * @export
- * @class VirtualElement
- * @extends {React.Component<IProps, IState>}
- */
 export class VirtualElement extends React.Component<IProps, IState> {
 	private el: HTMLElement | null = null
 	private instance: HTMLElement | null = null
@@ -70,7 +60,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 	}
 
 	visibleChanged = (inView: boolean) => {
-		this.props._debug && console.log(this.props.id, 'Changed', inView)
+		this.props.debug && console.log(this.props.id, 'Changed', inView)
 		if (this.optimizeTimeout) {
 			clearTimeout(this.optimizeTimeout)
 			this.optimizeTimeout = null
@@ -82,24 +72,20 @@ export class VirtualElement extends React.Component<IProps, IState> {
 		} else if (!inView && this.state.inView) {
 			this.optimizeTimeout = setTimeout(() => {
 				this.optimizeTimeout = null
-				const measurements = this.measureElement() || undefined
 				this.setState({
 					inView,
-
-					isMeasured: measurements ? true : false,
-					...measurements,
-				} as IState)
+				})
 			}, OPTIMIZE_PERIOD)
 		}
 	}
 
-	measureElement = (): IElementMeasurements | null => {
+	refreshSizing = () => {
+		this.refreshSizingTimeout = null
 		if (this.el) {
 			const style = this.styleObj || window.getComputedStyle(this.el)
 			this.styleObj = style
-			this.props._debug && console.log(this.props.id, 'Re-measuring child', this.el.clientHeight)
-
-			return {
+			this.setState({
+				isMeasured: true,
 				width: style.width || 'auto',
 				clientHeight: this.el.clientHeight,
 				marginTop: style.marginTop || undefined,
@@ -107,20 +93,8 @@ export class VirtualElement extends React.Component<IProps, IState> {
 				marginLeft: style.marginLeft || undefined,
 				marginRight: style.marginRight || undefined,
 				id: this.el.id,
-			}
-		}
-
-		return null
-	}
-
-	refreshSizing = () => {
-		this.refreshSizingTimeout = null
-		const measurements = this.measureElement()
-		if (measurements) {
-			this.setState({
-				isMeasured: true,
-				...measurements,
 			})
+			this.props.debug && console.log(this.props.id, 'Re-measuring child', this.el.clientHeight)
 		}
 	}
 
@@ -146,13 +120,20 @@ export class VirtualElement extends React.Component<IProps, IState> {
 		}
 	}
 
+	UNSAFE_componentWillUpdate(newProps, newState: IState) {
+		if (this.state.inView && !newState.inView) {
+			this.props.debug && console.log(this.props.id, 'Item is going away from viewport, refreshSizing')
+			this.refreshSizing()
+		}
+	}
+
 	componentWillUnmount() {
 		if (this.optimizeTimeout) clearTimeout(this.optimizeTimeout)
 		if (this.refreshSizingTimeout) clearTimeout(this.refreshSizingTimeout)
 	}
 
 	render() {
-		this.props._debug &&
+		this.props.debug &&
 			console.log(
 				this.props.id,
 				this.state.inView,
