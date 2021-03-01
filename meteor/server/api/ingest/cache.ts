@@ -130,8 +130,14 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	}
 
 	discardChanges() {
+		this._abortActiveTimeout()
+
 		this.toBeRemoved = false
 		super.discardChanges()
+
+		// Discard any hooks too
+		this._deferredAfterSaveFunctions.length = 0
+		this._deferredFunctions.length = 0
 
 		this.assertNoChanges()
 	}

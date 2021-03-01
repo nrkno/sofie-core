@@ -198,12 +198,16 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	}
 
 	discardChanges() {
+		this._abortActiveTimeout()
+
 		this.toBeRemoved = false
 		super.discardChanges()
 
 		// Discard any hooks too
 		this._deferredAfterSaveFunctions.length = 0
 		this._deferredFunctions.length = 0
+
+		this.assertNoChanges()
 	}
 
 	async saveAllToDatabase() {
