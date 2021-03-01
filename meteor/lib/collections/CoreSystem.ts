@@ -89,6 +89,13 @@ export interface ICoreSystem {
 		transactionSampleRate?: number
 	}
 	enableMonitorBlockedThread?: boolean
+
+	/** Cron jobs running nightly */
+	cron?: {
+		casparCGRestart?: {
+			enabled: boolean
+		}
+	}
 }
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
