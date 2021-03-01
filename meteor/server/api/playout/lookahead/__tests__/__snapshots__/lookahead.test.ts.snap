@@ -113,7 +113,33 @@ Array [
     "isLookahead": true,
     "layer": "WHEN_CLEAR",
     "pieceInstanceId": "piece1",
-    "priority": 0.1,
+    "priority": 0.07500000000000001,
+  },
+  Object {
+    "content": Object {
+      "id": "obj8",
+    },
+    "enable": Object {
+      "while": "1",
+    },
+    "id": "lookahead_future1_obj8",
+    "isLookahead": true,
+    "layer": "WHEN_CLEAR",
+    "pieceInstanceId": "piece1",
+    "priority": 0.05,
+  },
+  Object {
+    "content": Object {
+      "id": "obj9",
+    },
+    "enable": Object {
+      "while": "1",
+    },
+    "id": "lookahead_future2_obj9",
+    "isLookahead": true,
+    "layer": "WHEN_CLEAR",
+    "pieceInstanceId": "piece0",
+    "priority": 0.025,
   },
 ]
 `;

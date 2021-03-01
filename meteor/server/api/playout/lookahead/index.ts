@@ -34,6 +34,8 @@ function findLargestLookaheadDistance(mappings: Array<[string, MappingExt]>): nu
 	return _.max(values)
 }
 
+type ValidLookaheadMode = LookaheadMode.PRELOAD | LookaheadMode.WHEN_CLEAR
+
 export async function getLookeaheadObjects(
 	cache: CacheForPlayout,
 	partInstancesInfo0: SelectedPartInstancesTimelineInfo
@@ -110,24 +112,26 @@ export async function getLookeaheadObjects(
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 	const futurePartCount = orderedPartsFollowingPlayhead.length + (partInstancesInfo0.next ? 1 : 0)
 	for (const [layerId, mapping] of mappingsToConsider) {
-		const lookaheadTargetObjects = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
-		const lookaheadMaxSearchDistance =
-			mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0
-				? mapping.lookaheadMaxSearchDistance
-				: futurePartCount
+		if (mapping.lookahead !== LookaheadMode.NONE) {
+			const lookaheadTargetObjects = mapping.lookaheadDepth || 1
+			const lookaheadMaxSearchDistance =
+				mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0
+					? mapping.lookaheadMaxSearchDistance
+					: futurePartCount
 
-		const lookaheadObjs = findLookaheadForLayer(
-			cache.Playlist.doc.currentPartInstanceId,
-			partInstancesInfo,
-			previousPartInfo,
-			orderedPartsFollowingPlayhead,
-			piecesByPart,
-			layerId,
-			lookaheadTargetObjects,
-			lookaheadMaxSearchDistance
-		)
+			const lookaheadObjs = findLookaheadForLayer(
+				cache.Playlist.doc.currentPartInstanceId,
+				partInstancesInfo,
+				previousPartInfo,
+				orderedPartsFollowingPlayhead,
+				piecesByPart,
+				layerId,
+				lookaheadTargetObjects,
+				lookaheadMaxSearchDistance
+			)
 
-		timelineObjs.push(...processResult(lookaheadObjs, mapping.lookahead))
+			timelineObjs.push(...processResult(lookaheadObjs, mapping.lookahead))
+		}
 	}
 	if (span) span.end()
 	return timelineObjs
@@ -151,8 +155,9 @@ function mutateLookaheadObject(
 	rawObj: TimelineObjRundown & OnGenerateTimelineObjExt,
 	i: string,
 	enable: TimelineObjRundown['enable'],
-	mode: LookaheadMode,
-	priority: number
+	mode: ValidLookaheadMode,
+	priority: number,
+	disabled: boolean
 ): TimelineObjRundown & OnGenerateTimelineObjExt {
 	const obj = clone(rawObj)
 
@@ -174,7 +179,7 @@ function mutateLookaheadObject(
 
 function processResult(
 	lookaheadObjs: LookaheadResult,
-	mode: LookaheadMode
+	mode: ValidLookaheadMode
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const res: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
@@ -191,7 +196,7 @@ function processResult(
 
 		enable.end = getStartOfObjectRef(obj)
 
-		res.push(mutateLookaheadObject(obj, `timed${i}`, enable, mode, LOOKAHEAD_OBJ_PRIORITY))
+		res.push(mutateLookaheadObject(obj, `timed${i}`, enable, mode, LOOKAHEAD_OBJ_PRIORITY, false))
 	})
 
 	// Add each of the future objects, that have no end point
@@ -200,19 +205,19 @@ function processResult(
 	lookaheadObjs.future.some((obj, i) => {
 		if (!obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
-		// WHEN_CLEAR mode can't take multiple futures, as they are always flattened into the single layer. so give it some real timings, and only output one
-		const singleFutureObj = mode === LookaheadMode.WHEN_CLEAR
+		// WHEN_CLEAR mode can't take multiple futures, as they are always flattened into the single layer.
+		// so give it some real timings, and only leave one enabled. The rest are added for onTimelineGenerate to do some 'magic'
+		const singleEnabledObj = mode === LookaheadMode.WHEN_CLEAR
 
 		const lastTimedObj = _.last(lookaheadObjs.timed)
-		const enable = singleFutureObj && lastTimedObj ? calculateStartAfterPreviousObj(lastTimedObj) : { while: '1' }
+		const enable =
+			singleEnabledObj && i === 0 && lastTimedObj ? calculateStartAfterPreviousObj(lastTimedObj) : { while: '1' }
 		// We use while: 1 for the enabler, as any time before it should be active will be filled by either a playing object, or a timed lookahead.
 		// And this allows multiple futures to be timed in a way that allows them to co-exist
 
 		// Prioritise so that the earlier ones are higher, decreasing within the range 'reserved' for lookahead
-		const priority = singleFutureObj ? LOOKAHEAD_OBJ_PRIORITY : futurePriorityScale * (futureObjCount - i)
-		res.push(mutateLookaheadObject(obj, `future${i}`, enable, mode, priority))
-
-		if (singleFutureObj) return true // break
+		const priority = futurePriorityScale * (futureObjCount - i)
+		res.push(mutateLookaheadObject(obj, `future${i}`, enable, mode, priority, singleEnabledObj && i !== 0))
 	})
 
 	return res

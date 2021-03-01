@@ -228,11 +228,7 @@ describe('Lookahead', () => {
 				(cache) => getLookeaheadObjects(cache, partInstancesInfo)
 			)
 		)
-		expect(res).toHaveLength(8)
 		expect(res).toMatchSnapshot()
-
-		// 2x timed + 1x future
-		expect(res.filter((r) => r.layer === 'WHEN_CLEAR')).toHaveLength(3)
 
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(expect.anything(), 10) // default distance
