@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.19.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.0...v1.19.0-in-testing.1) (2021-03-01)
+
+
+### Features
+
+* Add CasparCG cron job system setting ([#410](https://github.com/nrkno/tv-automation-server-core/issues/410)) ([a731f68](https://github.com/nrkno/tv-automation-server-core/commit/a731f68d734c6577fe63863d4ecadabc3aa28da0))
+* Add PieceCountdownPanel ([#435](https://github.com/nrkno/tv-automation-server-core/issues/435)) ([1fd020c](https://github.com/nrkno/tv-automation-server-core/commit/1fd020cc037761e5c53013d20469e78a54931fb9))
+* segmentRanksUpdate peripheral device method ([#437](https://github.com/nrkno/tv-automation-server-core/issues/437)) ([ca4843b](https://github.com/nrkno/tv-automation-server-core/commit/ca4843b573a796586430ed85b24755fc50eaf63a))
+* zoom tweaks ([#467](https://github.com/nrkno/tv-automation-server-core/issues/467)) ([c2c05d0](https://github.com/nrkno/tv-automation-server-core/commit/c2c05d069ff05f2641b677bb5ad985867e06e112))
+
+
+### Bug Fixes
+
+* **Midi:** Filtering of idle information in multi-pedal setups ([#462](https://github.com/nrkno/tv-automation-server-core/issues/462)) ([e4cfec2](https://github.com/nrkno/tv-automation-server-core/commit/e4cfec2e420b28d5b101c6d8755443c28f8cabd4))
+* blueprintConfig dropped when restoring a snapshot ([#443](https://github.com/nrkno/tv-automation-server-core/issues/443)) ([319987d](https://github.com/nrkno/tv-automation-server-core/commit/319987d7e571fca872922cff31f04e4a9459533d))
+* Don't use NTP servers in tests ([#448](https://github.com/nrkno/tv-automation-server-core/issues/448)) ([4ce77fb](https://github.com/nrkno/tv-automation-server-core/commit/4ce77fbbdfb4e720d943c189d041f52d736d8ac6))
+* Restore shelf layout selection to lobby ([#447](https://github.com/nrkno/tv-automation-server-core/issues/447)) ([8617d33](https://github.com/nrkno/tv-automation-server-core/commit/8617d330d2ee1cd0aa2565651b55c635cd38c5e3))
+* Upload snapshots where part externalId is missing ([#438](https://github.com/nrkno/tv-automation-server-core/issues/438)) ([9c61b19](https://github.com/nrkno/tv-automation-server-core/commit/9c61b19ba90e68240a3c156f3577192771e7324d))
+* Use existing cache when performing error checks ([#461](https://github.com/nrkno/tv-automation-server-core/issues/461)) ([e46f0b9](https://github.com/nrkno/tv-automation-server-core/commit/e46f0b9a728ebd1f782f00569bf307eeedfec78b))
+
 ## [1.19.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0-1-in-testing-R30...v1.19.0-in-testing.0) (2021-02-27)
 
 
