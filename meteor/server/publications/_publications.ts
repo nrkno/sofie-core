@@ -1,6 +1,5 @@
 import './lib'
 
-import './bucketAdLibPieces'
 import './buckets'
 import './organization'
 import './peripheralDevice'
@@ -10,3 +9,4 @@ import './showStyle'
 import './studio'
 import './system'
 import './timeline'
+import './translationsBundles'

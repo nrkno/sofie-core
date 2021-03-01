@@ -2,9 +2,9 @@ import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 import { MouseIshController } from './mouse-ish-device'
 import { MidiPedalController } from './midi-pedal-device'
 import { ControllerAbstract } from './lib'
-import { ShuttleKeyboardController } from './shuttle-keyboard-device'
-import * as _ from 'underscore'
+import { JoyConController } from './joycon-device'
 import { KeyboardController } from './keyboard-device'
+import { ShuttleKeyboardController } from './shuttle-keyboard-device'
 
 export class PrompterControlManager {
 	private _view: PrompterViewInner
@@ -31,6 +31,9 @@ export class PrompterControlManager {
 			}
 			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.PEDAL) > -1) {
 				this._controllers.push(new MidiPedalController(this._view))
+			}
+			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.JOYCON) > -1) {
+				this._controllers.push(new JoyConController(this._view))
 			}
 		}
 

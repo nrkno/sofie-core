@@ -1,6 +1,7 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContentVizMSE } from 'timeline-state-resolver-types'
 import { Time } from './common'
-import { SomeContent } from './content'
+import { SomeTimelineContent } from './content'
+import { ITranslatableMessage } from './translations'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -17,7 +18,7 @@ export interface IBlueprintRundownPlaylistInfo {
 }
 
 /** The Rundown generated from Blueprint */
-export interface IBlueprintRundown {
+export interface IBlueprintRundown<TMetadata = unknown> {
 	externalId: string
 	/** Rundown slug - user-presentable name */
 	name: string
@@ -31,13 +32,15 @@ export interface IBlueprintRundown {
 	expectedDuration?: number
 
 	/** Arbitrary data storage for plugins */
-	metaData?: unknown
+	metaData?: TMetadata
 
 	/** A hint to the Core that the Rundown should be a part of a playlist */
 	playlistExternalId?: string
 }
 /** The Rundown sent from Core */
-export interface IBlueprintRundownDB extends IBlueprintRundown, IBlueprintRundownDBData {}
+export interface IBlueprintRundownDB<TMetadata = unknown>
+	extends IBlueprintRundown<TMetadata>,
+		IBlueprintRundownDBData {}
 /** Properties added to a rundown in Core */
 export interface IBlueprintRundownDBData {
 	_id: string
@@ -56,29 +59,26 @@ export interface IBlueprintRundownDBData {
 }
 
 /** The Segment generated from Blueprint */
-export interface IBlueprintSegment {
+export interface IBlueprintSegment<TMetadata = unknown> {
 	/** User-presentable name (Slug) for the Title */
 	name: string
 	/** Arbitrary data storage for plugins */
-	metaData?: unknown
+	metaData?: TMetadata
 	/** Hide the Segment in the UI */
 	isHidden?: boolean
 	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */
 	identifier?: string
 }
 /** The Segment sent from Core */
-export interface IBlueprintSegmentDB extends IBlueprintSegment {
+export interface IBlueprintSegmentDB<TMetadata = unknown> extends IBlueprintSegment<TMetadata> {
 	_id: string
 }
 
-/** @deprecated Use unknown instead */
-export type PartMetaData = unknown
-
-export interface IBlueprintMutatablePart {
+export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	/** The story title */
 	title: string
 	/** Arbitrary data storage for plugins */
-	metaData?: PartMetaData
+	metaData?: TMetadata
 
 	/** Should this item should progress to the next automatically */
 	autoNext?: boolean
@@ -116,7 +116,7 @@ export interface IBlueprintMutatablePart {
 	identifier?: string
 }
 /** The Part generated from Blueprint */
-export interface IBlueprintPart extends IBlueprintMutatablePart {
+export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatablePart<TMetadata> {
 	/** Id of the part from the gateway if this part does not map directly to an IngestPart. This must be unique for each part */
 	externalId: string
 
@@ -138,20 +138,20 @@ export interface IBlueprintPart extends IBlueprintMutatablePart {
 	 */
 	invalid?: boolean
 	/**
-	 * Provide additional information about the reason a part is invalid. The title should be a single, short sentence describing the reason. Additional
-	 * information can be provided in the description property. The blueprints can also provide a color hint that the UI can use when displaying the part.
+	 * Provide additional information about the reason a part is invalid. The `key` is the string key from blueprints
+	 * translations. Args will be used to replace placeholders within the translated file. If `key` is not found in the
+	 * translation, it will be interpollated using the `args` and used as the string to be displayed.
+	 * The blueprints can also provide a color hint that the UI can use when displaying the part.
 	 * Color needs to be in #xxxxxx RGB hexadecimal format.
 	 *
 	 * @type {{
-	 * 		title: string,
-	 * 		description?: string
+	 * 		message: ITranslatableMessage,
 	 * 		color?: string
 	 * 	}}
 	 * @memberof IBlueprintPart
 	 */
 	invalidReason?: {
-		title: string
-		description?: string
+		message: ITranslatableMessage
 		color?: string
 	}
 
@@ -162,21 +162,21 @@ export interface IBlueprintPart extends IBlueprintMutatablePart {
 	gap?: boolean
 }
 /** The Part sent from Core */
-export interface IBlueprintPartDB extends IBlueprintPart {
+export interface IBlueprintPartDB<TMetadata = unknown> extends IBlueprintPart<TMetadata> {
 	_id: string
 	/** The segment ("Title") this line belongs to */
 	segmentId: string
-
-	/** if the part was dunamically inserted (adlib) */
-	dynamicallyInsertedAfterPartId?: string
 }
 /** The Part instance sent from Core */
-export interface IBlueprintPartInstance {
+export interface IBlueprintPartInstance<TMetadata = unknown> {
 	_id: string
 	/** The segment ("Title") this line belongs to */
 	segmentId: string
 
-	part: IBlueprintPartDB // TODO - omit some duplicated fields?
+	part: IBlueprintPartDB<TMetadata>
+
+	/** Whether the PartInstance is an orphan (the Part referenced does not exist). Indicates the reason it is orphaned */
+	orphaned?: 'adlib-part' | 'deleted'
 }
 
 export interface IBlueprintPartInstanceTimings {
@@ -209,16 +209,13 @@ export interface PieceTransition {
 	duration: number
 }
 
-/** @deprecated Use unknown instead */
-export type PieceMetaData = unknown
-
-export interface IBlueprintPieceGeneric {
+export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** ID of the source object in the gateway */
 	externalId: string
 	/** User-presentable name for the timeline item */
 	name: string
 	/** Arbitrary data storage for plugins */
-	metaData?: PieceMetaData
+	metaData?: TMetadata
 
 	/** Whether and how the piece is infinite */
 	lifespan: PieceLifespan
@@ -228,7 +225,7 @@ export interface IBlueprintPieceGeneric {
 	/** Layer output this piece belongs to */
 	outputLayerId: string
 	/** The object describing the item in detail */
-	content?: SomeContent
+	content: SomeTimelineContent
 
 	/** The transition used by this piece to transition to and from the piece */
 	transitions?: {
@@ -252,6 +249,9 @@ export interface IBlueprintPieceGeneric {
 	adlibDisableOutTransition?: boolean
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
+
+	/** HACK: Some pieces have side effects on other pieces, and pruning them when they have finished playback will cause playout glitches. This will tell core to not always preserve it */
+	hasSideEffects?: boolean
 }
 
 export interface ExpectedPlayoutItemGeneric {
@@ -265,7 +265,7 @@ export interface ExpectedPlayoutItemGeneric {
 export type ExpectedPlayoutItemContent = ExpectedPlayoutItemContentVizMSE
 
 /** A Single item in a "line": script, VT, cameras. Generated by Blueprint */
-export interface IBlueprintPiece extends IBlueprintPieceGeneric {
+export interface IBlueprintPiece<TMetadata = unknown> extends IBlueprintPieceGeneric<TMetadata> {
 	/** Timeline enabler. When the piece should be active on the timeline. */
 	enable: {
 		start: number | 'now' // TODO - now will be removed from this eventually, but as it is not an acceptable value 99% of the time, that is not really breaking
@@ -279,10 +279,10 @@ export interface IBlueprintPiece extends IBlueprintPieceGeneric {
 	isTransition?: boolean
 	extendOnHold?: boolean
 }
-export interface IBlueprintPieceDB extends IBlueprintPiece {
+export interface IBlueprintPieceDB<TMetadata = unknown> extends IBlueprintPiece<TMetadata> {
 	_id: string
 }
-export interface IBlueprintPieceInstance {
+export interface IBlueprintPieceInstance<TMetadata = unknown> {
 	_id: string
 
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
@@ -290,14 +290,25 @@ export interface IBlueprintPieceInstance {
 	/** If this piece has been insterted during run of rundown (such as adLibs), then this is set to the timestamp it was inserted */
 	dynamicallyInserted?: Time
 
-	piece: IBlueprintPieceDB
+	piece: IBlueprintPieceDB<TMetadata>
+
+	infinite?: {
+		infinitePieceId: string
+		/** When the instance was a copy made from hold */
+		fromHold?: boolean
+
+		/** Whether this was 'copied' from the previous PartInstance or Part */
+		fromPreviousPart: boolean
+		/** Whether this was 'copied' from the previous PartInstance via the playhead, rather than from a Part */
+		fromPreviousPlayhead?: boolean
+	}
 }
-export interface IBlueprintResolvedPieceInstance extends IBlueprintPieceInstance {
+export interface IBlueprintResolvedPieceInstance<TMetadata = unknown> extends IBlueprintPieceInstance<TMetadata> {
 	resolvedStart: number
 	resolvedDuration?: number
 }
 
-export interface IBlueprintAdLibPiece extends IBlueprintPieceGeneric {
+export interface IBlueprintAdLibPiece<TMetadata = unknown> extends IBlueprintPieceGeneric<TMetadata> {
 	/** Used for sorting in the UI */
 	_rank: number
 	/** When something bad has happened, we can mark the AdLib as invalid, which will prevent the user from TAKE:ing it */
@@ -312,7 +323,7 @@ export interface IBlueprintAdLibPiece extends IBlueprintPieceGeneric {
 	nextPieceTags?: string[]
 }
 /** The AdLib piece sent from Core */
-export interface IBlueprintAdLibPieceDB extends IBlueprintAdLibPiece {
+export interface IBlueprintAdLibPieceDB<TMetadata = unknown> extends IBlueprintAdLibPiece<TMetadata> {
 	_id: string
 }
 

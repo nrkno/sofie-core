@@ -16,7 +16,7 @@ import {
 	isAdLibNext,
 } from './DashboardPanel'
 import ClassNames from 'classnames'
-import { AdLibPieceUi, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, matchFilter } from './AdLibPanel'
+import { AdLibPieceUi, IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, matchFilter } from './AdLibPanel'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -35,10 +35,10 @@ interface IAdLibRegionPanelProps {
 interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {}
 
 export class AdLibRegionPanelInner extends MeteorReactComponent<
-	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps>,
+	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
 	IState
 > {
-	constructor(props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
+	constructor(props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>) {
 		super(props)
 	}
 
@@ -51,7 +51,7 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
 				MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId)
@@ -175,7 +175,7 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 export const AdLibRegionPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps>,
 	IState,
-	IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps
+	AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
 		const studio = props.playlist.getStudio()

@@ -1,10 +1,9 @@
 import { addMigrationSteps } from './databaseMigration'
-import { Studios } from '../../lib/collections/Studios'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import * as semver from 'semver'
 import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/X_X_X'
 import * as _ from 'underscore'
-import { setExpectedVersion } from './lib'
+import { removeCollectionProperty, setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 /*
@@ -27,31 +26,8 @@ export const addSteps = addMigrationSteps('1.13.0', [
 		'^1.2.1'
 	),
 
-	{
-		id: 'Drop Studio Recording config',
-		canBeRunAutomatically: true,
-		validate: () => {
-			const badCount = Studios.find({
-				'testToolsConfig.recording': { $exists: true },
-			}).count()
-			if (badCount > 0) {
-				return `${badCount} studio need to be updated`
-			}
-			return false
-		},
-		migrate: () => {
-			Studios.update(
-				{
-					'testToolsConfig.recording': { $exists: true },
-				},
-				{
-					$unset: {
-						'testToolsConfig.recording': 1,
-					},
-				}
-			)
-		},
-	},
+	removeCollectionProperty('Studios', {}, 'testToolsConfig.recording'),
+
 	{
 		id: 'Drop removed collections',
 		canBeRunAutomatically: true,

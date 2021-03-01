@@ -132,7 +132,7 @@ export const ExternalFramePanel = withTranslation()(
 		}
 
 		onReceiveMessage = (e: MessageEvent) => {
-			if (e.origin === 'null' && this.frame && e.source === this.frame.contentWindow) {
+			if ((e.origin === 'null' || e.origin === self.origin) && this.frame && e.source === this.frame.contentWindow) {
 				const data = e.data || e['message']
 				if (!data) return
 				if (data.type) {

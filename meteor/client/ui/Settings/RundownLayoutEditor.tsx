@@ -764,6 +764,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									/>
 								</label>
 							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Toggle AdLibs on single mouse click')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.toggleOnSingleClick`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
 						</React.Fragment>
 					)}
 				</React.Fragment>
@@ -1130,6 +1143,32 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								type="colorpicker"
 								collection={RundownLayouts}
 								className="input text-input input-s"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Open shelf by default')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'openByDefault'}
+								obj={item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Default shelf height')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`startingHeight`}
+								obj={item}
+								type="int"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
 						</label>
 					</div>
 					<h4 className="mod mhs">{isRundownLayout ? t('Tabs') : isDashboardLayout ? t('Panels') : null}</h4>

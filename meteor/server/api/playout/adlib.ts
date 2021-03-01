@@ -10,6 +10,7 @@ import {
 	getRandomId,
 	waitForPromise,
 	assertNever,
+	getRank,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
@@ -18,10 +19,21 @@ import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
 import { Part } from '../../../lib/collections/Parts'
-import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache, getSelectedPartInstancesFromCache } from './lib'
-import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
+import {
+	prefixAllObjectIds,
+	setNextPart,
+	getRundownIDsFromCache,
+	selectNextPart,
+	getSegmentsAndPartsFromCache,
+} from './lib'
+import {
+	convertAdLibToPieceInstance,
+	getResolvedPieces,
+	convertPieceToAdLibPiece,
+	setupPieceInstanceInfiniteProperties,
+} from './pieces'
 import { updateTimeline } from './timeline'
-import { updatePartRanks, afterRemoveParts } from '../rundown'
+import { updatePartInstanceRanks } from '../rundown'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
 import {
@@ -51,7 +63,7 @@ export namespace ServerPlayoutAdLibAPI {
 			RundownSyncFunctionPriority.USER_PLAYOUT,
 			'pieceTakeNow',
 			() => {
-				if (!rundownPlaylist.active)
+				if (!rundownPlaylist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
 				if (rundownPlaylist.currentPartInstanceId !== partInstanceId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
@@ -81,13 +93,18 @@ export namespace ServerPlayoutAdLibAPI {
 
 				const showStyleBase = rundown.getShowStyleBase() // todo: database
 				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
-				if (sourceLayer && sourceLayer.type !== SourceLayerType.GRAPHICS)
+				if (sourceLayer && (sourceLayer.type !== SourceLayerType.GRAPHICS || sourceLayer.exclusiveGroup))
 					throw new Meteor.Error(
 						403,
 						`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS item!`
 					)
 
-				const newPieceInstance = convertAdLibToPieceInstance(pieceToCopy, partInstance, false)
+				const newPieceInstance = convertAdLibToPieceInstance(
+					rundownPlaylist.activationId,
+					pieceToCopy,
+					partInstance,
+					false
+				)
 				if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
 					newPieceInstance.piece.content.timelineObjects = prefixAllObjectIds(
 						_.map(newPieceInstance.piece.content.timelineObjects, (obj) => {
@@ -157,7 +174,7 @@ export namespace ServerPlayoutAdLibAPI {
 			RundownSyncFunctionPriority.USER_PLAYOUT,
 			'segmentAdLibPieceStart',
 			() => {
-				if (!rundownPlaylist.active)
+				if (!rundownPlaylist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
 				if (
 					rundownPlaylist.holdState === RundownHoldState.ACTIVE ||
@@ -209,7 +226,7 @@ export namespace ServerPlayoutAdLibAPI {
 			() => {
 				logger.debug('rundownBaselineAdLibPieceStart')
 
-				if (!rundownPlaylist.active)
+				if (!rundownPlaylist.activationId)
 					throw new Meteor.Error(
 						403,
 						`Rundown Baseline AdLib-pieces can be only placed in an active rundown!`
@@ -257,35 +274,47 @@ export namespace ServerPlayoutAdLibAPI {
 		currentPartInstance: PartInstance,
 		adLibPiece: AdLibPiece | BucketAdLib
 	) {
+		if (!rundownPlaylist.activationId) throw new Meteor.Error(500, 'RundownPlaylist is not active')
+
 		const span = profiler.startSpan('innerStartOrQueueAdLibPiece')
 		if (queue || adLibPiece.toBeQueued) {
 			const newPartInstance = new PartInstance({
 				_id: getRandomId(),
 				rundownId: rundown._id,
 				segmentId: currentPartInstance.segmentId,
+				playlistActivationId: rundownPlaylist.activationId,
 				takeCount: currentPartInstance.takeCount + 1,
 				rehearsal: !!rundownPlaylist.rehearsal,
+				orphaned: 'adlib-part',
 				part: new Part({
 					_id: getRandomId(),
-					_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
+					_rank: 99999, // Corrected in innerStartQueuedAdLib
 					externalId: '',
 					segmentId: currentPartInstance.segmentId,
 					rundownId: rundown._id,
 					title: adLibPiece.name,
-					dynamicallyInsertedAfterPartId:
-						currentPartInstance.part.dynamicallyInsertedAfterPartId ?? currentPartInstance.part._id,
 					prerollDuration: adLibPiece.adlibPreroll,
 					expectedDuration: adLibPiece.expectedDuration,
 				}),
 			})
-			const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, newPartInstance, queue)
+			const newPieceInstance = convertAdLibToPieceInstance(
+				rundownPlaylist.activationId,
+				adLibPiece,
+				newPartInstance,
+				queue
+			)
 			innerStartQueuedAdLib(cache, rundownPlaylist, rundown, currentPartInstance, newPartInstance, [
 				newPieceInstance,
 			])
 
 			// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 		} else {
-			const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, currentPartInstance, queue)
+			const newPieceInstance = convertAdLibToPieceInstance(
+				rundownPlaylist.activationId,
+				adLibPiece,
+				currentPartInstance,
+				queue
+			)
 			innerStartAdLibPiece(cache, rundownPlaylist, rundown, currentPartInstance, newPieceInstance)
 
 			syncPlayheadInfinitesForNextPartInstance(cache, rundownPlaylist)
@@ -304,7 +333,7 @@ export namespace ServerPlayoutAdLibAPI {
 			() => {
 				const playlist = RundownPlaylists.findOne(rundownPlaylist._id)
 				if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylist._id}" not found!`)
-				if (!playlist.active)
+				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
 				if (!playlist.currentPartInstanceId)
 					throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
@@ -335,7 +364,7 @@ export namespace ServerPlayoutAdLibAPI {
 				const lastPieceInstance = innerFindLastPieceOnLayer(
 					cache,
 					playlist,
-					sourceLayer._id,
+					[sourceLayer._id],
 					sourceLayer.stickyOriginalOnly || false
 				)
 
@@ -352,7 +381,7 @@ export namespace ServerPlayoutAdLibAPI {
 	export function innerFindLastPieceOnLayer(
 		cache: CacheForRundownPlaylist,
 		rundownPlaylist: RundownPlaylist,
-		sourceLayerId: string,
+		sourceLayerId: string[],
 		originalOnly: boolean,
 		customQuery?: MongoQuery<PieceInstance>
 	) {
@@ -361,8 +390,9 @@ export namespace ServerPlayoutAdLibAPI {
 
 		const query = {
 			...customQuery,
+			playlistActivationId: rundownPlaylist.activationId,
 			rundownId: { $in: rundownIds },
-			'piece.sourceLayerId': sourceLayerId,
+			'piece.sourceLayerId': { $in: sourceLayerId },
 			startedPlayback: {
 				$exists: true,
 			},
@@ -397,38 +427,40 @@ export namespace ServerPlayoutAdLibAPI {
 		const span = profiler.startSpan('innerStartQueuedAdLib')
 		logger.info('adlibQueueInsertPartInstance')
 
-		// check if there's already a queued part after this:
-		const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
-		if (nextPartInstance && nextPartInstance.part.dynamicallyInsertedAfterPartId) {
-			// TODO-PartInstance - pending new data flow - the call to setNextPart will prune the partInstance, so this will not be needed
-			cache.Parts.remove(nextPartInstance.part._id)
-			cache.PartInstances.remove(nextPartInstance._id)
-			cache.PieceInstances.remove({ partInstanceId: nextPartInstance._id })
-			afterRemoveParts(cache, currentPartInstance.rundownId, [nextPartInstance.part])
-		}
-
 		// Ensure it is labelled as dynamic
-		newPartInstance.part.dynamicallyInsertedAfterPartId = currentPartInstance.part._id
+		newPartInstance.orphaned = 'adlib-part'
+
+		const followingPart = selectNextPart(
+			rundownPlaylist,
+			currentPartInstance,
+			getSegmentsAndPartsFromCache(cache, rundownPlaylist),
+			true
+		)
+		newPartInstance.part._rank = getRank(
+			currentPartInstance.part,
+			followingPart?.part?.segmentId === newPartInstance.segmentId ? followingPart?.part : undefined
+		)
 
 		cache.PartInstances.insert(newPartInstance)
-		// TODO-PartInstance - pending new data flow
-		cache.Parts.insert(newPartInstance.part)
 
 		newPieceInstances.forEach((pieceInstance) => {
 			// Ensure it is labelled as dynamic
+			pieceInstance.dynamicallyInserted = getCurrentTime()
 			pieceInstance.partInstanceId = newPartInstance._id
 			pieceInstance.piece.startPartId = newPartInstance.part._id
+
+			setupPieceInstanceInfiniteProperties(pieceInstance)
 
 			cache.PieceInstances.insert(pieceInstance)
 		})
 
-		updatePartRanks(cache, rundownPlaylist, [newPartInstance.part.segmentId])
-
-		setNextPart(cache, rundownPlaylist, newPartInstance)
+		updatePartInstanceRanks(cache, rundownPlaylist, [
+			{ segmentId: newPartInstance.part.segmentId, oldPartIdsAndRanks: null },
+		])
 
 		// Find and insert any rundown defined infinites that we should inherit
-		const part = cache.Parts.findOne(newPartInstance.part._id)
-		const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, part!))
+		newPartInstance = cache.PartInstances.findOne(newPartInstance._id)!
+		const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, newPartInstance.part))
 		const infinitePieceInstances = getPieceInstancesForPart(
 			cache,
 			rundownPlaylist,
@@ -441,6 +473,8 @@ export namespace ServerPlayoutAdLibAPI {
 		for (const pieceInstance of infinitePieceInstances) {
 			cache.PieceInstances.insert(pieceInstance)
 		}
+
+		setNextPart(cache, rundownPlaylist, newPartInstance)
 
 		if (span) span.end()
 	}
@@ -457,6 +491,8 @@ export namespace ServerPlayoutAdLibAPI {
 		newPieceInstance.partInstanceId = existingPartInstance._id
 		newPieceInstance.piece.startPartId = existingPartInstance.part._id
 		newPieceInstance.dynamicallyInserted = getCurrentTime()
+
+		setupPieceInstanceInfiniteProperties(newPieceInstance)
 
 		// exclusiveGroup is handled at runtime by processAndPrunePieceInstanceTimings
 
@@ -491,7 +527,8 @@ export namespace ServerPlayoutAdLibAPI {
 				!pieceInstance.piece.virtual &&
 				filter(pieceInstance) &&
 				pieceInstance.resolvedStart !== undefined &&
-				pieceInstance.resolvedStart <= relativeStopAt
+				pieceInstance.resolvedStart <= relativeStopAt &&
+				!pieceInstance.stoppedPlayback
 			) {
 				switch (pieceInstance.piece.lifespan) {
 					case PieceLifespan.WithinPart:
@@ -504,8 +541,6 @@ export namespace ServerPlayoutAdLibAPI {
 							},
 						}
 						if (pieceInstance.infinite) {
-							// Mark where this ends
-							up['infinite.lastPartInstanceId'] = currentPartInstance._id
 							stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
 						}
 
@@ -542,7 +577,11 @@ export namespace ServerPlayoutAdLibAPI {
 									startPartId: currentPartInstance.part._id,
 									status: RundownAPI.PieceStatusCode.UNKNOWN,
 									virtual: true,
+									content: {
+										timelineObjects: [],
+									},
 								},
+								currentPartInstance.playlistActivationId,
 								currentPartInstance.rundownId,
 								currentPartInstance._id
 							),
@@ -582,7 +621,7 @@ export namespace ServerPlayoutAdLibAPI {
 			() => {
 				const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 				if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-				if (!rundownPlaylist.active)
+				if (!rundownPlaylist.activationId)
 					throw new Meteor.Error(403, `Bucket AdLib-pieces can be only placed in an active rundown!`)
 				if (!rundownPlaylist.currentPartInstanceId)
 					throw new Meteor.Error(400, `A part needs to be active to use a bucket adlib`)

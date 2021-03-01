@@ -15,9 +15,9 @@
     "docs": "yarn typedoc ."
   },
   "devDependencies": {
-    "@strictsoftware/typedoc-plugin-monorepo": "^0.3.1",
-    "concurrently": "^5.3.0",
+    "@strictsoftware/typedoc-plugin-monorepo": "^0.4.2",
+    "concurrently": "^6.0.0",
     "gh-pages": "^3.1.0",
-    "typedoc": "^0.19.2"
+    "typedoc": "^0.20.28"
   }
 }

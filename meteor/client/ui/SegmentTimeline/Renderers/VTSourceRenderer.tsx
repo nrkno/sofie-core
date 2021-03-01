@@ -1,9 +1,7 @@
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 import * as _ from 'underscore'
-import { RundownUtils } from '../../../lib/rundown'
 
-import { FloatingInspector } from '../../FloatingInspector'
 import { getElementWidth } from '../../../utils/dimensions'
 
 import ClassNames from 'classnames'
@@ -14,10 +12,12 @@ import { Lottie } from '@crello/react-lottie'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { VTContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { VTContent } from '@sofie-automation/blueprints-integration'
 import { PieceStatusIcon } from '../PieceStatusIcon'
 import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
-import { CriticalIconSmall, WarningIconSmall } from '../../../lib/ui/icons/notifications'
+import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
+import { RundownUtils } from '../../../lib/rundown'
+import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
 
 interface IProps extends ICustomLayerItemProps {}
 interface IState {
@@ -29,9 +29,10 @@ interface IState {
 	noticeLevel: NoticeLevel | null
 	begin: string
 	end: string
+
+	sourceEndCountdownAppendage?: boolean
 }
 export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithTranslation, IState> {
-	private vPreview: HTMLVideoElement
 	private leftLabel: HTMLSpanElement
 	private rightLabel: HTMLSpanElement
 
@@ -40,7 +41,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	private leftLabelNodes: JSX.Element
 	private rightLabelNodes: JSX.Element
 
-	private rightLabelContainer: HTMLSpanElement | undefined
+	private rightLabelContainer: HTMLSpanElement | null = null
+	private countdownContainer: HTMLSpanElement | null = null
 
 	private static readonly defaultLottieOptions = {
 		loop: true,
@@ -63,10 +65,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			begin: labelItems[0] || '',
 			end: labelItems[1] || '',
 		}
-	}
 
-	setVideoRef = (e: HTMLVideoElement) => {
-		this.vPreview = e
+		this.rightLabelContainer = document.createElement('span')
+		this.countdownContainer = document.createElement('span')
 	}
 
 	setLeftLabelRef = (e: HTMLSpanElement) => {
@@ -75,28 +76,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 	setRightLabelRef = (e: HTMLSpanElement) => {
 		this.rightLabel = e
-	}
-
-	updateTime = () => {
-		if (this.vPreview) {
-			const innerPiece = this.props.piece.instance.piece
-			const vtContent = innerPiece.content as VTContent | undefined
-
-			const itemDuration = (vtContent ? vtContent.sourceDuration : undefined) || this.props.piece.renderedDuration || 0
-			let targetTime = this.props.cursorTimePosition
-			let seek = (vtContent ? vtContent.seek : undefined) || 0
-			if (vtContent && vtContent.loop && this.vPreview.duration > 0) {
-				targetTime =
-					targetTime %
-					((itemDuration > 0 ? Math.min(this.vPreview.duration, itemDuration) : this.vPreview.duration) * 1000)
-			} else if (itemDuration === 0 && innerPiece.lifespan !== PieceLifespan.WithinPart) {
-				// noop
-			} else {
-				targetTime = Math.min(targetTime, itemDuration)
-			}
-			targetTime += seek
-			this.vPreview.currentTime = targetTime / 1000
-		}
 	}
 
 	getItemLabelOffsetRight(): React.CSSProperties {
@@ -108,6 +87,73 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
+	mountRightLabelContainer(
+		props: IProps,
+		prevProps: IProps | null,
+		newState: Partial<IState>,
+		itemElement: HTMLElement | null
+	): Partial<IState> {
+		if (this.rightLabelContainer && itemElement) {
+			const itemDuration = this.getItemDuration(true)
+			if (prevProps === null || itemElement !== prevProps.itemElement) {
+				if (itemDuration === Number.POSITIVE_INFINITY) {
+					itemElement.parentElement?.parentElement?.parentElement?.appendChild(this.rightLabelContainer)
+
+					newState.rightLabelIsAppendage = true
+				} else {
+					this.rightLabelContainer?.remove()
+					itemElement.appendChild(this.rightLabelContainer)
+					newState.rightLabelIsAppendage = false
+				}
+			} else if (prevProps?.partDuration !== props.partDuration) {
+				if (itemDuration === Number.POSITIVE_INFINITY && this.state.rightLabelIsAppendage !== true) {
+					itemElement.parentElement?.parentElement?.parentElement?.appendChild(this.rightLabelContainer)
+
+					newState.rightLabelIsAppendage = true
+				} else if (itemDuration !== Number.POSITIVE_INFINITY && this.state.rightLabelIsAppendage === true) {
+					this.rightLabelContainer?.remove()
+					itemElement.appendChild(this.rightLabelContainer)
+					newState.rightLabelIsAppendage = false
+				}
+			}
+		}
+
+		return newState
+	}
+
+	mountSourceEndedCountdownContainer(
+		props: IProps,
+		newState: Partial<IState>,
+		itemElement: HTMLElement | null
+	): Partial<IState> {
+		const { relative: relativeRendering, isLiveLine, outputLayer } = props
+		if (
+			this.countdownContainer &&
+			!this.state.sourceEndCountdownAppendage &&
+			!relativeRendering &&
+			isLiveLine &&
+			!outputLayer.collapsed &&
+			itemElement
+		) {
+			const liveLine = itemElement.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.querySelector(
+				'.segment-timeline__liveline'
+			)
+			if (liveLine) {
+				liveLine.appendChild(this.countdownContainer)
+				newState.sourceEndCountdownAppendage = true
+			}
+		} else if (
+			this.countdownContainer &&
+			this.state.sourceEndCountdownAppendage &&
+			!(!relativeRendering && isLiveLine && !outputLayer.collapsed && itemElement)
+		) {
+			this.countdownContainer.remove()
+			newState.sourceEndCountdownAppendage = false
+		}
+
+		return newState
+	}
+
 	componentDidMount() {
 		if (super.componentDidMount && typeof super.componentDidMount === 'function') {
 			super.componentDidMount()
@@ -115,36 +161,23 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 		const { itemElement } = this.props
 
+		let newState: Partial<IState> = {}
+
 		this.updateAnchoredElsWidths()
 		const metadata = this.props.piece.contentMetaData as MediaObject
 		if (metadata && metadata._rev) {
 			this.metadataRev = metadata._rev // update only if the metadata object changed
 
-			this.setState({
-				scenes: this.getScenes(),
-				freezes: this.getFreezes(),
-				blacks: this.getBlacks(),
-			})
+			newState.scenes = this.getScenes()
+			newState.freezes = this.getFreezes()
+			newState.blacks = this.getBlacks()
 		}
 
-		this.rightLabelContainer = document.createElement('span')
+		newState = this.mountRightLabelContainer(this.props, null, newState, itemElement)
+		newState = this.mountSourceEndedCountdownContainer(this.props, newState, itemElement)
 
-		if (itemElement) {
-			const itemDuration = this.getItemDuration(true)
-			if (itemDuration === Number.POSITIVE_INFINITY) {
-				itemElement.parentNode &&
-					itemElement.parentNode.parentNode &&
-					itemElement.parentNode.parentNode.parentNode &&
-					itemElement.parentNode.parentNode.parentNode.appendChild(this.rightLabelContainer)
-
-				this.setState({
-					rightLabelIsAppendage: true,
-				})
-			} else {
-				itemElement.appendChild(this.rightLabelContainer)
-			}
-
-			ReactDOM.render(this.rightLabelNodes, this.rightLabelContainer)
+		if (Object.keys(newState).length > 0) {
+			this.setState(newState as IState)
 		}
 	}
 
@@ -159,7 +192,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
-		this.updateTime()
 
 		const { itemElement } = this.props
 		const innerPiece = this.props.piece.instance.piece
@@ -168,7 +200,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			this.updateAnchoredElsWidths()
 		}
 
-		const newState: Partial<IState> = {}
+		let newState: Partial<IState> = {}
 		if (
 			innerPiece.name !== prevProps.piece.instance.piece.name ||
 			innerPiece.status !== prevProps.piece.instance.piece.status
@@ -193,42 +225,12 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			newState.blacks = undefined
 		}
 
-		if (this.rightLabelContainer && itemElement) {
-			const itemDuration = this.getItemDuration(true)
-			if (itemElement !== prevProps.itemElement) {
-				if (itemDuration === Number.POSITIVE_INFINITY) {
-					itemElement.parentNode &&
-						itemElement.parentNode.parentNode &&
-						itemElement.parentNode.parentNode.parentNode &&
-						itemElement.parentNode.parentNode.parentNode.appendChild(this.rightLabelContainer)
-
-					newState.rightLabelIsAppendage = true
-				} else {
-					this.rightLabelContainer?.remove()
-					itemElement.appendChild(this.rightLabelContainer)
-					newState.rightLabelIsAppendage = false
-				}
-			} else if (prevProps.partDuration !== this.props.partDuration) {
-				if (itemDuration === Number.POSITIVE_INFINITY && this.state.rightLabelIsAppendage === false) {
-					itemElement.parentNode &&
-						itemElement.parentNode.parentNode &&
-						itemElement.parentNode.parentNode.parentNode &&
-						itemElement.parentNode.parentNode.parentNode.appendChild(this.rightLabelContainer)
-
-					newState.rightLabelIsAppendage = true
-				} else if (itemDuration !== Number.POSITIVE_INFINITY && this.state.rightLabelIsAppendage === true) {
-					this.rightLabelContainer?.remove()
-					itemElement.appendChild(this.rightLabelContainer)
-					newState.rightLabelIsAppendage = false
-				}
-			}
-		}
+		newState = this.mountRightLabelContainer(this.props, prevProps, newState, itemElement)
+		newState = this.mountSourceEndedCountdownContainer(this.props, newState, itemElement)
 
 		if (Object.keys(newState).length > 0) {
 			this.setState(newState as IState)
 		}
-
-		ReactDOM.render(this.rightLabelNodes, this.rightLabelContainer!)
 	}
 
 	componentWillUnmount() {
@@ -237,21 +239,14 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 
 		if (this.rightLabelContainer) {
-			ReactDOM.unmountComponentAtNode(this.rightLabelContainer)
 			this.rightLabelContainer.remove()
-			this.rightLabelContainer = undefined
+			this.rightLabelContainer = null
 		}
-	}
 
-	getPreviewUrl = (): string | undefined => {
-		if (this.props.piece) {
-			const item = this.props.piece
-			const metadata = item.contentMetaData as MediaObject
-			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
-				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.mediaId)
-			}
+		if (this.countdownContainer) {
+			this.countdownContainer.remove()
+			this.countdownContainer = null
 		}
-		return undefined
 	}
 
 	getScenes = (): Array<number> | undefined => {
@@ -337,7 +332,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				}
 			}
 			// @todo: hardcoded 25fps
-			if (tot > 0) msgBlacks = `${Math.round(tot / timebase)} black frame${tot > timebase ? 's' : ''} in clip`
+			if (tot > 0) msgBlacks = `${Math.ceil(tot / timebase)} black frame${tot > timebase ? 's' : ''} in clip`
 		}
 		if (this.state.freezes) {
 			let tot = 0
@@ -354,7 +349,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				}
 			}
 			// @todo: hardcoded 25fps
-			if (tot > 0) msgFreezes += `${Math.round(tot / timebase)} freeze\n frame${tot > timebase ? 's' : ''} in clip`
+			if (tot > 0) msgFreezes += `${Math.ceil(tot / timebase)} freeze\n frame${tot > timebase ? 's' : ''} in clip`
 		}
 		if (show) {
 			return (
@@ -369,21 +364,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		} else {
 			return undefined
 		}
-	}
-
-	renderNotice(noticeLevel: NoticeLevel) {
-		return (
-			<>
-				<div className="segment-timeline__mini-inspector__notice-header">
-					{noticeLevel === NoticeLevel.CRITICAL ? (
-						<CriticalIconSmall />
-					) : noticeLevel === NoticeLevel.WARNING ? (
-						<WarningIconSmall />
-					) : null}
-				</div>
-				<div className="segment-timeline__mini-inspector__notice">{this.props.piece.message}</div>
-			</>
-		)
 	}
 
 	renderLeftLabel() {
@@ -417,6 +397,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 	renderRightLabel() {
 		const { begin, end } = this.state
+		const { isLiveLine, part } = this.props
 
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
 
@@ -440,15 +421,59 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				)}
 				<span className="segment-timeline__piece__label last-words">{end}</span>
 				{this.renderInfiniteIcon()}
-				{this.renderOverflowTimeLabel()}
+				{(!isLiveLine || part.instance.part.autoNext) &&
+					this.renderOverflowTimeLabel() /* do not render the overflow time label if the part is live and will not autonext */}
 			</span>
 		)
 	}
 
-	render() {
-		const { t } = this.props
-		const { noticeLevel } = this.state
+	renderContentEndCountdown() {
+		const { piece: uiPiece, part, isLiveLine, livePosition, partStartsAt } = this.props
+		const innerPiece = uiPiece.instance.piece
 
+		const vtContent = innerPiece.content as VTContent | undefined
+		const seek = vtContent && vtContent.seek ? vtContent.seek : 0
+		let countdown: React.ReactNode = null
+		const livePositionInPart = (livePosition || 0) - partStartsAt
+		if (
+			isLiveLine &&
+			this.countdownContainer &&
+			livePositionInPart >= (uiPiece.renderedInPoint || 0) &&
+			livePositionInPart < (uiPiece.renderedInPoint || 0) + (uiPiece.renderedDuration || Number.POSITIVE_INFINITY) &&
+			vtContent &&
+			vtContent.sourceDuration !== undefined &&
+			((part.instance.part.autoNext &&
+				(uiPiece.renderedInPoint || 0) + (vtContent.sourceDuration - seek) < (this.props.partDuration || 0)) ||
+				(!part.instance.part.autoNext &&
+					Math.abs(
+						(this.props.piece.renderedInPoint || 0) +
+							(vtContent.sourceDuration - seek) -
+							(this.props.partExpectedDuration || 0)
+					) > 500))
+		) {
+			const endOfContentAt = (this.props.piece.renderedInPoint || 0) + (vtContent.sourceDuration - seek)
+			const counter = endOfContentAt - livePositionInPart
+
+			if (counter > 0) {
+				countdown = (
+					<div
+						className="segment-timeline__liveline__appendage segment-timeline__liveline__appendage--piece-countdown"
+						style={{
+							top: `calc(${this.props.layerIndex} * var(--segment-layer-height))`,
+						}}>
+						<span className="segment-timeline__liveline__appendage--piece-countdown__content">
+							{RundownUtils.formatDiffToTimecode(counter || 0, false, false, true, false, true, '', false, false)}
+						</span>
+						<FreezeFrameIcon className="segment-timeline__liveline__appendage--piece-countdown__icon" />
+					</div>
+				)
+			}
+		}
+
+		return this.countdownContainer && ReactDOM.createPortal(countdown, this.countdownContainer)
+	}
+
+	render() {
 		const itemDuration = this.getItemDuration()
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
 		const seek = vtContent && vtContent.seek ? vtContent.seek : 0
@@ -463,6 +488,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		return (
 			<React.Fragment>
 				{this.renderInfiniteItemContentEnded()}
+				{this.renderContentEndCountdown()}
 				{this.state.scenes &&
 					this.state.scenes.map(
 						(i) =>
@@ -505,67 +531,20 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 							)
 					)}
 				{this.leftLabelNodes}
-				<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
-					{this.getPreviewUrl() ? (
-						<div
-							className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
-							style={this.getFloatingInspectorStyle()}>
-							<video
-								src={this.getPreviewUrl()}
-								ref={this.setVideoRef}
-								crossOrigin="anonymous"
-								playsInline={true}
-								muted={true}
-							/>
-							<span className="segment-timeline__mini-inspector__timecode">
-								{RundownUtils.formatDiffToTimecode(
-									realCursorTimePosition,
-									false,
-									false,
-									false,
-									false,
-									true,
-									undefined,
-									true
-								)}
-							</span>
-							{noticeLevel !== null ? (
-								<div
-									className={
-										'segment-timeline__mini-inspector segment-timeline__mini-inspector--sub-inspector ' +
-										this.props.typeClass +
-										' ' +
-										(noticeLevel === NoticeLevel.CRITICAL
-											? 'segment-timeline__mini-inspector--notice notice-critical'
-											: noticeLevel === NoticeLevel.WARNING
-											? 'segment-timeline__mini-inspector--notice notice-warning'
-											: '')
-									}>
-									{this.renderNotice(noticeLevel)}
-								</div>
-							) : null}
-						</div>
-					) : (
-						<div
-							className={
-								'segment-timeline__mini-inspector ' +
-								this.props.typeClass +
-								' ' +
-								(noticeLevel === NoticeLevel.CRITICAL
-									? 'segment-timeline__mini-inspector--notice notice-critical'
-									: noticeLevel === NoticeLevel.WARNING
-									? 'segment-timeline__mini-inspector--notice notice-warning'
-									: '')
-							}
-							style={this.getFloatingInspectorStyle()}>
-							{noticeLevel !== null ? this.renderNotice(noticeLevel) : null}
-							<div className="segment-timeline__mini-inspector__properties">
-								<span className="mini-inspector__label">{t('File name')}</span>
-								<span className="mini-inspector__value">{vtContent && vtContent.fileName}</span>
-							</div>
-						</div>
-					)}
-				</FloatingInspector>
+				{this.rightLabelContainer && ReactDOM.createPortal(this.rightLabelNodes, this.rightLabelContainer)}
+				<VTFloatingInspector
+					floatingInspectorStyle={this.getFloatingInspectorStyle()}
+					content={vtContent}
+					itemElement={this.props.itemElement}
+					noticeLevel={this.state.noticeLevel}
+					showMiniInspector={this.props.showMiniInspector}
+					timePosition={realCursorTimePosition}
+					mediaPreviewUrl={this.props.mediaPreviewUrl}
+					typeClass={this.props.typeClass}
+					contentMetaData={this.props.piece.contentMetaData}
+					noticeMessage={this.props.piece.message || ''}
+					renderedDuration={this.props.piece.renderedDuration || undefined}
+				/>
 			</React.Fragment>
 		)
 	}

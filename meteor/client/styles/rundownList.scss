@@ -73,6 +73,7 @@
 	}
 	.rundown-list-description__icon {
 		margin-left: 1em;
+		vertical-align: top;
 	}
 	.rundown-list-item__text {
 		display: inline-flex;
@@ -141,7 +142,7 @@
 		// a rundown playlist, see RundownPlaylistUi.tsx
 		.rundown-playlist {
 			list-style-type: none;
-			margin: 0;
+			margin: 0 0 6px;
 			width: 100%;
 
 			&.droptarget {

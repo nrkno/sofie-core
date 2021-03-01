@@ -303,23 +303,13 @@ function checkBlueprintCompability(blueprint: Blueprint) {
 		'blueprint.TSRVersion',
 		'core.timeline-state-resolver-types'
 	)
-	const coreStatus = checkDatabaseVersion(
-		parseVersion(CURRENT_SYSTEM_VERSION),
-		parseRange(blueprint.minimumCoreVersion),
-		'Blueprint does not support this version of core',
-		'blueprint.minimumCoreVersion',
-		'core system'
-	)
 
-	if (coreStatus && coreStatus.statusCode >= StatusCode.WARNING_MAJOR) {
-		coreStatus.messages[0] = 'Core version: ' + coreStatus.messages[0]
-		setSystemStatus(systemStatusId, coreStatus)
+	if (integrationStatus.statusCode >= StatusCode.WARNING_MAJOR) {
+		integrationStatus.messages[0] = 'Integration version: ' + integrationStatus.messages[0]
+		setSystemStatus(systemStatusId, integrationStatus)
 	} else if (tsrStatus && tsrStatus.statusCode >= StatusCode.WARNING_MAJOR) {
 		tsrStatus.messages[0] = 'Core - TSR library version: ' + tsrStatus.messages[0]
 		setSystemStatus(systemStatusId, tsrStatus)
-	} else if (integrationStatus.statusCode >= StatusCode.WARNING_MAJOR) {
-		integrationStatus.messages[0] = 'Integration version: ' + integrationStatus.messages[0]
-		setSystemStatus(systemStatusId, integrationStatus)
 	} else {
 		setSystemStatus(systemStatusId, {
 			statusCode: StatusCode.GOOD,

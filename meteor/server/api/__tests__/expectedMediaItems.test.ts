@@ -2,11 +2,11 @@ import { Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundown
 import { literal, protectString, getRandomId, waitForPromise } from '../../../lib/lib'
 import { setupDefaultStudioEnvironment, LAYER_IDS } from '../../../__mocks__/helpers/database'
 import { DBPart, Parts, PartId } from '../../../lib/collections/Parts'
-import { VTContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { VTContent, PieceLifespan, WithTimeline } from '@sofie-automation/blueprints-integration'
 import { Segments, DBSegment } from '../../../lib/collections/Segments'
 import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { updateExpectedMediaItemsOnRundown, updateExpectedMediaItemsOnPart } from '../expectedMediaItems'
+import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
@@ -53,7 +53,7 @@ describe('Expected Media Items', () => {
 			// currentPartInstanceId: protectString(''),
 			// previousPartInstanceId: protectString(''),
 			// nextPartInstanceId: protectString(''),
-			active: true,
+			activationId: protectString('active'),
 		})
 
 		Rundowns.insert(
@@ -94,12 +94,10 @@ describe('Expected Media Items', () => {
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: RundownAPI.PieceStatusCode.UNKNOWN,
 				lifespan: PieceLifespan.OutOnSegmentChange,
-				content: literal<VTContent>({
+				content: literal<WithTimeline<VTContent>>({
 					fileName: mockFileName0,
 					path: mockPath0,
 					mediaFlowIds: [mockFlow0, mockFlow1],
-					firstWords: '',
-					lastWords: '',
 					sourceDuration: 0,
 					timelineObjects: [],
 				}),
@@ -126,12 +124,10 @@ describe('Expected Media Items', () => {
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: RundownAPI.PieceStatusCode.UNKNOWN,
 				lifespan: PieceLifespan.OutOnSegmentChange,
-				content: literal<VTContent>({
+				content: literal<WithTimeline<VTContent>>({
 					fileName: mockFileName1,
 					path: mockPath1,
 					mediaFlowIds: [mockFlow0],
-					firstWords: '',
-					lastWords: '',
 					sourceDuration: 0,
 					timelineObjects: [],
 				}),
@@ -151,12 +147,10 @@ describe('Expected Media Items', () => {
 				outputLayerId: LAYER_IDS.OUTPUT_PGM,
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: RundownAPI.PieceStatusCode.UNKNOWN,
-				content: literal<VTContent>({
+				content: literal<WithTimeline<VTContent>>({
 					fileName: mockFileName1,
 					path: mockPath1,
 					mediaFlowIds: [mockFlow0],
-					firstWords: '',
-					lastWords: '',
 					sourceDuration: 0,
 					timelineObjects: [],
 				}),
@@ -199,66 +193,4 @@ describe('Expected Media Items', () => {
 			expect(items).toHaveLength(0)
 		})
 	})
-
-	describe('Based on a Part', () => {
-		testInFiber('Generates ExpectedMediaItems based on a Part', () => {
-			expect(Rundowns.findOne(rdId1)).toBeTruthy()
-			expect(Parts.findOne(protectString(rdId1 + '_' + mockPart0))).toBeTruthy()
-			expect(Pieces.find({ startPartId: protectString(rdId1 + '_' + mockPart0) }).count()).toBe(1)
-
-			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId1))
-			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart0))
-			waitForPromise(cache.saveAllToDatabase())
-
-			const items = ExpectedMediaItems.find({
-				rundownId: rdId1,
-				studioId: env.studio._id,
-			}).fetch()
-			expect(items).toHaveLength(2)
-		})
-		testInFiber('Removes all ExpectedMediaItems if a Part has been deleted', () => {
-			Parts.remove({
-				_id: protectString(rdId1 + '_' + mockPart0),
-			})
-
-			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId1))
-			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart0))
-			waitForPromise(cache.saveAllToDatabase())
-
-			const items = ExpectedMediaItems.find({
-				rundownId: rdId1,
-				studioId: env.studio._id,
-			}).fetch()
-			expect(items).toHaveLength(0)
-		})
-		testInFiber('Removes all ExpectedMediaItems if a Rundown has been deleted', () => {
-			const rd = Rundowns.findOne(rdId1)
-			if (!rd) {
-				fail()
-				return
-			}
-			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rd._id))
-
-			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart1))
-
-			waitForPromise(cache.saveAllToDatabase())
-			let items = ExpectedMediaItems.find({
-				rundownId: rdId1,
-				studioId: env.studio._id,
-			}).fetch()
-			expect(items).toHaveLength(2)
-
-			cache.Rundowns.remove(rd._id)
-			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart1))
-
-			waitForPromise(cache.saveAllToDatabase())
-			items = ExpectedMediaItems.find({
-				rundownId: rdId1,
-				studioId: env.studio._id,
-			}).fetch()
-			expect(items).toHaveLength(0)
-		})
-	})
-
-	return
 })

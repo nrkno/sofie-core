@@ -121,7 +121,6 @@ describe('cronjobs', () => {
 				_rank: 0,
 				created: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
 				organizationId: null,
-				dataSource: '',
 				externalId: '',
 				importVersions: {
 					blueprint: '',

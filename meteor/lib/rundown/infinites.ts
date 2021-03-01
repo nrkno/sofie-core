@@ -23,6 +23,7 @@ import {
 import { Mongo } from 'meteor/mongo'
 import { ShowStyleBase } from '../collections/ShowStyleBases'
 import { getPieceGroupId } from './timeline'
+import { RundownPlaylistActivationId } from '../collections/RundownPlaylists'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
 	return { startPartId: part._id }
@@ -66,6 +67,7 @@ export function buildPastInfinitePiecesForThisPartQuery(
 }
 
 export function getPlayheadTrackingInfinitesForPart(
+	playlistActivationId: RundownPlaylistActivationId,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
 	currentPartInstance: PartInstance,
@@ -121,7 +123,7 @@ export function getPlayheadTrackingInfinitesForPart(
 			for (const mode0 of [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnSegmentEnd]) {
 				const mode = mode0 as PieceLifespan.OutOnRundownEnd | PieceLifespan.OutOnSegmentEnd
 				const pieces = (piecesByInfiniteMode[mode] || []).filter(
-					(p) => p.infinite?.fromPreviousPlayhead || p.dynamicallyInserted
+					(p) => p.infinite && (p.infinite.fromPreviousPlayhead || p.dynamicallyInserted)
 				)
 				// This is the piece we may copy across
 				const candidatePiece =
@@ -153,33 +155,41 @@ export function getPlayheadTrackingInfinitesForPart(
 		}
 	}
 
-	const rewrapInstance = (p: PieceInstance) => {
-		const instance = rewrapPieceToInstance(p.piece, part.rundownId, newInstanceId, isTemporary)
-		instance._id = protectString(`${instance._id}_continue`)
+	const rewrapInstance = (p: PieceInstance | undefined): PieceInstance | undefined => {
+		if (p) {
+			const instance = rewrapPieceToInstance(
+				p.piece,
+				playlistActivationId,
+				part.rundownId,
+				newInstanceId,
+				isTemporary
+			)
+			instance._id = protectString(`${instance._id}_continue`)
 
-		// instance.infinite = p.infinite
-		if (p.infinite) {
-			// This was copied from before, so we know we can force the time to 0
-			instance.piece = {
-				...instance.piece,
-				enable: {
-					start: 0,
-				},
+			if (p.infinite) {
+				// This was copied from before, so we know we can force the time to 0
+				instance.piece = {
+					...instance.piece,
+					enable: {
+						start: 0,
+					},
+				}
+				instance.infinite = {
+					...p.infinite,
+					fromPreviousPart: true,
+					fromPreviousPlayhead: true,
+				}
+				instance.adLibSourceId = p.adLibSourceId
+
+				return instance
 			}
-			instance.infinite = {
-				...p.infinite,
-				fromPreviousPart: true,
-				fromPreviousPlayhead: true,
-			}
-			instance.adLibSourceId = p.adLibSourceId
 		}
-
-		return instance
+		return undefined
 	}
 
 	return flatten(
 		Array.from(piecesOnSourceLayers.values()).map((ps) => {
-			return _.compact(Object.values(ps)).map(rewrapInstance)
+			return _.compact(Object.values(ps).map(rewrapInstance))
 		})
 	)
 }
@@ -245,6 +255,7 @@ export function isPiecePotentiallyActiveInPart(
 }
 
 export function getPieceInstancesForPart(
+	playlistActivationId: RundownPlaylistActivationId,
 	playingPartInstance: PartInstance | undefined,
 	playingPieceInstances: PieceInstance[] | undefined,
 	part: DBPart,
@@ -310,6 +321,7 @@ export function getPieceInstancesForPart(
 	// OnChange infinites take priority over onEnd, as they travel with the playhead
 	const infinitesFromPrevious = playingPartInstance
 		? getPlayheadTrackingInfinitesForPart(
+				playlistActivationId,
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
 				playingPartInstance,
@@ -323,13 +335,12 @@ export function getPieceInstancesForPart(
 
 	// Compile the resulting list
 
-	const playingPieceInstancesMap = normalizeArrayFuncFilter(
-		playingPieceInstances ?? [],
-		(p) => unprotectString(p.infinite?.infinitePieceId) // TODO - is this 'unique' enough? what about replaying the source if the infinites started there?
+	const playingPieceInstancesMap = normalizeArrayFuncFilter(playingPieceInstances ?? [], (p) =>
+		unprotectString(p.infinite?.infiniteInstanceId)
 	)
 
 	const wrapPiece = (p: PieceInstancePiece) => {
-		const instance = rewrapPieceToInstance(p, part.rundownId, newInstanceId, isTemporary)
+		const instance = rewrapPieceToInstance(p, playlistActivationId, part.rundownId, newInstanceId, isTemporary)
 
 		if (!instance.infinite && instance.piece.lifespan !== PieceLifespan.WithinPart) {
 			const existingPiece = playingPieceInstancesMap[unprotectString(instance.piece._id)]
@@ -398,7 +409,8 @@ function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number
 export function processAndPrunePieceInstanceTimings(
 	showStyle: ShowStyleBase,
 	pieces: PieceInstance[],
-	nowInPart: number
+	nowInPart: number,
+	keepDisabledPieces?: boolean
 ): PieceInstanceWithTimings[] {
 	const result: PieceInstanceWithTimings[] = []
 
@@ -436,8 +448,13 @@ export function processAndPrunePieceInstanceTimings(
 	}
 
 	const groupedPieces = _.groupBy(
-		pieces.filter((p) => !p.disabled),
-		(p) => exclusiveGroupMap.get(p.piece.sourceLayerId) || p.piece.sourceLayerId
+		keepDisabledPieces ? pieces : pieces.filter((p) => !p.disabled),
+		// At this stage, if a Piece is disabled, the `keepDisabledPieces` must be turned on. If that's the case
+		// we split out the disabled Pieces onto the sourceLayerId they actually exist on, instead of putting them
+		// onto the shared "exclusivityGroup" layer. This may cause it to not display "exactly" accurately
+		// while in the disabled state, but it should keep it from affecting any not-disabled Pieces.
+		(p) =>
+			p.disabled ? p.piece.sourceLayerId : exclusiveGroupMap.get(p.piece.sourceLayerId) || p.piece.sourceLayerId
 	)
 	for (const pieces of Object.values(groupedPieces)) {
 		// Group and sort the pieces so that we can step through each point in time

@@ -14,6 +14,8 @@ import { Countdown } from './Countdown'
 interface IProps {
 	// the studio to be displayed in the screen saver
 	studioId: StudioId
+
+	ownBackground?: boolean
 }
 
 interface ITrackedProps {
@@ -35,11 +37,7 @@ interface IState {
 	subsReady: boolean
 }
 
-/**
- * This component renders a **nice**, animated screen saver with information about upcoming
- * shows planned in the studio and the time remaining to the expectedStart time of said show.
- */
-export const StudioScreenSaver = translateWithTracker((props: IProps) => {
+export const findNextPlaylist = (props: IProps) => {
 	invalidateAfter(5000)
 	const now = getCurrentTime()
 
@@ -82,7 +80,13 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				return false
 			}),
 	}
-})(
+}
+
+/**
+ * This component renders a **nice**, animated screen saver with information about upcoming
+ * shows planned in the studio and the time remaining to the expectedStart time of said show.
+ */
+export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 	class StudioScreenSaver extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		private _nextAnimationFrameRequest: number | undefined
 		private readonly SPEED = 0.5 // non-unit value
@@ -120,6 +124,10 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				studioId: this.props.studioId,
 			})
 
+			if (this.props.ownBackground) {
+				document.body.classList.add('dark', 'xdark')
+			}
+
 			window.addEventListener('resize', this.measureElement)
 
 			this.autorun(() => {
@@ -144,6 +152,11 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 
 		componentWillUnmount() {
 			super.componentWillUnmount()
+
+			if (this.props.ownBackground) {
+				document.body.classList.remove('dark', 'xdark')
+			}
+
 			this._nextAnimationFrameRequest && window.cancelAnimationFrame(this._nextAnimationFrameRequest)
 			window.removeEventListener('resize', this.measureElement)
 		}
@@ -240,13 +253,12 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				// guard against the simulation resulting in a fast-flying, horizontal or vertical text
 				if (Math.abs(speedVector[0]) >= 1 || Math.abs(speedVector[1]) >= 1) {
 					const normalizer = Math.max(Math.abs(speedVector[0]), Math.abs(speedVector[1]))
-					speedVector = [speedVector[0] / normalizer, speedVector[1] / normalizer]
+					speedVector[0] = speedVector[0] / normalizer
+					speedVector[1] = speedVector[1] / normalizer
 				}
 
-				this.position = {
-					x: x + speedVector[0] * this.PIXEL_SPEED * (frameTime / 17),
-					y: y + speedVector[1] * this.PIXEL_SPEED * (frameTime / 17),
-				}
+				this.position.x = x + speedVector[0] * this.PIXEL_SPEED * (frameTime / 17)
+				this.position.y = y + speedVector[1] * this.PIXEL_SPEED * (frameTime / 17)
 
 				// if by any chance the infoElement ends up beyond the screen area, reposition it to the center
 				if (

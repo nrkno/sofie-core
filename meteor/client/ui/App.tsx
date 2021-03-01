@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { WithTranslation } from 'react-i18next'
-import * as m from 'moment'
 import 'moment/min/locales'
 import { parse as queryStringParse } from 'query-string'
 import Header from './Header'
@@ -28,10 +27,10 @@ import { RundownView } from './RundownView'
 import { ActiveRundownView } from './ActiveRundownView'
 import { ClockView } from './ClockView/ClockView'
 import { ConnectionStatusNotification } from '../lib/ConnectionStatusNotification'
-import { BrowserRouter as Router, Route, Switch, Redirect, RouteComponentProps } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Switch, Redirect, RouteComponentProps, RouteProps } from 'react-router-dom'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './Prompter/PrompterView'
-import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
+import { ModalDialogGlobalContainer, doModalDialog } from '../lib/ModalDialog'
 import { Settings } from '../../lib/Settings'
 import { LoginPage } from './Account/NotLoggedIn/LoginPage'
 import { SignupPage } from './Account/NotLoggedIn/SignupPage'
@@ -40,10 +39,11 @@ import { ResetPasswordPage } from './Account/NotLoggedIn/ResetPasswordPage'
 import { AccountPage } from './Account/AccountPage'
 import { OrganizationPage } from './Account/OrganizationPage'
 import { getUser, User } from '../../lib/collections/Users'
-import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
+import { PubSub } from '../../lib/api/pubsub'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { DocumentTitleProvider } from '../lib/DocumentTitleProvider'
+import { Spinner } from '../lib/Spinner'
 
 const NullComponent = () => null
 
@@ -120,24 +120,27 @@ export const App = translateWithTracker(() => {
 			}
 
 			this.lastStart = Date.now()
-			this.protectedRoute = this.protectedRoute.bind(this)
 		}
-		private protectedRoute({ component: Component, ...args }: any) {
+
+		private protectedRoute = ({
+			component: Component,
+			...args
+		}: RouteProps & { component: React.ComponentType<any> }) => {
 			if (!Settings.enableUserAccounts) {
 				return <Route {...args} render={(props) => <Component {...props} />} />
 			} else {
 				// If not logged in, redirect to "/":
 				if (this.props.user || this.state.subscriptionsReady) {
-					console.log('redirecting', this.props.user)
 					return (
 						<Route {...args} render={(props) => (this.props.user ? <Component {...props} /> : <Redirect to="/" />)} />
 					)
 				} else {
-					return <div>Loading</div>
+					return <Spinner />
 				}
 			}
 		}
-		cronJob = () => {
+
+		private cronJob = () => {
 			const now = new Date()
 			const hour = now.getHours() + now.getMinutes() / 60
 			// if the time is between 3 and 5
@@ -156,8 +159,6 @@ export const App = translateWithTracker(() => {
 		}
 
 		componentDidMount() {
-			const { i18n } = this.props
-
 			// Global subscription of the currently logged in user:
 			this.subscribe(PubSub.loggedInUser, {})
 			this.autorun(() => {
@@ -175,8 +176,6 @@ export const App = translateWithTracker(() => {
 				}
 			})
 
-			m.locale(i18n.language)
-			document.documentElement.lang = i18n.language
 			setInterval(this.cronJob, CRON_INTERVAL)
 
 			const uiZoom = getUIZoom()
@@ -202,16 +201,28 @@ export const App = translateWithTracker(() => {
 		}
 
 		render() {
+			const { t } = this.props
 			return (
-				<Router>
+				<Router
+					getUserConfirmation={(message, callback) => {
+						doModalDialog({
+							title: t('Are you sure?'),
+							message,
+							onAccept: () => {
+								callback(true)
+							},
+							onDiscard: () => {
+								callback(false)
+							},
+						})
+					}}>
 					<div className="container-fluid">
 						{/* Header switch - render the usual header for all pages but the rundown view */}
 						{(!Settings.enableUserAccounts || this.props.user) && (
 							<ErrorBoundary>
 								<Switch>
 									<Route path="/rundown/:playlistId" component={NullComponent} />
-									<Route path="/countdowns/:studioId/presenter" component={NullComponent} />
-									<Route path="/countdowns/presenter" component={NullComponent} />
+									<Route path="/countdowns/:studioId" component={NullComponent} />
 									<Route path="/activeRundown" component={NullComponent} />
 									<Route path="/prompter/:studioId" component={NullComponent} />
 									<Route
@@ -267,10 +278,11 @@ export const App = translateWithTracker(() => {
 								<this.protectedRoute path="/rundown/:playlistId" component={RundownView} />
 								<this.protectedRoute path="/activeRundown/:studioId" component={ActiveRundownView} />
 								<this.protectedRoute path="/prompter/:studioId" component={PrompterView} />
-								<this.protectedRoute path="/countdowns/:studioId/presenter" component={ClockView} />
+								{/* We switch to the general ClockView component, and allow it to do the switch between various types of countdowns */}
+								<this.protectedRoute path="/countdowns/:studioId" component={ClockView} />
 								<this.protectedRoute path="/status" component={Status} />
 								<this.protectedRoute path="/settings" component={SettingsView} />
-								<Route path="/testTools" component={TestTools} />
+								<this.protectedRoute path="/testTools" component={TestTools} />
 								<Route>
 									<Redirect to="/" />
 								</Route>
@@ -279,8 +291,7 @@ export const App = translateWithTracker(() => {
 						<ErrorBoundary>
 							<Switch>
 								{/* Put views that should NOT have the Notification center here: */}
-								<Route path="/countdowns/:studioId/presenter" component={NullComponent} />
-								<Route path="/countdowns/presenter" component={NullComponent} />
+								<Route path="/countdowns/:studioId" component={NullComponent} />
 								<Route path="/prompter/:studioId" component={NullComponent} />
 								<Route path="/" component={ConnectionStatusNotification} />
 							</Switch>

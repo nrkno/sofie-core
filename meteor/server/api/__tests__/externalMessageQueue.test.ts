@@ -35,7 +35,7 @@ describe('Test external message queue static methods', () => {
 			currentPartInstanceId: protectString('part_now'),
 			nextPartInstanceId: protectString('partNext'),
 			previousPartInstanceId: null,
-			active: true,
+			activationId: protectString('active'),
 		})
 		Rundowns.insert({
 			_id: protectString('rundown_1'),
@@ -57,7 +57,6 @@ describe('Test external message queue static methods', () => {
 				blueprint: 'on',
 				core: 'plate',
 			},
-			dataSource: 'frank',
 			externalNRCSName: 'mockNRCS',
 			organizationId: protectString(''),
 		})
@@ -183,7 +182,7 @@ describe('Test sending messages to mocked endpoints', () => {
 			currentPartInstanceId: protectString('part_now'),
 			nextPartInstanceId: protectString('partNext'),
 			previousPartInstanceId: null,
-			active: true,
+			activationId: protectString('active'),
 		})
 		Rundowns.insert({
 			_id: protectString('rundown_1'),
@@ -205,7 +204,6 @@ describe('Test sending messages to mocked endpoints', () => {
 				blueprint: 'on',
 				core: 'plate',
 			},
-			dataSource: 'frank',
 			externalNRCSName: 'mockNRCS',
 			organizationId: protectString(''),
 		})

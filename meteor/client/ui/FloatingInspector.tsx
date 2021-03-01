@@ -1,13 +1,12 @@
-import * as React from 'react'
-import * as _ from 'underscore'
+import React from 'react'
 import Escape from 'react-escape'
 
-interface IPropsHeader {
+interface IProps {
 	shown: boolean
+	displayOn?: 'document' | 'viewport'
+	children?: React.ReactNode
 }
 
-export class FloatingInspector extends React.Component<IPropsHeader> {
-	render() {
-		return this.props.shown ? <Escape to="document">{this.props.children}</Escape> : null
-	}
+export const FloatingInspector: React.FC<IProps> = function(props: IProps) {
+	return props.shown ? <Escape to={props.displayOn ?? 'document'}>{props.children}</Escape> : null
 }

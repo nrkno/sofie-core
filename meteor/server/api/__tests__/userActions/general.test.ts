@@ -29,7 +29,6 @@ namespace UserActionAPI {
 		'forceResetAndActivate' = 'userAction.forceResetAndActivate',
 		'activate' = 'userAction.activate',
 		'deactivate' = 'userAction.deactivate',
-		'reloadData' = 'userAction.reloadData',
 		'unsyncRundown' = 'userAction.unsyncRundown',
 
 		'disableNextPiece' = 'userAction.disableNextPiece',
@@ -102,7 +101,9 @@ describe('User Actions - General', () => {
 			return Rundowns.findOne(rundownId0) as Rundown
 		}
 		const getPlaylist0 = () => {
-			return RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+			const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+			playlist.activationId = playlist.activationId ?? undefined
+			return playlist
 		}
 		const getRundown1 = () => {
 			return Rundowns.findOne(rundownId1) as Rundown
@@ -116,7 +117,7 @@ describe('User Actions - General', () => {
 		const parts = getRundown0().getParts()
 
 		expect(getPlaylist0()).toMatchObject({
-			active: false,
+			activationId: undefined,
 			rehearsal: false,
 		})
 
@@ -132,7 +133,7 @@ describe('User Actions - General', () => {
 			expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
 
 			expect(getPlaylist0()).toMatchObject({
-				active: true,
+				activationId: expect.stringMatching(/^randomId/),
 				rehearsal: true,
 				currentPartInstanceId: null,
 				// nextPartInstanceId: parts[0]._id,
@@ -261,7 +262,7 @@ describe('User Actions - General', () => {
 		// Deactivate rundown:
 		expect(Meteor.call(UserActionAPI.methods.deactivate, 'e', playlistId0)).toMatchObject({ success: 200 })
 		expect(getPlaylist0()).toMatchObject({
-			active: false,
+			activationId: undefined,
 			currentPartInstanceId: null,
 			nextPartInstanceId: null,
 		})

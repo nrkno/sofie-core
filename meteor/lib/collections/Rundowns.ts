@@ -18,8 +18,8 @@ import { Meteor } from 'meteor/meteor'
 import { AdLibPieces, AdLibPiece } from './AdLibPieces'
 import { RundownBaselineObjs } from './RundownBaselineObjs'
 import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from './RundownBaselineAdLibPieces'
-import { IBlueprintRundownDB, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
-import { ShowStyleCompound, getShowStyleCompound, ShowStyleVariantId } from './ShowStyleVariants'
+import { IBlueprintRundownDB } from '@sofie-automation/blueprints-integration'
+import { ShowStyleVariantId, ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
 import { IngestDataCache } from './IngestDataCache'
@@ -28,7 +28,7 @@ import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownP
 import { createMongoCollection } from './lib'
 import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
 import { PartInstances, PartInstance, DBPartInstance } from './PartInstances'
-import { PieceInstances, PieceInstance } from './PieceInstances'
+import { PieceInstances } from './PieceInstances'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { OrganizationId } from './Organization'
 import { AdLibActions } from './AdLibActions'
@@ -79,15 +79,10 @@ export interface DBRundown
 	startedPlayback?: Time
 
 	/** Is the rundown in an unsynced (has been unpublished from ENPS) state? */
-	unsynced?: boolean
-	/** Timestamp of when rundown was unsynced */
-	unsyncedTime?: Time
+	orphaned?: 'deleted' | 'from-snapshot'
 
 	/** Last sent storyStatus to ingestDevice (MOS) */
 	notifiedCurrentPlayingPartExternalId?: string
-
-	/** What the source of the data was */
-	dataSource: string
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
 	notes?: Array<RundownNote>
@@ -113,9 +108,7 @@ export class Rundown implements DBRundown {
 	public description?: string
 	public expectedStart?: Time
 	public expectedDuration?: number
-	public metaData?: {
-		[key: string]: any
-	}
+	public metaData?: unknown
 	// From IBlueprintRundownDB:
 	public _id: RundownId
 	public showStyleVariantId: ShowStyleVariantId
@@ -129,11 +122,9 @@ export class Rundown implements DBRundown {
 	public importVersions: RundownImportVersions
 	public status?: string
 	public airStatus?: string
-	public unsynced?: boolean
-	public unsyncedTime?: Time
+	public orphaned?: 'deleted'
 	public startedPlayback?: Time
 	public notifiedCurrentPlayingPartExternalId?: string
-	public dataSource: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
 	public externalNRCSName: string
@@ -162,6 +153,11 @@ export class Rundown implements DBRundown {
 	// 		return ss
 	// 	} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
 	// }
+	getShowStyleVariant(): ShowStyleVariant {
+		let showStyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
+		if (!showStyleVariant) throw new Meteor.Error(404, `ShowStyleVariant "${this.showStyleVariantId}" not found!`)
+		return showStyleVariant
+	}
 	getShowStyleBase(): ShowStyleBase {
 		let showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)

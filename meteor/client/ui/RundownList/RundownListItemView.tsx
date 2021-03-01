@@ -4,11 +4,13 @@ import { withTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { INoteBase, NoteType } from '../../../lib/api/notes'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { getAllowStudio } from '../../lib/localStorage'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
 import JonasFormattedTime from './JonasFormattedTime'
 import { EyeIcon } from '../../lib/ui/icons/rundownList'
+import { LoopingIcon } from '../../lib/ui/icons/looping'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
@@ -54,16 +56,18 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 	return connectDropTarget(
 		<li id={htmlElementId} className={classNames.join(' ')}>
 			<span className="rundown-list-item__name">
-				{connectDragSource(
-					<span className="draghandle">
-						<Tooltip
-							overlay={t('Drag to reorder or move out of playlist')}
-							placement="top"
-							overlayStyle={{ display: props.renderTooltips ? undefined : 'none' }}>
-							<button className="rundown-list-item__action">{iconDragHandle()}</button>
-						</Tooltip>
-					</span>
-				)}
+				{getAllowStudio()
+					? connectDragSource(
+							<span className="draghandle">
+								<Tooltip
+									overlay={t('Drag to reorder or move out of playlist')}
+									placement="top"
+									overlayStyle={{ display: props.renderTooltips ? undefined : 'none' }}>
+									<button className="rundown-list-item__action">{iconDragHandle()}</button>
+								</Tooltip>
+							</span>
+					  )
+					: null}
 				<b className="rundown-name">{rundownNameContent}</b>
 				{props.rundown.description ? (
 					<Tooltip overlay={props.rundown.description} trigger={['hover']} placement="right">
@@ -101,6 +105,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
+				{rundown.getRundownPlaylist().loop && <LoopingIcon />}
 			</span>
 			<span className="rundown-list-item__text">
 				<JonasFormattedTime timestamp={rundown.modified} t={t} />

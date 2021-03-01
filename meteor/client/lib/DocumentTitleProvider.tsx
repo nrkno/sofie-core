@@ -41,18 +41,18 @@ export const DocumentTitleProvider = translateWithTracker((props: IProps) => {
 			const appShortName = t('Sofie')
 			let compiledTitle = appShortName
 			if (docTitle && csName) {
-				compiledTitle = t('{{docTitle}} - {{appShortName}} - {{systemName}}', {
+				compiledTitle = t('{{docTitle}} – {{appShortName}} – {{systemName}}', {
 					docTitle,
 					appShortName,
 					systemName: csName,
 				})
 			} else if (docTitle && !csName) {
-				compiledTitle = t('{{docTitle}} - {{appShortName}}', {
+				compiledTitle = t('{{docTitle}} – {{appShortName}}', {
 					docTitle,
 					appShortName,
 				})
 			} else if (csName && !docTitle) {
-				compiledTitle = t('{{appShortName}} - {{systemName}}', {
+				compiledTitle = t('{{appShortName}} – {{systemName}}', {
 					appShortName,
 					systemName: csName,
 				})

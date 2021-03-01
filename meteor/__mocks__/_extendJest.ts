@@ -1,4 +1,4 @@
-import { setLoggerLevel } from '../server/api/logger'
+import '../server/api/logger'
 
 // Include this file in to get access to the extended functions
 

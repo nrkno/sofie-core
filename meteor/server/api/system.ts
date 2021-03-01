@@ -22,6 +22,7 @@ import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { AsRunLog } from '../../lib/collections/AsRunLog'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
 import { Buckets } from '../../lib/collections/Buckets'
 import { Evaluations } from '../../lib/collections/Evaluations'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
@@ -35,7 +36,7 @@ import { Organizations, OrganizationId } from '../../lib/collections/Organizatio
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { Parts } from '../../lib/collections/Parts'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
-import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { Pieces } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibActions } from '../../lib/collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
@@ -53,7 +54,10 @@ import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { getActiveRundownPlaylistsInStudio } from './playout/studio'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { createMongoCollection } from '../../lib/collections/lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { getBundle as getTranslationBundleInner } from './translationsBundles'
+import { TranslationsBundle, TranslationsBundleId } from '../../lib/collections/TranslationsBundles'
+import { OrganizationContentWriteAccess } from '../security/organization'
+import { ClientAPI } from '../../lib/api/client'
 
 function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
@@ -242,6 +246,10 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 	{
 		results.push(ownedByStudioId('BucketAdLibs', BucketAdLibs))
 	}
+	// BucketAdLibActions
+	{
+		results.push(ownedByStudioId('BucketAdLibActions', BucketAdLibActions))
+	}
 	// Buckets
 	{
 		results.push(ownedByStudioId('Buckets', Buckets))
@@ -282,7 +290,7 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 						rundownId: { $exists: true },
 					},
 					{
-						bucketId: { $nin: rundownIds },
+						rundownId: { $nin: rundownIds },
 					},
 				],
 			},
@@ -730,6 +738,13 @@ CPU JSON stringifying:       ${avg.cpuStringifying} ms (${comparison.cpuStringif
 	}
 }
 
+function getTranslationBundle(context: MethodContext, bundleId: TranslationsBundleId) {
+	check(bundleId, String)
+
+	OrganizationContentWriteAccess.anyContent(context)
+	return ClientAPI.responseSuccess(getTranslationBundleInner(bundleId))
+}
+
 class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 	cleanupIndexes(actuallyRemoveOldIndexes: boolean) {
 		return makePromise(() => cleanupIndexes(this, actuallyRemoveOldIndexes))
@@ -739,6 +754,9 @@ class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 	}
 	async doSystemBenchmark(runCount: number = 1) {
 		return doSystemBenchmark(this, runCount)
+	}
+	getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>> {
+		return makePromise(() => getTranslationBundle(this, bundleId))
 	}
 }
 registerClassToMeteorMethods(SystemAPIMethods, SystemAPIClass, false)

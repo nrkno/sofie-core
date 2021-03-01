@@ -14,15 +14,11 @@ import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
-import { doModalDialog, SomeEvent, ModalInputResult } from '../../lib/ModalDialog'
-import { doUserAction, UserAction } from '../../lib/userAction'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
-import { MeteorCall } from '../../../lib/api/methods'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { RundownViewEvents } from '../RundownView'
+import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -34,6 +30,7 @@ export interface ISourceLayerItemProps {
 	part: PartUi
 	partStartsAt: number
 	partDuration: number
+	partExpectedDuration: number
 	piece: PieceUi
 	timeScale: number
 	isLiveLine: boolean
@@ -50,7 +47,6 @@ export interface ISourceLayerItemProps {
 	scrollLeft: number
 	scrollWidth: number
 	liveLinePadding: number
-	renderToTimeline: (render: JSX.Element | null) => void
 	layerIndex: number
 }
 interface ISourceLayerItemState {
@@ -456,12 +452,8 @@ export const SourceLayerItem = withTranslation()(
 
 		private highlightTimeout: NodeJS.Timer
 
-		private onHighlight = (e: any) => {
-			if (
-				e.detail &&
-				e.detail.partId === this.props.part.partId &&
-				e.detail.pieceId === this.props.piece.instance.piece._id
-			) {
+		private onHighlight = (e: HighlightEvent) => {
+			if (e.partId === this.props.part.partId && e.pieceId === this.props.piece.instance.piece._id) {
 				this.setState({
 					highlight: true,
 				})
@@ -479,12 +471,12 @@ export const SourceLayerItem = withTranslation()(
 				this.mountResizeObserver()
 			}
 
-			window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
+			RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		}
 
 		componentWillUnmount() {
 			super.componentWillUnmount && super.componentWillUnmount()
-			window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
+			RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 			this.unmountResizeObserver()
 			clearTimeout(this.highlightTimeout)
 		}
@@ -532,6 +524,9 @@ export const SourceLayerItem = withTranslation()(
 			}
 			return
 		}
+
+		toggleMiniInspectorOn = (e: React.MouseEvent) => this.toggleMiniInspector(e, true)
+		toggleMiniInspectorOff = (e: React.MouseEvent) => this.toggleMiniInspector(e, false)
 
 		toggleMiniInspector = (e: MouseEvent | any, v: boolean) => {
 			this.setState({
@@ -736,9 +731,9 @@ export const SourceLayerItem = withTranslation()(
 						onClick={this.itemClick}
 						onDoubleClick={this.itemDblClick}
 						onMouseUp={this.itemMouseUp}
-						onMouseMove={(e) => this.moveMiniInspector(e)}
-						onMouseOver={(e) => !this.props.outputGroupCollapsed && this.toggleMiniInspector(e, true)}
-						onMouseLeave={(e) => this.toggleMiniInspector(e, false)}
+						onMouseMove={this.moveMiniInspector}
+						onMouseEnter={this.toggleMiniInspectorOn}
+						onMouseLeave={this.toggleMiniInspectorOff}
 						style={this.getItemStyle()}>
 						{this.renderInsideItem(typeClass)}
 						{DEBUG_MODE && (

@@ -17,7 +17,7 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { faTrash, faPencilAlt, faCheck, faPlus, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { findHighestRank } from './StudioSettings'
-import { literal, unprotectString, ProtectedString } from '../../../lib/lib'
+import { literal, unprotectString, ProtectedString, assertNever } from '../../../lib/lib'
 import { Random } from 'meteor/random'
 import { withTranslation } from 'react-i18next'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
@@ -317,8 +317,8 @@ const SourceLayerSettings = withTranslation()(
 					return t('Live Speak')
 				case SourceLayerType.LOWER_THIRD:
 					return t('Lower Third')
-				case SourceLayerType.MIC:
-					return t('Studio Microphone')
+				// case SourceLayerType.MIC:
+				// 	return t('Studio Microphone')
 				case SourceLayerType.REMOTE:
 					return t('Remote Source')
 				case SourceLayerType.SCRIPT:
@@ -327,19 +327,22 @@ const SourceLayerSettings = withTranslation()(
 					return t('Split Screen')
 				case SourceLayerType.VT:
 					return t('Clips')
-				case SourceLayerType.METADATA:
-					return t('Metadata')
-				case SourceLayerType.CAMERA_MOVEMENT:
-					return t('Camera Movement')
+				// case SourceLayerType.METADATA:
+				// 	return t('Metadata')
+				// case SourceLayerType.CAMERA_MOVEMENT:
+				// 	return t('Camera Movement')
 				case SourceLayerType.UNKNOWN:
 					return t('Unknown Layer')
 				case SourceLayerType.AUDIO:
 					return t('Audio Mixing')
 				case SourceLayerType.TRANSITION:
 					return t('Transition')
-				case SourceLayerType.LIGHTS:
-					return t('Lights')
+				// case SourceLayerType.LIGHTS:
+				// 	return t('Lights')
+				case SourceLayerType.LOCAL:
+					return t('Local')
 				default:
+					assertNever(type)
 					return SourceLayerType[type]
 			}
 		}

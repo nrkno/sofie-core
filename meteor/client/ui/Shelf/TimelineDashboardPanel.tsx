@@ -8,7 +8,7 @@ import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integra
 import { DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import {
 	IAdLibPanelProps,
-	IAdLibPanelTrackedProps,
+	AdLibFetchAndFilterProps,
 	fetchAndFilter,
 	AdLibPieceUi,
 	matchFilter,
@@ -26,6 +26,7 @@ import {
 	getNextPieceInstancesGrouped,
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
+import { RundownUtils } from '../../lib/rundown'
 interface IState {
 	outputLayers: {
 		[key: string]: IOutputLayer
@@ -39,7 +40,7 @@ interface IState {
 export const TimelineDashboardPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IDashboardPanelProps>,
 	IState,
-	IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
+	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
@@ -64,10 +65,11 @@ export const TimelineDashboardPanel = translateWithTracker<
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
 		setRef = (el: HTMLDivElement) => {
 			this.liveLine = el
+			super.setRef(el)
 			this.ensureLiveLineVisible()
 		}
-		componentDidUpdate(prevProps) {
-			super.componentDidUpdate(prevProps)
+		componentDidUpdate(prevProps, prevState) {
+			super.componentDidUpdate(prevProps, prevState)
 			this.ensureLiveLineVisible()
 		}
 		componentDidMount() {
@@ -113,10 +115,18 @@ export const TimelineDashboardPanel = translateWithTracker<
 											return (
 												<DashboardPieceButton
 													key={unprotectString(adLibListItem._id)}
-													adLibListItem={adLibListItem}
+													piece={adLibListItem}
+													studio={this.props.studio}
 													layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
 													outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
-													onToggleAdLib={this.onToggleAdLib}
+													onToggleAdLib={this.onToggleOrSelectAdLib}
+													onSelectAdLib={this.onSelectAdLib}
+													isSelected={
+														(this.props.selectedPiece &&
+															RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+															this.props.selectedPiece._id === adLibListItem._id) ||
+														false
+													}
 													playlist={this.props.playlist}
 													isOnAir={this.isAdLibOnAir(adLibListItem)}
 													mediaPreviewUrl={
@@ -127,7 +137,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 													widthScale={filter.buttonWidthScale}
 													heightScale={filter.buttonHeightScale}
 													displayStyle={PieceDisplayStyle.BUTTONS}
-													showThumbnailsInList={filter.showThumbnailsInList}>
+													showThumbnailsInList={filter.showThumbnailsInList}
+													toggleOnSingleClick={this.state.singleClickMode}>
 													{adLibListItem.name}
 												</DashboardPieceButton>
 											)
@@ -163,11 +174,19 @@ export const TimelineDashboardPanel = translateWithTracker<
 												return (
 													<DashboardPieceButton
 														key={unprotectString(adLibListItem._id)}
-														adLibListItem={adLibListItem}
+														piece={adLibListItem}
 														layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
 														outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
-														onToggleAdLib={this.onToggleAdLib}
+														onToggleAdLib={this.onToggleOrSelectAdLib}
+														onSelectAdLib={this.onSelectAdLib}
+														isSelected={
+															(this.props.selectedPiece &&
+																RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+																this.props.selectedPiece._id === adLibListItem._id) ||
+															false
+														}
 														playlist={this.props.playlist}
+														studio={this.props.studio}
 														isOnAir={this.isAdLibOnAir(adLibListItem)}
 														mediaPreviewUrl={
 															this.props.studio

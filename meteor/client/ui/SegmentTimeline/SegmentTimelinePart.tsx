@@ -22,9 +22,11 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigItemValue } from '@sofie-automation/blueprints-integration'
 
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
-import { IContextMenuContext, RundownViewEvents } from '../RundownView'
+import { IContextMenuContext } from '../RundownView'
 import { CSSProperties } from '../../styles/_cssVariables'
 import { ISourceLayerExtended } from '../../../lib/Rundown'
+import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import { LoopingIcon } from '../../lib/ui/icons/looping'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -33,11 +35,13 @@ interface ISourceLayerPropsBase {
 	key: string
 	outputLayer: IOutputLayerUi
 	playlist: RundownPlaylist
+	studio: Studio
 	segment: SegmentUi
 	part: PartUi
 	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
+	expectedDuration: number
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
@@ -115,6 +119,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 							part={this.props.part}
 							partStartsAt={this.props.startsAt}
 							partDuration={this.props.duration}
+							partExpectedDuration={this.props.expectedDuration}
 							timeScale={this.props.timeScale}
 							relative={this.props.relative}
 							autoNextPart={this.props.autoNextPart}
@@ -122,6 +127,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 							scrollLeft={this.props.scrollLeft}
 							scrollWidth={this.props.scrollWidth}
 							playlist={this.props.playlist}
+							studio={this.props.studio}
 							followLiveLine={this.props.followLiveLine}
 							isLiveLine={this.props.isLiveLine}
 							isNextLine={this.props.isNextLine}
@@ -174,9 +180,16 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 					.map((piece) => {
 						return (
 							<SourceLayerItemContainer
-								key={piece.instance._id}
-								{..._.omit(this.props, 'key')}
-								// The following code is fine, just withTracker HOC messing with available props
+								key={unprotectString(piece.instance._id)}
+								studio={this.props.studio}
+								playlist={this.props.playlist}
+								followLiveLine={this.props.followLiveLine}
+								isLiveLine={this.props.isLiveLine}
+								isNextLine={this.props.isNextLine}
+								liveLineHistorySize={this.props.liveLineHistorySize}
+								livePosition={this.props.livePosition}
+								outputGroupCollapsed={this.props.outputGroupCollapsed}
+								onFollowLiveLine={this.props.onFollowLiveLine}
 								onClick={this.props.onPieceClick}
 								onDoubleClick={this.props.onPieceDoubleClick}
 								mediaPreviewUrl={this.props.mediaPreviewUrl}
@@ -186,12 +199,14 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 								part={this.props.part}
 								partStartsAt={this.props.startsAt}
 								partDuration={this.props.duration}
+								partExpectedDuration={this.props.expectedDuration}
 								timeScale={this.props.timeScale}
 								relative={this.props.relative}
 								autoNextPart={this.props.autoNextPart}
 								liveLinePadding={this.props.liveLinePadding}
 								scrollLeft={this.props.scrollLeft}
 								scrollWidth={this.props.scrollWidth}
+								layerIndex={this.props.layerIndex}
 							/>
 						)
 					})
@@ -219,11 +234,13 @@ interface IOutputGroupProps {
 	layer: IOutputLayerUi
 	sourceLayers: ISourceLayerExtended[]
 	playlist: RundownPlaylist
+	studio: Studio
 	segment: SegmentUi
 	part: PartUi
 	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
+	expectedDuration: number
 	timeScale: number
 	collapsedOutputs: {
 		[key: string]: boolean
@@ -248,12 +265,13 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 	static whyDidYouRender = true
 
 	renderInside(isOutputGroupCollapsed) {
-		if (this.props.layer.sourceLayers !== undefined) {
+		if (this.props.sourceLayers !== undefined) {
 			if (!this.props.layer.isFlattened) {
 				return this.props.sourceLayers.map((sourceLayer, index) => {
 					return (
 						<SourceLayer
 							key={sourceLayer._id}
+							studio={this.props.studio}
 							layer={sourceLayer}
 							playlist={this.props.playlist}
 							outputLayer={this.props.layer}
@@ -262,10 +280,11 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 							part={this.props.part}
 							startsAt={this.props.startsAt}
 							duration={this.props.duration}
+							expectedDuration={this.props.expectedDuration}
 							timeScale={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
 							liveLinePadding={this.props.liveLinePadding}
-							layerIndex={index}
+							layerIndex={this.props.indexOffset + index}
 							mediaPreviewUrl={this.props.mediaPreviewUrl}
 							followLiveLine={this.props.followLiveLine}
 							isLiveLine={this.props.isLiveLine}
@@ -286,6 +305,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 				return (
 					<FlattenedSourceLayers
 						key={this.props.layer._id + '_flattened'}
+						studio={this.props.studio}
 						layers={this.props.sourceLayers}
 						playlist={this.props.playlist}
 						outputLayer={this.props.layer}
@@ -294,10 +314,11 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 						part={this.props.part}
 						startsAt={this.props.startsAt}
 						duration={this.props.duration}
+						expectedDuration={this.props.expectedDuration}
 						timeScale={this.props.timeScale}
 						autoNextPart={this.props.autoNextPart}
 						liveLinePadding={this.props.liveLinePadding}
-						layerIndex={1}
+						layerIndex={this.props.indexOffset}
 						mediaPreviewUrl={this.props.mediaPreviewUrl}
 						followLiveLine={this.props.followLiveLine}
 						isLiveLine={this.props.isLiveLine}
@@ -324,12 +345,18 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 				: this.props.layer.isDefaultCollapsed
 		return (
 			<div
-				className={ClassNames('segment-timeline__output-group', {
-					collapsable:
-						this.props.layer.sourceLayers && this.props.layer.sourceLayers.length > 1 && !this.props.layer.isFlattened,
-					collapsed: isCollapsed,
-					flattened: this.props.layer.isFlattened,
-				})}>
+				className={ClassNames(
+					'segment-timeline__output-group',
+					{
+						collapsable:
+							this.props.layer.sourceLayers &&
+							this.props.layer.sourceLayers.length > 1 &&
+							!this.props.layer.isFlattened,
+						collapsed: isCollapsed,
+						flattened: this.props.layer.isFlattened,
+					},
+					`layer-count-${this.props.sourceLayers?.length || 0}`
+				)}>
 				{DEBUG_MODE && (
 					<div className="segment-timeline__debug-info red">
 						{RundownUtils.formatTimeToTimecode(this.props.startsAt)}
@@ -416,8 +443,6 @@ export const SegmentTimelinePart = withTranslation()(
 		}
 	})(
 		class SegmentTimelinePart0 extends React.Component<Translated<WithTiming<IProps>>, IState> {
-			private delayedInstanceUpdate: NodeJS.Timer | undefined
-
 			constructor(props: Translated<WithTiming<IProps>>) {
 				super(props)
 
@@ -464,7 +489,7 @@ export const SegmentTimelinePart = withTranslation()(
 				const startedPlayback = nextProps.part.instance.timings?.startedPlayback
 
 				const isDurationSettling =
-					!!nextProps.playlist.active &&
+					!!nextProps.playlist.activationId &&
 					isPrevious &&
 					!isLive &&
 					!!startedPlayback &&
@@ -552,8 +577,8 @@ export const SegmentTimelinePart = withTranslation()(
 
 			private highlightTimeout: NodeJS.Timer
 
-			private onHighlight = (e: any) => {
-				if (e.detail && e.detail.partId === this.props.part.partId && !e.detail.pieceId) {
+			private onHighlight = (e: HighlightEvent) => {
+				if (e && e.partId === this.props.part.partId && !e.pieceId) {
 					this.setState({
 						highlight: true,
 					})
@@ -568,45 +593,17 @@ export const SegmentTimelinePart = withTranslation()(
 
 			componentDidMount() {
 				super.componentDidMount && super.componentDidMount()
-				window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
+				RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 			}
 
 			componentWillUnmount() {
 				super.componentWillUnmount && super.componentWillUnmount()
-				window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
+				RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 				this.highlightTimeout && clearTimeout(this.highlightTimeout)
-				this.delayedInstanceUpdate && clearTimeout(this.delayedInstanceUpdate)
-			}
-
-			queueDelayedUpdate() {
-				this.delayedInstanceUpdate = setTimeout(() => {
-					this.delayedInstanceUpdate = undefined
-					this.forceUpdate()
-				}, 5000)
 			}
 
 			shouldComponentUpdate(nextProps: WithTiming<IProps>, nextState: IState) {
 				if (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)) {
-					if (this.delayedInstanceUpdate) clearTimeout(this.delayedInstanceUpdate)
-					if (
-						this.props.part.instance.isTemporary === true &&
-						nextProps.part.instance.isTemporary === false &&
-						this.props.part.pieces.length > 0 &&
-						nextProps.part.pieces.length === 0 &&
-						!nextProps.part.instance.part.invalid
-					) {
-						this.queueDelayedUpdate()
-						return false
-					} else if (
-						this.props.part.instance.isTemporary === false &&
-						nextProps.part.instance.isTemporary === false &&
-						this.props.part.pieces.length === 0 &&
-						nextProps.part.pieces.length === 0 &&
-						!nextProps.part.instance.part.invalid
-					) {
-						this.queueDelayedUpdate()
-						return false
-					}
 					return true
 				} else {
 					return false
@@ -638,6 +635,16 @@ export const SegmentTimelinePart = withTranslation()(
 				}
 			}
 
+			static getPartExpectedDuration(props: WithTiming<IProps>): number {
+				return (
+					props.part.instance.timings?.duration ||
+					(props.timingDurations.partDisplayDurations &&
+						props.timingDurations.partDisplayDurations[unprotectString(props.part.instance.part._id)]) ||
+					props.part.renderedDuration ||
+					0
+				)
+			}
+
 			static getPartDuration(props: WithTiming<IProps>, liveDuration: number): number {
 				// const part = this.props.part
 
@@ -649,10 +656,6 @@ export const SegmentTimelinePart = withTranslation()(
 						props.part.renderedDuration ||
 						0
 				)
-
-				/* return part.duration !== undefined ? part.duration : Math.max(
-			((this.props.timingDurations.partDurations && this.props.timingDurations.partDurations[unprotectString(part._id)]) || 0),
-			this.props.part.renderedDuration || 0, this.state.liveDuration, 0) */
 			}
 
 			static getPartStartsAt(props: WithTiming<IProps>): number {
@@ -704,8 +707,10 @@ export const SegmentTimelinePart = withTranslation()(
 										segment={this.props.segment}
 										part={part}
 										playlist={this.props.playlist}
+										studio={this.props.studio}
 										startsAt={SegmentTimelinePart0.getPartStartsAt(this.props) || this.props.part.startsAt || 0}
 										duration={SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration)}
+										expectedDuration={SegmentTimelinePart0.getPartExpectedDuration(this.props)}
 										isLiveLine={this.props.playlist.currentPartInstanceId === part.instance._id}
 										isNextLine={this.props.playlist.nextPartInstanceId === part.instance._id}
 										timeScale={this.props.timeScale}
@@ -756,6 +761,7 @@ export const SegmentTimelinePart = withTranslation()(
 					this.props.isLastSegment &&
 					this.props.isLastInSegment &&
 					(!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartInstanceId))
+				const isEndOfLoopingShow = this.props.isLastSegment && this.props.isLastInSegment && this.props.playlist.loop
 				let invalidReasonColorVars: CSSProperties | undefined = undefined
 				if (innerPart.invalidReason && innerPart.invalidReason.color) {
 					const invalidColor = SegmentTimelinePart0.convertHexToRgba(innerPart.invalidReason.color)
@@ -811,7 +817,8 @@ export const SegmentTimelinePart = withTranslation()(
 											{(this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive) && t('Next')}
 										</React.Fragment>
 									)}
-									{this.props.isAfterLastValidInSegmentAndItsLive && CARRIAGE_RETURN_ICON}
+									{this.props.isAfterLastValidInSegmentAndItsLive && !this.props.playlist.loop && CARRIAGE_RETURN_ICON}
+									{this.props.isAfterLastValidInSegmentAndItsLive && this.props.playlist.loop && <LoopingIcon />}
 								</div>
 								{!this.props.relative && this.props.part.instance.part.identifier && (
 									<div className="segment-timeline__identifier">{this.props.part.instance.part.identifier}</div>
@@ -883,13 +890,19 @@ export const SegmentTimelinePart = withTranslation()(
 										})}>
 										{innerPart.autoNext && t('Auto') + ' '}
 										{this.state.isLive && t('Next')}
-										{!isEndOfShow && CARRIAGE_RETURN_ICON}
+										{!isEndOfShow && !isEndOfLoopingShow && CARRIAGE_RETURN_ICON}
+										{isEndOfLoopingShow && <LoopingIcon />}
 									</div>
 								</div>
 							)}
-							{isEndOfShow && (
+							{isEndOfShow && !this.props.playlist.loop && (
 								<div className="segment-timeline__part__show-end">
 									<div className="segment-timeline__part__show-end__label">{t('Show End')}</div>
+								</div>
+							)}
+							{isEndOfShow && this.props.playlist.loop && (
+								<div className="segment-timeline__part__show-end loop">
+									<div className="segment-timeline__part__show-end__label">{t('Loops to top')}</div>
 								</div>
 							)}
 						</div>

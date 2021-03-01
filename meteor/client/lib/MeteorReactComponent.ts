@@ -1,5 +1,4 @@
 import { Tracker } from 'meteor/tracker'
-import * as _ from 'underscore'
 import * as React from 'react'
 import { stringifyObjects } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'

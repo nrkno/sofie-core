@@ -25,7 +25,10 @@
  * 1.12.0: Release 24  (2020-09-28)
  * 1.13.0: Release 25  (2020-10-19)
  * 1.14.0: Release 26  (2020-11-10)
- * 1.15.0: Release 27
- * 1.16.0: Release 28
+ * 1.15.0: Release 27  (2020-12-08)
+ * 1.16.0: Release 28  (2021-01-19)
+ * 1.17.0: Release 29  (2021-02-08)
+ * 1.18.0: Release 30
+ * 1.19.0: Release 31
  */
-export const CURRENT_SYSTEM_VERSION = '1.16.0'
+export const CURRENT_SYSTEM_VERSION = '1.19.0-in-testing'

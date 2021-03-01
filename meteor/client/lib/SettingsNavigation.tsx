@@ -1,11 +1,8 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { Redirect } from 'react-router'
 import { withTracker } from './ReactMeteorData/ReactMeteorData'
 import { Mongo } from 'meteor/mongo'
 import { withTranslation } from 'react-i18next'
-import { Blueprints } from '../../lib/collections/Blueprints'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studios } from '../../lib/collections/Studios'
 import { MeteorCall } from '../../lib/api/methods'
 

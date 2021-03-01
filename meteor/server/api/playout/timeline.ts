@@ -5,7 +5,7 @@ import {
 	TSR,
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
-import { DeepReadonly } from 'utility-types'
+import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../../../lib/logging'
 import {
 	TimelineObjGeneric,
@@ -51,11 +51,12 @@ import { CacheForRundownPlaylist, CacheForStudioBase } from '../../DatabaseCache
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getExpectedLatency } from '../../../lib/collections/PeripheralDevices'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
-import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
+import { createPieceGroupAndCap, PieceTimelineMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
 import { getPartFirstObjectId, getPartGroupId, getPieceGroupId } from '../../../lib/rundown/timeline'
+import { TimelineObjClassesCore } from '@sofie-automation/blueprints-integration'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -71,7 +72,10 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 	const activePlaylist = getActiveRundownPlaylist(cache, studioId)
 
 	if (activePlaylist && cache.containsDataFromPlaylist !== activePlaylist._id) {
-		throw new Meteor.Error(500, `Active rundownPlaylist is not in cache`)
+		throw new Meteor.Error(
+			500,
+			`Active rundownPlaylist ("${activePlaylist._id}") is not in cache ("${cache.containsDataFromPlaylist}")`
+		)
 	}
 
 	if (!studio) throw new Meteor.Error(404, 'studio "' + studioId + '" not found!')
@@ -155,7 +159,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 export function getActiveRundownPlaylist(cache: CacheForStudioBase, studioId: StudioId): RundownPlaylist | undefined {
 	return cache.RundownPlaylists.findOne({
 		studioId: studioId,
-		active: true,
+		activationId: { $exists: true },
 	})
 }
 
@@ -304,7 +308,12 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 			const studioBlueprint = loadStudioBlueprint(studio)
 			if (studioBlueprint) {
 				const blueprint = studioBlueprint.blueprint
-				const baselineObjs = blueprint.getBaseline(new StudioContext(studio))
+
+				const context = new StudioContext(
+					{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
+					studio
+				)
+				const baselineObjs = blueprint.getBaseline(context)
 				studioBaseline = postProcessStudioBaselineObjects(studio, baselineObjs)
 
 				const id = `baseline_version`
@@ -419,7 +428,13 @@ function buildTimelineObjsForRundown(
 			content: {
 				deviceType: TSR.DeviceType.ABSTRACT,
 			},
-			classes: [activePlaylist.rehearsal ? 'rundown_rehersal' : 'rundown_active'],
+			classes: [
+				activePlaylist.rehearsal
+					? TimelineObjClassesCore.RundownRehearsal
+					: TimelineObjClassesCore.RundownActive,
+				!activePlaylist.currentPartInstanceId ? TimelineObjClassesCore.BeforeFirstPart : undefined,
+				!activePlaylist.nextPartInstanceId ? TimelineObjClassesCore.NoNextPart : undefined,
+			].filter((v): v is TimelineObjClassesCore => v !== undefined),
 			partInstanceId: null,
 		})
 	)
@@ -453,11 +468,7 @@ function buildTimelineObjsForRundown(
 		)
 		const currentInfinitePieceIds = _.compact(currentInfinitePieces.map((l) => l.infinite?.infinitePieceId))
 
-		let allowTransition = false
-
 		if (partInstancesInfo.previous) {
-			allowTransition = !partInstancesInfo.previous.partInstance.part.disableOutTransition
-
 			const previousPartLastStarted = partInstancesInfo.previous.partInstance.timings?.startedPlayback
 			if (previousPartLastStarted) {
 				const prevPartOverlapDuration = calcPartKeepaliveDuration(
@@ -490,6 +501,7 @@ function buildTimelineObjsForRundown(
 
 				const groupClasses: string[] = ['previous_part']
 				let prevObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = [previousPartGroup]
+				const transProps = getTransformTransitionProps(partInstancesInfo.previous.partInstance)
 				prevObjs = prevObjs.concat(
 					transformPartIntoTimeline(
 						activePlaylist._id,
@@ -499,7 +511,7 @@ function buildTimelineObjsForRundown(
 						previousPartGroup,
 						partInstancesInfo.previous.nowInPart,
 						false,
-						undefined,
+						transProps,
 						activePlaylist.holdState
 					)
 				)
@@ -623,12 +635,7 @@ function buildTimelineObjsForRundown(
 		}
 
 		const groupClasses: string[] = ['current_part']
-		const transProps: TransformTransitionProps = {
-			allowed: allowTransition,
-			preroll: partInstancesInfo.current.partInstance.part.prerollDuration,
-			transitionPreroll: partInstancesInfo.current.partInstance.part.transitionPrerollDuration,
-			transitionKeepalive: partInstancesInfo.current.partInstance.part.transitionKeepaliveDuration,
-		}
+		const transProps = getTransformTransitionProps(partInstancesInfo.current.partInstance)
 		timelineObjs.push(
 			currentPartGroup,
 			createPartGroupFirstObject(
@@ -670,14 +677,10 @@ function buildTimelineObjsForRundown(
 			)
 
 			const groupClasses: string[] = ['next_part']
-			const transProps: TransformTransitionProps = {
-				allowed:
-					partInstancesInfo.current.partInstance &&
-					!partInstancesInfo.current.partInstance.part.disableOutTransition,
-				preroll: partInstancesInfo.next.partInstance.part.prerollDuration,
-				transitionPreroll: partInstancesInfo.next.partInstance.part.transitionPrerollDuration,
-				transitionKeepalive: partInstancesInfo.next.partInstance.part.transitionKeepaliveDuration,
-			}
+			const transProps = getTransformTransitionProps(
+				partInstancesInfo.next.partInstance,
+				!partInstancesInfo.current.partInstance.part.disableOutTransition
+			)
 			timelineObjs.push(
 				nextPartGroup,
 				createPartGroupFirstObject(
@@ -730,6 +733,9 @@ function createPartGroup(
 		isGroup: true,
 		isPartGroup: true,
 		partInstanceId: partInstance._id,
+		metaData: literal<PieceTimelineMetadata>({
+			isPieceTimeline: true,
+		}),
 	})
 
 	return partGrp
@@ -781,16 +787,17 @@ function transformBaselineItemsIntoTimeline(
 
 interface TransformTransitionProps {
 	allowed: boolean
-	preroll?: number
-	transitionPreroll?: number | null
-	transitionKeepalive?: number | null
+	preroll: number | undefined
+	transitionPreroll: number | null | undefined
+	transitionKeepalive: number | null | undefined
 }
 
 export function hasPieceInstanceDefinitelyEnded(
-	pieceInstance: DeepReadonly<PieceInstanceWithTimings>,
+	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
 	nowInPart: number
 ): boolean {
 	if (nowInPart <= 0) return false
+	if (pieceInstance.piece.hasSideEffects) return false
 
 	let relativeEnd: number | undefined
 	if (typeof pieceInstance.resolvedEndCap === 'number') {
@@ -810,10 +817,19 @@ export function hasPieceInstanceDefinitelyEnded(
 	return relativeEnd !== undefined && relativeEnd + DEFINITELY_ENDED_FUTURE_DURATION < nowInPart
 }
 
+function getTransformTransitionProps(partInstance: PartInstance, allowTransition?: boolean): TransformTransitionProps {
+	return {
+		allowed: allowTransition ?? !!partInstance.allowedToUseTransition,
+		preroll: partInstance.part.prerollDuration,
+		transitionPreroll: partInstance.part.transitionPrerollDuration,
+		transitionKeepalive: partInstance.part.transitionKeepaliveDuration,
+	}
+}
+
 function transformPartIntoTimeline(
 	playlistId: RundownPlaylistId,
 	partId: PartId,
-	pieceInstances: DeepReadonly<PieceInstanceWithTimings>[],
+	pieceInstances: ReadonlyDeep<Array<PieceInstanceWithTimings>>,
 	firstObjClasses: string[],
 	partGroup: TimelineObjGroupPart & OnGenerateTimelineObjExt,
 	nowInPart: number,
@@ -828,7 +844,7 @@ function transformPartIntoTimeline(
 	const isHold = holdState === RundownHoldState.ACTIVE
 	const allowTransition =
 		transitionProps && transitionProps.allowed && !isHold && holdState !== RundownHoldState.COMPLETE
-	const transition: DeepReadonly<PieceInstanceWithTimings> | undefined = allowTransition
+	const transition: ReadonlyDeep<PieceInstanceWithTimings> | undefined = allowTransition
 		? pieceInstances.find((i) => !!i.piece.isTransition)
 		: undefined
 	const transitionPieceDelay = transitionProps

@@ -1,2 +1,2 @@
-METEOR@1.11.1
-# Note: Remember to update the base docker image in .circleci/config.yml when updating this!
+METEOR@1.12.1
+# Note: Remember to update the versions in .github/setup-meteor/action.yaml and Dockerfile when updating this!

@@ -4,7 +4,7 @@ const commonConfig = {
 	unmockedModulePathPatterns: ['/^imports\\/.*\\.jsx?$/', '/^node_modules/'],
 	globals: {
 		'ts-jest': {
-			tsConfig: 'tsconfig.json',
+			tsconfig: 'tsconfig.json',
 			babelConfig: {
 				plugins: [
 					'@babel/plugin-transform-modules-commonjs',

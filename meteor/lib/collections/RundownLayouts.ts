@@ -125,6 +125,7 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	hide?: boolean
 	displayTakeButtons?: boolean
 	queueAllAdlibs?: boolean
+	toggleOnSingleClick?: boolean
 }
 
 /** A string, identifying a RundownLayout */
@@ -142,6 +143,8 @@ export interface RundownLayoutBase {
 	exposeAsShelf: boolean
 	icon: string
 	iconColor: string
+	openByDefault: boolean
+	startingHeight?: number
 }
 
 export interface RundownLayout extends RundownLayoutBase {
