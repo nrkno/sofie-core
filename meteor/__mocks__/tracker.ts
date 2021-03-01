@@ -40,11 +40,11 @@ export namespace TrackerMock {
 		invalidated: boolean = false
 		firstRun: boolean = true
 
-		constructor(runFunc: AutorunCallback, parentComputation: Computation | null, onError?: (e: any) => void) {
+		constructor(computedFunc: AutorunCallback, parentComputation: Computation | null, onError?: (e: any) => void) {
 			this.parentComputation = parentComputation
 			this.firstRun = true
-			this.func = runFunc
-			this.func(this)
+			this.func = computedFunc
+			this.runFunc()
 			this.firstRun = false
 		}
 
@@ -69,13 +69,14 @@ export namespace TrackerMock {
 		}
 		public invalidate = () => {
 			this.invalidated = true
-			this.runAll(this.onInvalidateClbs)
 			if (!this.parentComputation) {
+				this.runAll(this.onInvalidateClbs)
 				this.runFunc()
+				this.invalidated = false
 			} else {
+				this.stop()
 				this.parentComputation.invalidate()
 			}
-			this.invalidated = false
 			return
 		}
 		public onInvalidate = (clb: ComputationCallback) => {
