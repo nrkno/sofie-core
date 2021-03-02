@@ -442,6 +442,39 @@ export function setNextPart(
 		partInstanceId: { $in: instancesIdsToRemove },
 	})
 
+	{
+		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
+		// When entering a segment, or moving backwards in a segment, delete any partInstances that are 'adlib-part'
+		if (nextPartInstance) {
+			let cleanupAdlibParts = false
+			if (!currentPartInstance) {
+				cleanupAdlibParts = true
+			} else if (nextPartInstance.segmentId !== currentPartInstance.segmentId) {
+				cleanupAdlibParts = true
+			} else if (
+				// same segment, going backwards
+				nextPartInstance.segmentId === currentPartInstance.segmentId &&
+				nextPartInstance.part._rank < currentPartInstance.part._rank
+			) {
+				cleanupAdlibParts = true
+			}
+
+			if (cleanupAdlibParts) {
+				// mark them as deleted, where they will be pruned by the logic in cleanupOrphanedItems
+				cache.PartInstances.update(
+					(p) =>
+						p.orphaned === 'adlib-part' &&
+						p.segmentId === nextPartInstance.segmentId &&
+						p.part._rank >= nextPartInstance.part._rank,
+					(p) => {
+						p.orphaned = 'deleted'
+						return p
+					}
+				)
+			}
+		}
+	}
+
 	if (movingToNewSegment && rundownPlaylist.nextSegmentId) {
 		// TODO - shouldnt this be done on take? this will have a bug where once the segment is set as next, another call to ensure the next is correct will change it
 		cache.RundownPlaylists.update(rundownPlaylist._id, {
@@ -503,7 +536,7 @@ function cleanupOrphanedItems(cache: CacheForRundownPlaylist, playlist: RundownP
 
 	const removePartInstanceIds: PartInstanceId[] = []
 
-	// Cleanup any orphaned segments once they are no longer being played
+	// Cleanup any orphaned segments once they are no longer being played. This also cleans up any adlib-parts, that have been marked as deleted as a deferred cleanup operation
 	const segments = cache.Segments.findFetch((s) => s.orphaned === 'deleted' && rundownIds.includes(s.rundownId))
 	const orphanedSegmentIds = new Set(segments.map((s) => s._id))
 	const groupedPartInstances = _.groupBy(
