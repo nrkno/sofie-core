@@ -99,6 +99,9 @@ export class JoyConController extends ControllerAbstract {
 	private onButtonRelease(button: string, mode?: JoyconMode | null) {}
 	private onButtonPressed(button: string, mode?: JoyconMode | null) {
 		if (mode === 'L') {
+			// Button overview JoyCon L single mode
+			// Arrows: Left = '0', Down = '1', Up = '2', Right = '3'
+			// Others: SL = '4', SR = '5', ZL = '6', L = '8', - = '9', Joystick = '10', Snapshot = '16'
 			switch (button) {
 				case '6':
 					// go to air
@@ -122,6 +125,9 @@ export class JoyConController extends ControllerAbstract {
 					break
 			}
 		} else if (mode === 'R') {
+			// Button overview JoyCon R single mode
+			// "Arrows": A = '0', X = '1', B = '2', Y = '3'
+			// Others: SL = '4', SR = '5', ZR = '7', R = '8', + = '9', Joystick = '10', Home = '16'
 			switch (button) {
 				case '7':
 					// go to air
@@ -145,6 +151,11 @@ export class JoyConController extends ControllerAbstract {
 					break
 			}
 		} else if (mode === 'LR') {
+			// Button overview JoyCon L+R paired mode
+			// L JoyCon Arrows: B = '0', A = '1', Y = '2', X = '3'
+			// L JoyCon Others: L = '4', ZL = '6', - = '8', Joystick = '10', Snapshot = '17', SL = '18', SR = '19'
+			// R JoyCon "Arrows": B = '0', A = '1', Y = '2', X = '3'
+			// R JoyCon Others: R = '5', ZR = '7', + = '9', Joystick = '11', Home = '16', SL = '20', SR = '21'
 			switch (button) {
 				case '6':
 				case '7':
@@ -242,7 +253,8 @@ export class JoyConController extends ControllerAbstract {
 				if (this.lastUsedJoyconMode === 'L') {
 					return input.axes[0] * -1 // in this mode, L is "negative"
 				} else if (this.lastUsedJoyconMode === 'R') {
-					return input.axes[0] // in this mode, R is "positive"
+					return input.axes[0] * 1.4 // in this mode, R is "positive"
+					// factor increased by 1.4 to account for the R joystick being less sensitive than L
 				}
 			}
 		} else if (this.lastUsedJoyconMode === 'LR') {
@@ -252,7 +264,8 @@ export class JoyConController extends ControllerAbstract {
 				return input.axes[1] * -1 // in this mode, we are "negative" on both sticks....
 			}
 			if (Math.abs(input.axes[3]) > this.deadBand) {
-				return input.axes[3] * -1 // in this mode, we are "negative" on both sticks....
+				return input.axes[3] * -1.4 // in this mode, we are "negative" on both sticks....
+				// factor increased by 1.4 to account for the R joystick being less sensitive than L
 			}
 		}
 
