@@ -410,6 +410,69 @@ export function setNextPart(
 		partInstanceId: { $in: instancesIdsToRemove },
 	})
 
+	{
+		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
+		// When entering a segment, or moving backwards in a segment, reset any partInstances that are 'adlib-part'
+		if (nextPartInstance) {
+			const canRemovePartInstance = (p: DBPartInstance): boolean => {
+				return (
+					p.orphaned === 'adlib-part' &&
+					!p.reset &&
+					p._id !== nextPartInstance._id &&
+					p.segmentId === nextPartInstance.segmentId
+				)
+			}
+
+			let cleanOrphans: Set<PartInstanceId>
+			if (!currentPartInstance || nextPartInstance.segmentId !== currentPartInstance.segmentId) {
+				cleanOrphans = new Set(cache.PartInstances.findFetch((p) => canRemovePartInstance(p)).map((p) => p._id))
+			} else if (
+				// same segment, going backwards
+				nextPartInstance.segmentId === currentPartInstance.segmentId &&
+				nextPartInstance.part._rank < currentPartInstance.part._rank
+			) {
+				cleanOrphans = new Set(
+					cache.PartInstances.findFetch(
+						(p) => canRemovePartInstance(p) && p._id !== currentPartInstance._id
+					).map((p) => p._id)
+				)
+			} else if (
+				// same segment, going forwards
+				nextPartInstance.segmentId === currentPartInstance.segmentId &&
+				nextPartInstance.part._rank >= currentPartInstance.part._rank
+			) {
+				cleanOrphans = new Set(
+					cache.PartInstances.findFetch(
+						(p) =>
+							canRemovePartInstance(p) &&
+							p._id !== currentPartInstance._id &&
+							p.part._rank >= currentPartInstance.part._rank &&
+							p.part._rank <= nextPartInstance.part._rank
+					).map((p) => p._id)
+				)
+			} else {
+				cleanOrphans = new Set()
+			}
+
+			if (cleanOrphans.size > 0) {
+				cache.PartInstances.update(
+					(p) => cleanOrphans.has(p._id),
+					(p) => {
+						p.reset = true
+						return p
+					}
+				)
+				cache.PieceInstances.update(
+					(p) => cleanOrphans.has(p.partInstanceId),
+					(p) => {
+						p.reset = true
+						return p
+					}
+				)
+			}
+		}
+	}
+
 	if (movingToNewSegment && rundownPlaylist.nextSegmentId) {
 		// TODO - shouldnt this be done on take? this will have a bug where once the segment is set as next, another call to ensure the next is correct will change it
 		cache.RundownPlaylists.update(rundownPlaylist._id, {
