@@ -50,7 +50,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	frameRate: 25,
 	defaultToCollapsedSegments: false,
 	autoExpandCurrentNextSegment: false,
-	autoRewindLeavingSegment: false,
+	autoRewindLeavingSegment: true,
 	disableBlurBorder: false,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,

@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.20.0-in-development](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0-1-in-testing-R30...v1.20.0-in-development) (2021-03-02)
 
+
+## [1.19.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.0...v1.19.0-in-testing.1) (2021-03-01)
+
+
+### Features
+
+* segmentRanksUpdate peripheral device method ([#437](https://github.com/nrkno/tv-automation-server-core/issues/437)) ([ca4843b](https://github.com/nrkno/tv-automation-server-core/commit/ca4843b573a796586430ed85b24755fc50eaf63a))
+
+## [1.19.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0-1-in-testing-R30...v1.19.0-in-testing.0) (2021-02-27)
+
 ## [1.18.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.17.0...v1.18.0-0) (2021-02-09)
 
 

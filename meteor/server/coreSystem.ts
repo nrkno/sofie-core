@@ -51,6 +51,11 @@ function initializeCoreSystem() {
 				enabled: false,
 				transactionSampleRate: -1,
 			},
+			cron: {
+				casparCGRestart: {
+					enabled: true,
+				},
+			},
 		})
 
 		// Check what migration has to provide:
@@ -460,6 +465,10 @@ function startupMessage() {
 }
 
 function startInstrumenting() {
+	if (!!process.env.JEST_WORKER_ID) {
+		return
+	}
+
 	// attempt init elastic APM
 	const system = getCoreSystem()
 	const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env

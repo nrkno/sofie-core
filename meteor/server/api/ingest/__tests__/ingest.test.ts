@@ -1197,6 +1197,80 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 	// TODO Part tests are minimal/happy path only on the assumption the API gets little use
 
+	testInFiber('dataSegmentRanksUpdate', () => {
+		Rundowns.remove({})
+		expect(Rundowns.findOne()).toBeFalsy()
+		const rundownData: IngestRundown = {
+			externalId: externalId,
+			name: 'MyMockRundown',
+			type: 'mock',
+			segments: [
+				{
+					externalId: 'segment0',
+					name: 'Segment 0',
+					rank: 1,
+					// payload?: any,
+					parts: [],
+				},
+				{
+					externalId: 'segment1',
+					name: 'Segment 1',
+					rank: 2,
+					// payload?: any,
+					parts: [],
+				},
+				{
+					externalId: 'segment2',
+					name: 'Segment 2',
+					rank: 3,
+					// payload?: any,
+					parts: [],
+				},
+				{
+					externalId: 'segment3',
+					name: 'Segment 3',
+					rank: 4,
+					// payload?: any,
+					parts: [],
+				},
+				{
+					externalId: 'segment4',
+					name: 'Segment 4',
+					rank: 5,
+					// payload?: any,
+					parts: [],
+				},
+				{
+					externalId: 'segment5',
+					name: 'Segment 5',
+					rank: 6,
+					// payload?: any,
+					parts: [],
+				},
+			],
+		}
+		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
+
+		const playlist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(playlist).toBeTruthy()
+
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+
+		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentRanksUpdate, device._id, device.token, externalId, {
+			['segment0']: 6,
+			['segment2']: 1,
+			['segment5']: 3,
+		})
+
+		expect(Segments.findOne({ externalId: 'segment0' })?._rank).toBe(6)
+		expect(Segments.findOne({ externalId: 'segment1' })?._rank).toBe(2)
+		expect(Segments.findOne({ externalId: 'segment2' })?._rank).toBe(1)
+		expect(Segments.findOne({ externalId: 'segment3' })?._rank).toBe(4)
+		expect(Segments.findOne({ externalId: 'segment4' })?._rank).toBe(5)
+		expect(Segments.findOne({ externalId: 'segment5' })?._rank).toBe(3)
+	})
+
 	testInFiber('unsyncing of rundown', () => {
 		// Cleanup any rundowns / playlists
 

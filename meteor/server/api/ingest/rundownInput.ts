@@ -7,7 +7,7 @@ import { getCurrentTime, waitForPromise } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
-import { Segments } from '../../../lib/collections/Segments'
+import { SegmentId, Segments } from '../../../lib/collections/Segments'
 import {
 	RundownIngestDataCache,
 	LocalIngestRundown,
@@ -132,6 +132,19 @@ export namespace RundownInput {
 		check(rundownExternalId, String)
 		check(ingestSegment, Object)
 		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment, false)
+	}
+	export function dataSegmentRanksUpdate(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		rundownExternalId: string,
+		newRanks: { [segmentExternalId: string]: number }
+	) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		logger.info('dataSegmentRanksUpdate', rundownExternalId, Object.keys(newRanks))
+		check(rundownExternalId, String)
+		check(newRanks, Object)
+		handleUpdatedSegmentRanks(peripheralDevice, rundownExternalId, newRanks)
 	}
 	// Delete, Create & Update Part:
 	export function dataPartDelete(
@@ -434,6 +447,59 @@ export function handleUpdatedSegment(
 			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segmentExternalId)
 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segmentExternalId}" is missing!`)
 			return updateSegmentFromIngestData(cache, ingestSegment, isCreateAction)
+		}
+	)
+}
+
+export function handleUpdatedSegmentRanks(
+	peripheralDevice: PeripheralDevice,
+	rundownExternalId: string,
+	newRanks: { [segmentExternalId: string]: number }
+) {
+	const studio = getStudioFromDevice(peripheralDevice)
+
+	return runIngestOperationWithCache(
+		'handleUpdatedSegmentRanks',
+		studio._id,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				// Update ranks on ingest data
+				for (const segment of ingestRundown.segments) {
+					segment.rank = newRanks[segment.externalId] ?? segment.rank
+				}
+				// We modify in-place
+				return ingestRundown
+			} else {
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
+			}
+		},
+		async (cache) => {
+			const changedSegmentIds: SegmentId[] = []
+			for (const [externalId, rank] of Object.entries(newRanks)) {
+				const segmentId = getSegmentId(cache.RundownId, externalId)
+				const changed = cache.Segments.update(segmentId, {
+					$set: {
+						_rank: rank,
+					},
+				})
+
+				if (changed === 0) {
+					logger.warn(`Failed to update rank of segment "${externalId}" (${rundownExternalId})`)
+				} else {
+					changedSegmentIds.push(segmentId)
+				}
+			}
+
+			return {
+				changedSegmentIds,
+				removedSegmentIds: [],
+				renamedSegments: new Map(),
+				removeRundown: false,
+
+				showStyle: undefined,
+				blueprint: undefined,
+			}
 		}
 	)
 }

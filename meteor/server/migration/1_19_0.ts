@@ -1,50 +1,32 @@
-import { addMigrationSteps } from './databaseMigration'
-import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { Studios } from '../../lib/collections/Studios'
-import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { addMigrationSteps } from './databaseMigration'
+import { setExpectedVersion } from './lib'
 
 /*
  * **************************************************************************************
  *
  *  These migrations are destined for the next release
  *
- * (This file is to be renamed to the correct version number when doing the release)
- *
  * **************************************************************************************
  */
-// Release 30
-export const addSteps = addMigrationSteps('1.18.0', [
-	//                     ^--- To be set to an absolute version number when doing the release
-	// add steps here:
-	// {
-	// 	id: 'my fancy step',
-	// 	canBeRunAutomatically: true,
-	// 	validate: () => {
-	// 		return false
-	// 	},
-	// 	migrate: () => {
-	// 		//
-	// 	}
-	// },
-	//
-	//
+// Release 31
+export const addSteps = addMigrationSteps('1.19.0', [
 	setExpectedVersion(
 		'expectedVersion.playoutDevice',
 		PeripheralDeviceAPI.DeviceType.PLAYOUT,
 		'_process',
-		'1.16.0-release30.1'
+		'1.17.0-release31.1'
 	),
 	setExpectedVersion(
 		'expectedVersion.mosDevice',
 		PeripheralDeviceAPI.DeviceType.MOS,
 		'_process',
-		'1.9.0-release30.1'
+		'1.10.0-release31.0'
 	),
 	setExpectedVersion(
 		'expectedVersion.mediaManager',
 		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
 		'_process',
-		'1.5.0-release30.2'
+		'1.6.0-release31.0'
 	),
 ])
