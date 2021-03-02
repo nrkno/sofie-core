@@ -32,7 +32,7 @@ import {
 	CacheForPlayout,
 	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getRundownIDsFromCache,
-	getSelectedPartInstancesFromCache as getSelectedPartInstancesFromCache2,
+	getSelectedPartInstancesFromCache,
 } from './cache'
 import { Settings } from '../../../lib/Settings'
 import { runIngestOperationWithCache, UpdateIngestRundownAction } from '../ingest/lockFunction'
@@ -216,7 +216,7 @@ export function setNextPart(
 	const span = profiler.startSpan('setNextPart')
 
 	const rundownIds = getRundownIDsFromCache(cache)
-	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache2(cache)
+	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	const movingToNewSegment =
 		!currentPartInstance || !rawNextPart || rawNextPart.segmentId !== currentPartInstance.segmentId
@@ -348,6 +348,39 @@ export function setNextPart(
 	)
 	cache.PieceInstances.remove((p) => instancesIdsToRemove.includes(p.partInstanceId))
 
+	{
+		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+		// When entering a segment, or moving backwards in a segment, delete any partInstances that are 'adlib-part'
+		if (nextPartInstance) {
+			let cleanupAdlibParts = false
+			if (!currentPartInstance) {
+				cleanupAdlibParts = true
+			} else if (nextPartInstance.segmentId !== currentPartInstance.segmentId) {
+				cleanupAdlibParts = true
+			} else if (
+				// same segment, going backwards
+				nextPartInstance.segmentId === currentPartInstance.segmentId &&
+				nextPartInstance.part._rank < currentPartInstance.part._rank
+			) {
+				cleanupAdlibParts = true
+			}
+
+			if (cleanupAdlibParts) {
+				// mark them as deleted, where they will be pruned by the logic in cleanupOrphanedItems
+				cache.PartInstances.update(
+					(p) =>
+						p.orphaned === 'adlib-part' &&
+						p.segmentId === nextPartInstance.segmentId &&
+						p.part._rank >= nextPartInstance.part._rank,
+					(p) => {
+						p.orphaned = 'deleted'
+						return p
+					}
+				)
+			}
+		}
+	}
+
 	if (movingToNewSegment && cache.Playlist.doc.nextSegmentId) {
 		// TODO - shouldnt this be done on take? this will have a bug where once the segment is set as next, another call to ensure the next is correct will change it
 		cache.Playlist.update({
@@ -396,7 +429,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 
 	const removePartInstanceIds: PartInstanceId[] = []
 
-	// Cleanup any orphaned segments once they are no longer being played
+	// Cleanup any orphaned segments once they are no longer being played. This also cleans up any adlib-parts, that have been marked as deleted as a deferred cleanup operation
 	const segments = cache.Segments.findFetch((s) => s.orphaned === 'deleted')
 	const orphanedSegmentIds = new Set(segments.map((s) => s._id))
 	const groupedPartInstances = _.groupBy(
