@@ -31,6 +31,7 @@ interface PrompterConfig {
 	followTake?: boolean
 	fontSize?: number
 	margin?: number
+	joycon_invertJoystick: boolean
 	joycon_speedMap?: number[]
 	joycon_reverseSpeedMap?: number[]
 	joycon_rangeRevMin?: number
@@ -116,6 +117,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			followTake: queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1',
 			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
 			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
+			joycon_invertJoystick:
+				queryParams['joycon_invertJoystick'] === undefined ? true : queryParams['joycon_invertJoystick'] === '1',
 			joycon_speedMap:
 				queryParams['joycon_speedMap'] === undefined
 					? undefined

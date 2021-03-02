@@ -1,6 +1,7 @@
 import { ControllerAbstract } from './lib'
 import { PrompterConfigMode, PrompterViewInner } from '../PrompterView'
 import Spline from 'cubic-spline'
+import { invert } from 'underscore'
 
 const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
 
@@ -12,6 +13,7 @@ type JoyconMode = 'L' | 'R' | 'LR'
 export class JoyConController extends ControllerAbstract {
 	private prompterView: PrompterViewInner
 
+	private invertJoystick = false // change scrolling direction for joystick
 	private rangeRevMin = -1 // pedal "all back" position, the max-reverse-position
 	private rangeNeutralMin = -0.25 // pedal "back" position where reverse-range transistions to the neutral range
 	private rangeNeutralMax = 0.25 // pedal "front" position where scrolling starts, the 0 speed origin
@@ -35,6 +37,7 @@ export class JoyConController extends ControllerAbstract {
 		this.prompterView = view
 
 		// assigns params from URL or falls back to the default
+		this.invertJoystick = view.configOptions.joycon_invertJoystick || this.invertJoystick
 		this.speedMap = view.configOptions.joycon_speedMap || this.speedMap
 		this.reverseSpeedMap = view.configOptions.joycon_reverseSpeedMap || this.reverseSpeedMap
 		this.rangeRevMin = view.configOptions.joycon_rangeRevMin || this.rangeRevMin
@@ -284,13 +287,21 @@ export class JoyConController extends ControllerAbstract {
 		if (inputValue >= rangeRevMin && inputValue <= rangeNeutralMin) {
 			// 1) Use the reverse speed spline for the expected speed. The reverse speed is specified using positive values,
 			//    so the result needs to be inversed
-			return Math.round(this.reverseSpeedSpline.at(inputValue)) * -1
+			if (this.invertJoystick) {
+				return Math.round(this.reverseSpeedSpline.at(inputValue))
+			} else {
+				return Math.round(this.reverseSpeedSpline.at(inputValue)) * -1
+			}
 		} else if (inputValue >= rangeNeutralMin && inputValue <= rangeNeutralMax) {
 			// 2) we're in the neutral zone
 			return 0
 		} else if (inputValue >= rangeNeutralMax && inputValue <= rangeFwdMax) {
 			// 3) Use the speed spline to find the expected speed at this point
-			return Math.round(this.speedSpline.at(inputValue))
+			if (this.invertJoystick) {
+				return Math.round(this.speedSpline.at(inputValue)) * -1
+			} else {
+				return Math.round(this.speedSpline.at(inputValue))
+			}
 		} else {
 			// 4) we should never be able to hit this due to validation above
 			console.error(`Illegal input value ${inputValue}`)
