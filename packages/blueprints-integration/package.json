@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/blueprints-integration",
-	"version": "1.19.0-in-development",
+	"version": "1.20.0-in-development",
 	"description": "Library to define the interaction between core and the blueprints.",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",

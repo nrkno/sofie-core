@@ -11,6 +11,7 @@
 		"debug": "meteor run --inspect",
 		"libs:build": "cd ../packages && yarn build",
 		"libs:install": "cd ../packages && yarn",
+		"libs:syncVersions": "node scripts/sync-package-versions.js && git add ../packages/*/package.json ../packages/*/CHANGELOG.md",
 		"postinstall": "meteor npm run prepareForTest && meteor npm run libs:install",
 		"prepareForTest": "node ../scripts/fixTestFibers.js",
 		"unit": "jest",
@@ -185,7 +186,7 @@
 	},
 	"standard-version": {
 		"scripts": {
-			"postbump": "node scripts/sync-package-versions.js && git add ../packages/*/package.json ../packages/*/CHANGELOG.md"
+			"postbump": "npm run libs:syncVersions"
 		}
 	}
 }
