@@ -136,6 +136,11 @@ body.prompter-scrollbar {
 		line-height: 1.2em;
 		margin-bottom: 0.5em;
 		overflow-wrap: break-word;
+		hyphens: auto;
+
+		.add-blank {
+			margin-bottom: 1.5em;
+		}
 	}
 
 	.overlay-fix {

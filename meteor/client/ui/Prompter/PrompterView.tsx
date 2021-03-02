@@ -49,6 +49,7 @@ interface PrompterConfig {
 	showScroll: boolean
 	debug: boolean
 	showOverUnder: boolean
+	addBlankLine: boolean
 }
 
 export enum PrompterConfigMode {
@@ -148,6 +149,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			showScroll: queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1',
 			debug: queryParams['debug'] === undefined ? false : queryParams['debug'] === '1',
 			showOverUnder: queryParams['showoverunder'] === undefined ? true : queryParams['showoverunder'] === '1',
+			addBlankLine: queryParams['addblanklinke'] === undefined ? true : queryParams['adblankline'] === '1',
 		}
 
 		this._controller = new PrompterControlManager(this)
@@ -709,7 +711,11 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						lines.push(
 							<div
 								key={'line_' + part.id + '_' + segment.id + '_' + line.id}
-								className={ClassNames('prompter-line', !line.text ? 'empty' : undefined)}>
+								className={ClassNames(
+									'prompter-line',
+									this.props.config.addBlankLine ? 'add-blank' : undefined,
+									!line.text ? 'empty' : undefined
+								)}>
 								{line.text || ''}
 							</div>
 						)
