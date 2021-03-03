@@ -6,7 +6,14 @@ import * as _ from 'underscore'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
-import { SegmentUi, PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './SegmentTimelineContainer'
+import {
+	SegmentUi,
+	PartUi,
+	IOutputLayerUi,
+	ISourceLayerUi,
+	PieceUi,
+	LIVE_LINE_TIME_PADDING,
+} from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { WithTiming, withTiming } from '../RundownView/RundownTiming/withTiming'
 import { RundownTiming } from '../RundownView/RundownTiming/RundownTiming'
@@ -27,6 +34,7 @@ import { CSSProperties } from '../../styles/_cssVariables'
 import { ISourceLayerExtended, PieceExtended } from '../../../lib/Rundown'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
+import { SegmentEnd } from '../../lib/ui/icons/segment'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -408,8 +416,6 @@ interface IState {
 	isInsideViewport: boolean
 	highlight: boolean
 }
-
-const LIVE_LINE_TIME_PADDING = 150
 
 const CARRIAGE_RETURN_ICON = (
 	<div className="segment-timeline__part__nextline__label__carriage-return">
@@ -890,8 +896,20 @@ export const SegmentTimelinePart = withTranslation()(
 										})}>
 										{innerPart.autoNext && t('Auto') + ' '}
 										{this.state.isLive && t('Next')}
-										{!isEndOfShow && !isEndOfLoopingShow && CARRIAGE_RETURN_ICON}
 										{isEndOfLoopingShow && <LoopingIcon />}
+									</div>
+								</div>
+							)}
+							{!isEndOfShow && this.props.isLastInSegment && (
+								<div
+									className={ClassNames('segment-timeline__part__segment-end', {
+										'is-next':
+											this.state.isLive &&
+											((!this.props.isLastSegment && !this.props.isLastInSegment) ||
+												!!this.props.playlist.nextPartInstanceId),
+									})}>
+									<div className="segment-timeline__part__segment-end__label">
+										<SegmentEnd />
 									</div>
 								</div>
 							)}

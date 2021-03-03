@@ -655,33 +655,6 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 			)
 		}
 	}
-	/** Get the mos story related to a part */
-	getIngestDataForPart(part: IBlueprintPartDB): IngestPart | undefined {
-		check(part._id, String)
-
-		try {
-			return loadIngestDataCachePart(
-				this._rundown._id,
-				this.rundown.externalId,
-				protectString<PartId>(part._id),
-				part.externalId
-			).data
-		} catch (e) {
-			return undefined
-		}
-	}
-	getIngestDataForPartInstance(partInstance: IBlueprintPartInstance): IngestPart | undefined {
-		return this.getIngestDataForPart(partInstance.part)
-	}
-	/** Get the mos story related to the rundown */
-	getIngestDataForRundown(): ExtendedIngestRundown | undefined {
-		try {
-			const ingestRundown = loadCachedRundownData(this._rundown._id, this.rundown.externalId)
-			return extendIngestRundownCore(ingestRundown, this._rundown)
-		} catch (e) {
-			return undefined
-		}
-	}
 
 	/**
 	 * Returns a piece.

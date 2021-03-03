@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { Rundowns, Rundown, DBRundown } from '../../../../../lib/collections/Rundowns'
-import { Segments, DBSegment, Segment, SegmentId } from '../../../../../lib/collections/Segments'
+import { Segments, DBSegment, SegmentId, Segment } from '../../../../../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
 import { literal, waitForPromise, protectString } from '../../../../../lib/lib'
@@ -15,8 +15,10 @@ import { Pieces } from '../../../../../lib/collections/Pieces'
 import { RundownPlaylists, RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections/IngestDataCache'
+import { resetRandomId, restartRandomId } from '../../../../../__mocks__/random'
 import { getPartId } from '../../lib'
 import { PartInstance } from '../../../../../lib/collections/PartInstances'
+import { UserActionsLog } from '../../../../../lib/collections/UserActionsLog'
 
 jest.mock('../../updateNext')
 
@@ -41,7 +43,15 @@ function getPartIdMap(segments: DBSegment[], parts: DBPart[]) {
 describe('Test recieved mos ingest payloads', () => {
 	let device: PeripheralDevice
 	beforeAll(() => {
+		// Start with ids not at the beginning
+		resetRandomId()
+		resetRandomId()
+
 		device = setupDefaultStudioEnvironment().ingestDevice
+	})
+	beforeEach(() => {
+		restartRandomId()
+		UserActionsLog.remove({})
 	})
 
 	testInFiber('mosRoCreate', () => {
@@ -110,8 +120,42 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
+	testInFiber('mosRoCreate: replace deleted', () => {
+		const roData = mockRO.roCreate()
+
+		Rundowns.update({ externalId: roData.ID.toString() }, { $set: { orphaned: 'deleted' } })
+		expect(Rundowns.findOne({ externalId: roData.ID.toString() })).toBeTruthy()
+
+		waitForPromise(MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, roData))
+
+		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundownPlaylist).toMatchObject({
+			externalId: rundown._id,
+		})
+
+		expect(rundown).toMatchObject({
+			externalId: roData.ID.toString(),
+			playlistId: rundownPlaylist._id,
+		})
+
+		expect(rundown.orphaned).toBeUndefined()
+	})
+	testInFiber('mosRoDelete: already orphaned rundown', () => {
+		const roData = mockRO.roCreate()
+		Rundowns.update({ externalId: roData.ID.toString() }, { $set: { orphaned: 'deleted' } })
+
+		const rundown = Rundowns.findOne({ externalId: roData.ID.toString() }) as DBRundown
+		expect(rundown).toBeTruthy()
+		expect(RundownPlaylists.findOne(rundown.playlistId)).toBeTruthy()
+
+		waitForPromise(MeteorCall.peripheralDevice.mosRoDelete(device._id, device.token, roData.ID))
+
+		expect(Rundowns.findOne()).toBeTruthy()
+	})
 	testInFiber('mosRoDelete', () => {
 		const roData = mockRO.roCreate()
+		Rundowns.update({ externalId: roData.ID.toString() }, { $unset: { orphaned: 1 } })
 		const rundown = Rundowns.findOne({ externalId: roData.ID.toString() }) as DBRundown
 		expect(rundown).toBeTruthy()
 		expect(RundownPlaylists.findOne(rundown.playlistId)).toBeTruthy()
@@ -169,7 +213,31 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
+	testInFiber('mosRoStatus: orphaned rundown', () => {
+		Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+
+		const newStatus = MOS.IMOSObjectStatus.UPDATED
+
+		let rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+		expect(rundown.status).not.toEqual(newStatus.toString())
+
+		const payload = literal<MOS.IMOSRunningOrderStatus>({
+			ID: new MOS.MosString128(rundown.externalId),
+			Status: newStatus,
+			Time: new MOS.MosTime(0),
+		})
+
+		waitForPromise(MeteorCall.peripheralDevice.mosRoStatus(device._id, device.token, payload))
+
+		rundown = Rundowns.findOne({ _id: rundown._id }) as Rundown
+		expect(rundown).toBeTruthy()
+		expect(rundown.status).not.toEqual(newStatus.toString())
+	})
+
 	testInFiber('mosRoStatus: Missing ro', () => {
+		Rundowns.update({}, { $unset: { orphaned: 1 } })
+
 		const newStatus = MOS.IMOSObjectStatus.BUSY
 
 		const externalId = 'fakeId'
@@ -213,7 +281,30 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
+	testInFiber('mosRoReadyToAir: orphaned rundown', () => {
+		Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+
+		const newStatus = MOS.IMOSObjectAirStatus.NOT_READY
+
+		let rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toBeTruthy()
+		expect(rundown.status).not.toEqual(newStatus.toString())
+
+		const payload = literal<MOS.IMOSROReadyToAir>({
+			ID: new MOS.MosString128(rundown.externalId),
+			Status: newStatus,
+		})
+
+		waitForPromise(MeteorCall.peripheralDevice.mosRoReadyToAir(device._id, device.token, payload))
+
+		rundown = Rundowns.findOne({ _id: rundown._id }) as Rundown
+		expect(rundown).toBeTruthy()
+		expect(rundown.airStatus).not.toEqual(newStatus.toString())
+	})
+
 	testInFiber('mosRoReadyToAir: Missing ro', () => {
+		Rundowns.update({}, { $unset: { orphaned: 1 } })
+
 		const newStatus = MOS.IMOSObjectAirStatus.READY
 
 		const externalId = 'fakeId'
@@ -261,7 +352,7 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
 
-	testInFiber('mosRoStatus: Wrong ro for part', () => {
+	testInFiber('mosRoStoryStatus: Wrong ro for part', () => {
 		const newStatus = MOS.IMOSObjectStatus.STOP
 
 		const rundownExternalId = 'fakeId'
@@ -286,7 +377,7 @@ describe('Test recieved mos ingest payloads', () => {
 		}
 	})
 
-	testInFiber('mosRoStatus: Missing part', () => {
+	testInFiber('mosRoStoryStatus: Missing part', () => {
 		const newStatus = MOS.IMOSObjectStatus.PLAY
 
 		const rundown = Rundowns.findOne() as Rundown
@@ -350,7 +441,33 @@ describe('Test recieved mos ingest payloads', () => {
 		})
 	})
 
+	testInFiber('mosRoStoryInsert: orphaned rundown', () => {
+		Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+
+		const playlist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(playlist).toBeTruthy()
+		const rundowns = playlist.getRundowns()
+		expect(rundowns).toHaveLength(1)
+		const rundown = rundowns[0]
+
+		const newPartData = mockRO.newItem('ro1;s1;newPart2', 'SEGMENT1;new2')
+
+		const action = literal<MOS.IMOSStoryAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+			StoryID: new MOS.MosString128('ro1;s1;p3'),
+		})
+
+		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData]))
+
+		const parts = rundown.getParts()
+
+		expect(Rundowns.findOne(rundown._id)?.orphaned).toEqual('deleted')
+		expect(parts.find((p) => p.externalId === newPartData.ID.toString())).toBeUndefined()
+	})
+
 	testInFiber('mosRoStoryInsert: New segment', () => {
+		Rundowns.update({}, { $unset: { orphaned: 1 } })
+
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
 		const rundowns = playlist.getRundowns()
@@ -498,7 +615,34 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
+
+	testInFiber('mosRoStoryReplace: orphaned rundown', () => {
+		Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+
+		const playlist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(playlist).toBeTruthy()
+		const rundowns = playlist.getRundowns()
+		expect(rundowns).toHaveLength(1)
+		const rundown = rundowns[0]
+
+		const newPartData = mockRO.newItem('ro1;s1;newPart2', 'SEGMENT1;new2')
+
+		const action = literal<MOS.IMOSStoryAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+			StoryID: new MOS.MosString128('ro1;s1;p3'),
+		})
+
+		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryReplace(device._id, device.token, action, [newPartData]))
+
+		const parts = rundown.getParts()
+
+		expect(Rundowns.findOne(rundown._id)?.orphaned).toEqual('deleted')
+		expect(parts.find((p) => p.externalId === newPartData.ID.toString())).toBeUndefined()
+	})
+
 	testInFiber('mosRoStoryReplace: Unknown ID', () => {
+		Rundowns.update({}, { $unset: { orphaned: 1 } })
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
 
@@ -1117,7 +1261,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
-		expect(rundown.unsynced).toBeFalsy()
+		expect(rundown.orphaned).toBeFalsy()
 
 		// activate and set on air
 		waitForPromise(MeteorCall.userAction.activate('', rundown.playlistId, true))
@@ -1142,7 +1286,7 @@ describe('Test recieved mos ingest payloads', () => {
 			// still valid
 			const rundown = Rundowns.findOne() as Rundown
 			expect(rundown).toBeTruthy()
-			expect(rundown.unsynced).toBeFalsy()
+			expect(rundown.orphaned).toBeFalsy()
 		}
 
 		const partInstances = rundown.getAllPartInstances()

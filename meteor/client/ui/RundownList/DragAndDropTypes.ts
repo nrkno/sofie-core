@@ -1,6 +1,7 @@
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { isProtectedString } from '../../../lib/lib'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 
 enum RundownListDragDropTypes {
 	RUNDOWN = 'rundown',
@@ -9,6 +10,7 @@ enum RundownListDragDropTypes {
 
 interface IRundownDragObject {
 	id: RundownId
+	rundownLayouts: Array<RundownLayoutBase>
 }
 
 function isRundownDragObject(obj: any): obj is IRundownDragObject {

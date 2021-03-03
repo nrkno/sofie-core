@@ -36,6 +36,7 @@ export enum RundownLayoutElementType {
 	FILTER = 'filter',
 	EXTERNAL_FRAME = 'external_frame',
 	ADLIB_REGION = 'adlib_region',
+	PIECE_COUNTDOWN = 'piece_countdown',
 }
 
 export interface RundownLayoutElementBase {
@@ -63,6 +64,11 @@ export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
 	role: RundownLayoutAdLibRegionRole
 	adlibRank: number
 	labelBelowPanel: boolean
+}
+
+export interface RundownLayoutPieceCountdown extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PIECE_COUNTDOWN
+	sourceLayerIds: string[] | undefined
 }
 
 /**
@@ -106,6 +112,13 @@ export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
 	y: number
 	width: number
 	height: number
+}
+
+export interface DashboardLayoutPieceCountdown extends RundownLayoutPieceCountdown {
+	x: number
+	y: number
+	width: number
+	scale: number
 }
 
 export interface DashboardLayoutFilter extends RundownLayoutFilterBase {

@@ -38,6 +38,7 @@ import { Settings } from '../../../lib/Settings'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 
 export const HTML_ID_PREFIX = 'rundown-'
 
@@ -45,6 +46,7 @@ export interface IRundownListItemProps {
 	isActive: boolean
 	rundown: Rundown
 	rundownViewUrl?: string
+	rundownLayouts: Array<RundownLayoutBase>
 	swapRundownOrder: (a: RundownId, b: RundownId) => void
 	playlistId: RundownPlaylistId
 	isOnlyRundownInPlaylist?: boolean
@@ -66,7 +68,7 @@ interface IRundownDragSourceProps {
 const dragSpec: DragSourceSpec<IRundownListItemProps, IRundownDragObject> = {
 	beginDrag: (props: IRundownListItemProps, monitor, component: React.Component) => {
 		const id = props.rundown._id
-		return { id }
+		return { id, rundownLayouts: props.rundownLayouts }
 	},
 	isDragging: (props, monitor) => {
 		return props.rundown._id === monitor.getItem().id
@@ -262,12 +264,21 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 				}
 
 				render() {
-					const { isActive, t, rundown, connectDragSource, connectDropTarget, isDragging, rundownViewUrl } = this.props
+					const {
+						isActive,
+						t,
+						rundown,
+						connectDragSource,
+						connectDropTarget,
+						isDragging,
+						rundownViewUrl,
+						rundownLayouts,
+					} = this.props
 					const userCanConfigure = getAllowConfigure()
 
 					const classNames: string[] = []
 					if (isDragging) classNames.push('dragging')
-					if (rundown.unsynced) classNames.push('unsynced')
+					if (rundown.orphaned) classNames.push('unsynced')
 
 					// rundown ids can start with digits, which is illegal for HTML id attributes
 					const htmlElementId = `${HTML_ID_PREFIX}${unprotectString(rundown._id)}`
@@ -293,15 +304,16 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 							renderTooltips={isDragging !== true}
 							rundownViewUrl={rundownViewUrl}
 							rundown={rundown}
+							rundownLayouts={rundownLayouts}
 							showStyleName={showStyleLabel}
 							showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
 							confirmDeleteRundownHandler={
-								(rundown.unsynced && getAllowStudio()) || userCanConfigure || getAllowService()
+								(rundown.orphaned && getAllowStudio()) || userCanConfigure || getAllowService()
 									? () => confirmDeleteRundown(rundown, t)
 									: undefined
 							}
 							confirmReSyncRundownHandler={
-								rundown.unsynced && getAllowStudio() ? () => confirmReSyncRundown(rundown, t) : undefined
+								rundown.orphaned && getAllowStudio() ? () => confirmReSyncRundown(rundown, t) : undefined
 							}
 						/>
 					)

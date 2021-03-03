@@ -1511,8 +1511,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	}
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-		private readonly LIVELINE_HISTORY_SIZE = 100
-
 		private bindKeys: Array<{
 			key: string
 			up?: (e: KeyboardEvent) => any
@@ -2249,9 +2247,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												rundownId={rundownAndSegments.rundown._id}
 												segmentId={segment._id}
 												playlist={this.props.playlist}
-												liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}
 												timeScale={this.state.timeScale}
-												onTimeScaleChange={this.onTimeScaleChange}
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
 												orderedAllPartIds={this.props.orderedPartsIds}
@@ -2730,7 +2726,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					)
 				} else if (this.props.playlist && this.props.studio && this.props.showStyleBase && this.props.onlyShelf) {
 					return (
-						<>
+						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
 							<ErrorBoundary>
 								<NoraPreviewRenderer />
 							</ErrorBoundary>
@@ -2752,7 +2748,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									bucketDisplayFilter={this.props.bucketDisplayFilter}
 								/>
 							</ErrorBoundary>
-						</>
+						</RundownTimingProvider>
 					)
 				} else {
 					return (

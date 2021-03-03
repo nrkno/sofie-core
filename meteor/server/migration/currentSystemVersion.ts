@@ -31,4 +31,4 @@
  * 1.18.0: Release 30
  * 1.19.0: Release 31
  */
-export const CURRENT_SYSTEM_VERSION = '1.19.0-in-development'
+export const CURRENT_SYSTEM_VERSION = '1.19.0-in-testing'

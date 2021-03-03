@@ -608,9 +608,8 @@ export function restoreFromRundownPlaylistSnapshot(
 	snapshot.playlist.nextPartInstanceId = null
 
 	snapshot.rundowns.forEach((rd) => {
-		if (!rd.unsynced) {
-			rd.unsynced = true
-			rd.unsyncedTime = getCurrentTime()
+		if (!rd.orphaned) {
+			rd.orphaned = 'from-snapshot'
 		}
 
 		rd.playlistId = playlistId
@@ -665,7 +664,9 @@ export function restoreFromRundownPlaylistSnapshot(
 	const partIdMap: { [key: string]: PartId } = {}
 	_.each(snapshot.parts, (part) => {
 		const oldId = part._id
-		partIdMap[unprotectString(oldId)] = part._id = getPartId(getNewRundownId(part.rundownId), part.externalId)
+		partIdMap[unprotectString(oldId)] = part._id = part.externalId
+			? getPartId(getNewRundownId(part.rundownId), part.externalId)
+			: getRandomId()
 	})
 	const partInstanceIdMap: { [key: string]: PartInstanceId } = {}
 	_.each(snapshot.partInstances, (partInstance) => {

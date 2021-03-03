@@ -131,12 +131,14 @@ export function migrateConfigToBlueprintConfigOnObject<
 		blueprintConfig?: IBlueprintConfig
 	}
 >(document: DBInterface): DBInterface {
-	document.blueprintConfig = {}
-	// @ts-ignore old typing
-	const oldConfig = document.config as any
-	if (oldConfig) {
-		for (const item of oldConfig) {
-			objectPathSet(document.blueprintConfig, item._id, item.value)
+	if (!document.blueprintConfig) {
+		document.blueprintConfig = {}
+		// @ts-ignore old typing
+		const oldConfig = document.config as any
+		if (oldConfig) {
+			for (const item of oldConfig) {
+				objectPathSet(document.blueprintConfig, item._id, item.value)
+			}
 		}
 	}
 	// @ts-ignore old typing

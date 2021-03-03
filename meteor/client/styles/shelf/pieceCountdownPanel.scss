@@ -1,0 +1,20 @@
+@import '../colorScheme';
+
+$piece-countdown-timecode-color: #ffff00;
+
+.piece-countdown-panel {
+	position: absolute;
+	user-select: none;
+	text-align: center;
+	margin: 0.625rem;
+
+	.piece-countdown-panel__timecode {
+		color: $piece-countdown-timecode-color;
+		font-weight: 500;
+		white-space: nowrap;
+
+		&.overtime {
+			color: $general-late-color;
+		}
+	}
+}

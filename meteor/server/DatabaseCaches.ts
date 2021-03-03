@@ -385,12 +385,24 @@ async function fillCacheForRundownPlaylistWithData(
 	ps.push(makePromise(() => cache.Parts.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)))
 	ps.push(makePromise(() => cache.Pieces.prepareInit({ startRundownId: { $in: rundownIds } }, false)))
 
+	const selectedPartInstanceIds = _.compact([
+		playlist.previousPartInstanceId,
+		playlist.currentPartInstanceId,
+		playlist.nextPartInstanceId,
+	])
 	ps.push(
 		makePromise(() =>
 			cache.PartInstances.prepareInit(
 				{
 					rundownId: { $in: rundownIds },
-					reset: { $ne: true },
+					$or: [
+						{
+							reset: { $ne: true },
+						},
+						{
+							_id: { $in: selectedPartInstanceIds },
+						},
+					],
 				},
 				initializeImmediately
 			)

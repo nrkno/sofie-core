@@ -365,10 +365,10 @@ describe('lib/mediaObjects', () => {
 
 		const status2 = checkPieceContentStatus(piece2, sourcelayer1, mockStudio)
 		expect(status2.status).toEqual(RundownAPI.PieceStatusCode.SOURCE_BROKEN)
-		expect(status2.message).toContain('is not in one of the accepted formats')
+		expect(status2.message).toContain('has the wrong format:')
 
 		const status3 = checkPieceContentStatus(piece3, sourcelayer1, mockStudio)
 		expect(status3.status).toEqual(RundownAPI.PieceStatusCode.SOURCE_MISSING)
-		expect(status3.message).toContain("it isn't present on the playout")
+		expect(status3.message).toContain('is not yet ready on the playout system')
 	})
 })

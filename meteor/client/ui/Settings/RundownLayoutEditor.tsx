@@ -24,6 +24,7 @@ import {
 	RundownLayoutAdLibRegion,
 	RundownLayoutAdLibRegionRole,
 	RundownLayoutId,
+	RundownLayoutPieceCountdown,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -1086,6 +1087,115 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			)
 		}
 
+		renderPieceCountdown(
+			item: RundownLayoutBase,
+			tab: RundownLayoutPieceCountdown,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">{t('Source Layers')}</label>
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={`filters.${index}.sourceLayerIds`}
+							obj={item}
+							type="checkbox"
+							collection={RundownLayouts}
+							className="mod mas"
+							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+							mutateUpdateValue={(v) => undefined}
+						/>
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={`filters.${index}.sourceLayerIds`}
+							obj={item}
+							options={this.props.showStyleBase.sourceLayers.map((l) => {
+								return { name: l.name, value: l._id }
+							})}
+							type="multiselect"
+							label={t('Disabled')}
+							collection={RundownLayouts}
+							className="input text-input input-l dropdown"
+							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+						/>
+					</div>
+					{isDashboardLayout && (
+						<React.Fragment>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('X')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.x`}
+										obj={item}
+										type="int"
+										collection={RundownLayouts}
+										className="input text-input input-l"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Y')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.y`}
+										obj={item}
+										type="int"
+										collection={RundownLayouts}
+										className="input text-input input-l"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Width')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.width`}
+										obj={item}
+										type="int"
+										collection={RundownLayouts}
+										className="input text-input input-l"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Scale')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.scale`}
+										obj={item}
+										type="float"
+										collection={RundownLayouts}
+										className="input text-input input-l"
+									/>
+								</label>
+							</div>
+						</React.Fragment>
+					)}
+				</React.Fragment>
+			)
+		}
+
 		renderElements(item: RundownLayoutBase) {
 			const { t } = this.props
 
@@ -1211,6 +1321,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								? this.renderFrame(item, tab, index, isRundownLayout, isDashboardLayout)
 								: RundownLayoutsAPI.isAdLibRegion(tab)
 								? this.renderAdLibRegion(item, tab, index, isRundownLayout, isDashboardLayout)
+								: RundownLayoutsAPI.isPieceCountdown(tab)
+								? this.renderPieceCountdown(item, tab, index, isRundownLayout, isDashboardLayout)
 								: undefined}
 						</div>
 					))}

@@ -1,0 +1,7 @@
+{
+    "files": [],
+    "references": [
+        { "path": "blueprints-integration" },
+        { "path": "server-core-integration" }
+    ]
+}
