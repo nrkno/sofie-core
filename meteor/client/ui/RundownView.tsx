@@ -2844,80 +2844,101 @@ export function handleRundownReloadResponse(
 		const playlist = RundownPlaylists.findOne(rundown?.playlistId)
 
 		hasDoneSomething = true
-		const notification = NotificationCenter.push(
-			new Notification(
-				undefined,
-				NoticeLevel.CRITICAL,
-				t(
-					'Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data from {{nrcsName}}. You can either leave it in Sofie and mark it as Unsynced or remove the rundown from Sofie. What do you want to do?',
-					{
-						nrcsName: rundown?.externalNRCSName || 'NRCS',
-						rundownName: rundown?.name || 'N/A',
-						playlistName: playlist?.name || 'N/A',
-					}
-				),
-				'userAction',
-				undefined,
-				true,
-				[
-					// actions:
-					{
-						label: t('Leave Unsynced'),
-						type: 'default',
-						disabled: !getAllowStudio(),
-						action: () => {
-							doUserAction(
-								t,
-								'Missing rundown action',
-								UserAction.UNSYNC_RUNDOWN,
-								(e) => MeteorCall.userAction.unsyncRundown(e, rundownId),
-								(err) => {
-									if (!err) {
-										notification.stop()
-										clb && clb('unsynced')
-									} else {
-										clb && clb('error')
-									}
+		const notification = new Notification(
+			undefined,
+			NoticeLevel.CRITICAL,
+			t(
+				'Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data from {{nrcsName}}. You can either leave it in Sofie and mark it as Unsynced or remove the rundown from Sofie. What do you want to do?',
+				{
+					nrcsName: rundown?.externalNRCSName || 'NRCS',
+					rundownName: rundown?.name || t('(Unknown rundown)'),
+					playlistName: playlist?.name || t('(Unknown playlist)'),
+				}
+			),
+			'userAction',
+			undefined,
+			true,
+			[
+				// actions:
+				{
+					label: t('Leave Unsynced'),
+					type: 'default',
+					disabled: !getAllowStudio(),
+					action: () => {
+						doUserAction(
+							t,
+							'Missing rundown action',
+							UserAction.UNSYNC_RUNDOWN,
+							(e) => MeteorCall.userAction.unsyncRundown(e, rundownId),
+							(err) => {
+								if (!err) {
+									notificationHandle.stop()
+									clb && clb('unsynced')
+								} else {
+									clb && clb('error')
 								}
-							)
-						},
+							}
+						)
 					},
-					{
-						label: t('Remove'),
-						type: 'default',
-						action: () => {
-							doModalDialog({
-								title: t('Remove rundown'),
-								message: t(
-									'Do you really want to remove just the rundown "{{rundownName}}" in the playlist {{playlistName}} from Sofie? This cannot be undone!',
-									{
-										rundownName: rundown?.name || 'N/A',
-										playlistName: playlist?.name || 'N/A',
-									}
-								),
-								onAccept: () => {
-									// nothing
-									doUserAction(
-										t,
-										'Missing rundown action',
-										UserAction.REMOVE_RUNDOWN,
-										(e) => MeteorCall.userAction.removeRundown(e, rundownId),
-										(err) => {
-											if (!err) {
-												notification.stop()
-												clb && clb('removed')
-											} else {
-												clb && clb('error')
-											}
+				},
+				{
+					label: t('Remove'),
+					type: 'default',
+					action: () => {
+						doModalDialog({
+							title: t('Remove rundown'),
+							message: t(
+								'Do you really want to remove just the rundown "{{rundownName}}" in the playlist {{playlistName}} from Sofie? This cannot be undone!',
+								{
+									rundownName: rundown?.name || 'N/A',
+									playlistName: playlist?.name || 'N/A',
+								}
+							),
+							onAccept: () => {
+								// nothing
+								doUserAction(
+									t,
+									'Missing rundown action',
+									UserAction.REMOVE_RUNDOWN,
+									(e) => MeteorCall.userAction.removeRundown(e, rundownId),
+									(err) => {
+										if (!err) {
+											notificationHandle.stop()
+											clb && clb('removed')
+										} else {
+											clb && clb('error')
 										}
-									)
-								},
-							})
-						},
+									}
+								)
+							},
+						})
 					},
-				]
-			)
+				},
+			]
 		)
+		const notificationHandle = NotificationCenter.push(notification)
+
+		if (rundown) {
+			// This allows the semi-modal dialog above to be closed automatically, once the rundown stops existing
+			// for whatever reason
+			const comp = Tracker.autorun(() => {
+				const rundown = Rundowns.findOne(rundownId, {
+					fields: {
+						_id: 1,
+						orphaned: 1,
+					},
+				})
+				// we should hide the message
+				if (!rundown || !rundown.orphaned) {
+					notificationHandle.stop()
+				}
+			})
+			notification.on('dropped', () => {
+				// clean up the reactive computation above when the notification is closed. Will be also executed by
+				// the notificationHandle.stop() above, so the Tracker.autorun will clean up after itself as well.
+				comp.stop()
+			})
+		}
 	}
 	return hasDoneSomething
 }

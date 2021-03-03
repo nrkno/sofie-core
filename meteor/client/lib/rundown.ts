@@ -19,7 +19,7 @@ import {
 	ISourceLayerExtended,
 	PartInstanceLimited,
 } from '../../lib/Rundown'
-import { DBSegment, Segment, SegmentId } from '../../lib/collections/Segments'
+import { DBSegment, Segment, SegmentId, Segments } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { literal, normalizeArray, getCurrentTime, applyToArray, unprotectString, protectString } from '../../lib/lib'
@@ -405,13 +405,26 @@ export namespace RundownUtils {
 			let startsAt = 0
 			let previousPart: PartExtended | undefined
 			// fetch all the pieces for the parts
-			const partIds = segmentInfo.partInstances.filter((p) => !p.orphaned).map((part) => part.part._id)
+			const partIds = segmentInfo.partInstances.map((part) => part.part._id)
 
-			const currentPartIndex = currentPartInstance
-				? orderedAllPartIds.indexOf(currentPartInstance.part._id)
-				: null
-
-			const nextPartIndex = nextPartInstance ? orderedAllPartIds.indexOf(nextPartInstance.part._id) : null
+			let nextPartIsAfterCurrentPart = false
+			if (nextPartInstance && currentPartInstance) {
+				if (nextPartInstance.segmentId === currentPartInstance.segmentId) {
+					nextPartIsAfterCurrentPart = currentPartInstance.part._rank < nextPartInstance.part._rank
+				} else {
+					const nextPartSegment = Segments.findOne(
+						{ _id: nextPartInstance.segmentId },
+						{ fields: { _rank: 1 } }
+					)
+					const currentPartSegment = Segments.findOne(
+						{ _id: currentPartInstance.segmentId },
+						{ fields: { _rank: 1 } }
+					)
+					if (nextPartSegment && currentPartSegment) {
+						nextPartIsAfterCurrentPart = currentPartSegment._rank < nextPartSegment._rank
+					}
+				}
+			}
 
 			partsE = segmentInfo.partInstances.map((partInstance, itIndex) => {
 				let partTimeline: SuperTimeline.TimelineObject[] = []
@@ -460,7 +473,7 @@ export namespace RundownUtils {
 					new Set(partIds.slice(0, itIndex)),
 					segmentsBeforeThisInRundownSet,
 					orderedAllPartIds,
-					currentPartIndex !== null && nextPartIndex !== null ? currentPartIndex < nextPartIndex : false,
+					nextPartIsAfterCurrentPart,
 					currentPartInstance,
 					currentPartInstance
 						? PieceInstances.find(
