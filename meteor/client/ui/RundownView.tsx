@@ -2925,11 +2925,11 @@ export function handleRundownReloadResponse(
 				const rundown = Rundowns.findOne(rundownId, {
 					fields: {
 						_id: 1,
-						unsynced: 1,
+						orphaned: 1,
 					},
 				})
 				// we should hide the message
-				if (!rundown || !rundown.unsynced) {
+				if (!rundown || !rundown.orphaned) {
 					notificationHandle.stop()
 				}
 			})
