@@ -68,11 +68,16 @@ function canContinueAdlibOnEndInfinites(
 
 function getIdsBeforeThisPart(cache: CacheForRundownPlaylist, nextPart: DBPart) {
 	const span = profiler.startSpan('getIdsBeforeThisPart')
-	// Note: This makes the assumption that nextPart is a part found in this cache
-	const partsBeforeThisInSegment = cache.Parts.findFetch({
-		segmentId: nextPart.segmentId,
-		_rank: { $lt: nextPart._rank },
-	}).map((p) => p._id)
+	// Get the normal parts
+	const partsBeforeThisInSegment = cache.Parts.findFetch(
+		(p) => p.segmentId === nextPart.segmentId && p._rank < nextPart._rank
+	)
+	// Find any orphaned parts
+	const partInstancesBeforeThisInSegment = cache.PartInstances.findFetch(
+		(p) => p.segmentId === nextPart.segmentId && p.orphaned && p.part._rank < nextPart._rank
+	)
+	partsBeforeThisInSegment.push(...partInstancesBeforeThisInSegment.map((p) => p.part))
+
 	const currentSegment = cache.Segments.findOne(nextPart.segmentId)
 	const segmentsBeforeThisInRundown = currentSegment
 		? cache.Segments.findFetch({
@@ -83,7 +88,7 @@ function getIdsBeforeThisPart(cache: CacheForRundownPlaylist, nextPart: DBPart) 
 
 	if (span) span.end()
 	return {
-		partsBeforeThisInSegment,
+		partsBeforeThisInSegment: _.sortBy(partsBeforeThisInSegment, (p) => p._rank).map((p) => p._id),
 		segmentsBeforeThisInRundown,
 	}
 }
