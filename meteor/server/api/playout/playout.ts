@@ -41,7 +41,6 @@ import {
 	getSegmentsAndPartsFromCache,
 	getSelectedPartInstancesFromCache,
 	getRundownIDsFromCache,
-	getRundownsFromCache,
 	getStudioFromCache,
 	getAllOrderedPartsFromCache,
 	getAllPieceInstancesFromCache,
@@ -334,7 +333,7 @@ export namespace ServerPlayoutAPI {
 	export function setNextPartInner(
 		cache: CacheForRundownPlaylist,
 		playlist: RundownPlaylist,
-		nextPartId: PartId | Part | null,
+		nextPartId: PartId | DBPart | null,
 		setManually?: boolean,
 		nextTimeOffset?: number | undefined
 	) {
@@ -342,7 +341,7 @@ export namespace ServerPlayoutAPI {
 		if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE)
 			throw new Meteor.Error(501, `Rundown "${playlist._id}" cannot change next during hold!`)
 
-		let nextPart: Part | null = null
+		let nextPart: DBPart | null = null
 		if (nextPartId) {
 			if (isStringOrProtectedString(nextPartId)) {
 				nextPart = cache.Parts.findOne(nextPartId) || null
@@ -398,8 +397,7 @@ export namespace ServerPlayoutAPI {
 		playlist: RundownPlaylist,
 		horizontalDelta: number,
 		verticalDelta: number,
-		setManually: boolean,
-		nextPartId0?: PartId
+		setManually: boolean
 	): PartId | null {
 		if (!playlist.activationId) throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" is not active!`)
 
@@ -412,79 +410,89 @@ export namespace ServerPlayoutAPI {
 			playlist
 		)
 
-		let currentNextPart: DBPart
-		if (nextPartId0) {
-			const nextPart = cache.Parts.findOne(nextPartId0)
-			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId0}" not found!`)
-			currentNextPart = nextPart
-		} else {
-			const nextPartInstanceTmp = nextPartInstance || currentPartInstance
-			if (!nextPartInstanceTmp)
-				throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" has no next and no current part!`)
+		const refPartInstance = nextPartInstance ?? currentPartInstance
+		const refPart = refPartInstance?.part
+		if (!refPart || !refPartInstance)
+			throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" has no next and no current part!`)
 
-			const nextPart = cache.Parts.findOne(nextPartInstanceTmp.part._id)
-			if (!nextPart)
-				throw new Meteor.Error(404, `Part "${nextPartInstanceTmp.part._id}" no longer exists in the rundown!`)
-			currentNextPart = nextPartInstanceTmp.part
-		}
+		if (verticalDelta) {
+			// Ignores horizontalDelta
 
-		const currentNextSegment = rawSegments.find((s) => s._id === currentNextPart.segmentId) as Segment
-		if (!currentNextSegment) throw new Meteor.Error(404, `Segment "${currentNextPart.segmentId}" not found!`)
+			const considerSegments = rawSegments.filter((s) => s._id === refPart.segmentId || !s.isHidden)
+			const refSegmentIndex = considerSegments.findIndex((s) => s._id === refPart.segmentId)
+			if (refSegmentIndex === -1) throw new Meteor.Error(404, `Segment "${refPart.segmentId}" not found!`)
 
-		const validSegments: Segment[] = []
-		const validParts: Part[] = []
+			const targetSegmentIndex = refSegmentIndex + verticalDelta
+			const targetSegment = considerSegments[targetSegmentIndex]
+			if (!targetSegment) throw new Meteor.Error(404, `No Segment found!`)
 
-		const partsInSegments: { [segmentId: string]: Part[] } = {}
-		_.each(rawSegments, (segment) => {
-			if (!segment.isHidden) {
-				const partsInSegment = _.filter(rawParts, (p) => p.segmentId === segment._id && p.isPlayable())
-				if (partsInSegment.length) {
-					validSegments.push(segment)
-					partsInSegments[unprotectString(segment._id)] = partsInSegment
-					validParts.push(...partsInSegment)
+			// find the allowable segment ids
+			const allowedSegments =
+				verticalDelta < 0
+					? considerSegments.slice(targetSegmentIndex)
+					: considerSegments.slice(0, targetSegmentIndex + 1).reverse()
+			// const allowedSegmentIds = new Set(allowedSegments.map((s) => s._id))
+
+			const playablePartsBySegment = _.groupBy(
+				rawParts.filter((p) => p.isPlayable()),
+				(p) => p.segmentId
+			)
+
+			// Iterate through segments and find the first part
+			let selectedPart: Part | undefined
+			for (const segment of allowedSegments) {
+				const parts = playablePartsBySegment[unprotectString(segment._id)] || []
+				// Cant go to the current part (yet)
+				const filteredParts = parts.filter((p) => p._id !== currentPartInstance?.part._id)
+				if (filteredParts.length > 0) {
+					selectedPart = filteredParts[0]
+					break
 				}
 			}
-		})
 
-		let partIndex = validParts.findIndex((part) => part._id === currentNextPart._id)
-		let segmentIndex = validSegments.findIndex((s) => s._id === currentNextSegment._id)
+			// TODO - looping playlists
 
-		if (partIndex === -1) throw new Meteor.Error(404, `Part not found in list of parts!`)
-		if (segmentIndex === -1)
-			throw new Meteor.Error(404, `Segment "${currentNextSegment._id}" not found in segmentsWithParts!`)
-		if (verticalDelta !== 0) {
-			segmentIndex += verticalDelta
-
-			const segment = validSegments[segmentIndex]
-			if (!segment) throw new Meteor.Error(404, `No Segment found!`)
-
-			const part = _.first(partsInSegments[unprotectString(segment._id)])
-			if (!part) throw new Meteor.Error(404, `No Parts in segment "${segment._id}"!`)
-
-			partIndex = validParts.findIndex((p) => p._id === part._id)
-			if (partIndex === -1) throw new Meteor.Error(404, `Part (from segment) not found in list of parts!`)
-		}
-		partIndex += horizontalDelta
-
-		partIndex = Math.max(0, Math.min(validParts.length - 1, partIndex))
-
-		let part = validParts[partIndex]
-		if (!part) throw new Meteor.Error(501, `Part index ${partIndex} not found in list of parts!`)
-
-		if (currentPartInstance && part._id === currentPartInstance.part._id && !nextPartId0) {
-			// Whoops, we're not allowed to next to that.
-			// Skip it, then (ie run the whole thing again)
-			if (part._id !== nextPartId0) {
-				return moveNextPartInner(cache, playlist, horizontalDelta, verticalDelta, setManually, part._id)
+			if (selectedPart) {
+				// Switch to that part
+				setNextPartInner(cache, playlist, selectedPart, setManually)
+				return selectedPart._id
 			} else {
-				// Calling ourselves again at this point would result in an infinite loop
-				// There probably isn't any Part available to Next then...
-				setNextPartInner(cache, playlist, null, setManually)
+				// Nothing looked valid so do nothing
+				// Note: we should try and a smaller delta if it is not -1/1
+				logger.info(`moveNextPart: Found no new part (verticalDelta=${verticalDelta})`)
+				return null
+			}
+		} else if (horizontalDelta) {
+			let playabaleParts: DBPart[] = rawParts.filter((p) => refPart._id === p._id || p.isPlayable())
+			let refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
+			if (refPartIndex === -1) {
+				const tmpRefPart = { ...refPart, invalid: true } // make sure it won't be found as playable
+				playabaleParts = RundownPlaylist._sortPartsInner([...playabaleParts, tmpRefPart], rawSegments)
+				refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
+				if (refPartIndex === -1) throw new Meteor.Error(500, `Part "${refPart._id}" not found after insert!`)
+			}
+
+			// Get the past we are after
+			const targetPartIndex = refPartIndex + horizontalDelta
+			let targetPart = playabaleParts[targetPartIndex]
+			if (targetPart && targetPart._id === currentPartInstance?.part._id) {
+				// Cant go to the current part (yet)
+				const newIndex = targetPartIndex + (horizontalDelta > 0 ? 1 : -1)
+				targetPart = playabaleParts[newIndex]
+			}
+
+			if (targetPart) {
+				// Switch to that part
+				setNextPartInner(cache, playlist, targetPart, setManually)
+				return targetPart._id
+			} else {
+				// Nothing looked valid so do nothing
+				// Note: we should try and a smaller delta if it is not -1/1
+				logger.info(`moveNextPart: Found no new part (horizontalDelta=${horizontalDelta})`)
 				return null
 			}
 		} else {
-			setNextPartInner(cache, playlist, part, setManually)
-			return part._id
+			throw new Meteor.Error(500, `Missing delta to move by!`)
 		}
 	}
 	export function setNextSegment(

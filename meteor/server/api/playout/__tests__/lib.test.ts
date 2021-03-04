@@ -12,8 +12,8 @@ class MockPart {
 		public playable: boolean = true
 	) {}
 
-	isPlayable() {
-		return this.playable
+	get invalid(): boolean {
+		return !this.playable
 	}
 
 	toPartInstance() {

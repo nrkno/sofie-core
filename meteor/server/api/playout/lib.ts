@@ -3,7 +3,7 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
-import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
+import { Parts, Part, DBPart, isPartPlayable } from '../../../lib/collections/Parts'
 import {
 	getCurrentTime,
 	Time,
@@ -172,7 +172,7 @@ function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPla
 }
 
 export interface SelectNextPartResult {
-	part: Part
+	part: DBPart
 	index: number
 	consumesNextSegmentId?: boolean
 }
@@ -180,7 +180,7 @@ export interface SelectNextPartResult {
 export function selectNextPart(
 	rundownPlaylist: Pick<RundownPlaylist, 'nextSegmentId' | 'loop'>,
 	previousPartInstance: PartInstance | null,
-	parts: Part[],
+	parts: DBPart[],
 	ignoreUnplayabale = true
 ): SelectNextPartResult | undefined {
 	const span = profiler.startSpan('selectNextPart')
@@ -192,13 +192,13 @@ export function selectNextPart(
 	 */
 	const findFirstPlayablePart = (
 		offset: number,
-		condition?: (part: Part) => boolean,
+		condition?: (part: DBPart) => boolean,
 		length?: number
 	): SelectNextPartResult | undefined => {
 		// Filter to after and find the first playabale
 		for (let index = offset; index < (length || parts.length); index++) {
 			const part = parts[index]
-			if ((!ignoreUnplayabale || part.isPlayable()) && (!condition || condition(part))) {
+			if ((!ignoreUnplayabale || isPartPlayable(part)) && (!condition || condition(part))) {
 				return { part, index }
 			}
 		}
@@ -261,7 +261,7 @@ export function selectNextPart(
 export function setNextPart(
 	cache: CacheForRundownPlaylist,
 	rundownPlaylist: RundownPlaylist,
-	rawNextPart: Part | DBPartInstance | null,
+	rawNextPart: DBPart | DBPartInstance | null,
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ) {
