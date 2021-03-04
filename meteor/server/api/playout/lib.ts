@@ -414,44 +414,41 @@ export function setNextPart(
 		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
 		// When entering a segment, or moving backwards in a segment, reset any partInstances that are 'adlib-part'
 		if (nextPartInstance) {
-			const canRemovePartInstance = (p: DBPartInstance): boolean => {
-				return (
-					p.orphaned === 'adlib-part' &&
-					!p.reset &&
-					p._id !== nextPartInstance._id &&
-					p.segmentId === nextPartInstance.segmentId
+			const cleanOrphans = new Set<PartInstanceId>()
+			if (currentPartInstance) {
+				// Always clean the current segment, anything after the current part (except the next part)
+				const trailingInOldSegment = cache.PartInstances.findFetch(
+					(p) =>
+						p.orphaned === 'adlib-part' &&
+						!p.reset &&
+						p._id !== currentPartInstance._id &&
+						p._id !== nextPartInstance._id &&
+						p.segmentId === currentPartInstance.segmentId &&
+						p.part._rank > currentPartInstance.part._rank
 				)
-			}
 
-			let cleanOrphans: Set<PartInstanceId>
-			if (!currentPartInstance || nextPartInstance.segmentId !== currentPartInstance.segmentId) {
-				cleanOrphans = new Set(cache.PartInstances.findFetch((p) => canRemovePartInstance(p)).map((p) => p._id))
-			} else if (
-				// same segment, going backwards
-				nextPartInstance.segmentId === currentPartInstance.segmentId &&
-				nextPartInstance.part._rank < currentPartInstance.part._rank
+				for (const part of trailingInOldSegment) {
+					cleanOrphans.add(part._id)
+				}
+			}
+			if (
+				!currentPartInstance ||
+				nextPartInstance.segmentId !== currentPartInstance.segmentId ||
+				(nextPartInstance.segmentId === currentPartInstance.segmentId &&
+					nextPartInstance.part._rank < currentPartInstance.part._rank)
 			) {
-				cleanOrphans = new Set(
-					cache.PartInstances.findFetch(
-						(p) => canRemovePartInstance(p) && p._id !== currentPartInstance._id
-					).map((p) => p._id)
+				// clean the new segment
+				const newSegmentParts = cache.PartInstances.findFetch(
+					(p) =>
+						p.orphaned === 'adlib-part' &&
+						!p.reset &&
+						p._id !== nextPartInstance._id &&
+						p._id !== currentPartInstance?._id &&
+						p.segmentId === nextPartInstance.segmentId
 				)
-			} else if (
-				// same segment, going forwards
-				nextPartInstance.segmentId === currentPartInstance.segmentId &&
-				nextPartInstance.part._rank >= currentPartInstance.part._rank
-			) {
-				cleanOrphans = new Set(
-					cache.PartInstances.findFetch(
-						(p) =>
-							canRemovePartInstance(p) &&
-							p._id !== currentPartInstance._id &&
-							p.part._rank >= currentPartInstance.part._rank &&
-							p.part._rank <= nextPartInstance.part._rank
-					).map((p) => p._id)
-				)
-			} else {
-				cleanOrphans = new Set()
+				for (const part of newSegmentParts) {
+					cleanOrphans.add(part._id)
+				}
 			}
 
 			if (cleanOrphans.size > 0) {
