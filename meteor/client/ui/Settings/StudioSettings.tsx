@@ -1523,7 +1523,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									obj={this.props.studio}
 									type="checkbox"
 									collection={Studios}></EditAttribute>
-								{t('Enable Play from Anywhere™')}
+								{t('Enable "Play from Anywhere"')}
 							</label>
 						</div>
 						<label className="field">
