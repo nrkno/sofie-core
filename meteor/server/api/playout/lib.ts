@@ -348,14 +348,14 @@ export function setNextPart(
 
 	{
 		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-		// When entering a segment, or moving backwards in a segment, reset any partInstances that are 'adlib-part'
+		// When entering a segment, or moving backwards in a segment, reset any partInstances in that window
+		// In theory the new segment should already be reset, as we do that upon leaving, but it wont be if jumping to earlier in the same segment or maybe if the rundown wasnt reset
 		if (nextPartInstance) {
-			const cleanOrphans = new Set<PartInstanceId>()
+			const resetPartInstanceIds = new Set<PartInstanceId>()
 			if (currentPartInstance) {
 				// Always clean the current segment, anything after the current part (except the next part)
 				const trailingInOldSegment = cache.PartInstances.findFetch(
 					(p) =>
-						p.orphaned === 'adlib-part' &&
 						!p.reset &&
 						p._id !== currentPartInstance._id &&
 						p._id !== nextPartInstance._id &&
@@ -364,39 +364,39 @@ export function setNextPart(
 				)
 
 				for (const part of trailingInOldSegment) {
-					cleanOrphans.add(part._id)
+					resetPartInstanceIds.add(part._id)
 				}
 			}
+
 			if (
 				!currentPartInstance ||
 				nextPartInstance.segmentId !== currentPartInstance.segmentId ||
 				(nextPartInstance.segmentId === currentPartInstance.segmentId &&
 					nextPartInstance.part._rank < currentPartInstance.part._rank)
 			) {
-				// clean the new segment
+				// clean the whole segment if new, or jumping backwards
 				const newSegmentParts = cache.PartInstances.findFetch(
 					(p) =>
-						p.orphaned === 'adlib-part' &&
 						!p.reset &&
 						p._id !== nextPartInstance._id &&
 						p._id !== currentPartInstance?._id &&
 						p.segmentId === nextPartInstance.segmentId
 				)
 				for (const part of newSegmentParts) {
-					cleanOrphans.add(part._id)
+					resetPartInstanceIds.add(part._id)
 				}
 			}
 
-			if (cleanOrphans.size > 0) {
+			if (resetPartInstanceIds.size > 0) {
 				cache.PartInstances.update(
-					(p) => cleanOrphans.has(p._id),
+					(p) => resetPartInstanceIds.has(p._id),
 					(p) => {
 						p.reset = true
 						return p
 					}
 				)
 				cache.PieceInstances.update(
-					(p) => cleanOrphans.has(p.partInstanceId),
+					(p) => resetPartInstanceIds.has(p.partInstanceId),
 					(p) => {
 						p.reset = true
 						return p
