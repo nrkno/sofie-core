@@ -6,7 +6,7 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime, getRandomId, makePromise, waitForPromise } from '../../../lib/lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownEventContext } from '../blueprints/context'
-import { setNextPart, onPartHasStoppedPlaying, selectNextPart, LOW_PRIO_DEFER_TIME } from './lib'
+import { setNextPart, onPartHasStoppedPlaying, selectNextPart, LOW_PRIO_DEFER_TIME, resetRundownPlaylist } from './lib'
 import { updateStudioTimeline, updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
@@ -31,6 +31,11 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 			'Only one rundown can be active at the same time. Active rundown playlists: ' + otherActiveIds,
 			JSON.stringify(otherActiveIds)
 		)
+	}
+
+	if (!!cache.Playlist.doc.activationId) {
+		// Reset the playlist if it wasnt already active
+		resetRundownPlaylist(cache)
 	}
 
 	cache.Playlist.update({
