@@ -229,19 +229,20 @@ export namespace ServerPeripheralDeviceAPI {
 							studioCache,
 							activePlaylist,
 							PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-							() => {
+							async () => {
 								const rundownIDs = Rundowns.find({ playlistId }).map((r) => r._id)
 
 								// We only need the PieceInstances, so load just them
 								const pieceInstanceCache = new DbCacheWriteCollection<PieceInstance, PieceInstance>(
 									PieceInstances
 								)
-								waitForPromise(
-									pieceInstanceCache.fillWithDataFromDatabase({ rundownId: { $in: rundownIDs } })
-								)
+
+								await pieceInstanceCache.prepareInit({ rundownId: { $in: rundownIDs } }, true)
 
 								// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
 								timelineTriggerTimeInner(studioCache, results, pieceInstanceCache, activePlaylist)
+
+								await pieceInstanceCache.updateDatabaseWithData()
 							}
 						)
 					} else {
@@ -285,7 +286,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
 				if (objPieceId && activePlaylist && pieceInstanceCache) {
-					logger.debug('Update PieceInstance: ', {
+					logger.info('Update PieceInstance: ', {
 						pieceId: objPieceId,
 						time: new Date(o.time).toTimeString(),
 					})
