@@ -44,6 +44,7 @@ interface PrompterConfig {
 	pedal_rangeNeutralMin?: number
 	pedal_rangeNeutralMax?: number
 	pedal_rangeFwdMax?: number
+	shuttle_speedMap?: number[]
 	marker?: 'center' | 'top' | 'bottom' | 'hide'
 	showMarker: boolean
 	showScroll: boolean
