@@ -32,12 +32,12 @@ export class MidiPedalController extends ControllerAbstract {
 		this.prompterView = view
 
 		// assigns params from URL or falls back to the default
-		this.speedMap = view.configOptions.speedMap || this.speedMap
-		this.reverseSpeedMap = view.configOptions.reverseSpeedMap || this.reverseSpeedMap
-		this.rangeRevMin = view.configOptions.rangeRevMin || this.rangeRevMin
-		this.rangeNeutralMin = view.configOptions.rangeNeutralMin || this.rangeNeutralMin
-		this.rangeNeutralMax = view.configOptions.rangeNeutralMax || this.rangeNeutralMax
-		this.rangeFwdMax = view.configOptions.rangeFwdMax || this.rangeFwdMax
+		this.speedMap = view.configOptions.pedal_speedMap || this.speedMap
+		this.reverseSpeedMap = view.configOptions.pedal_reverseSpeedMap || this.reverseSpeedMap
+		this.rangeRevMin = view.configOptions.pedal_rangeRevMin || this.rangeRevMin
+		this.rangeNeutralMin = view.configOptions.pedal_rangeNeutralMin || this.rangeNeutralMin
+		this.rangeNeutralMax = view.configOptions.pedal_rangeNeutralMax || this.rangeNeutralMax
+		this.rangeFwdMax = view.configOptions.pedal_rangeFwdMax || this.rangeFwdMax
 
 		// validate range settings, they need to be in sequence, or the logic will break
 		if (this.rangeNeutralMin <= this.rangeRevMin) {

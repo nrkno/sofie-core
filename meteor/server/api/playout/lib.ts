@@ -3,7 +3,7 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { DBRundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
-import { Part, DBPart } from '../../../lib/collections/Parts'
+import { Part, DBPart, isPartPlayable } from '../../../lib/collections/Parts'
 import {
 	getCurrentTime,
 	Time,
@@ -93,13 +93,13 @@ export function resetRundownPlaylist(cache: CacheForPlayout): void {
 }
 
 export interface SelectNextPartResult {
-	part: Part
+	part: DBPart
 	index: number
 	consumesNextSegmentId?: boolean
 }
 export interface PartsAndSegments {
 	segments: DBSegment[]
-	parts: Part[]
+	parts: DBPart[]
 }
 
 export function selectNextPart(
@@ -117,13 +117,13 @@ export function selectNextPart(
 	 */
 	const findFirstPlayablePart = (
 		offset: number,
-		condition?: (part: Part) => boolean,
+		condition?: (part: DBPart) => boolean,
 		length?: number
 	): SelectNextPartResult | undefined => {
 		// Filter to after and find the first playabale
 		for (let index = offset; index < (length || parts.length); index++) {
 			const part = parts[index]
-			if ((!ignoreUnplayabale || part.isPlayable()) && (!condition || condition(part))) {
+			if ((!ignoreUnplayabale || isPartPlayable(part)) && (!condition || condition(part))) {
 				return { part, index }
 			}
 		}
@@ -209,7 +209,7 @@ export function selectNextPart(
 }
 export function setNextPart(
 	cache: CacheForPlayout,
-	rawNextPart: Part | DBPartInstance | null,
+	rawNextPart: DBPart | DBPartInstance | null,
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ) {
@@ -350,30 +350,57 @@ export function setNextPart(
 
 	{
 		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-		// When entering a segment, or moving backwards in a segment, delete any partInstances that are 'adlib-part'
+		// When entering a segment, or moving backwards in a segment, reset any partInstances that are 'adlib-part'
 		if (nextPartInstance) {
-			let cleanupAdlibParts = false
-			if (!currentPartInstance) {
-				cleanupAdlibParts = true
-			} else if (nextPartInstance.segmentId !== currentPartInstance.segmentId) {
-				cleanupAdlibParts = true
-			} else if (
-				// same segment, going backwards
-				nextPartInstance.segmentId === currentPartInstance.segmentId &&
-				nextPartInstance.part._rank < currentPartInstance.part._rank
-			) {
-				cleanupAdlibParts = true
-			}
-
-			if (cleanupAdlibParts) {
-				// mark them as deleted, where they will be pruned by the logic in cleanupOrphanedItems
-				cache.PartInstances.update(
+			const cleanOrphans = new Set<PartInstanceId>()
+			if (currentPartInstance) {
+				// Always clean the current segment, anything after the current part (except the next part)
+				const trailingInOldSegment = cache.PartInstances.findFetch(
 					(p) =>
 						p.orphaned === 'adlib-part' &&
-						p.segmentId === nextPartInstance.segmentId &&
-						p.part._rank >= nextPartInstance.part._rank,
+						!p.reset &&
+						p._id !== currentPartInstance._id &&
+						p._id !== nextPartInstance._id &&
+						p.segmentId === currentPartInstance.segmentId &&
+						p.part._rank > currentPartInstance.part._rank
+				)
+
+				for (const part of trailingInOldSegment) {
+					cleanOrphans.add(part._id)
+				}
+			}
+			if (
+				!currentPartInstance ||
+				nextPartInstance.segmentId !== currentPartInstance.segmentId ||
+				(nextPartInstance.segmentId === currentPartInstance.segmentId &&
+					nextPartInstance.part._rank < currentPartInstance.part._rank)
+			) {
+				// clean the new segment
+				const newSegmentParts = cache.PartInstances.findFetch(
+					(p) =>
+						p.orphaned === 'adlib-part' &&
+						!p.reset &&
+						p._id !== nextPartInstance._id &&
+						p._id !== currentPartInstance?._id &&
+						p.segmentId === nextPartInstance.segmentId
+				)
+				for (const part of newSegmentParts) {
+					cleanOrphans.add(part._id)
+				}
+			}
+
+			if (cleanOrphans.size > 0) {
+				cache.PartInstances.update(
+					(p) => cleanOrphans.has(p._id),
 					(p) => {
-						p.orphaned = 'deleted'
+						p.reset = true
+						return p
+					}
+				)
+				cache.PieceInstances.update(
+					(p) => cleanOrphans.has(p.partInstanceId),
+					(p) => {
+						p.reset = true
 						return p
 					}
 				)
