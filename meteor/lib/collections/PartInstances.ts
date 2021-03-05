@@ -44,6 +44,9 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	/** Rank of the take that this PartInstance belongs to */
 	takeCount: number
 
+	/** Whether this instance was created because of RundownPlaylist.nextSegmentId. This will cause it to clear that property as part of the take operation */
+	consumesNextSegmentId?: boolean
+
 	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
 	isTaken?: boolean
 
@@ -81,6 +84,7 @@ export class PartInstance implements DBPartInstance {
 	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	public reset?: boolean
 	public takeCount: number
+	public consumesNextSegmentId?: boolean
 	public previousPartEndState?: PartEndState
 
 	public timings?: PartInstanceTimings

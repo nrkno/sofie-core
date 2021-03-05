@@ -86,7 +86,7 @@ export function resetRundownPlaylist(cache: CacheForPlayout): void {
 
 		// put the first on queue:
 		const firstPart = selectNextPart(cache.Playlist.doc, null, getOrderedSegmentsAndPartsFromPlayoutCache(cache))
-		setNextPart(cache, firstPart ? firstPart.part : null)
+		setNextPart(cache, firstPart)
 	} else {
 		setNextPart(cache, null)
 	}
@@ -107,7 +107,7 @@ export function selectNextPart(
 	previousPartInstance: PartInstance | null,
 	{ parts, segments }: PartsAndSegments,
 	ignoreUnplayabale = true
-): SelectNextPartResult | undefined {
+): SelectNextPartResult | null {
 	const span = profiler.startSpan('selectNextPart')
 	/**
 	 * Iterates over all the parts and searches for the first one to be playable
@@ -205,11 +205,11 @@ export function selectNextPart(
 	}
 
 	if (span) span.end()
-	return nextPart
+	return nextPart ?? null
 }
 export function setNextPart(
 	cache: CacheForPlayout,
-	rawNextPart: DBPart | DBPartInstance | null,
+	rawNextPart: Omit<SelectNextPartResult, 'index'> | DBPartInstance | null,
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ) {
@@ -218,8 +218,8 @@ export function setNextPart(
 	const rundownIds = getRundownIDsFromCache(cache)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
-	const newNextPartInstance = rawNextPart && 'part' in rawNextPart ? rawNextPart : null
-	let newNextPart = rawNextPart && 'part' in rawNextPart ? null : rawNextPart
+	const newNextPartInstance = rawNextPart && 'playlistActivationId' in rawNextPart ? rawNextPart : null
+	let newNextPart = rawNextPart && 'playlistActivationId' in rawNextPart ? null : rawNextPart
 
 	const nonTakenPartInstances = cache.PartInstances.findFetch({
 		rundownId: { $in: rundownIds },
@@ -230,13 +230,13 @@ export function setNextPart(
 		if (!cache.Playlist.doc.activationId)
 			throw new Meteor.Error(500, `RundownPlaylist "${cache.Playlist.doc._id}" is not active`)
 
-		if ((newNextPart && newNextPart.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
+		if ((newNextPart && newNextPart.part.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
 		}
-		if (newNextPart && !rundownIds.includes(newNextPart.rundownId)) {
+		if (newNextPart && !rundownIds.includes(newNextPart.part.rundownId)) {
 			throw new Meteor.Error(
 				409,
-				`Part "${newNextPart._id}" of rundown "${newNextPart.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
+				`Part "${newNextPart.part._id}" of rundown "${newNextPart.part.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
 			)
 		} else if (newNextPartInstance && !rundownIds.includes(newNextPartInstance.rundownId)) {
 			throw new Meteor.Error(
@@ -245,7 +245,7 @@ export function setNextPart(
 			)
 		}
 
-		const nextPart = newNextPartInstance ? newNextPartInstance.part : newNextPart!
+		const nextPart = newNextPartInstance ? newNextPartInstance.part : newNextPart!.part
 
 		// create new instance
 		let newInstanceId: PartInstanceId
@@ -268,6 +268,7 @@ export function setNextPart(
 				segmentId: nextPart.segmentId,
 				part: nextPart,
 				rehearsal: !!cache.Playlist.doc.rehearsal,
+				consumesNextSegmentId: newNextPart?.consumesNextSegmentId,
 			})
 
 			const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, nextPart))
@@ -401,38 +402,6 @@ export function setNextPart(
 						return p
 					}
 				)
-			}
-		}
-	}
-
-	{
-		const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-		// If the previous and current part are not in the same segment, then we have just left a segment
-		if (previousPartInstance?.segmentId !== currentPartInstance?.segmentId) {
-			if (currentPartInstance && cache.Playlist.doc.nextSegmentId === currentPartInstance.segmentId) {
-				// TODO - this will bug when the nextSegment was set to the playing segment..
-				cache.Playlist.update({
-					$unset: {
-						nextSegmentId: 1,
-					},
-				})
-			}
-
-			// Reset the old segment
-			if (previousPartInstance) {
-				const segmentId = previousPartInstance.segmentId
-				const resetIds = new Set(
-					cache.PartInstances.update((p) => !p.reset && p.segmentId === segmentId, {
-						$set: {
-							reset: true,
-						},
-					})
-				)
-				cache.PieceInstances.update((p) => resetIds.has(p.partInstanceId), {
-					$set: {
-						reset: true,
-					},
-				})
 			}
 		}
 	}

@@ -91,14 +91,11 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	if (!takeRundown)
 		throw new Meteor.Error(500, `takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
 
-	// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
 	const nextPart = selectNextPart(
 		cache.Playlist.doc,
 		takePartInstance,
 		getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 	)
-
-	// beforeTake(rundown, previousPart || null, takePart)
 
 	const showStyle = await pShowStyle
 	const { blueprint } = await pBlueprint
@@ -146,16 +143,42 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 		})
 	}
 
-	// Once everything is synced, we can choose the next part
-	libsetNextPart(cache, nextPart?.part ?? null)
+	{
+		const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 
-	// update playoutData
-	// const newSelectedPartInstances = playlist.getSelectedPartInstances()
-	// rundownData = {
-	// 	...rundownData,
-	// 	...newSelectedPartInstances
-	// }
-	// rundownData = getAllOrderedPartsFromCache(cache, playlist) // this is not needed anymore
+		if (
+			currentPartInstance?.consumesNextSegmentId &&
+			cache.Playlist.doc.nextSegmentId === currentPartInstance.segmentId
+		) {
+			// clear the nextSegmentId if the newly taken partInstance says it was selected because of it
+			cache.Playlist.update({
+				$unset: {
+					nextSegmentId: 1,
+				},
+			})
+		}
+
+		// If the previous and current part are not in the same segment, then we have just left a segment
+		if (previousPartInstance && previousPartInstance.segmentId !== currentPartInstance?.segmentId) {
+			// Reset the old segment
+			const segmentId = previousPartInstance.segmentId
+			const resetIds = new Set(
+				cache.PartInstances.update((p) => !p.reset && p.segmentId === segmentId, {
+					$set: {
+						reset: true,
+					},
+				})
+			)
+			cache.PieceInstances.update((p) => resetIds.has(p.partInstanceId), {
+				$set: {
+					reset: true,
+				},
+			})
+		}
+	}
+
+	// Once everything is synced, we can choose the next part
+	libsetNextPart(cache, nextPart)
 
 	// Setup the parts for the HOLD we are starting
 	if (

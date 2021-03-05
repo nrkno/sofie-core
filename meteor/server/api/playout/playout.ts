@@ -349,7 +349,7 @@ export namespace ServerPlayoutAPI {
 			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 		}
 
-		libsetNextPart(cache, nextPart, setManually, nextTimeOffset)
+		libsetNextPart(cache, nextPart ? { part: nextPart } : null, setManually, nextTimeOffset)
 
 		// update lookahead and the next part when we have an auto-next
 		updateTimeline(cache)
@@ -932,7 +932,7 @@ export namespace ServerPlayoutAPI {
 							playingPartInstance,
 							getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 						)
-						libsetNextPart(cache, nextPart?.part ?? null)
+						libsetNextPart(cache, nextPart)
 					} else {
 						// a part is being played that has not been selected for playback by Core
 						// show must go on, so find next part and update the Rundown, but log an error
@@ -958,7 +958,7 @@ export namespace ServerPlayoutAPI {
 								playingPartInstance,
 								getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 							)
-							libsetNextPart(cache, nextPart?.part ?? null)
+							libsetNextPart(cache, nextPart)
 						}
 
 						// TODO - should this even change the next?
