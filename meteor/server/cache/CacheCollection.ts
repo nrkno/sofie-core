@@ -241,7 +241,7 @@ export class DbCacheWriteCollection<
 		selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface> = {},
 		forceUpdate?: boolean
-	): number {
+	): Array<DBInterface['_id']> {
 		this.assertNotToBeRemoved('update')
 
 		const span = profiler.startSpan(`DBCache.update.${this.name}`)
@@ -253,7 +253,7 @@ export class DbCacheWriteCollection<
 			? ({ _id: selector } as any)
 			: selector
 
-		let count = 0
+		const changedIds: Array<DBInterface['_id']> = []
 		_.each(this.findFetch(selector), (doc) => {
 			const _id = doc._id
 
@@ -283,10 +283,10 @@ export class DbCacheWriteCollection<
 					docEntry.updated = true
 				}
 			}
-			count++
+			changedIds.push(_id)
 		})
 		if (span) span.end()
-		return count
+		return changedIds
 	}
 
 	/** Returns true if a doc was replace, false if inserted */
@@ -331,10 +331,10 @@ export class DbCacheWriteCollection<
 			selector = { _id: selector } as any
 		}
 
-		const updatedCount = this.update(selector, doc, forceUpdate)
-		if (updatedCount > 0) {
+		const updatedIds = this.update(selector, doc, forceUpdate)
+		if (updatedIds.length > 0) {
 			if (span) span.end()
-			return { numberAffected: updatedCount }
+			return { numberAffected: updatedIds.length }
 		} else {
 			if (!selector['_id']) {
 				throw new Meteor.Error(500, `Can't upsert without selector._id`)

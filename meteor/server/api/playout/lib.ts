@@ -218,9 +218,6 @@ export function setNextPart(
 	const rundownIds = getRundownIDsFromCache(cache)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
-	const movingToNewSegment =
-		!currentPartInstance || !rawNextPart || rawNextPart.segmentId !== currentPartInstance.segmentId
-
 	const newNextPartInstance = rawNextPart && 'part' in rawNextPart ? rawNextPart : null
 	let newNextPart = rawNextPart && 'part' in rawNextPart ? null : rawNextPart
 
@@ -408,14 +405,36 @@ export function setNextPart(
 		}
 	}
 
-	if (movingToNewSegment && cache.Playlist.doc.nextSegmentId) {
-		// TODO - shouldnt this be done on take? this will have a bug where once the segment is set as next, another call to ensure the next is correct will change it
-		cache.Playlist.update({
-			$unset: {
-				nextSegmentId: 1,
-			},
-		})
-		// delete rundownPlaylist.nextSegmentId
+	{
+		const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+		// If the previous and current part are not in the same segment, then we have just left a segment
+		if (previousPartInstance?.segmentId !== currentPartInstance?.segmentId) {
+			if (currentPartInstance && cache.Playlist.doc.nextSegmentId === currentPartInstance.segmentId) {
+				// TODO - this will bug when the nextSegment was set to the playing segment..
+				cache.Playlist.update({
+					$unset: {
+						nextSegmentId: 1,
+					},
+				})
+			}
+
+			// Reset the old segment
+			if (previousPartInstance) {
+				const segmentId = previousPartInstance.segmentId
+				const resetIds = new Set(
+					cache.PartInstances.update((p) => !p.reset && p.segmentId === segmentId, {
+						$set: {
+							reset: true,
+						},
+					})
+				)
+				cache.PieceInstances.update((p) => resetIds.has(p.partInstanceId), {
+					$set: {
+						reset: true,
+					},
+				})
+			}
+		}
 	}
 
 	cleanupOrphanedItems(cache)
