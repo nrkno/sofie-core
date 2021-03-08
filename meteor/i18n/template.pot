@@ -1782,7 +1782,7 @@ msgstr ""
 msgid "Click to show available Show Styles"
 msgstr ""
 
-msgid "Enable Play from Anywhere™"
+msgid "Enable \"Play from Anywhere\""
 msgstr ""
 
 msgid "Media Preview URL"

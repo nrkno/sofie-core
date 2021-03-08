@@ -1873,8 +1873,8 @@ msgstr "Showstyle ikkje satt"
 msgid "Click to show available Show Styles"
 msgstr "Klikk for å vise tilgjengelege showstyles"
 
-msgid "Enable Play from Anywhere™"
-msgstr "Slå på Play from Anywhere™"
+msgid "Enable \"Play from Anywhere\""
+msgstr "Slå på \"Play from Anywhere\""
 
 msgid "Media Preview URL"
 msgstr "Førehandsvisningsadresse (url)"
