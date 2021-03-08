@@ -703,7 +703,7 @@ describe('Playout API', () => {
 
 		{
 			// move horizontally +1
-			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, 1, 0, true)
+			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, 1, 0)
 			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			// expect second part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[1]._id)
@@ -711,7 +711,7 @@ describe('Playout API', () => {
 
 		{
 			// move horizontally -1
-			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, -1, 0, true)
+			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, -1, 0)
 			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			// expect first part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[0]._id)
@@ -719,7 +719,7 @@ describe('Playout API', () => {
 
 		{
 			// move vertically +1
-			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, 0, 1, true)
+			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, 0, 1)
 			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			// expect 3rd part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[2]._id)
@@ -727,7 +727,7 @@ describe('Playout API', () => {
 
 		{
 			// move vertically -1
-			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, 0, -1, true)
+			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, 0, -1)
 			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			// expect 1st part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[0]._id)

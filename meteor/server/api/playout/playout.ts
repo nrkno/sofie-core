@@ -357,19 +357,18 @@ export namespace ServerPlayoutAPI {
 	export function moveNextPart(
 		context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
-		horizontalDelta: number,
-		verticalDelta: number,
-		setManually: boolean
+		partDelta: number,
+		segmentDelta: number
 	): PartId | null {
 		// @TODO Check for a better solution to validate security methods
 		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 
 		check(rundownPlaylistId, String)
-		check(horizontalDelta, Number)
-		check(verticalDelta, Number)
+		check(partDelta, Number)
+		check(segmentDelta, Number)
 
-		if (!horizontalDelta && !verticalDelta)
-			throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${horizontalDelta}, ${verticalDelta})`)
+		if (!partDelta && !segmentDelta)
+			throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${partDelta}, ${segmentDelta})`)
 
 		return runPlayoutOperationWithCache(
 			context,
@@ -385,19 +384,11 @@ export namespace ServerPlayoutAPI {
 					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" cannot change next during hold!`)
 			},
 			(cache) => {
-				const { segments, parts } = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
-				return moveNextPartInner(cache, segments, parts, horizontalDelta, verticalDelta, setManually)
+				return moveNextPartInner(cache, partDelta, segmentDelta)
 			}
 		)
 	}
-	function moveNextPartInner(
-		cache: CacheForPlayout,
-		rawSegments: Segment[],
-		rawParts: Part[],
-		horizontalDelta: number,
-		verticalDelta: number,
-		setManually: boolean
-	): PartId | null {
+	export function moveNextPartInner(cache: CacheForPlayout, partDelta: number, segmentDelta: number): PartId | null {
 		const playlist = cache.Playlist.doc
 
 		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
@@ -407,20 +398,22 @@ export namespace ServerPlayoutAPI {
 		if (!refPart || !refPartInstance)
 			throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" has no next and no current part!`)
 
-		if (verticalDelta) {
+		const { segments: rawSegments, parts: rawParts } = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+
+		if (segmentDelta) {
 			// Ignores horizontalDelta
 
 			const considerSegments = rawSegments.filter((s) => s._id === refPart.segmentId || !s.isHidden)
 			const refSegmentIndex = considerSegments.findIndex((s) => s._id === refPart.segmentId)
 			if (refSegmentIndex === -1) throw new Meteor.Error(404, `Segment "${refPart.segmentId}" not found!`)
 
-			const targetSegmentIndex = refSegmentIndex + verticalDelta
+			const targetSegmentIndex = refSegmentIndex + segmentDelta
 			const targetSegment = considerSegments[targetSegmentIndex]
 			if (!targetSegment) throw new Meteor.Error(404, `No Segment found!`)
 
 			// find the allowable segment ids
 			const allowedSegments =
-				verticalDelta < 0
+				segmentDelta < 0
 					? considerSegments.slice(targetSegmentIndex)
 					: considerSegments.slice(0, targetSegmentIndex + 1).reverse()
 			// const allowedSegmentIds = new Set(allowedSegments.map((s) => s._id))
@@ -446,15 +439,15 @@ export namespace ServerPlayoutAPI {
 
 			if (selectedPart) {
 				// Switch to that part
-				setNextPartInner(cache, selectedPart, setManually)
+				setNextPartInner(cache, selectedPart, true)
 				return selectedPart._id
 			} else {
 				// Nothing looked valid so do nothing
 				// Note: we should try and a smaller delta if it is not -1/1
-				logger.info(`moveNextPart: Found no new part (verticalDelta=${verticalDelta})`)
+				logger.info(`moveNextPart: Found no new part (verticalDelta=${segmentDelta})`)
 				return null
 			}
-		} else if (horizontalDelta) {
+		} else if (partDelta) {
 			let playabaleParts: DBPart[] = rawParts.filter((p) => refPart._id === p._id || p.isPlayable())
 			let refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
 			if (refPartIndex === -1) {
@@ -465,22 +458,22 @@ export namespace ServerPlayoutAPI {
 			}
 
 			// Get the past we are after
-			const targetPartIndex = refPartIndex + horizontalDelta
+			const targetPartIndex = refPartIndex + partDelta
 			let targetPart = playabaleParts[targetPartIndex]
 			if (targetPart && targetPart._id === currentPartInstance?.part._id) {
 				// Cant go to the current part (yet)
-				const newIndex = targetPartIndex + (horizontalDelta > 0 ? 1 : -1)
+				const newIndex = targetPartIndex + (partDelta > 0 ? 1 : -1)
 				targetPart = playabaleParts[newIndex]
 			}
 
 			if (targetPart) {
 				// Switch to that part
-				setNextPartInner(cache, targetPart, setManually)
+				setNextPartInner(cache, targetPart, true)
 				return targetPart._id
 			} else {
 				// Nothing looked valid so do nothing
 				// Note: we should try and a smaller delta if it is not -1/1
-				logger.info(`moveNextPart: Found no new part (horizontalDelta=${horizontalDelta})`)
+				logger.info(`moveNextPart: Found no new part (horizontalDelta=${partDelta})`)
 				return null
 			}
 		} else {

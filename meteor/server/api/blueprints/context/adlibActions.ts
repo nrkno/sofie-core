@@ -38,6 +38,7 @@ import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './
 import { Meteor } from 'meteor/meteor'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
+import { ServerPlayoutAPI } from '../../playout/playout'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -349,6 +350,9 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		this.nextPartState = ActionPartChange.SAFE_CHANGE
 
 		return clone(unprotectObject(newPartInstance))
+	}
+	moveNextPart(partDelta: number, segmentDelta: number): void {
+		ServerPlayoutAPI.moveNextPartInner(this._cache, partDelta, segmentDelta)
 	}
 	updatePartInstance(part: 'current' | 'next', props: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		// filter the submission to the allowed ones

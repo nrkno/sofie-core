@@ -185,8 +185,7 @@ export function moveNext(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	horisontalDelta: number,
-	verticalDelta: number,
-	setManually: boolean
+	verticalDelta: number
 ): ClientAPI.ClientResponse<PartId | null> {
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 	if (!playlist.activationId)
@@ -200,7 +199,7 @@ export function moveNext(
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.moveNextPart(context, rundownPlaylistId, horisontalDelta, verticalDelta, setManually)
+		ServerPlayoutAPI.moveNextPart(context, rundownPlaylistId, horisontalDelta, verticalDelta)
 	)
 }
 export function prepareForBroadcast(
@@ -837,8 +836,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			this,
 			rundownPlaylistId,
 			horisontalDelta,
-			verticalDelta,
-			true
+			verticalDelta
 		)
 	}
 	prepareForBroadcast(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {

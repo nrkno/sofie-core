@@ -153,6 +153,8 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 	/** Remove piecesInstances by id. Returns ids of piecesInstances that were removed. Note: For now we only allow removing from the next, but this might change to include current if there is justification */
 	removePieceInstances(part: 'next', pieceInstanceIds: string[]): string[]
 
+	/** Move the next part through the rundown. Can move by either a number of parts, or segments in either direction. */
+	moveNextPart(partDelta: number, segmentDelta: number): void
 	/** Set flag to perform take after executing the current action. Returns state of the flag after each call. */
 	takeAfterExecuteAction(take: boolean): boolean
 
