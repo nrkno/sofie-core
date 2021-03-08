@@ -33,7 +33,7 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 		)
 	}
 
-	if (!!cache.Playlist.doc.activationId) {
+	if (!cache.Playlist.doc.activationId) {
 		// Reset the playlist if it wasnt already active
 		resetRundownPlaylist(cache)
 	}
