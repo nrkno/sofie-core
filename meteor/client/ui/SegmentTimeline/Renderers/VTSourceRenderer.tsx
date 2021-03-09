@@ -238,6 +238,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 	getFreezes = (): Array<Anomaly> | undefined => {
 		if (this.props.piece) {
+			if ((this.props.piece.instance.piece.content as VTContent | undefined)?.ignoreFreezeFrame) {
+				return
+			}
+
 			const itemDuration = this.getItemDuration()
 			const item = this.props.piece
 			const metadata = item.contentMetaData as MediaObject
@@ -258,6 +262,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 	getBlacks = (): Array<Anomaly> | undefined => {
 		if (this.props.piece) {
+			if ((this.props.piece.instance.piece.content as VTContent | undefined)?.ignoreBlackFrames) {
+				return
+			}
+
 			const itemDuration = this.getItemDuration()
 			const item = this.props.piece
 			const metadata = item.contentMetaData as MediaObject
