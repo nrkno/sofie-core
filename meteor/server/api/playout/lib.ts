@@ -397,7 +397,7 @@ export function setNextPart(
 			{
 				partInstanceId: { $nin: selectedPartInstanceIds },
 				rundownId: nextPart.rundownId,
-				'piece.partId': nextPart._id,
+				'piece.startPartId': nextPart._id,
 				reset: { $ne: true },
 			},
 			{
