@@ -80,6 +80,8 @@ export interface VTContent extends BaseContent {
 	seek?: number
 	editable?: VTEditableParameters
 	ignoreMediaObjectStatus?: boolean
+	ignoreBlackFrames?: boolean
+	ignoreFreezeFrame?: boolean
 }
 
 export interface CameraContent extends BaseContent {

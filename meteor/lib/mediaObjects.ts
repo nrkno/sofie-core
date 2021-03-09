@@ -126,6 +126,8 @@ export function checkPieceContentStatus(
 	let contentDuration: number | undefined = undefined
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
+	const ignoreBlackFrames = piece.content && piece.content.ignoreBlackFrames
+	const ignoreFreezeFrames = piece.content && piece.content.ignoreFreezeFrames
 	if (!ignoreMediaStatus && sourceLayer) {
 		const messages: Array<string> = []
 		const displayName = piece.name
@@ -265,10 +267,10 @@ export function checkPieceContentStatus(
 											)
 										}
 									}
-									if (mediaObject.mediainfo.blacks) {
+									if (!ignoreBlackFrames && mediaObject.mediainfo.blacks) {
 										addFrameWarning(mediaObject.mediainfo.blacks, t('black'), t)
 									}
-									if (mediaObject.mediainfo.freezes) {
+									if (!ignoreFreezeFrames && mediaObject.mediainfo.freezes) {
 										addFrameWarning(mediaObject.mediainfo.freezes, t('freeze'), t)
 									}
 								}
