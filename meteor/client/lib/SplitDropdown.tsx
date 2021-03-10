@@ -30,18 +30,18 @@ export function SplitDropdown(props: IProps) {
 	const [expanded, setExpanded] = useState(false)
 
 	function getSelected() {
-		return (
+		const selectedChild =
 			props.children &&
 			Array.isArray(props.children) &&
-			(props.children.find((element) => element.key === props.selectedKey)?.children || (
-				<div className="expco-item"></div>
-			))
-		)
+			props.children.find((element) => element.key === props.selectedKey)?.children
+		return selectedChild ? <>{selectedChild}</> : <div className="expco-item"></div>
 	}
 
 	function toggleExpco() {
 		setExpanded(!expanded)
 	}
+
+	console.log(props.children?.map((child) => child.key))
 
 	return (
 		<div
@@ -52,13 +52,13 @@ export function SplitDropdown(props: IProps) {
 				},
 				props.className
 			)}>
-			<div className={ClassNames('expco-title focusable-main')}>{getSelected()}</div>
+			<div className="expco-title focusable-main">{getSelected()}</div>
 			<div className="action-btn right expco-expand subtle" onClick={toggleExpco}>
 				<FontAwesomeIcon icon={faChevronUp} />
 			</div>
 			<div className="expco-body bd">
-				{props.children?.map((child) => (
-					<React.Fragment key={child.key}>{child.children}</React.Fragment>
+				{props.children?.map((child, index) => (
+					<React.Fragment key={child.key || index}>{child.children}</React.Fragment>
 				))}
 			</div>
 		</div>
