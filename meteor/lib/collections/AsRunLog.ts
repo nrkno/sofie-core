@@ -7,21 +7,18 @@ import { StudioId } from './Studios'
 import { SegmentId } from './Segments'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
-import { TimelineObjId } from './Timeline'
 import { registerIndex } from '../database'
 
-export type AsRunLogEventBase = Omit<
-	ProtectedStringProperties<
-		IBlueprintAsRunLogEvent,
-		'rundownId' | 'studioId' | 'segmentId' | 'partInstanceId' | 'pieceInstanceId' | 'timelineObjectId'
-	>,
-	'_id' | 'timestamp' | 'rehersal'
->
+export type AsRunLogEventBase = Omit<AsRunLogEvent, '_id' | 'timestamp' | 'rehersal'>
 
 /** A string, identifying a AsRunLogEvent */
 export type AsRunLogEventId = ProtectedString<'AsRunLogEventId'>
 
-export interface AsRunLogEvent extends AsRunLogEventBase {
+export interface AsRunLogEvent
+	extends ProtectedStringProperties<
+		IBlueprintAsRunLogEvent,
+		'_id' | 'rundownId' | 'studioId' | 'segmentId' | 'partInstanceId' | 'pieceInstanceId'
+	> {
 	_id: AsRunLogEventId
 	/** Timestamp of the event */
 	timestamp: Time
@@ -33,7 +30,6 @@ export interface AsRunLogEvent extends AsRunLogEventBase {
 	segmentId?: SegmentId
 	partInstanceId?: PartInstanceId
 	pieceInstanceId?: PieceInstanceId
-	timelineObjectId?: TimelineObjId
 }
 
 export const AsRunLog: TransformedCollection<AsRunLogEvent, AsRunLogEvent> = createMongoCollection<AsRunLogEvent>(

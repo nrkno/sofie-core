@@ -8,12 +8,11 @@ export interface IBlueprintAsRunLogEvent {
 	segmentId?: string
 	partInstanceId?: string
 	pieceInstanceId?: string
-	timelineObjectId?: string
 
 	/** Name/id of the content */
 	content: IBlueprintAsRunLogEventContent
 	/** Name/id of the sub-content */
-	content2?: string
+	content2?: string // TODO - this is not read anywhere, and is implied based on what ids are set
 	/** Metadata about the content */
 	metadata?: any
 
