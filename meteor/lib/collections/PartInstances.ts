@@ -27,7 +27,10 @@ export interface InternalIBlueprintPartInstance
 	extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
 	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>
 }
-export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance {
+
+export function unprotectPartInstance(pieceInstance: PartInstance): IBlueprintPartInstance
+export function unprotectPartInstance(pieceInstance: PartInstance | undefined): IBlueprintPartInstance | undefined
+export function unprotectPartInstance(partInstance: PartInstance | undefined): IBlueprintPartInstance | undefined {
 	return partInstance as any
 }
 

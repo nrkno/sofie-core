@@ -181,6 +181,7 @@ describe('cronjobs', () => {
 			const asRunLog0 = protectString<AsRunLogEventId>(Random.id())
 			AsRunLog.insert({
 				_id: asRunLog0,
+				playlistActivationId: protectString(''),
 				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				rehersal: false,
 				rundownId: protectString(''),
@@ -192,6 +193,7 @@ describe('cronjobs', () => {
 			const asRunLog1 = protectString<AsRunLogEventId>(Random.id())
 			AsRunLog.insert({
 				_id: asRunLog1,
+				playlistActivationId: protectString(''),
 				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				rehersal: false,
 				rundownId: protectString(''),

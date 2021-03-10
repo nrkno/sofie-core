@@ -8,8 +8,9 @@ import { SegmentId } from './Segments'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
 import { registerIndex } from '../database'
+import { RundownPlaylistActivationId } from './RundownPlaylists'
 
-export type AsRunLogEventBase = Omit<AsRunLogEvent, '_id' | 'timestamp' | 'rehersal'>
+export type AsRunLogEventBase = Omit<AsRunLogEvent, '_id' | 'timestamp' | 'rehersal' | 'playlistActivationId'>
 
 /** A string, identifying a AsRunLogEvent */
 export type AsRunLogEventId = ProtectedString<'AsRunLogEventId'>
@@ -25,6 +26,7 @@ export interface AsRunLogEvent
 	/** If the event was done in rehersal */
 	rehersal: boolean
 
+	playlistActivationId: RundownPlaylistActivationId | undefined
 	rundownId: RundownId
 	studioId: StudioId
 	segmentId?: SegmentId
@@ -39,7 +41,6 @@ registerCollection('AsRunLog', AsRunLog)
 
 registerIndex(AsRunLog, {
 	rundownId: 1,
-})
-registerIndex(AsRunLog, {
+	playlistActivationId: 1,
 	timestamp: 1,
 })

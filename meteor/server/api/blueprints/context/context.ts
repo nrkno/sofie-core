@@ -53,7 +53,7 @@ import {
 	unprotectPieceInstance,
 	protectPieceInstance,
 } from '../../../../lib/collections/PieceInstances'
-import { unprotectPartInstance, PartInstance } from '../../../../lib/collections/PartInstances'
+import { unprotectPartInstance, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { ReadonlyDeep } from 'type-fest'
 import { Random } from 'meteor/random'
@@ -546,7 +546,11 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 }
 
 export class AsRunEventContext extends RundownContext implements IAsRunEventContext {
-	public readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
+	public readonly _asRunEvent: Readonly<AsRunLogEvent>
+
+	public get asRunEvent(): Readonly<IBlueprintAsRunLogEvent> {
+		return unprotectObject(this._asRunEvent)
+	}
 
 	constructor(
 		contextInfo: ContextInfo,
@@ -556,7 +560,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		asRunEvent: AsRunLogEvent
 	) {
 		super(contextInfo, studio, showStyleCompound, rundown)
-		this.asRunEvent = unprotectObject(asRunEvent)
+		this._asRunEvent = asRunEvent
 	}
 
 	getCurrentTime(): number {
@@ -568,6 +572,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		return unprotectObjectArray(
 			AsRunLog.find(
 				{
+					playlistActivationId: { $eq: this._asRunEvent.playlistActivationId },
 					rundownId: this._rundown._id,
 				},
 				{
@@ -623,9 +628,11 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		check(partInstanceId, String)
 		if (partInstanceId) {
 			return unprotectPartInstance(
-				this._rundown.getAllPartInstances({
+				PartInstances.findOne({
+					playlistActivationId: this._asRunEvent.playlistActivationId,
+					rundownId: this._rundown._id,
 					_id: protectString(partInstanceId),
-				})[0]
+				})
 			)
 		}
 	}
@@ -640,6 +647,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		if (pieceInstanceId) {
 			return unprotectPieceInstance(
 				PieceInstances.findOne({
+					playlistActivationId: this._asRunEvent.playlistActivationId,
 					rundownId: this._rundown._id,
 					_id: protectString(pieceInstanceId),
 				})
@@ -655,6 +663,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		if (partInstanceId) {
 			return unprotectObjectArray(
 				PieceInstances.find({
+					playlistActivationId: this._asRunEvent.playlistActivationId,
 					rundownId: this._rundown._id,
 					partInstanceId: protectString(partInstanceId),
 				}).fetch()

@@ -34,13 +34,16 @@ const EVENT_WAIT_TIME = 500
 
 export async function pushAsRunLogAsync(
 	eventBase: AsRunLogEventBase,
-	rehersal: boolean,
+	playlist: ReadonlyDeep<RundownPlaylist>,
+	// rehersal: boolean,
 	timestamp?: Time
 ): Promise<AsRunLogEvent | null> {
 	if (!timestamp) timestamp = getCurrentTime()
+	const rehersal = !!playlist.rehearsal
 
 	let event: AsRunLogEvent = extendMandadory<AsRunLogEventBase, AsRunLogEvent>(eventBase, {
 		_id: protectString(getHash(JSON.stringify(eventBase) + timestamp + '_' + rehersal)),
+		playlistActivationId: playlist.activationId,
 		timestamp: timestamp,
 		rehersal: rehersal,
 	})
@@ -52,8 +55,12 @@ export async function pushAsRunLogAsync(
 		return null
 	}
 }
-export function pushAsRunLog(eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time): AsRunLogEvent | null {
-	let p = pushAsRunLogAsync(eventBase, rehersal, timestamp)
+export function pushAsRunLog(
+	eventBase: AsRunLogEventBase,
+	playlist: ReadonlyDeep<RundownPlaylist>,
+	timestamp?: Time
+): AsRunLogEvent | null {
+	const p = pushAsRunLogAsync(eventBase, playlist, timestamp)
 
 	return waitForPromise(p)
 }
@@ -129,7 +136,7 @@ export function reportRundownHasStarted(cache: CacheForPlayout, rundownId: Rundo
 				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 'rundown',
 			},
-			!!playlist.rehearsal,
+			playlist,
 			timestamp
 		)
 		if (event) handleAsRunEvent(event)
@@ -153,7 +160,7 @@ export function reportRundownDataHasChanged(playlist: ReadonlyDeep<RundownPlayli
 				content: IBlueprintAsRunLogEventContent.DATACHANGED,
 				content2: 'rundown',
 			},
-			!!playlist.rehearsal,
+			playlist,
 			timestamp
 		)
 		if (event) handleAsRunEvent(event)
@@ -180,7 +187,7 @@ export function reportPartHasStarted(cache: CacheForPlayout, partInstance: PartI
 				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 'part',
 			},
-			!!playlist.rehearsal,
+			playlist,
 			timestamp
 		)
 		if (event) handleAsRunEvent(event)
@@ -211,7 +218,7 @@ export function reportPartHasStopped(playlistId: RundownPlaylistId, partInstance
 				content: IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
 				content2: 'part',
 			},
-			!!playlist.rehearsal,
+			playlist,
 			timestamp
 		)
 		if (event) handleAsRunEvent(event)
@@ -272,7 +279,7 @@ export function reportPieceHasStarted(playlistId: RundownPlaylistId, pieceInstan
 				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 'piece',
 			},
-			!!playlist.rehearsal,
+			playlist,
 			timestamp
 		)
 		if (event) handleAsRunEvent(event)
@@ -311,7 +318,7 @@ export function reportPieceHasStopped(playlistId: RundownPlaylistId, pieceInstan
 				content: IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
 				content2: 'piece',
 			},
-			!!playlist.rehearsal,
+			playlist,
 			timestamp
 		)
 		if (event) handleAsRunEvent(event)

@@ -470,6 +470,7 @@ describe('Test blueprint api context', () => {
 			const mockEvent: AsRunLogEvent = {
 				_id: protectString(`${rundown._id}_tmp`),
 				timestamp: Date.now(),
+				playlistActivationId: protectString('active'),
 				rundownId: rundown._id,
 				studioId: rundown.studioId,
 				rehersal: false,
@@ -513,6 +514,7 @@ describe('Test blueprint api context', () => {
 
 			const mockEvent: AsRunLogEvent = {
 				_id: protectString(`${rundown._id}_tmp`),
+				playlistActivationId: protectString('active'),
 				timestamp: Date.now(),
 				rundownId: rundown._id,
 				studioId: rundown.studioId,
@@ -538,6 +540,7 @@ describe('Test blueprint api context', () => {
 
 			AsRunLog.insert({
 				_id: protectString(`${rundown._id}_event1`),
+				playlistActivationId: protectString('active'),
 				timestamp: Date.now() - 1000,
 				rundownId: rundown._id,
 				studioId: rundown.studioId,
@@ -547,6 +550,7 @@ describe('Test blueprint api context', () => {
 			AsRunLog.insert(mockEvent)
 			AsRunLog.insert({
 				_id: protectString(`${rundown._id}_event2`),
+				playlistActivationId: protectString('active'),
 				timestamp: Date.now() - 2000,
 				rundownId: rundown._id,
 				studioId: rundown.studioId,
