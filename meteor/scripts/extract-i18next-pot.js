@@ -82,6 +82,10 @@ var parserOptions = {
 		prefix: '{{',
 		suffix: '}}',
 	},
+	acorn: {
+		ecmaVersion: 11,
+		sourceType: 'module',
+	},
 }
 
 var parser = new Parser(parserOptions)
