@@ -67,8 +67,6 @@ interface IProps {
 	collapsedOutputs: {
 		[key: string]: boolean
 	}
-	onCollapseSegmentToggle?: (event: any) => void
-	isCollapsed?: boolean
 	scrollLeft: number
 	hasAlreadyPlayed: boolean
 	hasGuestItems: boolean
@@ -177,7 +175,6 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 					playlist={this.props.playlist}
 					studio={this.props.studio}
 					collapsedOutputs={this.props.collapsedOutputs}
-					isCollapsed={this.props.isCollapsed}
 					scrollLeft={0}
 					scrollWidth={1}
 					timeScale={1}
@@ -666,7 +663,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							playlist={this.props.playlist}
 							studio={this.props.studio}
 							collapsedOutputs={this.props.collapsedOutputs}
-							isCollapsed={this.props.isCollapsed}
 							scrollLeft={this.props.scrollLeft}
 							timeScale={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
@@ -675,7 +671,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							livePosition={this.props.livePosition}
 							onScroll={this.props.onScroll}
 							onCollapseOutputToggle={this.props.onCollapseOutputToggle}
-							onCollapseSegmentToggle={this.props.onCollapseSegmentToggle}
 							onFollowLiveLine={this.props.onFollowLiveLine}
 							onContextMenu={this.props.onContextMenu}
 							relative={false}
@@ -803,8 +798,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			<div
 				id={this.props.id}
 				className={ClassNames('segment-timeline', {
-					collapsed: this.props.isCollapsed,
-
 					live: this.props.isLiveSegment,
 					next: !this.props.isLiveSegment && this.props.isNextSegment,
 					queued: this.props.isQueuedSegment,
@@ -929,13 +922,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					<VelocityReact.VelocityTransitionGroup
 						enter={{ animation: 'slideDown', easing: 'ease-out', duration: 250 }}
 						leave={{ animation: 'slideUp', easing: 'ease-in', duration: 250 }}>
-						{!this.props.isCollapsed && (
-							<SegmentTimelineZoom
-								onZoomDblClick={this.onZoomNormalize}
-								timelineWidth={this.state.timelineWidth}
-								{...this.props}
-							/>
-						)}
+						<SegmentTimelineZoom
+							onZoomDblClick={this.onZoomNormalize}
+							timelineWidth={this.state.timelineWidth}
+							{...this.props}
+						/>
 					</VelocityReact.VelocityTransitionGroup>
 				</ErrorBoundary>
 			</div>
