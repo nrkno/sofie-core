@@ -35,7 +35,10 @@ export interface PieceInstanceInfinite
 }
 
 export interface PieceInstance
-	extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece' | 'infinite'>, '_id' | 'adLibSourceId'> {
+	extends ProtectedStringProperties<
+		Omit<IBlueprintPieceInstance, 'piece' | 'infinite'>,
+		'_id' | 'adLibSourceId' | 'partInstanceId'
+	> {
 	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
 	readonly isTemporary?: boolean
 
@@ -81,7 +84,7 @@ export interface PieceInstance
 
 export interface ResolvedPieceInstance
 	extends PieceInstance,
-		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'piece' | 'infinite'> {
+		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'partInstanceId' | 'piece' | 'infinite'> {
 	piece: PieceInstancePiece
 }
 

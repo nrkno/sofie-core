@@ -9,7 +9,6 @@ import { getHash, protectString, unprotectString, waitForPromise } from '../../.
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import {
 	LookaheadMode,
-	IBlueprintAsRunLogEventContent,
 	IBlueprintSegmentDB,
 	TSR,
 	IBlueprintPartInstance,
@@ -19,20 +18,12 @@ import {
 	ConfigManifestEntry,
 	SomeBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import {
-	CommonContext,
-	StudioContext,
-	ShowStyleContext,
-	PartEventContext,
-	AsRunEventContext,
-	TimelineEventContext,
-} from '../context'
+import { CommonContext, StudioContext, ShowStyleContext, PartEventContext, TimelineEventContext } from '../context'
 import { ConfigRef } from '../config'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleCompound, ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
 import { DBPart, PartId } from '../../../../lib/collections/Parts'
-import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import {
 	wrapPartToTemporaryInstance,
 	PartInstances,
@@ -465,456 +456,456 @@ describe('Test blueprint api context', () => {
 		})
 	})
 
-	describe('AsRunEventContext', () => {
-		function getContext(rundown: Rundown, event?: Partial<AsRunLogEvent>) {
-			const mockEvent: AsRunLogEvent = {
-				_id: protectString(`${rundown._id}_tmp`),
-				timestamp: Date.now(),
-				playlistActivationId: protectString('active'),
-				rundownId: rundown._id,
-				studioId: rundown.studioId,
-				rehersal: false,
-				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-				...event,
-			}
-
-			const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
-			expect(playlist).toBeTruthy()
-
-			const studio = Studios.findOne(rundown.studioId) as Studio
-			expect(studio).toBeTruthy()
-
-			const showStyle = waitForPromise(getShowStyleCompoundForRundown(rundown)) as ShowStyleCompound
-			expect(showStyle).toBeTruthy()
-
-			return new AsRunEventContext(
-				{
-					name: 'as-run',
-					identifier: unprotectString(mockEvent._id),
-				},
-				studio,
-				showStyle,
-				rundown,
-				mockEvent
-			)
-		}
-		testInFiber('getAllAsRunEvents', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
-			expect(playlist).toBeTruthy()
-
-			const studio = Studios.findOne(rundown.studioId) as Studio
-			expect(studio).toBeTruthy()
-
-			const showStyle = waitForPromise(getShowStyleCompoundForRundown(rundown)) as ShowStyleCompound
-			expect(showStyle).toBeTruthy()
-
-			const mockEvent: AsRunLogEvent = {
-				_id: protectString(`${rundown._id}_tmp`),
-				playlistActivationId: protectString('active'),
-				timestamp: Date.now(),
-				rundownId: rundown._id,
-				studioId: rundown.studioId,
-				rehersal: false,
-				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-			}
-
-			const context = new AsRunEventContext(
-				{
-					name: 'as-run',
-					identifier: unprotectString(mockEvent._id),
-				},
-				studio,
-				showStyle,
-				rundown,
-				mockEvent
-			)
-			expect(context.studio).toBeTruthy()
-			expect(context.asRunEvent).toEqual(mockEvent)
-
-			// Should be no events yet
-			expect(context.getAllAsRunEvents()).toHaveLength(0)
-
-			AsRunLog.insert({
-				_id: protectString(`${rundown._id}_event1`),
-				playlistActivationId: protectString('active'),
-				timestamp: Date.now() - 1000,
-				rundownId: rundown._id,
-				studioId: rundown.studioId,
-				rehersal: true,
-				content: IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
-			})
-			AsRunLog.insert(mockEvent)
-			AsRunLog.insert({
-				_id: protectString(`${rundown._id}_event2`),
-				playlistActivationId: protectString('active'),
-				timestamp: Date.now() - 2000,
-				rundownId: rundown._id,
-				studioId: rundown.studioId,
-				rehersal: true,
-				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-			})
-
-			// Should now be some
-			const events = context.getAllAsRunEvents()
-			expect(events).toHaveLength(3)
-			expect(_.pluck(events, '_id')).toEqual([
-				`${rundown._id}_event2`,
-				`${rundown._id}_event1`,
-				`${rundown._id}_tmp`,
-			])
-		})
-
-		testInFiber('getSegments', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			// Should be some defaults
-			expect(_.pluck(context.getSegments(), '_id')).toEqual([
-				`${rundown._id}_segment0`,
-				`${rundown._id}_segment1`,
-				`${rundown._id}_segment2`,
-			])
-		})
-
-		testInFiber('getSegment - no id', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			try {
-				// Event doesnt have a segment id
-				context.getSegment()
-				// Should not get here
-				expect(false).toBeTruthy()
-			} catch (e) {
-				expect(e.message).toEqual('Match error: Expected string, got undefined')
-			}
-		})
-		testInFiber('getSegment - empty id', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			try {
-				context.getSegment('')
-				// Should not get here
-				expect(false).toBeTruthy()
-			} catch (e) {
-				expect(e.message).toEqual('Match error: Expected string, got undefined')
-			}
-		})
-		testInFiber('getSegment - unknown id', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			expect(context.getSegment('not-a-real-segment')).toBeUndefined()
-		})
-		testInFiber('getSegment - good', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			const segment = context.getSegment(`${rundown._id}_segment1`) as IBlueprintSegmentDB
-			expect(segment).toBeTruthy()
-			expect(segment._id).toEqual(`${rundown._id}_segment1`)
-		})
-		testInFiber('getSegment - empty id with event segmentId', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown, {
-				segmentId: protectString(`${rundown._id}_segment0`),
-			})
-
-			const segment = context.getSegment('') as IBlueprintSegmentDB
-			expect(segment).toBeTruthy()
-			expect(segment._id).toEqual(`${rundown._id}_segment0`)
-		})
-		testInFiber('getSegment - good with event segmentId', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown, {
-				segmentId: protectString(`${rundown._id}_segment1`),
-			})
-
-			const segment = context.getSegment(`${rundown._id}_segment2`) as IBlueprintSegmentDB
-			expect(segment).toBeTruthy()
-			expect(segment._id).toEqual(`${rundown._id}_segment2`)
-		})
-
-		testInFiber('getParts', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-			generateSparsePieceInstances(rundown)
-
-			const context = getContext(rundown)
-
-			// Should be some defaults
-			expect(_.pluck(context.getParts(), '_id')).toEqual([
-				`${rundown._id}_part0_0`,
-				`${rundown._id}_part0_1`,
-				`${rundown._id}_part1_0`,
-				`${rundown._id}_part1_1`,
-				`${rundown._id}_part1_2`,
-			])
-		})
-
-		testInFiber('getPartInstance - no id', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-			generateSparsePieceInstances(rundown)
-
-			const context = getContext(rundown)
-
-			try {
-				// Event doesnt have a segment id
-				context.getPartInstance()
-				// Should not get here
-				expect(false).toBeTruthy()
-			} catch (e) {
-				expect(e.message).toEqual('Match error: Expected string, got undefined')
-			}
-		})
-		testInFiber('getPartInstance - empty id', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-			generateSparsePieceInstances(rundown)
-
-			const context = getContext(rundown)
-
-			try {
-				context.getPartInstance('')
-				// Should not get here
-				expect(false).toBeTruthy()
-			} catch (e) {
-				expect(e.message).toEqual('Match error: Expected string, got undefined')
-			}
-		})
-		testInFiber('getPartInstance - unknown id', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-			generateSparsePieceInstances(rundown)
-
-			const context = getContext(rundown)
-
-			expect(context.getPartInstance('not-a-real-part')).toBeUndefined()
-		})
-		testInFiber('getPartInstance - good', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-			generateSparsePieceInstances(rundown)
-
-			const context = getContext(rundown)
-
-			const part = context.getPartInstance(`${rundown._id}_part1_0_instance`) as IBlueprintPartInstance
-			expect(part).toBeTruthy()
-			expect(part._id).toEqual(`${rundown._id}_part1_0_instance`)
-		})
-		testInFiber('getPartInstance - empty id with event partId', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-			generateSparsePieceInstances(rundown)
-
-			const context = getContext(rundown, {
-				partInstanceId: protectString(`${rundown._id}_part1_1_instance`),
-			})
-
-			const part = context.getPartInstance('') as IBlueprintPartInstance
-			expect(part).toBeTruthy()
-			expect(part._id).toEqual(`${rundown._id}_part1_1_instance`)
-		})
-		testInFiber('getPartInstance - good with event partId', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-			generateSparsePieceInstances(rundown)
-
-			const context = getContext(rundown, {
-				partInstanceId: protectString(`${rundown._id}_part1_2_instance`),
-			})
-
-			const part = context.getPartInstance(`${rundown._id}_part0_1_instance`) as IBlueprintPartInstance
-			expect(part).toBeTruthy()
-			expect(part._id).toEqual(`${rundown._id}_part0_1_instance`)
-		})
-
-		testInFiber('getPieceInstances - good', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			// Generate some pieces
-			generateSparsePieceInstances(rundown)
-
-			const part = PartInstances.find({ rundownId: rundown._id }).fetch()[3]
-			expect(part).toBeTruthy()
-
-			// Should be some defaults
-			expect(_.pluck(context.getPieceInstances(unprotectString(part._id)), '_id')).toEqual([
-				`${rundown._id}_part1_1_piece0`,
-				`${rundown._id}_part1_1_piece1`,
-			])
-		})
-		testInFiber('getPieceInstances - bad id', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			// Generate some pieces
-			generateSparsePieceInstances(rundown)
-
-			// Should be some defaults
-			expect(context.getPieceInstances('not-a-real-part')).toHaveLength(0)
-		})
-		testInFiber('getPieceInstances - empty id', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			// Generate some pieces
-			generateSparsePieceInstances(rundown)
-
-			// Should be some defaults
-			expect(context.getPieceInstances('')).toHaveLength(0)
-		})
-
-		testInFiber('getPieceInstance - no id', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			// Generate some pieces
-			generateSparsePieceInstances(rundown)
-
-			expect(context.getPieceInstance()).toBeUndefined()
-		})
-		testInFiber('getPieceInstance - empty id', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			// Generate some pieces
-			generateSparsePieceInstances(rundown)
-
-			expect(context.getPieceInstance('')).toBeUndefined()
-		})
-		testInFiber('getPieceInstance - unknown id', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			// Generate some pieces
-			generateSparsePieceInstances(rundown)
-
-			expect(context.getPieceInstance('not-a-real-piece')).toBeUndefined()
-		})
-		testInFiber('getPieceInstance - good', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			// Generate some pieces
-			generateSparsePieceInstances(rundown)
-
-			const piece = context.getPieceInstance(`${rundown._id}_part0_1_piece3`) as IBlueprintPieceInstance
-			expect(piece).toBeTruthy()
-			expect(piece._id).toEqual(`${rundown._id}_part0_1_piece3`)
-		})
-		testInFiber('getPieceInstance - empty id with event pieceId', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown, {
-				pieceInstanceId: protectString(`${rundown._id}_part0_1_piece2`),
-			})
-
-			// Generate some pieces
-			generateSparsePieceInstances(rundown)
-
-			const piece = context.getPieceInstance('') as IBlueprintPieceInstance
-			expect(piece).toBeTruthy()
-			expect(piece._id).toEqual(`${rundown._id}_part0_1_piece2`)
-		})
-		testInFiber('getPieceInstance - good with event pieceId', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown, {
-				pieceInstanceId: protectString(`${rundown._id}_part0_1_piece2`),
-			})
-
-			// Generate some pieces
-			generateSparsePieceInstances(rundown)
-
-			const piece = context.getPieceInstance(`${rundown._id}_part1_2_piece0`) as IBlueprintPieceInstance
-			expect(piece).toBeTruthy()
-			expect(piece._id).toEqual(`${rundown._id}_part1_2_piece0`)
-		})
-
-		testInFiber('formatDateAsTimecode', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			const d = new Date('2019-01-01 18:33:34:896')
-			expect(context.formatDateAsTimecode(d.getTime())).toEqual('18:33:34:22')
-		})
-
-		testInFiber('formatDurationAsTimecode', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const context = getContext(rundown)
-
-			expect(context.formatDurationAsTimecode(0)).toEqual('00:00:00:00')
-			expect(context.formatDurationAsTimecode(10000)).toEqual('00:00:10:00')
-			expect(context.formatDurationAsTimecode(12345678)).toEqual('03:25:45:16')
-		})
-	})
+	// describe('AsRunEventContext', () => {
+	// 	function getContext(rundown: Rundown, event?: Partial<AsRunLogEvent>) {
+	// 		const mockEvent: AsRunLogEvent = {
+	// 			_id: protectString(`${rundown._id}_tmp`),
+	// 			timestamp: Date.now(),
+	// 			playlistActivationId: protectString('active'),
+	// 			rundownId: rundown._id,
+	// 			studioId: rundown.studioId,
+	// 			rehersal: false,
+	// 			content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
+	// 			...event,
+	// 		}
+
+	// 		const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
+	// 		expect(playlist).toBeTruthy()
+
+	// 		const studio = Studios.findOne(rundown.studioId) as Studio
+	// 		expect(studio).toBeTruthy()
+
+	// 		const showStyle = waitForPromise(getShowStyleCompoundForRundown(rundown)) as ShowStyleCompound
+	// 		expect(showStyle).toBeTruthy()
+
+	// 		return new AsRunEventContext(
+	// 			{
+	// 				name: 'as-run',
+	// 				identifier: unprotectString(mockEvent._id),
+	// 			},
+	// 			studio,
+	// 			showStyle,
+	// 			rundown,
+	// 			mockEvent
+	// 		)
+	// 	}
+	// 	testInFiber('getAllAsRunEvents', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
+	// 		expect(playlist).toBeTruthy()
+
+	// 		const studio = Studios.findOne(rundown.studioId) as Studio
+	// 		expect(studio).toBeTruthy()
+
+	// 		const showStyle = waitForPromise(getShowStyleCompoundForRundown(rundown)) as ShowStyleCompound
+	// 		expect(showStyle).toBeTruthy()
+
+	// 		const mockEvent: AsRunLogEvent = {
+	// 			_id: protectString(`${rundown._id}_tmp`),
+	// 			playlistActivationId: protectString('active'),
+	// 			timestamp: Date.now(),
+	// 			rundownId: rundown._id,
+	// 			studioId: rundown.studioId,
+	// 			rehersal: false,
+	// 			content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
+	// 		}
+
+	// 		const context = new AsRunEventContext(
+	// 			{
+	// 				name: 'as-run',
+	// 				identifier: unprotectString(mockEvent._id),
+	// 			},
+	// 			studio,
+	// 			showStyle,
+	// 			rundown,
+	// 			mockEvent
+	// 		)
+	// 		expect(context.studio).toBeTruthy()
+	// 		expect(context.asRunEvent).toEqual(mockEvent)
+
+	// 		// Should be no events yet
+	// 		expect(context.getAllAsRunEvents()).toHaveLength(0)
+
+	// 		AsRunLog.insert({
+	// 			_id: protectString(`${rundown._id}_event1`),
+	// 			playlistActivationId: protectString('active'),
+	// 			timestamp: Date.now() - 1000,
+	// 			rundownId: rundown._id,
+	// 			studioId: rundown.studioId,
+	// 			rehersal: true,
+	// 			content: IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
+	// 		})
+	// 		AsRunLog.insert(mockEvent)
+	// 		AsRunLog.insert({
+	// 			_id: protectString(`${rundown._id}_event2`),
+	// 			playlistActivationId: protectString('active'),
+	// 			timestamp: Date.now() - 2000,
+	// 			rundownId: rundown._id,
+	// 			studioId: rundown.studioId,
+	// 			rehersal: true,
+	// 			content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
+	// 		})
+
+	// 		// Should now be some
+	// 		const events = context.getAllAsRunEvents()
+	// 		expect(events).toHaveLength(3)
+	// 		expect(_.pluck(events, '_id')).toEqual([
+	// 			`${rundown._id}_event2`,
+	// 			`${rundown._id}_event1`,
+	// 			`${rundown._id}_tmp`,
+	// 		])
+	// 	})
+
+	// 	testInFiber('getSegments', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		// Should be some defaults
+	// 		expect(_.pluck(context.getSegments(), '_id')).toEqual([
+	// 			`${rundown._id}_segment0`,
+	// 			`${rundown._id}_segment1`,
+	// 			`${rundown._id}_segment2`,
+	// 		])
+	// 	})
+
+	// 	testInFiber('getSegment - no id', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		try {
+	// 			// Event doesnt have a segment id
+	// 			context.getSegment()
+	// 			// Should not get here
+	// 			expect(false).toBeTruthy()
+	// 		} catch (e) {
+	// 			expect(e.message).toEqual('Match error: Expected string, got undefined')
+	// 		}
+	// 	})
+	// 	testInFiber('getSegment - empty id', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		try {
+	// 			context.getSegment('')
+	// 			// Should not get here
+	// 			expect(false).toBeTruthy()
+	// 		} catch (e) {
+	// 			expect(e.message).toEqual('Match error: Expected string, got undefined')
+	// 		}
+	// 	})
+	// 	testInFiber('getSegment - unknown id', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		expect(context.getSegment('not-a-real-segment')).toBeUndefined()
+	// 	})
+	// 	testInFiber('getSegment - good', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		const segment = context.getSegment(`${rundown._id}_segment1`) as IBlueprintSegmentDB
+	// 		expect(segment).toBeTruthy()
+	// 		expect(segment._id).toEqual(`${rundown._id}_segment1`)
+	// 	})
+	// 	testInFiber('getSegment - empty id with event segmentId', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown, {
+	// 			segmentId: protectString(`${rundown._id}_segment0`),
+	// 		})
+
+	// 		const segment = context.getSegment('') as IBlueprintSegmentDB
+	// 		expect(segment).toBeTruthy()
+	// 		expect(segment._id).toEqual(`${rundown._id}_segment0`)
+	// 	})
+	// 	testInFiber('getSegment - good with event segmentId', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown, {
+	// 			segmentId: protectString(`${rundown._id}_segment1`),
+	// 		})
+
+	// 		const segment = context.getSegment(`${rundown._id}_segment2`) as IBlueprintSegmentDB
+	// 		expect(segment).toBeTruthy()
+	// 		expect(segment._id).toEqual(`${rundown._id}_segment2`)
+	// 	})
+
+	// 	testInFiber('getParts', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		const context = getContext(rundown)
+
+	// 		// Should be some defaults
+	// 		expect(_.pluck(context.getParts(), '_id')).toEqual([
+	// 			`${rundown._id}_part0_0`,
+	// 			`${rundown._id}_part0_1`,
+	// 			`${rundown._id}_part1_0`,
+	// 			`${rundown._id}_part1_1`,
+	// 			`${rundown._id}_part1_2`,
+	// 		])
+	// 	})
+
+	// 	testInFiber('getPartInstance - no id', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		const context = getContext(rundown)
+
+	// 		try {
+	// 			// Event doesnt have a segment id
+	// 			context.getPartInstance()
+	// 			// Should not get here
+	// 			expect(false).toBeTruthy()
+	// 		} catch (e) {
+	// 			expect(e.message).toEqual('Match error: Expected string, got undefined')
+	// 		}
+	// 	})
+	// 	testInFiber('getPartInstance - empty id', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		const context = getContext(rundown)
+
+	// 		try {
+	// 			context.getPartInstance('')
+	// 			// Should not get here
+	// 			expect(false).toBeTruthy()
+	// 		} catch (e) {
+	// 			expect(e.message).toEqual('Match error: Expected string, got undefined')
+	// 		}
+	// 	})
+	// 	testInFiber('getPartInstance - unknown id', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		const context = getContext(rundown)
+
+	// 		expect(context.getPartInstance('not-a-real-part')).toBeUndefined()
+	// 	})
+	// 	testInFiber('getPartInstance - good', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		const context = getContext(rundown)
+
+	// 		const part = context.getPartInstance(`${rundown._id}_part1_0_instance`) as IBlueprintPartInstance
+	// 		expect(part).toBeTruthy()
+	// 		expect(part._id).toEqual(`${rundown._id}_part1_0_instance`)
+	// 	})
+	// 	testInFiber('getPartInstance - empty id with event partId', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		const context = getContext(rundown, {
+	// 			partInstanceId: protectString(`${rundown._id}_part1_1_instance`),
+	// 		})
+
+	// 		const part = context.getPartInstance('') as IBlueprintPartInstance
+	// 		expect(part).toBeTruthy()
+	// 		expect(part._id).toEqual(`${rundown._id}_part1_1_instance`)
+	// 	})
+	// 	testInFiber('getPartInstance - good with event partId', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		const context = getContext(rundown, {
+	// 			partInstanceId: protectString(`${rundown._id}_part1_2_instance`),
+	// 		})
+
+	// 		const part = context.getPartInstance(`${rundown._id}_part0_1_instance`) as IBlueprintPartInstance
+	// 		expect(part).toBeTruthy()
+	// 		expect(part._id).toEqual(`${rundown._id}_part0_1_instance`)
+	// 	})
+
+	// 	testInFiber('getPieceInstances - good', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		// Generate some pieces
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		const part = PartInstances.find({ rundownId: rundown._id }).fetch()[3]
+	// 		expect(part).toBeTruthy()
+
+	// 		// Should be some defaults
+	// 		expect(_.pluck(context.getPieceInstances(unprotectString(part._id)), '_id')).toEqual([
+	// 			`${rundown._id}_part1_1_piece0`,
+	// 			`${rundown._id}_part1_1_piece1`,
+	// 		])
+	// 	})
+	// 	testInFiber('getPieceInstances - bad id', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		// Generate some pieces
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		// Should be some defaults
+	// 		expect(context.getPieceInstances('not-a-real-part')).toHaveLength(0)
+	// 	})
+	// 	testInFiber('getPieceInstances - empty id', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		// Generate some pieces
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		// Should be some defaults
+	// 		expect(context.getPieceInstances('')).toHaveLength(0)
+	// 	})
+
+	// 	testInFiber('getPieceInstance - no id', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		// Generate some pieces
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		expect(context.getPieceInstance()).toBeUndefined()
+	// 	})
+	// 	testInFiber('getPieceInstance - empty id', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		// Generate some pieces
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		expect(context.getPieceInstance('')).toBeUndefined()
+	// 	})
+	// 	testInFiber('getPieceInstance - unknown id', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		// Generate some pieces
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		expect(context.getPieceInstance('not-a-real-piece')).toBeUndefined()
+	// 	})
+	// 	testInFiber('getPieceInstance - good', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		// Generate some pieces
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		const piece = context.getPieceInstance(`${rundown._id}_part0_1_piece3`) as IBlueprintPieceInstance
+	// 		expect(piece).toBeTruthy()
+	// 		expect(piece._id).toEqual(`${rundown._id}_part0_1_piece3`)
+	// 	})
+	// 	testInFiber('getPieceInstance - empty id with event pieceId', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown, {
+	// 			pieceInstanceId: protectString(`${rundown._id}_part0_1_piece2`),
+	// 		})
+
+	// 		// Generate some pieces
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		const piece = context.getPieceInstance('') as IBlueprintPieceInstance
+	// 		expect(piece).toBeTruthy()
+	// 		expect(piece._id).toEqual(`${rundown._id}_part0_1_piece2`)
+	// 	})
+	// 	testInFiber('getPieceInstance - good with event pieceId', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown, {
+	// 			pieceInstanceId: protectString(`${rundown._id}_part0_1_piece2`),
+	// 		})
+
+	// 		// Generate some pieces
+	// 		generateSparsePieceInstances(rundown)
+
+	// 		const piece = context.getPieceInstance(`${rundown._id}_part1_2_piece0`) as IBlueprintPieceInstance
+	// 		expect(piece).toBeTruthy()
+	// 		expect(piece._id).toEqual(`${rundown._id}_part1_2_piece0`)
+	// 	})
+
+	// 	testInFiber('formatDateAsTimecode', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		const d = new Date('2019-01-01 18:33:34:896')
+	// 		expect(context.formatDateAsTimecode(d.getTime())).toEqual('18:33:34:22')
+	// 	})
+
+	// 	testInFiber('formatDurationAsTimecode', () => {
+	// 		const { rundownId } = setupDefaultRundownPlaylist(env)
+	// 		const rundown = Rundowns.findOne(rundownId) as Rundown
+	// 		expect(rundown).toBeTruthy()
+
+	// 		const context = getContext(rundown)
+
+	// 		expect(context.formatDurationAsTimecode(0)).toEqual('00:00:00:00')
+	// 		expect(context.formatDurationAsTimecode(10000)).toEqual('00:00:10:00')
+	// 		expect(context.formatDurationAsTimecode(12345678)).toEqual('03:25:45:16')
+	// 	})
+	// })
 
 	describe('TimelineEventContext', () => {
 		const getSessionId = (n: number): string => `session#${n}`

@@ -7,7 +7,6 @@ import { waitForPromise, protectString, waitTime } from '../../lib/lib'
 import { testInFiber, testInFiberOnly } from '../../__mocks__/helpers/jest'
 
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { AsRunLog } from '../../lib/collections/AsRunLog'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { Evaluations } from '../../lib/collections/Evaluations'
@@ -62,8 +61,6 @@ describe('Basic test of test environment', () => {
 	test('Verify Mock collections', () => {
 		// @ts-ignore
 		expect(AdLibPieces._isMock).toBeTruthy()
-		// @ts-ignore
-		expect(AsRunLog._isMock).toBeTruthy()
 		// @ts-ignore
 		expect(Blueprints._isMock).toBeTruthy()
 		// @ts-ignore

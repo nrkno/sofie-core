@@ -1,6 +1,6 @@
 import _ from 'underscore'
 import '../../../../__mocks__/_extendJest'
-import { runTimersUntilNow, testInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { fixSnapshot } from '../../../../__mocks__/helpers/snapshot'
 import { mockupCollection, resetMockupCollection } from '../../../../__mocks__/helpers/lib'
 import {
@@ -24,15 +24,11 @@ import { MethodContext } from '../../../../lib/api/methods'
 import { PartInstances, PartInstanceId } from '../../../../lib/collections/PartInstances'
 import { IngestActions } from '../../ingest/actions'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
-import { protectString, waitForPromise } from '../../../../lib/lib'
-import { AsRunLog } from '../../../../lib/collections/AsRunLog'
-import { IBlueprintAsRunLogEventContent } from '@sofie-automation/blueprints-integration'
+import { protectString } from '../../../../lib/lib'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import * as lib from '../../../../lib/lib'
 import { ClientAPI } from '../../../../lib/api/client'
 import { ServerRundownAPI } from '../../rundown'
-import { getRundownId } from '../../ingest/lib'
-import { consoleTestResultHandler } from 'tslint/lib/test'
 
 const DEFAULT_CONTEXT: MethodContext = {
 	userId: null,
@@ -528,50 +524,7 @@ describe('Playout API', () => {
 				const { currentPartInstance } = playlist.getSelectedPartInstances()
 				expect(currentPartInstance?.timings?.startedPlayback).toBe(now)
 
-				// AsRunLog is updated
-				const entry0 = AsRunLog.find({
-					studioId: env.studio._id,
-					rundownId: rundownId0,
-					segmentId: currentPartInstance?.part.segmentId,
-					partInstanceId: currentPartInstance?._id,
-					content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-					content2: 'part',
-				}).fetch()
-				expect(entry0[0]).toMatchObject({
-					timestamp: now,
-				})
-
-				const entry1 = AsRunLog.find({
-					studioId: env.studio._id,
-					rundownId: rundownId0,
-					content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-					content2: 'rundown',
-				}).fetch()
-				expect(entry1[0]).toMatchObject({
-					timestamp: now,
-				})
-
-				// Check that AsRunLog contains piece started playback entries
-				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstance!._id)
-				expect(pieceInstances).toHaveLength(2)
-				pieceInstances.forEach((pieceInstance) => {
-					const entry = AsRunLog.find({
-						studioId: env.studio._id,
-						rundownId: rundownId0,
-						segmentId: currentPartInstance?.part.segmentId,
-						partInstanceId: currentPartInstance?._id,
-						pieceInstanceId: pieceInstance._id,
-						content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-						content2: 'piece',
-					}).fetch()
-					expect(entry).toHaveLength(1)
-					expect(entry[0].timestamp).toBeWithinRange(now, now + TIME_RANDOM)
-				})
-			}
-
-			{
 				// the piece instances timings are set
-				const { currentPartInstance } = getPlaylist0().getSelectedPartInstances()
 				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstance?._id!)
 				expect(pieceInstances).toHaveLength(2)
 				pieceInstances.forEach((pieceInstance) => {
@@ -640,32 +593,8 @@ describe('Playout API', () => {
 				expect(previousPartInstanceAfterTake).toBeTruthy()
 				expect(previousPartInstanceAfterTake?.timings?.stoppedPlayback).toBe(now)
 
-				// verify AsRunLog is updated
-				const entry = AsRunLog.find({
-					studioId: env.studio._id,
-					rundownId: rundownId0,
-					segmentId: previousPartInstanceAfterTake?.part.segmentId,
-					partInstanceId: previousPartInstanceAfterTake?._id,
-					content: IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
-					content2: 'part',
-				}).fetch()
-				expect(entry[0]).toMatchObject({
-					timestamp: now,
-				})
-
-				// Check that AsRunLog contains piece started playback entries
 				pieceInstances.forEach((pieceInstance) => {
-					const entry = AsRunLog.find({
-						studioId: env.studio._id,
-						rundownId: rundownId0,
-						segmentId: previousPartInstanceAfterTake?.part.segmentId,
-						partInstanceId: previousPartInstanceAfterTake?._id,
-						pieceInstanceId: pieceInstance._id,
-						content: IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
-						content2: 'piece',
-					}).fetch()
-					expect(entry).toHaveLength(1)
-					expect(entry[0].timestamp).toBeWithinRange(now, now + TIME_RANDOM)
+					expect(pieceInstance.stoppedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
 				})
 			}
 		}

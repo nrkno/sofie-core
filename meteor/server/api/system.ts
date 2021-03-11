@@ -19,7 +19,6 @@ import { SystemWriteAccess } from '../security/system'
 import { check } from '../../lib/check'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { AsRunLog } from '../../lib/collections/AsRunLog'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
@@ -234,14 +233,6 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 	// AdLibPieces
 	{
 		results.push(ownedByRundownId('AdLibPieces', AdLibPieces))
-	}
-	// AsRunLog
-	{
-		results.push(
-			removeByQuery('AsRunLog', AsRunLog, {
-				timestamp: { $lt: getCurrentTime() - MAXIMUM_AGE },
-			})
-		)
 	}
 	// Blueprints
 	{

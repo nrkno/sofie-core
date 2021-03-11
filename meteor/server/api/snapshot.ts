@@ -78,7 +78,6 @@ import {
 	RundownBaselineAdLibAction,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
-import { AsRunLogEvent, AsRunLog } from '../../lib/collections/AsRunLog'
 import { saveIntoDb, sumChanges } from '../lib/database'
 
 interface DeprecatedRundownSnapshot {
@@ -120,7 +119,6 @@ interface RundownPlaylistSnapshot {
 	mediaObjects: Array<MediaObject>
 	expectedMediaItems: Array<ExpectedMediaItem>
 	expectedPlayoutItems: Array<ExpectedPlayoutItem>
-	asRunLog: Array<AsRunLogEvent> // Note: asRunLog is not restored when restoring
 }
 interface SystemSnapshot {
 	version: string
@@ -199,7 +197,6 @@ function createRundownPlaylistSnapshot(
 	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map((i) => i._id) } }).fetch()
 	const expectedPlayoutItems = ExpectedPlayoutItems.find({ rundownId: { $in: rundownIds } }).fetch()
 	const baselineObjs = RundownBaselineObjs.find({ rundownId: { $in: rundownIds } }).fetch()
-	const asRunLog = AsRunLog.find({ rundownId: { $in: rundownIds } }).fetch()
 
 	logger.info(`Snapshot generation done`)
 	return {
@@ -232,7 +229,6 @@ function createRundownPlaylistSnapshot(
 		mediaObjects,
 		expectedMediaItems,
 		expectedPlayoutItems,
-		asRunLog,
 	}
 }
 
@@ -752,8 +748,6 @@ export function restoreFromRundownPlaylistSnapshot(
 		{ rundownId: { $in: rundownIds } },
 		updateItemIds(snapshot.expectedPlayoutItems || [], true)
 	)
-
-	// snapshot.asRunLog is not restored, since that is a log of events in the system
 
 	logger.info(`Restore done`)
 }

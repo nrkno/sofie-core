@@ -599,8 +599,8 @@ describe('Test blueprint api context', () => {
 						})
 					).toThrowError('Cannot find PartInstance for PieceInstance')
 					expect(() =>
+						// @ts-ignore
 						context.getPartInstanceForPreviousPiece({
-							// @ts-ignore
 							partInstanceId: 'abc',
 						})
 					).toThrowError('Cannot find PartInstance for PieceInstance')

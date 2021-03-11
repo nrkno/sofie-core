@@ -25,7 +25,6 @@ import {
 	IBlueprintPieceInstance,
 	IBlueprintPartDB,
 	IBlueprintRundownDB,
-	IBlueprintAsRunLogEvent,
 	IBlueprintExternalMessageQueueObj,
 	IShowStyleContext,
 	IRundownContext,

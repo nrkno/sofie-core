@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 
 export enum PubSub {
-	asRunLog = 'asRunLog',
 	blueprints = 'blueprints',
 	coreSystem = 'coreSystem',
 	evaluations = 'evaluations',

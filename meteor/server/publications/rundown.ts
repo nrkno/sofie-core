@@ -11,7 +11,6 @@ import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { PartInstance, PartInstances, DBPartInstance } from '../../lib/collections/PartInstances'
-import { AsRunLog, AsRunLogEvent } from '../../lib/collections/AsRunLog'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { IngestDataCache, IngestDataCacheObj } from '../../lib/collections/IngestDataCache'
@@ -173,13 +172,6 @@ meteorPublish(PubSub.pieceInstancesSimple, function(selector: MongoQuery<PieceIn
 
 	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
 		return PieceInstances.find(selector, modifier)
-	}
-	return null
-})
-meteorPublish(PubSub.asRunLog, function(selector: MongoQuery<AsRunLogEvent>, token?: string) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
-		return AsRunLog.find(selector)
 	}
 	return null
 })
