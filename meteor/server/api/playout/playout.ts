@@ -20,12 +20,11 @@ import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections
 import { PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { ClientAPI } from '../../../lib/api/client'
 import {
-	reportRundownHasStarted,
-	reportPartHasStarted,
+	reportPartInstanceHasStarted,
 	reportPieceHasStarted,
 	reportPartHasStopped,
 	reportPieceHasStopped,
-} from '../asRunLog'
+} from '../blueprints/events'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
@@ -727,8 +726,8 @@ export namespace ServerPlayoutAPI {
 			'onPiecePlaybackStarted',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-			() => {
-				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
+			(_lock, playlist) => {
+				const rundowns = Rundowns.find({ playlistId: playlist._id }).fetch()
 				// This method is called when an auto-next event occurs
 
 				const pieceInstance = PieceInstances.findOne({
@@ -739,7 +738,7 @@ export namespace ServerPlayoutAPI {
 				if (!pieceInstance)
 					throw new Meteor.Error(
 						404,
-						`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${rundownPlaylistId}" not found!`
+						`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
 					)
 
 				const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
@@ -749,7 +748,7 @@ export namespace ServerPlayoutAPI {
 							startedPlayback
 						).toISOString()}`
 					)
-					reportPieceHasStarted(rundownPlaylistId, pieceInstance, startedPlayback)
+					reportPieceHasStarted(playlist, pieceInstance, startedPlayback)
 
 					// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
 				}
@@ -777,8 +776,8 @@ export namespace ServerPlayoutAPI {
 			'onPiecePlaybackStopped',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-			() => {
-				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
+			(_lock, playlist) => {
+				const rundowns = Rundowns.find({ playlistId: playlist._id }).fetch()
 
 				// This method is called when an auto-next event occurs
 				const pieceInstance = PieceInstances.findOne({
@@ -789,7 +788,7 @@ export namespace ServerPlayoutAPI {
 				if (!pieceInstance)
 					throw new Meteor.Error(
 						404,
-						`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${rundownPlaylistId}" not found!`
+						`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
 					)
 
 				const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
@@ -800,7 +799,7 @@ export namespace ServerPlayoutAPI {
 						).toISOString()}`
 					)
 
-					reportPieceHasStopped(rundownPlaylistId, pieceInstance, stoppedPlayback)
+					reportPieceHasStopped(playlist, pieceInstance, stoppedPlayback)
 				}
 			}
 		)
@@ -876,9 +875,7 @@ export namespace ServerPlayoutAPI {
 							}
 						}
 
-						setRundownStartedPlayback(cache, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
-
-						reportPartHasStarted(cache, playingPartInstance, startedPlayback)
+						reportPartInstanceHasStarted(cache, playingPartInstance, startedPlayback)
 					} else if (playlist.nextPartInstanceId === partInstanceId) {
 						// this is the next part, clearly an autoNext has taken place
 						if (playlist.currentPartInstanceId) {
@@ -892,8 +889,6 @@ export namespace ServerPlayoutAPI {
 							}
 						}
 
-						setRundownStartedPlayback(cache, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
-
 						cache.Playlist.update({
 							$set: {
 								previousPartInstanceId: playlist.currentPartInstanceId,
@@ -902,7 +897,7 @@ export namespace ServerPlayoutAPI {
 							},
 						})
 
-						reportPartHasStarted(cache, playingPartInstance, startedPlayback)
+						reportPartInstanceHasStarted(cache, playingPartInstance, startedPlayback)
 
 						// Update generated properties on the newly playing partInstance
 						const currentRundown = currentPartInstance
@@ -934,8 +929,6 @@ export namespace ServerPlayoutAPI {
 						if (previousReported && Date.now() - previousReported > INCORRECT_PLAYING_PART_DEBOUNCE) {
 							// first time this has happened for a while, let's try to progress the show:
 
-							setRundownStartedPlayback(cache, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
-
 							cache.Playlist.update({
 								$set: {
 									previousPartInstanceId: null,
@@ -944,7 +937,7 @@ export namespace ServerPlayoutAPI {
 								},
 							})
 
-							reportPartHasStarted(cache, playingPartInstance, startedPlayback)
+							reportPartInstanceHasStarted(cache, playingPartInstance, startedPlayback)
 
 							const nextPart = selectNextPart(
 								playlist,
@@ -1356,14 +1349,6 @@ export namespace ServerPlayoutAPI {
 		// TODO: Run update timeline here
 
 		return ClientAPI.responseSuccess(undefined)
-	}
-}
-
-function setRundownStartedPlayback(cache: CacheForPlayout, rundown: Rundown, startedPlayback: Time) {
-	const playlist = cache.Playlist.doc
-	if (!playlist.rundownsStartedPlayback || !playlist.rundownsStartedPlayback[unprotectString(rundown._id)]) {
-		// Set startedPlayback on the rundown if this is the first item to be played
-		reportRundownHasStarted(cache, rundown._id, startedPlayback)
 	}
 }
 

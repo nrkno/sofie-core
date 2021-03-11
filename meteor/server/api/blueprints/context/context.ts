@@ -46,7 +46,6 @@ import {
 } from '../config'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
-import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { NoteType, INoteBase } from '../../../../lib/api/notes'
 import { RundownPlaylistId, ABSessionInfo, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import {

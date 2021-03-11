@@ -22,7 +22,7 @@ import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { reportPartHasStarted } from '../asRunLog'
+import { reportPartInstanceHasStarted } from '../blueprints/events'
 import { profiler } from '../profiler'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -226,7 +226,7 @@ function afterTakeUpdateTimingsAndEvents(
 					takePartInstance._id
 				}" to have started playback on timestamp ${new Date(takeDoneTime).toISOString()}`
 			)
-			reportPartHasStarted(cache, takePartInstance, takeDoneTime)
+			reportPartInstanceHasStarted(cache, takePartInstance, takeDoneTime)
 		}
 
 		// let bp = getBlueprintOfRundown(rundown)
