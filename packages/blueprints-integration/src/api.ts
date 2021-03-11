@@ -12,8 +12,9 @@ import {
 	ISegmentUserContext,
 	IShowStyleUserContext,
 	ICommonContext,
-	IAsRunEventContext,
 	ITimelineEventContext,
+	IAsRunRundownEventContext,
+	IAsRunPartEventContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
@@ -179,8 +180,11 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 		time: number
 	) => PartEndState
 
-	/** Called after an as-run event is created */
-	onAsRunEvent?: (context: IAsRunEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>
+	/** Called when the Rundown data changes, to be able to update any queued external messages */
+	onRundownDataChangedEvent?: (context: IAsRunRundownEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>
+
+	/** Called when the timing for a PartInstance or its content changes */
+	onRundownTimingEvent?: (context: IAsRunPartEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>
 }
 
 export type PartEndState = unknown

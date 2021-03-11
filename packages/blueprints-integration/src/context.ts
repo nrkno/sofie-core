@@ -1,15 +1,13 @@
-import { IBlueprintAsRunLogEvent } from './asRunLog'
 import { IBlueprintExternalMessageQueueObj } from './message'
 import {
 	IBlueprintPart,
-	IBlueprintPartDB,
 	IBlueprintPartInstance,
 	IBlueprintPiece,
 	IBlueprintPieceInstance,
 	IBlueprintResolvedPieceInstance,
 	IBlueprintRundownDB,
-	IBlueprintSegmentDB,
 	IBlueprintMutatablePart,
+	IBlueprintSegmentDB,
 } from './rundown'
 import { BlueprintMappings } from './studio'
 import { OnGenerateTimelineObj } from './timeline'
@@ -225,46 +223,83 @@ export interface IPartEventContext extends IEventContext, IRundownContext {
 	readonly part: Readonly<IBlueprintPartInstance>
 }
 
-export interface IAsRunEventContext extends IEventContext, IRundownContext {
-	readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
-
+export interface IAsRunRundownEventContext extends IEventContext, IRundownContext {
 	formatDateAsTimecode(time: number): string
 	formatDurationAsTimecode(time: number): string
 
-	/** Get all asRunEvents in the rundown */
-	getAllAsRunEvents(): Readonly<IBlueprintAsRunLogEvent[]>
-
 	/** Get all unsent and queued messages in the rundown */
-	getAllQueuedMessages(): Readonly<IBlueprintExternalMessageQueueObj[]>
+	getAllUnsentQueuedMessages(): Readonly<IBlueprintExternalMessageQueueObj[]>
+}
 
-	/** Originals */
-
-	/** Get all segments in this rundown */
-	getSegments(): Readonly<IBlueprintSegmentDB[]>
-	/**
-	 * Returns a segment
-	 * @param id Id of segment to fetch. If omitted, return the segment related to this AsRunEvent
-	 */
-	getSegment(id?: string): Readonly<IBlueprintSegmentDB> | undefined
-
-	/** Get all parts in this rundown */
-	getParts(): Readonly<IBlueprintPartDB[]>
-
-	/** Instances */
+export interface IAsRunPartEventContext extends IAsRunRundownEventContext {
+	readonly previousPart: Readonly<IBlueprintPartInstance> | undefined
+	readonly part: Readonly<IBlueprintPartInstance>
+	readonly nextPart: Readonly<IBlueprintPartInstance> | undefined
 
 	/**
-	 * Returns a partInstance.
-	 * @param id Id of partInstance to fetch. If omitted, return the partInstance related to this AsRunEvent
+	 * Returns the first PartInstance in the Rundown within the current playlist activation.
+	 * This allows for a start time for the Rundown to be determined
 	 */
-	getPartInstance(id?: string): Readonly<IBlueprintPartInstance> | undefined
+	getFirstPartInstanceInRundown(): Readonly<IBlueprintPartInstance>
+
 	/**
-	 * Returns a pieceInstance.
-	 * @param id Id of pieceInstance to fetch. If omitted, return the pieceInstance related to this AsRunEvent
+	 * Returns the partInstances in the Segment, limited to the playthrough of the segment that refPartInstance is part of
+	 * @param refPartInstance PartInstance to use as the basis of the search
 	 */
-	getPieceInstance(pieceInstanceId?: string): Readonly<IBlueprintPieceInstance> | undefined
+	getPartInstancesInSegmentPlayoutId(
+		refPartInstance: Readonly<IBlueprintPartInstance>
+	): Readonly<IBlueprintPartInstance[]>
+
 	/**
 	 * Returns pieces in a partInstance
 	 * @param id Id of partInstance to fetch items in
 	 */
-	getPieceInstances(partInstanceId: string): Readonly<IBlueprintPieceInstance[]>
+	getPieceInstances(...partInstanceIds: string[]): Readonly<IBlueprintPieceInstance[]>
+
+	/**
+	 * Returns a segment
+	 * @param id Id of segment to fetch
+	 */
+	getSegment(id: string): Readonly<IBlueprintSegmentDB> | undefined
 }
+
+// export interface IAsRunEventContext extends IEventContext, IRundownContext {
+// 	readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
+
+// 	formatDateAsTimecode(time: number): string
+// 	formatDurationAsTimecode(time: number): string
+
+// 	/** Get all asRunEvents in the rundown */
+// 	getAllAsRunEvents(): Readonly<IBlueprintAsRunLogEvent[]>
+
+// 	/** Originals */
+
+// 	/** Get all segments in this rundown */
+// 	getSegments(): Readonly<IBlueprintSegmentDB[]>
+// 	/**
+// 	 * Returns a segment
+// 	 * @param id Id of segment to fetch. If omitted, return the segment related to this AsRunEvent
+// 	 */
+// 	getSegment(id?: string): Readonly<IBlueprintSegmentDB> | undefined
+
+// 	/** Get all parts in this rundown */
+// 	getParts(): Readonly<IBlueprintPartDB[]>
+
+// 	/** Instances */
+
+// 	/**
+// 	 * Returns a partInstance.
+// 	 * @param id Id of partInstance to fetch. If omitted, return the partInstance related to this AsRunEvent
+// 	 */
+// 	getPartInstance(id?: string): Readonly<IBlueprintPartInstance> | undefined
+// 	/**
+// 	 * Returns a pieceInstance.
+// 	 * @param id Id of pieceInstance to fetch. If omitted, return the pieceInstance related to this AsRunEvent
+// 	 */
+// 	getPieceInstance(pieceInstanceId?: string): Readonly<IBlueprintPieceInstance> | undefined
+// 	/**
+// 	 * Returns pieces in a partInstance
+// 	 * @param id Id of partInstance to fetch items in
+// 	 */
+// 	getPieceInstances(partInstanceId: string): Readonly<IBlueprintPieceInstance[]>
+// }

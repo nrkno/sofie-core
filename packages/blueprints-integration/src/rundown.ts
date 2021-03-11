@@ -175,6 +175,11 @@ export interface IBlueprintPartInstance<TMetadata = unknown> {
 
 	part: IBlueprintPartDB<TMetadata>
 
+	/** If the playlist was in rehearsal mode when the PartInstance was created */
+	rehearsal: boolean
+	/** Playout timings, in here we log times when playout happens */
+	timings?: IBlueprintPartInstanceTimings
+
 	/** Whether the PartInstance is an orphan (the Part referenced does not exist). Indicates the reason it is orphaned */
 	orphaned?: 'adlib-part' | 'deleted'
 }
@@ -284,6 +289,7 @@ export interface IBlueprintPieceDB<TMetadata = unknown> extends IBlueprintPiece<
 }
 export interface IBlueprintPieceInstance<TMetadata = unknown> {
 	_id: string
+	partInstanceId: string
 
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
 	adLibSourceId?: string
@@ -291,6 +297,9 @@ export interface IBlueprintPieceInstance<TMetadata = unknown> {
 	dynamicallyInserted?: Time
 
 	piece: IBlueprintPieceDB<TMetadata>
+
+	startedPlayback?: Time
+	stoppedPlayback?: Time
 
 	infinite?: {
 		infinitePieceId: string
