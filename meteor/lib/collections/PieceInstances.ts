@@ -63,18 +63,9 @@ export interface PieceInstance
 
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
 	adLibSourceId?: PieceId
-	/** If this piece has been insterted during run of rundown (such as adLibs), then this is set to the timestamp it was inserted */
-	dynamicallyInserted?: Time
 
 	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
 	infinite?: PieceInstanceInfinite
-
-	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
-	startedPlayback?: Time
-	/** Whether the piece has stopped playback (the most recent time it was played).
-	 * This is set from a callback from the playout gateway (milliseconds since epoch)
-	 */
-	stoppedPlayback?: Time
 
 	/** This is set when the duration needs to be overriden from some user action (milliseconds since start of part) */
 	userDuration?: {

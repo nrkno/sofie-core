@@ -56,9 +56,6 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	/** Playout timings, in here we log times when playout happens */
 	timings?: PartInstanceTimings
 
-	/** If the playlist was in rehearsal mode when the PartInstance was created */
-	rehearsal: boolean
-
 	part: DBPart
 
 	/** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
