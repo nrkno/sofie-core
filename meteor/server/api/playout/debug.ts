@@ -138,7 +138,7 @@ if (!Settings.enableUserAccounts) {
 						const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
 						if (part) {
 							setNextPart(cache, null)
-							setNextPart(cache, part)
+							setNextPart(cache, { part: part })
 
 							updateTimeline(cache)
 						}

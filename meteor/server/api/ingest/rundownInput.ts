@@ -484,7 +484,7 @@ export function handleUpdatedSegmentRanks(
 					},
 				})
 
-				if (changed === 0) {
+				if (changed.length === 0) {
 					logger.warn(`Failed to update rank of segment "${externalId}" (${rundownExternalId})`)
 				} else {
 					changedSegmentIds.push(segmentId)

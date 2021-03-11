@@ -86,7 +86,7 @@ export function resetRundownPlaylist(cache: CacheForPlayout): void {
 
 		// put the first on queue:
 		const firstPart = selectNextPart(cache.Playlist.doc, null, getOrderedSegmentsAndPartsFromPlayoutCache(cache))
-		setNextPart(cache, firstPart ? firstPart.part : null)
+		setNextPart(cache, firstPart)
 	} else {
 		setNextPart(cache, null)
 	}
@@ -107,7 +107,7 @@ export function selectNextPart(
 	previousPartInstance: PartInstance | null,
 	{ parts, segments }: PartsAndSegments,
 	ignoreUnplayabale = true
-): SelectNextPartResult | undefined {
+): SelectNextPartResult | null {
 	const span = profiler.startSpan('selectNextPart')
 	/**
 	 * Iterates over all the parts and searches for the first one to be playable
@@ -205,11 +205,11 @@ export function selectNextPart(
 	}
 
 	if (span) span.end()
-	return nextPart
+	return nextPart ?? null
 }
 export function setNextPart(
 	cache: CacheForPlayout,
-	rawNextPart: DBPart | DBPartInstance | null,
+	rawNextPart: Omit<SelectNextPartResult, 'index'> | DBPartInstance | null,
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ) {
@@ -218,11 +218,8 @@ export function setNextPart(
 	const rundownIds = getRundownIDsFromCache(cache)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
-	const movingToNewSegment =
-		!currentPartInstance || !rawNextPart || rawNextPart.segmentId !== currentPartInstance.segmentId
-
-	const newNextPartInstance = rawNextPart && 'part' in rawNextPart ? rawNextPart : null
-	let newNextPart = rawNextPart && 'part' in rawNextPart ? null : rawNextPart
+	const newNextPartInstance = rawNextPart && 'playlistActivationId' in rawNextPart ? rawNextPart : null
+	let newNextPart = rawNextPart && 'playlistActivationId' in rawNextPart ? null : rawNextPart
 
 	const nonTakenPartInstances = cache.PartInstances.findFetch({
 		rundownId: { $in: rundownIds },
@@ -233,13 +230,13 @@ export function setNextPart(
 		if (!cache.Playlist.doc.activationId)
 			throw new Meteor.Error(500, `RundownPlaylist "${cache.Playlist.doc._id}" is not active`)
 
-		if ((newNextPart && newNextPart.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
+		if ((newNextPart && newNextPart.part.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
 		}
-		if (newNextPart && !rundownIds.includes(newNextPart.rundownId)) {
+		if (newNextPart && !rundownIds.includes(newNextPart.part.rundownId)) {
 			throw new Meteor.Error(
 				409,
-				`Part "${newNextPart._id}" of rundown "${newNextPart.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
+				`Part "${newNextPart.part._id}" of rundown "${newNextPart.part.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
 			)
 		} else if (newNextPartInstance && !rundownIds.includes(newNextPartInstance.rundownId)) {
 			throw new Meteor.Error(
@@ -248,7 +245,7 @@ export function setNextPart(
 			)
 		}
 
-		const nextPart = newNextPartInstance ? newNextPartInstance.part : newNextPart!
+		const nextPart = newNextPartInstance ? newNextPartInstance.part : newNextPart!.part
 
 		// create new instance
 		let newInstanceId: PartInstanceId
@@ -271,6 +268,7 @@ export function setNextPart(
 				segmentId: nextPart.segmentId,
 				part: nextPart,
 				rehearsal: !!cache.Playlist.doc.rehearsal,
+				consumesNextSegmentId: newNextPart?.consumesNextSegmentId,
 			})
 
 			const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, nextPart))
@@ -350,14 +348,14 @@ export function setNextPart(
 
 	{
 		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-		// When entering a segment, or moving backwards in a segment, reset any partInstances that are 'adlib-part'
+		// When entering a segment, or moving backwards in a segment, reset any partInstances in that window
+		// In theory the new segment should already be reset, as we do that upon leaving, but it wont be if jumping to earlier in the same segment or maybe if the rundown wasnt reset
 		if (nextPartInstance) {
-			const cleanOrphans = new Set<PartInstanceId>()
+			const resetPartInstanceIds = new Set<PartInstanceId>()
 			if (currentPartInstance) {
 				// Always clean the current segment, anything after the current part (except the next part)
 				const trailingInOldSegment = cache.PartInstances.findFetch(
 					(p) =>
-						p.orphaned === 'adlib-part' &&
 						!p.reset &&
 						p._id !== currentPartInstance._id &&
 						p._id !== nextPartInstance._id &&
@@ -366,39 +364,39 @@ export function setNextPart(
 				)
 
 				for (const part of trailingInOldSegment) {
-					cleanOrphans.add(part._id)
+					resetPartInstanceIds.add(part._id)
 				}
 			}
+
 			if (
 				!currentPartInstance ||
 				nextPartInstance.segmentId !== currentPartInstance.segmentId ||
 				(nextPartInstance.segmentId === currentPartInstance.segmentId &&
 					nextPartInstance.part._rank < currentPartInstance.part._rank)
 			) {
-				// clean the new segment
+				// clean the whole segment if new, or jumping backwards
 				const newSegmentParts = cache.PartInstances.findFetch(
 					(p) =>
-						p.orphaned === 'adlib-part' &&
 						!p.reset &&
 						p._id !== nextPartInstance._id &&
 						p._id !== currentPartInstance?._id &&
 						p.segmentId === nextPartInstance.segmentId
 				)
 				for (const part of newSegmentParts) {
-					cleanOrphans.add(part._id)
+					resetPartInstanceIds.add(part._id)
 				}
 			}
 
-			if (cleanOrphans.size > 0) {
+			if (resetPartInstanceIds.size > 0) {
 				cache.PartInstances.update(
-					(p) => cleanOrphans.has(p._id),
+					(p) => resetPartInstanceIds.has(p._id),
 					(p) => {
 						p.reset = true
 						return p
 					}
 				)
 				cache.PieceInstances.update(
-					(p) => cleanOrphans.has(p.partInstanceId),
+					(p) => resetPartInstanceIds.has(p.partInstanceId),
 					(p) => {
 						p.reset = true
 						return p
@@ -406,16 +404,6 @@ export function setNextPart(
 				)
 			}
 		}
-	}
-
-	if (movingToNewSegment && cache.Playlist.doc.nextSegmentId) {
-		// TODO - shouldnt this be done on take? this will have a bug where once the segment is set as next, another call to ensure the next is correct will change it
-		cache.Playlist.update({
-			$unset: {
-				nextSegmentId: 1,
-			},
-		})
-		// delete rundownPlaylist.nextSegmentId
 	}
 
 	cleanupOrphanedItems(cache)
