@@ -386,7 +386,6 @@ interface IProps {
 	collapsedOutputs: {
 		[key: string]: boolean
 	}
-	onCollapseSegmentToggle?: (event: any) => void
 	isCollapsed?: boolean
 	scrollLeft: number
 	scrollWidth: number
