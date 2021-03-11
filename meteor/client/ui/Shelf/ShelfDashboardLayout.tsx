@@ -14,6 +14,7 @@ import { AdLibRegionPanel } from './AdLibRegionPanel'
 import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
 import { Studio } from '../../../lib/collections/Studios'
 import { PieceCountdownPanel } from './PieceCountdownPanel'
+import { NextInfoPanel } from './NextInfoPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -99,6 +100,14 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 						/>
 					) : RundownLayoutsAPI.isPieceCountdown(panel) ? (
 						<PieceCountdownPanel
+							key={panel._id}
+							panel={panel}
+							layout={rundownLayout}
+							playlist={props.playlist}
+							visible={true}
+						/>
+					) : RundownLayoutsAPI.isNextInfo(panel) ? (
+						<NextInfoPanel
 							key={panel._id}
 							panel={panel}
 							layout={rundownLayout}

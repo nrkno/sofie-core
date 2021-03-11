@@ -38,6 +38,7 @@ export enum RundownLayoutElementType {
 	ADLIB_REGION = 'adlib_region',
 	KEYBOARD_PREVIEW = 'keyboard_preview',
 	PIECE_COUNTDOWN = 'piece_countdown',
+	NEXT_INFO = 'next_info',
 }
 
 export interface RundownLayoutElementBase {
@@ -79,6 +80,13 @@ export interface RundownLayoutPieceCountdown extends RundownLayoutElementBase {
 export interface RundownLayoutPieceCountdown extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.PIECE_COUNTDOWN
 	sourceLayerIds: string[] | undefined
+}
+
+export interface RundownLayoutNextInfo extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.NEXT_INFO
+	showSegmentName: boolean
+	showPartTitle: boolean
+	hideForDynamicallyInsertedParts: boolean
 }
 
 /**
@@ -130,6 +138,13 @@ export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
 }
 
 export interface DashboardLayoutPieceCountdown extends RundownLayoutPieceCountdown {
+	x: number
+	y: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutNextInfo extends RundownLayoutNextInfo {
 	x: number
 	y: number
 	width: number
