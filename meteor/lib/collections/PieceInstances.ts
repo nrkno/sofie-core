@@ -22,6 +22,9 @@ export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined)
 export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined): IBlueprintPieceInstance | undefined {
 	return pieceInstance as any
 }
+export function unprotectPieceInstanceArray(pieceInstances: PieceInstance[]): IBlueprintPieceInstance[] {
+	return pieceInstances as any
+}
 export function protectPieceInstance(pieceInstance: IBlueprintPieceInstance): PartialDeep<PieceInstance> {
 	return pieceInstance as any
 }

@@ -9,7 +9,7 @@ import {
 	protectString,
 	clone,
 } from '../../lib/lib'
-import { MongoQuery, TransformedCollection, FindOptions, MongoModifier } from '../../lib/typings/meteor'
+import { MongoQuery, TransformedCollection, FindOptions, MongoModifier, FindOneOptions } from '../../lib/typings/meteor'
 import _ from 'underscore'
 import { profiler } from '../api/profiler'
 import { Meteor } from 'meteor/meteor'
@@ -131,7 +131,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	}
 	findOne(
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
-		options?: FindOptions<DBInterface>
+		options?: FindOneOptions<DBInterface>
 	): Class | undefined {
 		return this.findFetch(selector, options)[0]
 	}

@@ -289,6 +289,7 @@ export interface IBlueprintPieceDB<TMetadata = unknown> extends IBlueprintPiece<
 }
 export interface IBlueprintPieceInstance<TMetadata = unknown> {
 	_id: string
+	/** The part instace this piece belongs to */
 	partInstanceId: string
 
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
@@ -298,7 +299,11 @@ export interface IBlueprintPieceInstance<TMetadata = unknown> {
 
 	piece: IBlueprintPieceDB<TMetadata>
 
+	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
 	startedPlayback?: Time
+	/** Whether the piece has stopped playback (the most recent time it was played).
+	 * This is set from a callback from the playout gateway (milliseconds since epoch)
+	 */
 	stoppedPlayback?: Time
 
 	infinite?: {

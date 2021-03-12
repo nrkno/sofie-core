@@ -10,6 +10,7 @@ import {
 	clone,
 	omit,
 	unpartialString,
+	protectStringArray,
 } from '../../../../lib/lib'
 import { PartId } from '../../../../lib/collections/Parts'
 import { check, Match } from '../../../../lib/check'
@@ -51,6 +52,7 @@ import {
 	PieceInstances,
 	unprotectPieceInstance,
 	protectPieceInstance,
+	unprotectPieceInstanceArray,
 } from '../../../../lib/collections/PieceInstances'
 import { unprotectPartInstance, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
@@ -59,6 +61,7 @@ import { Random } from 'meteor/random'
 import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
 import _ from 'underscore'
 import { Segments } from '../../../../lib/collections/Segments'
+import { Meteor } from 'meteor/meteor'
 
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
@@ -660,33 +663,71 @@ export class AsRunRundownEventContext extends RundownContext implements IAsRunRu
 
 export class AsRunPartEventContext extends AsRunRundownEventContext implements IAsRunPartEventContext {
 	readonly previousPart: Readonly<IBlueprintPartInstance<unknown>> | undefined
-	readonly part: Readonly<IBlueprintPartInstance<unknown>>
+	private readonly _part: PartInstance
 	readonly nextPart: Readonly<IBlueprintPartInstance<unknown>> | undefined
+
+	public get part(): Readonly<IBlueprintPartInstance<unknown>> {
+		return unprotectPartInstance(this._part)
+	}
 
 	constructor(
 		contextInfo: ContextInfo,
 		studio: ReadonlyDeep<Studio>,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		rundown: ReadonlyDeep<Rundown>
+		rundown: ReadonlyDeep<Rundown>,
+		previousPartInstance: PartInstance | undefined,
+		partInstance: PartInstance,
+		nextPartInstance: PartInstance | undefined
 	) {
 		super(contextInfo, studio, showStyleCompound, rundown)
 
-		// TODO previousPart
-		// TODO part
-		// TODO nextPart
+		this.previousPart = unprotectPartInstance(previousPartInstance)
+		this._part = partInstance
+		this.nextPart = unprotectPartInstance(nextPartInstance)
 	}
 
 	getFirstPartInstanceInRundown(): Readonly<IBlueprintPartInstance<unknown>> {
-		throw new Error('Method not implemented.')
+		const partInstance = PartInstances.findOne(
+			{
+				rundownId: this._rundown._id,
+				playlistActivationId: this._part.playlistActivationId,
+			},
+			{
+				sort: {
+					// TODO - verify sort
+					takeCount: 1,
+				},
+			}
+		)
+
+		// If this doesn't find anything, then where did our reference PartInstance come from?
+		if (!partInstance)
+			throw new Meteor.Error(
+				500,
+				`No PartInstances found for Rundown "${this._rundown._id}" (PlaylistActivationId "${this._part.playlistActivationId}")`
+			)
+
+		return unprotectPartInstance(partInstance)
 	}
+
 	getPartInstancesInSegmentPlayoutId(
 		refPartInstance: Readonly<IBlueprintPartInstance<unknown>>
 	): readonly IBlueprintPartInstance<unknown>[] {
 		throw new Error('Method not implemented.')
 	}
+
 	getPieceInstances(...partInstanceIds: string[]): readonly IBlueprintPieceInstance<unknown>[] {
-		throw new Error('Method not implemented.')
+		if (partInstanceIds.length === 0) return []
+
+		const pieceInstances = PieceInstances.find({
+			rundownId: this._rundown._id,
+			playlistActivationId: this._part.playlistActivationId,
+			partInstanceId: { $in: protectStringArray(partInstanceIds) },
+		}).fetch()
+
+		return unprotectPieceInstanceArray(pieceInstances)
 	}
+
 	getSegment(segmentId: string): Readonly<IBlueprintSegmentDB<unknown>> | undefined {
 		check(segmentId, String)
 		return unprotectObject(

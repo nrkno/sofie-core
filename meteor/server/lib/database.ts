@@ -9,6 +9,7 @@ import {
 	MongoModifier,
 	UpdateOptions,
 	UpsertOptions,
+	FindOneOptions,
 } from '../../lib/typings/meteor'
 import { profiler } from '../api/profiler'
 
@@ -288,13 +289,16 @@ export function asyncCollectionFindFetch<
 	waitTime(0)
 	return p
 }
-export function asyncCollectionFindOne<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
+export async function asyncCollectionFindOne<
+	DocClass extends DBInterface,
+	DBInterface extends { _id: ProtectedString<any> }
+>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | DBInterface['_id']
+	selector: MongoQuery<DBInterface> | DBInterface['_id'],
+	options?: FindOneOptions<DBInterface>
 ): Promise<DocClass | undefined> {
-	return asyncCollectionFindFetch(collection, selector, { limit: 1 }).then((arr) => {
-		return arr[0]
-	})
+	const arr = await asyncCollectionFindFetch(collection, selector, { ...options, limit: 1 })
+	return arr[0]
 }
 export function asyncCollectionInsert<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,

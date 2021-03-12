@@ -6,7 +6,7 @@ import { logger } from '../../../lib/logging'
 import { IBlueprintExternalMessageQueueObj } from '@sofie-automation/blueprints-integration'
 import { queueExternalMessages } from '../ExternalMessageQueue'
 import { loadShowStyleBlueprint } from './cache'
-import { AsRunRundownEventContext } from './context'
+import { AsRunPartEventContext, AsRunRundownEventContext } from './context'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
@@ -48,27 +48,75 @@ function handlePartInstanceTimingEvent(playlistId: RundownPlaylistId, partInstan
 	Meteor.setTimeout(() => {
 		const span = profiler.startSpan('handlePartInstanceTimingEvent')
 		try {
-			// const rundown = Rundowns.findOne(partInstanceId.rundownId)
-			// if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstanceId.rundownId}" not found!`)
-			// const { studio, showStyle, blueprint } = waitForPromise(getBlueprintAndDependencies(rundown))
-			// if (blueprint.onRundownDataChangedEvent) {
-			// 	const context = new AsRunRundownEventContext(
-			// 		{
-			// 			name: rundown.name,
-			// 			identifier: `rundownId=${rundown._id},timestamp=${timestamp}`,
-			// 		},
-			// 		studio,
-			// 		showStyle,
-			// 		rundown
-			// 	)
-			// 	Promise.resolve(blueprint.onRundownDataChangedEvent(context))
-			// 		.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
-			// 			queueExternalMessages(rundown, messages)
-			// 		})
-			// 		.catch((error) => logger.error(error))
-			// }
+			const timestamp = getCurrentTime()
+
+			const partInstance = PartInstances.findOne(partInstanceId)
+			if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
+
+			const rundown = Rundowns.findOne(partInstance.rundownId)
+			if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
+
+			const { studio, showStyle, playlist, blueprint } = waitForPromise(getBlueprintAndDependencies(rundown))
+
+			if (playlist._id !== playlistId)
+				throw new Meteor.Error(
+					404,
+					`PartInstance "${partInstanceId}" does not belong to RundownPlaylist "${playlistId}"!`
+				)
+
+			if (blueprint.onRundownTimingEvent) {
+				// The the PartInstances(events) before and after the one we are processing
+				const [previousPartInstance, nextPartInstance] = waitForPromiseAll([
+					asyncCollectionFindOne(
+						PartInstances,
+						{
+							rundownId: partInstance.rundownId,
+							playlistActivationId: partInstance.playlistActivationId,
+							takeCount: { $lt: partInstance.takeCount },
+						},
+						{
+							sort: {
+								// TODO - test
+								takeCount: -1,
+							},
+						}
+					),
+					asyncCollectionFindOne(
+						PartInstances,
+						{
+							rundownId: partInstance.rundownId,
+							playlistActivationId: partInstance.playlistActivationId,
+							takeCount: { $gt: partInstance.takeCount },
+						},
+						{
+							sort: {
+								// TODO - test
+								takeCount: 1,
+							},
+						}
+					),
+				])
+
+				const context = new AsRunPartEventContext(
+					{
+						name: rundown.name,
+						identifier: `rundownId=${rundown._id},timestamp=${timestamp}`,
+					},
+					studio,
+					showStyle,
+					rundown,
+					previousPartInstance,
+					partInstance,
+					nextPartInstance
+				)
+				Promise.resolve(blueprint.onRundownTimingEvent(context))
+					.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
+						queueExternalMessages(rundown, messages)
+					})
+					.catch((error) => logger.error(error))
+			}
 		} catch (e) {
-			logger.error(e)
+			logger.error(`handlePartInstanceTimingEvent: ${e}`)
 		}
 		span?.end()
 	}, EVENT_WAIT_TIME)

@@ -15,6 +15,7 @@ import {
 	FindOptions,
 	ObserveChangesCallbacks,
 	ObserveCallbacks,
+	FindOneOptions,
 } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
@@ -139,7 +140,7 @@ export namespace MongoMock {
 				},
 			}
 		}
-		findOne(query, options?: Omit<FindOptions<T>, 'limit'>) {
+		findOne(query, options?: FindOneOptions<T>) {
 			return this.find(query, options).fetch()[0]
 		}
 		update(
