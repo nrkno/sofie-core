@@ -872,12 +872,19 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						this.props.parts &&
 						this.props.parts.length > 0 &&
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
-							<SegmentDuration parts={this.props.parts} />
+							<SegmentDuration
+								parts={this.props.parts}
+								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
+							/>
 						)}
 				</div>
 				<div className="segment-timeline__timeUntil">
 					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (
-						<PartCountdown partId={countdownToPartId} hideOnZero={true} />
+						<PartCountdown
+							partId={countdownToPartId}
+							hideOnZero={true}
+							label={<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>}
+						/>
 					)}
 					{Settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
 						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>

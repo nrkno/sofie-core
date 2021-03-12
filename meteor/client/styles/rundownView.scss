@@ -708,15 +708,27 @@ svg.icon {
 		grid-column: segment-name / segment-group-controls;
 		grid-row: header / main-view;
 
-		font-size: 1em;
+		font-size: 1.2em;
 		line-height: 2.45em;
-		// padding-left: 25px;
+		letter-spacing: 0;
+		font-weight: 400;
 		margin-left: 0.4em;
-		letter-spacing: 1px;
 
 		> span.negative {
 			color: $general-late-color;
 			font-weight: 500;
+		}
+
+		> .segment-timeline__duration__label {
+			text-transform: uppercase;
+			display: block;
+			position: absolute;
+			top: 0;
+			left: 0;
+			font-size: 0.5em;
+			line-height: 2em;
+			color: #888;
+			font-weight: 400;
 		}
 	}
 	.segment-timeline__timeUntil {
@@ -729,12 +741,25 @@ svg.icon {
 		grid-column: segment-name / segment-group-controls;
 		grid-row: header / main-view;
 
-		font-size: 1.3em;
-		font-weight: 400;
-		line-height: 2em;
 		padding-right: 0px;
 		margin-right: 0em;
-		letter-spacing: 0px;
+
+		font-size: 1.2em;
+		line-height: 2.45em;
+		letter-spacing: 0;
+		font-weight: 400;
+
+		> .segment-timeline__timeUntil__label {
+			text-transform: uppercase;
+			display: block;
+			position: absolute;
+			top: 0;
+			right: 0;
+			font-size: 0.5em;
+			line-height: 2em;
+			color: #888;
+			font-weight: 400;
+		}
 	}
 	.segment-timeline__unsynced {
 		text-transform: uppercase;
