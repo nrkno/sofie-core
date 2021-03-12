@@ -46,6 +46,7 @@ describe('Test blueprint api context', () => {
 			PartInstances.insert({
 				_id: protectString(`${part._id}_instance`),
 				playlistActivationId: protectString('active'),
+				segmentPlayoutId: protectString(''),
 				rundownId: part.rundownId,
 				segmentId: part.segmentId,
 				takeCount: i,

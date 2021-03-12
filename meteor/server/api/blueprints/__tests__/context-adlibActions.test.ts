@@ -68,6 +68,7 @@ describe('Test blueprint api context', () => {
 				rundownId: part.rundownId,
 				segmentId: part.segmentId,
 				playlistActivationId: activationId,
+				segmentPlayoutId: protectString(''),
 				takeCount: i,
 				rehearsal: false,
 				part,

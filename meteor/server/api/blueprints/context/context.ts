@@ -11,9 +11,10 @@ import {
 	omit,
 	unpartialString,
 	protectStringArray,
+	unDeepString,
 } from '../../../../lib/lib'
 import { PartId } from '../../../../lib/collections/Parts'
-import { check, Match } from '../../../../lib/check'
+import { check } from '../../../../lib/check'
 import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
@@ -24,7 +25,6 @@ import {
 	IBlueprintSegmentDB,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
-	IBlueprintPartDB,
 	IBlueprintRundownDB,
 	IBlueprintExternalMessageQueueObj,
 	IShowStyleContext,
@@ -50,11 +50,16 @@ import { NoteType, INoteBase } from '../../../../lib/api/notes'
 import { RundownPlaylistId, ABSessionInfo, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import {
 	PieceInstances,
-	unprotectPieceInstance,
 	protectPieceInstance,
 	unprotectPieceInstanceArray,
 } from '../../../../lib/collections/PieceInstances'
-import { unprotectPartInstance, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
+import {
+	unprotectPartInstance,
+	PartInstance,
+	PartInstances,
+	protectPartInstance,
+	unprotectPartInstanceArray,
+} from '../../../../lib/collections/PartInstances'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { ReadonlyDeep } from 'type-fest'
 import { Random } from 'meteor/random'
@@ -578,78 +583,6 @@ export class AsRunRundownEventContext extends RundownContext implements IAsRunRu
 			).fetch()
 		)
 	}
-	// /** Get all segments in this rundown */
-	// getSegments(): Array<IBlueprintSegmentDB> {
-	// 	return unprotectObjectArray(this._rundown.getSegments())
-	// }
-	// /**
-	//  * Returns a segment
-	//  * @param segmentId Id of segment to fetch. If is omitted, return the segment related to this AsRunEvent
-	//  */
-	// getSegment(segmentId?: string): IBlueprintSegmentDB | undefined {
-	// 	segmentId = segmentId || this.asRunEvent.segmentId
-	// 	check(segmentId, String)
-	// 	if (segmentId) {
-	// 		return unprotectObject(
-	// 			this._rundown.getSegments({
-	// 				_id: protectString(segmentId),
-	// 			})[0]
-	// 		)
-	// 	}
-	// }
-	// /** Get all parts in this rundown */
-	// getParts(): Array<IBlueprintPartDB> {
-	// 	return unprotectObjectArray(this._rundown.getParts())
-	// }
-	// /** Get the part related to this AsRunEvent */
-	// getPartInstance(partInstanceId?: string): IBlueprintPartInstance | undefined {
-	// 	partInstanceId = partInstanceId || this.asRunEvent.partInstanceId
-	// 	check(partInstanceId, String)
-	// 	if (partInstanceId) {
-	// 		return unprotectPartInstance(
-	// 			PartInstances.findOne({
-	// 				playlistActivationId: this._asRunEvent.playlistActivationId,
-	// 				rundownId: this._rundown._id,
-	// 				_id: protectString(partInstanceId),
-	// 			})
-	// 		)
-	// 	}
-	// }
-
-	// /**
-	//  * Returns a piece.
-	//  * @param id Id of piece to fetch. If omitted, return the piece related to this AsRunEvent
-	//  */
-	// getPieceInstance(pieceInstanceId?: string): IBlueprintPieceInstance | undefined {
-	// 	check(pieceInstanceId, Match.Optional(String))
-	// 	pieceInstanceId = pieceInstanceId || this.asRunEvent.pieceInstanceId
-	// 	if (pieceInstanceId) {
-	// 		return unprotectPieceInstance(
-	// 			PieceInstances.findOne({
-	// 				playlistActivationId: this._asRunEvent.playlistActivationId,
-	// 				rundownId: this._rundown._id,
-	// 				_id: protectString(pieceInstanceId),
-	// 			})
-	// 		)
-	// 	}
-	// }
-	// /**
-	//  * Returns pieces in a part
-	//  * @param id Id of part to fetch pieces in
-	//  */
-	// getPieceInstances(partInstanceId: string): Array<IBlueprintPieceInstance> {
-	// 	check(partInstanceId, String)
-	// 	if (partInstanceId) {
-	// 		return unprotectObjectArray(
-	// 			PieceInstances.find({
-	// 				playlistActivationId: this._asRunEvent.playlistActivationId,
-	// 				rundownId: this._rundown._id,
-	// 				partInstanceId: protectString(partInstanceId),
-	// 			}).fetch()
-	// 		) as any // pieceinstande.piece is the issue
-	// 	}
-	// 	return []
-	// }
 
 	formatDateAsTimecode(time: number): string {
 		check(time, Number)
@@ -713,7 +646,25 @@ export class AsRunPartEventContext extends AsRunRundownEventContext implements I
 	getPartInstancesInSegmentPlayoutId(
 		refPartInstance: Readonly<IBlueprintPartInstance<unknown>>
 	): readonly IBlueprintPartInstance<unknown>[] {
-		throw new Error('Method not implemented.')
+		const refPartInstance2 = protectPartInstance(refPartInstance)
+		if (!refPartInstance2 || !refPartInstance2.segmentId || !refPartInstance2.segmentPlayoutId)
+			throw new Meteor.Error(500, '')
+
+		const partInstances = PartInstances.find(
+			{
+				rundownId: this._rundown._id,
+				playlistActivationId: this._part.playlistActivationId,
+				segmentId: unDeepString(refPartInstance2.segmentId),
+				segmentPlayoutId: unDeepString(refPartInstance2.segmentPlayoutId),
+			},
+			{
+				sort: {
+					takeCount: 1,
+				},
+			}
+		).fetch()
+
+		return unprotectPartInstanceArray(partInstances)
 	}
 
 	getPieceInstances(...partInstanceIds: string[]): readonly IBlueprintPieceInstance<unknown>[] {
