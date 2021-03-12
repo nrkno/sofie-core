@@ -41,8 +41,6 @@ export function SplitDropdown(props: IProps) {
 		setExpanded(!expanded)
 	}
 
-	console.log(props.children?.map((child) => child.key))
-
 	return (
 		<div
 			className={ClassNames(
