@@ -947,7 +947,6 @@ function updateRundownFromIngestData(
 		savePreparedChangesIntoCache<Piece, Piece>(prepareSavePieces, cache.Pieces, {
 			afterInsert(piece) {
 				logger.debug('inserted piece ' + piece._id)
-				logger.debug(piece)
 			},
 			afterUpdate(piece) {
 				logger.debug('updated piece ' + piece._id)
@@ -960,7 +959,6 @@ function updateRundownFromIngestData(
 		savePreparedChangesIntoCache<AdLibAction, AdLibAction>(prepareSaveAdLibActions, cache.AdLibActions, {
 			afterInsert(adlibAction) {
 				logger.debug('inserted adlibAction ' + adlibAction._id)
-				logger.debug(adlibAction)
 			},
 			afterUpdate(adlibAction) {
 				logger.debug('updated adlibAction ' + adlibAction._id)
@@ -972,7 +970,6 @@ function updateRundownFromIngestData(
 		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, cache.AdLibPieces, {
 			afterInsert(adLibPiece) {
 				logger.debug('inserted adLibPiece ' + adLibPiece._id)
-				logger.debug(adLibPiece)
 			},
 			afterUpdate(adLibPiece) {
 				logger.debug('updated adLibPiece ' + adLibPiece._id)
@@ -1416,7 +1413,6 @@ function updateSegmentFromIngestData(
 		savePreparedChangesIntoCache<Piece, Piece>(prepareSavePieces, cache.Pieces, {
 			afterInsert(piece) {
 				logger.debug('inserted piece ' + piece._id)
-				logger.debug(piece)
 			},
 			afterUpdate(piece) {
 				logger.debug('updated piece ' + piece._id)
@@ -1428,7 +1424,6 @@ function updateSegmentFromIngestData(
 		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, cache.AdLibPieces, {
 			afterInsert(adLibPiece) {
 				logger.debug('inserted adLibPiece ' + adLibPiece._id)
-				logger.debug(adLibPiece)
 			},
 			afterUpdate(adLibPiece) {
 				logger.debug('updated adLibPiece ' + adLibPiece._id)
