@@ -385,7 +385,9 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 									key={key.code}
 									className={ClassNames(
 										'keyboard-preview__key',
-										customColor === undefined
+										!func
+											? undefined
+											: customColor === undefined
 											? customSourceLayer !== undefined
 												? RundownUtils.getSourceLayerClassName(customSourceLayer)
 												: func && func.sourceLayer
@@ -405,7 +407,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 										func ? this.onKeyClick(e, allFuncs || []) : modifierKey && this.toggleModifierOnTouch(modifierKey)
 									}>
 									<div className="keyboard-preview__key__label">{thisKeyLabel}</div>
-									{(func || customLabel) && (
+									{func && (
 										<div className="keyboard-preview__key__function-label">
 											{customLabel || allFuncs.map((func) => func.label).join(', ')}
 										</div>
