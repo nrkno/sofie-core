@@ -183,7 +183,10 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	/** Called when the Rundown data changes, to be able to update any queued external messages */
 	onRundownDataChangedEvent?: (context: IAsRunRundownEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>
 
-	/** Called when the timing for a PartInstance or its content changes */
+	/**
+	 * Called when the timing for a PartInstance or its content changes.
+	 * This will often be batched (via a short debounce), but is called for each part when either the part or a piece timing changes.
+	 */
 	onRundownTimingEvent?: (context: IAsRunPartEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>
 }
 
