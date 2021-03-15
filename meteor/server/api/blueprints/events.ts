@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { getCurrentTime, Time, waitForPromise, waitForPromiseAll } from '../../../lib/lib'
+import { getCurrentTime, Time, unprotectString, waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { logger } from '../../../lib/logging'
 import { IBlueprintExternalMessageQueueObj } from '@sofie-automation/blueprints-integration'
@@ -182,7 +182,14 @@ export function reportPartInstanceHasStarted(cache: CacheForPlayout, partInstanc
 			},
 		})
 
-		// const origPlaylist = cache.Playlist.doc
+		// Track on the playlist
+		cache.Playlist.update((pl) => {
+			if (!pl.rundownsStartedPlayback) pl.rundownsStartedPlayback = {}
+			const rundownId = unprotectString(partInstance.rundownId)
+			if (!pl.rundownsStartedPlayback[rundownId]) pl.rundownsStartedPlayback[rundownId] = timestamp
+			if (!pl.startedPlayback) pl.startedPlayback = timestamp
+			return pl
+		})
 
 		cache.deferAfterSave(() => {
 			handlePartInstanceTimingEvent(cache.PlaylistId, partInstance._id)

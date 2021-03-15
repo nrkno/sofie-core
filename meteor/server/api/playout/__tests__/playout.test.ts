@@ -593,7 +593,8 @@ describe('Playout API', () => {
 				expect(previousPartInstanceAfterTake).toBeTruthy()
 				expect(previousPartInstanceAfterTake?.timings?.stoppedPlayback).toBe(now)
 
-				pieceInstances.forEach((pieceInstance) => {
+				const pieceInstances2 = getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId!)
+				pieceInstances2.forEach((pieceInstance) => {
 					expect(pieceInstance.stoppedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
 				})
 			}
