@@ -249,11 +249,9 @@ export namespace MeteorMock {
 			// Don't know how to implement in mock?
 
 			const fiber = Fiber.current
-			if (!fiber) throw new Error(500, `It appears that bindEnvironment function isn't running in a fiber`)
+			if (fiber) throw new Error(500, `It appears that bindEnvironment function is already running in a fiber`)
 
-			const returnValue = fcn()
-
-			return returnValue
+			runInFiber(fcn).catch(console.error)
 		}
 	}
 	export let users: any = undefined

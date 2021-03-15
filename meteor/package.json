@@ -136,6 +136,7 @@
 		"@types/xml2json": "^0.11.3",
 		"@types/xmldom": "^0.1.30",
 		"@welldone-software/why-did-you-render": "^4.3.1",
+		"babel-jest": "^26.6.3",
 		"codecov": "^3.8.1",
 		"concurrently": "^6.0.0",
 		"ejson": "^2.2.1",
