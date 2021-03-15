@@ -89,6 +89,13 @@ export interface ActionExecutionContext extends ShowStyleContext {
 			pieceMetaDataFilter?: any // Mongo query against properties inside of piece.metaData
 		}
 	): IBlueprintPieceInstance | undefined
+	findLastScriptedPieceOnLayer(
+		sourceLayerId: string,
+		options?: {
+			excludeCurrentPart?: boolean
+			pieceMetaDataFilter?: any
+		}
+	): IBlueprintPiece | undefined
 	/** Fetch the showstyle config for the specified part */
 	// getNextShowStyleConfig(): Readonly<{ [key: string]: ConfigItemValue }>
 
