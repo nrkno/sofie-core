@@ -393,6 +393,7 @@ function updatePartInstancesBasicProperties(
 				playlist.nextPartInstanceId !== partInstance._id
 			) {
 				cache.PartInstances.update(partInstance._id, { $set: { reset: true } })
+				cache.PieceInstances.update((p) => p.partInstanceId === partInstance._id, { $set: { reset: true } })
 			} else {
 				cache.PartInstances.update(partInstance._id, { $set: { orphaned: 'deleted' } })
 			}

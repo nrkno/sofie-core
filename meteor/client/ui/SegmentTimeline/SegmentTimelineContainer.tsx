@@ -367,6 +367,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					})
 				}
 			})
+			window.addEventListener('resize', this.onWindowResize)
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps) {
@@ -487,12 +488,12 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.pastInfinitesComp.invalidate()
 			}
 
-			if (!isLiveSegment && this.props.parts !== prevProps.parts && this.state.showingAllSegment) {
-				this.showEntireSegment()
-			}
-
 			if (!isLiveSegment && this.props.parts !== prevProps.parts) {
 				this.updateMaxTimeScale()
+			}
+
+			if (!isLiveSegment && this.props.parts !== prevProps.parts && this.state.showingAllSegment) {
+				this.showEntireSegment()
 			}
 
 			this.setState({
@@ -519,6 +520,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			RundownViewEventBus.off(RundownViewEvents.REWIND_SEGMENTS, this.onRewindSegment)
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART, this.onGoToPart)
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART_INSTANCE, this.onGoToPartInstance)
+			window.removeEventListener('resize', this.onWindowResize)
 		}
 
 		private partInstanceSub: Meteor.SubscriptionHandle | undefined
@@ -562,6 +564,13 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.partInstanceSubDebounce = setTimeout(this.subscribeToPieceInstancesInner, 40, partInstanceIds)
 			}
 		}
+
+		onWindowResize = _.throttle(() => {
+			if (this.state.showingAllSegment) {
+				this.updateMaxTimeScale()
+				this.showEntireSegment()
+			}
+		}, 250)
 
 		onTimeScaleChange = (timeScaleVal: number) => {
 			if (Number.isFinite(timeScaleVal) && timeScaleVal > 0) {
