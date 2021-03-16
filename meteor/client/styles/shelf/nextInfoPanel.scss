@@ -3,7 +3,6 @@
 .next-info-panel {
 	position: absolute;
 	user-select: none;
-	text-align: center;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -11,5 +10,16 @@
 
 	.next-info-panel__segment {
 		font-weight: 500;
+	}
+
+	.next-info-panel__part {
+		&:before {
+			content: ' (';
+			display: inline;
+		}
+		&:after {
+			content: ')';
+			display: inline;
+		}
 	}
 }
