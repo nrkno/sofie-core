@@ -58,13 +58,16 @@ export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps
 				<span className="next-info-panel__name" style={style}>
 					{showAny && this.props.panel.name}{' '}
 				</span>
-				<span className="next-info-panel__segment" style={style}>
-					{segmentName}
-				</span>
-				<span className="next-info-panel__part" style={style}>
-					{segmentName && partTitle && ': '}
-					{partTitle}
-				</span>
+				{segmentName && (
+					<span className="next-info-panel__segment" style={style}>
+						{segmentName}
+					</span>
+				)}
+				{partTitle && (
+					<span className="next-info-panel__part" style={style}>
+						{partTitle}
+					</span>
+				)}
 			</div>
 		)
 	}
