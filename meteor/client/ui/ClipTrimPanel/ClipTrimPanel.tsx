@@ -54,15 +54,16 @@ type StateChange = Partial<IState>
 export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	const piece = Pieces.findOne(props.pieceId)
 	const studio = Studios.findOne(props.studioId)
+	const content = piece?.content as VTContent | undefined
 	return {
 		piece: piece,
-		mediaObject: piece
+		mediaObject: content?.fileName
 			? MediaObjects.findOne({
-					mediaId: (piece.content as VTContent).fileName.toUpperCase(),
+					mediaId: content.fileName.toUpperCase(),
 			  })
 			: undefined,
 		studio: studio,
-		maxDuration: piece ? (piece.content as VTContent).sourceDuration || 0 : 0,
+		maxDuration: content?.sourceDuration || 0,
 	}
 })(
 	class ClipTrimPanel extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
@@ -92,17 +93,14 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 		componentDidMount() {
 			this.subscribe(PubSub.pieces, { _id: this.props.pieceId, startRundownId: this.props.rundownId })
 			this.autorun(() => {
-				if (this.props.piece && this.props.piece.content && this.props.piece.content.fileName) {
-					const piece = this.props.piece
-					let objId: string | undefined = undefined
-					objId = (piece.content as VTContent).fileName.toUpperCase()
+				const content = this.props.piece?.content as VTContent | undefined
+				const objId = content?.fileName?.toUpperCase()
 
-					if (objId) {
-						// if (this.mediaObjectSub) this.mediaObjectSub.stop()
-						this.subscribe(PubSub.mediaObjects, this.props.studioId, {
-							mediaId: objId,
-						})
-					}
+				if (objId) {
+					// if (this.mediaObjectSub) this.mediaObjectSub.stop()
+					this.subscribe(PubSub.mediaObjects, this.props.studioId, {
+						mediaId: objId,
+					})
 				}
 			})
 		}

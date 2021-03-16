@@ -34,6 +34,7 @@ describe('Infinites', () => {
 			_id: protectString(id),
 			rundownId: protectString(''),
 			partInstanceId: protectString(''),
+			playlistActivationId: protectString('active'),
 			piece: literal<PieceInstancePiece>({
 				_id: protectString(`${id}_p`),
 				externalId: '',
@@ -46,6 +47,7 @@ describe('Infinites', () => {
 				invalid: false,
 				status: -1,
 				virtual: clear,
+				content: { timelineObjects: [] },
 			}),
 			dynamicallyInserted: clear ? getCurrentTime() : undefined,
 		})

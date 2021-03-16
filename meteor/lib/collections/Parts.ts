@@ -24,8 +24,7 @@ import { registerIndex } from '../database'
 export type PartId = ProtectedString<'PartId'>
 
 /** A "Line" in NRK Lingo. */
-export interface DBPart
-	extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'> {
+export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
 	_id: PartId
 	/** Position inside the segment */
 	_rank: number
@@ -38,8 +37,6 @@ export interface DBPart
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
-	/** if the part is inserted after another (for adlibbing) */
-	dynamicallyInsertedAfterPartId?: PartId
 
 	/** Human readable unqiue identifier of the part */
 	identifier?: string
@@ -82,7 +79,6 @@ export class Part implements DBPart {
 	public rundownId: RundownId
 	public status?: string
 	public notes?: Array<PartNote>
-	public dynamicallyInsertedAfterPartId?: PartId
 	public identifier?: string
 
 	constructor(document: DBPart) {
@@ -137,9 +133,11 @@ export class Part implements DBPart {
 			? [
 					{
 						type: NoteType.ERROR,
-						message:
-							this.invalidReason.title +
-							(this.invalidReason.description ? ': ' + this.invalidReason.description : ''),
+						message: {
+							key: `${this.invalidReason.title}${
+								this.invalidReason.description ? `: ${+this.invalidReason.description}` : ''
+							}`,
+						},
 						origin: {
 							name: this.title,
 						},
@@ -167,7 +165,9 @@ export class Part implements DBPart {
 							name: 'Media Check',
 							pieceId: piece._id,
 						},
-						message: st.message || '',
+						message: {
+							key: st.message || '',
+						},
 					})
 				}
 			}

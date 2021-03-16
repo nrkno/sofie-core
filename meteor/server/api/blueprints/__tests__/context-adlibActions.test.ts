@@ -7,7 +7,7 @@ import {
 import { protectString, unprotectString, waitForPromise, getRandomId, getCurrentTime } from '../../../../lib/lib'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { NotesContext, ActionExecutionContext, ActionPartChange } from '../context'
+import { ActionExecutionContext, ActionPartChange } from '../context'
 import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../../lib/collections/PartInstances'
 import {
@@ -17,7 +17,11 @@ import {
 	PieceInstances,
 } from '../../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylistActivationId,
+	RundownPlaylists,
+} from '../../../../lib/collections/RundownPlaylists'
 import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
 
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
@@ -51,13 +55,17 @@ postProcessPiecesMock.mockImplementation(() => [])
 const { postProcessPieces: postProcessPiecesOrig } = jest.requireActual('../postProcess')
 
 describe('Test blueprint api context', () => {
-	function generateSparsePieceInstances(rundown: Rundown) {
+	function generateSparsePieceInstances(playlist: RundownPlaylist, rundown: Rundown) {
+		const activationId = playlist.activationId as RundownPlaylistActivationId
+		expect(activationId).toBeTruthy()
+
 		rundown.getParts().forEach((part, i) => {
 			// make into a partInstance
 			PartInstances.insert({
 				_id: protectString(`${part._id}_instance`),
 				rundownId: part.rundownId,
 				segmentId: part.segmentId,
+				playlistActivationId: activationId,
 				takeCount: i,
 				rehearsal: false,
 				part,
@@ -69,6 +77,7 @@ describe('Test blueprint api context', () => {
 					_id: protectString(`${part._id}_piece${i}`),
 					rundownId: rundown._id,
 					partInstanceId: protectString(`${part._id}_instance`),
+					playlistActivationId: activationId,
 					piece: {
 						_id: protectString(`${part._id}_piece_inner${i}`),
 						externalId: '-',
@@ -80,7 +89,7 @@ describe('Test blueprint api context', () => {
 						startPartId: part._id,
 						content: {
 							index: i,
-						},
+						} as any,
 						lifespan: PieceLifespan.WithinPart,
 						invalid: false,
 					},
@@ -100,6 +109,9 @@ describe('Test blueprint api context', () => {
 		const rundown = cache.Rundowns.findOne({ playlistId: cache.containsDataFromPlaylist }) as Rundown
 		expect(rundown).toBeTruthy()
 
+		const activationId = playlist.activationId as RundownPlaylistActivationId
+		expect(activationId).toBeTruthy()
+
 		const studio = Studios.findOne(playlist.studioId) as Studio
 		expect(studio).toBeTruthy()
 
@@ -107,27 +119,43 @@ describe('Test blueprint api context', () => {
 		const rundownIds = getRundownIDsFromCache(cache, playlist)
 		waitForPromise(cache.PieceInstances.fillWithDataFromDatabase({ rundownId: { $in: rundownIds } }))
 
-		const notesContext = new NotesContext('fakeContext', `fakeContext`, true)
-		const context = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
+		const context = new ActionExecutionContext(
+			{
+				name: 'fakeContext',
+				identifier: 'action',
+			},
+			cache,
+			studio,
+			playlist,
+			rundown
+		)
 		expect(context.getStudio()).toBeTruthy()
 
 		return {
 			playlist,
 			rundown,
-			notesContext,
 			context,
+			activationId,
 		}
 	}
 
 	function wrapWithCache<T>(fcn: (cache: CacheForRundownPlaylist, playlist: RundownPlaylist) => T) {
 		const defaultSetup = setupDefaultRundownPlaylist(env)
+
+		// Mark playlist as active
+		RundownPlaylists.update(defaultSetup.playlistId, {
+			$set: {
+				activationId: getRandomId(),
+			},
+		})
+
 		const tmpPlaylist = RundownPlaylists.findOne(defaultSetup.playlistId) as RundownPlaylist
 		expect(tmpPlaylist).toBeTruthy()
 
 		const rundown = Rundowns.findOne(defaultSetup.rundownId) as Rundown
 		expect(rundown).toBeTruthy()
 
-		generateSparsePieceInstances(rundown)
+		generateSparsePieceInstances(tmpPlaylist, rundown)
 
 		return wrapWithCacheForRundownPlaylist(tmpPlaylist, (cache) => fcn(cache, tmpPlaylist))
 	}
@@ -287,7 +315,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('basic and original only', () => {
 				wrapWithCache((cache) => {
-					const { context, rundown } = getActionExecutionContext(cache)
+					const { context, rundown, activationId } = getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -308,6 +336,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId0,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: activationId,
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -320,6 +349,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 1000,
 					})
@@ -335,6 +367,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId1,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: activationId,
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -347,6 +380,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 2000,
 					})
@@ -360,7 +396,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('excludeCurrentPart', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist, rundown } = getActionExecutionContext(cache)
+					const { context, playlist, rundown, activationId } = getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -383,6 +419,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId0,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: activationId,
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -395,6 +432,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 1000,
 					})
@@ -403,6 +443,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId1,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[2]._id,
+						playlistActivationId: activationId,
 						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							_id: getRandomId(),
@@ -415,6 +456,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 2000,
 					})
@@ -433,7 +477,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('pieceMetaDataFilter', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist, rundown } = getActionExecutionContext(cache)
+					const { context, playlist, rundown, activationId } = getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -456,6 +500,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId0,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[0]._id,
+						playlistActivationId: activationId,
 						piece: {
 							_id: getRandomId(),
 							startPartId: partInstances[0].part._id,
@@ -467,6 +512,9 @@ describe('Test blueprint api context', () => {
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 1000,
 					})
@@ -475,6 +523,7 @@ describe('Test blueprint api context', () => {
 						_id: pieceId1,
 						rundownId: rundown._id,
 						partInstanceId: partInstances[2]._id,
+						playlistActivationId: activationId,
 						piece: {
 							_id: getRandomId(),
 							startPartId: partInstances[2].part._id,
@@ -490,6 +539,9 @@ describe('Test blueprint api context', () => {
 							},
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
+							content: {
+								timelineObjects: [],
+							},
 						},
 						startedPlayback: 2000,
 					})
@@ -509,6 +561,60 @@ describe('Test blueprint api context', () => {
 							pieceMetaDataFilter: { prop1: { $ne: 'hello' } },
 						})
 					).toMatchObject({ _id: pieceId0 })
+				})
+			})
+		})
+
+		describe('getPartInstanceForPreviousPiece', () => {
+			testInFiber('invalid parameters', () => {
+				wrapWithCache((cache) => {
+					const { context } = getActionExecutionContext(cache)
+
+					// @ts-ignore
+					expect(() => context.getPartInstanceForPreviousPiece()).toThrowError(
+						'Cannot find PartInstance from invalid PieceInstance'
+					)
+					// @ts-ignore
+					expect(() => context.getPartInstanceForPreviousPiece({})).toThrowError(
+						'Cannot find PartInstance from invalid PieceInstance'
+					)
+					// @ts-ignore
+					expect(() => context.getPartInstanceForPreviousPiece('abc')).toThrowError(
+						'Cannot find PartInstance from invalid PieceInstance'
+					)
+					expect(() =>
+						context.getPartInstanceForPreviousPiece({
+							// @ts-ignore
+							partInstanceId: 6,
+						})
+					).toThrowError('Cannot find PartInstance for PieceInstance')
+					expect(() =>
+						context.getPartInstanceForPreviousPiece({
+							// @ts-ignore
+							partInstanceId: 'abc',
+						})
+					).toThrowError('Cannot find PartInstance for PieceInstance')
+				})
+			})
+
+			testInFiber('valid parameters', () => {
+				wrapWithCache((cache) => {
+					const { context, playlist } = getActionExecutionContext(cache)
+
+					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
+					expect(partInstanceIds).toHaveLength(5)
+
+					expect(
+						context.getPartInstanceForPreviousPiece({ partInstanceId: partInstanceIds[1] } as any)
+					).toMatchObject({
+						_id: partInstanceIds[1],
+					})
+
+					expect(
+						context.getPartInstanceForPreviousPiece({ partInstanceId: partInstanceIds[4] } as any)
+					).toMatchObject({
+						_id: partInstanceIds[4],
+					})
 				})
 			})
 		})
@@ -794,6 +900,9 @@ describe('Test blueprint api context', () => {
 						externalId: '-',
 						enable: { start: 0 },
 						lifespan: PieceLifespan.OutOnRundownEnd,
+						content: {
+							timelineObjects: [],
+						},
 					}
 					const newPart: IBlueprintPart = {
 						externalId: 'nope',
@@ -818,7 +927,7 @@ describe('Test blueprint api context', () => {
 					expect(newPartInstance).toBeTruthy()
 					expect(newPartInstance.part._rank).toBeLessThan(9000)
 					expect(newPartInstance.part._rank).toBeGreaterThan(partInstance.part._rank)
-					expect(newPartInstance.part.dynamicallyInsertedAfterPartId).toBeTruthy()
+					expect(newPartInstance.orphaned).toEqual('adlib-part')
 
 					const newNextPartInstances = context.getPieceInstances('next')
 					expect(newNextPartInstances).toHaveLength(1)

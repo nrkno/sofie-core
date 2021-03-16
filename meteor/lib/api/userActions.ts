@@ -1,4 +1,3 @@
-import { Omit } from '../lib'
 import { ClientAPI } from '../api/client'
 import { MethodContext } from './methods'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
@@ -271,6 +270,8 @@ export enum UserActionAPIMethods {
 
 	'guiFocused' = 'userAction.focused',
 	'guiBlurred' = 'userAction.blurred',
+
+	'getTranslationBundle' = 'userAction.getTranslationBundle',
 
 	'switchRouteSet' = 'userAction.switchRouteSet',
 	'moveRundown' = 'userAction.moveRundown',

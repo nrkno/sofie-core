@@ -386,8 +386,15 @@ async function fillCacheForRundownPlaylistWithData(
 	ps.push(makePromise(() => cache.Pieces.prepareInit({ startRundownId: { $in: rundownIds } }, false)))
 
 	ps.push(
-		makePromise(() => cache.PartInstances.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately))
-		// TODO - should this only load the non-reset?
+		makePromise(() =>
+			cache.PartInstances.prepareInit(
+				{
+					rundownId: { $in: rundownIds },
+					reset: { $ne: true },
+				},
+				initializeImmediately
+			)
+		)
 	)
 
 	ps.push(
@@ -402,6 +409,7 @@ async function fillCacheForRundownPlaylistWithData(
 				await cache.PieceInstances.fillWithDataFromDatabase({
 					rundownId: { $in: rundownIds },
 					partInstanceId: { $in: selectedPartInstanceIds },
+					reset: { $ne: true },
 				})
 			}, initializeImmediately)
 		)
@@ -455,7 +463,7 @@ export async function initCacheForRundownPlaylist(
 	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(
 		playlist.studioId,
 		playlist._id,
-		playlist.active ?? false
+		!!playlist.activationId
 	)
 	if (extendFromCache) {
 		cache._extendWithData(extendFromCache)
@@ -501,7 +509,7 @@ export async function initCacheForRundownPlaylistFromRundown(rundownId: RundownI
 export async function initCacheForRundownPlaylistFromStudio(studioId: StudioId) {
 	const playlist = RundownPlaylists.findOne({
 		studioId: studioId,
-		active: true,
+		activationId: { $exists: true },
 	})
 	if (!playlist) {
 		return initCacheForNoRundownPlaylist(studioId)

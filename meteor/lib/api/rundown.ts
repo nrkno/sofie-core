@@ -89,9 +89,13 @@ export function runInRundownContext<T>(rundown: Rundown, fcn: () => T, errorInfo
 function handleRundownContextError(rundown: Rundown, errorInformMessage: string | undefined, error: any) {
 	rundown.appendNote({
 		type: NoteType.ERROR,
-		message:
-			(errorInformMessage ? errorInformMessage : 'Something went wrong when processing data this rundown.') +
-			`Error message: ${(error || 'N/A').toString()}`,
+		message: {
+			key: `${errorInformMessage ||
+				'Something went wrong when processing data for this rundown.'} Error message: {{error}}`,
+			args: {
+				error: `${error || 'N/A'}`,
+			},
+		},
 		origin: {
 			name: rundown.name,
 		},

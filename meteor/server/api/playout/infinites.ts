@@ -15,6 +15,7 @@ import {
 	buildPastInfinitePiecesForThisPartQuery,
 } from '../../../lib/rundown/infinites'
 import { profiler } from '../profiler'
+import { Meteor } from 'meteor/meteor'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -62,11 +63,16 @@ function canContinueAdlibOnEndInfinites(
 
 function getIdsBeforeThisPart(cache: CacheForRundownPlaylist, nextPart: DBPart) {
 	const span = profiler.startSpan('getIdsBeforeThisPart')
-	// Note: This makes the assumption that nextPart is a part found in this cache
-	const partsBeforeThisInSegment = cache.Parts.findFetch({
-		segmentId: nextPart.segmentId,
-		_rank: { $lt: nextPart._rank },
-	}).map((p) => p._id)
+	// Get the normal parts
+	const partsBeforeThisInSegment = cache.Parts.findFetch(
+		(p) => p.segmentId === nextPart.segmentId && p._rank < nextPart._rank
+	)
+	// Find any orphaned parts
+	const partInstancesBeforeThisInSegment = cache.PartInstances.findFetch(
+		(p) => p.segmentId === nextPart.segmentId && p.orphaned && p.part._rank < nextPart._rank
+	)
+	partsBeforeThisInSegment.push(...partInstancesBeforeThisInSegment.map((p) => p.part))
+
 	const currentSegment = cache.Segments.findOne(nextPart.segmentId)
 	const segmentsBeforeThisInRundown = currentSegment
 		? cache.Segments.findFetch({
@@ -77,7 +83,7 @@ function getIdsBeforeThisPart(cache: CacheForRundownPlaylist, nextPart: DBPart) 
 
 	if (span) span.end()
 	return {
-		partsBeforeThisInSegment,
+		partsBeforeThisInSegment: _.sortBy(partsBeforeThisInSegment, (p) => p._rank).map((p) => p._id),
 		segmentsBeforeThisInRundown,
 	}
 }
@@ -137,6 +143,9 @@ function getPlayheadTrackingInfinitesForPart(
 	nextPartInstance: PartInstance
 ): PieceInstance[] {
 	const span = profiler.startSpan('getPlayheadTrackingInfinitesForPart')
+
+	if (!playlist.activationId) throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is not active`)
+
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, nextPartInstance.part)
 
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
@@ -150,6 +159,7 @@ function getPlayheadTrackingInfinitesForPart(
 	const playingPieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
 
 	const res = libgetPlayheadTrackingInfinitesForPart(
+		playlist.activationId,
 		new Set(partsBeforeThisInSegment),
 		new Set(segmentsBeforeThisInRundown),
 		playingPartInstance,
@@ -175,6 +185,8 @@ export function getPieceInstancesForPart(
 	const span = profiler.startSpan('getPieceInstancesForPart')
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
+	if (!playlist.activationId) throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is not active`)
+
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
 	const playingPieceInstances = playingPartInstance
 		? cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
@@ -183,6 +195,7 @@ export function getPieceInstancesForPart(
 	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(playlist, orderedParts, playingPartInstance, part)
 
 	const res = libgetPieceInstancesForPart(
+		playlist.activationId,
 		playingPartInstance,
 		playingPieceInstances,
 		part,

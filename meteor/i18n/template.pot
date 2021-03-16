@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-01-07T09:15:46.298Z\n"
-"PO-Revision-Date: 2021-01-07T09:15:46.298Z\n"
+"POT-Creation-Date: 2021-03-02T08:11:46.296Z\n"
+"PO-Revision-Date: 2021-03-02T08:11:46.296Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -148,6 +148,9 @@ msgstr ""
 msgid "Something went wrong, and it affected the output"
 msgstr ""
 
+msgid "Are you sure?"
+msgstr ""
+
 msgid ""
 "Trimming this clip has timed out. It's possible that the story is currently "
 "locked for writing in {{nrcsName}} and will eventually be updated. Make "
@@ -190,6 +193,9 @@ msgid "Remove out-trimming"
 msgstr ""
 
 msgid "Out"
+msgstr ""
+
+msgid "Next"
 msgstr ""
 
 msgid "Could not get system status. Please consult system administrator."
@@ -403,7 +409,7 @@ msgstr ""
 
 msgid ""
 "You are in rehearsal mode, the broadcast starts in less than 1 minute. Do "
-"you want to reset the rundown and go into playout mode?"
+"you want to reset the rundown and go into On-Air mode?"
 msgstr ""
 
 msgid "Started"
@@ -430,7 +436,7 @@ msgstr ""
 msgid "Undo Hold"
 msgstr ""
 
-msgid "Activate"
+msgid "Activate (On-Air)"
 msgstr ""
 
 msgid "Deactivate"
@@ -466,6 +472,14 @@ msgstr ""
 msgid "Could not find a Piece that can be disabled."
 msgstr ""
 
+msgid "Failed to execute take"
+msgstr ""
+
+msgid ""
+"The rundown you are trying to execute a take on is inactive, would you like "
+"to activate this rundown?"
+msgstr ""
+
 msgid "Failed to activate"
 msgstr ""
 
@@ -484,10 +498,10 @@ msgid ""
 "Are you sure you want to activate this one anyway?"
 msgstr ""
 
-msgid "Activate Anyway"
+msgid "Activate Anyway (Rehearsal)"
 msgstr ""
 
-msgid "Activate Anyway (GO ON AIR)"
+msgid "Activate Anyway (On-Air)"
 msgstr ""
 
 msgid "Do you want to activate this Rundown?"
@@ -611,13 +625,20 @@ msgstr ""
 
 msgid ""
 "Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data "
-"from {{nrcsName}}, what do you want to do?"
+"from {{nrcsName}}. You can either leave it in Sofie and mark it as Unsynced "
+"or remove the rundown from Sofie. What do you want to do?"
 msgstr ""
 
-msgid "Leave it in Sofie (mark the rundown as unsynced)"
+msgid "(Unknown rundown)"
 msgstr ""
 
-msgid "Remove just the rundown from Sofie"
+msgid "(Unknown playlist)"
+msgstr ""
+
+msgid "Leave Unsynced"
+msgstr ""
+
+msgid "Remove"
 msgstr ""
 
 msgid "Remove rundown"
@@ -635,6 +656,9 @@ msgid "({{time}} ago)"
 msgstr ""
 
 msgid "Planned Duration"
+msgstr ""
+
+msgid "Looping"
 msgstr ""
 
 msgid ""
@@ -793,10 +817,10 @@ msgstr ""
 msgid "Auto"
 msgstr ""
 
-msgid "Next"
+msgid "Show End"
 msgstr ""
 
-msgid "Show End"
+msgid "Loops to top"
 msgstr ""
 
 msgid "Unknown"
@@ -1012,9 +1036,6 @@ msgid "Device Type"
 msgstr ""
 
 msgid "Remove this item?"
-msgstr ""
-
-msgid "Remove"
 msgstr ""
 
 msgid "Are you sure you want to remove {{type}} \"{{deviceId}}\"?"
@@ -1271,6 +1292,9 @@ msgid "Display Take buttons"
 msgstr ""
 
 msgid "Queue all adlibs"
+msgstr ""
+
+msgid "Toggle AdLibs on single mouse click"
 msgstr ""
 
 msgid "URL"
@@ -1594,54 +1618,6 @@ msgstr ""
 msgid "Playout gateway not connected"
 msgstr ""
 
-msgid "CasparCG Channel"
-msgstr ""
-
-msgid "The CasparCG channel to use (1 is the first)"
-msgstr ""
-
-msgid "CasparCG Layer"
-msgstr ""
-
-msgid "The layer in a channel to use"
-msgstr ""
-
-msgid "Preview when not on air"
-msgstr ""
-
-msgid "Whether to load to first frame"
-msgstr ""
-
-msgid "Mapping type"
-msgstr ""
-
-msgid "Index"
-msgstr ""
-
-msgid "Identifier"
-msgstr ""
-
-msgid "Priority"
-msgstr ""
-
-msgid "Sisyfos Channel"
-msgstr ""
-
-msgid "Quantel Port ID"
-msgstr ""
-
-msgid "The name you'd like the port to have"
-msgstr ""
-
-msgid "Quantel Channel ID"
-msgstr ""
-
-msgid "The channel to use for output (0 is the first one)"
-msgstr ""
-
-msgid "Mode"
-msgstr ""
-
 msgid "Remove this mapping?"
 msgstr ""
 
@@ -1649,30 +1625,6 @@ msgid "Are you sure you want to remove mapping for layer \"{{mappingId}}\"?"
 msgstr ""
 
 msgid "This layer is now rerouted by an active Route Set: {{routeSets}}"
-msgstr ""
-
-msgid "Preset"
-msgstr ""
-
-msgid "Preset Transition Speed"
-msgstr ""
-
-msgid "Zoom"
-msgstr ""
-
-msgid "Zoom Speed"
-msgstr ""
-
-msgid "Unknown Mapping"
-msgstr ""
-
-msgid "Channel: {{channel}}"
-msgstr ""
-
-msgid "Port: {{port}}, Channel: {{channel}}"
-msgstr ""
-
-msgid "Unknown device type: {{device}}"
 msgstr ""
 
 msgid "Layer ID"
@@ -1699,6 +1651,9 @@ msgid "Lookahead Maximum Search Distance (Default = unlimited/-1)"
 msgstr ""
 
 msgid "Layer Mappings"
+msgstr ""
+
+msgid "Add a playout device to the studio in order to edit the layer mappings"
 msgstr ""
 
 msgid "Remove this Exclusivity Group?"
@@ -1793,6 +1748,9 @@ msgid "The way this Route Set should behave towards the user"
 msgstr ""
 
 msgid "Route Sets"
+msgstr ""
+
+msgid "Add a playout device to the studio in order to configure the route sets"
 msgstr ""
 
 msgid ""

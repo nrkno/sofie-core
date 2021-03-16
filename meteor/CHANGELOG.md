@@ -2,6 +2,100 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.18.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0-1-in-testing-R30...v1.18.0) (2021-03-16)
+
+
+### Bug Fixes
+
+* moveNextPart when next part is an adlib ([83caabf](https://github.com/nrkno/tv-automation-server-core/commit/83caabf43548dbdf8838b5182ee36f54f45bf9ee))
+* onEnd infinites from adlib-parts not continuing ([5680cfe](https://github.com/nrkno/tv-automation-server-core/commit/5680cfe58d09c6e2fff8d5797324c5072f644a16))
+* Presenter screen not working ([#465](https://github.com/nrkno/tv-automation-server-core/issues/465)) ([90a0d08](https://github.com/nrkno/tv-automation-server-core/commit/90a0d08ccb389edd73ff49c663ad8a5dd6a505c3))
+* reactively remove the unsynced notification ([a8cbb4f](https://github.com/nrkno/tv-automation-server-core/commit/a8cbb4f1b124ceb5a7e0a498fe8600b43a32d74d))
+* reset adlibbed partinstances when jumping around the rundown ([0def72b](https://github.com/nrkno/tv-automation-server-core/commit/0def72b667fc22da3d3db01c14ff3664919b33a5))
+* some cases where adlibbed partinstances not reset ([1c7db3a](https://github.com/nrkno/tv-automation-server-core/commit/1c7db3a9473c3604ad9cc512d5b573aaab893c1b))
+* **Midi:** Filtering of idle information in multi-pedal setups ([dd1fa79](https://github.com/nrkno/tv-automation-server-core/commit/dd1fa7981d3163f5fa3a7aa1733e44e8a7b6610d))
+
+## [1.18.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.17.0...v1.18.0-0) (2021-02-09)
+
+
+### Features
+
+* activation pop-up when doing a take on an inactive rundown ([6dd6412](https://github.com/nrkno/tv-automation-server-core/commit/6dd64124b7e1d7ef961e0c265317a7834aa988ef))
+* add interface IAsRunEventUserContext ([a3284a8](https://github.com/nrkno/tv-automation-server-core/commit/a3284a8f217f4040b79cb49a95dccb969e12bb82))
+* add support for TranslatableMessages in notification center ([4d47369](https://github.com/nrkno/tv-automation-server-core/commit/4d47369d149b70d4b18ca84b327753f5772d963f))
+* add UI clarifications for looping rundown playlists ([82b0ab0](https://github.com/nrkno/tv-automation-server-core/commit/82b0ab0ec259befcba4406b2ac2b752fb932d50e))
+* blueprint logging api changes ([50c4a0b](https://github.com/nrkno/tv-automation-server-core/commit/50c4a0b2be53646427ba55191c24ae6727a05bb7))
+* clamp the size of the prompter indicators at 12% of the screen height ([4e207c4](https://github.com/nrkno/tv-automation-server-core/commit/4e207c47989105b9e629e67b8413705accec508f))
+* correctly parse translations from blueprints and store in database ([cab7f79](https://github.com/nrkno/tv-automation-server-core/commit/cab7f79e3fd69f455c93c6c151860ee082395999))
+* don't add empty translations bundles to the client side translator ([006b591](https://github.com/nrkno/tv-automation-server-core/commit/006b5918f53ef9e1ec3b2a839c4d56f864bdd28e))
+* double click on AdLib in the Dashboard and Buckets to trigger ([#430](https://github.com/nrkno/tv-automation-server-core/issues/430)) ([8d4f75c](https://github.com/nrkno/tv-automation-server-core/commit/8d4f75cbfceafbadfca672c255b0193d0cd68342))
+* explicitly tie origin blueprint to translation bundle in data model ([92e7e3d](https://github.com/nrkno/tv-automation-server-core/commit/92e7e3dc5291e051803d2ac0d1ad43bac0f105cd))
+* expose PartInstance.orphaned to blueprints [publish] ([e1dc02a](https://github.com/nrkno/tv-automation-server-core/commit/e1dc02acb73f86dc5f9979374973a2819cdafbc8))
+* extended i18n capabilities to include translations bundles from blueprints ([1e6312f](https://github.com/nrkno/tv-automation-server-core/commit/1e6312fe815e86305ef7d452bde6f658d0d0241a))
+* github actions ([5241061](https://github.com/nrkno/tv-automation-server-core/commit/52410614519234a31658ad7410b1a43e3772a739))
+* implement a method to fetch individual translation bundles ([835b14c](https://github.com/nrkno/tv-automation-server-core/commit/835b14c33c5a719a2698d9d2845b492a4d74dd8f))
+* Layer Mappings defined by manifest ([63eb7b6](https://github.com/nrkno/tv-automation-server-core/commit/63eb7b6fe20c4768f584975054261a6bc34792e5))
+* Notes now support parametrized strings (changes NotesContext#error/warning signatures) ([cb4cb45](https://github.com/nrkno/tv-automation-server-core/commit/cb4cb452e7ab8197479f0922d59ddb0e0cbe1d6b))
+* option to go directly on-air from an inactive rundown ([3e17352](https://github.com/nrkno/tv-automation-server-core/commit/3e17352944b862a1be9c47a5e0f98b2d6ae05ae6))
+* PartInstances without Parts ([#417](https://github.com/nrkno/tv-automation-server-core/issues/417)) ([8895258](https://github.com/nrkno/tv-automation-server-core/commit/889525886f986f69fb91af55b49ed9b93780b67c))
+* remove impossible interfaces and add type predicate functions for ICommonContext and IUserNotesContext ([3aecc51](https://github.com/nrkno/tv-automation-server-core/commit/3aecc5118fa5c5a5c008655862349c87c563793b))
+* rename unsynced to orphaned ([a1cdcd0](https://github.com/nrkno/tv-automation-server-core/commit/a1cdcd043b724ef6574672ef9a52430474e08a23))
+* replace plain text messages with TranslatableMessages for Notes ([3d2dbea](https://github.com/nrkno/tv-automation-server-core/commit/3d2dbea751d17511c05a6d1ab42363a87a4e12b0))
+* ShowStyleBlueprintManifest.onAsRunEvent context changed to user context ([5738cf9](https://github.com/nrkno/tv-automation-server-core/commit/5738cf97b70c452ecfc3ed0b5a3515105b292d38))
+* ShowStyleBlueprintManifest.onTimelineGenerate changed to have user space context. Unused context argument removed from ShowStyleBlueprintManifest.getEndStateForPart ([ef97859](https://github.com/nrkno/tv-automation-server-core/commit/ef978590894d249796e9e853f24d3684c6ec43f3))
+* simplify some piece content typings ([#388](https://github.com/nrkno/tv-automation-server-core/issues/388)) [publish] ([#388](https://github.com/nrkno/tv-automation-server-core/issues/388)) ([359916f](https://github.com/nrkno/tv-automation-server-core/commit/359916fbcfd2f86a2a0a2f836bef871a83a736c3))
+* support namespaces in NotesContext to utilize translations from blueprints ([ecf69e4](https://github.com/nrkno/tv-automation-server-core/commit/ecf69e481f3c29e9f4d59dac47700c75208a8844))
+* translate segment ids on mos rundown ingest ([#449](https://github.com/nrkno/tv-automation-server-core/issues/449)) ([6ac2cb6](https://github.com/nrkno/tv-automation-server-core/commit/6ac2cb6267cca55c72029ddaa620aec2cb1968aa))
+* use a darker shade of green for Script source layer type ([d032c81](https://github.com/nrkno/tv-automation-server-core/commit/d032c81a40e228152331d225c915284abeb3bc57))
+* use parent blueprint as namespaces for translation bundles coming from blueprint uploads ([16471ca](https://github.com/nrkno/tv-automation-server-core/commit/16471ca37c3e49cd39e30b806f30ceb31e14d262))
+* working import and translations from blueprint content ([c957ec8](https://github.com/nrkno/tv-automation-server-core/commit/c957ec87cba4ac18e59aa2eec13b3f92d9af673d))
+* Adds support for multiple midi inputs ([c68d74c](https://github.com/nrkno/tv-automation-server-core/commit/c68d74ca06fd8dbe4c5545d651b76a9a8973769d))
+
+
+### Bug Fixes
+
+* add hint field to config manifest interfaces [publish] ([74b93b9](https://github.com/nrkno/tv-automation-server-core/commit/74b93b9113f824d225a47e976b9abb9cb5637395))
+* also reset pieceInstances for removed parts ([a59f800](https://github.com/nrkno/tv-automation-server-core/commit/a59f800082309739f5002758caaa63baaaae62f3))
+* bring back context argument for ShowStyleBlueprintManifest.getEndStateForPart ([903c6ab](https://github.com/nrkno/tv-automation-server-core/commit/903c6ab49f495fea7f25287826f854b96b3419a1))
+* change back to non user contexts for ShowStyleBlueprintManifest.onTimelineGenerate and onAsRunEvent ([cfc0a1b](https://github.com/nrkno/tv-automation-server-core/commit/cfc0a1b40d23e59cfa3d2965f1480893c59f2204))
+* clarify all activation actions to be either rehearsal or on-air ([bed3579](https://github.com/nrkno/tv-automation-server-core/commit/bed3579e38d20f716218260c6980f609d9c52890))
+* do not show the spinner after the inital subscriptions were fulfilled ([822d82a](https://github.com/nrkno/tv-automation-server-core/commit/822d82aa74cb35abb878c5a9df3e9efc46f00b67))
+* enable looping playlists ([be26d22](https://github.com/nrkno/tv-automation-server-core/commit/be26d22d15045a8f634911eb0db5b3e6caba1b3e))
+* ensure that header badge is white ([2653ef5](https://github.com/nrkno/tv-automation-server-core/commit/2653ef5c7c8881305612ec089d3b6845e04e1af4))
+* expectedMediaItems should use adlibs from the cache, not the db ([e638a4f](https://github.com/nrkno/tv-automation-server-core/commit/e638a4f7d0d63d4d28dba848bbd0a8c0b6ab7c8c))
+* findLastPieceOnLayer returning stale data ([#431](https://github.com/nrkno/tv-automation-server-core/issues/431)) ([e867f18](https://github.com/nrkno/tv-automation-server-core/commit/e867f183e9e1c0e626cc3941c1146763f665844b))
+* hotkeys for segment adlibs wouldn't work in adlib parts ([76a59f0](https://github.com/nrkno/tv-automation-server-core/commit/76a59f0a911a346a4c703d1b7f96dcec1cb01ba5))
+* hoverscrub in shelf scrolls with rundown, instead of being fixed to viewport ([#453](https://github.com/nrkno/tv-automation-server-core/issues/453)) ([70dfe31](https://github.com/nrkno/tv-automation-server-core/commit/70dfe319a46d6742ab24ebf844db0c6aec7bdf55))
+* improve log messages ([ef2ca49](https://github.com/nrkno/tv-automation-server-core/commit/ef2ca49a68c2d7c39ffef72698f2e60cbb1dc545))
+* ITranslatableMessage typechecker predicate had multiple bugs ([8868a0c](https://github.com/nrkno/tv-automation-server-core/commit/8868a0c0d36df6a31346ac6d299744c888aa77d3))
+* layer mappings summary composed from manifest [publish] ([b71c3eb](https://github.com/nrkno/tv-automation-server-core/commit/b71c3eba6eeef2351b272f04d93be8374d8496f6))
+* live speak should be clip blue and live-speak green ([8964ab3](https://github.com/nrkno/tv-automation-server-core/commit/8964ab32357993eac79ad13ae72cbdd2f6217e7a))
+* minor improvements after code review ([558c4b3](https://github.com/nrkno/tv-automation-server-core/commit/558c4b377f04468abc30536f84af9ee4068d4160))
+* more context usage inconsistencies ([5908754](https://github.com/nrkno/tv-automation-server-core/commit/5908754e9c8352d3c408914de20fba69d02308b7))
+* move getTranslationBundle method from userActions to systems api ([96a8d75](https://github.com/nrkno/tv-automation-server-core/commit/96a8d75aa7e2cb5327b77c6bb7d47727feeab63b))
+* namespaces not applied when creating notes from blueprint processing ([4c979e4](https://github.com/nrkno/tv-automation-server-core/commit/4c979e40983edcf019f432343586511e5dfef88a))
+* parametrized strings would sometimes cause an exception in the i18n translator ([b9c0b10](https://github.com/nrkno/tv-automation-server-core/commit/b9c0b10cba5c647a1a2ed00f3a88fa5567b50f73))
+* pieces for display should be sorted based on priority ([cc89b79](https://github.com/nrkno/tv-automation-server-core/commit/cc89b79943aab786427b2e22065e976f3d2653a6))
+* regenerateRundown not using syncFunction ([8d01e41](https://github.com/nrkno/tv-automation-server-core/commit/8d01e41988f327b624769b03821a177df0a4d0f3))
+* reject ingest updates when rundown or segment are orphaned ([4240656](https://github.com/nrkno/tv-automation-server-core/commit/424065697f412c9f089b3f9bd9637712144a818d))
+* remove debug log statements used under developement, commented parts of the code that aren't immediately intuitive ([181b31c](https://github.com/nrkno/tv-automation-server-core/commit/181b31ca608845630646cb1270e70d267d451b60))
+* remove unused context argument from StudioBlueprintManifest.getRundownPlaylistInfo, StudioBlueprintManifest.preprocessConfig and ShowStyleBlueprintManifest.getShowStyleVariantId ([0e30711](https://github.com/nrkno/tv-automation-server-core/commit/0e30711831ce11366be5ea1fecb595c3279805ac))
+* remove unused import (linting error) ([970c8ea](https://github.com/nrkno/tv-automation-server-core/commit/970c8ea155fb6229c02c410afe0da3c8f78fdfdd))
+* reordering rundowns in lobby would result in incorrect calls to backend ([96d1597](https://github.com/nrkno/tv-automation-server-core/commit/96d1597d8d00a410aaef815b31f1a2960f4abe10))
+* reset partInstances for removed parts ([3b1c4a6](https://github.com/nrkno/tv-automation-server-core/commit/3b1c4a6b375f72060ce6458e95f53ccad94a42fa))
+* resync missing rundown ([#440](https://github.com/nrkno/tv-automation-server-core/issues/440)) ([26c07e7](https://github.com/nrkno/tv-automation-server-core/commit/26c07e7408001404b4755bf7b16ccd151ed6ef51))
+* save rundown baseline changes in parallel ([d4c9b78](https://github.com/nrkno/tv-automation-server-core/commit/d4c9b780300f651006e5780d9992e5ba2d39eae6))
+* theoretical segment unsyncing for mos ([b6f20af](https://github.com/nrkno/tv-automation-server-core/commit/b6f20afa653b807ec9444e5fe855d3eb697b3137))
+* update blueprints-integration dependency and re-add context where necessary ([6a8ac28](https://github.com/nrkno/tv-automation-server-core/commit/6a8ac286957ac60d2b9b7c34cab795033a575f1e))
+* **freeze frame countdown:** some positioning problems ([8c23067](https://github.com/nrkno/tv-automation-server-core/commit/8c2306757155913ceee35ef227898e632c2982a1))
+* **looping playlist:** Looping icon was shown even when no `loop` flag was enabled ([bd62aec](https://github.com/nrkno/tv-automation-server-core/commit/bd62aec1a7bd66f75303aac5c033c2945094f5e8))
+* **Presenter screen:** countdown colors match the ones used in the Rundown View ([#442](https://github.com/nrkno/tv-automation-server-core/issues/442)) ([00fc90c](https://github.com/nrkno/tv-automation-server-core/commit/00fc90c576115762434aac05e174ff5b0b6a1581))
+* **RundownView:** issue with VirtualElement when running with touch emulation turned on in Inspector ([13e1382](https://github.com/nrkno/tv-automation-server-core/commit/13e138225e0aebe496951d0320e2fcd41a7a870d))
+* **Shelf:** trim filter input, refactor AdLibPanelToolbar ([e3619d9](https://github.com/nrkno/tv-automation-server-core/commit/e3619d9bcb8ef5b546d83e711554b8aaf34c5845))
+* settle inconsistencies between outdated translation code and newer blueprint changes ([5cdf1e5](https://github.com/nrkno/tv-automation-server-core/commit/5cdf1e5a7f722c31411c8d95efd6e2228c6e4344))
+* tests ([4397486](https://github.com/nrkno/tv-automation-server-core/commit/439748640843db04875d05bb0d9cea46f111a735))
+* typo in translationsbundles collection name ([c8c52df](https://github.com/nrkno/tv-automation-server-core/commit/c8c52df2b5ede03a01d88058e1f23c0706c8af59))
+
 ## [1.17.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.16.2...v1.17.0) (2021-02-08)
 
 

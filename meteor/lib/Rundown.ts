@@ -9,10 +9,11 @@ import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
+	PieceInstanceWithTimings,
 } from './rundown/infinites'
 import { FindOptions } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
-import { getCurrentTime } from './lib'
+import { getCurrentTime, protectString } from './lib'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -50,7 +51,7 @@ export interface ISourceLayerExtended extends ISourceLayer {
 }
 
 export interface PieceExtended {
-	instance: PieceInstance
+	instance: PieceInstanceWithTimings
 
 	/** Source layer that this piece belongs to */
 	sourceLayer?: ISourceLayerExtended
@@ -120,6 +121,7 @@ export function getPieceInstancesForPartInstance(
 ) {
 	if (partInstance.isTemporary) {
 		return getPieceInstancesForPart(
+			protectString(''),
 			currentPartInstance,
 			currentPartInstancePieceInstances,
 			partInstance.part,
@@ -158,6 +160,7 @@ export function getPieceInstancesForPartInstance(
 			// make sure to invalidate the current computation after SIMULATION_INVALIDATION has passed
 			invalidateAfter(SIMULATION_INVALIDATION)
 			return getPieceInstancesForPart(
+				protectString(''),
 				currentPartInstance,
 				currentPartInstancePieceInstances,
 				partInstance.part,

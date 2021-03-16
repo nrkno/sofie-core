@@ -9,7 +9,6 @@ import { getHash, protectString, unprotectObject, unprotectString, waitForPromis
 import { Studio } from '../../../../lib/collections/Studios'
 import {
 	LookaheadMode,
-	NotesContext as INotesContext,
 	IBlueprintAsRunLogEventContent,
 	IBlueprintSegmentDB,
 	TSR,
@@ -22,10 +21,8 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import {
 	CommonContext,
-	StudioConfigContext,
 	StudioContext,
 	ShowStyleContext,
-	NotesContext,
 	PartEventContext,
 	AsRunEventContext,
 	TimelineEventContext,
@@ -39,10 +36,10 @@ import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
 	wrapPartToTemporaryInstance,
-	PartInstance,
 	PartInstances,
 	unprotectPartInstance,
 	PartInstanceId,
+	PartInstance,
 } from '../../../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstanceInfiniteId } from '../../../../lib/collections/PieceInstances'
 import { SegmentId } from '../../../../lib/collections/Segments'
@@ -59,6 +56,7 @@ describe('Test blueprint api context', () => {
 			// make into a partInstance
 			PartInstances.insert({
 				_id: protectString(`${part._id}_instance`),
+				playlistActivationId: protectString('active'),
 				rundownId: part.rundownId,
 				segmentId: part.segmentId,
 				takeCount: i,
@@ -92,21 +90,21 @@ describe('Test blueprint api context', () => {
 
 	describe('CommonContext', () => {
 		testInFiber('no param', () => {
-			const context = new CommonContext('pre')
+			const context = new CommonContext({ name: 'name', identifier: 'pre' })
 
 			const res = context.getHashId(undefined as any)
 			expect(res).toEqual(getHash('pre_hash0'))
 			expect(context.unhashId(res)).toEqual('hash0')
 		})
 		testInFiber('no param + notUnique', () => {
-			const context = new CommonContext('pre')
+			const context = new CommonContext({ name: 'name', identifier: 'pre' })
 
 			const res = context.getHashId(undefined as any, true)
 			expect(res).toEqual(getHash('pre_hash0_1'))
 			expect(context.unhashId(res)).toEqual('hash0_1')
 		})
 		testInFiber('empty param', () => {
-			const context = new CommonContext('pre')
+			const context = new CommonContext({ name: 'name', identifier: 'pre' })
 
 			const res = context.getHashId('')
 			expect(res).toEqual(getHash('pre_hash0'))
@@ -119,7 +117,7 @@ describe('Test blueprint api context', () => {
 			expect(res2).not.toEqual(res)
 		})
 		testInFiber('string', () => {
-			const context = new CommonContext('pre')
+			const context = new CommonContext({ name: 'name', identifier: 'pre' })
 
 			const res = context.getHashId('something')
 			expect(res).toEqual(getHash('pre_something'))
@@ -132,7 +130,7 @@ describe('Test blueprint api context', () => {
 			expect(res2).toEqual(res)
 		})
 		testInFiber('string + notUnique', () => {
-			const context = new CommonContext('pre')
+			const context = new CommonContext({ name: 'name', identifier: 'pre' })
 
 			const res = context.getHashId('something', true)
 			expect(res).toEqual(getHash('pre_something_0'))
@@ -146,11 +144,7 @@ describe('Test blueprint api context', () => {
 		})
 	})
 
-	describe('NotesContext', () => {
-		// TODO
-	})
-
-	describe('StudioConfigContext', () => {
+	describe('StudioContext', () => {
 		function mockStudio() {
 			const manifest = () => ({
 				blueprintType: 'studio' as BlueprintManifestType.STUDIO,
@@ -176,6 +170,7 @@ describe('Test blueprint api context', () => {
 						required: false,
 					},
 				] as ConfigManifestEntry[],
+
 				studioMigrations: [],
 				getBaseline: () => [],
 				getShowStyleId: () => null,
@@ -186,6 +181,13 @@ describe('Test blueprint api context', () => {
 					sofieUrl: 'testUrl',
 					mediaPreviewsUrl: '',
 				},
+				mappings: {
+					abc: {
+						deviceId: 'abc',
+						device: TSR.DeviceType.ABSTRACT,
+						lookahead: LookaheadMode.PRELOAD,
+					},
+				},
 				blueprintConfig: { abc: true, '123': 'val2', notInManifest: 'val3' },
 				blueprintId: Blueprints.insert(blueprint),
 			})
@@ -193,13 +195,13 @@ describe('Test blueprint api context', () => {
 
 		testInFiber('getStudio', () => {
 			const studio = mockStudio()
-			const context = new StudioConfigContext(studio)
+			const context = new StudioContext({ name: 'studio', identifier: unprotectString(studio._id) }, studio)
 
 			expect(context.getStudio()).toEqual(studio)
 		})
 		testInFiber('getStudioConfig', () => {
 			const studio = mockStudio()
-			const context = new StudioConfigContext(studio)
+			const context = new StudioContext({ name: 'studio', identifier: unprotectString(studio._id) }, studio)
 
 			expect(context.getStudioConfig()).toEqual({
 				SofieHostURL: 'testUrl', // Injected
@@ -209,7 +211,7 @@ describe('Test blueprint api context', () => {
 		})
 		testInFiber('getStudioConfigRef', () => {
 			const studio = mockStudio()
-			const context = new StudioConfigContext(studio)
+			const context = new StudioContext({ name: 'studio', identifier: unprotectString(studio._id) }, studio)
 
 			const getStudioConfigRef = jest.spyOn(ConfigRef, 'getStudioConfigRef')
 			getStudioConfigRef.mockImplementation(() => {
@@ -225,24 +227,10 @@ describe('Test blueprint api context', () => {
 				getStudioConfigRef.mockRestore()
 			}
 		})
-	})
-
-	describe('StudioContext', () => {
-		function mockStudio() {
-			return setupMockStudio({
-				mappings: {
-					abc: {
-						deviceId: 'abc',
-						device: TSR.DeviceType.ABSTRACT,
-						lookahead: LookaheadMode.PRELOAD,
-					},
-				},
-			})
-		}
 
 		testInFiber('getStudioMappings', () => {
 			const studio = mockStudio()
-			const context = new StudioContext(studio)
+			const context = new StudioContext({ name: 'studio', identifier: unprotectString(studio._id) }, studio)
 
 			expect(context.getStudioMappings()).toEqual({
 				abc: {
@@ -357,40 +345,18 @@ describe('Test blueprint api context', () => {
 			)
 			Blueprints.update(blueprint._id, blueprint)
 
-			const notesContext = new NotesContext(
-				contextName || 'N/A',
-				`rundownId=${rundownId},segmentId=${segmentId}`,
-				false
-			)
 			return new ShowStyleContext(
+				{
+					name: contextName || 'N/A',
+					identifier: `rundownId=${rundownId},segmentId=${segmentId}`,
+				},
 				studio,
 				undefined,
 				undefined,
 				showStyleVariant.showStyleBaseId,
-				showStyleVariant._id,
-				notesContext
+				showStyleVariant._id
 			)
 		}
-
-		testInFiber('handleNotesExternally', () => {
-			const studio = mockStudio()
-			const context = getContext(studio)
-			const notesContext: NotesContext = context.notesContext
-			expect(notesContext).toBeTruthy()
-
-			expect(notesContext.handleNotesExternally).toEqual(context.handleNotesExternally)
-			expect(notesContext.handleNotesExternally).toBeFalsy()
-
-			// set to true
-			context.handleNotesExternally = true
-			expect(notesContext.handleNotesExternally).toEqual(context.handleNotesExternally)
-			expect(notesContext.handleNotesExternally).toBeTruthy()
-
-			// and back to false
-			context.handleNotesExternally = false
-			expect(notesContext.handleNotesExternally).toEqual(context.handleNotesExternally)
-			expect(notesContext.handleNotesExternally).toBeFalsy()
-		})
 
 		testInFiber('getShowStyleBase', () => {
 			const studio = mockStudio()
@@ -472,47 +438,11 @@ describe('Test blueprint api context', () => {
 				getShowStyleConfigRef.mockRestore()
 			}
 		})
-
-		class FakeNotesContext implements INotesContext {
-			error: (message: string) => void = jest.fn()
-			warning: (message: string) => void = jest.fn()
-			getHashId: (originString: string, originIsNotUnique?: boolean | undefined) => string = jest.fn(
-				() => 'hashed'
-			)
-			unhashId: (hash: string) => string = jest.fn(() => 'unhash')
-		}
-
-		testInFiber('notes', () => {
-			const studio = mockStudio()
-			const context = getContext(studio)
-
-			// Fake the notes context
-			const fakeNotes = new FakeNotesContext()
-				// Apply mocked notesContext:
-			;(context as any).notesContext = fakeNotes
-
-			context.error('this is an error', 'extid1')
-
-			expect(fakeNotes.error).toHaveBeenCalledTimes(1)
-			expect(fakeNotes.error).toHaveBeenCalledWith('this is an error', 'extid1')
-
-			context.warning('this is an warning', 'extid1')
-			expect(fakeNotes.warning).toHaveBeenCalledTimes(1)
-			expect(fakeNotes.warning).toHaveBeenCalledWith('this is an warning', 'extid1')
-
-			const hash = context.getHashId('str 1', false)
-			expect(hash).toEqual('hashed')
-			expect(fakeNotes.getHashId).toHaveBeenCalledTimes(1)
-			expect(fakeNotes.getHashId).toHaveBeenCalledWith('str 1', false)
-
-			const unhash = context.unhashId('str 1')
-			expect(unhash).toEqual('unhash')
-			expect(fakeNotes.unhashId).toHaveBeenCalledTimes(1)
-			expect(fakeNotes.unhashId).toHaveBeenCalledWith('str 1')
-		})
 	})
 
-	describe('SegmentContext', () => {})
+	describe('SegmentUserContext', () => {
+		// TODO?
+	})
 
 	describe('PartEventContext', () => {
 		testInFiber('get part', () => {
@@ -529,8 +459,8 @@ describe('Test blueprint api context', () => {
 				_id: protectString('not-a-real-part'),
 			}
 
-			const tmpPart = wrapPartToTemporaryInstance(mockPart as DBPart)
-			const context = new PartEventContext(rundown, cache, tmpPart)
+			const tmpPart = wrapPartToTemporaryInstance(protectString('active'), mockPart as DBPart)
+			const context = new PartEventContext('fake', protectString('blueprint1'), rundown, cache, tmpPart)
 			expect(context.getStudio()).toBeTruthy()
 
 			expect(context.part).toEqual(tmpPart)
@@ -554,7 +484,15 @@ describe('Test blueprint api context', () => {
 
 			let cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
-			return new AsRunEventContext(rundown, cache, mockEvent)
+			return new AsRunEventContext(
+				{
+					name: 'as-run',
+					identifier: unprotectString(mockEvent._id),
+				},
+				rundown,
+				cache,
+				mockEvent
+			)
 		}
 		testInFiber('getAllAsRunEvents', () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
@@ -575,7 +513,15 @@ describe('Test blueprint api context', () => {
 				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 			}
 
-			const context = new AsRunEventContext(rundown, cache, mockEvent)
+			const context = new AsRunEventContext(
+				{
+					name: 'as-run',
+					identifier: unprotectString(mockEvent._id),
+				},
+				rundown,
+				cache,
+				mockEvent
+			)
 			expect(context.getStudio()).toBeTruthy()
 			expect(context.asRunEvent).toEqual(mockEvent)
 
@@ -845,7 +791,7 @@ describe('Test blueprint api context', () => {
 			const part = rundown.getParts()[3]
 			expect(part).toBeTruthy()
 
-			const partInstance = wrapPartToTemporaryInstance(part)
+			const partInstance = wrapPartToTemporaryInstance(protectString('active'), part)
 			const ingestPart = context.getIngestDataForPartInstance(unprotectPartInstance(partInstance))
 			expect(ingestPart).toBeUndefined()
 		})
@@ -871,7 +817,7 @@ describe('Test blueprint api context', () => {
 				} as any,
 			})
 
-			const partInstance = wrapPartToTemporaryInstance(part)
+			const partInstance = wrapPartToTemporaryInstance(protectString('active'), part)
 			const ingestPart = context.getIngestDataForPartInstance(unprotectObject(partInstance))
 			expect(ingestPart).toEqual({
 				fakeData: true,

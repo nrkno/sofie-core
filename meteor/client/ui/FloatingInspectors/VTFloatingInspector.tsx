@@ -21,6 +21,7 @@ interface IProps {
 	noticeMessage: string | null
 	contentMetaData: MediaObject | null
 	renderedDuration?: number | undefined
+	displayOn?: 'document' | 'viewport'
 }
 
 function getPreviewUrl(contentMetaData: MediaObject | null, mediaPreviewUrl: string | undefined): string | undefined {
@@ -82,7 +83,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 	const showFrameMarker = offsetTimePosition === 0 || offsetTimePosition >= itemDuration
 
 	return (
-		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined}>
+		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
 			{getPreviewUrl(props.contentMetaData, props.mediaPreviewUrl) ? (
 				<div
 					className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"

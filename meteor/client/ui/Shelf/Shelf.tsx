@@ -476,6 +476,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 										studioMode={this.props.studioMode}
 										rundownLayout={this.props.rundownLayout}
 										shouldQueue={this.state.shouldQueue}
+										selectedPiece={this.state.selectedPiece}
+										onSelectPiece={this.selectPiece}
 										onChangeQueueAdLib={this.changeQueueAdLib}
 										studio={this.props.studio}
 									/>

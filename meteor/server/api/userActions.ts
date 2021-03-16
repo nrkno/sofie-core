@@ -2,8 +2,8 @@ import * as _ from 'underscore'
 import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
-import { getCurrentTime, getHash, Omit, makePromise } from '../../lib/lib'
-import { Rundowns, RundownHoldState, RundownId, Rundown } from '../../lib/collections/Rundowns'
+import { getCurrentTime, getHash, makePromise } from '../../lib/lib'
+import { Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { Parts, Part, PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout/playout'
@@ -21,7 +21,7 @@ import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDa
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { getActiveRundownPlaylistsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
-import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import {
 	PieceInstances,
@@ -76,7 +76,7 @@ export const take = syncFunction(function take(
 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 
-	if (!playlist.active) {
+	if (!playlist.activationId) {
 		return ClientAPI.responseError(`Rundown is not active, please activate the rundown before doing a TAKE.`)
 	}
 	if (!playlist.nextPartInstanceId) {
@@ -121,7 +121,7 @@ export function setNext(
 	if (nextPartId) check(nextPartId, String)
 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!playlist.active)
+	if (!playlist.activationId)
 		return ClientAPI.responseError(
 			'RundownPlaylist is not active, please activate it before setting a part as Next'
 		)
@@ -149,7 +149,7 @@ export function setNextSegment(
 	else check(nextSegmentId, null)
 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!playlist.active)
+	if (!playlist.activationId)
 		return ClientAPI.responseError('Rundown is not active, please activate it before setting a part as Next')
 
 	let nextSegment: Segment | null = null
@@ -167,10 +167,7 @@ export function setNextSegment(
 		}
 
 		const partsInSegment = nextSegment.getParts()
-		const firstValidPartInSegment = _.find(
-			partsInSegment,
-			(p) => p.isPlayable() && !p.dynamicallyInsertedAfterPartId
-		)
+		const firstValidPartInSegment = _.find(partsInSegment, (p) => p.isPlayable())
 
 		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')
 
@@ -191,7 +188,8 @@ export function moveNext(
 	setManually: boolean
 ): ClientAPI.ClientResponse<PartId | null> {
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!playlist.active) return ClientAPI.responseError('Rundown Playlist is not active, please activate it first')
+	if (!playlist.activationId)
+		return ClientAPI.responseError('Rundown Playlist is not active, please activate it first')
 
 	if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
 		return ClientAPI.responseError('The Next cannot be changed during a Hold!')
@@ -211,7 +209,7 @@ export function prepareForBroadcast(
 	check(rundownPlaylistId, String)
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 
-	if (playlist.active)
+	if (playlist.activationId)
 		return ClientAPI.responseError(
 			'Rundown Playlist is active, please deactivate before preparing it for broadcast'
 		)
@@ -233,7 +231,7 @@ export function resetRundownPlaylist(
 	check(rundownPlaylistId, String)
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-	if (playlist.active && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
+	if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
 		return ClientAPI.responseError(
 			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
 		)
@@ -249,7 +247,7 @@ export function resetAndActivate(
 	check(rundownPlaylistId, String)
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-	if (playlist.active && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
+	if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
 		return ClientAPI.responseError(
 			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
 		)
@@ -326,7 +324,7 @@ export function pieceTakeNow(
 	check(pieceInstanceIdOrPieceIdToCopy, String)
 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!playlist.active)
+	if (!playlist.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
 	if (playlist.currentPartInstanceId !== partInstanceId)
 		return ClientAPI.responseError(`Part AdLib-pieces can be only placed in a current part!`)
@@ -386,7 +384,7 @@ export function pieceSetInOutPoints(
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 	const part = Parts.findOne(partId)
 	if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-	if (playlist && playlist.active && part.status === 'PLAY') {
+	if (playlist && playlist.activationId && part.status === 'PLAY') {
 		throw new Meteor.Error(`Part cannot be active while setting in/out!`) // @todo: un-hardcode
 	}
 	const rundown = Rundowns.findOne(part.rundownId)
@@ -426,7 +424,7 @@ export function executeAction(
 
 	const playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
-	if (!playlist.active)
+	if (!playlist.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, please activate it before executing an action!`)
 	if (!playlist.currentPartInstanceId)
 		return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
@@ -448,7 +446,7 @@ export function segmentAdLibPieceStart(
 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 
-	if (!playlist.active)
+	if (!playlist.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
 	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)
@@ -469,7 +467,7 @@ export function sourceLayerOnPartStop(
 	check(sourceLayerIds, Match.OneOf(String, Array))
 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!playlist.active)
+	if (!playlist.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib on a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
@@ -489,7 +487,7 @@ export function rundownBaselineAdLibPieceStart(
 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 
-	if (!playlist.active)
+	if (!playlist.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
 	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 		return ClientAPI.responseError(`Can't start AdLib piece when the Rundown is in Hold mode!`)
@@ -507,7 +505,7 @@ export function sourceLayerStickyPieceStart(
 	check(sourceLayerId, String)
 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!playlist.active)
+	if (!playlist.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting a sticky-item!`)
 	if (!playlist.currentPartInstanceId)
 		return ClientAPI.responseError(`No part is playing, please Take a part before starting a sticky-item.`)
@@ -658,7 +656,7 @@ export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylis
 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 
-	if (playlist.active) {
+	if (playlist.activationId) {
 		return ClientAPI.responseError(`Rundown Playlist is active, please deactivate it before regenerating it.`)
 	}
 
@@ -726,7 +724,7 @@ export function bucketAdlibStart(
 
 	let rundown = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
-	if (!rundown.active)
+	if (!rundown.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
 	if (rundown.holdState === RundownHoldState.ACTIVE || rundown.holdState === RundownHoldState.PENDING) {
 		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)

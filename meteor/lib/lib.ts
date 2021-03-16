@@ -401,7 +401,6 @@ export type Partial<T> = {
 export function partial<T>(o: Partial<T>) {
 	return o
 }
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 export interface IDObj {
 	_id: ProtectedString<any>
 }
@@ -592,8 +591,8 @@ export function getRank<T extends { _rank: number }>(
 	i: number = 0,
 	count: number = 1
 ): number {
-	let newRankMax
-	let newRankMin
+	let newRankMax: number
+	let newRankMin: number
 
 	if (after) {
 		if (before) {
@@ -928,6 +927,11 @@ export function makePromise<T>(fcn: () => T): Promise<T> {
 }
 
 export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
+	if (typeof selector !== 'object') {
+		// selector must be an object
+		return false
+	}
+
 	let ok = true
 	_.each(selector, (s: any, key: string) => {
 		if (!ok) return

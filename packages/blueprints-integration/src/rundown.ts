@@ -1,6 +1,6 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContentVizMSE } from 'timeline-state-resolver-types'
 import { Time } from './common'
-import { SomeContent } from './content'
+import { SomeTimelineContent } from './content'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -165,9 +165,6 @@ export interface IBlueprintPartDB<TMetadata = unknown> extends IBlueprintPart<TM
 	_id: string
 	/** The segment ("Title") this line belongs to */
 	segmentId: string
-
-	/** if the part was dunamically inserted (adlib) */
-	dynamicallyInsertedAfterPartId?: string
 }
 /** The Part instance sent from Core */
 export interface IBlueprintPartInstance<TMetadata = unknown> {
@@ -175,7 +172,10 @@ export interface IBlueprintPartInstance<TMetadata = unknown> {
 	/** The segment ("Title") this line belongs to */
 	segmentId: string
 
-	part: IBlueprintPartDB<TMetadata> // TODO - omit some duplicated fields?
+	part: IBlueprintPartDB<TMetadata>
+
+	/** Whether the PartInstance is an orphan (the Part referenced does not exist). Indicates the reason it is orphaned */
+	orphaned?: 'adlib-part' // Future scope: | 'deleted'
 }
 
 export interface IBlueprintPartInstanceTimings {
@@ -224,7 +224,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** Layer output this piece belongs to */
 	outputLayerId: string
 	/** The object describing the item in detail */
-	content?: SomeContent
+	content: SomeTimelineContent
 
 	/** The transition used by this piece to transition to and from the piece */
 	transitions?: {
@@ -248,6 +248,9 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	adlibDisableOutTransition?: boolean
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
+
+	/** HACK: Some pieces have side effects on other pieces, and pruning them when they have finished playback will cause playout glitches. This will tell core to not always preserve it */
+	hasSideEffects?: boolean
 }
 
 export interface ExpectedPlayoutItemGeneric {

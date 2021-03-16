@@ -72,7 +72,10 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 	const activePlaylist = getActiveRundownPlaylist(cache, studioId)
 
 	if (activePlaylist && cache.containsDataFromPlaylist !== activePlaylist._id) {
-		throw new Meteor.Error(500, `Active rundownPlaylist is not in cache`)
+		throw new Meteor.Error(
+			500,
+			`Active rundownPlaylist ("${activePlaylist._id}") is not in cache ("${cache.containsDataFromPlaylist}")`
+		)
 	}
 
 	if (!studio) throw new Meteor.Error(404, 'studio "' + studioId + '" not found!')
@@ -156,7 +159,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 export function getActiveRundownPlaylist(cache: CacheForStudioBase, studioId: StudioId): RundownPlaylist | undefined {
 	return cache.RundownPlaylists.findOne({
 		studioId: studioId,
-		active: true,
+		activationId: { $exists: true },
 	})
 }
 
@@ -305,7 +308,12 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 			const studioBlueprint = loadStudioBlueprint(studio)
 			if (studioBlueprint) {
 				const blueprint = studioBlueprint.blueprint
-				const baselineObjs = blueprint.getBaseline(new StudioContext(studio))
+
+				const context = new StudioContext(
+					{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
+					studio
+				)
+				const baselineObjs = blueprint.getBaseline(context)
 				studioBaseline = postProcessStudioBaselineObjects(studio, baselineObjs)
 
 				const id = `baseline_version`
@@ -789,6 +797,7 @@ export function hasPieceInstanceDefinitelyEnded(
 	nowInPart: number
 ): boolean {
 	if (nowInPart <= 0) return false
+	if (pieceInstance.piece.hasSideEffects) return false
 
 	let relativeEnd: number | undefined
 	if (typeof pieceInstance.resolvedEndCap === 'number') {

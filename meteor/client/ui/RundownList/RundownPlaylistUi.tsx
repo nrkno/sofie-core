@@ -140,11 +140,7 @@ export const RundownPlaylistUi = DropTarget(
 				const playlistId = this.props.playlist._id
 				const rundownOrder = this.state.rundownOrder.slice()
 
-				if (
-					playlist.rundowns.findIndex((rundown) => {
-						rundownId === rundown._id
-					}) > -1
-				) {
+				if (playlist.rundowns.findIndex((rundown) => rundownId === rundown._id) > -1) {
 					// finalize order from component state
 					MeteorCall.userAction.moveRundown(
 						'Drag and drop rundown playlist reorder',
@@ -265,7 +261,7 @@ export const RundownPlaylistUi = DropTarget(
 					return (
 						<>
 							<RundownListItem
-								isActive={playlist.active === true}
+								isActive={!!playlist.activationId}
 								key={unprotectString(playlist.rundowns[0]._id)}
 								rundown={playlist.rundowns[0]}
 								rundownViewUrl={playlistViewURL}
@@ -282,7 +278,7 @@ export const RundownPlaylistUi = DropTarget(
 
 					return rundown ? (
 						<RundownListItem
-							isActive={playlist.active === true}
+							isActive={!!playlist.activationId}
 							key={unprotectString(rundown._id)}
 							rundown={rundown}
 							swapRundownOrder={handleRundownSwap}
@@ -341,7 +337,7 @@ export const RundownPlaylistUi = DropTarget(
 )
 
 function createProgressBarRow(playlist: RundownPlaylistUi): React.ReactElement | null {
-	if (playlist.active && playlist.expectedDuration !== undefined && playlist.startedPlayback) {
+	if (playlist.activationId && playlist.expectedDuration !== undefined && playlist.startedPlayback) {
 		return <ActiveProgressBar rundownPlaylist={playlist} />
 	}
 

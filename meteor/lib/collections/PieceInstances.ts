@@ -1,13 +1,5 @@
 import { TransformedCollection } from '../typings/meteor'
-import {
-	registerCollection,
-	literal,
-	ProtectedString,
-	ProtectedStringProperties,
-	protectString,
-	Omit,
-	omit,
-} from '../lib'
+import { registerCollection, ProtectedString, ProtectedStringProperties, protectString, omit } from '../lib'
 import {
 	IBlueprintPieceInstance,
 	Time,
@@ -19,6 +11,7 @@ import { PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
 import { registerIndex } from '../database'
 import { PartialDeep } from 'type-fest'
+import { RundownPlaylistActivationId } from './RundownPlaylists'
 
 /** A string, identifying a PieceInstance */
 export type PieceInstanceId = ProtectedString<'PieceInstanceId'>
@@ -45,6 +38,9 @@ export interface PieceInstance
 	extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece' | 'infinite'>, '_id' | 'adLibSourceId'> {
 	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
 	readonly isTemporary?: boolean
+
+	/** The id of the playlist activation session */
+	playlistActivationId: RundownPlaylistActivationId
 
 	/** Whether this instance has been finished with and reset (to restore the original piece as the primary version) */
 	reset?: boolean
@@ -95,6 +91,7 @@ export function omitPiecePropertiesForInstance(piece: Piece): PieceInstancePiece
 
 export function rewrapPieceToInstance(
 	piece: PieceInstancePiece,
+	playlistActivationId: RundownPlaylistActivationId,
 	rundownId: RundownId,
 	partInstanceId: PartInstanceId,
 	isTemporary?: boolean
@@ -103,6 +100,7 @@ export function rewrapPieceToInstance(
 		isTemporary,
 		_id: protectString(`${partInstanceId}_${piece._id}`),
 		rundownId: rundownId,
+		playlistActivationId: playlistActivationId,
 		partInstanceId: partInstanceId,
 		piece: piece,
 	}
@@ -110,11 +108,13 @@ export function rewrapPieceToInstance(
 
 export function wrapPieceToInstance(
 	piece: Piece,
+	playlistActivationId: RundownPlaylistActivationId,
 	partInstanceId: PartInstanceId,
 	isTemporary?: boolean
 ): PieceInstance {
 	return rewrapPieceToInstance(
 		omitPiecePropertiesForInstance(piece),
+		playlistActivationId,
 		piece.startRundownId,
 		partInstanceId,
 		partInstanceId === protectString('') || isTemporary

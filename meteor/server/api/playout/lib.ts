@@ -3,8 +3,17 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
-import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
-import { getCurrentTime, Time, clone, literal, waitForPromise, protectString, applyToArray } from '../../../lib/lib'
+import { Parts, Part, DBPart, isPartPlayable } from '../../../lib/collections/Parts'
+import {
+	getCurrentTime,
+	Time,
+	clone,
+	literal,
+	waitForPromise,
+	protectString,
+	applyToArray,
+	getRandomId,
+} from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import {
 	fetchPiecesThatMayBeActiveForPart,
@@ -42,11 +51,6 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 
 	// Note: After the RundownPlaylist (R19) update, the playhead is no longer affected in this operation,
 	// since that isn't tied to the rundown anymore.
-
-	cache.Parts.remove({
-		rundownId: rundown._id,
-		dynamicallyInsertedAfterPartId: { $exists: true },
-	})
 
 	// Mask all instances as reset
 	cache.PartInstances.update(
@@ -118,13 +122,6 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 		}
 	)
 
-	cache.Parts.remove({
-		rundownId: {
-			$in: rundownIDs,
-		},
-		dynamicallyInsertedAfterPartId: { $exists: true },
-	})
-
 	resetRundownPlaylistPlayhead(cache, rundownPlaylist)
 }
 function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist) {
@@ -157,7 +154,15 @@ function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPla
 		}
 	)
 
-	if (rundownPlaylist.active) {
+	if (rundownPlaylist.activationId) {
+		// generate a new activationId
+		rundownPlaylist.activationId = getRandomId()
+		cache.RundownPlaylists.update(rundownPlaylist._id, {
+			$set: {
+				activationId: rundownPlaylist.activationId,
+			},
+		})
+
 		// put the first on queue:
 		const firstPart = selectNextPart(rundownPlaylist, null, getAllOrderedPartsFromCache(cache, rundownPlaylist))
 		setNextPart(cache, rundownPlaylist, firstPart ? firstPart.part : null)
@@ -167,7 +172,7 @@ function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPla
 }
 
 export interface SelectNextPartResult {
-	part: Part
+	part: DBPart
 	index: number
 	consumesNextSegmentId?: boolean
 }
@@ -175,17 +180,25 @@ export interface SelectNextPartResult {
 export function selectNextPart(
 	rundownPlaylist: Pick<RundownPlaylist, 'nextSegmentId' | 'loop'>,
 	previousPartInstance: PartInstance | null,
-	parts: Part[]
+	parts: DBPart[],
+	ignoreUnplayabale = true
 ): SelectNextPartResult | undefined {
 	const span = profiler.startSpan('selectNextPart')
+	/**
+	 * Iterates over all the parts and searches for the first one to be playable
+	 * @param offset the index from where to start the search
+	 * @param condition whether the part will be returned
+	 * @param length the maximum index or where to stop the search
+	 */
 	const findFirstPlayablePart = (
 		offset: number,
-		condition?: (part: Part) => boolean
+		condition?: (part: DBPart) => boolean,
+		length?: number
 	): SelectNextPartResult | undefined => {
 		// Filter to after and find the first playabale
-		for (let index = offset; index < parts.length; index++) {
+		for (let index = offset; index < (length || parts.length); index++) {
 			const part = parts[index]
-			if (part.isPlayable() && (!condition || condition(part))) {
+			if ((!ignoreUnplayabale || isPartPlayable(part)) && (!condition || condition(part))) {
 				return { part, index }
 			}
 		}
@@ -195,47 +208,65 @@ export function selectNextPart(
 	let offset = 0
 	if (previousPartInstance) {
 		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
-		// TODO - choose something better for next?
 		if (currentIndex !== -1) {
+			// Start looking at the next part
 			offset = currentIndex + 1
+		} else {
+			// Look for other parts in the segment to reference
+			let segmentStartIndex: number | undefined
+			let nextInSegmentIndex: number | undefined
+			parts.forEach((p, i) => {
+				if (p.segmentId === previousPartInstance.segmentId) {
+					if (segmentStartIndex === undefined) segmentStartIndex = i
+
+					if (p._rank <= previousPartInstance.part._rank) {
+						nextInSegmentIndex = i + 1
+					}
+				}
+			})
+			offset = nextInSegmentIndex ?? segmentStartIndex ?? offset
 		}
 	}
 
+	// Filter to after and find the first playabale
 	let nextPart = findFirstPlayablePart(offset)
 
 	if (rundownPlaylist.nextSegmentId) {
 		// No previous part, or segment has changed
 		if (!previousPartInstance || (nextPart && previousPartInstance.segmentId !== nextPart.part.segmentId)) {
 			// Find first in segment
-			const nextPart2 = findFirstPlayablePart(
-				0,
-				(part) => part.segmentId === rundownPlaylist.nextSegmentId && !part.dynamicallyInsertedAfterPartId
-			)
-			if (nextPart2) {
+			const newSegmentPart = findFirstPlayablePart(0, (part) => part.segmentId === rundownPlaylist.nextSegmentId)
+			if (newSegmentPart) {
 				// If matched matched, otherwise leave on auto
 				nextPart = {
-					...nextPart2,
+					...newSegmentPart,
 					consumesNextSegmentId: true,
 				}
 			}
 		}
 	}
 
-	// TODO - rundownPlaylist.loop
+	// if playlist should loop, check from 0 to currentPart
+	if (rundownPlaylist.loop && !nextPart && previousPartInstance) {
+		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
+		// TODO - choose something better for next?
+		if (currentIndex !== -1) {
+			nextPart = findFirstPlayablePart(0, undefined, currentIndex)
+		}
+	}
 
-	// Filter to after and find the first playabale
-	const res = nextPart || findFirstPlayablePart(offset)
 	if (span) span.end()
-	return res
+	return nextPart
 }
 export function setNextPart(
 	cache: CacheForRundownPlaylist,
 	rundownPlaylist: RundownPlaylist,
-	rawNextPart: Part | DBPartInstance | null,
+	rawNextPart: DBPart | DBPartInstance | null,
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ) {
 	const span = profiler.startSpan('setNextPart')
+
 	const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
 		cache,
@@ -255,6 +286,9 @@ export function setNextPart(
 	})
 
 	if (newNextPart || newNextPartInstance) {
+		if (!rundownPlaylist.activationId)
+			throw new Meteor.Error(500, `RundownPlaylist "${rundownPlaylist._id}" is not active`)
+
 		if ((newNextPart && newNextPart.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
 		}
@@ -268,16 +302,6 @@ export function setNextPart(
 				409,
 				`PartInstance "${newNextPartInstance._id}" of rundown "${newNextPartInstance.rundownId}" not part of RundownPlaylist "${rundownPlaylist._id}"`
 			)
-		}
-
-		if (newNextPart) {
-			// TODO-PartInstances - pending new data flow
-			removeFollowingDynamicallyInsertedParts(cache, newNextPart)
-			const partId = newNextPart._id
-			newNextPart = cache.Parts.findOne(partId) as Part
-			if (!newNextPart) {
-				throw new Meteor.Error(409, `Part "${partId}" is missing after the reset`)
-			}
 		}
 
 		const nextPart = newNextPartInstance ? newNextPartInstance.part : newNextPart!
@@ -298,6 +322,7 @@ export function setNextPart(
 			cache.PartInstances.insert({
 				_id: newInstanceId,
 				takeCount: newTakeCount,
+				playlistActivationId: rundownPlaylist.activationId,
 				rundownId: nextPart.rundownId,
 				segmentId: nextPart.segmentId,
 				part: nextPart,
@@ -355,7 +380,7 @@ export function setNextPart(
 		cache.RundownPlaylists.update(rundownPlaylist._id, {
 			$set: literal<Partial<RundownPlaylist>>({
 				nextPartInstanceId: newInstanceId,
-				nextPartManual: !!setManually,
+				nextPartManual: !!(setManually || newNextPartInstance?.orphaned),
 				nextTimeOffset: nextTimeOffset || null,
 			}),
 		})
@@ -385,20 +410,64 @@ export function setNextPart(
 		partInstanceId: { $in: instancesIdsToRemove },
 	})
 
-	const dynamicallyInsertedPartsToRemove = nonTakenPartInstances
-		.filter(
-			(p) =>
-				p.part.dynamicallyInsertedAfterPartId &&
-				p._id !== rundownPlaylist.nextPartInstanceId &&
-				p._id !== rundownPlaylist.currentPartInstanceId
-		)
-		.map((p) => p.part._id)
-	if (dynamicallyInsertedPartsToRemove.length > 0) {
-		// TODO-PartInstances - pending new data flow
-		cache.Parts.remove({
-			rundownId: { $in: rundownIds },
-			_id: { $in: dynamicallyInsertedPartsToRemove },
-		})
+	{
+		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
+		// When entering a segment, or moving backwards in a segment, reset any partInstances that are 'adlib-part'
+		if (nextPartInstance) {
+			const cleanOrphans = new Set<PartInstanceId>()
+			if (currentPartInstance) {
+				// Always clean the current segment, anything after the current part (except the next part)
+				const trailingInOldSegment = cache.PartInstances.findFetch(
+					(p) =>
+						p.orphaned === 'adlib-part' &&
+						!p.reset &&
+						p._id !== currentPartInstance._id &&
+						p._id !== nextPartInstance._id &&
+						p.segmentId === currentPartInstance.segmentId &&
+						p.part._rank > currentPartInstance.part._rank
+				)
+
+				for (const part of trailingInOldSegment) {
+					cleanOrphans.add(part._id)
+				}
+			}
+			if (
+				!currentPartInstance ||
+				nextPartInstance.segmentId !== currentPartInstance.segmentId ||
+				(nextPartInstance.segmentId === currentPartInstance.segmentId &&
+					nextPartInstance.part._rank < currentPartInstance.part._rank)
+			) {
+				// clean the new segment
+				const newSegmentParts = cache.PartInstances.findFetch(
+					(p) =>
+						p.orphaned === 'adlib-part' &&
+						!p.reset &&
+						p._id !== nextPartInstance._id &&
+						p._id !== currentPartInstance?._id &&
+						p.segmentId === nextPartInstance.segmentId
+				)
+				for (const part of newSegmentParts) {
+					cleanOrphans.add(part._id)
+				}
+			}
+
+			if (cleanOrphans.size > 0) {
+				cache.PartInstances.update(
+					(p) => cleanOrphans.has(p._id),
+					(p) => {
+						p.reset = true
+						return p
+					}
+				)
+				cache.PieceInstances.update(
+					(p) => cleanOrphans.has(p.partInstanceId),
+					(p) => {
+						p.reset = true
+						return p
+					}
+				)
+			}
+		}
 	}
 
 	if (movingToNewSegment && rundownPlaylist.nextSegmentId) {
@@ -449,24 +518,6 @@ export function setNextSegment(
 	if (span) span.end()
 }
 
-function removeFollowingDynamicallyInsertedParts(cache: CacheForRundownPlaylist, part: DBPart): void {
-	// remove parts that have been dynamically queued for after this part (queued adLibs)
-	saveIntoCache(
-		cache.Parts,
-		{
-			rundownId: part.rundownId,
-			dynamicallyInsertedAfterPartId: part._id,
-		},
-		[],
-		{
-			afterRemoveAll(removedParts) {
-				for (const removedPart of removedParts) {
-					removeFollowingDynamicallyInsertedParts(cache, removedPart)
-				}
-			},
-		}
-	)
-}
 export function onPartHasStoppedPlaying(
 	cache: CacheForRundownPlaylist,
 	partInstance: PartInstance,
