@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-03-02T08:11:46.296Z\n"
-"PO-Revision-Date: 2021-03-02 09:47+0100\n"
+"POT-Creation-Date: 2021-03-11T15:49:32.866Z\n"
+"PO-Revision-Date: 2021-03-11 17:11+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -302,6 +302,11 @@ msgstr "Sendestart"
 msgid "Last updated"
 msgstr "Sist oppdatert"
 
+#, fuzzy
+#| msgid "Shelf Layouts"
+msgid "Shelf Layout"
+msgstr "Layouter for skuffen"
+
 msgid "Getting Started"
 msgstr "Kom i gong"
 
@@ -392,6 +397,17 @@ msgstr "Ikkje synkronisert med MOS/{{nrcsName}}"
 
 msgid "Delete"
 msgstr "Slett"
+
+msgid "Standalone Shelf"
+msgstr "Frittståande skuff"
+
+#, fuzzy
+#| msgid "Standalone Shelf"
+msgid "Rundown & Shelf"
+msgstr "Frittståande skuff"
+
+msgid "Default"
+msgstr "Standard"
 
 msgid "Delete rundown?"
 msgstr "Slette køyreplanen?"
@@ -696,11 +712,11 @@ msgid "Looping"
 msgstr "Loopmodus"
 
 msgid ""
-"The Rundown \"{{rundownName}}\" has been UNSYNCED from {{nrcsName}}! No data "
-"updates will currently come through."
+"The rundown \"{{rundownName}}\" is not published or activated in "
+"{{nrcsName}}! No data updates will currently come through."
 msgstr ""
 "Køyreplanen \"{{rundownName}}\" er ikkje synkronisert med MOS/{{nrcsName}}! "
-"Ingen oppdateringer vil hentast inn."
+"Kontroller at den er satt til MOS Active i ENPS!"
 
 msgid "Re-sync"
 msgstr "Synkroniser med MOS"
@@ -1378,6 +1394,11 @@ msgstr "Adlib-rang"
 msgid "Place label below panel"
 msgstr "Plasser etikett under panel"
 
+#, fuzzy
+#| msgid "Disable"
+msgid "Disabled"
+msgstr "Deaktiver"
+
 msgid "Expose layout as a standalone page"
 msgstr "Eksponer layout som ei sjølvstendig side"
 
@@ -1971,6 +1992,12 @@ msgid ""
 "issue, but (unverified) might cause issues in itself."
 msgstr ""
 
+msgid "Cron jobs"
+msgstr ""
+
+msgid "Enable CasparCG restart job"
+msgstr ""
+
 msgid "Cleanup"
 msgstr "Opprydding"
 
@@ -2334,20 +2361,23 @@ msgstr "Køyr i"
 msgid "Stop"
 msgstr "Stopp"
 
-msgid "Clip can't be played because the filename is missing"
-msgstr "Klippet kan ikkje spelast av fordi filnamnet mangler"
-
-msgid "Clip can't be played because it isn't present on the playout system"
+msgid "{{sourceLayer}} is missing a file path"
 msgstr ""
-"Klippet kan ikkje spelast av fordi det ikkje finnast på utspelingssystemet"
 
-msgid "Clip doesn't have audio & video"
+msgid "{{sourceLayer}} is not yet ready on the playout system"
+msgstr ""
+
+#, fuzzy
+#| msgid "Clip doesn't have audio & video"
+msgid "{{sourceLayer}} doesn't have both audio & video"
 msgstr "Klippet har ikkje lyd eller bilete"
 
-msgid "Clip format ({{format}}) is not in one of the accepted formats"
-msgstr "Klippformatet ({{format}}) er ikkje støtta"
+msgid "{{sourceLayer}} has the wrong format: {{format}}"
+msgstr ""
 
-msgid "Clip has {{audioStreams}} audio streams"
+#, fuzzy
+#| msgid "Clip has {{audioStreams}} audio streams"
+msgid "{{sourceLayer}} has {{audioStreams}} audio streams"
 msgstr "Klippet har {{audioStreams}} lydstraumar"
 
 msgid "Clip starts with {{frames}} {{type}} frame"
@@ -2362,8 +2392,27 @@ msgstr "{{frames}} {{type}} frame oppdaga inne i klippet"
 msgid "{{frames}} {{type}} frame detected in clip"
 msgstr "{{frames}} {{type}} frame oppdaga i klippet"
 
-msgid "Clip is being ingested"
+msgid "black"
+msgstr ""
+
+msgid "freeze"
+msgstr ""
+
+#, fuzzy
+#| msgid "Clip is being ingested"
+msgid "{{sourceLayer}} is being ingested"
 msgstr "Klippet blir prosessert"
+
+msgid "Segment no longer exists in {{nrcs}}"
+msgstr ""
+
+msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
+msgstr ""
+
+msgid ""
+"The Rundown was attempted to be moved out of the Playlist when it was on "
+"Air. Move it back and try again later."
+msgstr ""
 
 msgctxt "°°°°°°plural"
 msgid "{{count}} rows°°°°°°"
@@ -2398,6 +2447,16 @@ msgstr "{{frames}} {{type}} frame oppdaga inne i klippet°°°°°°"
 msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
+
+#~ msgid "Clip can't be played because the filename is missing"
+#~ msgstr "Klippet kan ikkje spelast av fordi filnamnet mangler"
+
+#~ msgid "Clip can't be played because it isn't present on the playout system"
+#~ msgstr ""
+#~ "Klippet kan ikkje spelast av fordi det ikkje finnast på utspelingssystemet"
+
+#~ msgid "Clip format ({{format}}) is not in one of the accepted formats"
+#~ msgstr "Klippformatet ({{format}}) er ikkje støtta"
 
 #~ msgid "Activate"
 #~ msgstr "Aktiver"
@@ -2502,14 +2561,8 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 #~ "Er du sikker på at du vil synkronisere alle køyreplanane i køyreplanlista "
 #~ "\"{{name}}\" om att?"
 
-#~ msgid "Standalone Shelf"
-#~ msgstr "Frittståande skuff"
-
 #~ msgid "Timeline views"
 #~ msgstr "Tidslinjevisningar"
-
-#~ msgid "Default"
-#~ msgstr "Standard"
 
 #~ msgid "Multiple ({{count}})"
 #~ msgstr "Fleire ({{count}})"
@@ -2830,9 +2883,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
 #~ msgid "Device id"
 #~ msgstr "Einings-id"
-
-#~ msgid "Disable"
-#~ msgstr "Deaktiver"
 
 #~ msgid "Thread Usage"
 #~ msgstr "Trådar i bruk"
