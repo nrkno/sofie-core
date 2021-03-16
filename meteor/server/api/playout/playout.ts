@@ -64,7 +64,6 @@ import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { checkAccessAndGetPlaylist } from '../lib'
 import {
 	runPlayoutOperationWithLock,
 	runPlayoutOperationWithCacheFromStudioOperation,
@@ -365,9 +364,6 @@ export namespace ServerPlayoutAPI {
 		partDelta: number,
 		segmentDelta: number
 	): PartId | null {
-		// @TODO Check for a better solution to validate security methods
-		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-
 		check(rundownPlaylistId, String)
 		check(partDelta, Number)
 		check(segmentDelta, Number)
@@ -629,7 +625,7 @@ export namespace ServerPlayoutAPI {
 
 				// logger.info('nowInPart', nowInPart)
 				// logger.info('filteredPieces', filteredPieces)
-				let getNextPiece = (partInstance: PartInstance, undo: boolean, ignoreStartedPlayback: boolean) => {
+				const getNextPiece = (partInstance: PartInstance, ignoreStartedPlayback: boolean) => {
 					// Find next piece to disable
 
 					let nowInPart = 0
@@ -671,9 +667,9 @@ export namespace ServerPlayoutAPI {
 					})
 				}
 
-				if (nextPartInstance) {
+				if (nextPartInstance?.timings) {
 					// pretend that the next part never has played (even if it has)
-					delete nextPartInstance.timings?.startedPlayback
+					delete nextPartInstance.timings.startedPlayback
 				}
 
 				const partInstances: Array<[PartInstance | undefined, boolean]> = [
@@ -686,7 +682,7 @@ export namespace ServerPlayoutAPI {
 
 				for (const [partInstance, ignoreStartedPlayback] of partInstances) {
 					if (partInstance) {
-						nextPieceInstance = getNextPiece(partInstance, !!undo, ignoreStartedPlayback)
+						nextPieceInstance = getNextPiece(partInstance, ignoreStartedPlayback)
 						if (nextPieceInstance) break
 					}
 				}
