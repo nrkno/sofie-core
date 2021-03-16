@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.18.0-release30.2",
+	"version": "1.18.0",
 	"private": true,
 	"engines": {
 		"node": "^12.20.1 || 14"

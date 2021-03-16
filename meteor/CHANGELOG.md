@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.18.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0-1-in-testing-R30...v1.18.0) (2021-03-16)
+
+
+### Bug Fixes
+
+* moveNextPart when next part is an adlib ([83caabf](https://github.com/nrkno/tv-automation-server-core/commit/83caabf43548dbdf8838b5182ee36f54f45bf9ee))
+* onEnd infinites from adlib-parts not continuing ([5680cfe](https://github.com/nrkno/tv-automation-server-core/commit/5680cfe58d09c6e2fff8d5797324c5072f644a16))
+* Presenter screen not working ([#465](https://github.com/nrkno/tv-automation-server-core/issues/465)) ([90a0d08](https://github.com/nrkno/tv-automation-server-core/commit/90a0d08ccb389edd73ff49c663ad8a5dd6a505c3))
+* reactively remove the unsynced notification ([a8cbb4f](https://github.com/nrkno/tv-automation-server-core/commit/a8cbb4f1b124ceb5a7e0a498fe8600b43a32d74d))
+* reset adlibbed partinstances when jumping around the rundown ([0def72b](https://github.com/nrkno/tv-automation-server-core/commit/0def72b667fc22da3d3db01c14ff3664919b33a5))
+* some cases where adlibbed partinstances not reset ([1c7db3a](https://github.com/nrkno/tv-automation-server-core/commit/1c7db3a9473c3604ad9cc512d5b573aaab893c1b))
+* **Midi:** Filtering of idle information in multi-pedal setups ([dd1fa79](https://github.com/nrkno/tv-automation-server-core/commit/dd1fa7981d3163f5fa3a7aa1733e44e8a7b6610d))
+
 ## [1.18.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.17.0...v1.18.0-0) (2021-02-09)
 
 
