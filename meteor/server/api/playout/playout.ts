@@ -54,7 +54,12 @@ import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collec
 import { MethodContext } from '../../../lib/api/methods'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
 import { StudioContentWriteAccess } from '../../security/studio'
-import { afterTake, takeNextPartInnerSync, updatePartInstanceOnTake } from './take'
+import {
+	afterTake,
+	resetPreviousSegmentAndClearNextSegmentId,
+	takeNextPartInnerSync,
+	updatePartInstanceOnTake,
+} from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
@@ -918,6 +923,8 @@ export namespace ServerPlayoutAPI {
 							playingPartInstance,
 							currentPartInstance
 						)
+
+						resetPreviousSegmentAndClearNextSegmentId(cache)
 
 						// Update the next partinstance
 						const nextPart = selectNextPart(
