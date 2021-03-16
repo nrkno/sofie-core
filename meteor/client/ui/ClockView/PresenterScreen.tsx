@@ -1,21 +1,24 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { DBSegment } from '../../../lib/collections/Segments'
+import { DBSegment, Segment } from '../../../lib/collections/Segments'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { extendMandadory, literal, getCurrentTime } from '../../../lib/lib'
-import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
+import { extendMandadory, literal, getCurrentTime, protectStringArray } from '../../../lib/lib'
+import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
 import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
 import { RundownUtils } from '../../lib/rundown'
+import { PieceInstances } from '../../../lib/collections/PieceInstances'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { Part } from '../../../lib/collections/Parts'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -30,83 +33,157 @@ interface RundownOverviewProps {
 	segmentLiveDurations?: TimeMap
 }
 interface RundownOverviewState {}
-interface RundownOverviewTrackedProps {
+export interface RundownOverviewTrackedProps {
 	playlist?: RundownPlaylist
 	segments: Array<SegmentUi>
-	showStyleBaseId?: ShowStyleBaseId
+	currentSegment: SegmentUi | undefined
+	currentPartInstance: PartUi | undefined
+	nextSegment: SegmentUi | undefined
+	nextPartInstance: PartUi | undefined
+	currentShowStyleBaseId: ShowStyleBaseId | undefined
+	nextShowStyleBaseId: ShowStyleBaseId | undefined
+	showStyleBaseIds: ShowStyleBaseId[]
 	rundownIds: RundownId[]
 }
 
-export const getPresenterScreenReactive = (props: RundownOverviewProps) => {
-	let playlist: RundownPlaylist | undefined
-	if (props.playlistId) playlist = RundownPlaylists.findOne(props.playlistId)
-	let segments: Array<SegmentUi> = []
+function getShowStyleBaseIdSegmentPartUi(
+	partInstance: PartInstance,
+	playlist: RundownPlaylist,
+	orderedSegmentsAndParts: {
+		segments: Segment[]
+		parts: Part[]
+	}
+): {
+	showStyleBaseId: ShowStyleBaseId | undefined
+	segment: SegmentUi | undefined
+	partInstance: PartUi | undefined
+} {
 	let showStyleBaseId: ShowStyleBaseId | undefined = undefined
+	let segment: SegmentUi | undefined = undefined
+	let partInstanceUi: PartUi | undefined = undefined
+
+	const currentRundown = Rundowns.findOne(partInstance.rundownId, {
+		fields: {
+			_id: 1,
+			_rank: 1,
+			showStyleBaseId: 1,
+			name: 1,
+			expectedStart: 1,
+			expectedDuration: 1,
+		},
+	})
+	showStyleBaseId = currentRundown?.showStyleBaseId
+
+	const segmentIndex = orderedSegmentsAndParts.segments.findIndex((segment) => segment._id === partInstance.segmentId)
+	if (currentRundown) {
+		const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+
+		if (showStyleBase) {
+			// This registers a reactive dependency on infinites-capping pieces, so that the segment can be
+			// re-evaluated when a piece like that appears.
+
+			let o = RundownUtils.getResolvedSegment(
+				showStyleBase,
+				playlist,
+				orderedSegmentsAndParts.segments[segmentIndex],
+				new Set(orderedSegmentsAndParts.segments.map((segment) => segment._id).slice(0, segmentIndex)),
+				orderedSegmentsAndParts.parts.map((part) => part._id),
+				true,
+				true
+			)
+
+			segment = extendMandadory<DBSegment, SegmentUi>(o.segmentExtended, {
+				items: o.parts,
+			})
+
+			partInstanceUi = o.parts.find((part) => part.instance._id === partInstance._id)
+		}
+	}
+
+	return {
+		showStyleBaseId: showStyleBaseId,
+		segment: segment,
+		partInstance: partInstanceUi,
+	}
+}
+
+export const getPresenterScreenReactive = (props: RundownOverviewProps): RundownOverviewTrackedProps => {
+	let playlist: RundownPlaylist | undefined
+	if (props.playlistId)
+		playlist = RundownPlaylists.findOne(props.playlistId, {
+			fields: {
+				lastIncorrectPartPlaybackReported: 0,
+				modified: 0,
+				nextPartManual: 0,
+				previousPersistentState: 0,
+				rundownRanksAreSetInSofie: 0,
+				trackedAbSessions: 0,
+				restoredFromSnapshotId: 0,
+			},
+		})
+	let segments: Array<SegmentUi> = []
+	let showStyleBaseIds: ShowStyleBaseId[] = []
+	let rundowns: { [key: string]: Rundown } = {}
 	let rundownIds: RundownId[] = []
 
+	let currentSegment: SegmentUi | undefined = undefined
+	let currentPartInstanceUi: PartUi | undefined = undefined
+	let currentShowStyleBaseId: ShowStyleBaseId | undefined = undefined
+
+	let nextSegment: SegmentUi | undefined = undefined
+	let nextPartInstanceUi: PartUi | undefined = undefined
+	let nextShowStyleBaseId: ShowStyleBaseId | undefined = undefined
+
 	if (playlist) {
-		const allPartInstancesMap = playlist.getActivePartInstancesMap()
-		segments = playlist.getSegments().map((segment) => {
-			const displayDurationGroups: _.Dictionary<number> = {}
-			const parts = segment.getParts()
-			let displayDuration = 0
+		rundowns = playlist.getRundownsMap()
+		const orderedSegmentsAndParts = playlist.getSegmentsAndPartsSync()
+		rundownIds = protectStringArray(Object.keys(rundowns))
+		showStyleBaseIds = Object.values(rundowns).map((rundown) => rundown.showStyleBaseId)
+		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+		const partInstance = currentPartInstance || nextPartInstance
+		if (partInstance) {
+			const infinitesEndingPieces = PieceInstances.find({
+				rundownId: {
+					$in: rundownIds,
+				},
+				dynamicallyInserted: {
+					$exists: true,
+				},
+				'infinite.fromPreviousPart': false,
+				'piece.lifespan': {
+					$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange],
+				},
+				reset: {
+					$ne: true,
+				},
+			}).fetch()
 
-			return extendMandadory<DBSegment, SegmentUi>(segment, {
-				items: parts.map((part, index) => {
-					const instance = findPartInstanceOrWrapToTemporary(allPartInstancesMap, part)
-					// take the displayDurationGroups into account
-					if (
-						part.displayDurationGroup &&
-						(displayDurationGroups[part.displayDurationGroup] ||
-							// or there is a following member of this displayDurationGroup
-							(parts[index + 1] && parts[index + 1].displayDurationGroup === part.displayDurationGroup))
-					) {
-						displayDurationGroups[part.displayDurationGroup] =
-							(displayDurationGroups[part.displayDurationGroup] || 0) +
-							((part.expectedDuration || 0) - (instance.timings?.duration || 0))
-						displayDuration = Math.max(
-							0,
-							Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0) ||
-								displayDurationGroups[part.displayDurationGroup]
-						)
-					}
-					return literal<PartUi>({
-						instance,
-						partId: part._id,
-						pieces: [],
-						renderedDuration: part.expectedDuration ? 0 : displayDuration,
-						startsAt: 0,
-						willProbablyAutoNext: false,
-					})
-				}),
-			})
-		})
+			if (currentPartInstance) {
+				const current = getShowStyleBaseIdSegmentPartUi(currentPartInstance, playlist, orderedSegmentsAndParts)
+				currentSegment = current.segment
+				currentPartInstanceUi = current.partInstance
+				currentShowStyleBaseId = current.showStyleBaseId
+			}
 
-		if (playlist.currentPartInstanceId) {
-			const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-			const partInstance = currentPartInstance || nextPartInstance
-			if (partInstance) {
-				const currentRundown = Rundowns.findOne(partInstance.rundownId)
-				if (currentRundown) {
-					showStyleBaseId = currentRundown.showStyleBaseId
-				}
+			if (nextPartInstance) {
+				const next = getShowStyleBaseIdSegmentPartUi(nextPartInstance, playlist, orderedSegmentsAndParts)
+				nextSegment = next.segment
+				nextPartInstanceUi = next.partInstance
+				nextShowStyleBaseId = next.showStyleBaseId
 			}
 		}
-
-		if (!showStyleBaseId) {
-			const rundowns = playlist.getRundowns()
-			if (rundowns.length > 0) {
-				showStyleBaseId = rundowns[0].showStyleBaseId
-			}
-		}
-
-		rundownIds = playlist.getRundownIDs()
 	}
 	return {
 		segments,
 		playlist,
-		showStyleBaseId,
+		showStyleBaseIds,
 		rundownIds,
+		currentSegment,
+		currentPartInstance: currentPartInstanceUi,
+		currentShowStyleBaseId,
+		nextSegment,
+		nextPartInstance: nextPartInstanceUi,
+		nextShowStyleBaseId,
 	}
 }
 
@@ -146,6 +223,11 @@ export class PresenterScreenBase extends MeteorReactComponent<
 						rundownId: { $in: rundownIds },
 						reset: { $ne: true },
 					})
+					this.subscribe(PubSub.showStyleBases, {
+						_id: {
+							$in: this.props.showStyleBaseIds,
+						},
+					})
 
 					this.autorun(() => {
 						let playlist = RundownPlaylists.findOne(this.props.playlistId, {
@@ -183,42 +265,19 @@ export class PresenterScreenBase extends MeteorReactComponent<
 	}
 
 	render() {
-		const { playlist, segments, showStyleBaseId, playlistId } = this.props
+		const { playlist, segments, currentShowStyleBaseId, nextShowStyleBaseId, playlistId } = this.props
 
-		if (playlist && playlistId && segments && showStyleBaseId) {
-			let currentPart: PartUi | undefined
-			let currentSegment: SegmentUi | undefined
-			for (const segment of segments) {
-				if (segment.items) {
-					for (const item of segment.items) {
-						if (item.instance._id === playlist.currentPartInstanceId) {
-							currentSegment = segment
-							currentPart = item
-						}
-					}
-				}
-			}
-			let currentSegmentDuration = 0
+		if (playlist && playlistId && segments) {
+			const currentPart = this.props.currentPartInstance
+			const currentSegment = this.props.currentSegment
+
+			let currentPartCountdown = 0
 			if (currentPart) {
-				currentSegmentDuration += currentPart.renderedDuration || currentPart.instance.part.expectedDuration || 0
-				currentSegmentDuration += -1 * (currentPart.instance.timings?.duration || 0)
-				if (!currentPart.instance.timings?.duration && currentPart.instance.timings?.startedPlayback) {
-					currentSegmentDuration += -1 * (getCurrentTime() - currentPart.instance.timings.startedPlayback)
-				}
+				currentPartCountdown = -1 * (this.props.timingDurations.remainingTimeOnCurrentPart || 0)
 			}
 
-			let nextPart: PartUi | undefined
-			let nextSegment: SegmentUi | undefined
-			for (const segment of segments) {
-				if (segment.items) {
-					for (const item of segment.items) {
-						if (item.instance._id === playlist.nextPartInstanceId) {
-							nextSegment = segment
-							nextPart = item
-						}
-					}
-				}
-			}
+			const nextPart = this.props.nextPartInstance
+			const nextSegment = this.props.nextSegment
 
 			const overUnderClock = playlist.expectedDuration
 				? (this.props.timingDurations.asPlayedRundownDuration || 0) - playlist.expectedDuration
@@ -228,12 +287,12 @@ export class PresenterScreenBase extends MeteorReactComponent<
 			return (
 				<div className="clocks-full-screen">
 					<div className="clocks-half clocks-top">
-						{currentPart ? (
+						{currentPart && currentShowStyleBaseId ? (
 							<React.Fragment>
 								<div className="clocks-part-icon clocks-current-segment-icon">
 									<PieceIconContainer
 										partInstanceId={currentPart.instance._id}
-										showStyleBaseId={showStyleBaseId}
+										showStyleBaseId={currentShowStyleBaseId}
 										rundownIds={this.props.rundownIds}
 									/>
 								</div>
@@ -242,12 +301,12 @@ export class PresenterScreenBase extends MeteorReactComponent<
 									<PieceNameContainer
 										partName={currentPart.instance.part.title}
 										partInstanceId={currentPart.instance._id}
-										showStyleBaseId={showStyleBaseId}
+										showStyleBaseId={currentShowStyleBaseId}
 										rundownIds={this.props.rundownIds}
 									/>
 								</div>
 								<div className="clocks-current-segment-countdown clocks-segment-countdown">
-									<Timediff time={currentSegmentDuration} />
+									<Timediff time={currentPartCountdown} />
 								</div>
 							</React.Fragment>
 						) : playlist.expectedStart ? (
@@ -258,10 +317,10 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					</div>
 					<div className="clocks-half clocks-bottom clocks-top-bar">
 						<div className="clocks-part-icon">
-							{nextPart ? (
+							{nextPart && nextShowStyleBaseId ? (
 								<PieceIconContainer
 									partInstanceId={nextPart.instance._id}
-									showStyleBaseId={showStyleBaseId}
+									showStyleBaseId={nextShowStyleBaseId}
 									rundownIds={this.props.rundownIds}
 								/>
 							) : null}
@@ -276,11 +335,11 @@ export class PresenterScreenBase extends MeteorReactComponent<
 								{nextSegment && nextSegment.name ? nextSegment.name.split(';')[0] : '_'}
 							</div>
 							<div className="clocks-part-title clocks-part-title">
-								{nextPart && nextPart.instance.part.title ? (
+								{nextPart && nextShowStyleBaseId && nextPart.instance.part.title ? (
 									<PieceNameContainer
 										partName={nextPart.instance.part.title}
 										partInstanceId={nextPart.instance._id}
-										showStyleBaseId={showStyleBaseId}
+										showStyleBaseId={nextShowStyleBaseId}
 										rundownIds={this.props.rundownIds}
 									/>
 								) : (
