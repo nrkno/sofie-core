@@ -33,8 +33,8 @@ import {
 	ISegmentUserContext,
 	IPartEventContext,
 	ITimelineEventContext,
-	IAsRunRundownEventContext,
-	IAsRunPartEventContext,
+	IRundownDataChangedEventContext,
+	IRundownTimingEventContext,
 } from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
@@ -553,7 +553,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 	}
 }
 
-export class AsRunRundownEventContext extends RundownContext implements IAsRunRundownEventContext {
+export class RundownDataChangedEventContext extends RundownContext implements IRundownDataChangedEventContext {
 	constructor(
 		contextInfo: ContextInfo,
 		studio: ReadonlyDeep<Studio>,
@@ -594,7 +594,7 @@ export class AsRunRundownEventContext extends RundownContext implements IAsRunRu
 	}
 }
 
-export class AsRunPartEventContext extends AsRunRundownEventContext implements IAsRunPartEventContext {
+export class RundownTimingEventContext extends RundownDataChangedEventContext implements IRundownTimingEventContext {
 	readonly previousPart: Readonly<IBlueprintPartInstance<unknown>> | undefined
 	private readonly _part: PartInstance
 	readonly nextPart: Readonly<IBlueprintPartInstance<unknown>> | undefined

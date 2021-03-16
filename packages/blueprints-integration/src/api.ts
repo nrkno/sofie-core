@@ -13,8 +13,8 @@ import {
 	IShowStyleUserContext,
 	ICommonContext,
 	ITimelineEventContext,
-	IAsRunRundownEventContext,
-	IAsRunPartEventContext,
+	IRundownDataChangedEventContext,
+	IRundownTimingEventContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
@@ -181,13 +181,15 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	) => PartEndState
 
 	/** Called when the Rundown data changes, to be able to update any queued external messages */
-	onRundownDataChangedEvent?: (context: IAsRunRundownEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>
+	onRundownDataChangedEvent?: (
+		context: IRundownDataChangedEventContext
+	) => Promise<IBlueprintExternalMessageQueueObj[]>
 
 	/**
 	 * Called when the timing for a PartInstance or its content changes.
 	 * This will often be batched (via a short debounce), but is called for each part when either the part or a piece timing changes.
 	 */
-	onRundownTimingEvent?: (context: IAsRunPartEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>
+	onRundownTimingEvent?: (context: IRundownTimingEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>
 }
 
 export type PartEndState = unknown

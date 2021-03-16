@@ -223,7 +223,7 @@ export interface IPartEventContext extends IEventContext, IRundownContext {
 	readonly part: Readonly<IBlueprintPartInstance>
 }
 
-export interface IAsRunRundownEventContext extends IEventContext, IRundownContext {
+export interface IRundownDataChangedEventContext extends IEventContext, IRundownContext {
 	formatDateAsTimecode(time: number): string
 	formatDurationAsTimecode(time: number): string
 
@@ -231,7 +231,7 @@ export interface IAsRunRundownEventContext extends IEventContext, IRundownContex
 	getAllUnsentQueuedMessages(): Readonly<IBlueprintExternalMessageQueueObj[]>
 }
 
-export interface IAsRunPartEventContext extends IAsRunRundownEventContext {
+export interface IRundownTimingEventContext extends IRundownDataChangedEventContext {
 	readonly previousPart: Readonly<IBlueprintPartInstance> | undefined
 	readonly part: Readonly<IBlueprintPartInstance>
 	readonly nextPart: Readonly<IBlueprintPartInstance> | undefined

@@ -6,7 +6,7 @@ import { logger } from '../../../lib/logging'
 import { IBlueprintExternalMessageQueueObj } from '@sofie-automation/blueprints-integration'
 import { queueExternalMessages } from '../ExternalMessageQueue'
 import { loadShowStyleBlueprint } from './cache'
-import { AsRunPartEventContext, AsRunRundownEventContext } from './context'
+import { RundownTimingEventContext, RundownDataChangedEventContext } from './context'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
@@ -75,7 +75,6 @@ function handlePartInstanceTimingEventInner(playlistId: RundownPlaylistId, partI
 					},
 					{
 						sort: {
-							// TODO - test
 							takeCount: -1,
 						},
 					}
@@ -89,14 +88,13 @@ function handlePartInstanceTimingEventInner(playlistId: RundownPlaylistId, partI
 					},
 					{
 						sort: {
-							// TODO - test
 							takeCount: 1,
 						},
 					}
 				),
 			])
 
-			const context = new AsRunPartEventContext(
+			const context = new RundownTimingEventContext(
 				{
 					name: rundown.name,
 					identifier: `rundownId=${rundown._id},timestamp=${timestamp}`,
@@ -154,7 +152,7 @@ export function reportRundownDataHasChanged(playlist: ReadonlyDeep<RundownPlayli
 		const { studio, showStyle, blueprint } = waitForPromise(getBlueprintAndDependencies(rundown))
 
 		if (blueprint.onRundownDataChangedEvent) {
-			const context = new AsRunRundownEventContext(
+			const context = new RundownDataChangedEventContext(
 				{
 					name: rundown.name,
 					identifier: `rundownId=${rundown._id},timestamp=${timestamp}`,

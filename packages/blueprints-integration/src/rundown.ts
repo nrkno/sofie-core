@@ -299,9 +299,9 @@ export interface IBlueprintPieceInstance<TMetadata = unknown> {
 
 	piece: IBlueprintPieceDB<TMetadata>
 
-	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
+	/** The time the system started playback of this part, undefined if not yet played back (milliseconds since epoch) */
 	startedPlayback?: Time
-	/** Whether the piece has stopped playback (the most recent time it was played).
+	/** Whether the piece has stopped playback (the most recent time it was played), undefined if not yet played back or is currently playing.
 	 * This is set from a callback from the playout gateway (milliseconds since epoch)
 	 */
 	stoppedPlayback?: Time
