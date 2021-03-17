@@ -1,0 +1,111 @@
+{
+  "name": "mos-gateway",
+  "version": "1.33.0-0",
+  "description": "MOS-Gateway for the Sofie project",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nrkno/tv-automation-mos-gateway.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nrkno/tv-automation-mos-gateway/issues"
+  },
+  "homepage": "https://github.com/nrkno/tv-automation-mos-gateway#readme",
+  "author": {
+    "name": "Johan Nyman",
+    "email": "johan@superfly.tv",
+    "url": "http://superfly.tv"
+  },
+  "contributors": [
+    {
+      "name": "Jesper Stærkær",
+      "email": "jesper@superfly.tv",
+      "url": "http://superfly.tv"
+    }
+  ],
+  "scripts": {
+    "info": "npm-scripts-info",
+    "build": "trash dist && yarn build:main",
+    "buildstart": "yarn build && yarn start",
+    "buildinspect": "yarn build && yarn inspect",
+    "build:main": "tsc -p tsconfig.build.json",
+    "lint": "tslint --project tsconfig.json --config tslint.json",
+    "unit": "jest",
+    "test": "yarn lint && yarn unit",
+    "test:integration": "yarn lint && jest --config=jest-integration.config.js",
+    "watch": "jest --watch",
+    "cov": "jest; open-cli coverage/lcov-report/index.html",
+    "cov-open": "open-cli coverage/lcov-report/index.html",
+    "send-coverage": "jest && codecov",
+    "changelog": "standard-version",
+    "inspect": "node --inspect dist/index.js",
+    "release": "yarn reset && yarn test && yarn changelog",
+    "reset": "git clean -dfx && git reset --hard && yarn",
+    "ci": "yarn test",
+    "validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
+    "validate:dev-dependencies": "yarn audit --groups devDependencies",
+    "license-validate": "node-license-validator -p -d --allow-licenses MIT 0BSD BSD BSD-2-Clause BSD-3-Clause ISC Apache Apache-2.0 Unlicense WTFPL --allow-packages cycle",
+    "start": "node dist/index.js",
+    "unlinkall": "yarn unlink @sofie-automation/server-core-integration mos-connection && yarn --check-files",
+    "prepareChangelog": "standard-version --prerelease"
+  },
+  "scripts-info": {
+    "info": "Display information about the scripts",
+    "build": "(Trash and re)build the library",
+    "lint": "Lint all typescript source files",
+    "unit": "Build the library and run unit tests",
+    "test": "Lint, build, and test the library",
+    "watch": "Watch source files, rebuild library on changes, rerun relevant tests",
+    "cov": "Run tests, generate the HTML coverage report, and open it in a browser",
+    "changelog": "Bump package.json version, update CHANGELOG.md, tag a release",
+    "reset": "Delete all untracked files and reset the repo to the last commit",
+    "release": "Clean, build, test, and prepare release (a one-step publish process)",
+    "ci": "Test script for running by the CI (CircleCI)",
+    "validate:dependencies": "Scan dependencies for vulnerabilities and check licenses"
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.21",
+    "@types/node": "^12.20.6",
+    "@types/underscore": "^1.11.0",
+    "@types/winston": "^2.3.9",
+    "codecov": "^3.8.1",
+    "jest": "^26.6.3",
+    "mkdirp": "^1.0.4",
+    "node-license-validator": "^1.3.0",
+    "npm-scripts-info": "^0.3.9",
+    "open-cli": "^6.0.1",
+    "standard-version": "^9.1.1",
+    "trash-cli": "^4.0.0",
+    "ts-jest": "^26.5.4",
+    "tslint": "^6.1.3",
+    "tslint-config-standard": "^9.0.0",
+    "typescript": "~4.0.5"
+  },
+  "keywords": [
+    "mos",
+    "broadcast",
+    "socket",
+    "typescript",
+    "javascript",
+    "open",
+    "source",
+    "automation",
+    "ncs",
+    "nrcs",
+    "rundown",
+    "production"
+  ],
+  "dependencies": {
+    "@sofie-automation/server-core-integration": "1.32.0-in-testing.0",
+    "mos-connection": "^0.9.0",
+    "tslib": "^2.1.0",
+    "underscore": "^1.12.1",
+    "winston": "^2.4.2"
+  },
+  "resolutions": {
+    "node-license-validator/**/minimist": "^1.2.3"
+  }
+}

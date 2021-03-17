@@ -1,0 +1,5 @@
+FROM node:12.12.0-alpine
+RUN apk add --no-cache tzdata
+COPY . /opt/mos-gateway
+WORKDIR /opt/mos-gateway
+CMD ["yarn", "start"]
