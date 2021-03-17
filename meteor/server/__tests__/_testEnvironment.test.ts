@@ -33,6 +33,7 @@ import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { isInFiber } from '../../__mocks__/Fibers'
 import { Mongo } from 'meteor/mongo'
+import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
 
 describe('Basic test of test environment', () => {
 	testInFiber('Check that tests will run in fibers correctly', () => {
@@ -116,28 +117,14 @@ describe('Basic test of test environment', () => {
 
 		MongoMock.mockSetData<DBStudio>(Studios, [
 			{
-				_id: protectString('abc'),
+				...defaultStudio(protectString('abc')),
 				name: 'abc',
-				organizationId: null,
-				mappings: {},
-				supportedShowStyleBase: [],
-				blueprintConfig: {},
-				settings: { mediaPreviewsUrl: '', sofieUrl: '' },
 				_rundownVersionHash: 'abc',
-				routeSets: {},
-				routeSetExclusivityGroups: {},
 			},
 			{
-				_id: protectString('def'),
+				...defaultStudio(protectString('def')),
 				name: 'def',
-				organizationId: null,
-				mappings: {},
-				supportedShowStyleBase: [],
-				blueprintConfig: {},
-				settings: { mediaPreviewsUrl: '', sofieUrl: '' },
 				_rundownVersionHash: 'def',
-				routeSets: {},
-				routeSetExclusivityGroups: {},
 			},
 		])
 
@@ -172,16 +159,9 @@ describe('Basic test of test environment', () => {
 		expect(observer).toBeTruthy()
 
 		Studios.insert({
-			_id: protectString('xyz'),
+			...defaultStudio(protectString('xyz')),
 			name: 'xyz',
-			organizationId: null,
-			mappings: {},
-			supportedShowStyleBase: [],
-			blueprintConfig: {},
-			settings: { mediaPreviewsUrl: '', sofieUrl: '' },
 			_rundownVersionHash: 'xyz',
-			routeSets: {},
-			routeSetExclusivityGroups: {},
 		})
 		expect(Studios.find().fetch()).toHaveLength(2)
 

@@ -368,15 +368,15 @@ export namespace ServerPlayoutAPI {
 		check(partDelta, Number)
 		check(segmentDelta, Number)
 
-		if (!partDelta && !segmentDelta)
-			throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${partDelta}, ${segmentDelta})`)
-
 		return runPlayoutOperationWithCache(
 			context,
 			'moveNextPart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
+				if (!partDelta && !segmentDelta)
+					throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${partDelta}, ${segmentDelta})`)
+
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" is not active!`)
@@ -1209,16 +1209,16 @@ export namespace ServerPlayoutAPI {
 		check(partInstanceId, String)
 		check(sourceLayerIds, Match.OneOf(String, Array))
 
-		if (_.isString(sourceLayerIds)) sourceLayerIds = [sourceLayerIds]
-
-		if (sourceLayerIds.length === 0) return
-
 		return runPlayoutOperationWithCache(
 			context,
 			'sourceLayerOnPartStop',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
+				if (_.isString(sourceLayerIds)) sourceLayerIds = [sourceLayerIds]
+
+				if (sourceLayerIds.length === 0) return
+
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)

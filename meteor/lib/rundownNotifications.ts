@@ -279,7 +279,7 @@ export function getMediaObjectIssues(rundownIds: RundownId[]): IMediaObjectIssue
 						const segment = part ? segments[unprotectString(part.segmentId)] : undefined
 						if (segment && sourceLayer && part) {
 							// we don't want this to be in a non-reactive context, so we manage this computation manually
-							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio.settings)
+							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
 							if (
 								status !== RundownAPI.PieceStatusCode.OK &&
 								status !== RundownAPI.PieceStatusCode.UNKNOWN &&

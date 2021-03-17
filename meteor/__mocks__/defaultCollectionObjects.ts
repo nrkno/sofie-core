@@ -1,5 +1,5 @@
-import { getCurrentTime, unprotectObject, unprotectString } from '../lib/lib'
-import { StudioId } from '../lib/collections/Studios'
+import { DBStudio, StudioId } from '../lib/collections/Studios'
+import { getCurrentTime, unprotectString } from '../lib/lib'
 import { DBRundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
 import { PeripheralDeviceId } from '../lib/collections/PeripheralDevices'
 import { ShowStyleBaseId } from '../lib/collections/ShowStyleBases'
@@ -70,6 +70,28 @@ export function defaultRundown(
 		},
 
 		externalNRCSName: 'mock',
+	}
+}
+
+export function defaultStudio(_id: StudioId): DBStudio {
+	return {
+		_id: _id,
+
+		name: 'mockStudio',
+		organizationId: null,
+		mappings: {},
+		supportedShowStyleBase: [],
+		blueprintConfig: {},
+		settings: {
+			mediaPreviewsUrl: '',
+			sofieUrl: '',
+		},
+		_rundownVersionHash: '',
+		routeSets: {},
+		routeSetExclusivityGroups: {},
+		packageContainers: {},
+		previewContainerIds: [],
+		thumbnailContainerIds: [],
 	}
 }
 

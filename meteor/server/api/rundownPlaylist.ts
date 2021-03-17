@@ -53,6 +53,7 @@ import { updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { Random } from 'meteor/random'
 import { asyncCollectionRemove, asyncCollectionFindOne } from '../lib/database'
+import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 
 export function removeEmptyPlaylists(studioId: StudioId) {
 	runStudioOperationWithCache('removeEmptyPlaylists', studioId, StudioLockFunctionPriority.MISC, async (cache) => {
@@ -111,6 +112,7 @@ export async function removeRundownsFromDb(rundownIds: RundownId[]): Promise<voi
 			asyncCollectionRemove(AdLibPieces, { rundownId: { $in: rundownIds } }),
 			asyncCollectionRemove(ExpectedMediaItems, { rundownId: { $in: rundownIds } }),
 			asyncCollectionRemove(ExpectedPlayoutItems, { rundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(ExpectedPackages, { rundownId: { $in: rundownIds } }),
 			asyncCollectionRemove(IngestDataCache, { rundownId: { $in: rundownIds } }),
 			asyncCollectionRemove(RundownBaselineAdLibPieces, { rundownId: { $in: rundownIds } }),
 			asyncCollectionRemove(Segments, { rundownId: { $in: rundownIds } }),

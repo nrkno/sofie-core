@@ -26,6 +26,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { profiler } from '../profiler'
+import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { ReadonlyDeep } from 'type-fest'
 import { DbCacheReadCollection } from '../../cache/CacheCollection'
 import {

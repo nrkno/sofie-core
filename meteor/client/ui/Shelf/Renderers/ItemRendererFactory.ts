@@ -6,6 +6,8 @@ import { MediaObject } from '../../../../lib/collections/MediaObjects'
 import { DefaultListItemRenderer } from './DefaultListItemRenderer'
 import { VTListItemRenderer } from './VTListItemRenderer'
 import { L3rdListItemRenderer } from './L3rdListItemRenderer'
+import { ScanInfoForPackages } from '../../../../lib/mediaObjects'
+import { Studio } from '../../../../lib/collections/Studios'
 
 export interface ILayerItemRendererProps {
 	adLibListItem: IAdLibListItem
@@ -16,6 +18,8 @@ export interface ILayerItemRendererProps {
 	message?: string | null
 	metadata?: MediaObject | null
 	mediaPreviewUrl: string | undefined
+	packageInfos: ScanInfoForPackages | undefined
+	studioPackageContainers: Studio['packageContainers'] | undefined
 }
 
 export default function renderItem(props: ILayerItemRendererProps): JSX.Element {

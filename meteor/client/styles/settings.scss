@@ -89,7 +89,9 @@
 	.settings-line-templates-snapshots,
 	.settings-studio-device-httpsend-table,
 	.settings-studio-showStyleVariants-table,
-	.settings-studio-rundown-layouts-table {
+	.settings-studio-rundown-layouts-table,
+	.settings-studio-package-containers,
+	.settings-studio-package-containers-accessors-table {
 		width: 100%;
 
 		> thead > tr {
@@ -111,6 +113,12 @@
 		.expando-details > td {
 			max-width: 0;
 		}
+	}
+
+	.settings-studio-accessors {
+		border-left: 0.5em solid #999;
+		margin-left: 1em;
+		padding-left: 1em;
 	}
 
 	.settings-studio-sticky-scroller {

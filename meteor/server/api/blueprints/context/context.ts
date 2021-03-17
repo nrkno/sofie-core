@@ -136,6 +136,7 @@ export class StudioContext extends CommonContext implements IStudioContext {
 	}
 
 	getStudioMappings(): Readonly<BlueprintMappings> {
+		// @ts-ignore ProtectedString deviceId not compatible with string
 		return this.studio.mappings
 	}
 }

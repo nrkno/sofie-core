@@ -52,6 +52,7 @@ import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Bluepr
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
+import { ExpectedPackageDB, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { importIngestRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
@@ -120,6 +121,7 @@ interface RundownPlaylistSnapshot {
 	mediaObjects: Array<MediaObject>
 	expectedMediaItems: Array<ExpectedMediaItem>
 	expectedPlayoutItems: Array<ExpectedPlayoutItem>
+	expectedPackages: Array<ExpectedPackageDB>
 	asRunLog: Array<AsRunLogEvent> // Note: asRunLog is not restored when restoring
 }
 interface SystemSnapshot {
@@ -198,6 +200,7 @@ function createRundownPlaylistSnapshot(
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
 	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map((i) => i._id) } }).fetch()
 	const expectedPlayoutItems = ExpectedPlayoutItems.find({ rundownId: { $in: rundownIds } }).fetch()
+	const expectedPackages = ExpectedPackages.find({ rundownId: { $in: rundownIds } }).fetch()
 	const baselineObjs = RundownBaselineObjs.find({ rundownId: { $in: rundownIds } }).fetch()
 	const asRunLog = AsRunLog.find({ rundownId: { $in: rundownIds } }).fetch()
 
@@ -232,6 +235,7 @@ function createRundownPlaylistSnapshot(
 		mediaObjects,
 		expectedMediaItems,
 		expectedPlayoutItems,
+		expectedPackages,
 		asRunLog,
 	}
 }
@@ -751,6 +755,11 @@ export function restoreFromRundownPlaylistSnapshot(
 		ExpectedPlayoutItems,
 		{ rundownId: { $in: rundownIds } },
 		updateItemIds(snapshot.expectedPlayoutItems || [], true)
+	)
+	saveIntoDb(
+		ExpectedPackages,
+		{ rundownId: { $in: rundownIds } },
+		updateItemIds(snapshot.expectedPackages || [], true)
 	)
 
 	// snapshot.asRunLog is not restored, since that is a log of events in the system

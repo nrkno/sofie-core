@@ -1,12 +1,10 @@
-import { Rundowns, DBRundown, RundownId } from '../../../../lib/collections/Rundowns'
-import { literal, protectString, getRandomId, unprotectString } from '../../../../lib/lib'
+import { literal, protectString, getRandomId } from '../../../../lib/lib'
 import { setupDefaultStudioEnvironment, LAYER_IDS } from '../../../../__mocks__/helpers/database'
 import { DBPart, Parts, PartId } from '../../../../lib/collections/Parts'
-import { VTContent, PieceLifespan, WithTimeline } from '@sofie-automation/blueprints-integration'
+import { VTContent, PieceLifespan, WithTimeline, ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { Segments, DBSegment } from '../../../../lib/collections/Segments'
 import { Pieces, Piece, PieceId } from '../../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../../lib/api/rundown'
-import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { ExpectedMediaItems } from '../../../../lib/collections/ExpectedMediaItems'
 import { testInFiber, beforeAllInFiber } from '../../../../__mocks__/helpers/jest'
 import { AdLibPieces, AdLibPiece } from '../../../../lib/collections/AdLibPieces'
@@ -18,8 +16,14 @@ import {
 	defaultPart,
 	defaultPiece,
 	defaultAdLibPiece,
+	// } from '../../../__mocks__/defaultCollectionObjects'
+	// import { updateExpectedPackagesOnRundown } from '../expectedPackages'
+	// import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 } from '../../../../__mocks__/defaultCollectionObjects'
 import { runIngestOperationWithLock } from '../lockFunction'
+import { updateExpectedPackagesOnRundown } from '../expectedPackages'
+import { ExpectedPackages } from '../../../../lib/collections/ExpectedPackages'
+import { DBRundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
 describe('Expected Media Items', () => {
@@ -44,6 +48,26 @@ describe('Expected Media Items', () => {
 
 	const mockFlow0 = 'mockFlow0'
 	const mockFlow1 = 'mockFlow1'
+
+	const getExpectedPackage = (id: string, filePath: string) => {
+		return literal<ExpectedPackage.ExpectedPackageMediaFile>({
+			_id: id,
+			layers: ['layer0'],
+			contentVersionHash: 'abc',
+			type: ExpectedPackage.PackageType.MEDIA_FILE,
+			content: {
+				filePath: filePath,
+			},
+			version: {},
+			sources: [
+				{
+					containerId: 'source0',
+					accessors: {},
+				},
+			],
+			sideEffect: {},
+		})
+	}
 
 	function setupRundown(rdId: string, rplId: RundownPlaylistId) {
 		RundownPlaylists.insert({
@@ -101,6 +125,7 @@ describe('Expected Media Items', () => {
 					sourceDuration: 0,
 					timelineObjects: [],
 				}),
+				expectedPackages: [getExpectedPackage('id0', mockPath0), getExpectedPackage('id1', mockPath0)],
 			})
 		)
 		Parts.insert(
@@ -131,6 +156,7 @@ describe('Expected Media Items', () => {
 					sourceDuration: 0,
 					timelineObjects: [],
 				}),
+				expectedPackages: [getExpectedPackage('id0', mockPath1)],
 			})
 		)
 		AdLibPieces.insert(
@@ -154,6 +180,7 @@ describe('Expected Media Items', () => {
 					sourceDuration: 0,
 					timelineObjects: [],
 				}),
+				expectedPackages: [getExpectedPackage('id0', mockPath1)],
 			})
 		)
 		return rd._id
@@ -165,11 +192,18 @@ describe('Expected Media Items', () => {
 	})
 
 	describe('Based on a Rundown', () => {
-		testInFiber('Generates ExpectedMediaItems based on a Rundown', () => {
+		testInFiber('Generates ExpectedPackages(/ExpectedMediaItems) based on a Rundown', () => {
 			runIngestOperationWithLock('test', env.studio._id, rdExtId0, async (cache) =>
-				updateExpectedMediaItemsOnRundown(cache)
+				updateExpectedPackagesOnRundown(cache)
 			)
 
+			const packages = ExpectedPackages.find({
+				rundownId: rdId0,
+				studioId: env.studio._id,
+			}).fetch()
+			expect(packages).toHaveLength(4)
+
+			// to be deprecated:
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId0,
 				studioId: env.studio._id,
@@ -184,7 +218,7 @@ describe('Expected Media Items', () => {
 		// 	}
 		// 	const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId0))
 		// 	removeRundownFromCache(cache, rd)
-		// 	updateExpectedMediaItemsOnRundown(cache, rdId0)
+		// 	updateExpectedPackagesOnRundown(cache)
 
 		// 	waitForPromise(cache.saveAllToDatabase())
 		// 	const items = ExpectedMediaItems.find({

@@ -19,6 +19,7 @@ import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import { Studio } from '../../../lib/collections/Studios'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -48,6 +49,7 @@ export interface ISourceLayerItemProps {
 	scrollWidth: number
 	liveLinePadding: number
 	layerIndex: number
+	studio: Studio | undefined
 }
 interface ISourceLayerItemState {
 	showMiniInspector: boolean

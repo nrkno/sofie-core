@@ -9,8 +9,9 @@ import { ShowStyleVariantId } from './ShowStyleVariants'
 import { BucketId } from './Buckets'
 import { registerIndex } from '../database'
 
+export type BucketAdLibId = PieceId
 export interface BucketAdLib extends IBlueprintAdLibPiece {
-	_id: PieceId
+	_id: BucketAdLibId
 	bucketId: BucketId
 
 	/**

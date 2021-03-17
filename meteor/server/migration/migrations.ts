@@ -1,4 +1,4 @@
-// Here, all migration scripts for all versions need to be reference
+// Here, all migration scripts for all versions need to be referenced:
 
 import { addSteps as addSteps0_1_0 } from './0_1_0'
 addSteps0_1_0()

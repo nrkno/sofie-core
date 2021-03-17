@@ -27,8 +27,9 @@ import {
 	VTContent,
 	WithTimeline,
 } from '@sofie-automation/blueprints-integration'
-import { IStudioSettings } from '../collections/Studios'
+import { IStudioSettings, Studio } from '../collections/Studios'
 import { RundownAPI } from '../api/rundown'
+import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
 
 describe('lib/mediaObjects', () => {
 	testInFiber('buildFormatString', () => {
@@ -172,6 +173,10 @@ describe('lib/mediaObjects', () => {
 			mediaPreviewsUrl: '',
 			supportedAudioStreams: '4',
 			sofieUrl: '',
+		}
+		const mockStudio: Studio = {
+			...defaultStudio(protectString('studio0')),
+			settings: mockStudioSettings,
 		}
 
 		MediaObjects.insert(
@@ -354,15 +359,15 @@ describe('lib/mediaObjects', () => {
 			}),
 		})
 
-		const status1 = checkPieceContentStatus(piece1, sourcelayer1, mockStudioSettings)
+		const status1 = checkPieceContentStatus(piece1, sourcelayer1, mockStudio)
 		expect(status1.status).toEqual(RundownAPI.PieceStatusCode.OK)
 		expect(status1.message).toBeFalsy()
 
-		const status2 = checkPieceContentStatus(piece2, sourcelayer1, mockStudioSettings)
+		const status2 = checkPieceContentStatus(piece2, sourcelayer1, mockStudio)
 		expect(status2.status).toEqual(RundownAPI.PieceStatusCode.SOURCE_BROKEN)
 		expect(status2.message).toContain('has the wrong format:')
 
-		const status3 = checkPieceContentStatus(piece3, sourcelayer1, mockStudioSettings)
+		const status3 = checkPieceContentStatus(piece3, sourcelayer1, mockStudio)
 		expect(status3.status).toEqual(RundownAPI.PieceStatusCode.SOURCE_MISSING)
 		expect(status3.message).toContain('is not yet ready on the playout system')
 	})

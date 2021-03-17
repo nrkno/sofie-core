@@ -13,6 +13,7 @@ import { logger } from '../../logging'
 import { waitForPromise } from '../../../lib/lib'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
 import { runIngestOperationWithLock } from './lockFunction'
+import { updateExpectedPackagesOnRundown } from './expectedPackages'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
@@ -50,6 +51,15 @@ if (!Settings.enableUserAccounts) {
 			rundowns.map((rundown) => {
 				runIngestOperationWithLock('', rundown.studioId, rundown.externalId, async (cache) =>
 					updateExpectedMediaItemsOnRundown(cache)
+				)
+			})
+		},
+		debug_recreateExpectedPackages() {
+			const rundowns = Rundowns.find().fetch()
+
+			rundowns.map((rundown) => {
+				runIngestOperationWithLock('', rundown.studioId, rundown.externalId, async (cache) =>
+					updateExpectedPackagesOnRundown(cache)
 				)
 			})
 		},

@@ -53,6 +53,7 @@ import {
 	defaultPart,
 	defaultPiece,
 	defaultAdLibPiece,
+	defaultStudio,
 } from '../defaultCollectionObjects'
 
 export enum LAYER_IDS {
@@ -141,24 +142,12 @@ export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
 export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 	doc = doc || {}
 
-	const defaultStudio: DBStudio = {
-		_id: protectString('mockStudio' + dbI++),
+	const studio: DBStudio = {
+		...defaultStudio(protectString('mockStudio' + dbI++)),
 		name: 'mockStudio',
-		organizationId: null,
-		// blueprintId?: BlueprintId
-		mappings: {},
-		supportedShowStyleBase: [],
-		blueprintConfig: {},
-		// testToolsConfig?: ITestToolsConfig
-		settings: {
-			mediaPreviewsUrl: '',
-			sofieUrl: '',
-		},
 		_rundownVersionHash: 'asdf',
-		routeSets: {},
-		routeSetExclusivityGroups: {},
+		...doc,
 	}
-	const studio = _.extend(defaultStudio, doc)
 	Studios.insert(studio)
 	return studio
 }
