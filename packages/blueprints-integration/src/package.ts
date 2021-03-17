@@ -98,12 +98,18 @@ export namespace ExpectedPackage {
 	}
 	export interface ExpectedPackageQuantelClip extends Base {
 		type: PackageType.QUANTEL_CLIP
-		content: {
-			guid?: string
-			title?: string
-		}
+		content:
+			| {
+					guid: string
+					title?: string
+			  }
+			| {
+					guid?: string
+					title: string
+			  }
 		version: {
-			// @todo: something here?
+			/** The time the clips was created */
+			created?: number
 		}
 		sources: {
 			containerId: string
@@ -185,13 +191,26 @@ export namespace Accessor {
 		/** Any headers to send along with the request */
 		// headers?: { [name: string]: any } // Not implemented (yet)
 
-		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible*/
+		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible. */
 		networkId?: string
 	}
 	export interface Quantel extends Base {
 		type: AccessType.QUANTEL
 
-		zoneId: string
+		/** URL to a Quantel-gateway (https://github.com/nrkno/tv-automation-quantel-gateway) */
+		quantelGatewayUrl: string
+
+		/** Master URL for the Quantel ISA */
+		ISAUrlMaster: string
+		/** Backup URL for the Quantel ISA */
+		ISAUrlBackup?: string
+		/** Zone id, defaults to 'default' */
+		zoneId?: string
+		/** Server id. Can be omitted for sources, as clip-searches are zone-wide */
+		serverId?: number
+
+		/** Name/Id of the network the share exists on. Used to differ between different networks. Leave empty if globally accessible. */
+		networkId?: string
 	}
 	/** Virtual PackageContainer used for piping data into core */
 	export interface CorePackageCollection extends Base {
