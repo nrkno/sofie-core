@@ -1,5 +1,5 @@
-import { getCurrentTime } from '../lib/lib'
 import { DBStudio, StudioId } from '../lib/collections/Studios'
+import { getCurrentTime, unprotectString } from '../lib/lib'
 import { DBRundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
 import { PeripheralDeviceId } from '../lib/collections/PeripheralDevices'
 import { ShowStyleBaseId } from '../lib/collections/ShowStyleBases'
@@ -11,6 +11,7 @@ import { RundownAPI } from '../lib/api/rundown'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PieceId, Piece } from '../lib/collections/Pieces'
 import { AdLibPiece } from '../lib/collections/AdLibPieces'
+import { getRundownId } from '../server/api/ingest/lib'
 
 export function defaultRundownPlaylist(
 	_id: RundownPlaylistId,
@@ -21,7 +22,6 @@ export function defaultRundownPlaylist(
 		_id: _id,
 
 		externalId: 'MOCK_RUNDOWNPLAYLIST',
-		peripheralDeviceId: ingestDeviceId,
 		organizationId: null,
 		studioId: studioId,
 
@@ -37,7 +37,7 @@ export function defaultRundownPlaylist(
 	}
 }
 export function defaultRundown(
-	_id: RundownId,
+	externalId: string,
 	studioId: StudioId,
 	ingestDeviceId: PeripheralDeviceId,
 	playlistId: RundownPlaylistId,
@@ -55,8 +55,8 @@ export function defaultRundown(
 		playlistId: playlistId,
 		_rank: 0,
 
-		_id: _id,
-		externalId: 'MOCK_RUNDOWN',
+		_id: getRundownId(studioId, externalId),
+		externalId: externalId,
 		name: 'Default Rundown',
 
 		created: getCurrentTime(),
@@ -99,7 +99,7 @@ export function defaultSegment(_id: SegmentId, rundownId: RundownId): DBSegment 
 	return {
 		_id: _id,
 		_rank: 0,
-		externalId: 'MOCK_SEGMENT',
+		externalId: unprotectString(_id),
 		rundownId: rundownId,
 		name: 'Default Segment',
 		externalModified: 1,
@@ -112,7 +112,7 @@ export function defaultPart(_id: PartId, rundownId: RundownId, segmentId: Segmen
 		rundownId: rundownId,
 		segmentId: segmentId,
 		_rank: 0,
-		externalId: 'MOCK_PART',
+		externalId: unprotectString(_id),
 		title: 'Default Part',
 	}
 }

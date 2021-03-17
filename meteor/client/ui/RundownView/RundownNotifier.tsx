@@ -15,7 +15,7 @@ import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Parts, PartId, Part } from '../../../lib/collections/Parts'
 import { getCurrentTime, unprotectString } from '../../../lib/lib'
@@ -23,20 +23,19 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Segments, SegmentId, Segment } from '../../../lib/collections/Segments'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
-import { Rundowns, RundownId, Rundown } from '../../../lib/collections/Rundowns'
+import { RundownId, Rundown } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator as t } from '../i18n'
-import { PartNote, NoteType, TrackedNote } from '../../../lib/api/notes'
-import { Pieces, PieceId, Piece } from '../../../lib/collections/Pieces'
+import { NoteType, TrackedNote } from '../../../lib/api/notes'
+import { PieceId, Piece } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 import { RankedNote, IMediaObjectIssue } from '../../../lib/api/rundownNotifications'
-import { Settings } from '../../../lib/Settings'
 import { isTranslatableMessage, translateMessage } from '../../../lib/api/TranslatableMessage'
 import { getAllowStudio } from '../../lib/localStorage'
 
@@ -177,17 +176,17 @@ class RundownViewNotifier extends WithManagedTracker {
 			if (playlist && rundowns) {
 				rundowns.forEach((rundown) => {
 					let unsyncedId = rundown._id + '_unsynced'
-					let newNotification: Notification | undefined = undefined
+					let unsyncedNotification: Notification | undefined = undefined
 
 					if (rundown.orphaned) {
-						newNotification = new Notification(
+						unsyncedNotification = new Notification(
 							unsyncedId,
 							NoticeLevel.CRITICAL,
 							t(
-								'The Rundown "{{rundownName}}" has been UNSYNCED from {{nrcsName}}! No data updates will currently come through.',
+								'The rundown "{{rundownName}}" is not published or activated in {{nrcsName}}! No data updates will currently come through.',
 								{
 									rundownName: rundown.name,
-									nrcsName: rundown.externalNRCSName || 'NRCS',
+									nrcsName: rundown.externalNRCSName ?? 'NRCS',
 								}
 							),
 							rundown._id,
@@ -231,10 +230,10 @@ class RundownViewNotifier extends WithManagedTracker {
 						)
 						newNoteIds.push(unsyncedId)
 					}
-					if (newNotification && !Notification.isEqual(this._rundownStatus[unsyncedId], newNotification)) {
-						this._rundownStatus[unsyncedId] = newNotification
+					if (unsyncedNotification && !Notification.isEqual(this._rundownStatus[unsyncedId], unsyncedNotification)) {
+						this._rundownStatus[unsyncedId] = unsyncedNotification
 						this._rundownStatusDep.changed()
-					} else if (!newNotification && this._rundownStatus[unsyncedId]) {
+					} else if (!unsyncedNotification && this._rundownStatus[unsyncedId]) {
 						delete this._rundownStatus[unsyncedId]
 						this._rundownStatusDep.changed()
 					}
@@ -243,7 +242,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					if (rundown.notes) {
 						rundown.notes.forEach((note) => {
 							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.message + '_' + note.type
-							const newNotification = new Notification(
+							const notificationFromNote = new Notification(
 								rundownNoteId,
 								note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
 								note.message,
@@ -253,8 +252,8 @@ class RundownViewNotifier extends WithManagedTracker {
 								[],
 								-1
 							)
-							if (!Notification.isEqual(this._rundownStatus[rundownNoteId], newNotification)) {
-								this._rundownStatus[rundownNoteId] = newNotification
+							if (!Notification.isEqual(this._rundownStatus[rundownNoteId], notificationFromNote)) {
+								this._rundownStatus[rundownNoteId] = notificationFromNote
 								this._rundownStatusDep.changed()
 							}
 							newNoteIds.push(rundownNoteId)
@@ -453,14 +452,13 @@ class RundownViewNotifier extends WithManagedTracker {
 					rank * 1000
 				)
 				newNotification.on('action', (notification, type, e) => {
-					switch (type) {
-						case 'default':
-							const handler = onRONotificationClick.get()
-							if (handler && typeof handler === 'function') {
-								handler({
-									sourceLocator: origin,
-								})
-							}
+					if (type === 'default') {
+						const handler = onRONotificationClick.get()
+						if (handler && typeof handler === 'function') {
+							handler({
+								sourceLocator: origin,
+							})
+						}
 					}
 				})
 				newNoteIds.push(notificationId)
@@ -604,19 +602,18 @@ class RundownViewNotifier extends WithManagedTracker {
 						issue.segmentRank * 1000 + issue.partRank
 					)
 					newNotification.on('action', (notification, type, e) => {
-						switch (type) {
-							case 'default':
-								const handler = onRONotificationClick.get()
-								if (handler && typeof handler === 'function') {
-									handler({
-										sourceLocator: {
-											name: issue.name,
-											rundownId: issue.rundownId,
-											pieceId: issue.pieceId,
-											partId: issue.partId,
-										},
-									})
-								}
+						if (type === 'default') {
+							const handler = onRONotificationClick.get()
+							if (handler && typeof handler === 'function') {
+								handler({
+									sourceLocator: {
+										name: issue.name,
+										rundownId: issue.rundownId,
+										pieceId: issue.pieceId,
+										partId: issue.partId,
+									},
+								})
+							}
 						}
 					})
 				}

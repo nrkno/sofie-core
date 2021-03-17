@@ -1,29 +1,22 @@
-import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber, beforeEachInFiber } from '../../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
-	setupDefaultRundown,
 	setupMockPeripheralDevice,
 	setupDefaultRundownPlaylist,
 } from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundowns } from '../../../../lib/collections/Rundowns'
 import '../api'
-import { Timeline as OrgTimeline } from '../../../../lib/collections/Timeline'
 import { activateRundownPlaylist, prepareStudioForBroadcast } from '../actions'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { protectString } from '../../../../lib/lib'
-import { removeRundownFromCache, removeRundownPlaylistFromCache } from '../lib'
-import {
-	wrapWithCacheForRundownPlaylistFromRundown,
-	wrapWithCacheForRundownPlaylist,
-	wrapWithCacheForRundownPlaylistFromStudio,
-} from '../../../DatabaseCaches'
+import { protectString, waitForPromise } from '../../../../lib/lib'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
+import { removeRundownsFromDb } from '../../rundownPlaylist'
 
 // const Timeline = mockupCollection(OrgTimeline)
 
@@ -48,8 +41,12 @@ describe('Playout Actions', () => {
 			env.studio
 		)
 
-		_.each(Rundowns.find().fetch(), (rundown) =>
-			wrapWithCacheForRundownPlaylistFromRundown(rundown._id, (cache) => removeRundownFromCache(cache, rundown))
+		waitForPromise(
+			removeRundownsFromDb(
+				Rundowns.find()
+					.fetch()
+					.map((r) => r._id)
+			)
 		)
 	})
 	testInFiber('activateRundown', () => {
@@ -66,51 +63,74 @@ describe('Playout Actions', () => {
 		const { playlistId: playlistId2 } = setupDefaultRundownPlaylist(env, protectString('ro2'))
 		expect(playlistId2).toBeTruthy()
 
-		const playlistRemoved = RundownPlaylists.findOne(playlistId2) as RundownPlaylist
-		wrapWithCacheForRundownPlaylist(playlistRemoved, (cache) =>
-			removeRundownPlaylistFromCache(cache, playlistRemoved)
-		)
-
-		// Activating a rundown that doesn't exist:
-		expect(() => {
-			wrapWithCacheForRundownPlaylist(playlistRemoved, (cache) =>
-				activateRundownPlaylist(cache, playlistRemoved, false)
-			)
-		}).toThrowError(/not found/)
-
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 		// Activating a rundown, to rehearsal
 		let playlist = getPlaylist0()
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => activateRundownPlaylist(cache, playlist, true))
+		runPlayoutOperationWithCache(
+			null,
+			'activateRundownPlaylist',
+			playlist._id,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			async (cache) => await activateRundownPlaylist(cache, true)
+		)
 		expect(getPlaylist0()).toMatchObject({ activationId: expect.stringMatching(/^randomId/), rehearsal: true })
 
 		// Activating a rundown
 		playlist = getPlaylist0()
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => activateRundownPlaylist(cache, playlist, false))
+		runPlayoutOperationWithCache(
+			null,
+			'activateRundownPlaylist',
+			playlist._id,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			async (cache) => await activateRundownPlaylist(cache, false)
+		)
 		expect(getPlaylist0()).toMatchObject({ activationId: expect.stringMatching(/^randomId/), rehearsal: false })
 
 		// Activating a rundown, back to rehearsal
 		playlist = getPlaylist0()
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => activateRundownPlaylist(cache, playlist, true))
+		runPlayoutOperationWithCache(
+			null,
+			'activateRundownPlaylist',
+			playlist._id,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			async (cache) => await activateRundownPlaylist(cache, true)
+		)
 		expect(getPlaylist0()).toMatchObject({ activationId: expect.stringMatching(/^randomId/), rehearsal: true })
 
 		// Activating another rundown
 		expect(() => {
 			const playlist = getPlaylist1()
-			wrapWithCacheForRundownPlaylist(playlist, (cache) => activateRundownPlaylist(cache, playlist, false))
+			runPlayoutOperationWithCache(
+				null,
+				'activateRundownPlaylist',
+				playlist._id,
+				PlayoutLockFunctionPriority.USER_PLAYOUT,
+				null,
+				async (cache) => await activateRundownPlaylist(cache, false)
+			)
 		}).toThrowError(/only one rundown can be active/i)
 	})
 	testInFiber('prepareStudioForBroadcast', () => {
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
+		const { playlistId } = setupDefaultRundownPlaylist(env, protectString('ro0'))
+		expect(playlistId).toBeTruthy()
+
+		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
+		expect(playlist).toBeTruthy()
+
 		// prepareStudioForBroadcast
-		const playlist = {
-			_id: protectString<RundownPlaylistId>('some-id'),
-			studioId: env.studio._id,
-		} as RundownPlaylist
 		const okToDestroyStuff = true
-		wrapWithCacheForRundownPlaylistFromStudio(env.studio._id, (cache) =>
-			prepareStudioForBroadcast(okToDestroyStuff, playlist)
+		runPlayoutOperationWithCache(
+			null,
+			'activateRundownPlaylist',
+			playlist._id,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => prepareStudioForBroadcast(cache, okToDestroyStuff)
 		)
 
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(1)

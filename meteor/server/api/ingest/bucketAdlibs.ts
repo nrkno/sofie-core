@@ -13,17 +13,18 @@ import {
 	cleanUpExpectedMediaItemForBucketAdLibPiece,
 	updateExpectedMediaItemForBucketAdLibAction,
 	updateExpectedMediaItemForBucketAdLibPiece,
-} from '../expectedMediaItems'
+} from './expectedMediaItems'
 import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
-import { asyncCollectionFindFetch, asyncCollectionRemove, waitForPromiseAll } from '../../../lib/lib'
+import { waitForPromiseAll } from '../../../lib/lib'
 import { bucketSyncFunction } from '../buckets'
 import {
 	cleanUpExpectedPackagesForBucketAdLibs,
 	cleanUpExpectedPackagesForBucketAdLibsActions,
 	updateExpectedPackagesForBucketAdLib,
 	updateExpectedPackagesForBucketAdLibAction,
-} from '../expectedPackages'
+} from './expectedPackages'
 import { ShowStyleUserContext } from '../blueprints/context'
+import { asyncCollectionFindFetch, asyncCollectionRemove } from '../../lib/database'
 
 function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
 	return !!(adlib as IBlueprintActionManifest).actionId
@@ -44,10 +45,7 @@ export function updateBucketAdlibFromIngestData(
 			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT
 		},
 		studio,
-		undefined,
-		undefined,
-		showStyle._id,
-		showStyle.showStyleVariantId
+		showStyle
 	)
 	if (!blueprint.getAdlibItem) throw new Meteor.Error(501, "This blueprint doesn't support ingest AdLibs")
 	const rawAdlib = blueprint.getAdlibItem(context, ingestData)

@@ -13,7 +13,7 @@ import { updatePartInstanceRanks } from '../rundown'
 import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import { Part, PartId, Parts } from '../../../lib/collections/Parts'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
-import { wrapWithCacheForRundownPlaylist } from '../../DatabaseCaches'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../playout/lockFunction'
 
 require('../rundown') // include in order to create the Meteor methods needed
 
@@ -30,6 +30,8 @@ describe('updatePartInstanceRanks', () => {
 		const info = setupDefaultRundownPlaylist(env, protectString('rundown00'))
 		const playlist0 = RundownPlaylists.findOne(info.playlistId) as RundownPlaylist
 		expect(playlist0).toBeTruthy()
+
+		RundownPlaylists.update(info.playlistId, { $set: { activationId: protectString('active') } })
 
 		playlistId = info.playlistId
 		rundownId = info.rundownId
@@ -60,12 +62,6 @@ describe('updatePartInstanceRanks', () => {
 		insertPart('part04', 4)
 		insertPart('part05', 5)
 	})
-
-	function getPlaylist(): RundownPlaylist {
-		const playlist0 = RundownPlaylists.findOne(playlistId) as RundownPlaylist
-		expect(playlist0).toBeTruthy()
-		return playlist0
-	}
 
 	function getParts(): Part[] {
 		return Parts.find({ segmentId }).fetch()
@@ -109,8 +105,6 @@ describe('updatePartInstanceRanks', () => {
 	}
 
 	testInFiber('sync from parts: no change', () => {
-		const playlist = getPlaylist()
-
 		const initialRanks = getPartRanks()
 		expect(initialRanks).toHaveLength(5)
 
@@ -119,8 +113,13 @@ describe('updatePartInstanceRanks', () => {
 		const initialInstanceRanks = getPartInstanceRanks()
 		expect(initialInstanceRanks).toHaveLength(5)
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+		runPlayoutOperationWithCache(
+			null,
+			'updatePartInstanceRanks',
+			playlistId,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -153,8 +152,6 @@ describe('updatePartInstanceRanks', () => {
 	}
 
 	testInFiber('sync from parts: swap part order', () => {
-		const playlist = getPlaylist()
-
 		const initialRanks = getPartRanks()
 		expect(initialRanks).toHaveLength(5)
 
@@ -168,8 +165,13 @@ describe('updatePartInstanceRanks', () => {
 		updatePartRank(initialInstanceRanks, 'part03', 4)
 		updatePartRank(initialInstanceRanks, 'part04', 2)
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+		runPlayoutOperationWithCache(
+			null,
+			'updatePartInstanceRanks',
+			playlistId,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -180,8 +182,13 @@ describe('updatePartInstanceRanks', () => {
 		updatePartRank(initialInstanceRanks, 'part02', 0)
 		updatePartRank(initialInstanceRanks, 'part05', 1)
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+		runPlayoutOperationWithCache(
+			null,
+			'updatePartInstanceRanks',
+			playlistId,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks2 = getPartInstanceRanks()
@@ -189,8 +196,6 @@ describe('updatePartInstanceRanks', () => {
 	})
 
 	testInFiber('sync from parts: missing part', () => {
-		const playlist = getPlaylist()
-
 		const initialRanks = getPartRanks()
 		expect(initialRanks).toHaveLength(5)
 
@@ -205,8 +210,13 @@ describe('updatePartInstanceRanks', () => {
 		Parts.remove(protectString('part03'))
 		updatePartRank(initialInstanceRanks, 'part03', 2.5)
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+		runPlayoutOperationWithCache(
+			null,
+			'updatePartInstanceRanks',
+			playlistId,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -214,8 +224,6 @@ describe('updatePartInstanceRanks', () => {
 	})
 
 	testInFiber('sync from parts: missing first part', () => {
-		const playlist = getPlaylist()
-
 		const initialRanks = getPartRanks()
 		expect(initialRanks).toHaveLength(5)
 
@@ -232,8 +240,13 @@ describe('updatePartInstanceRanks', () => {
 		Parts.remove(protectString('part01'))
 		updatePartRank(initialInstanceRanks, 'part01', 0)
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+		runPlayoutOperationWithCache(
+			null,
+			'updatePartInstanceRanks',
+			playlistId,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -241,8 +254,6 @@ describe('updatePartInstanceRanks', () => {
 	})
 
 	testInFiber('sync from parts: adlib part after missing part', () => {
-		const playlist = getPlaylist()
-
 		const initialRanks = getPartRanks()
 		expect(initialRanks).toHaveLength(5)
 
@@ -277,8 +288,13 @@ describe('updatePartInstanceRanks', () => {
 			rank: 2.666666666666667,
 		})
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+		runPlayoutOperationWithCache(
+			null,
+			'updatePartInstanceRanks',
+			playlistId,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -286,8 +302,6 @@ describe('updatePartInstanceRanks', () => {
 	})
 
 	testInFiber('sync from parts: delete and insert segment', () => {
-		const playlist = getPlaylist()
-
 		const initialRanks = getPartRanks()
 		expect(initialRanks).toHaveLength(5)
 
@@ -303,8 +317,13 @@ describe('updatePartInstanceRanks', () => {
 			e.orphaned = 'deleted'
 		}
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+		runPlayoutOperationWithCache(
+			null,
+			'updatePartInstanceRanks',
+			playlistId,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -323,8 +342,13 @@ describe('updatePartInstanceRanks', () => {
 		updatePartInstanceRank(initialInstanceRanks, 'part04', -2)
 		updatePartInstanceRank(initialInstanceRanks, 'part05', -1)
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks2 }])
+		runPlayoutOperationWithCache(
+			null,
+			'updatePartInstanceRanks',
+			playlistId,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks2 }])
 		)
 
 		const newInstanceRanks2 = getPartInstanceRanks()
@@ -332,8 +356,6 @@ describe('updatePartInstanceRanks', () => {
 	})
 
 	testInFiber('sync from parts: replace segment', () => {
-		const playlist = getPlaylist()
-
 		const initialRanks = getPartRanks()
 		expect(initialRanks).toHaveLength(5)
 
@@ -357,8 +379,13 @@ describe('updatePartInstanceRanks', () => {
 		updatePartInstanceRank(initialInstanceRanks, 'part04', -1.5)
 		updatePartInstanceRank(initialInstanceRanks, 'part05', -0.5)
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			updatePartInstanceRanks(cache, playlist, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+		runPlayoutOperationWithCache(
+			null,
+			'updatePartInstanceRanks',
+			playlistId,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()

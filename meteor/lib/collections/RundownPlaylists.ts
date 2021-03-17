@@ -8,7 +8,6 @@ import {
 	registerCollection,
 	normalizeArray,
 	getCurrentTime,
-	asyncCollectionFindFetch,
 	normalizeArrayFunc,
 	ProtectedString,
 	unprotectString,
@@ -19,12 +18,11 @@ import { Segments, Segment, DBSegment, SegmentId } from './Segments'
 import { Parts, Part, DBPart, PartId } from './Parts'
 import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
-import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
-import { PeripheralDeviceId } from './PeripheralDevices'
 import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 import { PieceInstanceInfiniteId } from './PieceInstances'
+import { ReadonlyDeep } from 'type-fest'
 
 /** A string, identifying a RundownPlaylist */
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
@@ -55,8 +53,6 @@ export interface DBRundownPlaylist {
 	organizationId?: OrganizationId | null
 	/** Studio that this playlist is assigned to */
 	studioId: StudioId
-	/** The source of the playlist */
-	peripheralDeviceId: PeripheralDeviceId
 
 	restoredFromSnapshotId?: RundownPlaylistId
 
@@ -99,6 +95,8 @@ export interface DBRundownPlaylist {
 	startedPlayback?: Time
 	/** Timestamp for the last time an incorrect part was reported as started */
 	lastIncorrectPartPlaybackReported?: Time
+	/** Actual time of each rundown starting playback */
+	rundownsStartedPlayback?: Record<string, Time>
 
 	/** If the _rank of rundowns in this playlist has ben set manually by a user in Sofie */
 	rundownRanksAreSetInSofie?: boolean
@@ -114,13 +112,13 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public externalId: string
 	public organizationId: OrganizationId
 	public studioId: StudioId
-	public peripheralDeviceId: PeripheralDeviceId
 	public restoredFromSnapshotId?: RundownPlaylistId
 	public name: string
 	public created: Time
 	public modified: Time
 	public startedPlayback?: Time
 	public lastIncorrectPartPlaybackReported?: Time
+	public rundownsStartedPlayback?: Record<string, Time>
 	public expectedStart?: Time
 	public expectedDuration?: number
 	public rehearsal?: boolean
@@ -190,9 +188,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			},
 		}).map((i) => i._id)
 	}
-	getRundownsMap(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): { [key: string]: Rundown } {
-		return normalizeArray(this.getRundowns(selector, options), '_id')
-	}
 	touch() {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		if (getCurrentTime() - this.modified > 3600 * 1000) {
@@ -200,14 +195,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			this.modified = m
 			RundownPlaylists.update(this._id, { $set: { modified: m } })
 		}
-	}
-	/** Remove this RundownPlaylist and all its contents */
-	removeTOBEREMOVED() {
-		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
-		const allRundowns = this.getRundowns()
-		allRundowns.forEach((i) => i.removeTOBEREMOVED())
-
-		RundownPlaylists.remove(this._id)
 	}
 	/** Return the studio for this RundownPlaylist */
 	getStudio(): Studio {
@@ -313,58 +300,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		).fetch()
 		return parts
 	}
-	/**
-	 * Return ordered lists of all Segments and Parts of the rundowns
-	 */
-	async getSegmentsAndParts(rundowns0?: DBRundown[]): Promise<{ segments: Segment[]; parts: Part[] }> {
-		let rundowns = rundowns0
-		if (!rundowns) {
-			rundowns = this.getRundowns(undefined, {
-				fields: {
-					_id: 1,
-					_rank: 1,
-					name: 1,
-				},
-			})
-		}
-		const rundownIds = rundowns.map((i) => i._id)
-
-		const pSegments = asyncCollectionFindFetch(
-			Segments,
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
-			},
-			{
-				sort: {
-					rundownId: 1,
-					_rank: 1,
-				},
-			}
-		)
-
-		const pParts = asyncCollectionFindFetch(
-			Parts,
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
-			},
-			{
-				sort: {
-					rundownId: 1,
-					_rank: 1,
-				},
-			}
-		)
-
-		const segments = RundownPlaylist._sortSegments(await pSegments, rundowns)
-		return {
-			segments: segments,
-			parts: RundownPlaylist._sortPartsInner(await pParts, segments),
-		}
-	}
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
 	getSegmentsAndPartsSync(
 		segmentsQuery?: Mongo.Query<DBSegment>,
@@ -432,7 +367,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const sortedSegments = RundownPlaylist._sortSegments(segments, rundowns)
 		return {
 			segments: sortedSegments,
-			parts: RundownPlaylist._sortPartsInner(parts, segments),
+			parts: RundownPlaylist._sortPartsInner(parts, sortedSegments),
 		}
 	}
 	getSelectedPartInstances(rundownIds0?: RundownId[]) {
@@ -488,7 +423,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const instances = this.getActivePartInstances(selector, options)
 		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
 	}
-	static _sortSegments(segments: Segment[], rundowns: DBRundown[]) {
+	static _sortSegments(segments: Segment[], rundowns: Array<ReadonlyDeep<DBRundown>>) {
 		const rundownsMap = normalizeArray(rundowns, '_id')
 		return segments.sort((a, b) => {
 			if (a.rundownId === b.rundownId) {

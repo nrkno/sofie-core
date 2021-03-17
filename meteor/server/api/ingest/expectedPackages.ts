@@ -1,20 +1,9 @@
-import { check } from '../../lib/check'
-import { RundownId } from '../../lib/collections/Rundowns'
-import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
-import {
-	saveIntoDb,
-	protectString,
-	waitForPromise,
-	ProtectedString,
-	asyncCollectionFindFetch,
-	literal,
-	asyncCollectionFindOne,
-	asyncCollectionRemove,
-	waitForPromiseAll,
-} from '../../lib/lib'
-import { logger } from '../logging'
-import { CacheForRundownPlaylist } from '../DatabaseCaches'
-import { AdLibAction, AdLibActionId, AdLibActions } from '../../lib/collections/AdLibActions'
+import { check } from '../../../lib/check'
+import { RundownId } from '../../../lib/collections/Rundowns'
+import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
+import { protectString, waitForPromise, ProtectedString, waitForPromiseAll } from '../../../lib/lib'
+import { logger } from '../../logging'
+import { AdLibAction, AdLibActionId, AdLibActions } from '../../../lib/collections/AdLibActions'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
 import {
 	ExpectedPackageDB,
@@ -27,36 +16,36 @@ import {
 	ExpectedPackageDBType,
 	ExpectedPackages,
 	getContentVersionHash,
-} from '../../lib/collections/ExpectedPackages'
-import { Studio, StudioId, Studios } from '../../lib/collections/Studios'
+} from '../../../lib/collections/ExpectedPackages'
+import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import { ExpectedPackage, IBlueprintPieceGeneric } from '@sofie-automation/blueprints-integration'
-import { Piece, PieceId } from '../../lib/collections/Pieces'
-import { BucketAdLibAction, BucketAdLibActionId, BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
+import { Piece, PieceId } from '../../../lib/collections/Pieces'
+import { BucketAdLibAction, BucketAdLibActionId, BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { Meteor } from 'meteor/meteor'
-import { BucketAdLib, BucketAdLibId, BucketAdLibs } from '../../lib/collections/BucketAdlibs'
-import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { BucketAdLib, BucketAdLibId, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
+import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import {
 	RundownBaselineAdLibAction,
 	RundownBaselineAdLibActions,
-} from '../../lib/collections/RundownBaselineAdLibActions'
-import { updateExpectedPlayoutItemsOnRundown } from './ingest/expectedPlayoutItems'
-import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
-import { PieceInstances } from '../../lib/collections/PieceInstances'
+} from '../../../lib/collections/RundownBaselineAdLibActions'
+import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
+import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
+import { PieceInstances } from '../../../lib/collections/PieceInstances'
+import { CacheForIngest } from './cache'
+import { asyncCollectionFindFetch, asyncCollectionFindOne, asyncCollectionRemove, saveIntoDb } from '../../lib/database'
 
-export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
-	check(rundownId, String)
-
+export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	// @todo: this call is for backwards compatibility and soon to be removed
-	updateExpectedMediaItemsOnRundown(cache, rundownId)
-	updateExpectedPlayoutItemsOnRundown(cache, rundownId)
+	updateExpectedMediaItemsOnRundown(cache)
+	updateExpectedPlayoutItemsOnRundown(cache)
 
-	const rundown = cache.Rundowns.findOne(rundownId)
+	const rundown = cache.Rundown.doc
 	if (!rundown) {
 		cache.deferAfterSave(() => {
 			const removedItems = ExpectedPackages.remove({
-				rundownId: rundownId,
+				rundownId: cache.RundownId,
 			})
-			logger.info(`Removed ${removedItems} expected media items for deleted rundown "${rundownId}"`)
+			logger.info(`Removed ${removedItems} expected packages for deleted rundown "${cache.RundownId}"`)
 		})
 		return
 	} else {
@@ -86,12 +75,12 @@ export function updateExpectedPackagesOnRundown(cache: CacheForRundownPlaylist, 
 			if (!studio) throw new Error(`Studio "${studioId}" not found!`)
 
 			const expectedPackages: ExpectedPackageDB[] = [
-				...generateExpectedPackagesForPiece(studio, rundownId, pieces),
-				...generateExpectedPackagesForPiece(studio, rundownId, adlibs),
-				...generateExpectedPackagesForAdlibAction(studio, rundownId, actions),
+				...generateExpectedPackagesForPiece(studio, cache.RundownId, pieces),
+				...generateExpectedPackagesForPiece(studio, cache.RundownId, adlibs),
+				...generateExpectedPackagesForAdlibAction(studio, cache.RundownId, actions),
 
-				...generateExpectedPackagesForPiece(studio, rundownId, baselineAdlibs),
-				...generateExpectedPackagesForBaselineAdlibAction(studio, rundownId, baselineActions),
+				...generateExpectedPackagesForPiece(studio, cache.RundownId, baselineAdlibs),
+				...generateExpectedPackagesForBaselineAdlibAction(studio, cache.RundownId, baselineActions),
 			]
 
 			saveIntoDb<ExpectedPackageDB, ExpectedPackageDB>(

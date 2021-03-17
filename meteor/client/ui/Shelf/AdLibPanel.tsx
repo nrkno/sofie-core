@@ -518,6 +518,7 @@ function actionToAdLibPieceUi(
 		expectedDuration: 0,
 		externalId: unprotectString(action._id),
 		rundownId: action.rundownId,
+		partId: action.partId,
 		sourceLayer: sourceLayers[sourceLayerId],
 		outputLayer: outputLayers[outputLayerId],
 		sourceLayerId,
@@ -574,8 +575,6 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					...segment,
 					parts: [],
 					pieces: [],
-					status: undefined,
-					expanded: undefined,
 					isLive: false,
 					isNext: false,
 				})
@@ -694,10 +693,10 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 	)
 
 	adlibActions.forEach((action) => {
-		const segment = uiPartSegmentMap.get(action[0] as PartId)
+		const segment = uiPartSegmentMap.get(action[0])
 
 		if (segment) {
-			segment.pieces.push(action[1] as AdLibPieceUi)
+			segment.pieces.push(action[1])
 		}
 	})
 

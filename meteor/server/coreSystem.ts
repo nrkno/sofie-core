@@ -22,14 +22,14 @@ import { Studios, StudioId } from '../lib/collections/Studios'
 import { logger } from './logging'
 import * as semver from 'semver'
 import { findMissingConfigs } from './api/blueprints/config'
-import { ShowStyleVariants, createShowStyleCompound } from '../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
 import { syncFunction } from './codeControl'
 const PackageInfo = require('../package.json')
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 import { profiler } from './api/profiler'
 import * as path from 'path'
 import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
-import { env } from 'process'
+import { createShowStyleCompound } from './api/showStyles'
 
 export { PackageInfo }
 
@@ -464,7 +464,7 @@ function startupMessage() {
 }
 
 function startInstrumenting() {
-	if (!!env.JEST_WORKER_ID) {
+	if (!!process.env.JEST_WORKER_ID) {
 		return
 	}
 

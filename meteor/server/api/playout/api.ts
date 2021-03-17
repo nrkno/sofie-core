@@ -50,7 +50,7 @@ class ServerPlayoutAPIClass extends MethodContextAPI implements NewPlayoutAPI {
 		return makePromise(() => ServerPlayoutAPI.setNextSegment(this, playlistId, segmentId))
 	}
 	rundownMoveNext(playlistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number) {
-		return makePromise(() => ServerPlayoutAPI.moveNextPart(this, playlistId, horisontalDelta, verticalDelta, true))
+		return makePromise(() => ServerPlayoutAPI.moveNextPart(this, playlistId, horisontalDelta, verticalDelta))
 	}
 	rundownActivateHold(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerPlayoutAPI.activateHold(this, playlistId))

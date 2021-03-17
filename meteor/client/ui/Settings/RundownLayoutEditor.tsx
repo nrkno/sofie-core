@@ -656,9 +656,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName="bghl"
 										attribute={`filters.${index}.assignHotKeys`}
 										obj={item}
-										type="int"
+										type="checkbox"
 										collection={RundownLayouts}
-										className="input text-input input-l"
+										className="mod mas"
 									/>
 								</label>
 							</div>
@@ -669,9 +669,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName="bghl"
 										attribute={`filters.${index}.hide`}
 										obj={item}
-										type="float"
+										type="checkbox"
 										collection={RundownLayouts}
-										className="input text-input input-l"
+										className="mod mas"
 									/>
 								</label>
 							</div>

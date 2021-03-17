@@ -101,11 +101,9 @@ interface IState {
 	collapsedOutputs: {
 		[key: string]: boolean
 	}
-	collapsed: boolean
 	followLiveLine: boolean
 	livePosition: number
 	displayTimecode: number
-	autoExpandCurrentNextSegment: boolean
 	isLiveSegment: boolean
 	isNextSegment: boolean
 	currentLivePart: PartUi | undefined
@@ -275,16 +273,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					`segment.${props.segmentId}.outputs`,
 					{}
 				),
-				collapsed: UIStateStorage.getItemBoolean(
-					`rundownView.${this.props.playlist._id}`,
-					`segment.${props.segmentId}`,
-					!!Settings.defaultToCollapsedSegments
-				),
 				scrollLeft: 0,
 				followLiveLine: false,
 				livePosition: 0,
 				displayTimecode: 0,
-				autoExpandCurrentNextSegment: !!Settings.autoExpandCurrentNextSegment,
 				isLiveSegment: false,
 				isNextSegment: false,
 				autoNextPart: false,
@@ -365,12 +357,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			if (this.isLiveSegment === true) {
 				this.onFollowLiveLine(true, {})
 				this.startLive()
-
-				if (this.state.autoExpandCurrentNextSegment) {
-					this.setState({
-						collapsed: false,
-					})
-				}
 			}
 			RundownViewEventBus.on(RundownViewEvents.REWIND_SEGMENTS, this.onRewindSegment)
 			RundownViewEventBus.on(RundownViewEvents.GO_TO_PART, this.onGoToPart)
@@ -383,6 +369,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					})
 				}
 			})
+			window.addEventListener('resize', this.onWindowResize)
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps) {
@@ -427,12 +414,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.isLiveSegment = true
 				this.onFollowLiveLine(true, {})
 				this.startLive()
-
-				if (this.state.autoExpandCurrentNextSegment) {
-					this.setState({
-						collapsed: false,
-					})
-				}
 			}
 			// segment is stopping from being live
 			if (this.isLiveSegment === true && isLiveSegment === false) {
@@ -451,16 +432,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, (e) =>
 						MeteorCall.userAction.resyncSegment('', this.props.segmentui!.rundownId, this.props.segmentui!._id)
 					)
-				}
-
-				if (this.state.autoExpandCurrentNextSegment) {
-					this.setState({
-						collapsed: UIStateStorage.getItemBoolean(
-							`rundownView.${this.props.playlist._id}`,
-							`segment.${this.props.segmentId}`,
-							!!Settings.defaultToCollapsedSegments
-						),
-					})
 				}
 			}
 			if (
@@ -488,26 +459,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					})
 				}
 				this.nextPartDisplayStartsAt = nextPartDisplayStartsAt
-			}
-			// segment is becoming next
-			if (this.state.isNextSegment === false && isNextSegment === true) {
-				if (this.state.autoExpandCurrentNextSegment) {
-					this.setState({
-						collapsed: false,
-					})
-				}
-			}
-			// segment is stopping from becoming and it's not live either
-			if (this.state.isNextSegment === true && isNextSegment === false && isLiveSegment === false) {
-				if (this.state.autoExpandCurrentNextSegment) {
-					this.setState({
-						collapsed: UIStateStorage.getItemBoolean(
-							`rundownView.${this.props.playlist._id}`,
-							`segment.${this.props.segmentId}`,
-							!!Settings.defaultToCollapsedSegments
-						),
-					})
-				}
 			}
 
 			// rewind all scrollLeft's to 0 on rundown activate
@@ -539,12 +490,12 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.pastInfinitesComp.invalidate()
 			}
 
-			if (!isLiveSegment && this.props.parts !== prevProps.parts && this.state.showingAllSegment) {
-				this.showEntireSegment()
-			}
-
 			if (!isLiveSegment && this.props.parts !== prevProps.parts) {
 				this.updateMaxTimeScale()
+			}
+
+			if (!isLiveSegment && this.props.parts !== prevProps.parts && this.state.showingAllSegment) {
+				this.showEntireSegment()
 			}
 
 			this.setState({
@@ -571,6 +522,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			RundownViewEventBus.off(RundownViewEvents.REWIND_SEGMENTS, this.onRewindSegment)
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART, this.onGoToPart)
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART_INSTANCE, this.onGoToPartInstance)
+			window.removeEventListener('resize', this.onWindowResize)
 		}
 
 		private partInstanceSub: Meteor.SubscriptionHandle | undefined
@@ -615,6 +567,13 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
+		onWindowResize = _.throttle(() => {
+			if (this.state.showingAllSegment) {
+				this.updateMaxTimeScale()
+				this.showEntireSegment()
+			}
+		}, 250)
+
 		onTimeScaleChange = (timeScaleVal: number) => {
 			if (Number.isFinite(timeScaleVal) && timeScaleVal > 0) {
 				this.setState((state) => ({
@@ -636,14 +595,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				collapsedOutputs
 			)
 			this.setState({ collapsedOutputs })
-		}
-		onCollapseSegmentToggle = () => {
-			UIStateStorage.setItem(
-				`rundownView.${this.props.playlist._id}`,
-				`segment.${this.props.segmentId}`,
-				!this.state.collapsed
-			)
-			this.setState({ collapsed: !this.state.collapsed })
 		}
 		/** The user has scrolled scrollLeft seconds to the left in a child component */
 		onScroll = (scrollLeft: number, event: any) => {
@@ -833,8 +784,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						onItemDoubleClick={this.props.onPieceDoubleClick}
 						onCollapseOutputToggle={this.onCollapseOutputToggle}
 						collapsedOutputs={this.state.collapsedOutputs}
-						onCollapseSegmentToggle={this.onCollapseSegmentToggle}
-						isCollapsed={this.state.collapsed}
 						scrollLeft={this.state.scrollLeft}
 						playlist={this.props.playlist}
 						followLiveSegments={this.props.followLiveSegments}

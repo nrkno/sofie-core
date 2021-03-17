@@ -12,10 +12,10 @@ import { ServerPlayoutAPI } from '../../playout/playout'
 import { regenerateRundown, RundownInput } from '../rundownInput'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
-import { getSegmentId } from '../lib'
-import { wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { removeRundownPlaylistFromCache } from '../../playout/lib'
 import { MethodContext } from '../../../../lib/api/methods'
+import { Studio, Studios } from '../../../../lib/collections/Studios'
+import { removeRundownPlaylistFromDb } from '../../rundownPlaylist'
+import { Random } from 'meteor/random'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -105,7 +105,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: rundownData.externalId,
 			playlistId: rundownPlaylist._id,
 		})
-		expect(typeof rundown.touch).toEqual('function')
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		expect(segments).toHaveLength(2)
@@ -170,7 +169,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			name: rundownData.name,
 			playlistId: rundownPlaylist._id,
 		})
-		expect(typeof rundown.touch).toEqual('function')
 		expect(Rundowns.find().count()).toBe(1)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
@@ -239,7 +237,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
 		})
-		expect(typeof rundown.touch).toEqual('function')
 		expect(Rundowns.find().count()).toBe(1)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
@@ -322,7 +319,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
 		})
-		expect(typeof rundown.touch).toEqual('function')
 		expect(Rundowns.find().count()).toBe(1)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
@@ -389,7 +385,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
 		})
-		expect(typeof rundown.touch).toEqual('function')
 		expect(Rundowns.find().count()).toBe(1)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
@@ -441,7 +436,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
 		})
-		expect(typeof rundown.touch).toEqual('function')
 		expect(Rundowns.find().count()).toBe(1)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
@@ -465,12 +459,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 	testInFiber('dataRundownDelete for a second time', () => {
 		expect(Rundowns.findOne()).toBeFalsy()
-		try {
+		expect(() =>
 			Meteor.call(PeripheralDeviceAPIMethods.dataRundownDelete, device._id, device.token, externalId)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toMatch(/Rundown.*not found/i)
-		}
+		).toThrow(/Rundown.*not found/i)
 	})
 
 	// Note: this test fails, due to a backwards-compatibility hack in #c579c8f0
@@ -495,8 +486,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 	// 	}
 	// })
 
-	// Allow update even though no preceeding create
-	testInFiber('dataRundownUpdate even though not yet created', () => {
+	// Reject update when no preceeding create
+	testInFiber('dataRundownUpdate when not yet created', () => {
 		expect(Rundowns.findOne()).toBeFalsy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -529,18 +520,16 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
-		expect(Rundowns.findOne()).toBeTruthy()
+
+		expect(() =>
+			Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
+		).toThrow(/Rundown.*not found/)
+		expect(Rundowns.findOne()).toBeFalsy()
 	})
 
 	testInFiber('dataRundownUpdate fail when rundown is orphaned', () => {
-		expect(Rundowns.findOne()).toBeTruthy()
-		Rundowns.update({}, { $set: { orphaned: 'deleted' } })
-		const rundown0 = Rundowns.findOne() as Rundown
-		expect(rundown0.orphaned).toEqual('deleted')
-		expect(Segments.find({ rundownId: rundown0._id }).count()).toBe(2)
-
-		const rundownData: IngestRundown = {
+		expect(Rundowns.findOne()).toBeFalsy()
+		const rundownData0: IngestRundown = {
 			externalId: externalId,
 			name: 'MyMockRundown',
 			type: 'mock',
@@ -571,6 +560,35 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
+
+		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData0)
+		expect(Rundowns.findOne()).toBeTruthy()
+		Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+
+		const rundown0 = Rundowns.findOne() as Rundown
+		expect(rundown0.orphaned).toEqual('deleted')
+		expect(Segments.find({ rundownId: rundown0._id }).count()).toBe(2)
+
+		const rundownData: IngestRundown = {
+			externalId: externalId,
+			name: 'MyMockRundown',
+			type: 'mock',
+			segments: [
+				{
+					externalId: 'segment0',
+					name: 'Segment 0',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part1',
+							name: 'Part 1',
+							rank: 0,
+						},
+					],
+				},
+			],
+		}
+
 		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown.orphaned).toEqual('deleted')
@@ -770,19 +788,20 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	testInFiber('dataSegmentUpdate non-existant rundown', () => {
+		const segExternalId2 = Random.id()
 		const ingestSegment: IngestSegment = {
-			externalId: segExternalId,
+			externalId: segExternalId2,
 			name: 'MyMockSegment',
 			rank: 0,
 			parts: [],
 		}
 
-		try {
+		expect(Segments.findOne({ externalId: segExternalId2 })).toBeFalsy()
+
+		expect(() =>
 			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentUpdate, device._id, device.token, 'wibble', ingestSegment)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toMatch(/Rundown.*not found/i)
-		}
+		).toThrow(/Rundown.*not found/)
+		expect(Segments.findOne({ externalId: segExternalId2 })).toBeFalsy()
 	})
 
 	testInFiber('dataSegmentUpdate no change', () => {
@@ -844,7 +863,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rank: 0,
 			parts: [],
 		}
-		try {
+		expect(() =>
 			Meteor.call(
 				PeripheralDeviceAPIMethods.dataSegmentUpdate,
 				device._id,
@@ -852,10 +871,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				externalId,
 				ingestSegment
 			)
-			expect(false).toBe(true)
-		} catch (e) {
-			expect(e.message).toBe(`[401] getSegmentId: segmentExternalId must be set!`)
-		}
+		).toThrow(`[401] getSegmentId: segmentExternalId must be set!`)
 	})
 
 	testInFiber('dataSegmentDelete already orphaned segment', () => {
@@ -874,6 +890,52 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	testInFiber('dataSegmentDelete in deleted rundown', () => {
+		// reset rundown
+		const rundownData: IngestRundown = {
+			externalId: externalId,
+			name: 'MyMockRundown',
+			type: 'mock',
+			segments: [
+				{
+					externalId: 'segment0',
+					name: 'Segment 0',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part1',
+							name: 'Part 1',
+							rank: 0,
+						},
+					],
+				},
+				{
+					externalId: 'segment2',
+					name: 'Segment 2',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part2',
+							name: 'Part 2',
+							rank: 0,
+						},
+					],
+				},
+				{
+					externalId: segExternalId,
+					name: 'Segment 3',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part3',
+							name: 'Part 3',
+							rank: 0,
+						},
+					],
+				},
+			],
+		}
+		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id, externalId: segExternalId }).count()).toBe(1)
 
@@ -889,6 +951,52 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	testInFiber('dataSegmentDelete', () => {
+		// reset rundown
+		const rundownData: IngestRundown = {
+			externalId: externalId,
+			name: 'MyMockRundown',
+			type: 'mock',
+			segments: [
+				{
+					externalId: 'segment0',
+					name: 'Segment 0',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part1',
+							name: 'Part 1',
+							rank: 0,
+						},
+					],
+				},
+				{
+					externalId: 'segment2',
+					name: 'Segment 2',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part2',
+							name: 'Part 2',
+							rank: 0,
+						},
+					],
+				},
+				{
+					externalId: segExternalId,
+					name: 'Segment 3',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part3',
+							name: 'Part 3',
+							rank: 0,
+						},
+					],
+				},
+			],
+		}
+		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
 
@@ -915,9 +1023,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			)
 			fail('expected to throw')
 		} catch (e) {
-			expect(e.message).toBe(
-				`[404] handleRemovedSegment: Segment "${getSegmentId(rundown._id, segExternalId)}" not found`
-			)
+			expect(e.message).toBe(`[404] Rundown "${externalId}" does not have a Segment "${segExternalId}" to remove`)
 		}
 
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
@@ -1163,18 +1269,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Segments.findOne({ externalId: 'segment3' })?._rank).toBe(4)
 		expect(Segments.findOne({ externalId: 'segment4' })?._rank).toBe(5)
 		expect(Segments.findOne({ externalId: 'segment5' })?._rank).toBe(3)
-
-		Rundowns.remove({})
-		expect(Rundowns.findOne()).toBeFalsy()
 	})
 
 	testInFiber('unsyncing of rundown', () => {
 		// Cleanup any rundowns / playlists
+
 		RundownPlaylists.find()
 			.fetch()
-			.forEach((playlist) =>
-				wrapWithCacheForRundownPlaylist(playlist, (cache) => removeRundownPlaylistFromCache(cache, playlist))
-			)
+			.forEach((playlist) => removeRundownPlaylistFromDb(playlist))
 
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -1233,8 +1335,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				if (e.toString().match(/does not support the method "reloadRundown"/)) {
 					// This is expected
 
-					// Force the regeneration from cached data
-					regenerateRundown(rundown._id)
+					Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device2._id, device2.token, rundownData)
 					return
 				}
 				throw e

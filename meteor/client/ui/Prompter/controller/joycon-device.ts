@@ -1,6 +1,7 @@
 import { ControllerAbstract } from './lib'
 import { PrompterConfigMode, PrompterViewInner } from '../PrompterView'
 import Spline from 'cubic-spline'
+import { invert } from 'underscore'
 
 const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
 
@@ -12,6 +13,7 @@ type JoyconMode = 'L' | 'R' | 'LR'
 export class JoyConController extends ControllerAbstract {
 	private prompterView: PrompterViewInner
 
+	private invertJoystick = false // change scrolling direction for joystick
 	private rangeRevMin = -1 // pedal "all back" position, the max-reverse-position
 	private rangeNeutralMin = -0.25 // pedal "back" position where reverse-range transistions to the neutral range
 	private rangeNeutralMax = 0.25 // pedal "front" position where scrolling starts, the 0 speed origin
@@ -35,12 +37,13 @@ export class JoyConController extends ControllerAbstract {
 		this.prompterView = view
 
 		// assigns params from URL or falls back to the default
-		this.speedMap = view.configOptions.speedMap || this.speedMap
-		this.reverseSpeedMap = view.configOptions.reverseSpeedMap || this.reverseSpeedMap
-		this.rangeRevMin = view.configOptions.rangeRevMin || this.rangeRevMin
-		this.rangeNeutralMin = view.configOptions.rangeNeutralMin || this.rangeNeutralMin
-		this.rangeNeutralMax = view.configOptions.rangeNeutralMax || this.rangeNeutralMax
-		this.rangeFwdMax = view.configOptions.rangeFwdMax || this.rangeFwdMax
+		this.invertJoystick = view.configOptions.joycon_invertJoystick || this.invertJoystick
+		this.speedMap = view.configOptions.joycon_speedMap || this.speedMap
+		this.reverseSpeedMap = view.configOptions.joycon_reverseSpeedMap || this.reverseSpeedMap
+		this.rangeRevMin = view.configOptions.joycon_rangeRevMin || this.rangeRevMin
+		this.rangeNeutralMin = view.configOptions.joycon_rangeNeutralMin || this.rangeNeutralMin
+		this.rangeNeutralMax = view.configOptions.joycon_rangeNeutralMax || this.rangeNeutralMax
+		this.rangeFwdMax = view.configOptions.joycon_rangeFwdMax || this.rangeFwdMax
 		this.deadBand = Math.min(Math.abs(this.rangeNeutralMin), Math.abs(this.rangeNeutralMax))
 
 		// validate range settings, they need to be in sequence, or the logic will break
@@ -99,6 +102,9 @@ export class JoyConController extends ControllerAbstract {
 	private onButtonRelease(button: string, mode?: JoyconMode | null) {}
 	private onButtonPressed(button: string, mode?: JoyconMode | null) {
 		if (mode === 'L') {
+			// Button overview JoyCon L single mode
+			// Arrows: Left = '0', Down = '1', Up = '2', Right = '3'
+			// Others: SL = '4', SR = '5', ZL = '6', L = '8', - = '9', Joystick = '10', Snapshot = '16'
 			switch (button) {
 				case '6':
 					// go to air
@@ -122,6 +128,9 @@ export class JoyConController extends ControllerAbstract {
 					break
 			}
 		} else if (mode === 'R') {
+			// Button overview JoyCon R single mode
+			// "Arrows": A = '0', X = '1', B = '2', Y = '3'
+			// Others: SL = '4', SR = '5', ZR = '7', R = '8', + = '9', Joystick = '10', Home = '16'
 			switch (button) {
 				case '7':
 					// go to air
@@ -145,6 +154,11 @@ export class JoyConController extends ControllerAbstract {
 					break
 			}
 		} else if (mode === 'LR') {
+			// Button overview JoyCon L+R paired mode
+			// L JoyCon Arrows: B = '0', A = '1', Y = '2', X = '3'
+			// L JoyCon Others: L = '4', ZL = '6', - = '8', Joystick = '10', Snapshot = '17', SL = '18', SR = '19'
+			// R JoyCon "Arrows": B = '0', A = '1', Y = '2', X = '3'
+			// R JoyCon Others: R = '5', ZR = '7', + = '9', Joystick = '11', Home = '16', SL = '20', SR = '21'
 			switch (button) {
 				case '6':
 				case '7':
@@ -242,7 +256,8 @@ export class JoyConController extends ControllerAbstract {
 				if (this.lastUsedJoyconMode === 'L') {
 					return input.axes[0] * -1 // in this mode, L is "negative"
 				} else if (this.lastUsedJoyconMode === 'R') {
-					return input.axes[0] // in this mode, R is "positive"
+					return input.axes[0] * 1.4 // in this mode, R is "positive"
+					// factor increased by 1.4 to account for the R joystick being less sensitive than L
 				}
 			}
 		} else if (this.lastUsedJoyconMode === 'LR') {
@@ -252,7 +267,8 @@ export class JoyConController extends ControllerAbstract {
 				return input.axes[1] * -1 // in this mode, we are "negative" on both sticks....
 			}
 			if (Math.abs(input.axes[3]) > this.deadBand) {
-				return input.axes[3] * -1 // in this mode, we are "negative" on both sticks....
+				return input.axes[3] * -1.4 // in this mode, we are "negative" on both sticks....
+				// factor increased by 1.4 to account for the R joystick being less sensitive than L
 			}
 		}
 
@@ -271,13 +287,21 @@ export class JoyConController extends ControllerAbstract {
 		if (inputValue >= rangeRevMin && inputValue <= rangeNeutralMin) {
 			// 1) Use the reverse speed spline for the expected speed. The reverse speed is specified using positive values,
 			//    so the result needs to be inversed
-			return Math.round(this.reverseSpeedSpline.at(inputValue)) * -1
+			if (this.invertJoystick) {
+				return Math.round(this.reverseSpeedSpline.at(inputValue))
+			} else {
+				return Math.round(this.reverseSpeedSpline.at(inputValue)) * -1
+			}
 		} else if (inputValue >= rangeNeutralMin && inputValue <= rangeNeutralMax) {
 			// 2) we're in the neutral zone
 			return 0
 		} else if (inputValue >= rangeNeutralMax && inputValue <= rangeFwdMax) {
 			// 3) Use the speed spline to find the expected speed at this point
-			return Math.round(this.speedSpline.at(inputValue))
+			if (this.invertJoystick) {
+				return Math.round(this.speedSpline.at(inputValue)) * -1
+			} else {
+				return Math.round(this.speedSpline.at(inputValue))
+			}
 		} else {
 			// 4) we should never be able to hit this due to validation above
 			console.error(`Illegal input value ${inputValue}`)

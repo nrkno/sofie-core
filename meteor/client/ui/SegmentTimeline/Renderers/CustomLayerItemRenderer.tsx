@@ -131,6 +131,7 @@ export class CustomLayerItemRenderer<
 		if (
 			vtContent &&
 			vtContent.sourceDuration !== undefined &&
+			vtContent.sourceDuration !== 0 &&
 			(this.props.piece.renderedInPoint || 0) + (vtContent.sourceDuration - seek) < (this.props.partDuration || 0)
 		) {
 			return (

@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import {
 	getHash,
 	formatDateAsTimecode,
@@ -8,7 +7,6 @@ import {
 	unprotectObjectArray,
 	protectString,
 	getCurrentTime,
-	waitForPromise,
 	clone,
 	omit,
 	unpartialString,
@@ -23,14 +21,12 @@ import {
 	IStudioUserContext,
 	BlueprintMappings,
 	IBlueprintSegmentDB,
-	IngestPart,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
 	IBlueprintPartDB,
 	IBlueprintRundownDB,
 	IBlueprintAsRunLogEvent,
 	IBlueprintExternalMessageQueueObj,
-	ExtendedIngestRundown,
 	IShowStyleContext,
 	IRundownContext,
 	IEventContext,
@@ -48,12 +44,10 @@ import {
 	resetShowStyleBlueprintConfig,
 } from '../config'
 import { Rundown } from '../../../../lib/collections/Rundowns'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariantId, ShowStyleVariants, ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
+import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { NoteType, INoteBase } from '../../../../lib/api/notes'
-import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
-import { RundownPlaylistId, ABSessionInfo } from '../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, ABSessionInfo, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import {
 	PieceInstances,
 	unprotectPieceInstance,
@@ -61,12 +55,9 @@ import {
 } from '../../../../lib/collections/PieceInstances'
 import { unprotectPartInstance, PartInstance } from '../../../../lib/collections/PartInstances'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
-import { extendIngestRundownCore } from '../../ingest/lib'
-import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { ReadonlyDeep } from 'type-fest'
 import { Random } from 'meteor/random'
 import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
-import { BlueprintId } from '../../../../lib/collections/Blueprints'
 import _ from 'underscore'
 
 export interface ContextInfo {
@@ -124,8 +115,8 @@ export class CommonContext implements ICommonContext {
 /** Studio */
 
 export class StudioContext extends CommonContext implements IStudioContext {
-	protected readonly studio: Studio
-	constructor(contextInfo: ContextInfo, studio: Studio) {
+	public readonly studio: ReadonlyDeep<Studio>
+	constructor(contextInfo: ContextInfo, studio: ReadonlyDeep<Studio>) {
 		super(contextInfo)
 		this.studio = studio
 	}
@@ -134,9 +125,6 @@ export class StudioContext extends CommonContext implements IStudioContext {
 		return this.studio._id
 	}
 
-	getStudio(): Readonly<Studio> {
-		return this.studio
-	}
 	getStudioConfig(): unknown {
 		return getStudioBlueprintConfig(this.studio)
 	}
@@ -157,7 +145,7 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 	public readonly notes: INoteBase[] = []
 	private readonly tempSendNotesIntoBlackHole: boolean
 
-	constructor(contextInfo: UserContextInfo, studio: Studio) {
+	constructor(contextInfo: UserContextInfo, studio: ReadonlyDeep<Studio>) {
 		super(contextInfo, studio)
 		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
 	}
@@ -194,43 +182,21 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 export class ShowStyleContext extends StudioContext implements IShowStyleContext {
 	constructor(
 		contextInfo: ContextInfo,
-		studio: Studio,
-		private readonly cache: ReadOnlyCacheForRundownPlaylist | undefined,
-		readonly _rundown: Rundown | undefined,
-		readonly showStyleBaseId: ShowStyleBaseId,
-		readonly showStyleVariantId: ShowStyleVariantId
+		studio: ReadonlyDeep<Studio>,
+		public readonly showStyleCompound: ReadonlyDeep<ShowStyleCompound>
 	) {
 		super(contextInfo, studio)
 	}
 
-	getShowStyleBase(): ShowStyleBase {
-		if (this.cache && this._rundown) {
-			return waitForPromise(this.cache.activationCache.getShowStyleBase(this._rundown))
-		} else {
-			const showstyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
-			if (!showstyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
-			return showstyleBase
-		}
-	}
-	getShowStyleVariant(): ShowStyleVariant {
-		if (this.cache && this._rundown) {
-			return waitForPromise(this.cache.activationCache.getShowStyleVariant(this._rundown))
-		} else {
-			const showstyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
-			if (!showstyleVariant)
-				throw new Meteor.Error(404, `ShowStyleVariant "${this.showStyleVariantId}" not found!`)
-			return showstyleVariant
-		}
-	}
 	getShowStyleConfig(): unknown {
-		return getShowStyleBlueprintConfig(this.getShowStyleBase(), this.getShowStyleVariant())
+		return getShowStyleBlueprintConfig(this.showStyleCompound)
 	}
 	wipeCache() {
 		super.wipeCache()
-		resetShowStyleBlueprintConfig(this.getShowStyleBase(), this.getShowStyleVariant())
+		resetShowStyleBlueprintConfig(this.showStyleCompound)
 	}
 	getShowStyleConfigRef(configKey: string): string {
-		return ConfigRef.getShowStyleConfigRef(this.showStyleVariantId, configKey)
+		return ConfigRef.getShowStyleConfigRef(this.showStyleCompound.showStyleVariantId, configKey)
 	}
 }
 
@@ -240,13 +206,10 @@ export class ShowStyleUserContext extends ShowStyleContext implements IUserNotes
 
 	constructor(
 		contextInfo: UserContextInfo,
-		studio: Studio,
-		cache: CacheForRundownPlaylist | undefined,
-		_rundown: Rundown | undefined,
-		showStyleBaseId: ShowStyleBaseId,
-		showStyleVariantId: ShowStyleVariantId
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>
 	) {
-		super(contextInfo, studio, cache, _rundown, showStyleBaseId, showStyleVariantId)
+		super(contextInfo, studio, showStyleCompound)
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }): void {
@@ -282,18 +245,16 @@ export class ShowStyleUserContext extends ShowStyleContext implements IUserNotes
 export class RundownContext extends ShowStyleContext implements IRundownContext {
 	readonly rundownId: string
 	readonly rundown: Readonly<IBlueprintRundownDB>
-	readonly _rundown: Rundown
+	readonly _rundown: ReadonlyDeep<Rundown>
 	readonly playlistId: RundownPlaylistId
 
-	constructor(contextInfo: ContextInfo, rundown: Rundown, cache: ReadOnlyCacheForRundownPlaylist) {
-		super(
-			contextInfo,
-			cache.activationCache.getStudio(),
-			cache,
-			rundown,
-			rundown.showStyleBaseId,
-			rundown.showStyleVariantId
-		)
+	constructor(
+		contextInfo: ContextInfo,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		rundown: ReadonlyDeep<Rundown>
+	) {
+		super(contextInfo, studio, showStyleCompound)
 
 		this.rundownId = unprotectString(rundown._id)
 		this.rundown = unprotectObject(rundown)
@@ -303,14 +264,19 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 }
 
 export class RundownEventContext extends RundownContext implements IEventContext {
-	constructor(blueprintId: BlueprintId, rundown: Rundown, cache: CacheForRundownPlaylist) {
+	constructor(
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		rundown: ReadonlyDeep<Rundown>
+	) {
 		super(
 			{
 				name: rundown.name,
-				identifier: `rundownId=${rundown._id},blueprintId=${blueprintId}`,
+				identifier: `rundownId=${rundown._id},blueprintId=${showStyleCompound.blueprintId}`,
 			},
-			rundown,
-			cache
+			studio,
+			showStyleCompound,
+			rundown
 		)
 	}
 
@@ -326,8 +292,13 @@ export interface RawPartNote extends INoteBase {
 export class SegmentUserContext extends RundownContext implements ISegmentUserContext {
 	public readonly notes: RawPartNote[] = []
 
-	constructor(contextInfo: ContextInfo, rundown: Rundown, cache: CacheForRundownPlaylist) {
-		super(contextInfo, rundown, cache)
+	constructor(
+		contextInfo: ContextInfo,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		rundown: ReadonlyDeep<Rundown>
+	) {
+		super(contextInfo, studio, showStyleCompound, rundown)
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
@@ -367,18 +338,19 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 
 	constructor(
 		eventName: string,
-		blueprintId: BlueprintId,
-		rundown: Rundown,
-		cache: CacheForRundownPlaylist,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		rundown: ReadonlyDeep<Rundown>,
 		partInstance: PartInstance
 	) {
 		super(
 			{
 				name: `Event: ${eventName}`,
-				identifier: `rundownId=${rundown._id},blueprintId=${blueprintId}`,
+				identifier: `rundownId=${rundown._id},blueprintId=${showStyleCompound.blueprintId}`,
 			},
-			rundown,
-			cache
+			studio,
+			showStyleCompound,
+			rundown
 		)
 
 		this.part = unprotectPartInstance(partInstance)
@@ -406,8 +378,10 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 	}
 
 	constructor(
-		rundown: Rundown,
-		cache: CacheForRundownPlaylist,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		playlist: ReadonlyDeep<RundownPlaylist>,
+		rundown: ReadonlyDeep<Rundown>,
 		previousPartInstance: PartInstance | undefined,
 		currentPartInstance: PartInstance | undefined,
 		nextPartInstance: PartInstance | undefined
@@ -417,8 +391,9 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 				name: rundown.name,
 				identifier: `rundownId=${rundown._id},previousPartInstance=${previousPartInstance?._id},currentPartInstance=${currentPartInstance?._id},nextPartInstance=${nextPartInstance?._id}`,
 			},
-			rundown,
-			cache
+			studio,
+			showStyleCompound,
+			rundown
 		)
 
 		this.currentPartInstance = currentPartInstance ? unprotectPartInstance(currentPartInstance) : undefined
@@ -426,8 +401,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 
 		this.partInstances = _.compact([previousPartInstance, currentPartInstance, nextPartInstance])
 
-		this._knownSessions =
-			clone(cache.RundownPlaylists.findOne(cache.containsDataFromPlaylist)?.trackedAbSessions) ?? []
+		this._knownSessions = clone<ABSessionInfo[]>(playlist.trackedAbSessions ?? [])
 	}
 
 	getCurrentTime(): number {
@@ -577,11 +551,12 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 
 	constructor(
 		contextInfo: ContextInfo,
-		rundown: Rundown,
-		cache: ReadOnlyCacheForRundownPlaylist,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		rundown: ReadonlyDeep<Rundown>,
 		asRunEvent: AsRunLogEvent
 	) {
-		super(contextInfo, rundown, cache)
+		super(contextInfo, studio, showStyleCompound, rundown)
 		this.asRunEvent = unprotectObject(asRunEvent)
 	}
 

@@ -11,6 +11,8 @@ import '../api'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
+import { RundownBaselineAdLibPieces } from '../../../../lib/collections/RundownBaselineAdLibPieces'
+import { AdLibPieces } from '../../../../lib/collections/AdLibPieces'
 
 namespace PlayoutAPI {
 	// Using our own method definition, to catch external API changes
@@ -140,7 +142,9 @@ describe('Playout API', () => {
 		{
 			// Reset rundown:
 			Meteor.call(PlayoutAPI.methods.rundownResetRundown, playlistId0)
-			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			const activationId = getPlaylist0().activationId
+			expect(activationId).toBeTruthy()
+			const instances = PartInstances.find({ rundownId: rundownId0, playlistActivationId: activationId }).fetch()
 			expect(instances).toHaveLength(1)
 			expect(instances[0].part._id).toEqual(parts[0]._id)
 			expect(getPlaylist0()).toMatchObject({
@@ -152,7 +156,9 @@ describe('Playout API', () => {
 		{
 			// Take the first Part:
 			Meteor.call(PlayoutAPI.methods.rundownTake, playlistId0)
-			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			const activationId = getPlaylist0().activationId
+			expect(activationId).toBeTruthy()
+			const instances = PartInstances.find({ rundownId: rundownId0, playlistActivationId: activationId }).fetch()
 			expect(instances).toHaveLength(2)
 			expect(instances[0].part._id).toEqual(parts[0]._id)
 			expect(instances[1].part._id).toEqual(parts[1]._id)
@@ -165,7 +171,9 @@ describe('Playout API', () => {
 		{
 			// Take the second Part:
 			Meteor.call(PlayoutAPI.methods.rundownTake, playlistId0)
-			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			const activationId = getPlaylist0().activationId
+			expect(activationId).toBeTruthy()
+			const instances = PartInstances.find({ rundownId: rundownId0, playlistActivationId: activationId }).fetch()
 			expect(instances).toHaveLength(3)
 			expect(instances[1].part._id).toEqual(parts[1]._id)
 			expect(instances[2].part._id).toEqual(parts[2]._id)
@@ -178,7 +186,9 @@ describe('Playout API', () => {
 		{
 			// Reset rundown:
 			Meteor.call(PlayoutAPI.methods.rundownResetRundown, playlistId0)
-			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			const activationId = getPlaylist0().activationId
+			expect(activationId).toBeTruthy()
+			const instances = PartInstances.find({ rundownId: rundownId0, playlistActivationId: activationId }).fetch()
 			expect(instances).toHaveLength(1)
 			expect(instances[0].part._id).toEqual(parts[0]._id)
 			expect(getPlaylist0()).toMatchObject({
@@ -190,7 +200,9 @@ describe('Playout API', () => {
 		{
 			// Set Part as next:
 			Meteor.call(PlayoutAPI.methods.rundownSetNext, playlistId0, parts[parts.length - 2]._id)
-			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			const activationId = getPlaylist0().activationId
+			expect(activationId).toBeTruthy()
+			const instances = PartInstances.find({ rundownId: rundownId0, playlistActivationId: activationId }).fetch()
 			expect(instances).toHaveLength(1)
 			expect(instances[0].part._id).toEqual(parts[parts.length - 2]._id)
 			expect(getPlaylist0()).toMatchObject({
@@ -202,7 +214,9 @@ describe('Playout API', () => {
 		{
 			// Take the Nexted Part:
 			Meteor.call(PlayoutAPI.methods.rundownTake, playlistId0)
-			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			const activationId = getPlaylist0().activationId
+			expect(activationId).toBeTruthy()
+			const instances = PartInstances.find({ rundownId: rundownId0, playlistActivationId: activationId }).fetch()
 			expect(instances).toHaveLength(2)
 			expect(instances[0].part._id).toEqual(parts[parts.length - 2]._id)
 			expect(instances[1].part._id).toEqual(parts[parts.length - 1]._id)
@@ -215,7 +229,9 @@ describe('Playout API', () => {
 		{
 			// Take the last Part:
 			Meteor.call(PlayoutAPI.methods.rundownTake, playlistId0)
-			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			const activationId = getPlaylist0().activationId
+			expect(activationId).toBeTruthy()
+			const instances = PartInstances.find({ rundownId: rundownId0, playlistActivationId: activationId }).fetch()
 			expect(instances).toHaveLength(2)
 			expect(instances[1].part._id).toEqual(parts[parts.length - 1]._id)
 			expect(getPlaylist0()).toMatchObject({
@@ -227,7 +243,9 @@ describe('Playout API', () => {
 		{
 			// Move the next-point backwards:
 			Meteor.call(PlayoutAPI.methods.rundownMoveNext, playlistId0, -1, 0)
-			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			const activationId = getPlaylist0().activationId
+			expect(activationId).toBeTruthy()
+			const instances = PartInstances.find({ rundownId: rundownId0, playlistActivationId: activationId }).fetch()
 			expect(instances).toHaveLength(3)
 			expect(instances[1].part._id).toEqual(parts[parts.length - 1]._id)
 			expect(instances[2].part._id).toEqual(parts[parts.length - 2]._id)
@@ -239,7 +257,9 @@ describe('Playout API', () => {
 		{
 			// Move the next-point backwards:
 			Meteor.call(PlayoutAPI.methods.rundownMoveNext, playlistId0, -1, 0)
-			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			const activationId = getPlaylist0().activationId
+			expect(activationId).toBeTruthy()
+			const instances = PartInstances.find({ rundownId: rundownId0, playlistActivationId: activationId }).fetch()
 			expect(instances).toHaveLength(3)
 			expect(instances[1].part._id).toEqual(parts[parts.length - 1]._id)
 			expect(instances[2].part._id).toEqual(parts[parts.length - 3]._id)
@@ -252,7 +272,9 @@ describe('Playout API', () => {
 		{
 			// Take the nexted Part:
 			Meteor.call(PlayoutAPI.methods.rundownTake, playlistId0)
-			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			const activationId = getPlaylist0().activationId
+			expect(activationId).toBeTruthy()
+			const instances = PartInstances.find({ rundownId: rundownId0, playlistActivationId: activationId }).fetch()
 			expect(instances).toHaveLength(4)
 			expect(instances[2].part._id).toEqual(parts[parts.length - 3]._id)
 			expect(instances[3].part._id).toEqual(parts[parts.length - 2]._id)
@@ -265,8 +287,6 @@ describe('Playout API', () => {
 		{
 			// Deactivate rundown:
 			Meteor.call(PlayoutAPI.methods.rundownDeactivate, playlistId0)
-			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
-			expect(instances).toHaveLength(3)
 			expect(getPlaylist0()).toMatchObject({
 				activationId: undefined,
 				currentPartInstanceId: null,
@@ -291,10 +311,17 @@ describe('Playout API', () => {
 		expect(getPlaylist0()).toBeTruthy()
 
 		const parts = getRundown0().getParts()
-		const globalAdLibs = getRundown0().getGlobalAdLibPieces()
+		const globalAdLibs = RundownBaselineAdLibPieces.find(
+			{
+				rundownId: getRundown0()._id,
+			},
+			{
+				sort: { _rank: 1 },
+			}
+		).fetch()
 		expect(globalAdLibs).toHaveLength(2)
 
-		const adLibs = parts[0].getAdLibPieces()
+		const adLibs = AdLibPieces.find({ partId: parts[0]._id }).fetch()
 		expect(adLibs).toHaveLength(1)
 
 		expect(() => {

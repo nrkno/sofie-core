@@ -48,7 +48,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import deepExtend from 'deep-extend'
 import { logger } from '../logging'
-import { generateExpectedPackagesForPartInstance } from '../api/expectedPackages'
+import { generateExpectedPackagesForPartInstance } from '../api/ingest/expectedPackages'
 import { PartInstance } from '../../lib/collections/PartInstances'
 
 function checkAccess(cred: Credentials | ResolvedCredentials, selector) {

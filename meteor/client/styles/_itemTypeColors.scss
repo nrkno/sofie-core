@@ -3,14 +3,15 @@ $segment-timeline-background-color: #1f1f1f;
 $segment-layer-background-unknown: #4b4b4b;
 $segment-layer-background-camera: #18791c;
 $segment-layer-background-camera--second: darken($segment-layer-background-camera, 10%);
-$segment-layer-background-lower-third: #ff6f00;
+$segment-layer-background-lower-third: #ed7200;
 $segment-layer-background-lower-third--second: darken($segment-layer-background-lower-third, 10%);
-$segment-layer-background-graphics: #ef6800;
+$segment-layer-background-graphics: #dc5c00;
 $segment-layer-background-graphics--second: darken($segment-layer-background-graphics, 10%);
-$segment-layer-background-live-speak: #1e6820;
+$segment-layer-background-live-speak: #0085ff;
+$segment-layer-background-live-speak--second: darken($segment-layer-background-live-speak, 10%);
 $segment-layer-background-remote: #e80064;
 $segment-layer-background-remote--second: darken($segment-layer-background-remote, 10%);
-$segment-layer-background-vt: #1769ff;
+$segment-layer-background-vt: #0a20ed;
 $segment-layer-background-vt--second: darken($segment-layer-background-vt, 10%);
 $segment-layer-background-local: #8d1010;
 $segment-layer-background-local--second: darken($segment-layer-background-local, 10%);
@@ -77,9 +78,20 @@ $segment-layer-background-guest: #008a92;
 
 	&.live-speak {
 		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-vt), -1px 1px 1px var(--segment-layer-background-vt),
-				-1px -1px 1px var(--segment-layer-background-vt), 1px 1px 1px var(--segment-layer-background-vt),
+			text-shadow: 1px -1px 1px var(--segment-layer-background-live-speak),
+				-1px 1px 1px var(--segment-layer-background-live-speak),
+				-1px -1px 1px var(--segment-layer-background-live-speak), 1px 1px 1px var(--segment-layer-background-live-speak),
 				1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
+		}
+
+		&.second {
+			#{$selectors} {
+				text-shadow: 1px -1px 1px var(--segment-layer-background-live-speak--second),
+					-1px 1px 1px var(--segment-layer-background-live-speak--second),
+					-1px -1px 1px var(--segment-layer-background-live-speak--second),
+					1px 1px 1px var(--segment-layer-background-live-speak--second), 1px 1px 3px rgba(0, 0, 0, 1),
+					1px 1px 8px rgba(0, 0, 0, 1);
+			}
 		}
 	}
 
@@ -180,11 +192,11 @@ $segment-layer-background-guest: #008a92;
 	}
 
 	&.live-speak {
-		background: linear-gradient(
-			to bottom,
-			var(--segment-layer-background-vt) 50%,
-			var(--segment-layer-background-live-speak) 50.0001%
-		);
+		background: var(--segment-layer-background-live-speak);
+
+		&.second {
+			background: var(--segment-layer-background-live-speak--second);
+		}
 	}
 
 	&.vt {

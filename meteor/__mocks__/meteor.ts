@@ -288,6 +288,11 @@ export namespace MeteorMock {
 		p: Promise<T>,
 		cb: (err: any | null, result?: any) => T
 	) {
+		if (cb === undefined && typeof p === 'function') {
+			cb = p as any
+			p = undefined as any
+		}
+
 		Promise.resolve(p)
 			.then((result) => {
 				cb(null, result)
@@ -312,6 +317,11 @@ export const waitForPromise: <T>(p: Promise<T>) => T = MeteorMock.wrapAsync(func
 	cb: (err: any | null, result?: any) => T
 ) {
 	if (MeteorMock.isClient) throw new MeteorMock.Error(500, `waitForPromise can't be used client-side`)
+	if (cb === undefined && typeof p === 'function') {
+		cb = p as any
+		p = undefined as any
+	}
+
 	Promise.resolve(p)
 		.then((result) => {
 			cb(null, result)

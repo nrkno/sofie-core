@@ -2,7 +2,7 @@ import { Rundowns } from '../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
-import { getCurrentTime } from '../lib/lib'
+import { getCurrentTime, makePromise, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
@@ -11,6 +11,8 @@ import { AsRunLog } from '../lib/collections/AsRunLog'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
 import { CASPARCG_RESTART_TIME } from '../lib/constants'
+import { Studios } from '../lib/collections/Studios'
+import { removeEmptyPlaylists } from './api/rundownPlaylist'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
 
 let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
@@ -154,4 +156,18 @@ Meteor.startup(() => {
 	}
 	Meteor.setInterval(nightlyCronjob, 5 * 60 * 1000) // check every 5 minutes
 	nightlyCronjob()
+
+	function cleanupPlaylists() {
+		// Ensure there are no empty playlists on an interval
+		const studios = Studios.find().fetch()
+		waitForPromiseAll(
+			studios.map((studio) =>
+				makePromise(() => {
+					removeEmptyPlaylists(studio._id)
+				})
+			)
+		)
+	}
+	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
+	cleanupPlaylists()
 })

@@ -673,13 +673,14 @@ export function setupRundownWithAutoplayPart0(
 	rundownId: RundownId
 ): RundownId {
 	const rundown: DBRundown = defaultRundown(
-		rundownId,
+		unprotectString(rundownId),
 		env.studio._id,
 		env.ingestDevice._id,
 		playlistId,
 		env.showStyleBase._id,
 		env.showStyleVariant._id
 	)
+	rundown._id = rundownId
 	Rundowns.insert(rundown)
 
 	const segment0: DBSegment = {

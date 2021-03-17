@@ -1,10 +1,7 @@
-import { SegmentNote } from '../../../../lib/api/notes'
 import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { Part } from '../../../../lib/collections/Parts'
-import { RundownId } from '../../../../lib/collections/Rundowns'
 import { DBSegment, SegmentId } from '../../../../lib/collections/Segments'
 import { protectString } from '../../../../lib/lib'
-import { defaultSegment } from '../../../../__mocks__/defaultCollectionObjects'
 import { PartsAndSegments, selectNextPart } from '../lib'
 
 class MockPart {
@@ -15,8 +12,8 @@ class MockPart {
 		public playable: boolean = true
 	) {}
 
-	isPlayable() {
-		return this.playable
+	get invalid(): boolean {
+		return !this.playable
 	}
 
 	toPartInstance() {
@@ -178,7 +175,7 @@ describe('selectNextPart', () => {
 			// no parts after
 			defaultParts = defaultParts.filter((p) => p.segmentId !== segment3)
 			const nextPart = selectNextPart(defaultPlaylist, previousPartInstance, getSegmentsAndParts())
-			expect(nextPart).toEqual(undefined)
+			expect(nextPart).toEqual(null)
 		}
 
 		{

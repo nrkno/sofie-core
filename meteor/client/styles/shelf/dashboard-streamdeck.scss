@@ -118,6 +118,9 @@
 						> .dashboard-panel__panel__button__label {
 							top: 4px;
 						}
+						&.selected {
+							box-shadow: none !important;
+						}
 					}
 				}
 			}
@@ -130,6 +133,10 @@
 	}
 
 	#render-target .container-fluid .notification-pop-ups {
+		display: none;
+	}
+
+	body > div > div[to='viewport'] {
 		display: none;
 	}
 }

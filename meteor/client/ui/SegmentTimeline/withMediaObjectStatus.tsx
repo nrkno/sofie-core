@@ -150,8 +150,6 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 								}
 							}
 						}
-					} else {
-						console.error(`Piece has no sourceLayer:`, piece)
 					}
 
 					this.forceUpdate()

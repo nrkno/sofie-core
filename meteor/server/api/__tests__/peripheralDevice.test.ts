@@ -71,7 +71,6 @@ describe('test peripheralDevice general API methods', () => {
 			externalId: 'mock_rpl',
 			name: 'Mock',
 			studioId: env.studio._id,
-			peripheralDeviceId: env.ingestDevice._id,
 			created: 0,
 			modified: 0,
 			currentPartInstanceId: null,

@@ -22,9 +22,6 @@ export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB
 	/** The rundown this segment belongs to */
 	rundownId: RundownId
 
-	status?: string
-	expanded?: boolean
-
 	/** Is the segment in an unsynced state? */
 	orphaned?: 'deleted'
 
@@ -39,8 +36,6 @@ export class Segment implements DBSegment {
 	public rundownId: RundownId
 	public name: string
 	public metaData?: { [key: string]: any }
-	public status?: string
-	public expanded?: boolean
 	public notes?: Array<SegmentNote>
 	public isHidden?: boolean
 	public orphaned?: 'deleted'
