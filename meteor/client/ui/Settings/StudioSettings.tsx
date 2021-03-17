@@ -631,7 +631,7 @@ const StudioMappings = withTranslation()(
 								{activeRoutes.existing[layerId] !== undefined ? (
 									<Tooltip
 										overlay={t('This layer is now rerouted by an active Route Set: {{routeSets}}', {
-											routeSets: activeRoutes.existing[layerId].join(', '),
+											routeSets: activeRoutes.existing[layerId].map((s) => s.outputMappedLayer).join(', '),
 											count: activeRoutes.existing[layerId].length,
 										})}
 										placement="right">
