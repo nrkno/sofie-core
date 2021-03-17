@@ -110,6 +110,12 @@ export enum StudioRouteBehavior {
 	TOGGLE = 1,
 	ACTIVATE_ONLY = 2,
 }
+
+export enum StudioRouteType {
+	REROUTE = 0,
+	REMAP = 1,
+}
+
 export interface RouteMapping extends ResultingMappingRoute {
 	/** Which original layer to route. If false, a "new" layer will be inserted during routing */
 	mappedLayer: string | undefined
@@ -126,6 +132,7 @@ export interface ResultingMappingRoute {
 	outputMappedLayer: string
 	deviceType?: TSR.DeviceType
 	remapping?: Partial<BlueprintMapping>
+	routeType: StudioRouteType
 }
 
 export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
@@ -168,6 +175,7 @@ export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
 
 	return routes
 }
+
 export function getRoutedMappings(inputMappings: MappingsExt, mappingRoutes: ResultingMappingRoutes): MappingsExt {
 	const outputMappings: MappingsExt = {}
 	for (let inputLayer of Object.keys(inputMappings)) {
@@ -176,10 +184,21 @@ export function getRoutedMappings(inputMappings: MappingsExt, mappingRoutes: Res
 		const routes = mappingRoutes.existing[inputLayer]
 		if (routes) {
 			for (let route of routes) {
-				const routedMapping: MappingExt = {
-					...inputMapping,
-					...(route.remapping || {}),
-				}
+				const routedMapping: MappingExt =
+					route.routeType === StudioRouteType.REMAP &&
+					route.deviceType &&
+					route.remapping &&
+					route.remapping.deviceId
+						? {
+								lookahead: route.remapping.lookahead ?? LookaheadMode.NONE,
+								device: route.deviceType,
+								deviceId: route.remapping.deviceId,
+								...route.remapping,
+						  }
+						: {
+								...inputMapping,
+								...(route.remapping || {}),
+						  }
 				outputMappings[route.outputMappedLayer] = routedMapping
 			}
 		} else {
