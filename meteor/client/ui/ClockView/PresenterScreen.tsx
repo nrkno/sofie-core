@@ -142,7 +142,8 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 		const partInstance = currentPartInstance || nextPartInstance
 		if (partInstance) {
-			const infinitesEndingPieces = PieceInstances.find({
+			// This is to register a reactive dependency on Rundown-spanning PieceInstances, that we may miss otherwise.
+			PieceInstances.find({
 				rundownId: {
 					$in: rundownIds,
 				},
