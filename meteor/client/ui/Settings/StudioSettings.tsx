@@ -739,6 +739,19 @@ const StudioMappings = withTranslation()(
 										</div>
 										<div className="mod mvs mhs">
 											<label className="field">
+												{t('Layer Name')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'mappings.' + layerId + '.layerName'}
+													obj={this.props.studio}
+													type="text"
+													collection={Studios}
+													className="input text-input input-l"></EditAttribute>
+												<span className="text-s dimmed">{t('Human-readable name of the layer')}</span>
+											</label>
+										</div>
+										<div className="mod mvs mhs">
+											<label className="field">
 												{t('Device Type')}
 												<EditAttribute
 													modifiedClassName="bghl"
