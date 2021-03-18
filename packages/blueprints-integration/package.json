@@ -59,7 +59,7 @@
 	},
 	"dependencies": {
 		"moment": "2.29.1",
-		"timeline-state-resolver-types": "git+https://github.com/olzzon/tv-automation-state-timeline-resolver#dist_types20210204_1",
+		"timeline-state-resolver-types": "git+https://github.com/olzzon/tv-automation-state-timeline-resolver#dist_types20210318_1",
 		"tslib": "^2.0.3",
 		"underscore": "1.11.0"
 	},
