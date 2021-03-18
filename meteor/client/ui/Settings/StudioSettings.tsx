@@ -644,13 +644,7 @@ const StudioMappings = withTranslation()(
 								hl: this.isItemEdited(layerId),
 							})}>
 							<th className="settings-studio-device__name c3 notifications-s notifications-text">
-								{mapping.layerName ? (
-									<React.Fragment>
-										{mapping.layerName}&nbsp;({layerId})
-									</React.Fragment>
-								) : (
-									layerId
-								)}
+								{mapping.layerName ?? layerId}
 								{activeRoutes.existing[layerId] !== undefined ? (
 									<Tooltip
 										overlay={t('This layer is now rerouted by an active Route Set: {{routeSets}}', {
