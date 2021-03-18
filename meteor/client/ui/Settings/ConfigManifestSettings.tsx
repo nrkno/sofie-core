@@ -48,7 +48,7 @@ import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notific
 function filterSourceLayers(
 	select: ConfigManifestEntrySourceLayers<true | false>,
 	layers: Array<{ name: string; value: string; type: SourceLayerType }>
-) {
+): Array<{ name: string; value: string; type: SourceLayerType }> {
 	if (select.filters && select.filters.sourceLayerTypes) {
 		const sourceLayerTypes = select.filters.sourceLayerTypes
 		return _.filter(layers, (layer) => {
@@ -62,21 +62,19 @@ function filterSourceLayers(
 function filterLayerMappings(
 	select: ConfigManifestEntryLayerMappings<true | false>,
 	mappings: { [key: string]: MappingsExt }
-) {
-	if (select.filters && select.filters.deviceTypes) {
-		const deviceTypes = select.filters.deviceTypes
-		return _.mapObject(mappings, (studioMappings) => {
-			return Object.keys(
-				_.pick(studioMappings, (mapping) => {
-					return deviceTypes.includes(mapping.device)
-				})
-			)
-		})
-	} else {
-		return _.mapObject(mappings, (studioMappings) => {
-			return Object.keys(studioMappings)
-		})
+): Array<{ name: string; value: string }> {
+	const deviceTypes = select.filters?.deviceTypes
+	const result: Array<{ name: string; value: string }> = []
+
+	for (const studioMappings of Object.values(mappings)) {
+		for (const [layerId, mapping] of Object.entries(studioMappings)) {
+			if (!deviceTypes || deviceTypes.includes(mapping.device)) {
+				result.push({ name: mapping.layerName ?? layerId, value: layerId })
+			}
+		}
 	}
+
+	return result
 }
 
 function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, DocClass extends DBInterface>(
