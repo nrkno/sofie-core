@@ -123,7 +123,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 		})
 	let segments: Array<SegmentUi> = []
 	let showStyleBaseIds: ShowStyleBaseId[] = []
-	let rundowns: { [key: string]: Rundown } = {}
+	let rundowns: Rundown[] = []
 	let rundownIds: RundownId[] = []
 
 	let currentSegment: SegmentUi | undefined = undefined
@@ -135,10 +135,10 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 	let nextShowStyleBaseId: ShowStyleBaseId | undefined = undefined
 
 	if (playlist) {
-		rundowns = playlist.getRundownsMap()
+		rundowns = playlist.getRundowns()
 		const orderedSegmentsAndParts = playlist.getSegmentsAndPartsSync()
-		rundownIds = protectStringArray(Object.keys(rundowns))
-		showStyleBaseIds = Object.values(rundowns).map((rundown) => rundown.showStyleBaseId)
+		rundownIds = rundowns.map((rundown) => rundown._id)
+		showStyleBaseIds = rundowns.map((rundown) => rundown.showStyleBaseId)
 		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 		const partInstance = currentPartInstance || nextPartInstance
 		if (partInstance) {
