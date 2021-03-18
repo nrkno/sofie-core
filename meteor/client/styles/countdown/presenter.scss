@@ -129,6 +129,7 @@
 		color: #f8e71c;
 		font-weight: bold;
 		margin-top: -2vh;
+		white-space: nowrap;
 
 		&.over {
 			color: $general-late-color;
