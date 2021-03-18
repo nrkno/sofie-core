@@ -54,6 +54,7 @@ import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { Random } from 'meteor/random'
 import { asyncCollectionRemove, asyncCollectionFindOne } from '../lib/database'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import { checkAccessToPlaylist } from './lib'
 
 export function removeEmptyPlaylists(studioId: StudioId) {
 	runStudioOperationWithCache('removeEmptyPlaylists', studioId, StudioLockFunctionPriority.MISC, async (cache) => {
@@ -71,8 +72,8 @@ export function removeEmptyPlaylists(studioId: StudioId) {
 						playlist,
 						PlayoutLockFunctionPriority.MISC,
 						async () => {
-							const playlists = Rundowns.find({ playlistId: playlist._id }).count()
-							if (playlists === 0) {
+							const rundowns = Rundowns.find({ playlistId: playlist._id }).count()
+							if (rundowns === 0) {
 								await removeRundownPlaylistFromDb(playlist)
 							}
 						}
@@ -445,8 +446,10 @@ export function moveRundownIntoPlaylist(
 }
 /** Restore the order of rundowns in a playlist, giving control over the ordering back to the NRCS */
 export function restoreRundownsInPlaylistToDefaultOrder(context: MethodContext, playlistId: RundownPlaylistId) {
+	const access = checkAccessToPlaylist(context, playlistId)
+
 	runPlayoutOperationWithLock(
-		context,
+		access,
 		'restoreRundownsInPlaylistToDefaultOrder',
 		playlistId,
 		PlayoutLockFunctionPriority.MISC,

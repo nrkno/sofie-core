@@ -43,7 +43,6 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { getPieceInstancesForPart } from './infinites'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from './lockFunction'
-import { MethodContext } from '../../../lib/api/methods'
 import {
 	CacheForPlayout,
 	getOrderedSegmentsAndPartsFromPlayoutCache,
@@ -52,16 +51,17 @@ import {
 } from './cache'
 import { ReadonlyDeep } from 'type-fest'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
+import { VerifiedRundownPlaylistContentAccess } from '../lib'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
 	) {
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'pieceTakeNow',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -170,14 +170,14 @@ export namespace ServerPlayoutAdLibAPI {
 		)
 	}
 	export function segmentAdLibPieceStart(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adLibPieceId: PieceId,
 		queue: boolean
 	) {
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'segmentAdLibPieceStart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -213,14 +213,14 @@ export namespace ServerPlayoutAdLibAPI {
 		)
 	}
 	export function rundownBaselineAdLibPieceStart(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		baselineAdLibPieceId: PieceId,
 		queue: boolean
 	) {
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'rundownBaselineAdLibPieceStart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -318,12 +318,12 @@ export namespace ServerPlayoutAdLibAPI {
 	}
 
 	export function sourceLayerStickyPieceStart(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		sourceLayerId: string
 	) {
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'sourceLayerStickyPieceStart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -595,7 +595,7 @@ export namespace ServerPlayoutAdLibAPI {
 		return stoppedInstances
 	}
 	export function startBucketAdlibPiece(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		bucketAdlibId: PieceId,
@@ -605,7 +605,7 @@ export namespace ServerPlayoutAdLibAPI {
 		if (!bucketAdlib) throw new Meteor.Error(404, `Bucket Adlib "${bucketAdlibId}" not found!`)
 
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'startBucketAdlibPiece',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,

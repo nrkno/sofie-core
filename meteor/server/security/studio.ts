@@ -3,7 +3,6 @@ import { check } from '../../lib/check'
 import { allowAccessToStudio } from './lib/security'
 import { StudioId, Studios, Studio } from '../../lib/collections/Studios'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
-import * as _ from 'underscore'
 import { logNotAllowed } from './lib/lib'
 import {
 	ExternalMessageQueue,
@@ -37,6 +36,15 @@ export namespace StudioReadAccess {
 		return true
 	}
 }
+
+export interface StudioContentAccess {
+	userId: UserId | null
+	organizationId: OrganizationId | null
+	studioId: StudioId | null
+	studio: Studio | null
+	cred: ResolvedCredentials | Credentials
+}
+
 export namespace StudioContentWriteAccess {
 	// These functions throws if access is not allowed.
 
@@ -79,16 +87,7 @@ export namespace StudioContentWriteAccess {
 		return { ...anyContent(cred0, existingMessage.studioId), message: existingMessage }
 	}
 	/** Return credentials if writing is allowed, throw otherwise */
-	export function anyContent(
-		cred0: Credentials,
-		studioId: StudioId
-	): {
-		userId: UserId | null
-		organizationId: OrganizationId | null
-		studioId: StudioId | null
-		studio: Studio | null
-		cred: ResolvedCredentials | Credentials
-	} {
+	export function anyContent(cred0: Credentials, studioId: StudioId): StudioContentAccess {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) {
 			return {

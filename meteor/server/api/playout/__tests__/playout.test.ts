@@ -1,6 +1,6 @@
 import _ from 'underscore'
 import '../../../../__mocks__/_extendJest'
-import { runTimersUntilNow, testInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { fixSnapshot } from '../../../../__mocks__/helpers/snapshot'
 import { mockupCollection, resetMockupCollection } from '../../../../__mocks__/helpers/lib'
 import {
@@ -20,19 +20,18 @@ import { PeripheralDeviceCommands } from '../../../../lib/collections/Peripheral
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { AdLibPieces } from '../../../../lib/collections/AdLibPieces'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import { MethodContext } from '../../../../lib/api/methods'
 import { PartInstances, PartInstanceId } from '../../../../lib/collections/PartInstances'
 import { IngestActions } from '../../ingest/actions'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
-import { protectString, waitForPromise } from '../../../../lib/lib'
+import { protectString } from '../../../../lib/lib'
 import { AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { IBlueprintAsRunLogEventContent } from '@sofie-automation/blueprints-integration'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import * as lib from '../../../../lib/lib'
 import { ClientAPI } from '../../../../lib/api/client'
 import { ServerRundownAPI } from '../../rundown'
-import { getRundownId } from '../../ingest/lib'
-import { consoleTestResultHandler } from 'tslint/lib/test'
+import { VerifiedRundownPlaylistContentAccess } from '../../lib'
+import { MethodContext } from '../../../../lib/api/methods'
 
 const DEFAULT_CONTEXT: MethodContext = {
 	userId: null,
@@ -46,6 +45,10 @@ const DEFAULT_CONTEXT: MethodContext = {
 	},
 	setUserId: () => {},
 	unblock: () => {},
+}
+
+function DEFAULT_ACCESS(playlist: RundownPlaylist): VerifiedRundownPlaylistContentAccess {
+	return { userId: null, organizationId: null, studioId: null, playlist: playlist, cred: {} }
 }
 
 describe('Playout API', () => {
@@ -129,7 +132,7 @@ describe('Playout API', () => {
 		expect(Timeline.upsert).not.toHaveBeenCalled()
 		expect(Timeline.update).not.toHaveBeenCalled()
 
-		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
+		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
 		expect(Timeline.insert).not.toHaveBeenCalled()
 		expect(Timeline.upsert).not.toHaveBeenCalled()
@@ -139,13 +142,13 @@ describe('Playout API', () => {
 
 		{
 			expect(() => {
-				ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'), true)
+				ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), protectString('fake_id'), true)
 			}).toThrowError(/not found/gi)
 		}
 
 		{
 			// Prepare and activate:
-			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, playlistId0, false)
+			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, false)
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeFalsy()
@@ -167,13 +170,13 @@ describe('Playout API', () => {
 
 		{
 			expect(() => {
-				ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, protectString('fake_id'))
+				ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), protectString('fake_id'))
 			}).toThrowError(/not found/gi)
 		}
 
 		{
 			// Take the first Part:
-			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
@@ -191,11 +194,11 @@ describe('Playout API', () => {
 		expect(fixSnapshot(getRundown0())).toMatchSnapshot()
 
 		expect(() => {
-			ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
+			ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 		}).toThrowError(/resetRundownPlaylist can only be run in rehearsal!/gi)
 
 		// Deactivate rundown:
-		ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
+		ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 		expect(getPlaylist0()).toMatchObject({
 			activationId: undefined,
 			currentPartInstanceId: null,
@@ -211,10 +214,10 @@ describe('Playout API', () => {
 		expect(Timeline.update).toHaveBeenCalled()
 
 		// lastly: reset rundown
-		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
+		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
 		expect(() => {
-			ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'))
+			ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), protectString('fake_id'))
 		}).toThrowError(/not found/gi)
 
 		// Verify that the data is back to as it was before any of the operations:
@@ -243,11 +246,14 @@ describe('Playout API', () => {
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
 		expect(() => {
-			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_CONTEXT, protectString('fake_id'))
+			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(
+				DEFAULT_ACCESS(getPlaylist0()),
+				protectString('fake_id')
+			)
 		}).toThrowError(/not found/gi)
 
 		// Prepare and activate in rehersal:
-		ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_CONTEXT, playlistId0)
+		ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
 		expect(getPlaylist0()).toMatchObject({
 			activationId: expect.stringMatching(/^randomId/),
@@ -260,12 +266,12 @@ describe('Playout API', () => {
 		})
 
 		expect(() => {
-			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_CONTEXT, playlistId0)
+			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 		}).toThrowError(/cannot be run on an active/i)
 
 		const { playlistId: playlistId1 } = setupDefaultRundownPlaylist(env)
 		expect(() => {
-			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_CONTEXT, playlistId1)
+			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_ACCESS(getPlaylist0()), playlistId1)
 		}).toThrowError(/only one [\w\s]+ can be active at the same time/i)
 	})
 	testInFiber(
@@ -307,11 +313,15 @@ describe('Playout API', () => {
 			expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
 			expect(() => {
-				ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'), true)
+				ServerPlayoutAPI.resetAndActivateRundownPlaylist(
+					DEFAULT_ACCESS(getPlaylist0()),
+					protectString('fake_id'),
+					true
+				)
 			}).toThrowError(/not found/gi)
 
 			// Prepare and activate in rehersal:
-			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0, true)
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, true)
 
 			expect(getPlaylist0()).toMatchObject({
 				activationId: expect.stringMatching(/^randomId/),
@@ -328,7 +338,7 @@ describe('Playout API', () => {
 
 			{
 				// Take the first Part:
-				ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
+				ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
 				const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 				expect(currentPartInstance).toBeTruthy()
@@ -336,10 +346,14 @@ describe('Playout API', () => {
 			}
 
 			expect(() => {
-				ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'), true)
+				ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(
+					DEFAULT_ACCESS(getPlaylist0()),
+					protectString('fake_id'),
+					true
+				)
 			}).toThrowError(/not found/gi)
 
-			ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId1, true)
+			ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId1, true)
 			expect(getPlaylist0()).toMatchObject({
 				activationId: undefined,
 			})
@@ -355,11 +369,11 @@ describe('Playout API', () => {
 
 			// Attempt to take the first Part of inactive playlist0, should throw
 			expect(() => {
-				ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
+				ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 			}).toThrowError(/is not active/gi)
 
 			// Take the first Part of active playlist1:
-			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId1)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId1)
 
 			expect(
 				getAllPartInstances().filter(
@@ -374,10 +388,10 @@ describe('Playout API', () => {
 				)
 			).toHaveLength(1)
 
-			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId1, true)
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId1, true)
 
 			// Take the first Part of active playlist1 again:
-			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId1)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId1)
 
 			// still should only contain a single taken instance, as rehearsal partInstances should be removed
 			expect(
@@ -393,25 +407,25 @@ describe('Playout API', () => {
 				)
 			).toHaveLength(1)
 
-			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId1, false)
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId1, false)
 
 			// Take the first Part of active playlist1 once more:
-			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId1)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId1)
 
 			// should throw with 402 code, as resetting the rundown when active is forbidden, with default configuration
 			expect(() => {
-				ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId1, false)
+				ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId1, false)
 			}).toThrowError(/cannot be run when active/gi)
 
-			ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, playlistId1)
+			ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId1)
 
 			expect(() => {
-				ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'))
+				ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), protectString('fake_id'))
 			}).toThrowError(/not found/gi)
 
-			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId1, false)
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId1, false)
 
-			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId1)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId1)
 
 			// should contain one not-reset taken instance
 			const playlist1 = getPlaylist1()
@@ -465,7 +479,7 @@ describe('Playout API', () => {
 			}
 
 			// Prepare and activate in rehersal:
-			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0, true)
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, true)
 
 			expect(getPlaylist0()).toMatchObject({
 				activationId: expect.stringMatching(/^randomId/),
@@ -484,7 +498,7 @@ describe('Playout API', () => {
 
 			{
 				// Take the first Part:
-				ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
+				ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
 				const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 				expect(currentPartInstance).toBeTruthy()
@@ -585,7 +599,7 @@ describe('Playout API', () => {
 				const { currentPartInstance } = getPlaylist0().getSelectedPartInstances()
 				now += currentPartInstance?.part.expectedDuration! - 500
 				// try to take just before an autonext
-				const response = ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
+				const response = ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 				expect(response).toBeTruthy()
 				expect((response as ClientAPI.ClientResponseError).message).toMatch(/cannot take shortly before/gi)
 				now = nowBuf
@@ -688,7 +702,7 @@ describe('Playout API', () => {
 		const parts = getPlaylist0().getAllOrderedParts()
 
 		// Prepare and activate in rehersal:
-		ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0, true)
+		ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, true)
 
 		{
 			// expect first part to be selected as next
@@ -703,7 +717,7 @@ describe('Playout API', () => {
 
 		{
 			// move horizontally +1
-			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, 1, 0)
+			ServerPlayoutAPI.moveNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0, 1, 0)
 			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			// expect second part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[1]._id)
@@ -711,7 +725,7 @@ describe('Playout API', () => {
 
 		{
 			// move horizontally -1
-			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, -1, 0)
+			ServerPlayoutAPI.moveNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0, -1, 0)
 			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			// expect first part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[0]._id)
@@ -719,7 +733,7 @@ describe('Playout API', () => {
 
 		{
 			// move vertically +1
-			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, 0, 1)
+			ServerPlayoutAPI.moveNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0, 0, 1)
 			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			// expect 3rd part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[2]._id)
@@ -727,7 +741,7 @@ describe('Playout API', () => {
 
 		{
 			// move vertically -1
-			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, 0, -1)
+			ServerPlayoutAPI.moveNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0, 0, -1)
 			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			// expect 1st part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[0]._id)
