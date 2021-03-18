@@ -12,7 +12,7 @@ import { getCurrentTime } from '../../../lib/lib'
 import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
-import { getPresenterScreenReactive, PresenterScreenBase } from './PresenterScreen'
+import { getPresenterScreenReactive, PresenterScreenBase, RundownOverviewTrackedProps } from './PresenterScreen'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -27,12 +27,7 @@ interface RundownOverviewProps {
 	segmentLiveDurations?: TimeMap
 }
 interface RundownOverviewState {}
-interface RundownOverviewTrackedProps {
-	playlist?: RundownPlaylist
-	segments: Array<SegmentUi>
-	showStyleBaseId?: ShowStyleBaseId
-	rundownIds: RundownId[]
-}
+
 /**
  * This component renders a Countdown screen for a given playlist
  */
@@ -45,38 +40,25 @@ export const OverlayScreen = withTranslation()(
 				protected bodyClassList: string[] = ['transparent']
 
 				render() {
-					const { playlist, segments, showStyleBaseId, t, playlistId } = this.props
+					const {
+						playlist,
+						segments,
+						nextShowStyleBaseId,
+						t,
+						playlistId,
+						currentPartInstance,
+						nextPartInstance,
+					} = this.props
 
-					if (playlist && playlistId && segments && showStyleBaseId) {
-						let currentPart: PartUi | undefined
-						for (const segment of segments) {
-							if (segment.items) {
-								for (const item of segment.items) {
-									if (item.instance._id === playlist.currentPartInstanceId) {
-										currentPart = item
-									}
-								}
-							}
-						}
-						let currentPartDuration: number | null = null
+					if (playlist && playlistId && segments) {
+						const currentPart = currentPartInstance
+
+						let currentPartCountdown: number | null = null
 						if (currentPart) {
-							currentPartDuration = currentPart.renderedDuration || currentPart.instance.part.expectedDuration || 0
-							currentPartDuration += -1 * (currentPart.instance.timings?.duration || 0)
-							if (!currentPart.instance.timings?.duration && currentPart.instance.timings?.startedPlayback) {
-								currentPartDuration += -1 * (getCurrentTime() - currentPart.instance.timings.startedPlayback)
-							}
+							currentPartCountdown = -1 * (this.props.timingDurations.remainingTimeOnCurrentPart || 0)
 						}
 
-						let nextPart: PartUi | undefined
-						for (const segment of segments) {
-							if (segment.items) {
-								for (const item of segment.items) {
-									if (item.instance._id === playlist.nextPartInstanceId) {
-										nextPart = item
-									}
-								}
-							}
-						}
+						const nextPart = nextPartInstance
 
 						// The over-under counter is something we may want to introduce into the screen at some point,
 						// So I'm leaving these as a reference -- Jan Starzak, 2020/12/16
@@ -91,8 +73,8 @@ export const OverlayScreen = withTranslation()(
 							<div className="clocks-overlay">
 								<div className="clocks-half clocks-bottom">
 									<div className="clocks-current-segment-countdown clocks-segment-countdown">
-										{currentPartDuration !== null ? (
-											<Timediff time={currentPartDuration} />
+										{currentPartCountdown !== null ? (
+											<Timediff time={currentPartCountdown} />
 										) : (
 											<span className="clock-segment-countdown-next">{t('Next')}</span>
 										)}
@@ -108,20 +90,20 @@ export const OverlayScreen = withTranslation()(
 										</div>
 									) : null} */}
 									<div className="clocks-part-icon">
-										{nextPart ? (
+										{nextPart && nextShowStyleBaseId ? (
 											<PieceIconContainer
 												partInstanceId={nextPart.instance._id}
-												showStyleBaseId={showStyleBaseId}
+												showStyleBaseId={nextShowStyleBaseId}
 												rundownIds={this.props.rundownIds}
 											/>
 										) : null}
 									</div>
 									<div className="clocks-part-title clocks-part-title">
-										{nextPart && nextPart.instance.part.title ? (
+										{nextPart && nextShowStyleBaseId && nextPart.instance.part.title ? (
 											<PieceNameContainer
 												partName={nextPart.instance.part.title}
 												partInstanceId={nextPart.instance._id}
-												showStyleBaseId={showStyleBaseId}
+												showStyleBaseId={nextShowStyleBaseId}
 												rundownIds={this.props.rundownIds}
 											/>
 										) : (

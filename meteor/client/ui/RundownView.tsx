@@ -263,12 +263,12 @@ const TimingDisplay = withTranslation()(
 								<span className="timing-clock-label left">{t('Started')}</span>
 								<Moment interval={0} format="HH:mm:ss" date={rundownPlaylist.startedPlayback} />
 							</span>
-						) : (
+						) : rundownPlaylist.expectedStart ? (
 							<span className="timing-clock plan-start left">
 								<span className="timing-clock-label left">{t('Planned Start')}</span>
 								<Moment interval={0} format="HH:mm:ss" date={rundownPlaylist.expectedStart} />
 							</span>
-						)}
+						) : null}
 						{rundownPlaylist.startedPlayback && rundownPlaylist.activationId && !rundownPlaylist.rehearsal ? (
 							rundownPlaylist.expectedStart ? (
 								<span className="timing-clock countdown playback-started left">
@@ -374,7 +374,7 @@ const TimingDisplay = withTranslation()(
 										<Moment
 											interval={0}
 											format="HH:mm:ss"
-											date={getCurrentTime() + (this.props.timingDurations.totalRundownDuration || 0)}
+											date={getCurrentTime() + (this.props.timingDurations.remainingRundownDuration || 0)}
 										/>
 									</span>
 								) : null}
