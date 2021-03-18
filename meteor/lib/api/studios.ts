@@ -50,6 +50,9 @@ export function mappingIsSisyfos(mapping: TSR.Mapping): mapping is TSR.MappingSi
 export function mappingIsSisyfosChannel(mapping: TSR.MappingSisyfos): mapping is TSR.MappingSisyfosChannel {
 	return mapping.mappingType === TSR.MappingSisyfosType.CHANNEL
 }
+export function mappingIsSisyfosChannels(mapping: TSR.MappingSisyfos): mapping is TSR.MappingSisyfosChannels {
+	return mapping.mappingType === TSR.MappingSisyfosType.CHANNELS
+}
 export function mappingIsQuantel(mapping: TSR.Mapping): mapping is TSR.MappingQuantel {
 	return mapping.device === TSR.DeviceType.QUANTEL
 }

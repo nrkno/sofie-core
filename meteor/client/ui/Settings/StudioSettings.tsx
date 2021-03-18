@@ -53,6 +53,7 @@ import {
 	mappingIsSisyfos,
 	mappingIsTCPSend,
 	mappingIsSisyfosChannel,
+	mappingIsSisyfosChannels,
 } from '../../../lib/api/studios'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getHelpMode } from '../../lib/localStorage'
@@ -413,17 +414,33 @@ const DeviceMappingSettings = withTranslation()(
 		renderPharosMappingSettings(attribute: string, _showOptional?: boolean) {
 			return <React.Fragment></React.Fragment>
 		}
-		renderSisyfosMappingSettings(prefix: string, showOptional?: boolean) {
+		renderSisyfosMappingSettings(attribute: string, showOptional?: boolean) {
 			const { t } = this.props
+			const mapping = attribute.split('.').reduce((o, i) => o[i], this.props.studio) as TSR.MappingSisyfos | undefined
+
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
-							{t('Sisyfos Channel')}
-							{showOptional && this.renderOptionalInput(prefix + '.channel', this.props.studio, Studios)}
+							{t('Mapping type')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.channel'}
+								attribute={attribute + '.mappingType'}
+								obj={this.props.studio}
+								type="dropdown"
+								options={TSR.MappingSisyfosType}
+								optionsAreNumbers={false}
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Sisyfos Channel')}
+							{showOptional && this.renderOptionalInput(attribute + '.channel', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={attribute + '.channel'}
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}
@@ -675,11 +692,14 @@ const StudioMappings = withTranslation()(
 									(mappingIsHyperdeck(mapping) && <span>{mapping.mappingType}</span>) ||
 									(mappingIsPharos(mapping) && <span>-</span>) ||
 									(mappingIsOSC(mapping) && <span>-</span>) ||
-									(mappingIsSisyfos(mapping) && mappingIsSisyfosChannel(mapping) ? (
-										<span>{t('Channel: {{channel}}', { channel: mapping.channel })}</span>
-									) : (
-										''
-									)) ||
+									(mappingIsSisyfos(mapping) &&
+										(mappingIsSisyfosChannel(mapping) ? (
+											<span>{t('Channel: {{channel}}', { channel: mapping.channel })}</span>
+										) : mappingIsSisyfosChannels(mapping) ? (
+											<span>{t('Channels')}</span>
+										) : (
+											<span>{t('Not Mapped')}</span>
+										))) ||
 									(mappingIsQuantel(mapping) && (
 										<span>
 											{t('Port: {{port}}, Channel: {{channel}}', { port: mapping.portId, channel: mapping.channelId })}
