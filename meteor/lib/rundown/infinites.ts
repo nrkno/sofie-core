@@ -4,7 +4,6 @@ import {
 	PieceInstance,
 	PieceInstancePiece,
 	rewrapPieceToInstance,
-	unprotectPieceInstance,
 } from '../collections/PieceInstances'
 import { DBPart, PartId } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
@@ -106,7 +105,7 @@ export function getPlayheadTrackingInfinitesForPart(
 			}
 		}
 
-		if (lastPieceInstance) {
+		if (lastPieceInstance && !lastPieceInstance.stoppedPlayback && !lastPieceInstance.userDuration) {
 			// If it is an onChange, then it may want to continue
 			let isUsed = false
 			switch (lastPieceInstance.piece.lifespan) {
@@ -143,7 +142,7 @@ export function getPlayheadTrackingInfinitesForPart(
 				// This is the piece we may copy across
 				const candidatePiece =
 					pieces.find((p) => p.piece.enable.start === 'now') ?? max(pieces, (p) => p.piece.enable.start)
-				if (candidatePiece) {
+				if (candidatePiece && !candidatePiece.stoppedPlayback && !candidatePiece.userDuration) {
 					// Check this infinite is allowed to continue to this part
 					let isValid = false
 					switch (mode) {
