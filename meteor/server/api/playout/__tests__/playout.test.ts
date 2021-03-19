@@ -141,12 +141,6 @@ describe('Playout API', () => {
 		const orgRundownData = getAllRundownData(getRundown0())
 
 		{
-			expect(() => {
-				ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), protectString('fake_id'), true)
-			}).toThrowError(/not found/gi)
-		}
-
-		{
 			// Prepare and activate:
 			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, false)
 
@@ -167,12 +161,6 @@ describe('Playout API', () => {
 		expect(Timeline.upsert).toHaveBeenCalled()
 		// expect(Timeline.update).toHaveBeenCalled() - complete replacement of timeline with single object
 		Timeline.mockClear()
-
-		{
-			expect(() => {
-				ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), protectString('fake_id'))
-			}).toThrowError(/not found/gi)
-		}
 
 		{
 			// Take the first Part:
@@ -216,10 +204,6 @@ describe('Playout API', () => {
 		// lastly: reset rundown
 		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
-		expect(() => {
-			ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), protectString('fake_id'))
-		}).toThrowError(/not found/gi)
-
 		// Verify that the data is back to as it was before any of the operations:
 		const rundownData = getAllRundownData(getRundown0())
 		expect(rundownData).toEqual(orgRundownData)
@@ -237,6 +221,11 @@ describe('Playout API', () => {
 			playlist.activationId = playlist.activationId ?? undefined
 			return playlist
 		}
+		const getPlaylist1 = () => {
+			const playlist = RundownPlaylists.findOne(playlistId1) as RundownPlaylist
+			playlist.activationId = playlist.activationId ?? undefined
+			return playlist
+		}
 
 		expect(getPlaylist0()).toMatchObject({
 			activationId: undefined,
@@ -244,13 +233,6 @@ describe('Playout API', () => {
 		})
 
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
-
-		expect(() => {
-			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(
-				DEFAULT_ACCESS(getPlaylist0()),
-				protectString('fake_id')
-			)
-		}).toThrowError(/not found/gi)
 
 		// Prepare and activate in rehersal:
 		ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
@@ -271,7 +253,7 @@ describe('Playout API', () => {
 
 		const { playlistId: playlistId1 } = setupDefaultRundownPlaylist(env)
 		expect(() => {
-			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_ACCESS(getPlaylist0()), playlistId1)
+			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 		}).toThrowError(/only one [\w\s]+ can be active at the same time/i)
 	})
 	testInFiber(
@@ -312,14 +294,6 @@ describe('Playout API', () => {
 
 			expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
-			expect(() => {
-				ServerPlayoutAPI.resetAndActivateRundownPlaylist(
-					DEFAULT_ACCESS(getPlaylist0()),
-					protectString('fake_id'),
-					true
-				)
-			}).toThrowError(/not found/gi)
-
 			// Prepare and activate in rehersal:
 			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, true)
 
@@ -345,15 +319,7 @@ describe('Playout API', () => {
 				expect(nextPartInstance).toBeTruthy()
 			}
 
-			expect(() => {
-				ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(
-					DEFAULT_ACCESS(getPlaylist0()),
-					protectString('fake_id'),
-					true
-				)
-			}).toThrowError(/not found/gi)
-
-			ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId1, true)
+			ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1, true)
 			expect(getPlaylist0()).toMatchObject({
 				activationId: undefined,
 			})
@@ -373,7 +339,7 @@ describe('Playout API', () => {
 			}).toThrowError(/is not active/gi)
 
 			// Take the first Part of active playlist1:
-			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId1)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
 			expect(
 				getAllPartInstances().filter(
@@ -388,10 +354,10 @@ describe('Playout API', () => {
 				)
 			).toHaveLength(1)
 
-			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId1, true)
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1, true)
 
 			// Take the first Part of active playlist1 again:
-			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId1)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
 			// still should only contain a single taken instance, as rehearsal partInstances should be removed
 			expect(
@@ -407,25 +373,21 @@ describe('Playout API', () => {
 				)
 			).toHaveLength(1)
 
-			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId1, false)
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1, false)
 
 			// Take the first Part of active playlist1 once more:
-			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId1)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
 			// should throw with 402 code, as resetting the rundown when active is forbidden, with default configuration
 			expect(() => {
-				ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId1, false)
+				ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1, false)
 			}).toThrowError(/cannot be run when active/gi)
 
-			ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId1)
+			ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
-			expect(() => {
-				ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), protectString('fake_id'))
-			}).toThrowError(/not found/gi)
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1, false)
 
-			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId1, false)
-
-			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId1)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
 			// should contain one not-reset taken instance
 			const playlist1 = getPlaylist1()
