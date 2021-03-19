@@ -1,5 +1,6 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContentVizMSE } from 'timeline-state-resolver-types'
 import { Time } from './common'
+import { ExpectedPackage, ListenToPackageUpdate } from './package'
 import { SomeTimelineContent } from './content'
 import { ITranslatableMessage } from './translations'
 
@@ -244,7 +245,9 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	adlibPreroll?: number
 	/** Whether the adlib should always be inserted queued */
 	toBeQueued?: boolean
-	/** Array of items expected to be played out. This is used by playout-devices to preload stuff. */
+	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
+	 * @deprecated replaced by .expectedPackages
+	 */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	/** When queued, should the adlib autonext */
 	adlibAutoNext?: boolean
@@ -255,10 +258,20 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
 
+	/**
+	 * An array of which Packages this Piece uses. This is used by a Package Manager to ensure that the Package is in place for playout.
+	 * @todo
+	 */
+	expectedPackages?: ExpectedPackage.Any[]
+
+	/** @todo: to be defined */
+	listenToPackageInfoUpdates?: ListenToPackageUpdate[]
+
 	/** HACK: Some pieces have side effects on other pieces, and pruning them when they have finished playback will cause playout glitches. This will tell core to not always preserve it */
 	hasSideEffects?: boolean
 }
 
+/** @deprecated */
 export interface ExpectedPlayoutItemGeneric {
 	/** What type of playout device this item should be handled by */
 	deviceSubType: TSR_DeviceType // subset of PeripheralDeviceAPI.DeviceSubType

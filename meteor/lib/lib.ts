@@ -14,7 +14,7 @@ import { ITranslatableMessage } from './api/TranslatableMessage'
 const cloneOrg = require('fast-clone')
 
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
-
+/** Deep clones a value */
 export function clone<T>(o: ReadonlyDeep<T> | Readonly<T> | T): T {
 	// Use this instead of fast-clone directly, as this retains the type
 	return cloneOrg(o)
@@ -41,6 +41,23 @@ export function getHash(str: string): string {
 		.update(str)
 		.digest('base64')
 		.replace(/[\+\/\=]/g, '_') // remove +/= from strings, because they cause troubles
+}
+/** Creates a hash based on the object properties (excluding ordering of properties) */
+export function hashObj(obj: any): string {
+	if (typeof obj === 'object') {
+		const keys = Object.keys(obj).sort((a, b) => {
+			if (a > b) return 1
+			if (a < b) return -1
+			return 0
+		})
+
+		const strs: string[] = []
+		for (const key of keys) {
+			strs.push(hashObj(obj[key]))
+		}
+		return getHash(strs.join('|'))
+	}
+	return obj + ''
 }
 
 export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
@@ -429,6 +446,19 @@ export const caught: <T>(v: Promise<T>) => Promise<T> = ((f) => (p) => (p.catch(
 /**
  * Blocks the fiber until all the Promises have resolved
  */
+export function waitForPromiseAll<T1, T2, T3, T4, T5, T6>(
+	ps: [
+		T1 | PromiseLike<T1>,
+		T2 | PromiseLike<T2>,
+		T3 | PromiseLike<T3>,
+		T4 | PromiseLike<T4>,
+		T5 | PromiseLike<T5>,
+		T6 | PromiseLike<T6>
+	]
+): [T1, T2, T3, T4, T5, T6]
+export function waitForPromiseAll<T1, T2, T3, T4, T5>(
+	ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>, T4 | PromiseLike<T4>, T5 | PromiseLike<T5>]
+): [T1, T2, T3, T4, T5]
 export function waitForPromiseAll<T1, T2, T3, T4>(
 	ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>, T4 | PromiseLike<T4>]
 ): [T1, T2, T3, T4]
@@ -936,6 +966,11 @@ export function protectString<T extends ProtectedString<any>>(str: string | unde
 }
 export function protectStringArray<T extends ProtectedString<any>>(arr: string[]): T[] {
 	return (arr as any) as T[]
+}
+export function protectStringObject<O extends object, Props extends keyof O>(
+	obj: O
+): ProtectedStringProperties<O, Props> {
+	return (obj as any) as ProtectedStringProperties<O, Props>
 }
 export function unprotectString(protectedStr: ProtectedString<any>): string
 export function unprotectString(protectedStr: ProtectedString<any> | null): string | null

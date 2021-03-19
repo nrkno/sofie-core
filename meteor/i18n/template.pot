@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-03-02T08:11:46.296Z\n"
-"PO-Revision-Date: 2021-03-02T08:11:46.296Z\n"
+"POT-Creation-Date: 2021-03-11T15:49:32.866Z\n"
+"PO-Revision-Date: 2021-03-11T15:49:32.866Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -291,6 +291,9 @@ msgstr ""
 msgid "Last updated"
 msgstr ""
 
+msgid "Shelf Layout"
+msgstr ""
+
 msgid "Getting Started"
 msgstr ""
 
@@ -378,6 +381,15 @@ msgid "Re-sync rundown data with {{nrcsName}}"
 msgstr ""
 
 msgid "Delete"
+msgstr ""
+
+msgid "Standalone Shelf"
+msgstr ""
+
+msgid "Rundown & Shelf"
+msgstr ""
+
+msgid "Default"
 msgstr ""
 
 msgid "Delete rundown?"
@@ -662,8 +674,8 @@ msgid "Looping"
 msgstr ""
 
 msgid ""
-"The Rundown \"{{rundownName}}\" has been UNSYNCED from {{nrcsName}}! No "
-"data updates will currently come through."
+"The rundown \"{{rundownName}}\" is not published or activated in "
+"{{nrcsName}}! No data updates will currently come through."
 msgstr ""
 
 msgid "Re-sync"
@@ -1312,6 +1324,9 @@ msgstr ""
 msgid "Place label below panel"
 msgstr ""
 
+msgid "Disabled"
+msgstr ""
+
 msgid "Expose layout as a standalone page"
 msgstr ""
 
@@ -1875,6 +1890,12 @@ msgid ""
 "issue, but (unverified) might cause issues in itself."
 msgstr ""
 
+msgid "Cron jobs"
+msgstr ""
+
+msgid "Enable CasparCG restart job"
+msgstr ""
+
 msgid "Cleanup"
 msgstr ""
 
@@ -2263,7 +2284,24 @@ msgstr ""
 msgid "{{frames}} {{type}} frame detected in clip"
 msgstr ""
 
-msgid "Clip is being ingested"
+msgid "black"
+msgstr ""
+
+msgid "freeze"
+msgstr ""
+
+msgid "{{sourceLayer}} is being ingested"
+msgstr ""
+
+msgid "Segment no longer exists in {{nrcs}}"
+msgstr ""
+
+msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
+msgstr ""
+
+msgid ""
+"The Rundown was attempted to be moved out of the Playlist when it was on "
+"Air. Move it back and try again later."
 msgstr ""
 
 msgctxt "°°°°°°plural"

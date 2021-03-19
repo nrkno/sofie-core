@@ -23,6 +23,12 @@ import {
 } from './ingest/expectedMediaItems'
 import { asyncCollectionRemove } from '../lib/database'
 import { getShowStyleCompoundForRundown } from './showStyles'
+import {
+	cleanUpExpectedPackagesForBucketAdLibs,
+	cleanUpExpectedPackagesForBucketAdLibsActions,
+	updateExpectedPackagesForBucketAdLib,
+	updateExpectedPackagesForBucketAdLibAction,
+} from './ingest/expectedPackages'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 
@@ -51,6 +57,7 @@ export namespace BucketsAPI {
 			waitForPromiseAll([
 				asyncCollectionRemove(BucketAdLibs, { _id: id }),
 				cleanUpExpectedMediaItemForBucketAdLibPiece([id]),
+				cleanUpExpectedPackagesForBucketAdLibs([id]),
 			])
 		})
 	}
@@ -68,6 +75,7 @@ export namespace BucketsAPI {
 			waitForPromiseAll([
 				asyncCollectionRemove(BucketAdLibActions, { _id: id }),
 				cleanUpExpectedMediaItemForBucketAdLibActions([id]),
+				cleanUpExpectedPackagesForBucketAdLibsActions([id]),
 			])
 		})
 	}
@@ -184,6 +192,7 @@ export namespace BucketsAPI {
 				$set: _.omit(action, ['_id']),
 			})
 			updateExpectedMediaItemForBucketAdLibAction(id)
+			updateExpectedPackagesForBucketAdLibAction(id)
 		})
 	}
 
@@ -265,6 +274,7 @@ export namespace BucketsAPI {
 		bucketSyncFunction(adLibAction.bucketId, 'saveAdLibActionIntoBucket', () => {
 			BucketAdLibActions.insert(adLibAction)
 			updateExpectedMediaItemForBucketAdLibAction(adLibAction._id)
+			updateExpectedPackagesForBucketAdLibAction(adLibAction._id)
 		})
 
 		return adLibAction
@@ -303,6 +313,7 @@ export namespace BucketsAPI {
 				$set: _.omit(adlib, ['_id']),
 			})
 			updateExpectedMediaItemForBucketAdLibPiece(id)
+			updateExpectedPackagesForBucketAdLib(id)
 		})
 	}
 

@@ -26,6 +26,8 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	adlibAutoNextOverlap: 0,
 	adlibDisableOutTransition: false,
 	tags: [],
+	expectedPackages: [],
+	listenToPackageInfoUpdates: [],
 	hasSideEffects: false,
 }
 // Compile a list of the keys which are allowed to be set

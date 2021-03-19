@@ -34,7 +34,10 @@ import {
 	RundownLayoutFilterBase,
 	DashboardLayoutFilter,
 } from '../../../lib/collections/RundownLayouts'
-import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
+import {
+	RundownBaselineAdLibItem,
+	RundownBaselineAdLibPieces,
+} from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
 import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -58,6 +61,7 @@ import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
+import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -442,6 +446,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 	isClearSourceLayer?: boolean
 	adlibAction?: AdLibAction | RundownBaselineAdLibAction
 	contentMetaData?: any
+	contentPackageInfos?: ScanInfoForPackages
 	message?: string | null
 }
 
@@ -760,7 +765,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					sourceLayers: ISourceLayer[],
 					sourceHotKeyUse: { [key: string]: number }
 				) => {
-					let rundownAdLibItems = RundownBaselineAdLibPieces.find(
+					let rundownAdLibItems: RundownBaselineAdLibItem[] = RundownBaselineAdLibPieces.find(
 						{
 							rundownId: currentRundownId,
 						},

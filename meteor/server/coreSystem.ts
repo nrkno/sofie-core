@@ -418,11 +418,10 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 
 		const getRealVersion = async (name: string, fallback: string): Promise<string> => {
 			try {
-				const pkgInfo = require(path.join(name, 'package.json'))
+				const pkgInfo = require(name + '/package.json')
 				return pkgInfo.version
 			} catch (e) {
 				logger.warn(`Failed to read version of package "${name}": ${e}`)
-				console.log(`Failed to read version of package "${name}": ${e}`)
 				return sanitizeVersion(fallback)
 			}
 		}

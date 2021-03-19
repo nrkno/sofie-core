@@ -18,6 +18,7 @@ import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { StudioId } from '../../../lib/collections/Studios'
 import { AdLibAction, AdLibActionId } from '../../../lib/collections/AdLibActions'
 import {
+	ExpectedPackage,
 	IBlueprintActionManifestDisplayContent,
 	SomeContent,
 	VTContent,
@@ -212,7 +213,7 @@ export function updateExpectedMediaItemForBucketAdLibAction(actionId: AdLibActio
 		result
 	)
 }
-
+/** @deprecated */
 export function updateExpectedMediaItemsOnRundown(cache: CacheForIngest): void {
 	const pieces = cache.Pieces.findFetch({})
 	const adlibs = cache.AdLibPieces.findFetch({})

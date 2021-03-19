@@ -50,6 +50,7 @@ function wrapExpectedPlayoutItems(
 	})
 }
 
+/** @deprecated */
 export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest): void {
 	const intermediaryItems: ExpectedPlayoutItemGenericWithPiece[] = []
 

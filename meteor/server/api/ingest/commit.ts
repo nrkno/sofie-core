@@ -1,6 +1,5 @@
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { loadShowStyleBlueprint, loadStudioBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
-import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { allowedToMoveRundownOutOfPlaylist, ChangedSegmentsRankInfo, updatePartInstanceRanks } from '../rundown'
@@ -43,6 +42,7 @@ import { runStudioOperationWithLock, StudioLockFunctionPriority } from '../studi
 import { getTranslatedMessage, ServerTranslatedMesssages } from '../../../lib/rundownNotifications'
 import { asyncCollectionUpsert, asyncCollectionFindOne, asyncCollectionRemove } from '../../lib/database'
 import { getShowStyleCompoundForRundown } from '../showStyles'
+import { updateExpectedPackagesOnRundown } from './expectedPackages'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -227,9 +227,8 @@ export async function CommitIngestOperation(
 						}
 					}
 
-					// Regenerate the full list of expected*Items
-					updateExpectedMediaItemsOnRundown(ingestCache)
-					updateExpectedPlayoutItemsOnRundown(ingestCache)
+					// Regenerate the full list of expected*Items / packages
+					updateExpectedPackagesOnRundown(ingestCache)
 
 					// Save the rundowns
 					// This will reorder the rundowns a little before the playlist and the contents, but that is ok
@@ -393,6 +392,7 @@ function updatePartInstancesBasicProperties(
 				playlist.nextPartInstanceId !== partInstance._id
 			) {
 				cache.PartInstances.update(partInstance._id, { $set: { reset: true } })
+				cache.PieceInstances.update((p) => p.partInstanceId === partInstance._id, { $set: { reset: true } })
 			} else {
 				cache.PartInstances.update(partInstance._id, { $set: { orphaned: 'deleted' } })
 			}

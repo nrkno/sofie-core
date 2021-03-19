@@ -493,13 +493,11 @@ svg.icon {
 	-webkit-user-select: none;
 
 	width: auto;
-	margin: 1.5em;
+	margin: 1em 1.5em;
 	// padding: 0 0 0.15em 0.15em;
 
 	background: $segment-background-color;
-	-webkit-box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
-	-moz-box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
-	box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
+	box-shadow: 7px 6px 15px 0px rgba(0, 0, 0, 0.7);
 
 	--segment-layer-height: #{$segment-layer-height};
 	border-radius: $segment-border-radius;
@@ -699,27 +697,8 @@ svg.icon {
 	}
 
 	// This is the display in the top-left corner of the segment
+	.segment-timeline__timeUntil,
 	.segment-timeline__duration {
-		position: relative;
-		display: block;
-		margin: 0;
-		padding: 0;
-
-		grid-column: segment-name / segment-group-controls;
-		grid-row: header / main-view;
-
-		font-size: 1em;
-		line-height: 2.45em;
-		// padding-left: 25px;
-		margin-left: 0.4em;
-		letter-spacing: 1px;
-
-		> span.negative {
-			color: $general-late-color;
-			font-weight: 500;
-		}
-	}
-	.segment-timeline__timeUntil {
 		position: relative;
 		display: block;
 		margin: 0;
@@ -729,12 +708,43 @@ svg.icon {
 		grid-column: segment-name / segment-group-controls;
 		grid-row: header / main-view;
 
-		font-size: 1.3em;
-		font-weight: 400;
-		line-height: 2em;
 		padding-right: 0px;
 		margin-right: 0em;
-		letter-spacing: 0px;
+		font-size: 1em;
+		line-height: 2.9em;
+		letter-spacing: 0;
+		font-weight: 400;
+
+		> span.negative {
+			color: $general-late-color;
+			font-weight: 500;
+		}
+
+		> .segment-timeline__timeUntil__label,
+		> .segment-timeline__duration__label {
+			text-transform: uppercase;
+			display: block;
+			position: absolute;
+			top: 0;
+			right: 0;
+			font-size: 0.5em;
+			line-height: 2.8em;
+			color: #888;
+			font-weight: 400;
+		}
+	}
+	.segment-timeline__duration {
+		text-align: left;
+		margin-left: 0.5em;
+
+		> .segment-timeline__duration__label {
+			text-align: left;
+			left: 0;
+			right: auto;
+		}
+	}
+	.segment-timeline__timeUntil {
+		color: #888;
 	}
 	.segment-timeline__unsynced {
 		text-transform: uppercase;
@@ -1582,7 +1592,7 @@ svg.icon {
 						.segment-timeline__piece__scene-marker {
 							position: absolute;
 							display: block;
-							top: -2px;
+							top: 0;
 							width: 2px;
 							bottom: 0;
 							background: linear-gradient(
@@ -1600,7 +1610,7 @@ svg.icon {
 						.segment-timeline__piece__anomaly-marker {
 							position: absolute;
 							display: block;
-							top: -2px;
+							top: 0;
 							height: calc(100% + 2px);
 							min-width: 2px;
 							background: repeating-linear-gradient(
@@ -1939,7 +1949,7 @@ svg.icon {
 
 		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
 
-		margin: 0 0.5em;
+		margin: 0 0.3em;
 
 		// this is a single output-layer container
 		.segment-timeline__output-layer-control {
@@ -1949,9 +1959,9 @@ svg.icon {
 			// the label with the name for the output layer
 			.segment-timeline__output-layer-control__label {
 				font-weight: 500;
-				padding-left: 20px;
+				padding-left: 18px;
 				letter-spacing: 0.02em;
-				color: rgb(255, 255, 255);
+				color: #888;
 
 				opacity: 1;
 				transition: $output-layer-group-collapse-animation-duration opacity;
@@ -1966,7 +1976,8 @@ svg.icon {
 				height: $segment-layer-height;
 				min-height: $segment-layer-height;
 				letter-spacing: 0em;
-				color: rgb(207, 207, 207);
+				color: #888;
+				padding-left: 18px;
 
 				transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
 					$output-layer-group-collapse-animation-duration height ease-in-out,

@@ -26,6 +26,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { profiler } from '../profiler'
+import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { ReadonlyDeep } from 'type-fest'
 import { DbCacheReadCollection } from '../../cache/CacheCollection'
 import {
@@ -314,7 +315,7 @@ export function setNextPart(
 			{
 				partInstanceId: { $nin: selectedPartInstanceIds },
 				rundownId: nextPart.rundownId,
-				'piece.partId': nextPart._id,
+				'piece.startPartId': nextPart._id,
 				reset: { $ne: true },
 			},
 			{

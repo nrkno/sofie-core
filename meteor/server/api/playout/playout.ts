@@ -53,12 +53,16 @@ import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collec
 import { MethodContext } from '../../../lib/api/methods'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
 import { StudioContentWriteAccess } from '../../security/studio'
-import { afterTake, takeNextPartInnerSync, updatePartInstanceOnTake } from './take'
+import {
+	afterTake,
+	resetPreviousSegmentAndClearNextSegmentId,
+	takeNextPartInnerSync,
+	updatePartInstanceOnTake,
+} from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { checkAccessAndGetPlaylist } from '../lib'
 import {
 	runPlayoutOperationWithLock,
 	runPlayoutOperationWithCacheFromStudioOperation,
@@ -359,15 +363,9 @@ export namespace ServerPlayoutAPI {
 		partDelta: number,
 		segmentDelta: number
 	): PartId | null {
-		// @TODO Check for a better solution to validate security methods
-		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-
 		check(rundownPlaylistId, String)
 		check(partDelta, Number)
 		check(segmentDelta, Number)
-
-		if (!partDelta && !segmentDelta)
-			throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${partDelta}, ${segmentDelta})`)
 
 		return runPlayoutOperationWithCache(
 			context,
@@ -375,6 +373,9 @@ export namespace ServerPlayoutAPI {
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
+				if (!partDelta && !segmentDelta)
+					throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${partDelta}, ${segmentDelta})`)
+
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" is not active!`)
@@ -623,7 +624,7 @@ export namespace ServerPlayoutAPI {
 
 				// logger.info('nowInPart', nowInPart)
 				// logger.info('filteredPieces', filteredPieces)
-				let getNextPiece = (partInstance: PartInstance, undo: boolean, ignoreStartedPlayback: boolean) => {
+				const getNextPiece = (partInstance: PartInstance, ignoreStartedPlayback: boolean) => {
 					// Find next piece to disable
 
 					let nowInPart = 0
@@ -665,9 +666,9 @@ export namespace ServerPlayoutAPI {
 					})
 				}
 
-				if (nextPartInstance) {
+				if (nextPartInstance?.timings) {
 					// pretend that the next part never has played (even if it has)
-					delete nextPartInstance.timings?.startedPlayback
+					delete nextPartInstance.timings.startedPlayback
 				}
 
 				const partInstances: Array<[PartInstance | undefined, boolean]> = [
@@ -680,7 +681,7 @@ export namespace ServerPlayoutAPI {
 
 				for (const [partInstance, ignoreStartedPlayback] of partInstances) {
 					if (partInstance) {
-						nextPieceInstance = getNextPiece(partInstance, !!undo, ignoreStartedPlayback)
+						nextPieceInstance = getNextPiece(partInstance, ignoreStartedPlayback)
 						if (nextPieceInstance) break
 					}
 				}
@@ -913,6 +914,8 @@ export namespace ServerPlayoutAPI {
 							playingPartInstance,
 							currentPartInstance
 						)
+
+						resetPreviousSegmentAndClearNextSegmentId(cache)
 
 						// Update the next partinstance
 						const nextPart = selectNextPart(
@@ -1199,16 +1202,16 @@ export namespace ServerPlayoutAPI {
 		check(partInstanceId, String)
 		check(sourceLayerIds, Match.OneOf(String, Array))
 
-		if (_.isString(sourceLayerIds)) sourceLayerIds = [sourceLayerIds]
-
-		if (sourceLayerIds.length === 0) return
-
 		return runPlayoutOperationWithCache(
 			context,
 			'sourceLayerOnPartStop',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
+				if (_.isString(sourceLayerIds)) sourceLayerIds = [sourceLayerIds]
+
+				if (sourceLayerIds.length === 0) return
+
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)

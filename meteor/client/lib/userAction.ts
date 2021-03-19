@@ -38,6 +38,7 @@ export enum UserAction {
 	ABORT_MEDIA_WORKFLOW,
 	PRIORITIZE_MEDIA_WORKFLOW,
 	ABORT_ALL_MEDIA_WORKFLOWS,
+	PACKAGE_MANAGER_RESTART_WORK,
 	GENERATE_RESTART_TOKEN,
 	RESTART_CORE,
 	USER_LOG_PLAYER_METHOD,
@@ -119,6 +120,8 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Prioritizing Media Workflow')
 		case UserAction.ABORT_ALL_MEDIA_WORKFLOWS:
 			return t('Aborting all Media Workflows')
+		case UserAction.PACKAGE_MANAGER_RESTART_WORK:
+			return t('Package Manager: Restart work')
 		case UserAction.GENERATE_RESTART_TOKEN:
 			return t('Generating restart token')
 		case UserAction.RESTART_CORE:

@@ -32,7 +32,9 @@ export enum PubSub {
 	studioOfDevice = 'studioOfDevice',
 	timeline = 'timeline',
 	userActionsLog = 'userActionsLog',
+	/** @deprecated */
 	mediaWorkFlows = 'mediaWorkFlows',
+	/** @deprecated */
 	mediaWorkFlowSteps = 'mediaWorkFlowSteps',
 	rundownLayouts = 'rundownLayouts',
 	loggedInUser = 'loggedInUser',
@@ -42,9 +44,13 @@ export enum PubSub {
 	bucketAdLibPieces = 'bucketAdLibPieces',
 	translationsBundles = 'translationsBundles',
 	bucketAdLibActions = 'bucketAdLibActions',
+	expectedPackages = 'expectedPackages',
+	expectedPackageWorkStatuses = 'expectedPackageWorkStatuses',
+	packageContainerPackageStatuses = 'packageContainerStatuses',
 	// custom publications:
 	mappingsForDevice = 'mappingsForDevice',
 	timelineForDevice = 'timelineForDevice',
+	expectedPackagesForDevice = 'expectedPackagesForDevice',
 }
 
 export function meteorSubscribe(name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {
