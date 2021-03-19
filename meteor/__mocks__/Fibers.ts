@@ -31,14 +31,21 @@ ${e.toString()}`)
 export function isInFiber(): boolean {
 	return !!Fiber.current
 }
-export function runInFiber(fcn: Function): Promise<void> {
+export function runInFiber<T>(fcn: () => T | Promise<T>): Promise<T> {
 	return new Promise((resolve, reject) => {
 		Fiber(() => {
 			try {
 				// Run the function
 				const out = fcn()
-				// the function has finished
-				resolve(out)
+				if (out instanceof Promise) {
+					out.then(resolve).catch((e) => {
+						console.log('Error: ' + e)
+						reject(e)
+					})
+				} else {
+					// the function has finished
+					resolve(out)
+				}
 			} catch (e) {
 				console.log('Error: ' + e)
 				reject(e)
