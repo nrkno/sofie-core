@@ -37,6 +37,10 @@ export namespace StudioReadAccess {
 	}
 }
 
+/**
+ * This is returned from a check of access to a studio.
+ * Fields will be populated about the user, and the studio if they have permission
+ */
 export interface StudioContentAccess {
 	userId: UserId | null
 	organizationId: OrganizationId | null

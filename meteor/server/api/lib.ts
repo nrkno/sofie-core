@@ -4,6 +4,11 @@ import { RundownPlaylistId, RundownPlaylist } from '../../lib/collections/Rundow
 import { Rundown, RundownId } from '../../lib/collections/Rundowns'
 import { RundownPlaylistContentAccess, RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 
+/**
+ * This is returned from a check of access to a playlist, when access is granted.
+ * Fields will be populated about the user.
+ * It is identical to RundownPlaylistContentAccess, except for confirming access is allowed
+ */
 export interface VerifiedRundownPlaylistContentAccess extends RundownPlaylistContentAccess {
 	playlist: RundownPlaylist
 }

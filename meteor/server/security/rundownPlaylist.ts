@@ -37,6 +37,10 @@ export namespace RundownPlaylistReadAccess {
 	}
 }
 
+/**
+ * This is returned from a check of access to a playlist.
+ * Fields will be populated about the user, and the playlist if they have permission
+ */
 export interface RundownPlaylistContentAccess {
 	userId: UserId | null
 	organizationId: OrganizationId | null
