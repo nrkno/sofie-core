@@ -2,7 +2,8 @@ import { Mongo } from 'meteor/mongo'
 import { waitForPromise } from '../../../lib/lib'
 
 interface DeprecatedDatabases {
-	AsRunLog: Mongo.Collection<any>
+	BucketIngestCache: Mongo.Collection<any>
+	RecordedFiles: Mongo.Collection<any>
 }
 
 let deprecatedDatabases: DeprecatedDatabases | null
@@ -18,7 +19,8 @@ export function getDeprecatedDatabases(): DeprecatedDatabases | null {
 		return deprecatedDatabases
 	} else {
 		deprecatedDatabases = {
-			AsRunLog: new Mongo.Collection('asRunLog'),
+			BucketIngestCache: new Mongo.Collection('bucketIngestCache'),
+			RecordedFiles: new Mongo.Collection('recordedFiles'),
 		}
 		return deprecatedDatabases
 	}
@@ -28,7 +30,8 @@ export function dropDeprecatedDatabases(): void {
 	if (dbs) {
 		const ps: Promise<any>[] = []
 
-		ps.push(dbs.AsRunLog.rawCollection().drop())
+		ps.push(dbs.BucketIngestCache.rawCollection().drop())
+		ps.push(dbs.RecordedFiles.rawCollection().drop())
 
 		waitForPromise(
 			Promise.all(ps).catch((e) => {

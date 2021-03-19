@@ -7,7 +7,6 @@ import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { AsRunLog } from '../lib/collections/AsRunLog'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
 import { CASPARCG_RESTART_TIME } from '../lib/constants'
@@ -53,19 +52,6 @@ Meteor.startup(() => {
 				logger.info('Cronjob: Will remove cached data from ' + rundownCacheCount + ' rundowns')
 
 			const cleanLimitTime = getCurrentTime() - 1000 * 3600 * 24 * 50 // 50 days ago
-
-			// Remove old entries in AsRunLog:
-			const oldAsRunLogCount: number = AsRunLog.find({
-				timestamp: { $lt: cleanLimitTime },
-			}).count()
-			if (oldAsRunLogCount > 0) {
-				logger.info(`Cronjob: Will remove ${oldAsRunLogCount} entries from AsRunLog`)
-				lowPrioFcn(() => {
-					AsRunLog.remove({
-						timestamp: { $lt: cleanLimitTime },
-					})
-				})
-			}
 
 			// Remove old entries in UserActionsLog:
 			const oldUserActionsLogCount: number = UserActionsLog.find({

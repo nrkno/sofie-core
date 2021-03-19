@@ -23,7 +23,7 @@ import {
 } from './infinites'
 import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, DBPartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PartInstance, DBPartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { profiler } from '../profiler'
 import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
@@ -261,12 +261,18 @@ export function setNextPart(
 			// Create new isntance
 			newInstanceId = protectString<PartInstanceId>(`${nextPart._id}_${Random.id()}`)
 			const newTakeCount = currentPartInstance ? currentPartInstance.takeCount + 1 : 0 // Increment
+			const segmentPlayoutId: SegmentPlayoutId =
+				nextPart.segmentId === currentPartInstance?.segmentId
+					? currentPartInstance.segmentPlayoutId
+					: getRandomId()
+
 			cache.PartInstances.insert({
 				_id: newInstanceId,
 				takeCount: newTakeCount,
 				playlistActivationId: cache.Playlist.doc.activationId,
 				rundownId: nextPart.rundownId,
 				segmentId: nextPart.segmentId,
+				segmentPlayoutId,
 				part: nextPart,
 				rehearsal: !!cache.Playlist.doc.rehearsal,
 				consumesNextSegmentId: newNextPart?.consumesNextSegmentId,

@@ -277,6 +277,7 @@ export namespace ServerPlayoutAdLibAPI {
 				rundownId: rundown._id,
 				segmentId: currentPartInstance.segmentId,
 				playlistActivationId: playlist.activationId,
+				segmentPlayoutId: currentPartInstance.segmentPlayoutId,
 				takeCount: currentPartInstance.takeCount + 1,
 				rehearsal: !!playlist.rehearsal,
 				orphaned: 'adlib-part',

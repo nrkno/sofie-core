@@ -1,3 +1,5 @@
+const path = require('path')
+
 const commonConfig = {
 	modulePaths: ['<rootDir>/node_modules/'],
 	moduleNameMapper: {},
@@ -20,7 +22,9 @@ const commonConfig = {
 	moduleFileExtensions: ['ts', 'js'],
 	transform: {
 		'^.+\\.(ts|tsx)$': 'ts-jest',
+		'^.+\\.(js|jsx|mjs)$': path.resolve('./scripts/babel-jest.js'),
 	},
+	transformIgnorePatterns: ['node_modules/(?!(debounce-fn)/)', '\\.pnp\\.[^\\/]+$'],
 	globalSetup: './__mocks__/global-setup.js',
 	setupFilesAfterEnv: ['./__mocks__/_setupMocks.ts'],
 	coverageThreshold: {

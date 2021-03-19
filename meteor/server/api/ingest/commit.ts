@@ -23,7 +23,7 @@ import {
 import { clone, makePromise, max, protectString, unprotectString } from '../../../lib/lib'
 import _, { pluck } from 'underscore'
 import { ReadOnlyCache } from '../../cache/CacheBase'
-import { reportRundownDataHasChanged } from '../asRunLog'
+import { reportRundownDataHasChanged } from '../blueprints/events'
 import { removeSegmentContents } from './cleanup'
 import { Settings } from '../../../lib/Settings'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'

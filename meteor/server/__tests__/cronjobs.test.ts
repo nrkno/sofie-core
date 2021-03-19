@@ -1,20 +1,17 @@
-import { Meteor } from 'meteor/meteor'
 import '../../__mocks__/_extendJest'
-import { testInFiber, runAllTimers, testInFiberOnly, beforeAllInFiber } from '../../__mocks__/helpers/jest'
-import { MeteorMock, useControllableDefer } from '../../__mocks__/meteor'
+import { testInFiber, runAllTimers, beforeAllInFiber } from '../../__mocks__/helpers/jest'
+import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { IngestDataCache, IngestCacheType, IngestDataCacheObjId } from '../../lib/collections/IngestDataCache'
 import { Random } from 'meteor/random'
 import { protectString } from '../../lib/lib'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { AsRunLog, AsRunLogEventId } from '../../lib/collections/AsRunLog'
 import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
-import { IBlueprintAsRunLogEventContent, TSR } from '@sofie-automation/blueprints-integration'
+import { TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { setupDefaultStudioEnvironment } from '../../__mocks__/helpers/database'
 import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
 
@@ -175,37 +172,6 @@ describe('cronjobs', () => {
 				_id: dataCache1Id,
 			})
 			expect(IngestDataCache.findOne(dataCache0Id)).toBeUndefined()
-		})
-		testInFiber('Removes old entries in AsRunLong', async () => {
-			// reasonably fresh entry
-			const asRunLog0 = protectString<AsRunLogEventId>(Random.id())
-			AsRunLog.insert({
-				_id: asRunLog0,
-				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-				rehersal: false,
-				rundownId: protectString(''),
-				studioId: protectString(''),
-				// 3 days old
-				timestamp: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
-			})
-			// stale entry
-			const asRunLog1 = protectString<AsRunLogEventId>(Random.id())
-			AsRunLog.insert({
-				_id: asRunLog1,
-				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-				rehersal: false,
-				rundownId: protectString(''),
-				studioId: protectString(''),
-				// 50 + 1 minute days old
-				timestamp: lib.getCurrentTime() - (1000 * 3600 * 24 * 50 + 1000 * 60),
-			})
-
-			await runCronjobs()
-
-			expect(AsRunLog.findOne(asRunLog0)).toMatchObject({
-				_id: asRunLog0,
-			})
-			expect(AsRunLog.findOne(asRunLog1)).toBeUndefined()
 		})
 		testInFiber('Removes old entries in UserActionsLog', async () => {
 			// reasonably fresh entry

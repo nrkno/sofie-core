@@ -25,8 +25,12 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { MongoModifier } from '../../lib/typings/meteor'
+import { ReadonlyDeep } from 'type-fest'
 
-export function queueExternalMessages(rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
+export function queueExternalMessages(
+	rundown: ReadonlyDeep<Rundown>,
+	messages: Array<IBlueprintExternalMessageQueueObj>
+) {
 	const playlist = rundown.getRundownPlaylist()
 
 	_.each(messages, (message: IBlueprintExternalMessageQueueObj) => {
