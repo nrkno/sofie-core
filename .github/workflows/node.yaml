@@ -122,7 +122,7 @@ jobs:
         IMAGES=
         DOCKER_TAG=${{ steps.docker-tag.outputs.tag }}
         # check if a release branch, or master, or a tag
-        if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ steps.docker-tag.outputs.tag }}" == refs/tags/* ]]
+        if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ github.ref }}" == refs/tags/* ]]
         then
           # If we have a dockerhub image name, then setup to publish there
           if [ -z "${{ secrets.DOCKERHUB_IMAGE }}" ]
@@ -283,9 +283,13 @@ jobs:
       run: |
         cd packages
         yarn docs
-        yarn gh-pages -d docs
       env:
         CI: true
+    - name: Publish
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./packages/docs
 
   prerelease-libs:
     name: Prerelease Lib
