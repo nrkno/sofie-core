@@ -5,7 +5,8 @@ import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../l
 import { assertNever, waitForPromise } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
-import { checkAccessAndGetPlaylist } from '../lib'
+import { RundownPlaylistContentAccess } from '../../security/rundownPlaylist'
+import { checkAccessAndGetPlaylist, VerifiedRundownPlaylistContentAccess } from '../lib'
 import { CacheForStudio } from '../studio/cache'
 import {
 	getStudioIdFromCacheOrLock,
@@ -59,13 +60,13 @@ export function getPlaylistIdFromCacheOrLock(cacheOrLock: any): RundownPlaylistI
 /**
  * Lock the playlist for performing a playout operation and load a cache of data.
  * Note: This also locks the studio, if that is already locked then use 'rundownPlaylistPlayoutFromStudioLockFunction' instead
- * @param context Meteor call context, to authenticate the request. Pass null if already authenticated
+ * @param access Meteor call context, to authenticate the request. Pass null if already authenticated
  * @param contextStr Contextual information for the call to this function. to aid debugging
  * @param rundownPlaylistId Id of the playlist to lock
  * @param fcn Function to run while holding the lock
  */
 export function runPlayoutOperationWithCache<T>(
-	context: MethodContext | null,
+	access: VerifiedRundownPlaylistContentAccess | null,
 	contextStr: string,
 	rundownPlaylistId: RundownPlaylistId,
 	priority: PlayoutLockFunctionPriority,
@@ -73,8 +74,14 @@ export function runPlayoutOperationWithCache<T>(
 	fcn: (cache: CacheForPlayout) => Promise<T> | T
 ): T {
 	let tmpPlaylist: RundownPlaylist
-	if (context) {
-		tmpPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	if (access) {
+		tmpPlaylist = access.playlist
+		if (!tmpPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+		if (tmpPlaylist._id !== rundownPlaylistId)
+			throw new Meteor.Error(
+				500,
+				`VerifiedAccess is for wrong Rundown Playlist "${rundownPlaylistId}" vs ${tmpPlaylist._id}!`
+			)
 	} else {
 		const pl = RundownPlaylists.findOne(rundownPlaylistId)
 		if (!pl) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
@@ -89,22 +96,23 @@ export function runPlayoutOperationWithCache<T>(
 /**
  * Lock the playlist for performing a playout operation and load a cache of data.
  * Warning: This will get the studio lock
- * @param context Contextual information for the call to this function. to aid debugging
+ * @param access Contextual information for the call to this function. to aid debugging
  * @param studioCache Cache of Studio or another Playlist data (used to verify the lock order)
  * @param rundownPlaylistId Id of the playlist to lock
  * @param priority Priority of function execution
  * @param fcn Function to run while holding the lock
  */
 export function runPlayoutOperationWithLock<T>(
-	context: MethodContext | null,
+	access: VerifiedRundownPlaylistContentAccess | null,
 	contextStr: string,
 	rundownPlaylistId: RundownPlaylistId,
 	priority: PlayoutLockFunctionPriority,
 	fcn: (lock: PlaylistLock, tmpPlaylist: ReadonlyDeep<RundownPlaylist>) => Promise<T> | T
 ): T {
 	let tmpPlaylist: RundownPlaylist
-	if (context) {
-		tmpPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	if (access) {
+		tmpPlaylist = access.playlist
+		if (!tmpPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	} else {
 		const pl = RundownPlaylists.findOne(rundownPlaylistId)
 		if (!pl) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)

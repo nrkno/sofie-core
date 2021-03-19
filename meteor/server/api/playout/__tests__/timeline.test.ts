@@ -12,23 +12,15 @@ import '../api'
 import { Timeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
 import { updateTimeline } from '../timeline'
-import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { MethodContext } from '../../../../lib/api/methods'
+import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
+import { VerifiedRundownPlaylistContentAccess } from '../../lib'
 
-const DEFAULT_CONTEXT: MethodContext = {
-	userId: null,
-	isSimulation: false,
-	connection: {
-		id: 'mockConnectionId',
-		close: () => {},
-		onClose: () => {},
-		clientAddress: '127.0.0.1',
-		httpHeaders: {},
-	},
-	setUserId: () => {},
-	unblock: () => {},
+function DEFAULT_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPlaylistContentAccess {
+	const playlist = RundownPlaylists.findOne(rundownPlaylistID) as RundownPlaylist
+	expect(playlist).toBeTruthy()
+	return { userId: null, organizationId: null, studioId: null, playlist: playlist, cred: {} }
 }
 
 describe('Timeline', () => {
@@ -67,7 +59,7 @@ describe('Timeline', () => {
 
 		{
 			// Prepare and activate in rehersal:
-			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, playlistId0, false)
+			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0, false)
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeFalsy()
 			expect(nextPartInstance).toBeTruthy()
@@ -82,7 +74,7 @@ describe('Timeline', () => {
 
 		{
 			// Take the first Part:
-			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()
@@ -123,7 +115,7 @@ describe('Timeline', () => {
 
 		{
 			// Deactivate rundown:
-			ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
+			ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0)
 			expect(getPlaylist0()).toMatchObject({
 				activationId: undefined,
 				currentPartInstanceId: null,

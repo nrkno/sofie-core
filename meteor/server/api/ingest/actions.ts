@@ -18,8 +18,8 @@ import {
 	runPlayoutOperationWithCacheFromStudioOperation,
 	PlayoutLockFunctionPriority,
 } from '../playout/lockFunction'
-import { MethodContext } from '../../../lib/api/methods'
 import { removeRundownsFromDb } from '../rundownPlaylist'
+import { VerifiedRundownPlaylistContentAccess } from '../lib'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -105,14 +105,14 @@ export namespace IngestActions {
 	 * Run the cached data through blueprints in order to re-generate the Rundown
 	 */
 	export function regenerateRundownPlaylist(
-		context: MethodContext | null,
+		access: VerifiedRundownPlaylistContentAccess | null,
 		rundownPlaylistId: RundownPlaylistId,
 		purgeExisting?: boolean
 	) {
 		check(rundownPlaylistId, String)
 
 		const ingestData = runPlayoutOperationWithLock(
-			context,
+			access,
 			'regenerateRundownPlaylist',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.MISC,

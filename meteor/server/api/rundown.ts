@@ -52,6 +52,7 @@ import { runIngestOperationWithLock } from './ingest/lockFunction'
 import { getRundown } from './ingest/lib'
 import { asyncCollectionFindFetch } from '../lib/database'
 import { createShowStyleCompound } from './showStyles'
+import { checkAccessToPlaylist } from './lib'
 
 export function selectShowStyleVariant(
 	context: StudioUserContext,
@@ -304,8 +305,10 @@ export namespace ServerRundownAPI {
 	export function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId): void {
 		check(playlistId, String)
 
+		const access = checkAccessToPlaylist(context, playlistId)
+
 		runPlayoutOperationWithLock(
-			context,
+			access,
 			'removeRundownPlaylist',
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
