@@ -245,13 +245,19 @@ export namespace MeteorMock {
 	}
 
 	export function bindEnvironment(fcn: Function): any {
-		return (...args: any[]) => {
-			// Don't know how to implement in mock?
-
+		{
+			// the outer bindEnvironment must be called from a fiber
 			const fiber = Fiber.current
-			if (fiber) throw new Error(500, `It appears that bindEnvironment function is already running in a fiber`)
+			if (!fiber) throw new Error(500, `It appears that bindEnvironment isn't running in a fiber`)
+		}
 
-			runInFiber(fcn).catch(console.error)
+		return (...args: any[]) => {
+			const fiber = Fiber.current
+			if (fiber) {
+				fcn(...args)
+			} else {
+				runInFiber(() => fcn(...args)).catch(console.error)
+			}
 		}
 	}
 	export let users: any = undefined

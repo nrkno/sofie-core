@@ -233,7 +233,7 @@ export interface IRundownDataChangedEventContext extends IEventContext, IRundown
 
 export interface IRundownTimingEventContext extends IRundownDataChangedEventContext {
 	readonly previousPart: Readonly<IBlueprintPartInstance> | undefined
-	readonly part: Readonly<IBlueprintPartInstance>
+	readonly currentPart: Readonly<IBlueprintPartInstance>
 	readonly nextPart: Readonly<IBlueprintPartInstance> | undefined
 
 	/**

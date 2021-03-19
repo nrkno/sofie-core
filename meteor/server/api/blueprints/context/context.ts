@@ -596,11 +596,11 @@ export class RundownDataChangedEventContext extends RundownContext implements IR
 
 export class RundownTimingEventContext extends RundownDataChangedEventContext implements IRundownTimingEventContext {
 	readonly previousPart: Readonly<IBlueprintPartInstance<unknown>> | undefined
-	private readonly _part: PartInstance
+	private readonly _currentPart: PartInstance
 	readonly nextPart: Readonly<IBlueprintPartInstance<unknown>> | undefined
 
-	public get part(): Readonly<IBlueprintPartInstance<unknown>> {
-		return unprotectPartInstance(this._part)
+	public get currentPart(): Readonly<IBlueprintPartInstance<unknown>> {
+		return unprotectPartInstance(this._currentPart)
 	}
 
 	constructor(
@@ -615,7 +615,7 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 		super(contextInfo, studio, showStyleCompound, rundown)
 
 		this.previousPart = unprotectPartInstance(previousPartInstance)
-		this._part = partInstance
+		this._currentPart = partInstance
 		this.nextPart = unprotectPartInstance(nextPartInstance)
 	}
 
@@ -623,7 +623,7 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 		const partInstance = PartInstances.findOne(
 			{
 				rundownId: this._rundown._id,
-				playlistActivationId: this._part.playlistActivationId,
+				playlistActivationId: this._currentPart.playlistActivationId,
 			},
 			{
 				sort: {
@@ -637,7 +637,7 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 		if (!partInstance)
 			throw new Meteor.Error(
 				500,
-				`No PartInstances found for Rundown "${this._rundown._id}" (PlaylistActivationId "${this._part.playlistActivationId}")`
+				`No PartInstances found for Rundown "${this._rundown._id}" (PlaylistActivationId "${this._currentPart.playlistActivationId}")`
 			)
 
 		return unprotectPartInstance(partInstance)
@@ -653,7 +653,7 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 		const partInstances = PartInstances.find(
 			{
 				rundownId: this._rundown._id,
-				playlistActivationId: this._part.playlistActivationId,
+				playlistActivationId: this._currentPart.playlistActivationId,
 				segmentId: unDeepString(refPartInstance2.segmentId),
 				segmentPlayoutId: unDeepString(refPartInstance2.segmentPlayoutId),
 			},
@@ -672,7 +672,7 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 
 		const pieceInstances = PieceInstances.find({
 			rundownId: this._rundown._id,
-			playlistActivationId: this._part.playlistActivationId,
+			playlistActivationId: this._currentPart.playlistActivationId,
 			partInstanceId: { $in: protectStringArray(partInstanceIds) },
 		}).fetch()
 
