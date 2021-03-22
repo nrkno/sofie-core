@@ -1,9 +1,8 @@
 import { check } from '../../../lib/check'
 import { RundownId } from '../../../lib/collections/Rundowns'
-import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { protectString, waitForPromise, ProtectedString, waitForPromiseAll } from '../../../lib/lib'
-import { logger } from '../../logging'
-import { AdLibAction, AdLibActionId, AdLibActions } from '../../../lib/collections/AdLibActions'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { protectString, waitForPromise, ProtectedString } from '../../../lib/lib'
+import { AdLibAction, AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
 import {
 	ExpectedPackageDB,
@@ -23,74 +22,40 @@ import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { BucketAdLibAction, BucketAdLibActionId, BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { Meteor } from 'meteor/meteor'
 import { BucketAdLib, BucketAdLibId, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
-import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import {
-	RundownBaselineAdLibAction,
-	RundownBaselineAdLibActions,
-} from '../../../lib/collections/RundownBaselineAdLibActions'
+import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { CacheForIngest } from './cache'
-import { asyncCollectionFindFetch, asyncCollectionFindOne, asyncCollectionRemove, saveIntoDb } from '../../lib/database'
+import { asyncCollectionRemove, saveIntoDb } from '../../lib/database'
+import { saveIntoCache } from '../../cache/lib'
+import { ReadonlyDeep } from 'type-fest'
 
 export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	// @todo: this call is for backwards compatibility and soon to be removed
 	updateExpectedMediaItemsOnRundown(cache)
 	updateExpectedPlayoutItemsOnRundown(cache)
 
-	const rundown = cache.Rundown.doc
-	if (!rundown) {
-		cache.deferAfterSave(() => {
-			const removedItems = ExpectedPackages.remove({
-				rundownId: cache.RundownId,
-			})
-			logger.info(`Removed ${removedItems} expected packages for deleted rundown "${cache.RundownId}"`)
-		})
-	} else {
-		const studioId = rundown.studioId
+	const studio = cache.Studio.doc
 
-		cache.deferAfterSave(() => {
-			const pAdlibs = asyncCollectionFindFetch(AdLibPieces, { rundownId: rundown._id })
-			const pActions = asyncCollectionFindFetch(AdLibActions, { rundownId: rundown._id })
-			const pStudio = asyncCollectionFindOne(Studios, { _id: studioId })
+	const pieces = cache.Pieces.findFetch({})
+	const adlibs = cache.AdLibPieces.findFetch({})
+	const actions = cache.AdLibActions.findFetch({})
+	const baselineAdlibs = cache.RundownBaselineAdLibPieces.findFetch({})
+	const baselineActions = cache.RundownBaselineAdLibActions.findFetch({})
 
-			const pBaselineAdlibs = asyncCollectionFindFetch(RundownBaselineAdLibPieces, { rundownId: rundown._id })
-			const pBaselineActions = asyncCollectionFindFetch(RundownBaselineAdLibActions, { rundownId: rundown._id })
+	// todo: keep expectedPackage of the currently playing partInstance
 
-			const pieces = cache.Pieces.findFetch({
-				startRundownId: rundown._id,
-			})
+	const expectedPackages: ExpectedPackageDB[] = [
+		...generateExpectedPackagesForPiece(studio, cache.RundownId, pieces),
+		...generateExpectedPackagesForPiece(studio, cache.RundownId, adlibs),
+		...generateExpectedPackagesForAdlibAction(studio, cache.RundownId, actions),
 
-			const [adlibs, actions, studio, baselineAdlibs, baselineActions] = waitForPromiseAll([
-				pAdlibs,
-				pActions,
-				pStudio,
-				pBaselineAdlibs,
-				pBaselineActions,
-			])
+		...generateExpectedPackagesForPiece(studio, cache.RundownId, baselineAdlibs),
+		...generateExpectedPackagesForBaselineAdlibAction(studio, cache.RundownId, baselineActions),
+	]
 
-			// todo: keep expectedPackage of the currently playing partInstance
-			if (!studio) throw new Error(`Studio "${studioId}" not found!`)
-
-			const expectedPackages: ExpectedPackageDB[] = [
-				...generateExpectedPackagesForPiece(studio, cache.RundownId, pieces),
-				...generateExpectedPackagesForPiece(studio, cache.RundownId, adlibs),
-				...generateExpectedPackagesForAdlibAction(studio, cache.RundownId, actions),
-
-				...generateExpectedPackagesForPiece(studio, cache.RundownId, baselineAdlibs),
-				...generateExpectedPackagesForBaselineAdlibAction(studio, cache.RundownId, baselineActions),
-			]
-
-			saveIntoDb<ExpectedPackageDB, ExpectedPackageDB>(
-				ExpectedPackages,
-				{
-					rundownId: rundown._id,
-				},
-				expectedPackages
-			)
-		})
-	}
+	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(cache.ExpectedPackages, {}, expectedPackages)
 }
 export function generateExpectedPackagesForPartInstance(
 	studio: Studio,
@@ -123,7 +88,11 @@ export function generateExpectedPackagesForPartInstance(
 	}
 	return packages
 }
-function generateExpectedPackagesForPiece(studio: Studio, rundownId: RundownId, pieces: (Piece | AdLibPiece)[]) {
+function generateExpectedPackagesForPiece(
+	studio: ReadonlyDeep<Studio>,
+	rundownId: RundownId,
+	pieces: (Piece | AdLibPiece)[]
+) {
 	const packages: ExpectedPackageDBFromPiece[] = []
 	for (const piece of pieces) {
 		if (piece.expectedPackages) {
@@ -140,7 +109,11 @@ function generateExpectedPackagesForPiece(studio: Studio, rundownId: RundownId, 
 	}
 	return packages
 }
-function generateExpectedPackagesForAdlibAction(studio: Studio, rundownId: RundownId, actions: AdLibAction[]) {
+function generateExpectedPackagesForAdlibAction(
+	studio: ReadonlyDeep<Studio>,
+	rundownId: RundownId,
+	actions: AdLibAction[]
+) {
 	const packages: ExpectedPackageDBFromAdLibAction[] = []
 	for (const action of actions) {
 		if (action.expectedPackages) {
@@ -158,7 +131,7 @@ function generateExpectedPackagesForAdlibAction(studio: Studio, rundownId: Rundo
 	return packages
 }
 function generateExpectedPackagesForBaselineAdlibAction(
-	studio: Studio,
+	studio: ReadonlyDeep<Studio>,
 	rundownId: RundownId,
 	actions: RundownBaselineAdLibAction[]
 ) {
@@ -211,7 +184,7 @@ function generateExpectedPackagesForBucketAdlibAction(studio: Studio, adlibActio
 	return packages
 }
 function generateExpectedPackageBases(
-	studio: Studio,
+	studio: ReadonlyDeep<Studio>,
 	ownerId: ProtectedString<any>,
 	expectedPackages: ExpectedPackage.Any[]
 ) {
