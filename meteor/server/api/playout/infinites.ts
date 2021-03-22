@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { DBPart, Part } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { asyncCollectionFindFetch } from '../../../lib/lib'
+import { asyncCollectionFindFetch, getCurrentTime } from '../../../lib/lib'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -13,8 +13,10 @@ import {
 	getPlayheadTrackingInfinitesForPart as libgetPlayheadTrackingInfinitesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
+	processAndPrunePieceInstanceTimings,
 } from '../../../lib/rundown/infinites'
 import { profiler } from '../profiler'
+import { Meteor } from 'meteor/meteor'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -139,6 +141,15 @@ function getPlayheadTrackingInfinitesForPart(
 	const span = profiler.startSpan('getPlayheadTrackingInfinitesForPart')
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, nextPartInstance.part)
 
+	const currentSegment = cache.Segments.findOne({ _id: playingPartInstance.segmentId })
+	if (!currentSegment) throw new Meteor.Error(`Segment "${playingPartInstance.segmentId}" not found!`)
+
+	const rundown = cache.Rundowns.findOne({ _id: currentSegment.rundownId })
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${currentSegment.rundownId}" not found!`)
+
+	// !! Database !!
+	const showStyleBase = rundown.getShowStyleBase()
+
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
 
 	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
@@ -149,11 +160,14 @@ function getPlayheadTrackingInfinitesForPart(
 	)
 	const playingPieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
 
+	const nowInPart = getCurrentTime() - (playingPartInstance.timings?.startedPlayback ?? 0)
+	const prunedPieceInstances = processAndPrunePieceInstanceTimings(showStyleBase, playingPieceInstances, nowInPart)
+
 	const res = libgetPlayheadTrackingInfinitesForPart(
 		new Set(partsBeforeThisInSegment),
 		new Set(segmentsBeforeThisInRundown),
 		playingPartInstance,
-		playingPieceInstances,
+		prunedPieceInstances,
 		nextPartInstance.part,
 		nextPartInstance._id,
 		canContinueAdlibOnEnds,
