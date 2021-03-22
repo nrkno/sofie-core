@@ -460,7 +460,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 	)
 	const removeSegmentsFromRundowns = new Map<RundownId, SegmentId[]>()
 	for (const segment of segments) {
-		const partInstances = groupedPartInstances[unprotectString(segment._id)]
+		const partInstances = groupedPartInstances[unprotectString(segment._id)] || []
 		const partInstanceIds = new Set(partInstances.map((p) => p._id))
 
 		// Not in current or next. Previous can be reset as it will still be in the db, but not shown in the ui
