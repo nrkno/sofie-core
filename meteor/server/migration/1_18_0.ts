@@ -29,22 +29,12 @@ export const addSteps = addMigrationSteps('1.18.0', [
 	// },
 	//
 	//
-	setExpectedVersion(
-		'expectedVersion.playoutDevice',
-		PeripheralDeviceAPI.DeviceType.PLAYOUT,
-		'_process',
-		'1.16.0-release30.1'
-	),
-	setExpectedVersion(
-		'expectedVersion.mosDevice',
-		PeripheralDeviceAPI.DeviceType.MOS,
-		'_process',
-		'1.9.0-release30.1'
-	),
+	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '1.16.0'),
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '1.9.0'),
 	setExpectedVersion(
 		'expectedVersion.mediaManager',
 		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
 		'_process',
-		'1.5.0-release30.2'
+		'1.5.0'
 	),
 ])

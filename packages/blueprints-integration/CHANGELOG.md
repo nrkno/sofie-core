@@ -2,6 +2,7 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<<<<<<< HEAD
 ## [1.19.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.0...v1.19.0-in-testing.1) (2021-03-01)
 
 ## [1.19.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0-1-in-testing-R30...v1.19.0-in-testing.0) (2021-02-27)
@@ -19,6 +20,11 @@ All notable changes to this project will be documented in this file. See [standa
 * invalidReason translation ([#459](https://github.com/nrkno/tv-automation-server-core/issues/459)) [publish] ([5bd01d4](https://github.com/nrkno/tv-automation-server-core/commit/5bd01d4660e9e76b07a2a3e02e8a4bc7ffd8a5f6))
 
 ## [1.18.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.17.0...v1.18.0-0) (2021-02-09)
+=======
+## [1.18.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0-1-in-testing-R30...v1.18.0) (2021-03-16)
+
+## [2.0.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.17.0...v2.0.0-0) (2021-02-09)
+>>>>>>> master
 
 
 ### Features
