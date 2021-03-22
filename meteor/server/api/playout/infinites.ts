@@ -11,12 +11,14 @@ import {
 	getPlayheadTrackingInfinitesForPart as libgetPlayheadTrackingInfinitesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
+	processAndPrunePieceInstanceTimings
 } from '../../../lib/rundown/infinites'
 import { profiler } from '../profiler'
 import { Meteor } from 'meteor/meteor'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { ReadonlyDeep } from 'type-fest'
 import { asyncCollectionFindFetch } from '../../lib/database'
+import { getCurrentTime } from '../../../lib/lib'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -78,14 +80,14 @@ function getIdsBeforeThisPart(cache: CacheForPlayout, nextPart: DBPart) {
 	const segmentsBeforeThisInRundown = currentSegment
 		? cache.Segments.findFetch({
 				rundownId: nextPart.rundownId,
-				_rank: { $lt: currentSegment._rank },
+				_rank: { $lt: currentSegment._rank }
 		  }).map((p) => p._id)
 		: []
 
 	if (span) span.end()
 	return {
 		partsBeforeThisInSegment: _.sortBy(partsBeforeThisInSegment, (p) => p._rank).map((p) => p._id),
-		segmentsBeforeThisInRundown,
+		segmentsBeforeThisInRundown
 	}
 }
 
@@ -109,7 +111,7 @@ export async function fetchPiecesThatMayBeActiveForPart(cache: CacheForPlayout, 
 	return [...piecesStartingInPart, ...infinitePieces]
 }
 
-export function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout): void {
+export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout): Promise<void> {
 	const span = profiler.startSpan('syncPlayheadInfinitesForNextPartInstance')
 	const { nextPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 	if (nextPartInstance && currentPartInstance) {
@@ -120,6 +122,12 @@ export function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout)
 			cache,
 			nextPartInstance.part
 		)
+
+		const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${currentPartInstance.rundownId}" not found!`)
+
+		// !! Database call !!
+		const showStyleBase = await cache.activationCache.getShowStyleBase(rundown)
 
 		const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 
@@ -133,12 +141,19 @@ export function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout)
 			(p) => p.partInstanceId === currentPartInstance._id
 		)
 
+		const nowInPart = getCurrentTime() - (currentPartInstance.timings?.startedPlayback ?? 0)
+		const prunedPieceInstances = processAndPrunePieceInstanceTimings(
+			showStyleBase,
+			playingPieceInstances,
+			nowInPart
+		)
+
 		const infinites = libgetPlayheadTrackingInfinitesForPart(
 			playlist.activationId,
 			new Set(partsBeforeThisInSegment),
 			new Set(segmentsBeforeThisInRundown),
 			currentPartInstance,
-			playingPieceInstances,
+			prunedPieceInstances,
 			nextPartInstance.part,
 			nextPartInstance._id,
 			canContinueAdlibOnEnds,
@@ -149,7 +164,7 @@ export function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout)
 			cache.PieceInstances,
 			{
 				partInstanceId: nextPartInstance._id,
-				'infinite.fromPreviousPlayhead': true,
+				'infinite.fromPreviousPlayhead': true
 			},
 			infinites
 		)

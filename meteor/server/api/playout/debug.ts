@@ -13,7 +13,7 @@ import { forceClearAllBlueprintConfigCaches } from '../blueprints/config'
 import {
 	PlayoutLockFunctionPriority,
 	runPlayoutOperationWithCache,
-	runPlayoutOperationWithCacheFromStudioOperation,
+	runPlayoutOperationWithCacheFromStudioOperation
 } from './lockFunction'
 import { getSelectedPartInstancesFromCache } from './cache'
 import { removeRundownPlaylistFromDb } from '../rundownPlaylist'
@@ -101,8 +101,8 @@ if (!Settings.enableUserAccounts) {
 				id,
 				PlayoutLockFunctionPriority.MISC,
 				null,
-				(cache) => {
-					syncPlayheadInfinitesForNextPartInstance(cache)
+				async (cache) => {
+					await syncPlayheadInfinitesForNextPartInstance(cache)
 				}
 			)
 		},
@@ -144,6 +144,6 @@ if (!Settings.enableUserAccounts) {
 					}
 				}
 			)
-		},
+		}
 	})
 }

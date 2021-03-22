@@ -9,7 +9,7 @@ import {
 	unprotectString,
 	getRandomId,
 	assertNever,
-	getRank,
+	getRank
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
@@ -23,7 +23,7 @@ import {
 	convertAdLibToPieceInstance,
 	getResolvedPieces,
 	convertPieceToAdLibPiece,
-	setupPieceInstanceInfiniteProperties,
+	setupPieceInstanceInfiniteProperties
 } from './pieces'
 import { updateTimeline } from './timeline'
 import { updatePartInstanceRanks } from '../rundown'
@@ -33,7 +33,7 @@ import {
 	PieceInstance,
 	PieceInstanceId,
 	rewrapPieceToInstance,
-	wrapPieceToInstance,
+	wrapPieceToInstance
 } from '../../../lib/collections/PieceInstances'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
@@ -48,7 +48,7 @@ import {
 	CacheForPlayout,
 	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getRundownIDsFromCache,
-	getSelectedPartInstancesFromCache,
+	getSelectedPartInstancesFromCache
 } from './cache'
 import { ReadonlyDeep } from 'type-fest'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
@@ -73,7 +73,7 @@ export namespace ServerPlayoutAdLibAPI {
 				if (playlist.currentPartInstanceId !== partInstanceId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
 			},
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
@@ -82,13 +82,13 @@ export namespace ServerPlayoutAdLibAPI {
 
 				const pieceInstanceToCopy = cache.PieceInstances.findOne({
 					_id: pieceInstanceIdOrPieceIdToCopy as PieceInstanceId,
-					rundownId: { $in: rundownIds },
+					rundownId: { $in: rundownIds }
 				})
 				const pieceToCopy = pieceInstanceToCopy
 					? pieceInstanceToCopy.piece
 					: (Pieces.findOne({
 							_id: pieceInstanceIdOrPieceIdToCopy as PieceId,
-							startRundownId: { $in: rundownIds },
+							startRundownId: { $in: rundownIds }
 					  }) as Piece)
 				if (!pieceToCopy) {
 					throw new Meteor.Error(404, `PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" not found!`)
@@ -122,7 +122,7 @@ export namespace ServerPlayoutAdLibAPI {
 								// @ts-ignore _id
 								_id: obj.id || obj._id,
 								studioId: protectString(''), // set later
-								objectType: TimelineObjType.RUNDOWN,
+								objectType: TimelineObjType.RUNDOWN
 							})
 						}),
 						unprotectString(newPieceInstance._id)
@@ -157,14 +157,14 @@ export namespace ServerPlayoutAdLibAPI {
 					cache.PieceInstances.update(pieceInstanceToCopy._id, {
 						$set: {
 							disabled: true,
-							hidden: true,
-						},
+							hidden: true
+						}
 					})
 				}
 
 				cache.PieceInstances.insert(newPieceInstance)
 
-				syncPlayheadInfinitesForNextPartInstance(cache)
+				await syncPlayheadInfinitesForNextPartInstance(cache)
 
 				updateTimeline(cache)
 			}
@@ -201,7 +201,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 				const adLibPiece = AdLibPieces.findOne({
 					_id: adLibPieceId,
-					rundownId: partInstance.rundownId,
+					rundownId: partInstance.rundownId
 				})
 				if (!adLibPiece) throw new Meteor.Error(404, `Part Ad Lib Item "${adLibPieceId}" not found!`)
 				if (adLibPiece.invalid)
@@ -252,7 +252,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 				const adLibPiece = RundownBaselineAdLibPieces.findOne({
 					_id: baselineAdLibPieceId,
-					rundownId: partInstance.rundownId,
+					rundownId: partInstance.rundownId
 				})
 				if (!adLibPiece)
 					throw new Meteor.Error(404, `Rundown Baseline Ad Lib Item "${baselineAdLibPieceId}" not found!`)
@@ -290,8 +290,8 @@ export namespace ServerPlayoutAdLibAPI {
 					rundownId: rundown._id,
 					title: adLibPiece.name,
 					prerollDuration: adLibPiece.adlibPreroll,
-					expectedDuration: adLibPiece.expectedDuration,
-				}),
+					expectedDuration: adLibPiece.expectedDuration
+				})
 			})
 			const newPieceInstance = convertAdLibToPieceInstance(
 				playlist.activationId,
@@ -311,7 +311,7 @@ export namespace ServerPlayoutAdLibAPI {
 			)
 			innerStartAdLibPiece(cache, rundown, currentPartInstance, newPieceInstance)
 
-			syncPlayheadInfinitesForNextPartInstance(cache)
+			await syncPlayheadInfinitesForNextPartInstance(cache)
 		}
 
 		updateTimeline(cache)
@@ -390,14 +390,14 @@ export namespace ServerPlayoutAdLibAPI {
 			rundownId: { $in: rundownIds },
 			'piece.sourceLayerId': { $in: sourceLayerId },
 			startedPlayback: {
-				$exists: true,
-			},
+				$exists: true
+			}
 		}
 
 		if (originalOnly) {
 			// Ignore adlibs if using original only
 			query.dynamicallyInserted = {
-				$exists: false,
+				$exists: false
 			}
 		}
 
@@ -407,8 +407,8 @@ export namespace ServerPlayoutAdLibAPI {
 		// TODO - will this cause problems?
 		return PieceInstances.findOne(query, {
 			sort: {
-				startedPlayback: -1,
-			},
+				startedPlayback: -1
+			}
 		})
 	}
 
@@ -435,7 +435,7 @@ export namespace ServerPlayoutAdLibAPI {
 		const query = {
 			...customQuery,
 			startRundownId: { $in: rundownIds },
-			sourceLayerId: { $in: sourceLayerId },
+			sourceLayerId: { $in: sourceLayerId }
 		}
 
 		const pieces = Pieces.find(query, { fields: { _id: 1, startPartId: 1, enable: 1 } }).fetch()
@@ -583,8 +583,8 @@ export namespace ServerPlayoutAdLibAPI {
 						logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
 						const up: Partial<PieceInstance> = {
 							userDuration: {
-								end: relativeStopAt,
-							},
+								end: relativeStopAt
+							}
 						}
 						if (pieceInstance.infinite) {
 							stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
@@ -592,10 +592,10 @@ export namespace ServerPlayoutAdLibAPI {
 
 						cache.PieceInstances.update(
 							{
-								_id: pieceInstance._id,
+								_id: pieceInstance._id
 							},
 							{
-								$set: up,
+								$set: up
 							}
 						)
 
@@ -624,8 +624,8 @@ export namespace ServerPlayoutAdLibAPI {
 									status: RundownAPI.PieceStatusCode.UNKNOWN,
 									virtual: true,
 									content: {
-										timelineObjects: [],
-									},
+										timelineObjects: []
+									}
 								},
 								currentPartInstance.playlistActivationId,
 								currentPartInstance.rundownId,
@@ -635,8 +635,8 @@ export namespace ServerPlayoutAdLibAPI {
 							infinite: {
 								infiniteInstanceId: getRandomId(),
 								infinitePieceId: pieceId,
-								fromPreviousPart: false,
-							},
+								fromPreviousPart: false
+							}
 						})
 
 						stoppedInstances.push(pieceInstance._id)

@@ -10,7 +10,7 @@ import {
 	unprotectString,
 	isStringOrProtectedString,
 	getRandomId,
-	makePromise,
+	makePromise
 } from '../../../lib/lib'
 import { StatObjectMetadata } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
@@ -23,7 +23,7 @@ import {
 	reportPartInstanceHasStarted,
 	reportPieceHasStarted,
 	reportPartHasStopped,
-	reportPieceHasStopped,
+	reportPieceHasStopped
 } from '../blueprints/events'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
@@ -35,14 +35,14 @@ import {
 	setNextPart as libsetNextPart,
 	setNextSegment as libSetNextSegment,
 	onPartHasStoppedPlaying,
-	selectNextPart,
+	selectNextPart
 } from './lib'
 import {
 	prepareStudioForBroadcast,
 	activateRundownPlaylist as libActivateRundownPlaylist,
 	deactivateRundownPlaylist as libDeactivateRundownPlaylist,
 	deactivateRundownPlaylistInner,
-	standDownStudio,
+	standDownStudio
 } from './actions'
 import { sortPieceInstancesByStart } from './pieces'
 import { PackageInfo } from '../../coreSystem'
@@ -57,7 +57,7 @@ import {
 	afterTake,
 	resetPreviousSegmentAndClearNextSegmentId,
 	takeNextPartInnerSync,
-	updatePartInstanceOnTake,
+	updatePartInstanceOnTake
 } from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'
@@ -67,7 +67,7 @@ import {
 	runPlayoutOperationWithLock,
 	runPlayoutOperationWithCacheFromStudioOperation,
 	runPlayoutOperationWithCache,
-	PlayoutLockFunctionPriority,
+	PlayoutLockFunctionPriority
 } from './lockFunction'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
@@ -683,7 +683,7 @@ export namespace ServerPlayoutAPI {
 
 				const partInstances: Array<[PartInstance | undefined, boolean]> = [
 					[currentPartInstance, false],
-					[nextPartInstance, true], // If not found in currently playing part, let's look in the next one:
+					[nextPartInstance, true] // If not found in currently playing part, let's look in the next one:
 				]
 				if (undo) partInstances.reverse()
 
@@ -700,8 +700,8 @@ export namespace ServerPlayoutAPI {
 					logger.info((undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + nextPieceInstance._id)
 					cache.PieceInstances.update(nextPieceInstance._id, {
 						$set: {
-							disabled: !undo,
-						},
+							disabled: !undo
+						}
 					})
 
 					updateTimeline(cache)
@@ -743,7 +743,7 @@ export namespace ServerPlayoutAPI {
 
 				const pieceInstance = PieceInstances.findOne({
 					_id: pieceInstanceId,
-					rundownId: { $in: rundowns.map((r) => r._id) },
+					rundownId: { $in: rundowns.map((r) => r._id) }
 				})
 				if (dynamicallyInserted && !pieceInstance) return // if it was dynamically inserted, it's okay if we can't find it
 				if (!pieceInstance)
@@ -793,7 +793,7 @@ export namespace ServerPlayoutAPI {
 				// This method is called when an auto-next event occurs
 				const pieceInstance = PieceInstances.findOne({
 					_id: pieceInstanceId,
-					rundownId: { $in: rundowns.map((r) => r._id) },
+					rundownId: { $in: rundowns.map((r) => r._id) }
 				})
 				if (dynamicallyInserted && !pieceInstance) return // if it was dynamically inserted, it's okay if we can't find it
 				if (!pieceInstance)
@@ -904,8 +904,8 @@ export namespace ServerPlayoutAPI {
 							$set: {
 								previousPartInstanceId: playlist.currentPartInstanceId,
 								currentPartInstanceId: playingPartInstance._id,
-								holdState: RundownHoldState.NONE,
-							},
+								holdState: RundownHoldState.NONE
+							}
 						})
 
 						reportPartInstanceHasStarted(cache, playingPartInstance, startedPlayback)
@@ -946,8 +946,8 @@ export namespace ServerPlayoutAPI {
 								$set: {
 									previousPartInstanceId: null,
 									currentPartInstanceId: playingPartInstance._id,
-									lastIncorrectPartPlaybackReported: Date.now(), // save the time to prevent the system to go in a loop
-								},
+									lastIncorrectPartPlaybackReported: Date.now() // save the time to prevent the system to go in a loop
+								}
 							})
 
 							reportPartInstanceHasStarted(cache, playingPartInstance, startedPlayback)
@@ -998,7 +998,7 @@ export namespace ServerPlayoutAPI {
 
 				const partInstance = PartInstances.findOne({
 					_id: partInstanceId,
-					rundownId: { $in: rundowns.map((r) => r._id) },
+					rundownId: { $in: rundowns.map((r) => r._id) }
 				})
 
 				if (partInstance) {
@@ -1166,7 +1166,7 @@ export namespace ServerPlayoutAPI {
 						identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
 							currentPartInstance._id
 						},execution=${getRandomId()}`,
-						tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
+						tempSendUserNotesIntoBlackHole: true // TODO-CONTEXT store these notes
 					},
 					cache,
 					showStyle,
@@ -1180,7 +1180,7 @@ export namespace ServerPlayoutAPI {
 					actionContext.currentPartState !== ActionPartChange.NONE ||
 					actionContext.nextPartState !== ActionPartChange.NONE
 				) {
-					syncPlayheadInfinitesForNextPartInstance(cache)
+					await syncPlayheadInfinitesForNextPartInstance(cache)
 				}
 
 				if (actionContext.takeAfterExecute) {
@@ -1228,7 +1228,7 @@ export namespace ServerPlayoutAPI {
 				if (playlist.currentPartInstanceId !== partInstanceId)
 					throw new Meteor.Error(403, `Pieces can be only manipulated in a current part!`)
 			},
-			(cache) => {
+			async (cache) => {
 				const partInstance = cache.PartInstances.findOne(partInstanceId)
 				if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 				const lastStartedPlayback = partInstance.timings?.startedPlayback
@@ -1249,7 +1249,7 @@ export namespace ServerPlayoutAPI {
 					undefined
 				)
 
-				syncPlayheadInfinitesForNextPartInstance(cache)
+				await syncPlayheadInfinitesForNextPartInstance(cache)
 
 				updateTimeline(cache)
 			}
@@ -1356,7 +1356,7 @@ export namespace ServerPlayoutAPI {
 		}
 
 		Studios.update(studioId, {
-			$set: modification,
+			$set: modification
 		})
 
 		// TODO: Run update timeline here
