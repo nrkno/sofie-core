@@ -2,7 +2,6 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-<<<<<<< HEAD
 ## [1.19.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.0...v1.19.0-in-testing.1) (2021-03-01)
 
 
@@ -33,14 +32,10 @@ All notable changes to this project will be documented in this file. See [standa
 * remove or reset orphaned once they are no longer current or nexted ([8823fe4](https://github.com/nrkno/tv-automation-server-core/commit/8823fe460b34443e91f538ef3490ed5b5fecfc5e))
 * rename unsynced to orphaned ([ae29442](https://github.com/nrkno/tv-automation-server-core/commit/ae29442518382c84a039733f49b8b1d25f328539))
 * show note when the segment is orphaned, or any of the partinstances are orphaned ([e91d3b3](https://github.com/nrkno/tv-automation-server-core/commit/e91d3b3709283bdc754c865a24433ade79b86ece))
-=======
-## [1.18.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0-1-in-testing-R30...v1.18.0) (2021-03-16)
->>>>>>> master
 
 
 ### Bug Fixes
 
-<<<<<<< HEAD
 * 0 freeze frame detected within the clip ([75c0427](https://github.com/nrkno/tv-automation-server-core/commit/75c042705454c850605c28cc3cffd64a53cac884))
 * add missing contexts to blueprint api methods [publish] ([#454](https://github.com/nrkno/tv-automation-server-core/issues/454)) ([2cef36c](https://github.com/nrkno/tv-automation-server-core/commit/2cef36c3f2e70ee722b5b890f5619d36fb7fa36d))
 * better notifications for unavailable clips ([2200fd7](https://github.com/nrkno/tv-automation-server-core/commit/2200fd723a666a38c855ae623fda6c9be5b16fcf))
@@ -58,7 +53,12 @@ All notable changes to this project will be documented in this file. See [standa
 * some ingest bugs ([4f67718](https://github.com/nrkno/tv-automation-server-core/commit/4f67718abb6a8b88b529739c54c89a64c4b9f155))
 * theoretical segment unsyncing for mos ([5c353cd](https://github.com/nrkno/tv-automation-server-core/commit/5c353cd3dcca67b5c17dd61c055d8e84f6cf98d7))
 * vibrate on supported devices ([d5ab1f0](https://github.com/nrkno/tv-automation-server-core/commit/d5ab1f0b7bf60ab4d522e26ec7f1c2d42ea1bf31))
-=======
+
+## [1.18.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0-1-in-testing-R30...v1.18.0) (2021-03-16)
+
+
+### Bug Fixes
+
 * moveNextPart when next part is an adlib ([83caabf](https://github.com/nrkno/tv-automation-server-core/commit/83caabf43548dbdf8838b5182ee36f54f45bf9ee))
 * onEnd infinites from adlib-parts not continuing ([5680cfe](https://github.com/nrkno/tv-automation-server-core/commit/5680cfe58d09c6e2fff8d5797324c5072f644a16))
 * Presenter screen not working ([#465](https://github.com/nrkno/tv-automation-server-core/issues/465)) ([90a0d08](https://github.com/nrkno/tv-automation-server-core/commit/90a0d08ccb389edd73ff49c663ad8a5dd6a505c3))
@@ -66,7 +66,6 @@ All notable changes to this project will be documented in this file. See [standa
 * reset adlibbed partinstances when jumping around the rundown ([0def72b](https://github.com/nrkno/tv-automation-server-core/commit/0def72b667fc22da3d3db01c14ff3664919b33a5))
 * some cases where adlibbed partinstances not reset ([1c7db3a](https://github.com/nrkno/tv-automation-server-core/commit/1c7db3a9473c3604ad9cc512d5b573aaab893c1b))
 * **Midi:** Filtering of idle information in multi-pedal setups ([dd1fa79](https://github.com/nrkno/tv-automation-server-core/commit/dd1fa7981d3163f5fa3a7aa1733e44e8a7b6610d))
->>>>>>> master
 
 ## [1.18.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.17.0...v1.18.0-0) (2021-02-09)
 
