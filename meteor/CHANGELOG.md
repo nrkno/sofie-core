@@ -2,44 +2,6 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [1.20.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0...v1.20.0-in-testing.0) (2021-03-22)
-
-
-### Features
-
-* allow adlib actions to move the next part by either a part or segment delta ([3a56c5c](https://github.com/nrkno/tv-automation-server-core/commit/3a56c5c426f2f3e7ce928813da1a2c6f394df3df))
-* change colors for live-speak, vt, graphics, lower-thirds ([#474](https://github.com/nrkno/tv-automation-server-core/issues/474)) ([c785f53](https://github.com/nrkno/tv-automation-server-core/commit/c785f535cdee15664406a617c4a056d0a593607d))
-* labels added to segment header counters ([#478](https://github.com/nrkno/tv-automation-server-core/issues/478)) ([7f247d5](https://github.com/nrkno/tv-automation-server-core/commit/7f247d5d9ecd38856d6d7a07fc56f9a07863e6b7))
-* remove AsRunLog collection ([#477](https://github.com/nrkno/tv-automation-server-core/issues/477)) ([1826f79](https://github.com/nrkno/tv-automation-server-core/commit/1826f79bb12732006cb174f8a7e915560b755a31))
-* reset segments upon leaving ([#473](https://github.com/nrkno/tv-automation-server-core/issues/473)) ([f854774](https://github.com/nrkno/tv-automation-server-core/commit/f8547740ba32c53d3f9cd3532bc0ef05f3e50b5c))
-* split security check out of lock functions ([#480](https://github.com/nrkno/tv-automation-server-core/issues/480)) ([703aabc](https://github.com/nrkno/tv-automation-server-core/commit/703aabc7a8aededefe7f889c011631ba668f9e78))
-
-
-### Bug Fixes
-
-* 0-length content should not render end of content warning ([4e2b661](https://github.com/nrkno/tv-automation-server-core/commit/4e2b661d80556d6fc3f07b713dcc2eed5f4e6c4a))
-* activeRundown view doesn't show any rundown ([f7e9f36](https://github.com/nrkno/tv-automation-server-core/commit/f7e9f36a695def324c165f3e0880e90d45ad86b1))
-* adLib actions in dashboard panels were not correctly filtered according to live segment ([acc6c15](https://github.com/nrkno/tv-automation-server-core/commit/acc6c15166def5f3dc8f0a19b8057921ab842bcc))
-* ci publish release scripts ([34c6f22](https://github.com/nrkno/tv-automation-server-core/commit/34c6f22cdba5a143804a3874c9b30febb816584e))
-* display piece name on buttons in list panels ([aede248](https://github.com/nrkno/tv-automation-server-core/commit/aede248d9808a2756f1d70c223fd0734a3b770f5))
-* expose multiple lookahead objects for onTimelineGenerate in WHEN_CLEAR mode ([7f291bf](https://github.com/nrkno/tv-automation-server-core/commit/7f291bfac8ab149b1a012286b953dbdfa7b7ae40))
-* improve wording in notification for unsynced rundown ([a1980f9](https://github.com/nrkno/tv-automation-server-core/commit/a1980f98ea13bf908dabefb26ffbe7ce595ba6ee))
-* load reset previous partinstance and pieceinstances for playout operations ([531785c](https://github.com/nrkno/tv-automation-server-core/commit/531785ca06aa4238185a644c6aee133ff33a86be))
-* maintain segmentShowAll state when window is resized ([e7fdfd1](https://github.com/nrkno/tv-automation-server-core/commit/e7fdfd1fe7c43c239dec8d69693d6295b7ad2e4e))
-* make rundownShelfLayoutSelection work again ([8442ed7](https://github.com/nrkno/tv-automation-server-core/commit/8442ed76b7a847ab89a6482cd0a1fa8b471651e9))
-* moving playing part sometimes getting confused ([8ecc8d6](https://github.com/nrkno/tv-automation-server-core/commit/8ecc8d6a07c0c70031d890121dcd459aa6345ffe))
-* packages: types for quantel ([fccf190](https://github.com/nrkno/tv-automation-server-core/commit/fccf190c966835ebde21a5b5a35f21f22a55bbfd))
-* pieceInstance start: 'now' not getting updated to concrete time ([d599cb8](https://github.com/nrkno/tv-automation-server-core/commit/d599cb8f6032ae9ac679c7226146fb793da005ba))
-* reset adlibbed partinstances when jumping around the rundown ([b32f7ea](https://github.com/nrkno/tv-automation-server-core/commit/b32f7eac6be454551eeb725a307a30288779bdc6))
-* reset previous segment during autonext ([2085dbb](https://github.com/nrkno/tv-automation-server-core/commit/2085dbba03d9f04e1faab5f744d48b73e45e6f68))
-* RundownLayoutEditor has wrong widgets for Dashboard panels ([3209a76](https://github.com/nrkno/tv-automation-server-core/commit/3209a7604ad31d07c96cc22c60729d8c3aae9a5d))
-* single button activation on streamdecks ([1690396](https://github.com/nrkno/tv-automation-server-core/commit/16903968d2a412ae4bf121853fe89aac7aef8b16))
-* some cases where pieceInstances not being reset ([89a1675](https://github.com/nrkno/tv-automation-server-core/commit/89a16758b9eca1ecc8860c866a9074fed3c41c2a))
-* SplitDropdown prints key errors ([136fe0e](https://github.com/nrkno/tv-automation-server-core/commit/136fe0ee1cd5f937eedf55ba62af15bfc7917a0f))
-* update expectedPackages via ingest-cache not directly to the db ([daab561](https://github.com/nrkno/tv-automation-server-core/commit/daab561bbbe3bcd3893f85741db20a7338648c72))
-* use the core blueprint id for i18n namespace ([75f57e0](https://github.com/nrkno/tv-automation-server-core/commit/75f57e000ed645e9dab27d22bf89db21987c7b7c))
-* **Presenter screen:** BTS countdown on presenter screen ([#479](https://github.com/nrkno/tv-automation-server-core/issues/479)) ([59d1de8](https://github.com/nrkno/tv-automation-server-core/commit/59d1de8c1ced2571fd8958da43b038a7408ce125))
-
 ## [1.19.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.0...v1.19.0-in-testing.1) (2021-03-01)
 
 
