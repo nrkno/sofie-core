@@ -7,6 +7,7 @@
 	<meta name="description" content="Documentation for Sofie Integration Libraries">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
 </head>
 <body>
 <header>
@@ -40,8 +41,6 @@
 							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
 							<input type="checkbox" id="tsd-filter-externals" checked />
 							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
-							<input type="checkbox" id="tsd-filter-only-exported" />
-							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
 						</div>
 					</div>
 					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
@@ -53,13 +52,13 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../globals.html">Globals</a>
+					<a href="../modules.html">Sofie Integration Libraries</a>
 				</li>
 				<li>
 					<a href="server_core_integration.html">server-core-integration</a>
 				</li>
 			</ul>
-			<h1>Package server-core-integration</h1>
+			<h1>Module server-core-integration</h1>
 		</div>
 	</div>
 </header>
@@ -82,32 +81,33 @@
 					<a href="#typescript" id="typescript" style="color: inherit; text-decoration: none;">
 						<h2>Typescript</h2>
 					</a>
-					<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { CoreConnection, PeripheralDeviceAPI } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@sofie-automation/server-core-integration&#x27;</span>
+					<pre><code class="language-typescript"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">CoreConnection</span><span style="color: #000000">, </span><span style="color: #001080">PeripheralDeviceAPI</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;@sofie-automation/server-core-integration&#039;</span>
 
-<span class="hljs-comment">// Set up our basic credentials:</span>
-<span class="hljs-keyword">let</span> core = <span class="hljs-keyword">new</span> CoreConnection({
-    <span class="hljs-attr">deviceId</span>: <span class="hljs-string">&#x27;device01&#x27;</span>,             <span class="hljs-comment">// Unique id</span>
-    <span class="hljs-attr">deviceToken</span>: <span class="hljs-string">&#x27;mySecretToken&#x27;</span>,    <span class="hljs-comment">// secret token, used to authenticate this device</span>
-    <span class="hljs-attr">deviceType</span>: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-    <span class="hljs-attr">deviceName</span>: <span class="hljs-string">&#x27;My peripheral device&#x27;</span>
-})
-core.on(<span class="hljs-string">&#x27;error&#x27;</span>, <span class="hljs-built_in">console</span>.log)
-<span class="hljs-comment">// Initiate connection to Core:</span>
-core.init({
-    <span class="hljs-attr">host</span>: <span class="hljs-string">&#x27;127.0.0.1&#x27;</span>,
-    <span class="hljs-attr">port</span>: <span class="hljs-number">3000</span>
-}).then(<span class="hljs-function">() =&gt;</span> {
-    <span class="hljs-comment">// Connection has been established</span>
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;Connected!&#x27;</span>)
-    <span class="hljs-comment">// Set device status:</span>
-    <span class="hljs-keyword">return</span> core.setStatus({
-        <span class="hljs-attr">statusCode</span>: PeripheralDeviceAPI.StatusCode.GOOD,
-        <span class="hljs-attr">messages</span>: [<span class="hljs-string">&#x27;Everything is awesome!&#x27;</span>]
-    })
-})
-.catch(<span class="hljs-function">(<span class="hljs-params">err</span>) =&gt;</span> {
-    <span class="hljs-built_in">console</span>.log(err)
-})</code></pre>
+<span style="color: #008000">// Set up our basic credentials:</span>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">core</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">CoreConnection</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">deviceId:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;device01&#039;</span><span style="color: #000000">,             </span><span style="color: #008000">// Unique id</span>
+<span style="color: #000000">    </span><span style="color: #001080">deviceToken:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;mySecretToken&#039;</span><span style="color: #000000">,    </span><span style="color: #008000">// secret token, used to authenticate this device</span>
+<span style="color: #000000">    </span><span style="color: #001080">deviceType:</span><span style="color: #000000"> </span><span style="color: #001080">PeripheralDeviceAPI</span><span style="color: #000000">.</span><span style="color: #001080">DeviceType</span><span style="color: #000000">.</span><span style="color: #0070C1">PLAYOUT</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">deviceName:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;My peripheral device&#039;</span>
+<span style="color: #000000">})</span>
+<span style="color: #001080">core</span><span style="color: #000000">.</span><span style="color: #795E26">on</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;error&#039;</span><span style="color: #000000">, </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #001080">log</span><span style="color: #000000">)</span>
+<span style="color: #008000">// Initiate connection to Core:</span>
+<span style="color: #001080">core</span><span style="color: #000000">.</span><span style="color: #795E26">init</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">host:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;127.0.0.1&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">port:</span><span style="color: #000000"> </span><span style="color: #098658">3000</span>
+<span style="color: #000000">}).</span><span style="color: #795E26">then</span><span style="color: #000000">(() </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #008000">// Connection has been established</span>
+<span style="color: #000000">    </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;Connected!&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    </span><span style="color: #008000">// Set device status:</span>
+<span style="color: #000000">    </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #001080">core</span><span style="color: #000000">.</span><span style="color: #795E26">setStatus</span><span style="color: #000000">({</span>
+<span style="color: #000000">        </span><span style="color: #001080">statusCode:</span><span style="color: #000000"> </span><span style="color: #001080">PeripheralDeviceAPI</span><span style="color: #000000">.</span><span style="color: #001080">StatusCode</span><span style="color: #000000">.</span><span style="color: #0070C1">GOOD</span><span style="color: #000000">,</span>
+<span style="color: #000000">        </span><span style="color: #001080">messages:</span><span style="color: #000000"> [</span><span style="color: #A31515">&#039;Everything is awesome!&#039;</span><span style="color: #000000">]</span>
+<span style="color: #000000">    })</span>
+<span style="color: #000000">})</span>
+<span style="color: #000000">.</span><span style="color: #795E26">catch</span><span style="color: #000000">((</span><span style="color: #001080">err</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">err</span><span style="color: #000000">)</span>
+<span style="color: #000000">})</span>
+</code></pre>
 					<a href="#development" id="development" style="color: inherit; text-decoration: none;">
 						<h2>Development</h2>
 					</a>
@@ -129,27 +129,28 @@ core.init({
 						<h2>DDP Client</h2>
 					</a>
 					<p>This library has a self-contained DDP client that can be used independently of the rest of the module.</p>
-					<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { DDPClient, DDPConnectorOptions } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;tv-automation-server-integration&#x27;</span>
+					<pre><code class="language-typescript"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">DDPClient</span><span style="color: #000000">, </span><span style="color: #001080">DDPConnectorOptions</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;tv-automation-server-integration&#039;</span>
 
-<span class="hljs-keyword">let</span> options: DDPConnectorOptions = {
-    <span class="hljs-attr">host</span>: <span class="hljs-string">&#x27;127.0.0.1&#x27;</span>,
-    <span class="hljs-attr">port</span>: <span class="hljs-number">5432</span>
-}
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">options</span><span style="color: #000000">: </span><span style="color: #267F99">DDPConnectorOptions</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">    </span><span style="color: #001080">host:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;127.0.0.1&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">port:</span><span style="color: #000000"> </span><span style="color: #098658">5432</span>
+<span style="color: #000000">}</span>
 
-<span class="hljs-keyword">let</span> ddp = <span class="hljs-keyword">new</span> DDPClient(options)
-ddp.on(<span class="hljs-string">&#x27;connected&#x27;</span>, <span class="hljs-comment">/* ... */</span> )
-ddp.connect(<span class="hljs-function">(<span class="hljs-params">err: <span class="hljs-built_in">any</span></span>) =&gt;</span> {
-    <span class="hljs-keyword">if</span> (err) {
-        <span class="hljs-comment">/* ... handle error ... */</span>
-        <span class="hljs-keyword">return</span>
-    } 
-    <span class="hljs-keyword">let</span> subId = ddp.subscribe(<span class="hljs-string">&#x27;expectedMediaItems&#x27;</span>)
-    ddp.observe(<span class="hljs-string">&#x27;expectedMediaItems&#x27;</span>, <span class="hljs-comment">/* added cb */</span>, <span class="hljs-comment">/* changed cb */</span>, <span class="hljs-comment">/* removed cb */</span>)
-
-    <span class="hljs-comment">/* ... then later ... */</span>
-    ddp.unsub(subId)
-    ddp.close()
-})</code></pre>
+<span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">ddp</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">DDPClient</span><span style="color: #000000">(</span><span style="color: #001080">options</span><span style="color: #000000">)</span>
+<span style="color: #001080">ddp</span><span style="color: #000000">.</span><span style="color: #795E26">on</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;connected&#039;</span><span style="color: #000000">, </span><span style="color: #008000">/* ... */</span><span style="color: #000000"> )</span>
+<span style="color: #001080">ddp</span><span style="color: #000000">.</span><span style="color: #795E26">connect</span><span style="color: #000000">((</span><span style="color: #001080">err</span><span style="color: #000000">: </span><span style="color: #267F99">any</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #AF00DB">if</span><span style="color: #000000"> (</span><span style="color: #001080">err</span><span style="color: #000000">) {</span>
+<span style="color: #000000">        </span><span style="color: #008000">/* ... handle error ... */</span>
+<span style="color: #000000">        </span><span style="color: #AF00DB">return</span>
+<span style="color: #000000">    } </span>
+<span style="color: #000000">    </span><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">subId</span><span style="color: #000000"> = </span><span style="color: #001080">ddp</span><span style="color: #000000">.</span><span style="color: #795E26">subscribe</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;expectedMediaItems&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    </span><span style="color: #001080">ddp</span><span style="color: #000000">.</span><span style="color: #795E26">observe</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;expectedMediaItems&#039;</span><span style="color: #000000">, </span><span style="color: #008000">/* added cb */</span><span style="color: #000000">, </span><span style="color: #008000">/* changed cb */</span><span style="color: #000000">, </span><span style="color: #008000">/* removed cb */</span><span style="color: #000000">)</span>
+<span style="color: #000000">    </span>
+<span style="color: #000000">    </span><span style="color: #008000">/* ... then later ... */</span>
+<span style="color: #000000">    </span><span style="color: #001080">ddp</span><span style="color: #000000">.</span><span style="color: #795E26">unsub</span><span style="color: #000000">(</span><span style="color: #001080">subId</span><span style="color: #000000">)</span>
+<span style="color: #000000">    </span><span style="color: #001080">ddp</span><span style="color: #000000">.</span><span style="color: #795E26">close</span><span style="color: #000000">()</span>
+<span style="color: #000000">})</span>
+</code></pre>
 					<p>See the documentation on the <a href="./docs/classes/ddpclient.html">DDP client class</a> for more details.</p>
 				</div>
 			</section>
@@ -158,305 +159,94 @@ ddp.connect(<span class="hljs-function">(<span class="hljs-params">err: <span cl
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>References</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#anymessage" class="tsd-kind-icon">Any<wbr>Message</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#clientserver" class="tsd-kind-icon">Client<wbr>Server</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#collection" class="tsd-kind-icon">Collection</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#collectionobj" class="tsd-kind-icon">Collection<wbr>Obj</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#configmanifestentry" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#configmanifestentrybase" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Base</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#configmanifestentrytype" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Type</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#configmanifestenumentry" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Enum<wbr>Entry</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#coreconnection" class="tsd-kind-icon">Core<wbr>Connection</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#corecredentials" class="tsd-kind-icon">Core<wbr>Credentials</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#coreoptions" class="tsd-kind-icon">Core<wbr>Options</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#ddpclient" class="tsd-kind-icon">DDPClient</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#ddpconnectoroptions" class="tsd-kind-icon">DDPConnector<wbr>Options</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#ddperror" class="tsd-kind-icon">DDPError</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#deviceconfigmanifest" class="tsd-kind-icon">Device<wbr>Config<wbr>Manifest</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#deviceoauthflow" class="tsd-kind-icon">DeviceOAuth<wbr>Flow</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#mappingmanifestentry" class="tsd-kind-icon">Mapping<wbr>Manifest<wbr>Entry</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#mappingsmanifest" class="tsd-kind-icon">Mappings<wbr>Manifest</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#message" class="tsd-kind-icon">Message</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#messagetype" class="tsd-kind-icon">Message<wbr>Type</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#observer" class="tsd-kind-icon">Observer</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#peripheraldeviceapi" class="tsd-kind-icon">Peripheral<wbr>DeviceAPI</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#serverclient" class="tsd-kind-icon">Server<wbr>Client</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#subdeviceconfigmanifest" class="tsd-kind-icon">Sub<wbr>Device<wbr>Config<wbr>Manifest</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#subdeviceconfigmanifestentry" class="tsd-kind-icon">Sub<wbr>Device<wbr>Config<wbr>Manifest<wbr>Entry</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#tlsopts" class="tsd-kind-icon">TLSOpts</a></li>
-								<li class="tsd-kind-reference tsd-parent-kind-module"><a href="server_core_integration.html#tableconfigmanifestentry" class="tsd-kind-icon">Table<wbr>Config<wbr>Manifest<wbr>Entry</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
 							<h3>Namespaces</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-namespace tsd-parent-kind-module"><a href="server_core_integration.peripheraldeviceapi-1.html" class="tsd-kind-icon">Peripheral<wbr>DeviceAPI</a></li>
+								<li class="tsd-kind-namespace tsd-parent-kind-module"><a href="server_core_integration.peripheraldeviceapi.html" class="tsd-kind-icon">Peripheral<wbr>DeviceAPI</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Enumerations</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum tsd-parent-kind-module"><a href="../enums/server_core_integration.configmanifestentrytype-1.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Type</a></li>
+								<li class="tsd-kind-enum tsd-parent-kind-module"><a href="../enums/server_core_integration.configmanifestentrytype.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Type</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Classes</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/server_core_integration.client.html" class="tsd-kind-icon">Client</a></li>
-								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/server_core_integration.coreconnection-1.html" class="tsd-kind-icon">Core<wbr>Connection</a></li>
-								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/server_core_integration.ddpclient-1.html" class="tsd-kind-icon">DDPClient</a></li>
+								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/server_core_integration.coreconnection.html" class="tsd-kind-icon">Core<wbr>Connection</a></li>
+								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/server_core_integration.ddpclient.html" class="tsd-kind-icon">DDPClient</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/server_core_integration.ddpconnector.html" class="tsd-kind-icon">DDPConnector</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/server_core_integration.queue.html" class="tsd-kind-icon">Queue</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/server_core_integration.random.html" class="tsd-kind-icon">Random</a></li>
-								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/server_core_integration.store.html" class="tsd-kind-icon">Store</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/server_core_integration.timesync.html" class="tsd-kind-icon">Time<wbr>Sync</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/server_core_integration.watchdog.html" class="tsd-kind-icon">Watch<wbr>Dog</a></li>
+								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/server_core_integration.export_.html" class="tsd-kind-icon">export&#61;</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Interfaces</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.added.html" class="tsd-kind-icon">Added</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.changed.html" class="tsd-kind-icon">Changed</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.collection-1.html" class="tsd-kind-icon">Collection</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.collectionobj-1.html" class="tsd-kind-icon">Collection<wbr>Obj</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.configmanifestentrybase-1.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Base</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.configmanifestenumentry-1.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Enum<wbr>Entry</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.connect.html" class="tsd-kind-icon">Connect</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.connected.html" class="tsd-kind-icon">Connected</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.corecredentials-1.html" class="tsd-kind-icon">Core<wbr>Credentials</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.coreoptions-1.html" class="tsd-kind-icon">Core<wbr>Options</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.ddpconnectoroptions-1.html" class="tsd-kind-icon">DDPConnector<wbr>Options</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.ddperror-1.html" class="tsd-kind-icon">DDPError</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.deviceconfigmanifest-1.html" class="tsd-kind-icon">Device<wbr>Config<wbr>Manifest</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.deviceoauthflow-1.html" class="tsd-kind-icon">DeviceOAuth<wbr>Flow</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.errormessage.html" class="tsd-kind-icon">Error<wbr>Message</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.failed.html" class="tsd-kind-icon">Failed</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.mappingmanifestentry-1.html" class="tsd-kind-icon">Mapping<wbr>Manifest<wbr>Entry</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.message-1.html" class="tsd-kind-icon">Message</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.method.html" class="tsd-kind-icon">Method</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.nosub.html" class="tsd-kind-icon">No<wbr>Sub</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.observer-1.html" class="tsd-kind-icon">Observer</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.ping.html" class="tsd-kind-icon">Ping</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.pong.html" class="tsd-kind-icon">Pong</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.queuedmethodcall.html" class="tsd-kind-icon">Queued<wbr>Method<wbr>Call</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.ready.html" class="tsd-kind-icon">Ready</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.removed.html" class="tsd-kind-icon">Removed</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.result.html" class="tsd-kind-icon">Result</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.sub.html" class="tsd-kind-icon">Sub</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.subdeviceconfigmanifest-1.html" class="tsd-kind-icon">Sub<wbr>Device<wbr>Config<wbr>Manifest</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.subdeviceconfigmanifestentry-1.html" class="tsd-kind-icon">Sub<wbr>Device<wbr>Config<wbr>Manifest<wbr>Entry</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.syncresult.html" class="tsd-kind-icon">Sync<wbr>Result</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.tlsopts-1.html" class="tsd-kind-icon">TLSOpts</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.tableconfigmanifestentry-1.html" class="tsd-kind-icon">Table<wbr>Config<wbr>Manifest<wbr>Entry</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.collection.html" class="tsd-kind-icon">Collection</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.collectionobj.html" class="tsd-kind-icon">Collection<wbr>Obj</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.configmanifestentrybase.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Base</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.configmanifestenumentry.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Enum<wbr>Entry</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.corecredentials.html" class="tsd-kind-icon">Core<wbr>Credentials</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.coreoptions.html" class="tsd-kind-icon">Core<wbr>Options</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.ddpconnectoroptions.html" class="tsd-kind-icon">DDPConnector<wbr>Options</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.ddperror.html" class="tsd-kind-icon">DDPError</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.deviceconfigmanifest.html" class="tsd-kind-icon">Device<wbr>Config<wbr>Manifest</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.deviceoauthflow.html" class="tsd-kind-icon">DeviceOAuth<wbr>Flow</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.mappingmanifestentry.html" class="tsd-kind-icon">Mapping<wbr>Manifest<wbr>Entry</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.message.html" class="tsd-kind-icon">Message</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.observer.html" class="tsd-kind-icon">Observer</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.subdeviceconfigmanifest.html" class="tsd-kind-icon">Sub<wbr>Device<wbr>Config<wbr>Manifest</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.subdeviceconfigmanifestentry.html" class="tsd-kind-icon">Sub<wbr>Device<wbr>Config<wbr>Manifest<wbr>Entry</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.tlsopts.html" class="tsd-kind-icon">TLSOpts</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.tableconfigmanifestentry.html" class="tsd-kind-icon">Table<wbr>Config<wbr>Manifest<wbr>Entry</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.timesyncoptions.html" class="tsd-kind-icon">Time<wbr>Sync<wbr>Options</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/server_core_integration.timesyncoptionsoptional.html" class="tsd-kind-icon">Time<wbr>Sync<wbr>Options<wbr>Optional</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.unsub.html" class="tsd-kind-icon">Un<wbr>Sub</a></li>
-								<li class="tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported"><a href="../interfaces/server_core_integration.updated.html" class="tsd-kind-icon">Updated</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Type aliases</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="server_core_integration.html#anymessage-1" class="tsd-kind-icon">Any<wbr>Message</a></li>
-								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="server_core_integration.html#clientserver-1" class="tsd-kind-icon">Client<wbr>Server</a></li>
-								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="server_core_integration.html#configmanifestentry-1" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry</a></li>
-								<li class="tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#fcn" class="tsd-kind-icon">Fcn</a></li>
-								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="server_core_integration.html#mappingsmanifest-1" class="tsd-kind-icon">Mappings<wbr>Manifest</a></li>
-								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="server_core_integration.html#messagetype-1" class="tsd-kind-icon">Message<wbr>Type</a></li>
-								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="server_core_integration.html#serverclient-1" class="tsd-kind-icon">Server<wbr>Client</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section tsd-is-not-exported">
-							<h3>Variables</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#datastore" class="tsd-kind-icon">Data<wbr>Store</a></li>
-								<li class="tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#timeoutcall" class="tsd-kind-icon">TIMEOUTCALL</a></li>
-								<li class="tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#timeoutreply" class="tsd-kind-icon">TIMEOUTREPLY</a></li>
-								<li class="tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#_" class="tsd-kind-icon">_</a></li>
-								<li class="tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#core" class="tsd-kind-icon">core</a></li>
-								<li class="tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#corehost" class="tsd-kind-icon">core<wbr>Host</a></li>
-								<li class="tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#coreport" class="tsd-kind-icon">core<wbr>Port</a></li>
-								<li class="tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#orgsettimeout" class="tsd-kind-icon">org<wbr>Set<wbr>Timeout</a></li>
-								<li class="tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#settimeoutorg" class="tsd-kind-icon">set<wbr>Timeout<wbr>Org</a></li>
-								<li class="tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#store-1" class="tsd-kind-icon">store</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="server_core_integration.html#anymessage" class="tsd-kind-icon">Any<wbr>Message</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="server_core_integration.html#clientserver" class="tsd-kind-icon">Client<wbr>Server</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="server_core_integration.html#configmanifestentry" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="server_core_integration.html#mappingsmanifest" class="tsd-kind-icon">Mappings<wbr>Manifest</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="server_core_integration.html#messagetype" class="tsd-kind-icon">Message<wbr>Type</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="server_core_integration.html#serverclient" class="tsd-kind-icon">Server<wbr>Client</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#delay" class="tsd-kind-icon">delay</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-module"><a href="server_core_integration.html#got" class="tsd-kind-icon">got</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter tsd-is-not-exported"><a href="server_core_integration.html#literal" class="tsd-kind-icon">literal</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#setup" class="tsd-kind-icon">setup</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#setupobserver" class="tsd-kind-icon">setup<wbr>Observer</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#setupsubscription" class="tsd-kind-icon">setup<wbr>Subscription</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#wait" class="tsd-kind-icon">wait</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-module tsd-is-not-exported"><a href="server_core_integration.html#wait-1" class="tsd-kind-icon">wait</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="server_core_integration.html#default" class="tsd-kind-icon">default</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>References</h2>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="anymessage" class="tsd-anchor"></a>
-					<h3>Any<wbr>Message</h3>
-					Re-exports <a href="server_core_integration.html#anymessage-1">AnyMessage</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="clientserver" class="tsd-anchor"></a>
-					<h3>Client<wbr>Server</h3>
-					Re-exports <a href="server_core_integration.html#clientserver-1">ClientServer</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="collection" class="tsd-anchor"></a>
-					<h3>Collection</h3>
-					Re-exports <a href="../interfaces/server_core_integration.collection-1.html">Collection</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="collectionobj" class="tsd-anchor"></a>
-					<h3>Collection<wbr>Obj</h3>
-					Re-exports <a href="../interfaces/server_core_integration.collectionobj-1.html">CollectionObj</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="configmanifestentry" class="tsd-anchor"></a>
-					<h3>Config<wbr>Manifest<wbr>Entry</h3>
-					Re-exports <a href="server_core_integration.html#configmanifestentry-1">ConfigManifestEntry</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="configmanifestentrybase" class="tsd-anchor"></a>
-					<h3>Config<wbr>Manifest<wbr>Entry<wbr>Base</h3>
-					Re-exports <a href="../interfaces/server_core_integration.configmanifestentrybase-1.html">ConfigManifestEntryBase</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="configmanifestentrytype" class="tsd-anchor"></a>
-					<h3>Config<wbr>Manifest<wbr>Entry<wbr>Type</h3>
-					Re-exports <a href="../enums/server_core_integration.configmanifestentrytype-1.html">ConfigManifestEntryType</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="configmanifestenumentry" class="tsd-anchor"></a>
-					<h3>Config<wbr>Manifest<wbr>Enum<wbr>Entry</h3>
-					Re-exports <a href="../interfaces/server_core_integration.configmanifestenumentry-1.html">ConfigManifestEnumEntry</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="coreconnection" class="tsd-anchor"></a>
-					<h3>Core<wbr>Connection</h3>
-					Re-exports <a href="../classes/server_core_integration.coreconnection-1.html">CoreConnection</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="corecredentials" class="tsd-anchor"></a>
-					<h3>Core<wbr>Credentials</h3>
-					Re-exports <a href="../interfaces/server_core_integration.corecredentials-1.html">CoreCredentials</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="coreoptions" class="tsd-anchor"></a>
-					<h3>Core<wbr>Options</h3>
-					Re-exports <a href="../interfaces/server_core_integration.coreoptions-1.html">CoreOptions</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="ddpclient" class="tsd-anchor"></a>
-					<h3>DDPClient</h3>
-					Re-exports <a href="../classes/server_core_integration.ddpclient-1.html">DDPClient</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="ddpconnectoroptions" class="tsd-anchor"></a>
-					<h3>DDPConnector<wbr>Options</h3>
-					Re-exports <a href="../interfaces/server_core_integration.ddpconnectoroptions-1.html">DDPConnectorOptions</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="ddperror" class="tsd-anchor"></a>
-					<h3>DDPError</h3>
-					Re-exports <a href="../interfaces/server_core_integration.ddperror-1.html">DDPError</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="deviceconfigmanifest" class="tsd-anchor"></a>
-					<h3>Device<wbr>Config<wbr>Manifest</h3>
-					Re-exports <a href="../interfaces/server_core_integration.deviceconfigmanifest-1.html">DeviceConfigManifest</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="deviceoauthflow" class="tsd-anchor"></a>
-					<h3>DeviceOAuth<wbr>Flow</h3>
-					Re-exports <a href="../interfaces/server_core_integration.deviceoauthflow-1.html">DeviceOAuthFlow</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="mappingmanifestentry" class="tsd-anchor"></a>
-					<h3>Mapping<wbr>Manifest<wbr>Entry</h3>
-					Re-exports <a href="../interfaces/server_core_integration.mappingmanifestentry-1.html">MappingManifestEntry</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="mappingsmanifest" class="tsd-anchor"></a>
-					<h3>Mappings<wbr>Manifest</h3>
-					Re-exports <a href="server_core_integration.html#mappingsmanifest-1">MappingsManifest</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="message" class="tsd-anchor"></a>
-					<h3>Message</h3>
-					Re-exports <a href="../interfaces/server_core_integration.message-1.html">Message</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="messagetype" class="tsd-anchor"></a>
-					<h3>Message<wbr>Type</h3>
-					Re-exports <a href="server_core_integration.html#messagetype-1">MessageType</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="observer" class="tsd-anchor"></a>
-					<h3>Observer</h3>
-					Re-exports <a href="../interfaces/server_core_integration.observer-1.html">Observer</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="peripheraldeviceapi" class="tsd-anchor"></a>
-					<h3>Peripheral<wbr>DeviceAPI</h3>
-					Re-exports <a href="server_core_integration.peripheraldeviceapi-1.html">PeripheralDeviceAPI</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="serverclient" class="tsd-anchor"></a>
-					<h3>Server<wbr>Client</h3>
-					Re-exports <a href="server_core_integration.html#serverclient-1">ServerClient</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="subdeviceconfigmanifest" class="tsd-anchor"></a>
-					<h3>Sub<wbr>Device<wbr>Config<wbr>Manifest</h3>
-					Re-exports <a href="../interfaces/server_core_integration.subdeviceconfigmanifest-1.html">SubDeviceConfigManifest</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="subdeviceconfigmanifestentry" class="tsd-anchor"></a>
-					<h3>Sub<wbr>Device<wbr>Config<wbr>Manifest<wbr>Entry</h3>
-					Re-exports <a href="../interfaces/server_core_integration.subdeviceconfigmanifestentry-1.html">SubDeviceConfigManifestEntry</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="tlsopts" class="tsd-anchor"></a>
-					<h3>TLSOpts</h3>
-					Re-exports <a href="../interfaces/server_core_integration.tlsopts-1.html">TLSOpts</a>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-module">
-					<a name="tableconfigmanifestentry" class="tsd-anchor"></a>
-					<h3>Table<wbr>Config<wbr>Manifest<wbr>Entry</h3>
-					Re-exports <a href="../interfaces/server_core_integration.tableconfigmanifestentry-1.html">TableConfigManifestEntry</a>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Type aliases</h2>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
-					<a name="anymessage-1" class="tsd-anchor"></a>
+					<a name="anymessage" class="tsd-anchor"></a>
 					<h3>Any<wbr>Message</h3>
-					<div class="tsd-signature tsd-kind-icon">Any<wbr>Message<span class="tsd-signature-symbol">:</span> <a href="../interfaces/server_core_integration.connect.html" class="tsd-signature-type">Connect</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.connected.html" class="tsd-signature-type">Connected</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.failed.html" class="tsd-signature-type">Failed</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.ping.html" class="tsd-signature-type">Ping</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.pong.html" class="tsd-signature-type">Pong</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.sub.html" class="tsd-signature-type">Sub</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.unsub.html" class="tsd-signature-type">UnSub</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.nosub.html" class="tsd-signature-type">NoSub</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.added.html" class="tsd-signature-type">Added</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.changed.html" class="tsd-signature-type">Changed</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.removed.html" class="tsd-signature-type">Removed</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.ready.html" class="tsd-signature-type">Ready</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.method.html" class="tsd-signature-type">Method</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.result.html" class="tsd-signature-type">Result</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.updated.html" class="tsd-signature-type">Updated</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.errormessage.html" class="tsd-signature-type">ErrorMessage</a></div>
+					<div class="tsd-signature tsd-kind-icon">Any<wbr>Message<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Connect</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Connected</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Failed</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Ping</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Pong</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Sub</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">UnSub</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">NoSub</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Added</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Changed</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Removed</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Ready</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Method</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Result</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Updated</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">ErrorMessage</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/ddpClient.ts#L282">server-core-integration/src/lib/ddpClient.ts:282</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/9444393/packages/server-core-integration/src/lib/ddpClient.ts#L282">server-core-integration/src/lib/ddpClient.ts:282</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
-					<a name="clientserver-1" class="tsd-anchor"></a>
+					<a name="clientserver" class="tsd-anchor"></a>
 					<h3>Client<wbr>Server</h3>
-					<div class="tsd-signature tsd-kind-icon">Client<wbr>Server<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"connect"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"ping"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"pong"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"method"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"sub"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"unsub"</span></div>
+					<div class="tsd-signature tsd-kind-icon">Client<wbr>Server<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;connect&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;ping&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;pong&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;method&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;sub&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;unsub&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/ddpClient.ts#L72">server-core-integration/src/lib/ddpClient.ts:72</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/9444393/packages/server-core-integration/src/lib/ddpClient.ts#L72">server-core-integration/src/lib/ddpClient.ts:72</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -466,68 +256,32 @@ ddp.connect(<span class="hljs-function">(<span class="hljs-params">err: <span cl
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
-					<a name="configmanifestentry-1" class="tsd-anchor"></a>
+					<a name="configmanifestentry" class="tsd-anchor"></a>
 					<h3>Config<wbr>Manifest<wbr>Entry</h3>
-					<div class="tsd-signature tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<span class="tsd-signature-symbol">:</span> <a href="../interfaces/server_core_integration.configmanifestentrybase-1.html" class="tsd-signature-type">ConfigManifestEntryBase</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.tableconfigmanifestentry-1.html" class="tsd-signature-type">TableConfigManifestEntry</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.configmanifestenumentry-1.html" class="tsd-signature-type">ConfigManifestEnumEntry</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/server_core_integration.subdeviceconfigmanifestentry-1.html" class="tsd-signature-type">SubDeviceConfigManifestEntry</a></div>
+					<div class="tsd-signature tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<span class="tsd-signature-symbol">:</span> <a href="" class="tsd-signature-type" data-tsd-kind="Interface">ConfigManifestEntryBase</a><span class="tsd-signature-symbol"> | </span><a href="" class="tsd-signature-type" data-tsd-kind="Interface">TableConfigManifestEntry</a><span class="tsd-signature-symbol"> | </span><a href="" class="tsd-signature-type" data-tsd-kind="Interface">ConfigManifestEnumEntry</a><span class="tsd-signature-symbol"> | </span><a href="" class="tsd-signature-type" data-tsd-kind="Interface">SubDeviceConfigManifestEntry</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/configManifest.ts#L32">server-core-integration/src/lib/configManifest.ts:32</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/9444393/packages/server-core-integration/src/lib/configManifest.ts#L32">server-core-integration/src/lib/configManifest.ts:32</a></li>
 						</ul>
 					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
-					<a name="fcn" class="tsd-anchor"></a>
-					<h3>Fcn</h3>
-					<div class="tsd-signature tsd-kind-icon">Fcn<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>fcn<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">; </span>reject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Function</span><span class="tsd-signature-symbol">; </span>resolve<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Function</span><span class="tsd-signature-symbol"> }</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/queue.ts#L2">server-core-integration/src/lib/queue.ts:2</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter">
-								<h5>fcn<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
-								<ul class="tsd-parameters">
-									<li class="tsd-parameter-signature">
-										<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-variable tsd-is-not-exported">
-											<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
-										</ul>
-										<ul class="tsd-descriptions">
-											<li class="tsd-description">
-												<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
-											</li>
-										</ul>
-									</li>
-								</ul>
-							</li>
-							<li class="tsd-parameter">
-								<h5>reject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Function</span></h5>
-							</li>
-							<li class="tsd-parameter">
-								<h5>resolve<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Function</span></h5>
-							</li>
-						</ul>
-					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
-					<a name="mappingsmanifest-1" class="tsd-anchor"></a>
+					<a name="mappingsmanifest" class="tsd-anchor"></a>
 					<h3>Mappings<wbr>Manifest</h3>
-					<div class="tsd-signature tsd-kind-icon">Mappings<wbr>Manifest<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="../interfaces/server_core_integration.mappingmanifestentry-1.html" class="tsd-signature-type">MappingManifestEntry</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<div class="tsd-signature tsd-kind-icon">Mappings<wbr>Manifest<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="" class="tsd-signature-type" data-tsd-kind="Interface">MappingManifestEntry</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/configManifest.ts#L63">server-core-integration/src/lib/configManifest.ts:63</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/9444393/packages/server-core-integration/src/lib/configManifest.ts#L63">server-core-integration/src/lib/configManifest.ts:63</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
-					<a name="messagetype-1" class="tsd-anchor"></a>
+					<a name="messagetype" class="tsd-anchor"></a>
 					<h3>Message<wbr>Type</h3>
-					<div class="tsd-signature tsd-kind-icon">Message<wbr>Type<span class="tsd-signature-symbol">:</span> <a href="server_core_integration.html#clientserver" class="tsd-signature-type">ClientServer</a><span class="tsd-signature-symbol"> | </span><a href="server_core_integration.html#serverclient" class="tsd-signature-type">ServerClient</a></div>
+					<div class="tsd-signature tsd-kind-icon">Message<wbr>Type<span class="tsd-signature-symbol">:</span> <a href="" class="tsd-signature-type" data-tsd-kind="Type alias">ClientServer</a><span class="tsd-signature-symbol"> | </span><a href="" class="tsd-signature-type" data-tsd-kind="Type alias">ServerClient</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/ddpClient.ts#L76">server-core-integration/src/lib/ddpClient.ts:76</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/9444393/packages/server-core-integration/src/lib/ddpClient.ts#L76">server-core-integration/src/lib/ddpClient.ts:76</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -537,12 +291,12 @@ ddp.connect(<span class="hljs-function">(<span class="hljs-params">err: <span cl
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
-					<a name="serverclient-1" class="tsd-anchor"></a>
+					<a name="serverclient" class="tsd-anchor"></a>
 					<h3>Server<wbr>Client</h3>
-					<div class="tsd-signature tsd-kind-icon">Server<wbr>Client<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"failed"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"connected"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"result"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"updated"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"nosub"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"added"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"removed"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"changed"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"ready"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"ping"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"pong"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"error"</span></div>
+					<div class="tsd-signature tsd-kind-icon">Server<wbr>Client<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;failed&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;connected&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;result&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;updated&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;nosub&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;added&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;removed&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;changed&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;ready&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;ping&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;pong&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;error&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/ddpClient.ts#L74">server-core-integration/src/lib/ddpClient.ts:74</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/9444393/packages/server-core-integration/src/lib/ddpClient.ts#L74">server-core-integration/src/lib/ddpClient.ts:74</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -552,153 +306,19 @@ ddp.connect(<span class="hljs-function">(<span class="hljs-params">err: <span cl
 					</div>
 				</section>
 			</section>
-			<section class="tsd-panel-group tsd-member-group tsd-is-not-exported">
-				<h2>Variables</h2>
-				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-					<a name="datastore" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> Data<wbr>Store</h3>
-					<div class="tsd-signature tsd-kind-icon">Data<wbr>Store<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> = require(&#x27;data-store&#x27;)</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/coreConnection.ts#L13">server-core-integration/src/lib/coreConnection.ts:13</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-					<a name="timeoutcall" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> TIMEOUTCALL</h3>
-					<div class="tsd-signature tsd-kind-icon">TIMEOUTCALL<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">200</span><span class="tsd-signature-symbol"> = 200</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/coreConnection.ts#L16">server-core-integration/src/lib/coreConnection.ts:16</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-					<a name="timeoutreply" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> TIMEOUTREPLY</h3>
-					<div class="tsd-signature tsd-kind-icon">TIMEOUTREPLY<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">50</span><span class="tsd-signature-symbol"> = 50</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/coreConnection.ts#L17">server-core-integration/src/lib/coreConnection.ts:17</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-					<a name="_" class="tsd-anchor"></a>
-					<h3>_</h3>
-					<div class="tsd-signature tsd-kind-icon">_<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">UnderscoreStatic</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/watchDog.ts#L2">server-core-integration/src/lib/watchDog.ts:2</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-					<a name="core" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagLet">Let</span> core</h3>
-					<div class="tsd-signature tsd-kind-icon">core<span class="tsd-signature-symbol">:</span> <a href="../classes/server_core_integration.coreconnection-1.html" class="tsd-signature-type">CoreConnection</a><span class="tsd-signature-symbol"> = new CoreConnection({deviceId: &#x27;ExampleDevice&#x27;,deviceToken: &#x27;abcd&#x27;,deviceType: P.DeviceType.PLAYOUT,deviceName: &#x27;Jest test framework&#x27;})</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/examples/client.ts#L5">server-core-integration/examples/client.ts:5</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-					<a name="corehost" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> core<wbr>Host</h3>
-					<div class="tsd-signature tsd-kind-icon">core<wbr>Host<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"127.0.0.1"</span><span class="tsd-signature-symbol"> = &quot;127.0.0.1&quot;</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/integrationTests/index.spec.ts#L17">server-core-integration/src/integrationTests/index.spec.ts:17</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-					<a name="coreport" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> core<wbr>Port</h3>
-					<div class="tsd-signature tsd-kind-icon">core<wbr>Port<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">3000</span><span class="tsd-signature-symbol"> = 3000</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/integrationTests/index.spec.ts#L18">server-core-integration/src/integrationTests/index.spec.ts:18</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-					<a name="orgsettimeout" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> org<wbr>Set<wbr>Timeout</h3>
-					<div class="tsd-signature tsd-kind-icon">org<wbr>Set<wbr>Timeout<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">setTimeout</span><span class="tsd-signature-symbol"> = setTimeout</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/__tests__/index.spec.ts#L12">server-core-integration/src/__tests__/index.spec.ts:12</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-					<a name="settimeoutorg" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagLet">Let</span> set<wbr>Timeout<wbr>Org</h3>
-					<div class="tsd-signature tsd-kind-icon">set<wbr>Timeout<wbr>Org<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">setTimeout</span><span class="tsd-signature-symbol"> = setTimeout</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/__tests__/watchDog.spec.ts#L3">server-core-integration/src/lib/__tests__/watchDog.spec.ts:3</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-					<a name="store-1" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagLet">Let</span> store</h3>
-					<div class="tsd-signature tsd-kind-icon">store<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{}</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/__mocks__/data-store.ts#L2">server-core-integration/src/__mocks__/data-store.ts:2</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter-index-signature">
-								<h5><span class="tsd-signature-symbol">[</span>key: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">any</span></h5>
-							</li>
-						</ul>
-					</div>
-				</section>
-			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-					<a name="delay" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagLet">Let</span> delay</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-						<li class="tsd-signature tsd-kind-icon">delay<span class="tsd-signature-symbol">(</span>time<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/__tests__/watchDog.spec.ts#L4">server-core-integration/src/lib/__tests__/watchDog.spec.ts:4</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>time: <span class="tsd-signature-type">any</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
-					<a name="got" class="tsd-anchor"></a>
-					<h3>got</h3>
+					<a name="default" class="tsd-anchor"></a>
+					<h3>default</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">got<span class="tsd-signature-symbol">(</span>url<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>body<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">default<span class="tsd-signature-symbol">(</span>url<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>body<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>base_url<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/__mocks__/got.ts#L1">server-core-integration/src/__mocks__/got.ts:1</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/9444393/packages/server-core-integration/src/__mocks__/got.ts#L1">server-core-integration/src/__mocks__/got.ts:1</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -707,133 +327,7 @@ ddp.connect(<span class="hljs-function">(<span class="hljs-params">err: <span cl
 									<h5>url: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>body<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter tsd-is-not-exported">
-					<a name="literal" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> literal</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter tsd-is-not-exported">
-						<li class="tsd-signature tsd-kind-icon">literal&lt;T&gt;<span class="tsd-signature-symbol">(</span>t<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/__mocks__/faye-websocket.ts#L8">server-core-integration/src/__mocks__/faye-websocket.ts:8</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-type-parameters-title">Type parameters</h4>
-							<ul class="tsd-type-parameters">
-								<li>
-									<h4>T</h4>
-								</li>
-							</ul>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>t: <span class="tsd-signature-type">T</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">T</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-					<a name="setup" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagLet">Let</span> setup</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-						<li class="tsd-signature tsd-kind-icon">setup<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/examples/client.ts#L53">server-core-integration/examples/client.ts:53</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-					<a name="setupobserver" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagLet">Let</span> setup<wbr>Observer</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-						<li class="tsd-signature tsd-kind-icon">setup<wbr>Observer<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/examples/client.ts#L44">server-core-integration/examples/client.ts:44</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-					<a name="setupsubscription" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagLet">Let</span> setup<wbr>Subscription</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-						<li class="tsd-signature tsd-kind-icon">setup<wbr>Subscription<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/examples/client.ts#L35">server-core-integration/examples/client.ts:35</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-					<a name="wait" class="tsd-anchor"></a>
-					<h3>wait</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-						<li class="tsd-signature tsd-kind-icon">wait<span class="tsd-signature-symbol">(</span>time<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/integrationTests/index.spec.ts#L10">server-core-integration/src/integrationTests/index.spec.ts:10</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>time: <span class="tsd-signature-type">number</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-					<a name="wait-1" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagLet">Let</span> wait</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-						<li class="tsd-signature tsd-kind-icon">wait<span class="tsd-signature-symbol">(</span>t<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/34c6f22/packages/server-core-integration/src/lib/__tests__/ddpClient.spec.ts#L4">server-core-integration/src/lib/__tests__/ddpClient.spec.ts:4</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>t: <span class="tsd-signature-type">number</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>body<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>base_url<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -842,8 +336,8 @@ ddp.connect(<span class="hljs-function">(<span class="hljs-params">err: <span cl
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 			<nav class="tsd-navigation primary">
 				<ul>
-					<li class="globals  ">
-						<a href="../globals.html"><em>Globals</em></a>
+					<li class=" ">
+						<a href="../modules.html">Exports</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="blueprints_integration.html">blueprints-<wbr>integration</a>
@@ -863,101 +357,20 @@ ddp.connect(<span class="hljs-function">(<span class="hljs-params">err: <span cl
 					<li class="current tsd-kind-module">
 						<a href="server_core_integration.html" class="tsd-kind-icon">server-<wbr>core-<wbr>integration</a>
 						<ul>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#anymessage" class="tsd-kind-icon">Any<wbr>Message</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#clientserver" class="tsd-kind-icon">Client<wbr>Server</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#collection" class="tsd-kind-icon">Collection</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#collectionobj" class="tsd-kind-icon">Collection<wbr>Obj</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#configmanifestentry" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#configmanifestentrybase" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Base</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#configmanifestentrytype" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Type</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#configmanifestenumentry" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Enum<wbr>Entry</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#coreconnection" class="tsd-kind-icon">Core<wbr>Connection</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#corecredentials" class="tsd-kind-icon">Core<wbr>Credentials</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#coreoptions" class="tsd-kind-icon">Core<wbr>Options</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#ddpclient" class="tsd-kind-icon">DDPClient</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#ddpconnectoroptions" class="tsd-kind-icon">DDPConnector<wbr>Options</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#ddperror" class="tsd-kind-icon">DDPError</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#deviceconfigmanifest" class="tsd-kind-icon">Device<wbr>Config<wbr>Manifest</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#deviceoauthflow" class="tsd-kind-icon">DeviceOAuth<wbr>Flow</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#mappingmanifestentry" class="tsd-kind-icon">Mapping<wbr>Manifest<wbr>Entry</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#mappingsmanifest" class="tsd-kind-icon">Mappings<wbr>Manifest</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#message" class="tsd-kind-icon">Message</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#messagetype" class="tsd-kind-icon">Message<wbr>Type</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#observer" class="tsd-kind-icon">Observer</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#peripheraldeviceapi" class="tsd-kind-icon">Peripheral<wbr>DeviceAPI</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#serverclient" class="tsd-kind-icon">Server<wbr>Client</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#subdeviceconfigmanifest" class="tsd-kind-icon">Sub<wbr>Device<wbr>Config<wbr>Manifest</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#subdeviceconfigmanifestentry" class="tsd-kind-icon">Sub<wbr>Device<wbr>Config<wbr>Manifest<wbr>Entry</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#tlsopts" class="tsd-kind-icon">TLSOpts</a>
-							</li>
-							<li class=" tsd-kind-reference tsd-parent-kind-module">
-								<a href="server_core_integration.html#tableconfigmanifestentry" class="tsd-kind-icon">Table<wbr>Config<wbr>Manifest<wbr>Entry</a>
-							</li>
 							<li class=" tsd-kind-namespace tsd-parent-kind-module">
-								<a href="server_core_integration.peripheraldeviceapi-1.html" class="tsd-kind-icon">Peripheral<wbr>DeviceAPI</a>
+								<a href="server_core_integration.peripheraldeviceapi.html" class="tsd-kind-icon">Peripheral<wbr>DeviceAPI</a>
 							</li>
 							<li class=" tsd-kind-enum tsd-parent-kind-module">
-								<a href="../enums/server_core_integration.configmanifestentrytype-1.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Type</a>
+								<a href="../enums/server_core_integration.configmanifestentrytype.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Type</a>
 							</li>
 							<li class=" tsd-kind-class tsd-parent-kind-module">
 								<a href="../classes/server_core_integration.client.html" class="tsd-kind-icon">Client</a>
 							</li>
 							<li class=" tsd-kind-class tsd-parent-kind-module">
-								<a href="../classes/server_core_integration.coreconnection-1.html" class="tsd-kind-icon">Core<wbr>Connection</a>
+								<a href="../classes/server_core_integration.coreconnection.html" class="tsd-kind-icon">Core<wbr>Connection</a>
 							</li>
 							<li class=" tsd-kind-class tsd-parent-kind-module">
-								<a href="../classes/server_core_integration.ddpclient-1.html" class="tsd-kind-icon">DDPClient</a>
+								<a href="../classes/server_core_integration.ddpclient.html" class="tsd-kind-icon">DDPClient</a>
 							</li>
 							<li class=" tsd-kind-class tsd-parent-kind-module">
 								<a href="../classes/server_core_integration.ddpconnector.html" class="tsd-kind-icon">DDPConnector</a>
@@ -969,112 +382,64 @@ ddp.connect(<span class="hljs-function">(<span class="hljs-params">err: <span cl
 								<a href="../classes/server_core_integration.random.html" class="tsd-kind-icon">Random</a>
 							</li>
 							<li class=" tsd-kind-class tsd-parent-kind-module">
-								<a href="../classes/server_core_integration.store.html" class="tsd-kind-icon">Store</a>
-							</li>
-							<li class=" tsd-kind-class tsd-parent-kind-module">
 								<a href="../classes/server_core_integration.timesync.html" class="tsd-kind-icon">Time<wbr>Sync</a>
 							</li>
 							<li class=" tsd-kind-class tsd-parent-kind-module">
 								<a href="../classes/server_core_integration.watchdog.html" class="tsd-kind-icon">Watch<wbr>Dog</a>
 							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.added.html" class="tsd-kind-icon">Added</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.changed.html" class="tsd-kind-icon">Changed</a>
+							<li class=" tsd-kind-class tsd-parent-kind-module">
+								<a href="../classes/server_core_integration.export_.html" class="tsd-kind-icon">export&#61;</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.collection-1.html" class="tsd-kind-icon">Collection</a>
+								<a href="../interfaces/server_core_integration.collection.html" class="tsd-kind-icon">Collection</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.collectionobj-1.html" class="tsd-kind-icon">Collection<wbr>Obj</a>
+								<a href="../interfaces/server_core_integration.collectionobj.html" class="tsd-kind-icon">Collection<wbr>Obj</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.configmanifestentrybase-1.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Base</a>
+								<a href="../interfaces/server_core_integration.configmanifestentrybase.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Base</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.configmanifestenumentry-1.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Enum<wbr>Entry</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.connect.html" class="tsd-kind-icon">Connect</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.connected.html" class="tsd-kind-icon">Connected</a>
+								<a href="../interfaces/server_core_integration.configmanifestenumentry.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Enum<wbr>Entry</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.corecredentials-1.html" class="tsd-kind-icon">Core<wbr>Credentials</a>
+								<a href="../interfaces/server_core_integration.corecredentials.html" class="tsd-kind-icon">Core<wbr>Credentials</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.coreoptions-1.html" class="tsd-kind-icon">Core<wbr>Options</a>
+								<a href="../interfaces/server_core_integration.coreoptions.html" class="tsd-kind-icon">Core<wbr>Options</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.ddpconnectoroptions-1.html" class="tsd-kind-icon">DDPConnector<wbr>Options</a>
+								<a href="../interfaces/server_core_integration.ddpconnectoroptions.html" class="tsd-kind-icon">DDPConnector<wbr>Options</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.ddperror-1.html" class="tsd-kind-icon">DDPError</a>
+								<a href="../interfaces/server_core_integration.ddperror.html" class="tsd-kind-icon">DDPError</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.deviceconfigmanifest-1.html" class="tsd-kind-icon">Device<wbr>Config<wbr>Manifest</a>
+								<a href="../interfaces/server_core_integration.deviceconfigmanifest.html" class="tsd-kind-icon">Device<wbr>Config<wbr>Manifest</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.deviceoauthflow-1.html" class="tsd-kind-icon">DeviceOAuth<wbr>Flow</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.errormessage.html" class="tsd-kind-icon">Error<wbr>Message</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.failed.html" class="tsd-kind-icon">Failed</a>
+								<a href="../interfaces/server_core_integration.deviceoauthflow.html" class="tsd-kind-icon">DeviceOAuth<wbr>Flow</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.mappingmanifestentry-1.html" class="tsd-kind-icon">Mapping<wbr>Manifest<wbr>Entry</a>
+								<a href="../interfaces/server_core_integration.mappingmanifestentry.html" class="tsd-kind-icon">Mapping<wbr>Manifest<wbr>Entry</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.message-1.html" class="tsd-kind-icon">Message</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.method.html" class="tsd-kind-icon">Method</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.nosub.html" class="tsd-kind-icon">No<wbr>Sub</a>
+								<a href="../interfaces/server_core_integration.message.html" class="tsd-kind-icon">Message</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.observer-1.html" class="tsd-kind-icon">Observer</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.ping.html" class="tsd-kind-icon">Ping</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.pong.html" class="tsd-kind-icon">Pong</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.queuedmethodcall.html" class="tsd-kind-icon">Queued<wbr>Method<wbr>Call</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.ready.html" class="tsd-kind-icon">Ready</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.removed.html" class="tsd-kind-icon">Removed</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.result.html" class="tsd-kind-icon">Result</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.sub.html" class="tsd-kind-icon">Sub</a>
+								<a href="../interfaces/server_core_integration.observer.html" class="tsd-kind-icon">Observer</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.subdeviceconfigmanifest-1.html" class="tsd-kind-icon">Sub<wbr>Device<wbr>Config<wbr>Manifest</a>
+								<a href="../interfaces/server_core_integration.subdeviceconfigmanifest.html" class="tsd-kind-icon">Sub<wbr>Device<wbr>Config<wbr>Manifest</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.subdeviceconfigmanifestentry-1.html" class="tsd-kind-icon">Sub<wbr>Device<wbr>Config<wbr>Manifest<wbr>Entry</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.syncresult.html" class="tsd-kind-icon">Sync<wbr>Result</a>
+								<a href="../interfaces/server_core_integration.subdeviceconfigmanifestentry.html" class="tsd-kind-icon">Sub<wbr>Device<wbr>Config<wbr>Manifest<wbr>Entry</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.tlsopts-1.html" class="tsd-kind-icon">TLSOpts</a>
+								<a href="../interfaces/server_core_integration.tlsopts.html" class="tsd-kind-icon">TLSOpts</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
-								<a href="../interfaces/server_core_integration.tableconfigmanifestentry-1.html" class="tsd-kind-icon">Table<wbr>Config<wbr>Manifest<wbr>Entry</a>
+								<a href="../interfaces/server_core_integration.tableconfigmanifestentry.html" class="tsd-kind-icon">Table<wbr>Config<wbr>Manifest<wbr>Entry</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
 								<a href="../interfaces/server_core_integration.timesyncoptions.html" class="tsd-kind-icon">Time<wbr>Sync<wbr>Options</a>
@@ -1082,86 +447,26 @@ ddp.connect(<span class="hljs-function">(<span class="hljs-params">err: <span cl
 							<li class=" tsd-kind-interface tsd-parent-kind-module">
 								<a href="../interfaces/server_core_integration.timesyncoptionsoptional.html" class="tsd-kind-icon">Time<wbr>Sync<wbr>Options<wbr>Optional</a>
 							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.unsub.html" class="tsd-kind-icon">Un<wbr>Sub</a>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-module tsd-is-not-exported">
-								<a href="../interfaces/server_core_integration.updated.html" class="tsd-kind-icon">Updated</a>
+							<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+								<a href="server_core_integration.html#anymessage" class="tsd-kind-icon">Any<wbr>Message</a>
 							</li>
 							<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-								<a href="server_core_integration.html#anymessage-1" class="tsd-kind-icon">Any<wbr>Message</a>
+								<a href="server_core_integration.html#clientserver" class="tsd-kind-icon">Client<wbr>Server</a>
 							</li>
 							<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-								<a href="server_core_integration.html#clientserver-1" class="tsd-kind-icon">Client<wbr>Server</a>
+								<a href="server_core_integration.html#configmanifestentry" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry</a>
 							</li>
 							<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-								<a href="server_core_integration.html#configmanifestentry-1" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry</a>
-							</li>
-							<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#fcn" class="tsd-kind-icon">Fcn</a>
+								<a href="server_core_integration.html#mappingsmanifest" class="tsd-kind-icon">Mappings<wbr>Manifest</a>
 							</li>
 							<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-								<a href="server_core_integration.html#mappingsmanifest-1" class="tsd-kind-icon">Mappings<wbr>Manifest</a>
+								<a href="server_core_integration.html#messagetype" class="tsd-kind-icon">Message<wbr>Type</a>
 							</li>
 							<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-								<a href="server_core_integration.html#messagetype-1" class="tsd-kind-icon">Message<wbr>Type</a>
-							</li>
-							<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-								<a href="server_core_integration.html#serverclient-1" class="tsd-kind-icon">Server<wbr>Client</a>
-							</li>
-							<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#datastore" class="tsd-kind-icon">Data<wbr>Store</a>
-							</li>
-							<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#timeoutcall" class="tsd-kind-icon">TIMEOUTCALL</a>
-							</li>
-							<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#timeoutreply" class="tsd-kind-icon">TIMEOUTREPLY</a>
-							</li>
-							<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#_" class="tsd-kind-icon">_</a>
-							</li>
-							<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#core" class="tsd-kind-icon">core</a>
-							</li>
-							<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#corehost" class="tsd-kind-icon">core<wbr>Host</a>
-							</li>
-							<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#coreport" class="tsd-kind-icon">core<wbr>Port</a>
-							</li>
-							<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#orgsettimeout" class="tsd-kind-icon">org<wbr>Set<wbr>Timeout</a>
-							</li>
-							<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#settimeoutorg" class="tsd-kind-icon">set<wbr>Timeout<wbr>Org</a>
-							</li>
-							<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#store-1" class="tsd-kind-icon">store</a>
-							</li>
-							<li class=" tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#delay" class="tsd-kind-icon">delay</a>
+								<a href="server_core_integration.html#serverclient" class="tsd-kind-icon">Server<wbr>Client</a>
 							</li>
 							<li class=" tsd-kind-function tsd-parent-kind-module">
-								<a href="server_core_integration.html#got" class="tsd-kind-icon">got</a>
-							</li>
-							<li class=" tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter tsd-is-not-exported">
-								<a href="server_core_integration.html#literal" class="tsd-kind-icon">literal</a>
-							</li>
-							<li class=" tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#setup" class="tsd-kind-icon">setup</a>
-							</li>
-							<li class=" tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#setupobserver" class="tsd-kind-icon">setup<wbr>Observer</a>
-							</li>
-							<li class=" tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#setupsubscription" class="tsd-kind-icon">setup<wbr>Subscription</a>
-							</li>
-							<li class=" tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#wait" class="tsd-kind-icon">wait</a>
-							</li>
-							<li class=" tsd-kind-function tsd-parent-kind-module tsd-is-not-exported">
-								<a href="server_core_integration.html#wait-1" class="tsd-kind-icon">wait</a>
+								<a href="server_core_integration.html#default" class="tsd-kind-icon">default</a>
 							</li>
 						</ul>
 					</li>
@@ -1180,7 +485,6 @@ ddp.connect(<span class="hljs-function">(<span class="hljs-params">err: <span cl
 				<li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
-				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
 				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
