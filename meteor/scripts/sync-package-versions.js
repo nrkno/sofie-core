@@ -22,6 +22,7 @@ const origDir = __dirname
 				skip: {
 					tag: true,
 					commit: true,
+					changelog: !process.env.GENERATE_CHANGELOGS,
 				},
 				releaseAs: pkg.version,
 			})
