@@ -17,8 +17,8 @@ import {
 	ExpectedPackages,
 	getContentVersionHash,
 } from '../../../lib/collections/ExpectedPackages'
-import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
-import { ExpectedPackage, IBlueprintPieceGeneric } from '@sofie-automation/blueprints-integration'
+import { Studio, Studios } from '../../../lib/collections/Studios'
+import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { BucketAdLibAction, BucketAdLibActionId, BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { Meteor } from 'meteor/meteor'
@@ -29,7 +29,7 @@ import {
 	RundownBaselineAdLibActions,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
-import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { CacheForIngest } from './cache'
 import { asyncCollectionFindFetch, asyncCollectionFindOne, asyncCollectionRemove, saveIntoDb } from '../../lib/database'
@@ -47,7 +47,6 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 			})
 			logger.info(`Removed ${removedItems} expected packages for deleted rundown "${cache.RundownId}"`)
 		})
-		return
 	} else {
 		const studioId = rundown.studioId
 
@@ -266,7 +265,7 @@ export function updateExpectedPackagesForBucketAdLibAction(actionId: BucketAdLib
 export async function cleanUpExpectedPackagesForBucketAdLibs(adLibIds: PieceId[]): Promise<void> {
 	check(adLibIds, [String])
 
-	const removedItems = await asyncCollectionRemove(ExpectedPackages, {
+	await asyncCollectionRemove(ExpectedPackages, {
 		pieceId: {
 			$in: adLibIds,
 		},
@@ -275,7 +274,7 @@ export async function cleanUpExpectedPackagesForBucketAdLibs(adLibIds: PieceId[]
 export async function cleanUpExpectedPackagesForBucketAdLibsActions(adLibIds: AdLibActionId[]): Promise<void> {
 	check(adLibIds, [String])
 
-	const removedItems = await asyncCollectionRemove(ExpectedPackages, {
+	await asyncCollectionRemove(ExpectedPackages, {
 		pieceId: {
 			$in: adLibIds,
 		},

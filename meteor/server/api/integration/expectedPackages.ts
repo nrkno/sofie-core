@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { check } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'

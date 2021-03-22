@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { getCurrentTime, Time, unprotectString, waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { logger } from '../../../lib/logging'

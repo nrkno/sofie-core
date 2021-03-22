@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
 import {
@@ -64,7 +63,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 		}
 
 		renderExpectedPackageStatuses() {
-			const { t, i18n, tReady } = this.props
+			const { t } = this.props
 
 			const packageRef: { [packageId: string]: ExpectedPackageDB } = {}
 			for (const expPackage of this.props.expectedPackages) {
@@ -80,7 +79,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 			for (const work of this.props.expectedPackageWorkStatuses) {
 				// todo: make this better:
 				const packageId = unprotectString(work.fromPackages[0]?.id) || 'N/A'
-				const referencedPackage = packageRef[packageId]
+				// const referencedPackage = packageRef[packageId]
 				let packageWithWorkStatus = packagesWithWorkStatuses[packageId]
 				if (!packageWithWorkStatus) {
 					packagesWithWorkStatuses[packageId] = packageWithWorkStatus = {
@@ -92,18 +91,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 			}
 
 			for (const id of Object.keys(packagesWithWorkStatuses)) {
-				packagesWithWorkStatuses[id].statuses.sort((a, b) => {
-					if ((a.displayRank || 0) > (b.displayRank || 0)) return 1
-					if ((a.displayRank || 0) < (b.displayRank || 0)) return -1
-
-					if (a.requiredForPlayout && !b.requiredForPlayout) return 1
-					if (!a.requiredForPlayout && b.requiredForPlayout) return -1
-
-					if (a.label > b.label) return 1
-					if (a.label < b.label) return -1
-
-					return 0
-				})
+				packagesWithWorkStatuses[id].statuses.sort(compareWorkStatus)
 			}
 
 			return Object.keys(packagesWithWorkStatuses).map((packageId) => {
@@ -167,8 +155,6 @@ export const ExpectedPackagesStatus = translateWithTracker<
 			})
 		}
 		renderExpectedPackageStatusesSummary() {
-			const { t } = this.props
-
 			const packageRef: { [packageId: string]: ExpectedPackageDB } = {}
 			for (const expPackage of this.props.expectedPackages) {
 				packageRef[unprotectString(expPackage._id)] = expPackage
@@ -183,7 +169,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 			for (const work of this.props.expectedPackageWorkStatuses) {
 				// todo: make this better:
 				const packageId = unprotectString(work.fromPackages[0]?.id) || 'N/A'
-				const referencedPackage = packageRef[packageId]
+				// const referencedPackage = packageRef[packageId]
 				let packageWithWorkStatus = packagesWithWorkStatuses[packageId]
 				if (!packageWithWorkStatus) {
 					packagesWithWorkStatuses[packageId] = packageWithWorkStatus = {
@@ -195,18 +181,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 			}
 
 			for (const id of Object.keys(packagesWithWorkStatuses)) {
-				packagesWithWorkStatuses[id].statuses.sort((a, b) => {
-					if ((a.displayRank || 0) > (b.displayRank || 0)) return 1
-					if ((a.displayRank || 0) < (b.displayRank || 0)) return -1
-
-					if (a.requiredForPlayout && !b.requiredForPlayout) return 1
-					if (!a.requiredForPlayout && b.requiredForPlayout) return -1
-
-					if (a.label > b.label) return 1
-					if (a.label < b.label) return -1
-
-					return 0
-				})
+				packagesWithWorkStatuses[id].statuses.sort(compareWorkStatus)
 			}
 
 			return Object.keys(packagesWithWorkStatuses).map((packageId) => {
@@ -291,3 +266,16 @@ export const ExpectedPackagesStatus = translateWithTracker<
 		}
 	}
 )
+
+function compareWorkStatus(a: ExpectedPackageWorkStatus, b: ExpectedPackageWorkStatus): number {
+	if ((a.displayRank || 0) > (b.displayRank || 0)) return 1
+	if ((a.displayRank || 0) < (b.displayRank || 0)) return -1
+
+	if (a.requiredForPlayout && !b.requiredForPlayout) return 1
+	if (!a.requiredForPlayout && b.requiredForPlayout) return -1
+
+	if (a.label > b.label) return 1
+	if (a.label < b.label) return -1
+
+	return 0
+}

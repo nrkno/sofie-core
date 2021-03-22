@@ -64,6 +64,7 @@ export namespace MongoMock {
 			this._name = name
 			this._transform = this._options.transform
 		}
+
 		find(query: any, options?: FindOptions<T>) {
 			if (_.isString(query)) query = { _id: query }
 			query = query || {}
@@ -83,6 +84,12 @@ export namespace MongoMock {
 			docs = mongoFindOptions(docs, options)
 
 			const observers = this.observers
+
+			const removeObserver = (id: string): void => {
+				const index = observers.findIndex((o) => o.id === id)
+				if (index === -1) throw new Meteor.Error(500, 'Cannot stop observer that is not registered')
+				observers.splice(index, 1)
+			}
 
 			return {
 				_fetchRaw: () => {
@@ -108,9 +115,7 @@ export namespace MongoMock {
 					)
 					return {
 						stop() {
-							const index = observers.findIndex((o) => o.id === id)
-							if (index === -1) throw new Meteor.Error(500, 'Cannot stop observer that is not registered')
-							observers.splice(index, 1)
+							removeObserver(id)
 						},
 					}
 				},
@@ -126,9 +131,7 @@ export namespace MongoMock {
 					)
 					return {
 						stop() {
-							const index = observers.findIndex((o) => o.id === id)
-							if (index === -1) throw new Meteor.Error(500, 'Cannot stop observer that is not registered')
-							observers.splice(index, 1)
+							removeObserver(id)
 						},
 					}
 				},
@@ -251,8 +254,10 @@ export namespace MongoMock {
 				this.insert(
 					doc,
 					cb
-						? (err, id) =>
-								err ? cb(err, undefined) : cb(null, { insertedId: id, numberAffected: undefined })
+						? (err, insertedId) =>
+								err
+									? cb(err, undefined)
+									: cb(null, { insertedId: insertedId, numberAffected: undefined })
 						: undefined
 				)
 			}

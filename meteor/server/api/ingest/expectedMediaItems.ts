@@ -18,7 +18,6 @@ import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { StudioId } from '../../../lib/collections/Studios'
 import { AdLibAction, AdLibActionId } from '../../../lib/collections/AdLibActions'
 import {
-	ExpectedPackage,
 	IBlueprintActionManifestDisplayContent,
 	SomeContent,
 	VTContent,

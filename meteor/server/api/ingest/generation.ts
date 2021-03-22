@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
-import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import { SegmentNote, PartNote, RundownNote } from '../../../lib/api/notes'
 import { AdLibAction } from '../../../lib/collections/AdLibActions'
@@ -12,7 +11,7 @@ import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBase
 import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
 import { DBRundown } from '../../../lib/collections/Rundowns'
-import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
+import { DBSegment } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { getCurrentTime, literal, protectString, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
@@ -82,10 +81,8 @@ export async function calculateSegmentsFromIngestData(
 		const showStyle = await getShowStyleCompoundForRundown(rundown)
 		const blueprint = loadShowStyleBlueprint(showStyle)
 
-		const changedSegmentIds: SegmentId[] = []
 		for (let ingestSegment of ingestSegments) {
 			const segmentId = getSegmentId(cache.RundownId, ingestSegment.externalId)
-			changedSegmentIds.push(segmentId)
 
 			const context = new SegmentUserContext(
 				{
@@ -387,7 +384,6 @@ export async function updateRundownFromIngestData(
 	}
 
 	const showStyleBlueprint = loadShowStyleBlueprint(showStyle.base)
-	// const notesContext = new NotesContext(true)
 	const blueprintContext = new ShowStyleUserContext(
 		{
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,

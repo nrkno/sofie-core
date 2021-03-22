@@ -35,7 +35,6 @@ import {
 	BlueprintManifestType,
 	TSR,
 	ConfigManifestEntry,
-	PackageContainer,
 	Accessor,
 } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'

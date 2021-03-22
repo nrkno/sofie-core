@@ -54,11 +54,11 @@ describe('Playout API', () => {
 	let playoutDevice: PeripheralDevice
 	const origGetCurrentTime = lib.getCurrentTime
 
-	function getPeripheralDeviceCommands(playoutDevice: PeripheralDevice) {
-		return PeripheralDeviceCommands.find({ deviceId: playoutDevice._id }, { sort: { time: 1 } }).fetch()
+	function getPeripheralDeviceCommands(device: PeripheralDevice) {
+		return PeripheralDeviceCommands.find({ deviceId: device._id }, { sort: { time: 1 } }).fetch()
 	}
-	function clearPeripheralDeviceCommands(playoutDevice: PeripheralDevice) {
-		return PeripheralDeviceCommands.remove({ deviceId: playoutDevice._id })
+	function clearPeripheralDeviceCommands(device: PeripheralDevice) {
+		return PeripheralDeviceCommands.remove({ deviceId: device._id })
 	}
 	function getAllRundownData(rundown: Rundown) {
 		return {

@@ -1282,7 +1282,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		RundownPlaylists.find()
 			.fetch()
-			.forEach((playlist) => removeRundownPlaylistFromDb(playlist))
+			.forEach((p) => removeRundownPlaylistFromDb(p))
 
 		const rundownData: IngestRundown = {
 			externalId: externalId,

@@ -8,8 +8,8 @@ import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { extendMandadory, literal, getCurrentTime, protectStringArray } from '../../../lib/lib'
-import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
+import { extendMandadory, getCurrentTime } from '../../../lib/lib'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
 import { PieceIconContainer } from '../PieceIcons/PieceIcon'
@@ -74,7 +74,7 @@ function getShowStyleBaseIdSegmentPartUi(
 	})
 	showStyleBaseId = currentRundown?.showStyleBaseId
 
-	const segmentIndex = orderedSegmentsAndParts.segments.findIndex((segment) => segment._id === partInstance.segmentId)
+	const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === partInstance.segmentId)
 	if (currentRundown) {
 		const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 
@@ -86,7 +86,7 @@ function getShowStyleBaseIdSegmentPartUi(
 				showStyleBase,
 				playlist,
 				orderedSegmentsAndParts.segments[segmentIndex],
-				new Set(orderedSegmentsAndParts.segments.map((segment) => segment._id).slice(0, segmentIndex)),
+				new Set(orderedSegmentsAndParts.segments.map((s) => s._id).slice(0, segmentIndex)),
 				orderedSegmentsAndParts.parts.map((part) => part._id),
 				true,
 				true
@@ -231,7 +231,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					})
 
 					this.autorun(() => {
-						let playlist = RundownPlaylists.findOne(this.props.playlistId, {
+						const playlistR = RundownPlaylists.findOne(this.props.playlistId, {
 							fields: {
 								_id: 1,
 								currentPartInstanceId: 1,
@@ -248,7 +248,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 									| 'getSelectedPartInstances'
 							  >
 							| undefined
-						const { nextPartInstance, currentPartInstance } = playlist!.getSelectedPartInstances()
+						const { nextPartInstance, currentPartInstance } = playlistR!.getSelectedPartInstances()
 						this.subscribe(PubSub.pieceInstances, {
 							partInstanceId: {
 								$in: [currentPartInstance?._id, nextPartInstance?._id],

@@ -4,7 +4,6 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import {
 	SegmentUi,
@@ -26,12 +25,11 @@ import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ConfigItemValue } from '@sofie-automation/blueprints-integration'
 
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
 import { CSSProperties } from '../../styles/_cssVariables'
-import { ISourceLayerExtended, PieceExtended } from '../../../lib/Rundown'
+import { ISourceLayerExtended } from '../../../lib/Rundown'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
 import { SegmentEnd } from '../../lib/ui/icons/segment'

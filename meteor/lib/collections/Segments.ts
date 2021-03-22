@@ -3,7 +3,7 @@ import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStr
 import { Parts, DBPart } from './Parts'
 import { RundownId } from './Rundowns'
 import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
-import { IBlueprintSegmentDB, Time } from '@sofie-automation/blueprints-integration'
+import { IBlueprintSegmentDB } from '@sofie-automation/blueprints-integration'
 import { SegmentNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'

@@ -10,7 +10,6 @@ import {
 import * as _ from 'underscore'
 import {
 	IBlueprintConfig,
-	BlueprintMappings,
 	BlueprintMapping,
 	TSR,
 	LookaheadMode,
@@ -24,7 +23,6 @@ import { ShowStyleBaseId } from './ShowStyleBases'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 import { ExpectedPackageDB } from './ExpectedPackages'
-import { RundownId } from './Rundowns'
 
 export interface MappingsExt {
 	[layerName: string]: MappingExt
@@ -115,7 +113,7 @@ export interface StudioRouteSet {
 	/** Whether this group is active or not */
 	active: boolean
 	/** Default state of this group */
-	defaultActive?: boolean | undefined
+	defaultActive?: boolean
 	/** Only one Route can be active at the same time in the exclusivity-group */
 	exclusivityGroup?: string
 	/** If true, should be displayed and toggleable by user */
@@ -252,9 +250,7 @@ export function routeExpectedPackages(
 
 	// Route the mappings
 	const routes = getActiveRoutes(studio)
-	const routedMappingsWithPackages: MappingsExtWithPackage = getRoutedMappings(mappingsWithPackages, routes)
-
-	return routedMappingsWithPackages
+	return getRoutedMappings(mappingsWithPackages, routes)
 }
 
 export class Studio implements DBStudio {

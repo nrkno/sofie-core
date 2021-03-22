@@ -16,7 +16,7 @@ import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collection
 import { Rundown, DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { Segment, DBSegment, Segments } from '../../../lib/collections/Segments'
 import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
-import { protectString, makePromise } from '../../../lib/lib'
+import { protectString } from '../../../lib/lib'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { DbCacheReadObject, DbCacheWriteOptionalObject } from '../../cache/CacheObject'
 import { CacheBase } from '../../cache/CacheBase'

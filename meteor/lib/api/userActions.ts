@@ -18,7 +18,6 @@ import { BucketAdLib } from '../collections/BucketAdlibs'
 import { AdLibActionId, AdLibActionCommon } from '../collections/AdLibActions'
 import { BucketAdLibAction } from '../collections/BucketAdlibActions'
 import { PeripheralDeviceId } from '../collections/PeripheralDevices'
-import { packageManagerAbortExpectation } from '../../server/api/userActions'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
