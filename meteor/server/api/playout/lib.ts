@@ -571,7 +571,7 @@ function cleanupOrphanedItems(cache: CacheForRundownPlaylist, playlist: RundownP
 	)
 	const removeSegmentIds: SegmentId[] = []
 	for (const segment of segments) {
-		const partInstances = groupedPartInstances[unprotectString(segment._id)]
+		const partInstances = groupedPartInstances[unprotectString(segment._id)] || []
 		const partInstanceIds = new Set(partInstances.map((p) => p._id))
 
 		// Not in current or next. Previous can be reset as it will still be in the db, but not shown in the ui
@@ -595,9 +595,14 @@ function cleanupOrphanedItems(cache: CacheForRundownPlaylist, playlist: RundownP
 
 		// Ensure any PartInstances are reset
 		const removeSegmentIds2 = new Set(removeSegmentIds)
-		removePartInstanceIds.push(
-			...cache.PartInstances.findFetch((p) => removeSegmentIds2.has(p.segmentId) && !p.reset).map((p) => p._id)
+		const partinstancesInRemovedSegments = cache.PartInstances.findFetch(
+			(p) => removeSegmentIds2.has(p.segmentId) && !p.reset
 		)
+		for (const partInstance of partinstancesInRemovedSegments) {
+			if (!selectedPartInstanceIds.includes(partInstance._id)) {
+				removePartInstanceIds.push(partInstance._id)
+			}
+		}
 	}
 
 	// Cleanup any orphaned partinstances once they are no longer being played (and the segment isnt orphaned)
