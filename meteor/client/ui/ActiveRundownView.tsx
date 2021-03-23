@@ -115,7 +115,8 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 										className="btn btn-primary"
 										onClick={() => {
 											history.push('/rundowns')
-										}}>
+										}}
+									>
 										{t('Return to list')}
 									</button>
 								)}

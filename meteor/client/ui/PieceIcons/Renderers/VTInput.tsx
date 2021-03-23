@@ -18,11 +18,13 @@ export default class VTInputIcon extends React.Component<{ abbreviation?: string
 						wordSpacing: '0px',
 						textShadow: '0 2px 9px rgba(0, 0, 0, 0.5)',
 					}}
-					xmlSpace="preserve">
+					xmlSpace="preserve"
+				>
 					<tspan
 						x="5.25"
 						y="71.513954"
-						style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 100 }}>
+						style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 100 }}
+					>
 						{this.props.abbreviation ? this.props.abbreviation : 'VT'}
 					</tspan>
 				</text>

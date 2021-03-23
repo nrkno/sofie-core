@@ -145,7 +145,8 @@ const StudioDevices = withTranslation()(
 						<Tooltip
 							overlay={t('Devices are needed to control your studio hardware')}
 							visible={getHelpMode() && !this.props.studioDevices.length}
-							placement="right">
+							placement="right"
+						>
 							<span>{t('Attached Devices')}</span>
 						</Tooltip>
 					</h2>
@@ -175,7 +176,8 @@ const StudioDevices = withTranslation()(
 											<div
 												className="ctx-menu-item"
 												key={unprotectString(device._id)}
-												onClick={(e) => this.onAddDevice(device)}>
+												onClick={(e) => this.onAddDevice(device)}
+											>
 												<b>{device.name}</b> <MomentFromNow date={device.lastSeen} /> ({unprotectString(device._id)})
 											</div>
 										)
@@ -382,7 +384,8 @@ const StudioMappings = withTranslation()(
 						<tr
 							className={ClassNames({
 								hl: this.isItemEdited(layerId),
-							})}>
+							})}
+						>
 							<th className="settings-studio-device__name c3 notifications-s notifications-text">
 								{layerId}
 								{activeRoutes.existing[layerId] !== undefined ? (
@@ -391,7 +394,8 @@ const StudioMappings = withTranslation()(
 											routeSets: activeRoutes.existing[layerId].join(', '),
 											count: activeRoutes.existing[layerId].length,
 										})}
-										placement="right">
+										placement="right"
+									>
 										<span className="notification">{activeRoutes.existing[layerId].length}</span>
 									</Tooltip>
 								) : null}
@@ -424,7 +428,8 @@ const StudioMappings = withTranslation()(
 													type="text"
 													collection={Studios}
 													updateFunction={this.updateLayerId}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 												<span className="text-s dimmed">{t('ID of the timeline-layer to map to some output')}</span>
 											</label>
 										</div>
@@ -439,7 +444,8 @@ const StudioMappings = withTranslation()(
 													options={TSR.DeviceType}
 													optionsAreNumbers={true}
 													collection={Studios}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 												<span className="text-s dimmed">{t('The type of device to use for the output')}</span>
 											</label>
 										</div>
@@ -452,7 +458,8 @@ const StudioMappings = withTranslation()(
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 												<span className="text-s dimmed">
 													{t('ID of the device (corresponds to the device ID in the peripheralDevice settings)')}
 												</span>
@@ -469,7 +476,8 @@ const StudioMappings = withTranslation()(
 													options={LookaheadMode}
 													optionsAreNumbers={true}
 													collection={Studios}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -481,7 +489,8 @@ const StudioMappings = withTranslation()(
 													obj={this.props.studio}
 													type="int"
 													collection={Studios}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -493,7 +502,8 @@ const StudioMappings = withTranslation()(
 													obj={this.props.studio}
 													type="int"
 													collection={Studios}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											</label>
 										</div>
 										<DeviceMappingSettings
@@ -804,7 +814,8 @@ const StudioRoutings = withTranslation()(
 							<div className="route-sets-editor mod pan mas" key={index}>
 								<button
 									className="action-btn right mod man pas"
-									onClick={(e) => this.confirmRemoveRoute(routeSetId, route, index)}>
+									onClick={(e) => this.confirmRemoveRoute(routeSetId, route, index)}
+								>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 								<div>
@@ -819,7 +830,8 @@ const StudioRoutings = withTranslation()(
 												options={Object.keys(this.props.studio.mappings)}
 												label={t('None')}
 												collection={Studios}
-												className="input text-input input-l"></EditAttribute>
+												className="input text-input input-l"
+											></EditAttribute>
 										</label>
 									</div>
 									<div className="mod mvs mhs">
@@ -831,7 +843,8 @@ const StudioRoutings = withTranslation()(
 												obj={this.props.studio}
 												type="text"
 												collection={Studios}
-												className="input text-input input-l"></EditAttribute>
+												className="input text-input input-l"
+											></EditAttribute>
 										</label>
 									</div>
 									<div className="mod mvs mhs">
@@ -851,7 +864,8 @@ const StudioRoutings = withTranslation()(
 												options={TSR.DeviceType}
 												optionsAreNumbers={true}
 												collection={Studios}
-												className="input text-input input-l"></EditAttribute>
+												className="input text-input input-l"
+											></EditAttribute>
 										)}
 									</div>
 									{routeDeviceType !== undefined && route.remapping !== undefined ? (
@@ -875,7 +889,8 @@ const StudioRoutings = withTranslation()(
 														obj={this.props.studio}
 														type="text"
 														collection={Studios}
-														className="input text-input input-l"></EditAttribute>
+														className="input text-input input-l"
+													></EditAttribute>
 												</label>
 											</div>
 											<DeviceMappingSettings
@@ -919,7 +934,8 @@ const StudioRoutings = withTranslation()(
 							<tr
 								className={ClassNames({
 									hl: this.isItemEdited(exclusivityGroupId),
-								})}>
+								})}
+							>
 								<th className="settings-studio-device__name c3">{exclusivityGroupId}</th>
 								<td className="settings-studio-device__id c5">{exclusivityGroup.name}</td>
 								<td className="settings-studio-device__id c3">
@@ -937,7 +953,8 @@ const StudioRoutings = withTranslation()(
 									</button>
 									<button
 										className="action-btn"
-										onClick={(e) => this.confirmRemoveEGroup(exclusivityGroupId, exclusivityGroup)}>
+										onClick={(e) => this.confirmRemoveEGroup(exclusivityGroupId, exclusivityGroup)}
+									>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 								</td>
@@ -957,7 +974,8 @@ const StudioRoutings = withTranslation()(
 														type="text"
 														collection={Studios}
 														updateFunction={this.updateExclusivityGroupId}
-														className="input text-input input-l"></EditAttribute>
+														className="input text-input input-l"
+													></EditAttribute>
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -969,7 +987,8 @@ const StudioRoutings = withTranslation()(
 														obj={this.props.studio}
 														type="text"
 														collection={Studios}
-														className="input text-input input-l"></EditAttribute>
+														className="input text-input input-l"
+													></EditAttribute>
 													<span className="text-s dimmed">{t('Display name of the Exclusivity Group')}</span>
 												</label>
 											</div>
@@ -1011,7 +1030,8 @@ const StudioRoutings = withTranslation()(
 						<tr
 							className={ClassNames({
 								hl: this.isItemEdited(routeId),
-							})}>
+							})}
+						>
 							<th className="settings-studio-device__name c2">{routeId}</th>
 							<td className="settings-studio-device__id c3">{routeSet.name}</td>
 							<td className="settings-studio-device__id c4">{routeSet.exclusivityGroup}</td>
@@ -1044,7 +1064,8 @@ const StudioRoutings = withTranslation()(
 													type="text"
 													collection={Studios}
 													updateFunction={this.updateRouteSetId}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -1057,7 +1078,8 @@ const StudioRoutings = withTranslation()(
 													collection={Studios}
 													updateFunction={(_ctx, value) => this.updateRouteSetActive(routeId, value)}
 													disabled={routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY && routeSet.active}
-													className=""></EditAttribute>
+													className=""
+												></EditAttribute>
 												{t('Active')}
 												<span className="mlm text-s dimmed">{t('Is this Route Set currently active')}</span>
 											</label>
@@ -1072,7 +1094,8 @@ const StudioRoutings = withTranslation()(
 													type="dropdown"
 													collection={Studios}
 													options={DEFAULT_ACTIVE_OPTIONS}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 												<span className="mlm text-s dimmed">{t('The default state of this Route Set')}</span>
 											</label>
 										</div>
@@ -1085,7 +1108,8 @@ const StudioRoutings = withTranslation()(
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 												<span className="text-s dimmed">{t('Display name of the Route Set')}</span>
 											</label>
 										</div>
@@ -1110,7 +1134,8 @@ const StudioRoutings = withTranslation()(
 													options={Object.keys(this.props.studio.routeSetExclusivityGroups)}
 													mutateDisplayValue={(v) => (v === undefined ? 'None' : v)}
 													collection={Studios}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 												<span className="text-s dimmed">
 													{t('If set, only one Route Set will be active per exclusivity group')}
 												</span>
@@ -1127,7 +1152,8 @@ const StudioRoutings = withTranslation()(
 													options={StudioRouteBehavior}
 													optionsAreNumbers={true}
 													collection={Studios}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 												<span className="text-s dimmed">
 													{t('The way this Route Set should behave towards the user')}
 												</span>
@@ -1351,7 +1377,8 @@ const StudioPackageManagerSettings = withTranslation()(
 							<tr
 								className={ClassNames({
 									hl: this.isPackageContainerEdited(containerId),
-								})}>
+								})}
+							>
 								<th className="settings-studio-package-container__id c2">{containerId}</th>
 								<td className="settings-studio-package-container__name c2">{packageContainer.container.label}</td>
 
@@ -1379,7 +1406,8 @@ const StudioPackageManagerSettings = withTranslation()(
 														type="text"
 														collection={Studios}
 														updateFunction={this.containerId}
-														className="input text-input input-l"></EditAttribute>
+														className="input text-input input-l"
+													></EditAttribute>
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -1391,7 +1419,8 @@ const StudioPackageManagerSettings = withTranslation()(
 														obj={this.props.studio}
 														type="text"
 														collection={Studios}
-														className="input text-input input-l"></EditAttribute>
+														className="input text-input input-l"
+													></EditAttribute>
 													<span className="text-s dimmed">{t('Display name/label of the Package Container')}</span>
 												</label>
 											</div>
@@ -1404,7 +1433,8 @@ const StudioPackageManagerSettings = withTranslation()(
 														options={this.getPlayoutDeviceIds()}
 														label={t('Select playout devices')}
 														type="multiselect"
-														collection={Studios}></EditAttribute>
+														collection={Studios}
+													></EditAttribute>
 													<span className="text-s dimmed">
 														{t('Select which playout devices are using this package container')}
 													</span>
@@ -1565,7 +1595,8 @@ const StudioPackageManagerSettings = withTranslation()(
 						<tr
 							className={ClassNames({
 								hl: this.isAccessorEdited(containerId, accessorId),
-							})}>
+							})}
+						>
 							<th className="settings-studio-accessor__id c2">{accessorId}</th>
 							{/* <td className="settings-studio-accessor__name c2">{accessor.name}</td> */}
 							<td className="settings-studio-accessor__type c1">{accessor.type}</td>
@@ -1595,7 +1626,8 @@ const StudioPackageManagerSettings = withTranslation()(
 													type="text"
 													collection={Studios}
 													updateFunction={this.updateAccessorId}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -1607,7 +1639,8 @@ const StudioPackageManagerSettings = withTranslation()(
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 												<span className="text-s dimmed">{t('Display name of the Package Container')}</span>
 											</label>
 										</div>
@@ -1621,7 +1654,8 @@ const StudioPackageManagerSettings = withTranslation()(
 													type="dropdown"
 													options={Accessor.AccessType}
 													collection={Studios}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											</label>
 										</div>
 										{accessor.type === Accessor.AccessType.LOCAL_FOLDER ? (
@@ -1635,7 +1669,8 @@ const StudioPackageManagerSettings = withTranslation()(
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
+															className="input text-input input-l"
+														></EditAttribute>
 														<span className="text-s dimmed">{t('File path to the folder of the local folder')}</span>
 													</label>
 												</div>
@@ -1648,7 +1683,8 @@ const StudioPackageManagerSettings = withTranslation()(
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
+															className="input text-input input-l"
+														></EditAttribute>
 														<span className="text-s dimmed">
 															{t('(Optional) This could be the name of the computer on which the local folder is on')}
 														</span>
@@ -1666,7 +1702,8 @@ const StudioPackageManagerSettings = withTranslation()(
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
+															className="input text-input input-l"
+														></EditAttribute>
 														<span className="text-s dimmed">
 															{t('Base url to the resource (example: http://myserver/folder)')}
 														</span>
@@ -1681,7 +1718,8 @@ const StudioPackageManagerSettings = withTranslation()(
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
+															className="input text-input input-l"
+														></EditAttribute>
 														<span className="text-s dimmed">{t('get, post etc...')}</span>
 													</label>
 												</div>
@@ -1695,7 +1733,8 @@ const StudioPackageManagerSettings = withTranslation()(
 															type="json"
 															storeJsonAsObject={true}
 															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
+															className="input text-input input-l"
+														></EditAttribute>
 														<span className="text-s dimmed">{t('')}</span>
 													</label>
 												</div>
@@ -1709,7 +1748,8 @@ const StudioPackageManagerSettings = withTranslation()(
 															type="json"
 															storeJsonAsObject={true}
 															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
+															className="input text-input input-l"
+														></EditAttribute>
 														<span className="text-s dimmed">{t('')}</span>
 													</label>
 												</div>
@@ -1722,7 +1762,8 @@ const StudioPackageManagerSettings = withTranslation()(
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
+															className="input text-input input-l"
+														></EditAttribute>
 														<span className="text-s dimmed">
 															{t(
 																'(Optional) A name/identifier of the local network where the share is located, leave empty if globally accessible'
@@ -1742,7 +1783,8 @@ const StudioPackageManagerSettings = withTranslation()(
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
+															className="input text-input input-l"
+														></EditAttribute>
 														<span className="text-s dimmed">{t('Folder path to shared folder')}</span>
 													</label>
 												</div>
@@ -1755,7 +1797,8 @@ const StudioPackageManagerSettings = withTranslation()(
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
+															className="input text-input input-l"
+														></EditAttribute>
 														<span className="text-s dimmed">{t('Username for athuentication')}</span>
 													</label>
 												</div>
@@ -1768,7 +1811,8 @@ const StudioPackageManagerSettings = withTranslation()(
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
+															className="input text-input input-l"
+														></EditAttribute>
 														<span className="text-s dimmed">{t('Password for authentication')}</span>
 													</label>
 												</div>
@@ -1781,7 +1825,8 @@ const StudioPackageManagerSettings = withTranslation()(
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
-															className="input text-input input-l"></EditAttribute>
+															className="input text-input input-l"
+														></EditAttribute>
 														<span className="text-s dimmed">
 															{t('(Optional) A name/identifier of the local network where the share is located')}
 														</span>
@@ -1799,7 +1844,8 @@ const StudioPackageManagerSettings = withTranslation()(
 													obj={this.props.studio}
 													type="checkbox"
 													collection={Studios}
-													className="input"></EditAttribute>
+													className="input"
+												></EditAttribute>
 												<span className="text-s dimmed">{t('')}</span>
 											</label>
 										</div>
@@ -1812,7 +1858,8 @@ const StudioPackageManagerSettings = withTranslation()(
 													obj={this.props.studio}
 													type="checkbox"
 													collection={Studios}
-													className="input"></EditAttribute>
+													className="input"
+												></EditAttribute>
 												<span className="text-s dimmed">{t('')}</span>
 											</label>
 										</div>
@@ -1820,7 +1867,8 @@ const StudioPackageManagerSettings = withTranslation()(
 									<div className="mod">
 										<button
 											className="btn btn-primary right"
-											onClick={(e) => this.finishEditAccessor(containerId, accessorId)}>
+											onClick={(e) => this.finishEditAccessor(containerId, accessorId)}
+										>
 											<FontAwesomeIcon icon={faCheck} />
 										</button>
 									</div>
@@ -1874,7 +1922,8 @@ const StudioPackageManagerSettings = withTranslation()(
 										options={this.getAvailablePackageContainers()}
 										label={t('Click to show available Package Containers')}
 										type="multiselect"
-										collection={Studios}></EditAttribute>
+										collection={Studios}
+									></EditAttribute>
 								</div>
 							</label>
 							<label className="field">
@@ -1886,7 +1935,8 @@ const StudioPackageManagerSettings = withTranslation()(
 										options={this.getAvailablePackageContainers()}
 										label={t('Click to show available Package Containers')}
 										type="multiselect"
-										collection={Studios}></EditAttribute>
+										collection={Studios}
+									></EditAttribute>
 								</div>
 							</label>
 						</div>
@@ -2005,7 +2055,8 @@ class StudioBaselineStatus extends MeteorReactComponent<
 						<Tooltip
 							overlay={t('Baseline needs reload, this studio may not work until reloaded')}
 							visible={getHelpMode()}
-							placement="right">
+							placement="right"
+						>
 							<span>{t('Yes')}</span>
 						</Tooltip>
 					) : (
@@ -2147,7 +2198,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								key={'settings-nevigation-' + base.showStyleBase.name}
 								attribute="name"
 								obj={base.showStyleBase}
-								type="showstyle"></SettingsNavigation>
+								type="showstyle"
+							></SettingsNavigation>
 						)
 					}
 				})
@@ -2184,7 +2236,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									obj={this.props.studio}
 									type="text"
 									collection={Studios}
-									className="mdinput"></EditAttribute>
+									className="mdinput"
+								></EditAttribute>
 								<span className="mdfx"></span>
 							</div>
 						</label>
@@ -2205,11 +2258,13 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									mutateDisplayValue={(v) => v || ''}
 									mutateUpdateValue={(v) => (v === '' ? undefined : v)}
 									collection={Studios}
-									className="mdinput"></EditAttribute>
+									className="mdinput"
+								></EditAttribute>
 								<SettingsNavigation
 									attribute="blueprintId"
 									obj={this.props.studio}
-									type="blueprint"></SettingsNavigation>
+									type="blueprint"
+								></SettingsNavigation>
 								<span className="mdfx"></span>
 							</div>
 						</label>
@@ -2227,7 +2282,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									options={this.props.availableShowStyleBases}
 									label={t('Click to show available Show Styles')}
 									type="multiselect"
-									collection={Studios}></EditAttribute>
+									collection={Studios}
+								></EditAttribute>
 								{this.renderShowStyleEditButtons()}
 								<SettingsNavigation type="newshowstyle" />
 							</div>
@@ -2239,7 +2295,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									attribute="settings.enablePlayFromAnywhere"
 									obj={this.props.studio}
 									type="checkbox"
-									collection={Studios}></EditAttribute>
+									collection={Studios}
+								></EditAttribute>
 								{t('Enable "Play from Anywhere"')}
 							</label>
 						</div>
@@ -2252,7 +2309,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									obj={this.props.studio}
 									type="text"
 									collection={Studios}
-									className="mdinput"></EditAttribute>
+									className="mdinput"
+								></EditAttribute>
 								<span className="mdfx"></span>
 							</div>
 						</label>
@@ -2265,7 +2323,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									obj={this.props.studio}
 									type="text"
 									collection={Studios}
-									className="mdinput"></EditAttribute>
+									className="mdinput"
+								></EditAttribute>
 								<span className="mdfx"></span>
 							</div>
 						</label>
@@ -2278,7 +2337,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									obj={this.props.studio}
 									type="text"
 									collection={Studios}
-									className="mdinput"></EditAttribute>
+									className="mdinput"
+								></EditAttribute>
 								<span className="mdfx"></span>
 							</div>
 						</label>
@@ -2291,7 +2351,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									obj={this.props.studio}
 									type="text"
 									collection={Studios}
-									className="mdinput"></EditAttribute>
+									className="mdinput"
+								></EditAttribute>
 								<span className="mdfx"></span>
 							</div>
 						</label>
@@ -2304,7 +2365,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									obj={this.props.studio}
 									type="text"
 									collection={Studios}
-									className="mdinput"></EditAttribute>
+									className="mdinput"
+								></EditAttribute>
 								<span className="mdfx"></span>
 							</div>
 						</label>
@@ -2315,7 +2377,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									attribute="settings.forceSettingNowTime"
 									obj={this.props.studio}
 									type="checkbox"
-									collection={Studios}></EditAttribute>
+									collection={Studios}
+								></EditAttribute>
 								{t('Force the Multi-gateway-mode')}
 							</label>
 						</div>
@@ -2328,7 +2391,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									obj={this.props.studio}
 									type="int"
 									collection={Studios}
-									className="mdinput"></EditAttribute>
+									className="mdinput"
+								></EditAttribute>
 							</label>
 						</div>
 					</div>

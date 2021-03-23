@@ -85,7 +85,8 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 					}
 					holdToDisplay={contextMenuHoldToDisplayTime()}
 					renderTag="tr"
-					key={unprotectString(this.props.piece._id)}>
+					key={unprotectString(this.props.piece._id)}
+				>
 					{renderItem({
 						adLibListItem: this.props.piece,
 						layer: this.props.layer,

@@ -353,7 +353,8 @@ export class PresenterScreenBase extends MeteorReactComponent<
 							<div
 								className={ClassNames('clocks-rundown-total', {
 									over: Math.floor(overUnderClock / 1000) >= 0,
-								})}>
+								})}
+							>
 								{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true)}
 							</div>
 						</div>

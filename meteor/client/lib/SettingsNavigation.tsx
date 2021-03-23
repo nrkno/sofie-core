@@ -110,7 +110,8 @@ const Blueprint = wrapSettingsNavigation(
 									this.redirectUser(
 										'/settings/blueprint/' + (this.props.attribute ? this.props.obj[this.props.attribute] : '')
 									)
-								}}>
+								}}
+							>
 								Edit Blueprint
 							</button>
 						)
@@ -122,7 +123,8 @@ const Blueprint = wrapSettingsNavigation(
 						className="btn btn-primary btn-add-new"
 						onClick={() => {
 							this.onBlueprintAdd()
-						}}>
+						}}
+					>
 						New Blueprint
 					</button>
 				)
@@ -146,7 +148,8 @@ const ShowStyle = wrapSettingsNavigation(
 							className="btn btn-primary btn-add-new"
 							onClick={() => {
 								this.redirectUser('/settings/showStyleBase/' + (this.props.attribute ? this.props.obj['_id'] : ''))
-							}}>
+							}}
+						>
 							Edit {this.props.obj[this.props.attribute]}
 						</button>
 					)
@@ -179,7 +182,8 @@ const NewShowStyle = wrapSettingsNavigation(
 						className="btn btn-primary btn-add-new"
 						onClick={() => {
 							this.onShowStyleAdd()
-						}}>
+						}}
+					>
 						New Show Style
 					</button>
 				)

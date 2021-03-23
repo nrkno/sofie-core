@@ -165,7 +165,8 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 										}}
 										attribute=""
 										type="text"
-										className="mdinput"></EditAttribute>
+										className="mdinput"
+									></EditAttribute>
 								</div>
 							</label>
 						) : null}

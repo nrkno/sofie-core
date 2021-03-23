@@ -67,7 +67,8 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 					},
 					this.props.className
 				)}
-				style={this.props.style}>
+				style={this.props.style}
+			>
 				<div className="notification-pop-up__header">
 					{item.status === NoticeLevel.CRITICAL ? (
 						<CriticalIcon />
@@ -86,7 +87,8 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 									<button
 										disabled={defaultAction.disabled}
 										className="btn btn-default notification-pop-up__actions--button"
-										onClick={(e) => this.triggerEvent(defaultAction, e)}>
+										onClick={(e) => this.triggerEvent(defaultAction, e)}
+									>
 										<CoreIcon.NrkArrowLeft
 											className="icon"
 											width="1em"
@@ -107,7 +109,8 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 													'btn',
 													['default', 'primary'].indexOf(action.type) ? 'btn-primary' : 'btn-default'
 												)}
-												onClick={(e) => this.triggerEvent(action, e)}>
+												onClick={(e) => this.triggerEvent(action, e)}
+											>
 												{action.label}
 											</button>
 										)
@@ -127,7 +130,8 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 							onClick={(e) => {
 								e.stopPropagation()
 								if (typeof this.props.onDismiss === 'function') this.props.onDismiss(e)
-							}}>
+							}}
+						>
 							{this.props.item.persistent ? <CollapseChevrons /> : <CoreIcon.NrkClose id="nrk-close" />}
 						</button>
 					</ContextMenuTrigger>
@@ -309,7 +313,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 					})
 
 					if (currentAnimationName !== 'none') {
-						window.requestAnimationFrame(function() {
+						window.requestAnimationFrame(function () {
 							Array.from(items).forEach((item) => {
 								item.style.animationName = currentAnimationName
 							})
@@ -339,8 +343,9 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 					? toggleButtonEl.getClientRects()[0]
 					: null
 				if (toggleButtonPosition) {
-					const style = `translate3d(${toggleButtonPosition.left -
-						notificationPosition.left}px, ${toggleButtonPosition.top - notificationPosition.top}px, 0) scale(0)`
+					const style = `translate3d(${toggleButtonPosition.left - notificationPosition.left}px, ${
+						toggleButtonPosition.top - notificationPosition.top
+					}px, 0) scale(0)`
 					return style
 				}
 			}
@@ -353,10 +358,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 				(this.props.filter === undefined || (i.status & this.props.filter) !== 0)
 			const sort = (a: Notification, b: Notification) => Notification.compare(a, b)
 			if (this.props.limitCount !== undefined) {
-				return this.props.notifications
-					.filter(filter)
-					.sort(sort)
-					.slice(0, this.props.limitCount)
+				return this.props.notifications.filter(filter).sort(sort).slice(0, this.props.limitCount)
 			} else {
 				return this.props.notifications.filter(filter).sort(sort)
 			}
@@ -432,7 +434,8 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 							duration: this.LEAVE_ANIMATION_DURATION,
 							display: 'flex',
 							complete: (elements) => this.checkKeepDisplaying(),
-						}}>
+						}}
+					>
 						{displayList}
 						{this.props.showEmptyListLabel && displayList.length === 0 && (
 							<div className="notification-pop-ups__empty-list">{t('No notifications')}</div>
@@ -511,7 +514,8 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 					)}
 					role="button"
 					onClick={this.props.onClick}
-					tabIndex={0}>
+					tabIndex={0}
+				>
 					<VelocityReact.VelocityTransitionGroup
 						enter={{
 							animation: {
@@ -526,7 +530,8 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 								opacity: [0, 1],
 							},
 							duration: 500,
-						}}>
+						}}
+					>
 						{!this.props.isOpen ? (
 							<div className="notifications__toggle-button__icon notifications__toggle-button__icon--default">
 								{((this.props.filter || 0) & NoticeLevel.CRITICAL) !== 0 ? (
@@ -544,16 +549,12 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 									</span>
 								)}
 							</div>
-						) : (
-							undefined
-						)}
+						) : undefined}
 						{this.props.isOpen ? (
 							<div className="notifications__toggle-button__icon notifications__toggle-button__icon--collapse">
 								<CollapseChevrons />
 							</div>
-						) : (
-							undefined
-						)}
+						) : undefined}
 					</VelocityReact.VelocityTransitionGroup>
 				</button>
 			)

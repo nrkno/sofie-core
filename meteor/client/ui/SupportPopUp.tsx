@@ -78,7 +78,8 @@ export class SupportPopUpToggle extends React.PureComponent<IToggleProps> {
 					})}
 					role="button"
 					onClick={this.props.onClick}
-					tabIndex={0}>
+					tabIndex={0}
+				>
 					<FontAwesomeIcon icon={faQuestion} />
 				</button>
 			</React.Fragment>

@@ -35,7 +35,8 @@ export const renderEditAttribute = (
 				{...opts}
 				type="dropdown"
 				options={(configField as ConfigManifestEntry).values || []}
-				className="input text-input input-l"></EditAttribute>
+				className="input text-input input-l"
+			></EditAttribute>
 		)
 	} else if (configField.type === ConfigManifestEntryType.OBJECT) {
 		return (
@@ -44,7 +45,8 @@ export const renderEditAttribute = (
 				mutateDisplayValue={(v) => JSON.stringify(v, undefined, 2)}
 				mutateUpdateValue={(v) => JSON.parse(v)}
 				type="multiline"
-				className="input text-input input-l"></EditAttribute>
+				className="input text-input input-l"
+			></EditAttribute>
 		)
 	} else if (configField.type === ConfigManifestEntryType.MULTILINE_STRING) {
 		return (

@@ -92,7 +92,8 @@ export const RundownDividerHeader = withTranslation()(
 								interval={1000}
 								calendar={{
 									sameElse: 'lll',
-								}}>
+								}}
+							>
 								{rundown.expectedStart}
 							</Moment>
 							&nbsp;

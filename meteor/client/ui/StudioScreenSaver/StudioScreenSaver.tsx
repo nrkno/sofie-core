@@ -326,16 +326,19 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 				<div
 					className={classNames('studio-screen-saver', {
 						loading: !this.state.subsReady,
-					})}>
+					})}
+				>
 					<object
 						className="studio-screen-saver__bkg"
 						data="/images/screen-saver-bkg.svg"
-						type="image/svg+xml"></object>
+						type="image/svg+xml"
+					></object>
 					<div
 						className={classNames('studio-screen-saver__info', {
 							'studio-screen-saver__info--no-rundown': !hasRundown,
 						})}
-						ref={this.setInfoElement}>
+						ref={this.setInfoElement}
+					>
 						<Clock className="studio-screen-saver__clock" />
 						{hasRundown && rundownPlaylist && rundownPlaylist.expectedStart ? (
 							<>

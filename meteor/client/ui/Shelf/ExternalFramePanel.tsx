@@ -352,12 +352,7 @@ export const ExternalFramePanel = withTranslation()(
 
 			let dragAllowed = false
 			if (e.dataTransfer) {
-				if (
-					e.dataTransfer
-						.getData('Text')
-						.trim()
-						.endsWith('</mos>')
-				) {
+				if (e.dataTransfer.getData('Text').trim().endsWith('</mos>')) {
 					// this is quite probably a MOS object
 					dragAllowed = true
 				} else if (
@@ -411,12 +406,7 @@ export const ExternalFramePanel = withTranslation()(
 
 		onDrop = (e: DragEvent) => {
 			if (e.dataTransfer) {
-				if (
-					e.dataTransfer
-						.getData('Text')
-						.trim()
-						.endsWith('</mos>')
-				) {
+				if (e.dataTransfer.getData('Text').trim().endsWith('</mos>')) {
 					// this is quite probably a MOS object, let's try and ingest it
 					this.actMOSMessage(e, e.dataTransfer.getData('Text'))
 				} else if (
@@ -521,7 +511,8 @@ export const ExternalFramePanel = withTranslation()(
 						{
 							visibility: this.props.visible ? 'visible' : 'hidden',
 						}
-					)}>
+					)}
+				>
 					<iframe
 						ref={this.setElement}
 						className="external-frame-panel__iframe"
@@ -531,7 +522,8 @@ export const ExternalFramePanel = withTranslation()(
 							transform: `scale(${scale})`,
 							width: `calc(100% / ${scale})`,
 							height: `calc(100% / ${scale})`,
-						}}></iframe>
+						}}
+					></iframe>
 				</div>
 			)
 		}

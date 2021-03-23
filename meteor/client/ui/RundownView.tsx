@@ -186,7 +186,8 @@ const WarningDisplay = withTranslation()(
 							this.state.plannedStartCloseShow &&
 							!(this.props.playlist.activationId && !this.props.playlist.rehearsal) &&
 							!!this.props.playlist.activationId
-						}>
+						}
+					>
 						<p>
 							{t(
 								'You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to reset the rundown and go into On-Air mode?'
@@ -242,7 +243,8 @@ const TimingDisplay = withTranslation()(
 							rundownPlaylist.loop
 								? `${currentRundown.name} - ${rundownPlaylist.name} (Looped)`
 								: `${currentRundown.name} - ${rundownPlaylist.name}`
-						}>
+						}
+					>
 						<strong>{currentRundown.name}</strong> {rundownPlaylist.name} {rundownPlaylist.loop && <LoopingIcon />}
 					</span>
 				) : (
@@ -290,7 +292,8 @@ const TimingDisplay = withTranslation()(
 								<span
 									className={ClassNames('timing-clock countdown plan-start left', {
 										heavy: getCurrentTime() > rundownPlaylist.expectedStart,
-									})}>
+									})}
+								>
 									{this.renderRundownName()}
 									{RundownUtils.formatDiffToTimecode(
 										getCurrentTime() - rundownPlaylist.expectedStart,
@@ -351,7 +354,8 @@ const TimingDisplay = withTranslation()(
 											light:
 												(this.props.timingDurations.asPlayedRundownDuration || 0) >
 												(rundownPlaylist.expectedDuration || 0),
-										})}>
+										})}
+									>
 										<span className="timing-clock-label right">{t('Diff')}</span>
 										{RundownUtils.formatDiffToTimecode(
 											(this.props.timingDurations.asPlayedRundownDuration || 0) - rundownPlaylist.expectedDuration,
@@ -387,7 +391,8 @@ const TimingDisplay = withTranslation()(
 											light:
 												(this.props.timingDurations.asPlayedRundownDuration || 0) >
 												(this.props.timingDurations.totalRundownDuration || 0),
-										})}>
+										})}
+									>
 										<span className="timing-clock-label right">{t('Diff')}</span>
 										{RundownUtils.formatDiffToTimecode(
 											(this.props.timingDurations.asPlayedRundownDuration || 0) -
@@ -1273,13 +1278,15 @@ const RundownHeader = withTranslation()(
 							active: !!this.props.playlist.activationId,
 							'not-active': !this.props.playlist.activationId,
 							rehearsal: this.props.playlist.rehearsal,
-						})}>
+						})}
+					>
 						<ContextMenuTrigger
 							id="rundown-context-menu"
 							attributes={{
 								className: 'flex-col col-timing horizontal-align-center',
 							}}
-							holdToDisplay={contextMenuHoldToDisplayTime()}>
+							holdToDisplay={contextMenuHoldToDisplayTime()}
+						>
 							<WarningDisplay
 								studioMode={this.props.studioMode}
 								inActiveRundownView={this.props.inActiveRundownView}
@@ -1292,7 +1299,8 @@ const RundownHeader = withTranslation()(
 										<Tooltip
 											overlay={t('Add ?studio=1 to the URL to enter studio mode')}
 											visible={getHelpMode() && !getAllowStudio()}
-											placement="bottom">
+											placement="bottom"
+										>
 											<div className="media-elem mrs sofie-logo" />
 										</Tooltip>
 										<div className="bd mls">
@@ -1326,7 +1334,8 @@ const RundownHeader = withTranslation()(
 						acceptText={t('OK')}
 						show={!!this.state.isError}
 						onAccept={this.discardError}
-						onDiscard={this.discardError}>
+						onDiscard={this.discardError}
+					>
 						<p>{this.state.errorMessage}</p>
 					</ModalDialog>
 				</React.Fragment>
@@ -2186,7 +2195,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				isNotificationsCenterOpen: level === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
 			})
 			setTimeout(
-				function() {
+				function () {
 					NotificationCenter.highlightSource(
 						segmentId,
 						level === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING
@@ -2238,7 +2247,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											initialShow={globalIndex++ < window.innerHeight / 260}
 											placeholderHeight={260}
 											placeholderClassName="placeholder-shimmer-element segment-timeline-placeholder"
-											width="auto">
+											width="auto"
+										>
 											<SegmentTimelineContainer
 												id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 												studio={this.props.studio}
@@ -2517,7 +2527,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									})}
 									style={this.getStyle()}
 									onWheelCapture={this.onWheel}
-									onContextMenu={this.onContextMenuTop}>
+									onContextMenu={this.onContextMenuTop}
+								>
 									<ErrorBoundary>
 										{this.state.studioMode && !Settings.disableBlurBorder && (
 											<KeyboardFocusIndicator>
@@ -2556,7 +2567,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												},
 												easing: 'ease-in',
 												duration: 500,
-											}}>
+											}}
+										>
 											{this.state.isNotificationsCenterOpen && (
 												<NotificationCenterPanel filter={this.state.isNotificationsCenterOpen} />
 											)}
@@ -2575,7 +2587,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												},
 												easing: 'ease-in',
 												duration: 500,
-											}}>
+											}}
+										>
 											{this.state.isSupportPanelOpen && (
 												<SupportPopUp>
 													<hr />
@@ -2654,7 +2667,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												<ModalDialog
 													onAccept={() => this.setState({ selectedPiece: undefined })}
 													title={t('Rundown not found')}
-													acceptText={t('Close')}>
+													acceptText={t('Close')}
+												>
 													{t('Rundown for piece "{{pieceLabel}}" could not be found.', {
 														pieceLabel: this.state.selectedPiece.instance.piece.name,
 													})}
@@ -2772,7 +2786,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												className="btn btn-primary"
 												onClick={() => {
 													history.push('/rundowns')
-												}}>
+												}}
+											>
 												{t('Return to list')}
 											</button>
 										)}

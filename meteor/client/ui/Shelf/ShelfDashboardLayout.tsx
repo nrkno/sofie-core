@@ -106,9 +106,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							playlist={props.playlist}
 							visible={true}
 						/>
-					) : (
-						undefined
-					)
+					) : undefined
 				)}
 			{rundownLayout.actionButtons && (
 				<DashboardActionButtonGroup

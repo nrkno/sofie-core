@@ -26,9 +26,10 @@ export interface BucketAdLibAction extends Omit<IBlueprintActionManifest, 'partI
 	importVersions: RundownImportVersions // TODO - is this good?
 }
 
-export const BucketAdLibActions: TransformedCollection<BucketAdLibAction, BucketAdLibAction> = createMongoCollection<
+export const BucketAdLibActions: TransformedCollection<
+	BucketAdLibAction,
 	BucketAdLibAction
->('bucketAdlibActions')
+> = createMongoCollection<BucketAdLibAction>('bucketAdlibActions')
 registerCollection('BucketAdLibActions', BucketAdLibActions)
 
 registerIndex(BucketAdLibActions, {

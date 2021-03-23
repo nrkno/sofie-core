@@ -231,12 +231,14 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 				<td className="settings-studio-device__actions table-item-actions c1" key="action">
 					<button
 						className="action-btn"
-						onClick={(e) => this.editItem('settings.' + configManifest.id + '.' + deviceId)}>
+						onClick={(e) => this.editItem('settings.' + configManifest.id + '.' + deviceId)}
+					>
 						<FontAwesomeIcon icon={faPencilAlt} />
 					</button>
 					<button
 						className="action-btn"
-						onClick={(e) => this.confirmRemove('settings.' + configManifest.id + '.' + deviceId)}>
+						onClick={(e) => this.confirmRemove('settings.' + configManifest.id + '.' + deviceId)}
+					>
 						<FontAwesomeIcon icon={faTrash} />
 					</button>
 				</td>
@@ -246,7 +248,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 				<tr
 					className={ClassNames({
 						hl: isEdited('settings.' + configManifest.id + '.' + deviceId),
-					})}>
+					})}
+				>
 					{els}
 				</tr>
 			)
@@ -291,7 +294,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 																	type="text"
 																	collection={PeripheralDevices}
 																	updateFunction={this.updateObjectId}
-																	className="input text-input input-l"></EditAttribute>
+																	className="input text-input input-l"
+																></EditAttribute>
 															</label>
 														</div>
 														{this.renderConfigFields(
@@ -303,7 +307,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 													<div className="mod alright">
 														<button
 															className={ClassNames('btn btn-primary')}
-															onClick={(e) => this.finishEditItem('settings.' + configManifest.id + '.' + deviceId)}>
+															onClick={(e) => this.finishEditItem('settings.' + configManifest.id + '.' + deviceId)}
+														>
 															<FontAwesomeIcon icon={faCheck} />
 														</button>
 													</div>
@@ -358,7 +363,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 																	type="text"
 																	collection={PeripheralDevices}
 																	updateFunction={this.updateObjectId}
-																	className="input text-input input-l"></EditAttribute>
+																	className="input text-input input-l"
+																></EditAttribute>
 															</label>
 														</div>
 														<div className="mod mvs mhs">
@@ -372,7 +378,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 																	options={configManifest.deviceTypesMapping || deviceTypes}
 																	optionsAreNumbers={typeof configManifest.defaultType === 'number'}
 																	collection={PeripheralDevices}
-																	className="input text-input input-l"></EditAttribute>
+																	className="input text-input input-l"
+																></EditAttribute>
 															</label>
 														</div>
 														{configField &&
@@ -385,7 +392,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 													<div className="mod alright">
 														<button
 															className={ClassNames('btn btn-primary')}
-															onClick={(e) => this.finishEditItem('settings.' + configManifest.id + '.' + deviceId)}>
+															onClick={(e) => this.finishEditItem('settings.' + configManifest.id + '.' + deviceId)}
+														>
 															<FontAwesomeIcon icon={faCheck} />
 														</button>
 													</div>
@@ -480,7 +488,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 				<tr
 					className={ClassNames({
 						hl: isEdited(path),
-					})}>
+					})}
+				>
 					{els}
 				</tr>
 			)
@@ -526,7 +535,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 														<div className="mod alright">
 															<button
 																className={ClassNames('btn btn-primary')}
-																onClick={(e) => this.finishEditItem(prefix + '' + i)}>
+																onClick={(e) => this.finishEditItem(prefix + '' + i)}
+															>
 																<FontAwesomeIcon icon={faCheck} />
 															</button>
 														</div>
@@ -542,7 +552,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 						<div className="mod mhs">
 							<button
 								className="btn btn-primary"
-								onClick={(e) => this.addNewItem(configField, prefix + ((tableContent || []).length || 0))}>
+								onClick={(e) => this.addNewItem(configField, prefix + ((tableContent || []).length || 0))}
+							>
 								<FontAwesomeIcon icon={faPlus} />
 							</button>
 						</div>
@@ -592,7 +603,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 																		type="dropdown"
 																		options={configTypes}
 																		collection={PeripheralDevices}
-																		className="input text-input input-l"></EditAttribute>
+																		className="input text-input input-l"
+																	></EditAttribute>
 																</label>
 															</div>
 															{this.renderConfigFields(tableConfigField, this.props.device, prefix + '' + i + '.')}
@@ -600,7 +612,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 														<div className="mod alright">
 															<button
 																className={ClassNames('btn btn-primary')}
-																onClick={(e) => this.finishEditItem(prefix + '' + i)}>
+																onClick={(e) => this.finishEditItem(prefix + '' + i)}
+															>
 																<FontAwesomeIcon icon={faCheck} />
 															</button>
 														</div>
@@ -616,7 +629,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 						<div className="mod mhs">
 							<button
 								className="btn btn-primary"
-								onClick={(e) => this.addNewItem(configField, prefix + ((tableContent || []).length || 0))}>
+								onClick={(e) => this.addNewItem(configField, prefix + ((tableContent || []).length || 0))}
+							>
 								<FontAwesomeIcon icon={faPlus} />
 							</button>
 						</div>
@@ -643,7 +657,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 							key={configField.id}
 							configField={configField}
 							obj={obj}
-							prefix={prefix}></ConfigManifestEntryComponent>
+							prefix={prefix}
+						></ConfigManifestEntryComponent>
 					)
 				}
 			}
@@ -668,7 +683,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 						secondaryText={t('Cancel')}
 						show={this.state.showDeleteConfirm}
 						onAccept={(e) => this.handleConfirmRemoveAccept(e)}
-						onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
+						onSecondary={(e) => this.handleConfirmRemoveCancel(e)}
+					>
 						<p>
 							{t('Are you sure you want to remove {{type}} "{{deviceId}}"?', {
 								deviceId: this.state.deleteConfirmItemPath && this.state.deleteConfirmItemPath.split('.').pop(),

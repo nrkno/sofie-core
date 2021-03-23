@@ -150,18 +150,21 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 					{
 						visibility: this.props.visible ? 'visible' : 'hidden',
 					}
-				)}>
+				)}
+			>
 				<div
 					className={ClassNames('adlib-region-panel__image-container', {
 						next: piece && this.isAdLibNext(piece),
 						'on-air': piece && this.isAdLibOnAir(piece),
-					})}>
+					})}
+				>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>
 						{
 							<span
 								className={ClassNames('adlib-region-panel__label', {
 									'adlib-region-panel__label--large': this.props.panel.labelBelowPanel,
-								})}>
+								})}
+							>
 								{this.props.panel.name}
 							</span>
 						}

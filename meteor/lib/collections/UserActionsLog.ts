@@ -32,9 +32,10 @@ export interface UserActionsLogItem {
 	timelineResolveDuration?: TimeDuration[]
 }
 
-export const UserActionsLog: TransformedCollection<UserActionsLogItem, UserActionsLogItem> = createMongoCollection<
+export const UserActionsLog: TransformedCollection<
+	UserActionsLogItem,
 	UserActionsLogItem
->('userActionsLog')
+> = createMongoCollection<UserActionsLogItem>('userActionsLog')
 registerCollection('UserActionsLog', UserActionsLog)
 
 registerIndex(UserActionsLog, {

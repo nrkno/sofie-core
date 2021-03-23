@@ -444,7 +444,8 @@ export class ConfigManifestTable<
 													className={ClassNames('action-btn', {
 														disabled: this.state.sortColumn !== i,
 													})}
-													onClick={() => this.sort(i)}>
+													onClick={() => this.sort(i)}
+												>
 													<FontAwesomeIcon
 														icon={
 															this.state.sortColumn === i
@@ -482,7 +483,8 @@ export class ConfigManifestTable<
 											className={ClassNames('btn btn-danger', {
 												'btn-tight': this.props.subPanel,
 											})}
-											onClick={() => this.removeRow(val._id, baseAttribute)}>
+											onClick={() => this.removeRow(val._id, baseAttribute)}
+										>
 											<FontAwesomeIcon icon={faTrash} />
 										</button>
 									</td>
@@ -495,14 +497,16 @@ export class ConfigManifestTable<
 					className={ClassNames('btn btn-primary', {
 						'btn-tight': this.props.subPanel,
 					})}
-					onClick={() => this.addRow(configEntry, baseAttribute)}>
+					onClick={() => this.addRow(configEntry, baseAttribute)}
+				>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
 				<button
 					className={ClassNames('btn mlm btn-secondary', {
 						'btn-tight': this.props.subPanel,
 					})}
-					onClick={() => this.exportJSON(configEntry, vals)}>
+					onClick={() => this.exportJSON(configEntry, vals)}
+				>
 					<FontAwesomeIcon icon={faDownload} />
 					&nbsp;{t('Export')}
 				</button>
@@ -512,7 +516,8 @@ export class ConfigManifestTable<
 					})}
 					accept="application/json,.json"
 					onChange={(e) => this.importJSON(e, configEntry, baseAttribute)}
-					key={this.state.uploadFileKey}>
+					key={this.state.uploadFileKey}
+				>
 					<FontAwesomeIcon icon={faUpload} />
 					&nbsp;{t('Import')}
 				</UploadButton>
@@ -750,7 +755,8 @@ export class ConfigManifestSettings<
 					<tr
 						className={ClassNames({
 							hl: this.isItemEdited(item),
-						})}>
+						})}
+					>
 						<th className="settings-studio-custom-config-table__name c2">{item.name}</th>
 						<td className="settings-studio-custom-config-table__value c3">
 							{this.renderConfigValue(item, configItem)}
@@ -772,7 +778,8 @@ export class ConfigManifestSettings<
 									className={ClassNames('btn btn-primary', {
 										'btn-tight': this.props.subPanel,
 									})}
-									onClick={(e) => this.createItem(item)}>
+									onClick={(e) => this.createItem(item)}
+								>
 									<FontAwesomeIcon icon={faPlus} /> {t('Create')}
 								</button>
 							)}
@@ -818,7 +825,8 @@ export class ConfigManifestSettings<
 					secondaryText={t('Cancel')}
 					show={this.state.showAddItem}
 					onAccept={(e) => this.handleConfirmAddItemAccept(e)}
-					onSecondary={(e) => this.handleConfirmAddItemCancel(e)}>
+					onSecondary={(e) => this.handleConfirmAddItemCancel(e)}
+				>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Item')}
@@ -840,7 +848,8 @@ export class ConfigManifestSettings<
 					secondaryText={t('Cancel')}
 					show={this.state.showDeleteConfirm}
 					onAccept={(e) => this.handleConfirmDeleteAccept(e)}
-					onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
+					onSecondary={(e) => this.handleConfirmDeleteCancel(e)}
+				>
 					<p>
 						{t('Are you sure you want to delete this config item "{{configId}}"?', {
 							configId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name,
@@ -861,11 +870,13 @@ export class ConfigManifestSettings<
 						className={ClassNames('btn btn-primary', {
 							'btn-tight': this.props.subPanel,
 						})}
-						onClick={this.addConfigItem}>
+						onClick={this.addConfigItem}
+					>
 						<Tooltip
 							overlay={t('More settings specific to this studio can be found here')}
 							visible={getHelpMode()}
-							placement="right">
+							placement="right"
+						>
 							<FontAwesomeIcon icon={faPlus} />
 						</Tooltip>
 					</button>

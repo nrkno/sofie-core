@@ -417,7 +417,8 @@ const EditAttributeCheckbox = wrapEditAttribute(
 							(this.props.className || '') +
 							' ' +
 							(this.state.editing ? this.props.modifiedClassName || '' : '')
-						}>
+						}
+					>
 						<input
 							type="checkbox"
 							className="form-control"
@@ -466,7 +467,8 @@ const EditAttributeSwitch = wrapEditAttribute(
 						' ' +
 						(this.props.disabled ? 'disabled' : '')
 					}
-					onClick={this.handleClick}>
+					onClick={this.handleClick}
+				>
 					{this.props.label}
 				</div>
 			)
@@ -579,7 +581,8 @@ const EditAttributeDropdown = wrapEditAttribute(
 					}
 					value={this.getAttributeText()}
 					onChange={this.handleChange}
-					disabled={this.props.disabled}>
+					disabled={this.props.disabled}
+				>
 					{this.getOptions(true).map((o, j) =>
 						Array.isArray(o.value) ? (
 							<optgroup key={j} label={o.name}>
@@ -816,7 +819,8 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 					availableOptions={this.getOptions()}
 					value={this.getAttribute()}
 					placeholder={this.props.label}
-					onChange={this.handleChange}></MultiSelect>
+					onChange={this.handleChange}
+				></MultiSelect>
 			)
 		}
 	}
@@ -927,7 +931,8 @@ const EditAttributeColorPicker = wrapEditAttribute(
 					availableOptions={this.props.options}
 					value={this.getAttribute()}
 					placeholder={this.props.label}
-					onChange={this.handleChange}></ColorPicker>
+					onChange={this.handleChange}
+				></ColorPicker>
 			)
 		}
 	}
@@ -949,7 +954,8 @@ const EditAttributeIconPicker = wrapEditAttribute(
 					availableOptions={this.props.options}
 					value={this.getAttribute()}
 					placeholder={this.props.label}
-					onChange={this.handleChange}></IconPicker>
+					onChange={this.handleChange}
+				></IconPicker>
 			)
 		}
 	}

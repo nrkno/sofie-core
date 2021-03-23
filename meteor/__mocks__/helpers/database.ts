@@ -241,7 +241,7 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 			TSR_VERSION,
 			SHOW_STYLE_ID,
 		},
-		function(): StudioBlueprintManifest {
+		function (): StudioBlueprintManifest {
 			return {
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.0.0',
@@ -279,7 +279,7 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 			TSR_VERSION,
 			SHOW_STYLE_VARIANT_ID,
 		},
-		function(): ShowStyleBlueprintManifest {
+		function (): ShowStyleBlueprintManifest {
 			return {
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.0.0',

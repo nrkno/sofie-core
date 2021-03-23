@@ -34,7 +34,7 @@ export namespace ReactiveDataHelper {
 		computation: (...params) => ReactiveVar<T>,
 		...labels
 	): (...params) => ReactiveVar<T> {
-		return function(...params): ReactiveVar<T> {
+		return function (...params): ReactiveVar<T> {
 			const cId = cacheId(computation.name, ...labels, ...params)
 			if (rVarCache[cId]) {
 				return rVarCache[cId]

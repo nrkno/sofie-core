@@ -21,13 +21,15 @@ export default class RemoteInputIcon extends React.Component<{ inputIndex?: stri
 						wordSpacing: '0px',
 						textShadow: '0 2px 9px rgba(0, 0, 0, 0.5)',
 					}}
-					xmlSpace="preserve">
+					xmlSpace="preserve"
+				>
 					<tspan
 						x="5"
 						y="66.514"
 						textLength="116.5"
 						lengthAdjust="spacing"
-						style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '62px', fontWeight: 100 }}>
+						style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '62px', fontWeight: 100 }}
+					>
 						{this.props.abbreviation ? this.props.abbreviation : 'LIVE'}
 						{this.props.inputIndex !== undefined ? this.props.inputIndex : ''}
 					</tspan>

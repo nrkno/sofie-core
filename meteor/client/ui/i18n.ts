@@ -78,10 +78,7 @@ class I18nContainer extends WithManagedTracker {
 	constructor() {
 		super()
 
-		this.i18nInstance = i18n
-			.use(Backend)
-			.use(LanguageDetector)
-			.use(initReactI18next)
+		this.i18nInstance = i18n.use(Backend).use(LanguageDetector).use(initReactI18next)
 
 		this.i18nInstance
 			.init(i18nOptions)

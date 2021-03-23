@@ -431,7 +431,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				onMouseEnter={this.handleOnMouseEnter}
 				onMouseLeave={this.handleOnMouseLeave}
 				onMouseMove={this.handleOnMouseMove}
-				data-obj-id={this.props.piece._id}>
+				data-obj-id={this.props.piece._id}
+			>
 				{!this.props.layer
 					? null
 					: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
@@ -449,7 +450,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						value={this.state.label}
 						onChange={this.onNameChanged}
 						onBlur={this.onRenameTextBoxBlur}
-						ref={this.onRenameTextBoxShow}></textarea>
+						ref={this.onRenameTextBoxShow}
+					></textarea>
 				) : (
 					<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
 				)}

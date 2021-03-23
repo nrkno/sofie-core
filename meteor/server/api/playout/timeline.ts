@@ -502,8 +502,9 @@ function buildTimelineObjsForRundown(
 					partInstancesInfo.previous.partInstance.part.autoNext &&
 					partInstancesInfo.previous.partInstance.part.autoNextOverlap
 				) {
-					previousPartGroupEnable.end = `#${currentPartGroupId}.start + ${partInstancesInfo.previous
-						.partInstance.part.autoNextOverlap || 0}`
+					previousPartGroupEnable.end = `#${currentPartGroupId}.start + ${
+						partInstancesInfo.previous.partInstance.part.autoNextOverlap || 0
+					}`
 				}
 				previousPartGroup = createPartGroup(partInstancesInfo.previous.partInstance, previousPartGroupEnable)
 				previousPartGroup.priority = -1

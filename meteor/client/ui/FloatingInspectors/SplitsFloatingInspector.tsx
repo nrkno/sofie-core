@@ -40,10 +40,12 @@ const RenderSplitPreview = memo(function RenderSplitPreview({ subItems }: { subI
 							height: ((item.content?.scale ?? 1) * 100).toString() + '%',
 							clipPath:
 								item.content && item.content.crop
-									? `inset(${item.content.crop.top * 100}% ${item.content.crop.right * 100}% ${item.content.crop
-											.bottom * 100}% ${item.content.crop.left * 100}%)`
+									? `inset(${item.content.crop.top * 100}% ${item.content.crop.right * 100}% ${
+											item.content.crop.bottom * 100
+									  }% ${item.content.crop.left * 100}%)`
 									: undefined,
-						}}>
+						}}
+					>
 						{item.role === SplitRole.BOX && <div className="video-preview__label">{item.label}</div>}
 					</div>
 				)
@@ -61,7 +63,8 @@ export const SplitsFloatingInspector: React.FunctionComponent<IProps> = (props) 
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
 			<div
 				className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
-				style={props.floatingInspectorStyle}>
+				style={props.floatingInspectorStyle}
+			>
 				<RenderSplitPreview subItems={splitItems} />
 			</div>
 		</FloatingInspector>

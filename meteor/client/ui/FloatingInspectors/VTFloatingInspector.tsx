@@ -139,14 +139,16 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 			{previewUrl ? (
 				<div
 					className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
-					style={props.floatingInspectorStyle}>
+					style={props.floatingInspectorStyle}
+				>
 					<video src={previewUrl} ref={videoElement} crossOrigin="anonymous" playsInline={true} muted={true} />
 					{showFrameMarker && (
 						<div
 							className={classNames('segment-timeline__mini-inspector__frame-marker', {
 								'segment-timeline__mini-inspector__frame-marker--first-frame': offsetTimePosition === 0,
 								'segment-timeline__mini-inspector__frame-marker--last-frame': offsetTimePosition >= itemDuration,
-							})}>
+							})}
+						>
 							<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 								<path d="M6 14.5L18.5 14.5V18.5H6H1.5V14V1.5H5.5V14V14.5H6Z" fill="#FFD600" stroke="black" />
 								{/* <path
@@ -172,7 +174,8 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 									: props.noticeLevel === NoticeLevel.WARNING
 									? 'segment-timeline__mini-inspector--notice notice-warning'
 									: '')
-							}>
+							}
+						>
 							{renderNotice(props.noticeLevel, props.noticeMessage)}
 						</div>
 					) : null}
@@ -189,7 +192,8 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 							? 'segment-timeline__mini-inspector--notice notice-warning'
 							: '')
 					}
-					style={props.floatingInspectorStyle}>
+					style={props.floatingInspectorStyle}
+				>
 					{props.noticeLevel !== null ? renderNotice(props.noticeLevel, props.noticeMessage) : null}
 					<div className="segment-timeline__mini-inspector__properties">
 						<span className="mini-inspector__label">{t('File name')}</span>

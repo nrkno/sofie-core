@@ -250,7 +250,8 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 							<Tooltip overlay={t('Remove in-trimming')} placement="top">
 								<button
 									className="action-btn clip-trim-panel__timecode-encoders__input__reset"
-									onClick={this.onResetIn}>
+									onClick={this.onResetIn}
+								>
 									<FontAwesomeIcon icon={faUndo} />
 								</button>
 							</Tooltip>
@@ -261,7 +262,8 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 							<Tooltip overlay={t('Remove all trimming')} placement="top">
 								<button
 									className="action-btn clip-trim-panel__timecode-encoders__input__reset"
-									onClick={this.onResetAll}>
+									onClick={this.onResetAll}
+								>
 									<FontAwesomeIcon icon={faUndo} />
 								</button>
 							</Tooltip>
@@ -277,7 +279,8 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 							<Tooltip overlay={t('Remove out-trimming')} placement="top">
 								<button
 									className="action-btn clip-trim-panel__timecode-encoders__input__reset"
-									onClick={this.onResetOut}>
+									onClick={this.onResetOut}
+								>
 									<FontAwesomeIcon icon={faUndo} />
 								</button>
 							</Tooltip>

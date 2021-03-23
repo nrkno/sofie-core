@@ -152,7 +152,8 @@ export const VideoEditMonitor = withTranslation()(
 						className={ClassNames('video-edit-monitor__monitor', {
 							'video-edit-monitor__monitor--mouse-down': this.state.isMouseDown,
 						})}
-						onMouseDown={this.videoMouseDown}>
+						onMouseDown={this.videoMouseDown}
+					>
 						<video className="video-edit-monitor__video" ref={this.setVideo}></video>
 					</div>
 					<div className="video-edit-monitor__waveform"></div>

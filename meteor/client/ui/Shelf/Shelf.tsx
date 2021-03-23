@@ -239,9 +239,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	getTop(newState?: boolean): string | undefined {
 		return this.state.overrideHeight
 			? (this.state.overrideHeight / window.innerHeight) * 100 + 'vh'
-			: (newState !== undefined
-				? newState
-				: this.props.isExpanded)
+			: (newState !== undefined ? newState : this.props.isExpanded)
 			? this.state.shelfHeight
 			: undefined
 	}
@@ -435,14 +433,16 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					'full-viewport': fullViewport,
 					moving: this.state.moving,
 				})}
-				style={fullViewport ? undefined : this.getStyle()}>
+				style={fullViewport ? undefined : this.getStyle()}
+			>
 				<ShelfContextMenu />
 				{!fullViewport && (
 					<div
 						className="rundown-view__shelf__handle dark"
 						tabIndex={0}
 						onMouseDown={this.grabHandle}
-						onTouchStart={this.touchOnHandle}>
+						onTouchStart={this.touchOnHandle}
+					>
 						<FontAwesomeIcon icon={faBars} />
 					</div>
 				)}
@@ -453,7 +453,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							attributes={{
 								className: 'rundown-view__shelf__contents__pane fill',
 							}}
-							holdToDisplay={contextMenuHoldToDisplayTime()}>
+							holdToDisplay={contextMenuHoldToDisplayTime()}
+						>
 							<ErrorBoundary>
 								{this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout) ? (
 									<ShelfRundownLayout

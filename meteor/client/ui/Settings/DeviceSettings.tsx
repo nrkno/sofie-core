@@ -126,7 +126,8 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 										obj={this.props.device}
 										type="text"
 										collection={PeripheralDevices}
-										className="mdinput"></EditAttribute>
+										className="mdinput"
+									></EditAttribute>
 									<span className="mdfx"></span>
 								</div>
 							</label>

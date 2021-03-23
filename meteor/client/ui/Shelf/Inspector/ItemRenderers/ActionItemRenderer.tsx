@@ -61,9 +61,10 @@ function transformedAdLibActionToAction(transformed: TransformedAdLibAction): Ad
 }
 
 // create a temporary collection to store changes to the AdLib Actions
-const LocalActionItems: TransformedCollection<TransformedAdLibAction, TransformedAdLibAction> = createMongoCollection<
+const LocalActionItems: TransformedCollection<
+	TransformedAdLibAction,
 	TransformedAdLibAction
->(null as any)
+> = createMongoCollection<TransformedAdLibAction>(null as any)
 
 export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 	let piece = RundownUtils.isPieceInstance(props.piece)
@@ -174,7 +175,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 								configField={configField}
 								obj={obj}
 								prefix={prefix}
-								className=""></ConfigManifestEntryComponent>
+								className=""
+							></ConfigManifestEntryComponent>
 						)
 					)}
 				</div>

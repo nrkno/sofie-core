@@ -8,7 +8,8 @@ export function CriticalIcon() {
 			viewBox="0 0 32 32"
 			fill="none"
 			xmlns="http://www.w3.org/2000/svg"
-			className="type-critical">
+			className="type-critical"
+		>
 			<path
 				fillRule="evenodd"
 				clipRule="evenodd"
@@ -42,7 +43,8 @@ export function WarningIcon() {
 			viewBox="6 0 32 32"
 			fill="none"
 			xmlns="http://www.w3.org/2000/svg"
-			className="type-warning">
+			className="type-warning"
+		>
 			<path
 				fillRule="evenodd"
 				clipRule="evenodd"
@@ -67,7 +69,8 @@ export function InformationIcon() {
 			viewBox="0 0 27 27"
 			fill="none"
 			xmlns="http://www.w3.org/2000/svg"
-			className="type-notification">
+			className="type-notification"
+		>
 			<path
 				fillRule="evenodd"
 				clipRule="evenodd"
@@ -92,7 +95,8 @@ export function CriticalIconSmall() {
 			viewBox="0 0 21 21"
 			fill="none"
 			xmlns="http://www.w3.org/2000/svg"
-			className="type-critical">
+			className="type-critical"
+		>
 			<path
 				fillRule="evenodd"
 				clipRule="evenodd"
@@ -126,7 +130,8 @@ export function WarningIconSmall() {
 			viewBox="4 0 21 21"
 			fill="none"
 			xmlns="http://www.w3.org/2000/svg"
-			className="type-warning">
+			className="type-warning"
+		>
 			<path
 				fillRule="evenodd"
 				clipRule="evenodd"
@@ -151,7 +156,8 @@ export function InformationIconSmall() {
 			viewBox="0 0 19 18"
 			fill="none"
 			xmlns="http://www.w3.org/2000/svg"
-			className="type-notification">
+			className="type-notification"
+		>
 			<path
 				fill-rule="evenodd"
 				clip-rule="evenodd"

@@ -46,7 +46,8 @@ export function MicFloatingInspector(props: IProps) {
 				className={
 					'segment-timeline__mini-inspector ' + props.typeClass + ' segment-timeline__mini-inspector--pop-down'
 				}
-				style={props.floatingInspectorStyle}>
+				style={props.floatingInspectorStyle}
+			>
 				<div>
 					{props.content && props.content.fullScript ? (
 						breakScript ? (

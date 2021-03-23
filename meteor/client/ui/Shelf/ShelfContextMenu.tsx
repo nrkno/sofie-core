@@ -90,7 +90,8 @@ export default function ShelfContextMenu() {
 						onClick={(e) => {
 							e.persist()
 							item.onToggle(item.adLib, false, e, mode)
-						}}>
+						}}
+					>
 						{mode.display.label}
 					</MenuItem>
 				))
@@ -100,7 +101,8 @@ export default function ShelfContextMenu() {
 						onClick={(e) => {
 							e.persist()
 							item.onToggle(item.adLib, false, e)
-						}}>
+						}}
+					>
 						{t('Execute')}
 					</MenuItem>
 				)
@@ -112,7 +114,8 @@ export default function ShelfContextMenu() {
 						onClick={(e) => {
 							e.persist()
 							item.onToggle(item.adLib, false, e)
-						}}>
+						}}
+					>
 						{t('Start this AdLib')}
 					</MenuItem>
 					{item.adLib.sourceLayer && item.adLib.sourceLayer?.isQueueable && (
@@ -120,7 +123,8 @@ export default function ShelfContextMenu() {
 							onClick={(e) => {
 								e.persist()
 								item.onToggle(item.adLib, true, e)
-							}}>
+							}}
+						>
 							{t('Queue this AdLib')}
 						</MenuItem>
 					)}
@@ -151,7 +155,8 @@ export default function ShelfContextMenu() {
 									piece: context.details.adLib,
 									context: e,
 								})
-							}}>
+							}}
+						>
 							{t('Inspect this AdLib')}
 						</MenuItem>
 					</>
@@ -166,7 +171,8 @@ export default function ShelfContextMenu() {
 									bucket: context.details.bucket,
 									context: e,
 								})
-							}}>
+							}}
+						>
 							{t('Rename this AdLib')}
 						</MenuItem>
 						<MenuItem
@@ -177,7 +183,8 @@ export default function ShelfContextMenu() {
 									bucket: context.details.bucket,
 									context: e,
 								})
-							}}>
+							}}
+						>
 							{t('Delete this AdLib')}
 						</MenuItem>
 						<hr />
@@ -192,7 +199,8 @@ export default function ShelfContextMenu() {
 									bucket: context.details.bucket,
 									context: e,
 								})
-							}}>
+							}}
+						>
 							{t('Empty this Bucket')}
 						</MenuItem>
 						<MenuItem
@@ -202,7 +210,8 @@ export default function ShelfContextMenu() {
 									bucket: context.details.bucket,
 									context: e,
 								})
-							}}>
+							}}
+						>
 							{t('Rename this Bucket')}
 						</MenuItem>
 						<MenuItem
@@ -212,7 +221,8 @@ export default function ShelfContextMenu() {
 									bucket: context.details.bucket,
 									context: e,
 								})
-							}}>
+							}}
+						>
 							{t('Delete this Bucket')}
 						</MenuItem>
 						<hr />
@@ -224,7 +234,8 @@ export default function ShelfContextMenu() {
 						RundownViewEventBus.emit(RundownViewEvents.CREATE_BUCKET, {
 							context: e,
 						})
-					}}>
+					}}
+				>
 					{t('Create new Bucket')}
 				</MenuItem>
 			</ContextMenu>

@@ -70,9 +70,10 @@ export interface PeripheralDevice {
 	accessTokenUrl?: string
 }
 
-export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice> = createMongoCollection<
+export const PeripheralDevices: TransformedCollection<
+	PeripheralDevice,
 	PeripheralDevice
->('peripheralDevices')
+> = createMongoCollection<PeripheralDevice>('peripheralDevices')
 registerCollection('PeripheralDevices', PeripheralDevices)
 
 registerIndex(PeripheralDevices, {

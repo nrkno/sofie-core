@@ -201,7 +201,8 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 						this.props.scrollLeft === 0 &&
 						(this.props.showingAllSegment || this.props.timeScale === this.props.maxTimeScale) &&
 						!this.props.isLiveSegment,
-				})}>
+				})}
+			>
 				<div className="segment-timeline__zoom-area" onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
 					<div className="segment-timeline__timeline">{this.renderZoomTimeline()}</div>
 					<SegmentTimelineZoomControls
@@ -251,17 +252,20 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 				<button
 					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
 					onClick={this.zoomOut}
-					disabled={this.props.timeScale <= this.props.maxTimeScale}>
+					disabled={this.props.timeScale <= this.props.maxTimeScale}
+				>
 					<ZoomOutIcon />
 				</button>
 				<button
 					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--all"
-					onClick={this.zoomNormalize}>
+					onClick={this.zoomNormalize}
+				>
 					<ZoomShowAll />
 				</button>
 				<button
 					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--in"
-					onClick={this.zoomIn}>
+					onClick={this.zoomIn}
+				>
 					<ZoomInIcon />
 				</button>
 			</div>
@@ -610,7 +614,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				<div className="segment-timeline__liveline" key={this.props.segment._id + '-liveline'} style={lineStyle}>
 					<div
 						className="segment-timeline__liveline__label"
-						onClick={(e) => this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, e)}>
+						onClick={(e) => this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, e)}
+					>
 						{t('On Air')}
 					</div>
 					<div className="segment-timeline__liveline__timecode">
@@ -702,7 +707,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 										this.props.collapsedOutputs[outputLayer._id] !== undefined
 											? this.props.collapsedOutputs[outputLayer._id] === true
 											: outputLayer.isDefaultCollapsed,
-								})}>
+								})}
+							>
 								<div
 									className="segment-timeline__output-layer-control__label"
 									data-output-id={outputLayer._id}
@@ -711,7 +717,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 										isCollapsable &&
 										this.props.onCollapseOutputToggle &&
 										this.props.onCollapseOutputToggle(outputLayer, e)
-									}>
+									}
+								>
 									{outputLayer.name}
 								</div>
 								{outputLayer.sourceLayers !== undefined &&
@@ -724,7 +731,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 													<div
 														key={sourceLayer._id}
 														className="segment-timeline__output-layer-control__layer"
-														data-source-id={sourceLayer._id}>
+														data-source-id={sourceLayer._id}
+													>
 														{array.length === 1 || sourceLayer.name === outputLayer.name ? '\xa0' : sourceLayer.name}
 													</div>
 												)
@@ -733,7 +741,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 										<div
 											key={outputLayer._id + '_flattened'}
 											className="segment-timeline__output-layer-control__layer"
-											data-source-id={outputLayer.sourceLayers.map((i) => i._id).join(',')}>
+											data-source-id={outputLayer.sourceLayers.map((i) => i._id).join(',')}
+										>
 											&nbsp;
 										</div>
 									))}
@@ -801,7 +810,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					'invert-flash': this.state.highlight,
 				})}
 				data-obj-id={this.props.segment._id}
-				ref={this.setSegmentRef}>
+				ref={this.setSegmentRef}
+			>
 				<ContextMenuTrigger
 					id="segment-timeline-context-menu"
 					collect={this.getSegmentContext}
@@ -809,10 +819,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						className: 'segment-timeline__title',
 					}}
 					holdToDisplay={contextMenuHoldToDisplayTime()}
-					renderTag="div">
+					renderTag="div"
+				>
 					<h2
 						className={'segment-timeline__title__label' + (this.props.segment.identifier ? ' identifier' : '')}
-						data-identifier={this.props.segment.identifier}>
+						data-identifier={this.props.segment.identifier}
+					>
 						{this.props.segment.name}
 					</h2>
 					{(criticalNotes > 0 || warningNotes > 0) && (
@@ -822,7 +834,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
 									onClick={(e) =>
 										this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(this.props.segment._id, NoteType.ERROR)
-									}>
+									}
+								>
 									<CriticalIconSmall />
 									<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
 								</div>
@@ -833,7 +846,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 									onClick={(e) =>
 										this.props.onHeaderNoteClick &&
 										this.props.onHeaderNoteClick(this.props.segment._id, NoteType.WARNING)
-									}>
+									}
+								>
 									<WarningIconSmall />
 									<div className="segment-timeline__title__notes__count">{warningNotes}</div>
 								</div>
@@ -846,7 +860,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								<div
 									className="segment-timeline__part-identifiers__identifier"
 									key={ident.partId + ''}
-									onClick={() => this.onClickSegmentIdent(ident.partId)}>
+									onClick={() => this.onClickSegmentIdent(ident.partId)}
+								>
 									{ident.ident}
 								</div>
 							))}
@@ -886,12 +901,14 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						'segment-timeline__timeline-container--grabbed': this.state.mouseGrabbed,
 					})}
 					onMouseDownCapture={this.onTimelineMouseDown}
-					onTouchStartCapture={this.onTimelineTouchStart}>
+					onTouchStartCapture={this.onTimelineTouchStart}
+				>
 					<div
 						className="segment-timeline__timeline"
 						key={this.props.segment._id + '-timeline'}
 						ref={this.setTimelineRef}
-						style={this.timelineStyle()}>
+						style={this.timelineStyle()}
+					>
 						<ErrorBoundary>
 							{this.renderTimeline()}
 							{this.renderEndOfSegment()}
@@ -914,7 +931,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				<ErrorBoundary>
 					<VelocityReact.VelocityTransitionGroup
 						enter={{ animation: 'slideDown', easing: 'ease-out', duration: 250 }}
-						leave={{ animation: 'slideUp', easing: 'ease-in', duration: 250 }}>
+						leave={{ animation: 'slideUp', easing: 'ease-in', duration: 250 }}
+					>
 						<SegmentTimelineZoom
 							onZoomDblClick={this.onZoomNormalize}
 							timelineWidth={this.state.timelineWidth}

@@ -66,7 +66,8 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 								<Tooltip
 									overlay={t('Drag to reorder or move out of playlist')}
 									placement="top"
-									overlayStyle={{ display: props.renderTooltips ? undefined : 'none' }}>
+									overlayStyle={{ display: props.renderTooltips ? undefined : 'none' }}
+								>
 									<button className="rundown-list-item__action">{iconDragHandle()}</button>
 								</Tooltip>
 							</span>
@@ -127,7 +128,8 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				{confirmReSyncRundownHandler ? (
 					<Tooltip
 						overlay={t('Re-sync rundown data with {{nrcsName}}', { nrcsName: rundown.externalNRCSName || 'NRCS' })}
-						placement="top">
+						placement="top"
+					>
 						<button className="rundown-list-item__action" onClick={() => confirmReSyncRundownHandler()}>
 							{iconResync()}
 						</button>

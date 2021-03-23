@@ -486,7 +486,7 @@ export function getNoticeLevelForPieceStatus(statusCode: RundownAPI.PieceStatusC
 		: null
 }
 
-window['testNotification'] = function(
+window['testNotification'] = function (
 	delay: number,
 	level: NoticeLevel = NoticeLevel.CRITICAL,
 	fakePersistent: boolean = false

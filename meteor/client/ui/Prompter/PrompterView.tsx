@@ -469,7 +469,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 									className="btn btn-primary"
 									onClick={() => {
 										history.push('/rundowns')
-									}}>
+									}}
+								>
 									{t('Return to list')}
 								</button>
 							)}
@@ -514,7 +515,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 									marginBottom: this.configOptions.margin ? this.configOptions.margin + 'vh' : undefined,
 									marginLeft: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
 									marginRight: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
-								}}></div>
+								}}
+							></div>
 						) : null}
 					</>
 				) : this.props.studio ? (
@@ -692,7 +694,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 							'segment-' + segment.id,
 							'part-' + firstPart.id,
 							firstPartStatus
-						)}>
+						)}
+					>
 						{segment.title || 'N/A'}
 					</div>
 				)
@@ -701,7 +704,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					lines.push(
 						<div
 							key={'part_' + part.id}
-							className={ClassNames('prompter-part', 'scroll-anchor', 'part-' + part.id, getPartStatus(part))}>
+							className={ClassNames('prompter-part', 'scroll-anchor', 'part-' + part.id, getPartStatus(part))}
+						>
 							{part.title || 'N/A'}
 						</div>
 					)
@@ -714,7 +718,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 									'prompter-line',
 									this.props.config.addBlankLine ? 'add-blank' : undefined,
 									!line.text ? 'empty' : undefined
-								)}>
+								)}
+							>
 								{line.text || ''}
 							</div>
 						)
@@ -737,14 +742,16 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						)}
 						style={{
 							fontSize: this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined,
-						}}>
+						}}
+					>
 						{this.props.children}
 
 						<div className="overlay-fix">
 							<div
 								className={
 									'read-marker ' + (!this.props.config.showMarker ? 'hide' : this.props.config.marker || 'hide')
-								}></div>
+								}
+							></div>
 
 							<div
 								className="indicators"
@@ -753,7 +760,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 									marginLeft: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
 									marginRight: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
 									fontSize: (this.props.config.fontSize ?? 0) > 12 ? `12vmin` : undefined,
-								}}>
+								}}
+							>
 								<div className="take-indicator hidden"></div>
 								<div className="next-indicator hidden"></div>
 							</div>
@@ -780,7 +788,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 										: this.props.config.margin
 										? this.props.config.margin + 'vh'
 										: undefined,
-							}}>
+							}}
+						>
 							<div className="prompter-break begin">{this.props.prompterData.title}</div>
 
 							{this.renderPrompterData(this.props.prompterData)}

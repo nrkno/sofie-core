@@ -116,7 +116,8 @@ const AdLibListView = withTranslation()(
 				<tbody
 					id={'adlib-panel__list-view__globals'}
 					key="globals"
-					className={ClassNames('adlib-panel__list-view__list__segment')}>
+					className={ClassNames('adlib-panel__list-view__list__segment')}
+				>
 					{itemList
 						.concat(this.props.rundownAdLibs)
 						.concat(

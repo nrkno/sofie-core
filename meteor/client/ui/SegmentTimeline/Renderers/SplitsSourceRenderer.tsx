@@ -127,7 +127,8 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 							{
 								second: array.length > 1 && index > 0 && item.type === array[index - 1].type,
 							}
-						)}></div>
+						)}
+					></div>
 				)
 			})
 	}
@@ -143,13 +144,15 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 				<span
 					className="segment-timeline__piece__label first-words overflow-label"
 					ref={this.setLeftLabelRef}
-					style={this.getItemLabelOffsetLeft()}>
+					style={this.getItemLabelOffsetLeft()}
+				>
 					{begin}
 				</span>
 				<span
 					className="segment-timeline__piece__label right-side"
 					ref={this.setRightLabelRef}
-					style={this.getItemLabelOffsetRight()}>
+					style={this.getItemLabelOffsetRight()}
+				>
 					{end && <span className="segment-timeline__piece__label last-words">{end}</span>}
 					{this.renderInfiniteIcon()}
 					{this.renderOverflowTimeLabel()}

@@ -156,9 +156,10 @@ export interface TimelineComplete {
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')
-export const Timeline: TransformedCollection<TimelineComplete, TimelineComplete> = createMongoCollection<
+export const Timeline: TransformedCollection<
+	TimelineComplete,
 	TimelineComplete
->('timeline')
+> = createMongoCollection<TimelineComplete>('timeline')
 registerCollection('Timeline', Timeline)
 
 // Note: this index is always created by default, so it's not needed.

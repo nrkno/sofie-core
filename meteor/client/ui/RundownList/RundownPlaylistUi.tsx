@@ -88,7 +88,7 @@ const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
 	},
 }
 
-const collect: DropTargetCollector<IRundownPlaylistDropTargetProps, IRundownPlaylistUiProps> = function(
+const collect: DropTargetCollector<IRundownPlaylistDropTargetProps, IRundownPlaylistUiProps> = function (
 	connect: DropTargetConnector,
 	monitor: DropTargetMonitor,
 	props: IRundownPlaylistUiProps
@@ -215,7 +215,8 @@ export const RundownPlaylistUi = DropTarget(
 						<div className="action-btn expco-item">
 							<div
 								className={ClassNames('action-btn layout-icon', { small: !layout.icon })}
-								style={{ color: layout.iconColor || 'transparent' }}>
+								style={{ color: layout.iconColor || 'transparent' }}
+							>
 								<FontAwesomeIcon icon={(layout.icon as IconName) || 'circle'} />
 							</div>
 							<span className="expco-text">{layout.name}</span>

@@ -1214,7 +1214,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								options={RundownLayoutType}
 								type="checkbox"
 								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
+								className="mod mas"
+							></EditAttribute>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -1227,7 +1228,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								options={RundownLayoutType}
 								type="checkbox"
 								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
+								className="mod mas"
+							></EditAttribute>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -1239,7 +1241,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								obj={item}
 								type="iconpicker"
 								collection={RundownLayouts}
-								className="input text-input input-s"></EditAttribute>
+								className="input text-input input-s"
+							></EditAttribute>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -1252,7 +1255,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								options={defaultColorPickerPalette}
 								type="colorpicker"
 								collection={RundownLayouts}
-								className="input text-input input-s"></EditAttribute>
+								className="input text-input input-s"
+							></EditAttribute>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -1265,7 +1269,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								options={RundownLayoutType}
 								type="checkbox"
 								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
+								className="mod mas"
+							></EditAttribute>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -1295,7 +1300,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									className={ClassNames('action-btn right mod man pas', {
 										star: (tab as any).default,
 									})}
-									onClick={(e) => this.onToggleDefault(item as RundownLayout, index, !(tab as any).default)}>
+									onClick={(e) => this.onToggleDefault(item as RundownLayout, index, !(tab as any).default)}
+								>
 									<FontAwesomeIcon icon={faStar} />
 								</button>
 							)}
@@ -1311,7 +1317,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											type="dropdown"
 											mutateDisplayValue={(v) => (v === undefined ? RundownLayoutElementType.FILTER : v)}
 											collection={RundownLayouts}
-											className="input text-input input-l"></EditAttribute>
+											className="input text-input input-l"
+										></EditAttribute>
 									</label>
 								</div>
 							</div>
@@ -1337,7 +1344,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<tr
 						className={ClassNames({
 							hl: this.isItemEdited(item),
-						})}>
+						})}
+					>
 						<th className="settings-studio-rundown-layouts-table__name c3">{item.name || t('Default Layout')}</th>
 						<td className="settings-studio-rundown-layouts-table__value c2">{item.type}</td>
 						<td className="settings-studio-rundown-layouts-table__value c1">
@@ -1346,7 +1354,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									<Link
 										target="_blank"
 										className="pill-link"
-										to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`}>
+										to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`}
+									>
 										{studio.name}
 									</Link>
 								</span>
@@ -1377,7 +1386,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 												obj={item}
 												type="text"
 												collection={RundownLayouts}
-												className="input text-input input-l"></EditAttribute>
+												className="input text-input input-l"
+											></EditAttribute>
 										</label>
 									</div>
 									<div className="mod mvs mhs">
@@ -1390,7 +1400,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 												options={RundownLayoutType}
 												type="dropdown"
 												collection={RundownLayouts}
-												className="input text-input input-l"></EditAttribute>
+												className="input text-input input-l"
+											></EditAttribute>
 										</label>
 									</div>
 								</div>
@@ -1531,7 +1542,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<UploadButton
 							className="btn btn-secondary mls"
 							onChange={(e) => this.onUploadFile(e)}
-							accept="application/json,.json">
+							accept="application/json,.json"
+						>
 							<FontAwesomeIcon icon={faUpload} />
 						</UploadButton>
 					</div>

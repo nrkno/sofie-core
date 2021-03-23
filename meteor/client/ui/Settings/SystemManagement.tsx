@@ -170,7 +170,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 									attribute="systemInfo.enabled"
 									obj={this.props.coreSystem}
 									type="checkbox"
-									collection={CoreSystem}></EditAttribute>
+									collection={CoreSystem}
+								></EditAttribute>
 							</div>
 						</div>
 
@@ -198,7 +199,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 									attribute="apm.enabled"
 									obj={this.props.coreSystem}
 									type="checkbox"
-									collection={CoreSystem}></EditAttribute>
+									collection={CoreSystem}
+								></EditAttribute>
 							</div>
 						</div>
 						<label className="field">
@@ -258,7 +260,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 									attribute="cron.casparCGRestart.enabled"
 									obj={this.props.coreSystem}
 									type="checkbox"
-									collection={CoreSystem}></EditAttribute>
+									collection={CoreSystem}
+								></EditAttribute>
 							</div>
 						</div>
 

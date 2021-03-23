@@ -158,7 +158,8 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 					onMouseUpCapture: (e) => this.onMouseUp(e),
 				}}
 				holdToDisplay={contextMenuHoldToDisplayTime()}
-				collect={this.getPartContext}>
+				collect={this.getPartContext}
+			>
 				{this.renderInside()}
 			</ContextMenuTrigger>
 		)
@@ -229,7 +230,8 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 					className: 'segment-timeline__layer segment-timeline__layer--flattened',
 					onMouseUpCapture: (e) => this.onMouseUp(e),
 				}}
-				collect={this.getPartContext}>
+				collect={this.getPartContext}
+			>
 				{this.renderInside()}
 			</ContextMenuTrigger>
 		)
@@ -362,7 +364,8 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 						flattened: this.props.layer.isFlattened,
 					},
 					`layer-count-${this.props.sourceLayers?.length || 0}`
-				)}>
+				)}
+			>
 				{DEBUG_MODE && (
 					<div className="segment-timeline__debug-info red">
 						{RundownUtils.formatTimeToTimecode(this.props.startsAt)}
@@ -791,7 +794,8 @@ export const SegmentTimelinePart = withTranslation()(
 							})}
 							data-obj-id={this.props.part.instance._id}
 							id={SegmentTimelinePartElementId + this.props.part.instance._id}
-							style={{ ...this.getLayerStyle(), ...invalidReasonColorVars }}>
+							style={{ ...this.getLayerStyle(), ...invalidReasonColorVars }}
+						>
 							{innerPart.invalid ? <div className="segment-timeline__part__invalid-cover"></div> : null}
 							{innerPart.floated ? <div className="segment-timeline__part__floated-cover"></div> : null}
 
@@ -804,12 +808,14 @@ export const SegmentTimelinePart = withTranslation()(
 									invalid: innerPart.invalid && !innerPart.gap,
 									floated: innerPart.floated,
 									offset: !!this.props.playlist.nextTimeOffset,
-								})}>
+								})}
+							>
 								<div
 									className={ClassNames('segment-timeline__part__nextline__label', {
 										'segment-timeline__part__nextline__label--thin':
 											(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext,
-									})}>
+									})}
+								>
 									{innerPart.invalid && !innerPart.gap ? (
 										<span>{t('Invalid')}</span>
 									) : (
@@ -828,7 +834,7 @@ export const SegmentTimelinePart = withTranslation()(
 								)}
 							</div>
 							{this.props.playlist.nextTimeOffset &&
-							this.state.isNext && ( // This is the off-set line
+								this.state.isNext && ( // This is the off-set line
 									<div
 										className={ClassNames('segment-timeline__part__nextline', {
 											'auto-next': this.props.part.willProbablyAutoNext,
@@ -842,12 +848,14 @@ export const SegmentTimelinePart = withTranslation()(
 														100 +
 												  '%'
 												: this.props.playlist.nextTimeOffset * this.props.timeScale + 'px',
-										}}>
+										}}
+									>
 										<div
 											className={ClassNames('segment-timeline__part__nextline__label', {
 												'segment-timeline__part__nextline__label--thin':
 													(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext,
-											})}>
+											})}
+										>
 											{innerPart.invalid ? (
 												!innerPart.gap && <span>{t('Invalid')}</span>
 											) : (
@@ -886,11 +894,13 @@ export const SegmentTimelinePart = withTranslation()(
 													!!this.props.playlist.nextPartInstanceId),
 											'show-end': isEndOfShow,
 										}
-									)}>
+									)}
+								>
 									<div
 										className={ClassNames('segment-timeline__part__nextline__label', {
 											'segment-timeline__part__nextline__label--thin': innerPart.autoNext && !this.state.isLive,
-										})}>
+										})}
+									>
 										{innerPart.autoNext && t('Auto') + ' '}
 										{this.state.isLive && t('Next')}
 										{isEndOfLoopingShow && <LoopingIcon />}
@@ -904,7 +914,8 @@ export const SegmentTimelinePart = withTranslation()(
 											this.state.isLive &&
 											((!this.props.isLastSegment && !this.props.isLastInSegment) ||
 												!!this.props.playlist.nextPartInstanceId),
-									})}>
+									})}
+								>
 									<div className="segment-timeline__part__segment-end__label">
 										<SegmentEnd />
 									</div>
@@ -931,7 +942,8 @@ export const SegmentTimelinePart = withTranslation()(
 								next: this.state.isNext,
 							})}
 							data-obj-id={this.props.part.instance._id}
-							style={this.getLayerStyle()}>
+							style={this.getLayerStyle()}
+						>
 							{/* render it empty, just to take up space */}
 						</div>
 					)

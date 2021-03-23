@@ -136,7 +136,8 @@ export const ExpectedPackagesStatus = translateWithTracker<
 													<button
 														className="action-btn"
 														// disabled={status.status !== 'fullfilled'}
-														onClick={(e) => this.abortExpectation(e, status)}>
+														onClick={(e) => this.abortExpectation(e, status)}
+													>
 														<FontAwesomeIcon icon={faStopCircle} />
 													</button>
 												</Tooltip>

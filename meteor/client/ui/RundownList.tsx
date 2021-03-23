@@ -78,7 +78,7 @@ const dropTargetSpec: DropTargetSpec<IRundownsListProps> = {
 	// }
 }
 
-const dropTargetCollector: DropTargetCollector<IRundownsListDropTargetProps, IRundownsListProps> = function(
+const dropTargetCollector: DropTargetCollector<IRundownsListDropTargetProps, IRundownsListProps> = function (
 	connect: DropTargetConnector,
 	monitor: DropTargetMonitor,
 	props: IRundownsListProps
@@ -292,7 +292,8 @@ export const RundownList = translateWithTracker(() => {
 												<Tooltip
 													overlay={t('Click on a rundown to control your studio')}
 													visible={getHelpMode()}
-													placement="top">
+													placement="top"
+												>
 													<span>{t('Rundown')}</span>
 												</Tooltip>
 											</span>

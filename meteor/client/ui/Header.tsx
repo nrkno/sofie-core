@@ -91,7 +91,8 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 							},
 							easing: 'ease-in',
 							duration: 500,
-						}}>
+						}}
+					>
 						{this.state.isNotificationCenterOpen !== undefined && (
 							<NotificationCenterPanel limitCount={15} filter={this.state.isNotificationCenterOpen} />
 						)}
@@ -110,7 +111,8 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 							},
 							easing: 'ease-in',
 							duration: 500,
-						}}>
+						}}
+					>
 						{this.state.isSupportPanelOpen && <SupportPopUp />}
 					</VelocityReact.VelocityTransitionGroup>
 				</ErrorBoundary>

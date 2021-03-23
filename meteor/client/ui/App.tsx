@@ -215,7 +215,8 @@ export const App = translateWithTracker(() => {
 								callback(false)
 							},
 						})
-					}}>
+					}}
+				>
 					<div className="container-fluid">
 						{/* Header switch - render the usual header for all pages but the rundown view */}
 						{(!Settings.enableUserAccounts || this.props.user) && (

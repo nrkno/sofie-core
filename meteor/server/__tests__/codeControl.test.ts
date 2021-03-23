@@ -155,10 +155,10 @@ describe('codeControl', () => {
 			let mockTime = 0
 			$nowOriginal = Date.now
 			$setTimeoutOriginal = Meteor.setTimeout
-			Date.now = function() {
+			Date.now = function () {
 				return mockTime
 			}
-			Meteor.setTimeout = function(fnc, delay) {
+			Meteor.setTimeout = function (fnc, delay) {
 				return $setTimeoutOriginal(() => {
 					mockTime += delay
 					fnc()

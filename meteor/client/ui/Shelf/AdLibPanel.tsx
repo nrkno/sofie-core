@@ -295,7 +295,8 @@ const AdLibListView = withTranslation()(
 											return item.timings?.startedPlayback && item.timings?.duration ? memo : false
 										}, true) === true,
 								}
-							)}>
+							)}
+						>
 							<tr className="adlib-panel__list-view__list__seg-header">
 								<td colSpan={4}>{segment.name}</td>
 							</tr>
@@ -343,11 +344,13 @@ const AdLibListView = withTranslation()(
 				<div
 					className={ClassNames('adlib-panel__list-view__list', {
 						'adlib-panel__list-view__list--no-segments': this.props.noSegments,
-					})}>
+					})}
+				>
 					<table
 						id={'adlib-panel__list-view__table__' + Random.id()}
 						className="adlib-panel__list-view__list__table"
-						ref={this.setTableRef}>
+						ref={this.setTableRef}
+					>
 						{this.renderRundownAdLibs()}
 						{this.renderSegments()}
 					</table>
@@ -405,7 +408,8 @@ export const AdLibPanelToolbar = withTranslation()(
 				<div
 					className={ClassNames('adlib-panel__list-view__toolbar', {
 						'adlib-panel__list-view__toolbar--no-segments': this.props.noSegments,
-					})}>
+					})}
+				>
 					<div className="adlib-panel__list-view__toolbar__filter">
 						<input
 							className="adlib-panel__list-view__toolbar__filter__input"
@@ -1162,7 +1166,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 						})}
 						onClick={(e) => this.onSelectSegment(item)}
 						key={unprotectString(item._id)}
-						tabIndex={0}>
+						tabIndex={0}
+					>
 						{item.name}
 					</li>
 				)
@@ -1201,7 +1206,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 							className="adlib-panel super-dark"
 							data-tab-id={
 								this.props.filter ? `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${this.props.filter._id}` : ShelfTabs.ADLIB
-							}>
+							}
+						>
 							{this.props.uiSegments.length > 30 && (
 								<ul className="adlib-panel__segments">{this.renderSegmentList()}</ul>
 							)}

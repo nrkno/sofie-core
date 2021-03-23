@@ -36,7 +36,8 @@ import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants
 import { Studio } from '../../../../lib/collections/Studios'
 import { CacheForPlayout } from '../../playout/cache'
 
-export class SyncIngestUpdateToPartInstanceContext extends RundownContext
+export class SyncIngestUpdateToPartInstanceContext
+	extends RundownContext
 	implements ISyncIngestUpdateToPartInstanceContext {
 	private readonly _partInstanceCache: DbCacheWriteCollection<PartInstance, DBPartInstance>
 	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance>

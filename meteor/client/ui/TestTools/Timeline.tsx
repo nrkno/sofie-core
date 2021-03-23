@@ -324,7 +324,8 @@ export const ComponentTimelineSimulate = withTracker<
 								const val = Number(e.target.value)
 								this.setState({ time: isNaN(val) ? null : val })
 							}}
-							value={this.state.time ?? 'now'}>
+							value={this.state.time ?? 'now'}
+						>
 							<option id="now">Now: {this.props.now}</option>
 							{times.map((e) => (
 								<option id={e + ''} key={e}>

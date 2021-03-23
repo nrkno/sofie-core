@@ -35,7 +35,8 @@ const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTit
 						'source-broken': piece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
 						'unknown-state': piece.status === RundownAPI.PieceStatusCode.UNKNOWN,
 					}
-				)}>
+				)}
+			>
 				{layer && (layer.abbreviation || layer.name)}
 			</div>
 			<span className="shelf-inspector__title__label">{piece.name}</span>
