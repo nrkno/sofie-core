@@ -2,7 +2,6 @@ import { IngestSegment } from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
-import { callPeripheralDeviceFunction } from '../../../../client/lib/clientAPI'
 import { SegmentId, Segment } from '../../../../lib/collections/Segments'
 import { clone, literal, normalizeArray } from '../../../../lib/lib'
 import { Settings } from '../../../../lib/Settings'
@@ -54,7 +53,7 @@ export async function diffAndApplyChanges(
 	const newSegmentEntries = compileSegmentEntries(newIngestRundown.segments)
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
 
-	// TODO: We may not need to do some of these quick updates anymore, but they are cheap so can stay for now
+	// Note: We may not need to do some of these quick updates anymore, but they are cheap so can stay for now
 
 	// Update segment ranks:
 	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {

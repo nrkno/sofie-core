@@ -1,9 +1,8 @@
 import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoQuery } from '../typings/meteor'
-import { Rundowns, RundownId } from './Rundowns'
+import { RundownId } from './Rundowns'
 import { Piece, Pieces } from './Pieces'
-import { AdLibPieces, AdLibPiece } from './AdLibPieces'
-import { Segments, SegmentId } from './Segments'
+import { SegmentId } from './Segments'
 import {
 	applyClassToDocument,
 	registerCollection,

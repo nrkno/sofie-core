@@ -628,7 +628,6 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 			},
 			{
 				sort: {
-					// TODO - verify sort
 					takeCount: 1,
 				},
 			}

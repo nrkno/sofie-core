@@ -4,7 +4,6 @@ import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/c
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { allowedToMoveRundownOutOfPlaylist, ChangedSegmentsRankInfo, updatePartInstanceRanks } from '../rundown'
 import { CacheForIngest } from './cache'
-import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
 import { getRundown } from './lib'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { CommitIngestData } from './lockFunction'
@@ -21,7 +20,6 @@ import {
 	removeRundownsFromDb,
 } from '../rundownPlaylist'
 import { clone, makePromise, max, protectString, unprotectString } from '../../../lib/lib'
-import _, { pluck } from 'underscore'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { reportRundownDataHasChanged } from '../blueprints/events'
 import { removeSegmentContents } from './cleanup'

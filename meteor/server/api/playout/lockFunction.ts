@@ -1,12 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { MethodContext } from '../../../lib/api/methods'
 import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { assertNever, waitForPromise } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
-import { RundownPlaylistContentAccess } from '../../security/rundownPlaylist'
-import { checkAccessAndGetPlaylist, VerifiedRundownPlaylistContentAccess } from '../lib'
+import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { CacheForStudio } from '../studio/cache'
 import {
 	getStudioIdFromCacheOrLock,
@@ -119,10 +117,18 @@ export function runPlayoutOperationWithLock<T>(
 		tmpPlaylist = pl
 	}
 
-	return runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, playoutToStudioLockPriority(priority), (lock) =>
-		runPlayoutOperationWithLockFromStudioOperation(contextStr, lock, tmpPlaylist, priority, (lock) =>
-			fcn(lock, tmpPlaylist)
-		)
+	return runStudioOperationWithLock(
+		contextStr,
+		tmpPlaylist.studioId,
+		playoutToStudioLockPriority(priority),
+		(studioLock) =>
+			runPlayoutOperationWithLockFromStudioOperation(
+				contextStr,
+				studioLock,
+				tmpPlaylist,
+				priority,
+				(playoutLock) => fcn(playoutLock, tmpPlaylist)
+			)
 	)
 }
 
@@ -236,7 +242,6 @@ function playoutLockFunctionInner<T>(
 	}
 
 	if (options?.skipPlaylistLock) {
-		// TODO-PartInstances remove this once new data flow
 		return waitForPromise(doPlaylistInner())
 	} else {
 		return runPlayoutOperationWithLockFromStudioOperation(context, lock, tmpPlaylist, priority, doPlaylistInner)

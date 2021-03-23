@@ -4,7 +4,7 @@ import { RandomMock } from '../../__mocks__/random'
 import { MongoMock } from '../../__mocks__/mongo'
 
 import { waitForPromise, protectString, waitTime } from '../../lib/lib'
-import { testInFiber, testInFiberOnly } from '../../__mocks__/helpers/jest'
+import { testInFiber } from '../../__mocks__/helpers/jest'
 
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { Blueprints } from '../../lib/collections/Blueprints'

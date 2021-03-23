@@ -26,7 +26,6 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { profiler } from '../profiler'
-import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { ReadonlyDeep } from 'type-fest'
 import { DbCacheReadCollection } from '../../cache/CacheCollection'
 import {
@@ -221,11 +220,6 @@ export function setNextPart(
 
 	const newNextPartInstance = rawNextPart && 'playlistActivationId' in rawNextPart ? rawNextPart : null
 	let newNextPart = rawNextPart && 'playlistActivationId' in rawNextPart ? null : rawNextPart
-
-	const nonTakenPartInstances = cache.PartInstances.findFetch({
-		rundownId: { $in: rundownIds },
-		isTaken: { $ne: true },
-	})
 
 	if (newNextPart || newNextPartInstance) {
 		if (!cache.Playlist.doc.activationId)

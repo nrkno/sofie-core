@@ -179,7 +179,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			)
 		)
 
-		// TODO: This could be defered until we get to updateTimeline. It could be a small performance boost
+		// Future: This could be defered until we get to updateTimeline. It could be a small performance boost
 		ps.push(this.Timeline.prepareInit({ _id: playlist.studioId }, true))
 
 		await Promise.allSettled(ps)

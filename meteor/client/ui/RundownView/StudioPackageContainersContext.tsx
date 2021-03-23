@@ -1,5 +1,5 @@
 import React from 'react'
-import { Studio, StudioPackageContainer } from '../../../lib/collections/Studios'
+import { StudioPackageContainer } from '../../../lib/collections/Studios'
 
 type StudioPackageContainersFromContext = Record<string, StudioPackageContainer> | undefined
 

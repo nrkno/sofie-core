@@ -277,11 +277,11 @@ export function handleMosDeleteStory(
 					)
 				}
 
-				ingestRundown.segments = makeChangeToIngestParts(rundownId, ingestParts, (ingestParts) => {
-					const filteredParts = ingestParts.filter((p) => storyIds.indexOf(p.externalId) === -1)
+				ingestRundown.segments = makeChangeToIngestParts(rundownId, ingestParts, (rundownParts) => {
+					const filteredParts = rundownParts.filter((p) => storyIds.indexOf(p.externalId) === -1)
 					// if (filteredParts.length === ingestParts.length) return // Nothing was removed
 					logger.debug(
-						`handleMosDeleteStory, new part count ${filteredParts.length} (was ${ingestParts.length})`
+						`handleMosDeleteStory, new part count ${filteredParts.length} (was ${rundownParts.length})`
 					)
 
 					return filteredParts
@@ -413,26 +413,26 @@ export function handleMosSwapStories(
 			if (ingestRundown) {
 				const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
-				ingestRundown.segments = makeChangeToIngestParts(rundownId, ingestParts, (ingestParts) => {
-					const story0Index = ingestParts.findIndex((p) => p.externalId === story0Str)
+				ingestRundown.segments = makeChangeToIngestParts(rundownId, ingestParts, (rundownParts) => {
+					const story0Index = rundownParts.findIndex((p) => p.externalId === story0Str)
 					if (story0Index === -1) {
 						throw new Meteor.Error(
 							404,
 							`Story ${story0} not found in rundown ${parseMosString(runningOrderMosId)}`
 						)
 					}
-					const story1Index = ingestParts.findIndex((p) => p.externalId === story1Str)
+					const story1Index = rundownParts.findIndex((p) => p.externalId === story1Str)
 					if (story1Index === -1) {
 						throw new Meteor.Error(
 							404,
 							`Story ${story1} not found in rundown ${parseMosString(runningOrderMosId)}`
 						)
 					}
-					const tmp = ingestParts[story0Index]
-					ingestParts[story0Index] = ingestParts[story1Index]
-					ingestParts[story1Index] = tmp
+					const tmp = rundownParts[story0Index]
+					rundownParts[story0Index] = rundownParts[story1Index]
+					rundownParts[story1Index] = tmp
 
-					return ingestParts
+					return rundownParts
 				})
 
 				// We modify in-place
@@ -465,13 +465,13 @@ export function handleMosMoveStories(
 				// Get story data
 				const storyIds = stories.map(parseMosString)
 
-				ingestRundown.segments = makeChangeToIngestParts(rundownId, ingestParts, (ingestParts) => {
+				ingestRundown.segments = makeChangeToIngestParts(rundownId, ingestParts, (rundownParts) => {
 					// Extract the parts-to-be-moved:
 					const movingParts = _.sortBy(
-						ingestParts.filter((p) => storyIds.indexOf(p.externalId) !== -1),
+						rundownParts.filter((p) => storyIds.indexOf(p.externalId) !== -1),
 						(p) => storyIds.indexOf(p.externalId)
 					)
-					const filteredParts = ingestParts.filter((p) => storyIds.indexOf(p.externalId) === -1)
+					const filteredParts = rundownParts.filter((p) => storyIds.indexOf(p.externalId) === -1)
 
 					// Ensure all stories to move were found
 					const movingIds = _.map(movingParts, (p) => p.externalId)
@@ -558,7 +558,5 @@ function groupPartsIntoIngestSegments(
 ): LocalIngestSegment[] {
 	// Group the parts and make them into Segments:
 	const newGroupedParts = groupIngestParts(newIngestParts)
-	const newIngestSegments = groupedPartsToSegments(rundownId, newGroupedParts)
-
-	return newIngestSegments
+	return groupedPartsToSegments(rundownId, newGroupedParts)
 }

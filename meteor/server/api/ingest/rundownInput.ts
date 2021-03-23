@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
-import * as _ from 'underscore'
 import { PeripheralDevice, PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { getCurrentTime, waitForPromise } from '../../../lib/lib'
@@ -525,14 +524,8 @@ export function handleRemovedPart(
 						`Rundown "${rundownExternalId}" does not have a Segment "${segmentExternalId}" to update`
 					)
 				}
-				const oldPartsLength = ingestSegment.parts.length
 				ingestSegment.parts = ingestSegment.parts.filter((p) => p.externalId !== partExternalId)
 				ingestSegment.modified = getCurrentTime()
-
-				// if (ingestSegment.parts.length === oldPartsLength) {
-				// 	// Nothing was removed
-				// 	return null
-				// }
 
 				// We modify in-place
 				return ingestRundown

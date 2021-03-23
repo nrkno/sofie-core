@@ -3,7 +3,7 @@ import { TransformedCollection } from '../typings/meteor'
 import { ProtectedString, registerCollection, Time } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { ExpectedPackageDBBase, ExpectedPackageId } from './ExpectedPackages'
+import { ExpectedPackageDBBase } from './ExpectedPackages'
 import { PeripheralDeviceId } from './PeripheralDevices'
 
 export type ExpectedPackageWorkStatusId = ProtectedString<'ExpectedPackageStatusId'>

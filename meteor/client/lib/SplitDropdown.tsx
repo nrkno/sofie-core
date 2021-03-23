@@ -1,4 +1,4 @@
-import React, { useState, PropsWithChildren, ReactNode } from 'react'
+import React, { useState, ReactNode } from 'react'
 import ClassNames from 'classnames'
 
 import { faChevronUp } from '@fortawesome/free-solid-svg-icons'

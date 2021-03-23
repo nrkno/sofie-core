@@ -1,5 +1,4 @@
 import { check } from '../../lib/check'
-import * as _ from 'underscore'
 import { makePromise, waitForPromise, waitForPromiseAll } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'

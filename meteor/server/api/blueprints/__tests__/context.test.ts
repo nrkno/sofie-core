@@ -1,9 +1,4 @@
-import * as _ from 'underscore'
-import {
-	setupDefaultStudioEnvironment,
-	setupMockStudio,
-	DefaultEnvironment,
-} from '../../../../__mocks__/helpers/database'
+import { setupDefaultStudioEnvironment, setupMockStudio } from '../../../../__mocks__/helpers/database'
 import { getHash, protectString, unprotectString } from '../../../../lib/lib'
 import { Studio } from '../../../../lib/collections/Studios'
 import {
@@ -27,9 +22,8 @@ import { generateFakeBlueprint } from './lib'
 import { createShowStyleCompound } from '../../showStyles'
 
 describe('Test blueprint api context', () => {
-	let env: DefaultEnvironment
 	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+		setupDefaultStudioEnvironment()
 	})
 
 	describe('CommonContext', () => {

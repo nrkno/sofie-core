@@ -1,5 +1,5 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString, Time, protectString } from '../lib'
+import { registerCollection, ProtectedString, protectString } from '../lib'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { registerIndex } from '../database'

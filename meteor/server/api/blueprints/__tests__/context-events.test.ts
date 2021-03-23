@@ -223,7 +223,6 @@ describe('Test blueprint api context', () => {
 			expect(context.getPartInstancesInSegmentPlayoutId(unprotectPartInstance(partInstance2))).toHaveLength(1)
 		})
 
-		// TODO - getPieceInstances
 		testInFiber('getPieceInstances ', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
@@ -717,7 +716,6 @@ describe('Test blueprint api context', () => {
 					name: 'name0',
 					infiniteInstanceId: infinite1,
 				},
-				// TODO infinite
 			]
 		}
 

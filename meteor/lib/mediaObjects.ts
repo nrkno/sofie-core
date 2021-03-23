@@ -102,10 +102,10 @@ export function acceptFormat(format: string, formats: Array<Array<string>>): boo
 	if (!match) return false // ingested format string is invalid
 
 	const mediaFormat = match.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
-	for (const format of formats) {
+	for (const candidateFormat of formats) {
 		let failed = false
-		for (const param in format) {
-			if (format[param] && format[param] !== mediaFormat[param]) {
+		for (const param in candidateFormat) {
+			if (candidateFormat[param] && candidateFormat[param] !== mediaFormat[param]) {
 				failed = true
 				break
 			}
@@ -215,9 +215,9 @@ export function checkPieceContentStatus(
 					checkedPackageContainers[packageContainerId] = true
 
 					for (const expectedPackage of mapping.expectedPackages) {
-						for (const packageSource of expectedPackage.sources) {
-							packageSource.containerId
-						}
+						// for (const packageSource of expectedPackage.sources) {
+						// 	packageSource.containerId
+						// }
 
 						const packageOnPackageContainer = getPackageContainerPackageStatus(
 							studio._id,
@@ -298,8 +298,8 @@ export function checkPieceContentStatus(
 			}
 			if (Object.keys(packageInfos).length) {
 				newStatus = RundownAPI.PieceStatusCode.OK
-				for (const [packageId, packageInfo] of Object.entries(packageInfos)) {
-					const { packageName, scan, deepScan } = packageInfo
+				for (const [_packageId, packageInfo] of Object.entries(packageInfos)) {
+					const { scan, deepScan } = packageInfo
 
 					if (scan && scan.streams) {
 						if (scan.streams.length < 2) {
@@ -416,6 +416,14 @@ export function checkPieceContentStatus(
 						}
 					}
 				}
+
+				if (messages.length) {
+					if (newStatus === RundownAPI.PieceStatusCode.OK) {
+						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+					}
+					message = messages.join('; ') + '.'
+				}
+
 				packageInfoToForward = packageInfos
 			}
 		} else {

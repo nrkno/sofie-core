@@ -16,13 +16,14 @@ import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collection
 import { Rundown, DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { Segment, DBSegment, Segments } from '../../../lib/collections/Segments'
 import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
-import { protectString, makePromise } from '../../../lib/lib'
+import { protectString } from '../../../lib/lib'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { DbCacheReadObject, DbCacheWriteOptionalObject } from '../../cache/CacheObject'
 import { CacheBase } from '../../cache/CacheBase'
 import { profiler } from '../profiler'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 import { getRundownId } from './lib'
+import { ExpectedPackageDB, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 
 export class CacheForIngest extends CacheBase<CacheForIngest> {
 	public readonly isIngest = true
@@ -41,6 +42,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 
 	public readonly ExpectedMediaItems: DbCacheWriteCollection<ExpectedMediaItem, ExpectedMediaItem>
 	public readonly ExpectedPlayoutItems: DbCacheWriteCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>
+	public readonly ExpectedPackages: DbCacheWriteCollection<ExpectedPackageDB, ExpectedPackageDB>
 
 	public readonly RundownBaselineObjs: DbCacheWriteCollection<RundownBaselineObj, RundownBaselineObj>
 	public readonly RundownBaselineAdLibPieces: DbCacheWriteCollection<
@@ -72,6 +74,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 
 		this.ExpectedMediaItems = new DbCacheWriteCollection(ExpectedMediaItems)
 		this.ExpectedPlayoutItems = new DbCacheWriteCollection(ExpectedPlayoutItems)
+		this.ExpectedPackages = new DbCacheWriteCollection(ExpectedPackages)
 
 		this.RundownBaselineObjs = new DbCacheWriteCollection(RundownBaselineObjs)
 		this.RundownBaselineAdLibPieces = new DbCacheWriteCollection(RundownBaselineAdLibPieces)
@@ -97,6 +100,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 
 			res.ExpectedMediaItems.prepareInit({ rundownId: rundownId }, true),
 			res.ExpectedPlayoutItems.prepareInit({ rundownId: rundownId }, true),
+			res.ExpectedPackages.prepareInit({ rundownId: rundownId }, true),
 
 			res.RundownBaselineObjs.prepareInit({ rundownId: rundownId }, false),
 			res.RundownBaselineAdLibPieces.prepareInit({ rundownId: rundownId }, false),

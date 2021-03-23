@@ -1,10 +1,6 @@
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString, ProtectedStringProperties, protectString, omit } from '../lib'
-import {
-	IBlueprintPieceInstance,
-	Time,
-	IBlueprintResolvedPieceInstance,
-} from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceInstance, IBlueprintResolvedPieceInstance } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { Piece, PieceId } from './Pieces'
 import { PartInstanceId } from './PartInstances'
