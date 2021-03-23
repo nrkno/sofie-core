@@ -190,7 +190,7 @@
 	},
 	"standard-version": {
 		"scripts": {
-			"postbump": "npm run libs:syncVersions"
+			"postbump": "npm run libs:syncVersionsAndChangelogs"
 		}
 	}
 }
