@@ -121,6 +121,8 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, Doc
 					type="int"
 					collection={collection}
 					className="input text-input input-m"
+					mutateDisplayValue={(v) => (item.zeroBased ? v + 1 : v)}
+					mutateUpdateValue={(v) => (item.zeroBased ? v - 1 : v)}
 				/>
 			)
 		case ConfigManifestEntryType.BOOLEAN:

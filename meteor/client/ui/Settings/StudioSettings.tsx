@@ -308,7 +308,9 @@ const DeviceMappingSettings = withTranslation()(
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
+								className="input text-input input-l"
+								mutateDisplayValue={(v) => v + 1}
+								mutateUpdateValue={(v) => v - 1}></EditAttribute>
 						</label>
 					</div>
 				</React.Fragment>
@@ -444,7 +446,9 @@ const DeviceMappingSettings = withTranslation()(
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
+								className="input text-input input-l"
+								mutateDisplayValue={(v) => v + 1}
+								mutateUpdateValue={(v) => v - 1}></EditAttribute>
 						</label>
 					</div>
 				</React.Fragment>
@@ -667,7 +671,7 @@ const StudioMappings = withTranslation()(
 									)) ||
 									(mappingIsAtem(mapping) && (
 										<span>
-											{TSR.MappingAtemType[mapping.mappingType]} {mapping.index}
+											{TSR.MappingAtemType[mapping.mappingType]} {mapping.index !== undefined ? mapping.index + 1 : ''}
 										</span>
 									)) ||
 									(mappingIsLawo(mapping) && (
@@ -694,7 +698,11 @@ const StudioMappings = withTranslation()(
 									(mappingIsOSC(mapping) && <span>-</span>) ||
 									(mappingIsSisyfos(mapping) &&
 										(mappingIsSisyfosChannel(mapping) ? (
-											<span>{t('Channel: {{channel}}', { channel: mapping.channel })}</span>
+											<span>
+												{t('Channel: {{channel}}', {
+													channel: mapping.channel !== undefined ? mapping.channel + 1 : '',
+												})}
+											</span>
 										) : mappingIsSisyfosChannels(mapping) ? (
 											<span>{t('Channels')}</span>
 										) : (
