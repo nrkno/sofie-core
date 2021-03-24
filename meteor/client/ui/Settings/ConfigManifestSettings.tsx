@@ -680,6 +680,8 @@ export class ConfigManifestSettings<
 				) : (
 					value.toString()
 				)
+			case ConfigManifestEntryType.NUMBER:
+				return _.isNumber(value) && item.zeroBased ? (value + 1).toString() : value.toString()
 			default:
 				return value.toString()
 		}
