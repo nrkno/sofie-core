@@ -766,7 +766,10 @@ function updateRundownFromIngestData(
 		newAdlibActions.push(...segmentContents.adlibActions)
 	})
 
-	const removedSegments = cache.Segments.findFetch({ _id: { $nin: newSegments.map((s) => s._id) } })
+	const removedSegments = cache.Segments.findFetch({
+		_id: { $nin: newSegments.map((s) => s._id) },
+		rundownId: rundownId,
+	})
 	const retainSegments = new Set<SegmentId>()
 	for (const oldSegment of removedSegments) {
 		if (!canRemoveSegment(cache, dbPlaylist, oldSegment)) {
