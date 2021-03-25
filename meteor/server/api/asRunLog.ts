@@ -32,24 +32,11 @@ import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 const EVENT_WAIT_TIME = 500
 
 export async function pushAsRunLogAsync(
-	eventBase: AsRunLogEventBase,
-	rehersal: boolean,
-	timestamp?: Time
+	_eventBase: AsRunLogEventBase,
+	_rehersal: boolean,
+	_timestamp?: Time
 ): Promise<AsRunLogEvent | null> {
-	if (!timestamp) timestamp = getCurrentTime()
-
-	let event: AsRunLogEvent = extendMandadory<AsRunLogEventBase, AsRunLogEvent>(eventBase, {
-		_id: protectString(getHash(JSON.stringify(eventBase) + timestamp + '_' + rehersal)),
-		timestamp: timestamp,
-		rehersal: rehersal,
-	})
-
-	let result = await asyncCollectionUpsert(AsRunLog, event._id, event)
-	if (result.insertedId) {
-		return event
-	} else {
-		return null
-	}
+	return null
 }
 export function pushAsRunLog(eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time): AsRunLogEvent | null {
 	let p = pushAsRunLogAsync(eventBase, rehersal, timestamp)
