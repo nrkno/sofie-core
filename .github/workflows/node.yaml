@@ -3,9 +3,9 @@ name: Node CI
 on:
   push:
     branches:
-      - '**'
+      - "**"
     tags:
-      - 'v**'
+      - "v**"
   pull_request:
 
 jobs:
@@ -15,53 +15,53 @@ jobs:
     continue-on-error: true
     timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v2
-    - uses: ./.github/actions/setup-meteor
-    - name: restore node_modules
-      uses: actions/cache@v2
-      with:
-        path: |
-          meteor/node_modules
-        key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
-    - name: Prepare Environment
-      run: |
-        cd meteor
-        meteor npm install
-        meteor npm run ci:prepare
-      env:
-        CI: true
-    - name: Run typecheck and linter
-      run: |
-        cd meteor
-        meteor npm run ci:lint
-      env:
-        CI: true
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/setup-meteor
+      - name: restore node_modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            meteor/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
+      - name: Prepare Environment
+        run: |
+          cd meteor
+          meteor npm install
+          meteor npm run ci:prepare
+        env:
+          CI: true
+      - name: Run typecheck and linter
+        run: |
+          cd meteor
+          meteor npm run ci:lint
+        env:
+          CI: true
   test-core:
     name: Test Core
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-    - uses: actions/checkout@v2
-    - uses: ./.github/actions/setup-meteor
-    - name: restore node_modules
-      uses: actions/cache@v2
-      with:
-        path: |
-          meteor/node_modules
-        key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
-    - name: Prepare Environment
-      run: |
-        cd meteor
-        meteor npm install
-        meteor npm run ci:prepare
-      env:
-        CI: true
-    - name: Run Tests
-      run: |
-        cd meteor
-        meteor npm run ci
-      env:
-        CI: true
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/setup-meteor
+      - name: restore node_modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            meteor/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
+      - name: Prepare Environment
+        run: |
+          cd meteor
+          meteor npm install
+          meteor npm run ci:prepare
+        env:
+          CI: true
+      - name: Run Tests
+        run: |
+          cd meteor
+          meteor npm run ci
+        env:
+          CI: true
 
   validate-prod-dependencies-core:
     name: Validate Core production dependencies
@@ -69,191 +69,276 @@ jobs:
     continue-on-error: true
     timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v2
-    - uses: ./.github/actions/setup-meteor
-    - name: restore node_modules
-      uses: actions/cache@v2
-      with:
-        path: |
-          meteor/node_modules
-        key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
-    - name: Validate production dependencies for vulnerabilities and compatible licenses
-      run: |
-        cd meteor
-        meteor npm install
-        meteor npm run validate:prod-dependencies
-      env:
-        CI: true
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/setup-meteor
+      - name: restore node_modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            meteor/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
+      - name: Validate production dependencies for vulnerabilities and compatible licenses
+        run: |
+          cd meteor
+          meteor npm install
+          meteor npm run validate:prod-dependencies
+        env:
+          CI: true
   validate-all-dependencies-core:
     name: Validate all Core dependencies
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v2
-    - uses: ./.github/actions/setup-meteor
-    - name: restore node_modules
-      uses: actions/cache@v2
-      with:
-        path: |
-          meteor/node_modules
-        key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
-    - name: Validate all dependencies for vulnerabilities
-      run: |
-        cd meteor
-        meteor npm install
-        meteor npm run validate:all-dependencies
-      env:
-        CI: true
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/setup-meteor
+      - name: restore node_modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            meteor/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
+      - name: Validate all dependencies for vulnerabilities
+        run: |
+          cd meteor
+          meteor npm install
+          meteor npm run validate:all-dependencies
+        env:
+          CI: true
   build-core:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
     name: Build Core and publish docker image
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-    - uses: actions/checkout@v2
-    - name: Get the Docker tag
-      id: docker-tag
-      uses: yuya-takeyama/docker-tag-from-github-ref-action@2b0614b1338c8f19dd9d3ea433ca9bc0cc7057ba
-      with:
-        remove-version-tag-prefix: false
-    - name: Determine images to publish
-      id: image-tags
-      run: |
-        IMAGES=
-        DOCKER_TAG=${{ steps.docker-tag.outputs.tag }}
-        # check if a release branch, or master, or a tag
-        if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ github.ref }}" == refs/tags/* ]]
-        then
-          # If we have a dockerhub image name, then setup to publish there
-          if [ -z "${{ secrets.DOCKERHUB_IMAGE }}" ]
+      - uses: actions/checkout@v2
+      - name: Get the Docker tag
+        id: docker-tag
+        uses: yuya-takeyama/docker-tag-from-github-ref-action@2b0614b1338c8f19dd9d3ea433ca9bc0cc7057ba
+        with:
+          remove-version-tag-prefix: false
+      - name: Determine images to publish
+        id: image-tags
+        run: |
+          IMAGES=
+          DOCKER_TAG=${{ steps.docker-tag.outputs.tag }}
+          # check if a release branch, or master, or a tag
+          if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ github.ref }}" == refs/tags/* ]]
           then
-            DOCKERHUB_PUBLISH="0"
+            # If we have a dockerhub image name, then setup to publish there
+            if [ -z "${{ secrets.DOCKERHUB_IMAGE_PREFIX }}" ]
+            then
+              DOCKERHUB_PUBLISH="0"
+            else
+              DOCKERHUB_PUBLISH="1"
+              IMAGES="${{ secrets.DOCKERHUB_IMAGE_PREFIX }}server-core:$DOCKER_TAG"$'\n'$IMAGES
+            fi
+            # debug output
+            echo dockerhub-publish $DOCKERHUB_PUBLISH
+            echo images $IMAGES
+            echo ::set-output name=images::"$IMAGES"
+            echo ::set-output name=dockerhub-publish::"$DOCKERHUB_PUBLISH"
           else
-            DOCKERHUB_PUBLISH="1"
-            IMAGES="${{ secrets.DOCKERHUB_IMAGE }}:$DOCKER_TAG"$'\n'$IMAGES
+            echo "Skipping docker build"
           fi
-          # debug output
-          echo dockerhub-publish $DOCKERHUB_PUBLISH
-          echo images $IMAGES
-          echo ::set-output name=images::"$IMAGES"
-          echo ::set-output name=dockerhub-publish::"$DOCKERHUB_PUBLISH"
-        else
-          echo "Skipping docker build"
-        fi
-    - uses: ./.github/actions/setup-meteor
-      if: ${{ steps.image-tags.outputs.images }}
-    - name: Prepare Environment
-      if: ${{ steps.image-tags.outputs.images }}
-      run: |
-        cd meteor
-        meteor npm install
-    - name: Build libs
-      if: ${{ steps.image-tags.outputs.images }}
-      run: |
-        cd packages
-        yarn install
-        yarn build
-    - name: Meteor Build
-      if: ${{ steps.image-tags.outputs.images }}
-      run: |
-        cd meteor
-        NODE_OPTIONS="--max-old-space-size=4096" METEOR_DEBUG_BUILD=1 meteor build --allow-superuser --directory .
-    - name: Meteor Bundle NPM Build
-      if: ${{ steps.image-tags.outputs.images }}
-      run: |
-        cd meteor/bundle/programs/server
-        meteor npm install
-    - name: Set up Docker Buildx
-      if: ${{ steps.image-tags.outputs.images }}
-      uses: docker/setup-buildx-action@v1
-    - name: Login to DockerHub
-      if: steps.image-tags.outputs.images && steps.image-tags.outputs.dockerhub-publish == '1'
-      uses: docker/login-action@v1 
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    # TODO - do we want this?
-    # - name: Login to GitHub Container Registry
-    #   uses: docker/login-action@v1 
-    #   with:
-    #     registry: ghcr.io
-    #     username: ${{ github.repository_owner }}
-    #     password: ${{ secrets.CR_PAT }}
-    - name: Build and push
-      uses: docker/build-push-action@v2
-      if: ${{ steps.image-tags.outputs.images }}
-      with:
-        context: .
-        file: ./Dockerfile.circle
-        push: true
-        tags: ${{ steps.image-tags.outputs.images }}
+      - uses: ./.github/actions/setup-meteor
+        if: ${{ steps.image-tags.outputs.images }}
+      - name: Prepare Environment
+        if: ${{ steps.image-tags.outputs.images }}
+        run: |
+          cd meteor
+          meteor npm install
+      - name: Build libs
+        if: ${{ steps.image-tags.outputs.images }}
+        run: |
+          cd packages
+          yarn install
+          yarn build
+      - name: Meteor Build
+        if: ${{ steps.image-tags.outputs.images }}
+        run: |
+          cd meteor
+          NODE_OPTIONS="--max-old-space-size=4096" METEOR_DEBUG_BUILD=1 meteor build --allow-superuser --directory .
+      - name: Meteor Bundle NPM Build
+        if: ${{ steps.image-tags.outputs.images }}
+        run: |
+          cd meteor/bundle/programs/server
+          meteor npm install
+      - name: Set up Docker Buildx
+        if: ${{ steps.image-tags.outputs.images }}
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        if: steps.image-tags.outputs.images && steps.image-tags.outputs.dockerhub-publish == '1'
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # TODO - do we want this?
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.repository_owner }}
+      #     password: ${{ secrets.CR_PAT }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        if: ${{ steps.image-tags.outputs.images }}
+        with:
+          context: .
+          file: ./meteor/Dockerfile.circle
+          push: true
+          tags: ${{ steps.image-tags.outputs.images }}
 
-  lint-libs:
-    name: Lint Lib
+  build-gateways:
+    # TODO - should this be dependant on tests or something passing if we are on a tag?
+    name: Build gateways
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        gateway-name: [playout-gateway, mos-gateway]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get the Docker tag
+        id: docker-tag
+        uses: yuya-takeyama/docker-tag-from-github-ref-action@2b0614b1338c8f19dd9d3ea433ca9bc0cc7057ba
+        with:
+          remove-version-tag-prefix: false
+      - name: Determine images to publish
+        id: image-tags
+        # TODO - image needs changing...
+        run: |
+          IMAGES=
+          DOCKER_TAG=${{ steps.docker-tag.outputs.tag }}
+          # check if a release branch, or master, or a tag
+          if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ steps.docker-tag.outputs.tag }}" == refs/tags/* ]]
+          then
+            # If we have a dockerhub image name, then setup to publish there
+            if [ -z "${{ secrets.DOCKERHUB_IMAGE_PREFIX }}" ]
+            then
+              DOCKERHUB_PUBLISH="0"
+            else
+              DOCKERHUB_PUBLISH="1"
+              IMAGES="${{ secrets.DOCKERHUB_IMAGE_PREFIX }}-${{ matrix.gateway-name }}:$DOCKER_TAG"$'\n'$IMAGES
+            fi
+            # debug output
+            echo dockerhub-publish $DOCKERHUB_PUBLISH
+            echo images $IMAGES
+            echo ::set-output name=images::"$IMAGES"
+            echo ::set-output name=dockerhub-publish::"$DOCKERHUB_PUBLISH"
+          else
+            echo "Skipping docker build"
+          fi
+      - name: Build libs
+        if: ${{ steps.image-tags.outputs.images }}
+        run: |
+          cd packages
+          yarn install
+          yarn build
+          yarn install --prod --ignore-scripts
+      - name: Set up Docker Buildx
+        if: ${{ steps.image-tags.outputs.images }}
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        if: steps.image-tags.outputs.images && steps.image-tags.outputs.dockerhub-publish == '1'
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # TODO - do we want this?
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.repository_owner }}
+      #     password: ${{ secrets.CR_PAT }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        if: ${{ steps.image-tags.outputs.images }}
+        with:
+          context: .
+          file: ./${{ matrix.gateway-name }}/Dockerfile.circle
+          push: true
+          tags: ${{ steps.image-tags.outputs.images }}
+
+  lint-packages:
+    name: Lint Package
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
 
     strategy:
       matrix:
-        lib-name: [blueprints-integration, server-core-integration]
+        package-name:
+          [
+            blueprints-integration,
+            server-core-integration,
+            playout-gateway,
+            mos-gateway,
+          ]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 12.x
-    - name: Prepare Environment
-      run: |
-        cd packages 
-        yarn install
-      env:
-        CI: true
-    - name: Run typecheck and linter
-      run: |
-        cd packages/${{ matrix.lib-name }}
-        yarn lint
-      env:
-        CI: true
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Prepare Environment
+        run: |
+          cd packages 
+          yarn install
+          yarn build
+        env:
+          CI: true
+      - name: Run typecheck and linter
+        run: |
+          cd packages/${{ matrix.package-name }}
+          yarn lint
+        env:
+          CI: true
 
-  test-libs:
-    name: Test Lib
+  test-packages:
+    name: Test Package
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
 
     strategy:
       matrix:
-        lib-name: [blueprints-integration, server-core-integration]
-        node-version: [10.x, 12.x, 14.x]
+        package-name: [blueprints-integration, server-core-integration]
+        node-version: [12.x, 14.x]
+
+    # Gateways dont support node 10. but no tests to run anyway :)
+    # if: "!(endsWith(matrix.package-name, 'gateway') & matrix.node-version == '10.x')"
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Prepare Environment
-      run: |
-        cd packages 
-        yarn install
-      env:
-        CI: true
-    - name: Run typecheck and linter
-      run: |
-        cd packages/${{ matrix.lib-name }}
-        yarn unit
-      env:
-        CI: true
-    - name: Send coverage
-      if: matrix.node-version == '12.x'
-      run: |
-        cd packages/${{ matrix.lib-name }}
-        yarn send-coverage
-      env:
-        CI: true
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Prepare Environment
+        run: |
+          cd packages 
+          yarn install
+          yarn build
+        env:
+          CI: true
+      - name: Run tests
+        run: |
+          cd packages/${{ matrix.package-name }}
+          yarn unit
+        env:
+          CI: true
+      - name: Send coverage
+        if: matrix.node-version == '12.x'
+        run: |
+          cd packages/${{ matrix.package-name }}
+          yarn send-coverage
+        env:
+          CI: true
 
   typedoc-libs:
     name: Publish Libs Typedoc
@@ -265,32 +350,31 @@ jobs:
     # TODO - we should only do this if the latest release
     if: contains(github.ref, 'refs/tags/')
 
-    needs:
-      release-libs
+    needs: release-libs
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 12.x
-    - name: Prepare Environment
-      run: |
-        cd packages 
-        yarn install
-      env:
-        CI: true
-    - name: Run typecheck and linter
-      run: |
-        cd packages
-        yarn docs
-      env:
-        CI: true
-    - name: Publish
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./packages/docs
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Prepare Environment
+        run: |
+          cd packages 
+          yarn install
+        env:
+          CI: true
+      - name: Run typecheck and linter
+        run: |
+          cd packages
+          yarn docs
+        env:
+          CI: true
+      - name: Publish
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./packages/docs
 
   prerelease-libs:
     name: Prerelease Lib
@@ -302,64 +386,63 @@ jobs:
     if: contains(github.ref, 'refs/heads/')
 
     needs:
-      - test-libs
+      - test-packages
 
     strategy:
       matrix:
-        lib-name: [blueprints-integration, server-core-integration]
+        package-name: [blueprints-integration, server-core-integration]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 12.x
-    - name: Check release is desired
-      # TODO - or if something changed? perhaps always on the releaseX branches?
-      id: do-publish
-      run: |
-        if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-          echo "No Token"
-        elif ! git log --format=oneline -n 1 | grep -q "\[publish\]"; then
-          echo "Skip"
-        else
-          echo "Publish prerelease"
-          echo ::set-output name=publish::"1"
-        fi
-    - name: Prepare Environment
-      if: ${{ steps.do-publish.outputs.publish }}
-      run: |
-        cd packages 
-        yarn install
-      env:
-        CI: true
-    - name: Get the Prerelease tag
-      id: prerelease-tag
-      uses: yuya-takeyama/docker-tag-from-github-ref-action@2b0614b1338c8f19dd9d3ea433ca9bc0cc7057ba
-      with:
-        remove-version-tag-prefix: false
-    - name: Bump version and build
-      if: ${{ steps.do-publish.outputs.publish }}
-      run: |
-        cd packages/${{ matrix.lib-name }}
-        COMMIT_TIMESTAMP=$(git log -1 --pretty=format:%ct HEAD)
-        COMMIT_DATE=$(date -d @$COMMIT_TIMESTAMP +%Y%m%d-%H%M%S)
-        GIT_HASH=$(git rev-parse --short HEAD)
-        PRERELEASE_TAG=nightly-$(echo "${{ steps.prerelease-tag.outputs.tag }}" | sed -r 's/[^a-z0-9]+/-/gi')
-        yarn release --prerelease $PRERELEASE_TAG-$COMMIT_DATE-$GIT_HASH --skip.changelog --skip.tag --skip.commit
-        yarn build
-      env:
-        CI: true
-    - name: Publish to NPM
-      if: ${{ steps.do-publish.outputs.publish }}
-      run: |
-        echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-        cd packages/${{ matrix.lib-name }}
-        NEW_VERSION=$(node -p "require('./package.json').version")
-        yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag nightly
-      env:
-        CI: true
-
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Check release is desired
+        # TODO - or if something changed? perhaps always on the releaseX branches?
+        id: do-publish
+        run: |
+          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
+            echo "No Token"
+          elif ! git log --format=oneline -n 1 | grep -q "\[publish\]"; then
+            echo "Skip"
+          else
+            echo "Publish prerelease"
+            echo ::set-output name=publish::"1"
+          fi
+      - name: Prepare Environment
+        if: ${{ steps.do-publish.outputs.publish }}
+        run: |
+          cd packages 
+          yarn install
+        env:
+          CI: true
+      - name: Get the Prerelease tag
+        id: prerelease-tag
+        uses: yuya-takeyama/docker-tag-from-github-ref-action@2b0614b1338c8f19dd9d3ea433ca9bc0cc7057ba
+        with:
+          remove-version-tag-prefix: false
+      - name: Bump version and build
+        if: ${{ steps.do-publish.outputs.publish }}
+        run: |
+          cd packages/${{ matrix.package-name }}
+          COMMIT_TIMESTAMP=$(git log -1 --pretty=format:%ct HEAD)
+          COMMIT_DATE=$(date -d @$COMMIT_TIMESTAMP +%Y%m%d-%H%M%S)
+          GIT_HASH=$(git rev-parse --short HEAD)
+          PRERELEASE_TAG=nightly-$(echo "${{ steps.prerelease-tag.outputs.tag }}" | sed -r 's/[^a-z0-9]+/-/gi')
+          yarn release --prerelease $PRERELEASE_TAG-$COMMIT_DATE-$GIT_HASH --skip.changelog --skip.tag --skip.commit
+          yarn build
+        env:
+          CI: true
+      - name: Publish to NPM
+        if: ${{ steps.do-publish.outputs.publish }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+          cd packages/${{ matrix.package-name }}
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag nightly
+        env:
+          CI: true
 
   release-libs:
     name: Release Lib
@@ -371,136 +454,138 @@ jobs:
     if: contains(github.ref, 'refs/tags/')
 
     needs:
-      - test-libs
+      - test-packages
       # core must be published first
       - build-core
 
     strategy:
       matrix:
-        lib-name: [blueprints-integration, server-core-integration]
+        package-name: [blueprints-integration, server-core-integration]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 12.x
-    - name: Check release is desired
-      id: do-publish
-      run: |
-        if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-          echo "No Token"
-        else
-
-          cd packages/${{ matrix.lib-name }}
-          PACKAGE_NAME=$(yarn info -s . name)
-          PUBLISHED_VERSION=$(yarn info -s $PACKAGE_NAME version)
-          THIS_VERSION=$(node -p "require('./package.json').version")
-          # Simple bash helper to comapre version numbers
-          verlte() {
-            [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
-          }
-          verlt() {
-            [ "$1" = "$2" ] && return 1 || verlte $1 $2
-          }
-          if verlt $PUBLISHED_VERSION $THIS_VERSION
-          then
-            echo "Publishing latest"
-            echo ::set-output name=tag::"latest"
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Check release is desired
+        id: do-publish
+        run: |
+          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
+            echo "No Token"
           else
-            echo "Publishing hotfix"
-            echo ::set-output name=tag::"hotfix"
+
+            cd packages/${{ matrix.package-name }}
+            PACKAGE_NAME=$(yarn info -s . name)
+            PUBLISHED_VERSION=$(yarn info -s $PACKAGE_NAME version)
+            THIS_VERSION=$(node -p "require('./package.json').version")
+            # Simple bash helper to comapre version numbers
+            verlte() {
+              [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
+            }
+            verlt() {
+              [ "$1" = "$2" ] && return 1 || verlte $1 $2
+            }
+            if verlt $PUBLISHED_VERSION $THIS_VERSION
+            then
+              echo "Publishing latest"
+              echo ::set-output name=tag::"latest"
+            else
+              echo "Publishing hotfix"
+              echo ::set-output name=tag::"hotfix"
+            fi
+
           fi
+      - name: Prepare Environment
+        if: ${{ steps.do-publish.outputs.tag }}
+        run: |
+          cd packages 
+          yarn install
+        env:
+          CI: true
+      - name: Bump version and build
+        if: ${{ steps.do-publish.outputs.tag }}
+        run: |
+          cd packages/${{ matrix.package-name }}
+          yarn build
+        env:
+          CI: true
+      - name: Publish to NPM
+        if: ${{ steps.do-publish.outputs.tag }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+          cd packages/${{ matrix.package-name }}
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag ${{ steps.do-publish.outputs.tag }}
+        env:
+          CI: true
 
-        fi
-    - name: Prepare Environment
-      if: ${{ steps.do-publish.outputs.tag }}
-      run: |
-        cd packages 
-        yarn install
-      env:
-        CI: true
-    - name: Bump version and build
-      if: ${{ steps.do-publish.outputs.tag }}
-      run: |
-        cd packages/${{ matrix.lib-name }}
-        yarn build
-      env:
-        CI: true
-    - name: Publish to NPM
-      if: ${{ steps.do-publish.outputs.tag }}
-      run: |
-        echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-        cd packages/${{ matrix.lib-name }}
-        NEW_VERSION=$(node -p "require('./package.json').version")
-        yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag ${{ steps.do-publish.outputs.tag }}
-      env:
-        CI: true
-
-  validate-prod-dependencies-libs:
-    name: Validate Lib production dependencies
+  validate-prod-dependencies-packages:
+    name: Validate Package production dependencies
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
 
     strategy:
       matrix:
-        lib-name: [blueprints-integration, server-core-integration]
+        package-name:
+          [
+            blueprints-integration,
+            server-core-integration,
+            playout-gateway,
+            mos-gateway,
+          ]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 12.x
-    - name: Prepare Environment
-      run: |
-        cd packages 
-        yarn install
-      env:
-        CI: true
-    - name: Validate production dependencies
-      run: |
-        cd packages/${{ matrix.lib-name }}
-        if ! git log --format=oneline -n 1 | grep -q "\[ignore-audit\]"; then
-          yarn validate:dependencies
-        else
-          echo "Skipping audit"
-        fi
-      env:
-        CI: true
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Prepare Environment
+        run: |
+          cd packages 
+          yarn install
+        env:
+          CI: true
+      - name: Validate production dependencies
+        run: |
+          cd packages/${{ matrix.package-name }}
+          if ! git log --format=oneline -n 1 | grep -q "\[ignore-audit\]"; then
+            yarn validate:dependencies
+          else
+            echo "Skipping audit"
+          fi
+        env:
+          CI: true
 
-  validate-all-dependencies-libs:
-    name: Validate all Lib dependencies
+  validate-all-dependencies-packages:
+    name: Validate all Package dependencies
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
 
-    strategy:
-      matrix:
-        lib-name: [blueprints-integration, server-core-integration]
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 12.x
-    - name: Prepare Environment
-      run: |
-        cd packages 
-        yarn install
-      env:
-        CI: true
-    - name: Validate production dependencies
-      run: |
-        cd packages/${{ matrix.lib-name }}
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Prepare Environment
+        run: |
+          cd packages
+          yarn install
+        env:
+          CI: true
+      - name: Validate production dependencies
+        run: |
+          cd packages
           yarn validate:dependencies
-      env:
-        CI: true
-    - name: Validate dev dependencies
-      run: |
-        cd packages/${{ matrix.lib-name }}
+        env:
+          CI: true
+      - name: Validate dev dependencies
+        run: |
+          cd packages
           yarn validate:dev-dependencies
-      env:
-        CI: true
+        env:
+          CI: true

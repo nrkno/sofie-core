@@ -1,4 +1,3 @@
-
 import { Connector } from '../connector'
 import * as Winston from 'winston'
 
@@ -6,9 +5,7 @@ test('Simple test', async () => {
 	let c: Connector
 
 	let logger = new Winston.Logger({
-		transports: [
-			new Winston.transports.Console()
-		]
+		transports: [new Winston.transports.Console()]
 	})
 	// @ts-ignore
 	logger.info = console.log
@@ -24,11 +21,16 @@ test('Simple test', async () => {
 	await c.init({
 		core: {
 			host: '127.0.0.1',
-			port: 3000
+			port: 3000,
+			watchdog: false
 		},
 		device: {
 			deviceId: 'JestTest',
 			deviceToken: '1234'
+		},
+		process: {
+			unsafeSSL: true,
+			certificates: []
 		},
 		mos: {
 			self: {

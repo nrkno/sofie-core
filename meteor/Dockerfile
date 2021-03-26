@@ -22,6 +22,6 @@ RUN npm install
 # DEPLOY IMAGE
 FROM node:12.21.0-slim
 COPY --from=0 /opt/bundle /opt/core
-COPY docker-entrypoint.sh /opt
+COPY meteor/docker-entrypoint.sh /opt
 WORKDIR /opt/core/
 CMD ["/opt/docker-entrypoint.sh"]

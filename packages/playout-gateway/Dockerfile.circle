@@ -1,5 +1,11 @@
-FROM node:12.20.0-alpine
+FROM node:12.21.0-alpine
 RUN apk add --no-cache tzdata
-COPY . /opt/playout-gateway
+
+COPY package.json /opt/
+COPY node_modules /opt/node_modules
+COPY playout-gateway /opt/playout-gateway
+COPY blueprints-integration /opt/blueprints-integration
+COPY server-core-integration /opt/server-core-integration
+
 WORKDIR /opt/playout-gateway
 CMD ["yarn", "start"]
