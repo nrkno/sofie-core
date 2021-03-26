@@ -1833,6 +1833,68 @@ const StudioPackageManagerSettings = withTranslation()(
 													</label>
 												</div>
 											</>
+										) : accessor.type === Accessor.AccessType.QUANTEL ? (
+											<>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Quantel gateway URL')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.quantelGatewayUrl`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">{t('URL to the Quantel Gateway')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('ISA URLs')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.ISAUrls`}
+															obj={this.props.studio}
+															type="array"
+															arrayType="string"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">{t('URLs to the ISAs (in order of importance)')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Zone ID')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.zoneId`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">{t('Zone ID (default value: "default")')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Server ID')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.serverId`}
+															obj={this.props.studio}
+															type="int"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">
+															{t('Server id (Can be omitted for sources, as clip-searches are zone-wide.)')}
+														</span>
+													</label>
+												</div>
+											</>
 										) : null}
 
 										<div className="mod mvs mhs">
