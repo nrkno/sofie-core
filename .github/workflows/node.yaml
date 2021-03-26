@@ -258,8 +258,8 @@ jobs:
         uses: docker/build-push-action@v2
         if: ${{ steps.image-tags.outputs.images }}
         with:
-          context: .
-          file: ./${{ matrix.gateway-name }}/Dockerfile.circle
+          context: ./packages
+          file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
           push: true
           tags: ${{ steps.image-tags.outputs.images }}
 
