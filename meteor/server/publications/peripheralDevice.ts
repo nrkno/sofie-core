@@ -512,7 +512,10 @@ function generateExpectedPackages(
 					if (lookedUpTarget) {
 						// Todo: should the be any combination of properties here?
 						combinedTargets.push({
-							...(lookedUpTarget.container as PackageContainerOnPackage),
+							...omit(clone(lookedUpTarget.container), 'accessors'),
+							accessors: lookedUpTarget.container.accessors as {
+								[accessorId: string]: AccessorOnPackage.Any
+							},
 							containerId: packageContainerId,
 						})
 					}
