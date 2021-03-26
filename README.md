@@ -14,10 +14,10 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 
 ### Prerequisites
 
-* Install [Meteor](https://www.meteor.com/install)
-* Install [Node.js](https://nodejs.org)
-* Install [Yarn](https://yarnpkg.com)
-* `npm install --global windows-build-tools`
+- Install [Meteor](https://www.meteor.com/install)
+- Install [Node.js](https://nodejs.org)
+- Install [Yarn](https://yarnpkg.com)
+- `npm install --global windows-build-tools`
 
 ### Quick-start:
 
@@ -31,25 +31,30 @@ npm start
 
 1. Clone the repository (for development, it is recommended to base your work on the latest unstable release branch)
 
-    `git clone -b releaseXYZ https://github.com/nrkno/tv-automation-server-core.git`
+   `git clone -b releaseXYZ https://github.com/nrkno/tv-automation-server-core.git`
 
 2. Go into the meteor directory
 
-    `cd tv-automation-server-core/meteor`
+   `cd tv-automation-server-core/meteor`
 
 3. Trigger Meteor to install the right version
 
-    `meteor --version`
+   `meteor --version`
 
 4. Install the right dependencies. (Before this, make sure your NODE_ENV environment variable is NOT set to "production"!)
 
-    `meteor npm install`
+   `meteor npm install`
 
 5. Start Meteor in development mode
 
-    `meteor npm run dev`
+   `meteor npm run dev`
+
+6. In another window, start the playout-gateway. You will need to manually restart this upon making changes  
+   `cd tv-automation-server-core/packages/playout-gateway`  
+   `yarn buildstart`
 
 If you make any changes to the libraries inside packages, you will need to run the typescript compiler in another terminal.
+
 ```
 cd packages
 yarn build # or yarn watch to watch for changes
@@ -110,5 +115,4 @@ Background image used for previewing graphical elements is based on "Sunset over
 
 ---
 
-*The NRK logo is a registered trademark of Norsk rikskringkasting AS. The license does not grant any right to use, in any way, any trademarks, service marks or logos of Norsk rikskringkasting AS.*
-
+_The NRK logo is a registered trademark of Norsk rikskringkasting AS. The license does not grant any right to use, in any way, any trademarks, service marks or logos of Norsk rikskringkasting AS._
