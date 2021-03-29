@@ -17,7 +17,7 @@ import {
 	PartExtended,
 	SegmentExtended,
 } from '../../../lib/Rundown'
-import { IContextMenuContext } from '../RundownView'
+import { IContextMenuContext, MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
@@ -489,7 +489,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 
 			if (!isLiveSegment && this.props.parts !== prevProps.parts) {
-				this.updateMaxTimeScale()
+				this.updateMaxTimeScale().catch(console.error)
 			}
 
 			if (!isLiveSegment && this.props.parts !== prevProps.parts && this.state.showingAllSegment) {
@@ -568,7 +568,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		onWindowResize = _.throttle(() => {
 			if (this.state.showingAllSegment) {
 				this.updateMaxTimeScale()
-				this.showEntireSegment()
+					.then(() => this.showEntireSegment())
+					.catch(console.error)
 			}
 		}, 250)
 
@@ -605,10 +606,15 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		onRewindSegment = () => {
 			if (!this.isLiveSegment) {
-				this.setState({
-					scrollLeft: 0,
-					livePosition: 0,
-				})
+				this.updateMaxTimeScale()
+					.then(() => {
+						this.showEntireSegment()
+						this.setState({
+							scrollLeft: 0,
+							livePosition: 0,
+						})
+					})
+					.catch(console.error)
 			}
 		}
 
@@ -738,14 +744,20 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					this.props.parts.map((i) => i.instance.part._id),
 					true
 				) || 1)
-			newScale = Math.min(0.03, newScale)
+			newScale = Math.min(MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale, newScale)
 			return newScale
 		}
 
 		updateMaxTimeScale = () => {
-			this.setState({
-				maxTimeScale: this.getShowAllTimeScale(),
-			})
+			const maxTimeScale = this.getShowAllTimeScale()
+			return new Promise<number>((resolve) =>
+				this.setState(
+					{
+						maxTimeScale,
+					},
+					() => resolve(maxTimeScale)
+				)
+			)
 		}
 
 		showEntireSegment = () => {
@@ -777,6 +789,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						segmentNotes={this.props.segmentNotes}
 						timeScale={this.state.timeScale}
 						maxTimeScale={this.state.maxTimeScale}
+						onRecalculateMaxTimeScale={this.updateMaxTimeScale}
 						showingAllSegment={this.state.showingAllSegment}
 						onItemClick={this.props.onPieceClick}
 						onItemDoubleClick={this.props.onPieceDoubleClick}
