@@ -1836,63 +1836,65 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps, prevState: IState) {
-			if (
-				this.props.playlist &&
-				prevProps.playlist &&
-				prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId &&
-				this.state.manualSetAsNext
-			) {
-				// reset followLiveSegments after a manual set as next
-				this.setState({
-					manualSetAsNext: false,
-					followLiveSegments: true,
-				})
-				if (this.props.playlist.currentPartInstanceId) {
+			if (!this.props.onlyShelf) {
+				if (
+					this.props.playlist &&
+					prevProps.playlist &&
+					prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId &&
+					this.state.manualSetAsNext
+				) {
+					// reset followLiveSegments after a manual set as next
+					this.setState({
+						manualSetAsNext: false,
+						followLiveSegments: true,
+					})
+					if (this.props.playlist.currentPartInstanceId) {
+						scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+							if (!error.toString().match(/another scroll/)) console.warn(error)
+						})
+					}
+				} else if (
+					this.props.playlist &&
+					prevProps.playlist &&
+					prevProps.playlist.activationId &&
+					!this.props.playlist.activationId
+				) {
+					// reset followLiveSegments after deactivating a rundown
+					this.setState({
+						followLiveSegments: true,
+					})
+				} else if (
+					this.props.playlist &&
+					prevProps.playlist &&
+					!prevProps.playlist.activationId &&
+					this.props.playlist.activationId &&
+					this.props.playlist.nextPartInstanceId
+				) {
+					// scroll to next after activation
+					scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
+						if (!error.toString().match(/another scroll/)) console.warn(error)
+					})
+				} else if (
+					// after take
+					this.props.playlist &&
+					prevProps.playlist &&
+					this.props.playlist.currentPartInstanceId !== prevProps.playlist.currentPartInstanceId &&
+					this.props.playlist.currentPartInstanceId &&
+					this.state.followLiveSegments
+				) {
 					scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
 						if (!error.toString().match(/another scroll/)) console.warn(error)
 					})
+				} else if (
+					// initial Rundown open
+					this.props.playlist &&
+					this.props.playlist.currentPartInstanceId &&
+					this.state.subsReady &&
+					!prevState.subsReady
+				) {
+					// allow for some time for the Rundown to render
+					maintainFocusOnPartInstance(this.props.playlist.currentPartInstanceId, 7000, true, true)
 				}
-			} else if (
-				this.props.playlist &&
-				prevProps.playlist &&
-				prevProps.playlist.activationId &&
-				!this.props.playlist.activationId
-			) {
-				// reset followLiveSegments after deactivating a rundown
-				this.setState({
-					followLiveSegments: true,
-				})
-			} else if (
-				this.props.playlist &&
-				prevProps.playlist &&
-				!prevProps.playlist.activationId &&
-				this.props.playlist.activationId &&
-				this.props.playlist.nextPartInstanceId
-			) {
-				// scroll to next after activation
-				scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
-					if (!error.toString().match(/another scroll/)) console.warn(error)
-				})
-			} else if (
-				// after take
-				this.props.playlist &&
-				prevProps.playlist &&
-				this.props.playlist.currentPartInstanceId !== prevProps.playlist.currentPartInstanceId &&
-				this.props.playlist.currentPartInstanceId &&
-				this.state.followLiveSegments
-			) {
-				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
-					if (!error.toString().match(/another scroll/)) console.warn(error)
-				})
-			} else if (
-				// initial Rundown open
-				this.props.playlist &&
-				this.props.playlist.currentPartInstanceId &&
-				this.state.subsReady &&
-				!prevState.subsReady
-			) {
-				// allow for some time for the Rundown to render
-				maintainFocusOnPartInstance(this.props.playlist.currentPartInstanceId, 7000, true, true)
 			}
 
 			if (
