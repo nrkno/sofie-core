@@ -10,7 +10,7 @@ import {
 	protectStringArray,
 	waitForPromise,
 } from '../../../../lib/lib'
-import { Part } from '../../../../lib/collections/Parts'
+import { Part, Parts } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
 import {
 	IEventContext,
@@ -22,6 +22,7 @@ import {
 	IBlueprintResolvedPieceInstance,
 	OmitId,
 	IBlueprintMutatablePart,
+	IBlueprintPieceDB,
 } from '@sofie-automation/blueprints-integration'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
@@ -39,7 +40,7 @@ import { Meteor } from 'meteor/meteor'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { ServerPlayoutAPI } from '../../playout/playout'
-import { Piece } from '../../../../lib/collections/Pieces'
+import { Piece, Pieces } from '../../../../lib/collections/Pieces'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -158,7 +159,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			excludeCurrentPart?: boolean
 			pieceMetaDataFilter?: any
 		}
-	): IBlueprintPiece | undefined {
+	): IBlueprintPieceDB | undefined {
 		const query: MongoQuery<Piece> = {}
 		if (options && options.pieceMetaDataFilter) {
 			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
@@ -206,6 +207,13 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		} else {
 			throw new Error('Cannot find PartInstance for PieceInstance')
 		}
+	}
+
+	getPartForPreviousPiece(piece: IBlueprintPieceDB): IBlueprintPart | undefined {
+		const pieceDB = Pieces.findOne({ _id: protectString(piece._id) })
+		if (!pieceDB) throw new Error(`Cannot find piece ${piece._id}`)
+
+		return Parts.findOne({ _id: pieceDB.startPartId })
 	}
 
 	insertPiece(part: 'current' | 'next', rawPiece: IBlueprintPiece): IBlueprintPieceInstance {
