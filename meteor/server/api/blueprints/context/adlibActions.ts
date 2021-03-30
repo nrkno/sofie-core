@@ -39,6 +39,7 @@ import { Meteor } from 'meteor/meteor'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { ServerPlayoutAPI } from '../../playout/playout'
+import { Piece } from '../../../../lib/collections/Pieces'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -150,6 +151,38 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		return clone(unprotectObject(lastPieceInstance))
 	}
+
+	findLastScriptedPieceOnLayer(
+		sourceLayerId: string,
+		options?: {
+			excludeCurrentPart?: boolean
+			pieceMetaDataFilter?: any
+		}
+	): IBlueprintPiece | undefined {
+		const query: MongoQuery<Piece> = {}
+		if (options && options.pieceMetaDataFilter) {
+			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
+				// TODO do we need better validation here?
+				// It should be pretty safe as we are working with the cache version (for now)
+				query[`piece.metaData.${key}`] = value
+			}
+		}
+
+		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInstanceId) {
+			const currentPartInstance = this._cache.PartInstances.findOne(
+				(p) => p._id === this._cache.Playlist.doc.currentPartInstanceId
+			)
+
+			if (currentPartInstance) {
+				query['startPartId'] = { $ne: currentPartInstance.part._id }
+			}
+		}
+
+		const lastPiece = ServerPlayoutAdLibAPI.innerFindLastScriptedPieceOnLayer(this._cache, sourceLayerId, query)
+
+		return clone(unprotectObject(lastPiece))
+	}
+
 	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance {
 		const pieceExt = (piece as unknown) as Partial<PieceInstance> | undefined
 		const partInstanceId = pieceExt?.partInstanceId
