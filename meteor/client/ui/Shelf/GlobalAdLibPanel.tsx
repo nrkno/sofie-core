@@ -356,6 +356,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					_rank: action.display._rank || 0,
 					content: content,
 					adlibAction: action,
+					uniquenessId: action.display.uniquenessId,
 				})
 			})
 
