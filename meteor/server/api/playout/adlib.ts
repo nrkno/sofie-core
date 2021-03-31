@@ -433,9 +433,8 @@ export namespace ServerPlayoutAdLibAPI {
 
 		const query = {
 			...customQuery,
-			playlistActivationId: cache.Playlist.doc.activationId,
 			startRundownId: { $in: rundownIds },
-			'piece.sourceLayerId': sourceLayerId,
+			sourceLayerId,
 		}
 
 		if (span) span.end()
