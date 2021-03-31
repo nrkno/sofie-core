@@ -9,6 +9,7 @@ import {
 	getRandomId,
 	protectStringArray,
 	waitForPromise,
+	UnprotectedStringProperties,
 } from '../../../../lib/lib'
 import { Part, Parts } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
@@ -209,9 +210,13 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 	}
 
-	getPartForPreviousPiece(piece: IBlueprintPieceDB): IBlueprintPart | undefined {
+	getPartForPreviousPiece(piece: UnprotectedStringProperties<Pick<Piece, '_id'>>): IBlueprintPart | undefined {
+		if (!piece?._id) {
+			throw new Error('Cannot find Part from invalid Piece')
+		}
+
 		const pieceDB = Pieces.findOne({ _id: protectString(piece._id) })
-		if (!pieceDB) throw new Error(`Cannot find piece ${piece._id}`)
+		if (!pieceDB) throw new Error(`Cannot find Piece ${piece._id}`)
 
 		return Parts.findOne({ _id: pieceDB.startPartId })
 	}

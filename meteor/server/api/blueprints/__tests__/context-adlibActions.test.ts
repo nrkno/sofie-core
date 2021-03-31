@@ -803,6 +803,64 @@ describe('Test blueprint api context', () => {
 			})
 		})
 
+		describe('getPartForPreviousPiece', () => {
+			testInFiber('invalid parameters', () => {
+				wrapWithCache((cache) => {
+					const { context } = getActionExecutionContext(cache)
+
+					// @ts-ignore
+					expect(() => context.getPartForPreviousPiece()).toThrowError('Cannot find Part from invalid Piece')
+					// @ts-ignore
+					expect(() => context.getPartForPreviousPiece({})).toThrowError(
+						'Cannot find Part from invalid Piece'
+					)
+					// @ts-ignore
+					expect(() => context.getPartForPreviousPiece('abc')).toThrowError(
+						'Cannot find Part from invalid Piece'
+					)
+					expect(() =>
+						context.getPartForPreviousPiece({
+							// @ts-ignore
+							partInstanceId: 6,
+						})
+					).toThrowError('Cannot find Part from invalid Piece')
+					expect(() =>
+						// @ts-ignore
+						context.getPartForPreviousPiece({
+							_id: 'abc',
+						})
+					).toThrowError('Cannot find Piece abc')
+				})
+			})
+
+			testInFiber('valid parameters', () => {
+				wrapWithCache((cache) => {
+					const { context } = getActionExecutionContext(cache)
+
+					const partInstances = cache.PartInstances.findFetch({})
+					expect(partInstances).toHaveLength(5)
+
+					const pieceInstance0 = cache.PieceInstances.findOne({ partInstanceId: partInstances[0]._id })
+					expect(pieceInstance0).not.toBeUndefined()
+
+					expect(
+						context.getPartForPreviousPiece({ _id: unprotectString(pieceInstance0!.piece._id) })
+					).toMatchObject({
+						_id: partInstances[0].part._id,
+					})
+
+					const pieceInstance1 = cache.PieceInstances.findOne({ partInstanceId: partInstances[1]._id })
+					expect(pieceInstance1).not.toBeUndefined()
+
+					expect(
+						context.getPartForPreviousPiece({ _id: unprotectString(pieceInstance1!.piece._id) })
+					).toMatchObject({
+						_id: partInstances[1].part._id,
+					})
+				})
+			})
+		})
+
 		describe('insertPiece', () => {
 			beforeEach(() => {
 				postProcessPiecesMock.mockClear()
