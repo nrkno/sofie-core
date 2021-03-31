@@ -128,6 +128,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						rundownBaseline: false,
 						showThumbnailsInList: false,
 						default: false,
+						nextInCurrentPart: false,
+						oneNextPerSourceLayer: false,
 					}),
 				},
 			})
@@ -775,6 +777,47 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										type="checkbox"
 										collection={RundownLayouts}
 										className="mod mas"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field" title="eg. when pieces in current part serve as data stores for adlibing">
+									{t('Current part can contain next pieces')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.nextInCurrentPart`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Indicate only one next piece per source layer')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.oneNextPerSourceLayer`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Button label line break')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.lineBreak`}
+										obj={item}
+										type="text"
+										collection={RundownLayouts}
+										className="input text-input input-l"
+										mutateDisplayValue={(v) => (!v ? '' : JSON.stringify(v).slice(1, -1))}
+										mutateUpdateValue={(v) => (v === '' ? undefined : JSON.parse(`"${v}"`))}
 									/>
 								</label>
 							</div>
