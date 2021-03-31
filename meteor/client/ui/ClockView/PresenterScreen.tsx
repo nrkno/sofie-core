@@ -205,7 +205,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 				fields: {
 					_id: 1,
 				},
-			}) as Pick<RundownPlaylist, '_id' | 'getRundownIDs'> | undefined
+			}) as Pick<RundownPlaylist, '_id' | 'getRundownIDs' | 'getRundowns'> | undefined
 			if (playlist) {
 				this.subscribe(PubSub.rundowns, {
 					playlistId: playlist._id,
@@ -213,6 +213,11 @@ export class PresenterScreenBase extends MeteorReactComponent<
 
 				this.autorun(() => {
 					const rundownIds = playlist!.getRundownIDs()
+					const showStyleBaseIds = (playlist!.getRundowns(undefined, {
+						fields: {
+							showStyleBaseId: 1,
+						},
+					}) as Pick<Rundown, 'showStyleBaseId'>[]).map((r) => r.showStyleBaseId)
 
 					this.subscribe(PubSub.segments, {
 						rundownId: { $in: rundownIds },
@@ -226,7 +231,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					})
 					this.subscribe(PubSub.showStyleBases, {
 						_id: {
-							$in: this.props.showStyleBaseIds,
+							$in: showStyleBaseIds,
 						},
 					})
 
