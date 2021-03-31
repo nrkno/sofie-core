@@ -13,7 +13,7 @@ import {
 	TSRTimelineObjBase,
 	CommandReport,
 	DeviceOptionsAtem,
-	AtemMediaPoolType,
+	AtemMediaPoolAsset,
 } from 'timeline-state-resolver'
 import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler'
 import clone = require('fast-clone')
@@ -603,24 +603,11 @@ export class TSRHandler {
 					deviceType === DeviceType.ATEM &&
 					!disableAtemUpload
 				) {
-					// const ssrcBgs = studio.config.filter((o) => o._id.substr(0, 18) === 'atemSSrcBackground')
 					const assets = (options as DeviceOptionsAtem).options.mediaPoolAssets
 					if (assets && assets.length > 0) {
 						try {
-							// TODO: support uploading clips and audio
 							this.uploadFilesToAtem(
-								_.compact(
-									assets.map((asset) => {
-										return asset.type === AtemMediaPoolType.Still &&
-											_.isNumber(asset.position) &&
-											asset.path
-											? {
-													position: asset.position,
-													path: asset.path,
-											  }
-											: undefined
-									})
-								)
+								assets.filter(asset => _.isNumber(asset.position) && asset.path)
 							)
 						} catch (e) {
 							// don't worry about it.
@@ -740,31 +727,28 @@ export class TSRHandler {
 	 * // @todo: proper atem media management
 	 * /Balte - 22-08
 	 */
-	private uploadFilesToAtem(files: { position: number; path: string }[]) {
-		files.forEach((file) => {
-			this.logger.info('try to load ' + JSON.stringify(file) + ' to atem')
-			this.tsr.getDevices().forEach(async (device) => {
-				if (device.deviceType === DeviceType.ATEM) {
-					const options = device.deviceOptions.options as { host: string }
-					this.logger.info('options ' + JSON.stringify(options))
-					if (options && options.host) {
-						this.logger.info('uploading ' + file.path + ' to ' + options.host + ' in MP' + file.position)
-						const process = cp.spawn(`node`, [
-							`./dist/atemUploader.js`,
-							options.host,
-							file.path,
-							file.position.toString(),
-						])
-						process.stdout.on('data', (data) => this.logger.info(data.toString()))
-						process.stderr.on('data', (data) => this.logger.info(data.toString()))
-						process.on('close', () => {
-							process.removeAllListeners()
-						})
-					} else {
-						throw Error('ATEM host option not set')
-					}
+	private uploadFilesToAtem(files: AtemMediaPoolAsset[]) {
+		this.logger.info('try to load ' + JSON.stringify(files.map(f => f.path).join(', ')) + ' to atem')
+		this.tsr.getDevices().forEach(async (device) => {
+			if (device.deviceType === DeviceType.ATEM) {
+				const options = device.deviceOptions.options as { host: string }
+				this.logger.info('options ' + JSON.stringify(options))
+				if (options && options.host) {
+					this.logger.info('uploading files to ' + options.host)
+					const process = cp.spawn(`node`, [
+						`./dist/atemUploader.js`,
+						options.host,
+						JSON.stringify(files)
+					])
+					process.stdout.on('data', (data) => this.logger.info(data.toString()))
+					process.stderr.on('data', (data) => this.logger.info(data.toString()))
+					process.on('close', () => {
+						process.removeAllListeners()
+					})
+				} else {
+					throw Error('ATEM host option not set')
 				}
-			})
+			}
 		})
 	}
 	private async _removeDevice(deviceId: string): Promise<any> {

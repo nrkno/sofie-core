@@ -2,14 +2,17 @@
 // eslint-disable-next-line node/no-extraneous-import
 import { Atem } from 'atem-connection'
 import * as fs from 'fs'
+import { AtemMediaPoolAsset, AtemMediaPoolType } from 'timeline-state-resolver'
 import * as _ from 'underscore'
+import * as path from 'path'
 
 /**
  * This script is a temporary implementation to upload media to the atem.
  * @todo: proper atem media management
  */
 
-const AtemMaxFilenameLength = 63
+const ATEM_MAX_FILENAME_LENGTH = 63
+const ATEM_MAX_CLIPNAME_LENGTH = 43
 
 function consoleLog(...args: any[]) {
 	console.log('AtemUpload:', ...args)
@@ -19,15 +22,13 @@ function consoleError(...args: any[]) {
 }
 export class AtemUploadScript {
 	private readonly connection: Atem
-	private readonly fileUrl: string
-
-	constructor(fileUrl: string) {
+	
+	constructor() {
 		this.connection = new Atem()
-		this.fileUrl = fileUrl
-
+		
 		this.connection.on('error', consoleError)
 	}
-
+	
 	public connect(ip: string): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			this.connection.once('connected', () => {
@@ -38,30 +39,50 @@ export class AtemUploadScript {
 			})
 		})
 	}
-
-	public loadFile(): Promise<Buffer> {
+	
+	public loadFile(fileUrl: string): Promise<Buffer> {
 		return new Promise<Buffer>((resolve, reject) => {
-			fs.readFile(this.fileUrl, (e, data) => {
+			fs.readFile(fileUrl, (e, data) => {
 				consoleLog('got file')
 				if (e) reject(e)
 				else resolve(data)
 			})
 		})
 	}
-
-	public checkIfFileExistsOnAtem(fileName: string, stillIndex: number): boolean {
+	public loadFiles(folder: string): Promise<Buffer[]> {
+		return new Promise<Buffer[]>(async (resolve, reject) => {
+			try {
+				const files = await fs.promises.readdir(folder)
+				consoleLog(files)
+				const loadBuffers = files.map(file => fs.promises.readFile(path.join(folder, file)))
+				const buffers = await Promise.all(loadBuffers)
+				
+				consoleLog('got files')
+				resolve(buffers)
+			} catch (e) {
+				console.error(e)
+				reject(e)
+			}
+		})
+	}
+	
+	public checkIfFileOrClipExistsOnAtem(fileName: string, stillOrClipIndex: number, type: AtemMediaPoolType): boolean {
 		consoleLog('got a file')
-
-		const still = this.connection.state ? this.connection.state.media.stillPool[stillIndex] : undefined
-		if (still) {
-			consoleLog('has still')
-			if (still.isUsed) {
-				consoleLog('still is used')
-				if (fileName.length === AtemMaxFilenameLength) {
-					consoleLog('filename is max length, change detection might fail')
-				}
-
-				if (still.fileName === fileName) {
+		
+		const still = this.connection.state ? this.connection.state.media.stillPool[stillOrClipIndex] : undefined
+		const clip = this.connection.state ? this.connection.state.media.clipPool[stillOrClipIndex] : undefined
+		let pool: typeof still | typeof clip
+		if (type === AtemMediaPoolType.Still) pool = still
+		if (type === AtemMediaPoolType.Clip) pool = clip
+		
+		if (pool) {
+			consoleLog('has ' + type)
+			if (pool.isUsed) {
+				consoleLog(type + ' is used')
+				const comparisonName = fileName.substr(type === AtemMediaPoolType.Still ? -ATEM_MAX_FILENAME_LENGTH : -ATEM_MAX_CLIPNAME_LENGTH)
+				const poolName = 'fileName' in pool ? pool.fileName : pool.name
+				
+				if (poolName === comparisonName) {
 					consoleLog('name equals')
 					return true
 				} else {
@@ -72,53 +93,67 @@ export class AtemUploadScript {
 			}
 		} else {
 			consoleLog('has no still')
-			throw Error('Atem appears to be missing still')
+			throw Error('Atem appears to be missing ' + type)
 		}
 	}
-
-	public async uploadToAtem(fileData: Buffer, stillIndex: number): Promise<void> {
-		const fileName = this.fileUrl.substr(-AtemMaxFilenameLength) // cannot be longer than 63 chars
-		if (!this.checkIfFileExistsOnAtem(fileName, stillIndex)) {
-			consoleLog('does not exist on ATEM')
+	
+	public async uploadStillToAtem(fileName: string, fileData: Buffer, stillIndex: number): Promise<void> {
+		fileName = fileName.substr(-ATEM_MAX_FILENAME_LENGTH) // cannot be longer than 63 chars
+		if (!this.checkIfFileOrClipExistsOnAtem(fileName, stillIndex, AtemMediaPoolType.Still)) {
+			consoleLog(fileName + ' does not exist on ATEM')
 			await this.connection.clearMediaPoolStill(stillIndex)
 			await this.connection.uploadStill(stillIndex, fileData, fileName, '')
 		} else {
-			consoleLog('does exist on ATEM')
+			consoleLog(fileName + ' does exist on ATEM')
+		}
+	}
+	public async uploadClipToAtem(name: string, fileData: Buffer[], clipIndex: number) {
+		name = name.substr(-ATEM_MAX_CLIPNAME_LENGTH) // cannot be longer than 43 chars
+		if (!this.checkIfFileOrClipExistsOnAtem(name, clipIndex, AtemMediaPoolType.Clip)) {
+			consoleLog(name + ' does not exist on ATEM')
+			await this.connection.clearMediaPoolClip(clipIndex)
+			await this.connection.uploadClip(clipIndex, fileData, name)
+		} else {
+			consoleLog(name + ' does exist on ATEM')
 		}
 	}
 }
 
 console.log('Setup AtemUploader...')
-const singleton = new AtemUploadScript(process.argv[3])
+const singleton = new AtemUploadScript()
+const assets: AtemMediaPoolAsset[] = JSON.parse(process.argv[3])
 singleton.connect(process.argv[2]).then(
 	async () => {
 		consoleLog('ATEM upload connected')
-		const fileData = await singleton.loadFile().catch((e) => {
-			consoleError(e)
-			console.error('Exiting process due to atemUpload error')
-			process.exit(-1)
-		})
-		let stillIndexSTr: string | undefined
-		if (process.argv.length >= 5) {
-			stillIndexSTr = process.argv[4]
-		}
-		let stillIndex: number | undefined
-		if (stillIndexSTr !== undefined) {
-			stillIndex = parseInt(stillIndexSTr, 10)
+
+		for (const asset of assets) {
+			// upload 1 by 1
+
+			if (asset.position === undefined || isNaN(asset.position) || !_.isNumber(asset.position)) {
+				console.error('Skipping due to invalid media pool ' + asset.path)
+				continue
+			}
+
+			try {
+				if (asset.type === AtemMediaPoolType.Still) {
+					const fileData = await singleton.loadFile(asset.path)
+
+					await singleton.uploadStillToAtem(asset.path, fileData, asset.position)
+					consoleLog('uploaded ATEM media to stillpool ' + asset.position)
+				} else if (asset.type === AtemMediaPoolType.Clip) {
+					const fileData = await singleton.loadFiles(asset.path)
+
+					await singleton.uploadClipToAtem(asset.path, fileData, asset.position)
+					consoleLog('uploaded ATEM media to clippool ' + asset.position)
+				}
+			} catch (e) {
+				consoleError('Failed to upload ' + asset.path)
+				consoleError(e)
+			}
 		}
 
-		if (stillIndex === undefined || isNaN(stillIndex) || !_.isNumber(stillIndex)) {
-			console.error('Exiting due to invalid mediaPool')
-			process.exit(-1)
-		}
-
-		singleton.uploadToAtem(fileData, stillIndex).then(
-			() => {
-				consoleLog('uploaded ATEM media to still ' + stillIndex)
-				process.exit(0)
-			},
-			() => process.exit(-1)
-		)
+		consoleLog('All media checked/uploaded, exiting...')
+		process.exit(0)
 	},
 	() => process.exit(-1)
 )
