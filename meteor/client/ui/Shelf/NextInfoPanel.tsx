@@ -36,8 +36,7 @@ export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const showAny =
-			!this.props.panel.hideForDynamicallyInsertedParts ||
-			!this.props.nextPartInstance?.part.dynamicallyInsertedAfterPartId
+			!this.props.panel.hideForDynamicallyInsertedParts || this.props.nextPartInstance?.orphaned !== 'adlib-part'
 		const segmentName = showAny && this.props.panel.showSegmentName && this.props.nextSegment?.name
 		const partTitle = showAny && this.props.panel.showPartTitle && this.props.nextPartInstance?.part.title
 		const style = {
