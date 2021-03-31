@@ -69,7 +69,7 @@ function filterLayerMappings(
 	for (const studioMappings of Object.values(mappings)) {
 		for (const [layerId, mapping] of Object.entries(studioMappings)) {
 			if (!deviceTypes || deviceTypes.includes(mapping.device)) {
-				result.push({ name: mapping.layerName ?? layerId, value: layerId })
+				result.push({ name: mapping.layerName || layerId, value: layerId })
 			}
 		}
 	}

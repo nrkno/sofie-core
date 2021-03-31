@@ -387,7 +387,7 @@ const StudioMappings = withTranslation()(
 							})}
 						>
 							<th className="settings-studio-device__name c3 notifications-s notifications-text">
-								{mapping.layerName ?? layerId}
+								{mapping.layerName || layerId}
 								{activeRoutes.existing[layerId] !== undefined ? (
 									<Tooltip
 										overlay={t('This layer is now rerouted by an active Route Set: {{routeSets}}', {
@@ -442,7 +442,8 @@ const StudioMappings = withTranslation()(
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 												<span className="text-s dimmed">{t('Human-readable name of the layer')}</span>
 											</label>
 										</div>
