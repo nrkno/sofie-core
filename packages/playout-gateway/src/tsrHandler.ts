@@ -606,9 +606,7 @@ export class TSRHandler {
 					const assets = (options as DeviceOptionsAtem).options.mediaPoolAssets
 					if (assets && assets.length > 0) {
 						try {
-							this.uploadFilesToAtem(
-								assets.filter(asset => _.isNumber(asset.position) && asset.path)
-							)
+							this.uploadFilesToAtem(assets.filter((asset) => _.isNumber(asset.position) && asset.path))
 						} catch (e) {
 							// don't worry about it.
 						}
@@ -728,18 +726,14 @@ export class TSRHandler {
 	 * /Balte - 22-08
 	 */
 	private uploadFilesToAtem(files: AtemMediaPoolAsset[]) {
-		this.logger.info('try to load ' + JSON.stringify(files.map(f => f.path).join(', ')) + ' to atem')
+		this.logger.info('try to load ' + JSON.stringify(files.map((f) => f.path).join(', ')) + ' to atem')
 		this.tsr.getDevices().forEach(async (device) => {
 			if (device.deviceType === DeviceType.ATEM) {
 				const options = device.deviceOptions.options as { host: string }
 				this.logger.info('options ' + JSON.stringify(options))
 				if (options && options.host) {
 					this.logger.info('uploading files to ' + options.host)
-					const process = cp.spawn(`node`, [
-						`./dist/atemUploader.js`,
-						options.host,
-						JSON.stringify(files)
-					])
+					const process = cp.spawn(`node`, [`./dist/atemUploader.js`, options.host, JSON.stringify(files)])
 					process.stdout.on('data', (data) => this.logger.info(data.toString()))
 					process.stderr.on('data', (data) => this.logger.info(data.toString()))
 					process.on('close', () => {
