@@ -36,6 +36,7 @@
 		"build": "rimraf dist && yarn build:main && yarn copytypes",
 		"build:main": "tsc -p tsconfig.build.json",
 		"lint": "tslint --project tsconfig.json --config tslint.json",
+		"lint-fix": "yarn lint --fix",
 		"unit": "jest",
 		"test": "yarn lint && yarn unit",
 		"test:integration": "yarn lint && jest --config=jest-integration.config.js",
