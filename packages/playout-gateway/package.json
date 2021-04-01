@@ -38,7 +38,8 @@
 		"start": "node dist/index.js",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck --allowPackages cycle@1.0.3"
+		"license-validate": "yarn sofie-licensecheck --allowPackages cycle@1.0.3",
+		"precommit": "lint-staged"
 	},
 	"scripts-info": {
 		"info": "Display information about the scripts",
@@ -73,5 +74,13 @@
 		"tslib": "^2.1.0",
 		"underscore": "^1.12.1",
 		"winston": "^2.4.2"
+	},
+	"lint-staged": {
+		"*.{js,css,json,md,scss}": [
+			"prettier --write"
+		],
+		"*.{ts,tsx}": [
+			"yarn lint-fix"
+		]
 	}
 }

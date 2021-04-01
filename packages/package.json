@@ -48,16 +48,8 @@
 	"name": "packages",
 	"husky": {
 		"hooks": {
-			"pre-commit": "lint-staged"
+			"pre-commit": "lerna run --concurrency 1 --stream precommit --since HEAD --exclude-dependents"
 		}
-	},
-	"lint-staged": {
-		"*.{js,css,json,md,scss}": [
-			"prettier --write"
-		],
-		"*.{ts,tsx}": [
-			"yarn lint-fix"
-		]
 	},
 	"resolutions": {
 		"node-license-validator/**/minimist": "^1.2.3"

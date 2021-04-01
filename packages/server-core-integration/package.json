@@ -62,7 +62,8 @@
 		"cov-open": "Open current test coverage",
 		"send-coverage": "send coverage to codecov",
 		"validate:dependencies": "Scan dependencies for vulnerabilities and check licenses",
-		"license-validate": "Validate licenses for dependencies."
+		"license-validate": "Validate licenses for dependencies.",
+		"precommit": "lint-staged"
 	},
 	"engines": {
 		"node": ">=10.10"
@@ -93,5 +94,13 @@
 		"got": "^11.8.2",
 		"tslib": "^2.0.3",
 		"underscore": "^1.12.1"
+	},
+	"lint-staged": {
+		"*.{js,css,json,md,scss}": [
+			"prettier --write"
+		],
+		"*.{ts,tsx}": [
+			"yarn lint --fix"
+		]
 	}
 }
