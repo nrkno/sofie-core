@@ -18,7 +18,6 @@
 		"build": "rimraf dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
 		"lint": "eslint . --ext .ts --ext .js --ignore-pattern dist",
-		"lint-fix": "yarn lint --fix",
 		"unit": "jest",
 		"test": "yarn lint && yarn unit",
 		"watch": "jest --watch",
@@ -50,7 +49,7 @@
 			"prettier --write"
 		],
 		"*.{ts,tsx}": [
-			"yarn lint-fix"
+			"yarn lint --fix"
 		]
 	}
 }
