@@ -67,6 +67,8 @@ import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { MongoFieldSpecifierOnes } from '../../../lib/typings/meteor'
+import { translateMessage } from '../../../lib/api/TranslatableMessage'
+import { i18nTranslator } from '../i18n'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
@@ -184,7 +186,7 @@ export function actionToAdLibPieceUi(
 
 	return literal<BucketAdLibActionUi>({
 		_id: protectString(`function_${action._id}`),
-		name: action.display.label,
+		name: translateMessage(action.display.label, i18nTranslator),
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,

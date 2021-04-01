@@ -11,6 +11,7 @@ import { IAdLibListItem } from './AdLibListItem'
 import { isActionItem } from './Inspector/ItemRenderers/ActionItemRenderer'
 import { AdLibPieceUi } from './AdLibPanel'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
+import { translateMessage } from '../../../lib/api/TranslatableMessage'
 
 export enum ContextType {
 	BUCKET = 'bucket',
@@ -82,7 +83,9 @@ export default function ShelfContextMenu() {
 		if (isActionItem(item.adLib)) {
 			const triggerModes = getActionItem(item.adLib)
 				?.triggerModes?.sort(
-					(a, b) => a.display._rank - b.display._rank || a.display.label.localeCompare(b.display.label)
+					(a, b) =>
+						a.display._rank - b.display._rank ||
+						translateMessage(a.display.label, t).localeCompare(translateMessage(b.display.label, t))
 				)
 				.map((mode) => (
 					<MenuItem
@@ -92,7 +95,7 @@ export default function ShelfContextMenu() {
 							item.onToggle(item.adLib, false, e, mode)
 						}}
 					>
-						{mode.display.label}
+						{t(mode.display.label.key, mode.display.label.args)}
 					</MenuItem>
 				))
 			return (
