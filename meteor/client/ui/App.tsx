@@ -18,6 +18,7 @@ import {
 	setHelpMode,
 	setUIZoom,
 	getUIZoom,
+	setShowHiddenSourceLayers,
 } from '../lib/localStorage'
 import Status from './Status'
 import { Settings as SettingsView } from './Settings'
@@ -100,6 +101,9 @@ export const App = translateWithTracker(() => {
 			if (params['help']) setHelpMode(params['help'] === '1')
 			if (params['zoom'] && typeof params['zoom'] === 'string') {
 				setUIZoom(parseFloat((params['zoom'] as string) || '1') / 100 || 1)
+			}
+			if (params['show_hidden_source_layers']) {
+				setShowHiddenSourceLayers(params['show_hidden_source_layers'] === '1')
 			}
 
 			if (!this.props.user) {

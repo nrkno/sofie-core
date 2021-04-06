@@ -23,7 +23,7 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
-import { getAllowSpeaking } from '../../lib/localStorage'
+import { getAllowSpeaking, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
 import { IContextMenuContext } from '../RundownView'
@@ -690,6 +690,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	renderOutputLayerControls() {
 		if (this.props.segment.outputLayers !== undefined) {
+			const showHiddenSourceLayers = getShowHiddenSourceLayers()
+
 			return Object.values(this.props.segment.outputLayers)
 				.sort((a, b) => {
 					return a._rank - b._rank
@@ -724,7 +726,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								{outputLayer.sourceLayers !== undefined &&
 									(!outputLayer.isFlattened ? (
 										outputLayer.sourceLayers
-											.filter((i) => !i.isHidden)
+											.filter((i) => showHiddenSourceLayers || !i.isHidden)
 											.sort((a, b) => a._rank - b._rank)
 											.map((sourceLayer, index, array) => {
 												return (
