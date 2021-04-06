@@ -217,7 +217,10 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Cannot find Part from invalid Piece')
 		}
 
-		const pieceDB = Pieces.findOne({ _id: protectString(piece._id) })
+		const pieceDB = Pieces.findOne({
+			_id: protectString(piece._id),
+			startRundownId: { $in: this._cache.Playlist.doc.getRundownIDs() },
+		})
 		if (!pieceDB) throw new Error(`Cannot find Piece ${piece._id}`)
 
 		return Parts.findOne({ _id: pieceDB.startPartId })

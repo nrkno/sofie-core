@@ -437,9 +437,9 @@ export namespace ServerPlayoutAdLibAPI {
 			sourceLayerId: { $in: sourceLayerId },
 		}
 
-		const pieces = Pieces.find(query).fetch()
+		const pieces = Pieces.find(query, { fields: { _id: 1, startPartId: 1, enable: 1 } }).fetch()
 
-		const part = Parts.findOne(
+		const part = cache.Parts.findOne(
 			{ _id: { $in: pieces.map((p) => p.startPartId) }, _rank: { $lte: currentPartInstance.part._rank } },
 			{ sort: { _rank: -1 } }
 		)
@@ -448,17 +448,21 @@ export namespace ServerPlayoutAdLibAPI {
 			return
 		}
 
-		if (span) span.end()
-
-		return pieces
+		const pieceId = pieces
+			.filter((p) => p.startPartId === part._id)
 			.sort((a, b) => {
 				if (a.enable.start === 'now' && b.enable.start === 'now') return 0
 				if (a.enable.start === 'now') return 1
 				if (b.enable.start === 'now') return -1
 
 				return a.enable.start - b.enable.start
-			})
-			.find((p) => p.startPartId === part._id)
+			})[0]?._id
+
+		if (!pieceId) return
+
+		if (span) span.end()
+
+		return Pieces.findOne(pieceId)
 	}
 
 	export async function innerStartQueuedAdLib(
