@@ -77,6 +77,8 @@ export namespace RundownLayoutsAPI {
 			currentSegment: false,
 			showThumbnailsInList: false,
 			hideDuplicates: false,
+			nextInCurrentPart: false,
+			oneNextPerSourceLayer: false,
 		}
 	}
 }

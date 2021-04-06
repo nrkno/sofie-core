@@ -132,6 +132,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						showThumbnailsInList: false,
 						hideDuplicates: false,
 						default: false,
+						nextInCurrentPart: false,
+						oneNextPerSourceLayer: false,
 					}),
 				},
 			})
@@ -788,6 +790,32 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									<EditAttribute
 										modifiedClassName="bghl"
 										attribute={`filters.${index}.hideDuplicates`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field" title="eg. when pieces in current part serve as data stores for adlibing">
+									{t('Current part can contain next pieces')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.nextInCurrentPart`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Indicate only one next piece per source layer')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.oneNextPerSourceLayer`}
 										obj={item}
 										type="checkbox"
 										collection={RundownLayouts}
