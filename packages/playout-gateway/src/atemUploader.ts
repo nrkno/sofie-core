@@ -53,7 +53,7 @@ export class AtemUploadScript {
 		const files = await fs.promises.readdir(folder)
 		consoleLog(files)
 		const loadBuffers = files.map((file) => fs.promises.readFile(path.join(folder, file)))
-		const buffers = await Promise.all(loadBuffers)
+		const buffers = Promise.all(loadBuffers)
 
 		consoleLog('got files')
 		return buffers
@@ -66,7 +66,7 @@ export class AtemUploadScript {
 		const clip = this.connection.state ? this.connection.state.media.clipPool[stillOrClipIndex] : undefined
 		let pool: typeof still | typeof clip
 		if (type === AtemMediaPoolType.Still) pool = still
-		if (type === AtemMediaPoolType.Clip) pool = clip
+		else if (type === AtemMediaPoolType.Clip) pool = clip
 
 		if (pool) {
 			consoleLog('has ' + type)
