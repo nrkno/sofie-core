@@ -172,7 +172,6 @@ export function matchFilter(
 		// Scope of the filter is determined by the scope of the uniquenessIds set (typically rundown-wide).
 		if (filter.hideDuplicates && uniquenessIds) {
 			const uniquenessId = item.uniquenessId || unprotectString(item._id)
-			console.log(uniquenessId)
 			if (uniquenessIds.has(uniquenessId)) {
 				return false
 			} else {
