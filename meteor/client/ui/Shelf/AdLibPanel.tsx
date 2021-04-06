@@ -92,6 +92,15 @@ interface IListViewStateHeader {
 	}
 }
 
+/**
+ * Applies a filter to an adLib to determine whether it matches filter criteria.
+ * @param item AdLib to test against filter.
+ * @param showStyleBase
+ * @param uiSegments All segments to search for live segment.
+ * @param filter Filter to match against.
+ * @param searchFilter Text to try to match against adLib label.
+ * @param uniquenessIds Set of uniquenessIds, for a given set only one adLib per uniquness Id will be matched by this filter.
+ */
 export function matchFilter(
 	item: AdLibPieceUi,
 	showStyleBase: ShowStyleBase,
@@ -159,6 +168,8 @@ export function matchFilter(
 			return false
 		}
 		// Hide duplicates
+		// Only the first adLib found with a given uniquenessId will be displayed if this option is enabled.
+		// Scope of the filter is determined by the scope of the uniquenessIds set (typically rundown-wide).
 		if (filter.hideDuplicates && uniquenessIds) {
 			const uniquenessId = item.uniquenessId || unprotectString(item._id)
 			console.log(uniquenessId)

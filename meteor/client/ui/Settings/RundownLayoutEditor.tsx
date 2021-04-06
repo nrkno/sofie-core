@@ -790,6 +790,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										collection={RundownLayouts}
 										className="mod mas"
 									/>
+									<span className="text-s dimmed">
+										{t('Picks the first instance of an adLib per rundown, identified by uniqueness Id')}
+									</span>
 								</label>
 							</div>
 						</React.Fragment>
