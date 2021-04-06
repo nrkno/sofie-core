@@ -128,8 +128,9 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 			pieceMetaDataFilter?: any // Mongo query against properties inside of piece.metaData
 		}
 	): IBlueprintPieceInstance | undefined
+	/** Get the previous scripted piece on a given layer, looking backwards from the current part. */
 	findLastScriptedPieceOnLayer(
-		sourceLayerId: string,
+		sourceLayerId: string | string[],
 		options?: {
 			excludeCurrentPart?: boolean
 			pieceMetaDataFilter?: any

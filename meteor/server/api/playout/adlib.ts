@@ -413,7 +413,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 	export function innerFindLastScriptedPieceOnLayer(
 		cache: CacheForPlayout,
-		sourceLayerId: string,
+		sourceLayerId: string[],
 		customQuery?: MongoQuery<Piece>
 	) {
 		const span = profiler.startSpan('innerFindLastScriptedPieceOnLayer')
@@ -425,7 +425,7 @@ export namespace ServerPlayoutAdLibAPI {
 			return
 		}
 
-		const currentPartInstance = cache.PartInstances.findOne({ _id: playlist.currentPartInstanceId })
+		const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
 
 		if (!currentPartInstance) {
 			return
@@ -434,10 +434,8 @@ export namespace ServerPlayoutAdLibAPI {
 		const query = {
 			...customQuery,
 			startRundownId: { $in: rundownIds },
-			sourceLayerId,
+			sourceLayerId: { $in: sourceLayerId },
 		}
-
-		if (span) span.end()
 
 		const pieces = Pieces.find(query).fetch()
 
@@ -450,7 +448,17 @@ export namespace ServerPlayoutAdLibAPI {
 			return
 		}
 
-		return pieces.find((p) => p.startPartId === part._id)
+		if (span) span.end()
+
+		return pieces
+			.sort((a, b) => {
+				if (a.enable.start === 'now' && b.enable.start === 'now') return 0
+				if (a.enable.start === 'now') return 1
+				if (b.enable.start === 'now') return -1
+
+				return a.enable.start - b.enable.start
+			})
+			.find((p) => p.startPartId === part._id)
 	}
 
 	export async function innerStartQueuedAdLib(

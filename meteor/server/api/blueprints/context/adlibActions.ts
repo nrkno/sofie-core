@@ -155,7 +155,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	}
 
 	findLastScriptedPieceOnLayer(
-		sourceLayerId: string,
+		sourceLayerId0: string | string[],
 		options?: {
 			excludeCurrentPart?: boolean
 			pieceMetaDataFilter?: any
@@ -166,19 +166,21 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
-				query[`piece.metaData.${key}`] = value
+				query[`metaData.${key}`] = value
 			}
 		}
 
 		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInstanceId) {
 			const currentPartInstance = this._cache.PartInstances.findOne(
-				(p) => p._id === this._cache.Playlist.doc.currentPartInstanceId
+				this._cache.Playlist.doc.currentPartInstanceId
 			)
 
 			if (currentPartInstance) {
 				query['startPartId'] = { $ne: currentPartInstance.part._id }
 			}
 		}
+
+		const sourceLayerId = Array.isArray(sourceLayerId0) ? sourceLayerId0 : [sourceLayerId0]
 
 		const lastPiece = ServerPlayoutAdLibAPI.innerFindLastScriptedPieceOnLayer(this._cache, sourceLayerId, query)
 
