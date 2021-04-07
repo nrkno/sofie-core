@@ -553,7 +553,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	protected setRef = (ref: HTMLDivElement) => {
 		const _panel = ref
 		if (_panel) {
-			debugger
 			const style = window.getComputedStyle(_panel)
 			// check if a special variable is set through CSS to indicate that we shouldn't expect
 			// double clicks to trigger AdLibs
