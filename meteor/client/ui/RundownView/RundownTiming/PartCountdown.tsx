@@ -19,16 +19,19 @@ export const PartCountdown = withTiming<IPartCountdownProps, {}>()(function Part
 	props: WithTiming<IPartCountdownProps>
 ) {
 	if (!props.partId || !props.timingDurations?.partCountdown) return null
+	const thisPartCountdown = props.timingDurations.partCountdown[unprotectString(props.partId)] as number | undefined
 
-	const shouldShow =
-		props.timingDurations.partCountdown[unprotectString(props.partId)] !== undefined &&
-		(props.hideOnZero !== true || props.timingDurations.partCountdown[unprotectString(props.partId)] > 0)
+	const shouldShow = thisPartCountdown !== undefined && (props.hideOnZero !== true || thisPartCountdown > 0)
 
 	return shouldShow ? (
 		<>
 			{props.label}
 			<span>
-				{RundownUtils.formatTimeToShortTime(props.timingDurations.partCountdown[unprotectString(props.partId)])}
+				{
+					RundownUtils.formatTimeToShortTime(
+						thisPartCountdown!
+					) /* shouldShow will be false if thisPartCountdown is undefined */
+				}
 			</span>
 		</>
 	) : null
