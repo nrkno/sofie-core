@@ -231,12 +231,12 @@ jobs:
           else
             echo "Skipping docker build"
           fi
-      - name: Build libs
+      - name: Build
         if: ${{ steps.image-tags.outputs.images }}
         run: |
           cd packages
           yarn install
-          yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
+          yarn lerna run --scope \*\*/${{ matrix.gateway-name }} --include-dependencies --stream build
           yarn install --prod --ignore-scripts
       - name: Set up Docker Buildx
         if: ${{ steps.image-tags.outputs.images }}
