@@ -313,10 +313,7 @@ workflows:
                 - blueprints-integration
                 - server-core-integration
               node-version:
-                - '10'
-                - '12'
-                - '14'
-                # - latest # currently 15
+                - '12' # Current target
           filters:
             tags:
               only: /v.*/
