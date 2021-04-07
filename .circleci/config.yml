@@ -223,10 +223,14 @@ workflows:
           filters:
             tags:
               only: /v.*/
+            branches:
+              ignore: /.*/
       - validate-prod-dependencies-core:
           filters:
             tags:
               only: /v.*/
+            branches:
+              ignore: /.*/
       - validate-all-dependencies-libs:
           matrix:
             parameters:
@@ -236,6 +240,8 @@ workflows:
           filters:
             tags:
               only: /v.*/
+            branches:
+              ignore: /.*/
       - validate-prod-dependencies-libs:
           matrix:
             parameters:
@@ -245,6 +251,8 @@ workflows:
           filters:
             tags:
               only: /v.*/
+            branches:
+              ignore: /.*/
       - build-core:
           filters:
             tags:
