@@ -217,7 +217,7 @@ jobs:
 
 workflows:
   version: 2
-  build-test-publish:
+  validate-deps:
     jobs:
       - validate-all-dependencies-core:
           filters:
@@ -253,12 +253,9 @@ workflows:
               only: /v.*/
             branches:
               ignore: /.*/
-      - build-core:
-          filters:
-            tags:
-              only: /v.*/
-            branches:
-              only: /.*/
+
+  build-test-publish:
+    jobs:
       - lint-core:
           filters:
             tags:
@@ -297,13 +294,26 @@ workflows:
             branches:
               only: /.*/
 
+      - build-core:
+          filters:
+            tags:
+              only: /v.*/
+            branches:
+              only: /.*/
+          requires:
+            - lint-libs
+            - lint-core
+            - test-libs
+            - test-core
+
+      - hold-for-approval:
+          type: approval
+          requires:
+            - build-core
+
       - publish-tag:
           requires:
-            - test-core
-            - test-libs
-            - validate-prod-dependencies-core
-            - validate-prod-dependencies-libs
-            - build-core
+            - hold-for-approval
           filters:
             tags:
               only: /v.*/
