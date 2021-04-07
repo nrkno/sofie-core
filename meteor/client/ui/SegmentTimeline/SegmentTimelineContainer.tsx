@@ -17,7 +17,7 @@ import {
 	PartExtended,
 	SegmentExtended,
 } from '../../../lib/Rundown'
-import { IContextMenuContext } from '../RundownView'
+import { IContextMenuContext, MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
@@ -40,6 +40,7 @@ import RundownViewEventBus, {
 	GoToPartEvent,
 	GoToPartInstanceEvent,
 } from '../RundownView/RundownViewEventBus'
+import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
@@ -71,6 +72,7 @@ export interface PieceUi extends PieceExtended {
 	linked?: boolean
 	/** Metadata object */
 	contentMetaData?: any
+	contentPackageInfos?: ScanInfoForPackages
 	message?: string | null
 }
 interface IProps {
@@ -367,6 +369,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					})
 				}
 			})
+			window.addEventListener('resize', this.onWindowResize)
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps) {
@@ -423,7 +426,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 				if (this.props.segmentui && this.props.segmentui.orphaned) {
 					const { t } = this.props
-					// TODO ORPHAN
 					// TODO: This doesn't seem right? componentDidUpdate can be triggered in a lot of different ways.
 					// What is this supposed to do?
 					doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, (e) =>
@@ -487,12 +489,12 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.pastInfinitesComp.invalidate()
 			}
 
-			if (!isLiveSegment && this.props.parts !== prevProps.parts && this.state.showingAllSegment) {
-				this.showEntireSegment()
+			if (!isLiveSegment && this.props.parts !== prevProps.parts) {
+				this.updateMaxTimeScale().catch(console.error)
 			}
 
-			if (!isLiveSegment && this.props.parts !== prevProps.parts) {
-				this.updateMaxTimeScale()
+			if (!isLiveSegment && this.props.parts !== prevProps.parts && this.state.showingAllSegment) {
+				this.showEntireSegment()
 			}
 
 			this.setState({
@@ -519,6 +521,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			RundownViewEventBus.off(RundownViewEvents.REWIND_SEGMENTS, this.onRewindSegment)
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART, this.onGoToPart)
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART_INSTANCE, this.onGoToPartInstance)
+			window.removeEventListener('resize', this.onWindowResize)
 		}
 
 		private partInstanceSub: Meteor.SubscriptionHandle | undefined
@@ -563,6 +566,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
+		onWindowResize = _.throttle(() => {
+			if (this.state.showingAllSegment) {
+				this.updateMaxTimeScale()
+					.then(() => this.showEntireSegment())
+					.catch(console.error)
+			}
+		}, 250)
+
 		onTimeScaleChange = (timeScaleVal: number) => {
 			if (Number.isFinite(timeScaleVal) && timeScaleVal > 0) {
 				this.setState((state) => ({
@@ -596,10 +607,15 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		onRewindSegment = () => {
 			if (!this.isLiveSegment) {
-				this.setState({
-					scrollLeft: 0,
-					livePosition: 0,
-				})
+				this.updateMaxTimeScale()
+					.then(() => {
+						this.showEntireSegment()
+						this.setState({
+							scrollLeft: 0,
+							livePosition: 0,
+						})
+					})
+					.catch(console.error)
 			}
 		}
 
@@ -729,14 +745,20 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					this.props.parts.map((i) => i.instance.part._id),
 					true
 				) || 1)
-			newScale = Math.min(0.03, newScale)
+			newScale = Math.min(MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale, newScale)
 			return newScale
 		}
 
 		updateMaxTimeScale = () => {
-			this.setState({
-				maxTimeScale: this.getShowAllTimeScale(),
-			})
+			const maxTimeScale = this.getShowAllTimeScale()
+			return new Promise<number>((resolve) =>
+				this.setState(
+					{
+						maxTimeScale,
+					},
+					() => resolve(maxTimeScale)
+				)
+			)
 		}
 
 		showEntireSegment = () => {
@@ -768,6 +790,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						segmentNotes={this.props.segmentNotes}
 						timeScale={this.state.timeScale}
 						maxTimeScale={this.state.maxTimeScale}
+						onRecalculateMaxTimeScale={this.updateMaxTimeScale}
 						showingAllSegment={this.state.showingAllSegment}
 						onItemClick={this.props.onPieceClick}
 						onItemDoubleClick={this.props.onPieceDoubleClick}

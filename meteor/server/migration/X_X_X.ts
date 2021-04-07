@@ -1,7 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { Studios } from '../../lib/collections/Studios'
-import { ensureCollectionProperty } from './lib'
+import * as _ from 'underscore'
 
 /*
  * **************************************************************************************
@@ -28,7 +27,6 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	// },
 	//
 	//
-	ensureCollectionProperty('CoreSystem', {}, 'cron.casparCGRestart.enabled', true),
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),

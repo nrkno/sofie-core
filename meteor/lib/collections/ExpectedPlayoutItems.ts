@@ -8,8 +8,11 @@ import { PartId } from './Parts'
 import { PieceId } from './Pieces'
 import { registerIndex } from '../database'
 
-/** A string, identifying a Rundown */
+/** A string, identifying a Rundown
+ * @deprecated
+ */
 export type ExpectedPlayoutItemId = ProtectedString<'ExpectedPlayoutItemId'>
+/** @deprecated */
 export interface ExpectedPlayoutItem extends ExpectedPlayoutItemGeneric {
 	/** Globally unique id of the item */
 	_id: ExpectedPlayoutItemId
@@ -24,6 +27,7 @@ export interface ExpectedPlayoutItem extends ExpectedPlayoutItemGeneric {
 	pieceId: PieceId
 }
 
+/** @deprecated */
 export const ExpectedPlayoutItems: TransformedCollection<
 	ExpectedPlayoutItem,
 	ExpectedPlayoutItem

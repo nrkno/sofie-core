@@ -53,6 +53,8 @@ import { updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { Random } from 'meteor/random'
 import { asyncCollectionRemove, asyncCollectionFindOne } from '../lib/database'
+import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import { checkAccessToPlaylist } from './lib'
 
 export function removeEmptyPlaylists(studioId: StudioId) {
 	runStudioOperationWithCache('removeEmptyPlaylists', studioId, StudioLockFunctionPriority.MISC, async (cache) => {
@@ -70,8 +72,8 @@ export function removeEmptyPlaylists(studioId: StudioId) {
 						playlist,
 						PlayoutLockFunctionPriority.MISC,
 						async () => {
-							const playlists = Rundowns.find({ playlistId: playlist._id }).count()
-							if (playlists === 0) {
+							const rundowns = Rundowns.find({ playlistId: playlist._id }).count()
+							if (rundowns === 0) {
 								await removeRundownPlaylistFromDb(playlist)
 							}
 						}
@@ -111,6 +113,7 @@ export async function removeRundownsFromDb(rundownIds: RundownId[]): Promise<voi
 			asyncCollectionRemove(AdLibPieces, { rundownId: { $in: rundownIds } }),
 			asyncCollectionRemove(ExpectedMediaItems, { rundownId: { $in: rundownIds } }),
 			asyncCollectionRemove(ExpectedPlayoutItems, { rundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(ExpectedPackages, { rundownId: { $in: rundownIds } }),
 			asyncCollectionRemove(IngestDataCache, { rundownId: { $in: rundownIds } }),
 			asyncCollectionRemove(RundownBaselineAdLibPieces, { rundownId: { $in: rundownIds } }),
 			asyncCollectionRemove(Segments, { rundownId: { $in: rundownIds } }),
@@ -443,8 +446,10 @@ export function moveRundownIntoPlaylist(
 }
 /** Restore the order of rundowns in a playlist, giving control over the ordering back to the NRCS */
 export function restoreRundownsInPlaylistToDefaultOrder(context: MethodContext, playlistId: RundownPlaylistId) {
+	const access = checkAccessToPlaylist(context, playlistId)
+
 	runPlayoutOperationWithLock(
-		context,
+		access,
 		'restoreRundownsInPlaylistToDefaultOrder',
 		playlistId,
 		PlayoutLockFunctionPriority.MISC,

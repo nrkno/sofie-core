@@ -1,8 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import ClassNames from 'classnames'
-import { Meteor } from 'meteor/meteor'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
@@ -11,13 +10,11 @@ import {
 	IOutputLayer,
 	SourceLayerType,
 	VTContent,
-	LiveSpeakContent,
 	SplitsContent,
 	NoraContent,
+	Accessor,
 } from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
-import { MediaObject } from '../../../lib/collections/MediaObjects'
-import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PubSub } from '../../../lib/api/pubsub'
 import { IAdLibListItem } from './AdLibListItem'
@@ -31,6 +28,7 @@ import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspect
 import { protectString } from '../../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
+import { getThumbnailPackageSettings } from '../../../lib/collections/ExpectedPackages'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
@@ -100,9 +98,45 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	getThumbnailUrl = (): string | undefined => {
 		const { piece } = this.props
-		if (this.props.mediaPreviewUrl && piece.contentMetaData) {
-			if (piece.contentMetaData && piece.contentMetaData.previewPath && this.props.mediaPreviewUrl) {
-				return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(piece.contentMetaData.mediaId)
+		if (piece.expectedPackages) {
+			// use Expected packages:
+			// Just use the first one we find.
+			// TODO: support multiple expected packages?
+			let thumbnailContainerId: string | undefined
+			let packageThumbnailPath: string | undefined
+			for (const expectedPackage of piece.expectedPackages) {
+				const sideEffect =
+					expectedPackage.sideEffect.thumbnailPackageSettings || getThumbnailPackageSettings(expectedPackage)
+				packageThumbnailPath = sideEffect?.path
+				thumbnailContainerId = expectedPackage.sideEffect.thumbnailContainerId
+
+				if (packageThumbnailPath && thumbnailContainerId) {
+					break // don't look further
+				}
+			}
+			if (packageThumbnailPath && thumbnailContainerId) {
+				const packageContainer = this.props.studio?.packageContainers[thumbnailContainerId]
+				if (packageContainer) {
+					// Look up an accessor we can use:
+					for (const accessor of Object.values(packageContainer.container.accessors)) {
+						if (accessor.type === Accessor.AccessType.HTTP && accessor.baseUrl) {
+							// TODO: add fiter for accessor.networkId ?
+							return [
+								accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
+								encodeURIComponent(
+									packageThumbnailPath.replace(/^\//, '') // trim leading slash
+								),
+							].join('/')
+						}
+					}
+				}
+			}
+		} else {
+			// Fallback to media objects
+			if (this.props.mediaPreviewUrl && piece.contentMetaData) {
+				if (piece.contentMetaData && piece.contentMetaData.previewPath && this.props.mediaPreviewUrl) {
+					return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(piece.contentMetaData.mediaId)
+				}
 			}
 		}
 		return undefined
@@ -170,6 +204,9 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							: null
 					}
 					mediaPreviewUrl={this.props.mediaPreviewUrl}
+					contentPackageInfos={this.props.piece.contentPackageInfos}
+					expectedPackages={this.props.piece.expectedPackages}
+					studioPackageContainers={this.props.studio?.packageContainers}
 					displayOn="viewport"
 				/>
 			</>

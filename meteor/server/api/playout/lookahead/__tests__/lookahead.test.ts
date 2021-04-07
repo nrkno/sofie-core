@@ -13,7 +13,6 @@ import { Piece } from '../../../../../lib/collections/Pieces'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { MappingsExt, Studios } from '../../../../../lib/collections/Studios'
 import { OnGenerateTimelineObjExt, TimelineObjRundown } from '../../../../../lib/collections/Timeline'
-import _ from 'underscore'
 import { PartInstanceAndPieceInstances } from '../util'
 import { getLookeaheadObjects } from '..'
 import { SelectedPartInstancesTimelineInfo } from '../../timeline'
@@ -47,7 +46,7 @@ describe('Lookahead', () => {
 			if (isNaN(parseInt(k))) {
 				mappings[k] = {
 					device: TSR.DeviceType.ABSTRACT,
-					deviceId: 'fake0',
+					deviceId: protectString('fake0'),
 					lookahead: LookaheadMode[k],
 					// lookaheadDepth: 0,
 					// lookaheadMaxSearchDistance: 0,

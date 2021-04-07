@@ -212,7 +212,7 @@ export function updateExpectedMediaItemForBucketAdLibAction(actionId: AdLibActio
 		result
 	)
 }
-
+/** @deprecated */
 export function updateExpectedMediaItemsOnRundown(cache: CacheForIngest): void {
 	const pieces = cache.Pieces.findFetch({})
 	const adlibs = cache.AdLibPieces.findFetch({})

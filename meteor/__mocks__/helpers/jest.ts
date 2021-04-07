@@ -1,27 +1,27 @@
 import { runInFiber } from '../Fibers'
 
-export function beforeAllInFiber(fcn: Function, timeout?: number) {
+export function beforeAllInFiber(fcn: () => void | Promise<void>, timeout?: number) {
 	beforeAll(async () => {
 		await runInFiber(fcn)
 	}, timeout)
 }
-export function afterAllInFiber(fcn: Function, timeout?: number) {
+export function afterAllInFiber(fcn: () => void | Promise<void>, timeout?: number) {
 	afterAll(async () => {
 		await runInFiber(fcn)
 	}, timeout)
 }
-export function beforeEachInFiber(fcn: Function, timeout?: number) {
+export function beforeEachInFiber(fcn: () => void | Promise<void>, timeout?: number) {
 	beforeEach(async () => {
 		await runInFiber(fcn)
 	}, timeout)
 }
-export function afterEachInFiber(fcn: Function, timeout?: number) {
+export function afterEachInFiber(fcn: () => void | Promise<void>, timeout?: number) {
 	afterEach(async () => {
 		await runInFiber(fcn)
 	}, timeout)
 }
 
-export function testInFiber(testName: string, fcn: Function, timeout?: number) {
+export function testInFiber(testName: string, fcn: () => void | Promise<void>, timeout?: number) {
 	test(
 		testName,
 		async () => {
@@ -31,7 +31,7 @@ export function testInFiber(testName: string, fcn: Function, timeout?: number) {
 	)
 }
 
-export function testInFiberOnly(testName: string, fcn: Function, timeout?: number) {
+export function testInFiberOnly(testName: string, fcn: () => void | Promise<void>, timeout?: number) {
 	// tslint:disable-next-line:no-focused-test
 	test.only(
 		testName,

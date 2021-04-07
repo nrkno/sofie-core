@@ -35,13 +35,15 @@ export type IndexSpecifier<T> = {
 	[P in keyof T]?: -1 | 1 | string
 }
 
-export interface FindOptions<DBInterface> {
+export interface FindOneOptions<DBInterface> {
 	sort?: SortSpecifier<DBInterface>
 	skip?: number
-	limit?: number
 	fields?: MongoFieldSpecifier<DBInterface>
 	reactive?: boolean
 	transform?: Function
+}
+export interface FindOptions<DBInterface> extends FindOneOptions<DBInterface> {
+	limit?: number
 }
 export interface UpdateOptions {
 	multi?: boolean

@@ -9,13 +9,13 @@ import { Part, Parts } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { ServerRundownAPI } from '../../rundown'
 import { ServerPlayoutAPI } from '../../playout/playout'
-import { regenerateRundown, RundownInput } from '../rundownInput'
-import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { RundownInput } from '../rundownInput'
+import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../../lib/api/methods'
-import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { removeRundownPlaylistFromDb } from '../../rundownPlaylist'
 import { Random } from 'meteor/random'
+import { VerifiedRundownPlaylistContentAccess } from '../../lib'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -31,6 +31,12 @@ const DEFAULT_CONTEXT: MethodContext = {
 	},
 	setUserId: () => {},
 	unblock: () => {},
+}
+
+function PLAYLIST_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPlaylistContentAccess {
+	const playlist = RundownPlaylists.findOne(rundownPlaylistID) as RundownPlaylist
+	expect(playlist).toBeTruthy()
+	return { userId: null, organizationId: null, studioId: null, playlist: playlist, cred: {} }
 }
 
 describe('Test ingest actions for rundowns and segments', () => {
@@ -1276,7 +1282,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		RundownPlaylists.find()
 			.fetch()
-			.forEach((playlist) => removeRundownPlaylistFromDb(playlist))
+			.forEach((p) => removeRundownPlaylistFromDb(p))
 
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -1349,7 +1355,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(parts).toHaveLength(3)
 
 		// Activate the rundown, make data updates and verify that it gets unsynced properly
-		ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, playlist._id, true)
+		ServerPlayoutAPI.activateRundownPlaylist(PLAYLIST_ACCESS(playlist._id), playlist._id, true)
 		expect(getRundown().orphaned).toBeUndefined()
 
 		RundownInput.dataRundownDelete(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId)
@@ -1358,7 +1364,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		resyncRundown()
 		expect(getRundown().orphaned).toBeUndefined()
 
-		ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlist._id)
+		ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
 		const partInstance = PartInstances.find({ 'part._id': parts[0]._id }).fetch()
 		expect(partInstance).toHaveLength(1)
 		expect(getPlaylist().currentPartInstanceId).toEqual(partInstance[0]._id)

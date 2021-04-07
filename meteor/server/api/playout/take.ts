@@ -22,7 +22,7 @@ import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { reportPartHasStarted } from '../asRunLog'
+import { reportPartInstanceHasStarted } from '../blueprints/events'
 import { profiler } from '../profiler'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -142,39 +142,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 		})
 	}
 
-	{
-		const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-
-		if (
-			currentPartInstance?.consumesNextSegmentId &&
-			cache.Playlist.doc.nextSegmentId === currentPartInstance.segmentId
-		) {
-			// clear the nextSegmentId if the newly taken partInstance says it was selected because of it
-			cache.Playlist.update({
-				$unset: {
-					nextSegmentId: 1,
-				},
-			})
-		}
-
-		// If the previous and current part are not in the same segment, then we have just left a segment
-		if (previousPartInstance && previousPartInstance.segmentId !== currentPartInstance?.segmentId) {
-			// Reset the old segment
-			const segmentId = previousPartInstance.segmentId
-			const resetIds = new Set(
-				cache.PartInstances.update((p) => !p.reset && p.segmentId === segmentId, {
-					$set: {
-						reset: true,
-					},
-				})
-			)
-			cache.PieceInstances.update((p) => resetIds.has(p.partInstanceId), {
-				$set: {
-					reset: true,
-				},
-			})
-		}
-	}
+	resetPreviousSegmentAndClearNextSegmentId(cache)
 
 	// Once everything is synced, we can choose the next part
 	libsetNextPart(cache, nextPart)
@@ -196,6 +164,40 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 
 	if (span) span.end()
 	return ClientAPI.responseSuccess(undefined)
+}
+
+export function resetPreviousSegmentAndClearNextSegmentId(cache: CacheForPlayout) {
+	const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+
+	if (
+		currentPartInstance?.consumesNextSegmentId &&
+		cache.Playlist.doc.nextSegmentId === currentPartInstance.segmentId
+	) {
+		// clear the nextSegmentId if the newly taken partInstance says it was selected because of it
+		cache.Playlist.update({
+			$unset: {
+				nextSegmentId: 1,
+			},
+		})
+	}
+
+	// If the previous and current part are not in the same segment, then we have just left a segment
+	if (previousPartInstance && previousPartInstance.segmentId !== currentPartInstance?.segmentId) {
+		// Reset the old segment
+		const segmentId = previousPartInstance.segmentId
+		const resetIds = new Set(
+			cache.PartInstances.update((p) => !p.reset && p.segmentId === segmentId, {
+				$set: {
+					reset: true,
+				},
+			})
+		)
+		cache.PieceInstances.update((p) => resetIds.has(p.partInstanceId), {
+			$set: {
+				reset: true,
+			},
+		})
+	}
 }
 
 function afterTakeUpdateTimingsAndEvents(
@@ -226,7 +228,7 @@ function afterTakeUpdateTimingsAndEvents(
 					takePartInstance._id
 				}" to have started playback on timestamp ${new Date(takeDoneTime).toISOString()}`
 			)
-			reportPartHasStarted(cache, takePartInstance, takeDoneTime)
+			reportPartInstanceHasStarted(cache, takePartInstance, takeDoneTime)
 		}
 
 		// let bp = getBlueprintOfRundown(rundown)

@@ -21,7 +21,7 @@ import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDa
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
 import { IngestActions } from './ingest/actions'
-import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import {
 	PieceInstances,
@@ -48,7 +48,9 @@ import { rundownContentAllowWrite } from '../security/rundown'
 import { profiler } from './profiler'
 import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
-import { checkAccessAndGetPlaylist, checkAccessAndGetRundown } from './lib'
+import { checkAccessAndGetPlaylist, checkAccessAndGetRundown, checkAccessToPlaylist } from './lib'
+import { PackageManagerAPI } from './packageManager'
+import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from './rundownPlaylist'
 import { getShowStyleCompound } from './showStyles'
 
@@ -75,7 +77,8 @@ export const take = syncFunction(function take(
 	// Called by the user. Wont throw as nasty errors
 	const now = getCurrentTime()
 
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
 	if (!playlist.activationId) {
 		return ClientAPI.responseError(`Rundown is not active, please activate the rundown before doing a TAKE.`)
@@ -107,7 +110,7 @@ export const take = syncFunction(function take(
 			)
 		}
 	}
-	return ServerPlayoutAPI.takeNextPart(context, playlist._id)
+	return ServerPlayoutAPI.takeNextPart(access, playlist._id)
 },
 'userActionsTake$0')
 
@@ -121,7 +124,8 @@ export function setNext(
 	check(rundownPlaylistId, String)
 	if (nextPartId) check(nextPartId, String)
 
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 	if (!playlist.activationId)
 		return ClientAPI.responseError(
 			'RundownPlaylist is not active, please activate it before setting a part as Next'
@@ -138,7 +142,7 @@ export function setNext(
 	if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
 		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
 	}
-	return ServerPlayoutAPI.setNextPart(context, rundownPlaylistId, nextPartId, setManually, timeOffset)
+	return ServerPlayoutAPI.setNextPart(access, rundownPlaylistId, nextPartId, setManually, timeOffset)
 }
 export function setNextSegment(
 	context: MethodContext,
@@ -149,7 +153,8 @@ export function setNextSegment(
 	if (nextSegmentId) check(nextSegmentId, String)
 	else check(nextSegmentId, null)
 
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 	if (!playlist.activationId)
 		return ClientAPI.responseError('Rundown is not active, please activate it before setting a part as Next')
 
@@ -175,11 +180,11 @@ export function setNextSegment(
 		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 		if (!currentPartInstance || !nextPartInstance || nextPartInstance.segmentId !== currentPartInstance.segmentId) {
 			// Special: in this case, the user probably dosen't want to setNextSegment, but rather just setNextPart
-			return ServerPlayoutAPI.setNextPart(context, rundownPlaylistId, firstValidPartInSegment._id, true, 0)
+			return ServerPlayoutAPI.setNextPart(access, rundownPlaylistId, firstValidPartInSegment._id, true, 0)
 		}
 	}
 
-	return ServerPlayoutAPI.setNextSegment(context, rundownPlaylistId, nextSegmentId)
+	return ServerPlayoutAPI.setNextSegment(access, rundownPlaylistId, nextSegmentId)
 }
 export function moveNext(
 	context: MethodContext,
@@ -187,7 +192,8 @@ export function moveNext(
 	horisontalDelta: number,
 	verticalDelta: number
 ): ClientAPI.ClientResponse<PartId | null> {
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 	if (!playlist.activationId)
 		return ClientAPI.responseError('Rundown Playlist is not active, please activate it first')
 
@@ -199,7 +205,7 @@ export function moveNext(
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.moveNextPart(context, rundownPlaylistId, horisontalDelta, verticalDelta)
+		ServerPlayoutAPI.moveNextPart(access, rundownPlaylistId, horisontalDelta, verticalDelta)
 	)
 }
 export function prepareForBroadcast(
@@ -207,7 +213,9 @@ export function prepareForBroadcast(
 	rundownPlaylistId: RundownPlaylistId
 ): ClientAPI.ClientResponse<void> {
 	check(rundownPlaylistId, String)
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
 	if (playlist.activationId)
 		return ClientAPI.responseError(
@@ -224,22 +232,24 @@ export function prepareForBroadcast(
 			anyOtherActiveRundowns
 		)
 	}
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(context, rundownPlaylistId))
+	return ClientAPI.responseSuccess(ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(access, rundownPlaylistId))
 }
 export function resetRundownPlaylist(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId
 ): ClientAPI.ClientResponse<void> {
 	check(rundownPlaylistId, String)
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
+
 	if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
 		return ClientAPI.responseError(
 			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
 		)
 	}
 
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.resetRundownPlaylist(context, rundownPlaylistId))
+	return ClientAPI.responseSuccess(ServerPlayoutAPI.resetRundownPlaylist(access, rundownPlaylistId))
 }
 export function resetAndActivate(
 	context: MethodContext,
@@ -247,8 +257,10 @@ export function resetAndActivate(
 	rehearsal?: boolean
 ): ClientAPI.ClientResponse<void> {
 	check(rundownPlaylistId, String)
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
+
 	if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
 		return ClientAPI.responseError(
 			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
@@ -267,7 +279,7 @@ export function resetAndActivate(
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.resetAndActivateRundownPlaylist(context, rundownPlaylistId, rehearsal)
+		ServerPlayoutAPI.resetAndActivateRundownPlaylist(access, rundownPlaylistId, rehearsal)
 	)
 }
 export function forceResetAndActivate(
@@ -278,10 +290,10 @@ export function forceResetAndActivate(
 	// Reset and activates a rundown, automatically deactivates any other running rundowns
 
 	check(rehearsal, Boolean)
-	checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(context, rundownPlaylistId, rehearsal)
+		ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(access, rundownPlaylistId, rehearsal)
 	)
 }
 export function activate(
@@ -292,7 +304,9 @@ export function activate(
 	check(rundownPlaylistId, String)
 	check(rehearsal, Boolean)
 
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
+
 	const anyOtherActiveRundowns = waitForPromise(
 		getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
 	)
@@ -305,19 +319,23 @@ export function activate(
 			anyOtherActiveRundowns
 		)
 	}
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.activateRundownPlaylist(context, playlist._id, rehearsal))
+	return ClientAPI.responseSuccess(ServerPlayoutAPI.activateRundownPlaylist(access, playlist._id, rehearsal))
 }
 export function deactivate(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId
 ): ClientAPI.ClientResponse<void> {
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.deactivateRundownPlaylist(context, rundownPlaylistId))
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+
+	return ClientAPI.responseSuccess(ServerPlayoutAPI.deactivateRundownPlaylist(access, rundownPlaylistId))
 }
 export function unsyncRundown(context: MethodContext, rundownId: RundownId) {
 	return ClientAPI.responseSuccess(ServerRundownAPI.unsyncRundown(context, rundownId))
 }
 export function disableNextPiece(context: MethodContext, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
-	return ServerPlayoutAPI.disableNextPiece(context, rundownPlaylistId, undo)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+
+	return ServerPlayoutAPI.disableNextPiece(access, rundownPlaylistId, undo)
 }
 export function pieceTakeNow(
 	context: MethodContext,
@@ -329,7 +347,9 @@ export function pieceTakeNow(
 	check(partInstanceId, String)
 	check(pieceInstanceIdOrPieceIdToCopy, String)
 
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
+
 	if (!playlist.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
 	if (playlist.currentPartInstanceId !== partInstanceId)
@@ -370,7 +390,7 @@ export function pieceTakeNow(
 		)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.pieceTakeNow(context, rundownPlaylistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
+		ServerPlayoutAPI.pieceTakeNow(access, rundownPlaylistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
 	)
 }
 export function pieceSetInOutPoints(
@@ -387,10 +407,12 @@ export function pieceSetInOutPoints(
 	check(inPoint, Number)
 	check(duration, Number)
 
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
+
 	const part = Parts.findOne(partId)
 	if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-	if (playlist && playlist.activationId && part.status === 'PLAY') {
+	if (playlist.activationId && part.status === 'PLAY') {
 		throw new Meteor.Error(`Part cannot be active while setting in/out!`) // @todo: un-hardcode
 	}
 	const rundown = Rundowns.findOne(part.rundownId)
@@ -428,15 +450,16 @@ export function executeAction(
 	check(userData, Match.Any)
 	check(triggerMode, Match.Maybe(String))
 
-	const playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
+
 	if (!playlist.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, please activate it before executing an action!`)
 	if (!playlist.currentPartInstanceId)
 		return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.executeAction(context, rundownPlaylistId, actionId, userData, triggerMode)
+		ServerPlayoutAPI.executeAction(access, rundownPlaylistId, actionId, userData, triggerMode)
 	)
 }
 export function segmentAdLibPieceStart(
@@ -450,7 +473,8 @@ export function segmentAdLibPieceStart(
 	check(partInstanceId, String)
 	check(adlibPieceId, String)
 
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
 	if (!playlist.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
@@ -459,7 +483,7 @@ export function segmentAdLibPieceStart(
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.segmentAdLibPieceStart(context, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
+		ServerPlayoutAPI.segmentAdLibPieceStart(access, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
 	)
 }
 export function sourceLayerOnPartStop(
@@ -472,12 +496,14 @@ export function sourceLayerOnPartStop(
 	check(partInstanceId, String)
 	check(sourceLayerIds, Match.OneOf(String, Array))
 
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
+
 	if (!playlist.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib on a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.sourceLayerOnPartStop(context, rundownPlaylistId, partInstanceId, sourceLayerIds)
+		ServerPlayoutAPI.sourceLayerOnPartStop(access, rundownPlaylistId, partInstanceId, sourceLayerIds)
 	)
 }
 export function rundownBaselineAdLibPieceStart(
@@ -491,7 +517,8 @@ export function rundownBaselineAdLibPieceStart(
 	check(partInstanceId, String)
 	check(adlibPieceId, String)
 
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
 	if (!playlist.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
@@ -499,7 +526,7 @@ export function rundownBaselineAdLibPieceStart(
 		return ClientAPI.responseError(`Can't start AdLib piece when the Rundown is in Hold mode!`)
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownBaselineAdLibPieceStart(context, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
+		ServerPlayoutAPI.rundownBaselineAdLibPieceStart(access, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
 	)
 }
 export function sourceLayerStickyPieceStart(
@@ -510,14 +537,16 @@ export function sourceLayerStickyPieceStart(
 	check(rundownPlaylistId, String)
 	check(sourceLayerId, String)
 
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
+
 	if (!playlist.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting a sticky-item!`)
 	if (!playlist.currentPartInstanceId)
 		return ClientAPI.responseError(`No part is playing, please Take a part before starting a sticky-item.`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.sourceLayerStickyPieceStart(context, rundownPlaylistId, sourceLayerId)
+		ServerPlayoutAPI.sourceLayerStickyPieceStart(access, rundownPlaylistId, sourceLayerId)
 	)
 }
 export function activateHold(
@@ -527,7 +556,8 @@ export function activateHold(
 ): ClientAPI.ClientResponse<void> {
 	check(rundownPlaylistId, String)
 
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
 	if (!playlist.currentPartInstanceId)
 		return ClientAPI.responseError(`No part is currently playing, please Take a part before activating Hold mode!`)
@@ -545,9 +575,9 @@ export function activateHold(
 	}
 
 	if (undo) {
-		return ClientAPI.responseSuccess(ServerPlayoutAPI.deactivateHold(context, rundownPlaylistId))
+		return ClientAPI.responseSuccess(ServerPlayoutAPI.deactivateHold(access, rundownPlaylistId))
 	} else {
-		return ClientAPI.responseSuccess(ServerPlayoutAPI.activateHold(context, rundownPlaylistId))
+		return ClientAPI.responseSuccess(ServerPlayoutAPI.activateHold(access, rundownPlaylistId))
 	}
 }
 export function userSaveEvaluation(context: MethodContext, evaluation: EvaluationBase): ClientAPI.ClientResponse<void> {
@@ -599,6 +629,15 @@ export function mediaRestartAllWorkflows(context: MethodContext) {
 export function mediaAbortAllWorkflows(context: MethodContext) {
 	const access = OrganizationContentWriteAccess.anyContent(context)
 	return ClientAPI.responseSuccess(MediaManagerAPI.abortAllWorkflows(context, access.organizationId))
+}
+export function packageManagerRestartExpectation(context: MethodContext, deviceId: PeripheralDeviceId, workId: string) {
+	return ClientAPI.responseSuccess(PackageManagerAPI.restartExpectation(context, deviceId, workId))
+}
+export function packageManagerRestartAllExpectations(context: MethodContext, studioId: StudioId) {
+	return ClientAPI.responseSuccess(PackageManagerAPI.restartAllExpectationsInStudio(context, studioId))
+}
+export function packageManagerAbortExpectation(context: MethodContext, deviceId: PeripheralDeviceId, workId: string) {
+	return ClientAPI.responseSuccess(PackageManagerAPI.abortExpectation(context, deviceId, workId))
 }
 export function bucketsRemoveBucket(context: MethodContext, id: BucketId) {
 	check(id, String)
@@ -660,13 +699,14 @@ export function bucketsModifyBucketAdLibAction(
 export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
 	check(rundownPlaylistId, String)
 
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
 	if (playlist.activationId) {
 		return ClientAPI.responseError(`Rundown Playlist is active, please deactivate it before regenerating it.`)
 	}
 
-	return ClientAPI.responseSuccess(IngestActions.regenerateRundownPlaylist(context, rundownPlaylistId))
+	return ClientAPI.responseSuccess(IngestActions.regenerateRundownPlaylist(access, rundownPlaylistId))
 }
 
 export function bucketAdlibImport(
@@ -727,16 +767,17 @@ export function bucketAdlibStart(
 	check(partInstanceId, String)
 	check(bucketAdlibId, String)
 
-	let rundown = RundownPlaylists.findOne(rundownPlaylistId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
-	if (!rundown.activationId)
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+
+	const playlist = access.playlist
+	if (!playlist.activationId)
 		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
-	if (rundown.holdState === RundownHoldState.ACTIVE || rundown.holdState === RundownHoldState.PENDING) {
+	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAdLibAPI.startBucketAdlibPiece(context, rundownPlaylistId, partInstanceId, bucketAdlibId, !!queue)
+		ServerPlayoutAdLibAPI.startBucketAdlibPiece(access, rundownPlaylistId, partInstanceId, bucketAdlibId, !!queue)
 	)
 }
 
@@ -1047,6 +1088,15 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	}
 	mediaAbortAllWorkflows(_userEvent: string) {
 		return makePromise(() => mediaAbortAllWorkflows(this))
+	}
+	packageManagerRestartExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
+		return makePromise(() => packageManagerRestartExpectation(this, deviceId, workId))
+	}
+	packageManagerRestartAllExpectations(_userEvent: string, studioId: StudioId) {
+		return makePromise(() => packageManagerRestartAllExpectations(this, studioId))
+	}
+	packageManagerAbortExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
+		return makePromise(() => packageManagerAbortExpectation(this, deviceId, workId))
 	}
 	regenerateRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
 		return traceAction(UserActionAPIMethods.regenerateRundownPlaylist, regenerateRundownPlaylist, this, playlistId)

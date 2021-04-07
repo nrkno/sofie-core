@@ -1,10 +1,6 @@
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString, ProtectedStringProperties, protectString, omit } from '../lib'
-import {
-	IBlueprintPieceInstance,
-	Time,
-	IBlueprintResolvedPieceInstance,
-} from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceInstance, IBlueprintResolvedPieceInstance } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { Piece, PieceId } from './Pieces'
 import { PartInstanceId } from './PartInstances'
@@ -22,6 +18,9 @@ export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined)
 export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined): IBlueprintPieceInstance | undefined {
 	return pieceInstance as any
 }
+export function unprotectPieceInstanceArray(pieceInstances: PieceInstance[]): IBlueprintPieceInstance[] {
+	return pieceInstances as any
+}
 export function protectPieceInstance(pieceInstance: IBlueprintPieceInstance): PartialDeep<PieceInstance> {
 	return pieceInstance as any
 }
@@ -35,7 +34,10 @@ export interface PieceInstanceInfinite
 }
 
 export interface PieceInstance
-	extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece' | 'infinite'>, '_id' | 'adLibSourceId'> {
+	extends ProtectedStringProperties<
+		Omit<IBlueprintPieceInstance, 'piece' | 'infinite'>,
+		'_id' | 'adLibSourceId' | 'partInstanceId'
+	> {
 	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
 	readonly isTemporary?: boolean
 
@@ -60,18 +62,9 @@ export interface PieceInstance
 
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
 	adLibSourceId?: PieceId
-	/** If this piece has been insterted during run of rundown (such as adLibs), then this is set to the timestamp it was inserted */
-	dynamicallyInserted?: Time
 
 	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
 	infinite?: PieceInstanceInfinite
-
-	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
-	startedPlayback?: Time
-	/** Whether the piece has stopped playback (the most recent time it was played).
-	 * This is set from a callback from the playout gateway (milliseconds since epoch)
-	 */
-	stoppedPlayback?: Time
 
 	/** This is set when the duration needs to be overriden from some user action (milliseconds since start of part) */
 	userDuration?: {
@@ -81,7 +74,7 @@ export interface PieceInstance
 
 export interface ResolvedPieceInstance
 	extends PieceInstance,
-		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'piece' | 'infinite'> {
+		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'partInstanceId' | 'piece' | 'infinite'> {
 	piece: PieceInstancePiece
 }
 

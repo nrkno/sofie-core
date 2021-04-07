@@ -13,7 +13,12 @@ import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
 import { parse as parseUrl } from 'url'
 import { RundownInput } from './ingest/rundownInput'
-import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
+import {
+	IngestRundown,
+	IngestSegment,
+	IngestPart,
+	ExpectedPackageStatusAPI,
+} from '@sofie-automation/blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
 import { MediaObject } from '../../lib/collections/MediaObjects'
@@ -31,6 +36,10 @@ import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { getValidActivationCache } from '../cache/ActivationCache'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceGroupMetadata } from '../../lib/rundown/pieces'
+import { PackageManagerIntegration } from './integration/expectedPackages'
+import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPackageWorkStatuses'
+import { PackageInfoDBType } from '../../lib/collections/PackageInfos'
 import { runStudioOperationWithCache, StudioLockFunctionPriority } from './studio/lockFunction'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithLockFromStudioOperation } from './playout/lockFunction'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
@@ -1084,6 +1093,107 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	) {
 		return makePromise(() =>
 			MediaManagerIntegration.updateMediaWorkFlowStep(this, deviceId, deviceToken, docId, obj)
+		)
+	}
+	insertExpectedPackageWorkStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		workStatusId: ExpectedPackageWorkStatusId,
+		workStatus: ExpectedPackageStatusAPI.WorkStatus
+	) {
+		return makePromise(() =>
+			PackageManagerIntegration.insertExpectedPackageWorkStatus(
+				this,
+				deviceId,
+				deviceToken,
+				workStatusId,
+				workStatus
+			)
+		)
+	}
+	updateExpectedPackageWorkStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		workStatusId: ExpectedPackageWorkStatusId,
+		workStatus: Partial<ExpectedPackageStatusAPI.WorkStatus>
+	) {
+		return makePromise(() =>
+			PackageManagerIntegration.updateExpectedPackageWorkStatus(
+				this,
+				deviceId,
+				deviceToken,
+				workStatusId,
+				workStatus
+			)
+		)
+	}
+	removeExpectedPackageWorkStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		workStatusId: ExpectedPackageWorkStatusId
+	) {
+		return makePromise(() =>
+			PackageManagerIntegration.removeExpectedPackageWorkStatus(this, deviceId, deviceToken, workStatusId)
+		)
+	}
+	removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
+		return makePromise(() =>
+			PackageManagerIntegration.removeAllExpectedPackageWorkStatusOfDevice(this, deviceId, deviceToken)
+		)
+	}
+	updatePackageContainerPackageStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		containerId: string,
+		packageId: string,
+		packageStatus: ExpectedPackageStatusAPI.PackageContainerPackageStatus | null
+	) {
+		return makePromise(() =>
+			PackageManagerIntegration.updatePackageContainerPackageStatus(
+				this,
+				deviceId,
+				deviceToken,
+				containerId,
+				packageId,
+				packageStatus
+			)
+		)
+	}
+	fetchPackageInfoMetadata(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		type: string,
+		packageIds: ExpectedPackageId[]
+	) {
+		return makePromise(() =>
+			PackageManagerIntegration.fetchPackageInfoMetadata(this, deviceId, deviceToken, type, packageIds)
+		)
+	}
+	updatePackageInfo(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		type: PackageInfoDBType, // string
+		packageId: ExpectedPackageId,
+		expectedContentVersionHash: string,
+		actualContentVersionHash: string,
+		payload: any
+	) {
+		return makePromise(() =>
+			PackageManagerIntegration.updatePackageInfo(
+				this,
+				deviceId,
+				deviceToken,
+				type,
+				packageId,
+				expectedContentVersionHash,
+				actualContentVersionHash,
+				payload
+			)
+		)
+	}
+	removePackageInfo(deviceId: PeripheralDeviceId, deviceToken: string, type: string, packageId: ExpectedPackageId) {
+		return makePromise(() =>
+			PackageManagerIntegration.removePackageInfo(this, deviceId, deviceToken, type, packageId)
 		)
 	}
 }

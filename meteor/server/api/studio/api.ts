@@ -14,6 +14,10 @@ import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQu
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { Credentials } from '../../security/lib/credentials'
 import { OrganizationId } from '../../../lib/collections/Organization'
+import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
+import { ExpectedPackageWorkStatuses } from '../../../lib/collections/ExpectedPackageWorkStatuses'
+import { PackageInfos } from '../../../lib/collections/PackageInfos'
+import { PackageContainerPackageStatuses } from '../../../lib/collections/PackageContainerPackageStatus'
 
 export function insertStudio(context: MethodContext | Credentials, newId?: StudioId): StudioId {
 	if (newId) check(newId, String)
@@ -39,6 +43,9 @@ export function insertStudioInner(organizationId: OrganizationId | null, newId?:
 			_rundownVersionHash: '',
 			routeSets: {},
 			routeSetExclusivityGroups: {},
+			packageContainers: {},
+			thumbnailContainerIds: [],
+			previewContainerIds: [],
 		})
 	)
 }
@@ -72,6 +79,10 @@ export function removeStudio(context: MethodContext, studioId: StudioId): void {
 	ExternalMessageQueue.remove({ studioId: studio._id })
 	MediaObjects.remove({ studioId: studio._id })
 	Timeline.remove({ studioId: studio._id })
+	ExpectedPackages.remove({ studioId: studio._id })
+	ExpectedPackageWorkStatuses.remove({ studioId: studio._id })
+	PackageInfos.remove({ studioId: studio._id })
+	PackageContainerPackageStatuses.remove({ studioId: studio._id })
 }
 
 class ServerStudiosAPI extends MethodContextAPI implements NewStudiosAPI {

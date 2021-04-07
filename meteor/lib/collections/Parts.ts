@@ -1,9 +1,8 @@
 import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoQuery } from '../typings/meteor'
-import { Rundowns, RundownId } from './Rundowns'
+import { RundownId } from './Rundowns'
 import { Piece, Pieces } from './Pieces'
-import { AdLibPieces, AdLibPiece } from './AdLibPieces'
-import { Segments, SegmentId } from './Segments'
+import { SegmentId } from './Segments'
 import {
 	applyClassToDocument,
 	registerCollection,
@@ -135,7 +134,7 @@ export class Part implements DBPart {
 
 			if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
 				const part = partLookup[piece.sourceLayerId]
-				const st = checkPieceContentStatus(piece, part, studio ? studio.settings : undefined)
+				const st = checkPieceContentStatus(piece, part, studio)
 				if (st.status !== RundownAPI.PieceStatusCode.OK && st.status !== RundownAPI.PieceStatusCode.UNKNOWN) {
 					notes.push({
 						type: getNoteTypeForPieceStatus(st.status) || NoteType.WARNING,

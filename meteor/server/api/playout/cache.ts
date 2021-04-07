@@ -149,29 +149,37 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		ps.push(this.Parts.prepareInit({ rundownId: { $in: loadRundownIds } }, true))
 
 		ps.push(
+			// Load all instances which are not reset, or which are selected
 			this.PartInstances.prepareInit(
 				{
 					playlistActivationId: playlist.activationId,
 					rundownId: { $in: rundownIds },
-					reset: { $ne: true },
+					$or: [
+						{
+							reset: { $ne: true },
+						},
+						{
+							_id: { $in: selectedPartInstanceIds },
+						},
+					],
 				},
 				true
 			)
 		)
 
 		ps.push(
+			// Load all instances for the selected partInstances
 			this.PieceInstances.prepareInit(
 				{
 					playlistActivationId: playlist.activationId,
 					rundownId: { $in: rundownIds },
 					partInstanceId: { $in: selectedPartInstanceIds },
-					reset: { $ne: true },
 				},
 				true
 			)
 		)
 
-		// TODO: This could be defered until we get to updateTimeline. It could be a small performance boost
+		// Future: This could be defered until we get to updateTimeline. It could be a small performance boost
 		ps.push(this.Timeline.prepareInit({ _id: playlist.studioId }, true))
 
 		await Promise.allSettled(ps)

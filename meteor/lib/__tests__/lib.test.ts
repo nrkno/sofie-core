@@ -27,7 +27,7 @@ import {
 	equalSets,
 	equivalentArrays,
 } from '../lib'
-import { Timeline, TimelineObjType, TimelineObjGeneric, TimelineComplete } from '../collections/Timeline'
+import { TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { FindOptions } from '../typings/meteor'
 

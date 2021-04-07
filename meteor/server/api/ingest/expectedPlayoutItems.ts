@@ -4,7 +4,7 @@ import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integra
 import * as _ from 'underscore'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { PartId, DBPart } from '../../../lib/collections/Parts'
+import { PartId } from '../../../lib/collections/Parts'
 import { protectString, unprotectString } from '../../../lib/lib'
 import { CacheForIngest } from './cache'
 import { saveIntoCache } from '../../cache/lib'
@@ -15,7 +15,7 @@ interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric
 	pieceId: PieceId
 }
 function extractExpectedPlayoutItems(
-	part: DBPart,
+	partId: PartId,
 	pieces: Array<Piece | AdLibPiece>
 ): ExpectedPlayoutItemGenericWithPiece[] {
 	let expectedPlayoutItemsGeneric: ExpectedPlayoutItemGenericWithPiece[] = []
@@ -25,7 +25,7 @@ function extractExpectedPlayoutItems(
 			_.each(piece.expectedPlayoutItems, (pieceItem) => {
 				expectedPlayoutItemsGeneric.push({
 					pieceId: piece._id,
-					partId: part._id,
+					partId: partId,
 					...pieceItem,
 				})
 			})
@@ -50,6 +50,7 @@ function wrapExpectedPlayoutItems(
 	})
 }
 
+/** @deprecated */
 export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest): void {
 	const intermediaryItems: ExpectedPlayoutItemGenericWithPiece[] = []
 
@@ -60,9 +61,9 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest): void
 	const adlibPiecesGrouped = _.groupBy(adlibPiecesInThisRundown, 'partId')
 
 	for (const part of cache.Parts.findFetch({})) {
-		intermediaryItems.push(...extractExpectedPlayoutItems(part, piecesGrouped[unprotectString(part._id)] || []))
+		intermediaryItems.push(...extractExpectedPlayoutItems(part._id, piecesGrouped[unprotectString(part._id)] || []))
 		intermediaryItems.push(
-			...extractExpectedPlayoutItems(part, adlibPiecesGrouped[unprotectString(part._id)] || [])
+			...extractExpectedPlayoutItems(part._id, adlibPiecesGrouped[unprotectString(part._id)] || [])
 		)
 	}
 

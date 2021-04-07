@@ -17,7 +17,7 @@ import {
 	StatObjectMetadata,
 	OnGenerateTimelineObjExt,
 } from '../../../lib/collections/Timeline'
-import { Studio, StudioId } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
 	waitForPromise,
@@ -33,7 +33,7 @@ import {
 	applyToArray,
 	protectString,
 } from '../../../lib/lib'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs'
 import * as _ from 'underscore'
@@ -234,7 +234,6 @@ function processAndSaveTimelineObjects(
 	)
 
 	logger.debug('updateTimeline done!')
-	// if (span) span.end()
 }
 
 export interface SelectedPartInstancesTimelineInfo {

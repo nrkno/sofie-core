@@ -138,6 +138,7 @@ body.transparent {
 	.clocks-rundown-total {
 		color: #f8e71c;
 		font-weight: bold;
+		white-space: nowrap;
 
 		&.over {
 			color: $general-late-color;

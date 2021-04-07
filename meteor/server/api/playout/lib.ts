@@ -23,7 +23,7 @@ import {
 } from './infinites'
 import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, DBPartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PartInstance, DBPartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
@@ -221,11 +221,6 @@ export function setNextPart(
 	const newNextPartInstance = rawNextPart && 'playlistActivationId' in rawNextPart ? rawNextPart : null
 	let newNextPart = rawNextPart && 'playlistActivationId' in rawNextPart ? null : rawNextPart
 
-	const nonTakenPartInstances = cache.PartInstances.findFetch({
-		rundownId: { $in: rundownIds },
-		isTaken: { $ne: true },
-	})
-
 	if (newNextPart || newNextPartInstance) {
 		if (!cache.Playlist.doc.activationId)
 			throw new Meteor.Error(500, `RundownPlaylist "${cache.Playlist.doc._id}" is not active`)
@@ -260,12 +255,18 @@ export function setNextPart(
 			// Create new isntance
 			newInstanceId = protectString<PartInstanceId>(`${nextPart._id}_${Random.id()}`)
 			const newTakeCount = currentPartInstance ? currentPartInstance.takeCount + 1 : 0 // Increment
+			const segmentPlayoutId: SegmentPlayoutId =
+				nextPart.segmentId === currentPartInstance?.segmentId
+					? currentPartInstance.segmentPlayoutId
+					: getRandomId()
+
 			cache.PartInstances.insert({
 				_id: newInstanceId,
 				takeCount: newTakeCount,
 				playlistActivationId: cache.Playlist.doc.activationId,
 				rundownId: nextPart.rundownId,
 				segmentId: nextPart.segmentId,
+				segmentPlayoutId,
 				part: nextPart,
 				rehearsal: !!cache.Playlist.doc.rehearsal,
 				consumesNextSegmentId: newNextPart?.consumesNextSegmentId,
@@ -308,7 +309,7 @@ export function setNextPart(
 			{
 				partInstanceId: { $nin: selectedPartInstanceIds },
 				rundownId: nextPart.rundownId,
-				'piece.partId': nextPart._id,
+				'piece.startPartId': nextPart._id,
 				reset: { $ne: true },
 			},
 			{
@@ -453,7 +454,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 	)
 	const removeSegmentsFromRundowns = new Map<RundownId, SegmentId[]>()
 	for (const segment of segments) {
-		const partInstances = groupedPartInstances[unprotectString(segment._id)]
+		const partInstances = groupedPartInstances[unprotectString(segment._id)] || []
 		const partInstanceIds = new Set(partInstances.map((p) => p._id))
 
 		// Not in current or next. Previous can be reset as it will still be in the db, but not shown in the ui

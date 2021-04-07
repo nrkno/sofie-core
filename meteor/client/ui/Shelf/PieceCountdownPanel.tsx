@@ -83,7 +83,7 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 				)}>
 				<span
 					className={ClassNames('piece-countdown-panel__timecode', {
-						overtime: !!(Math.floor(this.state.displayTimecode / 1000) > 0),
+						overtime: Math.floor(this.state.displayTimecode / 1000) > 0,
 					})}
 					style={{
 						fontSize: isDashboardLayout

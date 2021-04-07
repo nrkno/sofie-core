@@ -33,7 +33,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		for (const k of Object.keys(LookaheadMode)) {
 			mappings[k] = {
 				device: TSR.DeviceType.ABSTRACT,
-				deviceId: 'fake0',
+				deviceId: protectString('fake0'),
 				lookahead: LookaheadMode[k],
 				// lookaheadDepth: 0,
 				// lookaheadMaxSearchDistance: 0,

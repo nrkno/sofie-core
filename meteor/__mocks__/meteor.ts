@@ -199,23 +199,23 @@ export namespace MeteorMock {
 	export function absoluteUrl(path?: string): string {
 		return path + '' // todo
 	}
-	export function setTimeout(fcn: Function, time: number): number {
-		return ($.setTimeout(() => {
+	export function setTimeout(fcn: () => void | Promise<void>, time: number): number {
+		return $.setTimeout(() => {
 			runInFiber(fcn).catch(console.error)
-		}, time) as any) as number
+		}, time) as number
 	}
 	export function clearTimeout(timer: number) {
 		$.clearTimeout(timer)
 	}
-	export function setInterval(fcn: Function, time: number): number {
-		return ($.setInterval(() => {
+	export function setInterval(fcn: () => void | Promise<void>, time: number): number {
+		return $.setInterval(() => {
 			runInFiber(fcn).catch(console.error)
-		}, time) as any) as number
+		}, time) as number
 	}
 	export function clearInterval(timer: number) {
 		$.clearInterval(timer)
 	}
-	export function defer(fcn: Function) {
+	export function defer(fcn: () => void | Promise<void>) {
 		return (controllableDefer ? $.setTimeout : $.orgSetTimeout)(() => {
 			runInFiber(fcn).catch(console.error)
 		}, 0)
@@ -245,15 +245,19 @@ export namespace MeteorMock {
 	}
 
 	export function bindEnvironment(fcn: Function): any {
-		return (...args: any[]) => {
-			// Don't know how to implement in mock?
-
+		{
+			// the outer bindEnvironment must be called from a fiber
 			const fiber = Fiber.current
-			if (!fiber) throw new Error(500, `It appears that bindEnvironment function isn't running in a fiber`)
+			if (!fiber) throw new Error(500, `It appears that bindEnvironment isn't running in a fiber`)
+		}
 
-			const returnValue = fcn()
-
-			return returnValue
+		return (...args: any[]) => {
+			const fiber = Fiber.current
+			if (fiber) {
+				fcn(...args)
+			} else {
+				runInFiber(() => fcn(...args)).catch(console.error)
+			}
 		}
 	}
 	export let users: any = undefined

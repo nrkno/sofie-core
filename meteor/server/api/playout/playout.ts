@@ -20,12 +20,11 @@ import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections
 import { PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { ClientAPI } from '../../../lib/api/client'
 import {
-	reportRundownHasStarted,
-	reportPartHasStarted,
+	reportPartInstanceHasStarted,
 	reportPieceHasStarted,
 	reportPartHasStopped,
 	reportPieceHasStopped,
-} from '../asRunLog'
+} from '../blueprints/events'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
@@ -54,12 +53,16 @@ import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collec
 import { MethodContext } from '../../../lib/api/methods'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
 import { StudioContentWriteAccess } from '../../security/studio'
-import { afterTake, takeNextPartInnerSync, updatePartInstanceOnTake } from './take'
+import {
+	afterTake,
+	resetPreviousSegmentAndClearNextSegmentId,
+	takeNextPartInnerSync,
+	updatePartInstanceOnTake,
+} from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { checkAccessAndGetPlaylist } from '../lib'
 import {
 	runPlayoutOperationWithLock,
 	runPlayoutOperationWithCacheFromStudioOperation,
@@ -70,6 +73,7 @@ import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelecte
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { CacheForStudio } from '../studio/cache'
+import { VerifiedRundownPlaylistContentAccess } from '../lib'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -81,9 +85,12 @@ export namespace ServerPlayoutAPI {
 	 * Prepare the rundown for transmission
 	 * To be triggered well before the broadcast, since it may take time and cause outputs to flicker
 	 */
-	export function prepareRundownPlaylistForBroadcast(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
+	export function prepareRundownPlaylistForBroadcast(
+		access: VerifiedRundownPlaylistContentAccess,
+		rundownPlaylistId: RundownPlaylistId
+	) {
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'prepareRundownPlaylistForBroadcast',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -117,9 +124,12 @@ export namespace ServerPlayoutAPI {
 	 * Reset the broadcast, to be used during testing.
 	 * The User might have run through the rundown and wants to start over and try again
 	 */
-	export function resetRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId): void {
+	export function resetRundownPlaylist(
+		access: VerifiedRundownPlaylistContentAccess,
+		rundownPlaylistId: RundownPlaylistId
+	): void {
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'resetRundownPlaylist',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -143,12 +153,12 @@ export namespace ServerPlayoutAPI {
 	 * To be triggered by the User a short while before going on air
 	 */
 	export function resetAndActivateRundownPlaylist(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal?: boolean
 	) {
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'resetAndActivateRundownPlaylist',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -170,13 +180,13 @@ export namespace ServerPlayoutAPI {
 	 * Activate the rundownPlaylist, decativate any other running rundowns
 	 */
 	export function forceResetAndActivateRundownPlaylist(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal: boolean
 	) {
 		check(rehearsal, Boolean)
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'forceResetAndActivateRundownPlaylist',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -239,13 +249,13 @@ export namespace ServerPlayoutAPI {
 	 * Only activate the rundown, don't reset anything
 	 */
 	export function activateRundownPlaylist(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal: boolean
 	) {
 		check(rehearsal, Boolean)
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'activateRundownPlaylist',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -260,9 +270,12 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Deactivate the rundown
 	 */
-	export function deactivateRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
+	export function deactivateRundownPlaylist(
+		access: VerifiedRundownPlaylistContentAccess,
+		rundownPlaylistId: RundownPlaylistId
+	) {
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'deactivateRundownPlaylist',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -278,7 +291,7 @@ export namespace ServerPlayoutAPI {
 	 * Take the currently Next:ed Part (start playing it)
 	 */
 	export function takeNextPart(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId
 	): ClientAPI.ClientResponse<void> {
 		check(rundownPlaylistId, String)
@@ -286,7 +299,7 @@ export namespace ServerPlayoutAPI {
 		const now = getCurrentTime()
 
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'takeNextPartInner',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -298,7 +311,7 @@ export namespace ServerPlayoutAPI {
 	}
 
 	export function setNextPart(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		nextPartId: PartId | null,
 		setManually?: boolean,
@@ -308,7 +321,7 @@ export namespace ServerPlayoutAPI {
 		if (nextPartId) check(nextPartId, String)
 
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'setNextPart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -355,27 +368,24 @@ export namespace ServerPlayoutAPI {
 		updateTimeline(cache)
 	}
 	export function moveNextPart(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partDelta: number,
 		segmentDelta: number
 	): PartId | null {
-		// @TODO Check for a better solution to validate security methods
-		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-
 		check(rundownPlaylistId, String)
 		check(partDelta, Number)
 		check(segmentDelta, Number)
 
-		if (!partDelta && !segmentDelta)
-			throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${partDelta}, ${segmentDelta})`)
-
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'moveNextPart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
+				if (!partDelta && !segmentDelta)
+					throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${partDelta}, ${segmentDelta})`)
+
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" is not active!`)
@@ -481,7 +491,7 @@ export namespace ServerPlayoutAPI {
 		}
 	}
 	export function setNextSegment(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		nextSegmentId: SegmentId | null
 	): ClientAPI.ClientResponse<void> {
@@ -489,7 +499,7 @@ export namespace ServerPlayoutAPI {
 		if (nextSegmentId) check(nextSegmentId, String)
 
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'setNextSegment',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -514,12 +524,12 @@ export namespace ServerPlayoutAPI {
 			}
 		)
 	}
-	export function activateHold(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
+	export function activateHold(access: VerifiedRundownPlaylistContentAccess, rundownPlaylistId: RundownPlaylistId) {
 		check(rundownPlaylistId, String)
 		logger.debug('rundownActivateHold')
 
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'activateHold',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -567,12 +577,12 @@ export namespace ServerPlayoutAPI {
 			}
 		)
 	}
-	export function deactivateHold(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
+	export function deactivateHold(access: VerifiedRundownPlaylistContentAccess, rundownPlaylistId: RundownPlaylistId) {
 		check(rundownPlaylistId, String)
 		logger.debug('deactivateHold')
 
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'deactivateHold',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -590,14 +600,14 @@ export namespace ServerPlayoutAPI {
 		)
 	}
 	export function disableNextPiece(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		undo?: boolean
 	): ClientAPI.ClientResponse<void> {
 		check(rundownPlaylistId, String)
 
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'disableNextPiece',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -624,7 +634,7 @@ export namespace ServerPlayoutAPI {
 
 				// logger.info('nowInPart', nowInPart)
 				// logger.info('filteredPieces', filteredPieces)
-				let getNextPiece = (partInstance: PartInstance, undo: boolean, ignoreStartedPlayback: boolean) => {
+				const getNextPiece = (partInstance: PartInstance, ignoreStartedPlayback: boolean) => {
 					// Find next piece to disable
 
 					let nowInPart = 0
@@ -666,9 +676,9 @@ export namespace ServerPlayoutAPI {
 					})
 				}
 
-				if (nextPartInstance) {
+				if (nextPartInstance?.timings) {
 					// pretend that the next part never has played (even if it has)
-					delete nextPartInstance.timings?.startedPlayback
+					delete nextPartInstance.timings.startedPlayback
 				}
 
 				const partInstances: Array<[PartInstance | undefined, boolean]> = [
@@ -681,7 +691,7 @@ export namespace ServerPlayoutAPI {
 
 				for (const [partInstance, ignoreStartedPlayback] of partInstances) {
 					if (partInstance) {
-						nextPieceInstance = getNextPiece(partInstance, !!undo, ignoreStartedPlayback)
+						nextPieceInstance = getNextPiece(partInstance, ignoreStartedPlayback)
 						if (nextPieceInstance) break
 					}
 				}
@@ -710,7 +720,7 @@ export namespace ServerPlayoutAPI {
 	 * Triggered from Playout-gateway when a Piece has started playing
 	 */
 	export function onPiecePlaybackStarted(
-		context: MethodContext,
+		_context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
 		pieceInstanceId: PieceInstanceId,
 		dynamicallyInserted: boolean,
@@ -723,12 +733,12 @@ export namespace ServerPlayoutAPI {
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
 		return runPlayoutOperationWithLock(
-			context,
+			null, // TODO: should security be done?
 			'onPiecePlaybackStarted',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-			() => {
-				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
+			(_lock, playlist) => {
+				const rundowns = Rundowns.find({ playlistId: playlist._id }).fetch()
 				// This method is called when an auto-next event occurs
 
 				const pieceInstance = PieceInstances.findOne({
@@ -739,7 +749,7 @@ export namespace ServerPlayoutAPI {
 				if (!pieceInstance)
 					throw new Meteor.Error(
 						404,
-						`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${rundownPlaylistId}" not found!`
+						`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
 					)
 
 				const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
@@ -749,7 +759,7 @@ export namespace ServerPlayoutAPI {
 							startedPlayback
 						).toISOString()}`
 					)
-					reportPieceHasStarted(rundownPlaylistId, pieceInstance, startedPlayback)
+					reportPieceHasStarted(playlist, pieceInstance, startedPlayback)
 
 					// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
 				}
@@ -760,7 +770,7 @@ export namespace ServerPlayoutAPI {
 	 * Triggered from Playout-gateway when a Piece has stopped playing
 	 */
 	export function onPiecePlaybackStopped(
-		context: MethodContext,
+		_context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
 		pieceInstanceId: PieceInstanceId,
 		dynamicallyInserted: boolean,
@@ -773,12 +783,12 @@ export namespace ServerPlayoutAPI {
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
 		return runPlayoutOperationWithLock(
-			context,
+			null, // TODO: should security be done?
 			'onPiecePlaybackStopped',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-			() => {
-				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
+			(_lock, playlist) => {
+				const rundowns = Rundowns.find({ playlistId: playlist._id }).fetch()
 
 				// This method is called when an auto-next event occurs
 				const pieceInstance = PieceInstances.findOne({
@@ -789,7 +799,7 @@ export namespace ServerPlayoutAPI {
 				if (!pieceInstance)
 					throw new Meteor.Error(
 						404,
-						`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${rundownPlaylistId}" not found!`
+						`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
 					)
 
 				const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
@@ -800,7 +810,7 @@ export namespace ServerPlayoutAPI {
 						).toISOString()}`
 					)
 
-					reportPieceHasStopped(rundownPlaylistId, pieceInstance, stoppedPlayback)
+					reportPieceHasStopped(playlist, pieceInstance, stoppedPlayback)
 				}
 			}
 		)
@@ -876,9 +886,7 @@ export namespace ServerPlayoutAPI {
 							}
 						}
 
-						setRundownStartedPlayback(cache, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
-
-						reportPartHasStarted(cache, playingPartInstance, startedPlayback)
+						reportPartInstanceHasStarted(cache, playingPartInstance, startedPlayback)
 					} else if (playlist.nextPartInstanceId === partInstanceId) {
 						// this is the next part, clearly an autoNext has taken place
 						if (playlist.currentPartInstanceId) {
@@ -892,8 +900,6 @@ export namespace ServerPlayoutAPI {
 							}
 						}
 
-						setRundownStartedPlayback(cache, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
-
 						cache.Playlist.update({
 							$set: {
 								previousPartInstanceId: playlist.currentPartInstanceId,
@@ -902,7 +908,7 @@ export namespace ServerPlayoutAPI {
 							},
 						})
 
-						reportPartHasStarted(cache, playingPartInstance, startedPlayback)
+						reportPartInstanceHasStarted(cache, playingPartInstance, startedPlayback)
 
 						// Update generated properties on the newly playing partInstance
 						const currentRundown = currentPartInstance
@@ -919,6 +925,8 @@ export namespace ServerPlayoutAPI {
 							currentPartInstance
 						)
 
+						resetPreviousSegmentAndClearNextSegmentId(cache)
+
 						// Update the next partinstance
 						const nextPart = selectNextPart(
 							playlist,
@@ -934,8 +942,6 @@ export namespace ServerPlayoutAPI {
 						if (previousReported && Date.now() - previousReported > INCORRECT_PLAYING_PART_DEBOUNCE) {
 							// first time this has happened for a while, let's try to progress the show:
 
-							setRundownStartedPlayback(cache, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
-
 							cache.Playlist.update({
 								$set: {
 									previousPartInstanceId: null,
@@ -944,7 +950,7 @@ export namespace ServerPlayoutAPI {
 								},
 							})
 
-							reportPartHasStarted(cache, playingPartInstance, startedPlayback)
+							reportPartInstanceHasStarted(cache, playingPartInstance, startedPlayback)
 
 							const nextPart = selectNextPart(
 								playlist,
@@ -970,7 +976,7 @@ export namespace ServerPlayoutAPI {
 	 * Triggered from Playout-gateway when a Part has stopped playing
 	 */
 	export function onPartPlaybackStopped(
-		context: MethodContext,
+		_context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		stoppedPlayback: Time
@@ -982,7 +988,7 @@ export namespace ServerPlayoutAPI {
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
 		return runPlayoutOperationWithLock(
-			context,
+			null, // TODO: should security be done?
 			'onPartPlaybackStopped',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
@@ -1021,7 +1027,7 @@ export namespace ServerPlayoutAPI {
 	 * Make a copy of a piece and start playing it now
 	 */
 	export function pieceTakeNow(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
@@ -1031,14 +1037,14 @@ export namespace ServerPlayoutAPI {
 		check(pieceInstanceIdOrPieceIdToCopy, String)
 
 		return ServerPlayoutAdLibAPI.pieceTakeNow(
-			context,
+			access,
 			rundownPlaylistId,
 			partInstanceId,
 			pieceInstanceIdOrPieceIdToCopy
 		)
 	}
 	export function segmentAdLibPieceStart(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adLibPieceId: PieceId,
@@ -1049,7 +1055,7 @@ export namespace ServerPlayoutAPI {
 		check(adLibPieceId, String)
 
 		return ServerPlayoutAdLibAPI.segmentAdLibPieceStart(
-			context,
+			access,
 			rundownPlaylistId,
 			partInstanceId,
 			adLibPieceId,
@@ -1057,7 +1063,7 @@ export namespace ServerPlayoutAPI {
 		)
 	}
 	export function rundownBaselineAdLibPieceStart(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		baselineAdLibPieceId: PieceId,
@@ -1068,7 +1074,7 @@ export namespace ServerPlayoutAPI {
 		check(baselineAdLibPieceId, String)
 
 		return ServerPlayoutAdLibAPI.rundownBaselineAdLibPieceStart(
-			context,
+			access,
 			rundownPlaylistId,
 			partInstanceId,
 			baselineAdLibPieceId,
@@ -1076,17 +1082,17 @@ export namespace ServerPlayoutAPI {
 		)
 	}
 	export function sourceLayerStickyPieceStart(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		sourceLayerId: string
 	) {
 		check(rundownPlaylistId, String)
 		check(sourceLayerId, String)
 
-		return ServerPlayoutAdLibAPI.sourceLayerStickyPieceStart(context, rundownPlaylistId, sourceLayerId)
+		return ServerPlayoutAdLibAPI.sourceLayerStickyPieceStart(access, rundownPlaylistId, sourceLayerId)
 	}
 	export function executeAction(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
 		userData: any,
@@ -1097,7 +1103,7 @@ export namespace ServerPlayoutAPI {
 		check(userData, Match.Any)
 		check(triggerMode, Match.Maybe(String))
 
-		return executeActionInner(context, rundownPlaylistId, async (actionContext, cache, rundown) => {
+		return executeActionInner(access, rundownPlaylistId, async (actionContext, cache, rundown) => {
 			const blueprint = loadShowStyleBlueprint(actionContext.showStyleCompound)
 			if (!blueprint.blueprint.executeAction) {
 				throw new Meteor.Error(
@@ -1113,7 +1119,7 @@ export namespace ServerPlayoutAPI {
 	}
 
 	export function executeActionInner(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		func: (
 			context: ActionExecutionContext,
@@ -1125,7 +1131,7 @@ export namespace ServerPlayoutAPI {
 		const now = getCurrentTime()
 
 		runPlayoutOperationWithCache(
-			context,
+			access,
 			'executeActionInner',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
@@ -1197,7 +1203,7 @@ export namespace ServerPlayoutAPI {
 		return takeNextPartInnerSync(cache, now)
 	}
 	export function sourceLayerOnPartStop(
-		context: MethodContext,
+		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		sourceLayerIds: string[]
@@ -1206,16 +1212,16 @@ export namespace ServerPlayoutAPI {
 		check(partInstanceId, String)
 		check(sourceLayerIds, Match.OneOf(String, Array))
 
-		if (_.isString(sourceLayerIds)) sourceLayerIds = [sourceLayerIds]
-
-		if (sourceLayerIds.length === 0) return
-
 		return runPlayoutOperationWithCache(
-			context,
+			access,
 			'sourceLayerOnPartStop',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			(cache) => {
+				if (_.isString(sourceLayerIds)) sourceLayerIds = [sourceLayerIds]
+
+				if (sourceLayerIds.length === 0) return
+
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
@@ -1356,14 +1362,6 @@ export namespace ServerPlayoutAPI {
 		// TODO: Run update timeline here
 
 		return ClientAPI.responseSuccess(undefined)
-	}
-}
-
-function setRundownStartedPlayback(cache: CacheForPlayout, rundown: Rundown, startedPlayback: Time) {
-	const playlist = cache.Playlist.doc
-	if (!playlist.rundownsStartedPlayback || !playlist.rundownsStartedPlayback[unprotectString(rundown._id)]) {
-		// Set startedPlayback on the rundown if this is the first item to be played
-		reportRundownHasStarted(cache, rundown._id, startedPlayback)
 	}
 }
 

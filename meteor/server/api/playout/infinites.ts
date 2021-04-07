@@ -191,7 +191,7 @@ export function getPieceInstancesForPart(
 		new Set(partsBeforeThisInSegment),
 		new Set(segmentsBeforeThisInRundown),
 		possiblePieces,
-		orderedPartsAndSegments.parts.map((part) => part._id),
+		orderedPartsAndSegments.parts.map((p) => p._id),
 		newInstanceId,
 		canContinueAdlibOnEnds,
 		isTemporary

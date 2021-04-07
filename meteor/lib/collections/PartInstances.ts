@@ -20,14 +20,25 @@ import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 import { registerIndex } from '../database'
 import { RundownPlaylistActivationId } from './RundownPlaylists'
+import { PartialDeep } from 'type-fest'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
+export type SegmentPlayoutId = ProtectedString<'SegmentPlayoutId'>
 export interface InternalIBlueprintPartInstance
 	extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
 	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>
 }
-export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance {
+
+export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance
+export function unprotectPartInstance(partInstance: PartInstance | undefined): IBlueprintPartInstance | undefined
+export function unprotectPartInstance(partInstance: PartInstance | undefined): IBlueprintPartInstance | undefined {
+	return partInstance as any
+}
+export function unprotectPartInstanceArray(partInstances: PartInstance[]): IBlueprintPartInstance[] {
+	return partInstances as any
+}
+export function protectPartInstance(partInstance: IBlueprintPartInstance): PartialDeep<PartInstance> {
 	return partInstance as any
 }
 
@@ -37,6 +48,8 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 
 	/** The id of the playlist activation session */
 	playlistActivationId: RundownPlaylistActivationId
+	/** The id of the segment playout. This is unique for each session, and each time the segment is entered  */
+	segmentPlayoutId: SegmentPlayoutId
 
 	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	reset?: boolean
@@ -52,9 +65,6 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 
 	/** Playout timings, in here we log times when playout happens */
 	timings?: PartInstanceTimings
-
-	/** If the playlist was in rehearsal mode when the PartInstance was created */
-	rehearsal: boolean
 
 	part: DBPart
 
@@ -81,6 +91,7 @@ export class PartInstance implements DBPartInstance {
 	public readonly isTemporary: boolean
 
 	public playlistActivationId: RundownPlaylistActivationId
+	public segmentPlayoutId: SegmentPlayoutId
 	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	public reset?: boolean
 	public takeCount: number
@@ -121,6 +132,7 @@ export function wrapPartToTemporaryInstance(
 			rundownId: part.rundownId,
 			segmentId: part.segmentId,
 			playlistActivationId,
+			segmentPlayoutId: protectString(''), // Only needed when stored in the db, and filled in nearer the time
 			takeCount: -1,
 			rehearsal: false,
 			part: new Part(part),

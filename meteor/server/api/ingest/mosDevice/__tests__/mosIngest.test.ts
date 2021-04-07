@@ -1,7 +1,7 @@
 import * as MOS from 'mos-connection'
 import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
-import { testInFiber, testInFiberOnly } from '../../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { Rundowns, Rundown, DBRundown } from '../../../../../lib/collections/Rundowns'
 import { Segments, DBSegment, SegmentId, Segment } from '../../../../../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
@@ -939,7 +939,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const partMap = mockRO.segmentIdMap()
 		partMap[1].parts.push('ro1;s4;p1')
 		partMap[2].segmentId = 'sLfUx9cadyquE07Vw9byoX35G9I_'
-		partMap[2].parts = partMap[2].parts.reverse()
+		partMap[2].parts.reverse()
 		partMap.splice(3, 1)
 		expect(getPartIdMap(segments, parts)).toEqual(partMap)
 
@@ -1284,9 +1284,9 @@ describe('Test recieved mos ingest payloads', () => {
 
 		{
 			// still valid
-			const rundown = Rundowns.findOne() as Rundown
-			expect(rundown).toBeTruthy()
-			expect(rundown.orphaned).toBeFalsy()
+			const rundown2 = Rundowns.findOne() as Rundown
+			expect(rundown2).toBeTruthy()
+			expect(rundown2.orphaned).toBeFalsy()
 		}
 
 		const partInstances = rundown.getAllPartInstances()

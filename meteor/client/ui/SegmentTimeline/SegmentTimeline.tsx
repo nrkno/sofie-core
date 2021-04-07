@@ -6,7 +6,7 @@ import ClassNames from 'classnames'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
+import { RundownHoldState } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
@@ -22,19 +22,6 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
-// @ts-ignore Not recognized by Typescript
-import * as Zoom_In_MouseOut from './Zoom_In_MouseOut.json'
-// @ts-ignore Not recognized by Typescript
-import * as Zoom_In_MouseOver from './Zoom_In_MouseOver.json'
-// @ts-ignore Not recognized by Typescript
-import * as Zoom_Normal_MouseOut from './Zoom_Normal_MouseOut.json'
-// @ts-ignore Not recognized by Typescript
-import * as Zoom_Normal_MouseOver from './Zoom_Normal_MouseOver.json'
-// @ts-ignore Not recognized by Typescript
-import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
-// @ts-ignore Not recognized by Typescript
-import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
-import { LottieButton } from '../../lib/LottieButton'
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getAllowSpeaking } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
@@ -48,7 +35,6 @@ import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifica
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
 import * as VelocityReact from 'velocity-react'
-import { TFunction } from 'i18next'
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
 
 interface IProps {
@@ -62,6 +48,7 @@ interface IProps {
 	segmentNotes: Array<SegmentNote>
 	timeScale: number
 	maxTimeScale: number
+	onRecalculateMaxTimeScale: () => Promise<number>
 	showingAllSegment: boolean
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
 	collapsedOutputs: {
@@ -235,52 +222,62 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 	}
 }
 
-class SegmentTimelineZoomButtons extends React.Component<IProps> {
-	constructor(props: IProps) {
-		super(props)
+function SegmentTimelineZoomButtons(props: IProps) {
+	const zoomIn = (e: React.MouseEvent<HTMLElement>) => {
+		props.onZoomChange(props.timeScale * 2, e)
 	}
 
-	zoomIn = (e: React.MouseEvent<HTMLElement>) => {
-		this.props.onZoomChange(this.props.timeScale * 2, e)
-	}
-
-	zoomOut = (e: React.MouseEvent<HTMLElement>) => {
-		const targetTimeScale = Math.max(this.props.timeScale * 0.5, this.props.maxTimeScale)
-		this.props.onZoomChange(targetTimeScale, e)
-		if (targetTimeScale === this.props.maxTimeScale && !this.props.isLiveSegment) {
-			this.props.onScroll(0, e)
+	const zoomOut = (e: React.MouseEvent<HTMLElement>) => {
+		// if the segment is live, the maxTimeScale will not be recalculated while it's being played back, because
+		// that would require layout trashing the page on every timing tick. Instead, we cause the maxTimeScale to
+		// be recalculated manually, when the user actually interacts with the zoom
+		if (props.isLiveSegment) {
+			e.persist()
+			props
+				.onRecalculateMaxTimeScale()
+				.then((maxTimeScale) => zoomOutInner(maxTimeScale, e))
+				.catch(console.error)
+		} else {
+			zoomOutInner(props.maxTimeScale, e)
 		}
 	}
 
-	zoomNormalize = (e: React.MouseEvent<HTMLElement>) => {
-		this.props.onZoomChange(this.props.maxTimeScale, e)
-		if (!this.props.isLiveSegment) {
-			this.props.onScroll(0, e)
+	const zoomOutInner = (maxTimeScale: number, e: React.MouseEvent<HTMLElement>) => {
+		console.log(maxTimeScale)
+		const targetTimeScale = Math.max(props.timeScale * 0.5, maxTimeScale)
+		props.onZoomChange(targetTimeScale, e)
+		if (targetTimeScale === maxTimeScale && !props.isLiveSegment) {
+			props.onScroll(0, e)
 		}
 	}
 
-	render() {
-		return (
-			<div className="segment-timeline__timeline-zoom-buttons">
-				<button
-					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
-					onClick={this.zoomOut}
-					disabled={this.props.timeScale <= this.props.maxTimeScale}>
-					<ZoomOutIcon />
-				</button>
-				<button
-					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--all"
-					onClick={this.zoomNormalize}>
-					<ZoomShowAll />
-				</button>
-				<button
-					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--in"
-					onClick={this.zoomIn}>
-					<ZoomInIcon />
-				</button>
-			</div>
-		)
+	const zoomNormalize = (e: React.MouseEvent<HTMLElement>) => {
+		props.onZoomChange(props.maxTimeScale, e)
+		if (!props.isLiveSegment && props.scrollLeft > 0) {
+			props.onScroll(0, e)
+		}
 	}
+
+	return (
+		<div className="segment-timeline__timeline-zoom-buttons">
+			<button
+				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
+				onClick={zoomOut}
+				disabled={props.timeScale <= props.maxTimeScale && !props.isLiveSegment}>
+				<ZoomOutIcon />
+			</button>
+			<button
+				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--all"
+				onClick={zoomNormalize}>
+				<ZoomShowAll />
+			</button>
+			<button
+				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--in"
+				onClick={zoomIn}>
+				<ZoomInIcon />
+			</button>
+		</div>
+	)
 }
 
 export const SEGMENT_TIMELINE_ELEMENT_ID = 'rundown__segment__'
