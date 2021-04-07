@@ -310,6 +310,11 @@ workflows:
           type: approval
           requires:
             - build-core
+          filters:
+            tags:
+              only: /v.*/
+            branches:
+              ignore: /.*/
 
       - publish-tag:
           requires:
