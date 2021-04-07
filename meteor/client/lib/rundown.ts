@@ -34,6 +34,7 @@ import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { Mongo } from 'meteor/mongo'
 import { FindOptions } from '../../lib/typings/meteor'
+import { getShowHiddenSourceLayers } from './localStorage'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
@@ -426,6 +427,8 @@ export namespace RundownUtils {
 				}
 			}
 
+			const showHiddenSourceLayers = getShowHiddenSourceLayers()
+
 			partsE = segmentInfo.partInstances.map((partInstance, itIndex) => {
 				let partTimeline: SuperTimeline.TimelineObject[] = []
 
@@ -528,7 +531,7 @@ export namespace RundownUtils {
 						// mark the output layer as used within this segment
 						if (
 							sourceLayers[piece.piece.sourceLayerId] &&
-							!sourceLayers[piece.piece.sourceLayerId].isHidden
+							(showHiddenSourceLayers || !sourceLayers[piece.piece.sourceLayerId].isHidden)
 						) {
 							outputLayer.used = true
 						}

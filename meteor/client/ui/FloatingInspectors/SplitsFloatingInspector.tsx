@@ -11,7 +11,7 @@ interface IProps {
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
 	floatingInspectorStyle: React.CSSProperties
-	content: SplitsContent
+	content: Partial<SplitsContent>
 	displayOn?: 'document' | 'viewport'
 }
 
@@ -55,9 +55,13 @@ const RenderSplitPreview = memo(function RenderSplitPreview({ subItems }: { subI
 })
 
 export const SplitsFloatingInspector: React.FunctionComponent<IProps> = (props) => {
-	const splitItems = useMemo(() => SplitsSourceRenderer.generateSplitSubItems(props.content.boxSourceConfiguration), [
-		props.content.boxSourceConfiguration,
-	])
+	const splitItems = useMemo(() => {
+		if (props.content.boxSourceConfiguration) {
+			return SplitsSourceRenderer.generateSplitSubItems(props.content.boxSourceConfiguration)
+		} else {
+			return []
+		}
+	}, [props.content.boxSourceConfiguration])
 
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>

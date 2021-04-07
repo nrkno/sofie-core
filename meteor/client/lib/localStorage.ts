@@ -8,6 +8,7 @@ enum LocalStorageProperty {
 	TESTING = 'testingMode',
 	SPEAKING = 'speakingMode',
 	SERVICE = 'serviceMode',
+	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers',
 }
 
 export function setAllowStudio(studioMode: boolean) {
@@ -80,4 +81,11 @@ export function setUIZoom(uiZoomLevel: number) {
 
 export function getUIZoom(): number {
 	return parseFloat(localStorage.getItem('uiZoomLevel') || '1') || 1
+}
+
+export function setShowHiddenSourceLayers(show: boolean) {
+	localStorage.setItem(LocalStorageProperty.SHOW_HIDDEN_SOURCE_LAYERS, show ? '1' : '0')
+}
+export function getShowHiddenSourceLayers(): boolean {
+	return localStorage.getItem(LocalStorageProperty.SHOW_HIDDEN_SOURCE_LAYERS) === '1'
 }

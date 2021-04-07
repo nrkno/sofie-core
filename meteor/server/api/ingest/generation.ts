@@ -84,6 +84,9 @@ export async function calculateSegmentsFromIngestData(
 		for (let ingestSegment of ingestSegments) {
 			const segmentId = getSegmentId(cache.RundownId, ingestSegment.externalId)
 
+			// Ensure the parts are sorted by rank
+			ingestSegment.parts.sort((a, b) => a.rank - b.rank)
+
 			const context = new SegmentUserContext(
 				{
 					name: `getSegment=${ingestSegment.name}`,
