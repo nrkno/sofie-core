@@ -219,7 +219,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		const pieceDB = Pieces.findOne({
 			_id: protectString(piece._id),
-			startRundownId: { $in: this._cache.Playlist.doc.getRundownIDs() },
+			startRundownId: { $in: getRundownIDsFromCache(this._cache) },
 		})
 		if (!pieceDB) throw new Error(`Cannot find Piece ${piece._id}`)
 
