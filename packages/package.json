@@ -15,7 +15,8 @@
 		"watch": "lerna run --parallel build:main -- --watch --preserveWatchOutput",
 		"docs": "yarn typedoc .",
 		"sync-version-and-changelog": "lerna version --conventional-commits --no-git-tag-version --no-push --yes $(node -p \"require('../meteor/package.json').version\")",
-		"sync-version": "lerna version --no-changelog --no-git-tag-version --no-push --yes $(node -p \"require('../meteor/package.json').version\")",
+		"sync-version": "yarn set-version $(node -p \"require('../meteor/package.json').version\")",
+		"set-version": "lerna version --no-changelog --no-git-tag-version --no-push --yes",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
 		"license-validate": "yarn sofie-licensecheck --allowPackages cycle@1.0.3"
