@@ -26,8 +26,7 @@ jobs:
       - name: Prepare Environment
         run: |
           yarn
-          cd meteor
-          meteor npm run ci:prepare
+          yarn build:packages
         env:
           CI: true
       - name: Run typecheck and linter
@@ -52,8 +51,7 @@ jobs:
       - name: Prepare Environment
         run: |
           yarn
-          cd meteor
-          meteor npm run ci:prepare
+          yarn build:packages
         env:
           CI: true
       - name: Run Tests
