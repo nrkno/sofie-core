@@ -14,6 +14,7 @@ import {
 import { I18NextData } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../lib/api/methods'
 import { ClientAPI } from '../../lib/api/client'
+import { interpollateTranslation } from '../../lib/api/TranslatableMessage'
 
 const i18nOptions = {
 	fallbackLng: {
@@ -137,37 +138,9 @@ class I18nContainer extends WithManagedTracker {
 	}
 
 	// return key until real translator comes online
-	i18nTranslator(key, ...args) {
+	i18nTranslator(key: unknown, ...args: any[]): string {
 		console.debug('i18nTranslator placeholder called', { key, args })
-
-		if (!args[0]) {
-			return key
-		}
-
-		if (typeof args[0] === 'string') {
-			return key || args[0]
-		}
-
-		if (args[0].defaultValue) {
-			return args[0].defaultValue
-		}
-
-		if (typeof key !== 'string') {
-			return key
-		}
-
-		const options = args[0]
-		if (options?.replace) {
-			Object.assign(options, { ...options.replace })
-		}
-
-		let interpolated = String(key)
-		for (const placeholder of key.match(/[^{\}]+(?=})/g) || []) {
-			const value = options[placeholder] || placeholder
-			interpolated = interpolated.replace(`{{${placeholder}}}`, value)
-		}
-
-		return interpolated
+		return interpollateTranslation(key, ...args)
 	}
 }
 

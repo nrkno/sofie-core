@@ -40,6 +40,8 @@ import { ReactiveMap } from '../../../lib/reactiveMap'
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
+import { translateMessage } from '../../../lib/api/TranslatableMessage'
+import { i18nTranslator } from '../i18n'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -341,7 +343,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 				return literal<AdLibPieceUi>({
 					_id: protectString(`function_${action._id}`),
-					name: action.display.label,
+					name: translateMessage(action.display.label, i18nTranslator),
 					status: RundownAPI.PieceStatusCode.UNKNOWN,
 					isAction: true,
 					isGlobal: true,
