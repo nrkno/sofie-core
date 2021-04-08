@@ -2206,6 +2206,45 @@ svg.icon {
 	}
 }
 
+.playlist-looping-header {
+	color: $rundown-divider-color;
+	background: $rundown-divider-background-color;
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+	align-items: stretch;
+	align-content: space-between;
+	overflow: hidden;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+
+	width: auto;
+	margin: 0;
+	padding: 0.3em 1em 0.3em 1.3em;
+
+	&.multi-rundown {
+		margin-bottom: -1.9em;
+		padding-bottom: 0;
+	}
+
+	> .playlist-looping-header__label {
+		margin: 0;
+		padding: 0;
+		font-size: 1.05em;
+		font-weight: 500;
+
+		> svg.icon {
+			width: 1.4em;
+		}
+	}
+}
+
+.segment-timeline-container + .playlist-looping-header {
+	margin-bottom: 0 !important;
+	padding-bottom: 0.3em !important;
+}
+
 .rundown-divider-timeline {
 	display: flex;
 	flex-wrap: wrap;

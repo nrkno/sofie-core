@@ -73,6 +73,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 							</span>
 					  )
 					: null}
+				{rundown.getRundownPlaylist().loop && <LoopingIcon />}
 				<b className="rundown-name">{rundownNameContent}</b>
 				{props.rundown.description ? (
 					<Tooltip overlay={props.rundown.description} trigger={['hover']} placement="right">
@@ -110,7 +111,6 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
-				{rundown.getRundownPlaylist().loop && <LoopingIcon />}
 			</span>
 			<span className="rundown-list-item__text">
 				<JonasFormattedTime timestamp={rundown.modified} t={t} />

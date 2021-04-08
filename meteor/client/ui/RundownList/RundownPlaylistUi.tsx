@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react'
+import React from 'react'
 import ClassNames from 'classnames'
 import { withTranslation } from 'react-i18next'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconName } from '@fortawesome/fontawesome-svg-core'
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons'
+import { LoopingIcon } from '../../lib/ui/icons/looping'
 import { getRundownPlaylistLink } from './util'
 import {
 	DragElementWrapper,
@@ -301,6 +302,7 @@ export const RundownPlaylistUi = DropTarget(
 							<span>
 								<h2 className="rundown-playlist__heading">
 									<FontAwesomeIcon icon={faFolderOpen} />
+									{playlist.loop && <LoopingIcon />}
 									<span className="rundown-playlist__heading-text">
 										<Link to={playlistViewURL}>{playlist.name}</Link>
 									</span>

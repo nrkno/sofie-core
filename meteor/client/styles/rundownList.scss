@@ -115,6 +115,7 @@
 		.rundown-list-item__action {
 			all: unset; // unset button styles
 			cursor: pointer;
+			text-align: center;
 
 			&:not(:last-child) {
 				margin-right: var(--defaultSpacing);
