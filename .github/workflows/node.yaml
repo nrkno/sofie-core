@@ -441,13 +441,24 @@ jobs:
         env:
           CI: true
       - name: Publish to NPM
+        id: publish-npm
         if: ${{ steps.do-publish.outputs.publish }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
           yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag nightly
+          echo ::set-output name=version::$NEW_VERSION
         env:
+          CI: true
+      - name: Post published prerelease lib version comment in PR
+        if: ${{ steps.do-publish.outputs.publish }}
+        uses: mshick/add-pr-comment@v1
+        with:
+          message: |
+            ⚡ Published prerelease version **${{ matrix.package-name }}@${{ steps.publish-npm.outputs.version }}** to NPM
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
 
   release-libs:
