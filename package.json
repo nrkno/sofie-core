@@ -11,7 +11,7 @@
 		"install:meteor": "cd meteor && meteor --version && meteor npm install",
 		"install:packages": "cd packages && yarn install",
 		"start": "yarn install && yarn dev",
-		"dev": "yarn packages:build && yarn meteor:run",
+		"dev": "yarn build:packages && yarn meteor:run",
 		"build:packages": "cd packages && yarn build",
 		"meteor:run": "cd meteor && meteor npm run start",
 		"validate:release": "yarn install && yarn build:packages && yarn validate:release:meteor",
