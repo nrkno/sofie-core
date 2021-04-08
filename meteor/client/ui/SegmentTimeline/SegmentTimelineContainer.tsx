@@ -234,6 +234,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.segmentId !== nextProps.segmentId ||
 			props.segmentRef !== nextProps.segmentRef ||
 			props.timeScale !== nextProps.timeScale ||
+			props.ownCurrentPartInstance !== nextProps.ownCurrentPartInstance ||
+			props.ownNextPartInstance !== nextProps.ownNextPartInstance ||
 			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore)
 		) {
 			return true
