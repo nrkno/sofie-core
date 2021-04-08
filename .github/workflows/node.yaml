@@ -25,8 +25,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
+          yarn
           cd meteor
-          meteor npm install
           meteor npm run ci:prepare
         env:
           CI: true
@@ -51,8 +51,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
+          yarn
           cd meteor
-          meteor npm install
           meteor npm run ci:prepare
         env:
           CI: true
@@ -79,8 +79,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Validate production dependencies for vulnerabilities and compatible licenses
         run: |
+          yarn
           cd meteor
-          meteor npm install
           meteor npm run validate:prod-dependencies
         env:
           CI: true
@@ -100,8 +100,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Validate all dependencies for vulnerabilities
         run: |
+          yarn
           cd meteor
-          meteor npm install
           meteor npm run validate:all-dependencies
         env:
           CI: true
@@ -146,14 +146,11 @@ jobs:
       - name: Prepare Environment
         if: ${{ steps.image-tags.outputs.images }}
         run: |
-          cd meteor
-          meteor npm install
+          yarn install
       - name: Build libs
         if: ${{ steps.image-tags.outputs.images }}
         run: |
-          cd packages
-          yarn install
-          yarn build
+          yarn build:packages
       - name: Meteor Build
         if: ${{ steps.image-tags.outputs.images }}
         run: |
