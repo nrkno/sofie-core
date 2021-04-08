@@ -38,11 +38,6 @@ export async function pushAsRunLogAsync(
 ): Promise<AsRunLogEvent | null> {
 	return null
 }
-export function pushAsRunLog(eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time): AsRunLogEvent | null {
-	let p = pushAsRunLogAsync(eventBase, rehersal, timestamp)
-
-	return waitForPromise(p)
-}
 
 /**
  * Called after an asRun log event occurs
@@ -112,18 +107,6 @@ export function reportRundownHasStarted(
 				},
 			})
 		}
-
-		const event = pushAsRunLog(
-			{
-				studioId: rundown.studioId,
-				rundownId: rundown._id,
-				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-				content2: 'rundown',
-			},
-			!!playlist.rehearsal,
-			timestamp
-		)
-		if (event) handleAsRunEvent(event)
 	}
 }
 
@@ -138,20 +121,6 @@ export function reportRundownDataHasChanged(
 		logger.error(`rundown argument missing in reportRundownDataHasChanged`)
 	} else if (!playlist) {
 		logger.error(`playlist argument missing in reportRundownDataHasChanged`)
-	} else {
-		const timestamp = getCurrentTime()
-
-		const event = pushAsRunLog(
-			{
-				studioId: rundown.studioId,
-				rundownId: rundown._id,
-				content: IBlueprintAsRunLogEventContent.DATACHANGED,
-				content2: 'rundown',
-			},
-			!!playlist.rehearsal,
-			timestamp
-		)
-		if (event) handleAsRunEvent(event)
 	}
 }
 
@@ -167,19 +136,7 @@ export function reportPartHasStarted(cache: CacheForRundownPlaylist, partInstanc
 
 		const playlist = cache.RundownPlaylists.findOne(cache.containsDataFromPlaylist)
 		if (playlist) {
-			let event = pushAsRunLog(
-				{
-					studioId: playlist.studioId,
-					rundownId: partInstance.rundownId,
-					segmentId: partInstance.segmentId,
-					partInstanceId: partInstance._id,
-					content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-					content2: 'part',
-				},
-				!!playlist.rehearsal,
-				timestamp
-			)
-			if (event) handleAsRunEvent(event)
+			// AsRun
 		} else {
 			logger.error(
 				`RundownPlaylist "${cache.containsDataFromPlaylist}" not found in reportPartHasStarted "${partInstance._id}"`
@@ -203,20 +160,7 @@ export function reportPartHasStopped(playlistId: RundownPlaylistId, partInstance
 	partInstance.timings.stoppedPlayback = timestamp
 
 	if (playlist) {
-		let event = pushAsRunLog(
-			{
-				studioId: playlist.studioId,
-				rundownId: partInstance.rundownId,
-				segmentId: partInstance.segmentId,
-				partInstanceId: partInstance._id,
-				content: IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
-				content2: 'part',
-			},
-			!!playlist.rehearsal,
-			timestamp
-		)
-		if (event) handleAsRunEvent(event)
-		return event
+		// AsRun
 	} else logger.error(`RundownPlaylist "${playlistId}" not found in reportPartHasStopped "${partInstance._id}"`)
 }
 
@@ -263,20 +207,7 @@ export function reportPieceHasStarted(playlistId: RundownPlaylistId, pieceInstan
 	} else if (!playlist) {
 		logger.error(`RundownPlaylist "${playlistId}" not found in reportPieceHasStarted "${pieceInstance._id}"`)
 	} else {
-		let event = pushAsRunLog(
-			{
-				studioId: playlist.studioId,
-				rundownId: pieceInstance.rundownId,
-				segmentId: partInstance.segmentId,
-				partInstanceId: partInstance._id,
-				pieceInstanceId: pieceInstance._id,
-				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-				content2: 'piece',
-			},
-			!!playlist.rehearsal,
-			timestamp
-		)
-		if (event) handleAsRunEvent(event)
+		// AsRun
 	}
 }
 export function reportPieceHasStopped(playlistId: RundownPlaylistId, pieceInstance: PieceInstance, timestamp: Time) {
@@ -302,19 +233,6 @@ export function reportPieceHasStopped(playlistId: RundownPlaylistId, pieceInstan
 	} else if (!playlist) {
 		logger.error(`RundownPlaylist "${playlistId}" not found in reportPieceHasStopped "${pieceInstance._id}"`)
 	} else {
-		let event = pushAsRunLog(
-			{
-				studioId: playlist.studioId,
-				rundownId: pieceInstance.rundownId,
-				segmentId: partInstance.segmentId,
-				partInstanceId: partInstance._id,
-				pieceInstanceId: pieceInstance._id,
-				content: IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
-				content2: 'piece',
-			},
-			!!playlist.rehearsal,
-			timestamp
-		)
-		if (event) handleAsRunEvent(event)
+		// AsRun
 	}
 }
