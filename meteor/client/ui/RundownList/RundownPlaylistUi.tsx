@@ -269,6 +269,7 @@ export const RundownPlaylistUi = DropTarget(
 								rundownLayouts={rundownLayouts}
 								swapRundownOrder={handleRundownSwap}
 								playlistId={playlist._id}
+								isOnlyRundownInPlaylist={true}
 							/>
 							{playbackProgressBar}
 						</>
@@ -291,8 +292,18 @@ export const RundownPlaylistUi = DropTarget(
 				})
 
 				const expectedDuration =
-					playlist.expectedDuration &&
-					RundownUtils.formatDiffToTimecode(playlist.expectedDuration, false, true, true, false, true)
+					playlist.expectedDuration !== undefined &&
+					(playlist.loop ? (
+						<>
+							{t('({{timecode}})', {
+								timecode: RundownUtils.formatDiffToTimecode(playlist.expectedDuration, false, true, true, false, true),
+							})}
+							&nbsp;
+							<LoopingIcon />
+						</>
+					) : (
+						RundownUtils.formatDiffToTimecode(playlist.expectedDuration, false, true, true, false, true)
+					))
 
 				const classNames = ClassNames(['rundown-playlist', { droptarget: isActiveDropZone }])
 
@@ -302,9 +313,11 @@ export const RundownPlaylistUi = DropTarget(
 							<span>
 								<h2 className="rundown-playlist__heading">
 									<FontAwesomeIcon icon={faFolderOpen} />
-									{playlist.loop && <LoopingIcon />}
 									<span className="rundown-playlist__heading-text">
-										<Link to={playlistViewURL}>{playlist.name}</Link>
+										<Link to={playlistViewURL}>
+											{playlist.loop && <LoopingIcon />}
+											{playlist.name}
+										</Link>
 									</span>
 								</h2>
 								{getAllowStudio() ? (
@@ -324,7 +337,13 @@ export const RundownPlaylistUi = DropTarget(
 								)}
 							</span>
 							<span className="rundown-list-item__text">
-								{expectedDuration ? expectedDuration : <span className="dimmed">{t('Not set')}</span>}
+								{expectedDuration ? (
+									expectedDuration
+								) : playlist.loop ? (
+									<LoopingIcon />
+								) : (
+									<span className="dimmed">{t('Not set')}</span>
+								)}
 							</span>
 							<span className="rundown-list-item__text">
 								<JonasFormattedTime timestamp={playlist.modified} t={t} />
@@ -332,7 +351,7 @@ export const RundownPlaylistUi = DropTarget(
 							{rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
 								<span className="rundown-list-item__text">
 									<RundownShelfLayoutSelection
-										rundowns={[playlist.rundowns]}
+										rundowns={playlist.rundowns}
 										rundownLayouts={rundownLayouts}
 										playlistId={playlist._id}
 									/>
