@@ -1,4 +1,5 @@
 import React from 'react'
+import Tooltip from 'rc-tooltip'
 import ClassNames from 'classnames'
 import { withTranslation } from 'react-i18next'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
@@ -294,13 +295,22 @@ export const RundownPlaylistUi = DropTarget(
 				const expectedDuration =
 					playlist.expectedDuration !== undefined &&
 					(playlist.loop ? (
-						<>
-							{t('({{timecode}})', {
-								timecode: RundownUtils.formatDiffToTimecode(playlist.expectedDuration, false, true, true, false, true),
-							})}
-							&nbsp;
-							<LoopingIcon />
-						</>
+						<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+							<span>
+								{t('({{timecode}})', {
+									timecode: RundownUtils.formatDiffToTimecode(
+										playlist.expectedDuration,
+										false,
+										true,
+										true,
+										false,
+										true
+									),
+								})}
+								&nbsp;
+								<LoopingIcon />
+							</span>
+						</Tooltip>
 					) : (
 						RundownUtils.formatDiffToTimecode(playlist.expectedDuration, false, true, true, false, true)
 					))
@@ -340,7 +350,9 @@ export const RundownPlaylistUi = DropTarget(
 								{expectedDuration ? (
 									expectedDuration
 								) : playlist.loop ? (
-									<LoopingIcon />
+									<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+										<LoopingIcon />
+									</Tooltip>
 								) : (
 									<span className="dimmed">{t('Not set')}</span>
 								)}

@@ -118,18 +118,24 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			<span className="rundown-list-item__text">
 				{rundown.expectedDuration ? (
 					isOnlyRundownInPlaylist && playlist.loop ? (
-						<>
-							{t('({{timecode}})', {
-								timecode: RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true),
-							})}
-							&nbsp;
-							<LoopingIcon />
-						</>
+						<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+							<span>
+								{t('({{timecode}})', {
+									timecode: RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true),
+								})}
+								&nbsp;
+								<LoopingIcon />
+							</span>
+						</Tooltip>
 					) : (
 						RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)
 					)
 				) : isOnlyRundownInPlaylist && playlist.loop ? (
-					<LoopingIcon />
+					<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+						<span>
+							<LoopingIcon />
+						</span>
+					</Tooltip>
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
