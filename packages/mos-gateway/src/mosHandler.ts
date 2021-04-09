@@ -246,7 +246,7 @@ export class MosHandler {
 					coreMosHandler.onMosConnectionChanged(connectionStatus)
 				})
 				coreMosHandler.onMosConnectionChanged(mosDevice.getConnectionStatus())
-				mosDevice.onGetMachineInfo(() => { // MOSDevice >>>> Core
+				mosDevice.onRequestMachineInfo(() => { // MOSDevice >>>> Core
 					return coreMosHandler.getMachineInfo()
 				})
 
@@ -424,7 +424,7 @@ export class MosHandler {
 
 			this._ownMosDevices[deviceId] = mosDevice
 
-			const getMachineInfoUntilConnected = () => mosDevice.getMachineInfo().catch((e: any) => {
+			const getMachineInfoUntilConnected = () => mosDevice.requestMachineInfo().catch((e: any) => {
 				if (e && (e + '').match(/no connection available for failover/i)) {
 					// TODO: workaround (mos.connect resolves too soon, before the connection is actually initialted)
 					return new Promise((resolve) => {

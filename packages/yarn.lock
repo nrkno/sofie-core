@@ -6314,10 +6314,10 @@ moment@2.29.1, moment@^2.26.0:
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
   integrity sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==
 
-mos-connection@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-0.9.0.tgz#0a50c4ed4b48cedf48fafb6f8a66d9325ed4893a"
-  integrity sha512-girtvJzI9Wo9n5nvbw5fOyez8s9ivDqiP57g6H20e2ECo/GEUEbbOV37RQnpJ/lTw3IkxZYswsYdczi1RWcdEg==
+mos-connection@0.9.1-nightly-featur-ncs-functions-20210409-062558-714a718.0:
+  version "0.9.1-nightly-featur-ncs-functions-20210409-062558-714a718.0"
+  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-0.9.1-nightly-featur-ncs-functions-20210409-062558-714a718.0.tgz#621020136555fb3bf7fe68fe9058de02199b1946"
+  integrity sha512-eMweD6gyr5URuoKm8c6JZ49Lh1eIFxZwcut/e+iLj22SDRP0WYBm1exQUUVsKd37mN0jTG4Sxfi0DlJa96wrrw==
   dependencies:
     iconv-lite "^0.5.0"
     moment "^2.26.0"
