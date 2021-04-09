@@ -30,6 +30,7 @@
 	background-color: transparent;
 	width: 100%;
 	padding-right: var(--statusBarWidth);
+	letter-spacing: 0;
 
 	.rundown-list__header {
 		display: grid;
@@ -47,6 +48,7 @@
 		display: inline-block;
 		align-self: center;
 		align-items: center;
+		letter-spacing: inherit;
 
 		.draghandle {
 			cursor: grab;
@@ -87,6 +89,7 @@
 		display: inline-flex;
 		align-self: center;
 		align-items: center;
+		padding: 7px 0;
 
 		> svg.icon {
 			margin-top: 0;
@@ -172,10 +175,19 @@
 					calc(var(--nameColumnWidth) + var(--showStyleColumnWidth)) var(--airTimeColumnWidth)
 					var(--durationColumnWidth) var(--lastModifiedColumnWidth);
 
+				> span {
+					align-self: center;
+				}
+
 				.rundown-playlist__heading {
 					display: inline-block;
-					margin-left: 0;
 					font-size: 1em;
+					letter-spacing: inherit;
+					margin: 5px 20px 5px 0;
+
+					> svg.fa-folder-open {
+						color: #6f7071;
+					}
 
 					.rundown-playlist__heading-text {
 						margin-left: 1.5em;
@@ -208,7 +220,20 @@
 			.rundown-playlist__rundowns {
 				padding: 0;
 				margin: 0;
+				position: relative;
 				--leftGutterWidth: calc(2 * var(--defaultSpacing));
+
+				&::before {
+					content: ' ';
+					display: block;
+					position: absolute;
+					width: 100%;
+					left: 2.5em;
+					height: 10px;
+					background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), transparent);
+					z-index: 3;
+					pointer-events: none;
+				}
 
 				// overrides for rundowns inside of playlists
 				.rundown-list-item {
@@ -281,9 +306,6 @@
 			var(--nameColumnWidth) var(--showStyleColumnWidth) var(--airTimeColumnWidth)
 			var(--durationColumnWidth) var(--lastModifiedColumnWidth) var(--layoutSelectionColumnWidth);
 
-		.rundown-list-item__text {
-			padding: 7px 0;
-		}
 		.rundown-list-item__actions {
 			padding: 0 0 3px; // cater for icons being larger than the font
 		}
