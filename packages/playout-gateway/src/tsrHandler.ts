@@ -606,7 +606,10 @@ export class TSRHandler {
 					const assets = (options as DeviceOptionsAtem).options.mediaPoolAssets
 					if (assets && assets.length > 0) {
 						try {
-							this.uploadFilesToAtem(device, assets.filter((asset) => _.isNumber(asset.position) && asset.path))
+							this.uploadFilesToAtem(
+								device,
+								assets.filter((asset) => _.isNumber(asset.position) && asset.path)
+							)
 						} catch (e) {
 							// don't worry about it.
 						}
