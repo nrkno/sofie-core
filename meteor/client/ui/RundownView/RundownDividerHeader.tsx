@@ -106,7 +106,7 @@ export const RundownDividerHeader = withTranslation()(
 					{rundown.expectedDuration ? (
 						<div className="rundown-divider-timeline__expected-duration">
 							<span>{t('Planned Duration')}</span>&nbsp;
-							<Moment interval={0} format="HH:mm:ss" date={rundown.expectedDuration} />
+							{RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)}
 						</div>
 					) : null}
 				</div>
