@@ -40,7 +40,11 @@ import {
 import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
 import { Subtract } from 'utility-types'
 import { RundownAPI } from '../../lib/api/rundown'
-import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
+import {
+	RundownBaselineAdLibAction,
+	RundownBaselineAdLibActions,
+} from '../../lib/collections/RundownBaselineAdLibActions'
+import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 
 export enum PieceType {
 	PIECE = 'piece',
@@ -92,7 +96,7 @@ function generateExpectedMediaItemsFull(
 	rundownId: RundownId,
 	pieces: Piece[],
 	adlibs: AdLibPiece[],
-	actions: AdLibAction[]
+	actions: Array<RundownBaselineAdLibAction | AdLibAction>
 ): ExpectedMediaItem[] {
 	const eMIs: ExpectedMediaItem[] = []
 
@@ -253,11 +257,25 @@ export function updateExpectedMediaItemsOnRundown(cache: CacheForRundownPlaylist
 			rundownId: rundown._id,
 		}).fetch()
 
+		const baselineAdlibs = RundownBaselineAdLibPieces.find({
+			rundownId: rundown._id,
+		}).fetch()
+
 		const actions = AdLibActions.find({
 			rundownId: rundown._id,
 		}).fetch()
 
-		const eMIs = generateExpectedMediaItemsFull(studioId, rundownId, pieces, adlibs, actions)
+		const baselineActions = RundownBaselineAdLibActions.find({
+			rundownId: rundown._id,
+		}).fetch()
+
+		const eMIs = generateExpectedMediaItemsFull(
+			studioId,
+			rundownId,
+			pieces,
+			[...baselineAdlibs, ...adlibs],
+			[...baselineActions, ...actions]
+		)
 
 		saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(
 			ExpectedMediaItems,
