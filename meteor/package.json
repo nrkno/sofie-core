@@ -6,14 +6,11 @@
 		"node": "^12.21.0 || 14"
 	},
 	"scripts": {
-		"start": "meteor --version && meteor npm install && meteor npm run dev",
-		"dev": "npm run libs:build && concurrently --prefix \"[{name}]\" --names \"METEOR,TSC\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run debug --\" \"npm run watch-types -- --preserveWatchOutput\"",
+		"start": "concurrently --prefix \"[{name}]\" --names \"METEOR,TSC\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run debug --\" \"npm run watch-types -- --preserveWatchOutput\"",
 		"debug": "meteor run --inspect",
-		"libs:build": "cd ../packages && yarn build",
-		"libs:install": "cd ../packages && yarn",
 		"libs:syncVersions": "cd ../packages && yarn sync-version",
 		"libs:syncVersionsAndChangelogs": "cd ../packages && yarn sync-version-and-changelog",
-		"postinstall": "meteor npm run prepareForTest && meteor npm run libs:install",
+		"postinstall": "meteor npm run prepareForTest",
 		"prepareForTest": "node ../scripts/fixTestFibers.js",
 		"unit": "jest",
 		"unitci": "jest --maxWorkers 2 --coverage",
@@ -21,7 +18,6 @@
 		"test": "meteor npm run check-types && meteor npm run unit",
 		"watch": "jest --watch",
 		"update-snapshots": "jest --updateSnapshot",
-		"ci:prepare": "meteor npm run postinstall && meteor npm run libs:build",
 		"ci": "meteor npm run unitci && meteor npm run send-coverage",
 		"ci:lint": "meteor npm run check-types && meteor npm run lint",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
@@ -43,8 +39,7 @@
 		"validate:prod-dependencies": "npm audit --production",
 		"validate:dev-dependencies": "npm audit --only=dev --audit-level=moderate",
 		"check-types": "tsc --noEmit -p tsconfig.json",
-		"watch-types": "npm run check-types -- --watch",
-		"validate:release": "npm run validate:prod-dependencies && npm run license-validate && npm run libs:install && npm run libs:build && npm run lint && npm run test"
+		"watch-types": "npm run check-types -- --watch"
 	},
 	"dependencies": {
 		"@babel/runtime": "^7.13.10",
