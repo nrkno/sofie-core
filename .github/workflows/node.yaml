@@ -25,9 +25,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
-          cd meteor
-          meteor npm install
-          meteor npm run ci:prepare
+          yarn
+          yarn build:packages
         env:
           CI: true
       - name: Run typecheck and linter
@@ -51,9 +50,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
-          cd meteor
-          meteor npm install
-          meteor npm run ci:prepare
+          yarn
+          yarn build:packages
         env:
           CI: true
       - name: Run Tests
@@ -79,8 +77,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Validate production dependencies for vulnerabilities and compatible licenses
         run: |
+          yarn
           cd meteor
-          meteor npm install
           meteor npm run validate:prod-dependencies
         env:
           CI: true
@@ -100,8 +98,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Validate all dependencies for vulnerabilities
         run: |
+          yarn
           cd meteor
-          meteor npm install
           meteor npm run validate:all-dependencies
         env:
           CI: true
@@ -146,14 +144,11 @@ jobs:
       - name: Prepare Environment
         if: ${{ steps.image-tags.outputs.images }}
         run: |
-          cd meteor
-          meteor npm install
+          yarn install
       - name: Build libs
         if: ${{ steps.image-tags.outputs.images }}
         run: |
-          cd packages
-          yarn install
-          yarn build
+          yarn build:packages
       - name: Meteor Build
         if: ${{ steps.image-tags.outputs.images }}
         run: |
@@ -441,13 +436,24 @@ jobs:
         env:
           CI: true
       - name: Publish to NPM
+        id: publish-npm
         if: ${{ steps.do-publish.outputs.publish }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
           yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag nightly
+          echo ::set-output name=version::$NEW_VERSION
         env:
+          CI: true
+      - name: Post published prerelease lib version comment in PR
+        if: ${{ steps.do-publish.outputs.publish }}
+        uses: mshick/add-pr-comment@v1
+        with:
+          message: |
+            ⚡ Published prerelease version **${{ matrix.package-name }}@${{ steps.publish-npm.outputs.version }}** to NPM
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
 
   release-libs:

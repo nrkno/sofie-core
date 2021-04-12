@@ -26,6 +26,7 @@ import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { CacheForIngest } from './cache'
 import { saveIntoCache } from '../../cache/lib'
 import { asyncCollectionRemove, saveIntoDb } from '../../lib/database'
+import { interpollateTranslation, translateMessage } from '../../../lib/api/TranslatableMessage'
 
 export enum PieceType {
 	PIECE = 'piece',
@@ -119,7 +120,7 @@ function generateExpectedMediaItemsFull(
 					rundownId: rundownId,
 				},
 				studioId,
-				doc.display.label,
+				translateMessage(doc.display.label, interpollateTranslation),
 				(doc.display as IBlueprintActionManifestDisplayContent | undefined)?.content,
 				PieceType.ACTION
 			)
@@ -199,7 +200,7 @@ export function updateExpectedMediaItemForBucketAdLibAction(actionId: AdLibActio
 			bucketAdLibActionId: action._id,
 		},
 		action.studioId,
-		action.display.label,
+		translateMessage(action.display.label, interpollateTranslation),
 		(action.display as IBlueprintActionManifestDisplayContent | undefined)?.content,
 		PieceType.ADLIB
 	)

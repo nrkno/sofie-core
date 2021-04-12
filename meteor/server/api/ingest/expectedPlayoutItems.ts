@@ -1,73 +1,60 @@
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
+import { Piece } from '../../../lib/collections/Pieces'
 import { ExpectedPlayoutItem } from '../../../lib/collections/ExpectedPlayoutItems'
-import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { PartId } from '../../../lib/collections/Parts'
-import { protectString, unprotectString } from '../../../lib/lib'
+import { protectString } from '../../../lib/lib'
 import { CacheForIngest } from './cache'
 import { saveIntoCache } from '../../cache/lib'
 import { StudioId } from '../../../lib/collections/Studios'
 
-interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
-	partId?: PartId
-	pieceId: PieceId
-}
 function extractExpectedPlayoutItems(
-	partId: PartId,
-	pieces: Array<Piece | AdLibPiece>
-): ExpectedPlayoutItemGenericWithPiece[] {
-	let expectedPlayoutItemsGeneric: ExpectedPlayoutItemGenericWithPiece[] = []
+	studioId: StudioId,
+	rundownId: RundownId,
+	partId: PartId | undefined,
+	piece: Piece | AdLibPiece
+): ExpectedPlayoutItem[] {
+	let expectedPlayoutItemsGeneric: ExpectedPlayoutItem[] = []
 
-	_.each(pieces, (piece) => {
-		if (piece.expectedPlayoutItems) {
-			_.each(piece.expectedPlayoutItems, (pieceItem) => {
-				expectedPlayoutItemsGeneric.push({
-					pieceId: piece._id,
-					partId: partId,
-					...pieceItem,
-				})
+	if (piece.expectedPlayoutItems) {
+		_.each(piece.expectedPlayoutItems, (pieceItem, i) => {
+			expectedPlayoutItemsGeneric.push({
+				...pieceItem,
+				_id: protectString(piece._id + '_' + i),
+				studioId: studioId,
+				rundownId: rundownId,
+				pieceId: piece._id,
+				partId: partId,
 			})
-		}
-	})
+		})
+	}
 
 	return expectedPlayoutItemsGeneric
 }
 
-function wrapExpectedPlayoutItems(
-	studioId: StudioId,
-	rundownId: RundownId,
-	items: ExpectedPlayoutItemGenericWithPiece[]
-): ExpectedPlayoutItem[] {
-	return items.map((item, i) => {
-		return {
-			_id: protectString(item.pieceId + '_' + i),
-			studioId: studioId,
-			rundownId: rundownId,
-			...item,
-		}
-	})
-}
-
 /** @deprecated */
 export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest): void {
-	const intermediaryItems: ExpectedPlayoutItemGenericWithPiece[] = []
+	const expectedPlayoutItems: ExpectedPlayoutItem[] = []
 
-	const piecesStartingInThisRundown = cache.Pieces.findFetch({})
-	const piecesGrouped = _.groupBy(piecesStartingInThisRundown, 'startPartId')
+	const studioId = cache.Studio.doc._id
+	const rundownId = cache.RundownId
 
-	const adlibPiecesInThisRundown = cache.AdLibPieces.findFetch({})
-	const adlibPiecesGrouped = _.groupBy(adlibPiecesInThisRundown, 'partId')
-
-	for (const part of cache.Parts.findFetch({})) {
-		intermediaryItems.push(...extractExpectedPlayoutItems(part._id, piecesGrouped[unprotectString(part._id)] || []))
-		intermediaryItems.push(
-			...extractExpectedPlayoutItems(part._id, adlibPiecesGrouped[unprotectString(part._id)] || [])
-		)
+	for (const piece of cache.Pieces.findFetch({})) {
+		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, piece.startPartId, piece))
 	}
-
-	const expectedPlayoutItems = wrapExpectedPlayoutItems(cache.Studio.doc._id, cache.RundownId, intermediaryItems)
+	for (const piece of cache.AdLibPieces.findFetch({})) {
+		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, piece.partId, piece))
+	}
+	for (const piece of cache.RundownBaselineAdLibPieces.findFetch({})) {
+		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, piece))
+	}
+	// for (const piece of cache.AdLibActions.findFetch({})) {
+	// 	expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, piece.partId, piece))
+	// }
+	// for (const piece of cache.RundownBaselineAdLibActions.findFetch({})) {
+	// 	expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, piece))
+	// }
 
 	saveIntoCache<ExpectedPlayoutItem, ExpectedPlayoutItem>(cache.ExpectedPlayoutItems, {}, expectedPlayoutItems)
 }

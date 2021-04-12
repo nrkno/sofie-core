@@ -25,6 +25,46 @@ export function translateMessage(translatable: ITranslatableMessage, i18nTransla
 }
 
 /**
+ * Interpollate a translation key using the provided args. This can be used in the backend to compile the actual string
+ * (at least a single, probably English, version) presented to the user, for use in logs and such.
+ *
+ * @export
+ * @param {unknown} key Translation key, usually with interpollation handle-bar syntax placeholders
+ * @param {...any} args Map of values to be inserted in place of placeholders
+ * @return {string} the compiled string
+ */
+export function interpollateTranslation(key: unknown, ...args: any): string {
+	if (!args[0]) {
+		return String(key)
+	}
+
+	if (typeof args[0] === 'string') {
+		return String(key || args[0])
+	}
+
+	if (args[0].defaultValue) {
+		return args[0].defaultValue
+	}
+
+	if (typeof key !== 'string') {
+		return String(key)
+	}
+
+	const options = args[0]
+	if (options?.replace) {
+		Object.assign(options, { ...options.replace })
+	}
+
+	let interpolated = String(key)
+	for (const placeholder of key.match(/[^{\}]+(?=})/g) || []) {
+		const value = options[placeholder] || placeholder
+		interpolated = interpolated.replace(`{{${placeholder}}}`, value)
+	}
+
+	return interpolated
+}
+
+/**
  * Type check predicate for the ITranslatableMessage interface
  *
  * @param obj the value to typecheck
