@@ -252,7 +252,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 
 	return handleRemovedRundownFromStudio(studio._id, rundownExternalId)
 }
-export function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: string) {
+export function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: string, forceDelete?: boolean) {
 	return runIngestOperationWithCache(
 		'handleRemovedRundown',
 		studioId,
@@ -268,7 +268,7 @@ export function handleRemovedRundownFromStudio(studioId: StudioId, rundownExtern
 				changedSegmentIds: [],
 				removedSegmentIds: [],
 				renamedSegments: new Map(),
-				removeRundown: canRundownBeUpdated(rundown, false),
+				removeRundown: forceDelete || canRundownBeUpdated(rundown, false),
 
 				showStyle: undefined,
 				blueprint: undefined,
