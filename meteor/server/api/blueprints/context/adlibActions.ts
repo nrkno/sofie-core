@@ -167,14 +167,12 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
-				query[`piece.metaData.${key}`] = value
+				query[`metaData.${key}`] = value
 			}
 		}
 
 		if (options && options.excludeCurrentPart && this.rundownPlaylist.currentPartInstanceId) {
-			const currentPartInstance = this._cache.PartInstances.findOne(
-				(p) => p._id === this.rundownPlaylist.currentPartInstanceId
-			)
+			const currentPartInstance = this._cache.PartInstances.findOne(this.rundownPlaylist.currentPartInstanceId)
 
 			if (currentPartInstance) {
 				query['startPartId'] = { $ne: currentPartInstance.part._id }

@@ -417,10 +417,8 @@ export namespace ServerPlayoutAdLibAPI {
 		const query = {
 			...customQuery,
 			startRundownId: { $in: rundownIds },
-			'piece.sourceLayerId': sourceLayerId,
+			sourceLayerId,
 		}
-
-		if (span) span.end()
 
 		const pieces = Pieces.find(query).fetch()
 
@@ -433,7 +431,17 @@ export namespace ServerPlayoutAdLibAPI {
 			return
 		}
 
-		return pieces.find((p) => p.startPartId === part._id)
+		if (span) span.end()
+
+		return pieces
+			.filter((p) => p.startPartId === part._id)
+			.sort((a, b) => {
+				if (a.enable.start === 'now' && b.enable.start === 'now') return 0
+				if (a.enable.start === 'now') return 1
+				if (b.enable.start === 'now') return -1
+
+				return a.enable.start - b.enable.start
+			})[0]
 	}
 
 	export function innerStartQueuedAdLib(
