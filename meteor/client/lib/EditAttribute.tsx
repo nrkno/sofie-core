@@ -10,7 +10,6 @@ import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { Random } from 'meteor/random'
-import { number } from 'prop-types'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -951,14 +950,8 @@ const EditAttributeArray = wrapEditAttribute(
 					if (Number.isNaN(parsed)) return false // type check failed
 					values.push(parsed)
 				} else {
-					// if (this.props.arrayType === 'string')
-					let parsed: string
-					try {
-						parsed = JSON.parse(str)
-					} catch (_err) {
-						// ignore error
-						parsed = str + ''
-					}
+					// else this.props.arrayType is 'string'
+					const parsed = str + ''
 					if (typeof parsed !== 'string') return false // type check failed
 					values.push(parsed.trim())
 				}
@@ -1003,8 +996,6 @@ const EditAttributeArray = wrapEditAttribute(
 		getAttribute() {
 			const value = super.getAttribute()
 			if (Array.isArray(value)) {
-				// const str = JSON.stringify(value, null, 2) // "[...values]"
-				// return str.slice(1, -1) // remove [ and ]
 				return value.join(', ')
 			} else {
 				return ''
