@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-03-02T08:11:46.296Z\n"
-"PO-Revision-Date: 2021-03-02T08:11:46.296Z\n"
+"POT-Creation-Date: 2021-04-14T13:25:59.940Z\n"
+"PO-Revision-Date: 2021-04-14T13:25:59.940Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -291,6 +291,9 @@ msgstr ""
 msgid "Last updated"
 msgstr ""
 
+msgid "Shelf Layout"
+msgstr ""
+
 msgid "Getting Started"
 msgstr ""
 
@@ -378,6 +381,9 @@ msgid "Re-sync rundown data with {{nrcsName}}"
 msgstr ""
 
 msgid "Delete"
+msgstr ""
+
+msgid "Default"
 msgstr ""
 
 msgid "Delete rundown?"
@@ -1312,6 +1318,9 @@ msgstr ""
 msgid "Place label below panel"
 msgstr ""
 
+msgid "Disabled"
+msgstr ""
+
 msgid "Expose layout as a standalone page"
 msgstr ""
 
@@ -1875,6 +1884,12 @@ msgid ""
 "issue, but (unverified) might cause issues in itself."
 msgstr ""
 
+msgid "Cron jobs"
+msgstr ""
+
+msgid "Enable CasparCG restart job"
+msgstr ""
+
 msgid "Cleanup"
 msgstr ""
 
@@ -2263,7 +2278,19 @@ msgstr ""
 msgid "{{frames}} {{type}} frame detected in clip"
 msgstr ""
 
-msgid "Clip is being ingested"
+msgid "black"
+msgstr ""
+
+msgid "freeze"
+msgstr ""
+
+msgid "{{sourceLayer}} is being ingested"
+msgstr ""
+
+msgid "Segment no longer exists in {{nrcs}}"
+msgstr ""
+
+msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
 msgstr ""
 
 msgctxt "°°°°°°plural"
