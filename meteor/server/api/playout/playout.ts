@@ -1284,7 +1284,7 @@ export namespace ServerPlayoutAPI {
 		check(studioId, String)
 
 		return runStudioOperationWithCache(
-			'updateStudioBaseline',
+			'shouldUpdateStudioBaseline',
 			studioId,
 			StudioLockFunctionPriority.MISC,
 			async (cache) => {
