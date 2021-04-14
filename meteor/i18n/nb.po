@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-03-02T08:11:46.296Z\n"
-"PO-Revision-Date: 2021-03-03 10:39+0000\n"
+"POT-Creation-Date: 2021-04-14T13:25:59.940Z\n"
+"PO-Revision-Date: 2021-04-14 16:37+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -302,6 +302,9 @@ msgstr "Sendestart"
 msgid "Last updated"
 msgstr "Sist oppdatert"
 
+msgid "Shelf Layout"
+msgstr "Layouter for skuffen"
+
 msgid "Getting Started"
 msgstr "Kom i gang"
 
@@ -393,6 +396,9 @@ msgstr "Ikke synkronisert med MOS/{{nrcsName}}"
 msgid "Delete"
 msgstr "Slett"
 
+msgid "Default"
+msgstr "Standard"
+
 msgid "Delete rundown?"
 msgstr "Slette kjøreplanen?"
 
@@ -403,7 +409,7 @@ msgid "Please note: This action is irreversible!"
 msgstr "Merk: Denne handlingen kan ikke angres!"
 
 msgid "Re-Sync rundown?"
-msgstr "Synkroniser kjøreplanen med ENPS"
+msgstr "Synkroniser kjøreplanen med ENPS?"
 
 msgid "Re-Sync"
 msgstr "Synkroniser"
@@ -636,7 +642,7 @@ msgid "Close"
 msgstr "Lukk"
 
 msgid "Rundown for piece \"{{pieceLabel}}\" could not be found."
-msgstr "Finner ikke kjøreplan for \"{{pieceLabel}}\""
+msgstr "Finner ikke kjøreplan for \"{{pieceLabel}}\"."
 
 msgid "This rundown has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
@@ -1376,6 +1382,9 @@ msgstr "Adlib-rang"
 msgid "Place label below panel"
 msgstr "Plasser etikett under panel"
 
+msgid "Disabled"
+msgstr "Deaktivert"
+
 msgid "Expose layout as a standalone page"
 msgstr "Eksponer layout som en selvstendig side"
 
@@ -1732,7 +1741,7 @@ msgstr "Lagmappinger"
 msgid "Add a playout device to the studio in order to edit the layer mappings"
 msgstr ""
 "For å kunne redigere lagmappinger, må du legge til en playout-enhet til "
-"studio."
+"studio"
 
 msgid "Remove this Exclusivity Group?"
 msgstr "Fjern fra denne eksklusivitetsgruppen?"
@@ -1837,14 +1846,14 @@ msgstr "Omkoblingsgrupper"
 msgid "Add a playout device to the studio in order to configure the route sets"
 msgstr ""
 "For å kunne redigere omkoblingsgrupper, må du legge til en playout-enhet til "
-"studio."
+"studio"
 
 msgid ""
 "Controls for exposed Route Sets will be displayed to the producer within the "
 "Rundown View in the Switchboard."
 msgstr ""
 "Kontroller for eksponerte omkoblingsgrupper vil vises til producer i "
-"kjøreplansvisningen i omkoblingspanelet"
+"kjøreplansvisningen i omkoblingspanelet."
 
 msgid "Exclusivity Groups"
 msgstr "Eksklusivitetsgrupper"
@@ -1968,6 +1977,12 @@ msgstr "Aktiver"
 msgid ""
 "Enables internal monitoring of blocked main thread. Logs when there is an "
 "issue, but (unverified) might cause issues in itself."
+msgstr ""
+
+msgid "Cron jobs"
+msgstr "Cron-jobber"
+
+msgid "Enable CasparCG restart job"
 msgstr ""
 
 msgid "Cleanup"
@@ -2335,18 +2350,18 @@ msgid "Stop"
 msgstr "Stopp"
 
 msgid "{{sourceLayer}} is missing a file path"
-msgstr "{{sourceLayer}} kan ikke spilles av fordi filnavnet mangler"
+msgstr "{{sourceLayer}} kan ikke spilles av fordi filstien mangler"
 
 msgid "{{sourceLayer}} is not yet ready on the playout system"
 msgstr ""
 "Dette {{sourceLayer}} er ennå ikke klart til å spilles ut fra "
-"avviklingsserver."
+"avviklingsserver"
 
 msgid "{{sourceLayer}} doesn't have both audio & video"
-msgstr "{{sourceLayer}}  har ikke lyd eller bilde"
+msgstr "{{sourceLayer}} har ikke lyd eller bilde"
 
 msgid "{{sourceLayer}} has the wrong format: {{format}}"
-msgstr "{{sourceLayer}} formatet er ikke stottet: {{format}}"
+msgstr "Formatet til {{sourceLayer}} er ikke støttet: {{format}}"
 
 msgid "{{sourceLayer}} has {{audioStreams}} audio streams"
 msgstr "{{sourceLayer}} har {{audioStreams}} lydstrømmer"
@@ -2363,8 +2378,20 @@ msgstr "{{frames}} {{type}} frame oppdaget inne i klippet"
 msgid "{{frames}} {{type}} frame detected in clip"
 msgstr "{{frames}} {{type}} frame oppdaget i klippet"
 
-msgid "Clip is being ingested"
-msgstr "Klippet blir prosessert"
+msgid "black"
+msgstr "svarte"
+
+msgid "freeze"
+msgstr "fryste"
+
+msgid "{{sourceLayer}} is being ingested"
+msgstr "{{sourceLayer}} lastes inn til systemet"
+
+msgid "Segment no longer exists in {{nrcs}}"
+msgstr "Segmentet finnes ikke lenger i {{nrcs}}"
+
+msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
+msgstr "De følgende delene finnes ikke lenger i {{nrcs}}: {{partNames}}"
 
 msgctxt "°°°°°°plural"
 msgid "{{count}} rows°°°°°°"
@@ -2399,6 +2426,9 @@ msgstr "{{frames}} {{type}} frames oppdaget inne i klippet°°°°°°"
 msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
+
+#~ msgid "Clip is being ingested"
+#~ msgstr "Klippet blir prosessert"
 
 #~ msgid "Clip can't be played because the filename is missing"
 #~ msgstr "Klippet kan ikke spilles av fordi filnavnet mangler"
@@ -2518,9 +2548,6 @@ msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
 
 #~ msgid "Timeline views"
 #~ msgstr "Tidslinjevisninger"
-
-#~ msgid "Default"
-#~ msgstr "Standard"
 
 #~ msgid "Multiple ({{count}})"
 #~ msgstr "Flere ({{count}})"
@@ -2841,9 +2868,6 @@ msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
 
 #~ msgid "Device id"
 #~ msgstr "Enhets-id"
-
-#~ msgid "Disable"
-#~ msgstr "Deaktiver"
 
 #~ msgid "Thread Usage"
 #~ msgstr "Tråder i bruk"

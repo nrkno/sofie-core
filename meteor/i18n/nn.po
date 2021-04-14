@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-03-02T08:11:46.296Z\n"
-"PO-Revision-Date: 2021-03-02 09:47+0100\n"
+"POT-Creation-Date: 2021-04-14T13:25:59.940Z\n"
+"PO-Revision-Date: 2021-04-14 16:37+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -302,6 +302,9 @@ msgstr "Sendestart"
 msgid "Last updated"
 msgstr "Sist oppdatert"
 
+msgid "Shelf Layout"
+msgstr "Layouter for skuffen"
+
 msgid "Getting Started"
 msgstr "Kom i gong"
 
@@ -379,7 +382,7 @@ msgid "{{showStyleVariant}} – {{showStyleBase}}"
 msgstr "{{showStyleVariant}} – {{showStyleBase}}"
 
 msgid "Drag to reorder or move out of playlist"
-msgstr "Dra for å endre rekkefølgje eller flytta ut av speleliste "
+msgstr "Dra for å endre rekkefølgje eller flytta ut av speleliste"
 
 msgid "This rundown is currently active"
 msgstr "Denne køyreplanen er allereie aktiv"
@@ -393,6 +396,9 @@ msgstr "Ikkje synkronisert med MOS/{{nrcsName}}"
 msgid "Delete"
 msgstr "Slett"
 
+msgid "Default"
+msgstr "Standard"
+
 msgid "Delete rundown?"
 msgstr "Slette køyreplanen?"
 
@@ -403,7 +409,7 @@ msgid "Please note: This action is irreversible!"
 msgstr "Merk: Denne handlinga kan du ikkje angre!"
 
 msgid "Re-Sync rundown?"
-msgstr "Synkroniser køyreplanen med ENPS på ny"
+msgstr "Synkroniser køyreplanen med ENPS på ny?"
 
 msgid "Re-Sync"
 msgstr "Synkroniser"
@@ -635,7 +641,7 @@ msgid "Close"
 msgstr "Lukk"
 
 msgid "Rundown for piece \"{{pieceLabel}}\" could not be found."
-msgstr "Kan ikkje finne øyreplan for \"{{pieceLabel}}\" "
+msgstr "Kan ikkje finne køyreplan for \"{{pieceLabel}}\"."
 
 msgid "This rundown has been unpublished from Sofie."
 msgstr "Denne køyreplanen er ikkje lenger tilgjengeleg i Sofie."
@@ -1378,6 +1384,9 @@ msgstr "Adlib-rang"
 msgid "Place label below panel"
 msgstr "Plasser etikett under panel"
 
+msgid "Disabled"
+msgstr "Deaktivert"
+
 msgid "Expose layout as a standalone page"
 msgstr "Eksponer layout som ei sjølvstendig side"
 
@@ -1733,7 +1742,7 @@ msgstr "Lagmapping"
 msgid "Add a playout device to the studio in order to edit the layer mappings"
 msgstr ""
 "For å kunne redigere lagmappingar, må du leggje til ein playout-eining til "
-"studio."
+"studio"
 
 msgid "Remove this Exclusivity Group?"
 msgstr "Fjern frå denne eksklusivitetgruppa?"
@@ -1838,14 +1847,14 @@ msgstr "Omkoplingsgrupper"
 msgid "Add a playout device to the studio in order to configure the route sets"
 msgstr ""
 "For å kunne redigere omkoplingsgrupper, må du leggje til ein playout-eining "
-"til studio."
+"til studio"
 
 msgid ""
 "Controls for exposed Route Sets will be displayed to the producer within the "
 "Rundown View in the Switchboard."
 msgstr ""
 "Kontroller for eksponerte omkoplingsgrupper vil verte synt for producer i "
-"køyreplansvisninga i omkoplingspanelet"
+"køyreplansvisninga i omkoplingspanelet."
 
 msgid "Exclusivity Groups"
 msgstr "Ekslusivitetgrupper"
@@ -1969,6 +1978,12 @@ msgstr "Aktivert"
 msgid ""
 "Enables internal monitoring of blocked main thread. Logs when there is an "
 "issue, but (unverified) might cause issues in itself."
+msgstr ""
+
+msgid "Cron jobs"
+msgstr "Cron-jobbar"
+
+msgid "Enable CasparCG restart job"
 msgstr ""
 
 msgid "Cleanup"
@@ -2334,21 +2349,22 @@ msgstr "Køyr i"
 msgid "Stop"
 msgstr "Stopp"
 
-msgid "Clip can't be played because the filename is missing"
-msgstr "Klippet kan ikkje spelast av fordi filnamnet mangler"
+msgid "{{sourceLayer}} is missing a file path"
+msgstr "{{sourceLayer}} kan ikkje spelast av fordi filstien manglar"
 
-msgid "Clip can't be played because it isn't present on the playout system"
+msgid "{{sourceLayer}} is not yet ready on the playout system"
 msgstr ""
-"Klippet kan ikkje spelast av fordi det ikkje finnast på utspelingssystemet"
+"Dette {{sourceLayer}} er enno ikkje klart til å spelast ut fra "
+"avviklingsserver"
 
-msgid "Clip doesn't have audio & video"
-msgstr "Klippet har ikkje lyd eller bilete"
+msgid "{{sourceLayer}} doesn't have both audio & video"
+msgstr "{{sourceLayer}} har ikkje lyd eller bilete"
 
-msgid "Clip format ({{format}}) is not in one of the accepted formats"
-msgstr "Klippformatet ({{format}}) er ikkje støtta"
+msgid "{{sourceLayer}} has the wrong format: {{format}}"
+msgstr "Formatet til {{sourceLayer}} er ikkje støtta: {{format}}"
 
-msgid "Clip has {{audioStreams}} audio streams"
-msgstr "Klippet har {{audioStreams}} lydstraumar"
+msgid "{{sourceLayer}} has {{audioStreams}} audio streams"
+msgstr "{{sourceLayer}} har {{audioStreams}} lydstraumar"
 
 msgid "Clip starts with {{frames}} {{type}} frame"
 msgstr "Klippet startar med {{frames}} {{type}} frame"
@@ -2362,8 +2378,20 @@ msgstr "{{frames}} {{type}} frame oppdaga inne i klippet"
 msgid "{{frames}} {{type}} frame detected in clip"
 msgstr "{{frames}} {{type}} frame oppdaga i klippet"
 
-msgid "Clip is being ingested"
-msgstr "Klippet blir prosessert"
+msgid "black"
+msgstr "svarte"
+
+msgid "freeze"
+msgstr "fryste"
+
+msgid "{{sourceLayer}} is being ingested"
+msgstr "{{sourceLayer}} lastast inn til systemet"
+
+msgid "Segment no longer exists in {{nrcs}}"
+msgstr "Segmentet finnast ikkje lenger i {{nrcs}}"
+
+msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
+msgstr "Dei følgande delane finnast ikkje lenger i {{nrcs}}: {{partNames}}"
 
 msgctxt "°°°°°°plural"
 msgid "{{count}} rows°°°°°°"
@@ -2398,6 +2426,16 @@ msgstr "{{frames}} {{type}} frame oppdaga inne i klippet°°°°°°"
 msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
+
+#~ msgid "Clip can't be played because the filename is missing"
+#~ msgstr "Klippet kan ikkje spelast av fordi filnamnet mangler"
+
+#~ msgid "Clip can't be played because it isn't present on the playout system"
+#~ msgstr ""
+#~ "Klippet kan ikkje spelast av fordi det ikkje finnast på utspelingssystemet"
+
+#~ msgid "Clip format ({{format}}) is not in one of the accepted formats"
+#~ msgstr "Klippformatet ({{format}}) er ikkje støtta"
 
 #~ msgid "Activate"
 #~ msgstr "Aktiver"
@@ -2507,9 +2545,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
 #~ msgid "Timeline views"
 #~ msgstr "Tidslinjevisningar"
-
-#~ msgid "Default"
-#~ msgstr "Standard"
 
 #~ msgid "Multiple ({{count}})"
 #~ msgstr "Fleire ({{count}})"
@@ -2830,9 +2865,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
 #~ msgid "Device id"
 #~ msgstr "Einings-id"
-
-#~ msgid "Disable"
-#~ msgstr "Deaktiver"
 
 #~ msgid "Thread Usage"
 #~ msgstr "Trådar i bruk"
