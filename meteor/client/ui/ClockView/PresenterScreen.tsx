@@ -341,10 +341,10 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					<div className="presenter-screen__part presenter-screen__part--next-part">
 						<div
 							className={ClassNames('presenter-screen__segment-name', {
-								next: nextSegment !== undefined && nextSegment?.name !== currentSegment?.name,
+								next: nextSegment !== undefined && nextSegment?._id !== currentSegment?._id,
 							})}
 						>
-							{nextSegment?.name !== currentSegment?.name ? nextSegment?.name : undefined}
+							{nextSegment?._id !== currentSegment?._id ? nextSegment?.name : undefined}
 						</div>
 						{nextPart && nextShowStyleBaseId ? (
 							<>
