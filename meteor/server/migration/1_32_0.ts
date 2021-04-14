@@ -7,7 +7,7 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // Release 32
-export const addSteps = addMigrationSteps('1.32.0-0', [
+export const addSteps = addMigrationSteps('1.32.0', [
 	ensureCollectionProperty('Studios', {}, 'packageContainers', {}),
 	ensureCollectionProperty('Studios', {}, 'previewContainerIds', {}),
 	ensureCollectionProperty('Studios', {}, 'thumbnailContainerIds', {}),
