@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
 import { Studios } from '../../lib/collections/Studios'
-import { ensureCollectionProperty, setExpectedVersion } from './lib'
+import { ensureCollectionProperty, ensureCollectionPropertyManual, setExpectedVersion } from './lib'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyles } from './deprecatedDataTypes/0_18_0'
@@ -253,22 +253,20 @@ export const addSteps = addMigrationSteps('0.19.0', [
 		},
 	},
 	ensureCollectionProperty('Studios', {}, 'supportedShowStyleBase', []),
-	ensureCollectionProperty(
+	ensureCollectionPropertyManual(
 		'Studios',
 		{},
 		'settings.mediaPreviewsUrl',
-		null,
 		'text',
 		'Media previews URL',
 		'Enter the URL to the media previews provider, example: http://10.0.1.100:8000/',
 		undefined,
 		'studio.settings.mediaPreviewsUrl from config'
 	),
-	ensureCollectionProperty(
+	ensureCollectionPropertyManual(
 		'Studios',
 		{},
 		'settings.sofieUrl',
-		null,
 		'text',
 		'Sofie URL',
 		"Enter the URL to the Sofie Core (that's what's in your browser URL,), example: https://slsofie without trailing /, short form server name is OK.",
