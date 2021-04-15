@@ -44,7 +44,12 @@ export enum BlueprintManifestType {
 }
 
 export interface BlueprintManifestSet {
-	[id: string]: string
+	blueprints: {
+		[id: string]: string
+	}
+	assets: {
+		[id: string]: string
+	}
 }
 export type SomeBlueprintManifest = SystemBlueprintManifest | StudioBlueprintManifest | ShowStyleBlueprintManifest
 

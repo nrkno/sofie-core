@@ -69,7 +69,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 					{this.props.piece.instance.piece.name}
 					{content && content.icon && !this.state.iconFailed && (
 						<img
-							src={'/transition-icons/' + content.icon + '.svg'}
+							src={'/blueprints/assets/' + content.icon}
 							className="segment-timeline__piece__label__transition-icon"
 							onError={this.iconFailed}
 						/>
@@ -78,12 +78,12 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 				<FloatingInspector
 					shown={this.props.showMiniInspector && !this.state.iconFailed && this.props.itemElement !== null}
 				>
-					{content && content.icon && (
+					{content && content.preview && (
 						<div
 							className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
 							style={this.getFloatingInspectorStyle()}
 						>
-							<img src={'/transition-icons/preview/' + content.icon + '.png'} className="thumbnail" />
+							<img src={'/blueprints/assets/' + content.preview} className="thumbnail" />
 						</div>
 					)}
 				</FloatingInspector>
