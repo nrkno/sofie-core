@@ -33,6 +33,7 @@ import {
 	PieceInstance,
 	PieceInstanceId,
 	rewrapPieceToInstance,
+	wrapPieceToInstance,
 } from '../../../lib/collections/PieceInstances'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
@@ -421,7 +422,7 @@ export namespace ServerPlayoutAdLibAPI {
 		const playlist = cache.Playlist.doc
 		const rundownIds = getRundownIDsFromCache(cache)
 
-		if (!playlist.currentPartInstanceId) {
+		if (!playlist.currentPartInstanceId || !playlist.activationId) {
 			return
 		}
 
@@ -448,8 +449,11 @@ export namespace ServerPlayoutAdLibAPI {
 			return
 		}
 
-		const pieceId = pieces
-			.filter((p) => p.startPartId === part._id)
+		const partStarted = currentPartInstance.timings?.startedPlayback
+		const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
+
+		const piece = pieces
+			.filter((p) => (p.startPartId === part._id && p.enable.start === 'now') || p.enable.start < nowInPart)
 			.sort((a, b) => {
 				if (a.enable.start === 'now' && b.enable.start === 'now') return 0
 				if (a.enable.start === 'now') return 1
@@ -458,11 +462,11 @@ export namespace ServerPlayoutAdLibAPI {
 				return a.enable.start - b.enable.start
 			})[0]?._id
 
-		if (!pieceId) return
+		if (!piece) return
 
 		if (span) span.end()
 
-		return Pieces.findOne(pieceId)
+		return piece
 	}
 
 	export async function innerStartQueuedAdLib(
