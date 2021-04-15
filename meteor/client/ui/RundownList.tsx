@@ -295,7 +295,7 @@ export const RundownList = translateWithTracker(() => {
 												</Tooltip>
 											</span>
 											{/* <span className="rundown-list-item__problems">{t('Problems')}</span> */}
-											<span>{t('Show style')}</span>
+											<span>{t('Show Style')}</span>
 											<span>{t('On Air Start Time')}</span>
 											<span>{t('Duration')}</span>
 											<span>{t('Last updated')}</span>

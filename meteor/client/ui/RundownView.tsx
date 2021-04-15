@@ -104,6 +104,8 @@ import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../lib/
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { RundownViewKbdShortcuts } from './RundownViewKbdShortcuts'
 import { AdLibPieceUi } from '../lib/shelf'
+import { LoopingIcon } from '../lib/ui/icons/looping'
+import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -217,16 +219,34 @@ const TimingDisplay = withTranslation()(
 	withTiming<ITimingDisplayProps & WithTranslation, {}>()(
 		class TimingDisplay extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 			private renderRundownName() {
-				const { rundownPlaylist, currentRundown, rundownCount } = this.props
+				const { rundownPlaylist, currentRundown, rundownCount, t } = this.props
 				return currentRundown && (rundownPlaylist.name !== currentRundown.name || rundownCount > 1) ? (
 					<span
 						className="timing-clock-label left hide-overflow rundown-name"
-						title={`${currentRundown.name} - ${rundownPlaylist.name}`}>
-						<strong>{currentRundown.name}</strong> {rundownPlaylist.name}
+						title={
+							rundownPlaylist.loop
+								? t('{{currentRundownName}} - {{rundownPlaylistName}} (Looping)', {
+										currentRundownName: currentRundown.name,
+										rundownPlaylistName: rundownPlaylist.name,
+								  })
+								: t('{{currentRundownName}} - {{rundownPlaylistName}}', {
+										currentRundownName: currentRundown.name,
+										rundownPlaylistName: rundownPlaylist.name,
+								  })
+						}>
+						{rundownPlaylist.loop && <LoopingIcon />} <strong>{currentRundown.name}</strong> {rundownPlaylist.name}
 					</span>
 				) : (
-					<span className="timing-clock-label left hide-overflow rundown-name" title={rundownPlaylist.name}>
-						{rundownPlaylist.name}
+					<span
+						className="timing-clock-label left hide-overflow rundown-name"
+						title={
+							rundownPlaylist.loop
+								? t('{{rundownPlaylistName}} (Looping)', {
+										rundownPlaylistName: rundownPlaylist.name,
+								  })
+								: rundownPlaylist.name
+						}>
+						{rundownPlaylist.loop && <LoopingIcon />} {rundownPlaylist.name}
 					</span>
 				)
 			}
@@ -2393,7 +2413,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		renderSegmentsList() {
 			if (this.props.playlist && this.props.rundowns.length) {
-				return <div className="segment-timeline-container">{this.renderSegments()}</div>
+				return (
+					<React.Fragment>
+						{this.props.playlist?.loop && (
+							<PlaylistLoopingHeader position="start" multiRundown={this.props.matchedSegments.length > 1} />
+						)}
+						<div className="segment-timeline-container">{this.renderSegments()}</div>
+						{this.props.playlist?.loop && (
+							<PlaylistLoopingHeader position="end" multiRundown={this.props.matchedSegments.length > 1} />
+						)}
+					</React.Fragment>
+				)
 			} else {
 				return (
 					<div className="mod">

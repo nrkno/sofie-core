@@ -12,13 +12,6 @@ interface IProps {
 	playlist: RundownPlaylist
 }
 
-interface ITrackedProps {
-	notificationsFromRundown: {
-		critical: number
-		warning: number
-	}
-}
-
 const QUATER_DAY = 6 * 60 * 60 * 1000
 
 /**
@@ -34,38 +27,34 @@ const RundownCountdown = withTranslation()(
 		{}
 	>({
 		filter: 'currentTime',
-	})(
-		class RundownCountdown extends React.Component<
-			Translated<
-				WithTiming<{
-					expectedStart: number | undefined
-					className?: string | undefined
-				}>
-			>
-		> {
-			render() {
-				const { t } = this.props
-				if (this.props.expectedStart === undefined) return null
+	})(function RundownCountdown(
+		props: Translated<
+			WithTiming<{
+				expectedStart: number | undefined
+				className?: string | undefined
+			}>
+		>
+	) {
+		const { t } = props
+		if (props.expectedStart === undefined) return null
 
-				const time = this.props.expectedStart - (this.props.timingDurations.currentTime || 0)
+		const time = props.expectedStart - (props.timingDurations.currentTime || 0)
 
-				if (time < QUATER_DAY) {
-					return (
-						<span className={this.props.className}>
-							{time > 0
-								? t('(in: {{time}})', {
-										time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
-								  })
-								: t('({{time}} ago)', {
-										time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
-								  })}
-						</span>
-					)
-				}
-				return null
-			}
+		if (time < QUATER_DAY) {
+			return (
+				<span className={props.className}>
+					{time > 0
+						? t('(in: {{time}})', {
+								time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
+						  })
+						: t('({{time}} ago)', {
+								time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
+						  })}
+				</span>
+			)
 		}
-	)
+		return null
+	})
 )
 
 /**
