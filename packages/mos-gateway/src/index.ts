@@ -142,7 +142,7 @@ if (logPath) {
 	console.log('Logging to Console')
 	// Log json to console
 	logger.add(Winston.transports.Console,{
-		// level: 'verbose',
+		level: 'verbose',
 		handleExceptions: true,
 		json: true,
 		stringify: (obj: any) => {
@@ -182,8 +182,10 @@ logger.info(`debug: ${debug}`)
 logger.info(`certificates: [${certs.join(',')}]`)
 logger.info(`disableWatchdog: ${disableWatchdog}`)
 logger.info(`unsafeSSL: ${unsafeSSL}`)
-
 logger.info('-----------------------------------')
+logger.info(`Test info logging`)
+logger.warn(`Test warn logging`)
+logger.debug(`Test debug logging`)
 
 // App config -----------------------------------------
 let config: Config = {
