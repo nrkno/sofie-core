@@ -4511,13 +4511,6 @@ iconv-lite@0.4.24, iconv-lite@^0.4.24:
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
 
-iconv-lite@^0.5.0:
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.5.2.tgz#af6d628dccfb463b7364d97f715e4b74b8c8c2b8"
-  integrity sha512-kERHXvpSaB4aU3eANwidg79K8FlrN77m8G9V+0vOR3HYaRifrlwMEpT7ZBJqLSEIHnEgJTHcWK82wwLwwKwtag==
-  dependencies:
-    safer-buffer ">= 2.1.2 < 3"
-
 iconv-lite@^0.6.2:
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.6.2.tgz#ce13d1875b0c3a674bd6a04b7f76b01b1b6ded01"
@@ -6309,19 +6302,19 @@ modify-values@^1.0.0:
   resolved "https://registry.yarnpkg.com/modify-values/-/modify-values-1.0.1.tgz#b3939fa605546474e3e3e3c63d64bd43b4ee6022"
   integrity sha512-xV2bxeN6F7oYjZWTe/YPAy6MN2M+sL4u/Rlm2AHCIVGfo2p1yGmBHQ6vHehl4bRTZBdHu3TSkWdYgkwpYzAGSw==
 
-moment@2.29.1, moment@^2.26.0:
+moment@2.29.1, moment@^2.29.1:
   version "2.29.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
   integrity sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==
 
-mos-connection@0.9.1-nightly-featur-ncs-functions-20210409-062558-714a718.0:
-  version "0.9.1-nightly-featur-ncs-functions-20210409-062558-714a718.0"
-  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-0.9.1-nightly-featur-ncs-functions-20210409-062558-714a718.0.tgz#621020136555fb3bf7fe68fe9058de02199b1946"
-  integrity sha512-eMweD6gyr5URuoKm8c6JZ49Lh1eIFxZwcut/e+iLj22SDRP0WYBm1exQUUVsKd37mN0jTG4Sxfi0DlJa96wrrw==
+mos-connection@0.9.1-nightly-featur-ncs-functions-20210416-075213-811be5c.0:
+  version "0.9.1-nightly-featur-ncs-functions-20210416-075213-811be5c.0"
+  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-0.9.1-nightly-featur-ncs-functions-20210416-075213-811be5c.0.tgz#b59820a9c756e3ead20d5307b95291d6db29fc17"
+  integrity sha512-D9C4g5visedbFUyMOWXLXZV1Bz09t4FtiTx4AuKide0t1YATn24KM2lPFvHKB3KRkFgR3K5+WWzF49YzMF2jdA==
   dependencies:
-    iconv-lite "^0.5.0"
-    moment "^2.26.0"
-    tslib "^1.13.0"
+    iconv-lite "^0.6.2"
+    moment "^2.29.1"
+    tslib "^2.2.0"
     xml-js "^1.6.11"
     xmlbuilder "^15.1.1"
 
@@ -8906,6 +8899,11 @@ tslib@^2.0.3, tslib@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.1.0.tgz#da60860f1c2ecaa5703ab7d39bc05b6bf988b97a"
   integrity sha512-hcVC3wYEziELGGmEEXue7D75zbwIIVUMWAVbHItGPx0ziyXxrOMQx4rQEVEV45Ut/1IotuEvwqPopzIOkDMf0A==
+
+tslib@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.2.0.tgz#fb2c475977e35e241311ede2693cee1ec6698f5c"
+  integrity sha512-gS9GVHRU+RGn5KQM2rllAlR3dU6m7AcpJKdtH8gFvQiC4Otgk98XnmMU+nZenHt/+VhnBPWwgrJsyrdcw6i23w==
 
 tslint-config-standard@^9.0.0:
   version "9.0.0"

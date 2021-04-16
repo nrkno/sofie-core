@@ -77,7 +77,7 @@
 	],
 	"dependencies": {
 		"@sofie-automation/server-core-integration": "1.33.0-in-development",
-		"mos-connection": "0.9.1-nightly-featur-ncs-functions-20210409-062558-714a718.0",
+		"mos-connection": "0.9.1-nightly-featur-ncs-functions-20210416-075213-811be5c.0",
 		"tslib": "^2.1.0",
 		"underscore": "^1.12.1",
 		"winston": "^2.4.2"
