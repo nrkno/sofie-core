@@ -10,26 +10,61 @@ import { Meteor } from 'meteor/meteor'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
-import { Studios, Studio } from '../../lib/collections/Studios'
 import * as semver from 'semver'
 import { TransformedCollection } from '../../lib/typings/meteor'
 
 /**
  * Returns a migration step that ensures the provided property is set in the collection
- * @param collectionName
- * @param selector
- * @param property
- * @param value
- * @param inputType
- * @param label
- * @param description
- * @param defaultValue
  */
 export function ensureCollectionProperty<T = any>(
 	collectionName: string,
 	selector: Mongo.Selector<T>,
 	property: string,
-	value: any | null, // null if manual
+	defaultValue: any,
+	dependOnResultFrom?: string
+): MigrationStepBase {
+	let collection: TransformedCollection<T, any> = Collections[collectionName]
+	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
+
+	return {
+		id: `${collectionName}.${property}`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			let objects = collection.find(selector).fetch()
+			let propertyMissing: string | boolean = false
+			_.each(objects, (obj: any) => {
+				let objValue = objectPathGet(obj, property)
+				if (!objValue && objValue !== defaultValue) {
+					propertyMissing = `${property} is missing on ${obj._id}`
+				}
+			})
+			// logger.info('')
+			return propertyMissing
+		},
+		migrate: (input: MigrationStepInputFilteredResult) => {
+			let objects = collection.find(selector).fetch()
+			_.each(objects, (obj: any) => {
+				if (obj && objectPathGet(obj, property) !== defaultValue) {
+					let m = {}
+					m[property] = defaultValue
+					logger.info(
+						`Migration: Setting ${collectionName} object "${obj._id}".${property} to ${defaultValue}`
+					)
+					collection.update(obj._id, { $set: m })
+				} else {
+				}
+			})
+		},
+		dependOnResultFrom: dependOnResultFrom,
+	}
+}
+/**
+ * Returns a migration step that ensures the provided property is set in the collection
+ */
+export function ensureCollectionPropertyManual<T = any>(
+	collectionName: string,
+	selector: Mongo.Selector<T>,
+	property: string,
 	inputType?: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
 	label?: string,
 	description?: string,
@@ -41,17 +76,16 @@ export function ensureCollectionProperty<T = any>(
 
 	return {
 		id: `${collectionName}.${property}`,
-		canBeRunAutomatically: !_.isNull(value),
+		canBeRunAutomatically: false,
 		validate: () => {
 			let objects = collection.find(selector).fetch()
 			let propertyMissing: string | boolean = false
 			_.each(objects, (obj: any) => {
 				let objValue = objectPathGet(obj, property)
-				if (!objValue && objValue !== value) {
+				if (objValue === undefined) {
 					propertyMissing = `${property} is missing on ${obj._id}`
 				}
 			})
-
 			return propertyMissing
 		},
 		input: () => {
@@ -74,31 +108,17 @@ export function ensureCollectionProperty<T = any>(
 			return inputs
 		},
 		migrate: (input: MigrationStepInputFilteredResult) => {
-			if (value) {
-				let objects = collection.find(selector).fetch()
-				_.each(objects, (obj: any) => {
+			_.each(input, (value, objectId: string) => {
+				if (!_.isUndefined(value)) {
+					let obj = collection.findOne(objectId)
 					if (obj && objectPathGet(obj, property) !== value) {
 						let m = {}
 						m[property] = value
-						logger.info(`Migration: Setting ${collectionName} object "${obj._id}".${property} to ${value}`)
-						collection.update(obj._id, { $set: m })
+						logger.info(`Migration: Setting ${collectionName} object "${objectId}".${property} to ${value}`)
+						collection.update(objectId, { $set: m })
 					}
-				})
-			} else {
-				_.each(input, (value, objectId: string) => {
-					if (!_.isUndefined(value)) {
-						let obj = collection.findOne(objectId)
-						if (obj && objectPathGet(obj, property) !== value) {
-							let m = {}
-							m[property] = value
-							logger.info(
-								`Migration: Setting ${collectionName} object "${objectId}".${property} to ${value}`
-							)
-							collection.update(objectId, { $set: m })
-						}
-					}
-				})
-			}
+				}
+			})
 		},
 		dependOnResultFrom: dependOnResultFrom,
 	}

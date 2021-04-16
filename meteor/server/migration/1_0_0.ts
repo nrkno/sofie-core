@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
 import { Studios } from '../../lib/collections/Studios'
-import { ensureCollectionProperty, setExpectedVersion } from './lib'
+import { ensureCollectionProperty, ensureCollectionPropertyManual, setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Studio as Studio_1_10_0 } from './deprecatedDataTypes/1_10_0'
 
@@ -55,11 +55,10 @@ export const addSteps = addMigrationSteps('1.0.0', [
 			})
 		},
 	},
-	ensureCollectionProperty(
+	ensureCollectionPropertyManual(
 		'Studios',
 		{},
 		'settings.slackEvaluationUrls',
-		null,
 		'text',
 		'Slack webhook URLs',
 		'Enter the URL to the Slack webhook (example: "https://hooks.slack.com/services/WEBHOOKURL"',
@@ -106,11 +105,10 @@ export const addSteps = addMigrationSteps('1.0.0', [
 			})
 		},
 	},
-	ensureCollectionProperty(
+	ensureCollectionPropertyManual(
 		'Studios',
 		{},
 		'settings.supportedMediaFormats',
-		null,
 		'text',
 		'Studio config: mediaResolutions',
 		'A set of accepted media formats for playback (example: "1920x1080i5000tff,1280x720p5000")',
