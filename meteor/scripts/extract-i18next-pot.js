@@ -93,6 +93,10 @@ var parser = new Parser(parserOptions)
 var fileGlob = args.files
 var outputFile = args.output
 
+console.log('Extracting translatable strings...')
+console.log('This process may print out some error messages, but the translation template should work fine.')
+console.log('──────\n')
+
 // console.debug('Reading in files for glob: ' + fileGlob)
 glob(fileGlob, function(err, files) {
 	if (err) {
@@ -115,6 +119,7 @@ glob(fileGlob, function(err, files) {
 	converter.i18nextToPot('en', JSON.stringify(json), { quiet: true }).then(function(data) {
 		// console.debug('Writing into output file')
 		fs.writeFileSync(outputFile, data, 'utf-8')
-		console.log(`\nSuccessfully written ${Object.keys(json).length} strings to template "${outputFile}".`)
+		console.log('\n──────')
+		console.log(`Successfully written ${Object.keys(json).length} strings to template "${outputFile}".`)
 	})
 })

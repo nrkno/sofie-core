@@ -324,7 +324,7 @@ export namespace ServerRundownAPI {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 
-		handleRemovedRundownFromStudio(access.rundown.studioId, access.rundown.externalId)
+		handleRemovedRundownFromStudio(access.rundown.studioId, access.rundown.externalId, true)
 	}
 
 	export function unsyncRundown(context: MethodContext, rundownId: RundownId): void {

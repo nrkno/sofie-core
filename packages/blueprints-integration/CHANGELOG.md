@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.19.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0...v1.19.0-in-testing.2) (2021-04-12)
+
+## [1.19.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.0...v1.19.0-in-testing.1) (2021-03-01)
+
+
+### Features
+
+* allow searching multiple sourcelayers at once in AdlibActionContext.findLastPieceOnLayer [publish] ([7b31a5b](https://github.com/nrkno/tv-automation-server-core/commit/7b31a5b7b74e6142f4cb330eb74b217e3f797500))
+* remove getIngestDataFor* methods from AsRunEventContext ([97e5632](https://github.com/nrkno/tv-automation-server-core/commit/97e563250056a011e6c94ab81fa81fc041b8bcc1))
+
+
+### Bug Fixes
+
+* add missing contexts to blueprint api methods [publish] ([#454](https://github.com/nrkno/tv-automation-server-core/issues/454)) ([2cef36c](https://github.com/nrkno/tv-automation-server-core/commit/2cef36c3f2e70ee722b5b890f5619d36fb7fa36d))
+* invalidReason translation ([#459](https://github.com/nrkno/tv-automation-server-core/issues/459)) [publish] ([5bd01d4](https://github.com/nrkno/tv-automation-server-core/commit/5bd01d4660e9e76b07a2a3e02e8a4bc7ffd8a5f6))
+
 ## [1.32.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0...v1.32.0-in-testing.0) (2021-03-22)
 
 

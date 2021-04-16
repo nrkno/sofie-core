@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-03-11T15:49:32.866Z\n"
-"PO-Revision-Date: 2021-03-11 17:11+0100\n"
+"POT-Creation-Date: 2021-04-16T08:23:25.082Z\n"
+"PO-Revision-Date: 2021-04-16 10:25+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Generator: Poedit 2.4.2\n"
 
 msgid "Account Page"
-msgstr "Kontoside"
+msgstr "Brukerkontoside"
 
 msgid "Name:"
 msgstr "Navn:"
@@ -302,8 +302,6 @@ msgstr "Sendestart"
 msgid "Last updated"
 msgstr "Sist oppdatert"
 
-#, fuzzy
-#| msgid "Shelf Layouts"
 msgid "Shelf Layout"
 msgstr "Layouter for skuffen"
 
@@ -401,10 +399,8 @@ msgstr "Slett"
 msgid "Standalone Shelf"
 msgstr "Frittstående skuff"
 
-#, fuzzy
-#| msgid "Standalone Shelf"
 msgid "Rundown & Shelf"
-msgstr "Frittstående skuff"
+msgstr "Kjøreplan & skuff"
 
 msgid "Default"
 msgstr "Standard"
@@ -419,7 +415,7 @@ msgid "Please note: This action is irreversible!"
 msgstr "Merk: Denne handlingen kan ikke angres!"
 
 msgid "Re-Sync rundown?"
-msgstr "Synkroniser kjøreplanen med ENPS"
+msgstr "Synkroniser kjøreplanen med ENPS?"
 
 msgid "Re-Sync"
 msgstr "Synkroniser"
@@ -652,7 +648,7 @@ msgid "Close"
 msgstr "Lukk"
 
 msgid "Rundown for piece \"{{pieceLabel}}\" could not be found."
-msgstr "Finner ikke kjøreplan for \"{{pieceLabel}}\""
+msgstr "Finner ikke kjøreplan for \"{{pieceLabel}}\"."
 
 msgid "This rundown has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
@@ -717,7 +713,7 @@ msgid ""
 "{{nrcsName}}! No data updates will currently come through."
 msgstr ""
 "Kjøreplanen \"{{rundownName}}\" er ikke synkronisert med MOS/{{nrcsName}}! "
-"Kontroller at den er satt MOS Active i ENPS!"
+"Kontroller at den er satt MOS Active i ENPS."
 
 msgid "Re-sync"
 msgstr "Synkroniser med MOS"
@@ -868,6 +864,9 @@ msgstr "Synkroniser tittel på nytt"
 
 msgid "On Air"
 msgstr "On Air"
+
+msgid "On Air In"
+msgstr "On Air om"
 
 msgid "Unsynced"
 msgstr "Ikke synkronisert med MOS"
@@ -1392,10 +1391,8 @@ msgstr "Adlib-rang"
 msgid "Place label below panel"
 msgstr "Plasser etikett under panel"
 
-#, fuzzy
-#| msgid "Disable"
 msgid "Disabled"
-msgstr "Deaktiver"
+msgstr "Deaktivert"
 
 msgid "Expose layout as a standalone page"
 msgstr "Eksponer layout som en selvstendig side"
@@ -1753,7 +1750,7 @@ msgstr "Lagmappinger"
 msgid "Add a playout device to the studio in order to edit the layer mappings"
 msgstr ""
 "For å kunne redigere lagmappinger, må du legge til en playout-enhet til "
-"studio."
+"studio"
 
 msgid "Remove this Exclusivity Group?"
 msgstr "Fjern fra denne eksklusivitetsgruppen?"
@@ -1858,17 +1855,146 @@ msgstr "Omkoblingsgrupper"
 msgid "Add a playout device to the studio in order to configure the route sets"
 msgstr ""
 "For å kunne redigere omkoblingsgrupper, må du legge til en playout-enhet til "
-"studio."
+"studio"
 
 msgid ""
 "Controls for exposed Route Sets will be displayed to the producer within the "
 "Rundown View in the Switchboard."
 msgstr ""
 "Kontroller for eksponerte omkoblingsgrupper vil vises til producer i "
-"kjøreplansvisningen i omkoblingspanelet"
+"kjøreplansvisningen i omkoblingspanelet."
 
 msgid "Exclusivity Groups"
 msgstr "Eksklusivitetsgrupper"
+
+msgid "Remove this Package Container?"
+msgstr "Fjern denne pakkekontaineren?"
+
+msgid ""
+"Are you sure you want to remove the Package Container \"{{containerId}}\"?"
+msgstr "Er du sikker på at du vil fjerne pakkekontaineren \"{{containerId}}\"?"
+
+msgid "There are no Package Containers set up."
+msgstr "Det er ikke satt opp pakkekontainere ennå."
+
+msgid "Package Container ID"
+msgstr "Pakkekontainer-id"
+
+msgid "Display name/label of the Package Container"
+msgstr "Vis navn/merkelapp for pakkekontaineren"
+
+msgid "Playout devices which uses this package container"
+msgstr "Playout-enheter som benytter denne pakkekontaineren"
+
+msgid "Select playout devices"
+msgstr "Velg playout-enhet"
+
+msgid "Select which playout devices are using this package container"
+msgstr "Velg hvilke playout-enheter som skal benytte denne pakkekontaineren"
+
+msgid "Accessors"
+msgstr ""
+
+msgid "Remove this Package Container Accessor?"
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove the Package Container Accessor "
+"\"{{accessorId}}\"?"
+msgstr ""
+
+msgid "There are no Accessors set up."
+msgstr ""
+
+msgid "Accessor ID"
+msgstr ""
+
+msgid "Display name of the Package Container"
+msgstr "Pakkekontainerens navn som vises i oversikten"
+
+msgid "Accessor Type"
+msgstr ""
+
+msgid "Folder path"
+msgstr "Mappesti"
+
+msgid "File path to the folder of the local folder"
+msgstr ""
+
+msgid "Resource Id"
+msgstr "Ressurs-id"
+
+msgid ""
+"(Optional) This could be the name of the computer on which the local folder "
+"is on"
+msgstr ""
+"(Valgfri) Dette kan være navnet til datamaskinen som den lokale mappen er på"
+
+msgid "Base URL"
+msgstr ""
+
+msgid "Base url to the resource (example: http://myserver/folder)"
+msgstr ""
+
+msgid "Default request method"
+msgstr ""
+
+msgid "get, post etc..."
+msgstr ""
+
+msgid "Defaults request headers"
+msgstr ""
+
+msgid "Defaults request body"
+msgstr ""
+
+msgid "Network Id"
+msgstr ""
+
+msgid ""
+"(Optional) A name/identifier of the local network where the share is "
+"located, leave empty if globally accessible"
+msgstr ""
+
+msgid "Folder path to shared folder"
+msgstr ""
+
+msgid "UserName"
+msgstr "Brukernavn"
+
+msgid "Username for athuentication"
+msgstr "Brukernavn for autentisering"
+
+msgid "Password for authentication"
+msgstr "Passord for autentisering"
+
+msgid ""
+"(Optional) A name/identifier of the local network where the share is located"
+msgstr ""
+
+msgid "Allow Read access"
+msgstr "Tillat lesing"
+
+msgid "Allow Write access"
+msgstr "Tillat skriving/lagring"
+
+msgid "Package Manager"
+msgstr "Pakkebehandler"
+
+msgid "Studio Settings"
+msgstr "Studioinnstillinger"
+
+msgid "Package Containers to use for previews"
+msgstr "Pakkekontainere som skal benyttes til forhåndsvisninger"
+
+msgid "Click to show available Package Containers"
+msgstr "Klikk for å vise tilgjengelige pakkekontainere"
+
+msgid "Package Containers to use for thumbnails"
+msgstr "Pakkekontainere som skal benyttes til miniatyrbilder"
+
+msgid "Package Containers"
+msgstr "Pakkekontainere"
 
 msgid "Studio Baseline needs update: "
 msgstr "Studio baseline må oppdateres: "
@@ -1992,7 +2118,7 @@ msgid ""
 msgstr ""
 
 msgid "Cron jobs"
-msgstr ""
+msgstr "Cron-jobber"
 
 msgid "Enable CasparCG restart job"
 msgstr ""
@@ -2108,6 +2234,9 @@ msgstr "System"
 msgid "Media"
 msgstr "Media"
 
+msgid "Packages"
+msgstr "Pakker"
+
 msgid "Messages"
 msgstr "Meldinger"
 
@@ -2125,6 +2254,15 @@ msgstr "Brukernavn"
 
 msgid "Answers"
 msgstr "Svar"
+
+msgid "Abort"
+msgstr "Avbryt"
+
+msgid "Package Status"
+msgstr "Pakkestatus"
+
+msgid "Restart All"
+msgstr "Start alle på nytt"
 
 msgid "Message Queue"
 msgstr "Meldingskø"
@@ -2198,9 +2336,6 @@ msgstr "Minimer"
 msgid "Details"
 msgstr "Detaljer"
 
-msgid "Abort"
-msgstr "Avbryt"
-
 msgid "Prioritize"
 msgstr "Prioriter"
 
@@ -2209,9 +2344,6 @@ msgstr "Status for medieoverføringer"
 
 msgid "Abort All"
 msgstr "Avbryt alle"
-
-msgid "Restart All"
-msgstr "Start alle på nytt"
 
 msgid "Do you want to restart CasparCG Server?"
 msgstr "Er du sikker på at du vil restarte CasparCG?"
@@ -2361,19 +2493,31 @@ msgstr "Kjør i"
 msgid "Stop"
 msgstr "Stopp"
 
-msgid "{{sourceLayer}} is missing a file path"
-msgstr "{{sourceLayer}} kan ikke spilles av fordi filnavnet mangler"
+msgid ""
+"Clip \"{{fileName}}\" can't be played because it isn't present on the "
+"playout system"
+msgstr ""
+"Klippet \"{{fileName}}\" kan ikke spilles av fordi det ikke finnes på "
+"utspillingssystemet"
 
 msgid "{{sourceLayer}} is not yet ready on the playout system"
 msgstr ""
-"Dette {{sourceLayer}} er ennå ikke klart til å spilles ut fra "
-"avviklingsserver."
+"{{sourceLayer}} er ennå ikke klar til å spilles ut fra avviklingsserver"
+
+msgid "{{sourceLayer}} is transferring to the the playout system"
+msgstr "{{sourceLayer}} overføres til avviklingsserver"
+
+msgid ""
+"{{sourceLayer}} is transferring to the the playout system and cannot be "
+"played yet"
+msgstr ""
+"{{sourceLayer}} overføres til avviklingsserver og kan ikke spilles av ennå"
 
 msgid "{{sourceLayer}} doesn't have both audio & video"
-msgstr "{{sourceLayer}}  har ikke lyd eller bilde"
+msgstr "{{sourceLayer}} har ikke lyd og/eller bilde"
 
 msgid "{{sourceLayer}} has the wrong format: {{format}}"
-msgstr "{{sourceLayer}} formatet er ikke stottet: {{format}}"
+msgstr "{{sourceLayer}}-formatet er ikke støttet: {{format}}"
 
 msgid "{{sourceLayer}} has {{audioStreams}} audio streams"
 msgstr "{{sourceLayer}} har {{audioStreams}} lydstrømmer"
@@ -2390,27 +2534,33 @@ msgstr "{{frames}} {{type}} frame oppdaget inne i klippet"
 msgid "{{frames}} {{type}} frame detected in clip"
 msgstr "{{frames}} {{type}} frame oppdaget i klippet"
 
-msgid "black"
-msgstr ""
-
-msgid "freeze"
-msgstr ""
-
-#, fuzzy
-#| msgid "{{sourceLayer}} is missing a file path"
-msgid "{{sourceLayer}} is being ingested"
+msgid "{{sourceLayer}} is missing a file path"
 msgstr "{{sourceLayer}} kan ikke spilles av fordi filnavnet mangler"
 
+msgid "Clip doesn't have audio & video"
+msgstr "Klippet har ikke lyd og/eller bilde"
+
+msgid "black"
+msgstr "svart(e)"
+
+msgid "freeze"
+msgstr "fryst(e)"
+
+msgid "{{sourceLayer}} is being ingested"
+msgstr "{{sourceLayer}} blir prosessert"
+
 msgid "Segment no longer exists in {{nrcs}}"
-msgstr ""
+msgstr "Segmenet eksisterer ikke lenger i {{nrcs}}"
 
 msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
-msgstr ""
+msgstr "De følgende delene eksisterer ikke lenger i {{nrcs}}: {{partNames}}"
 
 msgid ""
 "The Rundown was attempted to be moved out of the Playlist when it was on "
 "Air. Move it back and try again later."
 msgstr ""
+"Kjøreplanen ble forsøkt flyttet ut av spillelisten mens den var OnAir. Flytt "
+"den tilbake og prøv igjen senere."
 
 msgctxt "°°°°°°plural"
 msgid "{{count}} rows°°°°°°"
@@ -2451,10 +2601,6 @@ msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
 
 #~ msgid "Clip can't be played because the filename is missing"
 #~ msgstr "Klippet kan ikke spilles av fordi filnavnet mangler"
-
-#~ msgid "Clip can't be played because it isn't present on the playout system"
-#~ msgstr ""
-#~ "Klippet kan ikke spilles av fordi det ikke finnes på utspillingssystemet"
 
 #~ msgid "Clip format ({{format}}) is not in one of the accepted formats"
 #~ msgstr "Klippformatet ({{format}}) er ikke støttet"
@@ -2756,12 +2902,6 @@ msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
 #~ msgid "Storage Type"
 #~ msgstr "Lagertype"
 
-#~ msgid "Allow Read"
-#~ msgstr "Tillat lesing"
-
-#~ msgid "Allow Write"
-#~ msgstr "Tillat skriving/lagring"
-
 #~ msgid "Base Path"
 #~ msgstr "Rotsti"
 
@@ -2920,9 +3060,6 @@ msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
 
 #~ msgid "Interval"
 #~ msgstr "Intervall"
-
-#~ msgid "Gateway URL"
-#~ msgstr "Gateway-adresse (url)"
 
 #~ msgid "ISA URL"
 #~ msgstr "ISA-adresse (url)"
