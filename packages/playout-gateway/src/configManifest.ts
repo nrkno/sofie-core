@@ -521,6 +521,11 @@ const MAPPING_MANIFEST: MappingsManifest = {
 			optional: true,
 			includeInSummary: true,
 		},
+		{
+			id: 'setLabelToLayerName',
+			type: ConfigManifestEntryType.BOOLEAN,
+			name: 'Set channel label to layer name',
+		},
 	],
 	// TODO - add VMix?
 }
