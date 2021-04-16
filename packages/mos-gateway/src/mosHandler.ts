@@ -430,7 +430,10 @@ export class MosHandler {
 			this._ownMosDevices[deviceId] = mosDevice
 
 			const getMachineInfoUntilConnected = () => mosDevice.requestMachineInfo().catch((e: any) => {
-				if (e && (e + '').match(/no connection available for failover/i)) {
+				if (e && (
+					(e + '').match(/no connection available for failover/i) ||
+					(e + '').match(/failover connection/i)
+				)) {
 					// TODO: workaround (mos.connect resolves too soon, before the connection is actually initialted)
 					return new Promise((resolve) => {
 						setTimeout(() => {
