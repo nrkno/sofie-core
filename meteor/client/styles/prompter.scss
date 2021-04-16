@@ -136,7 +136,7 @@ body.prompter-scrollbar {
 		line-height: 1.2em;
 		margin-bottom: 0.5em;
 		overflow-wrap: break-word;
-		hyphens: auto;
+		// hyphens: auto;  // do not use, leads to much more broken words than is needed.
 
 		.add-blank {
 			margin-bottom: 1.5em;
