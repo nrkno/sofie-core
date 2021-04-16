@@ -366,6 +366,11 @@ export class MosHandler {
 
 				_.each(devices, (device, deviceId: string) => {
 					if (device) {
+
+						if (device.secondary) {
+							// If the host isn't set, don't use secondary:
+							if (!device.secondary.host) delete device.secondary
+						}
 						let oldDevice: MosDevice | null = this._getDevice(deviceId)
 
 						if (!oldDevice) {
