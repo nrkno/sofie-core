@@ -32,10 +32,10 @@ export const addSteps = addMigrationSteps('0.16.0', [
 				label: 'File path for persistant storage',
 				description: 'Enter the file path for the persistant storage (example "/opt/coredisk")',
 				inputType: 'text',
-				attribute: 'storePath'
-			}
-		]
+				attribute: 'storePath',
+			},
+		],
 	},
 
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '0.1.1')
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '0.1.1'),
 ])

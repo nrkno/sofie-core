@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import {
 	MigrationStepInput,
 	MigrationStepInputFilteredResult,
-	MigrationStepBase
+	MigrationStepBase,
 } from '@sofie-automation/blueprints-integration'
 import { Collections, objectPathGet, DBObj, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
@@ -55,7 +55,7 @@ export function ensureCollectionProperty<T = any>(
 				}
 			})
 		},
-		dependOnResultFrom: dependOnResultFrom
+		dependOnResultFrom: dependOnResultFrom,
 	}
 }
 /**
@@ -101,7 +101,7 @@ export function ensureCollectionPropertyManual<T = any>(
 						description: localDescription,
 						inputType: inputType,
 						attribute: obj._id,
-						defaultValue: defaultValue
+						defaultValue: defaultValue,
 					})
 				}
 			})
@@ -120,7 +120,7 @@ export function ensureCollectionPropertyManual<T = any>(
 				}
 			})
 		},
-		dependOnResultFrom: dependOnResultFrom
+		dependOnResultFrom: dependOnResultFrom,
 	}
 }
 export function removeCollectionProperty<T = any>(
@@ -158,7 +158,7 @@ export function removeCollectionProperty<T = any>(
 				}
 			})
 		},
-		dependOnResultFrom: dependOnResultFrom
+		dependOnResultFrom: dependOnResultFrom,
 	}
 }
 function getMinVersion(versionStr: string | undefined): string {
@@ -179,7 +179,7 @@ export function setExpectedVersion(
 
 			let devices = PeripheralDevices.find({
 				type: deviceType,
-				subType: PeripheralDeviceAPI.SUBTYPE_PROCESS
+				subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			}).fetch()
 
 			for (let i in devices) {
@@ -221,7 +221,7 @@ export function setExpectedVersion(
 				}
 			})
 		},
-		overrideSteps: [id]
+		overrideSteps: [id],
 	}
 }
 
@@ -236,7 +236,7 @@ export function renamePropertiesInCollection<T extends DBInterface, DBInterface 
 	dependOnResultFrom?: string
 ) {
 	const m: any = {
-		$or: []
+		$or: [],
 	}
 	const oldNames: { [oldAttr: string]: string } = {}
 	_.each(_.keys(renames), (newAttr) => {
@@ -306,6 +306,6 @@ export function renamePropertiesInCollection<T extends DBInterface, DBInterface 
 				collection.update(doc._id, doc)
 			})
 			//
-		}
+		},
 	}
 }
