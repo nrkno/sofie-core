@@ -7,6 +7,10 @@ import { ShowStyleBaseId } from './ShowStyleBases'
 import { UserId } from './Users'
 import { registerIndex } from '../database'
 
+export interface LayoutFactory<T extends RundownLayoutBase> {
+	createLayout(...args: any[]): T | undefined
+}
+
 /**
  * The view targeted by this layout:
  * RUNDOWN_LAYOUT: a Rundown view for highly scripted shows: a show split into Segments and Parts,
@@ -17,8 +21,10 @@ import { registerIndex } from '../database'
  * @enum {string}
  */
 export enum RundownLayoutType {
+	RUNDOWN_VIEW_LAYOUT = 'rundown_view_layout',
 	RUNDOWN_LAYOUT = 'rundown_layout',
 	DASHBOARD_LAYOUT = 'dashboard_layout',
+	TOP_BAR_LAYOUT = 'top_bar_layout',
 }
 
 /**
@@ -192,7 +198,7 @@ export interface RundownLayoutBase {
 	blueprintId?: BlueprintId
 	userId?: UserId
 	name: string
-	type: RundownLayoutType.RUNDOWN_LAYOUT | RundownLayoutType.DASHBOARD_LAYOUT
+	type: RundownLayoutType
 	filters: RundownLayoutElementBase[]
 	exposeAsStandalone: boolean
 	exposeAsShelf: boolean
@@ -204,9 +210,18 @@ export interface RundownLayoutBase {
 	disableContextMenu: boolean
 }
 
+export interface RundownViewLayout extends RundownLayoutBase {
+	type: RundownLayoutType.RUNDOWN_VIEW_LAYOUT
+	expectedEndText: string
+}
+
 export interface RundownLayout extends RundownLayoutBase {
 	type: RundownLayoutType.RUNDOWN_LAYOUT
 	filters: RundownLayoutElementBase[]
+}
+
+export interface RundownLayoutTopBar extends RundownLayoutBase {
+	type: RundownLayoutType.TOP_BAR_LAYOUT
 }
 
 export enum ActionButtonType {
