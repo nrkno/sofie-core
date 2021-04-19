@@ -27,11 +27,9 @@ export const PartCountdown = withTiming<IPartCountdownProps, {}>()(function Part
 		<>
 			{props.label}
 			<span>
-				{
-					RundownUtils.formatTimeToShortTime(
-						thisPartCountdown!
-					) /* shouldShow will be false if thisPartCountdown is undefined */
-				}
+				{RundownUtils.formatTimeToShortTime(
+					thisPartCountdown!
+				) /* shouldShow will be false if thisPartCountdown is undefined */}
 			</span>
 		</>
 	) : null
