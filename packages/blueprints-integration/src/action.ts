@@ -2,6 +2,7 @@ import { ExpectedPackage, ListenToPackageUpdate } from './package'
 import { ConfigManifestEntry } from './config'
 import { SomeContent } from './content'
 import { ITranslatableMessage } from './translations'
+import { ExpectedPlayoutItemGeneric } from './rundown'
 
 export interface ActionUserData {
 	[key: string]: any
@@ -78,6 +79,10 @@ export interface IBlueprintActionManifest {
 	/** Optional ways of executing this action. The default option is computed from the display properties */
 	triggerModes?: IBlueprintActionTriggerMode[]
 
+	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
+	 * @deprecated replaced by .expectedPackages
+	 */
+	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	/**
 	 * An array of which Packages this Action uses. This is used by a Package Manager to ensure that the Package is in place for playout.
 	 */

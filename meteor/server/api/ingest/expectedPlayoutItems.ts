@@ -8,12 +8,14 @@ import { protectString } from '../../../lib/lib'
 import { CacheForIngest } from './cache'
 import { saveIntoCache } from '../../cache/lib'
 import { StudioId } from '../../../lib/collections/Studios'
+import { AdLibAction } from '../../../lib/collections/AdLibActions'
+import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
 
 function extractExpectedPlayoutItems(
 	studioId: StudioId,
 	rundownId: RundownId,
 	partId: PartId | undefined,
-	piece: Piece | AdLibPiece
+	piece: Piece | AdLibPiece | AdLibAction | RundownBaselineAdLibAction
 ): ExpectedPlayoutItem[] {
 	let expectedPlayoutItemsGeneric: ExpectedPlayoutItem[] = []
 
@@ -24,7 +26,7 @@ function extractExpectedPlayoutItems(
 				_id: protectString(piece._id + '_' + i),
 				studioId: studioId,
 				rundownId: rundownId,
-				pieceId: piece._id,
+				// pieceId: piece._id,
 				partId: partId,
 			})
 		})
@@ -49,12 +51,12 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest): void
 	for (const piece of cache.RundownBaselineAdLibPieces.findFetch({})) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, piece))
 	}
-	// for (const piece of cache.AdLibActions.findFetch({})) {
-	// 	expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, piece.partId, piece))
-	// }
-	// for (const piece of cache.RundownBaselineAdLibActions.findFetch({})) {
-	// 	expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, piece))
-	// }
+	for (const action of cache.AdLibActions.findFetch({})) {
+		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, action.partId, action))
+	}
+	for (const action of cache.RundownBaselineAdLibActions.findFetch({})) {
+		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, action))
+	}
 
 	saveIntoCache<ExpectedPlayoutItem, ExpectedPlayoutItem>(cache.ExpectedPlayoutItems, {}, expectedPlayoutItems)
 }
