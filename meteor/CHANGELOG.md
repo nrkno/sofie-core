@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.18.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0...v1.18.1) (2021-04-19)
+
+
+### Bug Fixes
+
+* CSS - Change for prompter: Broke words poorly ([d44f668](https://github.com/nrkno/tv-automation-server-core/commit/d44f6684e66488d5cd6098c374dc3eb725822aa7))
+* CSS - Prompter displays linebreaks in manuscripts ([19df095](https://github.com/nrkno/tv-automation-server-core/commit/19df09583f7e14db33659fc8695127f13fe25a57))
+
 ## [1.18.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0-1-in-testing-R30...v1.18.0) (2021-03-16)
 
 
