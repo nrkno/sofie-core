@@ -88,8 +88,9 @@ function handleRundownContextError(rundown: Rundown, errorInformMessage: string 
 	rundown.appendNote({
 		type: NoteType.ERROR,
 		message: {
-			key: `${errorInformMessage ||
-				'Something went wrong when processing data for this rundown.'} Error message: {{error}}`,
+			key: `${
+				errorInformMessage || 'Something went wrong when processing data for this rundown.'
+			} Error message: {{error}}`,
 			args: {
 				error: `${error || 'N/A'}`,
 			},

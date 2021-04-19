@@ -28,7 +28,11 @@
  * 1.15.0: Release 27  (2020-12-08)
  * 1.16.0: Release 28  (2021-01-19)
  * 1.17.0: Release 29  (2021-02-08)
- * 1.18.0: Release 30
+ * 1.18.0: Release 30  (2021-03-19)
  * 1.19.0: Release 31
+ // Note: The minor version makes a jump here. 32 now refers to "Release 32".
+ * 1.32.0: Release 32
  */
-export const CURRENT_SYSTEM_VERSION = '1.19.0-in-testing'
+
+// Note: Only set this to release versions, (ie X.Y.Z), not pre-releases (ie X.Y.Z-0-pre-release)
+export const CURRENT_SYSTEM_VERSION = '1.32.0'

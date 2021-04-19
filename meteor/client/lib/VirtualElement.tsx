@@ -174,7 +174,8 @@ export class VirtualElement extends React.Component<IProps, IState> {
 								marginLeft: this.state.marginLeft,
 								marginRight: this.state.marginRight,
 								marginBottom: this.state.marginBottom,
-							}}></div>
+							}}
+						></div>
 					) : (
 						this.props.children
 					)}

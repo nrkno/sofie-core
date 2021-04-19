@@ -53,6 +53,7 @@ import {
 	defaultPart,
 	defaultPiece,
 	defaultAdLibPiece,
+	defaultStudio,
 } from '../defaultCollectionObjects'
 
 export enum LAYER_IDS {
@@ -141,24 +142,12 @@ export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
 export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 	doc = doc || {}
 
-	const defaultStudio: DBStudio = {
-		_id: protectString('mockStudio' + dbI++),
+	const studio: DBStudio = {
+		...defaultStudio(protectString('mockStudio' + dbI++)),
 		name: 'mockStudio',
-		organizationId: null,
-		// blueprintId?: BlueprintId
-		mappings: {},
-		supportedShowStyleBase: [],
-		blueprintConfig: {},
-		// testToolsConfig?: ITestToolsConfig
-		settings: {
-			mediaPreviewsUrl: '',
-			sofieUrl: '',
-		},
 		_rundownVersionHash: 'asdf',
-		routeSets: {},
-		routeSetExclusivityGroups: {},
+		...doc,
 	}
-	const studio = _.extend(defaultStudio, doc)
 	Studios.insert(studio)
 	return studio
 }
@@ -252,7 +241,7 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 			TSR_VERSION,
 			SHOW_STYLE_ID,
 		},
-		function(): StudioBlueprintManifest {
+		function (): StudioBlueprintManifest {
 			return {
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.0.0',
@@ -290,7 +279,7 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 			TSR_VERSION,
 			SHOW_STYLE_VARIANT_ID,
 		},
-		function(): ShowStyleBlueprintManifest {
+		function (): ShowStyleBlueprintManifest {
 			return {
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.0.0',
@@ -684,13 +673,14 @@ export function setupRundownWithAutoplayPart0(
 	rundownId: RundownId
 ): RundownId {
 	const rundown: DBRundown = defaultRundown(
-		rundownId,
+		unprotectString(rundownId),
 		env.studio._id,
 		env.ingestDevice._id,
 		playlistId,
 		env.showStyleBase._id,
 		env.showStyleVariant._id
 	)
+	rundown._id = rundownId
 	Rundowns.insert(rundown)
 
 	const segment0: DBSegment = {

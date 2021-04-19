@@ -11,9 +11,9 @@ import {
 	handleMosRundownData,
 	handleMosFullStory,
 	handleMosDeleteStory,
-	handleInsertParts,
-	handleSwapStories,
-	handleMoveStories,
+	handleMosInsertParts,
+	handleMosSwapStories,
+	handleMosMoveStories,
 	handleMosRundownMetadata,
 } from './ingest'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
@@ -185,7 +185,7 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
-		handleInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, false, Stories)
+		handleMosInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, false, Stories)
 
 		transaction?.end()
 	}
@@ -204,7 +204,7 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
-		handleInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, true, Stories)
+		handleMosInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, true, Stories)
 
 		transaction?.end()
 	}
@@ -221,7 +221,7 @@ export namespace MosIntegration {
 
 		logger.info(`mosRoStoryMove "${Action.StoryID}" Stories: ${Stories}`)
 
-		handleMoveStories(peripheralDevice, Action.RunningOrderID, Action.StoryID, Stories)
+		handleMosMoveStories(peripheralDevice, Action.RunningOrderID, Action.StoryID, Stories)
 
 		transaction?.end()
 	}
@@ -258,7 +258,7 @@ export namespace MosIntegration {
 
 		logger.info(`mosRoStorySwap "${StoryID0}", "${StoryID1}"`)
 
-		handleSwapStories(peripheralDevice, Action.RunningOrderID, StoryID0, StoryID1)
+		handleMosSwapStories(peripheralDevice, Action.RunningOrderID, StoryID0, StoryID1)
 
 		transaction?.end()
 	}
@@ -287,7 +287,7 @@ export namespace MosIntegration {
 					airStatus: Action.Status,
 				},
 			})
-			regenerateRundown(rundown._id)
+			regenerateRundown(studio, rundown.externalId, peripheralDevice)
 		}
 
 		transaction?.end()

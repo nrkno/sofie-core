@@ -24,6 +24,7 @@ import { Mongo } from 'meteor/mongo'
 import { ShowStyleBase } from '../collections/ShowStyleBases'
 import { getPieceGroupId } from './timeline'
 import { RundownPlaylistActivationId } from '../collections/RundownPlaylists'
+import { ReadonlyDeep } from 'type-fest'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
 	return { startPartId: part._id }
@@ -87,16 +88,30 @@ export function getPlayheadTrackingInfinitesForPart(
 
 	const groupedPlayingPieceInstances = _.groupBy(currentPartPieceInstances, (p) => p.piece.sourceLayerId)
 	for (const [sourceLayerId, pieceInstances] of Object.entries(groupedPlayingPieceInstances)) {
-		// Find the one that starts last. Note: any piece will stop an onChange
-		const lastPieceInstance =
-			pieceInstances.find((p) => p.piece.enable.start === 'now') ??
-			max(pieceInstances, (p) => p.piece.enable.start)
+		// Find the ones that starts last. Note: any piece will stop an onChange
+		const lastPiecesByStart = _.groupBy(pieceInstances, (p) => p.piece.enable.start)
+		let lastPieceInstances = lastPiecesByStart['now'] || []
+		if (lastPieceInstances.length === 0) {
+			const target = max(Object.keys(lastPiecesByStart), (k) => Number(k))
+			if (target !== undefined) {
+				lastPieceInstances = lastPiecesByStart[target] || []
+			}
+		}
+
+		// Some basic resolving, to figure out which is our candidate
+		let lastPieceInstance: PieceInstance | undefined
+		for (const candidate of lastPieceInstances) {
+			if (lastPieceInstance === undefined || isCandidateBetterToBeContinued(lastPieceInstance, candidate)) {
+				lastPieceInstance = candidate
+			}
+		}
+
 		if (lastPieceInstance) {
 			// If it is an onChange, then it may want to continue
 			let isUsed = false
 			switch (lastPieceInstance.piece.lifespan) {
 				case PieceLifespan.OutOnSegmentChange:
-					if (currentPartInstance?.segmentId === part.segmentId) {
+					if (currentPartInstance.segmentId === part.segmentId) {
 						// Still in the same segment
 						isUsed = true
 					}
@@ -165,6 +180,8 @@ export function getPlayheadTrackingInfinitesForPart(
 				isTemporary
 			)
 			instance._id = protectString(`${instance._id}_continue`)
+			instance.dynamicallyInserted = p.dynamicallyInserted
+			instance.adLibSourceId = p.adLibSourceId
 
 			if (p.infinite) {
 				// This was copied from before, so we know we can force the time to 0
@@ -179,7 +196,6 @@ export function getPlayheadTrackingInfinitesForPart(
 					fromPreviousPart: true,
 					fromPreviousPlayhead: true,
 				}
-				instance.adLibSourceId = p.adLibSourceId
 
 				return instance
 			}
@@ -347,17 +363,22 @@ export function getPieceInstancesForPart(
 			instance.infinite = {
 				infiniteInstanceId: existingPiece?.infinite?.infiniteInstanceId ?? getRandomId(),
 				infinitePieceId: instance.piece._id,
-				fromPreviousPart: instance.piece.startPartId !== part._id,
+				fromPreviousPart: false, // Set below
 			}
 		}
-		if (instance.infinite?.fromPreviousPart) {
-			// If this is not the start point, it should start at 0
-			// Note: this should not be setitng fromPreviousPlayhead, as it is not from the playhead
-			instance.piece = {
-				...instance.piece,
-				enable: {
-					start: 0,
-				},
+
+		if (instance.infinite) {
+			instance.infinite.fromPreviousPart = instance.piece.startPartId !== part._id
+
+			if (instance.infinite.fromPreviousPart) {
+				// If this is not the start point, it should start at 0
+				// Note: this should not be setitng fromPreviousPlayhead, as it is not from the playhead
+				instance.piece = {
+					...instance.piece,
+					enable: {
+						start: 0,
+					},
+				}
 			}
 		}
 
@@ -407,7 +428,7 @@ function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number
  * The stacking order of infinites is considered, to define the stop times
  */
 export function processAndPrunePieceInstanceTimings(
-	showStyle: ShowStyleBase,
+	showStyle: ReadonlyDeep<ShowStyleBase>,
 	pieces: PieceInstance[],
 	nowInPart: number,
 	keepDisabledPieces?: boolean
@@ -499,6 +520,41 @@ export function processAndPrunePieceInstanceTimings(
 	return result
 }
 
+function isCandidateBetterToBeContinued(best: PieceInstance, candidate: PieceInstance): boolean {
+	// Prioritise the one from this part over previous part
+	if (best.infinite?.fromPreviousPart && !candidate.infinite?.fromPreviousPart) {
+		// Prefer the candidate as it is not from previous
+		return true
+	}
+	if (!best.infinite?.fromPreviousPart && candidate.infinite?.fromPreviousPart) {
+		// Prefer the best as it is not from previous
+		return false
+	}
+
+	// If we have adlibs, prefer the newest
+	if (best.dynamicallyInserted !== undefined || candidate.dynamicallyInserted !== undefined) {
+		// If we are working for the 'now' time, then we are looking at adlibs
+		// All adlib pieces will have a take time, so prefer the later one
+		const take0 = best.dynamicallyInserted ?? -1
+		const take1 = candidate.dynamicallyInserted ?? -1
+		return take1 > take0
+	}
+
+	// If one is virtual, prefer that
+	if (best.piece.virtual && !candidate.piece.virtual) {
+		// Prefer the virtual best
+		return false
+	}
+	if (!best.piece.virtual && candidate.piece.virtual) {
+		// Prefer the virtual candidate
+		return true
+	}
+
+	// Fallback to id, as we dont have any other criteria and this will be stable.
+	// Note: we shouldnt even get here, as it shouldnt be possible for multiple to start at the same time, but it is possible
+	return best.piece._id < candidate.piece._id
+}
+
 interface PieceInstanceOnInfiniteLayers {
 	onRundownEnd?: PieceInstanceWithTimings
 	onSegmentEnd?: PieceInstanceWithTimings
@@ -511,47 +567,10 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 
 	const res: PieceInstanceOnInfiniteLayers = {}
 
-	const isCandidateBetter = (best: PieceInstance, candidate: PieceInstance): boolean => {
-		// Prioritise the one from this part over previous part
-		if (best.infinite?.fromPreviousPart && !candidate.infinite?.fromPreviousPart) {
-			// Prefer the candidate as it is not from previous
-			return true
-		}
-		if (!best.infinite?.fromPreviousPart && candidate.infinite?.fromPreviousPart) {
-			// Prefer the best as it is not from previous
-			return false
-		}
-
-		// If we have adlibs, prefer the newest
-		if (best.piece.enable.start === 'now') {
-			// If we are working for the 'now' time, then we are looking at adlibs
-			// All adlib pieces will have a take time, so prefer the later one
-			const take0 = best.dynamicallyInserted
-			const take1 = candidate.dynamicallyInserted
-			if (take0 !== undefined && take1 !== undefined) {
-				return take1 > take0
-			}
-		}
-
-		// If one is virtual, prefer that
-		if (best.piece.virtual && !candidate.piece.virtual) {
-			// Prefer the virtual best
-			return false
-		}
-		if (!best.piece.virtual && candidate.piece.virtual) {
-			// Prefer the virtual candidate
-			return true
-		}
-
-		// Fallback to id, as we dont have any other criteria and this will be stable.
-		// Note: we shouldnt even get here, as it shouldnt be possible for multiple to start at the same time, but it is possible
-		return best.piece._id < candidate.piece._id
-	}
-
 	for (const piece of pieces) {
 		switch (piece.piece.lifespan) {
 			case PieceLifespan.OutOnRundownEnd:
-				if (!res.onRundownEnd || isCandidateBetter(res.onRundownEnd, piece)) {
+				if (!res.onRundownEnd || isCandidateBetterToBeContinued(res.onRundownEnd, piece)) {
 					res.onRundownEnd = {
 						...piece,
 						priority: 1,
@@ -559,7 +578,7 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 				}
 				break
 			case PieceLifespan.OutOnSegmentEnd:
-				if (!res.onSegmentEnd || isCandidateBetter(res.onSegmentEnd, piece)) {
+				if (!res.onSegmentEnd || isCandidateBetterToBeContinued(res.onSegmentEnd, piece)) {
 					res.onSegmentEnd = {
 						...piece,
 						priority: 2,
@@ -569,7 +588,7 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 			case PieceLifespan.OutOnRundownChange:
 			case PieceLifespan.OutOnSegmentChange:
 			case PieceLifespan.WithinPart:
-				if (!res.other || isCandidateBetter(res.other, piece)) {
+				if (!res.other || isCandidateBetterToBeContinued(res.other, piece)) {
 					res.other = {
 						...piece,
 						priority: 5,

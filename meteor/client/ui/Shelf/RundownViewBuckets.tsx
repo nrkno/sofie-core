@@ -553,12 +553,14 @@ export const RundownViewBuckets = withTranslation()(
 								<div
 									className="rundown-view__shelf__contents__pane"
 									key={unprotectString(bucket._id)}
-									style={this.bucketPanelStyle(index)}>
+									style={this.bucketPanelStyle(index)}
+								>
 									{!this.props.fullViewport || index > 0 ? (
 										<div
 											className="rundown-view__shelf__contents__pane__divider"
 											onMouseDown={(e) => this.grabHandle(e, bucket)}
-											onTouchStart={(e) => this.touchOnHandle(e, bucket)}>
+											onTouchStart={(e) => this.touchOnHandle(e, bucket)}
+										>
 											<div className="rundown-view__shelf__contents__pane__handle">
 												<FontAwesomeIcon icon={faBars} />
 											</div>
@@ -580,7 +582,8 @@ export const RundownViewBuckets = withTranslation()(
 												resolve()
 											})
 										}
-										holdToDisplay={contextMenuHoldToDisplayTime()}>
+										holdToDisplay={contextMenuHoldToDisplayTime()}
+									>
 										{this.state.panelWidths[index] > 0 && (
 											<BucketPanel
 												playlist={playlist}

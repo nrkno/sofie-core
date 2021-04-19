@@ -15,7 +15,7 @@ import {
 	IBlueprintActionTriggerMode,
 } from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
-import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { checkPieceContentStatus, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PubSub } from '../../../lib/api/pubsub'
 import { PieceGeneric } from '../../../lib/collections/Pieces'
@@ -31,6 +31,7 @@ import { setShelfContextMenuContext, ContextType as MenuContextType } from './Sh
 export interface IAdLibListItem extends AdLibPieceUi {
 	status: RundownAPI.PieceStatusCode
 	contentMetaData?: any
+	contentPackageInfos?: ScanInfoForPackages
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	hotkey?: string
@@ -84,7 +85,8 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 					}
 					holdToDisplay={contextMenuHoldToDisplayTime()}
 					renderTag="tr"
-					key={unprotectString(this.props.piece._id)}>
+					key={unprotectString(this.props.piece._id)}
+				>
 					{renderItem({
 						adLibListItem: this.props.piece,
 						layer: this.props.layer,
@@ -94,6 +96,8 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						message: this.props.piece.message,
 						metadata: this.props.piece.contentMetaData,
 						mediaPreviewUrl: this.props.studio.settings.mediaPreviewsUrl,
+						packageInfos: this.props.piece.contentPackageInfos,
+						studioPackageContainers: this.props.studio.packageContainers,
 					})}
 				</ContextMenuTrigger>
 			)

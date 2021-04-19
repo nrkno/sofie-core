@@ -9,7 +9,7 @@ import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 
-meteorPublish(PubSub.showStyleBases, function(selector0, token) {
+meteorPublish(PubSub.showStyleBases, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
 	const modifier: FindOptions<ShowStyleBase> = {
 		fields: {},
@@ -23,7 +23,7 @@ meteorPublish(PubSub.showStyleBases, function(selector0, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.showStyleVariants, function(selector0, token) {
+meteorPublish(PubSub.showStyleVariants, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 	const modifier: FindOptions<ShowStyleVariant> = {
 		fields: {},
@@ -38,7 +38,7 @@ meteorPublish(PubSub.showStyleVariants, function(selector0, token) {
 	return null
 })
 
-meteorPublish(PubSub.rundownLayouts, function(selector0, token) {
+meteorPublish(PubSub.rundownLayouts, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 	const modifier: FindOptions<RundownLayoutBase> = {
 		fields: {},

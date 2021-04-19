@@ -82,6 +82,10 @@ var parserOptions = {
 		prefix: '{{',
 		suffix: '}}',
 	},
+	acorn: {
+		ecmaVersion: 11,
+		sourceType: 'module',
+	},
 }
 
 var parser = new Parser(parserOptions)
@@ -89,8 +93,12 @@ var parser = new Parser(parserOptions)
 var fileGlob = args.files
 var outputFile = args.output
 
+console.log('Extracting translatable strings...')
+console.log('This process may print out some error messages, but the translation template should work fine.')
+console.log('──────\n')
+
 // console.debug('Reading in files for glob: ' + fileGlob)
-glob(fileGlob, function(err, files) {
+glob(fileGlob, function (err, files) {
 	if (err) {
 		console.log(err)
 		process.exit(1)
@@ -98,7 +106,7 @@ glob(fileGlob, function(err, files) {
 
 	// console.debug('Loading content of ' + files.length + ' files')
 	var content = ''
-	files.map(function(file) {
+	files.map(function (file) {
 		content += fs.readFileSync(file, 'utf-8')
 	})
 
@@ -108,9 +116,10 @@ glob(fileGlob, function(err, files) {
 	var json = parser.get().en.translation
 
 	// console.debug('Converting ' + Object.keys(json).length + ' translation keys into gettext')
-	converter.i18nextToPot('en', JSON.stringify(json), { quiet: true }).then(function(data) {
+	converter.i18nextToPot('en', JSON.stringify(json), { quiet: true }).then(function (data) {
 		// console.debug('Writing into output file')
 		fs.writeFileSync(outputFile, data, 'utf-8')
-		console.log(`\nSuccessfully written ${Object.keys(json).length} strings to template "${outputFile}".`)
+		console.log('\n──────')
+		console.log(`Successfully written ${Object.keys(json).length} strings to template "${outputFile}".`)
 	})
 })

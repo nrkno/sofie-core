@@ -29,6 +29,7 @@ import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists
 import { actionToAdLibPieceUi } from '../../BucketPanel'
 import RundownViewEventBus, { RundownViewEvents } from '../../../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from '../../AdLibListItem'
+import { translateMessage } from '../../../../../lib/api/TranslatableMessage'
 
 export { isActionItem }
 
@@ -61,9 +62,10 @@ function transformedAdLibActionToAction(transformed: TransformedAdLibAction): Ad
 }
 
 // create a temporary collection to store changes to the AdLib Actions
-const LocalActionItems: TransformedCollection<TransformedAdLibAction, TransformedAdLibAction> = createMongoCollection<
+const LocalActionItems: TransformedCollection<
+	TransformedAdLibAction,
 	TransformedAdLibAction
->(null as any)
+> = createMongoCollection<TransformedAdLibAction>(null as any)
 
 export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 	let piece = RundownUtils.isPieceInstance(props.piece)
@@ -174,7 +176,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 								configField={configField}
 								obj={obj}
 								prefix={prefix}
-								className=""></ConfigManifestEntryComponent>
+								className=""
+							></ConfigManifestEntryComponent>
 						)
 					)}
 				</div>
@@ -243,14 +246,16 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		}
 
 		render() {
-			const { t } = this.props
+			const { t, targetAction } = this.props
 			const action = this.getActionItem()
 
-			const modes = this.props.targetAction?.triggerModes?.sort(
-				(a, b) => a.display._rank - b.display._rank || a.display.label.localeCompare(b.display.label)
+			const modes = targetAction?.triggerModes?.sort(
+				(a, b) =>
+					a.display._rank - b.display._rank ||
+					translateMessage(a.display.label, t).localeCompare(translateMessage(b.display.label, t))
 			)
 
-			if (!action) {
+			if (!action || !targetAction) {
 				return <Spinner />
 			}
 
@@ -263,13 +268,13 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 					/>
 					<div className="shelf-inspector__action-editor">
 						<div className="shelf-inspector__action-editor__panel">
-							{action.userDataManifest && action.userDataManifest.editableFields && !this.props.targetAction ? (
+							{action.userDataManifest && action.userDataManifest.editableFields && !targetAction ? (
 								<Spinner />
-							) : action.userDataManifest && action.userDataManifest.editableFields && this.props.targetAction ? (
+							) : action.userDataManifest && action.userDataManifest.editableFields && targetAction ? (
 								<>
 									{this.renderConfigFields(
 										action.userDataManifest.editableFields,
-										this.props.targetAction,
+										targetAction,
 										'transformedUserData.'
 									)}
 								</>
@@ -278,11 +283,13 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 						<div className="shelf-inspector__action-editor__actions">
 							{modes?.length ? (
 								<button className="btn" onClick={(e) => this.onTrigger(e, modes[0])}>
-									{modes[0].display.label}
+									{translateMessage(modes[0].display.label, t)}
 								</button>
 							) : (
 								<button className="btn" onClick={this.onTrigger}>
-									{t('Execute')}
+									{targetAction?.display.triggerLabel
+										? translateMessage(targetAction?.display.triggerLabel, t)
+										: t('Execute')}
 								</button>
 							)}
 							<button className="btn" onClick={this.onSaveToBucket}>

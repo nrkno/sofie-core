@@ -284,7 +284,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 									className="btn mrm"
 									onClick={() => {
 										this.clickRefresh()
-									}}>
+									}}
+								>
 									<FontAwesomeIcon icon={faClipboardCheck} />
 									<span>{t('Re-check')}</span>
 								</button>
@@ -309,7 +310,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 										className="btn mrm"
 										onClick={() => {
 											this.resetDatabaseVersions()
-										}}>
+										}}
+									>
 										<FontAwesomeIcon icon={faDatabase} />
 										<span>{t('Reset All Versions')}</span>
 									</button>
@@ -331,12 +333,14 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 										<tr
 											className={ClassNames({
 												hl: this.state.showAllSteps,
-											})}>
+											})}
+										>
 											<th className="c3">{t('All steps')}</th>
 											<td className="table-item-actions c3">
 												<button
 													className="action-btn"
-													onClick={(e) => this.setState({ showAllSteps: !this.state.showAllSteps })}>
+													onClick={(e) => this.setState({ showAllSteps: !this.state.showAllSteps })}
+												>
 													<FontAwesomeIcon icon={this.state.showAllSteps ? faEyeSlash : faEye} />
 												</button>
 											</td>
@@ -374,7 +378,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 											className="btn btn-primary"
 											onClick={() => {
 												this.runMigration()
-											}}>
+											}}
+										>
 											<FontAwesomeIcon icon={faDatabase} />
 											<span>{t('Run automatic migration procedure')}</span>
 										</button>
@@ -395,7 +400,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 														this.runMigration()
 													},
 												})
-											}}>
+											}}
+										>
 											<FontAwesomeIcon icon={faClipboardCheck} />
 											<span>{t('Run Migration Procedure')}</span>
 										</button>
@@ -433,7 +439,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 															this.forceMigration()
 														},
 													})
-												}}>
+												}}
+											>
 												<FontAwesomeIcon icon={faDatabase} />
 												<span>{t('Force Migration (unsafe)')}</span>
 											</button>

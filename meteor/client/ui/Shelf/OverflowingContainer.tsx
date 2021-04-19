@@ -88,7 +88,8 @@ export class OverflowingContainer extends React.Component<IProps, IState> {
 							'overflowing-container--overflowing-left': this.state.overflowingLeft,
 						})}
 						onMouseDown={() => this.startScroll(-15)}
-						onMouseUp={this.stopScroll}>
+						onMouseUp={this.stopScroll}
+					>
 						<FontAwesomeIcon icon={faChevronLeft} />
 					</button>
 				)}
@@ -98,7 +99,8 @@ export class OverflowingContainer extends React.Component<IProps, IState> {
 						'overflowing-container--overflowing-left': this.state.overflowingLeft,
 						'overflowing-container--overflowing-right': this.state.overflowingRight,
 					})}
-					ref={(el) => (this._element = el)}>
+					ref={(el) => (this._element = el)}
+				>
 					{this.props.children}
 				</div>
 				{this.state.overflowing && (
@@ -108,7 +110,8 @@ export class OverflowingContainer extends React.Component<IProps, IState> {
 							'overflowing-container--overflowing-right': this.state.overflowingRight,
 						})}
 						onMouseDown={() => this.startScroll(15)}
-						onMouseUp={this.stopScroll}>
+						onMouseUp={this.stopScroll}
+					>
 						<FontAwesomeIcon icon={faChevronRight} />
 					</button>
 				)}

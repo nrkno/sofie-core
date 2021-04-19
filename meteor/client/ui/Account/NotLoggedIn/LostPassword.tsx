@@ -76,7 +76,8 @@ export const LostPasswordPage = translateWithTracker((props: ILostPasswordPagePr
 						<button
 							type="submit"
 							className="btn btn-primary"
-							onClick={(e: React.MouseEvent<HTMLButtonElement>) => this.resetPassword(e)}>
+							onClick={(e: React.MouseEvent<HTMLButtonElement>) => this.resetPassword(e)}
+						>
 							{t('Send reset email')}
 						</button>
 						<Link className="selectable" to="/">

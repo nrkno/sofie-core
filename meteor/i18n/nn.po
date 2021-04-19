@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-01-07T09:15:46.298Z\n"
-"PO-Revision-Date: 2021-01-07 10:47+0100\n"
+"POT-Creation-Date: 2021-04-16T08:23:25.082Z\n"
+"PO-Revision-Date: 2021-04-16 10:24+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Generator: Poedit 2.4.2\n"
 
 msgid "Account Page"
-msgstr "Kontoside"
+msgstr "Brukarkontoside"
 
 msgid "Name:"
 msgstr "Namn:"
@@ -154,6 +154,9 @@ msgstr "Noko gjekk gale, men det virka ikkje inn på sendinga"
 msgid "Something went wrong, and it affected the output"
 msgstr "Noko gjekk gale, og det virka inn på sendinga"
 
+msgid "Are you sure?"
+msgstr "Er du sikker?"
+
 msgid ""
 "Trimming this clip has timed out. It's possible that the story is currently "
 "locked for writing in {{nrcsName}} and will eventually be updated. Make sure "
@@ -202,6 +205,9 @@ msgstr "Nullstill utpunkt"
 
 msgid "Out"
 msgstr "Ut"
+
+msgid "Next"
+msgstr "Neste"
 
 msgid "Could not get system status. Please consult system administrator."
 msgstr "Kan ikkje innhente status for systemet. Kontakt systemadministrator."
@@ -296,6 +302,9 @@ msgstr "Sendestart"
 msgid "Last updated"
 msgstr "Sist oppdatert"
 
+msgid "Shelf Layout"
+msgstr "Layouter for skuffen"
+
 msgid "Getting Started"
 msgstr "Kom i gong"
 
@@ -373,7 +382,7 @@ msgid "{{showStyleVariant}} – {{showStyleBase}}"
 msgstr "{{showStyleVariant}} – {{showStyleBase}}"
 
 msgid "Drag to reorder or move out of playlist"
-msgstr "Dra for å endre rekkefølgje eller flytta ut av speleliste "
+msgstr "Dra for å endre rekkefølgje eller flytta ut av speleliste"
 
 msgid "This rundown is currently active"
 msgstr "Denne køyreplanen er allereie aktiv"
@@ -387,6 +396,15 @@ msgstr "Ikkje synkronisert med MOS/{{nrcsName}}"
 msgid "Delete"
 msgstr "Slett"
 
+msgid "Standalone Shelf"
+msgstr "Frittståande skuff"
+
+msgid "Rundown & Shelf"
+msgstr "Køyreplan & skuff"
+
+msgid "Default"
+msgstr "Standard"
+
 msgid "Delete rundown?"
 msgstr "Slette køyreplanen?"
 
@@ -397,7 +415,7 @@ msgid "Please note: This action is irreversible!"
 msgstr "Merk: Denne handlinga kan du ikkje angre!"
 
 msgid "Re-Sync rundown?"
-msgstr "Synkroniser køyreplanen med ENPS på ny"
+msgstr "Synkroniser køyreplanen med ENPS på ny?"
 
 msgid "Re-Sync"
 msgstr "Synkroniser"
@@ -417,7 +435,7 @@ msgstr "Nei"
 
 msgid ""
 "You are in rehearsal mode, the broadcast starts in less than 1 minute. Do "
-"you want to reset the rundown and go into playout mode?"
+"you want to reset the rundown and go into On-Air mode?"
 msgstr ""
 "Du er i testmodus og sendinga startar om mindre enn eitt minutt. Vil du "
 "laste inn køyreplanen på nytt og gjere klar til sending?"
@@ -446,14 +464,14 @@ msgstr "Take"
 msgid "Undo Hold"
 msgstr "Angre hold"
 
-msgid "Activate"
-msgstr "Aktiver"
+msgid "Activate (On-Air)"
+msgstr "Aktiver (gå ON AIR)"
 
 msgid "Deactivate"
 msgstr "Deaktiver"
 
 msgid "Activate (Rehearsal)"
-msgstr "Aktiver testmodus"
+msgstr "Aktiver (testmodus)"
 
 msgid "Reset Rundown"
 msgstr "Tilbakestill køyreplanen"
@@ -482,6 +500,16 @@ msgstr "Loggfør feil"
 msgid "Could not find a Piece that can be disabled."
 msgstr "Kunne ikkje finne eit element som kan skippes."
 
+msgid "Failed to execute take"
+msgstr "Kunne ikkje gjennomføre Take"
+
+msgid ""
+"The rundown you are trying to execute a take on is inactive, would you like "
+"to activate this rundown?"
+msgstr ""
+"Du prøve å gjere ein Take i ein inaktiv køyreplan. Vil du aktivere denne "
+"køyreplanen?"
+
 msgid "Failed to activate"
 msgstr "Kunne ikkje aktivere"
 
@@ -504,10 +532,10 @@ msgstr ""
 "\n"
 "Er du sikker på at du ønsker å aktivere?"
 
-msgid "Activate Anyway"
-msgstr "Aktiver uansett"
+msgid "Activate Anyway (Rehearsal)"
+msgstr "Aktiver uansett (testmodus)"
 
-msgid "Activate Anyway (GO ON AIR)"
+msgid "Activate Anyway (On-Air)"
 msgstr "Aktiver uansett (gå ON AIR)"
 
 msgid "Do you want to activate this Rundown?"
@@ -619,7 +647,7 @@ msgid "Close"
 msgstr "Lukk"
 
 msgid "Rundown for piece \"{{pieceLabel}}\" could not be found."
-msgstr "Kan ikkje finne øyreplan for \"{{pieceLabel}}\" "
+msgstr "Kan ikkje finne øyreplan for \"{{pieceLabel}}\"."
 
 msgid "This rundown has been unpublished from Sofie."
 msgstr "Denne køyreplanen er ikkje lenger tilgjengeleg i Sofie."
@@ -638,35 +666,33 @@ msgstr "Ukjend feil"
 
 msgid ""
 "Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data "
-"from {{nrcsName}}, what do you want to do?"
+"from {{nrcsName}}. You can either leave it in Sofie and mark it as Unsynced "
+"or remove the rundown from Sofie. What do you want to do?"
 msgstr ""
 "Køyreplanen {{rundownName}} i lista {{playlistName}} manglar i data frå "
-"{{nrcsName}}. Kva vil du gjere?"
+"{{nrcsName}}. Du kan anten markere den som ikkje synkronisert og behalde den "
+"i Sofie, eller du kan fjerne køyreplanen ifrå Sofie. Kva vil du gjere?"
 
-#, fuzzy
-#| msgid "Mark the rundown as unsynced"
-msgid "Leave it in Sofie (mark the rundown as unsynced)"
-msgstr "Marker køyreplan som ikkje-synkronisert"
+msgid "(Unknown rundown)"
+msgstr "(Ukjend køyreplan)"
 
-#, fuzzy
-#| msgid "Remove just the rundown"
-msgid "Remove just the rundown from Sofie"
-msgstr "Fjern berre køyreplan"
+msgid "(Unknown playlist)"
+msgstr "(Ukjend køyreplanliste)"
 
-#, fuzzy
-#| msgid "Remove rundown playlist"
+msgid "Leave Unsynced"
+msgstr "Behald ikkje-synkronisert køyreplan"
+
+msgid "Remove"
+msgstr "Fjern"
+
 msgid "Remove rundown"
-msgstr "Fjern køyreplanliste"
+msgstr "Fjern køyreplan"
 
-#, fuzzy
-#| msgid ""
-#| "Do you really want to remove just the rundown \"{{rundownName}}\" in the "
-#| "playlist {{playlistName}}? This cannot be undone!"
 msgid ""
 "Do you really want to remove just the rundown \"{{rundownName}}\" in the "
 "playlist {{playlistName}} from Sofie? This cannot be undone!"
 msgstr ""
-"Er du sikker på at du berre vil slette køyreplanen {{rundownName}} i lista "
+"Er du sikker på at du vil slette køyreplanen {{rundownName}} i lista "
 "{{playlistName}} frå Sofie? Denne handlinga kan du ikkje angre!"
 
 msgid "(in: {{time}})"
@@ -678,12 +704,15 @@ msgstr "(for {{time}} sidan)"
 msgid "Planned Duration"
 msgstr "Planlagt varigheit"
 
+msgid "Looping"
+msgstr "Loopmodus"
+
 msgid ""
-"The Rundown \"{{rundownName}}\" has been UNSYNCED from {{nrcsName}}! No data "
-"updates will currently come through."
+"The rundown \"{{rundownName}}\" is not published or activated in "
+"{{nrcsName}}! No data updates will currently come through."
 msgstr ""
 "Køyreplanen \"{{rundownName}}\" er ikkje synkronisert med MOS/{{nrcsName}}! "
-"Ingen oppdateringer vil hentast inn."
+"Kontroller at den er satt til MOS Active i ENPS."
 
 msgid "Re-sync"
 msgstr "Synkroniser med MOS"
@@ -825,16 +854,19 @@ msgid "Set segment as <strong>Next</strong>"
 msgstr "Set tittel som <strong>neste</strong>: Startar på neste Take"
 
 msgid "Queue segment"
-msgstr "Set tittel i kø: Startar når aktiv tittel er ferdig"
+msgstr "Cue tittel: Startar når aktiv tittel er ferdig"
 
 msgid "Clear queued segment"
-msgstr "Fjern tittel frå kø"
+msgstr "Fjern cuet tittel"
 
 msgid "Resync Segment"
 msgstr "Synkroniser tittel på nytt"
 
 msgid "On Air"
 msgstr "On Air"
+
+msgid "On Air In"
+msgstr "On Air om"
 
 msgid "Unsynced"
 msgstr "Ikkje synkronisert med MOS"
@@ -845,11 +877,11 @@ msgstr "Ugyldig"
 msgid "Auto"
 msgstr "Auto"
 
-msgid "Next"
-msgstr "Neste"
-
 msgid "Show End"
 msgstr "Sendeslutt"
+
+msgid "Loops to top"
+msgstr "Looper til toppen"
 
 msgid "Unknown"
 msgstr "Ukjend"
@@ -1071,9 +1103,6 @@ msgstr "Type eining"
 
 msgid "Remove this item?"
 msgstr "Fjern dette elementet?"
-
-msgid "Remove"
-msgstr "Fjern"
 
 msgid "Are you sure you want to remove {{type}} \"{{deviceId}}\"?"
 msgstr "Er du sikker på at du vil fjerne eininga {{type}} \"{{deviceId}}\"?"
@@ -1344,7 +1373,10 @@ msgid "Display Take buttons"
 msgstr "Vis Take-knapp"
 
 msgid "Queue all adlibs"
-msgstr "Sett alle adlibs i kø"
+msgstr "Cue alle adliber"
+
+msgid "Toggle AdLibs on single mouse click"
+msgstr "Veksle mellom adliber med enkelt museklikk"
 
 msgid "URL"
 msgstr "Adresse (url)"
@@ -1360,6 +1392,9 @@ msgstr "Adlib-rang"
 
 msgid "Place label below panel"
 msgstr "Plasser etikett under panel"
+
+msgid "Disabled"
+msgstr "Deaktivert"
 
 msgid "Expose layout as a standalone page"
 msgstr "Eksponer layout som ei sjølvstendig side"
@@ -1524,15 +1559,12 @@ msgstr "Fjern hurtigtast"
 msgid "Assign Hotkeys to Global AdLibs"
 msgstr "Tildel hurtigtastar til globale adliber"
 
-#, fuzzy
 msgid "Pieces on this layer are sticky"
 msgstr "Element på dette laget er sticky"
 
-#, fuzzy
 msgid "Only Pieces present in rundown are sticky"
 msgstr "Kun element til stades i køyreplanen er sticky"
 
-#, fuzzy
 msgid "Activate Sticky Piece Shortcut"
 msgstr "Aktiver hurtigtast for sticky element"
 
@@ -1540,17 +1572,15 @@ msgid "Allow disabling of Pieces"
 msgstr "Tillat deaktivering av element"
 
 msgid "AdLibs on this layer can be queued"
-msgstr "Adliber på dette laget kan setjas i kø"
+msgstr "Adliber på dette laget kan cues"
 
 msgid "Exclusivity group"
 msgstr "Ekslusivitetgruppe"
 
-#, fuzzy
 msgid ""
 "Add some source layers (e.g. Graphics) for your data to appear in rundowns"
 msgstr ""
-"Legg til kjeldelag (til dømes Grafikk) for å vise dine ENPS-data i "
-"køyreplanar"
+"Legg til kjeldelag (til dømes Grafikk) for å vise dine data i køyreplanar"
 
 msgid "No source layers set"
 msgstr "Ingen kjeldelag definert"
@@ -1570,11 +1600,9 @@ msgstr "Kanalnavn"
 msgid "Is PGM Output"
 msgstr "Er programutgang"
 
-#, fuzzy
 msgid "Is collapsed by default"
 msgstr "Er minimert som standard"
 
-#, fuzzy
 msgid "Is flattened"
 msgstr "Er slått saman"
 
@@ -1685,54 +1713,6 @@ msgstr "Ingen einingar tilkopla"
 msgid "Playout gateway not connected"
 msgstr "Playout-gateway ikkje tilkopla"
 
-msgid "CasparCG Channel"
-msgstr "CasparCG-kanal"
-
-msgid "The CasparCG channel to use (1 is the first)"
-msgstr "CasparCG-kanalen som skal nyttast (1 er den første)"
-
-msgid "CasparCG Layer"
-msgstr "CasparCG-lag"
-
-msgid "The layer in a channel to use"
-msgstr "Kanallaget som skal nyttast"
-
-msgid "Preview when not on air"
-msgstr "Vis preview når ikkje OnAir"
-
-msgid "Whether to load to first frame"
-msgstr "Første frame skal visast"
-
-msgid "Mapping type"
-msgstr "Mappingtype"
-
-msgid "Index"
-msgstr "Index"
-
-msgid "Identifier"
-msgstr "Identifikator"
-
-msgid "Priority"
-msgstr "Prioritet"
-
-msgid "Sisyfos Channel"
-msgstr "Sisyfos-kanal"
-
-msgid "Quantel Port ID"
-msgstr "Quantel port-id"
-
-msgid "The name you'd like the port to have"
-msgstr "Namnet du vil gje porten"
-
-msgid "Quantel Channel ID"
-msgstr "Quantel kanal-id"
-
-msgid "The channel to use for output (0 is the first one)"
-msgstr "Kanalen som skal nyttast som utgang (0 er den første)"
-
-msgid "Mode"
-msgstr "Modus"
-
 msgid "Remove this mapping?"
 msgstr "Fjern denne mappinga?"
 
@@ -1742,34 +1722,9 @@ msgstr "Er du sikker på at du fil fjerne mappinga for laget \"{{mappingId}}\"?"
 msgid "This layer is now rerouted by an active Route Set: {{routeSets}}"
 msgstr "Dette laget vert omkopla av ei aktiv omkoplingsgruppe: {{routeSets}}"
 
-msgid "Preset"
-msgstr "Preset"
-
-msgid "Preset Transition Speed"
-msgstr "Preset transition-hastigheit"
-
-msgid "Zoom"
-msgstr "Zoom"
-
-msgid "Zoom Speed"
-msgstr "Zoom-hastigheit"
-
-msgid "Unknown Mapping"
-msgstr "Ukjend lag"
-
-msgid "Channel: {{channel}}"
-msgstr "Kanal: {{channel}}"
-
-msgid "Port: {{port}}, Channel: {{channel}}"
-msgstr "Port: {{port}}, Kanal: {{channel}}"
-
-msgid "Unknown device type: {{device}}"
-msgstr "Ukjend einingtype: {{device}}"
-
 msgid "Layer ID"
 msgstr "Lag-id"
 
-#, fuzzy
 msgid "ID of the timeline-layer to map to some output"
 msgstr "Lag-id for tidslinjelaget som skal mappast til ein utgang"
 
@@ -1792,6 +1747,11 @@ msgstr "Lookahead maksimum søkelengde (standard = ubegrensa / -1)"
 
 msgid "Layer Mappings"
 msgstr "Lagmapping"
+
+msgid "Add a playout device to the studio in order to edit the layer mappings"
+msgstr ""
+"For å kunne redigere lagmappingar, må du leggje til ein playout-eining til "
+"studio"
 
 msgid "Remove this Exclusivity Group?"
 msgstr "Fjern frå denne eksklusivitetgruppa?"
@@ -1893,15 +1853,150 @@ msgstr "Måten denne omkoplingsgruppa skal oppføre seg overfor brukaren"
 msgid "Route Sets"
 msgstr "Omkoplingsgrupper"
 
+msgid "Add a playout device to the studio in order to configure the route sets"
+msgstr ""
+"For å kunne redigere omkoplingsgrupper, må du leggje til ein playout-eining "
+"til studio"
+
 msgid ""
 "Controls for exposed Route Sets will be displayed to the producer within the "
 "Rundown View in the Switchboard."
 msgstr ""
 "Kontroller for eksponerte omkoplingsgrupper vil verte synt for producer i "
-"køyreplansvisninga i omkoplingspanelet"
+"køyreplansvisninga i omkoplingspanelet."
 
 msgid "Exclusivity Groups"
 msgstr "Ekslusivitetgrupper"
+
+msgid "Remove this Package Container?"
+msgstr "Fjern denne pakkecontaineren?"
+
+msgid ""
+"Are you sure you want to remove the Package Container \"{{containerId}}\"?"
+msgstr "Er du sikker på at du vil fjerne pakkecontaineren \"{{containerId}}\"?"
+
+msgid "There are no Package Containers set up."
+msgstr "Det er ikkje satt opp pakkekontainere enno."
+
+msgid "Package Container ID"
+msgstr "Pakkekontainer-id"
+
+msgid "Display name/label of the Package Container"
+msgstr "Vis namn/merkelapp for pakkekontaineren"
+
+msgid "Playout devices which uses this package container"
+msgstr "Playout-einingar som nyttar denne pakkekontaineren"
+
+msgid "Select playout devices"
+msgstr "Vel playout-eining"
+
+msgid "Select which playout devices are using this package container"
+msgstr ""
+"Vel kva for nokre playout-einingar som skal nytte denne pakkekontaineren"
+
+msgid "Accessors"
+msgstr ""
+
+msgid "Remove this Package Container Accessor?"
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove the Package Container Accessor "
+"\"{{accessorId}}\"?"
+msgstr ""
+
+msgid "There are no Accessors set up."
+msgstr ""
+
+msgid "Accessor ID"
+msgstr ""
+
+msgid "Display name of the Package Container"
+msgstr "Pakkekontaineren sitt namn som visast i oversikten"
+
+msgid "Accessor Type"
+msgstr ""
+
+msgid "Folder path"
+msgstr "Mappesti"
+
+msgid "File path to the folder of the local folder"
+msgstr ""
+
+msgid "Resource Id"
+msgstr "Ressurs-id"
+
+msgid ""
+"(Optional) This could be the name of the computer on which the local folder "
+"is on"
+msgstr ""
+"(Valfri) Dette kan vere namnet til datamaskinen som den lokale mappa er på"
+
+msgid "Base URL"
+msgstr ""
+
+msgid "Base url to the resource (example: http://myserver/folder)"
+msgstr ""
+
+msgid "Default request method"
+msgstr ""
+
+msgid "get, post etc..."
+msgstr ""
+
+msgid "Defaults request headers"
+msgstr ""
+
+msgid "Defaults request body"
+msgstr ""
+
+msgid "Network Id"
+msgstr ""
+
+msgid ""
+"(Optional) A name/identifier of the local network where the share is "
+"located, leave empty if globally accessible"
+msgstr ""
+
+msgid "Folder path to shared folder"
+msgstr ""
+
+msgid "UserName"
+msgstr "Brukernamn"
+
+msgid "Username for athuentication"
+msgstr "Brukarnamn for autentisering"
+
+msgid "Password for authentication"
+msgstr "Passord for autentisering"
+
+msgid ""
+"(Optional) A name/identifier of the local network where the share is located"
+msgstr ""
+
+msgid "Allow Read access"
+msgstr "Tillat lesing"
+
+msgid "Allow Write access"
+msgstr "Tillat skriving/lagring"
+
+msgid "Package Manager"
+msgstr "Pakkebehandler"
+
+msgid "Studio Settings"
+msgstr "Studioinnstillingar"
+
+msgid "Package Containers to use for previews"
+msgstr "Pakkekontainere som skal nyttast til førehandsvisingar"
+
+msgid "Click to show available Package Containers"
+msgstr "Klikk for å vise tilgjengelege pakkekntainere"
+
+msgid "Package Containers to use for thumbnails"
+msgstr "Pakkekontainere som skal nyttast til miniatyrbilete"
+
+msgid "Package Containers"
+msgstr "Pakkekontainere"
 
 msgid "Studio Baseline needs update: "
 msgstr "Studio baseline treng oppdatering: "
@@ -1926,8 +2021,8 @@ msgstr "Showstyle ikkje satt"
 msgid "Click to show available Show Styles"
 msgstr "Klikk for å vise tilgjengelege showstyles"
 
-msgid "Enable Play from Anywhere™"
-msgstr "Slå på Play from Anywhere™"
+msgid "Enable \"Play from Anywhere\""
+msgstr "Slå på \"Play from Anywhere\""
 
 msgid "Media Preview URL"
 msgstr "Førehandsvisningsadresse (url)"
@@ -2024,6 +2119,12 @@ msgid ""
 "issue, but (unverified) might cause issues in itself."
 msgstr ""
 
+msgid "Cron jobs"
+msgstr "Cron-jobbar"
+
+msgid "Enable CasparCG restart job"
+msgstr ""
+
 msgid "Cleanup"
 msgstr "Opprydding"
 
@@ -2063,7 +2164,6 @@ msgstr "Kan ikkje spele av adlib fordi det er markert som på vent (float)"
 msgid "AdLib does not provide any options"
 msgstr "Adlib har ingen val"
 
-#, fuzzy
 msgid "Execute"
 msgstr "Utfør"
 
@@ -2073,7 +2173,6 @@ msgstr "Lagre til bøtte"
 msgid "Reveal in Shelf"
 msgstr "Vis i skuff"
 
-#, fuzzy
 msgid "Edit in Nora"
 msgstr "Rediger i Nora"
 
@@ -2099,7 +2198,7 @@ msgid "Start this AdLib"
 msgstr "Start denne adliben"
 
 msgid "Queue this AdLib"
-msgstr "Sett denne adliben i kø"
+msgstr "Cue denne adliben"
 
 msgid "Inspect this AdLib"
 msgstr "Inspiser denne adliben"
@@ -2137,6 +2236,9 @@ msgstr "System"
 msgid "Media"
 msgstr "Media"
 
+msgid "Packages"
+msgstr "Pakker"
+
 msgid "Messages"
 msgstr "Meldingar"
 
@@ -2154,6 +2256,15 @@ msgstr "Brukernamn"
 
 msgid "Answers"
 msgstr "Svar"
+
+msgid "Abort"
+msgstr "Avbryt"
+
+msgid "Package Status"
+msgstr "Pakkestatus"
+
+msgid "Restart All"
+msgstr "Start alle på ny"
 
 msgid "Message Queue"
 msgstr "Kø for meldingar"
@@ -2177,7 +2288,7 @@ msgid "Scan File"
 msgstr "Scan fil"
 
 msgid "Generate Thumbnail"
-msgstr "Generer miniatyrbilder"
+msgstr "Generer miniatyrbilete"
 
 msgid "Generate Preview"
 msgstr "Generer førehandsvisning"
@@ -2227,9 +2338,6 @@ msgstr "Minimer"
 msgid "Details"
 msgstr "Detaljar"
 
-msgid "Abort"
-msgstr "Avbryt"
-
 msgid "Prioritize"
 msgstr "Prioriter"
 
@@ -2238,9 +2346,6 @@ msgstr "Status for medieoverføringar"
 
 msgid "Abort All"
 msgstr "Avbryt alle"
-
-msgid "Restart All"
-msgstr "Start alle på ny"
 
 msgid "Do you want to restart CasparCG Server?"
 msgstr "Er du sikker på at du vil starte CasparCG om att?"
@@ -2308,7 +2413,6 @@ msgstr "Sofie Core starter om att om {{time}}s..."
 msgid "Not Connected"
 msgstr "Ikkje tilkopla"
 
-#, fuzzy
 msgid "Execution time*"
 msgstr "Utføringsvarigheit*"
 
@@ -2379,7 +2483,7 @@ msgid "Play from here"
 msgstr "Spel av frå her"
 
 msgid "Exectute Single"
-msgstr ""
+msgstr "Utfør einsleg handling"
 
 msgid "Next Action"
 msgstr "Neste handling"
@@ -2390,21 +2494,34 @@ msgstr "Køyr i"
 msgid "Stop"
 msgstr "Stopp"
 
-msgid "Clip can't be played because the filename is missing"
-msgstr "Klippet kan ikkje spelast av fordi filnamnet mangler"
-
-msgid "Clip can't be played because it isn't present on the playout system"
+msgid ""
+"Clip \"{{fileName}}\" can't be played because it isn't present on the "
+"playout system"
 msgstr ""
-"Klippet kan ikkje spelast av fordi det ikkje finnast på utspelingssystemet"
+"Klippet \"{{fileName}}\" kan ikkje spelast av fordi det ikkje finnast på "
+"utspelingssystemet"
 
-msgid "Clip doesn't have audio & video"
-msgstr "Klippet har ikkje lyd eller bilete"
+msgid "{{sourceLayer}} is not yet ready on the playout system"
+msgstr ""
+"{{sourceLayer}} er enno ikkje klar til å spelast ut fra avviklingsserver"
 
-msgid "Clip format ({{format}}) is not in one of the accepted formats"
-msgstr "Klippformatet ({{format}}) er ikkje støtta"
+msgid "{{sourceLayer}} is transferring to the the playout system"
+msgstr "{{sourceLayer}} overførast til avviklingsserver"
 
-msgid "Clip has {{audioStreams}} audio streams"
-msgstr "Klippet har {{audioStreams}} lydstraumar"
+msgid ""
+"{{sourceLayer}} is transferring to the the playout system and cannot be "
+"played yet"
+msgstr ""
+"{{sourceLayer}} overførast til avviklingsserver og kan ikkje spelast av enno"
+
+msgid "{{sourceLayer}} doesn't have both audio & video"
+msgstr "{{sourceLayer}} har ikkje lyd og/eller bilete"
+
+msgid "{{sourceLayer}} has the wrong format: {{format}}"
+msgstr "{{sourceLayer}}-formatet er ikkje støtta: {{format}}"
+
+msgid "{{sourceLayer}} has {{audioStreams}} audio streams"
+msgstr "{{sourceLayer}} har {{audioStreams}} lydstraumar"
 
 msgid "Clip starts with {{frames}} {{type}} frame"
 msgstr "Klippet startar med {{frames}} {{type}} frame"
@@ -2418,8 +2535,33 @@ msgstr "{{frames}} {{type}} frame oppdaga inne i klippet"
 msgid "{{frames}} {{type}} frame detected in clip"
 msgstr "{{frames}} {{type}} frame oppdaga i klippet"
 
-msgid "Clip is being ingested"
-msgstr "Klippet blir prosessert"
+msgid "{{sourceLayer}} is missing a file path"
+msgstr "{{sourceLayer}} kan ikkje spelast av fordi filnamnet manglar"
+
+msgid "Clip doesn't have audio & video"
+msgstr "Klippet har ikkje lyd og/eller bilete"
+
+msgid "black"
+msgstr "svart(e)"
+
+msgid "freeze"
+msgstr "fryst(e)"
+
+msgid "{{sourceLayer}} is being ingested"
+msgstr "{{sourceLayer}} vert prosessert"
+
+msgid "Segment no longer exists in {{nrcs}}"
+msgstr "Segmentet eksisterer ikkje lenger i {{nrcs}}"
+
+msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
+msgstr "Dei følgande delane eksisterer ikkje lenger i {{nrcs}}: {{partNames}}"
+
+msgid ""
+"The Rundown was attempted to be moved out of the Playlist when it was on "
+"Air. Move it back and try again later."
+msgstr ""
+"Køyreplanen vart forsøkt flytta ut av spillelista mens den var OnAir. Flytt "
+"den attende og prøv igjen seinare."
 
 msgctxt "°°°°°°plural"
 msgid "{{count}} rows°°°°°°"
@@ -2455,6 +2597,100 @@ msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
+#~ msgid "Clip can't be played because the filename is missing"
+#~ msgstr "Klippet kan ikkje spelast av fordi filnamnet mangler"
+
+#~ msgid "Clip format ({{format}}) is not in one of the accepted formats"
+#~ msgstr "Klippformatet ({{format}}) er ikkje støtta"
+
+#~ msgid "Activate"
+#~ msgstr "Aktiver"
+
+#~ msgid "Activate Anyway"
+#~ msgstr "Aktiver uansett"
+
+#, fuzzy
+#~| msgid "Mark the rundown as unsynced"
+#~ msgid "Leave it in Sofie (mark the rundown as unsynced)"
+#~ msgstr "Marker køyreplan som ikkje-synkronisert"
+
+#, fuzzy
+#~| msgid "Remove just the rundown"
+#~ msgid "Remove just the rundown from Sofie"
+#~ msgstr "Fjern berre køyreplan"
+
+#~ msgid "CasparCG Channel"
+#~ msgstr "CasparCG-kanal"
+
+#~ msgid "The CasparCG channel to use (1 is the first)"
+#~ msgstr "CasparCG-kanalen som skal nyttast (1 er den første)"
+
+#~ msgid "CasparCG Layer"
+#~ msgstr "CasparCG-lag"
+
+#~ msgid "The layer in a channel to use"
+#~ msgstr "Kanallaget som skal nyttast"
+
+#~ msgid "Preview when not on air"
+#~ msgstr "Vis preview når ikkje OnAir"
+
+#~ msgid "Whether to load to first frame"
+#~ msgstr "Første frame skal visast"
+
+#~ msgid "Mapping type"
+#~ msgstr "Mappingtype"
+
+#~ msgid "Index"
+#~ msgstr "Index"
+
+#~ msgid "Identifier"
+#~ msgstr "Identifikator"
+
+#~ msgid "Priority"
+#~ msgstr "Prioritet"
+
+#~ msgid "Sisyfos Channel"
+#~ msgstr "Sisyfos-kanal"
+
+#~ msgid "Quantel Port ID"
+#~ msgstr "Quantel port-id"
+
+#~ msgid "The name you'd like the port to have"
+#~ msgstr "Namnet du vil gje porten"
+
+#~ msgid "Quantel Channel ID"
+#~ msgstr "Quantel kanal-id"
+
+#~ msgid "The channel to use for output (0 is the first one)"
+#~ msgstr "Kanalen som skal nyttast som utgang (0 er den første)"
+
+#~ msgid "Mode"
+#~ msgstr "Modus"
+
+#~ msgid "Preset"
+#~ msgstr "Preset"
+
+#~ msgid "Preset Transition Speed"
+#~ msgstr "Preset transition-hastigheit"
+
+#~ msgid "Zoom"
+#~ msgstr "Zoom"
+
+#~ msgid "Zoom Speed"
+#~ msgstr "Zoom-hastigheit"
+
+#~ msgid "Unknown Mapping"
+#~ msgstr "Ukjend lag"
+
+#~ msgid "Channel: {{channel}}"
+#~ msgstr "Kanal: {{channel}}"
+
+#~ msgid "Port: {{port}}, Channel: {{channel}}"
+#~ msgstr "Port: {{port}}, Kanal: {{channel}}"
+
+#~ msgid "Unknown device type: {{device}}"
+#~ msgstr "Ukjend einingtype: {{device}}"
+
 #~ msgid "Delete this RundownPlaylist?"
 #~ msgstr "Slett denne køyreplanlista?"
 
@@ -2470,14 +2706,8 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 #~ "Er du sikker på at du vil synkronisere alle køyreplanane i køyreplanlista "
 #~ "\"{{name}}\" om att?"
 
-#~ msgid "Standalone Shelf"
-#~ msgstr "Frittståande skuff"
-
 #~ msgid "Timeline views"
 #~ msgstr "Tidslinjevisningar"
-
-#~ msgid "Default"
-#~ msgstr "Standard"
 
 #~ msgid "Multiple ({{count}})"
 #~ msgstr "Fleire ({{count}})"
@@ -2670,12 +2900,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 #~ msgid "Storage Type"
 #~ msgstr "Lagertype"
 
-#~ msgid "Allow Read"
-#~ msgstr "Tillat lesing"
-
-#~ msgid "Allow Write"
-#~ msgstr "Tillat skriving/lagring"
-
 #~ msgid "Base Path"
 #~ msgstr "Rotsti"
 
@@ -2799,9 +3023,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 #~ msgid "Device id"
 #~ msgstr "Einings-id"
 
-#~ msgid "Disable"
-#~ msgstr "Deaktiver"
-
 #~ msgid "Thread Usage"
 #~ msgstr "Trådar i bruk"
 
@@ -2837,9 +3058,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
 #~ msgid "Interval"
 #~ msgstr "Intervall"
-
-#~ msgid "Gateway URL"
-#~ msgstr "Gateway-adresse (url)"
 
 #~ msgid "ISA URL"
 #~ msgstr "ISA-adresse (url)"

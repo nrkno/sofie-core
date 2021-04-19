@@ -1,4 +1,4 @@
-import { ensureCollectionProperty, setExpectedVersion } from './lib'
+import { setExpectedVersion } from './lib'
 import { addMigrationSteps } from './databaseMigration'
 import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
 import * as _ from 'underscore'

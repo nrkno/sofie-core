@@ -56,13 +56,15 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 				<span
 					className="segment-timeline__piece__label"
 					ref={this.setLeftLabelRef}
-					style={this.getItemLabelOffsetLeft()}>
+					style={this.getItemLabelOffsetLeft()}
+				>
 					<span className="segment-timeline__piece__label">{innerPiece.name}</span>
 				</span>
 				<span
 					className="segment-timeline__piece__label right-side"
 					ref={this.setRightLabelRef}
-					style={this.getItemLabelOffsetRight()}>
+					style={this.getItemLabelOffsetRight()}
+				>
 					{this.renderInfiniteIcon()}
 					{this.renderOverflowTimeLabel()}
 				</span>

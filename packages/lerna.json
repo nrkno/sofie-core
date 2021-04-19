@@ -1,0 +1,5 @@
+{
+	"version": "1.33.0-in-development",
+	"npmClient": "yarn",
+	"useWorkspaces": true
+}

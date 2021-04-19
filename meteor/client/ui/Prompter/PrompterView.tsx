@@ -29,18 +29,26 @@ interface PrompterConfig {
 	followTake?: boolean
 	fontSize?: number
 	margin?: number
-	speedMap?: number[]
-	reverseSpeedMap?: number[]
-	rangeRevMin?: number
-	rangeNeutralMin?: number
-	rangeNeutralMax?: number
-	rangeFwdMax?: number
-
+	joycon_invertJoystick: boolean
+	joycon_speedMap?: number[]
+	joycon_reverseSpeedMap?: number[]
+	joycon_rangeRevMin?: number
+	joycon_rangeNeutralMin?: number
+	joycon_rangeNeutralMax?: number
+	joycon_rangeFwdMax?: number
+	pedal_speedMap?: number[]
+	pedal_reverseSpeedMap?: number[]
+	pedal_rangeRevMin?: number
+	pedal_rangeNeutralMin?: number
+	pedal_rangeNeutralMax?: number
+	pedal_rangeFwdMax?: number
+	shuttle_speedMap?: number[]
 	marker?: 'center' | 'top' | 'bottom' | 'hide'
 	showMarker: boolean
 	showScroll: boolean
 	debug: boolean
 	showOverUnder: boolean
+	addBlankLine: boolean
 }
 
 export enum PrompterConfigMode {
@@ -109,23 +117,38 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			followTake: queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1',
 			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
 			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
-			speedMap:
-				queryParams['speedMap'] === undefined
+			joycon_invertJoystick:
+				queryParams['joycon_invertJoystick'] === undefined ? true : queryParams['joycon_invertJoystick'] === '1',
+			joycon_speedMap:
+				queryParams['joycon_speedMap'] === undefined
 					? undefined
-					: new Array().concat(queryParams['speedMap']).map((value) => parseInt(value, 10)),
-			reverseSpeedMap:
-				queryParams['reverseSpeedMap'] === undefined
+					: new Array().concat(queryParams['joycon_speedMap']).map((value) => parseInt(value, 10)),
+			joycon_reverseSpeedMap:
+				queryParams['joycon_reverseSpeedMap'] === undefined
 					? undefined
-					: new Array().concat(queryParams['reverseSpeedMap']).map((value) => parseInt(value, 10)),
-			rangeRevMin: parseInt(firstIfArray(queryParams['rangeRevMin']) as string, 10) || undefined,
-			rangeNeutralMin: parseInt(firstIfArray(queryParams['rangeNeutralMin']) as string, 10) || undefined,
-			rangeNeutralMax: parseInt(firstIfArray(queryParams['rangeNeutralMax']) as string, 10) || undefined,
-			rangeFwdMax: parseInt(firstIfArray(queryParams['rangeFwdMax']) as string, 10) || undefined,
+					: new Array().concat(queryParams['joycon_reverseSpeedMap']).map((value) => parseInt(value, 10)),
+			joycon_rangeRevMin: parseInt(firstIfArray(queryParams['joycon_rangeRevMin']) as string, 10) || undefined,
+			joycon_rangeNeutralMin: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMin']) as string, 10) || undefined,
+			joycon_rangeNeutralMax: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMax']) as string, 10) || undefined,
+			joycon_rangeFwdMax: parseInt(firstIfArray(queryParams['joycon_rangeFwdMax']) as string, 10) || undefined,
+			pedal_speedMap:
+				queryParams['pedal_speedMap'] === undefined
+					? undefined
+					: new Array().concat(queryParams['pedal_speedMap']).map((value) => parseInt(value, 10)),
+			pedal_reverseSpeedMap:
+				queryParams['pedal_reverseSpeedMap'] === undefined
+					? undefined
+					: new Array().concat(queryParams['pedal_reverseSpeedMap']).map((value) => parseInt(value, 10)),
+			pedal_rangeRevMin: parseInt(firstIfArray(queryParams['pedal_rangeRevMin']) as string, 10) || undefined,
+			pedal_rangeNeutralMin: parseInt(firstIfArray(queryParams['pedal_rangeNeutralMin']) as string, 10) || undefined,
+			pedal_rangeNeutralMax: parseInt(firstIfArray(queryParams['pedal_rangeNeutralMax']) as string, 10) || undefined,
+			pedal_rangeFwdMax: parseInt(firstIfArray(queryParams['pedal_rangeFwdMax']) as string, 10) || undefined,
 			marker: (firstIfArray(queryParams['marker']) as any) || undefined,
 			showMarker: queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1',
 			showScroll: queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1',
 			debug: queryParams['debug'] === undefined ? false : queryParams['debug'] === '1',
 			showOverUnder: queryParams['showoverunder'] === undefined ? true : queryParams['showoverunder'] === '1',
+			addBlankLine: queryParams['addblanklinke'] === undefined ? true : queryParams['adblankline'] === '1',
 		}
 
 		this._controller = new PrompterControlManager(this)
@@ -446,7 +469,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 									className="btn btn-primary"
 									onClick={() => {
 										history.push('/rundowns')
-									}}>
+									}}
+								>
 									{t('Return to list')}
 								</button>
 							)}
@@ -491,7 +515,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 									marginBottom: this.configOptions.margin ? this.configOptions.margin + 'vh' : undefined,
 									marginLeft: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
 									marginRight: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
-								}}></div>
+								}}
+							></div>
 						) : null}
 					</>
 				) : this.props.studio ? (
@@ -669,7 +694,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 							'segment-' + segment.id,
 							'part-' + firstPart.id,
 							firstPartStatus
-						)}>
+						)}
+					>
 						{segment.title || 'N/A'}
 					</div>
 				)
@@ -678,7 +704,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					lines.push(
 						<div
 							key={'part_' + part.id}
-							className={ClassNames('prompter-part', 'scroll-anchor', 'part-' + part.id, getPartStatus(part))}>
+							className={ClassNames('prompter-part', 'scroll-anchor', 'part-' + part.id, getPartStatus(part))}
+						>
 							{part.title || 'N/A'}
 						</div>
 					)
@@ -687,7 +714,12 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						lines.push(
 							<div
 								key={'line_' + part.id + '_' + segment.id + '_' + line.id}
-								className={ClassNames('prompter-line', !line.text ? 'empty' : undefined)}>
+								className={ClassNames(
+									'prompter-line',
+									this.props.config.addBlankLine ? 'add-blank' : undefined,
+									!line.text ? 'empty' : undefined
+								)}
+							>
 								{line.text || ''}
 							</div>
 						)
@@ -710,14 +742,16 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						)}
 						style={{
 							fontSize: this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined,
-						}}>
+						}}
+					>
 						{this.props.children}
 
 						<div className="overlay-fix">
 							<div
 								className={
 									'read-marker ' + (!this.props.config.showMarker ? 'hide' : this.props.config.marker || 'hide')
-								}></div>
+								}
+							></div>
 
 							<div
 								className="indicators"
@@ -726,7 +760,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 									marginLeft: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
 									marginRight: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
 									fontSize: (this.props.config.fontSize ?? 0) > 12 ? `12vmin` : undefined,
-								}}>
+								}}
+							>
 								<div className="take-indicator hidden"></div>
 								<div className="next-indicator hidden"></div>
 							</div>
@@ -753,7 +788,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 										: this.props.config.margin
 										? this.props.config.margin + 'vh'
 										: undefined,
-							}}>
+							}}
+						>
 							<div className="prompter-break begin">{this.props.prompterData.title}</div>
 
 							{this.renderPrompterData(this.props.prompterData)}

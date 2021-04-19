@@ -164,7 +164,8 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 										...ErrorBoundary.style.componentStack,
 										...(this.state.expandedComponentStack ? ErrorBoundary.style.expandedStack : {}),
 									}}
-									onClick={this.toggleComponentStack}>
+									onClick={this.toggleComponentStack}
+								>
 									{this.state.info.componentStack}
 								</p>
 							)}
@@ -175,7 +176,8 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 										...ErrorBoundary.style.stack,
 										...(this.state.expandedStack ? ErrorBoundary.style.expandedStack : {}),
 									}}
-									onClick={this.toggleStack}>
+									onClick={this.toggleStack}
+								>
 									{this.state.error.stack}
 								</p>
 							)}

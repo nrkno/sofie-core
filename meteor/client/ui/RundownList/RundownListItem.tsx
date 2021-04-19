@@ -38,6 +38,7 @@ import { Settings } from '../../../lib/Settings'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 
 export const HTML_ID_PREFIX = 'rundown-'
@@ -75,7 +76,7 @@ const dragSpec: DragSourceSpec<IRundownListItemProps, IRundownDragObject> = {
 	},
 }
 
-const dragCollector: DragSourceCollector<IRundownDragSourceProps, IRundownListItemProps> = function(
+const dragCollector: DragSourceCollector<IRundownDragSourceProps, IRundownListItemProps> = function (
 	connect: DragSourceConnector,
 	monitor: DragSourceMonitor,
 	props: IRundownListItemProps
@@ -156,7 +157,7 @@ interface IRundownDragLayerProps {
 const dragLayerCollect: DragLayerCollector<
 	IRundownDragSourceProps & IRundownListItemProps,
 	IRundownDragLayerProps
-> = function(monitor, props) {
+> = function (monitor, props) {
 	let currentOffset: XYCoord | null = null
 	let clientOffset: XYCoord | null = null
 
@@ -232,11 +233,10 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 				}
 
 				handleRundownDrop(rundownId: RundownId) {
-					const { rundown, playlistId } = this.props
-					MeteorCall.userAction.moveRundown('Drag and drop add rundown to playlist', rundownId, playlistId, [
-						rundown._id,
-						rundownId,
-					])
+					const { rundown, playlistId, t } = this.props
+					doUserAction(t, 'Drag and drop add rundown to playlist', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
+						MeteorCall.userAction.moveRundown(e, rundownId, playlistId, [rundown._id, rundownId])
+					)
 				}
 
 				componentDidUpdate(prevProps) {
@@ -273,6 +273,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 						isDragging,
 						rundownViewUrl,
 						rundownLayouts,
+						isOnlyRundownInPlaylist,
 					} = this.props
 					const userCanConfigure = getAllowConfigure()
 
@@ -304,6 +305,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 							renderTooltips={isDragging !== true}
 							rundownViewUrl={rundownViewUrl}
 							rundown={rundown}
+							isOnlyRundownInPlaylist={isOnlyRundownInPlaylist}
 							rundownLayouts={rundownLayouts}
 							showStyleName={showStyleLabel}
 							showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}

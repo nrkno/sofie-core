@@ -138,13 +138,8 @@ const ExternalMessagesInStudio = translateWithTracker<
 			super(props)
 
 			this.state = {
-				dateFrom: moment()
-					.startOf('day')
-					.valueOf(),
-				dateTo: moment()
-					.add(1, 'days')
-					.startOf('day')
-					.valueOf(),
+				dateFrom: moment().startOf('day').valueOf(),
+				dateTo: moment().add(1, 'days').startOf('day').valueOf(),
 			}
 		}
 

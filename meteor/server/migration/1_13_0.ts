@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import * as semver from 'semver'
-import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/X_X_X'
+import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/1_13_0'
 import * as _ from 'underscore'
 import { removeCollectionProperty, setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
@@ -29,7 +29,7 @@ export const addSteps = addMigrationSteps('1.13.0', [
 	removeCollectionProperty('Studios', {}, 'testToolsConfig.recording'),
 
 	{
-		id: 'Drop removed collections',
+		id: 'Drop removed collections r25',
 		canBeRunAutomatically: true,
 		validate: () => {
 			let databaseSystem = getCoreSystem()

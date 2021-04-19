@@ -135,7 +135,8 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 				ref={itemIcon}
 				onMouseOver={handleOnMouseOver}
 				onMouseMove={handleOnMouseMove}
-				onMouseLeave={handleOnMouseLeave}>
+				onMouseLeave={handleOnMouseLeave}
+			>
 				{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--shortcut">

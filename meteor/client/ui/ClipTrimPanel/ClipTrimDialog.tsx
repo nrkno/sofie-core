@@ -146,7 +146,8 @@ export const ClipTrimDialog = withTranslation()(
 					onAccept={this.handleAccept}
 					onDiscard={(e) => this.props.onClose && this.props.onClose()}
 					onSecondary={(e) => this.props.onClose && this.props.onClose()}
-					className="big">
+					className="big"
+				>
 					<ClipTrimPanel
 						studioId={this.props.studio._id}
 						playlistId={this.props.playlistId}

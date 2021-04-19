@@ -210,7 +210,8 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 				<Escape to={this.state.displayOn}>
 					<div
 						className="segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics segment-timeline__mini-inspector--graphics--preview"
-						style={this.getElStyle()}>
+						style={this.getElStyle()}
+					>
 						<div className="preview">
 							<img width="100%" src="../images/previewBG.png" alt="" />
 							<iframe
@@ -218,7 +219,8 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 								src={this.state.noraContent?.previewRenderer}
 								ref={this._setPreview}
 								width="1920"
-								height="1080"></iframe>
+								height="1080"
+							></iframe>
 						</div>
 					</div>
 				</Escape>

@@ -31,9 +31,10 @@ export abstract class MediaWorkFlowStep {
 	expectedLeft?: number
 }
 
-export const MediaWorkFlowSteps: TransformedCollection<MediaWorkFlowStep, MediaWorkFlowStep> = createMongoCollection<
+export const MediaWorkFlowSteps: TransformedCollection<
+	MediaWorkFlowStep,
 	MediaWorkFlowStep
->('mediaWorkFlowSteps')
+> = createMongoCollection<MediaWorkFlowStep>('mediaWorkFlowSteps')
 registerCollection('MediaWorkFlowSteps', MediaWorkFlowSteps)
 
 registerIndex(MediaWorkFlowSteps, {

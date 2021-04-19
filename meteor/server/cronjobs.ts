@@ -2,15 +2,16 @@ import { Rundowns } from '../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
-import { getCurrentTime } from '../lib/lib'
+import { getCurrentTime, makePromise, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { AsRunLog } from '../lib/collections/AsRunLog'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
 import { CASPARCG_RESTART_TIME } from '../lib/constants'
+import { Studios } from '../lib/collections/Studios'
+import { removeEmptyPlaylists } from './api/rundownPlaylist'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
 
 let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
@@ -51,19 +52,6 @@ Meteor.startup(() => {
 				logger.info('Cronjob: Will remove cached data from ' + rundownCacheCount + ' rundowns')
 
 			const cleanLimitTime = getCurrentTime() - 1000 * 3600 * 24 * 50 // 50 days ago
-
-			// Remove old entries in AsRunLog:
-			const oldAsRunLogCount: number = AsRunLog.find({
-				timestamp: { $lt: cleanLimitTime },
-			}).count()
-			if (oldAsRunLogCount > 0) {
-				logger.info(`Cronjob: Will remove ${oldAsRunLogCount} entries from AsRunLog`)
-				lowPrioFcn(() => {
-					AsRunLog.remove({
-						timestamp: { $lt: cleanLimitTime },
-					})
-				})
-			}
 
 			// Remove old entries in UserActionsLog:
 			const oldUserActionsLogCount: number = UserActionsLog.find({
@@ -107,7 +95,7 @@ Meteor.startup(() => {
 							logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 
 							ps.push(
-								new Promise((resolve, reject) => {
+								new Promise<void>((resolve, reject) => {
 									PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 										subDevice._id,
 										(err) => {
@@ -154,4 +142,18 @@ Meteor.startup(() => {
 	}
 	Meteor.setInterval(nightlyCronjob, 5 * 60 * 1000) // check every 5 minutes
 	nightlyCronjob()
+
+	function cleanupPlaylists() {
+		// Ensure there are no empty playlists on an interval
+		const studios = Studios.find().fetch()
+		waitForPromiseAll(
+			studios.map((studio) =>
+				makePromise(() => {
+					removeEmptyPlaylists(studio._id)
+				})
+			)
+		)
+	}
+	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
+	cleanupPlaylists()
 })

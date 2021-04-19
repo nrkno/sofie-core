@@ -1,10 +1,9 @@
-// import { mousetrapHelper } from './mousetrapHelper'
 import Mousetrap from 'mousetrap'
-;(function(Mousetrap) {
+;(function (Mousetrap) {
 	var _globalCallbacks = {}
 	var _originalStopCallback = Mousetrap.prototype.stopCallback
 
-	Mousetrap.prototype.stopCallback = function(e, element, combo, sequence) {
+	Mousetrap.prototype.stopCallback = function (e, element, combo, sequence) {
 		var self = this
 
 		if (self.paused) {
@@ -18,7 +17,7 @@ import Mousetrap from 'mousetrap'
 		return _originalStopCallback.call(self, e, element, combo)
 	}
 
-	Mousetrap.prototype.bindGlobal = function(keys, callback, action) {
+	Mousetrap.prototype.bindGlobal = function (keys, callback, action) {
 		var self = this
 		self.bind(keys, callback, action)
 
@@ -34,7 +33,7 @@ import Mousetrap from 'mousetrap'
 
 	Mousetrap.init()
 })(Mousetrap)
-;(function(Mousetrap) {
+;(function (Mousetrap) {
 	var _originalStopCallback = Mousetrap.prototype.stopCallback
 	var _originalHandleKey = Mousetrap.prototype.handleKey
 
@@ -43,7 +42,7 @@ import Mousetrap from 'mousetrap'
 
 	const _downKeys = []
 
-	Mousetrap.prototype.handleKey = function(character, modifiers, e) {
+	Mousetrap.prototype.handleKey = function (character, modifiers, e) {
 		var self = this
 
 		if (e.type === 'keydown' && !_downKeys.includes(character)) _downKeys.push(character)
@@ -57,7 +56,7 @@ import Mousetrap from 'mousetrap'
 		return _originalHandleKey.apply(self, arguments)
 	}
 
-	Mousetrap.prototype.stopCallback = function(e, element, combo, sequence) {
+	Mousetrap.prototype.stopCallback = function (e, element, combo, sequence) {
 		var self = this
 
 		if (self.paused) {
@@ -72,7 +71,7 @@ import Mousetrap from 'mousetrap'
 		return _originalStopCallback.call(self, e, element, combo)
 	}
 
-	const escDown = function(e) {
+	const escDown = function (e) {
 		_isEscapePressed = true
 
 		if (!e.repeat) {
@@ -83,7 +82,7 @@ import Mousetrap from 'mousetrap'
 		e.stopPropagation()
 	}
 
-	const escUp = function(e) {
+	const escUp = function (e) {
 		_isEscapePressed = false
 
 		if (_downKeys.length === 0) {
@@ -98,7 +97,7 @@ import Mousetrap from 'mousetrap'
 })(Mousetrap)
 
 // Disable default browser action for alt keys - focus window menu
-;(function(Mousetrap) {
+;(function (Mousetrap) {
 	Mousetrap.init()
 
 	function preventDefault(e) {

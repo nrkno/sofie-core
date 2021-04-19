@@ -1,5 +1,7 @@
+import { ExpectedPackage, ListenToPackageUpdate } from './package'
 import { ConfigManifestEntry } from './config'
 import { SomeContent } from './content'
+import { ITranslatableMessage } from './translations'
 
 export interface ActionUserData {
 	[key: string]: any
@@ -16,13 +18,13 @@ export enum ActionExecuteAfterChanged {
 
 export interface IBlueprintActionManifestDisplay {
 	/** A label to be displayed to the user */
-	label: string
+	label: ITranslatableMessage
 	/** An optional, longer description that will not be immediately visible to the user */
-	description?: string
+	description?: ITranslatableMessage
 	_rank?: number
 
 	/** This is the label to be shown in the inspector for "Execute Action" */
-	triggerLabel?: string
+	triggerLabel?: ITranslatableMessage
 
 	tags?: string[]
 	/** Piece tags to use to determine if action is currently active */
@@ -47,9 +49,9 @@ export interface IBlueprintActionTriggerMode {
 	display: {
 		_rank: number
 		/** A label to be displayed to the user */
-		label: string
+		label: ITranslatableMessage
 		/** An optional, longer description that will not be immediately visible to the user */
-		description?: string
+		description?: ITranslatableMessage
 	}
 }
 
@@ -75,4 +77,10 @@ export interface IBlueprintActionManifest {
 
 	/** Optional ways of executing this action. The default option is computed from the display properties */
 	triggerModes?: IBlueprintActionTriggerMode[]
+
+	/**
+	 * An array of which Packages this Action uses. This is used by a Package Manager to ensure that the Package is in place for playout.
+	 */
+	expectedPackages?: ExpectedPackage.Any[]
+	listenToPackageInfoUpdates?: ListenToPackageUpdate[]
 }

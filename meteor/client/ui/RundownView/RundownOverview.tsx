@@ -138,7 +138,8 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 									(segmentDuration || 0)) *
 									100 +
 								'%',
-						}}>
+						}}
+					>
 						{isNext && <div className="rundown__overview__segment__part__next-line"></div>}
 						{isLive && (
 							<div
@@ -152,7 +153,8 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 											)) *
 											100 +
 										'%',
-								}}></div>
+								}}
+							></div>
 						)}
 					</div>
 				)
@@ -175,7 +177,8 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 							})}
 							style={{
 								width: ((segmentDuration || 0) / totalDuration) * 100 + '%',
-							}}>
+							}}
+						>
 							{segment.items.map((item) => {
 								return this.renderPart(
 									item,
@@ -191,7 +194,8 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 									className="rundown__overview__segment__part__label"
 									style={{
 										maxWidth: '100%',
-									}}>
+									}}
+								>
 									{segment.name}
 									{segmentDuration && _.isNumber(segmentDuration) && (
 										<span className="rundown__overview__segment__part__label__duration">

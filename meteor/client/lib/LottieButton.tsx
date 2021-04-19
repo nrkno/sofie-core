@@ -74,13 +74,15 @@ export class LottieButton extends React.Component<IProps, IState> {
 				role="button"
 				style={{ position: 'relative' }}
 				onClick={this.onClick}
-				tabIndex={0}>
+				tabIndex={0}
+			>
 				<Lottie config={this.state.hover ? this.overAnimation : this.outAnimation} />
 				{this.props.children}
 				<div
 					style={{ position: 'absolute', top: '0', left: '0', right: '0', bottom: '0' }}
 					onMouseEnter={this.onMouseEnter}
-					onMouseLeave={this.onMouseLeave}></div>
+					onMouseLeave={this.onMouseLeave}
+				></div>
 			</div>
 		)
 	}

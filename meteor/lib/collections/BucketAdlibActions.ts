@@ -10,8 +10,9 @@ import { BucketId } from './Buckets'
 import { registerIndex } from '../database'
 import { AdLibActionId } from './AdLibActions'
 
+export type BucketAdLibActionId = AdLibActionId
 export interface BucketAdLibAction extends Omit<IBlueprintActionManifest, 'partId'> {
-	_id: AdLibActionId
+	_id: BucketAdLibActionId
 	bucketId: BucketId
 
 	externalId: string
@@ -25,9 +26,10 @@ export interface BucketAdLibAction extends Omit<IBlueprintActionManifest, 'partI
 	importVersions: RundownImportVersions // TODO - is this good?
 }
 
-export const BucketAdLibActions: TransformedCollection<BucketAdLibAction, BucketAdLibAction> = createMongoCollection<
+export const BucketAdLibActions: TransformedCollection<
+	BucketAdLibAction,
 	BucketAdLibAction
->('bucketAdlibActions')
+> = createMongoCollection<BucketAdLibAction>('bucketAdlibActions')
 registerCollection('BucketAdLibActions', BucketAdLibActions)
 
 registerIndex(BucketAdLibActions, {

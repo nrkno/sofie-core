@@ -191,7 +191,8 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 						</Link>
 						<button
 							className="btn btn-primary"
-							onClick={(e: React.MouseEvent<HTMLButtonElement>) => this.createAccount(e)}>
+							onClick={(e: React.MouseEvent<HTMLButtonElement>) => this.createAccount(e)}
+						>
 							{t('Create New Account')}
 						</button>
 					</div>

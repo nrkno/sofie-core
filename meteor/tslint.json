@@ -17,7 +17,8 @@
 		"no-unnecessary-type-assertion": false,
 		"no-unnecessary-qualifier": false,
 		"prettier": true,
-		"no-focused-test": true
+		"no-focused-test": true,
+		"no-floating-promises": true
 	},
 	"linterOptions": {
 		"exclude": ["public/**", "node_modules"]

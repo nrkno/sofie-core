@@ -57,7 +57,8 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 							: button.height < 0
 							? `calc(${-1 * button.height - 1} * var(--dashboard-button-grid-height))`
 							: undefined,
-				}}>
+				}}
+			>
 				<div className="dashboard-panel__panel">
 					<div
 						className={ClassNames(
@@ -67,7 +68,8 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 						)}
 						onMouseDown={(e) => this.props.onButtonDown(button, e)}
 						onMouseUp={(e) => this.props.onButtonUp(button, e)}
-						data-obj-id={button.type}>
+						data-obj-id={button.type}
+					>
 						<span className="dashboard-panel__panel__button__label">{button.label}</span>
 					</div>
 				</div>

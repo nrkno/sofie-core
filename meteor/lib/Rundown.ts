@@ -50,7 +50,6 @@ export interface ISourceLayerExtended extends ISourceLayer {
 	pieces: Array<PieceExtended>
 	followingItems: Array<PieceExtended>
 }
-
 export interface PieceExtended {
 	instance: PieceInstanceWithTimings
 

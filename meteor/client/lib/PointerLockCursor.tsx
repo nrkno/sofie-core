@@ -41,7 +41,8 @@ export class PointerLockCursor extends React.Component<{}, IState> {
 							'drop-shadow(black -1px 0 0) ' +
 							'drop-shadow(rgba(0, 0, 0, 0.2) 2px 2px 2px)',
 						display: this.state.showCursor ? 'block' : 'none',
-					}}>
+					}}
+				>
 					<FontAwesomeIcon icon={faArrowsAltH} size="lg" />
 				</div>
 			</Escape>

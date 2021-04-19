@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React, { useState, ReactNode } from 'react'
 import ClassNames from 'classnames'
 
 import { faChevronUp } from '@fortawesome/free-solid-svg-icons'
@@ -7,53 +7,59 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 interface IProps {
 	selectedKey: string
 	className?: string
+	children?: SplitDropdownItemObj[]
 }
 
 interface IState {
 	expanded: boolean
 }
 
-export class SplitDropdown extends React.Component<IProps, IState> {
-	constructor(props: IProps) {
-		super(props)
+interface SplitDropdownItemObj {
+	key?: string
+	children?: ReactNode
+}
 
-		this.state = {
-			expanded: false,
-		}
+export function SplitDropdownItem(props: SplitDropdownItemObj): SplitDropdownItemObj {
+	return {
+		key: props.key,
+		children: props.children,
+	}
+}
+
+export function SplitDropdown(props: IProps) {
+	const [expanded, setExpanded] = useState(false)
+
+	function getSelected() {
+		const selectedChild =
+			props.children &&
+			Array.isArray(props.children) &&
+			props.children.find((element) => element.key === props.selectedKey)?.children
+		return selectedChild ? <>{selectedChild}</> : <div className="expco-item"></div>
 	}
 
-	toggleExpco = () => {
-		this.setState({
-			expanded: !this.state.expanded,
-		})
+	function toggleExpco() {
+		setExpanded(!expanded)
 	}
 
-	getSelected() {
-		return (
-			this.props.children &&
-			Array.isArray(this.props.children) &&
-			(this.props.children.find((element) => (element as React.ReactElement<{}>).key === this.props.selectedKey) || (
-				<div className="expco-item"></div>
-			))
-		)
-	}
-
-	render() {
-		return (
-			<div
-				className={ClassNames(
-					'expco button focusable subtle split-dropdown',
-					{
-						'expco-expanded': this.state.expanded,
-					},
-					this.props.className
-				)}>
-				<div className={ClassNames('expco-title focusable-main')}>{this.getSelected()}</div>
-				<div className="action-btn right expco-expand subtle" onClick={this.toggleExpco}>
-					<FontAwesomeIcon icon={faChevronUp} />
-				</div>
-				<div className="expco-body bd">{this.props.children}</div>
+	return (
+		<div
+			className={ClassNames(
+				'expco button focusable subtle split-dropdown',
+				{
+					'expco-expanded': expanded,
+				},
+				props.className
+			)}
+		>
+			<div className="expco-title focusable-main">{getSelected()}</div>
+			<div className="action-btn right expco-expand subtle" onClick={toggleExpco}>
+				<FontAwesomeIcon icon={faChevronUp} />
 			</div>
-		)
-	}
+			<div className="expco-body bd">
+				{props.children?.map((child, index) => (
+					<React.Fragment key={child.key || index}>{child.children}</React.Fragment>
+				))}
+			</div>
+		</div>
+	)
 }

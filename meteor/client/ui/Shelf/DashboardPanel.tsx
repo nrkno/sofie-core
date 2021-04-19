@@ -557,9 +557,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			// check if a special variable is set through CSS to indicate that we shouldn't expect
 			// double clicks to trigger AdLibs
 			const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
-			if (this.state.singleClickMode !== (value === UserAgentPointer.NO_POINTER)) {
+			const shouldBeSingleClick = !!value.match(UserAgentPointer.NO_POINTER)
+			if (this.state.singleClickMode !== shouldBeSingleClick) {
 				this.setState({
-					singleClickMode: value === UserAgentPointer.NO_POINTER,
+					singleClickMode: shouldBeSingleClick,
 				})
 			}
 		}
@@ -579,13 +580,15 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							'dashboard-panel--take': filter.displayTakeButtons,
 						})}
 						ref={this.setRef}
-						style={dashboardElementPosition(filter)}>
+						style={dashboardElementPosition(filter)}
+					>
 						<h4 className="dashboard-panel__header">{this.props.filter.name}</h4>
 						{filter.enableSearch && <AdLibPanelToolbar onFilterChange={this.onFilterChange} />}
 						<div
 							className={ClassNames('dashboard-panel__panel', {
 								'dashboard-panel__panel--horizontal': filter.overflowHorizontally,
-							})}>
+							})}
+						>
 							{filteredAdLibs.map((adLibPiece: AdLibPieceUi) => {
 								return (
 									<ContextMenuTrigger
@@ -601,7 +604,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 										}
 										renderTag="span"
 										key={unprotectString(adLibPiece._id)}
-										holdToDisplay={contextMenuHoldToDisplayTime()}>
+										holdToDisplay={contextMenuHoldToDisplayTime()}
+									>
 										<DashboardPieceButton
 											piece={adLibPiece}
 											studio={this.props.studio}
@@ -622,7 +626,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 											displayStyle={filter.displayStyle}
 											showThumbnailsInList={filter.showThumbnailsInList}
 											toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
-											isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}>
+											isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}
+										>
 											{adLibPiece.name}
 										</DashboardPieceButton>
 									</ContextMenuTrigger>
@@ -635,14 +640,16 @@ export class DashboardPanelInner extends MeteorReactComponent<
 									className={ClassNames('dashboard-panel__panel__button')}
 									onClick={(e) => {
 										this.onIn(e)
-									}}>
+									}}
+								>
 									<span className="dashboard-panel__panel__button__label">{t('In')}</span>
 								</div>
 								<div
 									className={ClassNames('dashboard-panel__panel__button')}
 									onClick={(e) => {
 										this.onOut(e, true)
-									}}>
+									}}
+								>
 									<span className="dashboard-panel__panel__button__label">{t('Out')}</span>
 								</div>
 							</div>

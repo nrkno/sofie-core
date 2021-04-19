@@ -49,13 +49,15 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 				<span
 					className="segment-timeline__piece__label"
 					ref={this.setLeftLabelRef}
-					style={this.getItemLabelOffsetLeft()}>
+					style={this.getItemLabelOffsetLeft()}
+				>
 					<span className="segment-timeline__piece__label">{this.props.piece.instance.piece.name}</span>
 				</span>
 				<span
 					className="segment-timeline__piece__label right-side"
 					ref={this.setRightLabelRef}
-					style={this.getItemLabelOffsetRight()}>
+					style={this.getItemLabelOffsetRight()}
+				>
 					{this.renderInfiniteIcon()}
 					{this.renderOverflowTimeLabel()}
 				</span>

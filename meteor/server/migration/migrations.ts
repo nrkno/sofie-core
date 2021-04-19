@@ -1,4 +1,4 @@
-// Here, all migration scripts for all versions need to be reference
+// Here, all migration scripts for all versions need to be referenced:
 
 import { addSteps as addSteps0_1_0 } from './0_1_0'
 addSteps0_1_0()
@@ -89,6 +89,9 @@ addSteps1_18_0()
 
 import { addSteps as addSteps1_19_0 } from './1_19_0'
 addSteps1_19_0()
+
+import { addSteps as addSteps1_32_0 } from './1_32_0'
+addSteps1_32_0()
 
 // Migrations for the in-development release:
 import { addSteps as addStepsX_X_X } from './X_X_X'

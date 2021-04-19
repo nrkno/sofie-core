@@ -4,9 +4,15 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
-import { SegmentUi, PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './SegmentTimelineContainer'
+import {
+	SegmentUi,
+	PartUi,
+	IOutputLayerUi,
+	ISourceLayerUi,
+	PieceUi,
+	LIVE_LINE_TIME_PADDING,
+} from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { WithTiming, withTiming } from '../RundownView/RundownTiming/withTiming'
 import { RundownTiming } from '../RundownView/RundownTiming/RundownTiming'
@@ -19,7 +25,6 @@ import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ConfigItemValue } from '@sofie-automation/blueprints-integration'
 
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
@@ -27,6 +32,8 @@ import { CSSProperties } from '../../styles/_cssVariables'
 import { ISourceLayerExtended } from '../../../lib/Rundown'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
+import { SegmentEnd } from '../../lib/ui/icons/segment'
+import { getShowHiddenSourceLayers } from '../../lib/localStorage'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -152,7 +159,8 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 					onMouseUpCapture: (e) => this.onMouseUp(e),
 				}}
 				holdToDisplay={contextMenuHoldToDisplayTime()}
-				collect={this.getPartContext}>
+				collect={this.getPartContext}
+			>
 				{this.renderInside()}
 			</ContextMenuTrigger>
 		)
@@ -223,7 +231,8 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 					className: 'segment-timeline__layer segment-timeline__layer--flattened',
 					onMouseUpCapture: (e) => this.onMouseUp(e),
 				}}
-				collect={this.getPartContext}>
+				collect={this.getPartContext}
+			>
 				{this.renderInside()}
 			</ContextMenuTrigger>
 		)
@@ -356,7 +365,8 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 						flattened: this.props.layer.isFlattened,
 					},
 					`layer-count-${this.props.sourceLayers?.length || 0}`
-				)}>
+				)}
+			>
 				{DEBUG_MODE && (
 					<div className="segment-timeline__debug-info red">
 						{RundownUtils.formatTimeToTimecode(this.props.startsAt)}
@@ -378,7 +388,6 @@ interface IProps {
 	collapsedOutputs: {
 		[key: string]: boolean
 	}
-	onCollapseSegmentToggle?: (event: any) => void
 	isCollapsed?: boolean
 	scrollLeft: number
 	scrollWidth: number
@@ -408,8 +417,6 @@ interface IState {
 	isInsideViewport: boolean
 	highlight: boolean
 }
-
-const LIVE_LINE_TIME_PADDING = 150
 
 const CARRIAGE_RETURN_ICON = (
 	<div className="segment-timeline__part__nextline__label__carriage-return">
@@ -671,7 +678,10 @@ export const SegmentTimelinePart = withTranslation()(
 
 			renderTimelineOutputGroups(part: PartUi) {
 				if (this.props.segment.outputLayers !== undefined) {
+					const showHiddenSourceLayers = getShowHiddenSourceLayers()
+
 					let indexAccumulator = 0
+
 					return Object.values(this.props.segment.outputLayers)
 						.filter((layer) => {
 							return layer.used ? true : false
@@ -682,7 +692,9 @@ export const SegmentTimelinePart = withTranslation()(
 						.map((layer) => {
 							// Only render output layers used by the segment
 							if (layer.used) {
-								const sourceLayers = layer.sourceLayers.filter((i) => !i.isHidden).sort((a, b) => a._rank - b._rank)
+								const sourceLayers = layer.sourceLayers
+									.filter((i) => showHiddenSourceLayers || !i.isHidden)
+									.sort((a, b) => a._rank - b._rank)
 								const currentIndex = indexAccumulator
 								indexAccumulator += this.props.collapsedOutputs[layer._id] === true ? 1 : sourceLayers.length
 								return (
@@ -788,7 +800,8 @@ export const SegmentTimelinePart = withTranslation()(
 							})}
 							data-obj-id={this.props.part.instance._id}
 							id={SegmentTimelinePartElementId + this.props.part.instance._id}
-							style={{ ...this.getLayerStyle(), ...invalidReasonColorVars }}>
+							style={{ ...this.getLayerStyle(), ...invalidReasonColorVars }}
+						>
 							{innerPart.invalid ? <div className="segment-timeline__part__invalid-cover"></div> : null}
 							{innerPart.floated ? <div className="segment-timeline__part__floated-cover"></div> : null}
 
@@ -801,12 +814,14 @@ export const SegmentTimelinePart = withTranslation()(
 									invalid: innerPart.invalid && !innerPart.gap,
 									floated: innerPart.floated,
 									offset: !!this.props.playlist.nextTimeOffset,
-								})}>
+								})}
+							>
 								<div
 									className={ClassNames('segment-timeline__part__nextline__label', {
 										'segment-timeline__part__nextline__label--thin':
 											(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext,
-									})}>
+									})}
+								>
 									{innerPart.invalid && !innerPart.gap ? (
 										<span>{t('Invalid')}</span>
 									) : (
@@ -825,7 +840,7 @@ export const SegmentTimelinePart = withTranslation()(
 								)}
 							</div>
 							{this.props.playlist.nextTimeOffset &&
-							this.state.isNext && ( // This is the off-set line
+								this.state.isNext && ( // This is the off-set line
 									<div
 										className={ClassNames('segment-timeline__part__nextline', {
 											'auto-next': this.props.part.willProbablyAutoNext,
@@ -839,12 +854,14 @@ export const SegmentTimelinePart = withTranslation()(
 														100 +
 												  '%'
 												: this.props.playlist.nextTimeOffset * this.props.timeScale + 'px',
-										}}>
+										}}
+									>
 										<div
 											className={ClassNames('segment-timeline__part__nextline__label', {
 												'segment-timeline__part__nextline__label--thin':
 													(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext,
-											})}>
+											})}
+										>
 											{innerPart.invalid ? (
 												!innerPart.gap && <span>{t('Invalid')}</span>
 											) : (
@@ -883,15 +900,30 @@ export const SegmentTimelinePart = withTranslation()(
 													!!this.props.playlist.nextPartInstanceId),
 											'show-end': isEndOfShow,
 										}
-									)}>
+									)}
+								>
 									<div
 										className={ClassNames('segment-timeline__part__nextline__label', {
 											'segment-timeline__part__nextline__label--thin': innerPart.autoNext && !this.state.isLive,
-										})}>
+										})}
+									>
 										{innerPart.autoNext && t('Auto') + ' '}
 										{this.state.isLive && t('Next')}
-										{!isEndOfShow && !isEndOfLoopingShow && CARRIAGE_RETURN_ICON}
 										{isEndOfLoopingShow && <LoopingIcon />}
+									</div>
+								</div>
+							)}
+							{!isEndOfShow && this.props.isLastInSegment && (
+								<div
+									className={ClassNames('segment-timeline__part__segment-end', {
+										'is-next':
+											this.state.isLive &&
+											((!this.props.isLastSegment && !this.props.isLastInSegment) ||
+												!!this.props.playlist.nextPartInstanceId),
+									})}
+								>
+									<div className="segment-timeline__part__segment-end__label">
+										<SegmentEnd />
 									</div>
 								</div>
 							)}
@@ -916,7 +948,8 @@ export const SegmentTimelinePart = withTranslation()(
 								next: this.state.isNext,
 							})}
 							data-obj-id={this.props.part.instance._id}
-							style={this.getLayerStyle()}>
+							style={this.getLayerStyle()}
+						>
 							{/* render it empty, just to take up space */}
 						</div>
 					)

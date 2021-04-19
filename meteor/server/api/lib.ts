@@ -2,7 +2,29 @@ import { Meteor } from 'meteor/meteor'
 import { MethodContext } from '../../lib/api/methods'
 import { RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown, RundownId } from '../../lib/collections/Rundowns'
-import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
+import { RundownPlaylistContentAccess, RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
+
+/**
+ * This is returned from a check of access to a playlist, when access is granted.
+ * Fields will be populated about the user.
+ * It is identical to RundownPlaylistContentAccess, except for confirming access is allowed
+ */
+export interface VerifiedRundownPlaylistContentAccess extends RundownPlaylistContentAccess {
+	playlist: RundownPlaylist
+}
+
+export function checkAccessToPlaylist(
+	context: MethodContext,
+	playlistId: RundownPlaylistId
+): VerifiedRundownPlaylistContentAccess {
+	const access = RundownPlaylistContentWriteAccess.playout(context, playlistId)
+	const playlist = access.playlist
+	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${playlistId}" not found!`)
+	return {
+		...access,
+		playlist,
+	}
+}
 
 export function checkAccessAndGetPlaylist(context: MethodContext, playlistId: RundownPlaylistId): RundownPlaylist {
 	const access = RundownPlaylistContentWriteAccess.playout(context, playlistId)

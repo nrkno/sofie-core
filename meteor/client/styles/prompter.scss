@@ -136,6 +136,12 @@ body.prompter-scrollbar {
 		line-height: 1.2em;
 		margin-bottom: 0.5em;
 		overflow-wrap: break-word;
+		// hyphens: auto;  // do not use, leads to much more broken words than is needed.
+		white-space: pre-line; // allows for line breaks in manuscript, also replaces line with just "<>" with a blank line
+
+		.add-blank {
+			margin-bottom: 1.5em;
+		}
 	}
 
 	.overlay-fix {

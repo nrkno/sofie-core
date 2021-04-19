@@ -217,7 +217,8 @@ export const RundownSystemStatus = translateWithTracker(
 								major: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
 								bad: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.BAD,
 								fatal: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.FATAL,
-							})}>
+							})}
+						>
 							<div className="indicator__tooltip">
 								<h4>
 									{t('{{nrcsName}} Connection', {
@@ -265,7 +266,8 @@ export const RundownSystemStatus = translateWithTracker(
 								major: this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
 								bad: this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.BAD,
 								fatal: this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.FATAL,
-							})}>
+							})}
+						>
 							<div className="indicator__tooltip">
 								<h4>{t('Play-out')}</h4>
 								<div>

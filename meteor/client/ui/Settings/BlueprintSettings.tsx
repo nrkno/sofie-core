@@ -242,7 +242,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<p className="mod mhn mvs">
 								<button
 									className="btn btn-primary"
-									onClick={() => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}>
+									onClick={() => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}
+								>
 									{this.props.assignedSystem ? t('Unassign') : t('Assign')}
 								</button>
 							</p>
@@ -276,7 +277,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									obj={blueprint}
 									type="text"
 									collection={Blueprints}
-									className="mdinput"></EditAttribute>
+									className="mdinput"
+								></EditAttribute>
 								<span className="mdfx"></span>
 							</div>
 						</label>
@@ -314,7 +316,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className="btn btn-primary"
 								accept="text/javascript,.js"
 								onChange={(e) => this.onUploadFile(e)}
-								key={this.state.uploadFileKey}>
+								key={this.state.uploadFileKey}
+							>
 								<FontAwesomeIcon icon={faUpload} />
 								<span>{t('Upload Blueprints')}</span>
 							</UploadButton>

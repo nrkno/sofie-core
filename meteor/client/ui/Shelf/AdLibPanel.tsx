@@ -34,7 +34,10 @@ import {
 	RundownLayoutFilterBase,
 	DashboardLayoutFilter,
 } from '../../../lib/collections/RundownLayouts'
-import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
+import {
+	RundownBaselineAdLibItem,
+	RundownBaselineAdLibPieces,
+} from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
 import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -58,6 +61,9 @@ import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
+import { ScanInfoForPackages } from '../../../lib/mediaObjects'
+import { translateMessage } from '../../../lib/api/TranslatableMessage'
+import { i18nTranslator } from '../i18n'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -291,7 +297,8 @@ const AdLibListView = withTranslation()(
 											return item.timings?.startedPlayback && item.timings?.duration ? memo : false
 										}, true) === true,
 								}
-							)}>
+							)}
+						>
 							<tr className="adlib-panel__list-view__list__seg-header">
 								<td colSpan={4}>{segment.name}</td>
 							</tr>
@@ -339,11 +346,13 @@ const AdLibListView = withTranslation()(
 				<div
 					className={ClassNames('adlib-panel__list-view__list', {
 						'adlib-panel__list-view__list--no-segments': this.props.noSegments,
-					})}>
+					})}
+				>
 					<table
 						id={'adlib-panel__list-view__table__' + Random.id()}
 						className="adlib-panel__list-view__list__table"
-						ref={this.setTableRef}>
+						ref={this.setTableRef}
+					>
 						{this.renderRundownAdLibs()}
 						{this.renderSegments()}
 					</table>
@@ -401,7 +410,8 @@ export const AdLibPanelToolbar = withTranslation()(
 				<div
 					className={ClassNames('adlib-panel__list-view__toolbar', {
 						'adlib-panel__list-view__toolbar--no-segments': this.props.noSegments,
-					})}>
+					})}
+				>
 					<div className="adlib-panel__list-view__toolbar__filter">
 						<input
 							className="adlib-panel__list-view__toolbar__filter__input"
@@ -442,6 +452,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 	isClearSourceLayer?: boolean
 	adlibAction?: AdLibAction | RundownBaselineAdLibAction
 	contentMetaData?: any
+	contentPackageInfos?: ScanInfoForPackages
 	message?: string | null
 }
 
@@ -507,12 +518,13 @@ function actionToAdLibPieceUi(
 
 	return literal<AdLibPieceUi>({
 		_id: protectString(`function_${action._id}`),
-		name: action.display.label,
+		name: translateMessage(action.display.label, i18nTranslator),
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
 		externalId: unprotectString(action._id),
 		rundownId: action.rundownId,
+		partId: action.partId,
 		sourceLayer: sourceLayers[sourceLayerId],
 		outputLayer: outputLayers[outputLayerId],
 		sourceLayerId,
@@ -569,8 +581,6 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					...segment,
 					parts: [],
 					pieces: [],
-					status: undefined,
-					expanded: undefined,
 					isLive: false,
 					isNext: false,
 				})
@@ -689,10 +699,10 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 	)
 
 	adlibActions.forEach((action) => {
-		const segment = uiPartSegmentMap.get(action[0] as PartId)
+		const segment = uiPartSegmentMap.get(action[0])
 
 		if (segment) {
-			segment.pieces.push(action[1] as AdLibPieceUi)
+			segment.pieces.push(action[1])
 		}
 	})
 
@@ -761,7 +771,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					sourceLayers: ISourceLayer[],
 					sourceHotKeyUse: { [key: string]: number }
 				) => {
-					let rundownAdLibItems = RundownBaselineAdLibPieces.find(
+					let rundownAdLibItems: RundownBaselineAdLibItem[] = RundownBaselineAdLibPieces.find(
 						{
 							rundownId: currentRundownId,
 						},
@@ -1158,7 +1168,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 						})}
 						onClick={(e) => this.onSelectSegment(item)}
 						key={unprotectString(item._id)}
-						tabIndex={0}>
+						tabIndex={0}
+					>
 						{item.name}
 					</li>
 				)
@@ -1197,7 +1208,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 							className="adlib-panel super-dark"
 							data-tab-id={
 								this.props.filter ? `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${this.props.filter._id}` : ShelfTabs.ADLIB
-							}>
+							}
+						>
 							{this.props.uiSegments.length > 30 && (
 								<ul className="adlib-panel__segments">{this.renderSegmentList()}</ul>
 							)}
