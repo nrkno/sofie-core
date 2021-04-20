@@ -96,3 +96,7 @@ addSteps1_32_0()
 // Migrations for the in-development release:
 import { addSteps as addStepsX_X_X } from './X_X_X'
 addStepsX_X_X()
+
+// Final migrations
+import { addExpectedDeviceVersions } from './expectedDeviceVersions'
+addExpectedDeviceVersions()
