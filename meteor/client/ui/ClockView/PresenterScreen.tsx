@@ -53,7 +53,9 @@ function getShowStyleBaseIdSegmentPartUi(
 	orderedSegmentsAndParts: {
 		segments: Segment[]
 		parts: Part[]
-	}
+	},
+	currentPartInstance: PartInstance | undefined,
+	nextPartInstance: PartInstance | undefined
 ): {
 	showStyleBaseId: ShowStyleBaseId | undefined
 	segment: SegmentUi | undefined
@@ -89,6 +91,8 @@ function getShowStyleBaseIdSegmentPartUi(
 				orderedSegmentsAndParts.segments[segmentIndex],
 				new Set(orderedSegmentsAndParts.segments.map((s) => s._id).slice(0, segmentIndex)),
 				orderedSegmentsAndParts.parts.map((part) => part._id),
+				currentPartInstance,
+				nextPartInstance,
 				true,
 				true
 			)
@@ -161,14 +165,26 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 			}).fetch()
 
 			if (currentPartInstance) {
-				const current = getShowStyleBaseIdSegmentPartUi(currentPartInstance, playlist, orderedSegmentsAndParts)
+				const current = getShowStyleBaseIdSegmentPartUi(
+					currentPartInstance,
+					playlist,
+					orderedSegmentsAndParts,
+					currentPartInstance,
+					nextPartInstance
+				)
 				currentSegment = current.segment
 				currentPartInstanceUi = current.partInstance
 				currentShowStyleBaseId = current.showStyleBaseId
 			}
 
 			if (nextPartInstance) {
-				const next = getShowStyleBaseIdSegmentPartUi(nextPartInstance, playlist, orderedSegmentsAndParts)
+				const next = getShowStyleBaseIdSegmentPartUi(
+					nextPartInstance,
+					playlist,
+					orderedSegmentsAndParts,
+					currentPartInstance,
+					nextPartInstance
+				)
 				nextSegment = next.segment
 				nextPartInstanceUi = next.partInstance
 				nextShowStyleBaseId = next.showStyleBaseId
