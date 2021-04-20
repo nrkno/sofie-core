@@ -15,6 +15,8 @@ import {
 	DeviceOptionsAtem,
 	AtemMediaPoolType,
 	MediaObject,
+	ExpectedPlayoutItem,
+	ExpectedPlayoutItemContent,
 } from 'timeline-state-resolver'
 import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler'
 import clone = require('fast-clone')
@@ -842,11 +844,13 @@ export class TSRHandler {
 								)
 							}),
 							(item) => {
-								return {
-									...item.content,
+								const itemContent: ExpectedPlayoutItemContent = item.content
+								const newItem: ExpectedPlayoutItem = {
+									...itemContent,
 									rundownId: item.rundownId,
 									playlistId: item.playlistId,
 								}
+								return newItem
 							}
 						)
 					)
