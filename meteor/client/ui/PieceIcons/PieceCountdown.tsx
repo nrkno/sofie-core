@@ -64,7 +64,7 @@ export const PieceCountdownContainer = withTracker((props: IPropsHeader) => {
 					return (
 						<>
 							<Timediff time={freezeCountdown} />
-							<FreezeFrameIcon className="icon freeze" />
+							<img className="freeze-icon" src="/icons/freeze-presenter-screen.svg" />
 						</>
 					)
 				}
