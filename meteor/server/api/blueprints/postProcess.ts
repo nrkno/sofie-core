@@ -1,6 +1,6 @@
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { protectString, unprotectString, literal } from '../../../lib/lib'
+import { protectString, unprotectString, literal, ArrayElement } from '../../../lib/lib'
 import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
@@ -213,6 +213,39 @@ export function postProcessGlobalAdLibActions(
 			_id: protectString(innerContext.getHashId(`${blueprintId}_global_adlib_action_${i}`)),
 			rundownId: rundownId,
 			partId: undefined,
+			display: {
+				...action.display,
+				label: {
+					...action.display.label,
+					namespaces: [unprotectString(blueprintId)],
+				},
+				triggerLabel: action.display.triggerLabel && {
+					...action.display.triggerLabel,
+					namespaces: [unprotectString(blueprintId)],
+				},
+				description: action.display.description && {
+					...action.display.description,
+					namespaces: [unprotectString(blueprintId)],
+				},
+			},
+			triggerModes:
+				action.triggerModes &&
+				action.triggerModes.map(
+					(triggerMode): ArrayElement<AdLibAction['triggerModes']> => ({
+						...triggerMode,
+						display: {
+							...triggerMode.display,
+							label: {
+								...triggerMode.display.label,
+								namespaces: [unprotectString(blueprintId)],
+							},
+							description: triggerMode.display.description && {
+								...triggerMode.display.description,
+								namespaces: [unprotectString(blueprintId)],
+							},
+						},
+					})
+				),
 		})
 	)
 }
@@ -231,6 +264,39 @@ export function postProcessAdLibActions(
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_action_${i}`)),
 			rundownId: rundownId,
 			partId: partId,
+			display: {
+				...action.display,
+				label: {
+					...action.display.label,
+					namespaces: [unprotectString(blueprintId)],
+				},
+				triggerLabel: action.display.triggerLabel && {
+					...action.display.triggerLabel,
+					namespaces: [unprotectString(blueprintId)],
+				},
+				description: action.display.description && {
+					...action.display.description,
+					namespaces: [unprotectString(blueprintId)],
+				},
+			},
+			triggerModes:
+				action.triggerModes &&
+				action.triggerModes.map(
+					(triggerMode): ArrayElement<AdLibAction['triggerModes']> => ({
+						...triggerMode,
+						display: {
+							...triggerMode.display,
+							label: {
+								...triggerMode.display.label,
+								namespaces: [unprotectString(blueprintId)],
+							},
+							description: triggerMode.display.description && {
+								...triggerMode.display.description,
+								namespaces: [unprotectString(blueprintId)],
+							},
+						},
+					})
+				),
 		})
 	)
 }
@@ -292,7 +358,7 @@ export function postProcessBucketAction(
 	innerContext: ShowStyleContext,
 	itemOrig: IBlueprintActionManifest,
 	externalId: string,
-	_blueprintId: BlueprintId,
+	blueprintId: BlueprintId,
 	bucketId: BucketId,
 	rank: number | undefined,
 	importVersions: RundownImportVersions
@@ -312,7 +378,37 @@ export function postProcessBucketAction(
 		display: {
 			...itemOrig.display,
 			_rank: rank ?? itemOrig.display._rank,
+			label: {
+				...itemOrig.display.label,
+				namespaces: [unprotectString(blueprintId)],
+			},
+			triggerLabel: itemOrig.display.triggerLabel && {
+				...itemOrig.display.triggerLabel,
+				namespaces: [unprotectString(blueprintId)],
+			},
+			description: itemOrig.display.description && {
+				...itemOrig.display.description,
+				namespaces: [unprotectString(blueprintId)],
+			},
 		},
+		triggerModes:
+			itemOrig.triggerModes &&
+			itemOrig.triggerModes.map(
+				(triggerMode): ArrayElement<BucketAdLibAction['triggerModes']> => ({
+					...triggerMode,
+					display: {
+						...triggerMode.display,
+						label: {
+							...triggerMode.display.label,
+							namespaces: [unprotectString(blueprintId)],
+						},
+						description: triggerMode.display.description && {
+							...triggerMode.display.description,
+							namespaces: [unprotectString(blueprintId)],
+						},
+					},
+				})
+			),
 	}
 
 	return action
