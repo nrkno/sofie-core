@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { NoraContent } from '@sofie-automation/blueprints-integration'
+import { NoraContent, NoraPayload } from '@sofie-automation/blueprints-integration'
 import { IModalAttributes, Modal } from '../../../../lib/ui/containers/modals/Modal'
 import { NoraItemEditor } from './NoraItemEditor'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
@@ -41,6 +41,8 @@ export default withTranslation()(
 			const { piece, t } = this.props
 
 			const actualPiece = RundownUtils.isAdLibPiece(piece) ? piece : piece.instance.piece
+			const payload = (actualPiece.content as NoraContent)?.payload
+
 
 			const modalProps: IModalAttributes = {
 				title: actualPiece.name,
@@ -59,6 +61,11 @@ export default withTranslation()(
 					/>
 					<div className="shelf-inspector__content">
 						<h2 className="mod mas">{actualPiece.name}</h2>
+						{isMultiStep(payload) ? (
+							<div className="mod mas">
+								<pre>{payload.step}</pre>
+							</div>
+						) : ''}
 						<div className="mod mas">
 							<button
 								className="btn btn-primary"
@@ -90,4 +97,14 @@ function isNoraItem(item: IAdLibListItem | PieceUi): boolean {
 	}
 
 	return true
+}
+
+/**
+ * Inspects a NoraPayload object and determines if it is a multi step variant.
+ * 
+ * @param payload the payload to check 
+ * @returns true if it is, false if it isn't
+ */
+function isMultiStep(payload: NoraPayload): boolean {
+	return payload?.step?.enabled === true
 }
