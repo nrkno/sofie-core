@@ -330,7 +330,7 @@ export class MosHandler {
 				// Profile 3: -------------------------------------------------
 				// Profile 4: -------------------------------------------------
 				// onStory: (cb: (story: IMOSROFullStory) => Promise<any>) => void
-				mosDevice.onROStory((story: IMOSROFullStory) => { // MOSDevice >>>> Core
+				mosDevice.onRunningOrderStory((story: IMOSROFullStory) => { // MOSDevice >>>> Core
 					return this._getROAck(story.RunningOrderId, coreMosHandler.mosRoFullStory(story))
 				})
 			})
@@ -346,7 +346,7 @@ export class MosHandler {
 			return
 		})
 	}
-	private sendStatusOfAllMosDevices() {
+	private sendStatusOfAllMosDevices () {
 		// Send an update to Core of the status of all mos devices
 		for (const handler of Object.values(this.allMosDevices)) {
 			if (handler.coreMosHandler) {
