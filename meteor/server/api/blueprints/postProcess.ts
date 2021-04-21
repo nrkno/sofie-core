@@ -28,6 +28,7 @@ import { profiler } from '../profiler'
 import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { CommonContext, ShowStyleContext } from './context'
 import { ReadonlyDeep } from 'type-fest'
+import { processAdLibActionITranslatableMessages } from '../../../lib/api/TranslatableMessage'
 
 /**
  *
@@ -213,39 +214,7 @@ export function postProcessGlobalAdLibActions(
 			_id: protectString(innerContext.getHashId(`${blueprintId}_global_adlib_action_${i}`)),
 			rundownId: rundownId,
 			partId: undefined,
-			display: {
-				...action.display,
-				label: {
-					...action.display.label,
-					namespaces: [unprotectString(blueprintId)],
-				},
-				triggerLabel: action.display.triggerLabel && {
-					...action.display.triggerLabel,
-					namespaces: [unprotectString(blueprintId)],
-				},
-				description: action.display.description && {
-					...action.display.description,
-					namespaces: [unprotectString(blueprintId)],
-				},
-			},
-			triggerModes:
-				action.triggerModes &&
-				action.triggerModes.map(
-					(triggerMode): ArrayElement<AdLibAction['triggerModes']> => ({
-						...triggerMode,
-						display: {
-							...triggerMode.display,
-							label: {
-								...triggerMode.display.label,
-								namespaces: [unprotectString(blueprintId)],
-							},
-							description: triggerMode.display.description && {
-								...triggerMode.display.description,
-								namespaces: [unprotectString(blueprintId)],
-							},
-						},
-					})
-				),
+			...processAdLibActionITranslatableMessages(action, blueprintId),
 		})
 	)
 }
@@ -264,39 +233,7 @@ export function postProcessAdLibActions(
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_action_${i}`)),
 			rundownId: rundownId,
 			partId: partId,
-			display: {
-				...action.display,
-				label: {
-					...action.display.label,
-					namespaces: [unprotectString(blueprintId)],
-				},
-				triggerLabel: action.display.triggerLabel && {
-					...action.display.triggerLabel,
-					namespaces: [unprotectString(blueprintId)],
-				},
-				description: action.display.description && {
-					...action.display.description,
-					namespaces: [unprotectString(blueprintId)],
-				},
-			},
-			triggerModes:
-				action.triggerModes &&
-				action.triggerModes.map(
-					(triggerMode): ArrayElement<AdLibAction['triggerModes']> => ({
-						...triggerMode,
-						display: {
-							...triggerMode.display,
-							label: {
-								...triggerMode.display.label,
-								namespaces: [unprotectString(blueprintId)],
-							},
-							description: triggerMode.display.description && {
-								...triggerMode.display.description,
-								namespaces: [unprotectString(blueprintId)],
-							},
-						},
-					})
-				),
+			...processAdLibActionITranslatableMessages(action, blueprintId),
 		})
 	)
 }
@@ -375,40 +312,7 @@ export function postProcessBucketAction(
 		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
-		display: {
-			...itemOrig.display,
-			_rank: rank ?? itemOrig.display._rank,
-			label: {
-				...itemOrig.display.label,
-				namespaces: [unprotectString(blueprintId)],
-			},
-			triggerLabel: itemOrig.display.triggerLabel && {
-				...itemOrig.display.triggerLabel,
-				namespaces: [unprotectString(blueprintId)],
-			},
-			description: itemOrig.display.description && {
-				...itemOrig.display.description,
-				namespaces: [unprotectString(blueprintId)],
-			},
-		},
-		triggerModes:
-			itemOrig.triggerModes &&
-			itemOrig.triggerModes.map(
-				(triggerMode): ArrayElement<BucketAdLibAction['triggerModes']> => ({
-					...triggerMode,
-					display: {
-						...triggerMode.display,
-						label: {
-							...triggerMode.display.label,
-							namespaces: [unprotectString(blueprintId)],
-						},
-						description: triggerMode.display.description && {
-							...triggerMode.display.description,
-							namespaces: [unprotectString(blueprintId)],
-						},
-					},
-				})
-			),
+		...processAdLibActionITranslatableMessages(itemOrig, blueprintId, rank),
 	}
 
 	return action
