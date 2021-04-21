@@ -6188,12 +6188,7 @@ minimist-options@^3.0.1:
     arrify "^1.0.1"
     is-plain-obj "^1.1.0"
 
-minimist@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-0.1.0.tgz#99df657a52574c21c9057497df742790b2b4c0de"
-  integrity sha1-md9lelJXTCHJBXSX33QnkLK0wN4=
-
-minimist@^1.1.1, minimist@^1.1.3, minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5:
+minimist@^0.1.0, minimist@^1.1.1, minimist@^1.1.3, minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
@@ -8734,17 +8729,17 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6, through@^2.3.8:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
-timeline-state-resolver-types@5.7.0-nightly-release33-20210420-084209-a6d7970bf.0:
-  version "5.7.0-nightly-release33-20210420-084209-a6d7970bf.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-5.7.0-nightly-release33-20210420-084209-a6d7970bf.0.tgz#ff5e6ae0c74643fddaf6745f0b6d40b4c5e11ef9"
-  integrity sha512-92pz79ZUPgaxbR3oU7T03QMcIX/WHKgpZ5YCKoS+W/dWFVSj3fAf3qfPUmcizC1dKb/XTTFLZszFCVo2bsciEw==
+timeline-state-resolver-types@5.7.0-nightly-release33-20210421-102534-d3150d7e3.0:
+  version "5.7.0-nightly-release33-20210421-102534-d3150d7e3.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-5.7.0-nightly-release33-20210421-102534-d3150d7e3.0.tgz#569d8436cb89996c32d354acf63ade5e91a6140c"
+  integrity sha512-0duh41MtYAnDaFoQ2JibTzGtmz+c/ydoAECmpdnpo0GVMb96viz7eLnTkMTWMMlwJBYJbuzPtvmkgh/ZWaZRvw==
   dependencies:
     tslib "^1.13.0"
 
-timeline-state-resolver@5.7.0-nightly-feat-tv2-contribute-20210420-084932-c4d9b5ca6.0:
-  version "5.7.0-nightly-feat-tv2-contribute-20210420-084932-c4d9b5ca6.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-5.7.0-nightly-feat-tv2-contribute-20210420-084932-c4d9b5ca6.0.tgz#a4145a66da6370c782e3542c6568d3326190c515"
-  integrity sha512-mAvRP180sjHVx1VQZTQHP7Z7u19oy1ALbw/Bx3oscT1DxIPrbVvl7YrCpyp1rSXF0Jhi6LYmT/LtWGZOAwJJAg==
+timeline-state-resolver@5.7.0-nightly-release33-20210421-102534-d3150d7e3.0:
+  version "5.7.0-nightly-release33-20210421-102534-d3150d7e3.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-5.7.0-nightly-release33-20210421-102534-d3150d7e3.0.tgz#62e250622cf65910229dc8ddcc9076e0aa33bf50"
+  integrity sha512-TvGMVgBxcalNX3BArX9XFnrz/rtdhbHcy47rME81Ple1Gya3lC+HXRFf/YFAV1wcwZttIJEVvYE2JzdjZz5Nzg==
   dependencies:
     atem-state "^0.10.1"
     bufferutil "^4.0.1"
