@@ -453,14 +453,15 @@ export namespace ServerPlayoutAdLibAPI {
 		const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
 
 		const piece = pieces
-			.filter((p) => (p.startPartId === part._id && p.enable.start === 'now') || p.enable.start < nowInPart)
+			// .filter((p) => (p.startPartId === part._id && p.enable.start === 'now') || p.enable.start < nowInPart)
+			.filter((p) => p.startPartId === part._id || p.enable.start < nowInPart) // TODO - Tom needs to have another look at this line
 			.sort((a, b) => {
 				if (a.enable.start === 'now' && b.enable.start === 'now') return 0
 				if (a.enable.start === 'now') return 1
 				if (b.enable.start === 'now') return -1
 
 				return a.enable.start - b.enable.start
-			})[0]?._id
+			})[0]
 
 		if (!piece) return
 

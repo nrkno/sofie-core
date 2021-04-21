@@ -12,7 +12,7 @@ import {
 	VTContent,
 	SplitsContent,
 	NoraContent,
-	Accessor
+	Accessor,
 } from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -85,14 +85,14 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			isHovered: false,
 			timePosition: 0,
 			label: this.props.piece.name,
-			active: false
+			active: false,
 		}
 	}
 
 	componentDidUpdate(prevProps) {
 		if (prevProps.piece.name !== this.props.piece.name) {
 			this.setState({
-				label: this.props.piece.name
+				label: this.props.piece.name,
 			})
 		}
 	}
@@ -126,7 +126,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 								accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
 								encodeURIComponent(
 									packageThumbnailPath.replace(/^\//, '') // trim leading slash
-								)
+								),
 							].join('/')
 						}
 					}
@@ -137,7 +137,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			if (this.props.mediaPreviewUrl && piece.contentMetaData) {
 				if (piece.contentMetaData && piece.contentMetaData.previewPath && this.props.mediaPreviewUrl) {
 					return (
-						ensureHasTrailingSlash(this.props.mediaPreviewUrl) +
+						ensureHasTrailingSlash(this.props.mediaPreviewUrl ?? null) +
 						'media/thumbnail/' +
 						encodeURIComponent(piece.contentMetaData.mediaId)
 					)
@@ -158,7 +158,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					floatingInspectorStyle={{
 						top: this.positionAndSize?.top + 'px',
 						left: this.positionAndSize?.left + 'px',
-						transform: 'translate(0, -100%)'
+						transform: 'translate(0, -100%)',
 					}}
 					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
 					itemElement={this.element}
@@ -197,7 +197,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					floatingInspectorStyle={{
 						top: this.positionAndSize?.top + 'px',
 						left: this.positionAndSize?.left + 'px',
-						transform: 'translate(0, -100%)'
+						transform: 'translate(0, -100%)',
 					}}
 					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
 					itemElement={null}
@@ -255,7 +255,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				top,
 				left,
 				width,
-				height
+				height,
 			}
 		}
 		this.setState({ isHovered: true })
@@ -273,13 +273,13 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		)
 		const sourceDuration = (this.props.piece.content as VTContent | undefined)?.sourceDuration || 0
 		this.setState({
-			timePosition: timePercentage * sourceDuration
+			timePosition: timePercentage * sourceDuration,
 		})
 	}
 
 	private onNameChanged = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		this.setState({
-			label: e.currentTarget.value || ''
+			label: e.currentTarget.value || '',
 		})
 	}
 
@@ -287,7 +287,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		if (e.key === 'Escape') {
 			this.setState(
 				{
-					label: this.props.piece.name
+					label: this.props.piece.name,
 				},
 				() => {
 					this._labelEl && this._labelEl.blur()
@@ -309,7 +309,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			e.persist()
 			this.setState(
 				{
-					label: this.props.piece.name
+					label: this.props.piece.name,
 				},
 				() => {
 					this.props.onNameChanged && this.props.onNameChanged(e, this.state.label)
@@ -358,7 +358,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		e.stopImmediatePropagation()
 		if (this.activeTouch) {
 			this.setState({
-				active: true
+				active: true,
 			})
 		}
 	}
@@ -369,7 +369,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			this.activeTouch = null
 
 			this.setState({
-				active: false
+				active: false,
 			})
 		}
 	}
@@ -388,7 +388,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			this.activeTouch = null
 
 			this.setState({
-				active: false
+				active: false,
 			})
 		}
 	}
@@ -412,7 +412,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						live: this.props.isOnAir,
 						disabled: this.props.disabled,
 						list: isList,
-						selected: this.props.isNext || this.props.isSelected
+						selected: this.props.isNext || this.props.isSelected,
 					},
 					this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)
 				)}
@@ -428,7 +428,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						!isList && !!this.props.heightScale
 							? //@ts-ignore
 							  (this.props.heightScale as number) * DEFAULT_BUTTON_HEIGHT + 'em'
-							: undefined
+							: undefined,
 				}}
 				onClick={this.handleClick}
 				onDoubleClick={this.handleDoubleClick}
