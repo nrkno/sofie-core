@@ -78,7 +78,7 @@
 		"lottie-web": "^5.7.7",
 		"meteor-node-stubs": "^1.0.2",
 		"moment": "^2.29.1",
-		"mos-connection": "^0.9.0",
+		"mos-connection": "^1.0.1",
 		"mousetrap": "^1.6.5",
 		"ntp-client": "^0.5.3",
 		"object-path": "^0.11.5",
