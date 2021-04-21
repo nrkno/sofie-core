@@ -13,7 +13,10 @@ import {
 	TSRTimelineObjBase,
 	CommandReport,
 	DeviceOptionsAtem,
-	AtemMediaPoolAsset,
+	AtemMediaPoolType,
+	MediaObject,
+	ExpectedPlayoutItem,
+	ExpectedPlayoutItemContent,
 } from 'timeline-state-resolver'
 import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler'
 import clone = require('fast-clone')
@@ -103,6 +106,7 @@ export class TSRHandler {
 	// private _config: TSRConfig
 	private _coreHandler!: CoreHandler
 	private _triggerupdateDevicesTimeout: any = null
+	private _triggerupdateExpectedPlayoutItemsTimeout: any = null
 	private _coreTsrHandlers: { [deviceId: string]: CoreTSRDeviceHandler } = {}
 	private _observers: Array<any> = []
 	private _cachedStudioId = ''
@@ -301,6 +305,19 @@ export class TSRHandler {
 			this._triggerUpdateDevices()
 		}
 		this._observers.push(deviceObserver)
+
+		const expectedPlayoutItemsObserver = this._coreHandler.core.observe('expectedPlayoutItems')
+		expectedPlayoutItemsObserver.added = () => {
+			this._triggerupdateExpectedPlayoutItems()
+		}
+		expectedPlayoutItemsObserver.changed = () => {
+			this._triggerupdateExpectedPlayoutItems()
+		}
+		expectedPlayoutItemsObserver.removed = () => {
+			this._triggerupdateExpectedPlayoutItems()
+		}
+		this._observers.push(expectedPlayoutItemsObserver)
+		this.logger.debug('VIZDEBUG: Observer to expectedPlayoutItems set up')
 	}
 	private resendStatuses(): void {
 		_.each(this._coreTsrHandlers, (tsrHandler) => {
@@ -556,6 +573,7 @@ export class TSRHandler {
 				}, INIT_TIMEOUT)
 			), // Timeout if not all are resolved within INIT_TIMEOUT
 		])
+		this._triggerupdateExpectedPlayoutItems() // So that any recently created devices will get all the ExpectedPlayoutItems
 		this.logger.info('updateDevices end')
 	}
 	private async _addDevice(deviceId: string, options: DeviceOptionsAny): Promise<any> {
@@ -603,12 +621,24 @@ export class TSRHandler {
 					deviceType === DeviceType.ATEM &&
 					!disableAtemUpload
 				) {
+					// const ssrcBgs = studio.config.filter((o) => o._id.substr(0, 18) === 'atemSSrcBackground')
 					const assets = (options as DeviceOptionsAtem).options.mediaPoolAssets
 					if (assets && assets.length > 0) {
 						try {
+							// TODO: support uploading clips and audio
 							this.uploadFilesToAtem(
-								device,
-								assets.filter((asset) => _.isNumber(asset.position) && asset.path)
+								_.compact(
+									assets.map((asset) => {
+										return asset.type === AtemMediaPoolType.Still &&
+											_.isNumber(asset.position) &&
+											asset.path
+											? {
+													position: asset.position,
+													path: asset.path,
+											  }
+											: undefined
+									})
+								)
 							)
 						} catch (e) {
 							// don't worry about it.
@@ -660,6 +690,12 @@ export class TSRHandler {
 				this.logger.error(error)
 				this.logger.debug(context)
 			}
+			const onUpdateMediaObject = (collectionId: string, docId: string, doc: MediaObject | null) => {
+				coreTsrHandler.onUpdateMediaObject(collectionId, docId, doc)
+			}
+			const onClearMediaObjectCollection = (collectionId: string) => {
+				coreTsrHandler.onClearMediaObjectCollection(collectionId)
+			}
 			let deviceName = device.deviceName
 			const deviceInstanceId = device.instanceId
 			const fixError = (e: any) => {
@@ -699,6 +735,8 @@ export class TSRHandler {
 			await device.device.on('slowCommand', onSlowCommand)
 			await device.device.on('commandError', onCommandError)
 			await device.device.on('commandReport', onCommandReport)
+			await device.device.on('updateMediaObject', onUpdateMediaObject)
+			await device.device.on('clearMediaObjects', onClearMediaObjectCollection)
 
 			await device.device.on('info', (e: any, ...args: any[]) => this.logger.info(fixError(e), ...args))
 			await device.device.on('warning', (e: any, ...args: any[]) => this.logger.warn(fixError(e), ...args))
@@ -728,23 +766,32 @@ export class TSRHandler {
 	 * // @todo: proper atem media management
 	 * /Balte - 22-08
 	 */
-	private uploadFilesToAtem(device: DeviceContainer, files: AtemMediaPoolAsset[]) {
-		this.logger.info('try to load ' + JSON.stringify(files.map((f) => f.path).join(', ')) + ' to atem')
-		if (device && device.deviceType === DeviceType.ATEM) {
-			const options = device.deviceOptions.options as { host: string }
-			this.logger.info('options ' + JSON.stringify(options))
-			if (options && options.host) {
-				this.logger.info('uploading files to ' + options.host)
-				const process = cp.spawn(`node`, [`./dist/atemUploader.js`, options.host, JSON.stringify(files)])
-				process.stdout.on('data', (data) => this.logger.info(data.toString()))
-				process.stderr.on('data', (data) => this.logger.info(data.toString()))
-				process.on('close', () => {
-					process.removeAllListeners()
-				})
-			} else {
-				throw Error('ATEM host option not set')
-			}
-		}
+	private uploadFilesToAtem(files: { position: number; path: string }[]) {
+		files.forEach((file) => {
+			this.logger.info('try to load ' + JSON.stringify(file) + ' to atem')
+			this.tsr.getDevices().forEach(async (device) => {
+				if (device.deviceType === DeviceType.ATEM) {
+					const options = device.deviceOptions.options as { host: string }
+					this.logger.info('options ' + JSON.stringify(options))
+					if (options && options.host) {
+						this.logger.info('uploading ' + file.path + ' to ' + options.host + ' in MP' + file.position)
+						const process = cp.spawn(`node`, [
+							`./dist/atemUploader.js`,
+							options.host,
+							file.path,
+							file.position.toString(),
+						])
+						process.stdout.on('data', (data) => this.logger.info(data.toString()))
+						process.stderr.on('data', (data) => this.logger.info(data.toString()))
+						process.on('close', () => {
+							process.removeAllListeners()
+						})
+					} else {
+						throw Error('ATEM host option not set')
+					}
+				}
+			})
+		})
 	}
 	private async _removeDevice(deviceId: string): Promise<any> {
 		if (this._coreTsrHandlers[deviceId]) {
@@ -755,6 +802,61 @@ export class TSRHandler {
 			}
 		}
 		delete this._coreTsrHandlers[deviceId]
+	}
+	private _triggerupdateExpectedPlayoutItems() {
+		this.logger.debug('VIZDEBUG: Trigger update expected playout items called')
+		if (!this._initialized) return
+		this.logger.debug("VIZDEBUG: And we're initialized")
+		if (this._triggerupdateExpectedPlayoutItemsTimeout) {
+			clearTimeout(this._triggerupdateExpectedPlayoutItemsTimeout)
+		}
+		this._triggerupdateExpectedPlayoutItemsTimeout = setTimeout(() => {
+			this._updateExpectedPlayoutItems().catch((e) =>
+				this.logger.error('Error in _updateExpectedPlayoutItems', e)
+			)
+		}, 200)
+	}
+	private async _updateExpectedPlayoutItems() {
+		this.logger.debug('VIZDEBUG: Update expected playout items called')
+
+		const expectedPlayoutItems = this._coreHandler.core.getCollection('expectedPlayoutItems')
+		const peripheralDevice = this._getPeripheralDevice()
+
+		this.logger.debug(`VIZDEBUG: Items before filter ${JSON.stringify(expectedPlayoutItems)}`)
+
+		const expectedItems = expectedPlayoutItems.find({
+			studioId: peripheralDevice.studioId,
+		})
+
+		this.logger.debug(`VIZDEBUG: Items after filter ${JSON.stringify(expectedItems)}`)
+
+		await Promise.all(
+			_.map(this.tsr.getDevices(), async (container) => {
+				if (await container.device.supportsExpectedPlayoutItems) {
+					this.logger.debug(`VIZDEBUG: Supports expected playout items`)
+
+					await container.device.handleExpectedPlayoutItems(
+						_.map(
+							_.filter(expectedItems, (item) => {
+								return (
+									item.deviceSubType === container.deviceType
+									// TODO: implement item.deviceId === container.deviceId
+								)
+							}),
+							(item) => {
+								const itemContent: ExpectedPlayoutItemContent = item.content
+								const newItem: ExpectedPlayoutItem = {
+									...itemContent,
+									rundownId: item.rundownId,
+									playlistId: item.playlistId,
+								}
+								return newItem
+							}
+						)
+					)
+				}
+			})
+		)
 	}
 	/**
 	 * Go through and transform timeline and generalize the Core-specific things

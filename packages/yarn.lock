@@ -8741,16 +8741,17 @@ timeline-state-resolver-types@5.7.0-nightly-release33-20210420-084209-a6d7970bf.
   dependencies:
     tslib "^1.13.0"
 
-timeline-state-resolver@5.6.0-nightly-release31-20210322-163519-1a4031442.0:
-  version "5.6.0-nightly-release31-20210322-163519-1a4031442.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-5.6.0-nightly-release31-20210322-163519-1a4031442.0.tgz#a3a74e1fe7b4500f3915a1257cd02435f34f4a40"
-  integrity sha512-bb+GRcmtfddjZPEH6ttrDk2Mh7IkcFY0Ea+Khp9S3jIeBv4KEJp2m03lLPUucxWNyDAQC4kye3kQS1biXYK4iQ==
+timeline-state-resolver@5.7.0-nightly-feat-tv2-contribute-20210420-084932-c4d9b5ca6.0:
+  version "5.7.0-nightly-feat-tv2-contribute-20210420-084932-c4d9b5ca6.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-5.7.0-nightly-feat-tv2-contribute-20210420-084932-c4d9b5ca6.0.tgz#a4145a66da6370c782e3542c6568d3326190c515"
+  integrity sha512-mAvRP180sjHVx1VQZTQHP7Z7u19oy1ALbw/Bx3oscT1DxIPrbVvl7YrCpyp1rSXF0Jhi6LYmT/LtWGZOAwJJAg==
   dependencies:
     atem-state "^0.10.1"
     bufferutil "^4.0.1"
     casparcg-connection "^5.1.0"
     casparcg-state "^2.1.0"
     debug "^4.3.1"
+    deepmerge "^4.2.2"
     emberplus-connection "^0.0.3"
     hyperdeck-connection "^0.4.3"
     osc "^2.4.0"

@@ -4,10 +4,17 @@ import {
 	PeripheralDeviceAPI as P,
 	DDPConnectorOptions,
 	PeripheralDeviceAPI,
-	CollectionObj,
 } from '@sofie-automation/server-core-integration'
 
-import { DeviceType, CasparCGDevice, DeviceContainer, HyperdeckDevice, QuantelDevice } from 'timeline-state-resolver'
+import {
+	DeviceType,
+	CasparCGDevice,
+	DeviceContainer,
+	HyperdeckDevice,
+	QuantelDevice,
+	MediaObject,
+} from 'timeline-state-resolver'
+import { CollectionObj } from '@sofie-automation/server-core-integration'
 
 import * as _ from 'underscore'
 import { DeviceConfig } from './connector'
@@ -63,6 +70,10 @@ export class CoreHandler {
 	private _coreConfig?: CoreConfig
 	private _process?: Process
 
+	private _studioId: string | undefined
+	private _timelineSubscription: string | null = null
+	private _expectedItemsSubscription: string | null = null
+
 	private _statusInitialized = false
 	private _statusDestroyed = false
 
@@ -106,8 +117,11 @@ export class CoreHandler {
 		}
 
 		await this.core.init(ddpConfig)
+
 		this.logger.info('Core id: ' + this.core.deviceId)
 		await this.setupObserversAndSubscriptions()
+		if (this._onConnected) this._onConnected()
+
 		this._statusInitialized = true
 		await this.updateCoreStatus()
 	}
@@ -140,7 +154,6 @@ export class CoreHandler {
 		observer.added = (id: string) => this.onDeviceChanged(id)
 		observer.changed = (id: string) => this.onDeviceChanged(id)
 		this.setupObserverForPeripheralDeviceCommands(this)
-		return
 	}
 	async destroy(): Promise<void> {
 		this._statusDestroyed = true
@@ -228,6 +241,44 @@ export class CoreHandler {
 				this.reportAllCommands = this.deviceSettings['reportAllCommands']
 			}
 
+			const studioId = device.studioId
+			if (studioId !== this._studioId) {
+				this._studioId = studioId
+
+				// Set up timeline data subscription:
+				if (this._timelineSubscription) {
+					this.core.unsubscribe(this._timelineSubscription)
+					this._timelineSubscription = null
+				}
+				this.core
+					.autoSubscribe('timeline', {
+						studioId: studioId,
+					})
+					.then((subscriptionId) => {
+						this._timelineSubscription = subscriptionId
+					})
+					.catch((err) => {
+						this.logger.error(err)
+					})
+
+				// Set up expectedPlayoutItems data subscription:
+				if (this._expectedItemsSubscription) {
+					this.core.unsubscribe(this._expectedItemsSubscription)
+					this._expectedItemsSubscription = null
+				}
+				this.core
+					.autoSubscribe('expectedPlayoutItems', {
+						studioId: studioId,
+					})
+					.then((subscriptionId) => {
+						this._expectedItemsSubscription = subscriptionId
+					})
+					.catch((err) => {
+						this.logger.error(err)
+					})
+				this.logger.debug('VIZDEBUG: Subscription to expectedPlayoutItems done')
+			}
+
 			if (this._tsrHandler) {
 				this._tsrHandler.onSettingsChanged()
 			}
@@ -261,7 +312,7 @@ export class CoreHandler {
 			// eslint-disable-next-line @typescript-eslint/ban-types
 			const fcn: Function = fcnObject[cmd.functionName]
 			try {
-				if (!fcn) throw Error('Function "' + cmd.functionName + '" not found!')
+				if (!fcn) throw Error(`Function "${cmd.functionName}" not found on device "${cmd.deviceId}"!`)
 
 				Promise.resolve(fcn.apply(fcnObject, cmd.args))
 					.then((result) => {
@@ -323,9 +374,9 @@ export class CoreHandler {
 		}
 		return false
 	}
-	devicesMakeReady(okToDestroyStuff?: boolean): Promise<any> {
+	devicesMakeReady(okToDestroyStuff?: boolean, activeRundownId?: string): Promise<any> {
 		if (this._tsrHandler) {
-			return this._tsrHandler.tsr.devicesMakeReady(okToDestroyStuff)
+			return this._tsrHandler.tsr.devicesMakeReady(okToDestroyStuff, activeRundownId)
 		} else {
 			throw Error('TSR not set up!')
 		}
@@ -591,6 +642,18 @@ export class CoreTSRDeviceHandler {
 		this.core
 			.callMethodLowPrio(PeripheralDeviceAPI.methods.reportCommandError, [errorMessage, ref])
 			.catch((e) => this._coreParentHandler.logger.error('Error when callMethodLowPrio: ', e, e.stack))
+	}
+	onUpdateMediaObject(collectionId: string, docId: string, doc: MediaObject | null): void {
+		this.core
+			.callMethodLowPrio(PeripheralDeviceAPI.methods.updateMediaObject, [collectionId, docId, doc])
+			.catch((e) => this._coreParentHandler.logger.error('Error when updating Media Object: ' + e, e.stack))
+	}
+	onClearMediaObjectCollection(collectionId: string): void {
+		this.core
+			.callMethodLowPrio(PeripheralDeviceAPI.methods.clearMediaObjectCollection, [collectionId])
+			.catch((e) =>
+				this._coreParentHandler.logger.error('Error when clearing Media Objects collection: ' + e, e.stack)
+			)
 	}
 
 	async dispose(): Promise<void> {
