@@ -50,6 +50,7 @@ const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
 import { postProcessPieces } from '../postProcess'
+import { Pieces } from '../../../../lib/collections/Pieces'
 
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
@@ -72,6 +73,16 @@ describe('Test blueprint api context', () => {
 				takeCount: i,
 				rehearsal: false,
 				part,
+			})
+
+			part.getPieces().forEach((p) => {
+				PieceInstances.insert({
+					_id: protectString(`${part._id}_piece_${p._id}`),
+					rundownId: rundown._id,
+					partInstanceId: protectString(`${part._id}_instance`),
+					playlistActivationId: activationId,
+					piece: p,
+				})
 			})
 
 			const count = ((i + 2) % 4) + 1 // Some consistent randomness
@@ -240,7 +251,7 @@ describe('Test blueprint api context', () => {
 					// Check the current part
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstanceIds[1] } })
 					expect(context.getPieceInstances('next')).toHaveLength(0)
-					expect(context.getPieceInstances('current')).toHaveLength(4)
+					expect(context.getPieceInstances('current')).toHaveLength(5)
 
 					// Now the next part
 					cache.Playlist.update({ $set: { currentPartInstanceId: null } })
@@ -576,6 +587,168 @@ describe('Test blueprint api context', () => {
 			})
 		})
 
+		describe('findLastScriptedPieceOnLayer', () => {
+			testInFiber('No Current Part', () => {
+				wrapWithCache((cache) => {
+					const { context, rundown, activationId } = getActionExecutionContext(cache)
+
+					// We need to push changes back to 'mongo' for these tests
+					waitForPromise(cache.saveAllToDatabase())
+
+					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
+					expect(sourceLayerIds).toHaveLength(2)
+
+					// No playback has begun, so nothing should happen
+					expect(context.findLastScriptedPieceOnLayer(sourceLayerIds[0])).toBeUndefined()
+					expect(context.findLastScriptedPieceOnLayer(sourceLayerIds[1])).toBeUndefined()
+				})
+			})
+
+			testInFiber('First Part', () => {
+				wrapWithCache((cache) => {
+					const { context, rundown, activationId } = getActionExecutionContext(cache)
+
+					// We need to push changes back to 'mongo' for these tests
+					waitForPromise(cache.saveAllToDatabase())
+
+					const segmentIds = cache.Segments.findFetch()
+						.sort((a, b) => a._rank - b._rank)
+						.map((s) => s._id)
+
+					const partInstances = cache.PartInstances.findFetch({ segmentId: segmentIds[0] }).sort(
+						(a, b) => a.part._rank - b.part._rank
+					)
+					expect(partInstances).toHaveLength(2)
+
+					const pieceInstances = cache.PieceInstances.findFetch({
+						partInstanceId: { $in: partInstances.map((p) => p._id) },
+					})
+					expect(pieceInstances).toHaveLength(10)
+
+					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
+					expect(sourceLayerIds).toHaveLength(2)
+
+					// Set Part 1 as current part
+					// as any to bypass readonly
+					;(cache.Playlist.doc.currentPartInstanceId as any) = partInstances[0]._id
+
+					const expectedPieceInstanceSourceLayer0 = pieceInstances.find(
+						(p) =>
+							p.partInstanceId === cache.Playlist.doc.currentPartInstanceId &&
+							p.piece.sourceLayerId === sourceLayerIds[0]
+					)
+					expect(expectedPieceInstanceSourceLayer0).not.toBeUndefined()
+
+					const expectedPieceSourceLayer0 = Pieces.findOne({
+						_id: expectedPieceInstanceSourceLayer0?.piece._id,
+					})
+					expect(context.findLastScriptedPieceOnLayer(sourceLayerIds[0])).toMatchObject({
+						_id: expectedPieceSourceLayer0?._id,
+					})
+
+					const expectedPieceInstanceSourceLayer1 = pieceInstances.find(
+						(p) =>
+							p.partInstanceId === cache.Playlist.doc.currentPartInstanceId &&
+							p.piece.sourceLayerId === sourceLayerIds[1]
+					)
+					expect(expectedPieceInstanceSourceLayer1).not.toBeUndefined()
+
+					const expectedPieceSourceLayer1 = Pieces.findOne({
+						_id: expectedPieceInstanceSourceLayer1?.piece._id,
+					})
+					expect(context.findLastScriptedPieceOnLayer(sourceLayerIds[1])).toMatchObject({
+						_id: expectedPieceSourceLayer1?._id,
+					})
+				})
+			})
+
+			testInFiber('First Part, Ignore Current Part', () => {
+				wrapWithCache((cache) => {
+					const { context, rundown, activationId } = getActionExecutionContext(cache)
+
+					// We need to push changes back to 'mongo' for these tests
+					waitForPromise(cache.saveAllToDatabase())
+
+					const segmentIds = cache.Segments.findFetch()
+						.sort((a, b) => a._rank - b._rank)
+						.map((s) => s._id)
+
+					const partInstances = cache.PartInstances.findFetch({ segmentId: segmentIds[0] }).sort(
+						(a, b) => a.part._rank - b.part._rank
+					)
+					expect(partInstances).toHaveLength(2)
+
+					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
+					expect(sourceLayerIds).toHaveLength(2)
+
+					// Set Part 1 as current part
+					// as any to bypass readonly
+					;(cache.Playlist.doc.currentPartInstanceId as any) = partInstances[0]._id
+
+					expect(
+						context.findLastScriptedPieceOnLayer(sourceLayerIds[0], { excludeCurrentPart: true })
+					).toBeUndefined()
+				})
+			})
+
+			testInFiber('Second Part', () => {
+				wrapWithCache((cache) => {
+					const { context, rundown, activationId } = getActionExecutionContext(cache)
+
+					// We need to push changes back to 'mongo' for these tests
+					waitForPromise(cache.saveAllToDatabase())
+
+					const segmentIds = cache.Segments.findFetch()
+						.sort((a, b) => a._rank - b._rank)
+						.map((s) => s._id)
+
+					const partInstances = cache.PartInstances.findFetch({ segmentId: segmentIds[0] }).sort(
+						(a, b) => a.part._rank - b.part._rank
+					)
+					expect(partInstances).toHaveLength(2)
+
+					const pieceInstances = cache.PieceInstances.findFetch({
+						partInstanceId: { $in: partInstances.map((p) => p._id) },
+					})
+					expect(pieceInstances).toHaveLength(10)
+
+					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
+					expect(sourceLayerIds).toHaveLength(2)
+
+					// Set Part 2 as current part
+					// as any to bypass readonly
+					;(cache.Playlist.doc.currentPartInstanceId as any) = partInstances[1]._id
+
+					const expectedPieceInstanceSourceLayer0 = pieceInstances.find(
+						(p) =>
+							p.partInstanceId === cache.Playlist.doc.currentPartInstanceId &&
+							p.piece.sourceLayerId === sourceLayerIds[0]
+					)
+					expect(expectedPieceInstanceSourceLayer0).not.toBeUndefined()
+
+					const expectedPieceSourceLayer0 = Pieces.findOne({
+						_id: expectedPieceInstanceSourceLayer0?.piece._id,
+					})
+					expect(context.findLastScriptedPieceOnLayer(sourceLayerIds[0])).toMatchObject({
+						_id: expectedPieceSourceLayer0?._id,
+					})
+
+					// Part 2 does not have any pieces on this sourcelayer, so we should find the piece from part 1
+					const expectedPieceInstanceSourceLayer1 = pieceInstances.find(
+						(p) => p.partInstanceId === partInstances[0]._id && p.piece.sourceLayerId === sourceLayerIds[1]
+					)
+					expect(expectedPieceInstanceSourceLayer0).not.toBeUndefined()
+
+					const expectedPieceSourceLayer1 = Pieces.findOne({
+						_id: expectedPieceInstanceSourceLayer1?.piece._id,
+					})
+					expect(context.findLastScriptedPieceOnLayer(sourceLayerIds[1])).toMatchObject({
+						_id: expectedPieceSourceLayer1?._id,
+					})
+				})
+			})
+		})
+
 		describe('getPartInstanceForPreviousPiece', () => {
 			testInFiber('invalid parameters', () => {
 				wrapWithCache((cache) => {
@@ -625,6 +798,64 @@ describe('Test blueprint api context', () => {
 						context.getPartInstanceForPreviousPiece({ partInstanceId: partInstanceIds[4] } as any)
 					).toMatchObject({
 						_id: partInstanceIds[4],
+					})
+				})
+			})
+		})
+
+		describe('getPartForPreviousPiece', () => {
+			testInFiber('invalid parameters', () => {
+				wrapWithCache((cache) => {
+					const { context } = getActionExecutionContext(cache)
+
+					// @ts-ignore
+					expect(() => context.getPartForPreviousPiece()).toThrowError('Cannot find Part from invalid Piece')
+					// @ts-ignore
+					expect(() => context.getPartForPreviousPiece({})).toThrowError(
+						'Cannot find Part from invalid Piece'
+					)
+					// @ts-ignore
+					expect(() => context.getPartForPreviousPiece('abc')).toThrowError(
+						'Cannot find Part from invalid Piece'
+					)
+					expect(() =>
+						context.getPartForPreviousPiece({
+							// @ts-ignore
+							partInstanceId: 6,
+						})
+					).toThrowError('Cannot find Part from invalid Piece')
+					expect(() =>
+						// @ts-ignore
+						context.getPartForPreviousPiece({
+							_id: 'abc',
+						})
+					).toThrowError('Cannot find Piece abc')
+				})
+			})
+
+			testInFiber('valid parameters', () => {
+				wrapWithCache((cache) => {
+					const { context } = getActionExecutionContext(cache)
+
+					const partInstances = cache.PartInstances.findFetch({})
+					expect(partInstances).toHaveLength(5)
+
+					const pieceInstance0 = cache.PieceInstances.findOne({ partInstanceId: partInstances[0]._id })
+					expect(pieceInstance0).not.toBeUndefined()
+
+					expect(
+						context.getPartForPreviousPiece({ _id: unprotectString(pieceInstance0!.piece._id) })
+					).toMatchObject({
+						_id: partInstances[0].part._id,
+					})
+
+					const pieceInstance1 = cache.PieceInstances.findOne({ partInstanceId: partInstances[1]._id })
+					expect(pieceInstance1).not.toBeUndefined()
+
+					expect(
+						context.getPartForPreviousPiece({ _id: unprotectString(pieceInstance1!.piece._id) })
+					).toMatchObject({
+						_id: partInstances[1].part._id,
 					})
 				})
 			})
