@@ -24,7 +24,7 @@ import {
 	RundownLayoutAdLibRegion,
 	RundownLayoutAdLibRegionRole,
 	RundownLayoutId,
-	RundownLayoutPieceCountdown,
+	RundownLayoutPieceCountdown
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -57,11 +57,11 @@ interface ITrackedProps {
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	const rundownLayouts = RundownLayouts.find({
 		showStyleBaseId: props.showStyleBase._id,
-		userId: { $exists: false },
+		userId: { $exists: false }
 	}).fetch()
 
 	return {
-		rundownLayouts,
+		rundownLayouts
 	}
 })(
 	class RundownLayoutEditor extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -70,7 +70,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 			this.state = {
 				editedItems: [],
-				uploadFileKey: Date.now(),
+				uploadFileKey: Date.now()
 			}
 		}
 
@@ -99,9 +99,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						x: 0,
 						y: 0,
 						width: 3,
-						height: 3,
-					}),
-				},
+						height: 3
+					})
+				}
 			})
 		}
 
@@ -127,16 +127,17 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						rank: 0,
 						rundownBaseline: false,
 						showThumbnailsInList: false,
-						default: false,
-					}),
-				},
+						hideDuplicates: false,
+						default: false
+					})
+				}
 			})
 		}
 
 		onToggleDefault = (item: RundownLayout, index: number, value: boolean) => {
 			const obj = _.object(item.filters.map((item, i) => [`filters.${i}.default`, i === index ? value : false]))
 			RundownLayouts.update(item._id, {
-				$set: obj,
+				$set: obj
 			})
 		}
 
@@ -144,9 +145,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			RundownLayouts.update(item._id, {
 				$pull: {
 					actionButtons: {
-						_id: button._id,
-					},
-				},
+						_id: button._id
+					}
+				}
 			})
 		}
 
@@ -154,9 +155,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			RundownLayouts.update(item._id, {
 				$pull: {
 					filters: {
-						_id: filter._id,
-					},
-				},
+						_id: filter._id
+					}
+				}
 			})
 		}
 
@@ -169,7 +170,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				this.state.editedItems.push(layoutBase._id)
 
 				this.setState({
-					editedItems: this.state.editedItems,
+					editedItems: this.state.editedItems
 				})
 			} else {
 				this.finishEditItem(layoutBase)
@@ -186,7 +187,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				this.state.editedItems.splice(idx, 1)
 
 				this.setState({
-					editedItems: this.state.editedItems,
+					editedItems: this.state.editedItems
 				})
 			}
 		}
@@ -201,7 +202,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				message: t('Are you sure you want to delete the shelf layout "{{name}}"?', { name: item.name }),
 				onAccept: () => {
 					MeteorCall.rundownLayout.removeRundownLayout(item._id).catch(console.error)
-				},
+				}
 			})
 		}
 
@@ -314,16 +315,16 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			const rundownBaselineOptions = [
 				{
 					name: t('Yes'),
-					value: true,
+					value: true
 				},
 				{
 					name: t('No'),
-					value: false,
+					value: false
 				},
 				{
 					name: t('Only Match Global AdLibs'),
-					value: 'only',
-				},
+					value: 'only'
+				}
 			]
 
 			return (
@@ -776,6 +777,22 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										collection={RundownLayouts}
 										className="mod mas"
 									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Hide duplicated AdLibs')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.hideDuplicates`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+									<span className="text-s dimmed">
+										{t('Picks the first instance of an adLib per rundown, identified by uniqueness Id')}
+									</span>
 								</label>
 							</div>
 						</React.Fragment>
@@ -1298,7 +1315,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							{isRundownLayout && (
 								<button
 									className={ClassNames('action-btn right mod man pas', {
-										star: (tab as any).default,
+										star: (tab as any).default
 									})}
 									onClick={(e) => this.onToggleDefault(item as RundownLayout, index, !(tab as any).default)}
 								>
@@ -1343,7 +1360,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<React.Fragment key={unprotectString(item._id)}>
 					<tr
 						className={ClassNames({
-							hl: this.isItemEdited(item),
+							hl: this.isItemEdited(item)
 						})}
 					>
 						<th className="settings-studio-rundown-layouts-table__name c3">{item.name || t('Default Layout')}</th>
@@ -1466,7 +1483,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				// On file upload
 
 				this.setState({
-					uploadFileKey: Date.now(),
+					uploadFileKey: Date.now()
 				})
 
 				let uploadFileContents = (e2.target as any).result
@@ -1479,7 +1496,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<React.Fragment>
 							<p>
 								{t('Are you sure you want to upload the shelf layout from the file "{{fileName}}"?', {
-									fileName: file.name,
+									fileName: file.name
 								})}
 							</p>
 							,
@@ -1491,8 +1508,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								method: 'POST',
 								body: uploadFileContents,
 								headers: {
-									'content-type': 'text/javascript',
-								},
+									'content-type': 'text/javascript'
+								}
 							})
 								.then((res) => {
 									NotificationCenter.push(
@@ -1518,9 +1535,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					},
 					onSecondary: () => {
 						this.setState({
-							uploadFileKey: Date.now(),
+							uploadFileKey: Date.now()
 						})
-					},
+					}
 				})
 			}
 			reader.readAsText(file)

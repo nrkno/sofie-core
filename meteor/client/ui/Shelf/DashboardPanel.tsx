@@ -20,14 +20,14 @@ import {
 	fetchAndFilter,
 	AdLibPieceUi,
 	matchFilter,
-	AdLibPanelToolbar,
+	AdLibPanelToolbar
 } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import {
 	ensureHasTrailingSlash,
 	contextMenuHoldToDisplayTime,
 	UserAgentPointer,
-	USER_AGENT_POINTER_PROPERTY,
+	USER_AGENT_POINTER_PROPERTY
 } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { PieceId } from '../../../lib/collections/Pieces'
@@ -107,7 +107,7 @@ export function dashboardElementPosition(el: DashboardPositionableElement): Reac
 				? `calc(${-1 * el.y - 1} * var(--dashboard-button-grid-height))`
 				: el.height < 0
 				? `calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))`
-				: undefined,
+				: undefined
 	}
 }
 
@@ -124,7 +124,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			outputLayers: {},
 			sourceLayers: {},
 			searchFilter: undefined,
-			singleClickMode: false,
+			singleClickMode: false
 		}
 	}
 
@@ -146,7 +146,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 			return {
 				outputLayers: tOLayers,
-				sourceLayers: tSLayers,
+				sourceLayers: tSLayers
 			}
 		}
 		return null
@@ -158,41 +158,41 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			if (rundownIds.length > 0) {
 				this.subscribe(PubSub.pieceInstances, {
 					rundownId: {
-						$in: rundownIds,
+						$in: rundownIds
 					},
 					startedPlayback: {
-						$exists: true,
+						$exists: true
 					},
 					$and: [
 						{
 							$or: [
 								{
 									adLibSourceId: {
-										$exists: true,
-									},
+										$exists: true
+									}
 								},
 								{
 									'piece.tags': {
-										$exists: true,
-									},
-								},
-							],
+										$exists: true
+									}
+								}
+							]
 						},
 						{
 							$or: [
 								{
 									stoppedPlayback: {
-										$eq: 0,
-									},
+										$eq: 0
+									}
 								},
 								{
 									stoppedPlayback: {
-										$exists: false,
-									},
-								},
-							],
-						},
-					],
+										$exists: false
+									}
+								}
+							]
+						}
+					]
 				})
 			}
 		})
@@ -251,10 +251,16 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		this.usedHotkeys.length = 0
 	}
 
-	protected static filterOutAdLibs(props: IAdLibPanelProps & AdLibFetchAndFilterProps, state: IState): AdLibPieceUi[] {
+	protected static filterOutAdLibs(
+		props: IAdLibPanelProps & AdLibFetchAndFilterProps,
+		state: IState,
+		uniquenessIds?: Set<string>
+	): AdLibPieceUi[] {
 		return props.rundownBaselineAdLibs
 			.concat(props.uiSegments.map((seg) => seg.pieces).flat())
-			.filter((item) => matchFilter(item, props.showStyleBase, props.uiSegments, props.filter, state.searchFilter))
+			.filter((item) =>
+				matchFilter(item, props.showStyleBase, props.uiSegments, props.filter, state.searchFilter, uniquenessIds)
+			)
 	}
 
 	protected isAdLibOnAir(adLib: AdLibPieceUi) {
@@ -489,7 +495,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	protected onFilterChange = (filter: string) => {
 		this.setState({
-			searchFilter: filter,
+			searchFilter: filter
 		})
 	}
 
@@ -546,7 +552,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	protected onSelectAdLib = (piece: AdLibPieceUi, e: any) => {
 		this.setState({
-			selectedAdLib: piece,
+			selectedAdLib: piece
 		})
 	}
 
@@ -560,7 +566,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			const shouldBeSingleClick = !!value.match(UserAgentPointer.NO_POINTER)
 			if (this.state.singleClickMode !== shouldBeSingleClick) {
 				this.setState({
-					singleClickMode: shouldBeSingleClick,
+					singleClickMode: shouldBeSingleClick
 				})
 			}
 		}
@@ -568,7 +574,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	render() {
 		const { t } = this.props
-		const filteredAdLibs = DashboardPanelInner.filterOutAdLibs(this.props, this.state)
+		const uniquenessIds = new Set<string>()
+		const filteredAdLibs = DashboardPanelInner.filterOutAdLibs(this.props, this.state, uniquenessIds)
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
 			if (!this.props.uiSegments || !this.props.playlist) {
@@ -577,7 +584,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 				return (
 					<div
 						className={ClassNames('dashboard-panel', {
-							'dashboard-panel--take': filter.displayTakeButtons,
+							'dashboard-panel--take': filter.displayTakeButtons
 						})}
 						ref={this.setRef}
 						style={dashboardElementPosition(filter)}
@@ -586,7 +593,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						{filter.enableSearch && <AdLibPanelToolbar onFilterChange={this.onFilterChange} />}
 						<div
 							className={ClassNames('dashboard-panel__panel', {
-								'dashboard-panel__panel--horizontal': filter.overflowHorizontally,
+								'dashboard-panel__panel--horizontal': filter.overflowHorizontally
 							})}
 						>
 							{filteredAdLibs.map((adLibPiece: AdLibPieceUi) => {
@@ -598,8 +605,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 												type: ContextType.ADLIB,
 												details: {
 													adLib: adLibPiece,
-													onToggle: this.onToggleAdLib,
-												},
+													onToggle: this.onToggleAdLib
+												}
 											})
 										}
 										renderTag="span"
@@ -668,52 +675,52 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 	if (currentPartInstanceId) {
 		prospectivePieces = PieceInstances.find({
 			startedPlayback: {
-				$exists: true,
+				$exists: true
 			},
 			$and: [
 				{
 					$or: [
 						{
 							stoppedPlayback: {
-								$eq: 0,
-							},
+								$eq: 0
+							}
 						},
 						{
 							stoppedPlayback: {
-								$exists: false,
-							},
-						},
-					],
+								$exists: false
+							}
+						}
+					]
 				},
 				{
 					$or: [
 						{
 							adLibSourceId: {
-								$exists: true,
-							},
+								$exists: true
+							}
 						},
 						{
 							'piece.tags': {
-								$exists: true,
-							},
-						},
-					],
+								$exists: true
+							}
+						}
+					]
 				},
 				{
 					$or: [
 						{
 							userDuration: {
-								$exists: false,
-							},
+								$exists: false
+							}
 						},
 						{
 							'userDuration.end': {
-								$exists: false,
-							},
-						},
-					],
-				},
-			],
+								$exists: false
+							}
+						}
+					]
+				}
+			]
 		}).fetch()
 
 		let nearestEnd = Number.POSITIVE_INFINITY
@@ -751,24 +758,24 @@ export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null)
 			$and: [
 				{
 					piece: {
-						$exists: true,
-					},
+						$exists: true
+					}
 				},
 				{
 					$or: [
 						{
 							adLibSourceId: {
-								$exists: true,
-							},
+								$exists: true
+							}
 						},
 						{
 							'piece.tags': {
-								$exists: true,
-							},
-						},
-					],
-				},
-			],
+								$exists: true
+							}
+						}
+					]
+				}
+			]
 		}).fetch()
 	}
 
@@ -790,7 +797,7 @@ export function getUnfinishedPieceInstancesGrouped(
 
 	return {
 		unfinishedAdLibIds,
-		unfinishedTags,
+		unfinishedTags
 	}
 }
 
@@ -856,7 +863,7 @@ export const DashboardPanel = translateWithTracker<
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,
-			nextTags,
+			nextTags
 		}
 	},
 	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {

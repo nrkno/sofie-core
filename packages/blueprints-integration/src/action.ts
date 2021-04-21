@@ -32,6 +32,8 @@ export interface IBlueprintActionManifestDisplay {
 	currentPieceTags?: string[]
 	/** Piece tags to use to determine if action is set as next */
 	nextPieceTags?: string[]
+	/** String that can be used to identify adlibs that are equivalent to each other */
+	uniquenessId?: string
 }
 
 export interface IBlueprintActionManifestDisplayContent extends IBlueprintActionManifestDisplay {

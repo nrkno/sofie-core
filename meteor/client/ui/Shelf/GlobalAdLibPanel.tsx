@@ -24,7 +24,7 @@ import {
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
-	SomeTimelineContent,
+	SomeTimelineContent
 } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -78,7 +78,7 @@ const AdLibListView = withTranslation()(
 
 			this.state = {
 				outputLayers: {},
-				sourceLayers: {},
+				sourceLayers: {}
 			}
 		}
 
@@ -100,7 +100,7 @@ const AdLibListView = withTranslation()(
 
 				return {
 					outputLayers: tOLayers,
-					sourceLayers: tSLayers,
+					sourceLayers: tSLayers
 				}
 			}
 			return null
@@ -140,7 +140,7 @@ const AdLibListView = withTranslation()(
 										outputLayerId: '',
 										rundownId: protectString(''),
 										_rank: layer._rank,
-										content: { timelineObjects: [] },
+										content: { timelineObjects: [] }
 									})
 								)
 						)
@@ -294,13 +294,13 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 		let rundownAdLibItems = RundownBaselineAdLibPieces.find(
 			{
-				rundownId: currentRundown._id,
+				rundownId: currentRundown._id
 			},
 			{
 				sort: {
 					sourceLayerId: 1,
-					_rank: 1,
-				},
+					_rank: 1
+				}
 			}
 		).fetch()
 		rundownAdLibs = rundownAdLibItems.map((item) => {
@@ -308,7 +308,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				...item,
 				isGlobal: true,
 				outputLayer: outputLayerLookup[item.outputLayerId],
-				sourceLayer: sourceLayerLookup[item.sourceLayerId],
+				sourceLayer: sourceLayerLookup[item.sourceLayerId]
 			}
 
 			return uiAdLib
@@ -318,12 +318,12 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			{
 				rundownId: currentRundown._id,
 				partId: {
-					$exists: false,
-				},
+					$exists: false
+				}
 			},
 			{
 				// @ts-ignore deep-property
-				sort: { 'display._rank': 1 },
+				sort: { 'display._rank': 1 }
 			}
 		)
 			.fetch()
@@ -337,7 +337,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
 					content = {
 						timelineObjects: [],
-						...(action.display as IBlueprintActionManifestDisplayContent).content,
+						...(action.display as IBlueprintActionManifestDisplayContent).content
 					}
 				}
 
@@ -358,6 +358,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					_rank: action.display._rank || 0,
 					content: content,
 					adlibAction: action,
+					uniquenessId: action.display.uniquenessId
 				})
 			})
 
@@ -392,7 +393,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		sourceLayerLookup,
 		rundownAdLibs,
 		currentRundown,
-		studio: props.playlist.getStudio(),
+		studio: props.playlist.getStudio()
 	}
 })(
 	class GlobalAdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -404,7 +405,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			this.state = {
 				selectedSegment: undefined,
 				filter: undefined,
-				followLive: true,
+				followLive: true
 			}
 		}
 
@@ -414,10 +415,10 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			this.autorun(() => {
 				if (this.props.currentRundown) {
 					this.subscribe(PubSub.rundownBaselineAdLibPieces, {
-						rundownId: this.props.currentRundown._id,
+						rundownId: this.props.currentRundown._id
 					})
 					this.subscribe(PubSub.showStyleBases, {
-						_id: this.props.currentRundown.showStyleBaseId,
+						_id: this.props.currentRundown.showStyleBaseId
 					})
 				}
 			})
@@ -530,7 +531,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 		onFilterChange = (filter: string) => {
 			this.setState({
-				filter,
+				filter
 			})
 		}
 
@@ -640,14 +641,14 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 				if (found) {
 					RundownViewEventBus.emit(RundownViewEvents.SWITCH_SHELF_TAB, {
-						tab: ShelfTabs.GLOBAL_ADLIB,
+						tab: ShelfTabs.GLOBAL_ADLIB
 					})
 
 					Meteor.setTimeout(() => {
 						const el = document.querySelector(`.adlib-panel__list-view__list__segment__item[data-obj-id="${pieceId}"]`)
 						if (el) {
 							el.scrollIntoView({
-								behavior: 'smooth',
+								behavior: 'smooth'
 							})
 						}
 					}, 100)
