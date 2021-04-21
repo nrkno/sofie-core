@@ -103,8 +103,6 @@ export class CoreMosDeviceHandler {
 		this._mosDevice = mosDevice
 		this._mosHandler = mosHandler
 
-		this._mosDevice = this._mosDevice // ts-ignore fix
-
 		this._coreParentHandler.logger.info('new CoreMosDeviceHandler ' + mosDevice.idPrimary)
 		this.core = new CoreConnection(parent.getCoreConnectionOptions(mosDevice.idPrimary, mosDevice.idPrimary, false))
 		this.core.onError((err) => {
@@ -565,9 +563,7 @@ export class CoreHandler {
 				ca: this._process.certificates
 			}
 		}
-		return this.core.init(ddpConfig).then((id: string) => {
-			id = id // tsignore
-
+		return this.core.init(ddpConfig).then((_id: string) => {
 			this.core.setStatus({
 				statusCode: P.StatusCode.GOOD
 				// messages: []

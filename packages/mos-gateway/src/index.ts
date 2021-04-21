@@ -16,7 +16,6 @@ let unsafeSSL: boolean		= process.env.UNSAFE_SSL === '1' || false
 let certs: string[] 		= (process.env.CERTIFICATES || '').split(';') || []
 let debug: boolean 		= false
 let printHelp: boolean 	= false
-logPath = logPath
 
 let prevProcessArg = ''
 process.argv.forEach((val) => {
