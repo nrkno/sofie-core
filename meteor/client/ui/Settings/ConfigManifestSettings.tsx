@@ -21,7 +21,7 @@ import {
 	ConfigManifestEntrySourceLayers,
 	ConfigManifestEntryLayerMappings,
 	SourceLayerType,
-	ConfigManifestEntrySelectFromOptions
+	ConfigManifestEntrySelectFromOptions,
 } from '@sofie-automation/blueprints-integration'
 import { literal, DBObj, KeysByType, ProtectedString, objectPathGet } from '../../../lib/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
@@ -40,7 +40,7 @@ import {
 	faUpload,
 	faSortUp,
 	faSortDown,
-	faSort
+	faSort,
 } from '@fortawesome/free-solid-svg-icons'
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
@@ -270,7 +270,7 @@ export class ConfigManifestTable<
 		this.state = {
 			uploadFileKey: Date.now(),
 			sortColumn: -1,
-			sortOrder: 'asc'
+			sortOrder: 'asc',
 		}
 	}
 
@@ -281,14 +281,14 @@ export class ConfigManifestTable<
 	removeRow(id: string, baseAttribute: string) {
 		const m: any = {}
 		m[baseAttribute] = {
-			_id: id
+			_id: id,
 		}
 		this.updateObject(this.props.object, { $pull: m })
 	}
 
 	addRow(configEntry: ConfigManifestEntryTable, baseAttribute: string) {
 		const rowDefault: any = {
-			_id: Random.id()
+			_id: Random.id(),
 		}
 		_.each(configEntry.columns, (col) => (rowDefault[col.id] = col.defaultVal))
 
@@ -322,7 +322,7 @@ export class ConfigManifestTable<
 			// On file upload
 
 			this.setState({
-				uploadFileKey: Date.now()
+				uploadFileKey: Date.now(),
 			})
 
 			const uploadFileContents = (e2.target as any).result
@@ -350,7 +350,7 @@ export class ConfigManifestTable<
 			const conformedConfig: TableConfigItemValue = []
 			_.forEach(newConfig, (entry) => {
 				const newEntry: TableConfigItemValue[0] = {
-					_id: entry._id || Random.id()
+					_id: entry._id || Random.id(),
 				}
 
 				// Ensure all fields are defined
@@ -371,17 +371,17 @@ export class ConfigManifestTable<
 		if (this.state.sortColumn === columnNumber) {
 			if (this.state.sortOrder === 'asc') {
 				this.setState({
-					sortOrder: 'desc'
+					sortOrder: 'desc',
 				})
 			} else {
 				this.setState({
-					sortColumn: -1
+					sortColumn: -1,
 				})
 			}
 		} else {
 			this.setState({
 				sortColumn: columnNumber,
-				sortOrder: 'asc'
+				sortOrder: 'asc',
 			})
 		}
 	}
@@ -440,7 +440,7 @@ export class ConfigManifestTable<
 											{(col.type === ConfigManifestEntryType.STRING || col.type === ConfigManifestEntryType.NUMBER) && (
 												<button
 													className={ClassNames('action-btn', {
-														disabled: this.state.sortColumn !== i
+														disabled: this.state.sortColumn !== i,
 													})}
 													onClick={() => this.sort(i)}
 												>
@@ -479,7 +479,7 @@ export class ConfigManifestTable<
 									<td>
 										<button
 											className={ClassNames('btn btn-danger', {
-												'btn-tight': this.props.subPanel
+												'btn-tight': this.props.subPanel,
 											})}
 											onClick={() => this.removeRow(val._id, baseAttribute)}
 										>
@@ -493,7 +493,7 @@ export class ConfigManifestTable<
 				</div>
 				<button
 					className={ClassNames('btn btn-primary', {
-						'btn-tight': this.props.subPanel
+						'btn-tight': this.props.subPanel,
 					})}
 					onClick={() => this.addRow(configEntry, baseAttribute)}
 				>
@@ -501,7 +501,7 @@ export class ConfigManifestTable<
 				</button>
 				<button
 					className={ClassNames('btn mlm btn-secondary', {
-						'btn-tight': this.props.subPanel
+						'btn-tight': this.props.subPanel,
 					})}
 					onClick={() => this.exportJSON(configEntry, vals)}
 				>
@@ -510,7 +510,7 @@ export class ConfigManifestTable<
 				</button>
 				<UploadButton
 					className={ClassNames('btn btn-secondary mls', {
-						'btn-tight': this.props.subPanel
+						'btn-tight': this.props.subPanel,
 					})}
 					accept="application/json,.json"
 					onChange={(e) => this.importJSON(e, configEntry, baseAttribute)}
@@ -541,7 +541,7 @@ export class ConfigManifestSettings<
 			showDeleteConfirm: false,
 			deleteConfirmItem: undefined,
 			editedItems: [],
-			uploadFileKey: Date.now()
+			uploadFileKey: Date.now(),
 		}
 	}
 
@@ -562,7 +562,7 @@ export class ConfigManifestSettings<
 		if (index >= 0) {
 			this.state.editedItems.splice(index, 1)
 			this.setState({
-				editedItems: this.state.editedItems
+				editedItems: this.state.editedItems,
 			})
 		}
 	}
@@ -570,8 +570,8 @@ export class ConfigManifestSettings<
 	createItem = (item: ConfigManifestEntry) => {
 		const m: any = {
 			$set: {
-				[`${this.props.configPath}.${item.id}`]: item.defaultVal
-			}
+				[`${this.props.configPath}.${item.id}`]: item.defaultVal,
+			},
 		}
 		this.updateObject(this.props.object, m)
 	}
@@ -585,7 +585,7 @@ export class ConfigManifestSettings<
 		if (this.state.editedItems.indexOf(item.id) < 0) {
 			this.state.editedItems.push(item.id)
 			this.setState({
-				editedItems: this.state.editedItems
+				editedItems: this.state.editedItems,
 			})
 		} else {
 			this.finishEditItem(item)
@@ -598,14 +598,14 @@ export class ConfigManifestSettings<
 		this.setState({
 			showAddItem: true,
 			showDeleteConfirm: false,
-			addItemId: options.length > 0 ? options[0].value : undefined
+			addItemId: options.length > 0 ? options[0].value : undefined,
 		})
 	}
 
 	handleConfirmAddItemCancel = (e) => {
 		this.setState({
 			addItemId: undefined,
-			showAddItem: false
+			showAddItem: false,
 		})
 	}
 
@@ -614,15 +614,15 @@ export class ConfigManifestSettings<
 			const item = this.props.manifest.find((c) => c.id === this.state.addItemId)
 			const m: any = {
 				$set: {
-					[`${this.props.configPath}.${this.state.addItemId}`]: item ? item.defaultVal : ''
-				}
+					[`${this.props.configPath}.${this.state.addItemId}`]: item ? item.defaultVal : '',
+				},
 			}
 			this.updateObject(this.props.object, m)
 		}
 
 		this.setState({
 			addItemId: undefined,
-			showAddItem: false
+			showAddItem: false,
 		})
 	}
 
@@ -630,14 +630,14 @@ export class ConfigManifestSettings<
 		this.setState({
 			showAddItem: false,
 			showDeleteConfirm: true,
-			deleteConfirmItem: item
+			deleteConfirmItem: item,
 		})
 	}
 
 	handleConfirmDeleteCancel = (e) => {
 		this.setState({
 			deleteConfirmItem: undefined,
-			showDeleteConfirm: false
+			showDeleteConfirm: false,
 		})
 	}
 
@@ -645,15 +645,15 @@ export class ConfigManifestSettings<
 		if (this.state.deleteConfirmItem) {
 			const m: any = {
 				$unset: {
-					[`${this.props.configPath}.${this.state.deleteConfirmItem.id}`]: ''
-				}
+					[`${this.props.configPath}.${this.state.deleteConfirmItem.id}`]: '',
+				},
 			}
 			this.updateObject(this.props.object, m)
 		}
 
 		this.setState({
 			deleteConfirmItem: undefined,
-			showDeleteConfirm: false
+			showDeleteConfirm: false,
 		})
 	}
 
@@ -752,7 +752,7 @@ export class ConfigManifestSettings<
 				<React.Fragment key={`${item.id}`}>
 					<tr
 						className={ClassNames({
-							hl: this.isItemEdited(item)
+							hl: this.isItemEdited(item),
 						})}
 					>
 						<th className="settings-studio-custom-config-table__name c2">{item.name}</th>
@@ -774,7 +774,7 @@ export class ConfigManifestSettings<
 							) : (
 								<button
 									className={ClassNames('btn btn-primary', {
-										'btn-tight': this.props.subPanel
+										'btn-tight': this.props.subPanel,
 									})}
 									onClick={(e) => this.createItem(item)}
 								>
@@ -850,7 +850,7 @@ export class ConfigManifestSettings<
 				>
 					<p>
 						{t('Are you sure you want to delete this config item "{{configId}}"?', {
-							configId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name
+							configId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name,
 						})}
 					</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
@@ -866,7 +866,7 @@ export class ConfigManifestSettings<
 				<div className="mod mhs">
 					<button
 						className={ClassNames('btn btn-primary', {
-							'btn-tight': this.props.subPanel
+							'btn-tight': this.props.subPanel,
 						})}
 						onClick={this.addConfigItem}
 					>

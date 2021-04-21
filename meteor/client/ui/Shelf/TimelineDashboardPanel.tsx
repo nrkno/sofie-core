@@ -12,7 +12,7 @@ import {
 	fetchAndFilter,
 	AdLibPieceUi,
 	matchFilter,
-	AdLibPanelToolbar
+	AdLibPanelToolbar,
 } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
@@ -23,7 +23,7 @@ import {
 	IDashboardPanelTrackedProps,
 	IDashboardPanelProps,
 	getUnfinishedPieceInstancesGrouped,
-	getNextPieceInstancesGrouped
+	getNextPieceInstancesGrouped,
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
@@ -53,7 +53,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,
-			nextTags
+			nextTags,
 		}
 	},
 	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
@@ -81,7 +81,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 				this.liveLine.scrollIntoView({
 					behavior: 'smooth',
 					block: 'start',
-					inline: 'start'
+					inline: 'start',
 				})
 			}
 		}, 250)
@@ -109,7 +109,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 							{filter.enableSearch && <AdLibPanelToolbar onFilterChange={this.onFilterChange} />}
 							<div
 								className={ClassNames('dashboard-panel__panel', {
-									'dashboard-panel__panel--horizontal': filter.overflowHorizontally
+									'dashboard-panel__panel--horizontal': filter.overflowHorizontally,
 								})}
 							>
 								{filteredRudownBaselineAdLibs.length > 0 && (
@@ -170,7 +170,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 											id={'dashboard-panel__panel__group__' + seg._id}
 											className={ClassNames('dashboard-panel__panel__group', {
 												live: seg.isLive,
-												next: seg.isNext && !this.props.playlist.currentPartInstanceId
+												next: seg.isNext && !this.props.playlist.currentPartInstanceId,
 											})}
 										>
 											{(seg.isLive || (seg.isNext && !this.props.playlist.currentPartInstanceId)) && (
@@ -209,9 +209,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 												)
 											})}
 										</div>
-									) : (
-										undefined
-									)
+									) : undefined
 								})}
 							</div>
 						</div>

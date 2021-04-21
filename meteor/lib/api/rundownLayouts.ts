@@ -10,7 +10,7 @@ import {
 	RundownLayoutExternalFrame,
 	RundownLayoutAdLibRegion,
 	PieceDisplayStyle,
-	RundownLayoutPieceCountdown
+	RundownLayoutPieceCountdown,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -26,7 +26,7 @@ export interface NewRundownLayoutsAPI {
 
 export enum RundownLayoutsAPIMethods {
 	'removeRundownLayout' = 'rundownLayout.removeRundownLayout',
-	'createRundownLayout' = 'rundownLayout.createRundownLayout'
+	'createRundownLayout' = 'rundownLayout.createRundownLayout',
 }
 
 export namespace RundownLayoutsAPI {
@@ -66,7 +66,7 @@ export namespace RundownLayoutsAPI {
 			displayStyle: PieceDisplayStyle.BUTTONS,
 			currentSegment: false,
 			showThumbnailsInList: false,
-			hideDuplicates: false
+			hideDuplicates: false,
 		}
 	}
 }

@@ -35,7 +35,7 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 	pieceRenderedIn,
 	pieceRenderedDuration,
 	typeClass,
-	displayOn
+	displayOn,
 }) => {
 	const { t } = useTranslation()
 	const innerPiece = piece
@@ -61,7 +61,7 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 					}
 					return {
 						key: key,
-						value: str
+						value: str,
 					}
 				}
 			})

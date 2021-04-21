@@ -7,7 +7,7 @@ interface IProps {
 }
 
 const FRAMES_INLINE_STYLE: React.CSSProperties = {
-	fontSize: '0.8em'
+	fontSize: '0.8em',
 }
 
 export function StyledTimecode({ time: time }: IProps) {
@@ -19,7 +19,7 @@ export function StyledTimecode({ time: time }: IProps) {
 		<>
 			<span
 				className={ClassNames('styled-timecode__hours', {
-					'zero-hours': hours === '00:'
+					'zero-hours': hours === '00:',
 				})}
 			>
 				{hours}

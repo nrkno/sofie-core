@@ -61,7 +61,7 @@ function getPackagePreviewUrl(
 						accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
 						encodeURIComponent(
 							packagePreviewPath.replace(/^\//, '') // trim leading slash
-						)
+						),
 					].join('/')
 				}
 			}
@@ -147,7 +147,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 						<div
 							className={classNames('segment-timeline__mini-inspector__frame-marker', {
 								'segment-timeline__mini-inspector__frame-marker--first-frame': offsetTimePosition === 0,
-								'segment-timeline__mini-inspector__frame-marker--last-frame': offsetTimePosition >= itemDuration
+								'segment-timeline__mini-inspector__frame-marker--last-frame': offsetTimePosition >= itemDuration,
 							})}
 						>
 							<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
