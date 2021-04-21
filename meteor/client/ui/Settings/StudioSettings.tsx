@@ -14,7 +14,7 @@ import {
 	RouteMapping,
 	StudioRouteSetExclusivityGroup,
 	getActiveRoutes,
-	StudioPackageContainer,
+	StudioPackageContainer
 } from '../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -35,7 +35,7 @@ import {
 	BlueprintManifestType,
 	TSR,
 	ConfigManifestEntry,
-	Accessor,
+	Accessor
 } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
@@ -64,23 +64,23 @@ const StudioDevices = withTranslation()(
 			super(props)
 
 			this.state = {
-				showAvailableDevices: false,
+				showAvailableDevices: false
 			}
 		}
 
 		onRemoveDevice = (item: PeripheralDevice) => {
 			PeripheralDevices.update(item._id, {
 				$unset: {
-					studioId: 1,
-				},
+					studioId: 1
+				}
 			})
 		}
 
 		onAddDevice = (item: PeripheralDevice) => {
 			PeripheralDevices.update(item._id, {
 				$set: {
-					studioId: this.props.studio._id,
-				},
+					studioId: this.props.studio._id
+				}
 			})
 		}
 		confirmRemove = (device: PeripheralDevice) => {
@@ -95,10 +95,10 @@ const StudioDevices = withTranslation()(
 				message: (
 					<p>
 						{t('Are you sure you want to remove device "{{deviceId}}"?', {
-							deviceId: device && (device.name || device._id),
+							deviceId: device && (device.name || device._id)
 						})}
 					</p>
-				),
+				)
 			})
 		}
 
@@ -125,7 +125,7 @@ const StudioDevices = withTranslation()(
 
 		showAvailableDevices() {
 			this.setState({
-				showAvailableDevices: !this.state.showAvailableDevices,
+				showAvailableDevices: !this.state.showAvailableDevices
 			})
 		}
 
@@ -259,7 +259,7 @@ const StudioMappings = withTranslation()(
 			super(props)
 
 			this.state = {
-				editedMappings: [],
+				editedMappings: []
 			}
 		}
 		isItemEdited = (layerId: string) => {
@@ -270,7 +270,7 @@ const StudioMappings = withTranslation()(
 			if (index >= 0) {
 				this.state.editedMappings.splice(index, 1)
 				this.setState({
-					editedMappings: this.state.editedMappings,
+					editedMappings: this.state.editedMappings
 				})
 			}
 		}
@@ -278,7 +278,7 @@ const StudioMappings = withTranslation()(
 			if (this.state.editedMappings.indexOf(layerId) < 0) {
 				this.state.editedMappings.push(layerId)
 				this.setState({
-					editedMappings: this.state.editedMappings,
+					editedMappings: this.state.editedMappings
 				})
 			} else {
 				this.finishEditItem(layerId)
@@ -298,14 +298,14 @@ const StudioMappings = withTranslation()(
 						<p>{t('Are you sure you want to remove mapping for layer "{{mappingId}}"?', { mappingId: mappingId })}</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</React.Fragment>
-				),
+				)
 			})
 		}
 		removeLayer = (mappingId: string) => {
 			let unsetObject = {}
 			unsetObject['mappings.' + mappingId] = ''
 			Studios.update(this.props.studio._id, {
-				$unset: unsetObject,
+				$unset: unsetObject
 			})
 		}
 		addNewLayer = () => {
@@ -318,11 +318,11 @@ const StudioMappings = withTranslation()(
 			let setObject = {}
 			setObject['mappings.' + newLayerKeyName + iter.toString()] = {
 				device: TSR.DeviceType.CASPARCG,
-				deviceId: 'newDeviceId',
+				deviceId: 'newDeviceId'
 			}
 
 			Studios.update(this.props.studio._id, {
-				$set: setObject,
+				$set: setObject
 			})
 		}
 		updateLayerId = (edit: EditAttributeBase, newValue: string) => {
@@ -342,7 +342,7 @@ const StudioMappings = withTranslation()(
 			if (edit.props.collection) {
 				edit.props.collection.update(this.props.studio._id, {
 					$set: mSet,
-					$unset: mUnset,
+					$unset: mUnset
 				})
 			}
 
@@ -383,16 +383,16 @@ const StudioMappings = withTranslation()(
 					<React.Fragment key={layerId}>
 						<tr
 							className={ClassNames({
-								hl: this.isItemEdited(layerId),
+								hl: this.isItemEdited(layerId)
 							})}
 						>
 							<th className="settings-studio-device__name c3 notifications-s notifications-text">
-								{layerId}
+								{mapping.layerName || layerId}
 								{activeRoutes.existing[layerId] !== undefined ? (
 									<Tooltip
 										overlay={t('This layer is now rerouted by an active Route Set: {{routeSets}}', {
 											routeSets: activeRoutes.existing[layerId].join(', '),
-											count: activeRoutes.existing[layerId].length,
+											count: activeRoutes.existing[layerId].length
 										})}
 										placement="right"
 									>
@@ -431,6 +431,20 @@ const StudioMappings = withTranslation()(
 													className="input text-input input-l"
 												></EditAttribute>
 												<span className="text-s dimmed">{t('ID of the timeline-layer to map to some output')}</span>
+											</label>
+										</div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Layer Name')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'mappings.' + layerId + '.layerName'}
+													obj={this.props.studio}
+													type="text"
+													collection={Studios}
+													className="input text-input input-l"
+												></EditAttribute>
+												<span className="text-s dimmed">{t('Human-readable name of the layer')}</span>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -566,7 +580,7 @@ const StudioRoutings = withTranslation()(
 			super(props)
 
 			this.state = {
-				editedItems: [],
+				editedItems: []
 			}
 		}
 		isItemEdited = (routeSetId: string) => {
@@ -577,7 +591,7 @@ const StudioRoutings = withTranslation()(
 			if (index >= 0) {
 				this.state.editedItems.splice(index, 1)
 				this.setState({
-					editedItems: this.state.editedItems,
+					editedItems: this.state.editedItems
 				})
 			}
 		}
@@ -585,7 +599,7 @@ const StudioRoutings = withTranslation()(
 			if (this.state.editedItems.indexOf(routeSetId) < 0) {
 				this.state.editedItems.push(routeSetId)
 				this.setState({
-					editedItems: this.state.editedItems,
+					editedItems: this.state.editedItems
 				})
 			} else {
 				this.finishEditItem(routeSetId)
@@ -606,13 +620,13 @@ const StudioRoutings = withTranslation()(
 							{t(
 								'Are you sure you want to remove exclusivity group "{{eGroupName}}"?\nRoute Sets assigned to this group will be reset to no group.',
 								{
-									eGroupName: exclusivityGroup.name,
+									eGroupName: exclusivityGroup.name
 								}
 							)}
 						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</React.Fragment>
-				),
+				)
 			})
 		}
 		confirmRemoveRoute = (routeSetId: string, route: RouteMapping, index: number) => {
@@ -629,12 +643,12 @@ const StudioRoutings = withTranslation()(
 						<p>
 							{t('Are you sure you want to remove the Route from "{{sourceLayerId}}" to "{{newLayerId}}"?', {
 								sourceLayerId: route.mappedLayer,
-								newLayerId: route.outputMappedLayer,
+								newLayerId: route.outputMappedLayer
 							})}
 						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</React.Fragment>
-				),
+				)
 			})
 		}
 		confirmRemove = (routeSetId: string) => {
@@ -651,7 +665,7 @@ const StudioRoutings = withTranslation()(
 						<p>{t('Are you sure you want to remove the Route Set "{{routeId}}"?', { routeId: routeSetId })}</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</React.Fragment>
-				),
+				)
 			})
 		}
 		removeExclusivityGroup = (eGroupId: string) => {
@@ -663,7 +677,7 @@ const StudioRoutings = withTranslation()(
 			})
 			unsetObject['routeSetExclusivityGroups.' + eGroupId] = ''
 			Studios.update(this.props.studio._id, {
-				$unset: unsetObject,
+				$unset: unsetObject
 			})
 		}
 		removeRouteSetRoute = (routeId: string, index: number) => {
@@ -672,14 +686,14 @@ const StudioRoutings = withTranslation()(
 			newRoutes.splice(index, 1)
 			unsetObject['routeSets.' + routeId + '.routes'] = newRoutes
 			Studios.update(this.props.studio._id, {
-				$set: unsetObject,
+				$set: unsetObject
 			})
 		}
 		removeRouteSet = (routeId: string) => {
 			let unsetObject = {}
 			unsetObject['routeSets.' + routeId] = ''
 			Studios.update(this.props.studio._id, {
-				$unset: unsetObject,
+				$unset: unsetObject
 			})
 		}
 		addNewRouteInSet = (routeId: string) => {
@@ -692,13 +706,13 @@ const StudioRoutings = withTranslation()(
 			let newRoute: RouteMapping = {
 				mappedLayer: '',
 				outputMappedLayer: '',
-				remapping: {},
+				remapping: {}
 			}
 			let setObject = {}
 			setObject['routeSets.' + routeId + '.routes'] = newRoute
 
 			Studios.update(this.props.studio._id, {
-				$push: setObject,
+				$push: setObject
 			})
 		}
 		addNewRouteSet = () => {
@@ -713,13 +727,13 @@ const StudioRoutings = withTranslation()(
 				name: 'New Route Set',
 				active: false,
 				routes: [],
-				behavior: StudioRouteBehavior.TOGGLE,
+				behavior: StudioRouteBehavior.TOGGLE
 			}
 			let setObject: Partial<DBStudio> = {}
 			setObject['routeSets.' + newRouteKeyName + iter] = newRoute
 
 			Studios.update(this.props.studio._id, {
-				$set: setObject,
+				$set: setObject
 			})
 		}
 		addNewExclusivityGroup = () => {
@@ -730,13 +744,13 @@ const StudioRoutings = withTranslation()(
 			}
 
 			let newGroup: StudioRouteSetExclusivityGroup = {
-				name: 'New Exclusivity Group',
+				name: 'New Exclusivity Group'
 			}
 			let setObject: Partial<DBStudio> = {}
 			setObject['routeSetExclusivityGroups.' + newEGroupKeyName + iter] = newGroup
 
 			Studios.update(this.props.studio._id, {
-				$set: setObject,
+				$set: setObject
 			})
 		}
 		updateRouteSetId = (edit: EditAttributeBase, newValue: string) => {
@@ -756,7 +770,7 @@ const StudioRoutings = withTranslation()(
 			if (edit.props.collection) {
 				edit.props.collection.update(this.props.studio._id, {
 					$set: mSet,
-					$unset: mUnset,
+					$unset: mUnset
 				})
 			}
 
@@ -780,7 +794,7 @@ const StudioRoutings = withTranslation()(
 			if (edit.props.collection) {
 				edit.props.collection.update(this.props.studio._id, {
 					$set: mSet,
-					$unset: mUnset,
+					$unset: mUnset
 				})
 			}
 
@@ -897,7 +911,7 @@ const StudioRoutings = withTranslation()(
 												mapping={
 													{
 														device: routeDeviceType,
-														...route.remapping,
+														...route.remapping
 													} as MappingExt
 												}
 												studio={this.props.studio}
@@ -933,7 +947,7 @@ const StudioRoutings = withTranslation()(
 						<React.Fragment key={exclusivityGroupId}>
 							<tr
 								className={ClassNames({
-									hl: this.isItemEdited(exclusivityGroupId),
+									hl: this.isItemEdited(exclusivityGroupId)
 								})}
 							>
 								<th className="settings-studio-device__name c3">{exclusivityGroupId}</th>
@@ -1013,7 +1027,7 @@ const StudioRoutings = withTranslation()(
 			const DEFAULT_ACTIVE_OPTIONS = {
 				[t('Active')]: true,
 				[t('Not Active')]: false,
-				[t('Not defined')]: undefined,
+				[t('Not defined')]: undefined
 			}
 
 			if (Object.keys(this.props.studio.routeSets).length === 0) {
@@ -1029,7 +1043,7 @@ const StudioRoutings = withTranslation()(
 					<React.Fragment key={routeId}>
 						<tr
 							className={ClassNames({
-								hl: this.isItemEdited(routeId),
+								hl: this.isItemEdited(routeId)
 							})}
 						>
 							<th className="settings-studio-device__name c2">{routeId}</th>
@@ -1235,7 +1249,7 @@ const StudioPackageManagerSettings = withTranslation()(
 
 			this.state = {
 				editedPackageContainer: [],
-				editedAccessors: [],
+				editedAccessors: []
 			}
 		}
 		isPackageContainerEdited = (containerId: string) => {
@@ -1246,7 +1260,7 @@ const StudioPackageManagerSettings = withTranslation()(
 			if (index >= 0) {
 				this.state.editedPackageContainer.splice(index, 1)
 				this.setState({
-					editedPackageContainer: this.state.editedPackageContainer,
+					editedPackageContainer: this.state.editedPackageContainer
 				})
 			}
 		}
@@ -1254,7 +1268,7 @@ const StudioPackageManagerSettings = withTranslation()(
 			if (this.state.editedPackageContainer.indexOf(containerId) < 0) {
 				this.state.editedPackageContainer.push(containerId)
 				this.setState({
-					editedPackageContainer: this.state.editedPackageContainer,
+					editedPackageContainer: this.state.editedPackageContainer
 				})
 			} else {
 				this.finishEditPackageContainer(containerId)
@@ -1273,19 +1287,19 @@ const StudioPackageManagerSettings = withTranslation()(
 					<React.Fragment>
 						<p>
 							{t('Are you sure you want to remove the Package Container "{{containerId}}"?', {
-								containerId: containerId,
+								containerId: containerId
 							})}
 						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</React.Fragment>
-				),
+				)
 			})
 		}
 		removePackageContainer = (containerId: string) => {
 			let unsetObject = {}
 			unsetObject['packageContainers.' + containerId] = ''
 			Studios.update(this.props.studio._id, {
-				$unset: unsetObject,
+				$unset: unsetObject
 			})
 		}
 		addNewPackageContainer = () => {
@@ -1300,14 +1314,14 @@ const StudioPackageManagerSettings = withTranslation()(
 				deviceIds: [],
 				container: {
 					label: 'New Package Container',
-					accessors: {},
-				},
+					accessors: {}
+				}
 			}
 			let setObject: Partial<DBStudio> = {}
 			setObject['packageContainers.' + newKeyName + iter] = newPackageContainer
 
 			Studios.update(this.props.studio._id, {
-				$set: setObject,
+				$set: setObject
 			})
 		}
 		containerId = (edit: EditAttributeBase, newValue: string) => {
@@ -1327,7 +1341,7 @@ const StudioPackageManagerSettings = withTranslation()(
 			if (edit.props.collection) {
 				edit.props.collection.update(this.props.studio._id, {
 					$set: mSet,
-					$unset: mUnset,
+					$unset: mUnset
 				})
 			}
 
@@ -1351,7 +1365,7 @@ const StudioPackageManagerSettings = withTranslation()(
 					for (const deviceId of Object.keys(settings.devices || {})) {
 						deviceIds.push({
 							name: deviceId,
-							value: deviceId,
+							value: deviceId
 						})
 					}
 				}
@@ -1376,7 +1390,7 @@ const StudioPackageManagerSettings = withTranslation()(
 						<React.Fragment key={containerId}>
 							<tr
 								className={ClassNames({
-									hl: this.isPackageContainerEdited(containerId),
+									hl: this.isPackageContainerEdited(containerId)
 								})}
 							>
 								<th className="settings-studio-package-container__id c2">{containerId}</th>
@@ -1472,7 +1486,7 @@ const StudioPackageManagerSettings = withTranslation()(
 			if (index >= 0) {
 				this.state.editedAccessors.splice(index, 1)
 				this.setState({
-					editedAccessors: this.state.editedAccessors,
+					editedAccessors: this.state.editedAccessors
 				})
 			}
 		}
@@ -1480,7 +1494,7 @@ const StudioPackageManagerSettings = withTranslation()(
 			if (this.state.editedAccessors.indexOf(containerId + accessorId) < 0) {
 				this.state.editedAccessors.push(containerId + accessorId)
 				this.setState({
-					editedAccessors: this.state.editedAccessors,
+					editedAccessors: this.state.editedAccessors
 				})
 			} else {
 				this.finishEditAccessor(containerId, accessorId)
@@ -1499,19 +1513,19 @@ const StudioPackageManagerSettings = withTranslation()(
 					<React.Fragment>
 						<p>
 							{t('Are you sure you want to remove the Package Container Accessor "{{accessorId}}"?', {
-								accessorId: accessorId,
+								accessorId: accessorId
 							})}
 						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</React.Fragment>
-				),
+				)
 			})
 		}
 		removeAccessor = (containerId: string, accessorId: string) => {
 			let unsetObject = {}
 			unsetObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = ''
 			Studios.update(this.props.studio._id, {
-				$unset: unsetObject,
+				$unset: unsetObject
 			})
 		}
 		addNewAccessor = (containerId: string) => {
@@ -1531,13 +1545,13 @@ const StudioPackageManagerSettings = withTranslation()(
 				label: 'Local folder',
 				allowRead: true,
 				allowWrite: false,
-				folderPath: '',
+				folderPath: ''
 			}
 			let setObject: Partial<DBStudio> = {}
 			setObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = newAccessor
 
 			Studios.update(this.props.studio._id, {
-				$set: setObject,
+				$set: setObject
 			})
 		}
 		updateAccessorId = (edit: EditAttributeBase, newValue: string) => {
@@ -1562,7 +1576,7 @@ const StudioPackageManagerSettings = withTranslation()(
 			if (edit.props.collection) {
 				edit.props.collection.update(this.props.studio._id, {
 					$set: mSet,
-					$unset: mUnset,
+					$unset: mUnset
 				})
 			}
 
@@ -1594,7 +1608,7 @@ const StudioPackageManagerSettings = withTranslation()(
 					<React.Fragment key={accessorId}>
 						<tr
 							className={ClassNames({
-								hl: this.isAccessorEdited(containerId, accessorId),
+								hl: this.isAccessorEdited(containerId, accessorId)
 							})}
 						>
 							<th className="settings-studio-accessor__id c2">{accessorId}</th>
@@ -1958,7 +1972,7 @@ const StudioPackageManagerSettings = withTranslation()(
 				if (hasHttpAccessor) {
 					arr.push({
 						name: packageContainer.container.label,
-						value: containerId,
+						value: containerId
 					})
 				}
 			}
@@ -2062,7 +2076,7 @@ class StudioBaselineStatus extends MeteorReactComponent<
 		super(props)
 
 		this.state = {
-			needsUpdate: false,
+			needsUpdate: false
 		}
 	}
 
@@ -2146,21 +2160,21 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		const blueprint = studio
 			? Blueprints.findOne({
 					_id: studio.blueprintId,
-					blueprintType: BlueprintManifestType.STUDIO,
+					blueprintType: BlueprintManifestType.STUDIO
 			  })
 			: undefined
 
 		return {
 			studio: studio,
 			studioDevices: PeripheralDevices.find({
-				studioId: props.match.params.studioId,
+				studioId: props.match.params.studioId
 			}).fetch(),
 			availableShowStyleVariants: ShowStyleVariants.find(
 				studio
 					? {
 							showStyleBaseId: {
-								$in: studio.supportedShowStyleBase || [],
-							},
+								$in: studio.supportedShowStyleBase || []
+							}
 					  }
 					: {}
 			)
@@ -2170,7 +2184,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					return {
 						name: `${(baseStyle || { name: '' }).name}: ${variant.name} (${variant._id})`,
 						value: variant._id,
-						showStyleVariant: variant,
+						showStyleVariant: variant
 					}
 				}),
 			availableShowStyleBases: ShowStyleBases.find()
@@ -2179,24 +2193,24 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					return {
 						name: `${showStyle.name}`,
 						value: showStyle._id,
-						showStyleBase: showStyle,
+						showStyleBase: showStyle
 					}
 				}),
 			availableDevices: PeripheralDevices.find(
 				{
 					studioId: {
 						$not: {
-							$eq: props.match.params.studioId,
-						},
+							$eq: props.match.params.studioId
+						}
 					},
 					parentDeviceId: {
-						$exists: false,
-					},
+						$exists: false
+					}
 				},
 				{
 					sort: {
-						lastConnected: -1,
-					},
+						lastConnected: -1
+					}
 				}
 			).fetch(),
 			blueprintConfigManifest: blueprint ? blueprint.studioConfigManifest || [] : [],
@@ -2204,21 +2218,21 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 			layerMappingsManifest: PeripheralDevices.findOne(
 				{
 					studioId: {
-						$eq: props.match.params.studioId,
+						$eq: props.match.params.studioId
 					},
 					parentDeviceId: {
-						$exists: false,
+						$exists: false
 					},
 					type: {
-						$eq: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-					},
+						$eq: PeripheralDeviceAPI.DeviceType.PLAYOUT
+					}
 				},
 				{
 					sort: {
-						lastConnected: -1,
-					},
+						lastConnected: -1
+					}
 				}
-			)?.configManifest?.layerMappings,
+			)?.configManifest?.layerMappings
 		}
 	}
 )(
@@ -2232,15 +2246,15 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 			let options: { name: string; value: BlueprintId | null }[] = [
 				{
 					name: t('None'),
-					value: protectString(''),
-				},
+					value: protectString('')
+				}
 			]
 
 			options.push(
 				..._.map(Blueprints.find({ blueprintType: BlueprintManifestType.STUDIO }).fetch(), (blueprint) => {
 					return {
 						name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : unprotectString(blueprint._id),
-						value: blueprint._id,
+						value: blueprint._id
 					}
 				})
 			)
