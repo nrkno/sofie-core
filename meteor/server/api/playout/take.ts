@@ -181,6 +181,7 @@ export function resetPreviousSegmentAndClearNextSegmentId(cache: CacheForPlayout
 		})
 	}
 
+	// If the playlist is looping and
 	// If the previous and current part are not in the same segment, then we have just left a segment
 	if (
 		cache.Playlist.doc.loop &&
