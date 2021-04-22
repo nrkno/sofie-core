@@ -175,7 +175,6 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			let secondsStep = 5 * 60
 			// interStep - draw X lines between every big line
 			let interStep = 5
-			console.log(secondTimeScale)
 			if (secondTimeScale > 0 && secondTimeScale < 0.04) {
 				secondsStep = 4 * 3600
 				interStep = 10
