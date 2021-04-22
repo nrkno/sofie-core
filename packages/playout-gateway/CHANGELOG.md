@@ -1,3 +1,28 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# [1.33.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.33.0-in-development.0) (2021-04-22)
+
+
+### Bug Fixes
+
+* update ci flow for lerna building and version bumping [publish] ([8494483](https://github.com/nrkno/tv-automation-server-core/commit/8494483be5ffa6d58e9761bcfea2210716afbab8))
+* **playout-gw:** upload files to the right atem ([47bc15b](https://github.com/nrkno/tv-automation-server-core/commit/47bc15bcb9d38234995d1c25105e4d71aef611f7))
+
+
+### Features
+
+* Config manifest for Sisyfos setLabelToLayerName ([d3d559e](https://github.com/nrkno/tv-automation-server-core/commit/d3d559ec8f733b38df4906ccf721ab2ba244c976))
+* import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
+* playout-gw atem clip uploading ([ba602f5](https://github.com/nrkno/tv-automation-server-core/commit/ba602f55800bc7e07c6ea2f04645910528fb18c5))
+* playout-gw media objects ([e98e9ee](https://github.com/nrkno/tv-automation-server-core/commit/e98e9ee775f353d00df63bccdf0ccb55fff2743a))
+
+
+
+
+
 # Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
