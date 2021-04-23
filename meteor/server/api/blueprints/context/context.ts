@@ -51,6 +51,7 @@ import {
 	resetStudioBlueprintConfig,
 	getShowStyleBlueprintConfig,
 	resetShowStyleBlueprintConfig,
+	forceClearAllBlueprintConfigCaches,
 } from '../config'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
@@ -182,6 +183,7 @@ export class StudioConfigContext implements IStudioConfigContext {
 		return getStudioBlueprintConfig(this.studio)
 	}
 	protected wipeCache() {
+		forceClearAllBlueprintConfigCaches()
 		resetStudioBlueprintConfig(this.studio)
 	}
 	getStudioConfigRef(configKey: string): string {
@@ -237,6 +239,7 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	}
 	wipeCache() {
 		super.wipeCache()
+		forceClearAllBlueprintConfigCaches()
 		resetShowStyleBlueprintConfig(this.getShowStyleBase(), this.getShowStyleVariant())
 	}
 	getShowStyleConfigRef(configKey: string): string {
