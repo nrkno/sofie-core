@@ -181,8 +181,13 @@ export function resetPreviousSegmentAndClearNextSegmentId(cache: CacheForPlayout
 		})
 	}
 
+	// If the playlist is looping and
 	// If the previous and current part are not in the same segment, then we have just left a segment
-	if (previousPartInstance && previousPartInstance.segmentId !== currentPartInstance?.segmentId) {
+	if (
+		cache.Playlist.doc.loop &&
+		previousPartInstance &&
+		previousPartInstance.segmentId !== currentPartInstance?.segmentId
+	) {
 		// Reset the old segment
 		const segmentId = previousPartInstance.segmentId
 		const resetIds = new Set(
