@@ -374,7 +374,7 @@ const AdLibListView = withTranslation()(
 				>
 					<table
 						id={'adlib-panel__list-view__table__' + Random.id()}
-						className="adlib-panel__list-view__list__table"
+						className="adlib-panel__list-view__list__table scroll-sink"
 						ref={this.setTableRef}
 					>
 						{this.renderRundownAdLibs(uniquenessIds)}
