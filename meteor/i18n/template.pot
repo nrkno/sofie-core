@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-04-16T08:23:25.082Z\n"
-"PO-Revision-Date: 2021-04-16T08:23:25.082Z\n"
+"POT-Creation-Date: 2021-04-26T13:33:57.514Z\n"
+"PO-Revision-Date: 2021-04-26T13:33:57.514Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -282,13 +282,13 @@ msgstr ""
 msgid "Problems"
 msgstr ""
 
-msgid "Show style"
+msgid "Show Style"
 msgstr ""
 
 msgid "On Air Start Time"
 msgstr ""
 
-msgid "Last updated"
+msgid "Last Updated"
 msgstr ""
 
 msgid "Shelf Layout"
@@ -377,6 +377,12 @@ msgstr ""
 msgid "Not set"
 msgstr ""
 
+msgid "This rundown will loop indefinitely"
+msgstr ""
+
+msgid "({{timecode}})"
+msgstr ""
+
 msgid "Re-sync rundown data with {{nrcsName}}"
 msgstr ""
 
@@ -422,6 +428,15 @@ msgstr ""
 msgid ""
 "You are in rehearsal mode, the broadcast starts in less than 1 minute. Do "
 "you want to reset the rundown and go into On-Air mode?"
+msgstr ""
+
+msgid "{{currentRundownName}} - {{rundownPlaylistName}} (Looping)"
+msgstr ""
+
+msgid "{{currentRundownName}} - {{rundownPlaylistName}}"
+msgstr ""
+
+msgid "{{rundownPlaylistName}} (Looping)"
 msgstr ""
 
 msgid "Started"
@@ -661,6 +676,12 @@ msgid ""
 "playlist {{playlistName}} from Sofie? This cannot be undone!"
 msgstr ""
 
+msgid "Loop Start"
+msgstr ""
+
+msgid "Loop End"
+msgstr ""
+
 msgid "(in: {{time}})"
 msgstr ""
 
@@ -668,9 +689,6 @@ msgid "({{time}} ago)"
 msgstr ""
 
 msgid "Planned Duration"
-msgstr ""
-
-msgid "Looping"
 msgstr ""
 
 msgid ""
@@ -1312,6 +1330,14 @@ msgstr ""
 msgid "Toggle AdLibs on single mouse click"
 msgstr ""
 
+msgid "Hide duplicated AdLibs"
+msgstr ""
+
+msgid ""
+"Picks the first instance of an adLib per rundown, identified by uniqueness "
+"Id"
+msgstr ""
+
 msgid "URL"
 msgstr ""
 
@@ -1651,6 +1677,12 @@ msgstr ""
 msgid "ID of the timeline-layer to map to some output"
 msgstr ""
 
+msgid "Layer Name"
+msgstr ""
+
+msgid "Human-readable name of the layer"
+msgstr ""
+
 msgid "The type of device to use for the output"
 msgstr ""
 
@@ -1879,6 +1911,30 @@ msgid "Password for authentication"
 msgstr ""
 
 msgid "(Optional) A name/identifier of the local network where the share is located"
+msgstr ""
+
+msgid "Quantel gateway URL"
+msgstr ""
+
+msgid "URL to the Quantel Gateway"
+msgstr ""
+
+msgid "ISA URLs"
+msgstr ""
+
+msgid "URLs to the ISAs (in order of importance)"
+msgstr ""
+
+msgid "Zone ID"
+msgstr ""
+
+msgid "Zone ID (default value: \"default\")"
+msgstr ""
+
+msgid "Server ID"
+msgstr ""
+
+msgid "Server id (Can be omitted for sources, as clip-searches are zone-wide.)"
 msgstr ""
 
 msgid "Allow Read access"
