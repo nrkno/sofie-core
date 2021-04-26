@@ -143,7 +143,9 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 			<React.Fragment>
 				<div className="segment-timeline__piece__preview">{this.renderSubItems()}</div>
 				<span
-					className="segment-timeline__piece__label first-words overflow-label"
+					className={ClassNames('segment-timeline__piece__label first-words', {
+						'overflow-label': end !== '',
+					})}
 					ref={this.setLeftLabelRef}
 					style={this.getItemLabelOffsetLeft()}>
 					{begin}

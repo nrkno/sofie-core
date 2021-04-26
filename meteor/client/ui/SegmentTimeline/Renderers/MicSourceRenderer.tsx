@@ -4,6 +4,7 @@ import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 
 import { getElementWidth } from '../../../utils/dimensions'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
@@ -183,7 +184,9 @@ export const MicSourceRenderer = withTranslation()(
 			return (
 				<React.Fragment>
 					<span
-						className="segment-timeline__piece__label first-words overflow-label"
+						className={ClassNames('segment-timeline__piece__label first-words', {
+							'overflow-label': end !== '',
+						})}
 						ref={this.setLeftLabelRef}
 						style={this.getItemLabelOffsetLeft()}>
 						{begin}
