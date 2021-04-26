@@ -41,7 +41,7 @@ body.transparent {
 	// 	pointer-events: none;
 	// }
 
-	.clocks-half {
+	.clocks-lower-third {
 		position: fixed;
 		left: 3vmin;
 		right: 3vmin;
@@ -50,11 +50,11 @@ body.transparent {
 		display: flex;
 		align-items: center;
 		color: #fff;
-	}
 
-	.clocks-bottom {
-		bottom: 3vmin;
-		height: 1.2em;
+		&.bottom {
+			bottom: 3vmin;
+			height: 1.2em;
+		}
 	}
 
 	.clocks-part-icon {
@@ -108,12 +108,13 @@ body.transparent {
 		color: #ffffff;
 	}
 
-	.clocks-rundown-countdown {
+	.clocks-rundown-countdown,
+	.clocks-current-part-countdown {
 		font-weight: 300;
-	}
 
-	.clocks-current-segment-countdown {
-		font-weight: 300;
+		&.over {
+			color: $general-late-color;
+		}
 	}
 
 	.clocks-segment-countdown-red {

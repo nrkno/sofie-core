@@ -231,7 +231,7 @@ const AdLibListView = withTranslation()(
 		render() {
 			return (
 				<div className="adlib-panel__list-view__list adlib-panel__list-view__list--no-segments">
-					<table className="adlib-panel__list-view__list__table" ref={this.setTableRef}>
+					<table className="adlib-panel__list-view__list__table scroll-sink" ref={this.setTableRef}>
 						{this.renderGlobalAdLibs()}
 					</table>
 				</div>
@@ -358,6 +358,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					_rank: action.display._rank || 0,
 					content: content,
 					adlibAction: action,
+					uniquenessId: action.display.uniquenessId,
 				})
 			})
 

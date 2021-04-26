@@ -2,6 +2,7 @@ import { ExpectedPackage, ListenToPackageUpdate } from './package'
 import { ConfigManifestEntry } from './config'
 import { SomeContent } from './content'
 import { ITranslatableMessage } from './translations'
+import { ExpectedPlayoutItemGeneric } from './rundown'
 
 export interface ActionUserData {
 	[key: string]: any
@@ -31,6 +32,8 @@ export interface IBlueprintActionManifestDisplay {
 	currentPieceTags?: string[]
 	/** Piece tags to use to determine if action is set as next */
 	nextPieceTags?: string[]
+	/** String that can be used to identify adlibs that are equivalent to each other */
+	uniquenessId?: string
 }
 
 export interface IBlueprintActionManifestDisplayContent extends IBlueprintActionManifestDisplay {
@@ -78,6 +81,10 @@ export interface IBlueprintActionManifest {
 	/** Optional ways of executing this action. The default option is computed from the display properties */
 	triggerModes?: IBlueprintActionTriggerMode[]
 
+	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
+	 * @deprecated replaced by .expectedPackages
+	 */
+	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	/**
 	 * An array of which Packages this Action uses. This is used by a Package Manager to ensure that the Package is in place for playout.
 	 */

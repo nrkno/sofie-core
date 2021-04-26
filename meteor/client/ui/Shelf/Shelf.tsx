@@ -85,6 +85,7 @@ const MAX_HEIGHT = 95
 export const DEFAULT_TAB = ShelfTabs.ADLIB
 
 export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> {
+	private element: HTMLDivElement | null = null
 	private _mouseStart: {
 		x: number
 		y: number
@@ -189,6 +190,10 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 		RundownViewEventBus.on(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.on(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
+
+		document.body.addEventListener('wheel', this.preventWheelPropagation, {
+			passive: false,
+		})
 	}
 
 	componentWillUnmount() {
@@ -204,6 +209,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 		RundownViewEventBus.off(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.off(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
+
+		document.body.removeEventListener('wheel', this.preventWheelPropagation)
 	}
 
 	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
@@ -413,6 +420,10 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.selectPiece(e.piece)
 	}
 
+	private setRef = (element: HTMLDivElement | null) => {
+		this.element = element
+	}
+
 	selectPiece = (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => {
 		this.setState({
 			selectedPiece: piece,
@@ -425,15 +436,35 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		})
 	}
 
+	private preventWheelPropagation = (e: WheelEvent) => {
+		const composedPath = e.composedPath()
+		if (this.element && composedPath.includes(this.element)) {
+			const scrollSink = composedPath.find(
+				(element) => element instanceof HTMLElement && element.classList.contains('scroll-sink')
+			)
+			if (scrollSink instanceof HTMLElement) {
+				if (e.deltaY < 0 && scrollSink.scrollTop <= 0) {
+					e.preventDefault()
+				} else if (
+					e.deltaY > 0 &&
+					Math.round(scrollSink.scrollTop) >= scrollSink.scrollHeight - scrollSink.clientHeight
+				) {
+					e.preventDefault()
+				}
+			}
+		}
+	}
+
 	render() {
 		const { t, fullViewport } = this.props
 		return (
 			<div
-				className={ClassNames('rundown-view__shelf dark', {
+				className={ClassNames('rundown-view__shelf dark scroll-sink', {
 					'full-viewport': fullViewport,
 					moving: this.state.moving,
 				})}
 				style={fullViewport ? undefined : this.getStyle()}
+				ref={this.setRef}
 			>
 				<ShelfContextMenu />
 				{!fullViewport && (

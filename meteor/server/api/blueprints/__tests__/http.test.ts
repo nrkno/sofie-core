@@ -219,8 +219,10 @@ describe('Test blueprint http api', () => {
 			const id = 'id1'
 			const body = 'bodyStr1'
 
-			const payload: any = {}
-			payload[id] = body
+			const payload: any = {
+				blueprints: {},
+			}
+			payload.blueprints[id] = body
 
 			const res = callRoute(JSON.stringify(payload))
 			expect(res.statusCode).toEqual(200)
@@ -233,8 +235,10 @@ describe('Test blueprint http api', () => {
 			const id = 'id1'
 			const body = 'bodyStr1'
 
-			const payload: any = {}
-			payload[id] = body
+			const payload: any = {
+				blueprints: {},
+			}
+			payload.blueprints[id] = body
 
 			const res = callRoute(payload)
 			expect(res.statusCode).toEqual(200)
@@ -246,9 +250,11 @@ describe('Test blueprint http api', () => {
 		testInFiber('with json body - multiple', () => {
 			const count = 10
 
-			const payload: any = {}
+			const payload: any = {
+				blueprints: {},
+			}
 			for (let i = 0; i < count; i++) {
-				payload[`id${i}`] = `body${i}`
+				payload.blueprints[`id${i}`] = `body${i}`
 			}
 
 			const res = callRoute(JSON.stringify(payload))
@@ -263,9 +269,11 @@ describe('Test blueprint http api', () => {
 		testInFiber('with errors', () => {
 			const count = 10
 
-			const payload: any = {}
+			const payload: any = {
+				blueprints: {},
+			}
 			for (let i = 0; i < count; i++) {
-				payload[`id${i}`] = `body${i}`
+				payload.blueprints[`id${i}`] = `body${i}`
 			}
 
 			const uploadBlueprint = resetUploadMock()

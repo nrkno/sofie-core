@@ -292,6 +292,8 @@ export namespace RundownUtils {
 	 * @param {DBSegment} segment
 	 * @param {Set<SegmentId>} segmentsBeforeThisInRundownSet
 	 * @param {PartId[]} orderedAllPartIds
+	 * @param {PartInstance | undefined } currentPartInstance
+	 * @param {PartInstance | undefined } nextPartInstance
 	 * @param {boolean} [pieceInstanceSimulation=false] Can be used client-side to simulate the contents of a
 	 * 		PartInstance, whose contents are being streamed in. When ran in a reactive context, the computation will
 	 * 		be eventually invalidated so that the actual data can be streamed in (to show that the part is actually empty)
@@ -306,6 +308,8 @@ export namespace RundownUtils {
 		segment: DBSegment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
 		orderedAllPartIds: PartId[],
+		currentPartInstance: PartInstance | undefined,
+		nextPartInstance: PartInstance | undefined,
 		pieceInstanceSimulation: boolean = false,
 		includeDisabledPieces: boolean = false
 	): {
@@ -349,8 +353,6 @@ export namespace RundownUtils {
 
 		// fetch all the parts for the segment
 		let partsE: Array<PartExtended> = []
-
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 
 		const segmentInfo = getSegmentsWithPartInstances(
 			playlist,
@@ -472,6 +474,7 @@ export namespace RundownUtils {
 				}
 
 				const rawPieceInstances = getPieceInstancesForPartInstance(
+					playlist.activationId,
 					partInstance,
 					new Set(partIds.slice(0, itIndex)),
 					segmentsBeforeThisInRundownSet,

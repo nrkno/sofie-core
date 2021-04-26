@@ -208,7 +208,7 @@ jobs:
           IMAGES=
           DOCKER_TAG=${{ steps.docker-tag.outputs.tag }}
           # check if a release branch, or master, or a tag
-          if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ steps.docker-tag.outputs.tag }}" == refs/tags/* ]]
+          if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ github.ref }}" == refs/tags/* ]]
           then
             # If we have a dockerhub image name, then setup to publish there
             if [ -z "${{ secrets.DOCKERHUB_IMAGE_PREFIX }}" ]

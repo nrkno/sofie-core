@@ -163,4 +163,5 @@ export type LiveSpeakContent = VTContent
 
 export interface TransitionContent extends BaseContent {
 	icon?: string
+	preview?: string
 }

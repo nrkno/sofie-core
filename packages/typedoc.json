@@ -10,7 +10,9 @@
 		"*/dist",
 		"*/src/types",
 		"*/examples",
-		"packages/*-gateway"
+		"packages/*-gateway",
+		"packages/mos-gateway",
+		"packages/playout-gateway"
 	],
 	"external-modulemap": ".*packages/([^/]+)-integration/.*"
 }

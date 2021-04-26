@@ -6,18 +6,10 @@ import { withTiming, WithTiming } from './RundownTiming/withTiming'
 import { RundownUtils } from '../../lib/rundown'
 import { withTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { LoopingIcon } from '../../lib/ui/icons/looping'
 
 interface IProps {
 	rundown: Rundown
 	playlist: RundownPlaylist
-}
-
-interface ITrackedProps {
-	notificationsFromRundown: {
-		critical: number
-		warning: number
-	}
 }
 
 const QUATER_DAY = 6 * 60 * 60 * 1000
@@ -35,38 +27,34 @@ const RundownCountdown = withTranslation()(
 		{}
 	>({
 		filter: 'currentTime',
-	})(
-		class RundownCountdown extends React.Component<
-			Translated<
-				WithTiming<{
-					expectedStart: number | undefined
-					className?: string | undefined
-				}>
-			>
-		> {
-			render() {
-				const { t } = this.props
-				if (this.props.expectedStart === undefined) return null
+	})(function RundownCountdown(
+		props: Translated<
+			WithTiming<{
+				expectedStart: number | undefined
+				className?: string | undefined
+			}>
+		>
+	) {
+		const { t } = props
+		if (props.expectedStart === undefined) return null
 
-				const time = this.props.expectedStart - (this.props.timingDurations.currentTime || 0)
+		const time = props.expectedStart - (props.timingDurations.currentTime || 0)
 
-				if (time < QUATER_DAY) {
-					return (
-						<span className={this.props.className}>
-							{time > 0
-								? t('(in: {{time}})', {
-										time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
-								  })
-								: t('({{time}} ago)', {
-										time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
-								  })}
-						</span>
-					)
-				}
-				return null
-			}
+		if (time < QUATER_DAY) {
+			return (
+				<span className={props.className}>
+					{time > 0
+						? t('(in: {{time}})', {
+								time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
+						  })
+						: t('({{time}} ago)', {
+								time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
+						  })}
+				</span>
+			)
 		}
-	)
+		return null
+	})
 )
 
 /**
@@ -77,60 +65,36 @@ const RundownCountdown = withTranslation()(
  *
  * The component should be minimally reactive.
  */
-export const RundownDividerHeader = withTranslation()(
-	class RundownDividerHeader extends React.Component<Translated<IProps>> {
-		render() {
-			const { t, rundown, playlist } = this.props
-			return (
-				<div className="rundown-divider-timeline">
-					<h2 className="rundown-divider-timeline__title">{rundown.name}</h2>
-					<h3 className="rundown-divider-timeline__playlist-name">{playlist.name}</h3>
-					{rundown.expectedStart ? (
-						<div className="rundown-divider-timeline__expected-start">
-							<span>{t('Planned Start')}</span>&nbsp;
-							<Moment
-								interval={1000}
-								calendar={{
-									sameElse: 'lll',
-								}}
-							>
-								{rundown.expectedStart}
-							</Moment>
-							&nbsp;
-							<RundownCountdown
-								className="rundown-divider-timeline__expected-start__countdown"
-								expectedStart={rundown.expectedStart}
-							/>
-						</div>
-					) : null}
-					{rundown.expectedDuration ? (
-						<div className="rundown-divider-timeline__expected-duration">
-							<span>{t('Planned Duration')}</span>&nbsp;
-							{RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)}
-						</div>
-					) : null}
+export const RundownDividerHeader = withTranslation()(function RundownDividerHeader(props: Translated<IProps>) {
+	const { t, rundown, playlist } = props
+	return (
+		<div className="rundown-divider-timeline">
+			<h2 className="rundown-divider-timeline__title">{rundown.name}</h2>
+			<h3 className="rundown-divider-timeline__playlist-name">{playlist.name}</h3>
+			{rundown.expectedStart ? (
+				<div className="rundown-divider-timeline__expected-start">
+					<span>{t('Planned Start')}</span>&nbsp;
+					<Moment
+						interval={1000}
+						calendar={{
+							sameElse: 'lll',
+						}}
+					>
+						{rundown.expectedStart}
+					</Moment>
+					&nbsp;
+					<RundownCountdown
+						className="rundown-divider-timeline__expected-start__countdown"
+						expectedStart={rundown.expectedStart}
+					/>
 				</div>
-			)
-		}
-	}
-)
-
-interface ILoopingHeaderProps {
-	playlist: RundownPlaylist
-}
-export const RundownLoopingHeader = withTranslation()(
-	class RundownLoopingHeader extends React.Component<Translated<ILoopingHeaderProps>> {
-		render() {
-			const { t, playlist } = this.props
-			return (
-				<div className="rundown-divider-timeline">
-					<h3 className="rundown-divider-timeline__playlist-name">
-						<LoopingIcon />
-						&nbsp;
-						{t('Looping')}: {playlist.name}
-					</h3>
+			) : null}
+			{rundown.expectedDuration ? (
+				<div className="rundown-divider-timeline__expected-duration">
+					<span>{t('Planned Duration')}</span>&nbsp;
+					{RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)}
 				</div>
-			)
-		}
-	}
-)
+			) : null}
+		</div>
+	)
+})

@@ -251,10 +251,16 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		this.usedHotkeys.length = 0
 	}
 
-	protected static filterOutAdLibs(props: IAdLibPanelProps & AdLibFetchAndFilterProps, state: IState): AdLibPieceUi[] {
+	protected static filterOutAdLibs(
+		props: IAdLibPanelProps & AdLibFetchAndFilterProps,
+		state: IState,
+		uniquenessIds?: Set<string>
+	): AdLibPieceUi[] {
 		return props.rundownBaselineAdLibs
 			.concat(props.uiSegments.map((seg) => seg.pieces).flat())
-			.filter((item) => matchFilter(item, props.showStyleBase, props.uiSegments, props.filter, state.searchFilter))
+			.filter((item) =>
+				matchFilter(item, props.showStyleBase, props.uiSegments, props.filter, state.searchFilter, uniquenessIds)
+			)
 	}
 
 	protected isAdLibOnAir(adLib: AdLibPieceUi) {
@@ -568,7 +574,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	render() {
 		const { t } = this.props
-		const filteredAdLibs = DashboardPanelInner.filterOutAdLibs(this.props, this.state)
+		const uniquenessIds = new Set<string>()
+		const filteredAdLibs = DashboardPanelInner.filterOutAdLibs(this.props, this.state, uniquenessIds)
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
 			if (!this.props.uiSegments || !this.props.playlist) {

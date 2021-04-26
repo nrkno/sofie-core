@@ -244,7 +244,6 @@ function SegmentTimelineZoomButtons(props: IProps) {
 	}
 
 	const zoomOutInner = (maxTimeScale: number, e: React.MouseEvent<HTMLElement>) => {
-		console.log(maxTimeScale)
 		const targetTimeScale = Math.max(props.timeScale * 0.5, maxTimeScale)
 		props.onZoomChange(targetTimeScale, e)
 		if (targetTimeScale === maxTimeScale && !props.isLiveSegment) {

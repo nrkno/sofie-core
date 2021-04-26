@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { ensureCollectionProperty } from './lib'
+import { ensureCollectionProperty, ensureCollectionPropertyManual } from './lib'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { protectString } from '../../lib/lib'
@@ -44,11 +44,10 @@ export const addSteps = addMigrationSteps('0.1.0', [
 			})
 		},
 	},
-	ensureCollectionProperty(
+	ensureCollectionPropertyManual(
 		'Studios',
 		{},
 		'name',
-		null,
 		'text',
 		'Studio $id: Name',
 		'Enter the Name of the Studio "$id"'

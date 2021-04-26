@@ -9,8 +9,9 @@ import {
 	getRandomId,
 	protectStringArray,
 	waitForPromise,
+	UnprotectedStringProperties,
 } from '../../../../lib/lib'
-import { Part } from '../../../../lib/collections/Parts'
+import { Part, Parts } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
 import {
 	IEventContext,
@@ -22,6 +23,7 @@ import {
 	IBlueprintResolvedPieceInstance,
 	OmitId,
 	IBlueprintMutatablePart,
+	IBlueprintPieceDB,
 } from '@sofie-automation/blueprints-integration'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
@@ -39,6 +41,7 @@ import { Meteor } from 'meteor/meteor'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { ServerPlayoutAPI } from '../../playout/playout'
+import { Piece, Pieces } from '../../../../lib/collections/Pieces'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -150,6 +153,40 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		return clone(unprotectObject(lastPieceInstance))
 	}
+
+	findLastScriptedPieceOnLayer(
+		sourceLayerId0: string | string[],
+		options?: {
+			excludeCurrentPart?: boolean
+			pieceMetaDataFilter?: any
+		}
+	): IBlueprintPieceDB | undefined {
+		const query: MongoQuery<Piece> = {}
+		if (options && options.pieceMetaDataFilter) {
+			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
+				// TODO do we need better validation here?
+				// It should be pretty safe as we are working with the cache version (for now)
+				query[`metaData.${key}`] = value
+			}
+		}
+
+		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInstanceId) {
+			const currentPartInstance = this._cache.PartInstances.findOne(
+				this._cache.Playlist.doc.currentPartInstanceId
+			)
+
+			if (currentPartInstance) {
+				query['startPartId'] = { $ne: currentPartInstance.part._id }
+			}
+		}
+
+		const sourceLayerId = Array.isArray(sourceLayerId0) ? sourceLayerId0 : [sourceLayerId0]
+
+		const lastPiece = ServerPlayoutAdLibAPI.innerFindLastScriptedPieceOnLayer(this._cache, sourceLayerId, query)
+
+		return clone(unprotectObject(lastPiece))
+	}
+
 	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance {
 		const pieceExt = (piece as unknown) as Partial<PieceInstance> | undefined
 		const partInstanceId = pieceExt?.partInstanceId
@@ -173,6 +210,20 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		} else {
 			throw new Error('Cannot find PartInstance for PieceInstance')
 		}
+	}
+
+	getPartForPreviousPiece(piece: UnprotectedStringProperties<Pick<Piece, '_id'>>): IBlueprintPart | undefined {
+		if (!piece?._id) {
+			throw new Error('Cannot find Part from invalid Piece')
+		}
+
+		const pieceDB = Pieces.findOne({
+			_id: protectString(piece._id),
+			startRundownId: { $in: getRundownIDsFromCache(this._cache) },
+		})
+		if (!pieceDB) throw new Error(`Cannot find Piece ${piece._id}`)
+
+		return Parts.findOne({ _id: pieceDB.startPartId })
 	}
 
 	insertPiece(part: 'current' | 'next', rawPiece: IBlueprintPiece): IBlueprintPieceInstance {

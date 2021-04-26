@@ -109,7 +109,9 @@ export namespace ExpectedPackage {
 			  }
 		version: {
 			/** The time the clips was created */
-			created?: number
+			created?: string
+			/** Quantel cloneId defines a clip across multiple servers */
+			cloneId?: number
 		}
 		sources: {
 			containerId: string
@@ -137,7 +139,7 @@ export interface PackageContainer {
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Accessor {
-	export type Any = LocalFolder | FileShare | HTTP | Quantel
+	export type Any = LocalFolder | FileShare | HTTP | Quantel | CorePackageCollection
 
 	export enum AccessType {
 		LOCAL_FOLDER = 'local_folder',
@@ -200,10 +202,9 @@ export namespace Accessor {
 		/** URL to a Quantel-gateway (https://github.com/nrkno/tv-automation-quantel-gateway) */
 		quantelGatewayUrl: string
 
-		/** Master URL for the Quantel ISA */
-		ISAUrlMaster: string
-		/** Backup URL for the Quantel ISA */
-		ISAUrlBackup?: string
+		/** Locations of the Quantel ISA:s (in order of importance) */
+		ISAUrls: string[]
+
 		/** Zone id, defaults to 'default' */
 		zoneId?: string
 		/** Server id. Can be omitted for sources, as clip-searches are zone-wide */
@@ -215,7 +216,7 @@ export namespace Accessor {
 	/** Virtual PackageContainer used for piping data into core */
 	export interface CorePackageCollection extends Base {
 		type: Accessor.AccessType.CORE_PACKAGE_INFO
-		// TODO
+		// empty
 	}
 }
 /**
@@ -244,7 +245,7 @@ export namespace AccessorOnPackage {
 	}
 	// eslint-disable-next-line @typescript-eslint/no-empty-interface
 	export interface CorePackageCollection extends Partial<Accessor.CorePackageCollection> {
-		// todo
+		// empty
 	}
 }
 

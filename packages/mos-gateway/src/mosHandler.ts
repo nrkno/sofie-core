@@ -393,8 +393,7 @@ export class MosHandler {
 					}
 				})
 
-				return Promise.all(_.map(devicesToRemove, (val, deviceId) => {
-					val = val
+				return Promise.all(_.map(devicesToRemove, (_val, deviceId) => {
 					return this._removeDevice(deviceId)
 				}))
 				.then(() => {

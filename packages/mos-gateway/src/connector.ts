@@ -60,12 +60,7 @@ export class Connector {
 
 			this._logger.info('Shutting down in 10 seconds!')
 
-			try {
-				this.dispose()
-				.catch(e => this._logger.error(e))
-			} catch (e) {
-				this._logger.error(e)
-			}
+			this.dispose().catch(e => this._logger.error(e))
 
 			setTimeout(() => {
 				process.exit(0)

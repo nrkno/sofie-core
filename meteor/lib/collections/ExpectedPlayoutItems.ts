@@ -23,8 +23,8 @@ export interface ExpectedPlayoutItem extends ExpectedPlayoutItemGeneric {
 	rundownId: RundownId
 	/** The part id that is the source of this Playout Item */
 	partId?: PartId
-	/** The piece id that is the source of this Playout Item */
-	pieceId: PieceId
+	// /** The piece id that is the source of this Playout Item */
+	// pieceId: PieceId
 }
 
 /** @deprecated */

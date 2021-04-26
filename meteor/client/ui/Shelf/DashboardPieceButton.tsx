@@ -29,6 +29,7 @@ import { protectString } from '../../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { getThumbnailPackageSettings } from '../../../lib/collections/ExpectedPackages'
+import { ensureHasTrailingSlash } from '../../lib/lib'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
@@ -135,7 +136,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			// Fallback to media objects
 			if (this.props.mediaPreviewUrl && piece.contentMetaData) {
 				if (piece.contentMetaData && piece.contentMetaData.previewPath && this.props.mediaPreviewUrl) {
-					return this.props.mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(piece.contentMetaData.mediaId)
+					return (
+						ensureHasTrailingSlash(this.props.mediaPreviewUrl ?? null) +
+						'media/thumbnail/' +
+						encodeURIComponent(piece.contentMetaData.mediaId)
+					)
 				}
 			}
 		}

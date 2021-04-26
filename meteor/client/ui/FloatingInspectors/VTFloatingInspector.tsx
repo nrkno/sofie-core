@@ -11,6 +11,7 @@ import { StyledTimecode } from '../../lib/StyledTimecode'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { Studio } from '../../../lib/collections/Studios'
 import { getPreviewPackageSettings } from '../../../lib/collections/ExpectedPackages'
+import { ensureHasTrailingSlash } from '../../lib/lib'
 
 interface IProps {
 	mediaPreviewUrl?: string
@@ -73,7 +74,7 @@ function getMediaPreviewUrl(
 ): string | undefined {
 	const metadata = contentMetaData
 	if (metadata && metadata.previewPath && mediaPreviewUrl) {
-		return mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.mediaId)
+		return ensureHasTrailingSlash(mediaPreviewUrl) + 'media/preview/' + encodeURIComponent(metadata.mediaId)
 	}
 }
 

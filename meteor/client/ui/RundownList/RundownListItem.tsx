@@ -273,6 +273,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 						isDragging,
 						rundownViewUrl,
 						rundownLayouts,
+						isOnlyRundownInPlaylist,
 					} = this.props
 					const userCanConfigure = getAllowConfigure()
 
@@ -304,6 +305,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 							renderTooltips={isDragging !== true}
 							rundownViewUrl={rundownViewUrl}
 							rundown={rundown}
+							isOnlyRundownInPlaylist={isOnlyRundownInPlaylist}
 							rundownLayouts={rundownLayouts}
 							showStyleName={showStyleLabel}
 							showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
