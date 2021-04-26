@@ -44,7 +44,7 @@ import {
 	ExtendedIngestRundown,
 	OnGenerateTimelineObj,
 } from '@sofie-automation/blueprints-integration'
-import { Studio, StudioId } from '../../../../lib/collections/Studios'
+import { Studio, StudioId, Studios } from '../../../../lib/collections/Studios'
 import {
 	ConfigRef,
 	getStudioBlueprintConfig,
@@ -166,7 +166,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 /** Studio */
 
 export class StudioConfigContext implements IStudioConfigContext {
-	protected readonly studio: Studio
+	protected studio: Studio
 	constructor(studio: Studio) {
 		this.studio = studio
 	}
@@ -175,14 +175,22 @@ export class StudioConfigContext implements IStudioConfigContext {
 		return this.studio._id
 	}
 
-	getStudio(): Readonly<Studio> {
-		return this.studio
+	getStudio(forceReloadFromDB?: boolean): Readonly<Studio> {
+		if (!forceReloadFromDB) {
+			return this.studio
+		} else {
+			const studio = Studios.findOne(this.studioId)
+			if (!studio) throw new Meteor.Error(404, `Studio "${this.studioId}" not found!`)
+			this.studio = studio
+			return studio
+		}
 	}
 	getStudioConfig(): unknown {
 		return getStudioBlueprintConfig(this.studio)
 	}
 	protected wipeCache() {
 		resetStudioBlueprintConfig(this.studio)
+		getStudioBlueprintConfig(this.getStudio(true))
 	}
 	getStudioConfigRef(configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
@@ -213,8 +221,8 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 		this.notesContext = notesContext
 	}
 
-	getShowStyleBase(): ShowStyleBase {
-		if (this.cache && this._rundown) {
+	getShowStyleBase(forceReloadFromDB?: boolean): ShowStyleBase {
+		if (this.cache && this._rundown && !forceReloadFromDB) {
 			return waitForPromise(this.cache.activationCache.getShowStyleBase(this._rundown))
 		} else {
 			const showstyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
@@ -222,8 +230,8 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 			return showstyleBase
 		}
 	}
-	getShowStyleVariant(): ShowStyleVariant {
-		if (this.cache && this._rundown) {
+	getShowStyleVariant(forceReloadFromDB?: boolean): ShowStyleVariant {
+		if (this.cache && this._rundown && !forceReloadFromDB) {
 			return waitForPromise(this.cache.activationCache.getShowStyleVariant(this._rundown))
 		} else {
 			const showstyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
@@ -238,6 +246,7 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	wipeCache() {
 		super.wipeCache()
 		resetShowStyleBlueprintConfig(this.getShowStyleBase(), this.getShowStyleVariant())
+		getShowStyleBlueprintConfig(this.getShowStyleBase(true), this.getShowStyleVariant(true))
 	}
 	getShowStyleConfigRef(configKey: string): string {
 		return ConfigRef.getShowStyleConfigRef(this.showStyleVariantId, configKey)

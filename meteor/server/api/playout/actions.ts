@@ -103,10 +103,16 @@ export function deactivateRundownPlaylist(cache: CacheForRundownPlaylist, rundow
 			const { blueprint } = loadShowStyleBlueprint(
 				waitForPromise(cache.activationCache.getShowStyleBase(rundown))
 			)
+			let result: Promise<void> | undefined
 			if (blueprint.onRundownDeActivate) {
-				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, cache, undefined))).catch(
-					logger.error
-				)
+				result = blueprint.onRundownDeActivate(new RundownContext(rundown, cache, undefined))
+			}
+
+			const context = new RundownContext(rundown, cache, undefined)
+			context.wipeCache()
+
+			if (result) {
+				Promise.resolve(result).catch(logger.error)
 			}
 		}
 	})
