@@ -4,7 +4,6 @@ import { CoreConnection,
 	DDPConnectorOptions
 } from '@sofie-automation/server-core-integration'
 import * as Winston from 'winston'
-import * as fs from 'fs'
 import { Process } from './process'
 
 import {
@@ -800,24 +799,20 @@ export class CoreHandler {
 			versions['_process'] = process.env.npm_package_version
 		}
 
-		let dirNames = [
+		const pkgNames = [
 			'@sofie-automation/server-core-integration',
 			'mos-connection'
 		]
 		try {
-			let nodeModulesDirectories = fs.readdirSync('node_modules')
-			_.each(nodeModulesDirectories, (dir) => {
+			for (const pkgName of pkgNames) {
 				try {
-					if (dirNames.indexOf(dir) !== -1) {
-						let file = 'node_modules/' + dir + '/package.json'
-						file = fs.readFileSync(file, 'utf8')
-						let json = JSON.parse(file)
-						versions[dir] = json.version || 'N/A'
-					}
+					// eslint-disable-next-line @typescript-eslint/no-var-requires
+					const pkgInfo = require(`${pkgName}/package.json`)
+					versions[pkgName] = pkgInfo.version || 'N/A'
 				} catch (e) {
-					this.logger.error(e)
+					this.logger.error(`Failed to load package.json for lib "${pkgName}": ${e}`)
 				}
-			})
+			}
 		} catch (e) {
 			this.logger.error(e)
 		}
