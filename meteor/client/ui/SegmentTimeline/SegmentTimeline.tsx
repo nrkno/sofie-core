@@ -205,7 +205,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 				})}
 			>
 				<div className="segment-timeline__zoom-area" onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
-					<div className="segment-timeline__timeline">{this.renderZoomTimeline()}</div>
+					{/* <div className="segment-timeline__timeline">{this.renderZoomTimeline()}</div> */}
 					<SegmentTimelineZoomControls
 						scrollLeft={this.props.scrollLeft}
 						scrollWidth={this.props.timelineWidth / this.props.timeScale}
@@ -941,16 +941,16 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						part={this.props.followingPart} />
 				</ErrorBoundary> */}
 				<ErrorBoundary>
-					<VelocityReact.VelocityTransitionGroup
+					{/* <VelocityReact.VelocityTransitionGroup
 						enter={{ animation: 'slideDown', easing: 'ease-out', duration: 250 }}
 						leave={{ animation: 'slideUp', easing: 'ease-in', duration: 250 }}
-					>
-						<SegmentTimelineZoom
-							onZoomDblClick={this.onZoomNormalize}
-							timelineWidth={this.state.timelineWidth}
-							{...this.props}
-						/>
-					</VelocityReact.VelocityTransitionGroup>
+					> */}
+					<SegmentTimelineZoom
+						onZoomDblClick={this.onZoomNormalize}
+						timelineWidth={this.state.timelineWidth}
+						{...this.props}
+					/>
+					{/* </VelocityReact.VelocityTransitionGroup> */}
 				</ErrorBoundary>
 			</div>
 		)

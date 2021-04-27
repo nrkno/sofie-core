@@ -849,6 +849,7 @@ svg.icon {
 	// The area controlling the zoom at the bottom of the segment
 	.segment-timeline__zoom-area {
 		position: relative;
+		min-height: 1em;
 		max-height: 4em;
 		margin: 0.2em 1em 0em 0;
 		padding: 1px 0;
@@ -2059,6 +2060,7 @@ svg.icon {
 
 		.segment-timeline__zoom-area {
 			margin: 0.2em 0 0 0;
+			min-height: 0;
 
 			.segment-timeline__timeline {
 				padding: 0;
