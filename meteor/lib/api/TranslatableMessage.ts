@@ -98,6 +98,6 @@ function checkArgs(args: any): args is { [key: string]: any } {
 		return false
 	}
 
-	// this is good enough for object literals, which is what args essentially is
-	return args.constructor === Object
+	// this is good enough for object literals and arrays, which is what args can be
+	return args.constructor === Object || Array.isArray(args)
 }

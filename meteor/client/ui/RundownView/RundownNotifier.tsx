@@ -422,7 +422,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				const { origin, message, type: itemType, rank } = item
 				const { pieceId, partId, segmentId, rundownId, name, segmentName } = origin
 
-				const translatedMessage = isTranslatableMessage(message) ? translateMessage(message, t) : message
+				const translatedMessage = isTranslatableMessage(message) ? translateMessage(message, t) : String(message)
 
 				const notificationId = `${translatedMessage}-${pieceId || partId || segmentId || rundownId}-${name}-${itemType}`
 
