@@ -2,6 +2,119 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.32.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.32.0-in-testing.1) (2021-04-27)
+
+
+### Features
+
+* add segment header counter labels ([#476](https://github.com/nrkno/tv-automation-server-core/issues/476)) ([25062e2](https://github.com/nrkno/tv-automation-server-core/commit/25062e2f7fef0a017c960f791f986ca4e5b08177))
+
+
+### Bug Fixes
+
+* allow deleting orphaned rundowns if delete was requested by the user (and not from mos) ([45b18c9](https://github.com/nrkno/tv-automation-server-core/commit/45b18c92c614d71a56179e894eae323f5317a3a3))
+* allow string arrays for TranslatableMessage args ([5a62f5d](https://github.com/nrkno/tv-automation-server-core/commit/5a62f5da9cafe4b19e3513e0120e89c268f2337e))
+* current version for r32 migrations ([e12950c](https://github.com/nrkno/tv-automation-server-core/commit/e12950c00c6b537903c2d238db8706ba688b7ed1))
+* don't set CURRENT_SYSTEM_VERSION to pre-release version ([de63856](https://github.com/nrkno/tv-automation-server-core/commit/de638565703a9360c655a2dde8849a8e2e057d33))
+* don't set CURRENT_SYSTEM_VERSION to pre-release version ([549b028](https://github.com/nrkno/tv-automation-server-core/commit/549b028508842eed5a176ea302bc755470459f2a))
+* ensure the parts fed into the blueprints are sorted by rank ([8e7a54d](https://github.com/nrkno/tv-automation-server-core/commit/8e7a54de21f2a923f61e58129450688273304832))
+* issue with ensureCollectionProperty which didn't work when the value was set to "null" ([5cc9cbf](https://github.com/nrkno/tv-automation-server-core/commit/5cc9cbf683762b575d727fbb2566255f68fcc29a))
+* issue with ensureCollectionProperty which didn't work when the value was set to "null" ([cfe07ce](https://github.com/nrkno/tv-automation-server-core/commit/cfe07ce560c2618853a1543b57f0fd46fc1dfb3a))
+* only reset previous segment on looping rundowns ([#507](https://github.com/nrkno/tv-automation-server-core/issues/507)) ([e17e08c](https://github.com/nrkno/tv-automation-server-core/commit/e17e08cf4f4830b7975c1f14f37c8ef2bc07cad6))
+* pieces not being propogated when hold is started ([ee44a44](https://github.com/nrkno/tv-automation-server-core/commit/ee44a44b616d501bd38b5f66495730d07dcec64f))
+* **PresenterScreen:** LiveSpeak piece Icon uses old styling ([119e693](https://github.com/nrkno/tv-automation-server-core/commit/119e693d119418e09786f26a201b0039812af0a6))
+* **PresenterScreen:** showStyleBases subscription is not reactive ([cd6a10e](https://github.com/nrkno/tv-automation-server-core/commit/cd6a10ea9a4124878c41458c6e1799f29e9838ab))
+
+## [1.32.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0...v1.32.0-in-testing.0) (2021-03-22)
+
+
+### Features
+
+* add expectedPackages (wip) ([19e34d5](https://github.com/nrkno/tv-automation-server-core/commit/19e34d52785daac50e31a39f61720996d5f8f227))
+* allow adlib actions to move the next part by either a part or segment delta ([3a56c5c](https://github.com/nrkno/tv-automation-server-core/commit/3a56c5c426f2f3e7ce928813da1a2c6f394df3df))
+* allow an expectedPackage to have multiple layers [publish] ([60b8d7c](https://github.com/nrkno/tv-automation-server-core/commit/60b8d7c297485173c475e93f89c403878c23a598))
+* change colors for live-speak, vt, graphics, lower-thirds ([#474](https://github.com/nrkno/tv-automation-server-core/issues/474)) ([c785f53](https://github.com/nrkno/tv-automation-server-core/commit/c785f535cdee15664406a617c4a056d0a593607d))
+* define some caches and new syncfunctions ([48ce6b0](https://github.com/nrkno/tv-automation-server-core/commit/48ce6b0c05b18ebf37e5e294fdb0154fd9324e31))
+* expectedPackages contiued implementation. ([5a4dd80](https://github.com/nrkno/tv-automation-server-core/commit/5a4dd802b4360b93e80b9dd4c3eeefa96dded547))
+* expectedPackages: implement support for bucket adlibs & bucket adlib actions ([fff9e1a](https://github.com/nrkno/tv-automation-server-core/commit/fff9e1aaf5f98dac023ad49c3abb2d0e8d40733d))
+* expectedPackages: let core set the path (& other settings in the future) for the thumbnail and preview [publish] ([cb3a600](https://github.com/nrkno/tv-automation-server-core/commit/cb3a600fdd0ab9f728c5bd6c1640f8bd3002b0ac))
+* generate expectedPackages from baseline adlibs and actions ([eda53e6](https://github.com/nrkno/tv-automation-server-core/commit/eda53e6ab8dbec99312dd0bebafc4aa5a3c80d8f))
+* implement ExpectedPackageWorkStatuses, for piping info about work being performed on expectedPackages ([273c7f4](https://github.com/nrkno/tv-automation-server-core/commit/273c7f448af592fa136ca516c9efd5fd473af3fa))
+* labels added to segment header counters ([#478](https://github.com/nrkno/tv-automation-server-core/issues/478)) ([7f247d5](https://github.com/nrkno/tv-automation-server-core/commit/7f247d5d9ecd38856d6d7a07fc56f9a07863e6b7))
+* package management: continued implementation.. PackageContainers PackageContainerStatuses, PackageInfos etc,,, (wip) ([c5c2bce](https://github.com/nrkno/tv-automation-server-core/commit/c5c2bce6e567581ffc98c4dd543183ad5aa9174a))
+* package-management: data piping for packageInfos, move device-container coupling to Studio, add Studio.previewContainerIds & Studio.thumbnailContainerIds etc. Add ExpectedPackage.sideEffect. etc... ([3fec5e9](https://github.com/nrkno/tv-automation-server-core/commit/3fec5e9bc53b287b4bb731d631e7b3494b88b141))
+* package-management: GUI: add support for expectedPackages, for media info, previews, thumbnails etc.. (wip) ([6ac6ad8](https://github.com/nrkno/tv-automation-server-core/commit/6ac6ad89111b8d89f16e301e989a315e26261bc0))
+* packageManager: modify publication to emit expectedPackages from next & current PartInstance as well ([3444a3d](https://github.com/nrkno/tv-automation-server-core/commit/3444a3d8afd9edf80c27061e26e8d05dfcb4d842))
+* performance tweaks ([22c3aaf](https://github.com/nrkno/tv-automation-server-core/commit/22c3aaf786614d486770b0a3b0b746045397b5d8))
+* ReactiveStore class, to be used as a performance enhancer on the clien-side. ([6366d10](https://github.com/nrkno/tv-automation-server-core/commit/6366d108aead80d91c5a94ba65955512c6feb8e8))
+* refactor playout to use new lockFunction and cache flow ([acf14d1](https://github.com/nrkno/tv-automation-server-core/commit/acf14d14be8e2fa9a5ca8b33d18b0f8b4ec452bf))
+* remove AsRunLog collection ([#477](https://github.com/nrkno/tv-automation-server-core/issues/477)) ([1826f79](https://github.com/nrkno/tv-automation-server-core/commit/1826f79bb12732006cb174f8a7e915560b755a31))
+* reset segments upon leaving ([#473](https://github.com/nrkno/tv-automation-server-core/issues/473)) ([f854774](https://github.com/nrkno/tv-automation-server-core/commit/f8547740ba32c53d3f9cd3532bc0ef05f3e50b5c))
+* restart-, abort- & restartAll-Expectations actions for Package Manager [publish] ([669d116](https://github.com/nrkno/tv-automation-server-core/commit/669d1163fb03d6358e8c4f6a4a5a258fba8f297d))
+* split security check out of lock functions ([#480](https://github.com/nrkno/tv-automation-server-core/issues/480)) ([703aabc](https://github.com/nrkno/tv-automation-server-core/commit/703aabc7a8aededefe7f889c011631ba668f9e78))
+* StudioPackageContainersContext ([f31c730](https://github.com/nrkno/tv-automation-server-core/commit/f31c7307928298782dec46158d18c244af690ede))
+* summary in GUI ([2570a6a](https://github.com/nrkno/tv-automation-server-core/commit/2570a6a52868b507d05f346e09b286a955ffb3a5))
+
+
+### Bug Fixes
+
+* 0-length content should not render end of content warning ([4e2b661](https://github.com/nrkno/tv-automation-server-core/commit/4e2b661d80556d6fc3f07b713dcc2eed5f4e6c4a))
+* activeRundown view doesn't show any rundown ([f7e9f36](https://github.com/nrkno/tv-automation-server-core/commit/f7e9f36a695def324c165f3e0880e90d45ad86b1))
+* add delay & batch update functionality to ReactiveStore ([678cfad](https://github.com/nrkno/tv-automation-server-core/commit/678cfad172c8552c67b7920d1c3cc8fc99a45ddb))
+* add expectedPackages to snapshot ([220465a](https://github.com/nrkno/tv-automation-server-core/commit/220465a28939fb890dfd7191ca0e79b6867bde28))
+* add missing migrations ([d98827c](https://github.com/nrkno/tv-automation-server-core/commit/d98827c270e1d8d7975ad82ce9a3e28d5145800c))
+* add optional parameter for lazynessDuration in optimizedObserver ([1b7bdcd](https://github.com/nrkno/tv-automation-server-core/commit/1b7bdcdecbafe787505113b82326bcd2dfa910f4))
+* adLib actions in dashboard panels were not correctly filtered according to live segment ([acc6c15](https://github.com/nrkno/tv-automation-server-core/commit/acc6c15166def5f3dc8f0a19b8057921ab842bcc))
+* blueprint-integration: add expectedPackages properties to Adlib actions ([b45df41](https://github.com/nrkno/tv-automation-server-core/commit/b45df419140aa3c4280cc8832368b69ea2790085))
+* bug fix in publication ([04244de](https://github.com/nrkno/tv-automation-server-core/commit/04244de20d4a129fbd77d52172d50a1cf6b93ab0))
+* cache discardChanges not cleaning up enough ([f10b295](https://github.com/nrkno/tv-automation-server-core/commit/f10b295a796d12065a71dfa00f2144d40df87ae5))
+* clarify typings of ExpectedPackageWorkStatus.fromPackages property ([ec7c26d](https://github.com/nrkno/tv-automation-server-core/commit/ec7c26d072375bd185d513e9612aabf8d49ed2ac))
+* display piece name on buttons in list panels ([aede248](https://github.com/nrkno/tv-automation-server-core/commit/aede248d9808a2756f1d70c223fd0734a3b770f5))
+* EditAttribute: support for json input type that stores the json as values, not json-string ([8124c63](https://github.com/nrkno/tv-automation-server-core/commit/8124c63f39bdf413fbae45e6ff02b32881b49e12))
+* expected-packages pub should still publish data when there are no expectedPackages ([fb5dd25](https://github.com/nrkno/tv-automation-server-core/commit/fb5dd25593de638fb5f69f371dc70603ad336011))
+* expectedPackages: add seekTime property for thumbnail generation ([baa551d](https://github.com/nrkno/tv-automation-server-core/commit/baa551d8334746138bbc667ae5e385d4ca7bd96f))
+* expose multiple lookahead objects for onTimelineGenerate in WHEN_CLEAR mode ([7f291bf](https://github.com/nrkno/tv-automation-server-core/commit/7f291bfac8ab149b1a012286b953dbdfa7b7ae40))
+* handle floating promises ([492fd9f](https://github.com/nrkno/tv-automation-server-core/commit/492fd9fd3e7414095e5a78bde1d9693ae97c8d42))
+* improve wording in notification for unsynced rundown ([a1980f9](https://github.com/nrkno/tv-automation-server-core/commit/a1980f98ea13bf908dabefb26ffbe7ce595ba6ee))
+* load reset previous partinstance and pieceinstances for playout operations ([531785c](https://github.com/nrkno/tv-automation-server-core/commit/531785ca06aa4238185a644c6aee133ff33a86be))
+* make rundownShelfLayoutSelection work again ([8442ed7](https://github.com/nrkno/tv-automation-server-core/commit/8442ed76b7a847ab89a6482cd0a1fa8b471651e9))
+* make sideEffects be reactive on the publication as fallback/default, while allowing blueprints to set the sideEffects as well. ([aeb2be7](https://github.com/nrkno/tv-automation-server-core/commit/aeb2be704866904c5552bc43f62d6479ef9ae7e4))
+* merge MappedDrive into FileShare, they will configured as the same thing ([852c5ea](https://github.com/nrkno/tv-automation-server-core/commit/852c5ea4544e3a06f0c8b3bcbd3646c8df5d85fd))
+* minor fixes ([2f66298](https://github.com/nrkno/tv-automation-server-core/commit/2f66298b021f4366e1f1c796bbb53127484db035))
+* more todos ([5db7db6](https://github.com/nrkno/tv-automation-server-core/commit/5db7db6a019409027b0e70e4ed5edc5043b4c5f6))
+* move PackageContainerPackageStatus to blueprint-integration ([ebe3b3f](https://github.com/nrkno/tv-automation-server-core/commit/ebe3b3fe373791d302d51d1a13a5d597f8324e5a))
+* move Rundown.startedPlayback to RundownPlaylist to avoid mutating Rundown in playout logic ([eafc08b](https://github.com/nrkno/tv-automation-server-core/commit/eafc08b012d77e30c9b97abc45cdf6911ee9b0bc))
+* move updateExpectedPlayoutItemsOnRundown ([7a5541f](https://github.com/nrkno/tv-automation-server-core/commit/7a5541f45dabab511f9c38e20dd88bc917c9b300))
+* package management: continued implementations ([9a23581](https://github.com/nrkno/tv-automation-server-core/commit/9a23581c2335df6587dd95d9e9f16afd2b3b45e5))
+* package manager: improve publication, stub support for device location ([8a1ae77](https://github.com/nrkno/tv-automation-server-core/commit/8a1ae774fde5418951ee2080f0921cc4888575a2))
+* package: add Studio.packageOrigins ([16a3e12](https://github.com/nrkno/tv-automation-server-core/commit/16a3e12106824dcb7fdec9f72c9a7d593b9352c2))
+* package: type updates, add locations ([e393b22](https://github.com/nrkno/tv-automation-server-core/commit/e393b221affc8b6994c5dceaee88ec5456147afb))
+* packages: types for quantel ([fccf190](https://github.com/nrkno/tv-automation-server-core/commit/fccf190c966835ebde21a5b5a35f21f22a55bbfd))
+* pieceInstance start: 'now' not getting updated to concrete time ([d599cb8](https://github.com/nrkno/tv-automation-server-core/commit/d599cb8f6032ae9ac679c7226146fb793da005ba))
+* proper handling of publication when studioId is not set on device ([e0d8683](https://github.com/nrkno/tv-automation-server-core/commit/e0d8683aa756d6ed8bd65da1adc42e5c555c5843))
+* reimplement lockFunction priorities ([5539eb4](https://github.com/nrkno/tv-automation-server-core/commit/5539eb4ccc34f57ab8733a23e13859c01f33b274))
+* remaining tests ([c97f9c1](https://github.com/nrkno/tv-automation-server-core/commit/c97f9c1e2f3a711b36bb652dba75ef3e1362971c))
+* remove RundownPlaylist.peripheralDeviceId ([158ac3a](https://github.com/nrkno/tv-automation-server-core/commit/158ac3a7cb70149c2fc9f71cbc8e338e03fe5aed))
+* remove unused properties [publish] ([115ede6](https://github.com/nrkno/tv-automation-server-core/commit/115ede6d3e9a947eea788c7290b5757b9cb38e26))
+* replace compareObjs with _.isEqual. This makes all our deep comparisons for db collections to be the same ([b63725c](https://github.com/nrkno/tv-automation-server-core/commit/b63725c55c67e6cef46e88fc4a5e495eb38156f8))
+* reset previous segment during autonext ([2085dbb](https://github.com/nrkno/tv-automation-server-core/commit/2085dbba03d9f04e1faab5f744d48b73e45e6f68))
+* return an enum instead of undefined to trigger a delete ([493b2b9](https://github.com/nrkno/tv-automation-server-core/commit/493b2b9cf68b57944b3c9d1b4d1dc9120e02b040))
+* RundownLayoutEditor has wrong widgets for Dashboard panels ([3209a76](https://github.com/nrkno/tv-automation-server-core/commit/3209a7604ad31d07c96cc22c60729d8c3aae9a5d))
+* single button activation on streamdecks ([1690396](https://github.com/nrkno/tv-automation-server-core/commit/16903968d2a412ae4bf121853fe89aac7aef8b16))
+* some tests ([4fb8699](https://github.com/nrkno/tv-automation-server-core/commit/4fb869920b5aa572788e412255da3ebf94d0b43c))
+* SplitDropdown prints key errors ([136fe0e](https://github.com/nrkno/tv-automation-server-core/commit/136fe0ee1cd5f937eedf55ba62af15bfc7917a0f))
+* stronger typing for Mapping.deviceId ([ebd6b2a](https://github.com/nrkno/tv-automation-server-core/commit/ebd6b2a7d6dd042718edaf787cec270b7b6993d7))
+* tidy up ingest data cache usage ([d0430a0](https://github.com/nrkno/tv-automation-server-core/commit/d0430a07a379f877c7bf36d27b60e8c200694692))
+* tidy up some todos ([8040363](https://github.com/nrkno/tv-automation-server-core/commit/8040363e693b712c5a71dd5f5a36c37b5ae1739c))
+* types: package origins: add HTTP interface ([3bb36fa](https://github.com/nrkno/tv-automation-server-core/commit/3bb36fa8d4ea7dbcb73014ad9ded596e9de19cff))
+* typings ([9cdfadc](https://github.com/nrkno/tv-automation-server-core/commit/9cdfadc3c5203287b6e17fac88fa2ba73f9199ff))
+* typings and safety around manual playlist contents ordering ([7c1df4e](https://github.com/nrkno/tv-automation-server-core/commit/7c1df4ef8f838f39e62a42c8eabddd381f64ecd6))
+* typings fixes ([0721e16](https://github.com/nrkno/tv-automation-server-core/commit/0721e16b58ef0c032bc0d5bce7b6c563c133f550))
+* typo ([d7e6aca](https://github.com/nrkno/tv-automation-server-core/commit/d7e6aca852a2aebed0044f126b612234a01544e2))
+* update expectedPackages via ingest-cache not directly to the db ([daab561](https://github.com/nrkno/tv-automation-server-core/commit/daab561bbbe3bcd3893f85741db20a7338648c72))
+* use ReactiveStore for PackageContainerPackageStatuses ([117d92b](https://github.com/nrkno/tv-automation-server-core/commit/117d92b02bd86fe6ad07b0dc9abcb0efa3eee4f8))
+* waitForPromise 'cb is undefined' ([4266910](https://github.com/nrkno/tv-automation-server-core/commit/4266910987a8164a370389eddfcaaaf709979e1a))
+
 ## [1.32.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0...v1.32.0-in-testing.0) (2021-03-22)
 
 
