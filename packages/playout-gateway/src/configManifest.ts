@@ -542,14 +542,14 @@ const MAPPING_MANIFEST: MappingsManifest = {
 			type: ConfigManifestEntryType.STRING,
 			name: 'Index',
 			includeInSummary: true,
-			optional: true
+			optional: true,
 		},
 		{
 			id: 'inputLayer',
 			type: ConfigManifestEntryType.STRING,
 			name: 'Input Layer',
 			includeInSummary: true,
-			optional: true
+			optional: true,
 		},
 	],
 }
