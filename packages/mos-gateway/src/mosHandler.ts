@@ -23,7 +23,7 @@ import {
 } from 'mos-connection'
 import * as _ from 'underscore'
 import * as Winston from 'winston'
-import { CoreHandler } from './coreHandler'
+import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
 import { CollectionObj } from '@sofie-automation/server-core-integration'
 
 // export interface MosOptions {
@@ -68,7 +68,7 @@ export class MosHandler {
 	public mosOptions: MosConfig
 	public debugLogging: boolean = false
 
-	private allMosDevices: {[id: string]: IMOSDevice} = {}
+	private allMosDevices: {[id: string]: {mosDevice: IMOSDevice, coreMosHandler?: CoreMosDeviceHandler}} = {}
 	private _ownMosDevices: {[deviceId: string]: MosDevice} = {}
 	private _logger: Winston.LoggerInstance
 	private _disposed: boolean = false
@@ -109,7 +109,9 @@ export class MosHandler {
 		})
 		.then(() => {
 			this._coreHandler.onConnected(() => {
+				// This is called whenever a connection to Core has been (re-)established
 				this.setupObservers()
+				this.sendStatusOfAllMosDevices()
 			})
 			this.setupObservers()
 
@@ -231,12 +233,14 @@ export class MosHandler {
 			// a new connection to a device has been made
 			this._logger.info('new mosConnection established: ' + mosDevice.idPrimary + ', ' + mosDevice.idSecondary)
 
-			this.allMosDevices[mosDevice.idPrimary] = mosDevice
+			this.allMosDevices[mosDevice.idPrimary] = { mosDevice: mosDevice }
 
 			return this._coreHandler.registerMosDevice(mosDevice, this)
 			.then((coreMosHandler) => {
 				// this._logger.info('mosDevice registered -------------')
 				// Setup message flow between the devices:
+
+				this.allMosDevices[mosDevice.idPrimary].coreMosHandler = coreMosHandler
 
 				// Initial Status check:
 				let connectionStatus = mosDevice.getConnectionStatus()
@@ -341,6 +345,14 @@ export class MosHandler {
 		.then(() => {
 			return
 		})
+	}
+	private sendStatusOfAllMosDevices () {
+		// Send an update to Core of the status of all mos devices
+		for (const handler of Object.values(this.allMosDevices)) {
+			if (handler.coreMosHandler) {
+				handler.coreMosHandler.onMosConnectionChanged(handler.mosDevice.getConnectionStatus())
+			}
+		}
 	}
 	private getThisPeripheralDevice (): CollectionObj | undefined {
 		let peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
