@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { PeripheralDevice, PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { getCurrentTime, waitForPromise } from '../../../lib/lib'
+import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { getCurrentTime, unprotectString, waitForPromise } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
@@ -12,7 +12,7 @@ import {
 	LocalIngestRundown,
 	makeNewIngestSegment,
 	makeNewIngestPart,
-	makeNewIngestRundown,
+	makeNewIngestRundown
 } from './ingestCache'
 import {
 	getSegmentId,
@@ -20,12 +20,13 @@ import {
 	canRundownBeUpdated,
 	canSegmentBeUpdated,
 	checkAccessAndGetPeripheralDevice,
-	getRundown,
+	getRundown
 } from './lib'
 import { MethodContext } from '../../../lib/api/methods'
 import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownAction } from './lockFunction'
 import { CacheForIngest } from './cache'
 import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
+import { removeRundownsFromDb } from '../rundownPlaylist'
 
 export namespace RundownInput {
 	// Get info on the current rundowns from this device:
@@ -196,7 +197,7 @@ export namespace RundownInput {
 function getIngestRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string): IngestRundown {
 	const rundown = Rundowns.findOne({
 		peripheralDeviceId: peripheralDevice._id,
-		externalId: rundownExternalId,
+		externalId: rundownExternalId
 	})
 	if (!rundown) {
 		throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
@@ -215,7 +216,7 @@ function getIngestSegment(
 ): IngestSegment {
 	const rundown = Rundowns.findOne({
 		peripheralDeviceId: peripheralDevice._id,
-		externalId: rundownExternalId,
+		externalId: rundownExternalId
 	})
 	if (!rundown) {
 		throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
@@ -223,7 +224,7 @@ function getIngestSegment(
 
 	const segment = Segments.findOne({
 		externalId: segmentExternalId,
-		rundownId: rundown._id,
+		rundownId: rundown._id
 	})
 
 	if (!segment) {
@@ -241,7 +242,7 @@ function getIngestSegment(
 }
 function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
 	const rundowns = Rundowns.find({
-		peripheralDeviceId: peripheralDevice._id,
+		peripheralDeviceId: peripheralDevice._id
 	}).fetch()
 
 	return rundowns.map((r) => r.externalId)
@@ -252,7 +253,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 
 	return handleRemovedRundownFromStudio(studio._id, rundownExternalId)
 }
-export function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: string, forceDelete?: boolean) {
+function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: string, forceDelete?: boolean) {
 	return runIngestOperationWithCache(
 		'handleRemovedRundown',
 		studioId,
@@ -271,11 +272,20 @@ export function handleRemovedRundownFromStudio(studioId: StudioId, rundownExtern
 				removeRundown: forceDelete || canRundownBeUpdated(rundown, false),
 
 				showStyle: undefined,
-				blueprint: undefined,
+				blueprint: undefined
 			}
 		}
 	)
 }
+export function handleRemovedRundownByRundown(rundown: DBRundown, forceDelete?: boolean) {
+	if (rundown.restoredFromSnapshotId) {
+		// It's from a snapshot, so should be removed directly, as that means it cannot run ingest operations
+		waitForPromise(removeRundownsFromDb([rundown._id]))
+	} else {
+		handleRemovedRundownFromStudio(rundown.studioId, rundown.externalId, forceDelete)
+	}
+}
+
 /** Handle an updated (or inserted) Rundown */
 export function handleUpdatedRundown(
 	studio0: Studio | undefined,
@@ -354,7 +364,7 @@ export function regenerateRundown(
 				(cache.Rundown.doc?.peripheralDeviceId
 					? PeripheralDevices.findOne({
 							_id: cache.Rundown.doc.peripheralDeviceId,
-							studioId: cache.Studio.doc._id,
+							studioId: cache.Studio.doc._id
 					  })
 					: undefined)
 
@@ -410,7 +420,7 @@ export function handleRemovedSegment(
 					removeRundown: false,
 
 					showStyle: undefined,
-					blueprint: undefined,
+					blueprint: undefined
 				}
 			}
 		}
@@ -479,8 +489,8 @@ export function handleUpdatedSegmentRanks(
 				const segmentId = getSegmentId(cache.RundownId, externalId)
 				const changed = cache.Segments.update(segmentId, {
 					$set: {
-						_rank: rank,
-					},
+						_rank: rank
+					}
 				})
 
 				if (changed.length === 0) {
@@ -497,7 +507,7 @@ export function handleUpdatedSegmentRanks(
 				removeRundown: false,
 
 				showStyle: undefined,
-				blueprint: undefined,
+				blueprint: undefined
 			}
 		}
 	)

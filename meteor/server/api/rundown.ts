@@ -12,7 +12,7 @@ import {
 	waitForPromiseObj,
 	normalizeArray,
 	normalizeArrayToMap,
-	clone,
+	clone
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
@@ -21,7 +21,7 @@ import {
 	ShowStyleVariants,
 	ShowStyleVariant,
 	ShowStyleVariantId,
-	ShowStyleCompound,
+	ShowStyleCompound
 } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
@@ -37,18 +37,18 @@ import { StudioContentWriteAccess } from '../security/studio'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
-import { handleRemovedRundownFromStudio } from './ingest/rundownInput'
+import { handleRemovedRundownByRundown } from './ingest/rundownInput'
 import {
 	moveRundownIntoPlaylist,
 	removeRundownPlaylistFromDb,
-	restoreRundownsInPlaylistToDefaultOrder,
+	restoreRundownsInPlaylistToDefaultOrder
 } from './rundownPlaylist'
 import { StudioUserContext } from './blueprints/context'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
 import { CacheForPlayout } from './playout/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithLock } from './playout/lockFunction'
-import { runIngestOperationWithLock } from './ingest/lockFunction'
+import { runIngestOperationFromRundown } from './ingest/lockFunction'
 import { getRundown } from './ingest/lib'
 import { asyncCollectionFindFetch } from '../lib/database'
 import { createShowStyleCompound } from './showStyles'
@@ -64,7 +64,7 @@ export function selectShowStyleVariant(
 		return null
 	}
 	const showStyleBases = ShowStyleBases.find({
-		_id: { $in: clone<Array<ShowStyleBaseId>>(studio.supportedShowStyleBase) },
+		_id: { $in: clone<Array<ShowStyleBaseId>>(studio.supportedShowStyleBase) }
 	}).fetch()
 	let showStyleBase = _.first(showStyleBases)
 	if (!showStyleBase) {
@@ -122,7 +122,7 @@ export function selectShowStyleVariant(
 		return {
 			variant: showStyleVariant,
 			base: showStyleBase,
-			compound,
+			compound
 		}
 	}
 }
@@ -160,13 +160,13 @@ export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments:
 	const groupedPartInstances = _.groupBy(
 		cache.PartInstances.findFetch({
 			reset: { $ne: true },
-			segmentId: { $in: changedSegments.map((s) => s.segmentId) },
+			segmentId: { $in: changedSegments.map((s) => s.segmentId) }
 		}),
 		(p) => p.segmentId
 	)
 	const groupedNewParts = _.groupBy(
 		cache.Parts.findFetch({
-			segmentId: { $in: changedSegments.map((s) => s.segmentId) },
+			segmentId: { $in: changedSegments.map((s) => s.segmentId) }
 		}),
 		(p) => p.segmentId
 	)
@@ -187,11 +187,11 @@ export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments:
 				// We have a part and instance, so make sure the part isn't orphaned and sync the rank
 				cache.PartInstances.update(partInstance._id, {
 					$set: {
-						'part._rank': part._rank,
+						'part._rank': part._rank
 					},
 					$unset: {
-						orphaned: 1,
-					},
+						orphaned: 1
+					}
 				})
 
 				// Update local copy
@@ -201,8 +201,8 @@ export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments:
 				partInstance.orphaned = 'deleted'
 				cache.PartInstances.update(partInstance._id, {
 					$set: {
-						orphaned: 'deleted',
-					},
+						orphaned: 'deleted'
+					}
 				})
 			}
 		}
@@ -324,30 +324,25 @@ export namespace ServerRundownAPI {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 
-		handleRemovedRundownFromStudio(access.rundown.studioId, access.rundown.externalId, true)
+		handleRemovedRundownByRundown(access.rundown, true)
 	}
 
 	export function unsyncRundown(context: MethodContext, rundownId: RundownId): void {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 
-		runIngestOperationWithLock(
-			'unsyncRundown',
-			access.rundown.studioId,
-			access.rundown.externalId,
-			async (cache) => {
-				const rundown = getRundown(cache)
-				if (!rundown.orphaned) {
-					cache.Rundown.update({
-						$set: {
-							orphaned: 'deleted',
-						},
-					})
-				} else {
-					logger.info(`Rundown "${rundownId}" was already unsynced`)
-				}
+		runIngestOperationFromRundown('unsyncRundown', access.rundown, async (cache) => {
+			const rundown = getRundown(cache)
+			if (!rundown.orphaned) {
+				cache.Rundown.update({
+					$set: {
+						orphaned: 'deleted'
+					}
+				})
+			} else {
+				logger.info(`Rundown "${rundownId}" was already unsynced`)
 			}
-		)
+		})
 	}
 	/** Resync all rundowns in a rundownPlaylist */
 	export function resyncRundownPlaylist(
@@ -364,9 +359,9 @@ export namespace ServerRundownAPI {
 				.map((rundown) => {
 					return {
 						rundownId: rundown._id,
-						response: innerResyncRundown(rundown),
+						response: innerResyncRundown(rundown)
 					}
-				}),
+				})
 		}
 		return response
 	}
@@ -461,14 +456,14 @@ export namespace ClientRundownAPI {
 		// Load all variants/compounds
 		const { showStyleBases, showStyleVariants } = waitForPromiseObj({
 			showStyleBases: asyncCollectionFindFetch(ShowStyleBases, {
-				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleBaseId) },
+				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleBaseId) }
 			}),
 			showStyleVariants: asyncCollectionFindFetch(ShowStyleVariants, {
-				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleVariantId) },
-			}),
+				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleVariantId) }
+			})
 		})
 		const showStyleBlueprints = Blueprints.find({
-			_id: { $in: _.uniq(_.compact(showStyleBases.map((c) => c.blueprintId))) },
+			_id: { $in: _.uniq(_.compact(showStyleBases.map((c) => c.blueprintId))) }
 		}).fetch()
 
 		const showStyleBasesMap = normalizeArray(showStyleBases, '_id')
@@ -487,7 +482,7 @@ export namespace ClientRundownAPI {
 							rundown.showStyleVariantId
 						}`,
 						checkFailed: true,
-						fields: [],
+						fields: []
 					}
 				}
 
@@ -499,7 +494,7 @@ export namespace ClientRundownAPI {
 							rundown.showStyleVariantId
 						}`,
 						checkFailed: true,
-						fields: [],
+						fields: []
 					}
 				}
 
@@ -509,14 +504,14 @@ export namespace ClientRundownAPI {
 						id: id,
 						name: compound.name,
 						checkFailed: true,
-						fields: [],
+						fields: []
 					}
 				} else {
 					return {
 						id: id,
 						name: compound.name,
 						checkFailed: false,
-						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig),
+						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig)
 					}
 				}
 			}
@@ -524,7 +519,7 @@ export namespace ClientRundownAPI {
 
 		return {
 			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studio.blueprintConfig),
-			showStyles: showStyleWarnings,
+			showStyles: showStyleWarnings
 		}
 	}
 }

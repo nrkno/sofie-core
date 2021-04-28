@@ -15,12 +15,12 @@ import {
 	defaultSegment,
 	defaultPart,
 	defaultPiece,
-	defaultAdLibPiece,
+	defaultAdLibPiece
 	// } from '../../../__mocks__/defaultCollectionObjects'
 	// import { updateExpectedPackagesOnRundown } from '../expectedPackages'
 	// import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 } from '../../../../__mocks__/defaultCollectionObjects'
-import { runIngestOperationWithLock } from '../lockFunction'
+import { runIngestOperationFromRundown } from '../lockFunction'
 import { updateExpectedPackagesOnRundown } from '../expectedPackages'
 import { ExpectedPackages } from '../../../../lib/collections/ExpectedPackages'
 import { DBRundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
@@ -56,16 +56,16 @@ describe('Expected Media Items', () => {
 			contentVersionHash: 'abc',
 			type: ExpectedPackage.PackageType.MEDIA_FILE,
 			content: {
-				filePath: filePath,
+				filePath: filePath
 			},
 			version: {},
 			sources: [
 				{
 					containerId: 'source0',
-					accessors: {},
-				},
+					accessors: {}
+				}
 			],
-			sideEffect: {},
+			sideEffect: {}
 		})
 	}
 
@@ -78,7 +78,7 @@ describe('Expected Media Items', () => {
 			// currentPartInstanceId: protectString(''),
 			// previousPartInstanceId: protectString(''),
 			// nextPartInstanceId: protectString(''),
-			activationId: protectString('active'),
+			activationId: protectString('active')
 		})
 
 		const rd = literal<DBRundown>({
@@ -89,20 +89,20 @@ describe('Expected Media Items', () => {
 				rplId,
 				env.showStyleBase._id,
 				env.showStyleVariant._id
-			),
+			)
 		})
 		Rundowns.insert(rd)
 		Segments.insert(
 			literal<DBSegment>({
 				...defaultSegment(getRandomId(), rd._id),
-				_rank: 1,
+				_rank: 1
 			})
 		)
 		Parts.insert(
 			literal<DBPart>({
 				...defaultPart(protectString(rdId + '_' + mockPart0), rd._id, protectString('')),
 				_rank: 1,
-				title: '',
+				title: ''
 			})
 		)
 		Pieces.insert(
@@ -123,9 +123,9 @@ describe('Expected Media Items', () => {
 					path: mockPath0,
 					mediaFlowIds: [mockFlow0, mockFlow1],
 					sourceDuration: 0,
-					timelineObjects: [],
+					timelineObjects: []
 				}),
-				expectedPackages: [getExpectedPackage('id0', mockPath0), getExpectedPackage('id1', mockPath0)],
+				expectedPackages: [getExpectedPackage('id0', mockPath0), getExpectedPackage('id1', mockPath0)]
 			})
 		)
 		Parts.insert(
@@ -133,7 +133,7 @@ describe('Expected Media Items', () => {
 				...defaultPart(protectString(rdId + '_' + mockPart1), rd._id, protectString('')),
 				_rank: 1,
 				externalId: '',
-				title: '',
+				title: ''
 			})
 		)
 		Pieces.insert(
@@ -154,9 +154,9 @@ describe('Expected Media Items', () => {
 					path: mockPath1,
 					mediaFlowIds: [mockFlow0],
 					sourceDuration: 0,
-					timelineObjects: [],
+					timelineObjects: []
 				}),
-				expectedPackages: [getExpectedPackage('id0', mockPath1)],
+				expectedPackages: [getExpectedPackage('id0', mockPath1)]
 			})
 		)
 		AdLibPieces.insert(
@@ -178,9 +178,9 @@ describe('Expected Media Items', () => {
 					path: mockPath1,
 					mediaFlowIds: [mockFlow0],
 					sourceDuration: 0,
-					timelineObjects: [],
+					timelineObjects: []
 				}),
-				expectedPackages: [getExpectedPackage('id0', mockPath1)],
+				expectedPackages: [getExpectedPackage('id0', mockPath1)]
 			})
 		)
 		return rd._id
@@ -193,20 +193,21 @@ describe('Expected Media Items', () => {
 
 	describe('Based on a Rundown', () => {
 		testInFiber('Generates ExpectedPackages(/ExpectedMediaItems) based on a Rundown', () => {
-			runIngestOperationWithLock('test', env.studio._id, rdExtId0, async (cache) =>
-				updateExpectedPackagesOnRundown(cache)
-			)
+			const rundown = Rundowns.findOne(rdId0) as DBRundown
+			expect(rundown).toBeTruthy()
+
+			runIngestOperationFromRundown('test', rundown, async (cache) => updateExpectedPackagesOnRundown(cache))
 
 			const packages = ExpectedPackages.find({
 				rundownId: rdId0,
-				studioId: env.studio._id,
+				studioId: env.studio._id
 			}).fetch()
 			expect(packages).toHaveLength(4)
 
 			// to be deprecated:
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId0,
-				studioId: env.studio._id,
+				studioId: env.studio._id
 			}).fetch()
 			expect(items).toHaveLength(4)
 		})

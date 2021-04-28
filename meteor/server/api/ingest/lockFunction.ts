@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { PartId } from '../../../lib/collections/Parts'
+import { DBRundown } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { StudioId } from '../../../lib/collections/Studios'
@@ -38,7 +39,7 @@ export interface CommitIngestData {
 }
 
 export enum UpdateIngestRundownAction {
-	DELETE = 'delete',
+	DELETE = 'delete'
 }
 
 /**
@@ -125,12 +126,23 @@ export function runIngestOperationWithCache(
  * @param fcn Function to run while holding the lock
  * @param playlistLock If the playlist lock is already held, supply it here to avoid trying to reaquire the lock
  */
-export function runIngestOperationWithLock(
+export function runIngestOperationFromRundown(
 	context: string,
-	studioId: StudioId,
-	rundownExternalId: string,
+	refRundown: DBRundown,
 	fcn: (ingestCache: CacheForIngest) => Promise<void>
 ): void {
+	const refRundownId = refRundown._id
+	const studioId = refRundown.studioId
+	const rundownExternalId = refRundown.externalId
+
+	const targetRundownId = getRundownId(studioId, rundownExternalId)
+	if (targetRundownId !== refRundownId) {
+		throw new Meteor.Error(
+			500,
+			`Rundown id cannot run ingest operations, as it's _id "${refRundownId}" does not match the expected "${targetRundownId}". Perhaps it was restored from a snapshot?`
+		)
+	}
+
 	return ingestLockFunctionInner(context, rundownExternalId, async () => {
 		const ingestCache = await CacheForIngest.create(studioId, rundownExternalId)
 		const beforeRundown = getRundown(ingestCache)
