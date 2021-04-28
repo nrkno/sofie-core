@@ -12,7 +12,7 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { logger } from '../../logging'
 import { waitForPromise } from '../../../lib/lib'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
-import { runIngestOperationWithLock } from './lockFunction'
+import { runIngestOperationFromRundown } from './lockFunction'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
 
 if (!Settings.enableUserAccounts) {
@@ -48,19 +48,15 @@ if (!Settings.enableUserAccounts) {
 		debug_recreateExpectedMediaItems() {
 			const rundowns = Rundowns.find().fetch()
 
-			rundowns.map((rundown) => {
-				runIngestOperationWithLock('', rundown.studioId, rundown.externalId, async (cache) =>
-					updateExpectedMediaItemsOnRundown(cache)
-				)
+			rundowns.forEach((rundown) => {
+				runIngestOperationFromRundown('', rundown, async (cache) => updateExpectedMediaItemsOnRundown(cache))
 			})
 		},
 		debug_recreateExpectedPackages() {
 			const rundowns = Rundowns.find().fetch()
 
-			rundowns.map((rundown) => {
-				runIngestOperationWithLock('', rundown.studioId, rundown.externalId, async (cache) =>
-					updateExpectedPackagesOnRundown(cache)
-				)
+			rundowns.forEach((rundown) => {
+				runIngestOperationFromRundown('', rundown, async (cache) => updateExpectedPackagesOnRundown(cache))
 			})
 		},
 	})

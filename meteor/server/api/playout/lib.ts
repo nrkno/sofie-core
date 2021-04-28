@@ -475,7 +475,10 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 	// We need to run this outside of the current lock, and within an ingest lock, so defer to the work queue
 	for (const [rundownId, candidateSegmentIds] of removeSegmentsFromRundowns) {
 		const rundown = cache.Rundowns.findOne(rundownId)
-		if (rundown) {
+		if (rundown?.restoredFromSnapshotId) {
+			// This is not valid as the rundownId won't match the externalId, so ingest will fail
+			// For now do nothing
+		} else if (rundown) {
 			Meteor.defer(() => {
 				runIngestOperationWithCache(
 					'cleanupOrphanedItems:defer',
@@ -484,7 +487,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 					(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
 					async (ingestCache) => {
 						// Find the segments that are still orphaned (in case they have resynced before this executes)
-						// We flag them for deletion again, and they will either be kept if they are someone playing, or purged if they are not
+						// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
 						const stillOrphanedSegments = ingestCache.Segments.findFetch(
 							(s) => s.orphaned === 'deleted' && candidateSegmentIds.includes(s._id)
 						)
