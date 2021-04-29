@@ -38,7 +38,6 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	const playlistActivationId = cache.Playlist.doc.activationId
 
 	let timeOffset: number | null = cache.Playlist.doc.nextTimeOffset || null
-	const isFirstTake = !cache.Playlist.doc.startedPlayback
 
 	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
 
@@ -48,6 +47,9 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	const currentRundown = partInstance ? cache.Rundowns.findOne(partInstance.rundownId) : undefined
 	if (!currentRundown)
 		throw new Meteor.Error(404, `Rundown "${(partInstance && partInstance.rundownId) || ''}" could not be found!`)
+
+	// it is only a first take if the Playlist has no startedPlayback and the taken PartInstance is not untimed
+	const isFirstTake = !cache.Playlist.doc.startedPlayback && !partInstance.part.untimed
 
 	const pShowStyle = cache.activationCache.getShowStyleCompound(currentRundown)
 	const pBlueprint = pShowStyle.then((s) => loadShowStyleBlueprint(s))
