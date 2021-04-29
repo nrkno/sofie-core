@@ -81,8 +81,9 @@ export default function ShelfContextMenu() {
 		onToggle: (adLib: T, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => void
 	}) {
 		if (isActionItem(item.adLib)) {
-			const triggerModes = getActionItem(item.adLib)
-				?.triggerModes?.sort(
+			const adLibAction = getActionItem(item.adLib)
+			const triggerModes = adLibAction?.triggerModes
+				?.sort(
 					(a, b) =>
 						a.display._rank - b.display._rank ||
 						translateMessage(a.display.label, t).localeCompare(translateMessage(b.display.label, t))
@@ -95,7 +96,7 @@ export default function ShelfContextMenu() {
 							item.onToggle(item.adLib, false, e, mode)
 						}}
 					>
-						{t(mode.display.label.key, mode.display.label.args)}
+						{translateMessage(mode.display.label, t)}
 					</MenuItem>
 				))
 			return (
@@ -106,7 +107,8 @@ export default function ShelfContextMenu() {
 							item.onToggle(item.adLib, false, e)
 						}}
 					>
-						{t('Execute')}
+						{(adLibAction?.display.triggerLabel && translateMessage(adLibAction?.display.triggerLabel, t)) ??
+							t('Execute')}
 					</MenuItem>
 				)
 			)
