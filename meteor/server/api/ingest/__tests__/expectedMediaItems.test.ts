@@ -20,7 +20,7 @@ import {
 	// import { updateExpectedPackagesOnRundown } from '../expectedPackages'
 	// import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 } from '../../../../__mocks__/defaultCollectionObjects'
-import { runIngestOperationWithLock } from '../lockFunction'
+import { runIngestOperationFromRundown } from '../lockFunction'
 import { updateExpectedPackagesOnRundown } from '../expectedPackages'
 import { ExpectedPackages } from '../../../../lib/collections/ExpectedPackages'
 import { DBRundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
@@ -193,9 +193,10 @@ describe('Expected Media Items', () => {
 
 	describe('Based on a Rundown', () => {
 		testInFiber('Generates ExpectedPackages(/ExpectedMediaItems) based on a Rundown', () => {
-			runIngestOperationWithLock('test', env.studio._id, rdExtId0, async (cache) =>
-				updateExpectedPackagesOnRundown(cache)
-			)
+			const rundown = Rundowns.findOne(rdId0) as DBRundown
+			expect(rundown).toBeTruthy()
+
+			runIngestOperationFromRundown('test', rundown, async (cache) => updateExpectedPackagesOnRundown(cache))
 
 			const packages = ExpectedPackages.find({
 				rundownId: rdId0,
