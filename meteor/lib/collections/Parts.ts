@@ -74,6 +74,7 @@ export class Part implements DBPart {
 		message: ITranslatableMessage
 		color?: string
 	}
+	public untimed?: boolean
 	public floated?: boolean
 	public gap?: boolean
 	// From IBlueprintPartDB:
