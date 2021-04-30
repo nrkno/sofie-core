@@ -381,8 +381,7 @@ export interface DefaultEnvironment {
 
 	ingestDevice: PeripheralDevice
 }
-export function setupDefaultStudioEnvironment(organizationId?: OrganizationId | null): DefaultEnvironment {
-	organizationId = organizationId || null
+export function setupDefaultStudioEnvironment(organizationId: OrganizationId | null = null): DefaultEnvironment {
 	const core = setupMockCore({})
 
 	const showStyleBaseId: ShowStyleBaseId = getRandomId()
