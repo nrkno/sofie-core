@@ -49,11 +49,11 @@ export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
 const SIMULATED_PLAYBACK_CROSSFADE_STEP = 0.02
 
 export const LIVE_LINE_TIME_PADDING = 150
-const LIVELINE_HISTORY_SIZE = 100
-const TIMELINE_RIGHT_PADDING =
+export const LIVELINE_HISTORY_SIZE = 100
+export const TIMELINE_RIGHT_PADDING =
 	// TODO: This is only temporary, for hands-on tweaking
 	parseInt(localStorage.getItem('EXP_timeline_right_padding')!) || LIVELINE_HISTORY_SIZE + LIVE_LINE_TIME_PADDING
-const MINIMUM_ZOOM_FACTOR =
+export const MINIMUM_ZOOM_FACTOR =
 	// TODO: This is only temporary, for hands-on tweaking
 	// parseInt(localStorage.getItem('EXP_timeline_min_time_scale')!) ||
 	MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale
@@ -638,14 +638,17 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		/** The user has scrolled scrollLeft seconds to the left in a child component */
 		onScroll = (scrollLeft: number, event: any) => {
 			this.setState({
-				scrollLeft: Math.min(
-					scrollLeft,
-					(computeSegmentDuration(
-						this.context.durations,
-						this.props.parts.map((i) => i.instance.part._id),
-						true
-					) || 1) -
-						LIVELINE_HISTORY_SIZE / this.state.timeScale
+				scrollLeft: Math.max(
+					0,
+					Math.min(
+						scrollLeft,
+						(computeSegmentDuration(
+							this.context.durations,
+							this.props.parts.map((i) => i.instance.part._id),
+							true
+						) || 1) -
+							LIVELINE_HISTORY_SIZE / this.state.timeScale
+					)
 				),
 				followLiveLine: false,
 			})
