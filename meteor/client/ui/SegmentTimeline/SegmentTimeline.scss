@@ -46,11 +46,9 @@ $timeline-layer-height: 1em;
 	contain: content style;
 
 	&.segment-timeline__timeline-container--grabbable {
-		cursor: grab;
-
-		&.segment-timeline__timeline-container--grabbed {
-			cursor: grabbing;
-		}
+		cursor: ew-resize;
+		cursor: url(/images/zoom_area_move.png), ew-resize;
+		cursor: url(/images/zoom_area_move.png) 25 25, ew-resize;
 	}
 
 	.segment-timeline__timeline {

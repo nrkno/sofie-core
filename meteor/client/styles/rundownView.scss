@@ -979,9 +979,7 @@ svg.icon {
 				bottom: 0;
 				width: 250px;
 				margin-left: -125px;
-				cursor: ew-resize;
-				cursor: url(/images/zoom_area_move.png), ew-resize;
-				cursor: url(/images/zoom_area_move.png) 23 17, ew-resize;
+				cursor: grab;
 				background: rgba(255, 255, 255, 0.2);
 				box-shadow: 0 0 6px rgba(255, 255, 255, 1);
 
