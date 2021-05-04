@@ -7,7 +7,7 @@ import {
 	protectString,
 	literal,
 	clone,
-	getRandomId
+	getRandomId,
 } from '../../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { setNextPart as libsetNextPart, isTooCloseToAutonext, selectNextPart, LOW_PRIO_DEFER_TIME } from './lib'
@@ -74,8 +74,8 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	if (cache.Playlist.doc.holdState === RundownHoldState.COMPLETE) {
 		cache.Playlist.update({
 			$set: {
-				holdState: RundownHoldState.NONE
-			}
+				holdState: RundownHoldState.NONE,
+			},
 		})
 		// If hold is active, then this take is to clear it
 	} else if (cache.Playlist.doc.holdState === RundownHoldState.ACTIVE) {
@@ -122,23 +122,23 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 			holdState:
 				!cache.Playlist.doc.holdState || cache.Playlist.doc.holdState === RundownHoldState.COMPLETE
 					? RundownHoldState.NONE
-					: cache.Playlist.doc.holdState + 1
-		}
+					: cache.Playlist.doc.holdState + 1,
+		},
 	})
 
 	cache.PartInstances.update(takePartInstance._id, {
 		$set: {
 			isTaken: true,
 			'timings.take': now,
-			'timings.playOffset': timeOffset || 0
-		}
+			'timings.playOffset': timeOffset || 0,
+		},
 	})
 
 	if (cache.Playlist.doc.previousPartInstanceId) {
 		cache.PartInstances.update(cache.Playlist.doc.previousPartInstanceId, {
 			$set: {
-				'timings.takeOut': now
-			}
+				'timings.takeOut': now,
+			},
 		})
 	}
 
@@ -176,8 +176,8 @@ export function resetPreviousSegmentAndClearNextSegmentId(cache: CacheForPlayout
 		// clear the nextSegmentId if the newly taken partInstance says it was selected because of it
 		cache.Playlist.update({
 			$unset: {
-				nextSegmentId: 1
-			}
+				nextSegmentId: 1,
+			},
 		})
 	}
 
@@ -193,14 +193,14 @@ export function resetPreviousSegmentAndClearNextSegmentId(cache: CacheForPlayout
 		const resetIds = new Set(
 			cache.PartInstances.update((p) => !p.reset && p.segmentId === segmentId, {
 				$set: {
-					reset: true
-				}
+					reset: true,
+				},
 			})
 		)
 		cache.PieceInstances.update((p) => resetIds.has(p.partInstanceId), {
 			$set: {
-				reset: true
-			}
+				reset: true,
+			},
 		})
 	}
 }
@@ -219,8 +219,8 @@ function afterTakeUpdateTimingsAndEvents(
 	if (takePartInstance) {
 		cache.PartInstances.update(takePartInstance._id, {
 			$set: {
-				'timings.takeDone': takeDoneTime
-			}
+				'timings.takeDone': takeDoneTime,
+			},
 		})
 
 		// Simulate playout, if no gateway
@@ -293,7 +293,7 @@ export function updatePartInstanceOnTake(
 				name: `${playlist.name}`,
 				identifier: `playlist=${playlist._id},currentPartInstance=${
 					currentPartInstance._id
-				},execution=${getRandomId()}`
+				},execution=${getRandomId()}`,
 			},
 			cache.Studio.doc,
 			showStyle,
@@ -314,8 +314,8 @@ export function updatePartInstanceOnTake(
 		$set: {
 			isTaken: true,
 			// set transition properties to what will be used to generate timeline later:
-			allowedToUseTransition: currentPartInstance && !currentPartInstance.part.disableOutTransition
-		}
+			allowedToUseTransition: currentPartInstance && !currentPartInstance.part.disableOutTransition,
+		},
 	}
 	if (previousPartEndState) {
 		partInstanceM.$set.previousPartEndState = previousPartEndState
@@ -383,9 +383,9 @@ function startHold(
 					infinite: {
 						infiniteInstanceId: infiniteInstanceId,
 						infinitePieceId: instance.piece._id,
-						fromPreviousPart: false
-					}
-				}
+						fromPreviousPart: false,
+					},
+				},
 			})
 
 			// make the extension
@@ -398,17 +398,17 @@ function startHold(
 				piece: {
 					...clone(instance.piece),
 					enable: { start: 0 },
-					extendOnHold: false
+					extendOnHold: false,
 				},
 				infinite: {
 					infiniteInstanceId: infiniteInstanceId,
 					infinitePieceId: instance.piece._id,
 					fromPreviousPart: true,
-					fromHold: true
+					fromHold: true,
 				},
 				// Preserve the timings from the playing instance
 				startedPlayback: instance.startedPlayback,
-				stoppedPlayback: instance.stoppedPlayback
+				stoppedPlayback: instance.stoppedPlayback,
 			})
 			const content = newInstance.piece.content as VTContent | undefined
 			if (content && content.fileName && content.sourceDuration && instance.startedPlayback) {
@@ -429,8 +429,8 @@ function completeHold(
 ) {
 	cache.Playlist.update({
 		$set: {
-			holdState: RundownHoldState.COMPLETE
-		}
+			holdState: RundownHoldState.COMPLETE,
+		},
 	})
 
 	if (cache.Playlist.doc.currentPartInstanceId) {

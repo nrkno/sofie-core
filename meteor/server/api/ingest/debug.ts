@@ -58,6 +58,6 @@ if (!Settings.enableUserAccounts) {
 			rundowns.forEach((rundown) => {
 				runIngestOperationFromRundown('', rundown, async (cache) => updateExpectedPackagesOnRundown(cache))
 			})
-		}
+		},
 	})
 }

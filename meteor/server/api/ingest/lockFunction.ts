@@ -39,7 +39,7 @@ export interface CommitIngestData {
 }
 
 export enum UpdateIngestRundownAction {
-	DELETE = 'delete'
+	DELETE = 'delete',
 }
 
 /**
