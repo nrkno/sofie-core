@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.19.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.19.0) (2021-05-04)
+
+
+### Bug Fixes
+
+* don't set CURRENT_SYSTEM_VERSION to pre-release version ([de63856](https://github.com/nrkno/tv-automation-server-core/commit/de638565703a9360c655a2dde8849a8e2e057d33))
+* issue with ensureCollectionProperty which didn't work when the value was set to "null" ([5cc9cbf](https://github.com/nrkno/tv-automation-server-core/commit/5cc9cbf683762b575d727fbb2566255f68fcc29a))
+
 ## [1.19.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0...v1.19.0-in-testing.2) (2021-04-12)
 
 ## [1.19.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.0...v1.19.0-in-testing.1) (2021-03-01)
