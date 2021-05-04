@@ -265,7 +265,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 				const config = configManifest.config[configManifest.defaultType || 'default']
 				const propNames = [
 					<th key="ID">ID</th>,
-					...config.map((o) => o.columnName).map((name) => (name ? <th key={name}>{name}</th> : undefined)),
+					...config.map((col) => (col.columnName ? <th key={col.id}>{col.columnName}</th> : undefined)),
 					<th key="action">&nbsp;</th>,
 				]
 
