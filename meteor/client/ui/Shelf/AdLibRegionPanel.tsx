@@ -14,6 +14,7 @@ import {
 	getNextPieceInstancesGrouped,
 	isAdLibOnAir,
 	isAdLibNext,
+	isAdLibDisplayedAsOnAir,
 } from './DashboardPanel'
 import ClassNames from 'classnames'
 import { AdLibPieceUi, IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, matchFilter } from './AdLibPanel'
@@ -58,6 +59,10 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 
 	isAdLibOnAir(adLib: AdLibPieceUi) {
 		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
+	}
+
+	isAdLibDisplayedAsOnAir(adLib: AdLibPieceUi) {
+		return isAdLibDisplayedAsOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
 	isAdLibNext(adLib: AdLibPieceUi) {
@@ -191,7 +196,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 				<div
 					className={ClassNames('adlib-region-panel__image-container', {
 						next: piece && this.isAdLibNext(piece),
-						'on-air': piece && this.isAdLibOnAir(piece),
+						'on-air': piece && this.isAdLibDisplayedAsOnAir(piece),
 						blackout: !!this.props.piece || (this.props.panel.showBlackIfNoThumbnailPiece && !this.getThumbnailUrl()),
 					})}>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>

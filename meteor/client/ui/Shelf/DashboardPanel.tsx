@@ -233,6 +233,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
+	isAdLibDisplayedAsOnAir(adLib: AdLibPieceUi) {
+		return isAdLibDisplayedAsOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
+	}
+
 	findNext(adLibs: AdLibPieceUi[]) {
 		return findNext(
 			this.props.nextAdLibIds,
@@ -614,7 +618,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 											outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
 											onToggleAdLib={filter.displayTakeButtons ? this.onSelectAdLib : this.onToggleAdLib}
 											playlist={this.props.playlist}
-											isOnAir={this.isAdLibOnAir(adLibPiece)}
+											isOnAir={this.isAdLibDisplayedAsOnAir(adLibPiece)}
 											isNext={adLibPiece.isNext}
 											mediaPreviewUrl={
 												this.props.studio
@@ -832,6 +836,15 @@ export function isAdLibOnAir(
 		return true
 	}
 	return false
+}
+
+export function isAdLibDisplayedAsOnAir(
+	unfinishedAdLibIds: IDashboardPanelTrackedProps['unfinishedAdLibIds'],
+	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
+	adLib: AdLibPieceUi
+) {
+	const isOnAir = isAdLibOnAir(unfinishedAdLibIds, unfinishedTags, adLib)
+	return adLib.invertOnAirState ? !isOnAir : isOnAir
 }
 
 export function isAdLibNext(

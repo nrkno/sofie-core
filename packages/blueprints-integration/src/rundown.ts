@@ -333,6 +333,8 @@ export interface IBlueprintAdLibPiece<TMetadata = unknown> extends IBlueprintPie
 	nextPieceTags?: string[]
 	/** Can be used by the UI to filter out identical AdLib Actions repeated across multiple segments */
 	uniquenessId?: string
+	/** When not playing, display in the UI as playing, and vice versa. Useful for Adlibs that toggle something off when taken */
+	invertOnAirState?: boolean
 }
 /** The AdLib piece sent from Core */
 export interface IBlueprintAdLibPieceDB<TMetadata = unknown> extends IBlueprintAdLibPiece<TMetadata> {

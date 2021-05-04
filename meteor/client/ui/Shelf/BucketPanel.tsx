@@ -37,6 +37,7 @@ import {
 	getUnfinishedPieceInstancesGrouped,
 	getNextPieceInstancesGrouped,
 	isAdLibOnAir,
+	isAdLibDisplayedAsOnAir,
 } from './DashboardPanel'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
@@ -429,6 +430,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLibPiece)
 				}
 
+				isAdLibDisplayedAsOnAir(adLib: AdLibPieceUi) {
+					return isAdLibDisplayedAsOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
+				}
+
 				onDragEnter = () => {
 					this.setState({
 						dropActive: true,
@@ -778,7 +783,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 													outputLayer={this.props.outputLayers[adlib.outputLayerId]}
 													onToggleAdLib={this.onToggleAdLib as any}
 													playlist={this.props.playlist}
-													isOnAir={this.isAdLibOnAir((adlib as any) as AdLibPieceUi)}
+													isOnAir={this.isAdLibDisplayedAsOnAir((adlib as any) as AdLibPieceUi)}
 													mediaPreviewUrl={
 														this.props.studio
 															? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
