@@ -407,6 +407,10 @@ body.tv2 {
 				background: var(--dve-lower) !important;
 			}
 		}
+
+		&.piece-tag--no_next_highlight.selected {
+			box-shadow: none;
+		}
 	}
 	.rundown-view {
 		.status-bar {
