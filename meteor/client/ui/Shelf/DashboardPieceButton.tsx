@@ -331,7 +331,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						list: isList,
 						selected: this.props.isNext || this.props.isSelected,
 					},
-					this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)
+					this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type),
+					...(this.props.piece.tags ? this.props.piece.tags.map((tag) => `piece-tag--${tag}`) : [])
 				)}
 				style={{
 					width: isList
