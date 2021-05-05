@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.19.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0...v1.19.1) (2021-05-05)
+
+
+### Bug Fixes
+
+* broken blueprints-integration released ([8eb5c8e](https://github.com/nrkno/tv-automation-server-core/commit/8eb5c8eec908f50a761f0f983be85e1515ea305d))
+
 ## [1.19.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.19.0) (2021-05-05)
 
 
