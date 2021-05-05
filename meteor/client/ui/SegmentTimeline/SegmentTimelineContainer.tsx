@@ -40,6 +40,7 @@ import RundownViewEventBus, {
 	GoToPartEvent,
 	GoToPartInstanceEvent,
 } from '../RundownView/RundownViewEventBus'
+import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
@@ -71,6 +72,7 @@ export interface PieceUi extends PieceExtended {
 	linked?: boolean
 	/** Metadata object */
 	contentMetaData?: any
+	contentPackageInfos?: ScanInfoForPackages
 	message?: string | null
 }
 interface IProps {
@@ -424,7 +426,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 				if (this.props.segmentui && this.props.segmentui.orphaned) {
 					const { t } = this.props
-					// TODO ORPHAN
 					// TODO: This doesn't seem right? componentDidUpdate can be triggered in a lot of different ways.
 					// What is this supposed to do?
 					doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, (e) =>

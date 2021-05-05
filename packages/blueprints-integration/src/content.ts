@@ -39,6 +39,7 @@ export interface VTEditableParameters extends BaseEditableParameters {
 	editorialDuration: number
 }
 
+/** @todo Should all this be deprecated and replaced by expectedPackages altogether? */
 export type SomeContent =
 	| VTContent
 	| CameraContent

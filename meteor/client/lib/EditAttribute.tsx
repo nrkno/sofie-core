@@ -76,6 +76,7 @@ interface IEditAttributeBaseProps {
 	mutateDisplayValue?: (v: any) => any
 	mutateUpdateValue?: (v: any) => any
 	disabled?: boolean
+	storeJsonAsObject?: boolean
 }
 interface IEditAttributeBaseState {
 	value: any
@@ -96,18 +97,18 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		this.handleUpdate = this.handleUpdate.bind(this)
 		this.handleDiscard = this.handleDiscard.bind(this)
 	}
-	handleEdit(newValue) {
+	handleEdit(inputValue: any, storeValue?: any) {
 		this.setState({
-			value: newValue,
+			value: inputValue,
 			editing: true,
 		})
 		if (this.props.updateOnKey) {
-			this.updateValue(newValue)
+			this.updateValue(storeValue ?? inputValue)
 		}
 	}
-	handleUpdate(newValue) {
-		this.handleUpdateButDontSave(newValue)
-		this.updateValue(newValue)
+	handleUpdate(inputValue: any, storeValue?: any) {
+		this.handleUpdateButDontSave(inputValue)
+		this.updateValue(storeValue ?? inputValue)
 	}
 	handleUpdateEditing(newValue) {
 		this.handleUpdateButDontSave(newValue, true)
@@ -832,16 +833,20 @@ const EditAttributeJson = wrapEditAttribute(
 		}
 		isJson(str: string) {
 			try {
-				JSON.parse(str)
+				const parsed = JSON.parse(str)
+				if (typeof parsed === 'object') return { parsed: parsed }
 			} catch (err) {
-				return false
+				// ignore
 			}
-			return true
+			return false
 		}
 		handleChange(event) {
 			let v = event.target.value
-			if (this.isJson(v)) {
-				this.handleEdit(v)
+
+			const jsonObj = this.isJson(v)
+			if (jsonObj) {
+				const storeValue = this.props.storeJsonAsObject ? jsonObj.parsed : v
+				this.handleEdit(v, storeValue)
 				this.setState({
 					valueError: false,
 				})
@@ -854,8 +859,10 @@ const EditAttributeJson = wrapEditAttribute(
 			if (v === '') {
 				v = '{}'
 			}
-			if (this.isJson(v)) {
-				this.handleUpdate(v)
+			const jsonObj = this.isJson(v)
+			if (jsonObj) {
+				const storeValue = this.props.storeJsonAsObject ? jsonObj.parsed : v
+				this.handleUpdate(v, storeValue)
 				this.setState({
 					valueError: false,
 				})
@@ -871,6 +878,12 @@ const EditAttributeJson = wrapEditAttribute(
 			if (e.key === 'Escape') {
 				this.handleDiscard()
 			}
+		}
+		getAttribute() {
+			const value = super.getAttribute()
+			if (this.props.storeJsonAsObject) {
+				return value ? JSON.stringify(value, null, 2) : value
+			} else return value
 		}
 		render() {
 			return (

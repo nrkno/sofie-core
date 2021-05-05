@@ -17,6 +17,6 @@
   "devDependencies": {
     "@strictsoftware/typedoc-plugin-monorepo": "^0.4.2",
     "concurrently": "^6.0.0",
-    "typedoc": "^0.20.28"
+    "typedoc": "^0.20.33"
   }
 }

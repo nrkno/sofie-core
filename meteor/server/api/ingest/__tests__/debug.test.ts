@@ -54,6 +54,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toMatchObject({
 			externalId: rundown._id,
+			_id: rundown.playlistId,
 		})
 
 		// Remove the parts to make it explicit that the blueprints rerun properly

@@ -1,22 +1,17 @@
-import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import '../../../__mocks__/_extendJest'
-import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 	setupDefaultRundown,
 } from '../../../__mocks__/helpers/database'
-import { protectString, literal, unprotectString } from '../../../lib/lib'
-import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
-import { Response as MockResponse, Request as MockRequest } from 'mock-http'
-import { RundownLayoutType, RundownLayouts, RundownLayout } from '../../../lib/collections/RundownLayouts'
+import { protectString, waitForPromise } from '../../../lib/lib'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { produceRundownPlaylistInfoFromRundown } from '../rundown'
-import { updateRundownsInPlaylist } from '../ingest/rundownInput'
+import { produceRundownPlaylistInfoFromRundown, updateRundownsInPlaylist } from '../rundownPlaylist'
+import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 
 require('../client') // include in order to create the Meteor methods needed
 require('../rundown') // include in order to create the Meteor methods needed
@@ -46,7 +41,7 @@ describe('Rundown', () => {
 			env,
 			protectString('rundown00')
 		)
-		const playlist0 = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+		let playlist0 = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
 		expect(playlist0).toBeTruthy()
 
 		// Add 2 more rundowns in it:
@@ -71,8 +66,18 @@ describe('Rundown', () => {
 		expect(rundown00.playlistId).toEqual(playlistId0)
 
 		// This should set the default sorting of the rundowns in the plylist:
-		let rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(env.studio, rundown00, undefined)
-		updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundown00)
+		let rundownsCollection = new DbCacheWriteCollection(Rundowns)
+		waitForPromise(rundownsCollection.prepareInit({ playlistId: playlist0._id }, true))
+		let rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(
+			env.studio,
+			undefined,
+			playlist0,
+			playlist0._id,
+			playlist0.externalId,
+			rundownsCollection.findFetch()
+		)
+		updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundownsCollection)
+		waitForPromise(rundownsCollection.updateDatabaseWithData())
 
 		// Expect the rundowns to be in the right order:
 		let rundownsInPLaylist0 = playlist0.getRundowns()
@@ -84,9 +89,22 @@ describe('Rundown', () => {
 		Meteor.call(RundownAPIMethods.moveRundown, rundownId00, playlist0, ['rundown01', 'rundown02', 'rundown00'])
 		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown02', 'rundown00'])
 
+		playlist0 = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+		expect(playlist0).toBeTruthy()
+
 		// This should do no change, since rank is now controlled by Sofie:
-		rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(env.studio, rundown00, undefined)
-		updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundown00)
+		rundownsCollection = new DbCacheWriteCollection(Rundowns)
+		waitForPromise(rundownsCollection.prepareInit({ playlistId: playlist0._id }, true))
+		rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(
+			env.studio,
+			undefined,
+			playlist0,
+			playlist0._id,
+			playlist0.externalId,
+			rundownsCollection.findFetch()
+		)
+		updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundownsCollection)
+		waitForPromise(rundownsCollection.updateDatabaseWithData())
 		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown02', 'rundown00'])
 
 		Meteor.call(RundownAPIMethods.moveRundown, rundownId02, playlist0, ['rundown02', 'rundown01', 'rundown00'])

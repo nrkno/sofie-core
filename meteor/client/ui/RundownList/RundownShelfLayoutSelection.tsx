@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { Link } from 'react-router-dom'
 import { SplitDropdown } from '../../lib/SplitDropdown'
@@ -40,18 +40,21 @@ export const RundownShelfLayoutSelection = withTranslation()(
 		}
 
 		private renderLinkItem(layout: RundownLayoutBase, link: string, key: string) {
-			return (
-				<Link to={link} onClick={() => this.saveViewChoice(key)} key={key}>
-					<div className="action-btn expco-item">
-						<div
-							className={classNames('action-btn layout-icon', { small: !layout.icon })}
-							style={{ color: layout.iconColor || 'transparent' }}>
-							<FontAwesomeIcon icon={(layout.icon as IconProp) || 'circle'} />
+			return {
+				key,
+				children: (
+					<Link to={link} onClick={() => this.saveViewChoice(key)}>
+						<div className="action-btn expco-item">
+							<div
+								className={classNames('action-btn layout-icon', { small: !layout.icon })}
+								style={{ color: layout.iconColor || 'transparent' }}>
+								<FontAwesomeIcon icon={(layout.icon as IconProp) || 'circle'} />
+							</div>
+							{layout.name}
 						</div>
-						{layout.name}
-					</div>
-				</Link>
-			)
+					</Link>
+				),
+			}
 		}
 
 		render() {
@@ -79,19 +82,27 @@ export const RundownShelfLayoutSelection = withTranslation()(
 
 			return shelfLayouts.length > 0 || standaloneLayouts.length > 0 ? (
 				<React.Fragment>
-					<SplitDropdown selectedKey={this.state.selectedView}>
-						<div className="expco-header">Standalone Shelfs</div>
-						{standaloneLayouts}
-						<div className="expco-header">Rundown + Shelf</div>
-						{shelfLayouts}
-						<div className="expco-separator"></div>
-						<Link
-							to={getRundownPlaylistLink(this.props.playlistId)}
-							onClick={() => this.saveViewChoice('default')}
-							key={'default'}>
-							<div className="action-btn expco-item">Default</div>
-						</Link>
-					</SplitDropdown>
+					<SplitDropdown
+						selectedKey={this.state.selectedView}
+						children={[
+							{ children: <div className="expco-header">{t('Standalone Shelf')}</div> },
+							...standaloneLayouts,
+							{ children: <div className="expco-header">{t('Rundown & Shelf')}</div> },
+							...shelfLayouts,
+							{ children: <div className="expco-separator"></div> },
+							{
+								key: 'default',
+								children: (
+									<Link
+										to={getRundownPlaylistLink(this.props.playlistId)}
+										onClick={() => this.saveViewChoice('default')}
+										key={'default'}>
+										<div className="action-btn expco-item">{t('Default')}</div>
+									</Link>
+								),
+							},
+						]}
+					/>
 				</React.Fragment>
 			) : (
 				<span className="dimmed">{t('Default')}</span>

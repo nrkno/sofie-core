@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-04-14T13:25:59.940Z\n"
-"PO-Revision-Date: 2021-04-14T13:25:59.940Z\n"
+"POT-Creation-Date: 2021-04-16T08:23:25.082Z\n"
+"PO-Revision-Date: 2021-04-16T08:23:25.082Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -383,6 +383,12 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
+msgid "Standalone Shelf"
+msgstr ""
+
+msgid "Rundown & Shelf"
+msgstr ""
+
 msgid "Default"
 msgstr ""
 
@@ -668,8 +674,8 @@ msgid "Looping"
 msgstr ""
 
 msgid ""
-"The Rundown \"{{rundownName}}\" has been UNSYNCED from {{nrcsName}}! No "
-"data updates will currently come through."
+"The rundown \"{{rundownName}}\" is not published or activated in "
+"{{nrcsName}}! No data updates will currently come through."
 msgstr ""
 
 msgid "Re-sync"
@@ -812,6 +818,9 @@ msgid "Resync Segment"
 msgstr ""
 
 msgid "On Air"
+msgstr ""
+
+msgid "On Air In"
 msgstr ""
 
 msgid "Unsynced"
@@ -1770,6 +1779,132 @@ msgstr ""
 msgid "Exclusivity Groups"
 msgstr ""
 
+msgid "Remove this Package Container?"
+msgstr ""
+
+msgid "Are you sure you want to remove the Package Container \"{{containerId}}\"?"
+msgstr ""
+
+msgid "There are no Package Containers set up."
+msgstr ""
+
+msgid "Package Container ID"
+msgstr ""
+
+msgid "Display name/label of the Package Container"
+msgstr ""
+
+msgid "Playout devices which uses this package container"
+msgstr ""
+
+msgid "Select playout devices"
+msgstr ""
+
+msgid "Select which playout devices are using this package container"
+msgstr ""
+
+msgid "Accessors"
+msgstr ""
+
+msgid "Remove this Package Container Accessor?"
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove the Package Container Accessor "
+"\"{{accessorId}}\"?"
+msgstr ""
+
+msgid "There are no Accessors set up."
+msgstr ""
+
+msgid "Accessor ID"
+msgstr ""
+
+msgid "Display name of the Package Container"
+msgstr ""
+
+msgid "Accessor Type"
+msgstr ""
+
+msgid "Folder path"
+msgstr ""
+
+msgid "File path to the folder of the local folder"
+msgstr ""
+
+msgid "Resource Id"
+msgstr ""
+
+msgid ""
+"(Optional) This could be the name of the computer on which the local folder "
+"is on"
+msgstr ""
+
+msgid "Base URL"
+msgstr ""
+
+msgid "Base url to the resource (example: http://myserver/folder)"
+msgstr ""
+
+msgid "Default request method"
+msgstr ""
+
+msgid "get, post etc..."
+msgstr ""
+
+msgid "Defaults request headers"
+msgstr ""
+
+msgid "Defaults request body"
+msgstr ""
+
+msgid "Network Id"
+msgstr ""
+
+msgid ""
+"(Optional) A name/identifier of the local network where the share is "
+"located, leave empty if globally accessible"
+msgstr ""
+
+msgid "Folder path to shared folder"
+msgstr ""
+
+msgid "UserName"
+msgstr ""
+
+msgid "Username for athuentication"
+msgstr ""
+
+msgid "Password for authentication"
+msgstr ""
+
+msgid "(Optional) A name/identifier of the local network where the share is located"
+msgstr ""
+
+msgid "Allow Read access"
+msgstr ""
+
+msgid "Allow Write access"
+msgstr ""
+
+msgid "Package Manager"
+msgstr ""
+
+msgid "Studio Settings"
+msgstr ""
+
+msgid "Package Containers to use for previews"
+msgstr ""
+
+msgid "Click to show available Package Containers"
+msgstr ""
+
+msgid "Package Containers to use for thumbnails"
+msgstr ""
+
+msgid "Package Containers"
+msgstr ""
+
 msgid "Studio Baseline needs update: "
 msgstr ""
 
@@ -1791,7 +1926,7 @@ msgstr ""
 msgid "Click to show available Show Styles"
 msgstr ""
 
-msgid "Enable Play from Anywhere™"
+msgid "Enable \"Play from Anywhere\""
 msgstr ""
 
 msgid "Media Preview URL"
@@ -2001,6 +2136,9 @@ msgstr ""
 msgid "Media"
 msgstr ""
 
+msgid "Packages"
+msgstr ""
+
 msgid "Messages"
 msgstr ""
 
@@ -2017,6 +2155,15 @@ msgid "User Name"
 msgstr ""
 
 msgid "Answers"
+msgstr ""
+
+msgid "Abort"
+msgstr ""
+
+msgid "Package Status"
+msgstr ""
+
+msgid "Restart All"
 msgstr ""
 
 msgid "Message Queue"
@@ -2091,9 +2238,6 @@ msgstr ""
 msgid "Details"
 msgstr ""
 
-msgid "Abort"
-msgstr ""
-
 msgid "Prioritize"
 msgstr ""
 
@@ -2101,9 +2245,6 @@ msgid "Media Transfer Status"
 msgstr ""
 
 msgid "Abort All"
-msgstr ""
-
-msgid "Restart All"
 msgstr ""
 
 msgid "Do you want to restart CasparCG Server?"
@@ -2251,10 +2392,20 @@ msgstr ""
 msgid "Stop"
 msgstr ""
 
-msgid "{{sourceLayer}} is missing a file path"
+msgid ""
+"Clip \"{{fileName}}\" can't be played because it isn't present on the "
+"playout system"
 msgstr ""
 
 msgid "{{sourceLayer}} is not yet ready on the playout system"
+msgstr ""
+
+msgid "{{sourceLayer}} is transferring to the the playout system"
+msgstr ""
+
+msgid ""
+"{{sourceLayer}} is transferring to the the playout system and cannot be "
+"played yet"
 msgstr ""
 
 msgid "{{sourceLayer}} doesn't have both audio & video"
@@ -2278,6 +2429,12 @@ msgstr ""
 msgid "{{frames}} {{type}} frame detected in clip"
 msgstr ""
 
+msgid "{{sourceLayer}} is missing a file path"
+msgstr ""
+
+msgid "Clip doesn't have audio & video"
+msgstr ""
+
 msgid "black"
 msgstr ""
 
@@ -2291,6 +2448,11 @@ msgid "Segment no longer exists in {{nrcs}}"
 msgstr ""
 
 msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
+msgstr ""
+
+msgid ""
+"The Rundown was attempted to be moved out of the Playlist when it was on "
+"Air. Move it back and try again later."
 msgstr ""
 
 msgctxt "°°°°°°plural"

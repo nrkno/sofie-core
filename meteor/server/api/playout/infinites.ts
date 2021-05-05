@@ -1,18 +1,11 @@
 import * as _ from 'underscore'
-import { DBPart, Part } from '../../../lib/collections/Parts'
+import { DBPart } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { asyncCollectionFindFetch } from '../../../lib/lib'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import {
-	selectNextPart,
-	getSelectedPartInstancesFromCache,
-	getSegmentsAndPartsFromCache,
-	PartsAndSegments,
-} from './lib'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { saveIntoCache } from '../../DatabaseCache'
+import { PartsAndSegments, selectNextPart } from './lib'
+import { saveIntoCache } from '../../cache/lib'
 import {
 	getPieceInstancesForPart as libgetPieceInstancesForPart,
 	getPlayheadTrackingInfinitesForPart as libgetPlayheadTrackingInfinitesForPart,
@@ -21,6 +14,9 @@ import {
 } from '../../../lib/rundown/infinites'
 import { profiler } from '../profiler'
 import { Meteor } from 'meteor/meteor'
+import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
+import { ReadonlyDeep } from 'type-fest'
+import { asyncCollectionFindFetch } from '../../lib/database'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -29,7 +25,7 @@ export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
  * We can only continue adlib onEnd infinites if we go forwards in the rundown. Any distance backwards will clear them.
  * */
 function canContinueAdlibOnEndInfinites(
-	playlist: RundownPlaylist,
+	playlist: ReadonlyDeep<RundownPlaylist>,
 	orderedPartsAndSegments: PartsAndSegments,
 	previousPartInstance: PartInstance | undefined,
 	part: DBPart
@@ -66,7 +62,7 @@ function canContinueAdlibOnEndInfinites(
 	}
 }
 
-function getIdsBeforeThisPart(cache: CacheForRundownPlaylist, nextPart: DBPart) {
+function getIdsBeforeThisPart(cache: CacheForPlayout, nextPart: DBPart) {
 	const span = profiler.startSpan('getIdsBeforeThisPart')
 	// Get the normal parts
 	const partsBeforeThisInSegment = cache.Parts.findFetch(
@@ -93,16 +89,11 @@ function getIdsBeforeThisPart(cache: CacheForRundownPlaylist, nextPart: DBPart) 
 	}
 }
 
-export async function fetchPiecesThatMayBeActiveForPart(
-	cache: CacheForRundownPlaylist,
-	part: DBPart
-): Promise<Piece[]> {
+export async function fetchPiecesThatMayBeActiveForPart(cache: CacheForPlayout, part: DBPart): Promise<Piece[]> {
 	const span = profiler.startSpan('fetchPiecesThatMayBeActiveForPart')
 
 	const thisPiecesQuery = buildPiecesStartingInThisPartQuery(part)
-	const pPiecesStartingInPart = cache.Pieces.initialized
-		? Promise.resolve(cache.Pieces.findFetch(thisPiecesQuery))
-		: asyncCollectionFindFetch(Pieces, thisPiecesQuery)
+	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, thisPiecesQuery)
 
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
@@ -111,23 +102,48 @@ export async function fetchPiecesThatMayBeActiveForPart(
 		partsBeforeThisInSegment,
 		segmentsBeforeThisInRundown
 	)
-	const pInfinitePieces = cache.Pieces.initialized
-		? Promise.resolve(cache.Pieces.findFetch(infinitePiecesQuery))
-		: asyncCollectionFindFetch(Pieces, infinitePiecesQuery)
+	const pInfinitePieces = asyncCollectionFindFetch(Pieces, infinitePiecesQuery)
 
 	const [piecesStartingInPart, infinitePieces] = await Promise.all([pPiecesStartingInPart, pInfinitePieces])
 	if (span) span.end()
 	return [...piecesStartingInPart, ...infinitePieces]
 }
 
-export function syncPlayheadInfinitesForNextPartInstance(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist
-): void {
+export function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout): void {
 	const span = profiler.startSpan('syncPlayheadInfinitesForNextPartInstance')
-	const { nextPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+	const { nextPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 	if (nextPartInstance && currentPartInstance) {
-		const infinites = getPlayheadTrackingInfinitesForPart(cache, playlist, currentPartInstance, nextPartInstance)
+		const playlist = cache.Playlist.doc
+		if (!playlist.activationId) throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is not active`)
+
+		const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(
+			cache,
+			nextPartInstance.part
+		)
+
+		const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+
+		const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
+			playlist,
+			orderedPartsAndSegments,
+			currentPartInstance,
+			nextPartInstance.part
+		)
+		const playingPieceInstances = cache.PieceInstances.findFetch(
+			(p) => p.partInstanceId === currentPartInstance._id
+		)
+
+		const infinites = libgetPlayheadTrackingInfinitesForPart(
+			playlist.activationId,
+			new Set(partsBeforeThisInSegment),
+			new Set(segmentsBeforeThisInRundown),
+			currentPartInstance,
+			playingPieceInstances,
+			nextPartInstance.part,
+			nextPartInstance._id,
+			canContinueAdlibOnEnds,
+			false
+		)
 
 		saveIntoCache(
 			cache.PieceInstances,
@@ -141,46 +157,8 @@ export function syncPlayheadInfinitesForNextPartInstance(
 	if (span) span.end()
 }
 
-function getPlayheadTrackingInfinitesForPart(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
-	playingPartInstance: PartInstance,
-	nextPartInstance: PartInstance
-): PieceInstance[] {
-	const span = profiler.startSpan('getPlayheadTrackingInfinitesForPart')
-
-	if (!playlist.activationId) throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is not active`)
-
-	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, nextPartInstance.part)
-
-	const orderedPartsAndSegments = getSegmentsAndPartsFromCache(cache, playlist)
-
-	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
-		playlist,
-		orderedPartsAndSegments,
-		playingPartInstance,
-		nextPartInstance.part
-	)
-	const playingPieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
-
-	const res = libgetPlayheadTrackingInfinitesForPart(
-		playlist.activationId,
-		new Set(partsBeforeThisInSegment),
-		new Set(segmentsBeforeThisInRundown),
-		playingPartInstance,
-		playingPieceInstances,
-		nextPartInstance.part,
-		nextPartInstance._id,
-		canContinueAdlibOnEnds,
-		false
-	)
-	if (span) span.end()
-	return res
-}
-
 export function getPieceInstancesForPart(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
+	cache: CacheForPlayout,
 	playingPartInstance: PartInstance | undefined,
 	part: DBPart,
 	possiblePieces: Piece[],
@@ -190,9 +168,10 @@ export function getPieceInstancesForPart(
 	const span = profiler.startSpan('getPieceInstancesForPart')
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
+	const playlist = cache.Playlist.doc
 	if (!playlist.activationId) throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is not active`)
 
-	const orderedPartsAndSegments = getSegmentsAndPartsFromCache(cache, playlist)
+	const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 	const playingPieceInstances = playingPartInstance
 		? cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
 		: []
@@ -212,7 +191,7 @@ export function getPieceInstancesForPart(
 		new Set(partsBeforeThisInSegment),
 		new Set(segmentsBeforeThisInRundown),
 		possiblePieces,
-		orderedPartsAndSegments.parts.map((part) => part._id),
+		orderedPartsAndSegments.parts.map((p) => p._id),
 		newInstanceId,
 		canContinueAdlibOnEnds,
 		isTemporary

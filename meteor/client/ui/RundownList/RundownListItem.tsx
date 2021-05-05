@@ -38,6 +38,7 @@ import { Settings } from '../../../lib/Settings'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 
 export const HTML_ID_PREFIX = 'rundown-'
@@ -232,11 +233,10 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 				}
 
 				handleRundownDrop(rundownId: RundownId) {
-					const { rundown, playlistId } = this.props
-					MeteorCall.userAction.moveRundown('Drag and drop add rundown to playlist', rundownId, playlistId, [
-						rundown._id,
-						rundownId,
-					])
+					const { rundown, playlistId, t } = this.props
+					doUserAction(t, 'Drag and drop add rundown to playlist', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
+						MeteorCall.userAction.moveRundown(e, rundownId, playlistId, [rundown._id, rundownId])
+					)
 				}
 
 				componentDidUpdate(prevProps) {

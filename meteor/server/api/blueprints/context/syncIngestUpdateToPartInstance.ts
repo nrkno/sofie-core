@@ -1,6 +1,5 @@
 import { clone } from 'underscore'
 import { ContextInfo, RundownContext } from './context'
-import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import {
 	IBlueprintPiece,
 	IBlueprintPieceInstance,
@@ -27,11 +26,15 @@ import {
 	normalizeArrayToMap,
 } from '../../../../lib/lib'
 import { Rundown } from '../../../../lib/collections/Rundowns'
-import { DbCacheWriteCollection } from '../../../DatabaseCache'
+import { DbCacheWriteCollection } from '../../../cache/CacheCollection'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { Meteor } from 'meteor/meteor'
 import { INoteBase, NoteType } from '../../../../lib/api/notes'
 import { RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
+import { ReadonlyDeep } from 'type-fest'
+import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
+import { Studio } from '../../../../lib/collections/Studios'
+import { CacheForPlayout } from '../../playout/cache'
 
 export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 	implements ISyncIngestUpdateToPartInstanceContext {
@@ -44,14 +47,15 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 	constructor(
 		contextInfo: ContextInfo,
 		private readonly playlistActivationId: RundownPlaylistActivationId,
-		rundown: Rundown,
-		cache: ReadOnlyCacheForRundownPlaylist,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		rundown: ReadonlyDeep<Rundown>,
 		private partInstance: PartInstance,
 		pieceInstances: PieceInstance[],
 		proposedPieceInstances: PieceInstance[],
 		private playStatus: 'current' | 'next'
 	) {
-		super(contextInfo, rundown, cache)
+		super(contextInfo, studio, showStyleCompound, rundown)
 
 		// Create temporary cache databases
 		this._pieceInstanceCache = new DbCacheWriteCollection(PieceInstances)
@@ -90,7 +94,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		}
 	}
 
-	applyChangesToCache(cache: CacheForRundownPlaylist) {
+	applyChangesToCache(cache: CacheForPlayout) {
 		this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
 		this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
 	}
@@ -115,7 +119,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 							lifespan: proposedPieceInstance.piece.lifespan,
 						},
 					],
-					this.getShowStyleBase().blueprintId,
+					this.showStyleCompound.blueprintId,
 					this.partInstance.rundownId,
 					this.partInstance.segmentId,
 					this.partInstance.part._id,
@@ -140,7 +144,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		const piece = postProcessPieces(
 			this,
 			[trimmedPiece],
-			this.getShowStyleBase().blueprintId,
+			this.showStyleCompound.blueprintId,
 			this.partInstance.rundownId,
 			this.partInstance.segmentId,
 			this.partInstance.part._id,
@@ -181,7 +185,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 			updatedPiece.content.timelineObjects = postProcessTimelineObjects(
 				this,
 				pieceInstance.piece._id,
-				this.getShowStyleBase().blueprintId,
+				this.showStyleCompound.blueprintId,
 				updatedPiece.content.timelineObjects,
 				false
 			)

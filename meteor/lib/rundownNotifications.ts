@@ -2,7 +2,15 @@ import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
 import { NoteType, TrackedNote } from './api/notes'
 import { Segments, Segment, DBSegment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
-import { unprotectString, makePromise, waitForPromise, literal, generateTranslation, normalizeArrayToMap } from './lib'
+import {
+	unprotectString,
+	makePromise,
+	waitForPromise,
+	literal,
+	generateTranslation,
+	normalizeArrayToMap,
+	assertNever,
+} from './lib'
 import * as _ from 'underscore'
 import { Pieces } from './collections/Pieces'
 import { ShowStyleBases, ShowStyleBase } from './collections/ShowStyleBases'
@@ -12,7 +20,8 @@ import { RundownAPI } from './api/rundown'
 import { IMediaObjectIssue } from './api/rundownNotifications'
 import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
 import { MongoFieldSpecifierOnes } from './typings/meteor'
-import { RundownPlaylist, RundownPlaylists } from './collections/RundownPlaylists'
+import { RundownPlaylist } from './collections/RundownPlaylists'
+import { ITranslatableMessage } from './api/TranslatableMessage'
 
 export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 	const rundowns = Rundowns.find(
@@ -105,14 +114,14 @@ function getAllNotesForSegmentAndParts(
 	const partInstancesBySegment = _.groupBy(deletedPartInstances, (p) => p.segmentId)
 
 	for (const segment of segments) {
-		const parts = partsBySegment[unprotectString(segment._id)] || []
+		const segmentParts = partsBySegment[unprotectString(segment._id)] || []
 		const partInstances = partInstancesBySegment[unprotectString(segment._id)] || []
 
 		notes.push(
 			...getBasicNotesForSegment(
 				segment,
 				rundownsMap.get(segment.rundownId)?.externalNRCSName ?? 'NRCS',
-				parts,
+				segmentParts,
 				partInstances
 			)
 		)
@@ -228,20 +237,20 @@ export function getMediaObjectIssues(rundownIds: RundownId[]): IMediaObjectIssue
 					[key: string]: Segment
 				}
 
-				const p: Promise<void>[] = []
+				const ps: Promise<void>[] = []
 
 				// p.push(asyncCollectionFindOne(ShowStyleBases, rundown.showStyleBaseId))
-				p.push(
+				ps.push(
 					makePromise(() => {
 						showStyle = ShowStyleBases.findOne(rundown.showStyleBaseId)
 					})
 				)
-				p.push(
+				ps.push(
 					makePromise(() => {
 						rundownStudio = Studios.findOne(rundown.studioId)
 					})
 				)
-				p.push(
+				ps.push(
 					makePromise(() => {
 						segments = _.object(
 							Segments.find({ rundownId: rundown._id })
@@ -250,7 +259,7 @@ export function getMediaObjectIssues(rundownIds: RundownId[]): IMediaObjectIssue
 						)
 					})
 				)
-				waitForPromise(Promise.all(p))
+				waitForPromise(Promise.all(ps))
 
 				if (showStyle && rundownStudio) {
 					const showStyleBase = showStyle
@@ -270,7 +279,7 @@ export function getMediaObjectIssues(rundownIds: RundownId[]): IMediaObjectIssue
 						const segment = part ? segments[unprotectString(part.segmentId)] : undefined
 						if (segment && sourceLayer && part) {
 							// we don't want this to be in a non-reactive context, so we manage this computation manually
-							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio.settings)
+							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
 							if (
 								status !== RundownAPI.PieceStatusCode.OK &&
 								status !== RundownAPI.PieceStatusCode.UNKNOWN &&
@@ -300,4 +309,24 @@ export function getMediaObjectIssues(rundownIds: RundownId[]): IMediaObjectIssue
 	const allStatus = waitForPromise(p)
 
 	return _.flatten(allStatus)
+}
+
+export enum ServerTranslatedMesssages {
+	PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN,
+}
+export function getTranslatedMessage(
+	key: ServerTranslatedMesssages,
+	args?: { [key: string]: any }
+): ITranslatableMessage {
+	switch (key) {
+		case ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN:
+			return generateTranslation(
+				'The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.',
+				args
+			)
+
+		default:
+			assertNever(key)
+			return { key, args }
+	}
 }

@@ -33,7 +33,6 @@ import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstan
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { IngestDataCache, IngestDataCacheObj } from '../../lib/collections/IngestDataCache'
-import { AsRunLog, AsRunLogEvent } from '../../lib/collections/AsRunLog'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { Timeline } from '../../lib/collections/Timeline'
@@ -422,17 +421,6 @@ RundownBaselineAdLibPieces.allow({
 })
 IngestDataCache.allow({
 	insert(userId, doc: IngestDataCacheObj): boolean {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	},
-})
-AsRunLog.allow({
-	insert(userId, doc: AsRunLogEvent): boolean {
 		return rundownContentAllowWrite(userId, doc)
 	},
 	update(userId, doc) {

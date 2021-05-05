@@ -1,20 +1,23 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../lib/check'
-import { registerClassToMeteorMethods } from '../methods'
-import { NewStudiosAPI, StudiosAPIMethods } from '../../lib/api/studios'
-import { Studios, DBStudio, StudioId } from '../../lib/collections/Studios'
-import { literal, getRandomId, makePromise, lazyIgnore } from '../../lib/lib'
-import { Rundowns } from '../../lib/collections/Rundowns'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
-import { OrganizationContentWriteAccess } from '../security/organization'
-import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { Timeline } from '../../lib/collections/Timeline'
-import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
-import { MediaObjects } from '../../lib/collections/MediaObjects'
-import { Credentials } from '../security/lib/credentials'
-import { OrganizationId } from '../../lib/collections/Organization'
-import { Random } from 'meteor/random'
+import { check } from '../../../lib/check'
+import { registerClassToMeteorMethods } from '../../methods'
+import { NewStudiosAPI, StudiosAPIMethods } from '../../../lib/api/studios'
+import { Studios, DBStudio, StudioId } from '../../../lib/collections/Studios'
+import { literal, getRandomId, makePromise, lazyIgnore } from '../../../lib/lib'
+import { Rundowns } from '../../../lib/collections/Rundowns'
+import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { MethodContextAPI, MethodContext } from '../../../lib/api/methods'
+import { OrganizationContentWriteAccess } from '../../security/organization'
+import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { Timeline } from '../../../lib/collections/Timeline'
+import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
+import { MediaObjects } from '../../../lib/collections/MediaObjects'
+import { Credentials } from '../../security/lib/credentials'
+import { OrganizationId } from '../../../lib/collections/Organization'
+import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
+import { ExpectedPackageWorkStatuses } from '../../../lib/collections/ExpectedPackageWorkStatuses'
+import { PackageInfos } from '../../../lib/collections/PackageInfos'
+import { PackageContainerPackageStatuses } from '../../../lib/collections/PackageContainerPackageStatus'
 
 export function insertStudio(context: MethodContext | Credentials, newId?: StudioId): StudioId {
 	if (newId) check(newId, String)
@@ -40,6 +43,9 @@ export function insertStudioInner(organizationId: OrganizationId | null, newId?:
 			_rundownVersionHash: '',
 			routeSets: {},
 			routeSetExclusivityGroups: {},
+			packageContainers: {},
+			thumbnailContainerIds: [],
+			previewContainerIds: [],
 		})
 	)
 }
@@ -73,6 +79,10 @@ export function removeStudio(context: MethodContext, studioId: StudioId): void {
 	ExternalMessageQueue.remove({ studioId: studio._id })
 	MediaObjects.remove({ studioId: studio._id })
 	Timeline.remove({ studioId: studio._id })
+	ExpectedPackages.remove({ studioId: studio._id })
+	ExpectedPackageWorkStatuses.remove({ studioId: studio._id })
+	PackageInfos.remove({ studioId: studio._id })
+	PackageContainerPackageStatuses.remove({ studioId: studio._id })
 }
 
 class ServerStudiosAPI extends MethodContextAPI implements NewStudiosAPI {

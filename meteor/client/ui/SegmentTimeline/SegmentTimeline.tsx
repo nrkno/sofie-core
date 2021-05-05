@@ -6,7 +6,7 @@ import ClassNames from 'classnames'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
+import { RundownHoldState } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
@@ -22,19 +22,6 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
-// @ts-ignore Not recognized by Typescript
-import * as Zoom_In_MouseOut from './Zoom_In_MouseOut.json'
-// @ts-ignore Not recognized by Typescript
-import * as Zoom_In_MouseOver from './Zoom_In_MouseOver.json'
-// @ts-ignore Not recognized by Typescript
-import * as Zoom_Normal_MouseOut from './Zoom_Normal_MouseOut.json'
-// @ts-ignore Not recognized by Typescript
-import * as Zoom_Normal_MouseOver from './Zoom_Normal_MouseOver.json'
-// @ts-ignore Not recognized by Typescript
-import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
-// @ts-ignore Not recognized by Typescript
-import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
-import { LottieButton } from '../../lib/LottieButton'
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getAllowSpeaking } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
@@ -48,7 +35,6 @@ import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifica
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
 import * as VelocityReact from 'velocity-react'
-import { TFunction } from 'i18next'
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
 
 interface IProps {
@@ -883,14 +869,21 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						this.props.parts &&
 						this.props.parts.length > 0 &&
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
-							<SegmentDuration parts={this.props.parts} />
+							<SegmentDuration
+								parts={this.props.parts}
+								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
+							/>
 						)}
 				</div>
 				<div className="segment-timeline__timeUntil">
 					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (
-						<PartCountdown partId={countdownToPartId} hideOnZero={true} />
+						<PartCountdown
+							partId={countdownToPartId}
+							hideOnZero={true}
+							label={<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>}
+						/>
 					)}
-					{Settings.allowUnsyncedSegments && this.props.segment.orphaned && (
+					{Settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
 						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 					)}
 				</div>

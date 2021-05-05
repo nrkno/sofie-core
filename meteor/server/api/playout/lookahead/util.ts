@@ -2,10 +2,13 @@ import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { Part } from '../../../../lib/collections/Parts'
 import { PieceInstance, PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
 import { Piece } from '../../../../lib/collections/Pieces'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { profiler } from '../../profiler'
-import { getSegmentsAndPartsFromCache, getSelectedPartInstancesFromCache, selectNextPart } from '../lib'
+import {
+	CacheForPlayout,
+	getOrderedSegmentsAndPartsFromPlayoutCache,
+	getSelectedPartInstancesFromCache,
+} from '../cache'
+import { selectNextPart } from '../lib'
 
 export interface PartInstanceAndPieceInstances {
 	part: PartInstance
@@ -26,18 +29,15 @@ export function isPieceInstance(piece: Piece | PieceInstance | PieceInstancePiec
 /**
  * Excludes the previous, current and next part
  */
-export function getOrderedPartsAfterPlayhead(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
-	partCount: number
-): Part[] {
+export function getOrderedPartsAfterPlayhead(cache: CacheForPlayout, partCount: number): Part[] {
 	if (partCount <= 0) {
 		return []
 	}
 	const span = profiler.startSpan('getOrderedPartsAfterPlayhead')
 
-	const partsAndSegments = getSegmentsAndPartsFromCache(cache, playlist)
-	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+	const playlist = cache.Playlist.doc
+	const partsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	// If the nextPartInstance consumes the
 	const alreadyConsumedNextSegmentId =

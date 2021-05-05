@@ -3,14 +3,76 @@ import { registerClassToMeteorMethods } from '../methods'
 import { NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
-import { literal, protectString, getRandomId, makePromise } from '../../lib/lib'
+import {
+	ShowStyleVariants,
+	ShowStyleVariantId,
+	ShowStyleCompound,
+	ShowStyleVariant,
+} from '../../lib/collections/ShowStyleVariants'
+import { protectString, getRandomId, makePromise } from '../../lib/lib'
 import { RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { Credentials } from '../security/lib/credentials'
 import { OrganizationId } from '../../lib/collections/Organization'
+import deepmerge from 'deepmerge'
+import { ReadonlyDeep } from 'type-fest'
+import { DBRundown } from '../../lib/collections/Rundowns'
+import { asyncCollectionFindOne } from '../lib/database'
+
+export function getShowStyleCompound(showStyleVariantId: ShowStyleVariantId): ShowStyleCompound | undefined {
+	const showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
+	if (!showStyleVariant) return undefined
+	const showStyleBase = ShowStyleBases.findOne(showStyleVariant.showStyleBaseId)
+	if (!showStyleBase) return undefined
+
+	return createShowStyleCompound(showStyleBase, showStyleVariant)
+}
+export async function getShowStyleCompoundForRundown(
+	rundown: Pick<ReadonlyDeep<DBRundown>, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>
+): Promise<ShowStyleCompound> {
+	const [showStyleBase, showStyleVariant] = await Promise.all([
+		asyncCollectionFindOne(ShowStyleBases, { _id: rundown.showStyleBaseId }),
+		asyncCollectionFindOne(ShowStyleVariants, { _id: rundown.showStyleVariantId }),
+	])
+	if (!showStyleBase)
+		throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" for Rundown "${rundown._id}" not found`)
+	if (!showStyleVariant)
+		throw new Meteor.Error(
+			404,
+			`ShowStyleVariant "${rundown.showStyleVariantId}" for Rundown "${rundown._id}" not found`
+		)
+
+	const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
+	if (!compound)
+		throw new Meteor.Error(
+			404,
+			`Failed to compile ShowStyleCompound for base "${rundown.showStyleBaseId}" and variant  "${rundown.showStyleVariantId}"`
+		)
+
+	return compound
+}
+
+export function createShowStyleCompound(
+	showStyleBase: ShowStyleBase,
+	showStyleVariant: ShowStyleVariant
+): ShowStyleCompound | undefined {
+	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
+
+	let configs = deepmerge(showStyleBase.blueprintConfig, showStyleVariant.blueprintConfig, {
+		arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
+	})
+
+	return {
+		...showStyleBase,
+		showStyleVariantId: showStyleVariant._id,
+		name: `${showStyleBase.name}-${showStyleVariant.name}`,
+		blueprintConfig: configs,
+		_rundownVersionHash: showStyleBase._rundownVersionHash,
+		_rundownVersionHashVariant: showStyleVariant._rundownVersionHash,
+	}
+}
 
 export function insertShowStyleBase(context: MethodContext | Credentials): ShowStyleBaseId {
 	const access = OrganizationContentWriteAccess.studio(context)

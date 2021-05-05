@@ -12,9 +12,13 @@ import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
 import { parse as parseUrl } from 'url'
-import { syncFunction } from '../codeControl'
-import { RundownInput, rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from './ingest/rundownInput'
-import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
+import { RundownInput } from './ingest/rundownInput'
+import {
+	IngestRundown,
+	IngestSegment,
+	IngestPart,
+	ExpectedPackageStatusAPI,
+} from '@sofie-automation/blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
 import { MediaObject } from '../../lib/collections/MediaObjects'
@@ -28,13 +32,19 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerPOST } from './http'
-import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../DatabaseCaches'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { getActiveRundownPlaylistsInStudio } from './playout/studio'
-import { StudioId } from '../../lib/collections/Studios'
-import { getValidActivationCache } from '../ActivationCache'
+import { getValidActivationCache } from '../cache/ActivationCache'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceGroupMetadata } from '../../lib/rundown/pieces'
+import { PackageManagerIntegration } from './integration/expectedPackages'
+import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPackageWorkStatuses'
+import { PackageInfoDBType } from '../../lib/collections/PackageInfos'
+import { runStudioOperationWithCache, StudioLockFunctionPriority } from './studio/lockFunction'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithLockFromStudioOperation } from './playout/lockFunction'
+import { DbCacheWriteCollection } from '../cache/CacheCollection'
+import { CacheForStudio } from './studio/cache'
+import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -192,7 +202,7 @@ export namespace ServerPeripheralDeviceAPI {
 	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
 	 * ( typically when using the "now"-feature )
 	 */
-	export const timelineTriggerTime = syncFunction(function timelineTriggerTime(
+	export function timelineTriggerTime(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
@@ -213,49 +223,61 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 
 		if (results.length > 0) {
-			const activePlaylists = getActiveRundownPlaylistsInStudio(null, studioId)
+			runStudioOperationWithCache(
+				'timelineTriggerTime',
+				studioId,
+				StudioLockFunctionPriority.CALLBACK_PLAYOUT,
+				(studioCache) => {
+					const activePlaylists = studioCache.getActiveRundownPlaylists()
 
-			if (activePlaylists.length === 1) {
-				const activePlaylist = activePlaylists[0]
-				const playlistId = activePlaylist._id
-				rundownPlaylistSyncFunction(
-					playlistId,
-					RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
-					'timelineTriggerTime',
-					() => {
-						// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
-						const cache = waitForPromise(initCacheForRundownPlaylist(activePlaylist, undefined, false))
-						timelineTriggerTimeInner(cache, studioId, results, activePlaylist)
-						waitForPromise(cache.saveAllToDatabase())
+					if (activePlaylists.length === 1) {
+						const activePlaylist = activePlaylists[0]
+						const playlistId = activePlaylist._id
+						runPlayoutOperationWithLockFromStudioOperation(
+							'timelineTriggerTime',
+							studioCache,
+							activePlaylist,
+							PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
+							async () => {
+								const rundownIDs = Rundowns.find({ playlistId }).map((r) => r._id)
+
+								// We only need the PieceInstances, so load just them
+								const pieceInstanceCache = new DbCacheWriteCollection<PieceInstance, PieceInstance>(
+									PieceInstances
+								)
+
+								await pieceInstanceCache.prepareInit({ rundownId: { $in: rundownIDs } }, true)
+
+								// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
+								timelineTriggerTimeInner(studioCache, results, pieceInstanceCache, activePlaylist)
+
+								await pieceInstanceCache.updateDatabaseWithData()
+							}
+						)
+					} else {
+						timelineTriggerTimeInner(studioCache, results, undefined, undefined)
 					}
-				)
-			} else {
-				// TODO - technically this could still be a race condition, but the chances of it colliding with another cache write
-				// are slim and need larger changes to avoid. Also, using a `start: 'now'` in a studio baseline would be weird
-				const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
-				timelineTriggerTimeInner(cache, studioId, results, undefined)
-				waitForPromise(cache.saveAllToDatabase())
-			}
+				}
+			)
 		}
-	},
-	'timelineTriggerTime$0,$1')
+	}
 
 	function timelineTriggerTimeInner(
-		cache: CacheForRundownPlaylist,
-		studioId: StudioId,
+		cache: CacheForStudio,
 		results: PeripheralDeviceAPI.TimelineTriggerTimeResult,
+		pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance> | undefined,
 		activePlaylist: RundownPlaylist | undefined
 	) {
 		let lastTakeTime: number | undefined
 
 		// ------------------------------
-		let timelineObjs = cache.Timeline.findOne({ _id: studioId })?.timeline || []
+		let timelineObjs = cache.Timeline.findOne(cache.Studio.doc._id)?.timeline || []
 		let tlChanged = false
 
 		_.each(results, (o) => {
 			check(o.id, String)
 
-			logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
+			logger.info(`Timeline: Setting time: "${o.id}": ${o.time}`)
 
 			const obj = timelineObjs.find((tlo) => tlo.id === o.id)
 			if (obj) {
@@ -269,18 +291,18 @@ export namespace ServerPeripheralDeviceAPI {
 				})
 
 				// TODO - we should do the same for the partInstance.
-				// Or we should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
+				// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
 
 				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
-				if (objPieceId && activePlaylist) {
-					logger.debug('Update PieceInstance: ', {
+				if (objPieceId && activePlaylist && pieceInstanceCache) {
+					logger.info('Update PieceInstance: ', {
 						pieceId: objPieceId,
 						time: new Date(o.time).toTimeString(),
 					})
 
-					const pieceInstance = cache.PieceInstances.findOne(objPieceId)
+					const pieceInstance = pieceInstanceCache.findOne(objPieceId)
 					if (pieceInstance) {
-						cache.PieceInstances.update(pieceInstance._id, {
+						pieceInstanceCache.update(pieceInstance._id, {
 							$set: {
 								'piece.enable.start': o.time,
 							},
@@ -295,9 +317,9 @@ export namespace ServerPeripheralDeviceAPI {
 			}
 		})
 
-		if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId) {
+		if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
 			// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
-			const remainingNowPieces = cache.PieceInstances.findFetch({
+			const remainingNowPieces = pieceInstanceCache.findFetch({
 				partInstanceId: activePlaylist.currentPartInstanceId,
 				dynamicallyInserted: { $exists: true },
 				disabled: { $ne: true },
@@ -306,7 +328,7 @@ export namespace ServerPeripheralDeviceAPI {
 				const pieceTakeTime = piece.dynamicallyInserted
 				if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
 					// Disable and hide the instance
-					cache.PieceInstances.update(piece._id, {
+					pieceInstanceCache.update(piece._id, {
 						$set: {
 							disabled: true,
 							hidden: true,
@@ -317,7 +339,7 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		if (tlChanged) {
 			cache.Timeline.update(
-				studioId,
+				cache.Studio.doc._id,
 				{
 					$set: {
 						timeline: timelineObjs,
@@ -343,7 +365,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		ServerPlayoutAPI.onPartPlaybackStarted(context, r.rundownPlaylistId, r.partInstanceId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStarted(context, peripheralDevice, r.rundownPlaylistId, r.partInstanceId, r.time)
 	}
 	export function partPlaybackStopped(
 		context: MethodContext,
@@ -1071,6 +1093,107 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	) {
 		return makePromise(() =>
 			MediaManagerIntegration.updateMediaWorkFlowStep(this, deviceId, deviceToken, docId, obj)
+		)
+	}
+	insertExpectedPackageWorkStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		workStatusId: ExpectedPackageWorkStatusId,
+		workStatus: ExpectedPackageStatusAPI.WorkStatus
+	) {
+		return makePromise(() =>
+			PackageManagerIntegration.insertExpectedPackageWorkStatus(
+				this,
+				deviceId,
+				deviceToken,
+				workStatusId,
+				workStatus
+			)
+		)
+	}
+	updateExpectedPackageWorkStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		workStatusId: ExpectedPackageWorkStatusId,
+		workStatus: Partial<ExpectedPackageStatusAPI.WorkStatus>
+	) {
+		return makePromise(() =>
+			PackageManagerIntegration.updateExpectedPackageWorkStatus(
+				this,
+				deviceId,
+				deviceToken,
+				workStatusId,
+				workStatus
+			)
+		)
+	}
+	removeExpectedPackageWorkStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		workStatusId: ExpectedPackageWorkStatusId
+	) {
+		return makePromise(() =>
+			PackageManagerIntegration.removeExpectedPackageWorkStatus(this, deviceId, deviceToken, workStatusId)
+		)
+	}
+	removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
+		return makePromise(() =>
+			PackageManagerIntegration.removeAllExpectedPackageWorkStatusOfDevice(this, deviceId, deviceToken)
+		)
+	}
+	updatePackageContainerPackageStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		containerId: string,
+		packageId: string,
+		packageStatus: ExpectedPackageStatusAPI.PackageContainerPackageStatus | null
+	) {
+		return makePromise(() =>
+			PackageManagerIntegration.updatePackageContainerPackageStatus(
+				this,
+				deviceId,
+				deviceToken,
+				containerId,
+				packageId,
+				packageStatus
+			)
+		)
+	}
+	fetchPackageInfoMetadata(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		type: string,
+		packageIds: ExpectedPackageId[]
+	) {
+		return makePromise(() =>
+			PackageManagerIntegration.fetchPackageInfoMetadata(this, deviceId, deviceToken, type, packageIds)
+		)
+	}
+	updatePackageInfo(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		type: PackageInfoDBType, // string
+		packageId: ExpectedPackageId,
+		expectedContentVersionHash: string,
+		actualContentVersionHash: string,
+		payload: any
+	) {
+		return makePromise(() =>
+			PackageManagerIntegration.updatePackageInfo(
+				this,
+				deviceId,
+				deviceToken,
+				type,
+				packageId,
+				expectedContentVersionHash,
+				actualContentVersionHash,
+				payload
+			)
+		)
+	}
+	removePackageInfo(deviceId: PeripheralDeviceId, deviceToken: string, type: string, packageId: ExpectedPackageId) {
+		return makePromise(() =>
+			PackageManagerIntegration.removePackageInfo(this, deviceId, deviceToken, type, packageId)
 		)
 	}
 }

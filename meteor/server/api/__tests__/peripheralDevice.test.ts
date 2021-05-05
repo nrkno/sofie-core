@@ -2,20 +2,20 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceCommand, PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
-import { Rundown, Rundowns, RundownId } from '../../../lib/collections/Rundowns'
-import { Segment, Segments, SegmentId } from '../../../lib/collections/Segments'
-import { Part, Parts } from '../../../lib/collections/Parts'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
+import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
+import { Segments, SegmentId } from '../../../lib/collections/Segments'
+import { Parts } from '../../../lib/collections/Parts'
+import { Pieces } from '../../../lib/collections/Pieces'
 
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 
-import { getCurrentTime, literal, protectString, unprotectString, ProtectedString, waitTime } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, ProtectedString, waitTime } from '../../../lib/lib'
 import * as MOS from 'mos-connection'
-import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLoggerLevel } from '../../../server/api/logger'
-import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import {
 	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
@@ -32,27 +32,17 @@ import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
-import { PeripheralDevicesAPI } from '../../../client/lib/clientAPI'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { MethodContext } from '../../../lib/api/methods'
-import { time } from 'console'
+import { VerifiedRundownPlaylistContentAccess } from '../lib'
 
 const DEBUG = false
 
 const ActualServerPlayoutAPI: typeof ServerPlayoutAPI = _ActualServerPlayoutAPI
 
-const DEFAULT_CONTEXT: MethodContext = {
-	userId: null,
-	isSimulation: false,
-	connection: {
-		id: 'mockConnectionId',
-		close: () => {},
-		onClose: () => {},
-		clientAddress: '127.0.0.1',
-		httpHeaders: {},
-	},
-	setUserId: () => {},
-	unblock: () => {},
+function DEFAULT_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPlaylistContentAccess {
+	const playlist = RundownPlaylists.findOne(rundownPlaylistID) as RundownPlaylist
+	expect(playlist).toBeTruthy()
+	return { userId: null, organizationId: null, studioId: null, playlist: playlist, cred: {} }
 }
 
 describe('test peripheralDevice general API methods', () => {
@@ -71,7 +61,6 @@ describe('test peripheralDevice general API methods', () => {
 			externalId: 'mock_rpl',
 			name: 'Mock',
 			studioId: env.studio._id,
-			peripheralDeviceId: env.ingestDevice._id,
 			created: 0,
 			modified: 0,
 			currentPartInstanceId: null,
@@ -292,8 +281,8 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('partPlaybackStarted', () => {
-		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, rundownPlaylistID, false)
-		ActualServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, rundownPlaylistID)
+		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -308,12 +297,12 @@ describe('test peripheralDevice general API methods', () => {
 
 		expect(ServerPlayoutAPI.onPartPlaybackStarted).toHaveBeenCalled()
 
-		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, rundownPlaylistID)
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
 	testInFiber('partPlaybackStopped', () => {
-		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, rundownPlaylistID, false)
-		ActualServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, rundownPlaylistID)
+		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -329,12 +318,12 @@ describe('test peripheralDevice general API methods', () => {
 
 		expect(ServerPlayoutAPI.onPartPlaybackStopped).toHaveBeenCalled()
 
-		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, rundownPlaylistID)
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
 	testInFiber('piecePlaybackStarted', () => {
-		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, rundownPlaylistID, false)
-		ActualServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, rundownPlaylistID)
+		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -358,12 +347,12 @@ describe('test peripheralDevice general API methods', () => {
 
 		expect(ServerPlayoutAPI.onPiecePlaybackStarted).toHaveBeenCalled()
 
-		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, rundownPlaylistID)
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
 	testInFiber('piecePlaybackStopped', () => {
-		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, rundownPlaylistID, false)
-		ActualServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, rundownPlaylistID)
+		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -387,12 +376,12 @@ describe('test peripheralDevice general API methods', () => {
 
 		expect(ServerPlayoutAPI.onPiecePlaybackStopped).toHaveBeenCalled()
 
-		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, rundownPlaylistID)
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
 	testInFiber('timelineTriggerTime', () => {
-		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, rundownPlaylistID, false)
-		ActualServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, rundownPlaylistID)
+		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -429,7 +418,7 @@ describe('test peripheralDevice general API methods', () => {
 			expect(enable.start).toBeGreaterThan(0)
 		})
 
-		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, rundownPlaylistID)
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
 	testInFiber('killProcess with a rundown present', () => {

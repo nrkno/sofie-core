@@ -11,19 +11,19 @@ import {
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
-	getShowStyleCompound,
 	ShowStyleVariantId,
 	ShowStyleCompound,
 	ShowStyleVariant,
-	createShowStyleCompound,
 	ShowStyleVariants,
 } from '../../../lib/collections/ShowStyleVariants'
 import { protectString, objectPathGet, objectPathSet } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './cache'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { BlueprintId, Blueprints } from '../../../lib/collections/Blueprints'
 import { CommonContext } from './context'
+import { ReadonlyDeep } from 'type-fest'
+import { getShowStyleCompound } from '../showStyles'
 
 /**
  * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.
@@ -84,7 +84,7 @@ export namespace ConfigRef {
 	}
 }
 
-export function preprocessStudioConfig(studio: Studio, blueprint?: StudioBlueprintManifest) {
+export function preprocessStudioConfig(studio: ReadonlyDeep<Studio>, blueprint?: StudioBlueprintManifest) {
 	let res: any = {}
 	if (blueprint && blueprint.studioConfigManifest !== undefined) {
 		applyToConfig(res, blueprint.studioConfigManifest, studio.blueprintConfig, `Studio ${studio._id}`)
@@ -105,7 +105,10 @@ export function preprocessStudioConfig(studio: Studio, blueprint?: StudioBluepri
 	return res
 }
 
-export function preprocessShowStyleConfig(showStyle: ShowStyleCompound, blueprint?: ShowStyleBlueprintManifest) {
+export function preprocessShowStyleConfig(
+	showStyle: ReadonlyDeep<ShowStyleCompound>,
+	blueprint?: ShowStyleBlueprintManifest
+) {
 	let res: any = {}
 	if (blueprint && blueprint.showStyleConfigManifest !== undefined) {
 		applyToConfig(res, blueprint.showStyleConfigManifest, showStyle.blueprintConfig, `ShowStyle ${showStyle._id}`)
@@ -122,7 +125,10 @@ export function preprocessShowStyleConfig(showStyle: ShowStyleCompound, blueprin
 	return res
 }
 
-export function findMissingConfigs(manifest: ConfigManifestEntry[] | undefined, config: IBlueprintConfig) {
+export function findMissingConfigs(
+	manifest: ConfigManifestEntry[] | undefined,
+	config: ReadonlyDeep<IBlueprintConfig>
+) {
 	const missingKeys: string[] = []
 	if (manifest === undefined) {
 		return missingKeys
@@ -139,7 +145,7 @@ export function findMissingConfigs(manifest: ConfigManifestEntry[] | undefined, 
 export function applyToConfig(
 	res: any,
 	configManifest: ConfigManifestEntry[],
-	blueprintConfig: IBlueprintConfig,
+	blueprintConfig: ReadonlyDeep<IBlueprintConfig>,
 	source: string
 ) {
 	for (const val of configManifest) {
@@ -170,14 +176,14 @@ export function forceClearAllBlueprintConfigCaches() {
 	showStyleBlueprintConfigCache.clear()
 }
 
-export function resetStudioBlueprintConfig(studio: Studio): void {
+export function resetStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): void {
 	for (const map of studioBlueprintConfigCache.values()) {
 		map.delete(studio._id)
 	}
 	getStudioBlueprintConfig(studio)
 }
 
-export function getStudioBlueprintConfig(studio: Studio): unknown {
+export function getStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): unknown {
 	let blueprintConfigMap = studio.blueprintId ? studioBlueprintConfigCache.get(studio.blueprintId) : undefined
 	if (!blueprintConfigMap && studio.blueprintId) {
 		blueprintConfigMap = new Map()
@@ -206,36 +212,33 @@ export function getStudioBlueprintConfig(studio: Studio): unknown {
 	return compiledConfig
 }
 
-export function resetShowStyleBlueprintConfig(showStyleBase: ShowStyleBase, showStyleVariant: ShowStyleVariant): void {
+export function resetShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<ShowStyleCompound>): void {
 	for (const map of showStyleBlueprintConfigCache.values()) {
-		map.get(showStyleBase._id)?.delete(showStyleVariant._id)
+		map.get(showStyleCompound._id)?.delete(showStyleCompound.showStyleVariantId)
 	}
-	getShowStyleBlueprintConfig(showStyleBase, showStyleVariant)
+	getShowStyleBlueprintConfig(showStyleCompound)
 }
-export function getShowStyleBlueprintConfig(showStyleBase: ShowStyleBase, showStyleVariant: ShowStyleVariant): unknown {
-	let blueprintConfigMap = showStyleBase.blueprintId
-		? showStyleBlueprintConfigCache.get(showStyleBase.blueprintId)
+export function getShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<ShowStyleCompound>): unknown {
+	let blueprintConfigMap:
+		| Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>>
+		| undefined = showStyleCompound.blueprintId
+		? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId)
 		: new Map()
 	if (!blueprintConfigMap) {
 		blueprintConfigMap = new Map()
-		showStyleBlueprintConfigCache.set(showStyleBase.blueprintId, blueprintConfigMap)
+		showStyleBlueprintConfigCache.set(showStyleCompound.blueprintId, blueprintConfigMap)
 	}
 
-	let showStyleBaseMap = blueprintConfigMap.get(showStyleBase._id)
+	let showStyleBaseMap = blueprintConfigMap.get(showStyleCompound._id)
 	if (!showStyleBaseMap) {
 		showStyleBaseMap = new Map()
-		blueprintConfigMap.set(showStyleBase._id, showStyleBaseMap)
+		blueprintConfigMap.set(showStyleCompound._id, showStyleBaseMap)
 	}
 
-	const cachedConfig = showStyleBaseMap.get(showStyleVariant._id)
+	const cachedConfig = showStyleBaseMap.get(showStyleCompound.showStyleVariantId)
 	if (cachedConfig) {
 		return cachedConfig.config
 	}
-
-	logger.debug('Building ShowStyle config')
-
-	const showStyleCompound = createShowStyleCompound(showStyleBase, showStyleVariant)
-	if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${showStyleVariant._id}"`)
 
 	const showStyleBlueprint = loadShowStyleBlueprint(showStyleCompound)
 	if (showStyleBlueprint) {
@@ -255,7 +258,7 @@ export function getShowStyleBlueprintConfig(showStyleBase: ShowStyleBase, showSt
 	}
 
 	const compiledConfig = preprocessShowStyleConfig(showStyleCompound, showStyleBlueprint?.blueprint)
-	showStyleBaseMap.set(showStyleVariant._id, { config: compiledConfig })
+	showStyleBaseMap.set(showStyleCompound.showStyleVariantId, { config: compiledConfig })
 	return compiledConfig
 }
 

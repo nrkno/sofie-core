@@ -1,10 +1,9 @@
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
-import { initCacheForStudioBase, initCacheForStudio } from '../../DatabaseCaches'
-import { Studios, Studio } from '../../../lib/collections/Studios'
-import { getRandomId, waitTime, protectString } from '../../../lib/lib'
-import { RundownPlaylistId, RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { defaultRundownPlaylist } from '../../../__mocks__/defaultCollectionObjects'
+import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
+import { waitTime, protectString } from '../../../lib/lib'
+import { CacheForStudio } from '../../api/studio/cache'
+import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
 
 // setLoggerLevel('info')
 
@@ -14,7 +13,7 @@ describe('DatabaseCaches', () => {
 	beforeEach(() => {
 		setupDefaultStudioEnvironment()
 	})
-	describe('CacheForStudioBase', () => {
+	describe('CacheForStudio', () => {
 		testInFiber('Insert, update & remove', async () => {
 			const studio = Studios.findOne() as Studio
 			expect(studio).toBeTruthy()
@@ -22,27 +21,28 @@ describe('DatabaseCaches', () => {
 			const added = jest.fn()
 			const changed = jest.fn()
 			const removed = jest.fn()
-			RundownPlaylists.find().observeChanges({
+			Timeline.find().observeChanges({
 				added,
 				changed,
 				removed,
 			})
 
-			let dbObj: RundownPlaylist | undefined
-			// const cache = new CacheForStudioBase()
-			const cache = await initCacheForStudioBase(studio._id)
+			let dbObj: TimelineComplete | undefined
+			const cache = await CacheForStudio.create(studio._id)
 
-			const id: RundownPlaylistId = protectString('myPlaylist0')
+			const id: StudioId = protectString('tewtDoc1')
 
 			// Insert a document:
-			cache.RundownPlaylists.insert({
-				...defaultRundownPlaylist(id, studio._id, getRandomId()),
-				name: 'insert',
+			cache.Timeline.insert({
+				_id: id,
+				timeline: [],
+				timelineHash: protectString('insert'),
+				generated: 1234,
 			})
-			cache.RundownPlaylists.update(id, { $set: { name: 'insertthenupdate' } })
+			cache.Timeline.update(id, { $set: { timelineHash: protectString('insertthenupdate') } })
 
-			expect(cache.RundownPlaylists.findOne(id)).toBeTruthy()
-			expect(RundownPlaylists.findOne(id)).toBeFalsy()
+			expect(cache.Timeline.findOne(id)).toBeTruthy()
+			expect(Timeline.findOne(id)).toBeFalsy()
 
 			waitTime(1) // to allow for observers to trigger
 			expect(added).toHaveBeenCalledTimes(0)
@@ -55,15 +55,15 @@ describe('DatabaseCaches', () => {
 			expect(changed).toHaveBeenCalledTimes(0) // the previous update should have been included in the insert
 			expect(removed).toHaveBeenCalledTimes(0)
 			added.mockClear()
-			dbObj = RundownPlaylists.findOne(id)
-			expect(dbObj).toMatchObject({ name: 'insertthenupdate' })
+			dbObj = Timeline.findOne(id)
+			expect(dbObj).toMatchObject({ timelineHash: 'insertthenupdate' })
 
 			// Update a document:
-			cache.RundownPlaylists.update(
+			cache.Timeline.update(
 				{
-					name: 'insertthenupdate',
+					timelineHash: protectString('insertthenupdate'),
 				},
-				{ $set: { name: 'updated' } }
+				{ $set: { timelineHash: protectString('updated') } }
 			)
 
 			await cache.saveAllToDatabase()
@@ -73,11 +73,11 @@ describe('DatabaseCaches', () => {
 			expect(changed).toHaveBeenCalledTimes(1)
 			expect(removed).toHaveBeenCalledTimes(0)
 			changed.mockClear()
-			dbObj = RundownPlaylists.findOne(id)
-			expect(dbObj).toMatchObject({ name: 'updated' })
+			dbObj = Timeline.findOne(id)
+			expect(dbObj).toMatchObject({ timelineHash: 'updated' })
 
 			// Remove a document:
-			cache.RundownPlaylists.remove(id)
+			cache.Timeline.remove(id)
 
 			await cache.saveAllToDatabase()
 			waitTime(1) // to allow for observers to trigger
@@ -85,7 +85,7 @@ describe('DatabaseCaches', () => {
 			expect(changed).toHaveBeenCalledTimes(0)
 			expect(removed).toHaveBeenCalledTimes(1)
 			removed.mockClear()
-			expect(RundownPlaylists.findOne(id)).toBeFalsy()
+			expect(Timeline.findOne(id)).toBeFalsy()
 		})
 		testInFiber('Multiple saves', async () => {
 			const studio = Studios.findOne() as Studio
@@ -94,39 +94,39 @@ describe('DatabaseCaches', () => {
 			const added = jest.fn()
 			const changed = jest.fn()
 			const removed = jest.fn()
-			RundownPlaylists.find().observeChanges({
+			Timeline.find().observeChanges({
 				added,
 				changed,
 				removed,
 			})
 
-			let dbObj: RundownPlaylist | undefined
-			// const cache = new CacheForStudioBase()
-			const cache = await initCacheForStudioBase(studio._id)
+			const cache = await CacheForStudio.create(studio._id)
 
-			const id: RundownPlaylistId = protectString('myPlaylist1')
+			const id: StudioId = protectString('tewtDoc1')
 
 			// Insert a document:
-			cache.RundownPlaylists.insert({
-				...defaultRundownPlaylist(id, studio._id, getRandomId()),
-				name: 'insert',
+			cache.Timeline.insert({
+				_id: id,
+				timeline: [],
+				timelineHash: protectString('insert'),
+				generated: 1234,
 			})
 			const deferFcn0 = jest.fn(() => {
-				expect(RundownPlaylists.findOne(id)).toBeFalsy()
+				expect(Timeline.findOne(id)).toBeFalsy()
 			})
 			const deferAfterSaveFcn0 = jest.fn(() => {
-				expect(RundownPlaylists.findOne(id)).toBeTruthy()
+				expect(Timeline.findOne(id)).toBeTruthy()
 			})
 			cache.defer(deferFcn0)
 			cache.deferAfterSave(deferAfterSaveFcn0)
 
-			expect(RundownPlaylists.findOne(id)).toBeFalsy()
+			expect(Timeline.findOne(id)).toBeFalsy()
 			await cache.saveAllToDatabase()
 			waitTime(1) // to allow for observers to trigger
 			expect(added).toHaveBeenCalledTimes(1)
 			expect(changed).toHaveBeenCalledTimes(0)
 			expect(removed).toHaveBeenCalledTimes(0)
-			expect(RundownPlaylists.findOne(id)).toBeTruthy()
+			expect(Timeline.findOne(id)).toBeTruthy()
 			expect(deferFcn0).toHaveReturnedTimes(1)
 			expect(deferAfterSaveFcn0).toHaveReturnedTimes(1)
 			added.mockClear()
@@ -143,13 +143,13 @@ describe('DatabaseCaches', () => {
 			expect(deferAfterSaveFcn0).toHaveReturnedTimes(0)
 
 			// Update the document:
-			cache.RundownPlaylists.update(id, { $set: { name: 'updated' } })
+			cache.Timeline.update(id, { $set: { timelineHash: protectString('updated') } })
 			// add new defered functions:
 			const deferFcn1 = jest.fn(() => {
-				expect(RundownPlaylists.findOne(id)).toMatchObject({ name: 'insert' })
+				expect(Timeline.findOne(id)).toMatchObject({ timelineHash: protectString('insert') })
 			})
 			const deferAfterSaveFcn1 = jest.fn(() => {
-				expect(RundownPlaylists.findOne(id)).toMatchObject({ name: 'updated' })
+				expect(Timeline.findOne(id)).toMatchObject({ timelineHash: protectString('updated') })
 			})
 			cache.defer(deferFcn1)
 			cache.deferAfterSave(deferAfterSaveFcn1)
@@ -168,7 +168,7 @@ describe('DatabaseCaches', () => {
 			deferAfterSaveFcn1.mockClear()
 
 			// Remove the document:
-			cache.RundownPlaylists.remove(id)
+			cache.Timeline.remove(id)
 
 			await cache.saveAllToDatabase()
 			waitTime(1) // to allow for observers to trigger
@@ -189,16 +189,16 @@ describe('DatabaseCaches', () => {
 			const added = jest.fn()
 			const changed = jest.fn()
 			const removed = jest.fn()
-			RundownPlaylists.find().observeChanges({
+			Timeline.find().observeChanges({
 				added,
 				changed,
 				removed,
 			})
 
 			{
-				const cache = await initCacheForStudio(studio._id)
+				const cache = await CacheForStudio.create(studio._id)
 
-				const cachedStudio = cache.Studios.findOne(studio._id)
+				const cachedStudio = cache.Studio.doc
 				expect(cachedStudio).toMatchObject(studio)
 
 				cache.assertNoChanges() // this shouldn't throw
@@ -206,18 +206,20 @@ describe('DatabaseCaches', () => {
 			}
 
 			{
-				const cache = await initCacheForStudio(studio._id)
-				const id: RundownPlaylistId = protectString('myPlaylist0')
+				const cache = await CacheForStudio.create(studio._id)
+				const id: StudioId = protectString('myPlaylist0')
 
 				// Insert a document:
-				cache.RundownPlaylists.insert({
-					...defaultRundownPlaylist(id, studio._id, getRandomId()),
-					name: 'insert',
+				cache.Timeline.insert({
+					_id: id,
+					timeline: [],
+					timelineHash: protectString('insert'),
+					generated: 1234,
 				})
-				cache.RundownPlaylists.update(id, { $set: { name: 'insertthenupdate' } })
+				cache.Timeline.update(id, { $set: { timelineHash: protectString('insertthenupdate') } })
 
-				expect(cache.RundownPlaylists.findOne(id)).toBeTruthy()
-				expect(RundownPlaylists.findOne(id)).toBeFalsy()
+				expect(cache.Timeline.findOne(id)).toBeTruthy()
+				expect(Timeline.findOne(id)).toBeFalsy()
 
 				expect(() => {
 					cache.assertNoChanges()
@@ -225,7 +227,7 @@ describe('DatabaseCaches', () => {
 			}
 
 			{
-				const cache = await initCacheForStudio(studio._id)
+				const cache = await CacheForStudio.create(studio._id)
 
 				// Insert a document:
 				cache.defer(() => {})
@@ -236,7 +238,7 @@ describe('DatabaseCaches', () => {
 			}
 
 			{
-				const cache = await initCacheForStudio(studio._id)
+				const cache = await CacheForStudio.create(studio._id)
 
 				// Insert a document:
 				cache.deferAfterSave(() => {})

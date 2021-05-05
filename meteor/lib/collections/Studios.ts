@@ -1,12 +1,20 @@
 import { TransformedCollection } from '../typings/meteor'
-import { applyClassToDocument, registerCollection, ProtectedString, omit } from '../lib'
+import {
+	applyClassToDocument,
+	registerCollection,
+	ProtectedString,
+	omit,
+	ProtectedStringProperties,
+	unprotectObject,
+} from '../lib'
 import * as _ from 'underscore'
 import {
 	IBlueprintConfig,
-	BlueprintMappings,
 	BlueprintMapping,
 	TSR,
 	LookaheadMode,
+	PackageContainer,
+	ExpectedPackage,
 } from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
@@ -14,11 +22,12 @@ import { BlueprintId } from './Blueprints'
 import { ShowStyleBaseId } from './ShowStyleBases'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
+import { ExpectedPackageDB } from './ExpectedPackages'
 
-export interface MappingsExt extends BlueprintMappings {
+export interface MappingsExt {
 	[layerName: string]: MappingExt
 }
-export interface MappingExt extends BlueprintMapping {}
+export interface MappingExt extends ProtectedStringProperties<BlueprintMapping, 'deviceId'> {}
 
 export interface IStudioSettings {
 	/** URL to endpoint where media preview are exposed */
@@ -78,15 +87,22 @@ export interface DBStudio {
 
 	_rundownVersionHash: string
 
-	routeSets: {
-		[id: string]: StudioRouteSet
-	}
+	routeSets: Record<string, StudioRouteSet>
+	routeSetExclusivityGroups: Record<string, StudioRouteSetExclusivityGroup>
 
-	routeSetExclusivityGroups: {
-		[id: string]: StudioRouteSetExclusivityGroup
-	}
+	/** Contains settings for which Package Containers are present in the studio.
+	 * (These are used by the Package Manager and the Expected Packages)
+	 */
+	packageContainers: Record<string, StudioPackageContainer>
+	/** Which package containers is used for media previews in GUI */
+	previewContainerIds: string[]
+	thumbnailContainerIds: string[]
 }
-
+export interface StudioPackageContainer {
+	/** List of which peripheraldevices uses this packageContainer */
+	deviceIds: string[]
+	container: PackageContainer
+}
 export interface StudioRouteSetExclusivityGroup {
 	name: string
 }
@@ -97,7 +113,7 @@ export interface StudioRouteSet {
 	/** Whether this group is active or not */
 	active: boolean
 	/** Default state of this group */
-	defaultActive?: boolean | undefined
+	defaultActive?: boolean
 	/** Only one Route can be active at the same time in the exclusivity-group */
 	exclusivityGroup?: string
 	/** If true, should be displayed and toggleable by user */
@@ -125,7 +141,7 @@ export interface ResultingMappingRoutes {
 export interface ResultingMappingRoute {
 	outputMappedLayer: string
 	deviceType?: TSR.DeviceType
-	remapping?: Partial<BlueprintMapping>
+	remapping?: Partial<MappingExt>
 }
 
 export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
@@ -168,22 +184,27 @@ export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
 
 	return routes
 }
-export function getRoutedMappings(inputMappings: MappingsExt, mappingRoutes: ResultingMappingRoutes): MappingsExt {
-	const outputMappings: MappingsExt = {}
+export function getRoutedMappings<M extends MappingExt>(
+	inputMappings: { [layerName: string]: M },
+	mappingRoutes: ResultingMappingRoutes
+): { [layerName: string]: M } {
+	const outputMappings: { [layerName: string]: M } = {}
+
+	// Re-route existing layers:
 	for (let inputLayer of Object.keys(inputMappings)) {
-		const inputMapping = inputMappings[inputLayer]
+		const inputMapping: M = inputMappings[inputLayer]
 
 		const routes = mappingRoutes.existing[inputLayer]
 		if (routes) {
 			for (let route of routes) {
-				const routedMapping: MappingExt = {
+				const routedMapping: M = {
 					...inputMapping,
 					...(route.remapping || {}),
 				}
 				outputMappings[route.outputMappedLayer] = routedMapping
 			}
 		} else {
-			// If no route is found at all, pass it through (backwards compatibility)
+			// If no route is found at all for a mapping, pass the mapping through un-modified for backwards compatibility.
 			outputMappings[inputLayer] = inputMapping
 		}
 	}
@@ -196,10 +217,40 @@ export function getRoutedMappings(inputMappings: MappingsExt, mappingRoutes: Res
 				deviceId: route.remapping.deviceId,
 				...route.remapping,
 			}
-			outputMappings[route.outputMappedLayer] = routedMapping
+			outputMappings[route.outputMappedLayer] = routedMapping as M
 		}
 	}
 	return outputMappings
+}
+
+export type MappingsExtWithPackage = {
+	[layerName: string]: MappingExt & { expectedPackages: (ExpectedPackage.Base & { rundownId?: string })[] }
+}
+export function routeExpectedPackages(
+	studio: Studio,
+	expectedPackages: (ExpectedPackageDB | ExpectedPackage.Base)[]
+): MappingsExtWithPackage {
+	// Map the expectedPackages onto their specified layer:
+	const mappingsWithPackages: MappingsExtWithPackage = {}
+	for (const expectedPackage of expectedPackages) {
+		for (const layerName of expectedPackage.layers) {
+			const mapping = studio.mappings[layerName]
+
+			if (mapping) {
+				if (!mappingsWithPackages[layerName]) {
+					mappingsWithPackages[layerName] = {
+						...mapping,
+						expectedPackages: [],
+					}
+				}
+				mappingsWithPackages[layerName].expectedPackages.push(unprotectObject(expectedPackage))
+			}
+		}
+	}
+
+	// Route the mappings
+	const routes = getActiveRoutes(studio)
+	return getRoutedMappings(mappingsWithPackages, routes)
 }
 
 export class Studio implements DBStudio {
@@ -215,13 +266,11 @@ export class Studio implements DBStudio {
 
 	public _rundownVersionHash: string
 
-	public routeSets: {
-		[id: string]: StudioRouteSet
-	}
-
-	public routeSetExclusivityGroups: {
-		[id: string]: StudioRouteSetExclusivityGroup
-	}
+	public routeSets: Record<string, StudioRouteSet>
+	public routeSetExclusivityGroups: Record<string, StudioRouteSetExclusivityGroup>
+	public packageContainers: Record<string, StudioPackageContainer>
+	public previewContainerIds: string[]
+	public thumbnailContainerIds: string[]
 
 	constructor(document: DBStudio) {
 		for (let [key, value] of Object.entries(document)) {

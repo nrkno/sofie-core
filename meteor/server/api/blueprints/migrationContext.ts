@@ -47,7 +47,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	getMapping(mappingId: string): BlueprintMapping | undefined {
 		check(mappingId, String)
 		let mapping = this.studio.mappings[mappingId]
-		if (mapping) return _.clone(mapping)
+		if (mapping) return unprotectObject(_.clone(mapping))
 	}
 	insertMapping(mappingId: string, mapping: OmitId<BlueprintMapping>): string {
 		check(mappingId, String)

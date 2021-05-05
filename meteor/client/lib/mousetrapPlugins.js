@@ -1,4 +1,3 @@
-// import { mousetrapHelper } from './mousetrapHelper'
 import Mousetrap from 'mousetrap'
 ;(function(Mousetrap) {
 	var _globalCallbacks = {}

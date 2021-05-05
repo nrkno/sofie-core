@@ -16,13 +16,17 @@ import {
 	PieceInstanceId,
 	PieceInstances,
 } from '../../../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import {
 	RundownPlaylist,
 	RundownPlaylistActivationId,
 	RundownPlaylists,
 } from '../../../../lib/collections/RundownPlaylists'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { isTooCloseToAutonext } from '../../playout/lib'
+import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../../playout/lockFunction'
+import { ReadonlyDeep } from 'type-fest'
 
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 ServerPlayoutAdLibAPI.innerStopPieces = jest.fn()
@@ -46,9 +50,7 @@ const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
 import { postProcessPieces } from '../postProcess'
-import { isTooCloseToAutonext, getRundownIDsFromCache } from '../../playout/lib'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { activateRundownPlaylist, deactivateRundownPlaylist } from '../../playout/actions'
+
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
 postProcessPiecesMock.mockImplementation(() => [])
@@ -66,20 +68,21 @@ describe('Test blueprint api context', () => {
 				rundownId: part.rundownId,
 				segmentId: part.segmentId,
 				playlistActivationId: activationId,
+				segmentPlayoutId: protectString(''),
 				takeCount: i,
 				rehearsal: false,
 				part,
 			})
 
 			const count = ((i + 2) % 4) + 1 // Some consistent randomness
-			for (let i = 0; i < count; i++) {
+			for (let o = 0; o < count; o++) {
 				PieceInstances.insert({
-					_id: protectString(`${part._id}_piece${i}`),
+					_id: protectString(`${part._id}_piece${o}`),
 					rundownId: rundown._id,
 					partInstanceId: protectString(`${part._id}_instance`),
 					playlistActivationId: activationId,
 					piece: {
-						_id: protectString(`${part._id}_piece_inner${i}`),
+						_id: protectString(`${part._id}_piece_inner${o}`),
 						externalId: '-',
 						enable: { start: 0 },
 						name: 'mock',
@@ -88,7 +91,7 @@ describe('Test blueprint api context', () => {
 						outputLayerId: '',
 						startPartId: part._id,
 						content: {
-							index: i,
+							index: o,
 						} as any,
 						lifespan: PieceLifespan.WithinPart,
 						invalid: false,
@@ -103,10 +106,10 @@ describe('Test blueprint api context', () => {
 		env = setupDefaultStudioEnvironment()
 	})
 
-	function getActionExecutionContext(cache: CacheForRundownPlaylist) {
-		const playlist = cache.RundownPlaylists.findOne(cache.containsDataFromPlaylist) as RundownPlaylist
+	function getActionExecutionContext(cache: CacheForPlayout) {
+		const playlist = cache.Playlist.doc
 		expect(playlist).toBeTruthy()
-		const rundown = cache.Rundowns.findOne({ playlistId: cache.containsDataFromPlaylist }) as Rundown
+		const rundown = cache.Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
 
 		const activationId = playlist.activationId as RundownPlaylistActivationId
@@ -116,8 +119,10 @@ describe('Test blueprint api context', () => {
 		expect(studio).toBeTruthy()
 
 		// Load all the PieceInstances, as we set the selected instances later
-		const rundownIds = getRundownIDsFromCache(cache, playlist)
+		const rundownIds = getRundownIDsFromCache(cache)
 		waitForPromise(cache.PieceInstances.fillWithDataFromDatabase({ rundownId: { $in: rundownIds } }))
+
+		const showStyle = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
 
 		const context = new ActionExecutionContext(
 			{
@@ -125,11 +130,10 @@ describe('Test blueprint api context', () => {
 				identifier: 'action',
 			},
 			cache,
-			studio,
-			playlist,
+			showStyle,
 			rundown
 		)
-		expect(context.getStudio()).toBeTruthy()
+		expect(context.studio).toBeTruthy()
 
 		return {
 			playlist,
@@ -139,7 +143,7 @@ describe('Test blueprint api context', () => {
 		}
 	}
 
-	function wrapWithCache<T>(fcn: (cache: CacheForRundownPlaylist, playlist: RundownPlaylist) => T) {
+	function wrapWithCache<T>(fcn: (cache: CacheForPlayout, playlist: ReadonlyDeep<RundownPlaylist>) => T) {
 		const defaultSetup = setupDefaultRundownPlaylist(env)
 
 		// Mark playlist as active
@@ -157,7 +161,14 @@ describe('Test blueprint api context', () => {
 
 		generateSparsePieceInstances(tmpPlaylist, rundown)
 
-		return wrapWithCacheForRundownPlaylist(tmpPlaylist, (cache) => fcn(cache, tmpPlaylist))
+		return runPlayoutOperationWithCache(
+			null,
+			'test',
+			tmpPlaylist._id,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			(cache) => fcn(cache, cache.Playlist.doc)
+		)
 	}
 
 	describe('ActionExecutionContext', () => {
@@ -179,7 +190,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('valid parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
 					expect(partInstanceIds).toHaveLength(5)
@@ -188,13 +199,13 @@ describe('Test blueprint api context', () => {
 					expect(context.getPartInstance('current')).toBeUndefined()
 
 					// Check the current part
-					playlist.currentPartInstanceId = partInstanceIds[1]
+					cache.Playlist.update({ $set: { currentPartInstanceId: partInstanceIds[1] } })
 					expect(context.getPartInstance('next')).toBeUndefined()
 					expect(context.getPartInstance('current')).toMatchObject({ _id: partInstanceIds[1] })
 
 					// Now the next part
-					playlist.currentPartInstanceId = null
-					playlist.nextPartInstanceId = partInstanceIds[2]
+					cache.Playlist.update({ $set: { currentPartInstanceId: null } })
+					cache.Playlist.update({ $set: { nextPartInstanceId: partInstanceIds[2] } })
 					expect(context.getPartInstance('next')).toMatchObject({ _id: partInstanceIds[2] })
 					expect(context.getPartInstance('current')).toBeUndefined()
 				})
@@ -203,7 +214,7 @@ describe('Test blueprint api context', () => {
 		describe('getPieceInstances', () => {
 			testInFiber('invalid parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					// @ts-ignore
 					expect(() => context.getPieceInstances()).toThrowError('Unknown part "undefined"')
@@ -218,7 +229,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('valid parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
 					expect(partInstanceIds).toHaveLength(5)
@@ -227,13 +238,13 @@ describe('Test blueprint api context', () => {
 					expect(context.getPieceInstances('current')).toHaveLength(0)
 
 					// Check the current part
-					playlist.currentPartInstanceId = partInstanceIds[1]
+					cache.Playlist.update({ $set: { currentPartInstanceId: partInstanceIds[1] } })
 					expect(context.getPieceInstances('next')).toHaveLength(0)
 					expect(context.getPieceInstances('current')).toHaveLength(4)
 
 					// Now the next part
-					playlist.currentPartInstanceId = null
-					playlist.nextPartInstanceId = partInstanceIds[2]
+					cache.Playlist.update({ $set: { currentPartInstanceId: null } })
+					cache.Playlist.update({ $set: { nextPartInstanceId: partInstanceIds[2] } })
 					expect(context.getPieceInstances('next')).toHaveLength(1)
 					expect(context.getPieceInstances('current')).toHaveLength(0)
 				})
@@ -257,7 +268,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('valid parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
 					expect(partInstanceIds).toHaveLength(5)
@@ -270,7 +281,7 @@ describe('Test blueprint api context', () => {
 
 					let mockCalledIds: PartInstanceId[] = []
 					getResolvedPiecesMock.mockImplementation(
-						(cache2: CacheForRundownPlaylist, showStyleBase: ShowStyleBase, partInstance: PartInstance) => {
+						(cache2: CacheForPlayout, showStyleBase: ShowStyleBase, partInstance: PartInstance) => {
 							expect(cache2).toBe(cache)
 							expect(showStyleBase).toBeTruthy()
 							mockCalledIds.push(partInstance._id)
@@ -279,7 +290,7 @@ describe('Test blueprint api context', () => {
 					)
 
 					// Check the current part
-					playlist.currentPartInstanceId = partInstanceIds[1]
+					cache.Playlist.update({ $set: { currentPartInstanceId: partInstanceIds[1] } })
 					expect(context.getResolvedPieceInstances('next')).toHaveLength(0)
 					expect(context.getResolvedPieceInstances('current')).toEqual(['abc'])
 					expect(getResolvedPiecesMock).toHaveBeenCalledTimes(1)
@@ -289,8 +300,8 @@ describe('Test blueprint api context', () => {
 					getResolvedPiecesMock.mockClear()
 
 					// Now the next part
-					playlist.currentPartInstanceId = null
-					playlist.nextPartInstanceId = partInstanceIds[2]
+					cache.Playlist.update({ $set: { currentPartInstanceId: null } })
+					cache.Playlist.update({ $set: { nextPartInstanceId: partInstanceIds[2] } })
 					expect(context.getResolvedPieceInstances('next')).toEqual(['abc'])
 					expect(context.getResolvedPieceInstances('current')).toHaveLength(0)
 					expect(getResolvedPiecesMock).toHaveBeenCalledTimes(1)
@@ -301,7 +312,7 @@ describe('Test blueprint api context', () => {
 		describe('findLastPieceOnLayer', () => {
 			testInFiber('invalid parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -396,7 +407,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('excludeCurrentPart', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist, rundown, activationId } = getActionExecutionContext(cache)
+					const { context, rundown, activationId } = getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -404,7 +415,7 @@ describe('Test blueprint api context', () => {
 					const partInstances = cache.PartInstances.findFetch({})
 					expect(partInstances).toHaveLength(5)
 
-					playlist.currentPartInstanceId = partInstances[2]._id
+					cache.Playlist.update({ $set: { currentPartInstanceId: partInstances[2]._id } })
 
 					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
 					expect(sourceLayerIds).toHaveLength(2)
@@ -477,7 +488,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('pieceMetaDataFilter', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist, rundown, activationId } = getActionExecutionContext(cache)
+					const { context, rundown, activationId } = getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -485,7 +496,7 @@ describe('Test blueprint api context', () => {
 					const partInstances = cache.PartInstances.findFetch({})
 					expect(partInstances).toHaveLength(5)
 
-					playlist.currentPartInstanceId = partInstances[2]._id
+					cache.Playlist.update({ $set: { currentPartInstanceId: partInstances[2]._id } })
 
 					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
 					expect(sourceLayerIds).toHaveLength(2)
@@ -589,8 +600,8 @@ describe('Test blueprint api context', () => {
 						})
 					).toThrowError('Cannot find PartInstance for PieceInstance')
 					expect(() =>
+						// @ts-ignore
 						context.getPartInstanceForPreviousPiece({
-							// @ts-ignore
 							partInstanceId: 'abc',
 						})
 					).toThrowError('Cannot find PartInstance for PieceInstance')
@@ -599,7 +610,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('valid parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
 					expect(partInstanceIds).toHaveLength(5)
@@ -627,11 +638,11 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('bad parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					const partInstance = cache.PartInstances.findOne() as PartInstance
 					expect(partInstance).toBeTruthy()
-					playlist.currentPartInstanceId = partInstance._id
+					cache.Playlist.update({ $set: { currentPartInstanceId: partInstance._id } })
 
 					// @ts-ignore
 					expect(() => context.insertPiece()).toThrowError('Unknown part "undefined"')
@@ -654,11 +665,11 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('good', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					const partInstance = cache.PartInstances.findOne() as PartInstance
 					expect(partInstance).toBeTruthy()
-					playlist.currentPartInstanceId = partInstance._id
+					cache.Playlist.update({ $set: { currentPartInstanceId: partInstance._id } })
 
 					postProcessPiecesMock.mockImplementationOnce(() => [
 						{
@@ -684,7 +695,7 @@ describe('Test blueprint api context', () => {
 
 					// check some properties not exposed to the blueprints
 					const newPieceInstance = cache.PieceInstances.findOne(
-						protectString(newPieceInstanceId!)
+						protectString(newPieceInstanceId)
 					) as PieceInstance
 					expect(newPieceInstance.dynamicallyInserted).toBeTruthy()
 					expect(newPieceInstance.partInstanceId).toEqual(partInstance._id)
@@ -695,7 +706,7 @@ describe('Test blueprint api context', () => {
 		describe('updatePieceInstance', () => {
 			testInFiber('bad parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					const pieceInstance = cache.PieceInstances.findOne() as PieceInstance
 					expect(pieceInstance).toBeTruthy()
@@ -721,7 +732,7 @@ describe('Test blueprint api context', () => {
 					).toThrowError('Can only update piece instances in current or next part instance')
 
 					// Set a current part instance
-					playlist.currentPartInstanceId = pieceInstance.partInstanceId
+					cache.Playlist.update({ $set: { currentPartInstanceId: pieceInstance.partInstanceId } })
 					expect(() => context.updatePieceInstance('abc', { sourceLayerId: 'new' })).toThrowError(
 						'PieceInstance could not be found'
 					)
@@ -733,8 +744,8 @@ describe('Test blueprint api context', () => {
 					).toThrowError('Can only update piece instances in current or next part instance')
 
 					// Set as next part instance
-					playlist.currentPartInstanceId = null
-					playlist.nextPartInstanceId = pieceInstance.partInstanceId
+					cache.Playlist.update({ $set: { currentPartInstanceId: null } })
+					cache.Playlist.update({ $set: { nextPartInstanceId: pieceInstance.partInstanceId } })
 					expect(() => context.updatePieceInstance('abc', { sourceLayerId: 'new' })).toThrowError(
 						'PieceInstance could not be found'
 					)
@@ -746,8 +757,8 @@ describe('Test blueprint api context', () => {
 					).toThrowError('Can only update piece instances in current or next part instance')
 
 					// Set as previous instance
-					playlist.nextPartInstanceId = null
-					playlist.previousPartInstanceId = pieceInstance.partInstanceId
+					cache.Playlist.update({ $set: { nextPartInstanceId: null } })
+					cache.Playlist.update({ $set: { previousPartInstanceId: pieceInstance.partInstanceId } })
 					expect(() =>
 						context.updatePieceInstance(unprotectString(pieceInstance._id), { sourceLayerId: 'new' })
 					).toThrowError('Can only update piece instances in current or next part instance')
@@ -759,12 +770,12 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('good', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					// Setup the rundown and find a piece to modify
 					const pieceInstance0 = cache.PieceInstances.findOne() as PieceInstance
 					expect(pieceInstance0).toBeTruthy()
-					playlist.currentPartInstanceId = pieceInstance0.partInstanceId
+					cache.Playlist.update({ $set: { currentPartInstanceId: pieceInstance0.partInstanceId } })
 
 					// Ensure there are no pending updates already
 					expect(cache.PieceInstances.isModified()).toBeFalsy()
@@ -812,7 +823,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('bad parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					// No next-part
 					// @ts-ignore
@@ -820,7 +831,7 @@ describe('Test blueprint api context', () => {
 
 					const partInstance = cache.PartInstances.findOne() as PartInstance
 					expect(partInstance).toBeTruthy()
-					playlist.currentPartInstanceId = partInstance._id
+					cache.Playlist.update({ $set: { currentPartInstanceId: partInstance._id } })
 
 					// Next part has already been modified
 					context.nextPartState = ActionPartChange.SAFE_CHANGE
@@ -891,7 +902,7 @@ describe('Test blueprint api context', () => {
 
 					const partInstance = cache.PartInstances.findOne() as PartInstance
 					expect(partInstance).toBeTruthy()
-					playlist.currentPartInstanceId = partInstance._id
+					cache.Playlist.update({ $set: { currentPartInstanceId: partInstance._id } })
 
 					const newPiece: IBlueprintPiece = {
 						name: 'test piece',
@@ -943,15 +954,15 @@ describe('Test blueprint api context', () => {
 		describe('stopPiecesOnLayers', () => {
 			testInFiber('invalid parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					// Bad instance id
-					playlist.currentPartInstanceId = protectString('abc')
+					cache.Playlist.update({ $set: { currentPartInstanceId: protectString('abc') } })
 					expect(() => context.stopPiecesOnLayers(['lay1'], 34)).toThrowError(
 						'Cannot stop pieceInstances when no current partInstance'
 					)
 
-					playlist.currentPartInstanceId = null
+					cache.Playlist.update({ $set: { currentPartInstanceId: null } })
 
 					innerStopPiecesMock.mockClear()
 					expect(context.stopPiecesOnLayers(['lay1'], 34)).toEqual([])
@@ -963,11 +974,11 @@ describe('Test blueprint api context', () => {
 			})
 			testInFiber('valid parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					const currentPartInstance = cache.PartInstances.findOne() as PartInstance
 					expect(currentPartInstance).toBeTruthy()
-					playlist.currentPartInstanceId = currentPartInstance._id
+					cache.Playlist.update({ $set: { currentPartInstanceId: currentPartInstance._id } })
 
 					innerStopPiecesMock.mockClear()
 					let filter: (piece: PieceInstance) => boolean = null as any
@@ -1002,15 +1013,15 @@ describe('Test blueprint api context', () => {
 		describe('stopPieceInstances', () => {
 			testInFiber('invalid parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					// Bad instance id
-					playlist.currentPartInstanceId = protectString('abc')
+					cache.Playlist.update({ $set: { currentPartInstanceId: protectString('abc') } })
 					expect(() => context.stopPieceInstances(['lay1'], 34)).toThrowError(
 						'Cannot stop pieceInstances when no current partInstance'
 					)
 
-					playlist.currentPartInstanceId = null
+					cache.Playlist.update({ $set: { currentPartInstanceId: null } })
 
 					innerStopPiecesMock.mockClear()
 					expect(context.stopPieceInstances(['lay1'], 34)).toEqual([])
@@ -1022,11 +1033,11 @@ describe('Test blueprint api context', () => {
 			})
 			testInFiber('valid parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					const currentPartInstance = cache.PartInstances.findOne() as PartInstance
 					expect(currentPartInstance).toBeTruthy()
-					playlist.currentPartInstanceId = currentPartInstance._id
+					cache.Playlist.update({ $set: { currentPartInstanceId: currentPartInstance._id } })
 
 					innerStopPiecesMock.mockClear()
 					let filter: (piece: PieceInstance) => boolean = null as any
@@ -1060,10 +1071,10 @@ describe('Test blueprint api context', () => {
 		describe('removePieceInstances', () => {
 			testInFiber('invalid parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					// No instance id
-					playlist.nextPartInstanceId = null
+					cache.Playlist.update({ $set: { nextPartInstanceId: null } })
 					expect(() => context.removePieceInstances('next', ['lay1'])).toThrowError(
 						'Cannot remove pieceInstances when no selected partInstance'
 					)
@@ -1072,7 +1083,7 @@ describe('Test blueprint api context', () => {
 					const beforePieceInstancesCount = cache.PieceInstances.findFetch().length // Because only those frm current, next, prev are included..
 					expect(beforePieceInstancesCount).not.toEqual(0)
 
-					playlist.nextPartInstanceId = protectString('abc')
+					cache.Playlist.update({ $set: { nextPartInstanceId: protectString('abc') } })
 					expect(context.removePieceInstances('next', [])).toEqual([])
 					expect(
 						context.removePieceInstances('next', [unprotectString(cache.PieceInstances.findOne()!._id)])
@@ -1083,7 +1094,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('good', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					expect(cache.PieceInstances.findFetch().length).not.toEqual(0)
 
@@ -1091,7 +1102,7 @@ describe('Test blueprint api context', () => {
 					const targetPieceInstance = cache.PieceInstances.findOne() as PieceInstance
 					expect(targetPieceInstance).toBeTruthy()
 
-					playlist.nextPartInstanceId = targetPieceInstance.partInstanceId
+					cache.Playlist.update({ $set: { nextPartInstanceId: targetPieceInstance.partInstanceId } })
 					expect(context.removePieceInstances('next', [unprotectString(targetPieceInstance._id)])).toEqual([
 						unprotectString(targetPieceInstance._id),
 					])
@@ -1106,7 +1117,7 @@ describe('Test blueprint api context', () => {
 		describe('updatePartInstance', () => {
 			testInFiber('bad parameters', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					const partInstance = cache.PartInstances.findOne() as PartInstance
 					expect(partInstance).toBeTruthy()
@@ -1126,7 +1137,7 @@ describe('Test blueprint api context', () => {
 					)
 
 					// Set a current part instance
-					playlist.currentPartInstanceId = partInstance._id
+					cache.Playlist.update({ $set: { currentPartInstanceId: partInstance._id } })
 					expect(() => context.updatePartInstance('next', { title: 'new' })).toThrowError(
 						'PartInstance could not be found'
 					)
@@ -1135,12 +1146,12 @@ describe('Test blueprint api context', () => {
 			})
 			testInFiber('good', () => {
 				wrapWithCache((cache) => {
-					const { context, playlist } = getActionExecutionContext(cache)
+					const { context } = getActionExecutionContext(cache)
 
 					// Setup the rundown and find an instance to modify
 					const partInstance0 = cache.PartInstances.findOne() as PartInstance
 					expect(partInstance0).toBeTruthy()
-					playlist.nextPartInstanceId = partInstance0._id
+					cache.Playlist.update({ $set: { nextPartInstanceId: partInstance0._id } })
 
 					// Ensure there are no pending updates already
 					expect(cache.PartInstances.isModified()).toBeFalsy()
