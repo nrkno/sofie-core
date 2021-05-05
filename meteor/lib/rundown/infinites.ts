@@ -452,7 +452,10 @@ export function processAndPrunePieceInstanceTimings(
 
 			if (key === 'onSegmentEnd' || (key === 'onRundownEnd' && !activePieces.onSegmentEnd)) {
 				// when start === 0, we are likely to have multiple infinite continuations. Only stop the 'other' if it should not be considered for being on air
-				if (activePieces.other && (start !== 0 || isCandidateBetterToBeContinued(activePieces.other, newPiece))) {
+				if (
+					activePieces.other &&
+					(start !== 0 || isCandidateBetterToBeContinued(activePieces.other, newPiece))
+				) {
 					// These modes should stop the 'other' when they start if not hidden behind a higher priority onEnd
 					activePieces.other.resolvedEndCap = offsetFromStart(start, newPiece)
 					activePieces.other = undefined
@@ -519,7 +522,7 @@ export function processAndPrunePieceInstanceTimings(
 	}
 
 	// Strip out any pieces that start and end at the same point
-	return result.filter(p => p.resolvedEndCap === undefined || p.resolvedEndCap !== p.piece.enable.start)
+	return result.filter((p) => p.resolvedEndCap === undefined || p.resolvedEndCap !== p.piece.enable.start)
 }
 
 function isCandidateBetterToBeContinued(best: PieceInstance, candidate: PieceInstance): boolean {
@@ -540,13 +543,13 @@ function isCandidateBetterToBeContinued(best: PieceInstance, candidate: PieceIns
 	} else if (best.dynamicallyInserted) {
 		// Prefer the adlib
 		return false
-	} else if (candidate.dynamicallyInserted){
+	} else if (candidate.dynamicallyInserted) {
 		// Prefer the adlib
 		return true
 	} else {
 		// Neither are adlibs, try other things
 	}
-	
+
 	// If one is virtual, prefer that
 	if (best.piece.virtual && !candidate.piece.virtual) {
 		// Prefer the virtual best

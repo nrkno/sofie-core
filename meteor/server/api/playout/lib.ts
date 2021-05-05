@@ -13,13 +13,13 @@ import {
 	protectString,
 	applyToArray,
 	getRandomId,
-	unprotectString
+	unprotectString,
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import {
 	fetchPiecesThatMayBeActiveForPart,
 	getPieceInstancesForPart,
-	syncPlayheadInfinitesForNextPartInstance
+	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
 import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -32,7 +32,7 @@ import {
 	CacheForPlayout,
 	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getRundownIDsFromCache,
-	getSelectedPartInstancesFromCache
+	getSelectedPartInstancesFromCache,
 } from './cache'
 import { Settings } from '../../../lib/Settings'
 import { runIngestOperationWithCache, UpdateIngestRundownAction } from '../ingest/lockFunction'
@@ -53,35 +53,35 @@ export function resetRundownPlaylist(cache: CacheForPlayout): void {
 
 	cache.PartInstances.update((p) => !p.reset, {
 		$set: {
-			reset: true
-		}
+			reset: true,
+		},
 	})
 	cache.PieceInstances.update((p) => !p.reset, {
 		$set: {
-			reset: true
-		}
+			reset: true,
+		},
 	})
 
 	cache.Playlist.update({
 		$set: {
 			previousPartInstanceId: null,
 			currentPartInstanceId: null,
-			holdState: RundownHoldState.NONE
+			holdState: RundownHoldState.NONE,
 		},
 		$unset: {
 			startedPlayback: 1,
 			rundownsStartedPlayback: 1,
 			previousPersistentState: 1,
-			trackedAbSessions: 1
-		}
+			trackedAbSessions: 1,
+		},
 	})
 
 	if (cache.Playlist.doc.activationId) {
 		// generate a new activationId
 		cache.Playlist.update({
 			$set: {
-				activationId: getRandomId()
-			}
+				activationId: getRandomId(),
+			},
 		})
 
 		// put the first on queue:
@@ -192,7 +192,7 @@ export function selectNextPart(
 				// If matched matched, otherwise leave on auto
 				nextPart = {
 					...newSegmentPart,
-					consumesNextSegmentId: true
+					consumesNextSegmentId: true,
 				}
 			}
 		}
@@ -269,7 +269,7 @@ export function setNextPart(
 				segmentPlayoutId,
 				part: nextPart,
 				rehearsal: !!cache.Playlist.doc.rehearsal,
-				consumesNextSegmentId: newNextPart?.consumesNextSegmentId
+				consumesNextSegmentId: newNextPart?.consumesNextSegmentId,
 			})
 
 			const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, nextPart))
@@ -289,7 +289,7 @@ export function setNextPart(
 		const selectedPartInstanceIds = _.compact([
 			newInstanceId,
 			cache.Playlist.doc.currentPartInstanceId,
-			cache.Playlist.doc.previousPartInstanceId
+			cache.Playlist.doc.previousPartInstanceId,
 		])
 		// reset any previous instances of this part
 		cache.PartInstances.update(
@@ -297,12 +297,12 @@ export function setNextPart(
 				_id: { $nin: selectedPartInstanceIds },
 				rundownId: nextPart.rundownId,
 				'part._id': nextPart._id,
-				reset: { $ne: true }
+				reset: { $ne: true },
 			},
 			{
 				$set: {
-					reset: true
-				}
+					reset: true,
+				},
 			}
 		)
 		cache.PieceInstances.update(
@@ -310,12 +310,12 @@ export function setNextPart(
 				partInstanceId: { $nin: selectedPartInstanceIds },
 				rundownId: nextPart.rundownId,
 				'piece.startPartId': nextPart._id,
-				reset: { $ne: true }
+				reset: { $ne: true },
 			},
 			{
 				$set: {
-					reset: true
-				}
+					reset: true,
+				},
 			}
 		)
 
@@ -323,8 +323,8 @@ export function setNextPart(
 			$set: literal<Partial<RundownPlaylist>>({
 				nextPartInstanceId: newInstanceId,
 				nextPartManual: !!(setManually || newNextPartInstance?.orphaned),
-				nextTimeOffset: nextTimeOffset || null
-			})
+				nextTimeOffset: nextTimeOffset || null,
+			}),
 		})
 	} else {
 		// Set to null
@@ -333,8 +333,8 @@ export function setNextPart(
 			$set: literal<Partial<RundownPlaylist>>({
 				nextPartInstanceId: null,
 				nextPartManual: !!setManually,
-				nextTimeOffset: null
-			})
+				nextTimeOffset: null,
+			}),
 		})
 	}
 
@@ -422,14 +422,14 @@ export function setNextSegment(cache: CacheForPlayout, nextSegment: Segment | nu
 
 		cache.Playlist.update({
 			$set: {
-				nextSegmentId: nextSegment._id
-			}
+				nextSegmentId: nextSegment._id,
+			},
 		})
 	} else {
 		cache.Playlist.update({
 			$unset: {
-				nextSegmentId: 1
-			}
+				nextSegmentId: 1,
+			},
 		})
 	}
 	if (span) span.end()
@@ -500,7 +500,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 							removeRundown: false,
 
 							showStyle: undefined,
-							blueprint: undefined
+							blueprint: undefined,
 						}
 					}
 				)
@@ -532,8 +532,8 @@ export function onPartHasStoppedPlaying(cache: CacheForPlayout, partInstance: Pa
 	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
 		cache.PartInstances.update(partInstance._id, {
 			$set: {
-				'timings.duration': stoppedPlayingTime - partInstance.timings.startedPlayback
-			}
+				'timings.duration': stoppedPlayingTime - partInstance.timings.startedPlayback,
+			},
 		})
 	} else {
 		// logger.warn(`Part "${part._id}" has never started playback on rundown "${rundownId}".`)
@@ -634,8 +634,8 @@ export function getRundownsSegmentsAndPartsFromCache(
 			{
 				sort: {
 					rundownId: 1,
-					_rank: 1
-				}
+					_rank: 1,
+				},
 			}
 		),
 		rundowns
@@ -647,8 +647,8 @@ export function getRundownsSegmentsAndPartsFromCache(
 			{
 				sort: {
 					rundownId: 1,
-					_rank: 1
-				}
+					_rank: 1,
+				},
 			}
 		),
 		segments
@@ -656,6 +656,6 @@ export function getRundownsSegmentsAndPartsFromCache(
 
 	return {
 		segments: segments,
-		parts: parts
+		parts: parts,
 	}
 }

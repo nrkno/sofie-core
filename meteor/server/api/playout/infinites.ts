@@ -11,7 +11,7 @@ import {
 	getPlayheadTrackingInfinitesForPart as libgetPlayheadTrackingInfinitesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
-	processAndPrunePieceInstanceTimings
+	processAndPrunePieceInstanceTimings,
 } from '../../../lib/rundown/infinites'
 import { profiler } from '../profiler'
 import { Meteor } from 'meteor/meteor'
@@ -80,14 +80,14 @@ function getIdsBeforeThisPart(cache: CacheForPlayout, nextPart: DBPart) {
 	const segmentsBeforeThisInRundown = currentSegment
 		? cache.Segments.findFetch({
 				rundownId: nextPart.rundownId,
-				_rank: { $lt: currentSegment._rank }
+				_rank: { $lt: currentSegment._rank },
 		  }).map((p) => p._id)
 		: []
 
 	if (span) span.end()
 	return {
 		partsBeforeThisInSegment: _.sortBy(partsBeforeThisInSegment, (p) => p._rank).map((p) => p._id),
-		segmentsBeforeThisInRundown
+		segmentsBeforeThisInRundown,
 	}
 }
 
@@ -164,7 +164,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPl
 			cache.PieceInstances,
 			{
 				partInstanceId: nextPartInstance._id,
-				'infinite.fromPreviousPlayhead': true
+				'infinite.fromPreviousPlayhead': true,
 			},
 			infinites
 		)

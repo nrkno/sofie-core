@@ -1,7 +1,7 @@
 import {
 	ShowStyleBlueprintManifest,
 	BlueprintSyncIngestPartInstance,
-	BlueprintSyncIngestNewData
+	BlueprintSyncIngestNewData,
 } from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
@@ -19,7 +19,7 @@ import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/c
 import {
 	fetchPiecesThatMayBeActiveForPart,
 	getPieceInstancesForPart,
-	syncPlayheadInfinitesForNextPartInstance
+	syncPlayheadInfinitesForNextPartInstance,
 } from '../playout/infinites'
 import { isTooCloseToAutonext } from '../playout/lib'
 import { CacheForIngest } from './cache'
@@ -49,7 +49,7 @@ export function syncChangesToPartInstances(
 						previousPartInstance: playlistPartInstances.previousPartInstance,
 						playStatus: 'current',
 						newPart: newPart,
-						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, newPart)
+						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, newPart),
 					})
 				}
 			}
@@ -63,7 +63,7 @@ export function syncChangesToPartInstances(
 							? 'current'
 							: 'next',
 						newPart: newPart,
-						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, newPart)
+						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, newPart),
 					})
 				}
 			}
@@ -73,16 +73,16 @@ export function syncChangesToPartInstances(
 				previousPartInstance,
 				playStatus,
 				newPart,
-				piecesThatMayBeActive
+				piecesThatMayBeActive,
 			} of instances) {
 				const pieceInstancesInPart = cache.PieceInstances.findFetch({
-					partInstanceId: existingPartInstance._id
+					partInstanceId: existingPartInstance._id,
 				})
 
 				const partId = existingPartInstance.part._id
 				const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
 					partInstance: unprotectObject(existingPartInstance),
-					pieceInstances: unprotectObjectArray(pieceInstancesInPart)
+					pieceInstances: unprotectObjectArray(pieceInstancesInPart),
 				}
 
 				const referencedAdlibIds = _.compact(pieceInstancesInPart.map((p) => p.adLibSourceId))
@@ -105,13 +105,13 @@ export function syncChangesToPartInstances(
 					pieceInstances: unprotectObjectArray(proposedPieceInstances),
 					adLibPieces: unprotectObjectArray(adlibPieces),
 					actions: unprotectObjectArray(adlibActions),
-					referencedAdlibs: unprotectObjectArray(referencedAdlibs)
+					referencedAdlibs: unprotectObjectArray(referencedAdlibs),
 				}
 
 				const syncContext = new SyncIngestUpdateToPartInstanceContext(
 					{
 						name: `Update to ${newPart.externalId}`,
-						identifier: `rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`
+						identifier: `rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
 					},
 					cache.Playlist.doc.activationId,
 					cache.Studio.doc,
@@ -149,8 +149,8 @@ export function syncChangesToPartInstances(
 							type: note.type,
 							message: note.message,
 							origin: {
-								name: '' // TODO
-							}
+								name: '', // TODO
+							},
 						})
 					)
 				}
@@ -159,8 +159,8 @@ export function syncChangesToPartInstances(
 					// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?
 					cache.PartInstances.update(existingPartInstance._id, {
 						$set: {
-							'part.notes': notes
-						}
+							'part.notes': notes,
+						},
 					})
 				}
 
