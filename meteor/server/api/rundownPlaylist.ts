@@ -49,7 +49,7 @@ import { Meteor } from 'meteor/meteor'
 import { BlueprintResultOrderedRundowns } from '@sofie-automation/blueprints-integration'
 import { MethodContext } from '../../lib/api/methods'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
-import { updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
+import { regeneratePlaylistAndRundownOrder, updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { Random } from 'meteor/random'
 import { asyncCollectionRemove, asyncCollectionFindOne } from '../lib/database'
@@ -135,7 +135,7 @@ export interface RundownPlaylistAndOrder {
 export function produceRundownPlaylistInfoFromRundown(
 	studio: ReadonlyDeep<Studio>,
 	studioBlueprint: WrappedStudioBlueprint | undefined,
-	existingPlaylist: RundownPlaylist | undefined,
+	existingPlaylist: ReadonlyDeep<RundownPlaylist> | undefined,
 	playlistId: RundownPlaylistId,
 	playlistExternalId: string,
 	rundowns: ReadonlyDeep<Array<Rundown>>
@@ -166,7 +166,7 @@ export function produceRundownPlaylistInfoFromRundown(
 			nextPartInstanceId: null,
 			previousPartInstanceId: null,
 
-			...existingPlaylist,
+			...clone<RundownPlaylist | undefined>(existingPlaylist),
 
 			_id: playlistId,
 			externalId: playlistExternalId,
@@ -201,7 +201,7 @@ export function produceRundownPlaylistInfoFromRundown(
 function defaultPlaylistForRundown(
 	rundown: ReadonlyDeep<DBRundown>,
 	studio: ReadonlyDeep<Studio>,
-	existingPlaylist?: RundownPlaylist
+	existingPlaylist?: ReadonlyDeep<RundownPlaylist>
 ): Omit<DBRundownPlaylist, '_id' | 'externalId'> {
 	return {
 		created: getCurrentTime(),
@@ -209,7 +209,7 @@ function defaultPlaylistForRundown(
 		nextPartInstanceId: null,
 		previousPartInstanceId: null,
 
-		...existingPlaylist,
+		...clone<RundownPlaylist | undefined>(existingPlaylist),
 
 		organizationId: studio.organizationId,
 		studioId: studio._id,
@@ -306,7 +306,7 @@ export function moveRundownIntoPlaylist(
 				lock,
 				oldPlaylist,
 				PlayoutLockFunctionPriority.MISC,
-				(oldPlaylistLock) => {
+				async (oldPlaylistLock) => {
 					// Reload playlist to ensure it is up-to-date
 					const playlist = RundownPlaylists.findOne(oldPlaylist._id)
 					if (!playlist)
@@ -324,8 +324,17 @@ export function moveRundownIntoPlaylist(
 						$set: { playlistId: protectString('__TMP__'), playlistIdIsSetInSofie: true },
 					})
 
+					// Regenerate the playlist
+					const newPlaylist = await regeneratePlaylistAndRundownOrder(studio, playlist)
+
 					// ensure the 'old' playout is updated to remove any references to the rundown
-					updatePlayoutAfterChangingRundownInPlaylist(playlist, oldPlaylistLock, null, undefined, undefined)
+					updatePlayoutAfterChangingRundownInPlaylist(
+						newPlaylist,
+						oldPlaylistLock,
+						null,
+						undefined,
+						undefined
+					)
 				}
 			)
 		}
@@ -409,11 +418,14 @@ export function moveRundownIntoPlaylist(
 						)
 					}
 
+					// Update the playlist and the order of the contents
+					const newPlaylist = await regeneratePlaylistAndRundownOrder(studio, playlist, rundownsCollection)
+
 					await rundownsCollection.updateDatabaseWithData()
 
 					// If the playlist is active this could have changed lookahead
 					updatePlayoutAfterChangingRundownInPlaylist(
-						playlist,
+						newPlaylist,
 						intoPlaylistLock,
 						rundown,
 						undefined,
@@ -454,11 +466,7 @@ export function restoreRundownsInPlaylistToDefaultOrder(context: MethodContext, 
 		playlistId,
 		PlayoutLockFunctionPriority.MISC,
 		async (playlistLock, tmpPlaylist) => {
-			const rundownsCollection = new DbCacheWriteCollection(Rundowns)
-			const [studio] = await Promise.all([
-				asyncCollectionFindOne(Studios, tmpPlaylist.studioId),
-				rundownsCollection.prepareInit({ playlistId: tmpPlaylist._id }, true),
-			])
+			const studio = await asyncCollectionFindOne(Studios, tmpPlaylist.studioId)
 
 			if (!studio)
 				throw new Meteor.Error(
@@ -476,20 +484,10 @@ export function restoreRundownsInPlaylistToDefaultOrder(context: MethodContext, 
 			newPlaylist.rundownRanksAreSetInSofie = false
 
 			// Update the _rank of the rundowns
-			const playlistInfo = produceRundownPlaylistInfoFromRundown(
-				studio,
-				undefined,
-				newPlaylist,
-				newPlaylist._id,
-				newPlaylist.externalId,
-				rundownsCollection.findFetch({})
-			)
-			updateRundownsInPlaylist(newPlaylist, playlistInfo.order, rundownsCollection)
-
-			await rundownsCollection.updateDatabaseWithData()
+			const updatedPlaylist = await regeneratePlaylistAndRundownOrder(studio, newPlaylist)
 
 			// If the playlist is active this could have changed lookahead
-			updatePlayoutAfterChangingRundownInPlaylist(newPlaylist, playlistLock, null, undefined, undefined)
+			updatePlayoutAfterChangingRundownInPlaylist(updatedPlaylist, playlistLock, null, undefined, undefined)
 		}
 	)
 }
