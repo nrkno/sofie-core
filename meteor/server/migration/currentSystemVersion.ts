@@ -29,7 +29,7 @@
  * 1.16.0: Release 28  (2021-01-19)
  * 1.17.0: Release 29  (2021-02-08)
  * 1.18.0: Release 30
- * 1.19.0: Release 31
+ * 1.19.0: Release 31  (2021-05-05)
  */
 
 // Note: Only set this to release versions, (ie X.Y.Z), not pre-releases (ie X.Y.Z-0-pre-release)

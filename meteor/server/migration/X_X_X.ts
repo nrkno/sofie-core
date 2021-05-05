@@ -28,7 +28,6 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	// },
 	//
 	//
-	ensureCollectionProperty('CoreSystem', {}, 'cron.casparCGRestart.enabled', true),
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
