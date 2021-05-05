@@ -12,8 +12,6 @@ export const addSteps = addMigrationSteps('1.32.0', [
 	ensureCollectionProperty('Studios', {}, 'previewContainerIds', {}),
 	ensureCollectionProperty('Studios', {}, 'thumbnailContainerIds', {}),
 
-	ensureCollectionProperty('CoreSystem', {}, 'cron.casparCGRestart.enabled', true),
-
 	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '1.32.0'),
 	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '1.32.0'),
 	setExpectedVersion(
