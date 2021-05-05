@@ -149,7 +149,7 @@ export class CoreMosDeviceHandler {
 	}
 	onMosConnectionChanged (connectionStatus: IMOSConnectionStatus) {
 
-		let statusCode = P.StatusCode.UNKNOWN
+		let statusCode: P.StatusCode
 		let messages: Array<string> = []
 
 		if (connectionStatus.PrimaryConnected) {
