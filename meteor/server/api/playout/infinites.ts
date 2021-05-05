@@ -145,7 +145,9 @@ export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPl
 		const prunedPieceInstances = processAndPrunePieceInstanceTimings(
 			showStyleBase,
 			playingPieceInstances,
-			nowInPart
+			nowInPart,
+			undefined,
+			true
 		)
 
 		const infinites = libgetPlayheadTrackingInfinitesForPart(
