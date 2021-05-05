@@ -101,7 +101,9 @@
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="blueprints_integration.iblueprintpartinstance.html#_id" class="tsd-kind-icon">_id</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="blueprints_integration.iblueprintpartinstance.html#orphaned" class="tsd-kind-icon">orphaned</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="blueprints_integration.iblueprintpartinstance.html#part" class="tsd-kind-icon">part</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="blueprints_integration.iblueprintpartinstance.html#rehearsal" class="tsd-kind-icon">rehearsal</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="blueprints_integration.iblueprintpartinstance.html#segmentid" class="tsd-kind-icon">segment<wbr>Id</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="blueprints_integration.iblueprintpartinstance.html#timings" class="tsd-kind-icon">timings</a></li>
 							</ul>
 						</section>
 					</div>
@@ -115,17 +117,17 @@
 					<div class="tsd-signature tsd-kind-icon">_id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/eb84012/packages/blueprints-integration/src/rundown.ts#L172">blueprints-integration/src/rundown.ts:172</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/e52d6ac/packages/blueprints-integration/src/rundown.ts#L173">blueprints-integration/src/rundown.ts:173</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="orphaned" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> orphaned</h3>
-					<div class="tsd-signature tsd-kind-icon">orphaned<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;adlib-part&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;deleted&quot;</span></div>
+					<div class="tsd-signature tsd-kind-icon">orphaned<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;adlib-part&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;deleted&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/eb84012/packages/blueprints-integration/src/rundown.ts#L179">blueprints-integration/src/rundown.ts:179</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/e52d6ac/packages/blueprints-integration/src/rundown.ts#L185">blueprints-integration/src/rundown.ts:185</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -140,9 +142,24 @@
 					<div class="tsd-signature tsd-kind-icon">part<span class="tsd-signature-symbol">:</span> <a href="" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintPartDB</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TMetadata</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/eb84012/packages/blueprints-integration/src/rundown.ts#L176">blueprints-integration/src/rundown.ts:176</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/e52d6ac/packages/blueprints-integration/src/rundown.ts#L177">blueprints-integration/src/rundown.ts:177</a></li>
 						</ul>
 					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="rehearsal" class="tsd-anchor"></a>
+					<h3>rehearsal</h3>
+					<div class="tsd-signature tsd-kind-icon">rehearsal<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/e52d6ac/packages/blueprints-integration/src/rundown.ts#L180">blueprints-integration/src/rundown.ts:180</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>If the playlist was in rehearsal mode when the PartInstance was created</p>
+						</div>
+					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="segmentid" class="tsd-anchor"></a>
@@ -150,12 +167,27 @@
 					<div class="tsd-signature tsd-kind-icon">segment<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/eb84012/packages/blueprints-integration/src/rundown.ts#L174">blueprints-integration/src/rundown.ts:174</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/e52d6ac/packages/blueprints-integration/src/rundown.ts#L175">blueprints-integration/src/rundown.ts:175</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
 							<p>The segment (&quot;Title&quot;) this line belongs to</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="timings" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> timings</h3>
+					<div class="tsd-signature tsd-kind-icon">timings<span class="tsd-signature-symbol">:</span> <a href="" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintPartInstanceTimings</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/e52d6ac/packages/blueprints-integration/src/rundown.ts#L182">blueprints-integration/src/rundown.ts:182</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Playout timings, in here we log times when playout happens</p>
 						</div>
 					</div>
 				</section>
@@ -195,7 +227,13 @@
 										<a href="blueprints_integration.iblueprintpartinstance.html#part" class="tsd-kind-icon">part</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="blueprints_integration.iblueprintpartinstance.html#rehearsal" class="tsd-kind-icon">rehearsal</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
 										<a href="blueprints_integration.iblueprintpartinstance.html#segmentid" class="tsd-kind-icon">segment<wbr>Id</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="blueprints_integration.iblueprintpartinstance.html#timings" class="tsd-kind-icon">timings</a>
 									</li>
 								</ul>
 							</li>
