@@ -9,13 +9,13 @@ import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInsp
 interface IProps extends ICustomLayerItemProps {}
 interface IState {}
 export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
-	leftLabel: HTMLElement
-	rightLabel: HTMLElement
+	leftLabel: HTMLElement | null
+	rightLabel: HTMLElement | null
 	lastOverflowTime: boolean
 
 	updateAnchoredElsWidths = () => {
-		const leftLabelWidth = getElementWidth(this.leftLabel)
-		const rightLabelWidth = getElementWidth(this.rightLabel)
+		const leftLabelWidth = this.leftLabel ? getElementWidth(this.leftLabel) : 0
+		const rightLabelWidth = this.rightLabel ? getElementWidth(this.rightLabel) : 0
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
@@ -53,21 +53,25 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 
 		return (
 			<React.Fragment>
-				<span
-					className="segment-timeline__piece__label"
-					ref={this.setLeftLabelRef}
-					style={this.getItemLabelOffsetLeft()}
-				>
-					<span className="segment-timeline__piece__label">{innerPiece.name}</span>
-				</span>
-				<span
-					className="segment-timeline__piece__label right-side"
-					ref={this.setRightLabelRef}
-					style={this.getItemLabelOffsetRight()}
-				>
-					{this.renderInfiniteIcon()}
-					{this.renderOverflowTimeLabel()}
-				</span>
+				{!this.props.isTooSmallForText && (
+					<>
+						<span
+							className="segment-timeline__piece__label"
+							ref={this.setLeftLabelRef}
+							style={this.getItemLabelOffsetLeft()}
+						>
+							<span className="segment-timeline__piece__label">{innerPiece.name}</span>
+						</span>
+						<span
+							className="segment-timeline__piece__label right-side"
+							ref={this.setRightLabelRef}
+							style={this.getItemLabelOffsetRight()}
+						>
+							{this.renderInfiniteIcon()}
+							{this.renderOverflowTimeLabel()}
+						</span>
+					</>
+				)}
 				<L3rdFloatingInspector
 					content={noraContent}
 					itemElement={this.props.itemElement}

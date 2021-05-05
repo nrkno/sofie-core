@@ -32,6 +32,7 @@ export interface ICustomLayerItemProps {
 	cursorPosition: OffsetPosition
 	cursorTimePosition: number
 	layerIndex: number
+	isTooSmallForText: boolean
 	getItemLabelOffsetLeft?: () => React.CSSProperties
 	getItemLabelOffsetRight?: () => React.CSSProperties
 	getItemDuration?: (returnInfinite?: boolean) => number

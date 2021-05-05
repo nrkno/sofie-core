@@ -541,7 +541,29 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	onTimelineWheel = (e: WheelEvent) => {
 		if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
 			// ctrl + Scroll
-			this.props.onZoomChange(Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1))), e)
+			const nextTimeScale = Math.max(
+				this.props.maxTimeScale,
+				Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1)))
+			)
+			if (this.timeline?.parentElement) {
+				const clientPositon = this.timeline.parentElement.getBoundingClientRect()
+				let zoomOffset = Math.max(0, e.clientX - clientPositon.x) / this.state.timelineWidth
+
+				const currentlyVisibleArea = this.state.timelineWidth / this.props.timeScale
+				const nextVisibleArea = this.state.timelineWidth / nextTimeScale
+				const differenceOfVisibleArea = currentlyVisibleArea - nextVisibleArea
+
+				if ((zoomOffset * this.state.timelineWidth) / this.props.timeScale > this.getSegmentDuration()) {
+					zoomOffset = 0
+				}
+
+				if (differenceOfVisibleArea === 0) {
+					this.props.onScroll(Math.max(0, this.props.scrollLeft + (e.deltaY * -1) / this.props.timeScale), e)
+				} else {
+					this.props.onScroll(Math.max(0, this.props.scrollLeft + differenceOfVisibleArea * zoomOffset), e)
+				}
+			}
+			this.props.onZoomChange(nextTimeScale, e)
 			e.preventDefault()
 			e.stopPropagation()
 		} else if (

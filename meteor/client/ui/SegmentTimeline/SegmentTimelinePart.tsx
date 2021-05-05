@@ -38,6 +38,12 @@ import { getShowHiddenSourceLayers } from '../../lib/localStorage'
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
 
+/** The width at which a Part is too small to attempt displaying text labels on Pieces, in pixels */
+export const BREAKPOINT_TOO_SMALL_FOR_TEXT = 30
+
+/** The width at whcih a Part is too small to be drawn at all, in pixels */
+export const BREAKPOINT_TOO_SMALL_FOR_DISPLAY = 3
+
 interface ISourceLayerPropsBase {
 	key: string
 	outputLayer: IOutputLayerUi
@@ -52,6 +58,7 @@ interface ISourceLayerPropsBase {
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
+	isTooSmallForText: boolean
 	outputGroupCollapsed: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -138,6 +145,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 							followLiveLine={this.props.followLiveLine}
 							isLiveLine={this.props.isLiveLine}
 							isNextLine={this.props.isNextLine}
+							isTooSmallForText={this.props.isTooSmallForText}
 							liveLineHistorySize={this.props.liveLineHistorySize}
 							livePosition={this.props.livePosition}
 							outputGroupCollapsed={this.props.outputGroupCollapsed}
@@ -194,6 +202,7 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 								followLiveLine={this.props.followLiveLine}
 								isLiveLine={this.props.isLiveLine}
 								isNextLine={this.props.isNextLine}
+								isTooSmallForText={this.props.isTooSmallForText}
 								liveLineHistorySize={this.props.liveLineHistorySize}
 								livePosition={this.props.livePosition}
 								outputGroupCollapsed={this.props.outputGroupCollapsed}
@@ -256,6 +265,7 @@ interface IOutputGroupProps {
 	}
 	isLiveLine: boolean
 	isNextLine: boolean
+	isTooSmallForText: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -298,6 +308,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 							followLiveLine={this.props.followLiveLine}
 							isLiveLine={this.props.isLiveLine}
 							isNextLine={this.props.isLiveLine}
+							isTooSmallForText={this.props.isTooSmallForText}
 							liveLineHistorySize={this.props.liveLineHistorySize}
 							livePosition={this.props.livePosition}
 							relative={this.props.relative}
@@ -332,6 +343,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 						followLiveLine={this.props.followLiveLine}
 						isLiveLine={this.props.isLiveLine}
 						isNextLine={this.props.isLiveLine}
+						isTooSmallForText={this.props.isTooSmallForText}
 						liveLineHistorySize={this.props.liveLineHistorySize}
 						livePosition={this.props.livePosition}
 						relative={this.props.relative}
@@ -415,6 +427,8 @@ interface IState {
 	liveDuration: number
 
 	isInsideViewport: boolean
+	isTooSmallForText: boolean
+	isTooSmallForDisplay: boolean
 	highlight: boolean
 }
 
@@ -464,6 +478,8 @@ export const SegmentTimelinePart = withTranslation()(
 					isNext,
 					isDurationSettling: false,
 					isInsideViewport: false,
+					isTooSmallForText: false,
+					isTooSmallForDisplay: false,
 					highlight: false,
 					liveDuration: isLive
 						? Math.max(
@@ -544,6 +560,8 @@ export const SegmentTimelinePart = withTranslation()(
 					}
 				}
 
+				const partDisplayDuration = SegmentTimelinePart0.getPartDuration(nextProps, liveDuration)
+
 				const isInsideViewport =
 					nextProps.relative ||
 					isLive ||
@@ -552,8 +570,13 @@ export const SegmentTimelinePart = withTranslation()(
 						nextProps.scrollWidth,
 						nextProps.part,
 						SegmentTimelinePart0.getPartStartsAt(nextProps),
-						SegmentTimelinePart0.getPartDuration(nextProps, liveDuration)
+						partDisplayDuration
 					)
+
+				const partDisplayWidth = partDisplayDuration * nextProps.timeScale
+				const isTooSmallForText = !isLive && !nextProps.relative && partDisplayWidth < BREAKPOINT_TOO_SMALL_FOR_TEXT
+				const isTooSmallForDisplay =
+					!isLive && !nextProps.relative && partDisplayWidth < BREAKPOINT_TOO_SMALL_FOR_DISPLAY
 
 				const partial = {
 					isLive,
@@ -561,6 +584,8 @@ export const SegmentTimelinePart = withTranslation()(
 					isDurationSettling,
 					liveDuration,
 					isInsideViewport,
+					isTooSmallForText,
+					isTooSmallForDisplay,
 				}
 
 				return partial
@@ -725,6 +750,7 @@ export const SegmentTimelinePart = withTranslation()(
 										expectedDuration={SegmentTimelinePart0.getPartExpectedDuration(this.props)}
 										isLiveLine={this.props.playlist.currentPartInstanceId === part.instance._id}
 										isNextLine={this.props.playlist.nextPartInstanceId === part.instance._id}
+										isTooSmallForText={this.state.isTooSmallForText}
 										timeScale={this.props.timeScale}
 										autoNextPart={this.props.autoNextPart}
 										liveLinePadding={SegmentTimelinePart0.getLiveLineTimePadding(this.props.timeScale)}
@@ -785,7 +811,7 @@ export const SegmentTimelinePart = withTranslation()(
 					}
 				}
 
-				if (this.state.isInsideViewport) {
+				if (this.state.isInsideViewport && !this.state.isTooSmallForDisplay) {
 					return (
 						<div
 							className={ClassNames('segment-timeline__part', {
