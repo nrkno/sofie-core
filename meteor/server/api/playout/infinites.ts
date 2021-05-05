@@ -161,7 +161,13 @@ function getPlayheadTrackingInfinitesForPart(
 	const playingPieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
 
 	const nowInPart = getCurrentTime() - (playingPartInstance.timings?.startedPlayback ?? 0)
-	const prunedPieceInstances = processAndPrunePieceInstanceTimings(showStyleBase, playingPieceInstances, nowInPart)
+	const prunedPieceInstances = processAndPrunePieceInstanceTimings(
+		showStyleBase,
+		playingPieceInstances,
+		nowInPart,
+		undefined,
+		true
+	)
 
 	const res = libgetPlayheadTrackingInfinitesForPart(
 		new Set(partsBeforeThisInSegment),
