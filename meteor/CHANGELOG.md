@@ -2,9 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
+## [1.32.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0-in-testing.1...v1.32.0) (2021-05-05)
 
-## [1.33.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.33.0-in-development.0) (2021-04-22)
+
+### Bug Fixes
+
+* allow removing rundowns that were imported from a snapshot ([029c666](https://github.com/nrkno/tv-automation-server-core/commit/029c666afe63a748b5af03bc6d5433ec4e32a190))
+* broken blueprints-integration released ([8eb5c8e](https://github.com/nrkno/tv-automation-server-core/commit/8eb5c8eec908f50a761f0f983be85e1515ea305d))
+* broken migration ([2713c8a](https://github.com/nrkno/tv-automation-server-core/commit/2713c8aba01d6e026143b69b0a10c0403721bf69))
+
+## [1.32.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.32.0-in-testing.1) (2021-04-27)
 
 
 ### Features

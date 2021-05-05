@@ -12,15 +12,13 @@ export const addSteps = addMigrationSteps('1.32.0', [
 	ensureCollectionProperty('Studios', {}, 'previewContainerIds', {}),
 	ensureCollectionProperty('Studios', {}, 'thumbnailContainerIds', {}),
 
-	ensureCollectionProperty('CoreSystem', {}, 'cron.casparCGRestart.enabled', true),
-
-	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '1.32.0-0'),
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '1.32.0-0'),
+	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '1.32.0'),
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '1.32.0'),
 	setExpectedVersion(
 		'expectedVersion.mediaManager',
 		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
 		'_process',
-		'1.7.0-release32.0'
+		'1.7.0'
 	),
 
 	{
@@ -53,6 +51,6 @@ export const addSteps = addMigrationSteps('1.32.0', [
 			if (dbs) {
 				dropDeprecatedDatabases()
 			}
-		},
-	},
+		}
+	}
 ])
