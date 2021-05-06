@@ -13,7 +13,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { RundownId } from '../../../lib/collections/Rundowns'
-import { findPieceInstanceToShow } from './utils'
+import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils'
 
 export interface IPropsHeader {
 	partInstanceId: PartInstanceId
@@ -21,15 +21,65 @@ export interface IPropsHeader {
 	showStyleBaseId: ShowStyleBaseId
 }
 
+export const PieceIcon = (props: {
+	pieceInstance: PieceInstance | undefined
+	sourceLayer: ISourceLayer | undefined
+}) => {
+	const piece = props.pieceInstance ? props.pieceInstance.piece : undefined
+	if (props.sourceLayer && piece) {
+		switch (props.sourceLayer.type) {
+			case SourceLayerType.GRAPHICS:
+				return <GraphicsInputIcon abbreviation={props.sourceLayer.abbreviation} />
+			case SourceLayerType.LIVE_SPEAK:
+				return <LiveSpeakInputIcon abbreviation={props.sourceLayer.abbreviation} />
+			case SourceLayerType.REMOTE:
+				const rmContent = piece ? (piece.content as RemoteContent | undefined) : undefined
+				return (
+					<RemoteInputIcon
+						inputIndex={rmContent ? rmContent.studioLabel : undefined}
+						abbreviation={props.sourceLayer.abbreviation}
+					/>
+				)
+			case SourceLayerType.SPLITS:
+				return <SplitInputIcon abbreviation={props.sourceLayer.abbreviation} piece={piece} />
+			case SourceLayerType.VT:
+				return <VTInputIcon abbreviation={props.sourceLayer.abbreviation} />
+			case SourceLayerType.CAMERA:
+				const camContent = piece ? (piece.content as CameraContent | undefined) : undefined
+				return (
+					<CamInputIcon
+						inputIndex={camContent ? camContent.studioLabel : undefined}
+						abbreviation={props.sourceLayer.abbreviation}
+					/>
+				)
+		}
+	}
+	return null
+}
+
+const supportedLayers = new Set([
+	SourceLayerType.GRAPHICS,
+	SourceLayerType.LIVE_SPEAK,
+	SourceLayerType.REMOTE,
+	SourceLayerType.SPLITS,
+	SourceLayerType.VT,
+	SourceLayerType.CAMERA,
+])
+
+export const PieceIconContainerAlternative = withTracker(
+	(props: {
+		pieceInstances: PieceInstance[]
+		sourceLayers: {
+			[key: string]: ISourceLayer
+		}
+	}) => {
+		return findPieceInstanceToShowFromInstances(props.pieceInstances, props.sourceLayers, supportedLayers)
+	}
+)((props: { sourceLayer: ISourceLayer | undefined; pieceInstance: PieceInstance | undefined }) => (
+	<PieceIcon pieceInstance={props.pieceInstance} sourceLayer={props.sourceLayer} />
+))
+
 export const PieceIconContainer = withTracker((props: IPropsHeader) => {
-	const supportedLayers = new Set([
-		SourceLayerType.GRAPHICS,
-		SourceLayerType.LIVE_SPEAK,
-		SourceLayerType.REMOTE,
-		SourceLayerType.SPLITS,
-		SourceLayerType.VT,
-		SourceLayerType.CAMERA,
-	])
 	return findPieceInstanceToShow(props, supportedLayers)
 })(
 	class PieceIconContainer extends MeteorReactComponent<
@@ -45,36 +95,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 		}
 
 		render() {
-			const piece = this.props.pieceInstance ? this.props.pieceInstance.piece : undefined
-			if (this.props.sourceLayer && piece) {
-				switch (this.props.sourceLayer.type) {
-					case SourceLayerType.GRAPHICS:
-						return <GraphicsInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
-					case SourceLayerType.LIVE_SPEAK:
-						return <LiveSpeakInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
-					case SourceLayerType.REMOTE:
-						const rmContent = piece ? (piece.content as RemoteContent | undefined) : undefined
-						return (
-							<RemoteInputIcon
-								inputIndex={rmContent ? rmContent.studioLabel : undefined}
-								abbreviation={this.props.sourceLayer.abbreviation}
-							/>
-						)
-					case SourceLayerType.SPLITS:
-						return <SplitInputIcon abbreviation={this.props.sourceLayer.abbreviation} piece={piece} />
-					case SourceLayerType.VT:
-						return <VTInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
-					case SourceLayerType.CAMERA:
-						const camContent = piece ? (piece.content as CameraContent | undefined) : undefined
-						return (
-							<CamInputIcon
-								inputIndex={camContent ? camContent.studioLabel : undefined}
-								abbreviation={this.props.sourceLayer.abbreviation}
-							/>
-						)
-				}
-			}
-			return null
+			return <PieceIcon pieceInstance={this.props.pieceInstance} sourceLayer={this.props.sourceLayer} />
 		}
 	}
 )

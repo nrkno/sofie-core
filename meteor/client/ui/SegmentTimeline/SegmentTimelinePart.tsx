@@ -42,7 +42,7 @@ export const SegmentTimelinePartElementId = 'rundown__segment__part__'
 export const BREAKPOINT_TOO_SMALL_FOR_TEXT = 30
 
 /** The width at whcih a Part is too small to be drawn at all, in pixels */
-export const BREAKPOINT_TOO_SMALL_FOR_DISPLAY = 3
+export const BREAKPOINT_TOO_SMALL_FOR_DISPLAY = 6
 
 interface ISourceLayerPropsBase {
 	key: string
@@ -407,6 +407,7 @@ interface IProps {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onPartTooSmallChanged?: (part: PartUi, isTooSmallForDisplay: boolean) => void
 	followLiveLine: boolean
 	autoNextPart: boolean
 	liveLineHistorySize: number
@@ -464,7 +465,7 @@ export const SegmentTimelinePart = withTranslation()(
 		}
 	})(
 		class SegmentTimelinePart0 extends React.Component<Translated<WithTiming<IProps>>, IState> {
-			constructor(props: Translated<WithTiming<IProps>>) {
+			constructor(props: Readonly<Translated<WithTiming<IProps>>>) {
 				super(props)
 
 				const partInstance = this.props.part.instance
@@ -500,8 +501,8 @@ export const SegmentTimelinePart = withTranslation()(
 			}
 
 			static getDerivedStateFromProps(
-				nextProps: IProps & RundownTiming.InjectedROTimingProps,
-				nextState: IState
+				nextProps: Readonly<IProps & RundownTiming.InjectedROTimingProps>,
+				nextState: Readonly<IState>
 			): Partial<IState> {
 				const isPrevious = nextProps.playlist.previousPartInstanceId === nextProps.part.instance._id
 				const isLive = nextProps.playlist.currentPartInstanceId === nextProps.part.instance._id
@@ -595,7 +596,7 @@ export const SegmentTimelinePart = withTranslation()(
 				return LIVE_LINE_TIME_PADDING / timeScale
 			}
 
-			static getCurrentLiveLinePosition(part: PartUi, currentTime: number): number {
+			static getCurrentLiveLinePosition(part: Readonly<PartUi>, currentTime: number): number {
 				if (part.instance.timings?.startedPlayback) {
 					if (part.instance.timings?.duration) {
 						return part.instance.timings.duration
@@ -626,6 +627,10 @@ export const SegmentTimelinePart = withTranslation()(
 			componentDidMount() {
 				super.componentDidMount && super.componentDidMount()
 				RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
+				const tooSmallState = this.state.isTooSmallForDisplay || this.state.isTooSmallForText
+				if (tooSmallState) {
+					this.props.onPartTooSmallChanged && this.props.onPartTooSmallChanged(this.props.part, tooSmallState)
+				}
 			}
 
 			componentWillUnmount() {
@@ -634,11 +639,20 @@ export const SegmentTimelinePart = withTranslation()(
 				this.highlightTimeout && clearTimeout(this.highlightTimeout)
 			}
 
-			shouldComponentUpdate(nextProps: WithTiming<IProps>, nextState: IState) {
+			shouldComponentUpdate(nextProps: Readonly<WithTiming<IProps>>, nextState: Readonly<IState>) {
 				if (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)) {
 					return true
 				} else {
 					return false
+				}
+			}
+
+			componentDidUpdate(prevProps: Readonly<Translated<WithTiming<IProps>>>, prevState: IState, snapshot?: any) {
+				super.componentDidUpdate && super.componentDidUpdate(prevProps, prevState, snapshot)
+				const tooSmallState = this.state.isTooSmallForDisplay || this.state.isTooSmallForText
+				const prevTooSmallState = prevState.isTooSmallForDisplay || prevState.isTooSmallForText
+				if (tooSmallState !== prevTooSmallState) {
+					this.props.onPartTooSmallChanged && this.props.onPartTooSmallChanged(this.props.part, tooSmallState)
 				}
 			}
 
@@ -811,7 +825,10 @@ export const SegmentTimelinePart = withTranslation()(
 					}
 				}
 
-				if (this.state.isInsideViewport && !this.state.isTooSmallForDisplay) {
+				if (
+					this.state.isInsideViewport &&
+					(!this.state.isTooSmallForDisplay || this.state.isLive || this.state.isNext)
+				) {
 					return (
 						<div
 							className={ClassNames('segment-timeline__part', {

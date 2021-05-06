@@ -90,6 +90,21 @@ $timeline-layer-height: 1em;
 		height: 100%;
 	}
 }
+.segment-timeline__small-parts-flag-hoist {
+	position: relative;
+	flex: 0 0;
+	max-width: 0;
+}
+.segment-timeline__small-parts-flag {
+	position: absolute;
+	top: -2.2em;
+	display: flex;
+
+	.segment-timeline__small-parts-flag__part {
+		flex: 0 0;
+		white-space: nowrap;
+	}
+}
 .segment-timeline__part {
 	flex: 0 0;
 	pointer-events: none;

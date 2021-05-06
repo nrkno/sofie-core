@@ -1181,6 +1181,34 @@ svg.icon {
 		overflow: visible;
 		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
 
+		.segment-timeline__small-parts-flag {
+			margin-left: -0.3em;
+			background: $segment-background-color;
+
+			&::before {
+				top: 0;
+				left: 0;
+				display: block;
+				content: ' ';
+				width: 0;
+				height: 0;
+				border-left: 0.4em solid transparent;
+				border-right: 0.4em solid transparent;
+
+				border-top: 0.4em solid #fff;
+				margin-right: 0.2em;
+				margin-top: 0.5em;
+			}
+			.segment-timeline__small-parts-flag__part {
+				margin-right: 0.1em;
+				cursor: default;
+
+				> .piece-icon {
+					width: 2em;
+				}
+			}
+		}
+
 		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
 		.segment-timeline__part {
 			position: relative;

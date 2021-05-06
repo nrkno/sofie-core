@@ -36,6 +36,9 @@ import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../Rundo
 
 import * as VelocityReact from 'velocity-react'
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PieceIconContainer } from '../PieceIcons/PieceIcon'
+import { SegmentTimelineSmallPartFlag } from './SegmentTimelineSmallPartFlag'
 
 interface IProps {
 	id: string
@@ -81,6 +84,7 @@ interface IStateHeader {
 	timelineWidth: number
 	mouseGrabbed: boolean
 	highlight: boolean
+	smallParts: Set<PartInstanceId>
 }
 
 interface IZoomPropsHeader {
@@ -311,6 +315,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			timelineWidth: 1,
 			mouseGrabbed: false,
 			highlight: false,
+			smallParts: new Set<PartInstanceId>(),
 		}
 	}
 
@@ -590,6 +595,30 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		})
 	}
 
+	onPartTooSmallChanged = (part: PartUi, isTooSmall: boolean) => {
+		if (!isTooSmall) {
+			if (this.state.smallParts.has(part.instance._id)) {
+				this.setState((state) => {
+					const smallParts = new Set(state.smallParts)
+					smallParts.delete(part.instance._id)
+					return {
+						smallParts,
+					}
+				})
+			}
+		} else {
+			if (!this.state.smallParts.has(part.instance._id)) {
+				this.setState((state) => {
+					const smallParts = new Set(state.smallParts)
+					smallParts.add(part.instance._id)
+					return {
+						smallParts,
+					}
+				})
+			}
+		}
+	}
+
 	getSegmentContext = (props) => {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
@@ -672,48 +701,72 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	renderTimeline() {
-		let partIsLive = false
+	renderSmallPartsFlag(parts: PartUi[]) {
 		return (
-			<React.Fragment>
-				{this.props.parts.map((part, index) => {
-					let previousPartIsLive = partIsLive
-					partIsLive = part.instance._id === this.props.playlist.currentPartInstanceId
-					return (
-						<SegmentTimelinePart
-							key={unprotectString(part.partId)}
-							segment={this.props.segment}
-							playlist={this.props.playlist}
-							studio={this.props.studio}
-							collapsedOutputs={this.props.collapsedOutputs}
-							scrollLeft={this.props.scrollLeft}
-							timeScale={this.props.timeScale}
-							autoNextPart={this.props.autoNextPart}
-							followLiveLine={this.props.followLiveLine}
-							liveLineHistorySize={this.props.liveLineHistorySize}
-							livePosition={this.props.livePosition}
-							onScroll={this.props.onScroll}
-							onCollapseOutputToggle={this.props.onCollapseOutputToggle}
-							onFollowLiveLine={this.props.onFollowLiveLine}
-							onContextMenu={this.props.onContextMenu}
-							relative={false}
-							onPieceClick={this.props.onItemClick}
-							onPieceDoubleClick={this.props.onItemDoubleClick}
-							scrollWidth={this.state.timelineWidth / this.props.timeScale}
-							firstPartInSegment={this.props.parts[0]}
-							isLastSegment={this.props.isLastSegment}
-							isLastInSegment={index === this.props.parts.length - 1}
-							isAfterLastValidInSegmentAndItsLive={
-								index === (this.props.lastValidPartIndex || 0) + 1 &&
-								previousPartIsLive &&
-								!!this.props.playlist.nextPartInstanceId
-							}
-							part={part}
+			<div className="segment-timeline__small-parts-flag-hoist">
+				<div className="segment-timeline__small-parts-flag">
+					{parts.map((part, index) => (
+						<SegmentTimelineSmallPartFlag
+							key={unprotectString(part.instance._id)}
+							partInstance={part}
+							sourceLayers={this.props.segment.sourceLayers}
 						/>
-					)
-				})}
-			</React.Fragment>
+					))}
+				</div>
+			</div>
 		)
+	}
+
+	renderTimeline() {
+		const { smallParts } = this.state
+		let partIsLive = false
+		let smallPartsAccumulator: PartUi[] = []
+		return this.props.parts.map((part, index) => {
+			let previousPartIsLive = partIsLive
+			partIsLive = part.instance._id === this.props.playlist.currentPartInstanceId
+			let emitSmallPartsInFlag: PartUi[] | undefined = undefined
+			if (smallParts.has(part.instance._id)) {
+				smallPartsAccumulator.push(part)
+			} else if (smallPartsAccumulator.length > 0) {
+				emitSmallPartsInFlag = smallPartsAccumulator
+				smallPartsAccumulator = []
+			}
+			return (
+				<React.Fragment key={unprotectString(part.instance._id)}>
+					{emitSmallPartsInFlag && this.renderSmallPartsFlag(emitSmallPartsInFlag)}
+					<SegmentTimelinePart
+						segment={this.props.segment}
+						playlist={this.props.playlist}
+						studio={this.props.studio}
+						collapsedOutputs={this.props.collapsedOutputs}
+						scrollLeft={this.props.scrollLeft}
+						timeScale={this.props.timeScale}
+						autoNextPart={this.props.autoNextPart}
+						followLiveLine={this.props.followLiveLine}
+						liveLineHistorySize={this.props.liveLineHistorySize}
+						livePosition={this.props.livePosition}
+						onScroll={this.props.onScroll}
+						onCollapseOutputToggle={this.props.onCollapseOutputToggle}
+						onFollowLiveLine={this.props.onFollowLiveLine}
+						onContextMenu={this.props.onContextMenu}
+						relative={false}
+						onPieceClick={this.props.onItemClick}
+						onPieceDoubleClick={this.props.onItemDoubleClick}
+						onPartTooSmallChanged={this.onPartTooSmallChanged}
+						scrollWidth={this.state.timelineWidth / this.props.timeScale}
+						firstPartInSegment={this.props.parts[0]}
+						isLastSegment={this.props.isLastSegment}
+						isLastInSegment={index === this.props.parts.length - 1}
+						isAfterLastValidInSegmentAndItsLive={
+							index === (this.props.lastValidPartIndex || 0) + 1 &&
+							previousPartIsLive &&
+							!!this.props.playlist.nextPartInstanceId
+						}
+						part={part}
+					/>
+				</React.Fragment>
+			)
+		})
 	}
 
 	renderEndOfSegment() {
