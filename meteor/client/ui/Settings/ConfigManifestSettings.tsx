@@ -121,6 +121,32 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, Doc
 					type="int"
 					collection={collection}
 					className="input text-input input-m"
+					mutateDisplayValue={(v) => (item.zeroBased ? v + 1 : v)}
+					mutateUpdateValue={(v) => (item.zeroBased ? v - 1 : v)}
+				/>
+			)
+		case ConfigManifestEntryType.INT:
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type="int"
+					collection={collection}
+					className="input text-input input-m"
+					mutateDisplayValue={(v) => (item.zeroBased ? v + 1 : v)}
+					mutateUpdateValue={(v) => (item.zeroBased ? v - 1 : v)}
+				/>
+			)
+		case ConfigManifestEntryType.FLOAT:
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type="float"
+					collection={collection}
+					className="input text-input input-m"
 				/>
 			)
 		case ConfigManifestEntryType.BOOLEAN:
@@ -683,6 +709,9 @@ export class ConfigManifestSettings<
 				) : (
 					value.toString()
 				)
+			case ConfigManifestEntryType.NUMBER:
+			case ConfigManifestEntryType.INT:
+				return _.isNumber(value) && item.zeroBased ? (value + 1).toString() : value.toString()
 			default:
 				return value.toString()
 		}

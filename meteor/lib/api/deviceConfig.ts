@@ -42,6 +42,7 @@ export enum ConfigManifestEntryType {
 	STRING = 'string',
 	MULTILINE_STRING = 'multiline_string',
 	BOOLEAN = 'boolean',
+	/** @deprecated use INT/FLOAT instead */
 	NUMBER = 'float',
 	FLOAT = 'float',
 	INT = 'int',
@@ -50,7 +51,12 @@ export enum ConfigManifestEntryType {
 	ENUM = 'enum',
 }
 
-export type ConfigManifestEntry = ConfigManifestEntryDefault | TableConfigManifestEntry | ConfigManifestEnumEntry
+export type ConfigManifestEntry =
+	| ConfigManifestEntryDefault
+	| TableConfigManifestEntry
+	| ConfigManifestEnumEntry
+	| ConfigManifestIntEntry
+	| ConfigManifestFloatEntry
 export interface ConfigManifestEntryBase {
 	id: string
 	name: string
@@ -64,7 +70,20 @@ export interface ConfigManifestEnumEntry extends ConfigManifestEntryBase {
 	values: any // for enum
 }
 export interface ConfigManifestEntryDefault extends ConfigManifestEntryBase {
-	type: Exclude<ConfigManifestEntryType, ConfigManifestEntryType.ENUM>
+	type: Exclude<
+		ConfigManifestEntryType,
+		ConfigManifestEntryType.ENUM | ConfigManifestEntryType.INT | ConfigManifestEntryType.FLOAT
+	>
+}
+export interface ConfigManifestIntEntry extends ConfigManifestEntryBase {
+	type: ConfigManifestEntryType.INT
+	/** Zero-based values will be stored in the database (and reported to blueprints) as values starting from 0, however,
+	 * 	when rendered in settings pages they will appear as value + 1
+	 */
+	zeroBased?: boolean
+}
+export interface ConfigManifestFloatEntry extends ConfigManifestEntryBase {
+	type: ConfigManifestEntryType.FLOAT
 }
 export interface ConfigManifestEnumEntry extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.ENUM
@@ -95,7 +114,10 @@ export interface TableConfigManifestEntry extends ConfigManifestEntryBase {
 
 export type MappingsManifest = Record<string, MappingManifestEntry[]>
 
-export interface MappingManifestEntry extends ConfigManifestEntryBase {
+export interface MappingManifestEntryProps {
 	optional?: boolean
 	includeInSummary?: boolean
 }
+
+export type MappingManifestEntry = MappingManifestEntryProps &
+	(ConfigManifestEntryDefault | ConfigManifestEnumEntry | ConfigManifestIntEntry | ConfigManifestFloatEntry)
