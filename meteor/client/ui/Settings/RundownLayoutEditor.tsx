@@ -25,7 +25,6 @@ import {
 	RundownLayoutAdLibRegionRole,
 	RundownLayoutId,
 	RundownLayoutPieceCountdown,
-	RundownLayoutNextInfo,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -1214,128 +1213,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			)
 		}
 
-		renderNextInfo(
-			item: RundownLayoutBase,
-			tab: RundownLayoutNextInfo,
-			index: number,
-			isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Name')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.name`}
-								obj={item}
-								type="text"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Show segment name')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.showSegmentName`}
-								obj={item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							/>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Show part title')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.showPartTitle`}
-								obj={item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							/>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Hide for dynamically inserted parts')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.hideForDynamicallyInsertedParts`}
-								obj={item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							/>
-						</label>
-					</div>
-					{isDashboardLayout && (
-						<React.Fragment>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('X')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.x`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Y')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.y`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Width')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.width`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Scale')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.scale`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-						</React.Fragment>
-					)}
-				</React.Fragment>
-			)
-		}
-
 		renderElements(item: RundownLayoutBase) {
 			const { t } = this.props
 
@@ -1470,8 +1347,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								? this.renderAdLibRegion(item, tab, index, isRundownLayout, isDashboardLayout)
 								: RundownLayoutsAPI.isPieceCountdown(tab)
 								? this.renderPieceCountdown(item, tab, index, isRundownLayout, isDashboardLayout)
-								: RundownLayoutsAPI.isNextInfo(tab)
-								? this.renderNextInfo(item, tab, index, isRundownLayout, isDashboardLayout)
 								: undefined}
 						</div>
 					))}
