@@ -1,0 +1,25 @@
+@import '../colorScheme';
+
+.next-info-panel {
+	position: absolute;
+	user-select: none;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	margin: 0.625rem;
+
+	.next-info-panel__segment {
+		font-weight: 500;
+	}
+
+	.next-info-panel__part {
+		&:before {
+			content: ' (';
+			display: inline;
+		}
+		&:after {
+			content: ')';
+			display: inline;
+		}
+	}
+}
