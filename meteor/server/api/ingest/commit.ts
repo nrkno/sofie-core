@@ -1,9 +1,5 @@
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import {
-	loadShowStyleBlueprint,
-	loadStudioBlueprint,
-	WrappedShowStyleBlueprint,
-} from '../blueprints/cache'
+import { loadShowStyleBlueprint, loadStudioBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { allowedToMoveRundownOutOfPlaylist, ChangedSegmentsRankInfo, updatePartInstanceRanks } from '../rundown'
@@ -299,7 +295,7 @@ async function generatePlaylistAndRundownsCollection(
 		ingestCache.Studio.doc,
 		finalRundown,
 		newPlaylistId,
-		newPlaylistExternalId,
+		newPlaylistExternalId
 	)
 
 	// Update the ingestCache to keep them in sync
@@ -324,17 +320,25 @@ async function generatePlaylistAndRundownsCollectionInner(
 ): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown, DBRundown>]> {
 	if (existingPlaylist0) {
 		if (existingPlaylist0._id !== newPlaylistId) {
-			throw new Meteor.Error(500, `ingest.generatePlaylistAndRundownsCollection requires existingPlaylist0("${existingPlaylist0._id}") newPlaylistId("${newPlaylistId}") to be the same`)
+			throw new Meteor.Error(
+				500,
+				`ingest.generatePlaylistAndRundownsCollection requires existingPlaylist0("${existingPlaylist0._id}") newPlaylistId("${newPlaylistId}") to be the same`
+			)
 		}
 		if (existingPlaylist0.externalId !== newPlaylistExternalId) {
-			throw new Meteor.Error(500, `ingest.generatePlaylistAndRundownsCollection requires existingPlaylist0("${existingPlaylist0.externalId}") newPlaylistExternalId("${newPlaylistExternalId}") to be the same`)
+			throw new Meteor.Error(
+				500,
+				`ingest.generatePlaylistAndRundownsCollection requires existingPlaylist0("${existingPlaylist0.externalId}") newPlaylistExternalId("${newPlaylistExternalId}") to be the same`
+			)
 		}
 	}
 
 	// Load existing playout data
 	const rundownsCollection = existingRundownsCollection ?? new DbCacheWriteCollection(Rundowns)
 	const [existingPlaylist, studioBlueprint] = await Promise.all([
-		existingPlaylist0 ? existingPlaylist0 : (asyncCollectionFindOne(RundownPlaylists, newPlaylistId) as Promise<ReadonlyDeep<RundownPlaylist>>) ,
+		existingPlaylist0
+			? existingPlaylist0
+			: (asyncCollectionFindOne(RundownPlaylists, newPlaylistId) as Promise<ReadonlyDeep<RundownPlaylist>>),
 		makePromise(() => loadStudioBlueprint(studio)),
 		existingRundownsCollection ? null : rundownsCollection.prepareInit({ playlistId: newPlaylistId }, true),
 	])
