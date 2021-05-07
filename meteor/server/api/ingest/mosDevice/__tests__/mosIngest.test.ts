@@ -21,6 +21,7 @@ import { resetRandomId, restartRandomId } from '../../../../../__mocks__/random'
 jest.mock('../../updateNext')
 import { ensureNextPartIsValid } from '../../updateNext'
 import { UserActionsLog } from '../../../../../lib/collections/UserActionsLog'
+import { removeRundownPlaylistFromDb } from '../../../rundownPlaylist'
 type TensureNextPartIsValid = jest.MockedFunction<typeof ensureNextPartIsValid>
 const ensureNextPartIsValidMock = ensureNextPartIsValid as TensureNextPartIsValid
 
@@ -1298,5 +1299,56 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0))
 		expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0))
 		expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0))
+	})
+
+	testInFiber('Playlist updates when removing one (of multiple) rundowns', async () => {
+		// Cleanup any existing playlists
+		RundownPlaylists.update({}, { $unset: { activationId: 1 } }, { multi: true })
+		await Promise.all(
+			RundownPlaylists.find()
+				.fetch()
+				.map((p) => removeRundownPlaylistFromDb(p))
+		)
+		expect(RundownPlaylists.find().count()).toBe(0)
+		expect(Rundowns.find().count()).toBe(0)
+
+		const roData1 = mockRO.roCreate()
+		roData1.ID = new MOS.MosString128('Rundown1')
+		roData1.Slug = new MOS.MosString128('Test Rundown 1')
+		;(roData1 as any).ForcePlaylistExternalId = 'playlist1'
+		await MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, roData1)
+
+		const roData2 = mockRO.roCreate()
+		roData2.ID = new MOS.MosString128('Rundown2')
+		roData2.Slug = new MOS.MosString128('Test Rundown 2')
+		;(roData2 as any).ForcePlaylistExternalId = 'playlist1'
+		await MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, roData2)
+
+		const rundown1 = Rundowns.findOne({ externalId: 'Rundown1' }) as Rundown
+		expect(rundown1).toBeTruthy()
+		const rundown2 = Rundowns.findOne({ externalId: 'Rundown2' }) as Rundown
+		expect(rundown2).toBeTruthy()
+
+		// The rundowns should be in the same playlist
+		expect(rundown1.playlistId).toEqual(rundown2.playlistId)
+		expect(rundown1.name).not.toEqual(rundown2.name)
+
+		// check the playlist looks correct
+		const playlist = RundownPlaylists.findOne(rundown1.playlistId) as RundownPlaylist
+		expect(playlist).toBeTruthy()
+
+		expect(playlist.name).toEqual(rundown1.name)
+		expect(playlist.name).not.toEqual(rundown2.name)
+
+		// Remove the first rundown in the playlist
+		await MeteorCall.peripheralDevice.mosRoDelete(device._id, device.token, roData1.ID)
+		expect(Rundowns.findOne(rundown1._id)).toBeFalsy()
+
+		// check the playlist looks correct
+		const playlist2 = RundownPlaylists.findOne(rundown1.playlistId) as RundownPlaylist
+		expect(playlist2).toBeTruthy()
+
+		expect(playlist2.name).toEqual(rundown2.name)
+		expect(playlist2.name).not.toEqual(playlist.name)
 	})
 })
