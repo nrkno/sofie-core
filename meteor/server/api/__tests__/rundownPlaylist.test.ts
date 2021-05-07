@@ -76,7 +76,6 @@ describe('Rundown', () => {
 			playlist0.externalId,
 			rundownsCollection.findFetch()
 		)
-		// rundownPlaylistInfo.rundownPlaylist.rundownRanksAreSetInSofie = true
 		updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundownsCollection)
 		waitForPromise(rundownsCollection.updateDatabaseWithData())
 
@@ -92,21 +91,6 @@ describe('Rundown', () => {
 
 		playlist0 = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
 		expect(playlist0).toBeTruthy()
-
-		// // This should do no change, since rank is now controlled by Sofie:
-		// rundownsCollection = new DbCacheWriteCollection(Rundowns)
-		// waitForPromise(rundownsCollection.prepareInit({ playlistId: playlist0._id }, true))
-		// rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(
-		// 	env.studio,
-		// 	undefined,
-		// 	playlist0,
-		// 	playlist0._id,
-		// 	playlist0.externalId,
-		// 	rundownsCollection.findFetch()
-		// )
-		// updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundownsCollection)
-		// waitForPromise(rundownsCollection.updateDatabaseWithData())
-		// expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown02', 'rundown00'])
 
 		Meteor.call(RundownAPIMethods.moveRundown, rundownId02, playlist0, ['rundown02', 'rundown01', 'rundown00'])
 		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown02', 'rundown01', 'rundown00'])
