@@ -1,5 +1,5 @@
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
-import { Time, registerCollection, ProtectedString } from '../lib'
+import { Time, registerCollection, ProtectedString, assertNever } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
 
 import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
@@ -145,6 +145,15 @@ export function getExternalNRCSName(device: PeripheralDevice | undefined): strin
 				return 'iNews'
 			} else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
 				return 'Google Sheet'
+			} else if (
+				device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT  ||
+				device.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER ||
+				device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER
+			) {
+				// These aren't ingest gateways
+				return 'N/A'
+			} else {
+				assertNever(device.type)
 			}
 		}
 	}
