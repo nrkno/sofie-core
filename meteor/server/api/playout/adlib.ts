@@ -73,7 +73,7 @@ export namespace ServerPlayoutAdLibAPI {
 				if (playlist.currentPartInstanceId !== partInstanceId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
 			},
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
@@ -164,7 +164,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 				cache.PieceInstances.insert(newPieceInstance)
 
-				syncPlayheadInfinitesForNextPartInstance(cache)
+				await syncPlayheadInfinitesForNextPartInstance(cache)
 
 				updateTimeline(cache)
 			}
@@ -311,7 +311,7 @@ export namespace ServerPlayoutAdLibAPI {
 			)
 			innerStartAdLibPiece(cache, rundown, currentPartInstance, newPieceInstance)
 
-			syncPlayheadInfinitesForNextPartInstance(cache)
+			await syncPlayheadInfinitesForNextPartInstance(cache)
 		}
 
 		updateTimeline(cache)

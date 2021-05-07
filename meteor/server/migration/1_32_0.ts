@@ -51,6 +51,6 @@ export const addSteps = addMigrationSteps('1.32.0', [
 			if (dbs) {
 				dropDeprecatedDatabases()
 			}
-		}
-	}
+		},
+	},
 ])

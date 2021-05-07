@@ -246,11 +246,11 @@ export function setNextPart(
 		let newInstanceId: PartInstanceId
 		if (newNextPartInstance) {
 			newInstanceId = newNextPartInstance._id
-			syncPlayheadInfinitesForNextPartInstance(cache)
+			waitForPromise(syncPlayheadInfinitesForNextPartInstance(cache))
 		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
 			// Re-use existing
 			newInstanceId = nextPartInstance._id
-			syncPlayheadInfinitesForNextPartInstance(cache)
+			waitForPromise(syncPlayheadInfinitesForNextPartInstance(cache))
 		} else {
 			// Create new isntance
 			newInstanceId = protectString<PartInstanceId>(`${nextPart._id}_${Random.id()}`)

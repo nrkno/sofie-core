@@ -166,7 +166,7 @@ export function syncChangesToPartInstances(
 
 				if (existingPartInstance._id === cache.Playlist.doc.currentPartInstanceId) {
 					// This should be run after 'current', before 'next':
-					syncPlayheadInfinitesForNextPartInstance(cache)
+					waitForPromise(syncPlayheadInfinitesForNextPartInstance(cache))
 				}
 			}
 		} else {
