@@ -169,7 +169,7 @@ export class CoreMosDeviceHandler {
 		if (!connectionStatus.PrimaryConnected) {
 			messages.push(connectionStatus.PrimaryStatus || 'Primary not connected')
 		}
-		if (!connectionStatus.SecondaryConnected) {
+		if (this._mosDevice.idSecondary && !connectionStatus.SecondaryConnected) {
 			messages.push(connectionStatus.SecondaryStatus || 'Fallback not connected')
 		}
 
