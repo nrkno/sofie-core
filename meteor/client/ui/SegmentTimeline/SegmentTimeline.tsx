@@ -37,8 +37,8 @@ import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../Rundo
 import * as VelocityReact from 'velocity-react'
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceIconContainer } from '../PieceIcons/PieceIcon'
-import { SegmentTimelineSmallPartFlag } from './SegmentTimelineSmallPartFlag'
+import { SegmentTimelineSmallPartFlagIcon } from './SmallParts/SegmentTimelineSmallPartFlagIcon'
+import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 
 interface IProps {
 	id: string
@@ -84,7 +84,8 @@ interface IStateHeader {
 	timelineWidth: number
 	mouseGrabbed: boolean
 	highlight: boolean
-	smallParts: Set<PartInstanceId>
+	/** This map contains a list of parts that are too small to be displayed properly, paired with their durations */
+	smallParts: Map<PartInstanceId, number>
 }
 
 interface IZoomPropsHeader {
@@ -315,7 +316,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			timelineWidth: 1,
 			mouseGrabbed: false,
 			highlight: false,
-			smallParts: new Set<PartInstanceId>(),
+			smallParts: new Map<PartInstanceId, number>(),
 		}
 	}
 
@@ -595,11 +596,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		})
 	}
 
-	onPartTooSmallChanged = (part: PartUi, isTooSmall: boolean) => {
-		if (!isTooSmall) {
+	onPartTooSmallChanged = (part: PartUi, isTooSmall: number | false) => {
+		if (isTooSmall === false) {
 			if (this.state.smallParts.has(part.instance._id)) {
 				this.setState((state) => {
-					const smallParts = new Set(state.smallParts)
+					const smallParts = new Map(state.smallParts)
 					smallParts.delete(part.instance._id)
 					return {
 						smallParts,
@@ -609,8 +610,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		} else {
 			if (!this.state.smallParts.has(part.instance._id)) {
 				this.setState((state) => {
-					const smallParts = new Set(state.smallParts)
-					smallParts.add(part.instance._id)
+					const smallParts = new Map(state.smallParts)
+					smallParts.set(part.instance._id, isTooSmall)
 					return {
 						smallParts,
 					}
@@ -701,39 +702,38 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	renderSmallPartsFlag(parts: PartUi[]) {
-		return (
-			<div className="segment-timeline__small-parts-flag-hoist">
-				<div className="segment-timeline__small-parts-flag">
-					{parts.map((part, index) => (
-						<SegmentTimelineSmallPartFlag
-							key={unprotectString(part.instance._id)}
-							partInstance={part}
-							sourceLayers={this.props.segment.sourceLayers}
-						/>
-					))}
-				</div>
-			</div>
-		)
-	}
-
 	renderTimeline() {
 		const { smallParts } = this.state
 		let partIsLive = false
-		let smallPartsAccumulator: PartUi[] = []
+		let smallPartsAccumulator: [PartUi, number][] = []
 		return this.props.parts.map((part, index) => {
 			let previousPartIsLive = partIsLive
 			partIsLive = part.instance._id === this.props.playlist.currentPartInstanceId
-			let emitSmallPartsInFlag: PartUi[] | undefined = undefined
-			if (smallParts.has(part.instance._id)) {
-				smallPartsAccumulator.push(part)
+			let emitSmallPartsInFlag: [PartUi, number][] | undefined = undefined
+			// if this is not undefined, it means that the part is on the list of small keys
+			const partDuration = smallParts.get(part.instance._id)
+			if (partDuration !== undefined) {
+				smallPartsAccumulator.push([part, partDuration])
 			} else if (smallPartsAccumulator.length > 0) {
 				emitSmallPartsInFlag = smallPartsAccumulator
 				smallPartsAccumulator = []
 			}
 			return (
 				<React.Fragment key={unprotectString(part.instance._id)}>
-					{emitSmallPartsInFlag && this.renderSmallPartsFlag(emitSmallPartsInFlag)}
+					{emitSmallPartsInFlag && (
+						<SegmentTimelineSmallPartFlag
+							parts={emitSmallPartsInFlag}
+							sourceLayers={this.props.segment.sourceLayers}
+							timeScale={this.props.timeScale}
+							autoNextPart={this.props.autoNextPart}
+							collapsedOutputs={this.props.collapsedOutputs}
+							playlist={this.props.playlist}
+							studio={this.props.studio}
+							segment={this.props.segment}
+							liveLineHistorySize={this.props.liveLineHistorySize}
+							isLastSegment={this.props.isLastSegment}
+						/>
+					)}
 					<SegmentTimelinePart
 						segment={this.props.segment}
 						playlist={this.props.playlist}

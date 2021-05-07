@@ -9,6 +9,7 @@ $segment-header-height: 2.3em;
 $segment-header-width: 12.5rem;
 $segment-background-color: #000;
 $segment-timeline-background-color: #1f1f1f;
+$segment-timeline-too-small-part: #0f0f0f;
 $segment-next-preview-background-color: #181818;
 $segment-title-background-color: #4b4b4b;
 $segment-title-background-color-next: $general-next-color;
@@ -1184,6 +1185,7 @@ svg.icon {
 		.segment-timeline__small-parts-flag {
 			margin-left: -0.3em;
 			background: $segment-background-color;
+			z-index: 1002;
 
 			&::before {
 				top: 0;
@@ -1199,12 +1201,13 @@ svg.icon {
 				margin-right: 0.2em;
 				margin-top: 0.5em;
 			}
+
 			.segment-timeline__small-parts-flag__part {
 				margin-right: 0.1em;
 				cursor: default;
 
-				> .piece-icon {
-					width: 2em;
+				> .piece_icon {
+					width: 1.6em;
 				}
 			}
 		}
@@ -1229,6 +1232,12 @@ svg.icon {
 				top: 0;
 				min-width: 200%;
 				z-index: 0;
+			}
+
+			&.segment-timeline__part--too-small {
+				height: 100%;
+				top: 0;
+				background: $segment-timeline-too-small-part;
 			}
 
 			&.invalid {
@@ -2375,6 +2384,17 @@ svg.icon {
 	}
 }
 
+@keyframes inspector-wipeRight {
+	0% {
+		opacity: 0;
+		clip-path: inset(0 100% 0 0);
+	}
+	100% {
+		opacity: 1;
+		clip-path: inset(0 -100px 0 0);
+	}
+}
+
 // TODO: this is just a debug label, should not be visible in final app
 .segment-timeline__debug-info {
 	position: absolute;
@@ -2413,6 +2433,53 @@ svg.icon {
 		transform: none;
 		bottom: 100%;
 		width: 26em;
+	}
+
+	&.segment-timeline__mini-inspector--small-parts {
+		top: 0;
+		z-index: 1001;
+		width: 350px;
+		max-width: 30vw;
+		transform: translate(0, 0);
+		padding: 0 0;
+		border-radius: 0;
+		margin-top: 0;
+		margin-left: 0;
+		box-shadow: 1px -1.5px 12px 9px rgba(0, 0, 0, 0.75);
+		animation: 0.2s inspector-wipeRight;
+		animation-timing-function: ease-out;
+
+		border-top: none;
+		border-bottom: none;
+		border-left: 1px solid #333;
+		border-right: 1px solid #333;
+		background: #000;
+		margin-top: $segment-header-height * -1;
+		padding: $segment-timeline-padding;
+
+		&::before {
+			content: none;
+			display: none;
+		}
+
+		.segment-timeline__mini-inspector--small-parts__duration {
+			display: block;
+			position: absolute;
+			top: 3px;
+			right: 5px;
+			white-space: nowrap;
+			color: #afafaf;
+			font-weight: 300;
+		}
+
+		> .segment-timeline__mini-inspector__mini-timeline {
+			white-space: nowrap;
+			background: #474747;
+
+			> .segment-timeline__part {
+				display: inline-block;
+			}
+		}
 	}
 
 	@include item-type-borders();

@@ -1,9 +1,9 @@
-import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import React from 'react'
-import { PieceIconContainerAlternative } from '../PieceIcons/PieceIcon'
-import { PartUi } from './SegmentTimelineContainer'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { PieceIconContainerAlternative } from '../../PieceIcons/PieceIcon'
+import { PartUi } from './../SegmentTimelineContainer'
 
-export const SegmentTimelineSmallPartFlag = (props: {
+export const SegmentTimelineSmallPartFlagIcon = (props: {
 	partInstance: PartUi
 	sourceLayers: {
 		[key: string]: ISourceLayer
