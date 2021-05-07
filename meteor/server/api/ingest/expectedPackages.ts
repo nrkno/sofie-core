@@ -17,19 +17,25 @@ import {
 	getContentVersionHash,
 } from '../../../lib/collections/ExpectedPackages'
 import { Studio, Studios } from '../../../lib/collections/Studios'
-import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
+import { BlueprintResultBaseline, ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { BucketAdLibAction, BucketAdLibActionId, BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { Meteor } from 'meteor/meteor'
 import { BucketAdLib, BucketAdLibId, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
+import {
+	updateBaselineExpectedPlayoutItemsOnRundown,
+	updateBaselineExpectedPlayoutItemsOnStudio,
+	updateExpectedPlayoutItemsOnRundown,
+} from './expectedPlayoutItems'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { CacheForIngest } from './cache'
 import { asyncCollectionRemove, saveIntoDb } from '../../lib/database'
 import { saveIntoCache } from '../../cache/lib'
 import { ReadonlyDeep } from 'type-fest'
+import { CacheForPlayout } from '../playout/cache'
+import { CacheForStudio } from '../studio/cache'
 
 export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	// @todo: this call is for backwards compatibility and soon to be removed
@@ -252,4 +258,24 @@ export async function cleanUpExpectedPackagesForBucketAdLibsActions(adLibIds: Ad
 			$in: adLibIds,
 		},
 	})
+}
+
+export function updateBaselineExpectedPackagesOnRundown(
+	cache: CacheForIngest,
+	baseline: BlueprintResultBaseline
+): void {
+	// @todo: this call is for backwards compatibility and soon to be removed
+	updateBaselineExpectedPlayoutItemsOnRundown(cache, baseline.expectedPlayoutItems)
+
+	// @todo: implement
+}
+
+export function updateBaselineExpectedPackagesOnStudio(
+	cache: CacheForStudio | CacheForPlayout,
+	baseline: BlueprintResultBaseline
+): void {
+	// @todo: this call is for backwards compatibility and soon to be removed
+	updateBaselineExpectedPlayoutItemsOnStudio(cache, baseline.expectedPlayoutItems)
+
+	// @todo: implement
 }

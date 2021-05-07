@@ -4,6 +4,7 @@ import {
 	TimelineObjHoldMode,
 	TSR,
 	PieceLifespan,
+	BlueprintResultBaseline,
 } from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../../../lib/logging'
@@ -59,6 +60,7 @@ import { TimelineObjClassesCore } from '@sofie-automation/blueprints-integration
 import { CacheForStudio, CacheForStudioBase } from '../studio/cache'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCacheFromStudioOperation } from './lockFunction'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
+import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackages'
 
 export function updateStudioOrPlaylistTimeline(cache: CacheForStudio) {
 	const playlists = cache.getActiveRundownPlaylists()
@@ -100,18 +102,19 @@ export function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout) {
 		}
 	}
 
-	let studioBaseline: TimelineObjRundown[] = []
+	let baselineObjects: TimelineObjRundown[] = []
+	let studioBaseline: BlueprintResultBaseline | undefined
 
 	const studioBlueprint = loadStudioBlueprint(studio)
 	if (studioBlueprint) {
 		const blueprint = studioBlueprint.blueprint
-		const baselineObjs = blueprint.getBaseline(
+		studioBaseline = blueprint.getBaseline(
 			new StudioContext({ name: 'studioBaseline', identifier: `studioId=${studio._id}` }, studio)
 		)
-		studioBaseline = postProcessStudioBaselineObjects(studio, baselineObjs)
+		baselineObjects = postProcessStudioBaselineObjects(studio, studioBaseline.timelineObjects)
 
 		const id = `baseline_version`
-		studioBaseline.push(
+		baselineObjects.push(
 			literal<TimelineObjRundown>({
 				id: id,
 				objectType: TimelineObjType.RUNDOWN,
@@ -132,7 +135,10 @@ export function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout) {
 		)
 	}
 
-	processAndSaveTimelineObjects(cache, studioBaseline, undefined)
+	processAndSaveTimelineObjects(cache, baselineObjects, undefined)
+	if (studioBaseline) {
+		updateBaselineExpectedPackagesOnStudio(cache, studioBaseline)
+	}
 
 	logger.debug('updateStudioTimeline done!')
 	if (span) span.end()

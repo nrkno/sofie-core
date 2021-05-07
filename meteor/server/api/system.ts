@@ -192,6 +192,25 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 			studioId: { $nin: studioIds },
 		})
 	}
+	const ownedByRundownIdOrStudioId = <
+		Class extends DBInterface,
+		DBInterface extends { _id: ProtectedString<any>; rundownId?: RundownId; studioId: StudioId }
+	>(
+		collectionName,
+		collection: TransformedCollection<Class, DBInterface>
+	): CollectionCleanupResult => {
+		return removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+			$or: [
+				{
+					rundownId: { $exists: true, $nin: rundownIds },
+				},
+				{
+					rundownId: { $exists: false },
+					studioId: { $nin: studioIds },
+				},
+			],
+		})
+	}
 	const ownedByOrganizationId = <
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; organizationId: OrganizationId | null | undefined }
@@ -304,7 +323,7 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 	}
 	// ExpectedPlayoutItems
 	{
-		results.push(ownedByRundownId('ExpectedPlayoutItems', ExpectedPlayoutItems))
+		results.push(ownedByRundownIdOrStudioId('ExpectedPlayoutItems', ExpectedPlayoutItems))
 	}
 	// ExternalMessageQueue
 	{
