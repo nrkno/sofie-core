@@ -1187,6 +1187,11 @@ svg.icon {
 			background: $segment-background-color;
 			z-index: 1002;
 
+			&:hover {
+				background: #151515;
+				transition: 0.2s background-color ease-out;
+			}
+
 			&::before {
 				top: 0;
 				left: 0;
@@ -2387,11 +2392,11 @@ svg.icon {
 @keyframes inspector-wipeRight {
 	0% {
 		opacity: 0;
-		clip-path: inset(0 100% 0 0);
+		clip-path: inset(0 100% 0 -100px);
 	}
 	100% {
 		opacity: 1;
-		clip-path: inset(0 -100px 0 0);
+		clip-path: inset(0 -100px 0 -100px);
 	}
 }
 
@@ -2453,7 +2458,7 @@ svg.icon {
 		border-bottom: none;
 		border-left: 1px solid #333;
 		border-right: 1px solid #333;
-		background: #000;
+		background: #151515;
 		margin-top: $segment-header-height * -1;
 		padding: $segment-timeline-padding;
 
