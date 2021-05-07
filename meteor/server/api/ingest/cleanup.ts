@@ -1,3 +1,4 @@
+import { isExpectedPlayoutItemRundown } from '../../../lib/collections/ExpectedPlayoutItems'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { CacheForIngest } from './cache'
 
@@ -14,7 +15,9 @@ export function removeSegmentContents(cache: CacheForIngest, segmentIds: Set<Seg
 			// Clean up all the db items that belong to the removed Parts
 			const removedPartIds2 = new Set(removedPartIds)
 			cache.Pieces.remove((p) => removedPartIds2.has(p.startPartId))
-			cache.ExpectedPlayoutItems.remove((e) => e.partId && removedPartIds2.has(e.partId))
+			cache.ExpectedPlayoutItems.remove(
+				(e) => isExpectedPlayoutItemRundown(e) && e.partId && removedPartIds2.has(e.partId)
+			)
 			cache.ExpectedMediaItems.remove((e) => 'partId' in e && e.partId && removedPartIds2.has(e.partId))
 			cache.AdLibPieces.remove((e) => e.partId && removedPartIds2.has(e.partId))
 			cache.AdLibActions.remove((e) => removedPartIds2.has(e.partId))

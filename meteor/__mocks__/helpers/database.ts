@@ -250,8 +250,10 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 
 				studioConfigManifest: [],
 				studioMigrations: [],
-				getBaseline: (): TSR.TSRTimelineObjBase[] => {
-					return []
+				getBaseline: () => {
+					return {
+						timelineObjects: [],
+					}
 				},
 				getShowStyleId: (): string | null => {
 					return SHOW_STYLE_ID
@@ -302,7 +304,7 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 					return {
 						rundown,
 						globalAdLibPieces: [],
-						baseline: [],
+						baseline: { timelineObjects: [] },
 					}
 				},
 				getSegment: (context: unknown, ingestSegment: IngestSegment): BlueprintResultSegment => {

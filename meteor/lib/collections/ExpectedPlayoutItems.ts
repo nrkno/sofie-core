@@ -13,18 +13,33 @@ import { registerIndex } from '../database'
  */
 export type ExpectedPlayoutItemId = ProtectedString<'ExpectedPlayoutItemId'>
 /** @deprecated */
-export interface ExpectedPlayoutItem extends ExpectedPlayoutItemGeneric {
+export interface ExpectedPlayoutItemBase extends ExpectedPlayoutItemGeneric {
 	/** Globally unique id of the item */
 	_id: ExpectedPlayoutItemId
 
 	/** The studio installation this ExpectedPlayoutItem was generated in */
 	studioId: StudioId
+}
+/** @deprecated */
+export interface ExpectedPlayoutItemRundown extends ExpectedPlayoutItemBase {
 	/** The rundown id that is the source of this PlayoutItem */
 	rundownId: RundownId
 	/** The part id that is the source of this Playout Item */
 	partId?: PartId
 	// /** The piece id that is the source of this Playout Item */
 	// pieceId: PieceId
+	/** Is created for studio/rundown baseline */
+	baseline?: 'rundown'
+}
+/** @deprecated */
+export interface ExpectedPlayoutItemStudio extends ExpectedPlayoutItemBase {
+	baseline: 'studio'
+}
+/** @deprecated */
+export type ExpectedPlayoutItem = ExpectedPlayoutItemStudio | ExpectedPlayoutItemRundown
+/** @deprecated */
+export function isExpectedPlayoutItemRundown(item: ExpectedPlayoutItem): item is ExpectedPlayoutItemRundown {
+	return item.baseline !== 'studio'
 }
 
 /** @deprecated */
@@ -39,4 +54,8 @@ registerIndex(ExpectedPlayoutItems, {
 })
 registerIndex(ExpectedPlayoutItems, {
 	rundownId: 1,
+})
+registerIndex(ExpectedPlayoutItems, {
+	studioId: 1,
+	baseline: 1,
 })
