@@ -223,7 +223,7 @@ function defaultPlaylistForRundown(
 
 /** Set _rank and playlistId of rundowns in a playlist */
 export function updateRundownsInPlaylist(
-	playlist: DBRundownPlaylist,
+	_playlist: DBRundownPlaylist,
 	rundownRanks: BlueprintResultOrderedRundowns,
 	rundownCollection: DbCacheWriteCollection<Rundown, DBRundown>
 ) {
@@ -231,14 +231,12 @@ export function updateRundownsInPlaylist(
 	let unrankedRundowns: DBRundown[] = []
 
 	for (const rundown of rundownCollection.findFetch({})) {
-		if (!playlist.rundownRanksAreSetInSofie) {
-			const rundownRank = rundownRanks[unprotectString(rundown._id)]
-			if (rundownRank !== undefined) {
-				rundown._rank = rundownRank
-				rundownCollection.update(rundown._id, { $set: { _rank: rundownRank } })
-			} else {
-				unrankedRundowns.push(rundown)
-			}
+		const rundownRank = rundownRanks[unprotectString(rundown._id)]
+		if (rundownRank !== undefined) {
+			rundown._rank = rundownRank
+			rundownCollection.update(rundown._id, { $set: { _rank: rundownRank } })
+		} else {
+			unrankedRundowns.push(rundown)
 		}
 
 		if (!_.isNaN(Number(rundown._rank))) {
@@ -248,15 +246,13 @@ export function updateRundownsInPlaylist(
 		}
 	}
 
-	if (playlist.rundownRanksAreSetInSofie) {
-		// Place new/unknown rundowns at the end:
+	// Place new/unknown rundowns at the end:
 
-		const orderedUnrankedRundowns = sortDefaultRundownInPlaylistOrder(unrankedRundowns)
+	const orderedUnrankedRundowns = sortDefaultRundownInPlaylistOrder(unrankedRundowns)
 
-		orderedUnrankedRundowns.forEach((rundown) => {
-			rundownCollection.update(rundown._id, { $set: { _rank: ++maxRank } })
-		})
-	}
+	orderedUnrankedRundowns.forEach((rundown) => {
+		rundownCollection.update(rundown._id, { $set: { _rank: ++maxRank } })
+	})
 }
 /** Move a rundown manually (by a user in Sofie)  */
 export function moveRundownIntoPlaylist(
@@ -327,14 +323,16 @@ export function moveRundownIntoPlaylist(
 					// Regenerate the playlist
 					const newPlaylist = await regeneratePlaylistAndRundownOrder(studio, playlist)
 
-					// ensure the 'old' playout is updated to remove any references to the rundown
-					updatePlayoutAfterChangingRundownInPlaylist(
-						newPlaylist,
-						oldPlaylistLock,
-						null,
-						undefined,
-						undefined
-					)
+					if (newPlaylist) {
+						// ensure the 'old' playout is updated to remove any references to the rundown
+						updatePlayoutAfterChangingRundownInPlaylist(
+							newPlaylist,
+							oldPlaylistLock,
+							null,
+							undefined,
+							undefined
+						)
+					}
 				}
 			)
 		}
@@ -360,6 +358,15 @@ export function moveRundownIntoPlaylist(
 							`RundownPlaylists "${intoPlaylistLock._playlistId}" for rundown "${rundown._id}" not found!`
 						)
 
+					if (!playlist.rundownRanksAreSetInSofie) {
+						playlist.rundownRanksAreSetInSofie = true
+						RundownPlaylists.update(playlist._id, {
+							$set: {
+								rundownRanksAreSetInSofie: true,
+							},
+						})
+					}
+
 					if (playlist._id === oldPlaylist?._id) {
 						// Move the rundown within the playlist
 
@@ -382,13 +389,6 @@ export function moveRundownIntoPlaylist(
 
 						if (newRank === undefined) throw new Meteor.Error(500, `newRank is undefined`)
 
-						if (!playlist.rundownRanksAreSetInSofie) {
-							RundownPlaylists.update(playlist._id, {
-								$set: {
-									rundownRanksAreSetInSofie: true,
-								},
-							})
-						}
 						rundownsCollection.update(rundown._id, {
 							$set: {
 								_rank: newRank,
@@ -420,6 +420,9 @@ export function moveRundownIntoPlaylist(
 
 					// Update the playlist and the order of the contents
 					const newPlaylist = await regeneratePlaylistAndRundownOrder(studio, playlist, rundownsCollection)
+					if (!newPlaylist) {
+						throw new Meteor.Error(500, `RundownPlaylist must still be valid as it has some Rundowns`)
+					}
 
 					await rundownsCollection.updateDatabaseWithData()
 
@@ -486,8 +489,10 @@ export function restoreRundownsInPlaylistToDefaultOrder(context: MethodContext, 
 			// Update the _rank of the rundowns
 			const updatedPlaylist = await regeneratePlaylistAndRundownOrder(studio, newPlaylist)
 
-			// If the playlist is active this could have changed lookahead
-			updatePlayoutAfterChangingRundownInPlaylist(updatedPlaylist, playlistLock, null, undefined, undefined)
+			if (updatedPlaylist) {
+				// If the playlist is active this could have changed lookahead
+				updatePlayoutAfterChangingRundownInPlaylist(updatedPlaylist, playlistLock, null, undefined, undefined)
+			}
 		}
 	)
 }
