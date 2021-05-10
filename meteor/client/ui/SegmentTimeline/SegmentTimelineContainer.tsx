@@ -409,6 +409,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				}
 			})
 			window.addEventListener('resize', this.onWindowResize)
+			this.updateMaxTimeScale()
+				.then(() => this.showEntireSegment())
+				.catch(console.error)
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps) {
@@ -806,13 +809,15 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		updateMaxTimeScale = () => {
-			const maxTimeScale = this.getShowAllTimeScale()
 			return new Promise<number>((resolve) =>
 				this.setState(
-					{
-						maxTimeScale,
+					() => {
+						const maxTimeScale = this.getShowAllTimeScale()
+						return {
+							maxTimeScale,
+						}
 					},
-					() => resolve(maxTimeScale)
+					() => resolve(this.state.maxTimeScale)
 				)
 			)
 		}
