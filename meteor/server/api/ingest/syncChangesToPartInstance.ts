@@ -63,7 +63,7 @@ export function syncChangesToPartInstances(
 							? 'current'
 							: 'next',
 						newPart: newPart,
-						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache,ingestCache, newPart),
+						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, ingestCache, newPart),
 					})
 				}
 			}
