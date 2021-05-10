@@ -55,6 +55,8 @@ export const SegmentTimelineSmallPartFlag = ({
 				key={unprotectString(part.instance._id)}
 				partInstance={part}
 				sourceLayers={sourceLayers}
+				isNext={playlist.nextPartInstanceId === part.instance._id}
+				isLive={playlist.currentPartInstanceId === part.instance._id}
 			/>
 		)
 	})

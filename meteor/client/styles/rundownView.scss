@@ -1213,6 +1213,19 @@ svg.icon {
 
 				> .piece_icon {
 					width: 1.6em;
+					vertical-align: top;
+				}
+
+				&.next {
+					> .piece_icon {
+						outline: 2px solid $segment-title-background-color-next;
+					}
+				}
+
+				&.live {
+					> .piece_icon {
+						outline: 2px solid $segment-title-background-color-live;
+					}
 				}
 			}
 		}
@@ -2483,6 +2496,7 @@ svg.icon {
 
 			> .segment-timeline__part {
 				display: inline-block;
+				vertical-align: top;
 			}
 		}
 	}
