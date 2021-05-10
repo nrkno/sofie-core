@@ -410,7 +410,7 @@ $segment-layer-background-guest: #008a92;
 			right: 0;
 			bottom: 0;
 			z-index: 1;
-			mix-blend-mode: overlay;
+			mix-blend-mode: normal;
 			background-image: repeating-linear-gradient(
 				45deg,
 				transparent,
@@ -419,6 +419,7 @@ $segment-layer-background-guest: #008a92;
 				black 15px,
 				transparent 16px
 			);
+			opacity: 0.4;
 		}
 	}
 
