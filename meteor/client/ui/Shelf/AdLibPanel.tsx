@@ -500,7 +500,7 @@ interface IAdLibPanelTrackedProps extends AdLibFetchAndFilterProps {
 	studio: Studio
 }
 
-function actionToAdLibPieceUi(
+export function actionToAdLibPieceUi(
 	action: AdLibAction | RundownBaselineAdLibAction,
 	sourceLayers: _.Dictionary<ISourceLayer>,
 	outputLayers: _.Dictionary<IOutputLayer>

@@ -51,6 +51,7 @@ export class Segment implements DBSegment {
 	public expanded?: boolean
 	public notes?: Array<SegmentNote>
 	public isHidden?: boolean
+	public showShelf?: boolean
 	public unsynced?: SegmentUnsyncedReason
 	public unsyncedTime?: Time
 	public identifier?: string

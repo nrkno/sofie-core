@@ -1391,24 +1391,18 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownPlaylistId: playlistId,
 		rundowns,
 		matchedSegments: playlist
-			? playlist
-					.getRundownsAndSegments({
-						isHidden: {
-							$ne: true,
-						},
-					})
-					.map((input, rundownIndex, rundownArray) => ({
-						...input,
-						segmentIdsBeforeEachSegment: input.segments.map(
-							(segment, segmentIndex, segmentArray) =>
-								new Set([
-									...(_.flatten(
-										rundownArray.slice(0, rundownIndex).map((match) => match.segments.map((segment) => segment._id))
-									) as SegmentId[]),
-									...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
-								])
-						),
-					}))
+			? playlist.getRundownsAndSegments().map((input, rundownIndex, rundownArray) => ({
+					...input,
+					segmentIdsBeforeEachSegment: input.segments.map(
+						(segment, segmentIndex, segmentArray) =>
+							new Set([
+								...(_.flatten(
+									rundownArray.slice(0, rundownIndex).map((match) => match.segments.map((segment) => segment._id))
+								) as SegmentId[]),
+								...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
+							])
+					),
+			  }))
 			: [],
 		playlist,
 		studio: studio,
@@ -2209,6 +2203,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									<ErrorBoundary key={unprotectString(segment._id)}>
 										<VirtualElement
 											id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+											className={ClassNames({
+												'segment-timeline-wraper--hidden': segment.isHidden,
+												'segment-timeline-wraper--shelf': segment.showShelf,
+											})}
 											margin={'100% 0px 100% 0px'}
 											initialShow={globalIndex++ < window.innerHeight / 260}
 											placeholderHeight={260}

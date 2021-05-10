@@ -936,6 +936,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							/>
 						)}
 				</div>
+
 				<div className="segment-timeline__identifier">{this.props.segment.identifier}</div>
 				<div
 					className="segment-timeline__timeUntil"
