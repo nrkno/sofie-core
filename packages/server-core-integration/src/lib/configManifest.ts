@@ -28,7 +28,7 @@ export enum ConfigManifestEntryType {
 	INT = 'int',
 	TABLE = 'table',
 	OBJECT = 'object',
-	ENUM = 'enum', // @todo: implement
+	ENUM = 'enum' // @todo: implement
 }
 
 export type ConfigManifestEntry =
