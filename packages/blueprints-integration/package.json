@@ -40,7 +40,7 @@
 	],
 	"dependencies": {
 		"moment": "2.29.1",
-		"timeline-state-resolver-types": "5.7.0-nightly-release33-20210421-102534-d3150d7e3.0",
+		"timeline-state-resolver-types": "5.9.0-nightly-release34-20210511-085833-30ad952a1.0",
 		"tslib": "^2.1.0",
 		"underscore": "1.13.1"
 	},
