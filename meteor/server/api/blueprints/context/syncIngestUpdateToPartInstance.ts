@@ -96,6 +96,12 @@ export class SyncIngestUpdateToPartInstanceContext
 	}
 
 	applyChangesToCache(cache: CacheForPlayout) {
+		if (this._partInstanceCache.isModified() || this._pieceInstanceCache.isModified()) {
+			this.logInfo(`Found ingest changes to apply to PartInstance`)
+		} else {
+			this.logInfo(`No ingest changes to apply to PartInstance`)
+		}
+
 		this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
 		this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
 	}

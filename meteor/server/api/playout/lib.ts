@@ -272,7 +272,7 @@ export function setNextPart(
 				consumesNextSegmentId: newNextPart?.consumesNextSegmentId,
 			})
 
-			const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, nextPart))
+			const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, undefined, nextPart))
 			const newPieceInstances = getPieceInstancesForPart(
 				cache,
 				currentPartInstance,

@@ -508,7 +508,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 		// Find and insert any rundown defined infinites that we should inherit
 		newPartInstance = cache.PartInstances.findOne(newPartInstance._id)!
-		const possiblePieces = await fetchPiecesThatMayBeActiveForPart(cache, newPartInstance.part)
+		const possiblePieces = await fetchPiecesThatMayBeActiveForPart(cache, undefined, newPartInstance.part)
 		const infinitePieceInstances = getPieceInstancesForPart(
 			cache,
 			currentPartInstance,
