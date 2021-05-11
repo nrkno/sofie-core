@@ -7,7 +7,12 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
-import { RundownTiming, computeSegmentDuration, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
+import {
+	RundownTiming,
+	computeSegmentDuration,
+	TimingEvent,
+	computeSegmentDisplayDuration,
+} from '../RundownView/RundownTiming/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import {
@@ -793,11 +798,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		getShowAllTimeScale = () => {
 			let newScale =
 				(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
-				(computeSegmentDuration(
-					this.context.durations,
-					this.props.parts.map((i) => i.instance.part._id),
-					true
-				) || 1)
+				(computeSegmentDisplayDuration(this.context.durations, this.props.parts) || 1)
 			// TODO: This is only temporary, for hands-on tweaking
 			newScale = Math.min(
 				parseInt(localStorage.getItem('EXP_timeline_min_time_scale')!) ||
