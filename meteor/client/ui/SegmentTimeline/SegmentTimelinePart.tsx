@@ -34,6 +34,8 @@ import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../Rundo
 import { LoopingIcon } from '../../lib/ui/icons/looping'
 import { SegmentEnd } from '../../lib/ui/icons/segment'
 import { getShowHiddenSourceLayers } from '../../lib/localStorage'
+import { Part } from '../../../lib/collections/Parts'
+import { TFunction } from 'i18next'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -420,6 +422,8 @@ interface IProps {
 	isAfterLastValidInSegmentAndItsLive: boolean
 	isLastSegment: boolean
 	isPreview?: boolean
+	cropDuration?: number
+	className?: string
 }
 
 interface IState {
@@ -667,23 +671,19 @@ export const SegmentTimelinePart = withTranslation()(
 
 			getLayerStyle() {
 				// this.props.part.expectedDuration ||
+				const actualPartDuration = SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration)
+				const partDuration = this.props.cropDuration
+					? Math.min(this.props.cropDuration, actualPartDuration)
+					: actualPartDuration
 				if (this.props.relative) {
 					return {
-						width:
-							(
-								(SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration) /
-									(this.props.totalSegmentDuration || 1)) *
-								100
-							).toString() + '%',
+						width: ((partDuration / (this.props.totalSegmentDuration || 1)) * 100).toString() + '%',
 						// width: (Math.max(this.state.liveDuration, this.props.part.duration || this.props.part.expectedDuration || 3000) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
 						willChange: this.state.isLive ? 'width' : undefined,
 					}
 				} else {
 					return {
-						minWidth:
-							Math.floor(
-								SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration) * this.props.timeScale
-							).toString() + 'px',
+						minWidth: Math.floor(partDuration * this.props.timeScale).toString() + 'px',
 						// minWidth: (Math.max(this.state.liveDuration, this.props.part.duration || this.props.part.expectedDuration || 3000) * this.props.timeScale).toString() + 'px',
 						willChange: this.state.isLive ? 'minWidth' : undefined,
 					}
@@ -704,7 +704,7 @@ export const SegmentTimelinePart = withTranslation()(
 				// const part = this.props.part
 
 				return Math.max(
-					props.isPreview ? liveDuration : 0,
+					!props.isPreview ? liveDuration : 0,
 					props.part.instance.timings?.duration ||
 						(props.timingDurations.partDisplayDurations &&
 							props.timingDurations.partDisplayDurations[unprotectString(props.part.instance.part._id)]) ||
@@ -724,7 +724,7 @@ export const SegmentTimelinePart = withTranslation()(
 				)
 			}
 
-			renderTimelineOutputGroups(part: PartUi) {
+			private renderTimelineOutputGroups(part: PartUi) {
 				if (this.props.segment.outputLayers !== undefined) {
 					const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
@@ -769,7 +769,14 @@ export const SegmentTimelinePart = withTranslation()(
 										playlist={this.props.playlist}
 										studio={this.props.studio}
 										startsAt={SegmentTimelinePart0.getPartStartsAt(this.props) || this.props.part.startsAt || 0}
-										duration={SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration)}
+										duration={
+											this.props.cropDuration
+												? Math.min(
+														this.props.cropDuration,
+														SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration)
+												  )
+												: SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration)
+										}
 										expectedDuration={SegmentTimelinePart0.getPartExpectedDuration(this.props)}
 										isLiveLine={this.props.playlist.currentPartInstanceId === part.instance._id}
 										isNextLine={this.props.playlist.nextPartInstanceId === part.instance._id}
@@ -785,7 +792,7 @@ export const SegmentTimelinePart = withTranslation()(
 				}
 			}
 
-			getFutureShadeStyle = () => {
+			private getFutureShadeStyle = () => {
 				return {
 					width:
 						Math.min(
@@ -800,6 +807,64 @@ export const SegmentTimelinePart = withTranslation()(
 							this.props.timeScale +
 						'px',
 				}
+			}
+
+			private renderEndOfSegment = (
+				t: TFunction,
+				innerPart: Part,
+				isEndOfShow: boolean,
+				isEndOfLoopingShow?: boolean
+			) => {
+				return (
+					<>
+						{this.props.isLastInSegment && (
+							<div
+								className={ClassNames('segment-timeline__part__nextline', 'segment-timeline__part__nextline--endline', {
+									'auto-next': innerPart.autoNext,
+									'is-next':
+										this.state.isLive &&
+										((!this.props.isLastSegment && !this.props.isLastInSegment) ||
+											!!this.props.playlist.nextPartInstanceId),
+									'show-end': isEndOfShow,
+								})}
+							>
+								<div
+									className={ClassNames('segment-timeline__part__nextline__label', {
+										'segment-timeline__part__nextline__label--thin': innerPart.autoNext && !this.state.isLive,
+									})}
+								>
+									{innerPart.autoNext && t('Auto') + ' '}
+									{this.state.isLive && t('Next')}
+									{isEndOfLoopingShow && <LoopingIcon />}
+								</div>
+							</div>
+						)}
+						{!isEndOfShow && this.props.isLastInSegment && (
+							<div
+								className={ClassNames('segment-timeline__part__segment-end', {
+									'is-next':
+										this.state.isLive &&
+										((!this.props.isLastSegment && !this.props.isLastInSegment) ||
+											!!this.props.playlist.nextPartInstanceId),
+								})}
+							>
+								<div className="segment-timeline__part__segment-end__label">
+									<SegmentEnd />
+								</div>
+							</div>
+						)}
+						{isEndOfShow && !this.props.playlist.loop && (
+							<div className="segment-timeline__part__show-end">
+								<div className="segment-timeline__part__show-end__label">{t('Show End')}</div>
+							</div>
+						)}
+						{isEndOfShow && this.props.playlist.loop && (
+							<div className="segment-timeline__part__show-end loop">
+								<div className="segment-timeline__part__show-end__label">{t('Loops to top')}</div>
+							</div>
+						)}
+					</>
+				)
 			}
 
 			static convertHexToRgba(hexColor: string): { red: number; green: number; blue: number } | undefined {
@@ -840,16 +905,20 @@ export const SegmentTimelinePart = withTranslation()(
 				) {
 					return (
 						<div
-							className={ClassNames('segment-timeline__part', {
-								live: this.state.isLive,
-								next: this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive,
-								invalid: innerPart.invalid && !innerPart.gap,
-								floated: innerPart.floated,
-								gap: innerPart.gap,
-								'invert-flash': this.state.highlight,
+							className={ClassNames(
+								'segment-timeline__part',
+								{
+									live: this.state.isLive,
+									next: this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive,
+									invalid: innerPart.invalid && !innerPart.gap,
+									floated: innerPart.floated,
+									gap: innerPart.gap,
+									'invert-flash': this.state.highlight,
 
-								'duration-settling': this.state.isDurationSettling,
-							})}
+									'duration-settling': this.state.isDurationSettling,
+								},
+								this.props.className
+							)}
 							data-obj-id={this.props.part.instance._id}
 							id={SegmentTimelinePartElementId + this.props.part.instance._id}
 							style={{ ...this.getLayerStyle(), ...invalidReasonColorVars }}
@@ -939,71 +1008,29 @@ export const SegmentTimelinePart = withTranslation()(
 								<div className="segment-timeline__part__future-shade" style={this.getFutureShadeStyle()}></div>
 							)}
 							{this.renderTimelineOutputGroups(this.props.part)}
-							{this.props.isLastInSegment && (
-								<div
-									className={ClassNames(
-										'segment-timeline__part__nextline',
-										'segment-timeline__part__nextline--endline',
-										{
-											'auto-next': innerPart.autoNext,
-											'is-next':
-												this.state.isLive &&
-												((!this.props.isLastSegment && !this.props.isLastInSegment) ||
-													!!this.props.playlist.nextPartInstanceId),
-											'show-end': isEndOfShow,
-										}
-									)}
-								>
-									<div
-										className={ClassNames('segment-timeline__part__nextline__label', {
-											'segment-timeline__part__nextline__label--thin': innerPart.autoNext && !this.state.isLive,
-										})}
-									>
-										{innerPart.autoNext && t('Auto') + ' '}
-										{this.state.isLive && t('Next')}
-										{isEndOfLoopingShow && <LoopingIcon />}
-									</div>
-								</div>
-							)}
-							{!isEndOfShow && this.props.isLastInSegment && (
-								<div
-									className={ClassNames('segment-timeline__part__segment-end', {
-										'is-next':
-											this.state.isLive &&
-											((!this.props.isLastSegment && !this.props.isLastInSegment) ||
-												!!this.props.playlist.nextPartInstanceId),
-									})}
-								>
-									<div className="segment-timeline__part__segment-end__label">
-										<SegmentEnd />
-									</div>
-								</div>
-							)}
-							{isEndOfShow && !this.props.playlist.loop && (
-								<div className="segment-timeline__part__show-end">
-									<div className="segment-timeline__part__show-end__label">{t('Show End')}</div>
-								</div>
-							)}
-							{isEndOfShow && this.props.playlist.loop && (
-								<div className="segment-timeline__part__show-end loop">
-									<div className="segment-timeline__part__show-end__label">{t('Loops to top')}</div>
-								</div>
-							)}
+							{this.renderEndOfSegment(t, innerPart, isEndOfShow, isEndOfLoopingShow)}
 						</div>
 					)
 				} else {
 					// render placeholders
 					return (
 						<div
-							className={ClassNames('segment-timeline__part', {
-								'segment-timeline__part--too-small': this.state.isInsideViewport,
-								live: this.state.isLive,
-								next: this.state.isNext,
-							})}
+							className={ClassNames(
+								'segment-timeline__part',
+								{
+									'segment-timeline__part--too-small': this.state.isInsideViewport,
+									live: this.state.isLive,
+									next: this.state.isNext,
+								},
+								this.props.className
+							)}
 							data-obj-id={this.props.part.instance._id}
 							style={this.getLayerStyle()}
 						>
 							{/* render it empty, just to take up space */}
+							{this.state.isInsideViewport
+								? this.renderEndOfSegment(t, innerPart, isEndOfShow, isEndOfLoopingShow)
+								: null}
 						</div>
 					)
 				}

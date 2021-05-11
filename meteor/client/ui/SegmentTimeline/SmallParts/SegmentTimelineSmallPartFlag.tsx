@@ -5,11 +5,13 @@ import { unprotectString } from '../../../../lib/lib'
 import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Studio } from '../../../../lib/collections/Studios'
-import { ECANCELED } from 'constants'
 import { SegmentTimelinePartHoverPreview } from './SegmentTimelinePartHoverPreview'
+import { TFunction } from 'i18next'
 
 export const SegmentTimelineSmallPartFlag = ({
+	t,
 	parts,
+	followingPart,
 	sourceLayers,
 	timeScale,
 
@@ -21,7 +23,9 @@ export const SegmentTimelineSmallPartFlag = ({
 	liveLineHistorySize,
 	isLastSegment,
 }: {
+	t: TFunction
 	parts: [PartUi, number][]
+	followingPart: PartUi | undefined
 	sourceLayers: {
 		[key: string]: ISourceLayer
 	}
@@ -74,10 +78,12 @@ export const SegmentTimelineSmallPartFlag = ({
 				{partFlags}
 			</div>
 			<SegmentTimelinePartHoverPreview
+				t={t}
 				autoNextPart={autoNextPart}
 				collapsedOutputs={collapsedOutputs}
 				studio={studio}
 				showMiniInspector={isHover}
+				followingPart={followingPart}
 				parts={parts.map(([part]) => part)}
 				segment={segment}
 				playlist={playlist}

@@ -704,25 +704,40 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	renderTimeline() {
 		const { smallParts } = this.state
+		const { t } = this.props
 		let partIsLive = false
 		let smallPartsAccumulator: [PartUi, number][] = []
 		return this.props.parts.map((part, index) => {
 			let previousPartIsLive = partIsLive
 			partIsLive = part.instance._id === this.props.playlist.currentPartInstanceId
 			let emitSmallPartsInFlag: [PartUi, number][] | undefined = undefined
+			let emitSmallPartsInFlagAtEnd: boolean = false
 			// if this is not undefined, it means that the part is on the list of small keys
 			const partDuration = smallParts.get(part.instance._id)
 			if (partDuration !== undefined) {
 				smallPartsAccumulator.push([part, partDuration])
-			} else if (smallPartsAccumulator.length > 0) {
+			}
+
+			if (partDuration === undefined && smallPartsAccumulator.length > 0) {
 				emitSmallPartsInFlag = smallPartsAccumulator
 				smallPartsAccumulator = []
+			} else if (
+				partDuration !== undefined &&
+				smallPartsAccumulator.length > 0 &&
+				this.props.parts.length === index + 1
+			) {
+				emitSmallPartsInFlag = smallPartsAccumulator
+				emitSmallPartsInFlagAtEnd = true
+				smallPartsAccumulator = []
 			}
+
 			return (
 				<React.Fragment key={unprotectString(part.instance._id)}>
-					{emitSmallPartsInFlag && (
+					{emitSmallPartsInFlag && !emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
+							t={t}
 							parts={emitSmallPartsInFlag}
+							followingPart={part}
 							sourceLayers={this.props.segment.sourceLayers}
 							timeScale={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
@@ -764,6 +779,22 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						}
 						part={part}
 					/>
+					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
+						<SegmentTimelineSmallPartFlag
+							t={t}
+							parts={emitSmallPartsInFlag}
+							followingPart={undefined}
+							sourceLayers={this.props.segment.sourceLayers}
+							timeScale={this.props.timeScale}
+							autoNextPart={this.props.autoNextPart}
+							collapsedOutputs={this.props.collapsedOutputs}
+							playlist={this.props.playlist}
+							studio={this.props.studio}
+							segment={this.props.segment}
+							liveLineHistorySize={this.props.liveLineHistorySize}
+							isLastSegment={this.props.isLastSegment}
+						/>
+					)}
 				</React.Fragment>
 			)
 		})

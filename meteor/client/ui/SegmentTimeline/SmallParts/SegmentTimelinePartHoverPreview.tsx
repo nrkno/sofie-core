@@ -1,17 +1,17 @@
-import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import React from 'react'
+import { TFunction } from 'i18next'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Studio } from '../../../../lib/collections/Studios'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
-import { FloatingInspector } from '../../FloatingInspector'
 import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
 import { SegmentTimelinePart } from '../SegmentTimelinePart'
 
 export const SegmentTimelinePartHoverPreview = ({
+	t,
 	showMiniInspector,
-	displayOn,
 	parts,
+	followingPart,
 	floatingInspectorStyle,
 	segment,
 	playlist,
@@ -22,9 +22,10 @@ export const SegmentTimelinePartHoverPreview = ({
 	isLastSegment,
 	totalSegmentDuration,
 }: {
+	t: TFunction
 	showMiniInspector: boolean
-	displayOn?: 'document' | 'viewport'
 	parts: PartUi[]
+	followingPart: PartUi | undefined
 	floatingInspectorStyle: React.CSSProperties
 
 	segment: SegmentUi
@@ -38,14 +39,17 @@ export const SegmentTimelinePartHoverPreview = ({
 	isLastSegment: boolean
 	totalSegmentDuration: number
 }) => {
+	const followingPartPreviewDuration = 0.15 * totalSegmentDuration
+	const previewWindowDuration = totalSegmentDuration + (followingPart ? followingPartPreviewDuration : 0)
 	return showMiniInspector ? (
 		<div
 			className="segment-timeline__mini-inspector segment-timeline__mini-inspector--small-parts"
 			style={floatingInspectorStyle}
 		>
-			<span className="segment-timeline__mini-inspector--small-parts__duration">
+			<div className="segment-timeline__mini-inspector--small-parts__duration">
+				<span className="segment-timeline__mini-inspector--small-parts__duration__label">{t('Parts Duration')}</span>
 				{RundownUtils.formatDiffToTimecode(totalSegmentDuration, false, false, true, false, true)}
-			</span>
+			</div>
 			<div className="segment-timeline__mini-inspector__mini-timeline">
 				{parts.map((part) => {
 					return (
@@ -61,7 +65,7 @@ export const SegmentTimelinePartHoverPreview = ({
 							followLiveLine={false}
 							liveLineHistorySize={liveLineHistorySize}
 							livePosition={0}
-							totalSegmentDuration={totalSegmentDuration}
+							totalSegmentDuration={previewWindowDuration}
 							relative={true}
 							scrollWidth={1}
 							isLastSegment={isLastSegment}
@@ -72,6 +76,31 @@ export const SegmentTimelinePartHoverPreview = ({
 						/>
 					)
 				})}
+				{followingPart && (
+					<SegmentTimelinePart
+						key={unprotectString(followingPart.instance._id)}
+						className="segment-timeline__part--shaded"
+						segment={segment}
+						playlist={playlist}
+						studio={studio}
+						collapsedOutputs={collapsedOutputs}
+						scrollLeft={0}
+						timeScale={0}
+						autoNextPart={autoNextPart}
+						followLiveLine={false}
+						liveLineHistorySize={liveLineHistorySize}
+						livePosition={0}
+						totalSegmentDuration={previewWindowDuration}
+						relative={true}
+						scrollWidth={1}
+						isLastSegment={isLastSegment}
+						isLastInSegment={false}
+						isAfterLastValidInSegmentAndItsLive={false}
+						part={followingPart}
+						isPreview={true}
+						cropDuration={followingPartPreviewDuration}
+					/>
+				)}
 			</div>
 		</div>
 	) : null

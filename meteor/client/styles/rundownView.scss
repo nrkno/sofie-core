@@ -1252,6 +1252,19 @@ svg.icon {
 				z-index: 0;
 			}
 
+			&.segment-timeline__part--shaded {
+				&::after {
+					content: ' ';
+					display: block;
+					position: absolute;
+					top: 0;
+					left: 0;
+					bottom: 0;
+					right: 0;
+					background: linear-gradient(to right, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
+				}
+			}
+
 			&.segment-timeline__part--too-small {
 				height: 100%;
 				top: 0;
@@ -2486,8 +2499,19 @@ svg.icon {
 			top: 3px;
 			right: 5px;
 			white-space: nowrap;
-			color: #afafaf;
-			font-weight: 300;
+			color: #fff;
+			font-weight: 400;
+
+			> .segment-timeline__mini-inspector--small-parts__duration__label {
+				font-weight: 300;
+				text-transform: uppercase;
+				vertical-align: top;
+				font-size: 0.5em;
+				margin-right: 0.5em;
+				position: relative;
+				top: 0.2em;
+				color: #888;
+			}
 		}
 
 		> .segment-timeline__mini-inspector__mini-timeline {
