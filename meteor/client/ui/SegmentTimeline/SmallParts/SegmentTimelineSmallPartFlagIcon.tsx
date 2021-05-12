@@ -1,6 +1,6 @@
 import React from 'react'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { PieceIconContainerAlternative } from '../../PieceIcons/PieceIcon'
+import { PieceIconContainerNoSub } from '../../PieceIcons/PieceIcon'
 import { PartUi } from './../SegmentTimelineContainer'
 import classNames from 'classnames'
 
@@ -19,9 +19,10 @@ export const SegmentTimelineSmallPartFlagIcon = (props: {
 				live: props.isLive,
 			})}
 		>
-			<PieceIconContainerAlternative
+			<PieceIconContainerNoSub
 				pieceInstances={props.partInstance.pieces.map((piece) => piece.instance)}
 				sourceLayers={props.sourceLayers}
+				renderUnknown={true}
 			/>
 		</div>
 	)

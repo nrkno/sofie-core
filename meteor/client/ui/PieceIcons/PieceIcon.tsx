@@ -8,6 +8,7 @@ import SplitInputIcon from './Renderers/SplitInput'
 import RemoteInputIcon from './Renderers/RemoteInput'
 import LiveSpeakInputIcon from './Renderers/LiveSpeakInput'
 import GraphicsInputIcon from './Renderers/GraphicsInput'
+import UnknownInputIcon from './Renderers/UnknownInput'
 import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { PubSub } from '../../../lib/api/pubsub'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
@@ -24,6 +25,7 @@ export interface IPropsHeader {
 export const PieceIcon = (props: {
 	pieceInstance: PieceInstance | undefined
 	sourceLayer: ISourceLayer | undefined
+	renderUnknown?: boolean
 }) => {
 	const piece = props.pieceInstance ? props.pieceInstance.piece : undefined
 	if (props.sourceLayer && piece) {
@@ -54,6 +56,11 @@ export const PieceIcon = (props: {
 				)
 		}
 	}
+
+	if (props.renderUnknown) {
+		return <UnknownInputIcon />
+	}
+
 	return null
 }
 
@@ -66,18 +73,27 @@ const supportedLayers = new Set([
 	SourceLayerType.CAMERA,
 ])
 
-export const PieceIconContainerAlternative = withTracker(
+export const PieceIconContainerNoSub = withTracker(
 	(props: {
 		pieceInstances: PieceInstance[]
 		sourceLayers: {
 			[key: string]: ISourceLayer
 		}
+		renderUnknown?: boolean
 	}) => {
 		return findPieceInstanceToShowFromInstances(props.pieceInstances, props.sourceLayers, supportedLayers)
 	}
-)((props: { sourceLayer: ISourceLayer | undefined; pieceInstance: PieceInstance | undefined }) => (
-	<PieceIcon pieceInstance={props.pieceInstance} sourceLayer={props.sourceLayer} />
-))
+)(
+	({
+		sourceLayer,
+		pieceInstance,
+		renderUnknown,
+	}: {
+		sourceLayer: ISourceLayer | undefined
+		pieceInstance: PieceInstance | undefined
+		renderUnknown?: boolean
+	}) => <PieceIcon pieceInstance={pieceInstance} sourceLayer={sourceLayer} renderUnknown={renderUnknown} />
+)
 
 export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 	return findPieceInstanceToShow(props, supportedLayers)
