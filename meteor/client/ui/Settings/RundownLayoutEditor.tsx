@@ -37,6 +37,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { defaultColorPickerPalette } from '../../lib/colorPicker'
 import FilterEditor from './components/FilterEditor'
 import ShelfLayoutSettings from './components/rundownLayouts/ShelfLayoutSettings'
+import RundownHeaderLayoutSettings from './components/rundownLayouts/RundownHeaderLayoutSettings'
 
 export interface IProps {
 	showStyleBase: ShowStyleBase
@@ -1236,6 +1237,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			const { t } = this.props
 
 			const isShelfLayout = RundownLayoutsAPI.IsLayoutForShelf(item)
+			const isRundownViewLayout = RundownLayoutsAPI.IsLayoutForRundownView(item)
+			const isRundownHeaderLayout = RundownLayoutsAPI.IsLayoutForRundownHeader(item)
+			const isMiniShelfLayout = RundownLayoutsAPI.IsLayoutForMiniShelf(item)
 
 			return (
 				<React.Fragment>
@@ -1267,6 +1271,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</label>
 					</div>
 					{isShelfLayout && <ShelfLayoutSettings item={item} />}
+					{isRundownHeaderLayout && <RundownHeaderLayoutSettings item={item} />}
 					<h4 className="mod mhs">{layout?.filtersTitle ? t(`${layout?.filtersTitle}`) : t('Filters')}</h4>
 					{item.filters.length === 0 ? (
 						<p className="text-s dimmed mhs">{t('There are no filters set up yet')}</p>
