@@ -1551,7 +1551,6 @@ interface ITrackedProps {
 	shelfLayoutId?: RundownLayoutId
 	rundownViewLayoutId?: RundownLayoutId
 	rundownHeaderLayoutId?: RundownLayoutId
-	orderedPartsIds: PartId[]
 	shelfDisplayOptions: {
 		buckets: boolean
 		layout: boolean
@@ -1653,7 +1652,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		shelfLayoutId: protectString((params['layout'] as string) || (params['shelfLayout'] as string) || ''), // 'layout' kept for backwards compatibility
 		rundownViewLayoutId: protectString((params['rundownViewLayout'] as string) || ''),
 		rundownHeaderLayoutId: protectString((params['rundownHeaderLayout'] as string) || ''),
-		orderedPartsIds: allParts,
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
 			layout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
