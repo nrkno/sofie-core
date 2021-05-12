@@ -75,6 +75,7 @@ interface ISourceLayerPropsBase {
 	autoNextPart: boolean
 	layerIndex: number
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
+	isPreview: boolean
 }
 interface ISourceLayerProps extends ISourceLayerPropsBase {
 	layer: ISourceLayerUi
@@ -153,6 +154,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 							outputGroupCollapsed={this.props.outputGroupCollapsed}
 							onFollowLiveLine={this.props.onFollowLiveLine}
 							layerIndex={this.props.layerIndex}
+							isPreview={this.props.isPreview}
 						/>
 					)
 				})
@@ -226,6 +228,7 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 								scrollLeft={this.props.scrollLeft}
 								scrollWidth={this.props.scrollWidth}
 								layerIndex={this.props.layerIndex}
+								isPreview={this.props.isPreview}
 							/>
 						)
 					})
@@ -281,6 +284,7 @@ interface IOutputGroupProps {
 	relative: boolean
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	indexOffset: number
+	isPreview: boolean
 }
 class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 	static whyDidYouRender = true
@@ -320,6 +324,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 							onFollowLiveLine={this.props.onFollowLiveLine}
 							onPieceClick={this.props.onPieceClick}
 							onPieceDoubleClick={this.props.onPieceDoubleClick}
+							isPreview={this.props.isPreview}
 						/>
 					)
 				})
@@ -355,6 +360,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 						onFollowLiveLine={this.props.onFollowLiveLine}
 						onPieceClick={this.props.onPieceClick}
 						onPieceDoubleClick={this.props.onPieceDoubleClick}
+						isPreview={this.props.isPreview}
 					/>
 				)
 			}
@@ -767,6 +773,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								autoNextPart={this.props.autoNextPart}
 								liveLinePadding={SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)}
 								indexOffset={currentIndex}
+								isPreview={this.props.isPreview || false}
 							/>
 						)
 					}

@@ -574,7 +574,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 		const realCursorTimePosition = this.props.cursorTimePosition + seek
 
-		if (!this.props.relative && !this.props.isTooSmallForText) {
+		if ((!this.props.relative && !this.props.isTooSmallForText) || this.props.isPreview) {
 			this.leftLabelNodes = this.renderLeftLabel()
 			this.rightLabelNodes = this.renderRightLabel()
 		}

@@ -9,6 +9,8 @@ $segment-header-height: 2.3em;
 $segment-header-width: 12.5rem;
 $segment-background-color: #000;
 $segment-timeline-background-color: #1f1f1f;
+$segment-mini-inspector-background: #474747;
+$segment-mini-inspector-timeline-background: #151515;
 $segment-timeline-too-small-part: #0f0f0f;
 $segment-next-preview-background-color: #181818;
 $segment-title-background-color: #4b4b4b;
@@ -1188,7 +1190,7 @@ svg.icon {
 			z-index: 1002;
 
 			&:hover {
-				background: #151515;
+				background: $segment-mini-inspector-timeline-background;
 				transition: 0.2s background-color ease-out;
 			}
 
@@ -2452,7 +2454,7 @@ svg.icon {
 	position: absolute;
 	display: block;
 	border-radius: 5px;
-	background: #474747;
+	background: $segment-mini-inspector-background;
 	box-shadow: 1px -1.5px 3.5px 1.5px rgba(0, 0, 0, 0.5);
 	padding: 0.7em 1em;
 	white-space: normal;
@@ -2488,9 +2490,11 @@ svg.icon {
 		border-bottom: none;
 		border-left: 1px solid #333;
 		border-right: 1px solid #333;
-		background: #151515;
+		background: $segment-mini-inspector-timeline-background;
 		margin-top: $segment-header-height * -1;
 		padding: $segment-timeline-padding;
+
+		overflow: hidden;
 
 		&::before {
 			content: none;
@@ -2519,12 +2523,19 @@ svg.icon {
 		}
 
 		> .segment-timeline__mini-inspector__mini-timeline {
+			position: relative;
 			white-space: nowrap;
-			background: #474747;
+			background: $segment-mini-inspector-background;
 
 			> .segment-timeline__part {
 				display: inline-block;
 				vertical-align: top;
+
+				&.segment-timeline__part--end-of-segment {
+					position: absolute;
+					min-width: 14%;
+					background: $segment-mini-inspector-timeline-background;
+				}
 			}
 		}
 	}

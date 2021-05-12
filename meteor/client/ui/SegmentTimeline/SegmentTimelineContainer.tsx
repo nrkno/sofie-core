@@ -825,10 +825,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		showEntireSegment = () => {
-			debugger
 			this.updateMaxTimeScale()
 				.then(() => {
-					debugger
 					this.onTimeScaleChange(this.getShowAllTimeScale())
 				})
 				.catch(console.error)

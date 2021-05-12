@@ -36,6 +36,7 @@ export interface ISourceLayerItemProps {
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
+	isPreview: boolean
 	isTooSmallForText: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void

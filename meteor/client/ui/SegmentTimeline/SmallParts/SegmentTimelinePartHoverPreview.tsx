@@ -20,6 +20,7 @@ export const SegmentTimelinePartHoverPreview = ({
 	autoNextPart,
 	liveLineHistorySize,
 	isLastSegment,
+	isLastInSegment,
 	totalSegmentDuration,
 }: {
 	t: TFunction
@@ -37,10 +38,12 @@ export const SegmentTimelinePartHoverPreview = ({
 	autoNextPart: boolean
 	liveLineHistorySize: number
 	isLastSegment: boolean
+	isLastInSegment: boolean
 	totalSegmentDuration: number
 }) => {
 	const followingPartPreviewDuration = 0.15 * totalSegmentDuration
-	const previewWindowDuration = totalSegmentDuration + (followingPart ? followingPartPreviewDuration : 0)
+	const previewWindowDuration =
+		totalSegmentDuration + (followingPart || isLastInSegment ? followingPartPreviewDuration : 0)
 	return showMiniInspector ? (
 		<div
 			className="segment-timeline__mini-inspector segment-timeline__mini-inspector--small-parts"
@@ -51,7 +54,7 @@ export const SegmentTimelinePartHoverPreview = ({
 				{RundownUtils.formatDiffToTimecode(totalSegmentDuration, false, false, true, false, true)}
 			</div>
 			<div className="segment-timeline__mini-inspector__mini-timeline">
-				{parts.map((part) => {
+				{parts.map((part, index) => {
 					return (
 						<SegmentTimelinePart
 							key={unprotectString(part.instance._id)}
@@ -69,7 +72,7 @@ export const SegmentTimelinePartHoverPreview = ({
 							relative={true}
 							scrollWidth={1}
 							isLastSegment={isLastSegment}
-							isLastInSegment={false}
+							isLastInSegment={isLastInSegment && !followingPart && parts.length - 1 === index}
 							isAfterLastValidInSegmentAndItsLive={false}
 							part={part}
 							isPreview={true}
@@ -100,6 +103,9 @@ export const SegmentTimelinePartHoverPreview = ({
 						isPreview={true}
 						cropDuration={followingPartPreviewDuration}
 					/>
+				)}
+				{!followingPart && isLastInSegment && (
+					<div className="segment-timeline__part segment-timeline__part--end-of-segment"></div>
 				)}
 			</div>
 		</div>
