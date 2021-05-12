@@ -52,7 +52,7 @@ import { generateExpectedPackagesForPartInstance } from '../api/ingest/expectedP
 import { PartInstance } from '../../lib/collections/PartInstances'
 /*
  * This file contains publications for the peripheralDevices, such as playout-gateway, mos-gateway and package-manager
-*/
+ */
 
 function checkAccess(cred: Credentials | ResolvedCredentials, selector) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -296,7 +296,7 @@ meteorCustomPublishArray(
 						context.invalidateRundownPlaylist = false
 						const activePlaylist = RundownPlaylists.findOne({
 							studioId: studioId,
-							activationId: { $exists: true }
+							activationId: { $exists: true },
 						})
 						context.activePlaylist = activePlaylist
 						console.log('context.activePlaylist', context.activePlaylist)
@@ -332,35 +332,40 @@ meteorCustomPublishArray(
 					}
 					if (invalidateRoutedPlayoutExpectedPackages) {
 						// Use the expectedPackages of the Current and Next Parts:
-						const playoutNextExpectedPackages: ExpectedPackageDB[] =
-							context.nextPartInstance
+						const playoutNextExpectedPackages: ExpectedPackageDB[] = context.nextPartInstance
 							? generateExpectedPackagesForPartInstance(
 									context.studio,
 									context.nextPartInstance.rundownId,
 									context.nextPartInstance
-								)
+							  )
 							: []
 
-						const playoutCurrentExpectedPackages: ExpectedPackageDB[] =
-							context.currentPartInstance
+						const playoutCurrentExpectedPackages: ExpectedPackageDB[] = context.currentPartInstance
 							? generateExpectedPackagesForPartInstance(
 									context.studio,
 									context.currentPartInstance.rundownId,
 									context.currentPartInstance
-								)
+							  )
 							: []
 
-
 						// Map the expectedPackages onto their specified layer:
-						const currentRoutedMappingsWithPackages = routeExpectedPackages(studio, playoutCurrentExpectedPackages)
-						const nextRoutedMappingsWithPackages = routeExpectedPackages(studio, playoutNextExpectedPackages)
+						const currentRoutedMappingsWithPackages = routeExpectedPackages(
+							studio,
+							playoutCurrentExpectedPackages
+						)
+						const nextRoutedMappingsWithPackages = routeExpectedPackages(
+							studio,
+							playoutNextExpectedPackages
+						)
 
 						if (
 							context.currentPartInstance &&
 							!Object.keys(currentRoutedMappingsWithPackages).length &&
 							!Object.keys(nextRoutedMappingsWithPackages).length
 						) {
-							logger.debug(`Pub.expectedPackagesForDevice: Both currentRoutedMappingsWithPackages and nextRoutedMappingsWithPackages are empty`)
+							logger.debug(
+								`Pub.expectedPackagesForDevice: Both currentRoutedMappingsWithPackages and nextRoutedMappingsWithPackages are empty`
+							)
 						}
 
 						// Filter, keep only the routed mappings for this device:
@@ -376,7 +381,7 @@ meteorCustomPublishArray(
 								filterPlayoutDeviceIds,
 								nextRoutedMappingsWithPackages,
 								Priorities.PLAYOUT_NEXT
-							)
+							),
 						]
 					}
 
@@ -449,7 +454,6 @@ interface ResultingExpectedPackage {
 	targets: PackageContainerOnPackage[]
 	playoutDeviceId: PeripheralDeviceId
 }
-
 
 enum Priorities {
 	// Lower priorities are done first
