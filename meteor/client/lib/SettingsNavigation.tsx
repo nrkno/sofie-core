@@ -19,7 +19,7 @@ export class SettingsNavigation extends React.Component<ISettingsNavigation> {
 			return <ShowStyle {...this.props} />
 		} else if (this.props.type === 'newshowstyle') {
 			return <NewShowStyle {...this.props} />
-		} else{
+		} else {
 			assertNever(this.props.type)
 		}
 

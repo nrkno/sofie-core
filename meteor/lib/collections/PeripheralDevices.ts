@@ -151,11 +151,14 @@ export function getExternalNRCSName(device: PeripheralDevice | undefined): strin
 				device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER
 			) {
 				// These aren't ingest gateways
-				return 'N/A'
 			} else {
 				assertNever(device.type)
 			}
 		}
+		// The device type is unknown to us:
+		return `Unknown NRCS: "${device.type}"`
+	} else {
+		// undefined NRCS:
+		return 'NRCS'
 	}
-	return 'NRCS'
 }

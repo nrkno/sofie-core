@@ -62,14 +62,15 @@ export const renderEditAttribute = (
 				}
 			/>
 		)
-	// } else if (configField.type === ConfigManifestEntryType.TABLE) {
-	// 	// not handled here, handled by GenericDeviceSettingsComponent
-	// } else if (configField.type === ConfigManifestEntryType.LABEL) {
-	// 	// todo ?
-	// } else if (configField.type === ConfigManifestEntryType.LINK) {
-	// 	// todo ?
-	// } else {
-	// 	assertNever(configField.type)
+		// TODO: Handle these?
+		// } else if (configField.type === ConfigManifestEntryType.TABLE) {
+		// 	// not handled here, handled by GenericDeviceSettingsComponent
+		// } else if (configField.type === ConfigManifestEntryType.LABEL) {
+		// 	// todo ?
+		// } else if (configField.type === ConfigManifestEntryType.LINK) {
+		// 	// todo ?
+		// } else {
+		// 	assertNever(configField.type)
 	}
 }
 
