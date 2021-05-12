@@ -291,7 +291,6 @@ meteorCustomPublishArray(
 							)
 						}
 					}
-					console.log('context.invalidateRundownPlaylist', context.invalidateRundownPlaylist)
 					if (context.invalidateRundownPlaylist) {
 						context.invalidateRundownPlaylist = false
 						const activePlaylist = RundownPlaylists.findOne({
@@ -299,7 +298,6 @@ meteorCustomPublishArray(
 							activationId: { $exists: true },
 						})
 						context.activePlaylist = activePlaylist
-						console.log('context.activePlaylist', context.activePlaylist)
 						context.activeRundowns = context.activePlaylist
 							? Rundowns.find({
 									playlistId: context.activePlaylist._id,
@@ -319,7 +317,7 @@ meteorCustomPublishArray(
 						// Map the expectedPackages onto their specified layer:
 						const routedMappingsWithPackages = routeExpectedPackages(studio, context.expectedPackages)
 
-						if (!Object.keys(routedMappingsWithPackages).length) {
+						if (context.expectedPackages.length && !Object.keys(routedMappingsWithPackages).length) {
 							logger.info(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
 						}
 
@@ -389,8 +387,6 @@ meteorCustomPublishArray(
 					for (const [containerId, studioPackageContainer] of Object.entries(studio.packageContainers)) {
 						packageContainers[containerId] = studioPackageContainer.container
 					}
-
-					console.log('pubdata', context.activePlaylist?._id)
 
 					const pubData = literal<DBObj[]>([
 						{
@@ -492,18 +488,19 @@ function generateExpectedPackages(
 							containerId: packageSource.containerId,
 						}
 
+						/** Array of both the accessors of the expected package and the source */
 						const accessorIds = _.uniq(
-							Object.keys(lookedUpSource.container.accessors).concat(Object.keys(packageSource.accessors))
+							Object.keys(lookedUpSource.container.accessors).concat(
+								Object.keys(packageSource.accessors || {})
+							)
 						)
 
 						for (const accessorId of accessorIds) {
-							const sourceAccessor = lookedUpSource.container.accessors[accessorId] as
-								| Accessor.Any
-								| undefined
+							const sourceAccessor: Accessor.Any | undefined =
+								lookedUpSource.container.accessors[accessorId]
 
-							const packageAccessor = packageSource.accessors[accessorId] as
-								| AccessorOnPackage.Any
-								| undefined
+							const packageAccessor: AccessorOnPackage.Any | undefined =
+								packageSource.accessors?.[accessorId]
 
 							if (packageAccessor && sourceAccessor && packageAccessor.type === sourceAccessor.type) {
 								combinedSource.accessors[accessorId] = deepExtend({}, sourceAccessor, packageAccessor)

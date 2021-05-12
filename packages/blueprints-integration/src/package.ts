@@ -49,7 +49,7 @@ export namespace ExpectedPackage {
 			/** Reference to a PackageContainer */
 			containerId: string
 			/** Locally defined Accessors, these are combined (deep extended) with the PackageContainer (if it is found) Accessors */
-			accessors: { [accessorId: string]: AccessorOnPackage.Any }
+			accessors?: { [accessorId: string]: AccessorOnPackage.Any }
 		}[]
 
 		/** The sideEffect is used by the Package Manager to generate extra artifacts, such as thumbnails & previews */
@@ -232,15 +232,15 @@ export namespace AccessorOnPackage {
 
 	export interface LocalFolder extends Partial<Accessor.LocalFolder> {
 		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
-		filePath: string
+		filePath?: string
 	}
 	export interface FileShare extends Partial<Accessor.FileShare> {
 		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
-		filePath: string
+		filePath?: string
 	}
 	export interface HTTP extends Partial<Accessor.HTTP> {
 		/** URL path to resource (combined with .baseUrl gives the full URL), for example: /folder/myFile */
-		url: string
+		url?: string
 	}
 	export interface Quantel extends Partial<Accessor.Quantel> {
 		guid?: string
