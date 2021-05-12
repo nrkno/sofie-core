@@ -71,7 +71,7 @@ interface IProps {
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
-	onShowEntireSegment?: (event: any, limitScale?: boolean) => void
+	onShowEntireSegment?: (event: any) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -257,7 +257,7 @@ function SegmentTimelineZoomButtons(props: IProps) {
 	}
 
 	const zoomNormalize = (e: React.MouseEvent<HTMLElement>) => {
-		props.onZoomChange(props.maxTimeScale, e)
+		props.onShowEntireSegment && props.onShowEntireSegment(e)
 		if (!props.isLiveSegment && props.scrollLeft > 0) {
 			props.onScroll(0, e)
 		}

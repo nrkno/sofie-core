@@ -468,7 +468,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.stopLive()
 				if (Settings.autoRewindLeavingSegment) {
 					this.onRewindSegment()
-					this.onShowEntireSegment('', true)
+					this.onShowEntireSegment('componentDidUpdate')
 				}
 
 				if (this.props.segmentui && this.props.segmentui.orphaned) {
@@ -798,7 +798,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		getShowAllTimeScale = () => {
 			let newScale =
 				(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
-				(computeSegmentDisplayDuration(this.context.durations, this.props.parts) || 1)
+				((computeSegmentDisplayDuration(this.context.durations, this.props.parts) || 1) -
+					(this.state.isLiveSegment ? this.state.livePosition : 0))
 			// TODO: This is only temporary, for hands-on tweaking
 			newScale = Math.min(
 				parseInt(localStorage.getItem('EXP_timeline_min_time_scale')!) ||
@@ -824,10 +825,16 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		showEntireSegment = () => {
-			this.onTimeScaleChange(this.getShowAllTimeScale())
+			debugger
+			this.updateMaxTimeScale()
+				.then(() => {
+					debugger
+					this.onTimeScaleChange(this.getShowAllTimeScale())
+				})
+				.catch(console.error)
 		}
 
-		onShowEntireSegment = (event: any, limitScale?: boolean) => {
+		onShowEntireSegment = (event: any) => {
 			this.setState({
 				scrollLeft: 0,
 				followLiveLine: this.state.isLiveSegment ? true : this.state.followLiveLine,

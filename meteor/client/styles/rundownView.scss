@@ -1200,10 +1200,10 @@ svg.icon {
 				width: 0;
 				height: 0;
 				border-left: 0.4em solid transparent;
-				border-right: 0.4em solid transparent;
-
-				border-top: 0.4em solid #fff;
-				margin-right: 0.2em;
+				border-right: 0.4em solid #fff;
+				border-top: 0.4em solid transparent;
+				margin-right: 0.3em;
+				margin-left: -0.3em;
 				margin-top: 0.5em;
 			}
 
@@ -1228,6 +1228,10 @@ svg.icon {
 					}
 				}
 			}
+		}
+
+		.segment-timeline__small-parts-flag-hoist:hover ~ .segment-timeline__small-parts-flag-hoist {
+			z-index: -1;
 		}
 
 		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
