@@ -77,16 +77,18 @@
 			z-index: 4;
 		}
 
-		&.vt {
-			.dashboard-panel__panel__button__label-container {
-				top: unset;
-			}
+		.dashboard-panel__panel__button__thumbnail + .dashboard-panel__panel__button__label-container {
+			top: unset;
 		}
 
 		&.graphics {
 			.dashboard-panel__panel__button__label-container {
 				grid-row: 1;
 				white-space: normal;
+			}
+			.dashboard-panel__panel__button__thumbnail + .dashboard-panel__panel__button__label-container {
+				grid-row: 2;
+				white-space: nowrap;
 			}
 		}
 	}

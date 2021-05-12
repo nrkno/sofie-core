@@ -123,7 +123,9 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		return (
 			<>
 				{thumbnailUrl && renderThumbnail && (
-					<img src={thumbnailUrl} className="dashboard-panel__panel__button__thumbnail" />
+					<div className="dashboard-panel__panel__button__thumbnail">
+						<img src={thumbnailUrl} />
+					</div>
 				)}
 			</>
 		)
@@ -140,9 +142,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 		return (
 			<>
-				{thumbnailUrl && renderThumbnail && (
-					<img src={thumbnailUrl} className="dashboard-panel__panel__button__thumbnail" />
-				)}
 				{sourceDuration && (
 					<span className="dashboard-panel__panel__button__sub-label">
 						{sourceDuration ? <StyledTimecode time={sourceDuration || 0} /> : null}
@@ -168,6 +167,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					}
 					mediaPreviewUrl={this.props.mediaPreviewUrl}
 				/>
+				{thumbnailUrl && renderThumbnail && (
+					<div className="dashboard-panel__panel__button__thumbnail">
+						<img src={thumbnailUrl} />
+					</div>
+				)}
 			</>
 		)
 	}
