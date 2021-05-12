@@ -20,7 +20,7 @@ export enum RundownLayoutType {
 	RUNDOWN_VIEW_LAYOUT = 'rundown_view_layout',
 	RUNDOWN_LAYOUT = 'rundown_layout',
 	DASHBOARD_LAYOUT = 'dashboard_layout',
-	RUNDOWN_HEADER_LAYOUT = 'top_bar_layout',
+	RUNDOWN_HEADER_LAYOUT = 'rundown_header_layout',
 }
 
 /**
@@ -222,7 +222,7 @@ export interface RundownLayout extends RundownLayoutShelfBase {
 
 export interface RundownLayoutRundownHeader extends RundownLayoutBase {
 	type: RundownLayoutType.RUNDOWN_HEADER_LAYOUT
-	endOfShowText: string
+	expectedEndText: string
 	nextBreakText: string
 }
 

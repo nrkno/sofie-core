@@ -3,7 +3,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/Reac
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { Link } from 'react-router-dom'
 import { SplitDropdown } from '../../lib/SplitDropdown'
-import { getRundownPlaylistLink, getRundownWithLayoutLink, getShelfLink } from './util'
+import { getRundownPlaylistLink, getRundownWithShelfLayoutLink, getShelfLink } from './util'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownLayoutBase, RundownLayouts } from '../../../lib/collections/RundownLayouts'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -94,7 +94,7 @@ export const RundownShelfLayoutSelection = translateWithTracker<
 				.map((layout) => {
 					return this.renderLinkItem(
 						layout,
-						getRundownWithLayoutLink(this.props.rundown.playlistId, layout._id),
+						getRundownWithShelfLayoutLink(this.props.playlistId, layout._id),
 						`shelf${layout._id}`
 					)
 				})
