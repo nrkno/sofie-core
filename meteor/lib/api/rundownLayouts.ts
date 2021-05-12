@@ -115,6 +115,18 @@ class RundownLayoutsRegistry {
 					})
 				}),
 			},
+			{
+				_id: 'rundown_header_layouts',
+				title: 'Rundown Header Layouts',
+				layouts: Array.from(this.rundownHeaderLayouts.entries()).map(([layoutType, descriptor]) => {
+					return literal<CustomizableRegionLayout>({
+						_id: layoutType,
+						type: layoutType,
+						filtersTitle: descriptor.filtersTitle,
+						supportedElements: descriptor.supportedElements,
+					})
+				}),
+			},
 		]
 	}
 }
@@ -168,7 +180,7 @@ export namespace RundownLayoutsAPI {
 		return registry.IsMiniShelfLayout(layout.type)
 	}
 
-	export function IsLayoutForRundownHeader(layout: RundownLayoutBase): layout is RundownLayoutBase {
+	export function IsLayoutForRundownHeader(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {
 		return registry.IsRundownHeaderLayout(layout.type)
 	}
 
