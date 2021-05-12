@@ -39,8 +39,6 @@ export function createRundownLayout(
 			filters: [],
 			type,
 			userId,
-			exposeAsStandalone: !!exposeAsStandalone,
-			exposeAsShelf: !!exposeAsShelf,
 			icon: '',
 			iconColor: '#ffffff',
 			openByDefault: openByDefault ?? false,

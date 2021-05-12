@@ -22,7 +22,11 @@ import {
 	RundownLayoutKeyboardPreview,
 	RundownLayoutNextInfo,
 } from '../../../lib/collections/RundownLayouts'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import {
+	CustomizableRegionLayout,
+	CustomizableRegionSettingsManifest,
+	RundownLayoutsAPI,
+} from '../../../lib/api/rundownLayouts'
 import { PubSub } from '../../../lib/api/pubsub'
 import { literal, unprotectString } from '../../../lib/lib'
 import { Random } from 'meteor/random'
@@ -35,10 +39,12 @@ import { Link } from 'react-router-dom'
 import { MeteorCall } from '../../../lib/api/methods'
 import { defaultColorPickerPalette } from '../../lib/colorPicker'
 import FilterEditor from './components/FilterEditor'
+import ShelfLayoutSettings from './components/rundownLayouts/ShelfLayoutSettings'
 
 export interface IProps {
 	showStyleBase: ShowStyleBase
 	studios: Studio[]
+	customRegion: CustomizableRegionSettingsManifest
 }
 
 interface IState {
@@ -48,16 +54,21 @@ interface IState {
 
 interface ITrackedProps {
 	rundownLayouts: RundownLayoutBase[]
+	layoutTypes: RundownLayoutType[]
 }
 
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
+	const layoutTypes = props.customRegion.layouts.map((l) => l.type)
+
 	const rundownLayouts = RundownLayouts.find({
 		showStyleBaseId: props.showStyleBase._id,
 		userId: { $exists: false },
+		type: { $in: layoutTypes },
 	}).fetch()
 
 	return {
 		rundownLayouts,
+		layoutTypes,
 	}
 })(
 	class RundownLayoutEditor extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -79,7 +90,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		onAddLayout = (e: any) => {
 			const { t, showStyleBase } = this.props
 			MeteorCall.rundownLayout
-				.createRundownLayout(t('New Layout'), RundownLayoutType.RUNDOWN_LAYOUT, showStyleBase._id)
+				.createRundownLayout(t('New Layout'), this.props.layoutTypes[0], showStyleBase._id)
 				.catch(console.error)
 		}
 
@@ -105,15 +116,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		onAddElement = (item: RundownLayoutBase) => {
 			const { t } = this.props
 
-			const isRundownLayout = RundownLayoutsAPI.isRundownLayout(item)
-			const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(item)
+			const layout = this.props.customRegion.layouts.find((l) => l.type === item.type)
+			const filtersTitle = layout?.filtersTitle ? t(layout.filtersTitle) : t('New Filter')
+
+			if (!layout?.supportedElements.length) {
+				return
+			}
 
 			RundownLayouts.update(item._id, {
 				$push: {
 					filters: literal<RundownLayoutFilter>({
 						_id: Random.id(),
 						type: RundownLayoutElementType.FILTER,
-						name: isRundownLayout ? t('New Tab') : isDashboardLayout ? t('New Panel') : t('New Item'),
+						name: filtersTitle,
 						currentSegment: false,
 						displayStyle: PieceDisplayStyle.BUTTONS,
 						label: undefined,
@@ -638,66 +653,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			)
 		}
 
-		renderElements(item: RundownLayoutBase) {
+		renderElements(item: RundownLayoutBase, layout?: CustomizableRegionLayout) {
 			const { t } = this.props
 
-			const isRundownLayout = RundownLayoutsAPI.isRundownLayout(item)
-			const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(item)
+			const isShelfLayout = RundownLayoutsAPI.IsLayoutForShelf(item)
 
 			return (
 				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Show Buckets')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'showBuckets'}
-								obj={item}
-								options={RundownLayoutType}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Disable Context Menu')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'disableContextMenu'}
-								obj={item}
-								options={RundownLayoutType}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Expose layout as a standalone page')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'exposeAsStandalone'}
-								obj={item}
-								options={RundownLayoutType}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Expose as a layout for the shelf')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'exposeAsShelf'}
-								obj={item}
-								options={RundownLayoutType}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
-						</label>
-					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Icon')}
@@ -723,33 +685,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className="input text-input input-s"></EditAttribute>
 						</label>
 					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Open shelf by default')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'openByDefault'}
-								obj={item}
-								options={RundownLayoutType}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Default shelf height')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`startingHeight`}
-								obj={item}
-								type="int"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-						</label>
-					</div>
-					<h4 className="mod mhs">{isRundownLayout ? t('Tabs') : isDashboardLayout ? t('Panels') : null}</h4>
+					{isShelfLayout && <ShelfLayoutSettings item={item} />}
+					<h4 className="mod mhs">{layout?.filtersTitle ? t(`${layout?.filtersTitle}`) : t('Filters')}</h4>
 					{item.filters.length === 0 ? (
 						<p className="text-s dimmed mhs">{t('There are no filters set up yet')}</p>
 					) : null}
@@ -768,114 +705,109 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 		renderItems() {
 			const { t } = this.props
-			return (this.props.rundownLayouts || []).map((item, index) => (
-				<React.Fragment key={unprotectString(item._id)}>
-					<tr
-						className={ClassNames({
-							hl: this.isItemEdited(item),
-						})}>
-						<th className="settings-studio-rundown-layouts-table__name c3">{item.name || t('Default Layout')}</th>
-						<td className="settings-studio-rundown-layouts-table__value c2">{item.type}</td>
-						<td className="settings-studio-rundown-layouts-table__value c1">
-							{this.props.studios.map((studio) => (
-								<span className="pill" key={unprotectString(studio._id)}>
-									<Link
-										target="_blank"
-										className="pill-link"
-										to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`}>
-										{studio.name}
-									</Link>
-								</span>
-							))}
-						</td>
-						<td className="settings-studio-rundown-layouts-table__actions table-item-actions c3">
-							<button className="action-btn" onClick={(e) => this.downloadItem(item)}>
-								<FontAwesomeIcon icon={faDownload} />
-							</button>
-							<button className="action-btn" onClick={(e) => this.editItem(item)}>
-								<FontAwesomeIcon icon={faPencilAlt} />
-							</button>
-							<button className="action-btn" onClick={(e) => this.onDeleteLayout(e, item)}>
-								<FontAwesomeIcon icon={faTrash} />
-							</button>
-						</td>
-					</tr>
-					{this.isItemEdited(item) && (
-						<tr className="expando-details hl">
-							<td colSpan={4}>
-								<div>
-									<div className="mod mvs mhs">
-										<label className="field">
-											{t('Name')}
-											<EditAttribute
-												modifiedClassName="bghl"
-												attribute={'name'}
-												obj={item}
-												type="text"
-												collection={RundownLayouts}
-												className="input text-input input-l"></EditAttribute>
-										</label>
-									</div>
-									<div className="mod mvs mhs">
-										<label className="field">
-											{t('Type')}
-											<EditAttribute
-												modifiedClassName="bghl"
-												attribute={'type'}
-												obj={item}
-												options={RundownLayoutType}
-												type="dropdown"
-												collection={RundownLayouts}
-												className="input text-input input-l"></EditAttribute>
-										</label>
-									</div>
-								</div>
-								<div>
-									{item.type === RundownLayoutType.RUNDOWN_LAYOUT
-										? this.renderElements(item)
-										: item.type === RundownLayoutType.DASHBOARD_LAYOUT
-										? this.renderElements(item)
-										: null}
-								</div>
-								<div className="mod mls">
-									<button className="btn btn-secondary" onClick={(e) => this.onAddElement(item)}>
-										<FontAwesomeIcon icon={faPlus} />
-										&nbsp;
-										{item.type === RundownLayoutType.RUNDOWN_LAYOUT
-											? t('Add tab')
-											: item.type === RundownLayoutType.DASHBOARD_LAYOUT
-											? t('Add panel')
-											: null}
-									</button>
-								</div>
-								{item.type === RundownLayoutType.DASHBOARD_LAYOUT ? (
-									<>
-										<div>{RundownLayoutsAPI.isDashboardLayout(item) ? this.renderActionButtons(item) : null}</div>
-										<div className="mod mls">
-											<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
-												<FontAwesomeIcon icon={faCheck} />
-											</button>
-											<button className="btn btn-secondary" onClick={(e) => this.onAddButton(item)}>
-												<FontAwesomeIcon icon={faPlus} />
-												&nbsp;
-												{t('Add button')}
-											</button>
-										</div>
-									</>
-								) : (
-									<>
-										<div className="mod mls">
-											<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
-												<FontAwesomeIcon icon={faCheck} />
-											</button>
-										</div>
-									</>
-								)}
+			return (this.props.rundownLayouts || []).map((item, index) => {
+				const layout = this.props.customRegion.layouts.find((l) => l.type === item.type)
+				return (
+					<React.Fragment key={unprotectString(item._id)}>
+						<tr
+							className={ClassNames({
+								hl: this.isItemEdited(item),
+							})}>
+							<th className="settings-studio-rundown-layouts-table__name c3">{item.name || t('Default Layout')}</th>
+							<td className="settings-studio-rundown-layouts-table__value c2">{item.type}</td>
+							<td className="settings-studio-rundown-layouts-table__value c1">
+								{this.props.studios.map((studio) => (
+									<span className="pill" key={unprotectString(studio._id)}>
+										<Link
+											target="_blank"
+											className="pill-link"
+											to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`}>
+											{studio.name}
+										</Link>
+									</span>
+								))}
+							</td>
+							<td className="settings-studio-rundown-layouts-table__actions table-item-actions c3">
+								<button className="action-btn" onClick={(e) => this.downloadItem(item)}>
+									<FontAwesomeIcon icon={faDownload} />
+								</button>
+								<button className="action-btn" onClick={(e) => this.editItem(item)}>
+									<FontAwesomeIcon icon={faPencilAlt} />
+								</button>
+								<button className="action-btn" onClick={(e) => this.onDeleteLayout(e, item)}>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
 							</td>
 						</tr>
-					)}
-				</React.Fragment>
-			))
+						{this.isItemEdited(item) && (
+							<tr className="expando-details hl">
+								<td colSpan={4}>
+									<div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Name')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'name'}
+													obj={item}
+													type="text"
+													collection={RundownLayouts}
+													className="input text-input input-l"></EditAttribute>
+											</label>
+										</div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Type')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'type'}
+													obj={item}
+													options={this.props.layoutTypes}
+													type="dropdown"
+													collection={RundownLayouts}
+													className="input text-input input-l"></EditAttribute>
+											</label>
+										</div>
+									</div>
+									<div>{this.renderElements(item, layout)}</div>
+									{layout?.supportedElements.length ? (
+										<div className="mod mls">
+											<button className="btn btn-secondary" onClick={(e) => this.onAddElement(item)}>
+												<FontAwesomeIcon icon={faPlus} />
+												&nbsp;
+												{t(`Add ${layout?.filtersTitle?.toLowerCase() ?? 'filter'}`)}
+											</button>
+										</div>
+									) : null}
+									{item.type === RundownLayoutType.DASHBOARD_LAYOUT ? (
+										<>
+											<div>{RundownLayoutsAPI.isDashboardLayout(item) ? this.renderActionButtons(item) : null}</div>
+											<div className="mod mls">
+												<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
+													<FontAwesomeIcon icon={faCheck} />
+												</button>
+												<button className="btn btn-secondary" onClick={(e) => this.onAddButton(item)}>
+													<FontAwesomeIcon icon={faPlus} />
+													&nbsp;
+													{t('Add button')}
+												</button>
+											</div>
+										</>
+									) : (
+										<>
+											<div className="mod mls">
+												<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
+													<FontAwesomeIcon icon={faCheck} />
+												</button>
+											</div>
+										</>
+									)}
+								</td>
+							</tr>
+						)}
+					</React.Fragment>
+				)
+			})
 		}
 
 		onUploadFile(e) {
@@ -956,7 +888,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 			return (
 				<div className="studio-edit rundown-layout-editor">
-					<h2 className="mhn">{t('Shelf Layouts')}</h2>
+					<h2 className="mhn">{this.props.customRegion.title}</h2>
 					<table className="expando settings-studio-rundown-layouts-table">
 						<tbody>{this.renderItems()}</tbody>
 					</table>

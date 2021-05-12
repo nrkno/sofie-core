@@ -9,6 +9,9 @@ import { RundownLayoutBase, RundownLayouts } from '../../../lib/collections/Rund
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import { withTranslation } from 'react-i18next'
+import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 interface IRundownShelfLayoutSelectionProps {
 	rundown: Rundown
@@ -72,8 +75,13 @@ export const RundownShelfLayoutSelection = translateWithTracker<
 		render() {
 			const { t } = this.props
 
-			const standaloneLayouts = this.props.rundownLayouts
-				.filter((layout) => layout.exposeAsStandalone)
+			const showstylesInPlaylist = this.props.rundowns.map((r) => r.showStyleBaseId)
+			const layoutsInRundown = this.props.rundownLayouts.filter((layout) =>
+				showstylesInPlaylist.includes(layout.showStyleBaseId)
+			)
+
+			const standaloneLayouts = layoutsInRundown
+				.filter((layout) => RundownLayoutsAPI.IsLayoutForShelf(layout) && layout.exposeAsStandalone)
 				.map((layout) => {
 					return this.renderLinkItem(
 						layout,
@@ -81,8 +89,8 @@ export const RundownShelfLayoutSelection = translateWithTracker<
 						`standalone${layout._id}`
 					)
 				})
-			const shelfLayouts = this.props.rundownLayouts
-				.filter((layout) => layout.exposeAsShelf)
+			const shelfLayouts = layoutsInRundown
+				.filter((layout) => RundownLayoutsAPI.IsLayoutForShelf(layout) && layout.exposeAsShelf)
 				.map((layout) => {
 					return this.renderLinkItem(
 						layout,

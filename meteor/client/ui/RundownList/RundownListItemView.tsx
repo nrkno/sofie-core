@@ -11,6 +11,8 @@ import { iconDragHandle, iconRemove, iconResync } from './icons'
 import JonasFormattedTime from './JonasFormattedTime'
 import { EyeIcon } from '../../lib/ui/icons/rundownList'
 import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
+import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
@@ -109,9 +111,19 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			<span className="rundown-list-item__text">
 				<JonasFormattedTime timestamp={rundown.modified} t={t} />
 			</span>
-			<span className="rundown-list-item__text">
-				<RundownShelfLayoutSelection rundown={props.rundown} />
-			</span>
+			{rundownLayouts.some(
+				(l) => RundownLayoutsAPI.IsLayoutForShelf(l) && (l.exposeAsShelf || l.exposeAsStandalone)
+			) && (
+				<span className="rundown-list-item__text">
+					{isOnlyRundownInPlaylist && (
+						<RundownShelfLayoutSelection
+							rundowns={[rundown]}
+							rundownLayouts={rundownLayouts}
+							playlistId={rundown.playlistId}
+						/>
+					)}
+				</span>
+			)}
 			<span className="rundown-list-item__actions">
 				{confirmReSyncRundownHandler ? (
 					<Tooltip

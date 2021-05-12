@@ -7,10 +7,6 @@ import { ShowStyleBaseId } from './ShowStyleBases'
 import { UserId } from './Users'
 import { registerIndex } from '../database'
 
-export interface LayoutFactory<T extends RundownLayoutBase> {
-	createLayout(...args: any[]): T | undefined
-}
-
 /**
  * The view targeted by this layout:
  * RUNDOWN_LAYOUT: a Rundown view for highly scripted shows: a show split into Segments and Parts,
@@ -24,7 +20,7 @@ export enum RundownLayoutType {
 	RUNDOWN_VIEW_LAYOUT = 'rundown_view_layout',
 	RUNDOWN_LAYOUT = 'rundown_layout',
 	DASHBOARD_LAYOUT = 'dashboard_layout',
-	TOP_BAR_LAYOUT = 'top_bar_layout',
+	RUNDOWN_HEADER_LAYOUT = 'top_bar_layout',
 }
 
 /**
@@ -200,8 +196,6 @@ export interface RundownLayoutBase {
 	name: string
 	type: RundownLayoutType
 	filters: RundownLayoutElementBase[]
-	exposeAsStandalone: boolean
-	exposeAsShelf: boolean
 	icon: string
 	iconColor: string
 	openByDefault: boolean
@@ -215,13 +209,21 @@ export interface RundownViewLayout extends RundownLayoutBase {
 	expectedEndText: string
 }
 
-export interface RundownLayout extends RundownLayoutBase {
-	type: RundownLayoutType.RUNDOWN_LAYOUT
-	filters: RundownLayoutElementBase[]
+export interface RundownLayoutShelfBase extends RundownLayoutBase {
+	exposeAsStandalone: boolean
+	exposeAsShelf: boolean
+	openByDefault: boolean
+	startingHeight?: number
 }
 
-export interface RundownLayoutTopBar extends RundownLayoutBase {
-	type: RundownLayoutType.TOP_BAR_LAYOUT
+export interface RundownLayout extends RundownLayoutShelfBase {
+	type: RundownLayoutType.RUNDOWN_LAYOUT
+}
+
+export interface RundownLayoutRundownHeader extends RundownLayoutBase {
+	type: RundownLayoutType.RUNDOWN_HEADER_LAYOUT
+	endOfShowText: string
+	nextBreakText: string
 }
 
 export enum ActionButtonType {
@@ -251,7 +253,7 @@ export interface DashboardLayoutActionButton {
 	labelToggled: string // different label for when the button is toggled on
 }
 
-export interface DashboardLayout extends RundownLayoutBase {
+export interface DashboardLayout extends RundownLayoutShelfBase {
 	type: RundownLayoutType.DASHBOARD_LAYOUT
 	filters: RundownLayoutElementBase[]
 	actionButtons?: DashboardLayoutActionButton[]

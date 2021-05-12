@@ -78,6 +78,9 @@ import {
 	RundownLayoutType,
 	RundownLayoutBase,
 	RundownLayoutId,
+	RundownViewLayout,
+	DashboardLayout,
+	RundownLayoutShelfBase,
 } from '../../lib/collections/RundownLayouts'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
@@ -96,8 +99,9 @@ import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownViewEventBus'
 import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../lib/hotkeyRegistry'
+import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { RundownViewKbdShortcuts } from './RundownViewKbdShortcuts'
-import { AdLibPieceUi, isAdLibOnAir } from '../lib/shelf'
+import { AdLibPieceUi } from '../lib/shelf'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1298,7 +1302,8 @@ interface IState {
 	isInspectorShelfExpanded: boolean
 	isClipTrimmerOpen: boolean
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
-	rundownLayout: RundownLayout | undefined
+	shelfLayout: RundownLayoutShelfBase | undefined
+	rundownViewLayout: RundownLayoutBase | undefined
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
@@ -1321,7 +1326,8 @@ interface ITrackedProps {
 	rundownLayouts?: Array<RundownLayoutBase>
 	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
-	rundownLayoutId?: RundownLayoutId
+	shelfLayoutId?: RundownLayoutId
+	rundownViewLayoutId?: RundownLayoutId
 	shelfDisplayOptions: {
 		buckets: boolean
 		layout: boolean
@@ -1428,7 +1434,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					subType: TSR.DeviceType.CASPARCG,
 				}).fetch()) ||
 			undefined,
-		rundownLayoutId: protectString((params['layout'] as string) || ''),
+		shelfLayoutId: protectString((params['layout'] as string) || (params['shelfLayout'] as string) || ''), // 'layout' kept for backwards compatibility
+		rundownViewLayoutId: protectString((params['rundownViewLayout'] as string) || ''),
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
 			layout: displayOptions.includes('layout'),
@@ -1504,7 +1511,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				})
 			}
 
-			const rundownLayout = this.props.rundownLayouts?.find((layout) => layout._id === this.props.rundownLayoutId)
+			const shelfLayout = this.props.rundownLayouts?.find((layout) => layout._id === this.props.shelfLayoutId)
+			let isInspectorShelfExpanded = false
+
+			if (shelfLayout && RundownLayoutsAPI.IsLayoutForShelf(shelfLayout)) {
+				isInspectorShelfExpanded = shelfLayout.openByDefault
+			}
 
 			this.state = {
 				timeScale: MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale,
@@ -1523,40 +1535,52 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				]),
 				isNotificationsCenterOpen: undefined,
 				isSupportPanelOpen: false,
-				isInspectorShelfExpanded: rundownLayout?.openByDefault ?? false,
+				isInspectorShelfExpanded,
 				isClipTrimmerOpen: false,
 				selectedPiece: undefined,
-				rundownLayout: undefined,
+				shelfLayout: undefined,
+				rundownViewLayout: undefined,
 				currentRundown: undefined,
 				wasShelfResizedByUser: false,
 				keyboardQueuedPiece: undefined,
 			}
 		}
 
-		static getDerivedStateFromProps(props: Translated<IProps & ITrackedProps>) {
-			let selectedLayout: RundownLayoutBase | undefined = undefined
+		static getDerivedStateFromProps(props: Translated<IProps & ITrackedProps>): Partial<IState> {
+			let selectedShelfLayout: RundownLayoutBase | undefined = undefined
+			let selectedViewLayout: RundownLayoutBase | undefined = undefined
 
 			if (props.rundownLayouts) {
 				// first try to use the one selected by the user
-				if (props.rundownLayoutId) {
-					selectedLayout = props.rundownLayouts.find((i) => i._id === props.rundownLayoutId)
+				if (props.shelfLayoutId) {
+					selectedShelfLayout = props.rundownLayouts.find((i) => i._id === props.shelfLayoutId)
+				}
+
+				if (props.rundownViewLayoutId) {
+					selectedViewLayout = props.rundownLayouts.find((i) => i._id === props.rundownViewLayoutId)
 				}
 
 				// if couldn't find based on id, try matching part of the name
-				if (props.rundownLayoutId && !selectedLayout) {
-					selectedLayout = props.rundownLayouts.find(
-						(i) => i.name.indexOf(unprotectString(props.rundownLayoutId!)) >= 0
+				if (props.shelfLayoutId && !selectedShelfLayout) {
+					selectedShelfLayout = props.rundownLayouts.find(
+						(i) => i.name.indexOf(unprotectString(props.shelfLayoutId!)) >= 0
+					)
+				}
+
+				if (props.rundownViewLayoutId && !selectedViewLayout) {
+					selectedViewLayout = props.rundownLayouts.find(
+						(i) => i.name.indexOf(unprotectString(props.rundownViewLayoutId!)) >= 0
 					)
 				}
 
 				// if not, try the first RUNDOWN_LAYOUT available
-				if (!selectedLayout) {
-					selectedLayout = props.rundownLayouts.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT)
+				if (!selectedShelfLayout) {
+					selectedShelfLayout = props.rundownLayouts.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT)
 				}
 
 				// if still not found, use the first one
-				if (!selectedLayout) {
-					selectedLayout = props.rundownLayouts[0]
+				if (!selectedShelfLayout) {
+					selectedShelfLayout = props.rundownLayouts[0]
 				}
 			}
 
@@ -1569,7 +1593,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 
 			return {
-				rundownLayout: selectedLayout,
+				shelfLayout:
+					selectedShelfLayout && RundownLayoutsAPI.IsLayoutForShelf(selectedShelfLayout)
+						? selectedShelfLayout
+						: undefined,
+				rundownViewLayout: selectedViewLayout,
 				currentRundown,
 			}
 		}
@@ -2801,7 +2829,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										buckets={this.props.buckets}
 										isExpanded={
 											this.state.isInspectorShelfExpanded ||
-											(!this.state.wasShelfResizedByUser && this.state.rundownLayout?.openByDefault)
+											(!this.state.wasShelfResizedByUser && this.state.shelfLayout?.openByDefault)
 										}
 										onChangeExpanded={this.onShelfChangeExpanded}
 										hotkeys={this.state.usedHotkeys}
@@ -2810,11 +2838,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										studioMode={this.state.studioMode}
 										onChangeBottomMargin={this.onChangeBottomMargin}
 										onRegisterHotkeys={this.onRegisterHotkeys}
-										rundownLayout={this.state.rundownLayout}
+										rundownLayout={this.state.shelfLayout}
 										shelfDisplayOptions={this.props.shelfDisplayOptions}
 										bucketDisplayFilter={this.props.bucketDisplayFilter}
 										studio={this.props.studio}
-										showBuckets={this.state.rundownLayout && this.state.rundownLayout.showBuckets}
 									/>
 								</ErrorBoundary>
 								<ErrorBoundary>
@@ -2859,12 +2886,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									studioMode={this.state.studioMode}
 									onChangeBottomMargin={this.onChangeBottomMargin}
 									onRegisterHotkeys={this.onRegisterHotkeys}
-									rundownLayout={this.state.rundownLayout}
+									rundownLayout={this.state.shelfLayout}
 									studio={this.props.studio}
 									fullViewport={true}
 									shelfDisplayOptions={this.props.shelfDisplayOptions}
 									bucketDisplayFilter={this.props.bucketDisplayFilter}
-									showBuckets={this.state.rundownLayout && this.state.rundownLayout.showBuckets}
+									showBuckets={this.state.shelfLayout && this.state.shelfLayout.showBuckets}
 								/>
 							</ErrorBoundary>
 						</RundownTimingProvider>
