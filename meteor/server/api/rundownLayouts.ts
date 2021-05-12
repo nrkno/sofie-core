@@ -23,10 +23,7 @@ export function createRundownLayout(
 	type: RundownLayoutType,
 	showStyleBaseId: ShowStyleBaseId,
 	blueprintId: BlueprintId | undefined,
-	userId?: UserId | undefined,
-	exposeAsStandalone?: boolean,
-	exposeAsShelf?: boolean,
-	openByDefault?: boolean
+	userId?: UserId | undefined
 ) {
 	const id: RundownLayoutId = getRandomId()
 	RundownLayouts.insert(
@@ -38,11 +35,8 @@ export function createRundownLayout(
 			filters: [],
 			type,
 			userId,
-			exposeAsStandalone: !!exposeAsStandalone,
-			exposeAsShelf: !!exposeAsShelf,
 			icon: '',
 			iconColor: '#ffffff',
-			openByDefault: openByDefault ?? false,
 		})
 	)
 	return id

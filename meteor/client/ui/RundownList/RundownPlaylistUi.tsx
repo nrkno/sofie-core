@@ -39,6 +39,7 @@ import JonasFormattedTime from './JonasFormattedTime'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
@@ -359,7 +360,9 @@ export const RundownPlaylistUi = DropTarget(
 							<span className="rundown-list-item__text">
 								<JonasFormattedTime timestamp={playlist.modified} t={t} />
 							</span>
-							{rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
+							{rundownLayouts.some(
+								(l) => RundownLayoutsAPI.IsLayoutForShelf(l) && (l.exposeAsShelf || l.exposeAsStandalone)
+							) && (
 								<span className="rundown-list-item__text">
 									<RundownShelfLayoutSelection
 										rundowns={playlist.rundowns}

@@ -32,6 +32,7 @@ import { RundownListFooter } from './RundownList/RundownListFooter'
 import RundownPlaylistDragLayer from './RundownList/RundownPlaylistDragLayer'
 import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
 import { doUserAction, UserAction } from '../lib/userAction'
+import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -303,10 +304,11 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 											<span>{t('Show Style')}</span>
 											<span>{t('On Air Start Time')}</span>
 											<span>{t('Duration')}</span>
-											<span>{t('Last Updated')}</span>
-											{this.props.rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
-												<span>{t('Shelf Layout')}</span>
-											)}
+											<span>{t('Last updated')}</span>
+											{this.props.rundownLayouts.some(
+												(l) => RundownLayoutsAPI.IsLayoutForShelf(l) && (l.exposeAsShelf || l.exposeAsStandalone)
+											) && <span>{t('Shelf Layout')}</span>}
+											<span>&nbsp;</span>
 										</header>
 										{this.renderRundownPlaylists(rundownPlaylists)}
 										<footer>

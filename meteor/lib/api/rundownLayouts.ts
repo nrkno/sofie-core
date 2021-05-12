@@ -12,11 +12,12 @@ import {
 	PieceDisplayStyle,
 	RundownLayoutPieceCountdown,
 	RundownViewLayout,
-	RundownLayoutTopBar,
-	LayoutFactory,
+	RundownLayoutRundownHeader,
+	RundownLayoutShelfBase,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
+import { literal } from '../lib'
 
 export interface NewRundownLayoutsAPI {
 	createRundownLayout(
@@ -32,18 +33,31 @@ export enum RundownLayoutsAPIMethods {
 	'createRundownLayout' = 'rundownLayout.createRundownLayout',
 }
 
-interface LayoutDescriptor<T extends RundownLayoutBase> {
-	factory: LayoutFactory<T>
+export interface LayoutDescriptor<T extends RundownLayoutBase> {
+	supportedElements: RundownLayoutElementType[]
+	filtersTitle?: string // e.g. tabs/panels
+}
+
+export interface CustomizableRegionSettingsManifest {
+	_id: string
+	title: string
+	layouts: Array<CustomizableRegionLayout>
+}
+
+export interface CustomizableRegionLayout {
+	_id: string
+	type: RundownLayoutType
+	filtersTitle?: string
 	supportedElements: RundownLayoutElementType[]
 }
 
 class RundownLayoutsRegistry {
-	private shelfLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutBase>> = new Map()
-	private rundownViewLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutBase>> = new Map()
-	private miniShelfLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutBase>> = new Map()
-	private topBarLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutBase>> = new Map()
+	private shelfLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutShelfBase>> = new Map()
+	private rundownViewLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownViewLayout>> = new Map()
+	private miniShelfLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutShelfBase>> = new Map()
+	private rundownHeaderLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutRundownHeader>> = new Map()
 
-	public RegisterShelfLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
+	public RegisterShelfLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutShelfBase>) {
 		this.shelfLayouts.set(id, description)
 	}
 
@@ -55,8 +69,8 @@ class RundownLayoutsRegistry {
 		this.miniShelfLayouts.set(id, description)
 	}
 
-	public RegisterTopBarLayouts(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
-		this.topBarLayouts.set(id, description)
+	public RegisterRundownHeaderLayouts(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
+		this.rundownHeaderLayouts.set(id, description)
 	}
 
 	public IsShelfLayout(id: RundownLayoutType) {
@@ -71,15 +85,44 @@ class RundownLayoutsRegistry {
 		return this.miniShelfLayouts.has(id)
 	}
 
-	public IsTopBarLayout(id: RundownLayoutType) {
-		return this.topBarLayouts.has(id)
+	public IsRundownHeaderLayout(id: RundownLayoutType) {
+		return this.rundownHeaderLayouts.has(id)
+	}
+
+	public GetSettingsManifest(): CustomizableRegionSettingsManifest[] {
+		return [
+			{
+				_id: 'shelf_layouts',
+				title: 'Shelf Layouts',
+				layouts: Array.from(this.shelfLayouts.entries()).map(([layoutType, descriptor]) => {
+					return literal<CustomizableRegionLayout>({
+						_id: layoutType,
+						type: layoutType,
+						filtersTitle: descriptor.filtersTitle,
+						supportedElements: descriptor.supportedElements,
+					})
+				}),
+			},
+			{
+				_id: 'rundown_view_layouts',
+				title: 'Rundown View Layouts',
+				layouts: Array.from(this.rundownViewLayouts.entries()).map(([layoutType, descriptor]) => {
+					return literal<CustomizableRegionLayout>({
+						_id: layoutType,
+						type: layoutType,
+						filtersTitle: descriptor.filtersTitle,
+						supportedElements: descriptor.supportedElements,
+					})
+				}),
+			},
+		]
 	}
 }
 
 export namespace RundownLayoutsAPI {
 	const registry = new RundownLayoutsRegistry()
-	registry.RegisterShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
-		factory: { createLayout: () => undefined },
+	registry.RegisterShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
+		filtersTitle: 'Panels',
 		supportedElements: [
 			RundownLayoutElementType.ADLIB_REGION,
 			RundownLayoutElementType.EXTERNAL_FRAME,
@@ -87,8 +130,8 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.PIECE_COUNTDOWN,
 		],
 	})
-	registry.RegisterShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
-		factory: { createLayout: () => undefined },
+	registry.RegisterShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
+		filtersTitle: 'Tabs',
 		supportedElements: [
 			RundownLayoutElementType.ADLIB_REGION,
 			RundownLayoutElementType.EXTERNAL_FRAME,
@@ -97,23 +140,23 @@ export namespace RundownLayoutsAPI {
 		],
 	})
 	registry.RegisterMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
-		factory: { createLayout: () => undefined },
 		supportedElements: [],
 	})
 	registry.RegisterMiniShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
-		factory: { createLayout: () => undefined },
 		supportedElements: [],
 	})
 	registry.RegisterRundownViewLayout(RundownLayoutType.RUNDOWN_VIEW_LAYOUT, {
-		factory: { createLayout: () => undefined },
 		supportedElements: [],
 	})
-	registry.RegisterTopBarLayouts(RundownLayoutType.TOP_BAR_LAYOUT, {
-		factory: { createLayout: () => undefined },
+	registry.RegisterRundownHeaderLayouts(RundownLayoutType.RUNDOWN_HEADER_LAYOUT, {
 		supportedElements: [],
 	})
 
-	export function IsLayoutForShelf(layout: RundownLayoutBase): layout is RundownLayoutBase {
+	export function GetSettingsManifest(): CustomizableRegionSettingsManifest[] {
+		return registry.GetSettingsManifest()
+	}
+
+	export function IsLayoutForShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
 		return registry.IsShelfLayout(layout.type)
 	}
 
@@ -125,8 +168,8 @@ export namespace RundownLayoutsAPI {
 		return registry.IsMiniShelfLayout(layout.type)
 	}
 
-	export function IsLayoutForTopBar(layout: RundownLayoutBase): layout is RundownLayoutBase {
-		return registry.IsTopBarLayout(layout.type)
+	export function IsLayoutForRundownHeader(layout: RundownLayoutBase): layout is RundownLayoutBase {
+		return registry.IsRundownHeaderLayout(layout.type)
 	}
 
 	export function isRundownViewLayout(layout: RundownLayoutBase): layout is RundownViewLayout {
@@ -141,8 +184,8 @@ export namespace RundownLayoutsAPI {
 		return layout.type === RundownLayoutType.DASHBOARD_LAYOUT
 	}
 
-	export function isTopBarLayout(layout: RundownLayoutBase): layout is RundownLayoutTopBar {
-		return layout.type === RundownLayoutType.TOP_BAR_LAYOUT
+	export function isRundownHeaderLayout(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {
+		return layout.type === RundownLayoutType.RUNDOWN_HEADER_LAYOUT
 	}
 
 	export function isFilter(element: RundownLayoutElementBase): element is RundownLayoutFilterBase {
