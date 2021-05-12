@@ -123,10 +123,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		return (
 			<>
 				{thumbnailUrl && renderThumbnail && (
-					<div className="dashboard-panel__panel__button__thumbnail">
-						{/* @nocommit */}
-						<img src="https://images.unsplash.com/photo-1618473962497-68e8d4e0680e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1049&q=80" />
-					</div>
+					<img src={thumbnailUrl} className="dashboard-panel__panel__button__thumbnail" />
 				)}
 			</>
 		)
@@ -144,10 +141,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		return (
 			<>
 				{thumbnailUrl && renderThumbnail && (
-					<div className="dashboard-panel__panel__button__thumbnail">
-						{/* @nocommit */}
-						<img src="https://images.unsplash.com/photo-1618473962497-68e8d4e0680e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1049&q=80" />
-					</div>
+					<img src={thumbnailUrl} className="dashboard-panel__panel__button__thumbnail" />
 				)}
 				{sourceDuration && (
 					<span className="dashboard-panel__panel__button__sub-label">
