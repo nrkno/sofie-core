@@ -525,7 +525,6 @@ class RundownViewNotifier extends WithManagedTracker {
 		this.autorun((comp: Tracker.Computation) => {
 			const localStatus: IMediaObjectIssue[] = []
 			const pieces = rPieces.get()
-			console.log(pieces)
 			pieces.forEach((piece) => {
 				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === piece.sourceLayerId)
 				const part = Parts.findOne(piece.startPartId, {
