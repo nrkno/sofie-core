@@ -20,7 +20,7 @@ import {
 import { IContextMenuContext, MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { NoteType, SegmentNote } from '../../../lib/api/notes'
+import { NoteType, SegmentNote, TrackedNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -199,14 +199,28 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			true,
 			true
 		)
-		const notes: Array<SegmentNote> = getBasicNotesForSegment(
+		const notes: TrackedNote[] = getBasicNotesForSegment(
 			segment,
 			rundownNrcsName ?? 'NRCS',
 			o.parts.map((p) => p.instance.part),
 			o.parts.map((p) => p.instance)
 		)
 		o.parts.forEach((part) => {
-			notes.push(...part.instance.part.getMinimumReactiveNotes(props.studio, props.showStyleBase))
+			notes.push(
+				...part.instance.part.getMinimumReactivePieceNotes(props.studio, props.showStyleBase).map(
+					(note): TrackedNote => ({
+						...note,
+						rank: segment._rank,
+						origin: {
+							...note.origin,
+							partId: part.partId,
+							rundownId: segment.rundownId,
+							segmentId: segment._id,
+							segmentName: segment.name,
+						},
+					})
+				)
+			)
 		})
 
 		let lastValidPartIndex = o.parts.length - 1
