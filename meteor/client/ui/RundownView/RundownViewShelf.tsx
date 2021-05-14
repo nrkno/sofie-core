@@ -5,34 +5,36 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/Reac
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { normalizeArray, unprotectString } from '../../../lib/lib'
-import { actionToAdLibPieceUi, AdLibPieceUi } from '../Shelf/AdLibPanel'
+import { AdlibSegmentUi } from '../Shelf/AdLibPanel'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { AdLibActions } from '../../../lib/collections/AdLibActions'
-import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { DashboardPieceButton } from '../Shelf/DashboardPieceButton'
 import { IBlueprintActionTriggerMode, IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
-import { getNextPieceInstancesGrouped, getUnfinishedPieceInstancesGrouped, isAdLibOnAir } from '../Shelf/DashboardPanel'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
+import {
+	getUnfinishedPieceInstancesGrouped,
+	getNextPieceInstancesGrouped,
+	AdLibPieceUi,
+	isAdLibOnAir,
+} from '../../lib/shelf'
 
 interface IRundownViewShelfProps {
 	studio: Studio
 	segment: SegmentUi
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
+	adLibSegmentUi: AdlibSegmentUi
 }
 
 interface IRundownViewShelfTrackedProps {
-	pieces: Array<AdLibPieceUi>
 	outputLayers: {
 		[key: string]: IOutputLayer
 	}
@@ -163,12 +165,13 @@ class RundownViewShelfInner extends MeteorReactComponent<
 	}
 
 	render() {
-		if (!this.props.pieces.length) return null
+		const { pieces } = this.props.adLibSegmentUi
+		if (!pieces.length) return null
 		return (
 			<div className="rundown-view-shelf dashboard-panel">
 				<div className="rundown-view-shelf__identifier">{this.props.segment.identifier}</div>
 				<div className="dashboard-panel__panel">
-					{this.props.pieces.map((adLibPiece) => {
+					{pieces.map((adLibPiece) => {
 						return (
 							// @todo: wrap in ContextMenuTrigger
 							<DashboardPieceButton
@@ -209,62 +212,6 @@ export const RundownViewShelf = translateWithTracker<
 		const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id') // @todo: optimize
 		const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
-		const pieces: Array<AdLibPieceUi> = []
-
-		const parts = props.playlist
-			.getUnorderedParts({
-				segmentId: props.segment._id,
-			})
-			.sort((a, b) => a._rank - b._rank)
-
-		pieces.length = 0
-
-		const rundownIds = props.playlist.getRundownIDs()
-		const partIds = parts.map((p) => p._id)
-
-		AdLibPieces.find(
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
-				partId: {
-					$in: partIds,
-				},
-			},
-			{
-				sort: { _rank: 1 },
-			}
-		)
-			.fetch()
-			.forEach((piece) => {
-				pieces.push({
-					...piece,
-					sourceLayer: sourceLayerLookup[piece.sourceLayerId],
-					outputLayer: outputLayerLookup[piece.outputLayerId],
-				})
-			})
-
-		AdLibActions.find(
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
-				partId: {
-					$in: partIds,
-				},
-			},
-			{
-				// @ts-ignore deep-property
-				sort: { 'display._rank': 1 },
-			}
-		)
-			.fetch()
-			.forEach((action) => {
-				pieces.push(actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup))
-			})
-
-		pieces.sort((a, b) => a._rank - b._rank)
-
 		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
 			(
 				currentPartInstanceId: PartInstanceId | null,
@@ -287,7 +234,6 @@ export const RundownViewShelf = translateWithTracker<
 		)
 
 		return {
-			pieces,
 			sourceLayers: sourceLayerLookup,
 			outputLayers: outputLayerLookup,
 			unfinishedAdLibIds,

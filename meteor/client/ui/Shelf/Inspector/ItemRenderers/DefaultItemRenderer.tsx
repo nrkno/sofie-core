@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { IAdLibListItem } from '../../AdLibListItem'
-import { AdLibPieceUi } from '../../AdLibPanel'
 import { RundownUtils } from '../../../../lib/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../../../lib/api/rundown'
@@ -10,6 +9,7 @@ import InspectorTitle from './InspectorTitle'
 import { Studio } from '../../../../../lib/collections/Studios'
 import { MediaObject } from '../../../../../lib/collections/MediaObjects'
 import { BucketAdLibUi } from '../../RundownViewBuckets'
+import { AdLibPieceUi } from '../../../../lib/shelf'
 
 export default function DefaultItemRenderer(props: {
 	piece: PieceUi | IAdLibListItem | BucketAdLibUi

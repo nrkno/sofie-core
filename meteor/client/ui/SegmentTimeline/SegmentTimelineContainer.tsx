@@ -42,6 +42,7 @@ import RundownViewEventBus, {
 } from '../RundownView/RundownViewEventBus'
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
+import { AdlibSegmentUi } from '../Shelf/AdLibPanel'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -91,6 +92,7 @@ interface IProps {
 	isLastSegment: boolean
 	ownCurrentPartInstance: PartInstance | undefined
 	ownNextPartInstance: PartInstance | undefined
+	adLibSegmentUi?: AdlibSegmentUi
 }
 interface IState {
 	scrollLeft: number
@@ -898,10 +900,11 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								budgetGap={this.state.budgetGap}
 							/>
 						)}
-						{this.props.segmentui.showShelf && (
+						{this.props.segmentui.showShelf && this.props.adLibSegmentUi && (
 							<RundownViewShelf
 								studio={this.props.studio}
 								segment={this.props.segmentui}
+								adLibSegmentUi={this.props.adLibSegmentUi}
 								playlist={this.props.playlist}
 								showStyleBase={this.props.showStyleBase}
 							/>

@@ -10,10 +10,10 @@ import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notific
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
-import { AdLibPieceUi } from '../AdLibPanel'
 import { assertNever, protectString } from '../../../../lib/lib'
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
 import { PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
+import { AdLibPieceUi } from '../../../lib/shelf'
 
 const _isMacLike = !!navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i)
 

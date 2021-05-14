@@ -16,7 +16,6 @@ import {
 	SplitsContent,
 	NoraContent,
 } from '@sofie-automation/blueprints-integration'
-import { AdLibPieceUi } from './AdLibPanel'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -34,6 +33,7 @@ import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { isTouchDevice } from '../../lib/lib'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem

@@ -86,10 +86,9 @@ import { Buckets, Bucket } from '../../lib/collections/Buckets'
 import { contextMenuHoldToDisplayTime } from '../lib/lib'
 import { OffsetPosition } from '../utils/positions'
 import { MeteorCall } from '../../lib/api/methods'
-import { AdlibSegmentUi } from './Shelf/AdLibPanel'
+import { AdlibSegmentUi, fetchAndFilter } from './Shelf/AdLibPanel'
 import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
-import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/DocumentTitleProvider'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
@@ -97,6 +96,8 @@ import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownViewEventBus'
 import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../lib/hotkeyRegistry'
+import { RundownViewKbdShortcuts } from './RundownViewKbdShortcuts'
+import { AdLibPieceUi } from '../lib/shelf'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -203,36 +204,6 @@ interface ITimingDisplayProps {
 	rundownPlaylist: RundownPlaylist
 	currentRundown: Rundown | undefined
 	rundownCount: number
-}
-
-export enum RundownViewKbdShortcuts {
-	RUNDOWN_TAKE = 'enter',
-	// RUNDOWN_HOLD = 'h',
-	RUNDOWN_UNDO_HOLD = 'shift+h',
-	RUNDOWN_ACTIVATE = '§',
-	RUNDOWN_ACTIVATE2 = '\\',
-	RUNDOWN_ACTIVATE3 = '|',
-	RUNDOWN_ACTIVATE4 = '½',
-	RUNDOWN_ACTIVATE_REHEARSAL = 'mod+§',
-	RUNDOWN_DEACTIVATE = 'mod+shift+§',
-	RUNDOWN_DEACTIVATE2 = 'mod+shift+½',
-	RUNDOWN_GO_TO_LIVE = 'shift+home',
-	RUNDOWN_REWIND_SEGMENTS = 'mod+home',
-	RUNDOWN_RESET_RUNDOWN = 'shift+escape',
-	RUNDOWN_TOGGLE_SHELF = 'tab',
-	ADLIB_QUEUE_MODIFIER = 'shift',
-	RUNDOWN_NEXT_FORWARD = 'shift+right',
-	RUNDOWN_NEXT_DOWN = 'shift+down',
-	RUNDOWN_NEXT_BACK = 'shift+left',
-	RUNDOWN_NEXT_UP = 'shift+up',
-	RUNDOWN_NEXT_FORWARD2 = 'shift+ArrowRight',
-	RUNDOWN_NEXT_DOWN2 = 'shift+ArrowDown',
-	RUNDOWN_NEXT_BACK2 = 'shift+ArrowLeft',
-	RUNDOWN_NEXT_UP2 = 'shift+ArrowUp',
-	// RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
-	// RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
-	RUNDOWN_LOG_ERROR = 'shift+backspace',
-	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = '',
 }
 
 const TimingDisplay = withTranslation()(
@@ -1331,6 +1302,7 @@ interface IState {
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
+	keyboardQueuedPiece: AdLibPieceUi | undefined
 }
 
 type MatchedSegment = {
@@ -1358,8 +1330,11 @@ interface ITrackedProps {
 	bucketDisplayFilter: number[] | undefined
 	currentPartInstance: PartInstance | undefined
 	nextPartInstance: PartInstance | undefined
+	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
 }
-export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
+export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: Translated<IProps>) => {
+	const { t, i18n, tReady } = props
+
 	let playlistId
 	if (props.match && props.match.params.playlistId) {
 		playlistId = decodeURIComponent(unprotectString(props.match.params.playlistId))
@@ -1386,6 +1361,19 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		? undefined
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
 
+	const showStyleBase = rundowns.length > 0 ? ShowStyleBases.findOne(rundowns[0].showStyleBaseId) : undefined
+	let uiSegmentMap: Map<SegmentId, AdlibSegmentUi> = new Map()
+	if (playlist && showStyleBase) {
+		uiSegmentMap = fetchAndFilter({
+			t,
+			i18n,
+			tReady,
+			playlist,
+			showStyleBase,
+			includeGlobalAdLibs: false,
+		}).uiSegmentMap
+	}
+
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
 		rundownPlaylistId: playlistId,
@@ -1406,7 +1394,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			: [],
 		playlist,
 		studio: studio,
-		showStyleBase: rundowns.length > 0 ? ShowStyleBases.findOne(rundowns[0].showStyleBaseId) : undefined,
+		showStyleBase,
 		rundownLayouts:
 			rundowns.length > 0 ? RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() : undefined,
 		buckets:
@@ -1445,6 +1433,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		bucketDisplayFilter,
 		currentPartInstance,
 		nextPartInstance,
+		uiSegmentMap,
 	}
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1522,6 +1511,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				rundownLayout: undefined,
 				currentRundown: undefined,
 				wasShelfResizedByUser: false,
+				keyboardQueuedPiece: undefined,
 			}
 		}
 
@@ -1851,6 +1841,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 			if (Settings.enableUserAccounts && getAllowStudio() !== this.state.studioMode) {
 				this.setState({ studioMode: getAllowStudio() })
+			}
+			if (this.props.currentPartInstance?.segmentId !== prevProps.currentPartInstance?.segmentId) {
+				this.setState({ keyboardQueuedPiece: undefined })
 			}
 		}
 
@@ -2219,6 +2212,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												followLiveSegments={this.state.followLiveSegments}
 												rundownId={rundownAndSegments.rundown._id}
 												segmentId={segment._id}
+												//adLibSegmentUi={this.props.uiSegmentMap.get(segment._id)}
 												playlist={this.props.playlist}
 												liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}
 												timeScale={this.state.timeScale}

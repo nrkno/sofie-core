@@ -10,7 +10,6 @@ import {
 	IAdLibPanelProps,
 	AdLibFetchAndFilterProps,
 	fetchAndFilter,
-	AdLibPieceUi,
 	matchFilter,
 	AdLibPanelToolbar,
 } from './AdLibPanel'
@@ -22,10 +21,9 @@ import {
 	dashboardElementPosition,
 	IDashboardPanelTrackedProps,
 	IDashboardPanelProps,
-	getUnfinishedPieceInstancesGrouped,
-	getNextPieceInstancesGrouped,
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
+import { getUnfinishedPieceInstancesGrouped, getNextPieceInstancesGrouped, AdLibPieceUi } from '../../lib/shelf'
 interface IState {
 	outputLayers: {
 		[key: string]: IOutputLayer

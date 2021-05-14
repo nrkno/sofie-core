@@ -2,7 +2,6 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibPieceUi } from '../../AdLibPanel'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../../RundownViewBuckets'
 import { RundownUtils } from '../../../../lib/rundown'
 import { RundownAPI } from '../../../../../lib/api/rundown'
@@ -10,6 +9,7 @@ import { Piece } from '../../../../../lib/collections/Pieces'
 import { Studio } from '../../../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../../../SegmentTimeline/withMediaObjectStatus'
 import { IAdLibListItem } from '../../AdLibListItem'
+import { AdLibPieceUi } from '../../../../lib/shelf'
 
 interface IProps {
 	piece: PieceUi | IAdLibListItem | BucketAdLibUi | BucketAdLibActionUi

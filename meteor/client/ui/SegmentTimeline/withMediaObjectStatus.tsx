@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { PieceUi } from './SegmentTimelineContainer'
-import { AdLibPieceUi } from '../Shelf/AdLibPanel'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -11,6 +10,7 @@ import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/med
 import { Studio } from '../../../lib/collections/Studios'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 type AnyPiece = {
 	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined

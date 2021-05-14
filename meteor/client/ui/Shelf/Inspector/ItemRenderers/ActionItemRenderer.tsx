@@ -1,7 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibPieceUi } from '../../AdLibPanel'
 import { RundownUtils } from '../../../../lib/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
 import {
@@ -29,6 +28,7 @@ import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists
 import { actionToAdLibPieceUi } from '../../BucketPanel'
 import RundownViewEventBus, { RundownViewEvents } from '../../../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from '../../AdLibListItem'
+import { AdLibPieceUi } from '../../../../lib/shelf'
 
 export { isActionItem }
 
