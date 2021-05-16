@@ -12,7 +12,7 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_GO_TO_LIVE = 'shift+home',
 	RUNDOWN_REWIND_SEGMENTS = 'mod+home',
 	RUNDOWN_RESET_RUNDOWN = 'shift+escape',
-	RUNDOWN_TOGGLE_SHELF = 'tab',
+	RUNDOWN_TOGGLE_SHELF = '', //'tab',
 	ADLIB_QUEUE_MODIFIER = 'shift',
 	RUNDOWN_NEXT_FORWARD = 'shift+right',
 	RUNDOWN_NEXT_DOWN = 'shift+down',
@@ -26,4 +26,6 @@ export enum RundownViewKbdShortcuts {
 	// RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
 	RUNDOWN_LOG_ERROR = 'shift+backspace',
 	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = '',
+	MINISHELF_QUEUE_NEXT_ADLIB = 'tab',
+	MINISHELF_QUEUE_PREV_ADLIB = 'shift+tab',
 }

@@ -24,6 +24,7 @@ import {
 	getNextPieceInstancesGrouped,
 	AdLibPieceUi,
 	isAdLibOnAir,
+	isAdLibNext,
 } from '../../lib/shelf'
 
 interface IRundownViewShelfProps {
@@ -60,6 +61,10 @@ class RundownViewShelfInner extends MeteorReactComponent<
 
 	isAdLibOnAir(adLib: AdLibPieceUi) {
 		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
+	}
+
+	isAdLibNext(adLib: AdLibPieceUi) {
+		return isAdLibNext(this.props.nextAdLibIds, this.props.unfinishedTags, this.props.nextTags, adLib)
 	}
 
 	onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
@@ -183,7 +188,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 								onToggleAdLib={this.onToggleAdLib}
 								playlist={this.props.playlist}
 								isOnAir={this.isAdLibOnAir(adLibPiece)}
-								isNext={false} // @todo
+								isNext={this.isAdLibOnAir(adLibPiece)}
 								mediaPreviewUrl={
 									this.props.studio
 										? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''

@@ -662,6 +662,7 @@ export function fetchAndFilter(props: Translated<IAdLibFetchAndFilterParams>): A
 					...piece,
 					sourceLayer: sourceLayerLookup[piece.sourceLayerId],
 					outputLayer: outputLayerLookup[piece.outputLayerId],
+					segmentId: segment._id,
 				})
 			}
 		})
@@ -695,7 +696,7 @@ export function fetchAndFilter(props: Translated<IAdLibFetchAndFilterParams>): A
 		const segment = uiPartSegmentMap.get(action[0] as PartId)
 
 		if (segment) {
-			segment.pieces.push(action[1] as AdLibPieceUi)
+			segment.pieces.push({ ...action[1], segmentId: segment._id } as AdLibPieceUi)
 		}
 	})
 

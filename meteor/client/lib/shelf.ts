@@ -5,6 +5,7 @@ import { PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
+import { SegmentId } from '../../lib/collections/Segments'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { getCurrentTime } from '../../lib/lib'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
@@ -23,6 +24,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 	contentMetaData?: any
 	message?: string | null
 	uniquenessId?: string
+	segmentId?: SegmentId
 }
 
 export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {

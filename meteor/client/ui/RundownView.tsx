@@ -86,7 +86,7 @@ import { Buckets, Bucket } from '../../lib/collections/Buckets'
 import { contextMenuHoldToDisplayTime } from '../lib/lib'
 import { OffsetPosition } from '../utils/positions'
 import { MeteorCall } from '../../lib/api/methods'
-import { AdlibSegmentUi, fetchAndFilter } from './Shelf/AdLibPanel'
+import { AdlibSegmentUi, fetchAndFilter, SourceLayerLookup } from './Shelf/AdLibPanel'
 import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { documentTitle } from '../lib/DocumentTitleProvider'
@@ -97,7 +97,7 @@ import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownViewEventBus'
 import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../lib/hotkeyRegistry'
 import { RundownViewKbdShortcuts } from './RundownViewKbdShortcuts'
-import { AdLibPieceUi } from '../lib/shelf'
+import { AdLibPieceUi, isAdLibOnAir } from '../lib/shelf'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1331,6 +1331,8 @@ interface ITrackedProps {
 	currentPartInstance: PartInstance | undefined
 	nextPartInstance: PartInstance | undefined
 	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
+	uiSegments: AdlibSegmentUi[]
+	sourceLayerLookup: SourceLayerLookup
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: Translated<IProps>) => {
 	const { t, i18n, tReady } = props
@@ -1363,15 +1365,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	const showStyleBase = rundowns.length > 0 ? ShowStyleBases.findOne(rundowns[0].showStyleBaseId) : undefined
 	let uiSegmentMap: Map<SegmentId, AdlibSegmentUi> = new Map()
+	let uiSegments: AdlibSegmentUi[] = []
+	let sourceLayerLookup: SourceLayerLookup = {}
 	if (playlist && showStyleBase) {
-		uiSegmentMap = fetchAndFilter({
+		;({ uiSegmentMap, uiSegments, sourceLayerLookup } = fetchAndFilter({
 			t,
 			i18n,
 			tReady,
 			playlist,
 			showStyleBase,
 			includeGlobalAdLibs: false,
-		}).uiSegmentMap
+		}))
 	}
 
 	// let rundownDurations = calculateDurations(rundown, parts)
@@ -1434,6 +1438,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		currentPartInstance,
 		nextPartInstance,
 		uiSegmentMap,
+		uiSegments,
+		sourceLayerLookup,
 	}
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1472,6 +1478,18 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					key: RundownViewKbdShortcuts.RUNDOWN_REWIND_SEGMENTS,
 					up: this.onRewindSegments,
 					label: t('Rewind segments to start'),
+					global: true,
+				},
+				{
+					key: RundownViewKbdShortcuts.MINISHELF_QUEUE_NEXT_ADLIB,
+					up: this.keyQueueNextMinishelfAdLib,
+					label: t('Queue next Minishelf AdLib'),
+					global: true,
+				},
+				{
+					key: RundownViewKbdShortcuts.MINISHELF_QUEUE_PREV_ADLIB,
+					up: this.keyQueuePrevMinishelfAdLib,
+					label: t('Queue previous Minishelf AdLib'),
 					global: true,
 				},
 			]
@@ -1941,6 +1959,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			RundownViewEventBus.emit(RundownViewEvents.REWIND_SEGMENTS)
 		}
 
+		keyQueueNextMinishelfAdLib = (e: mousetrap.ExtendedKeyboardEvent) => {
+			this.queueNextMinishelfAdLib(e)
+		}
+		keyQueuePrevMinishelfAdLib = (e: mousetrap.ExtendedKeyboardEvent) => {
+			this.queuePrevMinishelfAdLib(e)
+		}
+
 		onShowCurrentSegmentFullOn = () => {
 			if (this._segmentZoomOn === false) {
 				console.log(`Dispatching event: ${RundownViewEvents.SEGMENT_ZOOM_ON}`)
@@ -2212,7 +2237,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												followLiveSegments={this.state.followLiveSegments}
 												rundownId={rundownAndSegments.rundown._id}
 												segmentId={segment._id}
-												//adLibSegmentUi={this.props.uiSegmentMap.get(segment._id)}
+												adLibSegmentUi={this.props.uiSegmentMap.get(segment._id)}
 												playlist={this.props.playlist}
 												liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}
 												timeScale={this.state.timeScale}
@@ -2455,6 +2480,133 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					doneMessage
 				)
 			}
+		}
+
+		queueAdLibPiece = (adlibPiece: AdLibPieceUi, e: any) => {
+			const { t } = this.props
+
+			if (adlibPiece.invalid) {
+				NotificationCenter.push(
+					new Notification(
+						t('Invalid AdLib'),
+						NoticeLevel.WARNING,
+						t('Cannot play this AdLib because it is marked as Invalid'),
+						'toggleAdLib'
+					)
+				)
+				return
+			}
+			if (adlibPiece.floated) {
+				NotificationCenter.push(
+					new Notification(
+						t('Floated AdLib'),
+						NoticeLevel.WARNING,
+						t('Cannot play this AdLib because it is marked as Floated'),
+						'toggleAdLib'
+					)
+				)
+				return
+			}
+
+			let sourceLayer = this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
+
+			if (!adlibPiece.isAction && sourceLayer && !sourceLayer.isQueueable) {
+				console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
+				return
+			}
+			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+				if (!(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
+					if (adlibPiece.isAction && adlibPiece.adlibAction) {
+						const action = adlibPiece.adlibAction
+						doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
+							MeteorCall.userAction.executeAction(e, this.props.playlist!._id, action.actionId, action.userData)
+						)
+					} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
+						doUserAction(t, e, UserAction.START_ADLIB, (e) =>
+							MeteorCall.userAction.segmentAdLibPieceStart(
+								e,
+								this.props.playlist!._id,
+								currentPartInstanceId,
+								adlibPiece._id,
+								true
+							)
+						)
+					} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
+						doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
+							MeteorCall.userAction.baselineAdLibPieceStart(
+								e,
+								this.props.playlist!._id,
+								currentPartInstanceId,
+								adlibPiece._id,
+								true
+							)
+						)
+					} else if (adlibPiece.isSticky) {
+						// this.onToggleSticky(adlibPiece.sourceLayerId, e)
+					}
+				} else {
+					// if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
+					// 	this.onClearAllSourceLayers([sourceLayer], e)
+					// }
+				}
+			}
+		}
+
+		findShelfOnlySegment = (begin: number, end: number) => {
+			const { uiSegments } = this.props
+			for (let i = begin; begin > end ? i > end : i < end; begin > end ? i-- : i++) {
+				if (uiSegments[i].isHidden && uiSegments[i].showShelf && uiSegments[i].pieces.length) {
+					return uiSegments[i]
+				}
+			}
+			return undefined
+		}
+
+		queueMinishelfAdLib = (e: any, forward: boolean) => {
+			const { uiSegments, uiSegmentMap } = this.props
+			const { keyboardQueuedPiece } = this.state
+			let pieceToQueue: AdLibPieceUi | undefined
+			let currentSegmentId: SegmentId | undefined
+			if (keyboardQueuedPiece) {
+				if (keyboardQueuedPiece.segmentId && uiSegmentMap.has(keyboardQueuedPiece.segmentId)) {
+					const pieces = uiSegmentMap.get(keyboardQueuedPiece.segmentId)!.pieces
+					const nextPieceInd = pieces.findIndex((piece) => piece._id === keyboardQueuedPiece._id) + (forward ? 1 : -1)
+					if (nextPieceInd >= 0 && nextPieceInd < pieces.length) {
+						pieceToQueue = pieces[nextPieceInd]
+					}
+				}
+				currentSegmentId = keyboardQueuedPiece.segmentId
+			} else {
+				currentSegmentId = this.props.currentPartInstance?.segmentId
+			}
+			if (!pieceToQueue) {
+				if (currentSegmentId) {
+					const currentSegmentInd = uiSegments.findIndex((segment) => segment._id === currentSegmentId)
+					if (currentSegmentInd > 0) {
+						let nextShelfOnlySegment = forward
+							? this.findShelfOnlySegment(currentSegmentInd + 1, uiSegments.length) ||
+							  this.findShelfOnlySegment(0, currentSegmentInd)
+							: this.findShelfOnlySegment(currentSegmentInd - 1, -1) ||
+							  this.findShelfOnlySegment(uiSegments.length - 1, currentSegmentInd)
+						if (nextShelfOnlySegment && nextShelfOnlySegment.pieces.length) {
+							pieceToQueue = nextShelfOnlySegment.pieces[forward ? 0 : nextShelfOnlySegment.pieces.length - 1]
+						}
+					}
+				}
+			}
+			if (pieceToQueue) {
+				this.queueAdLibPiece(pieceToQueue, e)
+				this.setState({ keyboardQueuedPiece: pieceToQueue })
+			}
+		}
+
+		queueNextMinishelfAdLib = (e: any) => {
+			this.queueMinishelfAdLib(e, true)
+		}
+
+		queuePrevMinishelfAdLib = (e: any) => {
+			this.queueMinishelfAdLib(e, false)
 		}
 
 		onShelfChangeExpanded = (value: boolean) => {
