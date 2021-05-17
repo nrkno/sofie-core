@@ -1409,6 +1409,7 @@ interface IState {
 	shelfLayout: RundownLayoutShelfBase | undefined
 	rundownViewLayout: RundownLayoutBase | undefined
 	rundownHeaderLayout: RundownLayoutRundownHeader | undefined
+	miniShelfLayout: RundownLayoutShelfBase | undefined
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
@@ -1434,6 +1435,7 @@ interface ITrackedProps {
 	shelfLayoutId?: RundownLayoutId
 	rundownViewLayoutId?: RundownLayoutId
 	rundownHeaderLayoutId?: RundownLayoutId
+	miniShelfLayoutId?: RundownLayoutId
 	shelfDisplayOptions: {
 		buckets: boolean
 		layout: boolean
@@ -1535,6 +1537,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		shelfLayoutId: protectString((params['layout'] as string) || (params['shelfLayout'] as string) || ''), // 'layout' kept for backwards compatibility
 		rundownViewLayoutId: protectString((params['rundownViewLayout'] as string) || ''),
 		rundownHeaderLayoutId: protectString((params['rundownHeaderLayout'] as string) || ''),
+		miniShelfLayoutId: protectString((params['miniShelfLayout'] as string) || ''),
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
 			layout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
@@ -1620,6 +1623,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				shelfLayout: undefined,
 				rundownViewLayout: undefined,
 				rundownHeaderLayout: undefined,
+				miniShelfLayout: undefined,
 				currentRundown: undefined,
 				wasShelfResizedByUser: false,
 			}
@@ -1629,6 +1633,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			let selectedShelfLayout: RundownLayoutBase | undefined = undefined
 			let selectedViewLayout: RundownLayoutBase | undefined = undefined
 			let selectedHeaderLayout: RundownLayoutBase | undefined = undefined
+			let selectedMiniShelfLayout: RundownLayoutBase | undefined = undefined
 
 			if (props.rundownLayouts) {
 				// first try to use the one selected by the user
@@ -1642,6 +1647,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				if (props.rundownHeaderLayoutId) {
 					selectedHeaderLayout = props.rundownLayouts.find((i) => i._id === props.rundownHeaderLayoutId)
+				}
+
+				if (props.miniShelfLayoutId) {
+					selectedMiniShelfLayout = props.rundownLayouts.find((i) => i._id === props.miniShelfLayoutId)
 				}
 
 				// if couldn't find based on id, try matching part of the name
@@ -1663,6 +1672,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					)
 				}
 
+				if (props.miniShelfLayoutId && !selectedMiniShelfLayout) {
+					selectedMiniShelfLayout = props.rundownLayouts.find(
+						(i) => i.name.indexOf(unprotectString(props.miniShelfLayoutId!)) >= 0
+					)
+				}
+
 				// if not, try the first RUNDOWN_LAYOUT available
 				if (!selectedShelfLayout) {
 					selectedShelfLayout = props.rundownLayouts.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT)
@@ -1679,6 +1694,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				if (!selectedHeaderLayout) {
 					selectedHeaderLayout = props.rundownLayouts.filter((i) => RundownLayoutsAPI.IsLayoutForRundownHeader(i))[0]
+				}
+
+				if (!selectedMiniShelfLayout) {
+					selectedMiniShelfLayout = props.rundownLayouts.filter((i) => RundownLayoutsAPI.IsLayoutForMiniShelf(i))[0]
 				}
 			}
 
@@ -1699,6 +1718,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				rundownHeaderLayout:
 					selectedHeaderLayout && RundownLayoutsAPI.IsLayoutForRundownHeader(selectedHeaderLayout)
 						? selectedHeaderLayout
+						: undefined,
+				miniShelfLayout:
+					selectedMiniShelfLayout && RundownLayoutsAPI.IsLayoutForMiniShelf(selectedMiniShelfLayout)
+						? selectedMiniShelfLayout
 						: undefined,
 				currentRundown,
 			}
