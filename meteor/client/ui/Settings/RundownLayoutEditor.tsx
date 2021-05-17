@@ -62,6 +62,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		showStyleBaseId: props.showStyleBase._id,
 		userId: { $exists: false },
 		type: { $in: layoutTypes },
+		regionId: props.customRegion._id,
 	}).fetch()
 
 	return {
@@ -88,7 +89,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		onAddLayout = () => {
 			const { t, showStyleBase } = this.props
 			MeteorCall.rundownLayout
-				.createRundownLayout(t('New Layout'), this.props.layoutTypes[0], showStyleBase._id)
+				.createRundownLayout(t('New Layout'), this.props.layoutTypes[0], showStyleBase._id, this.props.customRegion._id)
 				.catch(console.error)
 		}
 

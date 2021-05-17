@@ -22,6 +22,7 @@ export function createRundownLayout(
 	name: string,
 	type: RundownLayoutType,
 	showStyleBaseId: ShowStyleBaseId,
+	regionId: string,
 	blueprintId: BlueprintId | undefined,
 	userId?: UserId | undefined
 ) {
@@ -37,6 +38,7 @@ export function createRundownLayout(
 			userId,
 			icon: '',
 			iconColor: '#ffffff',
+			regionId,
 		})
 	)
 	return id
@@ -118,7 +120,8 @@ function apiCreateRundownLayout(
 	context: MethodContext,
 	name: string,
 	type: RundownLayoutType,
-	showStyleBaseId: ShowStyleBaseId
+	showStyleBaseId: ShowStyleBaseId,
+	regionId: string
 ) {
 	check(name, String)
 	check(type, String)
@@ -126,7 +129,7 @@ function apiCreateRundownLayout(
 
 	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
 
-	return createRundownLayout(name, type, showStyleBaseId, undefined, access.userId || undefined)
+	return createRundownLayout(name, type, showStyleBaseId, regionId, undefined, access.userId || undefined)
 }
 function apiRemoveRundownLayout(context: MethodContext, id: RundownLayoutId) {
 	check(id, String)
@@ -139,8 +142,8 @@ function apiRemoveRundownLayout(context: MethodContext, id: RundownLayoutId) {
 }
 
 class ServerRundownLayoutsAPI extends MethodContextAPI implements NewRundownLayoutsAPI {
-	createRundownLayout(name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId) {
-		return makePromise(() => apiCreateRundownLayout(this, name, type, showStyleBaseId))
+	createRundownLayout(name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId, regionId: string) {
+		return makePromise(() => apiCreateRundownLayout(this, name, type, showStyleBaseId, regionId))
 	}
 	removeRundownLayout(rundownLayoutId: RundownLayoutId) {
 		return makePromise(() => apiRemoveRundownLayout(this, rundownLayoutId))
