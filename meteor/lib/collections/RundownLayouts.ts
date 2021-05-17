@@ -158,6 +158,8 @@ export interface RundownLayoutBase {
 	filters: RundownLayoutElementBase[]
 	icon: string
 	iconColor: string
+	/* Customizable region that the layout modifies. */
+	regionId: string
 }
 
 export interface RundownViewLayout extends RundownLayoutBase {
