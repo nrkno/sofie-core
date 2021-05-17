@@ -202,6 +202,8 @@ export interface RundownLayoutBase {
 	startingHeight?: number
 	showBuckets: boolean
 	disableContextMenu: boolean
+	/* Customizable region that the layout modifies. */
+	regionId: string
 }
 
 export interface RundownViewLayout extends RundownLayoutBase {

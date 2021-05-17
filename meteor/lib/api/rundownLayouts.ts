@@ -25,7 +25,8 @@ export interface NewRundownLayoutsAPI {
 	createRundownLayout(
 		name: string,
 		type: RundownLayoutType,
-		showStyleBaseId: ShowStyleBaseId
+		showStyleBaseId: ShowStyleBaseId,
+		regionId: string
 	): Promise<RundownLayoutId>
 	removeRundownLayout(id: RundownLayoutId): Promise<void>
 }

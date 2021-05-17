@@ -1,6 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { Studios } from '../../lib/collections/Studios'
+import * as _ from 'underscore'
+import { ensureCollectionProperty } from './lib'
 
 /*
  * **************************************************************************************
@@ -13,21 +14,5 @@ import { Studios } from '../../lib/collections/Studios'
  */
 // Release X
 export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
-	//                     ^--- To be set to an absolute version number when doing the release
-	// add steps here:
-	// {
-	// 	id: 'my fancy step',
-	// 	canBeRunAutomatically: true,
-	// 	validate: () => {
-	// 		return false
-	// 	},
-	// 	migrate: () => {
-	// 		//
-	// 	}
-	// },
-	//
-	//
-	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
-	// setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
-	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
+	ensureCollectionProperty('RundownLayouts', { regionId: { $exists: false } }, 'regionId', 'shelf_layouts'),
 ])
