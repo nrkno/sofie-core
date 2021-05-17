@@ -2485,35 +2485,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		queueAdLibPiece = (adlibPiece: AdLibPieceUi, e: any) => {
 			const { t } = this.props
 
-			if (adlibPiece.invalid) {
-				NotificationCenter.push(
-					new Notification(
-						t('Invalid AdLib'),
-						NoticeLevel.WARNING,
-						t('Cannot play this AdLib because it is marked as Invalid'),
-						'toggleAdLib'
-					)
-				)
-				return
-			}
-			if (adlibPiece.floated) {
-				NotificationCenter.push(
-					new Notification(
-						t('Floated AdLib'),
-						NoticeLevel.WARNING,
-						t('Cannot play this AdLib because it is marked as Floated'),
-						'toggleAdLib'
-					)
-				)
-				return
-			}
-
 			let sourceLayer = this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
 
-			if (!adlibPiece.isAction && sourceLayer && !sourceLayer.isQueueable) {
-				console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
-				return
-			}
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 				if (!(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
@@ -2553,11 +2526,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
+		isAdLibQueueableAndNonFloated = (piece: AdLibPieceUi) => {
+			return (piece.isAction || piece.sourceLayer?.isQueueable) && !piece.invalid && !piece.floated
+		}
+
 		findShelfOnlySegment = (begin: number, end: number) => {
 			const { uiSegments } = this.props
 			for (let i = begin; begin > end ? i > end : i < end; begin > end ? i-- : i++) {
-				if (uiSegments[i].isHidden && uiSegments[i].showShelf && uiSegments[i].pieces.length) {
-					return uiSegments[i]
+				const queueablePieces = uiSegments[i].pieces.filter(this.isAdLibQueueableAndNonFloated)
+				if (uiSegments[i].isHidden && uiSegments[i].showShelf && queueablePieces.length) {
+					return { segment: uiSegments[i], queueablePieces }
 				}
 			}
 			return undefined
@@ -2570,7 +2548,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			let currentSegmentId: SegmentId | undefined
 			if (keyboardQueuedPiece) {
 				if (keyboardQueuedPiece.segmentId && uiSegmentMap.has(keyboardQueuedPiece.segmentId)) {
-					const pieces = uiSegmentMap.get(keyboardQueuedPiece.segmentId)!.pieces
+					const pieces = uiSegmentMap
+						.get(keyboardQueuedPiece.segmentId)!
+						.pieces.filter(this.isAdLibQueueableAndNonFloated)
 					const nextPieceInd = pieces.findIndex((piece) => piece._id === keyboardQueuedPiece._id) + (forward ? 1 : -1)
 					if (nextPieceInd >= 0 && nextPieceInd < pieces.length) {
 						pieceToQueue = pieces[nextPieceInd]
@@ -2589,8 +2569,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							  this.findShelfOnlySegment(0, currentSegmentInd)
 							: this.findShelfOnlySegment(currentSegmentInd - 1, -1) ||
 							  this.findShelfOnlySegment(uiSegments.length - 1, currentSegmentInd)
-						if (nextShelfOnlySegment && nextShelfOnlySegment.pieces.length) {
-							pieceToQueue = nextShelfOnlySegment.pieces[forward ? 0 : nextShelfOnlySegment.pieces.length - 1]
+						if (nextShelfOnlySegment && nextShelfOnlySegment.queueablePieces.length) {
+							pieceToQueue =
+								nextShelfOnlySegment.queueablePieces[forward ? 0 : nextShelfOnlySegment.queueablePieces.length - 1]
 						}
 					}
 				}

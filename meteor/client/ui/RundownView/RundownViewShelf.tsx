@@ -188,7 +188,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 								onToggleAdLib={this.onToggleAdLib}
 								playlist={this.props.playlist}
 								isOnAir={this.isAdLibOnAir(adLibPiece)}
-								isNext={this.isAdLibOnAir(adLibPiece)}
+								isNext={this.isAdLibNext(adLibPiece)}
 								mediaPreviewUrl={
 									this.props.studio
 										? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
