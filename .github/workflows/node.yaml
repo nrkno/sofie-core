@@ -191,6 +191,7 @@ jobs:
     timeout-minutes: 30
 
     strategy:
+      fail-fast: false
       matrix:
         gateway-name: [playout-gateway, mos-gateway]
 
@@ -265,6 +266,7 @@ jobs:
     timeout-minutes: 15
 
     strategy:
+      fail-fast: false
       matrix:
         package-name:
           [
@@ -297,10 +299,10 @@ jobs:
   test-packages:
     name: Test Package
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 15
 
     strategy:
+      fail-fast: false
       matrix:
         package-name: [blueprints-integration, server-core-integration]
         node-version: [12.x, 14.x]
@@ -374,7 +376,6 @@ jobs:
   prerelease-libs:
     name: Prerelease Lib
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 15
 
     # only run for branches
@@ -384,6 +385,7 @@ jobs:
       - test-packages
 
     strategy:
+      fail-fast: false
       matrix:
         package-name: [blueprints-integration, server-core-integration]
 
@@ -459,7 +461,6 @@ jobs:
   release-libs:
     name: Release Lib
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 15
 
     # only run for tags
@@ -471,6 +472,7 @@ jobs:
       - build-core
 
     strategy:
+      fail-fast: false
       matrix:
         package-name: [blueprints-integration, server-core-integration]
 
@@ -539,6 +541,7 @@ jobs:
     timeout-minutes: 15
 
     strategy:
+      fail-fast: false
       matrix:
         package-name:
           [
