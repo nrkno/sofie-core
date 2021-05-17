@@ -61,7 +61,7 @@
 		"moment": "2.29.1",
 		"timeline-state-resolver-types": "git+https://github.com/olzzon/tv-automation-state-timeline-resolver#dist_types20210323_1",
 		"tslib": "^2.0.3",
-		"underscore": "1.11.0"
+		"underscore": "1.12.1"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"husky": {
