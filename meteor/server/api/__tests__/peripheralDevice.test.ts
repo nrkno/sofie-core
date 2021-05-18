@@ -10,7 +10,7 @@ import { Pieces } from '../../../lib/collections/Pieces'
 
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 
-import { getCurrentTime, literal, protectString, ProtectedString, waitTime } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, ProtectedString, waitTime, getRandomId } from '../../../lib/lib'
 import * as MOS from 'mos-connection'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
@@ -587,9 +587,9 @@ describe('test peripheralDevice general API methods', () => {
 		let deviceId: ProtectedString<any>
 		let device: PeripheralDevice
 		beforeEach(() => {
-			workFlowId = protectString(Random.id())
-			workStepIds = [protectString(Random.id()), protectString(Random.id())]
-			deviceId = protectString(Random.id())
+			workFlowId = getRandomId()
+			workStepIds = [getRandomId(), getRandomId()]
+			deviceId = getRandomId()
 			env = setupDefaultStudioEnvironment()
 			PeripheralDevices.insert({
 				_id: deviceId,
@@ -758,7 +758,7 @@ describe('test peripheralDevice general API methods', () => {
 		const MOCK_MEDIA_ID = 'SOME_FILE'.toUpperCase()
 		const MOCK_OBJID = Random.id()
 		beforeEach(() => {
-			deviceId = protectString(Random.id())
+			deviceId = getRandomId()
 			env = setupDefaultStudioEnvironment()
 			PeripheralDevices.insert({
 				_id: deviceId,

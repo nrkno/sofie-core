@@ -1,8 +1,7 @@
 import * as _ from 'underscore'
-import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import { Buckets, Bucket, BucketId } from '../../lib/collections/Buckets'
-import { literal, protectString, waitForPromise, waitForPromiseAll } from '../../lib/lib'
+import { getRandomId, literal, waitForPromise, waitForPromiseAll } from '../../lib/lib'
 import { BucketSecurity } from '../security/buckets'
 import { BucketAdLibs, BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
@@ -140,7 +139,7 @@ export namespace BucketsAPI {
 		}
 
 		const newBucket = literal<Bucket>({
-			_id: protectString(Random.id()),
+			_id: getRandomId(),
 			_rank: rank,
 			name: name,
 			studioId,
@@ -225,7 +224,7 @@ export namespace BucketsAPI {
 
 			adLibAction = {
 				...action,
-				_id: protectString(Random.id()),
+				_id: getRandomId(),
 				bucketId: bucketId,
 			}
 		} else {
@@ -262,7 +261,7 @@ export namespace BucketsAPI {
 
 			adLibAction = {
 				...(_.omit(action, ['partId', 'rundownId']) as Omit<AdLibAction, 'partId' | 'rundownId'>),
-				_id: protectString(Random.id()),
+				_id: getRandomId(),
 				externalId: '', // TODO - is this ok?
 				bucketId: bucketId,
 				studioId: studioId,

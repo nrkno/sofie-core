@@ -4,7 +4,7 @@ import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { IngestDataCache, IngestCacheType, IngestDataCacheObjId } from '../../lib/collections/IngestDataCache'
 import { Random } from 'meteor/random'
-import { protectString } from '../../lib/lib'
+import { getRandomId, protectString } from '../../lib/lib'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
@@ -147,7 +147,7 @@ describe('cronjobs', () => {
 				},
 				modified: new Date(2000, 0, 1, 0, 0, 0).getTime(),
 				// this one is attached to rundown0
-				rundownId: protectString(Random.id()),
+				rundownId: getRandomId(),
 				type: IngestCacheType.RUNDOWN,
 			})
 			// Attached IngestDataCache object 1
