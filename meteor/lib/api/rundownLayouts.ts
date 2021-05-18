@@ -167,10 +167,10 @@ export namespace RundownLayoutsAPI {
 		],
 	})
 	registry.RegisterMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
-		supportedElements: [],
+		supportedElements: [RundownLayoutElementType.FILTER],
 	})
 	registry.RegisterMiniShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
-		supportedElements: [],
+		supportedElements: [RundownLayoutElementType.FILTER],
 	})
 	registry.RegisterRundownViewLayout(RundownLayoutType.RUNDOWN_VIEW_LAYOUT, {
 		supportedElements: [],

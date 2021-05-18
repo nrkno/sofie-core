@@ -89,25 +89,25 @@ interface IListViewStateHeader {
 	sourceLayers: {
 		[key: string]: ISourceLayer
 	}
+	liveSegment?: AdlibSegmentUi
 }
 
 export function matchFilter(
 	item: AdLibPieceUi,
 	showStyleBase: ShowStyleBase,
-	uiSegments: Array<AdlibSegmentUi>,
+	liveSegment?: AdlibSegmentUi,
 	filter?: RundownLayoutFilterBase,
 	searchFilter?: string,
 	uniquenessIds?: Set<string>
 ) {
 	if (!searchFilter && !filter) return true
-	const liveSegment = uiSegments.find((i) => i.isLive === true)
 	const uppercaseLabel = item.name.toUpperCase()
 	if (filter) {
 		// Filter currentSegment only
 		if (
 			filter.currentSegment === true &&
 			item.partId &&
-			((liveSegment && liveSegment.parts.find((i) => item.partId === i.part._id) === undefined) || !liveSegment)
+			((liveSegment && liveSegment._id !== item.segmentId) || !liveSegment)
 		) {
 			return false
 		}
@@ -207,6 +207,8 @@ const AdLibListView = withTranslation()(
 				[key: string]: ISourceLayer
 			} = {}
 
+			const liveSegment = props.uiSegments.find((i) => i.isLive === true)
+
 			if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
 				props.showStyleBase.outputLayers.forEach((outputLayer) => {
 					tOLayers[outputLayer._id] = outputLayer
@@ -218,9 +220,10 @@ const AdLibListView = withTranslation()(
 				return {
 					outputLayers: tOLayers,
 					sourceLayers: tSLayers,
+					liveSegment,
 				}
 			}
-			return null
+			return { liveSegment }
 		}
 
 		scrollToCurrentSegment() {
@@ -258,7 +261,7 @@ const AdLibListView = withTranslation()(
 								matchFilter(
 									item,
 									this.props.showStyleBase,
-									this.props.uiSegments,
+									this.state.liveSegment,
 									this.props.filter,
 									this.props.searchFilter,
 									uniquenessIds
@@ -313,7 +316,7 @@ const AdLibListView = withTranslation()(
 										matchFilter(
 											item,
 											this.props.showStyleBase,
-											this.props.uiSegments,
+											this.state.liveSegment,
 											this.props.filter,
 											this.props.searchFilter,
 											uniquenessIds

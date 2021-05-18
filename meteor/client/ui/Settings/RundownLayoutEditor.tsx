@@ -776,7 +776,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										</div>
 									</div>
 									<div>{this.renderElements(item, layout)}</div>
-									{layout?.supportedElements.length ? (
+									{layout?.supportedElements.length &&
+									(!RundownLayoutsAPI.IsLayoutForMiniShelf(item) || layout?.supportedElements.length < 1) ? ( // support single filter in minishelf for now
 										<div className="mod mls">
 											<button className="btn btn-secondary" onClick={(e) => this.onAddElement(item)}>
 												<FontAwesomeIcon icon={faPlus} />

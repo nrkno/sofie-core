@@ -125,58 +125,62 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									</label>
 								</div>
 							)}
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('X')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.x`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Y')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.y`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Width')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.width`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Height')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.height`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
+							{!RundownLayoutsAPI.IsLayoutForMiniShelf(item) && (
+								<>
+									<div className="mod mvs mhs">
+										<label className="field">
+											{t('X')}
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`filters.${index}.x`}
+												obj={item}
+												type="int"
+												collection={RundownLayouts}
+												className="input text-input input-l"
+											/>
+										</label>
+									</div>
+									<div className="mod mvs mhs">
+										<label className="field">
+											{t('Y')}
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`filters.${index}.y`}
+												obj={item}
+												type="int"
+												collection={RundownLayouts}
+												className="input text-input input-l"
+											/>
+										</label>
+									</div>
+									<div className="mod mvs mhs">
+										<label className="field">
+											{t('Width')}
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`filters.${index}.width`}
+												obj={item}
+												type="int"
+												collection={RundownLayouts}
+												className="input text-input input-l"
+											/>
+										</label>
+									</div>
+									<div className="mod mvs mhs">
+										<label className="field">
+											{t('Height')}
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`filters.${index}.height`}
+												obj={item}
+												type="int"
+												collection={RundownLayouts}
+												className="input text-input input-l"
+											/>
+										</label>
+									</div>
+								</>
+							)}
 							{!isList && (
 								<React.Fragment>
 									<div className="mod mvs mhs">

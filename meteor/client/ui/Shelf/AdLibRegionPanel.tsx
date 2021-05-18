@@ -169,11 +169,12 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 	}
 
 	render() {
+		const liveSegment = this.props.uiSegments.find((i) => i.isLive === true)
 		const piece =
 			this.props.panel.tags && this.props.rundownBaselineAdLibs
 				? this.props.rundownBaselineAdLibs
 						.concat(_.flatten(this.props.uiSegments.map((seg) => seg.pieces)))
-						.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))[
+						.filter((item) => matchFilter(item, this.props.showStyleBase, liveSegment, this.props.filter))[
 						this.props.adlibRank ? this.props.adlibRank : 0
 				  ]
 				: undefined

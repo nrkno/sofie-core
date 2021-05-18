@@ -82,6 +82,7 @@ import {
 	DashboardLayout,
 	RundownLayoutShelfBase,
 	RundownLayoutRundownHeader,
+	RundownLayoutFilterBase,
 } from '../../lib/collections/RundownLayouts'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
@@ -90,7 +91,7 @@ import { Buckets, Bucket } from '../../lib/collections/Buckets'
 import { contextMenuHoldToDisplayTime } from '../lib/lib'
 import { OffsetPosition } from '../utils/positions'
 import { MeteorCall } from '../../lib/api/methods'
-import { AdlibSegmentUi, fetchAndFilter, SourceLayerLookup } from './Shelf/AdLibPanel'
+import { AdlibSegmentUi, fetchAndFilter, matchFilter, SourceLayerLookup } from './Shelf/AdLibPanel'
 import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { documentTitle } from '../lib/DocumentTitleProvider'
@@ -1311,7 +1312,6 @@ interface IState {
 	shelfLayout: RundownLayoutShelfBase | undefined
 	rundownViewLayout: RundownLayoutBase | undefined
 	rundownHeaderLayout: RundownLayoutRundownHeader | undefined
-	miniShelfLayout: RundownLayoutShelfBase | undefined
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
@@ -1338,6 +1338,7 @@ interface ITrackedProps {
 	rundownViewLayoutId?: RundownLayoutId
 	rundownHeaderLayoutId?: RundownLayoutId
 	miniShelfLayoutId?: RundownLayoutId
+	miniShelfLayout: RundownLayoutShelfBase | undefined
 	shelfDisplayOptions: {
 		buckets: boolean
 		layout: boolean
@@ -1380,18 +1381,59 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
 
 	const showStyleBase = rundowns.length > 0 ? ShowStyleBases.findOne(rundowns[0].showStyleBaseId) : undefined
-	let uiSegmentMap: Map<SegmentId, AdlibSegmentUi> = new Map()
 	let uiSegments: AdlibSegmentUi[] = []
 	let sourceLayerLookup: SourceLayerLookup = {}
+
+	const rundownLayouts =
+		rundowns.length > 0 ? RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() : undefined
+
+	let selectedMiniShelfLayout: RundownLayoutBase | undefined = undefined
+	const miniShelfLayoutId = protectString((params['miniShelfLayout'] as string) || '')
+
+	if (rundownLayouts) {
+		if (miniShelfLayoutId) {
+			selectedMiniShelfLayout = rundownLayouts.find((i) => i._id === miniShelfLayoutId)
+			if (!selectedMiniShelfLayout) {
+				selectedMiniShelfLayout = rundownLayouts.find((i) => i.name.indexOf(unprotectString(miniShelfLayoutId!)) >= 0)
+			}
+		}
+		if (!selectedMiniShelfLayout) {
+			selectedMiniShelfLayout = rundownLayouts.filter((i) => i.regionId === 'mini_shelf_layouts')[0] // @todo use correct api when exists
+		}
+	}
+	const filter = selectedMiniShelfLayout?.filters.find((filter) => RundownLayoutsAPI.isFilter(filter)) as
+		| RundownLayoutFilterBase
+		| undefined
+
+	const filteredUiSegmentMap = new Map<SegmentId, AdlibSegmentUi>()
+	const filteredUiSegments: AdlibSegmentUi[] = []
 	if (playlist && showStyleBase) {
-		;({ uiSegmentMap, uiSegments, sourceLayerLookup } = fetchAndFilter({
+		;({ uiSegments, sourceLayerLookup } = fetchAndFilter({
 			t,
 			i18n,
 			tReady,
 			playlist,
 			showStyleBase,
 			includeGlobalAdLibs: false,
+			filter,
 		}))
+		const liveSegment = uiSegments.find((i) => i.isLive === true)
+		uiSegments.forEach((segment) => {
+			const uniquenessIds = new Set<string>()
+			console.log(segment.pieces)
+			const filteredPieces = segment.pieces.filter((piece) =>
+				matchFilter(piece, showStyleBase, liveSegment, filter, undefined, uniquenessIds)
+			)
+			if (filteredPieces.length) {
+				console.log(filteredPieces)
+				const filteredSegment = {
+					...segment,
+					pieces: filteredPieces,
+				}
+				filteredUiSegmentMap.set(segment._id, filteredSegment)
+				filteredUiSegments.push(filteredSegment)
+			}
+		})
 	}
 
 	// let rundownDurations = calculateDurations(rundown, parts)
@@ -1415,8 +1457,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		playlist,
 		studio: studio,
 		showStyleBase,
-		rundownLayouts:
-			rundowns.length > 0 ? RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() : undefined,
+		rundownLayouts,
 		buckets:
 			(playlist &&
 				Buckets.find(
@@ -1447,7 +1488,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		shelfLayoutId: protectString((params['layout'] as string) || (params['shelfLayout'] as string) || ''), // 'layout' kept for backwards compatibility
 		rundownViewLayoutId: protectString((params['rundownViewLayout'] as string) || ''),
 		rundownHeaderLayoutId: protectString((params['rundownHeaderLayout'] as string) || ''),
-		miniShelfLayoutId: protectString((params['miniShelfLayout'] as string) || ''),
+		miniShelfLayoutId,
+		miniShelfLayout:
+			selectedMiniShelfLayout && RundownLayoutsAPI.IsLayoutForMiniShelf(selectedMiniShelfLayout)
+				? selectedMiniShelfLayout
+				: undefined,
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
 			layout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
@@ -1456,8 +1501,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		bucketDisplayFilter,
 		currentPartInstance,
 		nextPartInstance,
-		uiSegmentMap,
-		uiSegments,
+		uiSegmentMap: filteredUiSegmentMap,
+		uiSegments: filteredUiSegments,
 		sourceLayerLookup,
 	}
 })(
@@ -1553,7 +1598,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				shelfLayout: undefined,
 				rundownViewLayout: undefined,
 				rundownHeaderLayout: undefined,
-				miniShelfLayout: undefined,
 				currentRundown: undefined,
 				wasShelfResizedByUser: false,
 				keyboardQueuedPiece: undefined,
@@ -1564,7 +1608,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			let selectedShelfLayout: RundownLayoutBase | undefined = undefined
 			let selectedViewLayout: RundownLayoutBase | undefined = undefined
 			let selectedHeaderLayout: RundownLayoutBase | undefined = undefined
-			let selectedMiniShelfLayout: RundownLayoutBase | undefined = undefined
 
 			if (props.rundownLayouts) {
 				// first try to use the one selected by the user
@@ -1578,10 +1621,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				if (props.rundownHeaderLayoutId) {
 					selectedHeaderLayout = props.rundownLayouts.find((i) => i._id === props.rundownHeaderLayoutId)
-				}
-
-				if (props.miniShelfLayoutId) {
-					selectedMiniShelfLayout = props.rundownLayouts.find((i) => i._id === props.miniShelfLayoutId)
 				}
 
 				// if couldn't find based on id, try matching part of the name
@@ -1603,12 +1642,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					)
 				}
 
-				if (props.miniShelfLayoutId && !selectedMiniShelfLayout) {
-					selectedMiniShelfLayout = props.rundownLayouts.find(
-						(i) => i.name.indexOf(unprotectString(props.miniShelfLayoutId!)) >= 0
-					)
-				}
-
 				// if not, try the first RUNDOWN_LAYOUT available
 				if (!selectedShelfLayout) {
 					selectedShelfLayout = props.rundownLayouts.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT)
@@ -1625,10 +1658,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				if (!selectedHeaderLayout) {
 					selectedHeaderLayout = props.rundownLayouts.filter((i) => RundownLayoutsAPI.IsLayoutForRundownHeader(i))[0]
-				}
-
-				if (!selectedMiniShelfLayout) {
-					selectedMiniShelfLayout = props.rundownLayouts.filter((i) => RundownLayoutsAPI.IsLayoutForMiniShelf(i))[0]
 				}
 			}
 
@@ -1649,10 +1678,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				rundownHeaderLayout:
 					selectedHeaderLayout && RundownLayoutsAPI.IsLayoutForRundownHeader(selectedHeaderLayout)
 						? selectedHeaderLayout
-						: undefined,
-				miniShelfLayout:
-					selectedMiniShelfLayout && RundownLayoutsAPI.IsLayoutForMiniShelf(selectedMiniShelfLayout)
-						? selectedMiniShelfLayout
 						: undefined,
 				currentRundown,
 			}
