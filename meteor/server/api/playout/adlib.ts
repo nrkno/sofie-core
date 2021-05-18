@@ -73,7 +73,7 @@ export namespace ServerPlayoutAdLibAPI {
 				if (playlist.currentPartInstanceId !== partInstanceId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
 			},
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
@@ -164,7 +164,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 				cache.PieceInstances.insert(newPieceInstance)
 
-				syncPlayheadInfinitesForNextPartInstance(cache)
+				await syncPlayheadInfinitesForNextPartInstance(cache)
 
 				updateTimeline(cache)
 			}
@@ -311,7 +311,7 @@ export namespace ServerPlayoutAdLibAPI {
 			)
 			innerStartAdLibPiece(cache, rundown, currentPartInstance, newPieceInstance)
 
-			syncPlayheadInfinitesForNextPartInstance(cache)
+			await syncPlayheadInfinitesForNextPartInstance(cache)
 		}
 
 		updateTimeline(cache)
@@ -508,7 +508,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 		// Find and insert any rundown defined infinites that we should inherit
 		newPartInstance = cache.PartInstances.findOne(newPartInstance._id)!
-		const possiblePieces = await fetchPiecesThatMayBeActiveForPart(cache, newPartInstance.part)
+		const possiblePieces = await fetchPiecesThatMayBeActiveForPart(cache, undefined, newPartInstance.part)
 		const infinitePieceInstances = getPieceInstancesForPart(
 			cache,
 			currentPartInstance,

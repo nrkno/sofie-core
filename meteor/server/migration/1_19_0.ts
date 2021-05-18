@@ -19,5 +19,5 @@ export const addSteps = addMigrationSteps('1.19.0', [
 		'_process',
 		'1.6.0'
 	),
-	ensureCollectionProperty('CoreSystem', {}, 'cron.casparCGRestart.enabled', true)
+	ensureCollectionProperty('CoreSystem', {}, 'cron.casparCGRestart.enabled', true),
 ])

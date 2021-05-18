@@ -47,7 +47,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { TransformedCollection } from '../../../lib/typings/meteor'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
-import { MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
+import { ConfigManifestEntryType, MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
 import { renderEditAttribute } from './components/ConfigManifestEntryComponent'
 
 interface IStudioDevicesProps {
@@ -357,14 +357,20 @@ const StudioMappings = withTranslation()(
 					<span>
 						{m
 							.filter((entry) => entry.includeInSummary)
-							.map(
-								(entry) =>
-									entry.name +
-									': ' +
-									(entry.values && entry.values[mapping[entry.id]]
-										? entry.values[mapping[entry.id]]
-										: mapping[entry.id])
-							)
+							.map((entry) => {
+								let summary = entry.name + ': '
+
+								let mappingValue = entry.values && entry.values[mapping[entry.id]]
+								if (!mappingValue) {
+									mappingValue = mapping[entry.id]
+								}
+
+								if (entry.type === ConfigManifestEntryType.INT && entry.zeroBased && _.isNumber(mappingValue)) {
+									mappingValue += 1
+								}
+
+								return summary + mappingValue
+							})
 							.join(' - ')}
 					</span>
 				)

@@ -1,6 +1,6 @@
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString, hashObj } from '../lib'
+import { registerCollection, ProtectedString, hashObj, assertNever } from '../lib'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { StudioId } from './Studios'
@@ -104,6 +104,8 @@ export function getPreviewPackageSettings(
 		packagePath = expectedPackage.content.filePath
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
 		packagePath = expectedPackage.content.guid || expectedPackage.content.title
+	} else {
+		assertNever(expectedPackage)
 	}
 	if (packagePath) {
 		return {
@@ -121,6 +123,8 @@ export function getThumbnailPackageSettings(
 		packagePath = expectedPackage.content.filePath
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
 		packagePath = expectedPackage.content.guid || expectedPackage.content.title
+	} else {
+		assertNever(expectedPackage)
 	}
 	if (packagePath) {
 		return {

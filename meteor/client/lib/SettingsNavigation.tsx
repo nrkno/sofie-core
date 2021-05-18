@@ -5,6 +5,7 @@ import { Mongo } from 'meteor/mongo'
 import { withTranslation } from 'react-i18next'
 import { Studios } from '../../lib/collections/Studios'
 import { MeteorCall } from '../../lib/api/methods'
+import { assertNever } from '../../lib/lib'
 
 interface ISettingsNavigation extends ISettingsNavigationBaseProps {
 	type: SettingsNavigationType
@@ -18,6 +19,8 @@ export class SettingsNavigation extends React.Component<ISettingsNavigation> {
 			return <ShowStyle {...this.props} />
 		} else if (this.props.type === 'newshowstyle') {
 			return <NewShowStyle {...this.props} />
+		} else {
+			assertNever(this.props.type)
 		}
 
 		return <div>Unknown edit type {this.props.type}</div>

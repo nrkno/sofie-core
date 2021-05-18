@@ -412,7 +412,7 @@ const MAPPING_MANIFEST: MappingsManifest = {
 			name: 'Mapping Type',
 			includeInSummary: true,
 		},
-		{ id: 'index', type: ConfigManifestEntryType.INT, name: 'index', includeInSummary: true },
+		{ id: 'index', type: ConfigManifestEntryType.INT, name: 'index', includeInSummary: true, zeroBased: true },
 	],
 	[TSRDeviceType.CASPARCG]: [
 		{
@@ -522,6 +522,7 @@ const MAPPING_MANIFEST: MappingsManifest = {
 			name: 'Channel',
 			optional: true,
 			includeInSummary: true,
+			zeroBased: true,
 		},
 		{
 			id: 'setLabelToLayerName',

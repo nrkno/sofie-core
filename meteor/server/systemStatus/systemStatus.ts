@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { getCurrentTime, Time, unprotectString, getRandomId } from '../../lib/lib'
+import { getCurrentTime, Time, unprotectString, getRandomId, assertNever } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { parseVersion, parseRange } from '../../lib/collections/CoreSystem'
 import { StatusResponse, CheckObj, ExternalStatus, CheckError, SystemInstanceId } from '../../lib/api/systemStatus'
@@ -208,6 +208,12 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 			so.documentation = 'https://github.com/nrkno/tv-automation-playout-gateway'
 		} else if (device.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER) {
 			so.documentation = 'https://github.com/nrkno/tv-automation-media-management'
+		} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
+			so.documentation = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
+		} else if (device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER) {
+			so.documentation = 'https://github.com/nrkno/tv-automation-package-manager'
+		} else {
+			assertNever(device.type)
 		}
 
 		if (!statusObj.components) statusObj.components = []

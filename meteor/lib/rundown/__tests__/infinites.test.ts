@@ -25,7 +25,8 @@ describe('Infinites', () => {
 		enable: Piece['enable'],
 		sourceLayerId: string,
 		lifespan: PieceLifespan,
-		clear?: boolean
+		clearOrAdlib?: boolean | number,
+		infinite?: PieceInstance['infinite']
 	): PieceInstance {
 		return literal<PieceInstance>({
 			_id: protectString(id),
@@ -43,16 +44,23 @@ describe('Infinites', () => {
 				outputLayerId: '',
 				invalid: false,
 				status: -1,
-				virtual: clear,
+				virtual: clearOrAdlib === true,
 				content: { timelineObjects: [] },
 			}),
-			dynamicallyInserted: clear ? getCurrentTime() : undefined,
+			dynamicallyInserted: clearOrAdlib === true ? getCurrentTime() : clearOrAdlib || undefined,
+			infinite,
 		})
 	}
 
 	describe('processAndPrunePieceInstanceTimings', () => {
-		function runAndTidyResult(pieceInstances: PieceInstance[], nowInPart: number) {
-			const resolvedInstances = processAndPrunePieceInstanceTimings(env.showStyleBase, pieceInstances, nowInPart)
+		function runAndTidyResult(pieceInstances: PieceInstance[], nowInPart: number, includeVirtual?: boolean) {
+			const resolvedInstances = processAndPrunePieceInstanceTimings(
+				env.showStyleBase,
+				pieceInstances,
+				nowInPart,
+				undefined,
+				includeVirtual
+			)
 			return resolvedInstances.map((p) => ({
 				_id: p._id,
 				start: p.piece.enable.start,
@@ -165,6 +173,42 @@ describe('Infinites', () => {
 				},
 			])
 		})
+		testInFiber('clear onEnd; include virtuals', () => {
+			const pieceInstances = [
+				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnRundownEnd),
+				createPieceInstance('two', { start: 1000 }, 'one', PieceLifespan.OutOnSegmentEnd),
+				createPieceInstance('three', { start: 3000 }, 'one', PieceLifespan.OutOnRundownEnd, true),
+				createPieceInstance('four', { start: 5000 }, 'one', PieceLifespan.OutOnSegmentEnd, true),
+			]
+
+			const resolvedInstances = runAndTidyResult(pieceInstances, 500, true)
+			expect(resolvedInstances).toEqual([
+				{
+					_id: 'one',
+					priority: 1,
+					start: 0,
+					end: 3000,
+				},
+				{
+					_id: 'two',
+					priority: 2,
+					start: 1000,
+					end: 5000,
+				},
+				{
+					_id: 'three',
+					priority: 1,
+					start: 3000,
+					end: undefined,
+				},
+				{
+					_id: 'four',
+					priority: 2,
+					start: 5000,
+					end: undefined,
+				},
+			])
+		})
 		testInFiber('stop onSegmentChange with onEnd', () => {
 			const pieceInstances = [
 				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnSegmentEnd),
@@ -197,6 +241,96 @@ describe('Infinites', () => {
 					_id: 'four',
 					priority: 2,
 					start: 5000,
+					end: undefined,
+				},
+			])
+		})
+		testInFiber('prefer newer adlib', () => {
+			const pieceInstances = [
+				createPieceInstance('one', { start: 1000 }, 'one', PieceLifespan.OutOnSegmentEnd, 6000),
+				createPieceInstance('two', { start: 1000 }, 'one', PieceLifespan.OutOnSegmentEnd, 5500),
+			]
+
+			const resolvedInstances = runAndTidyResult(pieceInstances, 500)
+			expect(resolvedInstances).toEqual([
+				{
+					_id: 'one',
+					priority: 2,
+					start: 1000,
+					end: undefined,
+				},
+			])
+		})
+		testInFiber('prefer newer adlib2', () => {
+			const pieceInstances = [
+				createPieceInstance('one', { start: 1000 }, 'one', PieceLifespan.OutOnRundownChange, 6000),
+				createPieceInstance('two', { start: 1000 }, 'one', PieceLifespan.OutOnRundownChange, 5500),
+				createPieceInstance('three', { start: 1000 }, 'one', PieceLifespan.OutOnRundownChange, 7000),
+				createPieceInstance('four', { start: 1000 }, 'one', PieceLifespan.OutOnRundownChange, 4000),
+			]
+
+			const resolvedInstances = runAndTidyResult(pieceInstances, 500)
+			expect(resolvedInstances).toEqual([
+				{
+					_id: 'three',
+					priority: 5,
+					start: 1000,
+					end: undefined,
+				},
+			])
+		})
+		testInFiber('continue onChange when start=0 and onEnd is present, and both are infinite continuations', () => {
+			const pieceInstances = [
+				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnSegmentChange, 6000, {
+					fromPreviousPart: true,
+					fromPreviousPlayhead: true,
+					infiniteInstanceId: protectString('one_a'),
+					infinitePieceId: protectString('one_b'),
+				}),
+				createPieceInstance('two', { start: 0 }, 'one', PieceLifespan.OutOnSegmentEnd, false, {
+					fromPreviousPart: true,
+					infiniteInstanceId: protectString('two_a'),
+					infinitePieceId: protectString('two_b'),
+				}),
+			]
+
+			const resolvedInstances = runAndTidyResult(pieceInstances, 500)
+			expect(resolvedInstances).toEqual([
+				{
+					_id: 'one',
+					priority: 5,
+					start: 0,
+					end: undefined,
+				},
+				{
+					_id: 'two',
+					priority: 2,
+					start: 0,
+					end: undefined,
+				},
+			])
+		})
+		testInFiber('stop onChange when start=0 and onEnd is present, and both are infinite continuations', () => {
+			const pieceInstances = [
+				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnSegmentChange, 6000, {
+					fromPreviousPart: true,
+					fromPreviousPlayhead: true,
+					infiniteInstanceId: protectString('one_a'),
+					infinitePieceId: protectString('one_b'),
+				}),
+				createPieceInstance('two', { start: 0 }, 'one', PieceLifespan.OutOnSegmentEnd, false, {
+					fromPreviousPart: false,
+					infiniteInstanceId: protectString('two_a'),
+					infinitePieceId: protectString('two_b'),
+				}),
+			]
+
+			const resolvedInstances = runAndTidyResult(pieceInstances, 500)
+			expect(resolvedInstances).toEqual([
+				{
+					_id: 'two',
+					priority: 2,
+					start: 0,
 					end: undefined,
 				},
 			])
@@ -309,6 +443,55 @@ describe('Infinites', () => {
 				},
 				{
 					_id: 'newInstance0_two_p_continue',
+					start: 0,
+				},
+			])
+		})
+		testInFiber('ignore pieces that have stopped', () => {
+			const rundownId = protectString('rundown0')
+			const segmentId = protectString('segment0')
+			const partId = protectString('part0')
+			const previousPartInstance = { rundownId, segmentId, partId }
+			const previousPartPieces: PieceInstance[] = [
+				createPieceInstanceAsInfinite(
+					'one',
+					rundownId,
+					partId,
+					{ start: 1000 },
+					'one',
+					PieceLifespan.OutOnRundownChange
+				),
+				{
+					...createPieceInstanceAsInfinite(
+						'two',
+						rundownId,
+						partId,
+						{ start: 2000 },
+						'two',
+						PieceLifespan.OutOnRundownChange,
+						true
+					),
+					userDuration: { end: 5000 },
+				},
+				{
+					...createPieceInstanceAsInfinite(
+						'three',
+						rundownId,
+						partId,
+						{ start: 3000 },
+						'three',
+						PieceLifespan.OutOnRundownChange
+					),
+					stoppedPlayback: 5000,
+				},
+			]
+			const part = { rundownId, segmentId }
+			const instanceId = protectString('newInstance0')
+
+			const continuedInstances = runAndTidyResult(previousPartInstance, previousPartPieces, part, instanceId)
+			expect(continuedInstances).toEqual([
+				{
+					_id: 'newInstance0_one_p_continue',
 					start: 0,
 				},
 			])

@@ -153,7 +153,7 @@ export class CoreMosDeviceHandler {
 		let messages: Array<string> = []
 
 		if (connectionStatus.PrimaryConnected) {
-			if (connectionStatus.SecondaryConnected) {
+			if (connectionStatus.SecondaryConnected || !this._mosDevice.idSecondary) {
 				statusCode = P.StatusCode.GOOD
 			} else {
 				statusCode = P.StatusCode.WARNING_MINOR
@@ -169,7 +169,7 @@ export class CoreMosDeviceHandler {
 		if (!connectionStatus.PrimaryConnected) {
 			messages.push(connectionStatus.PrimaryStatus || 'Primary not connected')
 		}
-		if (!connectionStatus.SecondaryConnected) {
+		if (this._mosDevice.idSecondary && !connectionStatus.SecondaryConnected) {
 			messages.push(connectionStatus.SecondaryStatus || 'Fallback not connected')
 		}
 

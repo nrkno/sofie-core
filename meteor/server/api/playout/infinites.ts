@@ -11,12 +11,16 @@ import {
 	getPlayheadTrackingInfinitesForPart as libgetPlayheadTrackingInfinitesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
+	processAndPrunePieceInstanceTimings,
 } from '../../../lib/rundown/infinites'
 import { profiler } from '../profiler'
 import { Meteor } from 'meteor/meteor'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { ReadonlyDeep } from 'type-fest'
 import { asyncCollectionFindFetch } from '../../lib/database'
+import { getCurrentTime } from '../../../lib/lib'
+import { CacheForIngest } from '../ingest/cache'
+import { ReadOnlyCache } from '../../cache/CacheBase'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -89,11 +93,17 @@ function getIdsBeforeThisPart(cache: CacheForPlayout, nextPart: DBPart) {
 	}
 }
 
-export async function fetchPiecesThatMayBeActiveForPart(cache: CacheForPlayout, part: DBPart): Promise<Piece[]> {
+export async function fetchPiecesThatMayBeActiveForPart(
+	cache: CacheForPlayout,
+	unsavedIngestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'> | undefined,
+	part: DBPart
+): Promise<Piece[]> {
 	const span = profiler.startSpan('fetchPiecesThatMayBeActiveForPart')
 
 	const thisPiecesQuery = buildPiecesStartingInThisPartQuery(part)
-	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, thisPiecesQuery)
+	const pPiecesStartingInPart = unsavedIngestCache
+		? Promise.resolve(unsavedIngestCache.Pieces.findFetch(thisPiecesQuery))
+		: asyncCollectionFindFetch(Pieces, thisPiecesQuery)
 
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
@@ -102,14 +112,17 @@ export async function fetchPiecesThatMayBeActiveForPart(cache: CacheForPlayout, 
 		partsBeforeThisInSegment,
 		segmentsBeforeThisInRundown
 	)
-	const pInfinitePieces = asyncCollectionFindFetch(Pieces, infinitePiecesQuery)
+	// Future scope: Once there is a longer than Rundown infinite mode, this will need to split the query to search everywhere
+	const pInfinitePieces = unsavedIngestCache
+		? Promise.resolve(unsavedIngestCache.Pieces.findFetch(infinitePiecesQuery))
+		: asyncCollectionFindFetch(Pieces, infinitePiecesQuery)
 
 	const [piecesStartingInPart, infinitePieces] = await Promise.all([pPiecesStartingInPart, pInfinitePieces])
 	if (span) span.end()
 	return [...piecesStartingInPart, ...infinitePieces]
 }
 
-export function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout): void {
+export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout): Promise<void> {
 	const span = profiler.startSpan('syncPlayheadInfinitesForNextPartInstance')
 	const { nextPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 	if (nextPartInstance && currentPartInstance) {
@@ -120,6 +133,12 @@ export function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout)
 			cache,
 			nextPartInstance.part
 		)
+
+		const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${currentPartInstance.rundownId}" not found!`)
+
+		// !! Database call !!
+		const showStyleBase = await cache.activationCache.getShowStyleBase(rundown)
 
 		const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 
@@ -133,12 +152,21 @@ export function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout)
 			(p) => p.partInstanceId === currentPartInstance._id
 		)
 
+		const nowInPart = getCurrentTime() - (currentPartInstance.timings?.startedPlayback ?? 0)
+		const prunedPieceInstances = processAndPrunePieceInstanceTimings(
+			showStyleBase,
+			playingPieceInstances,
+			nowInPart,
+			undefined,
+			true
+		)
+
 		const infinites = libgetPlayheadTrackingInfinitesForPart(
 			playlist.activationId,
 			new Set(partsBeforeThisInSegment),
 			new Set(segmentsBeforeThisInRundown),
 			currentPartInstance,
-			playingPieceInstances,
+			prunedPieceInstances,
 			nextPartInstance.part,
 			nextPartInstance._id,
 			canContinueAdlibOnEnds,
