@@ -12,6 +12,8 @@ import {
 	ExpectedPackageDBFromBucketAdLib,
 	ExpectedPackageDBFromBucketAdLibAction,
 	ExpectedPackageDBFromPiece,
+	ExpectedPackageDBFromRundownBaselineObjects,
+	ExpectedPackageDBFromStudioBaselineObjects,
 	ExpectedPackageDBType,
 	ExpectedPackages,
 	getContentVersionHash,
@@ -61,7 +63,14 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 		...generateExpectedPackagesForBaselineAdlibAction(studio, cache.RundownId, baselineActions),
 	]
 
-	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(cache.ExpectedPackages, {}, expectedPackages)
+	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(
+		cache.ExpectedPackages,
+		{
+			// RUNDOWN_BASELINE_OBJECTS follow their own flow
+			fromPieceType: { $ne: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS },
+		},
+		expectedPackages
+	)
 }
 export function generateExpectedPackagesForPartInstance(
 	studio: Studio,
@@ -267,7 +276,23 @@ export function updateBaselineExpectedPackagesOnRundown(
 	// @todo: this call is for backwards compatibility and soon to be removed
 	updateBaselineExpectedPlayoutItemsOnRundown(cache, baseline.expectedPlayoutItems)
 
-	// @todo: implement
+	const bases = generateExpectedPackageBases(cache.Studio.doc, cache.RundownId, baseline.expectedPackages ?? [])
+	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(
+		cache.ExpectedPackages,
+		{
+			fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
+		},
+		bases.map(
+			(item): ExpectedPackageDBFromRundownBaselineObjects => {
+				return {
+					...item,
+					fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
+					rundownId: cache.RundownId,
+					pieceId: null,
+				}
+			}
+		)
+	)
 }
 
 export function updateBaselineExpectedPackagesOnStudio(
@@ -277,5 +302,23 @@ export function updateBaselineExpectedPackagesOnStudio(
 	// @todo: this call is for backwards compatibility and soon to be removed
 	updateBaselineExpectedPlayoutItemsOnStudio(cache, baseline.expectedPlayoutItems)
 
-	// @todo: implement
+	const bases = generateExpectedPackageBases(cache.Studio.doc, cache.Studio.doc._id, baseline.expectedPackages ?? [])
+	cache.deferAfterSave(() => {
+		saveIntoDb<ExpectedPackageDB, ExpectedPackageDB>(
+			ExpectedPackages,
+			{
+				studioId: cache.Studio.doc._id,
+				fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
+			},
+			bases.map(
+				(item): ExpectedPackageDBFromStudioBaselineObjects => {
+					return {
+						...item,
+						fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
+						pieceId: null,
+					}
+				}
+			)
+		)
+	})
 }

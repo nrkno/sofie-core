@@ -9,7 +9,7 @@ import * as _ from 'underscore'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { PartId } from '../../../lib/collections/Parts'
-import { protectString } from '../../../lib/lib'
+import { getRandomId, protectString } from '../../../lib/lib'
 import { CacheForIngest } from './cache'
 import { saveIntoCache } from '../../cache/lib'
 import { StudioId } from '../../../lib/collections/Studios'
@@ -86,7 +86,7 @@ export function updateBaselineExpectedPlayoutItemsOnRundown(
 			(item): ExpectedPlayoutItemRundown => {
 				return {
 					...item,
-					_id: protectString(Random.id()),
+					_id: getRandomId(),
 					studioId: cache.Studio.doc._id,
 					rundownId: cache.RundownId,
 					baseline: 'rundown',
@@ -107,7 +107,7 @@ export function updateBaselineExpectedPlayoutItemsOnStudio(
 				(item): ExpectedPlayoutItemStudio => {
 					return {
 						...item,
-						_id: protectString(Random.id()),
+						_id: getRandomId(),
 						studioId: cache.Studio.doc._id,
 						baseline: 'studio',
 					}
