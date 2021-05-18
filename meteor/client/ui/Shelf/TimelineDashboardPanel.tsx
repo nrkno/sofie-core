@@ -88,6 +88,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 			if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 				const filter = this.props.filter as DashboardLayoutFilter
 				const uniquenessIds = new Set<string>()
+				const liveSegment = this.props.uiSegments.find((i) => i.isLive === true)
 				if (!this.props.uiSegments || !this.props.playlist) {
 					return <Spinner />
 				} else {
@@ -95,7 +96,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 						matchFilter(
 							item,
 							this.props.showStyleBase,
-							this.props.uiSegments,
+							liveSegment,
 							this.props.filter,
 							this.state.searchFilter,
 							uniquenessIds
@@ -145,7 +146,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 												matchFilter(
 													item,
 													this.props.showStyleBase,
-													this.props.uiSegments,
+													liveSegment,
 													this.props.filter,
 													this.state.searchFilter,
 													uniquenessIds
