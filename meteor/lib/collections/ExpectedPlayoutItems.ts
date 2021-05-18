@@ -37,10 +37,6 @@ export interface ExpectedPlayoutItemStudio extends ExpectedPlayoutItemBase {
 }
 /** @deprecated */
 export type ExpectedPlayoutItem = ExpectedPlayoutItemStudio | ExpectedPlayoutItemRundown
-/** @deprecated */
-export function isExpectedPlayoutItemRundown(item: ExpectedPlayoutItem): item is ExpectedPlayoutItemRundown {
-	return item.baseline !== 'studio'
-}
 
 /** @deprecated */
 export const ExpectedPlayoutItems: TransformedCollection<

@@ -1,4 +1,4 @@
-import { isExpectedPlayoutItemRundown } from '../../../lib/collections/ExpectedPlayoutItems'
+import { ExpectedPackageDB } from '../../../lib/collections/ExpectedPackages'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { CacheForIngest } from './cache'
 
@@ -14,13 +14,19 @@ export function removeSegmentContents(cache: CacheForIngest, segmentIds: Set<Seg
 		if (removedPartIds.length > 0) {
 			// Clean up all the db items that belong to the removed Parts
 			const removedPartIds2 = new Set(removedPartIds)
-			cache.Pieces.remove((p) => removedPartIds2.has(p.startPartId))
-			cache.ExpectedPlayoutItems.remove(
-				(e) => isExpectedPlayoutItemRundown(e) && e.partId && removedPartIds2.has(e.partId)
-			)
+
+			const removedPieceIds = cache.Pieces.remove((p) => removedPartIds2.has(p.startPartId))
+			const removedAdlibIds = cache.AdLibPieces.remove((e) => e.partId && removedPartIds2.has(e.partId))
+			const removedActionIds = cache.AdLibActions.remove((e) => removedPartIds2.has(e.partId))
+			const allRemovedPieceIds: Set<NonNullable<ExpectedPackageDB['pieceId']>> = new Set([
+				...removedPieceIds,
+				...removedAdlibIds,
+				...removedActionIds,
+			])
+
+			cache.ExpectedPackages.remove((e) => e.pieceId && allRemovedPieceIds.has(e.pieceId))
+			cache.ExpectedPlayoutItems.remove((e) => 'partId' in e && e.partId && removedPartIds2.has(e.partId))
 			cache.ExpectedMediaItems.remove((e) => 'partId' in e && e.partId && removedPartIds2.has(e.partId))
-			cache.AdLibPieces.remove((e) => e.partId && removedPartIds2.has(e.partId))
-			cache.AdLibActions.remove((e) => removedPartIds2.has(e.partId))
 		}
 	}
 }
