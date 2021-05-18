@@ -70,6 +70,7 @@ describe('Rundown Layouts', () => {
 				showBuckets: true,
 				openByDefault: false,
 				disableContextMenu: true,
+				regionId: 'shelf_layouts',
 			})
 			return { rundownLayout: mockLayout, rundownLayoutId }
 		}
