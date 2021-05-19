@@ -19,6 +19,8 @@ import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelecte
 import { ReadonlyDeep } from 'type-fest'
 import { asyncCollectionFindFetch } from '../../lib/database'
 import { getCurrentTime } from '../../../lib/lib'
+import { CacheForIngest } from '../ingest/cache'
+import { ReadOnlyCache } from '../../cache/CacheBase'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -91,11 +93,17 @@ function getIdsBeforeThisPart(cache: CacheForPlayout, nextPart: DBPart) {
 	}
 }
 
-export async function fetchPiecesThatMayBeActiveForPart(cache: CacheForPlayout, part: DBPart): Promise<Piece[]> {
+export async function fetchPiecesThatMayBeActiveForPart(
+	cache: CacheForPlayout,
+	unsavedIngestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'> | undefined,
+	part: DBPart
+): Promise<Piece[]> {
 	const span = profiler.startSpan('fetchPiecesThatMayBeActiveForPart')
 
 	const thisPiecesQuery = buildPiecesStartingInThisPartQuery(part)
-	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, thisPiecesQuery)
+	const pPiecesStartingInPart = unsavedIngestCache
+		? Promise.resolve(unsavedIngestCache.Pieces.findFetch(thisPiecesQuery))
+		: asyncCollectionFindFetch(Pieces, thisPiecesQuery)
 
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
@@ -104,7 +112,10 @@ export async function fetchPiecesThatMayBeActiveForPart(cache: CacheForPlayout, 
 		partsBeforeThisInSegment,
 		segmentsBeforeThisInRundown
 	)
-	const pInfinitePieces = asyncCollectionFindFetch(Pieces, infinitePiecesQuery)
+	// Future scope: Once there is a longer than Rundown infinite mode, this will need to split the query to search everywhere
+	const pInfinitePieces = unsavedIngestCache
+		? Promise.resolve(unsavedIngestCache.Pieces.findFetch(infinitePiecesQuery))
+		: asyncCollectionFindFetch(Pieces, infinitePiecesQuery)
 
 	const [piecesStartingInPart, infinitePieces] = await Promise.all([pPiecesStartingInPart, pInfinitePieces])
 	if (span) span.end()

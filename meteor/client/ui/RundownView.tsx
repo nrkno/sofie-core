@@ -341,7 +341,7 @@ const TimingDisplay = withTranslation()(
 						)}
 						{rundownPlaylist.expectedDuration ? (
 							<React.Fragment>
-								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration && (
+								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration ? (
 									<span className="timing-clock plan-end right visual-last-child">
 										<span className="timing-clock-label right">{t('Planned End')}</span>
 										<Moment
@@ -350,8 +350,8 @@ const TimingDisplay = withTranslation()(
 											date={rundownPlaylist.expectedStart + rundownPlaylist.expectedDuration}
 										/>
 									</span>
-								)}
-								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration && (
+								) : null}
+								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration ? (
 									<span className="timing-clock countdown plan-end right">
 										{RundownUtils.formatDiffToTimecode(
 											getCurrentTime() - (rundownPlaylist.expectedStart + rundownPlaylist.expectedDuration),
@@ -360,8 +360,8 @@ const TimingDisplay = withTranslation()(
 											true
 										)}
 									</span>
-								)}
-								{rundownPlaylist.expectedDuration && (
+								) : null}
+								{rundownPlaylist.expectedDuration && this.props.rundownCount < 2 ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 									<span
 										className={ClassNames('timing-clock heavy-light right', {
 											heavy:
@@ -384,7 +384,7 @@ const TimingDisplay = withTranslation()(
 											true
 										)}
 									</span>
-								)}
+								) : null}
 							</React.Fragment>
 						) : (
 							<React.Fragment>
@@ -398,7 +398,7 @@ const TimingDisplay = withTranslation()(
 										/>
 									</span>
 								) : null}
-								{this.props.timingDurations ? (
+								{this.props.timingDurations && this.props.rundownCount < 2 ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 									<span
 										className={ClassNames('timing-clock heavy-light right', {
 											heavy:
