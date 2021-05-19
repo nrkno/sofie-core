@@ -12,24 +12,32 @@ import {
 	ExpectedPackageDBFromBucketAdLib,
 	ExpectedPackageDBFromBucketAdLibAction,
 	ExpectedPackageDBFromPiece,
+	ExpectedPackageDBFromRundownBaselineObjects,
+	ExpectedPackageDBFromStudioBaselineObjects,
 	ExpectedPackageDBType,
 	ExpectedPackages,
 	getContentVersionHash,
 } from '../../../lib/collections/ExpectedPackages'
 import { Studio, Studios } from '../../../lib/collections/Studios'
-import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
+import { BlueprintResultBaseline, ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { BucketAdLibAction, BucketAdLibActionId, BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { Meteor } from 'meteor/meteor'
 import { BucketAdLib, BucketAdLibId, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
+import {
+	updateBaselineExpectedPlayoutItemsOnRundown,
+	updateBaselineExpectedPlayoutItemsOnStudio,
+	updateExpectedPlayoutItemsOnRundown,
+} from './expectedPlayoutItems'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { CacheForIngest } from './cache'
 import { asyncCollectionRemove, saveIntoDb } from '../../lib/database'
 import { saveIntoCache } from '../../cache/lib'
 import { ReadonlyDeep } from 'type-fest'
+import { CacheForPlayout } from '../playout/cache'
+import { CacheForStudio } from '../studio/cache'
 
 export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	// @todo: this call is for backwards compatibility and soon to be removed
@@ -55,7 +63,14 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 		...generateExpectedPackagesForBaselineAdlibAction(studio, cache.RundownId, baselineActions),
 	]
 
-	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(cache.ExpectedPackages, {}, expectedPackages)
+	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(
+		cache.ExpectedPackages,
+		{
+			// RUNDOWN_BASELINE_OBJECTS follow their own flow
+			fromPieceType: { $ne: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS },
+		},
+		expectedPackages
+	)
 }
 export function generateExpectedPackagesForPartInstance(
 	studio: Studio,
@@ -251,5 +266,59 @@ export async function cleanUpExpectedPackagesForBucketAdLibsActions(adLibIds: Ad
 		pieceId: {
 			$in: adLibIds,
 		},
+	})
+}
+
+export function updateBaselineExpectedPackagesOnRundown(
+	cache: CacheForIngest,
+	baseline: BlueprintResultBaseline
+): void {
+	// @todo: this call is for backwards compatibility and soon to be removed
+	updateBaselineExpectedPlayoutItemsOnRundown(cache, baseline.expectedPlayoutItems)
+
+	const bases = generateExpectedPackageBases(cache.Studio.doc, cache.RundownId, baseline.expectedPackages ?? [])
+	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(
+		cache.ExpectedPackages,
+		{
+			fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
+		},
+		bases.map(
+			(item): ExpectedPackageDBFromRundownBaselineObjects => {
+				return {
+					...item,
+					fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
+					rundownId: cache.RundownId,
+					pieceId: null,
+				}
+			}
+		)
+	)
+}
+
+export function updateBaselineExpectedPackagesOnStudio(
+	cache: CacheForStudio | CacheForPlayout,
+	baseline: BlueprintResultBaseline
+): void {
+	// @todo: this call is for backwards compatibility and soon to be removed
+	updateBaselineExpectedPlayoutItemsOnStudio(cache, baseline.expectedPlayoutItems)
+
+	const bases = generateExpectedPackageBases(cache.Studio.doc, cache.Studio.doc._id, baseline.expectedPackages ?? [])
+	cache.deferAfterSave(() => {
+		saveIntoDb<ExpectedPackageDB, ExpectedPackageDB>(
+			ExpectedPackages,
+			{
+				studioId: cache.Studio.doc._id,
+				fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
+			},
+			bases.map(
+				(item): ExpectedPackageDBFromStudioBaselineObjects => {
+					return {
+						...item,
+						fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
+						pieceId: null,
+					}
+				}
+			)
+		)
 	})
 }

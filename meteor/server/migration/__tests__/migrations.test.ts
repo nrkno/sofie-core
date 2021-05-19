@@ -289,7 +289,11 @@ describe('Migrations', () => {
 					},
 				},
 			],
-			getBaseline: () => [],
+			getBaseline: () => {
+				return {
+					timelineObjects: [],
+				}
+			},
 			getShowStyleId: () => null,
 		})
 
@@ -344,7 +348,11 @@ describe('Migrations', () => {
 					},
 				},
 			],
-			getBaseline: () => [],
+			getBaseline: () => {
+				return {
+					timelineObjects: [],
+				}
+			},
 			getShowStyleId: () => null,
 			getShowStyleVariantId: () => null,
 			getRundown: () => ({
@@ -353,7 +361,7 @@ describe('Migrations', () => {
 					name: '',
 				},
 				globalAdLibPieces: [],
-				baseline: [],
+				baseline: { timelineObjects: [] },
 			}),
 			getSegment: () => ({
 				segment: { name: '' },

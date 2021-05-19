@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { SourceLayerType, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import {
@@ -608,7 +607,7 @@ export namespace ServerPlayoutAdLibAPI {
 							`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt} with a virtual`
 						)
 
-						const pieceId: PieceId = protectString(Random.id())
+						const pieceId: PieceId = getRandomId()
 						cache.PieceInstances.insert({
 							...rewrapPieceToInstance(
 								{
