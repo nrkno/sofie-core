@@ -241,6 +241,20 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		) {
 			return true
 		}
+		const findNextOrCurrentPart = (parts: PartUi[]) => {
+			return (
+				parts.find(
+					(i) =>
+						i.instance._id === props.playlist.currentPartInstanceId ||
+						i.instance._id === nextProps.playlist.currentPartInstanceId
+				) ||
+				parts.find(
+					(i) =>
+						i.instance._id === props.playlist.nextPartInstanceId ||
+						i.instance._id === nextProps.playlist.nextPartInstanceId
+				)
+			)
+		}
 		// Check rundown changes that are important to the segment
 		if (
 			typeof props.playlist !== typeof nextProps.playlist ||
@@ -248,17 +262,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				(props.playlist.nextSegmentId === props.segmentId || nextProps.playlist.nextSegmentId === props.segmentId)) ||
 			((props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
 				props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId) &&
-				data.parts &&
-				(data.parts.find(
-					(i) =>
-						i.instance._id === props.playlist.currentPartInstanceId ||
-						i.instance._id === nextProps.playlist.currentPartInstanceId
-				) ||
-					data.parts.find(
-						(i) =>
-							i.instance._id === props.playlist.nextPartInstanceId ||
-							i.instance._id === nextProps.playlist.nextPartInstanceId
-					))) ||
+				((data.parts && findNextOrCurrentPart(data.parts)) || data.segmentui?.showShelf)) ||
 			props.playlist.holdState !== nextProps.playlist.holdState ||
 			props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset
 		) {
