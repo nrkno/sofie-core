@@ -299,6 +299,11 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 						// expectedDuration?: number;
 						metaData: ingestRundown.payload,
 					}
+
+					// Allow the rundown to specify a playlistExternalId that should be used
+					const playlistId = ingestRundown.payload?.ForcePlaylistExternalId
+					if (playlistId) rundown.playlistExternalId = playlistId
+
 					return {
 						rundown,
 						globalAdLibPieces: [],
