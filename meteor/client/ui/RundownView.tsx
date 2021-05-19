@@ -1443,14 +1443,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const filteredPieces = segment.pieces.filter((piece) =>
 				matchFilter(piece, showStyleBase, liveSegment, filter, undefined, uniquenessIds)
 			)
-			if (filteredPieces.length) {
-				const filteredSegment = {
-					...segment,
-					pieces: filteredPieces,
-				}
-				filteredUiSegmentMap.set(segment._id, filteredSegment)
-				filteredUiSegments.push(filteredSegment)
+			const filteredSegment = {
+				...segment,
+				pieces: filteredPieces,
 			}
+			filteredUiSegmentMap.set(segment._id, filteredSegment)
+			filteredUiSegments.push(filteredSegment)
 		})
 	}
 
