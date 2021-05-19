@@ -377,20 +377,6 @@ body.tv2 {
 			}
 		}
 
-		&.list {
-			&.selected {
-				box-shadow: inset 0 0 0 2px var(--general-next-color), 2px 2px 0 var(--general-next-color),
-					-2px -2px 0 var(--general-next-color), -2px 2px 0 var(--general-next-color),
-					2px -2px 0 var(--general-next-color);
-			}
-
-			&.live {
-				box-shadow: inset 0 0 0 2px var(--general-live-color), 2px 2px 0 var(--general-live-color),
-					-2px -2px 0 var(--general-live-color), -2px 2px 0 var(--general-live-color),
-					2px -2px 0 var(--general-live-color);
-			}
-		}
-
 		&.uninteractive {
 			background: gray;
 
@@ -425,6 +411,20 @@ body.tv2 {
 				fill: var(--dve-lower) !important;
 				background: var(--dve-lower) !important;
 			}
+		}
+	}
+	.rundown-view-shelf .dashboard-panel__panel__button,
+	.dashboard-panel__panel__button.list {
+		&.selected {
+			box-shadow: inset 0 0 0 2px var(--general-next-color), 2px 2px 0 var(--general-next-color),
+				-2px -2px 0 var(--general-next-color), -2px 2px 0 var(--general-next-color),
+				2px -2px 0 var(--general-next-color);
+		}
+
+		&.live {
+			box-shadow: inset 0 0 0 2px var(--general-live-color), 2px 2px 0 var(--general-live-color),
+				-2px -2px 0 var(--general-live-color), -2px 2px 0 var(--general-live-color),
+				2px -2px 0 var(--general-live-color);
 		}
 	}
 	.rundown-view {
