@@ -5,6 +5,7 @@ import { getElementWidth } from '../../../utils/dimensions'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { NoraContent } from '@sofie-automation/blueprints-integration'
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
+import classNames from 'classnames'
 
 interface IProps extends ICustomLayerItemProps {}
 interface IState {}
@@ -51,13 +52,23 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 		const innerPiece = this.props.piece.instance.piece
 		const noraContent = innerPiece.content as NoraContent | undefined
 
+		const stepContent = noraContent?.payload.step
+		const isMultiStep = !!(stepContent && stepContent.enabled)
+
 		return (
 			<React.Fragment>
 				<span
-					className="segment-timeline__piece__label"
+					className={classNames('segment-timeline__piece__label', {
+						'no-left-margin': isMultiStep,
+					})}
 					ref={this.setLeftLabelRef}
 					style={this.getItemLabelOffsetLeft()}
 				>
+					{isMultiStep && stepContent ? (
+						<span className="segment-timeline__piece__step-chevron">
+							{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
+						</span>
+					) : null}
 					<span className="segment-timeline__piece__label">{innerPiece.name}</span>
 				</span>
 				<span
@@ -68,6 +79,12 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 					{this.renderInfiniteIcon()}
 					{this.renderOverflowTimeLabel()}
 				</span>
+				{isMultiStep ? (
+					<>
+						<span className="segment-timeline__piece--collapsed__step-chevron"></span>
+						<span className="segment-timeline__piece--decoration__step-chevron"></span>
+					</>
+				) : null}
 				<L3rdFloatingInspector
 					content={noraContent}
 					itemElement={this.props.itemElement}
