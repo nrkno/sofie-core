@@ -71,6 +71,9 @@ export function isUserNotesContext(obj: unknown): obj is IUserNotesContext {
 /** Studio */
 
 export interface IStudioContext extends ICommonContext {
+	/** The id of the studio */
+	readonly studioId: string
+
 	/** Returns the Studio blueprint config. If StudioBlueprintManifest.preprocessConfig is provided, a config preprocessed by that function is returned, otherwise it is returned unprocessed */
 	getStudioConfig: () => unknown
 	/** Returns a reference to a studio config value, that can later be resolved in Core */

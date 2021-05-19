@@ -129,7 +129,11 @@ export class StudioContext extends CommonContext implements IStudioContext {
 		this.studio = studio
 	}
 
-	public get studioId(): StudioId {
+	public get studioId(): string {
+		return unprotectString(this.studio._id)
+	}
+
+	public get studioIdProtected(): StudioId {
 		return this.studio._id
 	}
 
