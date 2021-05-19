@@ -93,6 +93,7 @@ interface IProps {
 	ownCurrentPartInstance: PartInstance | undefined
 	ownNextPartInstance: PartInstance | undefined
 	adLibSegmentUi?: AdlibSegmentUi
+	studioMode: boolean
 }
 interface IState {
 	scrollLeft: number
@@ -911,6 +912,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								adLibSegmentUi={this.props.adLibSegmentUi}
 								playlist={this.props.playlist}
 								showStyleBase={this.props.showStyleBase}
+								hotkeyGroup={unprotectString(this.props.segmentui._id) + '_RundownViewShelf'}
+								studioMode={this.props.studioMode}
 							/>
 						)}
 					</>

@@ -315,6 +315,12 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
+	renderHotkey() {
+		if (this.props.piece.hotkey) {
+			return <div className="dashboard-panel__panel__button__hotkey">{this.props.piece.hotkey.toUpperCase()}</div>
+		}
+	}
+
 	render() {
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
@@ -374,7 +380,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						  this.props.layer.type === SourceLayerType.LOWER_THIRD
 						? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
 						: null}
-
+					{this.renderHotkey()}
 					<div className="dashboard-panel__panel__button__label-container">
 						{this.props.editableName ? (
 							<textarea

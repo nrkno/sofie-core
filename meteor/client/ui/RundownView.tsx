@@ -2394,6 +2394,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 														? this.props.nextPartInstance
 														: undefined
 												}
+												studioMode={this.state.studioMode}
 											/>
 										</VirtualElement>
 									</ErrorBoundary>

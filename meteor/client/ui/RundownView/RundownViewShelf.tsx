@@ -26,6 +26,10 @@ import {
 	isAdLibOnAir,
 	isAdLibNext,
 } from '../../lib/shelf'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import mousetrap from 'mousetrap'
+import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../../lib/hotkeyRegistry'
+import { RundownViewKbdShortcuts } from '../RundownViewKbdShortcuts'
 
 interface IRundownViewShelfProps {
 	studio: Studio
@@ -33,13 +37,15 @@ interface IRundownViewShelfProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	adLibSegmentUi: AdlibSegmentUi
+	hotkeyGroup: string
+	studioMode: boolean
 }
 
 interface IRundownViewShelfTrackedProps {
-	outputLayers: {
+	outputLayerLookup: {
 		[key: string]: IOutputLayer
 	}
-	sourceLayers: {
+	sourceLayerLookup: {
 		[key: string]: ISourceLayer
 	}
 	unfinishedAdLibIds: PieceId[]
@@ -54,6 +60,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 	Translated<IRundownViewShelfProps & IRundownViewShelfTrackedProps>,
 	IRundownViewShelfState
 > {
+	usedHotkeys: Array<string> = []
 	constructor(props) {
 		super(props)
 		this.state = {}
@@ -118,7 +125,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 			return
 		}
 
-		let sourceLayer = this.props.sourceLayers[adlibPiece.sourceLayerId]
+		let sourceLayer = this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
 
 		if (queue && sourceLayer && !sourceLayer.isQueueable) {
 			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
@@ -169,6 +176,94 @@ class RundownViewShelfInner extends MeteorReactComponent<
 		}
 	}
 
+	componentDidMount() {
+		this.refreshKeyboardHotkeys()
+	}
+
+	componentDidUpdate(prevProps) {
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
+		this.usedHotkeys.length = 0
+
+		// Unregister hotkeys if group name has changed
+		if (prevProps.hotkeyGroup !== this.props.hotkeyGroup) {
+			RegisteredHotkeys.remove({
+				tag: prevProps.hotkeyGroup,
+			})
+		}
+
+		this.refreshKeyboardHotkeys()
+	}
+
+	componentWillUnmount() {
+		this._cleanUp()
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
+
+		RegisteredHotkeys.remove({
+			tag: this.props.hotkeyGroup,
+		})
+
+		this.usedHotkeys.length = 0
+	}
+
+	refreshKeyboardHotkeys() {
+		if (!this.props.studioMode) return
+
+		RegisteredHotkeys.remove({
+			tag: this.props.hotkeyGroup,
+		})
+
+		let preventDefault = (e) => {
+			e.preventDefault()
+		}
+
+		if (this.props.adLibSegmentUi.isLive) {
+			this.props.adLibSegmentUi.pieces.forEach((item) => {
+				if (item.hotkey) {
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
+					mousetrapHelper.bind(
+						item.hotkey,
+						(e: mousetrap.ExtendedKeyboardEvent) => {
+							preventDefault(e)
+							this.onToggleAdLib(item, false, e)
+						},
+						'keyup',
+						this.props.hotkeyGroup
+					)
+					this.usedHotkeys.push(item.hotkey)
+
+					registerHotkey(
+						item.hotkey,
+						item.name,
+						HotkeyAssignmentType.ADLIB,
+						this.props.sourceLayerLookup[item.sourceLayerId],
+						item.toBeQueued || false,
+						this.onToggleAdLib,
+						[item, false],
+						this.props.hotkeyGroup
+					)
+
+					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
+					if (sourceLayer && sourceLayer.isQueueable) {
+						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
+						mousetrapHelper.bind(
+							queueHotkey,
+							(e: mousetrap.ExtendedKeyboardEvent) => {
+								preventDefault(e)
+								this.onToggleAdLib(item, true, e)
+							},
+							'keyup',
+							this.props.hotkeyGroup
+						)
+						this.usedHotkeys.push(queueHotkey)
+					}
+				}
+			})
+		}
+	}
+
 	render() {
 		const { pieces } = this.props.adLibSegmentUi
 		if (!pieces.length) return null
@@ -183,8 +278,8 @@ class RundownViewShelfInner extends MeteorReactComponent<
 								key={unprotectString(adLibPiece._id)}
 								piece={adLibPiece}
 								studio={this.props.studio}
-								layer={this.props.sourceLayers[adLibPiece.sourceLayerId]}
-								outputLayer={this.props.outputLayers[adLibPiece.outputLayerId]}
+								layer={this.props.sourceLayerLookup[adLibPiece.sourceLayerId]}
+								outputLayer={this.props.outputLayerLookup[adLibPiece.outputLayerId]}
 								onToggleAdLib={this.onToggleAdLib}
 								playlist={this.props.playlist}
 								isOnAir={this.isAdLibOnAir(adLibPiece)}
@@ -239,8 +334,8 @@ export const RundownViewShelf = translateWithTracker<
 		)
 
 		return {
-			sourceLayers: sourceLayerLookup,
-			outputLayers: outputLayerLookup,
+			sourceLayerLookup,
+			outputLayerLookup,
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,
