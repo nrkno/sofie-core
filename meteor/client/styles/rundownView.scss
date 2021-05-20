@@ -1230,7 +1230,7 @@ svg.icon {
 
 				&.segment-timeline__part__nextline--endline {
 					left: auto;
-					right: 0;
+					right: -1px;
 				}
 
 				.segment-timeline__part__nextline__label {
@@ -1293,9 +1293,9 @@ svg.icon {
 			.segment-timeline__part__invalid-cover {
 				position: absolute;
 				top: 0;
-				left: 0;
+				left: 1px;
 				bottom: 0;
-				right: 0;
+				right: 1px;
 				z-index: 1;
 				pointer-events: none;
 				background-image: repeating-linear-gradient(
