@@ -166,10 +166,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.PIECE_COUNTDOWN,
 		],
 	})
-	registry.RegisterMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
-		supportedElements: [RundownLayoutElementType.FILTER],
-	})
-	registry.RegisterMiniShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
+	registry.RegisterMiniShelfLayout(RundownLayoutType.MINI_SHELF_LAYOUT, {
 		supportedElements: [RundownLayoutElementType.FILTER],
 	})
 	registry.RegisterRundownViewLayout(RundownLayoutType.RUNDOWN_VIEW_LAYOUT, {
@@ -213,6 +210,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isRundownHeaderLayout(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {
 		return layout.type === RundownLayoutType.RUNDOWN_HEADER_LAYOUT
+	}
+
+	export function isMiniShelfLayout(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {
+		return layout.type === RundownLayoutType.MINI_SHELF_LAYOUT
 	}
 
 	export function isFilter(element: RundownLayoutElementBase): element is RundownLayoutFilterBase {

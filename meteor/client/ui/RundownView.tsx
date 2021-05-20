@@ -1418,7 +1418,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 		if (!selectedMiniShelfLayout) {
-			selectedMiniShelfLayout = rundownLayouts.filter((i) => i.regionId === 'mini_shelf_layouts')[0] // @todo use correct api when exists
+			selectedMiniShelfLayout = rundownLayouts.filter((i) => i.type === RundownLayoutType.MINI_SHELF_LAYOUT)[0]
 		}
 	}
 	const filter = selectedMiniShelfLayout?.filters.find((filter) => RundownLayoutsAPI.isFilter(filter)) as

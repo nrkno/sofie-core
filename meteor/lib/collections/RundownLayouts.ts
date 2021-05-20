@@ -21,6 +21,7 @@ export enum RundownLayoutType {
 	RUNDOWN_LAYOUT = 'rundown_layout',
 	DASHBOARD_LAYOUT = 'dashboard_layout',
 	RUNDOWN_HEADER_LAYOUT = 'rundown_header_layout',
+	MINI_SHELF_LAYOUT = 'mini_shelf_layout',
 }
 
 /**

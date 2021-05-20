@@ -60,7 +60,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			tab: RundownLayoutFilterBase,
 			index: number,
 			isRundownLayout: boolean,
-			isDashboardLayout: boolean
+			isDashboardLayout: boolean,
+			isMiniShelfLayout: boolean
 		) {
 			const { t } = this.props
 			const isList = tab.displayStyle === PieceDisplayStyle.LIST
@@ -125,7 +126,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									</label>
 								</div>
 							)}
-							{!RundownLayoutsAPI.IsLayoutForMiniShelf(item) && (
+							{!isMiniShelfLayout && (
 								<>
 									<div className="mod mvs mhs">
 										<label className="field">
@@ -213,19 +214,21 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							)}
 						</React.Fragment>
 					)}
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Display Rank')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.rank`}
-								obj={item}
-								type="float"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-						</label>
-					</div>
+					{!isMiniShelfLayout && (
+						<div className="mod mvs mhs">
+							<label className="field">
+								{t('Display Rank')}
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.rank`}
+									obj={item}
+									type="float"
+									collection={RundownLayouts}
+									className="input text-input input-l"
+								/>
+							</label>
+						</div>
+					)}
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Only Display AdLibs from Current Segment')}
@@ -239,19 +242,21 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							/>
 						</label>
 					</div>
-					<div className="mod mvs mhs">
-						<label className="field">{t('Include Global AdLibs')}</label>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.rundownBaseline`}
-							obj={item}
-							options={rundownBaselineOptions}
-							type="dropdown"
-							label={t('Filter Disabled')}
-							collection={RundownLayouts}
-							className="input text-input input-l dropdown"
-						/>
-					</div>
+					{!isMiniShelfLayout && (
+						<div className="mod mvs mhs">
+							<label className="field">{t('Include Global AdLibs')}</label>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.rundownBaseline`}
+								obj={item}
+								options={rundownBaselineOptions}
+								type="dropdown"
+								label={t('Filter Disabled')}
+								collection={RundownLayouts}
+								className="input text-input input-l dropdown"
+							/>
+						</div>
+					)}
 					{isDashboardLayout && (
 						<React.Fragment>
 							<div className="mod mvs mhs">
@@ -404,7 +409,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && (
+					{!isMiniShelfLayout && isDashboardLayout && (
 						<React.Fragment>
 							<div className="mod mvs mhs">
 								<label className="field">
@@ -432,10 +437,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									/>
 								</label>
 							</div>
-						</React.Fragment>
-					)}
-					{isDashboardLayout && (
-						<React.Fragment>
 							<div className="mod mvs mhs">
 								<label className="field">
 									{t('Show panel as a timeline')}
@@ -451,20 +452,22 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							</div>
 						</React.Fragment>
 					)}
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Enable search toolbar')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.enableSearch`}
-								obj={item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							/>
-						</label>
-					</div>
-					{isDashboardLayout && (
+					{!isMiniShelfLayout && (
+						<div className="mod mvs mhs">
+							<label className="field">
+								{t('Enable search toolbar')}
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.enableSearch`}
+									obj={item}
+									type="checkbox"
+									collection={RundownLayouts}
+									className="mod mas"
+								/>
+							</label>
+						</div>
+					)}
+					{!isMiniShelfLayout && isDashboardLayout && (
 						<React.Fragment>
 							<div className="mod mvs mhs">
 								<label className="field">
@@ -479,10 +482,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									/>
 								</label>
 							</div>
-						</React.Fragment>
-					)}
-					{isDashboardLayout && (
-						<React.Fragment>
 							<div className="mod mvs mhs">
 								<label className="field">
 									{t('Overflow horizontally')}
@@ -958,6 +957,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 			const isRundownLayout = RundownLayoutsAPI.isRundownLayout(this.props.item)
 			const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.item)
+			const isMiniShelfLayout = RundownLayoutsAPI.isMiniShelfLayout(this.props.item)
 
 			return (
 				<div className="rundown-layout-editor-filter mod pan mas" key={this.props.filter._id}>
@@ -1003,7 +1003,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								this.props.filter,
 								this.props.index,
 								isRundownLayout,
-								isDashboardLayout
+								isDashboardLayout,
+								isMiniShelfLayout
 						  )
 						: RundownLayoutsAPI.isExternalFrame(this.props.filter)
 						? this.renderFrame(this.props.item, this.props.filter, this.props.index, isRundownLayout, isDashboardLayout)
