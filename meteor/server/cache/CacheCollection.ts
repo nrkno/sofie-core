@@ -147,9 +147,13 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	 * Note: this wipes the current collection first
 	 * @param documents The documents to store
 	 */
-	fillWithDataFromArray(documents: ReadonlyDeep<Array<Class>>) {
-		this.originalDocuments = documents
-		this.documents = new Map()
+	fillWithDataFromArray(documents: ReadonlyDeep<Array<Class>>, append = false) {
+		if (append) {
+			this.originalDocuments = this.originalDocuments.concat(documents)
+		} else {
+			this.originalDocuments = documents
+			this.documents = new Map()
+		}
 		_.each(documents, (doc) => {
 			const id = doc._id
 			if (this.documents.has(id)) {
