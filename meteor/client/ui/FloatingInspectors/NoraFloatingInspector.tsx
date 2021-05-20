@@ -229,6 +229,11 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 						{isMultiStep && stepContent ? (
 							<div className="segment-timeline__mini-inspector--graphics--preview__step-chevron">
 								{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
+								{typeof stepContent.total === 'number' && stepContent.total > 0 ? (
+									<span className="segment-timeline__mini-inspector--graphics--preview__step-chevron__total">
+										/{stepContent.total}
+									</span>
+								) : null}
 							</div>
 						) : null}
 					</div>

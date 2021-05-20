@@ -1941,7 +1941,7 @@ svg.icon {
 					padding: 0 1em 0 0.4em;
 					color: $segment-piece-step-counter;
 					text-shadow: 0 0 1px #000, 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
-					clip-path: polygon(0 0, 70% 0, 100% 50%, 70% 100%, 0 100%);
+					clip-path: polygon(0 0, calc(100% - 0.6em) 0, 100% 50%, calc(100% - 0.6em) 100%, 0 100%);
 					line-height: 1.4em;
 				}
 
@@ -2483,12 +2483,17 @@ svg.icon {
 			top: 0;
 			left: 0;
 			background: $segment-layer-background-graphics;
-			padding: 0 1em;
-			clip-path: polygon(0 0, 75% 0, 100% 50%, 75% 100%, 0 100%, 25% 50%);
+			padding: 0 0.75em;
+			clip-path: polygon(0 0, calc(100% - 0.6em) 0, 100% 50%, calc(100% - 0.6em) 100%, 0 100%, 0.6em 50%);
 			font-weight: 400;
 			text-shadow: 0 0 1px #000, 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 			color: $segment-piece-step-counter;
 			line-height: 1.4em;
+
+			.segment-timeline__mini-inspector--graphics--preview__step-chevron__total {
+				color: #fff;
+				text-shadow: none;
+			}
 		}
 	}
 
