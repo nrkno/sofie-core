@@ -27,6 +27,7 @@ import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownActio
 import { CacheForIngest } from './cache'
 import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
 import { removeRundownsFromDb } from '../rundownPlaylist'
+import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 export namespace RundownInput {
 	// Get info on the current rundowns from this device:
@@ -280,7 +281,15 @@ function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: s
 export function handleRemovedRundownByRundown(rundown: DBRundown, forceDelete?: boolean) {
 	if (rundown.restoredFromSnapshotId) {
 		// It's from a snapshot, so should be removed directly, as that means it cannot run ingest operations
+		// Note: this bypasses activation checks, but that probably doesnt matter
 		waitForPromise(removeRundownsFromDb([rundown._id]))
+
+		// check if the playlist is now empty
+		const rundownCount = Rundowns.find({ playlistId: rundown.playlistId }).count()
+		if (rundownCount === 0) {
+			// A lazy approach, but good enough for snapshots
+			RundownPlaylists.remove(rundown.playlistId)
+		}
 	} else {
 		handleRemovedRundownFromStudio(rundown.studioId, rundown.externalId, forceDelete)
 	}
