@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.32.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.32.1) (2021-05-20)
+
+
+### Bug Fixes
+
+* mos update to playlist causing next to be set to wrong part ([3f20d24](https://github.com/nrkno/tv-automation-server-core/commit/3f20d244625b0499a805b9d3650aaaa75fcddb8e))
+* some issues working with restored snapshots ([71216f5](https://github.com/nrkno/tv-automation-server-core/commit/71216f598f9a101323ab41ba01f8e881c6d633fe))
+
 ## [1.32.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0-in-testing.1...v1.32.0) (2021-05-05)
 
 
