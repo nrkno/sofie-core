@@ -836,13 +836,11 @@ export function isAdLibOnAir(
 
 export function isAdLibNext(
 	nextAdLibIds: IDashboardPanelTrackedProps['nextAdLibIds'],
-	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
 	nextTags: IDashboardPanelTrackedProps['nextTags'],
 	adLib: AdLibPieceUi
 ) {
 	if (
 		nextAdLibIds.includes(adLib._id) ||
-		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => unfinishedTags.includes(tag))) ||
 		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
 	) {
 		return true
