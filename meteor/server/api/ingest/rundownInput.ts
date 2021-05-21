@@ -1,12 +1,12 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { PeripheralDevice, PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { DBRundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { getCurrentTime, unprotectString, waitForPromise } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
-import { SegmentId, Segments } from '../../../lib/collections/Segments'
+import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import {
 	RundownIngestDataCache,
 	LocalIngestRundown,
@@ -432,6 +432,22 @@ export function handleRemovedSegment(
 					blueprint: undefined,
 				}
 			}
+		}
+	)
+}
+export function updateSegmentFromCache(rundownExternalId: string, studioId: StudioId, segment: Segment) {
+	return runIngestOperationWithCache(
+		'updateSegmentFromCache',
+		studioId,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (!ingestRundown) throw new Meteor.Error('updateSegmentFromCache called but ingestData is undefined')
+			return ingestRundown // don't mutate any ingest data
+		},
+		async (cache, ingestRundown) => {
+			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segment.externalId)
+			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segment.externalId}" is missing!`)
+			return updateSegmentFromIngestData(cache, ingestSegment, false)
 		}
 	)
 }
