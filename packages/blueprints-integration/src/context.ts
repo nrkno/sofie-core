@@ -1,3 +1,4 @@
+import { PackageInfo } from '@sofie-automation/blueprints-integration/src/packageInfo'
 import { IBlueprintExternalMessageQueueObj } from './message'
 import {
 	IBlueprintPart,
@@ -78,6 +79,8 @@ export interface IStudioContext extends ICommonContext {
 
 	/** Get the mappings for the studio */
 	getStudioMappings: () => Readonly<BlueprintMappings>
+
+	getPackageInfo: (packageId: string) =>Readonly<PackageInfo.Any[]>
 }
 
 export interface IStudioUserContext extends IUserNotesContext, IStudioContext {}
