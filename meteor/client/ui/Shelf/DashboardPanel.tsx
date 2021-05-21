@@ -858,32 +858,25 @@ export function findNext(
 ): Array<AdLibPieceUi & { isNext: boolean }> {
 	const nextAdlibs: Set<PieceId> = new Set()
 	const nextAdlibsPerLayer: Map<string, PieceId> = new Map()
-	adLibs.forEach((adLib) => {
-		if (
-			nextAdLibIds.includes(adLib._id) ||
-			(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
-		) {
-			if (oneNextPerSourceLayer) {
-				if (nextAdlibsPerLayer.has(adLib.sourceLayerId)) {
-					return
-				} else {
-					nextAdlibsPerLayer.set(adLib.sourceLayerId, adLib._id)
-				}
+	const checkAndSet = (adLib: AdLibPieceUi) => {
+		if (oneNextPerSourceLayer) {
+			if (nextAdlibsPerLayer.has(adLib.sourceLayerId)) {
+				return
+			} else {
+				nextAdlibsPerLayer.set(adLib.sourceLayerId, adLib._id)
 			}
-			nextAdlibs.add(adLib._id)
+		}
+		nextAdlibs.add(adLib._id)
+	}
+	adLibs.forEach((adLib) => {
+		if (isAdLibNext(nextAdLibIds, nextTags, adLib)) {
+			checkAndSet(adLib)
 		}
 	})
 	if (nextInCurrentPart) {
 		adLibs.forEach((adLib) => {
 			if (adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => unfinishedTags.includes(tag))) {
-				if (oneNextPerSourceLayer) {
-					if (nextAdlibsPerLayer.has(adLib.sourceLayerId)) {
-						return
-					} else {
-						nextAdlibsPerLayer.set(adLib.sourceLayerId, adLib._id)
-					}
-				}
-				nextAdlibs.add(adLib._id)
+				checkAndSet(adLib)
 			}
 		})
 	}
