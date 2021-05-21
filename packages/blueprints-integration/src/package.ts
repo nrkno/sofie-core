@@ -304,7 +304,7 @@ export namespace ExpectedPackageStatusAPI {
 	/** Describes the status of a Package in a PackageContainer */
 	export interface PackageContainerPackageStatus extends Omit<WorkStatusInfo, 'status'> {
 		status: PackageContainerPackageStatusStatus
-		/** Indicates that the Package is a Placehodler / Is NOT ready to be played out */
+		/** Indicates that the Package is a Placeholder / Is NOT ready to be played out */
 		isPlaceholder: boolean
 
 		contentVersionHash: string
