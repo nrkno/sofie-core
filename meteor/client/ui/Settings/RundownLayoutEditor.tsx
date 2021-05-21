@@ -806,21 +806,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									/>
 								</label>
 							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Button label line break')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.lineBreak`}
-										obj={item}
-										type="text"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-										mutateDisplayValue={(v) => (!v ? '' : JSON.stringify(v).slice(1, -1))}
-										mutateUpdateValue={(v) => (v === '' ? undefined : JSON.parse(`"${v}"`))}
-									/>
-								</label>
-							</div>
 						</React.Fragment>
 					)}
 				</React.Fragment>
