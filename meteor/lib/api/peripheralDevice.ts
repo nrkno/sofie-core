@@ -277,31 +277,44 @@ export interface NewPeripheralDeviceAPI {
 		obj: MediaWorkFlowStep | null
 	): Promise<void>
 
-	insertExpectedPackageWorkStatus(
+	updateExpectedPackageWorkStatuses(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId,
-		workStatus: ExpectedPackageStatusAPI.WorkStatus
-	): Promise<void>
-	updateExpectedPackageWorkStatus(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId,
-		workStatus: Partial<ExpectedPackageStatusAPI.WorkStatus>
-	): Promise<boolean>
-	removeExpectedPackageWorkStatus(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId
+		changes: (
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'delete'
+			  }
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'insert'
+					status: ExpectedPackageStatusAPI.WorkStatus
+			  }
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'update'
+					status: Partial<ExpectedPackageStatusAPI.WorkStatus>
+			  }
+		)[]
 	): Promise<void>
 	removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
 
-	updatePackageContainerPackageStatus(
+	updatePackageContainerPackageStatuses(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		containerId: string,
-		packageId: string,
-		packageStatus: ExpectedPackageStatusAPI.PackageContainerPackageStatus | null
+		changes: (
+			| {
+					containerId: string
+					packageId: string
+					type: 'delete'
+			  }
+			| {
+					containerId: string
+					packageId: string
+					type: 'update'
+					status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
+			  }
+		)[]
 	): Promise<void>
 
 	fetchPackageInfoMetadata(
@@ -402,12 +415,10 @@ export enum PeripheralDeviceAPIMethods {
 	'getMediaWorkFlowStepRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowStepRevisions',
 	'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep',
 
-	'insertExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.insertExpectedPackageWorkStatus',
-	'updateExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.updateExpectedPackageWorkStatus',
-	'removeExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.removeExpectedPackageWorkStatus',
+	'updateExpectedPackageWorkStatuses' = 'peripheralDevice.packageManager.updateExpectedPackageWorkStatuses',
 	'removeAllExpectedPackageWorkStatusOfDevice' = 'peripheralDevice.packageManager.removeAllExpectedPackageWorkStatusOfDevice',
 
-	'updatePackageContainerPackageStatus' = 'peripheralDevice.packageManager.updatePackageContainerPackageStatus',
+	'updatePackageContainerPackageStatuses' = 'peripheralDevice.packageManager.updatePackageContainerPackageStatuses',
 	'fetchPackageInfoMetadata' = 'peripheralDevice.packageManager.fetchPackageInfoMetadata',
 	'updatePackageInfo' = 'peripheralDevice.packageManager.updatePackageInfo',
 	'removePackageInfo' = 'peripheralDevice.packageManager.removePackageInfo',

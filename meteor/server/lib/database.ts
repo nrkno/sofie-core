@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { BulkWriteOperation } from 'mongodb'
+import { BulkWriteOperation, BulkWriteOpResultObject } from 'mongodb'
 import _ from 'underscore'
 import { DBObj, waitForPromise, normalizeArrayToMap, ProtectedString, makePromise, waitTime } from '../../lib/lib'
 import {
@@ -386,7 +386,7 @@ export async function asyncCollectionBulkWrite<
 >(
 	collection: TransformedCollection<DocClass, DBInterface>,
 	ops: Array<BulkWriteOperation<DBInterface>>
-): Promise<void> {
+): Promise<BulkWriteOpResultObject> {
 	if (ops.length > 0) {
 		const rawCollection = collection.rawCollection()
 		const bulkWriteResult = await rawCollection.bulkWrite(ops, {
@@ -403,5 +403,8 @@ export async function asyncCollectionBulkWrite<
 				`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`
 			)
 		}
+		return bulkWriteResult
+	} else {
+		return {}
 	}
 }
