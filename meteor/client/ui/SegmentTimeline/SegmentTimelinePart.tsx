@@ -33,6 +33,7 @@ import { ISourceLayerExtended } from '../../../lib/Rundown'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
 import { SegmentEnd } from '../../lib/ui/icons/segment'
+import { getShowHiddenSourceLayers } from '../../lib/localStorage'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -677,7 +678,10 @@ export const SegmentTimelinePart = withTranslation()(
 
 			renderTimelineOutputGroups(part: PartUi) {
 				if (this.props.segment.outputLayers !== undefined) {
+					const showHiddenSourceLayers = getShowHiddenSourceLayers()
+
 					let indexAccumulator = 0
+
 					return Object.values(this.props.segment.outputLayers)
 						.filter((layer) => {
 							return layer.used ? true : false
@@ -688,7 +692,9 @@ export const SegmentTimelinePart = withTranslation()(
 						.map((layer) => {
 							// Only render output layers used by the segment
 							if (layer.used) {
-								const sourceLayers = layer.sourceLayers.filter((i) => !i.isHidden).sort((a, b) => a._rank - b._rank)
+								const sourceLayers = layer.sourceLayers
+									.filter((i) => showHiddenSourceLayers || !i.isHidden)
+									.sort((a, b) => a._rank - b._rank)
 								const currentIndex = indexAccumulator
 								indexAccumulator += this.props.collapsedOutputs[layer._id] === true ? 1 : sourceLayers.length
 								return (

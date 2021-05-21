@@ -47,7 +47,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { TransformedCollection } from '../../../lib/typings/meteor'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
-import { MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
+import { ConfigManifestEntryType, MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
 import { renderEditAttribute } from './components/ConfigManifestEntryComponent'
 
 interface IStudioDevicesProps {
@@ -357,14 +357,20 @@ const StudioMappings = withTranslation()(
 					<span>
 						{m
 							.filter((entry) => entry.includeInSummary)
-							.map(
-								(entry) =>
-									entry.name +
-									': ' +
-									(entry.values && entry.values[mapping[entry.id]]
-										? entry.values[mapping[entry.id]]
-										: mapping[entry.id])
-							)
+							.map((entry) => {
+								let summary = entry.name + ': '
+
+								let mappingValue = entry.values && entry.values[mapping[entry.id]]
+								if (!mappingValue) {
+									mappingValue = mapping[entry.id]
+								}
+
+								if (entry.type === ConfigManifestEntryType.INT && entry.zeroBased && _.isNumber(mappingValue)) {
+									mappingValue += 1
+								}
+
+								return summary + mappingValue
+							})
 							.join(' - ')}
 					</span>
 				)
@@ -387,11 +393,11 @@ const StudioMappings = withTranslation()(
 							})}
 						>
 							<th className="settings-studio-device__name c3 notifications-s notifications-text">
-								{layerId}
+								{mapping.layerName || layerId}
 								{activeRoutes.existing[layerId] !== undefined ? (
 									<Tooltip
 										overlay={t('This layer is now rerouted by an active Route Set: {{routeSets}}', {
-											routeSets: activeRoutes.existing[layerId].join(', '),
+											routeSets: activeRoutes.existing[layerId].map((s) => s.outputMappedLayer).join(', '),
 											count: activeRoutes.existing[layerId].length,
 										})}
 										placement="right"
@@ -431,6 +437,20 @@ const StudioMappings = withTranslation()(
 													className="input text-input input-l"
 												></EditAttribute>
 												<span className="text-s dimmed">{t('ID of the timeline-layer to map to some output')}</span>
+											</label>
+										</div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Layer Name')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'mappings.' + layerId + '.layerName'}
+													obj={this.props.studio}
+													type="text"
+													collection={Studios}
+													className="input text-input input-l"
+												></EditAttribute>
+												<span className="text-s dimmed">{t('Human-readable name of the layer')}</span>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -1829,6 +1849,68 @@ const StudioPackageManagerSettings = withTranslation()(
 														></EditAttribute>
 														<span className="text-s dimmed">
 															{t('(Optional) A name/identifier of the local network where the share is located')}
+														</span>
+													</label>
+												</div>
+											</>
+										) : accessor.type === Accessor.AccessType.QUANTEL ? (
+											<>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Quantel gateway URL')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.quantelGatewayUrl`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">{t('URL to the Quantel Gateway')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('ISA URLs')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.ISAUrls`}
+															obj={this.props.studio}
+															type="array"
+															arrayType="string"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">{t('URLs to the ISAs (in order of importance)')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Zone ID')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.zoneId`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">{t('Zone ID (default value: "default")')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Server ID')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.serverId`}
+															obj={this.props.studio}
+															type="int"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">
+															{t('Server id (Can be omitted for sources, as clip-searches are zone-wide.)')}
 														</span>
 													</label>
 												</div>

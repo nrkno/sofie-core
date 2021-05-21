@@ -127,6 +127,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						rank: 0,
 						rundownBaseline: false,
 						showThumbnailsInList: false,
+						hideDuplicates: false,
 						default: false,
 						nextInCurrentPart: false,
 						oneNextPerSourceLayer: false,
@@ -804,6 +805,22 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										collection={RundownLayouts}
 										className="mod mas"
 									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Hide duplicated AdLibs')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.hideDuplicates`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+									<span className="text-s dimmed">
+										{t('Picks the first instance of an adLib per rundown, identified by uniqueness Id')}
+									</span>
 								</label>
 							</div>
 						</React.Fragment>

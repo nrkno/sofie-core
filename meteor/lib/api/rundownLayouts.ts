@@ -68,6 +68,7 @@ export namespace RundownLayoutsAPI {
 			showThumbnailsInList: false,
 			nextInCurrentPart: false,
 			oneNextPerSourceLayer: false,
+			hideDuplicates: false,
 		}
 	}
 }

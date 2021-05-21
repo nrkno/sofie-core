@@ -19,6 +19,8 @@ describe('client/lib/rundown', () => {
 		const playlist = RundownPlaylists.findOne(playlistId)
 		if (!playlist) throw new Error('Rundown not found')
 
+		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+
 		const segments = playlist.getSegments()
 		const parts = playlist.getAllOrderedParts()
 		const segment = segments[0]
@@ -29,7 +31,9 @@ describe('client/lib/rundown', () => {
 			playlist,
 			segment,
 			new Set(segments.slice(0, 0).map((segment) => segment._id)),
-			parts.map((part) => part._id)
+			parts.map((part) => part._id),
+			currentPartInstance,
+			nextPartInstance
 		)
 		expect(resolvedSegment).toBeTruthy()
 		expect(resolvedSegment.parts).toHaveLength(2)

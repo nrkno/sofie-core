@@ -32,10 +32,12 @@ import {
 	IBlueprintPartInstance,
 	IBlueprintAdLibPieceDB,
 	IBlueprintPartDB,
+	ExpectedPlayoutItemGeneric,
 } from './rundown'
 import { IBlueprintShowStyleBase, IBlueprintShowStyleVariant } from './showStyle'
 import { OnGenerateTimelineObj } from './timeline'
 import { IBlueprintConfig } from './common'
+import { ExpectedPackage } from './package'
 
 export enum BlueprintManifestType {
 	SYSTEM = 'system',
@@ -44,7 +46,12 @@ export enum BlueprintManifestType {
 }
 
 export interface BlueprintManifestSet {
-	[id: string]: string
+	blueprints: {
+		[id: string]: string
+	}
+	assets: {
+		[id: string]: string
+	}
 }
 export type SomeBlueprintManifest = SystemBlueprintManifest | StudioBlueprintManifest | ShowStyleBlueprintManifest
 
@@ -78,7 +85,7 @@ export interface StudioBlueprintManifest extends BlueprintManifestBase {
 	translations?: string
 
 	/** Returns the items used to build the baseline (default state) of a studio, this is the baseline used when there's no active rundown */
-	getBaseline: (context: IStudioContext) => TSRTimelineObjBase[]
+	getBaseline: (context: IStudioContext) => BlueprintResultStudioBaseline
 
 	/** Returns the id of the show style to use for a rundown, return null to ignore that rundown */
 	getShowStyleId: (
@@ -199,12 +206,18 @@ export interface BlueprintResultTimeline {
 	timeline: OnGenerateTimelineObj[]
 	persistentState: TimelinePersistentState
 }
-
+export interface BlueprintResultBaseline {
+	timelineObjects: TSRTimelineObjBase[]
+	/** @deprecated */
+	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
+	expectedPackages?: ExpectedPackage.Any[]
+}
+export type BlueprintResultStudioBaseline = BlueprintResultBaseline
 export interface BlueprintResultRundown {
 	rundown: IBlueprintRundown
 	globalAdLibPieces: IBlueprintAdLibPiece[]
 	globalActions?: IBlueprintActionManifest[]
-	baseline: TSRTimelineObjBase[]
+	baseline: BlueprintResultBaseline
 }
 export interface BlueprintResultSegment {
 	segment: IBlueprintSegment

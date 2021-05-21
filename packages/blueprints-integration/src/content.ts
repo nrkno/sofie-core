@@ -88,6 +88,22 @@ export interface ScriptContent extends BaseContent {
 // 	metadata?: MetadataElement[]
 // }
 
+/** Data describing a Nora template's step attributes */
+export interface NoraPayloadStepData {
+	/** the step to move to - used when sending commands to nora */
+	to?: number | 'next'
+	/** the current step (which you are moving from) - provided by nora */
+	from?: number
+	/** Enable/disable step. This is usually provided by the template it self, but can be overwritten by providing the value. */
+	enabled?: boolean
+	/** -1 means unknown/infinite value of steps available, positive values are literal - provided by nora */
+	total?: number
+	/** if true only forward linear advances are allowed, if false you can jump around */
+	orderLocked?: boolean
+	/** if true the graphics will start at the first step again if given a next command when on the last. If false it will stay on the last step */
+	repeat?: boolean
+}
+
 export interface NoraPayload {
 	content: { [key: string]: unknown }
 	manifest: string
@@ -101,6 +117,7 @@ export interface NoraPayload {
 		templateVariant: string | undefined
 	}
 	changed?: Time
+	step?: NoraPayloadStepData
 }
 
 export interface NoraContent extends BaseContent {
@@ -146,4 +163,5 @@ export type LiveSpeakContent = VTContent
 
 export interface TransitionContent extends BaseContent {
 	icon?: string
+	preview?: string
 }

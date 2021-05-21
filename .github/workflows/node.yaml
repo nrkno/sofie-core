@@ -25,9 +25,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
-          cd meteor
-          meteor npm install
-          meteor npm run ci:prepare
+          yarn
+          yarn build:packages
         env:
           CI: true
       - name: Run typecheck and linter
@@ -51,9 +50,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
-          cd meteor
-          meteor npm install
-          meteor npm run ci:prepare
+          yarn
+          yarn build:packages
         env:
           CI: true
       - name: Run Tests
@@ -79,8 +77,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Validate production dependencies for vulnerabilities and compatible licenses
         run: |
+          yarn
           cd meteor
-          meteor npm install
           meteor npm run validate:prod-dependencies
         env:
           CI: true
@@ -100,8 +98,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Validate all dependencies for vulnerabilities
         run: |
+          yarn
           cd meteor
-          meteor npm install
           meteor npm run validate:all-dependencies
         env:
           CI: true
@@ -146,14 +144,11 @@ jobs:
       - name: Prepare Environment
         if: ${{ steps.image-tags.outputs.images }}
         run: |
-          cd meteor
-          meteor npm install
+          yarn install
       - name: Build libs
         if: ${{ steps.image-tags.outputs.images }}
         run: |
-          cd packages
-          yarn install
-          yarn build
+          yarn build:packages
       - name: Meteor Build
         if: ${{ steps.image-tags.outputs.images }}
         run: |
@@ -196,6 +191,7 @@ jobs:
     timeout-minutes: 30
 
     strategy:
+      fail-fast: false
       matrix:
         gateway-name: [playout-gateway, mos-gateway]
 
@@ -213,7 +209,7 @@ jobs:
           IMAGES=
           DOCKER_TAG=${{ steps.docker-tag.outputs.tag }}
           # check if a release branch, or master, or a tag
-          if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ steps.docker-tag.outputs.tag }}" == refs/tags/* ]]
+          if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ github.ref }}" == refs/tags/* ]]
           then
             # If we have a dockerhub image name, then setup to publish there
             if [ -z "${{ secrets.DOCKERHUB_IMAGE_PREFIX }}" ]
@@ -231,12 +227,12 @@ jobs:
           else
             echo "Skipping docker build"
           fi
-      - name: Build libs
+      - name: Build
         if: ${{ steps.image-tags.outputs.images }}
         run: |
           cd packages
           yarn install
-          yarn build
+          yarn lerna run --scope \*\*/${{ matrix.gateway-name }} --include-dependencies --stream build
           yarn install --prod --ignore-scripts
       - name: Set up Docker Buildx
         if: ${{ steps.image-tags.outputs.images }}
@@ -270,6 +266,7 @@ jobs:
     timeout-minutes: 15
 
     strategy:
+      fail-fast: false
       matrix:
         package-name:
           [
@@ -289,7 +286,7 @@ jobs:
         run: |
           cd packages 
           yarn install
-          yarn build
+          yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
           CI: true
       - name: Run typecheck and linter
@@ -302,10 +299,10 @@ jobs:
   test-packages:
     name: Test Package
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 15
 
     strategy:
+      fail-fast: false
       matrix:
         package-name: [blueprints-integration, server-core-integration]
         node-version: [12.x, 14.x]
@@ -323,7 +320,7 @@ jobs:
         run: |
           cd packages 
           yarn install
-          yarn build
+          yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
           CI: true
       - name: Run tests
@@ -379,7 +376,6 @@ jobs:
   prerelease-libs:
     name: Prerelease Lib
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 15
 
     # only run for branches
@@ -389,6 +385,7 @@ jobs:
       - test-packages
 
     strategy:
+      fail-fast: false
       matrix:
         package-name: [blueprints-integration, server-core-integration]
 
@@ -422,32 +419,48 @@ jobs:
         uses: yuya-takeyama/docker-tag-from-github-ref-action@2b0614b1338c8f19dd9d3ea433ca9bc0cc7057ba
         with:
           remove-version-tag-prefix: false
-      - name: Bump version and build
+      - name: Bump version
         if: ${{ steps.do-publish.outputs.publish }}
         run: |
-          cd packages/${{ matrix.package-name }}
+          cd packages
           COMMIT_TIMESTAMP=$(git log -1 --pretty=format:%ct HEAD)
           COMMIT_DATE=$(date -d @$COMMIT_TIMESTAMP +%Y%m%d-%H%M%S)
           GIT_HASH=$(git rev-parse --short HEAD)
           PRERELEASE_TAG=nightly-$(echo "${{ steps.prerelease-tag.outputs.tag }}" | sed -r 's/[^a-z0-9]+/-/gi')
-          yarn release --prerelease $PRERELEASE_TAG-$COMMIT_DATE-$GIT_HASH --skip.changelog --skip.tag --skip.commit
-          yarn build
+          yarn set-version prerelease --preid $PRERELEASE_TAG-$COMMIT_DATE-$GIT_HASH
+        env:
+          CI: true
+      - name: Build
+        if: ${{ steps.do-publish.outputs.publish }}
+        run: |
+          cd packages
+          yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
           CI: true
       - name: Publish to NPM
+        id: publish-npm
         if: ${{ steps.do-publish.outputs.publish }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
           yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag nightly
+          echo ::set-output name=version::$NEW_VERSION
         env:
+          CI: true
+      - name: Post published prerelease lib version comment in PR
+        if: ${{ steps.do-publish.outputs.publish }}
+        uses: mshick/add-pr-comment@v1
+        with:
+          message: |
+            ⚡ Published prerelease version **${{ matrix.package-name }}@${{ steps.publish-npm.outputs.version }}** to NPM
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
 
   release-libs:
     name: Release Lib
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 15
 
     # only run for tags
@@ -459,6 +472,7 @@ jobs:
       - build-core
 
     strategy:
+      fail-fast: false
       matrix:
         package-name: [blueprints-integration, server-core-integration]
 
@@ -503,11 +517,11 @@ jobs:
           yarn install
         env:
           CI: true
-      - name: Bump version and build
+      - name: Build
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
-          cd packages/${{ matrix.package-name }}
-          yarn build
+          cd packages
+          yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
           CI: true
       - name: Publish to NPM
@@ -527,6 +541,7 @@ jobs:
     timeout-minutes: 15
 
     strategy:
+      fail-fast: false
       matrix:
         package-name:
           [

@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
@@ -17,20 +17,20 @@ import {
 	PartExtended,
 	SegmentExtended,
 } from '../../../lib/Rundown'
-import { IContextMenuContext } from '../RundownView'
+import { IContextMenuContext, MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
-import { unprotectString, equalSets, equivalentArrays, equalArrays } from '../../../lib/lib'
+import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { Parts, PartId } from '../../../lib/collections/Parts'
+import { Parts, PartId, Part } from '../../../lib/collections/Parts'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Tracker } from 'meteor/tracker'
@@ -40,6 +40,7 @@ import RundownViewEventBus, {
 	GoToPartEvent,
 	GoToPartInstanceEvent,
 } from '../RundownView/RundownViewEventBus'
+import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 
@@ -80,7 +81,6 @@ interface IProps {
 	rundownId: RundownId
 	segmentId: SegmentId
 	segmentsIdsBefore: Set<SegmentId>
-	orderedAllPartIds: PartId[]
 	studio: Studio
 	showStyleBase: ShowStyleBase
 	playlist: RundownPlaylist
@@ -157,12 +157,45 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			},
 		}).fetch()
 
+		const [orderedAllPartIds, { currentPartInstance, nextPartInstance }] = slowDownReactivity(
+			() =>
+				[
+					memoizedIsolatedAutorun(
+						(_playlistId: RundownPlaylistId) =>
+							(props.playlist.getAllOrderedParts(undefined, {
+								fields: {
+									segmentId: 1,
+									_rank: 1,
+								},
+							}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]).map((part) => part._id),
+						'playlist.getAllOrderedParts',
+						props.playlist._id
+					),
+					memoizedIsolatedAutorun(
+						(_playlistId: RundownPlaylistId, _currentPartInstanceId, _nextPartInstanceId) =>
+							props.playlist.getSelectedPartInstances(),
+						'playlist.getSelectedPartInstances',
+						props.playlist._id,
+						props.playlist.currentPartInstanceId,
+						props.playlist.nextPartInstanceId
+					),
+				] as [PartId[], { currentPartInstance: PartInstance | undefined; nextPartInstance: PartInstance | undefined }],
+			// if the rundown isn't active, run the changes ASAP, we don't care if there's going to be jank
+			// if this is the current or next segment (will have those two properties defined), run the changes ASAP,
+			// otherwise, trigger the updates in a window of 500-2500 ms from change
+			props.playlist.activationId === undefined || props.ownCurrentPartInstance || props.ownNextPartInstance
+				? 0
+				: Math.random() * 2000 + 500
+		)
+
 		let o = RundownUtils.getResolvedSegment(
 			props.showStyleBase,
 			props.playlist,
 			segment,
 			props.segmentsIdsBefore,
-			props.orderedAllPartIds,
+			orderedAllPartIds,
+			currentPartInstance,
+			nextPartInstance,
 			true,
 			true
 		)
@@ -205,8 +238,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.onSegmentScroll !== nextProps.onSegmentScroll ||
 			props.segmentId !== nextProps.segmentId ||
 			props.segmentRef !== nextProps.segmentRef ||
-			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
-			!equalArrays(props.orderedAllPartIds, nextProps.orderedAllPartIds)
+			props.timeScale !== nextProps.timeScale ||
+			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore)
 		) {
 			return true
 		}
@@ -490,7 +523,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 
 			if (!isLiveSegment && this.props.parts !== prevProps.parts) {
-				this.updateMaxTimeScale()
+				this.updateMaxTimeScale().catch(console.error)
 			}
 
 			if (!isLiveSegment && this.props.parts !== prevProps.parts && this.state.showingAllSegment) {
@@ -569,7 +602,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		onWindowResize = _.throttle(() => {
 			if (this.state.showingAllSegment) {
 				this.updateMaxTimeScale()
-				this.showEntireSegment()
+					.then(() => this.showEntireSegment())
+					.catch(console.error)
 			}
 		}, 250)
 
@@ -606,10 +640,15 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		onRewindSegment = () => {
 			if (!this.isLiveSegment) {
-				this.setState({
-					scrollLeft: 0,
-					livePosition: 0,
-				})
+				this.updateMaxTimeScale()
+					.then(() => {
+						this.showEntireSegment()
+						this.setState({
+							scrollLeft: 0,
+							livePosition: 0,
+						})
+					})
+					.catch(console.error)
 			}
 		}
 
@@ -739,14 +778,20 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					this.props.parts.map((i) => i.instance.part._id),
 					true
 				) || 1)
-			newScale = Math.min(0.03, newScale)
+			newScale = Math.min(MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale, newScale)
 			return newScale
 		}
 
 		updateMaxTimeScale = () => {
-			this.setState({
-				maxTimeScale: this.getShowAllTimeScale(),
-			})
+			const maxTimeScale = this.getShowAllTimeScale()
+			return new Promise<number>((resolve) =>
+				this.setState(
+					{
+						maxTimeScale,
+					},
+					() => resolve(maxTimeScale)
+				)
+			)
 		}
 
 		showEntireSegment = () => {
@@ -778,6 +823,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						segmentNotes={this.props.segmentNotes}
 						timeScale={this.state.timeScale}
 						maxTimeScale={this.state.maxTimeScale}
+						onRecalculateMaxTimeScale={this.updateMaxTimeScale}
 						showingAllSegment={this.state.showingAllSegment}
 						onItemClick={this.props.onPieceClick}
 						onItemDoubleClick={this.props.onPieceDoubleClick}

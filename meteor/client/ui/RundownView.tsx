@@ -91,7 +91,8 @@ import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/DocumentTitleProvider'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { RundownDividerHeader, RundownLoopingHeader } from './RundownView/RundownDividerHeader'
+import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
+import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownViewEventBus'
@@ -235,21 +236,36 @@ const TimingDisplay = withTranslation()(
 	withTiming<ITimingDisplayProps & WithTranslation, {}>()(
 		class TimingDisplay extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 			private renderRundownName() {
-				const { rundownPlaylist, currentRundown, rundownCount } = this.props
+				const { rundownPlaylist, currentRundown, rundownCount, t } = this.props
 				return currentRundown && (rundownPlaylist.name !== currentRundown.name || rundownCount > 1) ? (
 					<span
 						className="timing-clock-label left hide-overflow rundown-name"
 						title={
 							rundownPlaylist.loop
-								? `${currentRundown.name} - ${rundownPlaylist.name} (Looped)`
-								: `${currentRundown.name} - ${rundownPlaylist.name}`
+								? t('{{currentRundownName}} - {{rundownPlaylistName}} (Looping)', {
+										currentRundownName: currentRundown.name,
+										rundownPlaylistName: rundownPlaylist.name,
+								  })
+								: t('{{currentRundownName}} - {{rundownPlaylistName}}', {
+										currentRundownName: currentRundown.name,
+										rundownPlaylistName: rundownPlaylist.name,
+								  })
 						}
 					>
-						<strong>{currentRundown.name}</strong> {rundownPlaylist.name} {rundownPlaylist.loop && <LoopingIcon />}
+						{rundownPlaylist.loop && <LoopingIcon />} <strong>{currentRundown.name}</strong> {rundownPlaylist.name}
 					</span>
 				) : (
-					<span className="timing-clock-label left hide-overflow rundown-name" title={rundownPlaylist.name}>
-						{rundownPlaylist.name} {rundownPlaylist.loop && <LoopingIcon />}
+					<span
+						className="timing-clock-label left hide-overflow rundown-name"
+						title={
+							rundownPlaylist.loop
+								? t('{{rundownPlaylistName}} (Looping)', {
+										rundownPlaylistName: rundownPlaylist.name,
+								  })
+								: rundownPlaylist.name
+						}
+					>
+						{rundownPlaylist.loop && <LoopingIcon />} {rundownPlaylist.name}
 					</span>
 				)
 			}
@@ -325,7 +341,7 @@ const TimingDisplay = withTranslation()(
 						)}
 						{rundownPlaylist.expectedDuration ? (
 							<React.Fragment>
-								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration && (
+								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration ? (
 									<span className="timing-clock plan-end right visual-last-child">
 										<span className="timing-clock-label right">{t('Planned End')}</span>
 										<Moment
@@ -334,8 +350,8 @@ const TimingDisplay = withTranslation()(
 											date={rundownPlaylist.expectedStart + rundownPlaylist.expectedDuration}
 										/>
 									</span>
-								)}
-								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration && (
+								) : null}
+								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration ? (
 									<span className="timing-clock countdown plan-end right">
 										{RundownUtils.formatDiffToTimecode(
 											getCurrentTime() - (rundownPlaylist.expectedStart + rundownPlaylist.expectedDuration),
@@ -344,8 +360,8 @@ const TimingDisplay = withTranslation()(
 											true
 										)}
 									</span>
-								)}
-								{rundownPlaylist.expectedDuration && (
+								) : null}
+								{rundownPlaylist.expectedDuration && this.props.rundownCount < 2 ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 									<span
 										className={ClassNames('timing-clock heavy-light right', {
 											heavy:
@@ -368,7 +384,7 @@ const TimingDisplay = withTranslation()(
 											true
 										)}
 									</span>
-								)}
+								) : null}
 							</React.Fragment>
 						) : (
 							<React.Fragment>
@@ -382,7 +398,7 @@ const TimingDisplay = withTranslation()(
 										/>
 									</span>
 								) : null}
-								{this.props.timingDurations ? (
+								{this.props.timingDurations && this.props.rundownCount < 2 ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 									<span
 										className={ClassNames('timing-clock heavy-light right', {
 											heavy:
@@ -1402,7 +1418,6 @@ interface ITrackedProps {
 	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
 	rundownLayoutId?: RundownLayoutId
-	orderedPartsIds: PartId[]
 	shelfDisplayOptions: {
 		buckets: boolean
 		layout: boolean
@@ -1423,24 +1438,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	const playlist = RundownPlaylists.findOne(playlistId)
 	let rundowns: Rundown[] = []
 	let studio: Studio | undefined
-	let allParts: PartId[] = []
 	let currentPartInstance: PartInstance | undefined
 	let nextPartInstance: PartInstance | undefined
 
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun((_playlistId) => playlist.getRundowns(), 'playlist.getRundowns', playlistId)
-		allParts = memoizedIsolatedAutorun(
-			(_playlistId) =>
-				(playlist.getAllOrderedParts(undefined, {
-					fields: {
-						segmentId: 1,
-						_rank: 1,
-					},
-				}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]).map((part) => part._id),
-			'playlist.getAllOrderedParts',
-			playlistId
-		)
 		;({ currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances())
 	}
 
@@ -1508,7 +1511,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}).fetch()) ||
 			undefined,
 		rundownLayoutId: protectString((params['layout'] as string) || ''),
-		orderedPartsIds: allParts,
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
 			layout: displayOptions.includes('layout'),
@@ -1836,63 +1838,65 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps, prevState: IState) {
-			if (
-				this.props.playlist &&
-				prevProps.playlist &&
-				prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId &&
-				this.state.manualSetAsNext
-			) {
-				// reset followLiveSegments after a manual set as next
-				this.setState({
-					manualSetAsNext: false,
-					followLiveSegments: true,
-				})
-				if (this.props.playlist.currentPartInstanceId) {
+			if (!this.props.onlyShelf) {
+				if (
+					this.props.playlist &&
+					prevProps.playlist &&
+					prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId &&
+					this.state.manualSetAsNext
+				) {
+					// reset followLiveSegments after a manual set as next
+					this.setState({
+						manualSetAsNext: false,
+						followLiveSegments: true,
+					})
+					if (this.props.playlist.currentPartInstanceId) {
+						scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+							if (!error.toString().match(/another scroll/)) console.warn(error)
+						})
+					}
+				} else if (
+					this.props.playlist &&
+					prevProps.playlist &&
+					prevProps.playlist.activationId &&
+					!this.props.playlist.activationId
+				) {
+					// reset followLiveSegments after deactivating a rundown
+					this.setState({
+						followLiveSegments: true,
+					})
+				} else if (
+					this.props.playlist &&
+					prevProps.playlist &&
+					!prevProps.playlist.activationId &&
+					this.props.playlist.activationId &&
+					this.props.playlist.nextPartInstanceId
+				) {
+					// scroll to next after activation
+					scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
+						if (!error.toString().match(/another scroll/)) console.warn(error)
+					})
+				} else if (
+					// after take
+					this.props.playlist &&
+					prevProps.playlist &&
+					this.props.playlist.currentPartInstanceId !== prevProps.playlist.currentPartInstanceId &&
+					this.props.playlist.currentPartInstanceId &&
+					this.state.followLiveSegments
+				) {
 					scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
 						if (!error.toString().match(/another scroll/)) console.warn(error)
 					})
+				} else if (
+					// initial Rundown open
+					this.props.playlist &&
+					this.props.playlist.currentPartInstanceId &&
+					this.state.subsReady &&
+					!prevState.subsReady
+				) {
+					// allow for some time for the Rundown to render
+					maintainFocusOnPartInstance(this.props.playlist.currentPartInstanceId, 7000, true, true)
 				}
-			} else if (
-				this.props.playlist &&
-				prevProps.playlist &&
-				prevProps.playlist.activationId &&
-				!this.props.playlist.activationId
-			) {
-				// reset followLiveSegments after deactivating a rundown
-				this.setState({
-					followLiveSegments: true,
-				})
-			} else if (
-				this.props.playlist &&
-				prevProps.playlist &&
-				!prevProps.playlist.activationId &&
-				this.props.playlist.activationId &&
-				this.props.playlist.nextPartInstanceId
-			) {
-				// scroll to next after activation
-				scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
-					if (!error.toString().match(/another scroll/)) console.warn(error)
-				})
-			} else if (
-				// after take
-				this.props.playlist &&
-				prevProps.playlist &&
-				this.props.playlist.currentPartInstanceId !== prevProps.playlist.currentPartInstanceId &&
-				this.props.playlist.currentPartInstanceId &&
-				this.state.followLiveSegments
-			) {
-				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
-					if (!error.toString().match(/another scroll/)) console.warn(error)
-				})
-			} else if (
-				// initial Rundown open
-				this.props.playlist &&
-				this.props.playlist.currentPartInstanceId &&
-				this.state.subsReady &&
-				!prevState.subsReady
-			) {
-				// allow for some time for the Rundown to render
-				maintainFocusOnPartInstance(this.props.playlist.currentPartInstanceId, 7000, true, true)
 			}
 
 			if (
@@ -2260,7 +2264,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												timeScale={this.state.timeScale}
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
-												orderedAllPartIds={this.props.orderedPartsIds}
 												segmentsIdsBefore={rundownAndSegments.segmentIdsBeforeEachSegment[segmentIndex]}
 												isLastSegment={
 													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
@@ -2303,9 +2306,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			if (this.props.playlist && this.props.rundowns.length) {
 				return (
 					<React.Fragment>
-						{this.props.playlist?.loop && <RundownLoopingHeader playlist={this.props.playlist} />}
+						{this.props.playlist?.loop && (
+							<PlaylistLoopingHeader position="start" multiRundown={this.props.matchedSegments.length > 1} />
+						)}
 						<div className="segment-timeline-container">{this.renderSegments()}</div>
-						{this.props.playlist?.loop && <RundownLoopingHeader playlist={this.props.playlist} />}
+						{this.props.playlist?.loop && (
+							<PlaylistLoopingHeader position="end" multiRundown={this.props.matchedSegments.length > 1} />
+						)}
 					</React.Fragment>
 				)
 			} else {

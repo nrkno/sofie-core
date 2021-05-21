@@ -110,7 +110,11 @@ describe('Test blueprint api context', () => {
 				] as ConfigManifestEntry[],
 
 				studioMigrations: [],
-				getBaseline: () => [],
+				getBaseline: () => {
+					return {
+						timelineObjects: [],
+					}
+				},
 				getShowStyleId: () => null,
 			})
 			const blueprint = generateFakeBlueprint('', BlueprintManifestType.STUDIO, manifest)

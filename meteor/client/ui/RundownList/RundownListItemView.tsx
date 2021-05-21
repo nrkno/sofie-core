@@ -29,6 +29,7 @@ interface IRundownListItemViewProps {
 	isDragLayer: boolean
 	connectDropTarget: (content: ReactElement) => ReactElement | null
 	renderTooltips: boolean
+	isOnlyRundownInPlaylist?: boolean
 }
 
 export default withTranslation()(function RundownListItemView(props: Translated<IRundownListItemViewProps>) {
@@ -45,7 +46,10 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		rundownLayouts,
 		confirmReSyncRundownHandler,
 		confirmDeleteRundownHandler,
+		isOnlyRundownInPlaylist,
 	} = props
+
+	const playlist = rundown.getRundownPlaylist()
 
 	const classNames = props.classNames.slice()
 	classNames.push('rundown-list-item')
@@ -53,7 +57,14 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		classNames.push('dragging')
 	}
 
-	const rundownNameContent = rundownViewUrl ? <Link to={rundownViewUrl}>{props.rundown.name}</Link> : props.rundown.name
+	const rundownNameContent = rundownViewUrl ? (
+		<Link to={rundownViewUrl}>
+			{isOnlyRundownInPlaylist && playlist.loop && <LoopingIcon />}
+			{props.rundown.name}
+		</Link>
+	) : (
+		props.rundown.name
+	)
 
 	// const [warnings, errors] = getAllNotes(rundown)
 
@@ -106,22 +117,41 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			</span>
 			<span className="rundown-list-item__text">
 				{rundown.expectedDuration ? (
-					RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)
+					isOnlyRundownInPlaylist && playlist.loop ? (
+						<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+							<span>
+								{t('({{timecode}})', {
+									timecode: RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true),
+								})}
+								&nbsp;
+								<LoopingIcon />
+							</span>
+						</Tooltip>
+					) : (
+						RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)
+					)
+				) : isOnlyRundownInPlaylist && playlist.loop ? (
+					<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+						<span>
+							<LoopingIcon />
+						</span>
+					</Tooltip>
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
-				{rundown.getRundownPlaylist().loop && <LoopingIcon />}
 			</span>
 			<span className="rundown-list-item__text">
 				<JonasFormattedTime timestamp={rundown.modified} t={t} />
 			</span>
 			{rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
 				<span className="rundown-list-item__text">
-					<RundownShelfLayoutSelection
-						rundowns={[rundown]}
-						rundownLayouts={rundownLayouts}
-						playlistId={rundown.playlistId}
-					/>
+					{isOnlyRundownInPlaylist && (
+						<RundownShelfLayoutSelection
+							rundowns={[rundown]}
+							rundownLayouts={rundownLayouts}
+							playlistId={rundown.playlistId}
+						/>
+					)}
 				</span>
 			)}
 			<span className="rundown-list-item__actions">

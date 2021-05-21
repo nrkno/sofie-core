@@ -1,6 +1,5 @@
-import { IMOSItem, MosString128, MosTime, MosDuration } from 'mos-connection'
-import { Parser as MosParser } from 'mos-connection/dist/mosModel/Parser'
-import * as MosUtils from 'mos-connection/dist/utils/Utils'
+import { IMOSItem, MosString128, MosTime, MosDuration, MosModel, Utils as MosUtils } from 'mos-connection'
+import * as XMLBuilder from 'xmlbuilder'
 import * as _ from 'underscore'
 
 /**
@@ -50,7 +49,7 @@ export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | 
 		}
 
 		if (doc.mos.ncsItem && doc.mos.ncsItem.item) {
-			res.item = MosParser.xml2Item(doc.mos.ncsItem.item)
+			res.item = MosModel.XMLMosItem.fromXML(doc.mos.ncsItem.item)
 		}
 
 		return res
@@ -60,19 +59,7 @@ export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | 
 }
 
 export function generateMosPluginItemXml(item: IMOSItem): string {
-	const tmpItem = {
-		...item,
-	}
-	if (item.MosExternalMetaData) {
-		tmpItem.MosExternalMetaData = item.MosExternalMetaData.map((md) => {
-			return {
-				mosScope: md.MosScope,
-				mosSchema: md.MosSchema,
-				mosPayload: md.MosPayload,
-			}
-		}) as any
-	}
-
-	const builder = MosParser.item2xml(tmpItem)
-	return `<mos><ncsItem>${builder.toString()}</ncsItem></mos>`
+	const builder = XMLBuilder.create('ncsItem')
+	MosModel.XMLMosItem.toXML(builder, item)
+	return `<mos>${builder.toString()}</mos>`
 }

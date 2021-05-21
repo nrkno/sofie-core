@@ -38,7 +38,6 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	const playlistActivationId = cache.Playlist.doc.activationId
 
 	let timeOffset: number | null = cache.Playlist.doc.nextTimeOffset || null
-	const isFirstTake = !cache.Playlist.doc.startedPlayback
 
 	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
 
@@ -48,6 +47,9 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	const currentRundown = partInstance ? cache.Rundowns.findOne(partInstance.rundownId) : undefined
 	if (!currentRundown)
 		throw new Meteor.Error(404, `Rundown "${(partInstance && partInstance.rundownId) || ''}" could not be found!`)
+
+	// it is only a first take if the Playlist has no startedPlayback and the taken PartInstance is not untimed
+	const isFirstTake = !cache.Playlist.doc.startedPlayback && !partInstance.part.untimed
 
 	const pShowStyle = cache.activationCache.getShowStyleCompound(currentRundown)
 	const pBlueprint = pShowStyle.then((s) => loadShowStyleBlueprint(s))
@@ -181,8 +183,13 @@ export function resetPreviousSegmentAndClearNextSegmentId(cache: CacheForPlayout
 		})
 	}
 
+	// If the playlist is looping and
 	// If the previous and current part are not in the same segment, then we have just left a segment
-	if (previousPartInstance && previousPartInstance.segmentId !== currentPartInstance?.segmentId) {
+	if (
+		cache.Playlist.doc.loop &&
+		previousPartInstance &&
+		previousPartInstance.segmentId !== currentPartInstance?.segmentId
+	) {
 		// Reset the old segment
 		const segmentId = previousPartInstance.segmentId
 		const resetIds = new Set(
@@ -367,7 +374,7 @@ function startHold(
 
 	// Make a copy of any item which is flagged as an 'infinite' extension
 	const itemsToCopy = cache.PieceInstances.findFetch(
-		(p) => p.partInstanceId === holdToPartInstance._id && p.piece.extendOnHold
+		(p) => p.partInstanceId === holdFromPartInstance._id && p.piece.extendOnHold
 	)
 	itemsToCopy.forEach((instance) => {
 		if (!instance.infinite) {

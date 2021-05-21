@@ -1180,7 +1180,7 @@ export namespace ServerPlayoutAPI {
 					actionContext.currentPartState !== ActionPartChange.NONE ||
 					actionContext.nextPartState !== ActionPartChange.NONE
 				) {
-					syncPlayheadInfinitesForNextPartInstance(cache)
+					await syncPlayheadInfinitesForNextPartInstance(cache)
 				}
 
 				if (actionContext.takeAfterExecute) {
@@ -1228,7 +1228,7 @@ export namespace ServerPlayoutAPI {
 				if (playlist.currentPartInstanceId !== partInstanceId)
 					throw new Meteor.Error(403, `Pieces can be only manipulated in a current part!`)
 			},
-			(cache) => {
+			async (cache) => {
 				const partInstance = cache.PartInstances.findOne(partInstanceId)
 				if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 				const lastStartedPlayback = partInstance.timings?.startedPlayback
@@ -1249,7 +1249,7 @@ export namespace ServerPlayoutAPI {
 					undefined
 				)
 
-				syncPlayheadInfinitesForNextPartInstance(cache)
+				await syncPlayheadInfinitesForNextPartInstance(cache)
 
 				updateTimeline(cache)
 			}
@@ -1284,7 +1284,7 @@ export namespace ServerPlayoutAPI {
 		check(studioId, String)
 
 		return runStudioOperationWithCache(
-			'updateStudioBaseline',
+			'shouldUpdateStudioBaseline',
 			studioId,
 			StudioLockFunctionPriority.MISC,
 			async (cache) => {

@@ -183,8 +183,9 @@ export function reportPartInstanceHasStarted(cache: CacheForPlayout, partInstanc
 		cache.Playlist.update((pl) => {
 			if (!pl.rundownsStartedPlayback) pl.rundownsStartedPlayback = {}
 			const rundownId = unprotectString(partInstance.rundownId)
-			if (!pl.rundownsStartedPlayback[rundownId]) pl.rundownsStartedPlayback[rundownId] = timestamp
-			if (!pl.startedPlayback) pl.startedPlayback = timestamp
+			if (!pl.rundownsStartedPlayback[rundownId] && !partInstance.part.untimed)
+				pl.rundownsStartedPlayback[rundownId] = timestamp
+			if (!pl.startedPlayback && !partInstance.part.untimed) pl.startedPlayback = timestamp
 			return pl
 		})
 

@@ -11,8 +11,11 @@ import { StyledTimecode } from '../../lib/StyledTimecode'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { Studio } from '../../../lib/collections/Studios'
 import { getPreviewPackageSettings } from '../../../lib/collections/ExpectedPackages'
+import { ensureHasTrailingSlash } from '../../lib/lib'
+import { RundownAPI } from '../../../lib/api/rundown'
 
 interface IProps {
+	status: RundownAPI.PieceStatusCode
 	mediaPreviewUrl?: string
 	typeClass?: string
 	showMiniInspector: boolean
@@ -73,7 +76,7 @@ function getMediaPreviewUrl(
 ): string | undefined {
 	const metadata = contentMetaData
 	if (metadata && metadata.previewPath && mediaPreviewUrl) {
-		return mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.mediaId)
+		return ensureHasTrailingSlash(mediaPreviewUrl) + 'media/preview/' + encodeURIComponent(metadata.mediaId)
 	}
 }
 
@@ -195,10 +198,12 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 					style={props.floatingInspectorStyle}
 				>
 					{props.noticeLevel !== null ? renderNotice(props.noticeLevel, props.noticeMessage) : null}
-					<div className="segment-timeline__mini-inspector__properties">
-						<span className="mini-inspector__label">{t('File name')}</span>
-						<span className="mini-inspector__value">{props.content && props.content.fileName}</span>
-					</div>
+					{props.status !== RundownAPI.PieceStatusCode.SOURCE_NOT_SET ? (
+						<div className="segment-timeline__mini-inspector__properties">
+							<span className="mini-inspector__label">{t('File name')}</span>
+							<span className="mini-inspector__value">{props.content && props.content.fileName}</span>
+						</div>
+					) : null}
 				</div>
 			)}
 		</FloatingInspector>

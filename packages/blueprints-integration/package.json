@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/blueprints-integration",
-	"version": "1.33.0-in-development",
+	"version": "1.35.0-in-development",
 	"description": "Library to define the interaction between core and the blueprints.",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -26,7 +26,8 @@
 		"send-coverage": "codecov -p ../..",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck"
+		"license-validate": "yarn sofie-licensecheck",
+		"precommit": "lint-staged"
 	},
 	"engines": {
 		"node": ">=10.10"
@@ -39,8 +40,16 @@
 	],
 	"dependencies": {
 		"moment": "2.29.1",
-		"timeline-state-resolver-types": "5.6.0-nightly-release31-20210322-163519-1a4031442.0",
+		"timeline-state-resolver-types": "5.9.0-nightly-release34-20210511-085833-30ad952a1.0",
 		"tslib": "^2.1.0",
-		"underscore": "1.12.1"
+		"underscore": "1.13.1"
+	},
+	"lint-staged": {
+		"*.{js,css,json,md,scss}": [
+			"prettier --write"
+		],
+		"*.{ts,tsx}": [
+			"yarn lint --fix"
+		]
 	}
 }

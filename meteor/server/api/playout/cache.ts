@@ -8,7 +8,7 @@ import {
 	RundownPlaylist,
 	DBRundownPlaylist,
 	RundownPlaylistId,
-	RundownPlaylists,
+	RundownPlaylists
 } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { Segment, DBSegment, Segments } from '../../../lib/collections/Segments'
@@ -57,7 +57,7 @@ export abstract class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> 
 	protected async preInit(tmpPlaylist: ReadonlyDeep<RundownPlaylist>) {
 		await Promise.allSettled([
 			this.Playlist._initialize(tmpPlaylist._id),
-			this.Rundowns.prepareInit({ playlistId: tmpPlaylist._id }, true),
+			this.Rundowns.prepareInit({ playlistId: tmpPlaylist._id }, true)
 		])
 
 		const rundowns = this.Rundowns.findFetch()
@@ -140,7 +140,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		const selectedPartInstanceIds = _.compact([
 			playlist.currentPartInstanceId,
 			playlist.nextPartInstanceId,
-			playlist.previousPartInstanceId,
+			playlist.previousPartInstanceId
 		])
 
 		// If there is an ingestCache, then avoid loading some bits from the db for that rundown
@@ -156,12 +156,12 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 					rundownId: { $in: rundownIds },
 					$or: [
 						{
-							reset: { $ne: true },
+							reset: { $ne: true }
 						},
 						{
-							_id: { $in: selectedPartInstanceIds },
-						},
-					],
+							_id: { $in: selectedPartInstanceIds }
+						}
+					]
 				},
 				true
 			)
@@ -173,7 +173,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 				{
 					playlistActivationId: playlist.activationId,
 					rundownId: { $in: rundownIds },
-					partInstanceId: { $in: selectedPartInstanceIds },
+					partInstanceId: { $in: selectedPartInstanceIds }
 				},
 				true
 			)
@@ -186,8 +186,8 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 		if (ingestCache) {
 			// Populate the collections with the cached data instead
-			this.Segments.fillWithDataFromArray(ingestCache.Segments.findFetch())
-			this.Parts.fillWithDataFromArray(ingestCache.Parts.findFetch())
+			this.Segments.fillWithDataFromArray(ingestCache.Segments.findFetch(), true)
+			this.Parts.fillWithDataFromArray(ingestCache.Parts.findFetch(), true)
 		}
 	}
 
@@ -246,8 +246,8 @@ export function getOrderedSegmentsAndPartsFromPlayoutCache(
 		{
 			sort: {
 				_rank: 1,
-				_id: 1,
-			},
+				_id: 1
+			}
 		}
 	)
 	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, rundowns)
@@ -273,6 +273,6 @@ export function getSelectedPartInstancesFromCache(
 			: undefined,
 		previousPartInstance: playlist.previousPartInstanceId
 			? cache.PartInstances.findOne(playlist.previousPartInstanceId)
-			: undefined,
+			: undefined
 	}
 }

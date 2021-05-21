@@ -100,7 +100,7 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 								<span className="mini-inspector__in-point">
 									{RundownUtils.formatTimeToShortTime(pieceRenderedIn || 0)}
 								</span>
-								{innerPiece.lifespan ? (
+								{!pieceRenderedDuration && !innerPiece.enable.duration ? (
 									(innerPiece.lifespan === PieceLifespan.WithinPart && (
 										<span className="mini-inspector__duration">{t('Until next take')}</span>
 									)) ||

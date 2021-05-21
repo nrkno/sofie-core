@@ -37,7 +37,7 @@ import { StudioContentWriteAccess } from '../security/studio'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
-import { handleRemovedRundownFromStudio } from './ingest/rundownInput'
+import { handleRemovedRundownByRundown } from './ingest/rundownInput'
 import {
 	moveRundownIntoPlaylist,
 	removeRundownPlaylistFromDb,
@@ -48,7 +48,7 @@ import { PartInstanceId } from '../../lib/collections/PartInstances'
 import { CacheForPlayout } from './playout/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithLock } from './playout/lockFunction'
-import { runIngestOperationWithLock } from './ingest/lockFunction'
+import { runIngestOperationFromRundown } from './ingest/lockFunction'
 import { getRundown } from './ingest/lib'
 import { asyncCollectionFindFetch } from '../lib/database'
 import { createShowStyleCompound } from './showStyles'
@@ -324,30 +324,25 @@ export namespace ServerRundownAPI {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 
-		handleRemovedRundownFromStudio(access.rundown.studioId, access.rundown.externalId)
+		handleRemovedRundownByRundown(access.rundown, true)
 	}
 
 	export function unsyncRundown(context: MethodContext, rundownId: RundownId): void {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 
-		runIngestOperationWithLock(
-			'unsyncRundown',
-			access.rundown.studioId,
-			access.rundown.externalId,
-			async (cache) => {
-				const rundown = getRundown(cache)
-				if (!rundown.orphaned) {
-					cache.Rundown.update({
-						$set: {
-							orphaned: 'deleted',
-						},
-					})
-				} else {
-					logger.info(`Rundown "${rundownId}" was already unsynced`)
-				}
+		runIngestOperationFromRundown('unsyncRundown', access.rundown, async (cache) => {
+			const rundown = getRundown(cache)
+			if (!rundown.orphaned) {
+				cache.Rundown.update({
+					$set: {
+						orphaned: 'deleted',
+					},
+				})
+			} else {
+				logger.info(`Rundown "${rundownId}" was already unsynced`)
 			}
-		)
+		})
 	}
 	/** Resync all rundowns in a rundownPlaylist */
 	export function resyncRundownPlaylist(

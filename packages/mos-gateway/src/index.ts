@@ -16,7 +16,6 @@ let unsafeSSL: boolean		= process.env.UNSAFE_SSL === '1' || false
 let certs: string[] 		= (process.env.CERTIFICATES || '').split(';') || []
 let debug: boolean 		= false
 let printHelp: boolean 	= false
-logPath = logPath
 
 let prevProcessArg = ''
 process.argv.forEach((val) => {
@@ -106,7 +105,7 @@ if (logPath) {
 	// Log json to file, human-readable to console
 	console.log('Logging to', logPath)
 	logger.add(Winston.transports.Console, {
-		level: 'verbose',
+		level: 'debug',
 		handleExceptions: true,
 		json: false
 	})
@@ -142,7 +141,7 @@ if (logPath) {
 	console.log('Logging to Console')
 	// Log json to console
 	logger.add(Winston.transports.Console,{
-		// level: 'verbose',
+		level: 'debug',
 		handleExceptions: true,
 		json: true,
 		stringify: (obj: any) => {
@@ -182,8 +181,10 @@ logger.info(`debug: ${debug}`)
 logger.info(`certificates: [${certs.join(',')}]`)
 logger.info(`disableWatchdog: ${disableWatchdog}`)
 logger.info(`unsafeSSL: ${unsafeSSL}`)
-
 logger.info('-----------------------------------')
+logger.info(`Test info logging`)
+logger.warn(`Test warn logging`)
+logger.debug(`Test debug logging`)
 
 // App config -----------------------------------------
 let config: Config = {

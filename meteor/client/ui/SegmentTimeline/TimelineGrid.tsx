@@ -175,7 +175,16 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			let secondsStep = 5 * 60
 			// interStep - draw X lines between every big line
 			let interStep = 5
-			if (secondTimeScale > 0 && secondTimeScale < 1) {
+			if (secondTimeScale > 0 && secondTimeScale < 0.04) {
+				secondsStep = 4 * 3600
+				interStep = 10
+			} else if (secondTimeScale > 0.04 && secondTimeScale < 0.1) {
+				secondsStep = 3600
+				interStep = 10
+			} else if (secondTimeScale >= 0.1 && secondTimeScale < 0.5) {
+				secondsStep = 600
+				interStep = 10
+			} else if (secondTimeScale >= 0.5 && secondTimeScale < 1) {
 				secondsStep = 600
 				interStep = 60
 			} else if (secondTimeScale >= 1 && secondTimeScale < 3) {
@@ -214,9 +223,6 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// and then after getting the ceil of the value, multiply it back for all the inter-steps,
 			// beacuse we do the paint iteration for every line
 			let maxTicks = Math.ceil(this.width / (step * interStep)) * interStep + interStep
-			const scrollLeftSec = this.props.scrollLeft / 1000
-			let base = Math.floor(scrollLeftSec / maxTicks) * maxTicks
-			const baseN = (Math.floor(scrollLeftSec / maxTicks) + 1) * maxTicks
 
 			// We store the x-position of the 0-th line to know if a particular section is N or N+1
 			// and switch between base and baseN
@@ -234,12 +240,10 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				let isLabel = i % interStep === 0
 
 				if (isLabel === true) {
-					let t =
-						(xPosition > breakX && this.props.scrollLeft > 0 ? baseN : base) +
-						this.ring(i - interStep, maxTicks) * (secondsStep / interStep)
+					let t = xPosition / this.pixelRatio / this.props.timeScale + this.props.scrollLeft
 
 					this.ctx.fillText(
-						RundownUtils.formatDiffToTimecode(t * 1000, false, false, true, false, true),
+						RundownUtils.formatDiffToTimecode(t, false, false, true, false, true),
 						xPosition,
 						this.labelTop * this.pixelRatio
 					)

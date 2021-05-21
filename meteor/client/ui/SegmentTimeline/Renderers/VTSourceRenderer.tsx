@@ -581,55 +581,62 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 		return (
 			<React.Fragment>
-				{this.renderInfiniteItemContentEnded()}
-				{this.renderContentEndCountdown()}
-				{this.state.scenes &&
-					this.state.scenes.map(
-						(i) =>
-							i < itemDuration &&
-							i - seek >= 0 && (
-								<span
-									className="segment-timeline__piece__scene-marker"
-									key={i}
-									style={{ left: ((i - seek) * this.props.timeScale).toString() + 'px' }}
-								></span>
-							)
-					)}
-				{this.state.freezes &&
-					this.state.freezes.map(
-						(i) =>
-							i.start < itemDuration &&
-							i.start - seek >= 0 && (
-								<span
-									className="segment-timeline__piece__anomaly-marker"
-									key={i.start}
-									style={{
-										left: ((i.start - seek) * this.props.timeScale).toString() + 'px',
-										width:
-											(Math.min(itemDuration - i.start + seek, i.duration) * this.props.timeScale).toString() + 'px',
-									}}
-								></span>
-							)
-					)}
-				{this.state.blacks &&
-					this.state.blacks.map(
-						(i) =>
-							i.start < itemDuration &&
-							i.start - seek >= 0 && (
-								<span
-									className="segment-timeline__piece__anomaly-marker segment-timeline__piece__anomaly-marker__freezes"
-									key={i.start}
-									style={{
-										left: ((i.start - seek) * this.props.timeScale).toString() + 'px',
-										width:
-											(Math.min(itemDuration - i.start + seek, i.duration) * this.props.timeScale).toString() + 'px',
-									}}
-								></span>
-							)
-					)}
+				{!this.props.part.instance.part.invalid && (
+					<>
+						{this.renderInfiniteItemContentEnded()}
+						{this.renderContentEndCountdown()}
+						{this.state.scenes &&
+							this.state.scenes.map(
+								(i) =>
+									i < itemDuration &&
+									i - seek >= 0 && (
+										<span
+											className="segment-timeline__piece__scene-marker"
+											key={i}
+											style={{ left: ((i - seek) * this.props.timeScale).toString() + 'px' }}
+										></span>
+									)
+							)}
+						{this.state.freezes &&
+							this.state.freezes.map(
+								(i) =>
+									i.start < itemDuration &&
+									i.start - seek >= 0 && (
+										<span
+											className="segment-timeline__piece__anomaly-marker"
+											key={i.start}
+											style={{
+												left: ((i.start - seek) * this.props.timeScale).toString() + 'px',
+												width:
+													(Math.min(itemDuration - i.start + seek, i.duration) * this.props.timeScale).toString() +
+													'px',
+											}}
+										></span>
+									)
+							)}
+						{this.state.blacks &&
+							this.state.blacks.map(
+								(i) =>
+									i.start < itemDuration &&
+									i.start - seek >= 0 && (
+										<span
+											className="segment-timeline__piece__anomaly-marker segment-timeline__piece__anomaly-marker__freezes"
+											key={i.start}
+											style={{
+												left: ((i.start - seek) * this.props.timeScale).toString() + 'px',
+												width:
+													(Math.min(itemDuration - i.start + seek, i.duration) * this.props.timeScale).toString() +
+													'px',
+											}}
+										></span>
+									)
+							)}
+					</>
+				)}
 				{this.leftLabelNodes}
 				{this.rightLabelContainer && ReactDOM.createPortal(this.rightLabelNodes, this.rightLabelContainer)}
 				<VTFloatingInspector
+					status={this.props.piece.instance.piece.status}
 					floatingInspectorStyle={this.getFloatingInspectorStyle()}
 					content={vtContent}
 					itemElement={this.props.itemElement}

@@ -7,6 +7,7 @@ import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { ConfigManifestEntry, ConfigManifestEntryType } from '../../../../lib/api/deviceConfig'
 import { ConfigManifestEntry as BlueprintConfigManifestEntry } from '@sofie-automation/blueprints-integration'
 import { TransformedCollection } from '../../../../lib/typings/meteor'
+import { assertNever } from '../../../../lib/lib'
 
 export const renderEditAttribute = (
 	collection: TransformedCollection<any, any>,
@@ -23,8 +24,18 @@ export const renderEditAttribute = (
 		label: (configField as ConfigManifestEntry).placeholder || '',
 	}
 
-	if (configField.type === ConfigManifestEntryType.FLOAT || configField.type === ConfigManifestEntryType.INT) {
-		return <EditAttribute {...opts} type={configField.type} className="input text-input input-l"></EditAttribute>
+	if (configField.type === ConfigManifestEntryType.FLOAT) {
+		return <EditAttribute {...opts} type="float" className="input text-input input-l"></EditAttribute>
+	} else if (configField.type === ConfigManifestEntryType.INT) {
+		return (
+			<EditAttribute
+				{...opts}
+				type={'int'}
+				className="input text-input input-l"
+				mutateDisplayValue={(v) => (configField.zeroBased ? v + 1 : v)}
+				mutateUpdateValue={(v) => (configField.zeroBased ? v - 1 : v)}
+			></EditAttribute>
+		)
 	} else if (configField.type === ConfigManifestEntryType.STRING) {
 		return <EditAttribute {...opts} type="text" className="input text-input input-l"></EditAttribute>
 	} else if (configField.type === ConfigManifestEntryType.BOOLEAN) {
@@ -61,6 +72,15 @@ export const renderEditAttribute = (
 				}
 			/>
 		)
+		// TODO: Handle these?
+		// } else if (configField.type === ConfigManifestEntryType.TABLE) {
+		// 	// not handled here, handled by GenericDeviceSettingsComponent
+		// } else if (configField.type === ConfigManifestEntryType.LABEL) {
+		// 	// todo ?
+		// } else if (configField.type === ConfigManifestEntryType.LINK) {
+		// 	// todo ?
+		// } else {
+		// 	assertNever(configField.type)
 	}
 }
 

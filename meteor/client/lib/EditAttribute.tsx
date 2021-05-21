@@ -10,6 +10,7 @@ import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { Random } from 'meteor/random'
+import { assertNever } from '../../lib/lib'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -27,6 +28,7 @@ export type EditAttributeType =
 	| 'json'
 	| 'colorpicker'
 	| 'iconpicker'
+	| 'array'
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render() {
 		if (this.props.type === 'text') {
@@ -53,6 +55,10 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeColorPicker {...this.props} />
 		} else if (this.props.type === 'iconpicker') {
 			return <EditAttributeIconPicker {...this.props} />
+		} else if (this.props.type === 'array') {
+			return <EditAttributeArray {...this.props} />
+		} else {
+			assertNever(this.props.type)
 		}
 
 		return <div>Unknown edit type {this.props.type}</div>
@@ -77,6 +83,8 @@ interface IEditAttributeBaseProps {
 	mutateUpdateValue?: (v: any) => any
 	disabled?: boolean
 	storeJsonAsObject?: boolean
+	/** Defaults to string */
+	arrayType?: 'boolean' | 'int' | 'float' | 'string'
 }
 interface IEditAttributeBaseState {
 	value: any
@@ -888,6 +896,113 @@ const EditAttributeJson = wrapEditAttribute(
 			if (this.props.storeJsonAsObject) {
 				return value ? JSON.stringify(value, null, 2) : value
 			} else return value
+		}
+		render() {
+			return (
+				<input
+					type="text"
+					className={ClassNames(
+						'form-control',
+						this.props.className,
+						this.state.valueError && this.props.invalidClassName
+							? this.props.invalidClassName
+							: this.state.editing
+							? this.props.modifiedClassName || ''
+							: ''
+					)}
+					placeholder={this.props.label}
+					value={this.getEditAttribute() || ''}
+					onChange={this.handleChange}
+					onBlur={this.handleBlur}
+					onKeyUp={this.handleEscape}
+					disabled={this.props.disabled}
+				/>
+			)
+		}
+	}
+)
+const EditAttributeArray = wrapEditAttribute(
+	class EditAttributeArray extends EditAttributeBase {
+		constructor(props) {
+			super(props)
+
+			this.handleChange = this.handleChange.bind(this)
+			this.handleBlur = this.handleBlur.bind(this)
+			this.handleEscape = this.handleEscape.bind(this)
+		}
+		isArray(strOrg: string): { parsed: any[] } | false {
+			if (!(strOrg + '').trim().length) return { parsed: [] }
+
+			const values: any[] = []
+			const strs = (strOrg + '').split(',')
+
+			for (const str of strs) {
+				// Check that the values in the array are of the right type:
+
+				if (this.props.arrayType === 'boolean') {
+					const parsed = JSON.parse(str)
+					if (typeof parsed !== 'boolean') return false // type check failed
+					values.push(parsed)
+				} else if (this.props.arrayType === 'int') {
+					const parsed = parseInt(str, 10)
+
+					if (Number.isNaN(parsed)) return false // type check failed
+					values.push(parsed)
+				} else if (this.props.arrayType === 'float') {
+					const parsed = parseFloat(str)
+					if (Number.isNaN(parsed)) return false // type check failed
+					values.push(parsed)
+				} else {
+					// else this.props.arrayType is 'string'
+					const parsed = str + ''
+					if (typeof parsed !== 'string') return false // type check failed
+					values.push(parsed.trim())
+				}
+			}
+			return { parsed: values }
+		}
+		handleChange(event) {
+			let v = event.target.value
+
+			const arrayObj = this.isArray(v)
+			if (arrayObj) {
+				this.handleEdit(v, arrayObj.parsed)
+				this.setState({
+					valueError: false,
+				})
+			} else {
+				this.handleUpdateButDontSave(v, true)
+			}
+		}
+		handleBlur(event) {
+			let v = event.target.value
+
+			const arrayObj = this.isArray(v)
+			if (arrayObj) {
+				this.handleUpdate(v, arrayObj.parsed)
+				this.setState({
+					valueError: false,
+				})
+			} else {
+				this.handleUpdateButDontSave(v, true)
+				this.setState({
+					valueError: true,
+				})
+			}
+		}
+		handleEscape(event) {
+			let e = event as KeyboardEvent
+			if (e.key === 'Escape') {
+				this.handleDiscard()
+			}
+		}
+		getAttribute() {
+			const value = super.getAttribute()
+			if (Array.isArray(value)) {
+				return value.join(', ')
+			} else {
+				return ''
+			}
 		}
 		render() {
 			return (

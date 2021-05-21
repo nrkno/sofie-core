@@ -14,6 +14,9 @@ import {
 	CommandReport,
 	DeviceOptionsAtem,
 	AtemMediaPoolType,
+	MediaObject,
+	ExpectedPlayoutItem,
+	ExpectedPlayoutItemContent,
 } from 'timeline-state-resolver'
 import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler'
 import clone = require('fast-clone')
@@ -103,6 +106,7 @@ export class TSRHandler {
 	// private _config: TSRConfig
 	private _coreHandler!: CoreHandler
 	private _triggerupdateDevicesTimeout: any = null
+	private _triggerupdateExpectedPlayoutItemsTimeout: any = null
 	private _coreTsrHandlers: { [deviceId: string]: CoreTSRDeviceHandler } = {}
 	private _observers: Array<any> = []
 	private _cachedStudioId = ''
@@ -301,6 +305,19 @@ export class TSRHandler {
 			this._triggerUpdateDevices()
 		}
 		this._observers.push(deviceObserver)
+
+		const expectedPlayoutItemsObserver = this._coreHandler.core.observe('expectedPlayoutItems')
+		expectedPlayoutItemsObserver.added = () => {
+			this._triggerupdateExpectedPlayoutItems()
+		}
+		expectedPlayoutItemsObserver.changed = () => {
+			this._triggerupdateExpectedPlayoutItems()
+		}
+		expectedPlayoutItemsObserver.removed = () => {
+			this._triggerupdateExpectedPlayoutItems()
+		}
+		this._observers.push(expectedPlayoutItemsObserver)
+		this.logger.debug('VIZDEBUG: Observer to expectedPlayoutItems set up')
 	}
 	private resendStatuses(): void {
 		_.each(this._coreTsrHandlers, (tsrHandler) => {
@@ -556,6 +573,7 @@ export class TSRHandler {
 				}, INIT_TIMEOUT)
 			), // Timeout if not all are resolved within INIT_TIMEOUT
 		])
+		this._triggerupdateExpectedPlayoutItems() // So that any recently created devices will get all the ExpectedPlayoutItems
 		this.logger.info('updateDevices end')
 	}
 	private async _addDevice(deviceId: string, options: DeviceOptionsAny): Promise<any> {
@@ -672,6 +690,12 @@ export class TSRHandler {
 				this.logger.error(error)
 				this.logger.debug(context)
 			}
+			const onUpdateMediaObject = (collectionId: string, docId: string, doc: MediaObject | null) => {
+				coreTsrHandler.onUpdateMediaObject(collectionId, docId, doc)
+			}
+			const onClearMediaObjectCollection = (collectionId: string) => {
+				coreTsrHandler.onClearMediaObjectCollection(collectionId)
+			}
 			let deviceName = device.deviceName
 			const deviceInstanceId = device.instanceId
 			const fixError = (e: any) => {
@@ -711,6 +735,8 @@ export class TSRHandler {
 			await device.device.on('slowCommand', onSlowCommand)
 			await device.device.on('commandError', onCommandError)
 			await device.device.on('commandReport', onCommandReport)
+			await device.device.on('updateMediaObject', onUpdateMediaObject)
+			await device.device.on('clearMediaObjects', onClearMediaObjectCollection)
 
 			await device.device.on('info', (e: any, ...args: any[]) => this.logger.info(fixError(e), ...args))
 			await device.device.on('warning', (e: any, ...args: any[]) => this.logger.warn(fixError(e), ...args))
@@ -776,6 +802,61 @@ export class TSRHandler {
 			}
 		}
 		delete this._coreTsrHandlers[deviceId]
+	}
+	private _triggerupdateExpectedPlayoutItems() {
+		this.logger.debug('VIZDEBUG: Trigger update expected playout items called')
+		if (!this._initialized) return
+		this.logger.debug("VIZDEBUG: And we're initialized")
+		if (this._triggerupdateExpectedPlayoutItemsTimeout) {
+			clearTimeout(this._triggerupdateExpectedPlayoutItemsTimeout)
+		}
+		this._triggerupdateExpectedPlayoutItemsTimeout = setTimeout(() => {
+			this._updateExpectedPlayoutItems().catch((e) =>
+				this.logger.error('Error in _updateExpectedPlayoutItems', e)
+			)
+		}, 200)
+	}
+	private async _updateExpectedPlayoutItems() {
+		this.logger.debug('VIZDEBUG: Update expected playout items called')
+
+		const expectedPlayoutItems = this._coreHandler.core.getCollection('expectedPlayoutItems')
+		const peripheralDevice = this._getPeripheralDevice()
+
+		this.logger.debug(`VIZDEBUG: Items before filter ${JSON.stringify(expectedPlayoutItems)}`)
+
+		const expectedItems = expectedPlayoutItems.find({
+			studioId: peripheralDevice.studioId,
+		})
+
+		this.logger.debug(`VIZDEBUG: Items after filter ${JSON.stringify(expectedItems)}`)
+
+		await Promise.all(
+			_.map(this.tsr.getDevices(), async (container) => {
+				if (await container.device.supportsExpectedPlayoutItems) {
+					this.logger.debug(`VIZDEBUG: Supports expected playout items`)
+
+					await container.device.handleExpectedPlayoutItems(
+						_.map(
+							_.filter(expectedItems, (item) => {
+								return (
+									item.deviceSubType === container.deviceType
+									// TODO: implement item.deviceId === container.deviceId
+								)
+							}),
+							(item) => {
+								const itemContent: ExpectedPlayoutItemContent = item.content
+								const newItem: ExpectedPlayoutItem = {
+									...itemContent,
+									rundownId: item.rundownId,
+									playlistId: item.playlistId,
+								}
+								return newItem
+							}
+						)
+					)
+				}
+			})
+		)
 	}
 	/**
 	 * Go through and transform timeline and generalize the Core-specific things

@@ -87,6 +87,7 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	tags: string[] | undefined
 	displayStyle: PieceDisplayStyle
 	showThumbnailsInList: boolean
+	hideDuplicates: boolean
 	currentSegment: boolean
 	nextInCurrentPart: boolean
 	oneNextPerSourceLayer: boolean

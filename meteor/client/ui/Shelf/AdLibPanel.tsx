@@ -62,6 +62,8 @@ import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
+import { translateMessage } from '../../../lib/api/TranslatableMessage'
+import { i18nTranslator } from '../i18n'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -92,12 +94,22 @@ interface IListViewStateHeader {
 	}
 }
 
+/**
+ * Applies a filter to an adLib to determine whether it matches filter criteria.
+ * @param item AdLib to test against filter.
+ * @param showStyleBase
+ * @param uiSegments All segments to search for live segment.
+ * @param filter Filter to match against.
+ * @param searchFilter Text to try to match against adLib label.
+ * @param uniquenessIds Set of uniquenessIds, for a given set only one adLib per uniquness Id will be matched by this filter.
+ */
 export function matchFilter(
 	item: AdLibPieceUi,
 	showStyleBase: ShowStyleBase,
 	uiSegments: Array<AdlibSegmentUi>,
 	filter?: RundownLayoutFilterBase,
-	searchFilter?: string
+	searchFilter?: string,
+	uniquenessIds?: Set<string>
 ) {
 	if (!searchFilter && !filter) return true
 	const liveSegment = uiSegments.find((i) => i.isLive === true)
@@ -156,6 +168,17 @@ export function matchFilter(
 			}, true) === false
 		) {
 			return false
+		}
+		// Hide duplicates
+		// Only the first adLib found with a given uniquenessId will be displayed if this option is enabled.
+		// Scope of the filter is determined by the scope of the uniquenessIds set (typically rundown-wide).
+		if (filter.hideDuplicates && uniquenessIds) {
+			const uniquenessId = item.uniquenessId || unprotectString(item._id)
+			if (uniquenessIds.has(uniquenessId)) {
+				return false
+			} else {
+				uniquenessIds.add(uniquenessId)
+			}
 		}
 	}
 	if (searchFilter) {
@@ -238,7 +261,7 @@ const AdLibListView = withTranslation()(
 			}
 		}
 
-		renderRundownAdLibs() {
+		renderRundownAdLibs(uniquenessIds: Set<string>) {
 			const { t } = this.props
 
 			return (
@@ -253,7 +276,8 @@ const AdLibListView = withTranslation()(
 										this.props.showStyleBase,
 										this.props.uiSegments,
 										this.props.filter,
-										this.props.searchFilter
+										this.props.searchFilter,
+										uniquenessIds
 									)
 							)
 							.map((adLibPiece: AdLibPieceUi) => (
@@ -277,7 +301,7 @@ const AdLibListView = withTranslation()(
 			)
 		}
 
-		renderSegments() {
+		renderSegments(uniquenessIds: Set<string>) {
 			return this.props.uiSegments
 				.filter((a) => (this.props.filter ? (this.props.filter.currentSegment ? a.isLive : true) : true))
 				.map((segment) => {
@@ -308,7 +332,8 @@ const AdLibListView = withTranslation()(
 											this.props.showStyleBase,
 											this.props.uiSegments,
 											this.props.filter,
-											this.props.searchFilter
+											this.props.searchFilter,
+											uniquenessIds
 										)
 									)
 									.map((adLibPiece: AdLibPieceUi) => (
@@ -339,6 +364,7 @@ const AdLibListView = withTranslation()(
 
 		render() {
 			const selected = this.props.selectedPiece
+			const uniquenessIds = new Set<string>()
 
 			return (
 				<div
@@ -348,11 +374,11 @@ const AdLibListView = withTranslation()(
 				>
 					<table
 						id={'adlib-panel__list-view__table__' + Random.id()}
-						className="adlib-panel__list-view__list__table"
+						className="adlib-panel__list-view__list__table scroll-sink"
 						ref={this.setTableRef}
 					>
-						{this.renderRundownAdLibs()}
-						{this.renderSegments()}
+						{this.renderRundownAdLibs(uniquenessIds)}
+						{this.renderSegments(uniquenessIds)}
 					</table>
 				</div>
 			)
@@ -516,7 +542,7 @@ function actionToAdLibPieceUi(
 
 	return literal<AdLibPieceUi>({
 		_id: protectString(`function_${action._id}`),
-		name: action.display.label,
+		name: translateMessage(action.display.label, i18nTranslator),
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
@@ -534,6 +560,7 @@ function actionToAdLibPieceUi(
 		currentPieceTags: action.display.currentPieceTags,
 		nextPieceTags: action.display.nextPieceTags,
 		lifespan: PieceLifespan.WithinPart, // value doesn't matter
+		uniquenessId: action.display.uniquenessId,
 	})
 }
 
@@ -825,6 +852,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 					rundownBaselineAdLibs = rundownBaselineAdLibs
 						.concat(globalAdLibActions)
+						.sort((a, b) => a._rank - b._rank)
 						.map((item) => {
 							// automatically assign hotkeys based on adLibItem index
 							const uiAdLib: AdLibPieceUi = _.clone(item)
@@ -851,7 +879,6 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 							// always add them to the list
 							return uiAdLib
 						})
-						.sort((a, b) => a._rank - b._rank)
 
 					return rundownBaselineAdLibs.sort((a, b) => a._rank - b._rank)
 				},

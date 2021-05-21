@@ -357,6 +357,11 @@ body.no-overflow {
 					> strong {
 						margin-right: 0.4em;
 					}
+
+					> svg.icon.looping {
+						width: 1.4em;
+						height: 1.4em;
+					}
 				}
 			}
 
@@ -576,7 +581,7 @@ svg.icon {
 					top: -0.3em;
 					left: -0.3em;
 					white-space: nowrap;
-					padding: 0 2px;
+					padding: 0 2px 0 0.3em;
 				}
 
 				> svg.type-warning + .segment-timeline__title__notes__count {
@@ -1225,7 +1230,7 @@ svg.icon {
 
 				&.segment-timeline__part__nextline--endline {
 					left: auto;
-					right: 0;
+					right: -1px;
 				}
 
 				.segment-timeline__part__nextline__label {
@@ -1288,9 +1293,9 @@ svg.icon {
 			.segment-timeline__part__invalid-cover {
 				position: absolute;
 				top: 0;
-				left: 0;
+				left: 1px;
 				bottom: 0;
-				right: 0;
+				right: 1px;
 				z-index: 1;
 				pointer-events: none;
 				background-image: repeating-linear-gradient(
@@ -2204,6 +2209,45 @@ svg.icon {
 				$output-layer-group-collapse-animation-duration margin 0;
 		}
 	}
+}
+
+.playlist-looping-header {
+	color: $rundown-divider-color;
+	background: $rundown-divider-background-color;
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+	align-items: stretch;
+	align-content: space-between;
+	overflow: hidden;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+
+	width: auto;
+	margin: 0;
+	padding: 0.3em 1em 0.3em 1.3em;
+
+	&.multi-rundown {
+		margin-bottom: -1.9em;
+		padding-bottom: 0;
+	}
+
+	> .playlist-looping-header__label {
+		margin: 0;
+		padding: 0;
+		font-size: 1.05em;
+		font-weight: 500;
+
+		> svg.icon {
+			width: 1.4em;
+		}
+	}
+}
+
+.segment-timeline-container + .playlist-looping-header {
+	margin-bottom: 0 !important;
+	padding-bottom: 0.3em !important;
 }
 
 .rundown-divider-timeline {

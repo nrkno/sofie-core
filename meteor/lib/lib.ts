@@ -116,6 +116,7 @@ export function literal<T>(o: T) {
 export type Partial<T> = {
 	[P in keyof T]?: T[P]
 }
+export type ArrayElement<A> = A extends readonly (infer T)[] ? T : never
 export function partial<T>(o: Partial<T>) {
 	return o
 }

@@ -74,7 +74,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 
 	static getDerivedStateFromProps(props: IProps): IState {
 		let subItems: Array<SplitSubItem> = []
-		const splitContent = props.piece.instance.piece.content as SplitsContent | undefined
+		const splitContent = props.piece.instance.piece.content as Partial<SplitsContent> | undefined
 		if (splitContent && splitContent.boxSourceConfiguration) {
 			subItems = SplitsSourceRenderer.generateSplitSubItems(splitContent.boxSourceConfiguration)
 		}
@@ -160,7 +160,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 				{this.props.piece.instance.piece.content ? (
 					<SplitsFloatingInspector
 						floatingInspectorStyle={this.getFloatingInspectorStyle()}
-						content={this.props.piece.instance.piece.content as SplitsContent}
+						content={this.props.piece.instance.piece.content as Partial<SplitsContent>}
 						itemElement={this.props.itemElement}
 						showMiniInspector={this.props.showMiniInspector}
 						typeClass={this.props.typeClass}
