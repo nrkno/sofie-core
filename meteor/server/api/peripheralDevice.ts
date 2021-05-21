@@ -18,6 +18,7 @@ import {
 	IngestSegment,
 	IngestPart,
 	ExpectedPackageStatusAPI,
+	PackageInfo,
 } from '@sofie-automation/blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
@@ -39,7 +40,6 @@ import { PieceGroupMetadata } from '../../lib/rundown/pieces'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPackageWorkStatuses'
-import { PackageInfoDBType } from '../../lib/collections/PackageInfos'
 import { runStudioOperationWithCache, StudioLockFunctionPriority } from './studio/lockFunction'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithLockFromStudioOperation } from './playout/lockFunction'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
@@ -1195,7 +1195,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	updatePackageInfo(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		type: PackageInfoDBType, // string
+		type: PackageInfo.Type, // string
 		packageId: ExpectedPackageId,
 		expectedContentVersionHash: string,
 		actualContentVersionHash: string,
