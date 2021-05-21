@@ -39,8 +39,8 @@ export interface PackageContainerPackageStatusDB {
 export const PackageContainerPackageStatuses: TransformedCollection<
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageStatusDB
-> = createMongoCollection<PackageContainerPackageStatusDB>('packageContainerStatuses')
-registerCollection('PackageContainerStatuses', PackageContainerPackageStatuses)
+> = createMongoCollection<PackageContainerPackageStatusDB>('packageContainerPackageStatuses')
+registerCollection('PackageContainerPackageStatuses', PackageContainerPackageStatuses)
 
 registerIndex(PackageContainerPackageStatuses, {
 	studioId: 1,
