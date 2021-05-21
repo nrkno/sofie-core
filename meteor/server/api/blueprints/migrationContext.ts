@@ -267,18 +267,26 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 	private getProtectedVariantId(variantId: string): ShowStyleVariantId {
 		return protectString<ShowStyleVariantId>(this.getVariantId(variantId))
 	}
+	private getVariantFromDb(variantId: string): ShowStyleVariant | undefined {
+		const variant = ShowStyleVariants.findOne({
+			showStyleBaseId: this.showStyleBase._id,
+			_id: this.getProtectedVariantId(variantId),
+		})
+		if (variant) return variant
+
+		// Assume we were given the full id
+		return ShowStyleVariants.findOne({
+			showStyleBaseId: this.showStyleBase._id,
+			_id: protectString(variantId),
+		})
+	}
 	getVariant(variantId: string): IBlueprintShowStyleVariant | undefined {
 		check(variantId, String)
 		if (!variantId) {
 			throw new Meteor.Error(500, `Variant id "${variantId}" is invalid`)
 		}
 
-		return unprotectObject(
-			ShowStyleVariants.findOne({
-				showStyleBaseId: this.showStyleBase._id,
-				_id: this.getProtectedVariantId(variantId),
-			})
-		) as any
+		return unprotectObject(this.getVariantFromDb(variantId)) as any
 	}
 	insertVariant(variantId: string, variant: OmitId<ShowStyleVariantPart>): string {
 		check(variantId, String)
@@ -301,10 +309,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		if (!variantId) {
 			throw new Meteor.Error(500, `Variant id "${variantId}" is invalid`)
 		}
-		const variant = ShowStyleVariants.findOne({
-			_id: this.getProtectedVariantId(variantId),
-			showStyleBaseId: this.showStyleBase._id,
-		})
+		const variant = this.getVariantFromDb(variantId)
 		if (!variant) throw new Meteor.Error(404, `Variant "${variantId}" not found`)
 
 		ShowStyleVariants.update(variant._id, { $set: newVariant })
@@ -543,10 +548,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		check(configId, String)
 		if (configId === '') return undefined
 
-		const variant = ShowStyleVariants.findOne({
-			_id: this.getProtectedVariantId(variantId),
-			showStyleBaseId: this.showStyleBase._id,
-		})
+		const variant = this.getVariantFromDb(variantId)
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
 		let configItem = objectPathGet(variant.blueprintConfig, configId)
@@ -564,10 +566,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		if (_.isUndefined(value))
 			throw new Meteor.Error(400, `setVariantConfig "${variantId}", "${configId}": value is undefined`)
 
-		const variant = ShowStyleVariants.findOne({
-			_id: this.getProtectedVariantId(variantId),
-			showStyleBaseId: this.showStyleBase._id,
-		})
+		const variant = this.getVariantFromDb(variantId)
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
 		let modifier: Mongo.Modifier<DBShowStyleVariant> = {
@@ -588,10 +587,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		check(configId, String)
 
 		if (configId) {
-			const variant = ShowStyleVariants.findOne({
-				_id: this.getProtectedVariantId(variantId),
-				showStyleBaseId: this.showStyleBase._id,
-			})
+			const variant = this.getVariantFromDb(variantId)
 			if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
 			ShowStyleVariants.update(

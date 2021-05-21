@@ -636,6 +636,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				{this.leftLabelNodes}
 				{this.rightLabelContainer && ReactDOM.createPortal(this.rightLabelNodes, this.rightLabelContainer)}
 				<VTFloatingInspector
+					status={this.props.piece.instance.piece.status}
 					floatingInspectorStyle={this.getFloatingInspectorStyle()}
 					content={vtContent}
 					itemElement={this.props.itemElement}

@@ -49,7 +49,7 @@ export function syncChangesToPartInstances(
 						previousPartInstance: playlistPartInstances.previousPartInstance,
 						playStatus: 'current',
 						newPart: newPart,
-						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, newPart),
+						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, ingestCache, newPart),
 					})
 				}
 			}
@@ -63,7 +63,7 @@ export function syncChangesToPartInstances(
 							? 'current'
 							: 'next',
 						newPart: newPart,
-						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, newPart),
+						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, ingestCache, newPart),
 					})
 				}
 			}

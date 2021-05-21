@@ -110,7 +110,11 @@ describe('Test blueprint cache', () => {
 
 				studioConfigManifest: [],
 				studioMigrations: [],
-				getBaseline: () => [],
+				getBaseline: () => {
+					return {
+						timelineObjects: [],
+					}
+				},
 				getShowStyleId: () => null,
 			})
 
@@ -250,7 +254,11 @@ describe('Test blueprint cache', () => {
 
 				studioConfigManifest: [],
 				studioMigrations: [],
-				getBaseline: () => [],
+				getBaseline: () => {
+					return {
+						timelineObjects: [],
+					}
+				},
 				getShowStyleId: () => null,
 			})
 

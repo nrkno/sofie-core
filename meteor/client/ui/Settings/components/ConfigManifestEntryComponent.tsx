@@ -7,6 +7,7 @@ import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { ConfigManifestEntry, ConfigManifestEntryType } from '../../../../lib/api/deviceConfig'
 import { ConfigManifestEntry as BlueprintConfigManifestEntry } from '@sofie-automation/blueprints-integration'
 import { TransformedCollection } from '../../../../lib/typings/meteor'
+import { assertNever } from '../../../../lib/lib'
 
 export const renderEditAttribute = (
 	collection: TransformedCollection<any, any>,
@@ -71,6 +72,15 @@ export const renderEditAttribute = (
 				}
 			/>
 		)
+		// TODO: Handle these?
+		// } else if (configField.type === ConfigManifestEntryType.TABLE) {
+		// 	// not handled here, handled by GenericDeviceSettingsComponent
+		// } else if (configField.type === ConfigManifestEntryType.LABEL) {
+		// 	// todo ?
+		// } else if (configField.type === ConfigManifestEntryType.LINK) {
+		// 	// todo ?
+		// } else {
+		// 	assertNever(configField.type)
 	}
 }
 
