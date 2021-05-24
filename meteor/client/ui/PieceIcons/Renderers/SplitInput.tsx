@@ -89,6 +89,7 @@ export default class SplitInputIcon extends React.Component<{
 							textShadow: '0 2px 9px rgba(0, 0, 0, 0.5)',
 						}}
 						xmlSpace="preserve"
+						className="label"
 					>
 						<tspan
 							x="63.25"

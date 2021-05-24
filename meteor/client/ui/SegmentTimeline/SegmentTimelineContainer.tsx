@@ -48,6 +48,7 @@ import RundownViewEventBus, {
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
+import { SegmentTimelinePartClass } from './SegmentTimelinePart'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -689,11 +690,33 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		onGoToPartInstance = (e: GoToPartInstanceEvent) => {
+			const timingDurations = this.context?.durations as RundownTiming.RundownTimingContext
+
 			if (this.props.segmentId === e.segmentId) {
 				for (const part of this.props.parts) {
 					if (part.instance._id === e.partInstanceId) {
+						let newScale: number | undefined
+
+						let scrollLeft =
+							((timingDurations.partDisplayStartsAt &&
+								timingDurations.partDisplayStartsAt[unprotectString(part.partId)]) ||
+								0) -
+							((timingDurations.partDisplayStartsAt &&
+								timingDurations.partDisplayStartsAt[unprotectString(this.props.parts[0].partId)]) ||
+								0)
+
+						if (e.zoomInToFit) {
+							newScale =
+								(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING * 2 || 1) /
+								(SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
+							newScale = MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale // Math.min(MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale, newScale)
+
+							scrollLeft = Math.max(0, scrollLeft - TIMELINE_RIGHT_PADDING / newScale)
+						}
+
 						this.setState({
-							scrollLeft: part.startsAt,
+							scrollLeft,
+							timeScale: newScale ?? this.state.timeScale,
 						})
 					}
 				}

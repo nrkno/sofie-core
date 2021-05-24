@@ -19,6 +19,7 @@ export default class UnknownInputIcon extends React.Component<{ abbreviation?: s
 						textShadow: '0 2px 9px rgba(0, 0, 0, 0.5)',
 					}}
 					xmlSpace="preserve"
+					className="label"
 				>
 					<tspan
 						x="45.5"

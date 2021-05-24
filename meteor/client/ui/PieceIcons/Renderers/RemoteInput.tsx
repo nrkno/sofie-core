@@ -29,6 +29,7 @@ export default class RemoteInputIcon extends React.Component<{ inputIndex?: stri
 						textLength="116.5"
 						lengthAdjust="spacing"
 						style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '62px', fontWeight: 100 }}
+						className="label"
 					>
 						{this.props.abbreviation ? this.props.abbreviation : 'LIVE'}
 						{this.props.inputIndex !== undefined ? this.props.inputIndex : ''}

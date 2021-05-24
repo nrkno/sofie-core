@@ -55,6 +55,7 @@ export interface GoToPartEvent extends IEventContext {
 export interface GoToPartInstanceEvent extends IEventContext {
 	segmentId: SegmentId
 	partInstanceId: PartInstanceId
+	zoomInToFit?: boolean
 }
 
 export interface SelectPieceEvent extends IEventContext {

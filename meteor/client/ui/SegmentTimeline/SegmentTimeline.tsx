@@ -1020,7 +1020,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						'segment-timeline__timeline-container--grabbable': Settings.allowGrabbingTimeline,
 						'segment-timeline__timeline-container--grabbed': this.state.mouseGrabbed,
 					})}
-					onMouseDownCapture={this.onTimelineMouseDown}
+					onMouseDown={this.onTimelineMouseDown}
 					onTouchStartCapture={this.onTimelineTouchStart}
 				>
 					<div

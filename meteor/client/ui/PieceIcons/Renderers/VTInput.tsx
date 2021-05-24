@@ -19,6 +19,7 @@ export default class VTInputIcon extends React.Component<{ abbreviation?: string
 						textShadow: '0 2px 9px rgba(0, 0, 0, 0.5)',
 					}}
 					xmlSpace="preserve"
+					className="label"
 				>
 					<tspan
 						x="5.25"

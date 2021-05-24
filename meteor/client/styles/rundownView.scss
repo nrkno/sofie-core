@@ -1210,8 +1210,13 @@ svg.icon {
 			}
 
 			.segment-timeline__small-parts-flag__part {
+				display: flex;
 				margin-right: 0.1em;
 				cursor: default;
+				cursor: pointer;
+
+				--invalid-reason-color-transparent: transparent;
+				--invalid-reason-color-opaque: black;
 
 				> .piece_icon {
 					width: 1.6em;
@@ -1227,6 +1232,42 @@ svg.icon {
 				&.live {
 					> .piece_icon {
 						outline: 2px solid $segment-title-background-color-live;
+					}
+				}
+
+				&.invalid {
+					position: relative;
+
+					> .piece_icon {
+						.label {
+							display: none;
+						}
+					}
+
+					&::after {
+						content: ' ';
+						display: block;
+						position: absolute;
+						top: 0;
+						bottom: 0;
+						left: 2px;
+						right: 2px;
+						z-index: 3;
+						background: repeating-linear-gradient(
+								45deg,
+								var(--invalid-reason-color-opaque) 0,
+								var(--invalid-reason-color-opaque) 5px,
+								var(--invalid-reason-color-transparent) 5px,
+								var(--invalid-reason-color-transparent) 9px
+							),
+							repeating-linear-gradient(
+								-45deg,
+								var(--invalid-reason-color-opaque) 0,
+								var(--invalid-reason-color-opaque) 5px,
+								var(--invalid-reason-color-transparent) 5px,
+								var(--invalid-reason-color-transparent) 9px
+							);
+						opacity: 0.75;
 					}
 				}
 			}

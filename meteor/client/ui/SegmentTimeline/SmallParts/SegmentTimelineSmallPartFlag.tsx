@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useCallback } from 'react'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineSmallPartFlagIcon } from './SegmentTimelineSmallPartFlagIcon'
 import { unprotectString } from '../../../../lib/lib'
@@ -7,6 +7,7 @@ import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Studio } from '../../../../lib/collections/Studios'
 import { SegmentTimelinePartHoverPreview } from './SegmentTimelinePartHoverPreview'
 import { TFunction } from 'i18next'
+import RundownViewEventBus, { RundownViewEvents } from '../../RundownView/RundownViewEventBus'
 
 export const SegmentTimelineSmallPartFlag = ({
 	t,
@@ -63,6 +64,17 @@ export const SegmentTimelineSmallPartFlag = ({
 				sourceLayers={sourceLayers}
 				isNext={playlist.nextPartInstanceId === part.instance._id}
 				isLive={playlist.currentPartInstanceId === part.instance._id}
+				onClick={useCallback(
+					(e) => {
+						RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART_INSTANCE, {
+							segmentId: part.instance.segmentId,
+							partInstanceId: part.instance._id,
+							zoomInToFit: true,
+							context: e,
+						})
+					},
+					[part.instance._id]
+				)}
 			/>
 		)
 	})
