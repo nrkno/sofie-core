@@ -162,10 +162,10 @@ export function forceClearAllBlueprintConfigCaches() {
 }
 
 export function resetStudioBlueprintConfig(studio: Studio): void {
-	for (const map of studioBlueprintConfigCache.values()) {
+	for (let [id, map] of studioBlueprintConfigCache.entries()) {
 		map.delete(studio._id)
+		studioBlueprintConfigCache.set(id, map)
 	}
-	getStudioBlueprintConfig(studio)
 }
 
 export function getStudioBlueprintConfig(studio: Studio): unknown {
@@ -198,10 +198,10 @@ export function getStudioBlueprintConfig(studio: Studio): unknown {
 }
 
 export function resetShowStyleBlueprintConfig(showStyleBase: ShowStyleBase, showStyleVariant: ShowStyleVariant): void {
-	for (const map of showStyleBlueprintConfigCache.values()) {
+	for (let [id, map] of showStyleBlueprintConfigCache.entries()) {
 		map.get(showStyleBase._id)?.delete(showStyleVariant._id)
+		showStyleBlueprintConfigCache.set(id, map)
 	}
-	getShowStyleBlueprintConfig(showStyleBase, showStyleVariant)
 }
 export function getShowStyleBlueprintConfig(showStyleBase: ShowStyleBase, showStyleVariant: ShowStyleVariant): unknown {
 	let blueprintConfigMap = showStyleBase.blueprintId

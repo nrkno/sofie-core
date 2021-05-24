@@ -2985,23 +2985,25 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								<NoraPreviewRenderer />
 							</ErrorBoundary>
 							<ErrorBoundary>
-								<Shelf
-									buckets={this.props.buckets}
-									isExpanded={this.state.isInspectorShelfExpanded}
-									onChangeExpanded={this.onShelfChangeExpanded}
-									hotkeys={this.state.usedHotkeys}
-									playlist={this.props.playlist}
-									showStyleBase={this.props.showStyleBase}
-									studioMode={this.state.studioMode}
-									onChangeBottomMargin={this.onChangeBottomMargin}
-									onRegisterHotkeys={this.onRegisterHotkeys}
-									rundownLayout={this.state.shelfLayout}
-									studio={this.props.studio}
-									fullViewport={true}
-									shelfDisplayOptions={this.props.shelfDisplayOptions}
-									bucketDisplayFilter={this.props.bucketDisplayFilter}
-									showBuckets={this.state.shelfLayout && this.state.shelfLayout.showBuckets}
-								/>
+								<div onContextMenu={this.onContextMenuTop}>
+									<Shelf
+										buckets={this.props.buckets}
+										isExpanded={this.state.isInspectorShelfExpanded}
+										onChangeExpanded={this.onShelfChangeExpanded}
+										hotkeys={this.state.usedHotkeys}
+										playlist={this.props.playlist}
+										showStyleBase={this.props.showStyleBase}
+										studioMode={this.state.studioMode}
+										onChangeBottomMargin={this.onChangeBottomMargin}
+										onRegisterHotkeys={this.onRegisterHotkeys}
+										rundownLayout={this.state.shelfLayout}
+										studio={this.props.studio}
+										fullViewport={true}
+										shelfDisplayOptions={this.props.shelfDisplayOptions}
+										bucketDisplayFilter={this.props.bucketDisplayFilter}
+										showBuckets={this.state.shelfLayout && this.state.shelfLayout.showBuckets}
+									/>
+								</div>
 							</ErrorBoundary>
 						</RundownTimingProvider>
 					)

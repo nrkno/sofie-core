@@ -96,6 +96,8 @@ export interface ActionExecutionContext extends ShowStyleContext {
 			pieceMetaDataFilter?: any
 		}
 	): IBlueprintPiece | undefined
+	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance
+	getPartForPreviousPiece(piece: { _id: string }): IBlueprintPart | undefined
 	/** Fetch the showstyle config for the specified part */
 	// getNextShowStyleConfig(): Readonly<{ [key: string]: ConfigItemValue }>
 

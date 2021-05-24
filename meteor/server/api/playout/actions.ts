@@ -103,10 +103,16 @@ export function deactivateRundownPlaylist(cache: CacheForRundownPlaylist, rundow
 			const { blueprint } = loadShowStyleBlueprint(
 				waitForPromise(cache.activationCache.getShowStyleBase(rundown))
 			)
+			let result: Promise<void> | undefined
 			if (blueprint.onRundownDeActivate) {
-				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, cache, undefined))).catch(
-					logger.error
-				)
+				result = blueprint.onRundownDeActivate(new RundownContext(rundown, cache, undefined))
+			}
+
+			const context = new RundownContext(rundown, cache, undefined)
+			context.wipeCache()
+
+			if (result) {
+				Promise.resolve(result).catch(logger.error)
 			}
 		}
 	})
@@ -122,8 +128,7 @@ export function deactivateRundownPlaylistInner(
 
 	let rundown: Rundown | undefined
 	if (currentPartInstance) {
-		// defer so that an error won't prevent deactivate
-		Meteor.setTimeout(() => {
+		try {
 			rundown = Rundowns.findOne(currentPartInstance.rundownId)
 
 			if (rundown) {
@@ -133,7 +138,9 @@ export function deactivateRundownPlaylistInner(
 					`Could not find owner Rundown "${currentPartInstance.rundownId}" of PartInstance "${currentPartInstance._id}"`
 				)
 			}
-		}, 40)
+		} catch (e) {
+			logger.error(`Error while deactivating playlist: ${e}`)
+		}
 	} else {
 		if (nextPartInstance) {
 			rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
@@ -148,6 +155,7 @@ export function deactivateRundownPlaylistInner(
 			previousPartInstanceId: null,
 			currentPartInstanceId: null,
 			holdState: RundownHoldState.NONE,
+			activeInstanceId: undefined,
 		},
 	})
 	// rundownPlaylist.currentPartInstanceId = null

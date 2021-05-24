@@ -9,8 +9,9 @@ import {
 	getRandomId,
 	protectStringArray,
 	waitTime,
+	UnprotectedStringProperties,
 } from '../../../../lib/lib'
-import { Part } from '../../../../lib/collections/Parts'
+import { Part, Parts } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
 import {
 	EventContext as IEventContext,
@@ -27,12 +28,12 @@ import { Studio } from '../../../../lib/collections/Studios'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PieceInstance, wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
-import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { NotesContext, ShowStyleContext } from './context'
-import { isTooCloseToAutonext } from '../../playout/lib'
+import { getRundownIDsFromCache, isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
@@ -40,7 +41,7 @@ import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { MediaObjects } from '../../../../lib/collections/MediaObjects'
-import { Piece } from '../../../../lib/collections/Pieces'
+import { Piece, Pieces } from '../../../../lib/collections/Pieces'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -187,6 +188,45 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		)
 
 		return clone(unprotectObject(lastPiece))
+	}
+
+	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance {
+		const pieceExt = (piece as unknown) as Partial<PieceInstance> | undefined
+		const partInstanceId = pieceExt?.partInstanceId
+		if (!partInstanceId) {
+			throw new Error('Cannot find PartInstance from invalid PieceInstance')
+		}
+
+		const cached = this._cache.PartInstances.findOne(partInstanceId)
+		if (cached) {
+			return clone(unprotectObject(cached))
+		}
+
+		// It might be reset and so not in the cache
+		const rundownIds = getRundownIDsFromCache(this._cache, this.rundownPlaylist)
+		const oldInstance = PartInstances.findOne({
+			_id: partInstanceId,
+			rundownId: { $in: rundownIds },
+		})
+		if (oldInstance) {
+			return unprotectObject(oldInstance)
+		} else {
+			throw new Error('Cannot find PartInstance for PieceInstance')
+		}
+	}
+
+	getPartForPreviousPiece(piece: UnprotectedStringProperties<Pick<Piece, '_id'>>): IBlueprintPart | undefined {
+		if (!piece?._id) {
+			throw new Error('Cannot find Part from invalid Piece')
+		}
+
+		const pieceDB = Pieces.findOne({
+			_id: protectString(piece._id),
+			startRundownId: { $in: getRundownIDsFromCache(this._cache, this.rundownPlaylist) },
+		})
+		if (!pieceDB) throw new Error(`Cannot find Piece ${piece._id}`)
+
+		return Parts.findOne({ _id: pieceDB.startPartId })
 	}
 
 	insertPiece(part: 'current' | 'next', rawPiece: IBlueprintPiece): IBlueprintPieceInstance {

@@ -412,6 +412,10 @@ body.tv2 {
 				background: var(--dve-lower) !important;
 			}
 		}
+
+		&.piece-tag--no_next_highlight.selected {
+			box-shadow: none;
+		}
 	}
 	.rundown-view-shelf .dashboard-panel__panel__button,
 	.dashboard-panel__panel__button.list {
@@ -437,6 +441,17 @@ body.tv2 {
 	}
 	.rundown-view + .notification-pop-ups {
 		top: 3.375rem;
+	}
+
+	.notification-pop-ups {
+		max-height: unset;
+	}
+
+	@media screen and (min-height: 1441px) {
+		// Expanding over second screen
+		.notification-center-panel {
+			bottom: 50vh;
+		}
 	}
 
 	.rundown-view__shelf__contents__pane.shelf-inspector {

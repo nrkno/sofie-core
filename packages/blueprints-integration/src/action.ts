@@ -31,6 +31,8 @@ export interface IBlueprintActionManifestDisplay {
 	nextPieceTags?: string[]
 	/** Can be used by the UI to filter out identical AdLib Actions repeated across multiple segments */
 	uniquenessId?: string
+	/** When not playing, display in the UI as playing, and vice versa. Useful for Adlibs that toggle something off when taken */
+	invertOnAirState?: boolean
 }
 
 export interface IBlueprintActionManifestDisplayContent extends IBlueprintActionManifestDisplay {

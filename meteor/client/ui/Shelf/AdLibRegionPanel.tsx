@@ -7,7 +7,7 @@ import {
 	RundownLayoutAdLibRegionRole,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition, IDashboardPanelTrackedProps } from './DashboardPanel'
+import { dashboardElementPosition, IDashboardPanelTrackedProps, isAdLibDisplayedAsOnAir } from './DashboardPanel'
 import ClassNames from 'classnames'
 import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, matchFilter } from './AdLibPanel'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -58,6 +58,10 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 
 	isAdLibOnAir(adLib: AdLibPieceUi) {
 		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
+	}
+
+	isAdLibDisplayedAsOnAir(adLib: AdLibPieceUi) {
+		return isAdLibDisplayedAsOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
 	isAdLibNext(adLib: AdLibPieceUi) {
@@ -151,7 +155,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		if (piece && piece.contentMetaData && piece.contentMetaData.previewPath && mediaPreviewsUrl) {
 			return (
 				ensureHasTrailingSlash(mediaPreviewsUrl) +
-				'/media/thumbnail/' +
+				'media/thumbnail/' +
 				piece.contentMetaData.mediaId
 					.split('/')
 					.map((id) => encodeURIComponent(id))
@@ -192,7 +196,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 				<div
 					className={ClassNames('adlib-region-panel__image-container', {
 						next: piece && this.isAdLibNext(piece),
-						'on-air': piece && this.isAdLibOnAir(piece),
+						'on-air': piece && this.isAdLibDisplayedAsOnAir(piece),
 						blackout: !!this.props.piece || (this.props.panel.showBlackIfNoThumbnailPiece && !this.getThumbnailUrl()),
 					})}>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>

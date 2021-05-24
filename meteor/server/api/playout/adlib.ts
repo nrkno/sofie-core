@@ -414,6 +414,12 @@ export namespace ServerPlayoutAdLibAPI {
 			return
 		}
 
+		const currentSegment = cache.Segments.findOne({ _id: currentPartInstance.segmentId })
+
+		if (!currentSegment) {
+			return
+		}
+
 		const query = {
 			...customQuery,
 			startRundownId: { $in: rundownIds },
@@ -422,8 +428,14 @@ export namespace ServerPlayoutAdLibAPI {
 
 		const pieces = Pieces.find(query).fetch()
 
+		const segments = cache.Segments.findFetch({ _rank: { $lte: currentSegment._rank } }).map((s) => s._id)
+
 		const part = Parts.findOne(
-			{ _id: { $in: pieces.map((p) => p.startPartId) }, _rank: { $lte: currentPartInstance.part._rank } },
+			{
+				_id: { $in: pieces.map((p) => p.startPartId) },
+				_rank: { $lte: currentPartInstance.part._rank },
+				segmentId: { $in: segments },
+			},
 			{ sort: { _rank: -1 } }
 		)
 
@@ -431,17 +443,22 @@ export namespace ServerPlayoutAdLibAPI {
 			return
 		}
 
-		if (span) span.end()
+		const partStarted = currentPartInstance.timings?.startedPlayback
+		const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
 
-		return pieces
-			.filter((p) => p.startPartId === part._id)
+		const piece = pieces
+			.filter((p) => p.startPartId === part._id && (p.enable.start === 'now' || p.enable.start <= nowInPart))
 			.sort((a, b) => {
 				if (a.enable.start === 'now' && b.enable.start === 'now') return 0
-				if (a.enable.start === 'now') return 1
-				if (b.enable.start === 'now') return -1
+				if (a.enable.start === 'now') return -1
+				if (b.enable.start === 'now') return 1
 
 				return a.enable.start - b.enable.start
 			})[0]
+
+		if (span) span.end()
+
+		return piece
 	}
 
 	export function innerStartQueuedAdLib(
