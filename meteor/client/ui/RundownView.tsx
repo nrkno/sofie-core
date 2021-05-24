@@ -583,7 +583,7 @@ const RundownHeader = withTranslation()(
 			}
 		}
 		componentDidMount() {
-			let preventDefault = (e: Event) => {
+			const preventDefault = (e: Event) => {
 				e.preventDefault()
 				e.stopImmediatePropagation()
 				e.stopPropagation()
@@ -1014,7 +1014,7 @@ const RundownHeader = withTranslation()(
 				const onSuccess = () => {
 					if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 				}
-				let doActivateRehersal = () => {
+				const doActivateRehersal = () => {
 					doUserAction(
 						t,
 						e,
@@ -1120,7 +1120,7 @@ const RundownHeader = withTranslation()(
 			const { t } = this.props
 			if (e.persist) e.persist()
 
-			let doReset = () => {
+			const doReset = () => {
 				this.rewindSegments() // Do a rewind right away
 				doUserAction(
 					t,
@@ -1636,7 +1636,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		componentDidMount() {
-			let playlistId = this.props.rundownPlaylistId
+			const playlistId = this.props.rundownPlaylistId
 
 			this.subscribe(PubSub.rundownPlaylists, {
 				_id: playlistId,
@@ -1645,7 +1645,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				playlistId,
 			})
 			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId, {
+				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						_id: 1,
 						studioId: 1,
@@ -1664,7 +1664,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 
 			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId, {
+				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						_id: 1,
 					},
@@ -1728,7 +1728,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			})
 			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId, {
+				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						currentPartInstanceId: 1,
 						nextPartInstanceId: 1,
@@ -1767,7 +1767,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			})
 			this.autorun(() => {
-				let subsReady = this.subscriptionsReady()
+				const subsReady = this.subscriptionsReady()
 				if (subsReady !== this.state.subsReady) {
 					this.setState({
 						subsReady: subsReady,
@@ -1777,7 +1777,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			document.body.classList.add('dark', 'vertical-overflow-only')
 
-			let preventDefault = (e) => {
+			const preventDefault = (e) => {
 				e.preventDefault()
 				e.stopImmediatePropagation()
 				e.stopPropagation()
@@ -2175,7 +2175,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				if (!segmentId) {
 					if (e.sourceLocator.partId) {
-						let part = Parts.findOne(e.sourceLocator.partId)
+						const part = Parts.findOne(e.sourceLocator.partId)
 						if (part) {
 							segmentId = part.segmentId
 						}
@@ -2837,7 +2837,7 @@ function handleRundownPlaylistReloadResponse(t: i18next.TFunction, result: Reloa
 		}
 	}
 
-	let actionsTaken: RundownReloadResponseUserAction[] = []
+	const actionsTaken: RundownReloadResponseUserAction[] = []
 	function onActionTaken(action: RundownReloadResponseUserAction): void {
 		actionsTaken.push(action)
 		if (actionsTaken.length === rundownsInNeedOfHandling.length) {

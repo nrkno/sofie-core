@@ -161,9 +161,9 @@ export function formatDurationAsTimecode(duration: Time) {
  * @param time
  */
 export function formatDateTime(time: Time) {
-	let d = new Date(time)
+	const d = new Date(time)
 
-	let yyyy: any = d.getFullYear()
+	const yyyy: any = d.getFullYear()
 	let mm: any = d.getMonth() + 1
 	let dd: any = d.getDate()
 
@@ -201,7 +201,7 @@ export function removeNullyProperties<T>(obj: T): T {
 	return obj
 }
 export function objectPathGet(obj: any, path: string, defaultValue?: any) {
-	let v = objectPath.get(obj, path)
+	const v = objectPath.get(obj, path)
 	if (v === undefined && defaultValue !== undefined) return defaultValue
 	return v
 }
@@ -223,7 +223,7 @@ export function stringifyObjects(objs: any): string {
 	} else if (_.isFunction(objs)) {
 		return ''
 	} else if (_.isObject(objs)) {
-		let keys = _.sortBy(_.keys(objs), (k) => k)
+		const keys = _.sortBy(_.keys(objs), (k) => k)
 
 		return _.compact(
 			_.map(keys, (key) => {
@@ -250,7 +250,7 @@ export function registerCollection(name: string, collection: TransformedCollecti
 // )
 export const getCollectionStats: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
 	function getCollectionStats(collection: TransformedCollection<any, any>, cb) {
-		let raw = collection.rawCollection()
+		const raw = collection.rawCollection()
 		raw.stats(cb)
 	}
 )
@@ -385,20 +385,20 @@ export function lazyIgnore(name: string, f1: () => void, t: number): void {
 export function escapeHtml(text: string): string {
 	// Escape strings, so they are XML-compatible:
 
-	let map = {
+	const map = {
 		'&': '&amp;',
 		'<': '&lt;',
 		'>': '&gt;',
 		'"': '&quot;',
 		"'": '&#039;',
 	}
-	let nbsp = String.fromCharCode(160) // non-breaking space (160)
+	const nbsp = String.fromCharCode(160) // non-breaking space (160)
 	map[nbsp] = ' ' // regular space
 
 	const textLength = text.length
 	let outText = ''
 	for (let i = 0; i < textLength; i++) {
-		let c = text[i]
+		const c = text[i]
 		if (map[c]) {
 			outText += map[c]
 		} else {
@@ -428,7 +428,7 @@ export function toc(name: string = 'default', logStr?: string | Promise<any>[]) 
 				})
 		})
 	} else {
-		let t: number = Date.now() - ticCache[name]
+		const t: number = Date.now() - ticCache[name]
 		if (logStr) logger.info('toc: ' + name + ': ' + logStr + ': ' + t)
 		return t
 	}
@@ -518,11 +518,11 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 		if (!ok) return
 
 		try {
-			let keyWords = key.split('.')
+			const keyWords = key.split('.')
 			if (keyWords.length > 1) {
-				let oAttr = o[keyWords[0]]
+				const oAttr = o[keyWords[0]]
 				if (_.isObject(oAttr) || oAttr === undefined) {
-					let innerSelector: any = {}
+					const innerSelector: any = {}
 					innerSelector[keyWords.slice(1).join('.')] = s
 					ok = mongoWhere(oAttr || {}, innerSelector)
 				} else {
@@ -539,7 +539,7 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 					throw new Error('An $or filter must be an array')
 				}
 			} else {
-				let oAttr = o[key]
+				const oAttr = o[key]
 
 				if (_.isObject(s)) {
 					if (_.has(s, '$gt')) {
@@ -561,7 +561,7 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 					} else if (_.has(s, '$exists')) {
 						ok = (o[key] !== undefined) === !!s.$exists
 					} else if (_.has(s, '$not')) {
-						let innerSelector: any = {}
+						const innerSelector: any = {}
 						innerSelector[key] = s.$not
 						ok = !mongoWhere(o, innerSelector)
 					} else {
@@ -572,7 +572,7 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 						}
 					}
 				} else {
-					let innerSelector: any = {}
+					const innerSelector: any = {}
 					innerSelector[key] = { $eq: s }
 					ok = mongoWhere(o, innerSelector)
 				}
@@ -713,10 +713,10 @@ export function mutatePath<T>(
 ): void {
 	if (!path) throw new Meteor.Error(500, 'parameter path missing')
 
-	let attrs = path.split('.')
+	const attrs = path.split('.')
 
-	let lastAttr = _.last(attrs)
-	let attrsExceptLast = attrs.slice(0, -1)
+	const lastAttr = _.last(attrs)
+	const attrsExceptLast = attrs.slice(0, -1)
 
 	const generateWildcardAttrInfo = () => {
 		const keys = _.filter(_.keys(substitutions), (k) => k.indexOf(currentPath) === 0)
@@ -804,7 +804,7 @@ export function mutatePath<T>(
  * @param valueToPush Value to push onto array
  */
 export function pushOntoPath<T>(obj: Object, path: string, valueToPush: T) {
-	let mutator = (o: Object, lastAttr: string) => {
+	const mutator = (o: Object, lastAttr: string) => {
 		if (!_.has(o, lastAttr)) {
 			o[lastAttr] = []
 		} else {
@@ -814,7 +814,7 @@ export function pushOntoPath<T>(obj: Object, path: string, valueToPush: T) {
 					'Object propery "' + lastAttr + '" is not an array ("' + o[lastAttr] + '") (in path "' + path + '")'
 				)
 		}
-		let arr = o[lastAttr]
+		const arr = o[lastAttr]
 
 		arr.push(valueToPush)
 		return arr
@@ -828,7 +828,7 @@ export function pushOntoPath<T>(obj: Object, path: string, valueToPush: T) {
  * @param valueToPush Value to push onto array
  */
 export function pullFromPath<T>(obj: Object, path: string, matchValue: T) {
-	let mutator = (o: Object, lastAttr: string) => {
+	const mutator = (o: Object, lastAttr: string) => {
 		if (_.has(o, lastAttr)) {
 			if (!_.isArray(o[lastAttr]))
 				throw new Meteor.Error(
@@ -1029,7 +1029,7 @@ export function assertNever(_never: never): void {
 export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
 	if (a === b) return true
 	if (a.size !== b.size) return false
-	for (let val of a.values()) {
+	for (const val of a.values()) {
 		if (!b.has(val)) return false
 	}
 	return true

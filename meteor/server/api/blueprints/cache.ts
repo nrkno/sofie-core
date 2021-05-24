@@ -164,7 +164,7 @@ export function evalBlueprint(blueprint: Blueprint): SomeBlueprintManifest {
 
 		// Wrap the functions, to emit better errors
 		_.each(_.keys(manifest), (key) => {
-			let value = manifest[key]
+			const value = manifest[key]
 			if (_.isFunction(value)) {
 				manifest[key] = (...args: any[]) => {
 					try {

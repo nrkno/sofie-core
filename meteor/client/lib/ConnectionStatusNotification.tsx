@@ -59,8 +59,8 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 				}
 			}
 
-			let systemNotification: Notification | undefined = createSystemNotification(cs)
-			let newNotification = this.createNewStatusNotification(meteorStatus)
+			const systemNotification: Notification | undefined = createSystemNotification(cs)
+			const newNotification = this.createNewStatusNotification(meteorStatus)
 
 			if (newNotification.persistent) {
 				this._notificationList.set(_.compact([newNotification, systemNotification]))

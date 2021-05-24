@@ -658,13 +658,13 @@ export namespace ServerPlayoutAPI {
 
 					const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(
 						_.sortBy(filteredPieces, (piece: PieceInstance) => {
-							let sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+							const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
 							return sourceLayer?._rank || -9999
 						}),
 						nowInPart
 					)
 
-					let findLast: boolean = !!undo
+					const findLast: boolean = !!undo
 
 					if (findLast) sortedPieces.reverse()
 

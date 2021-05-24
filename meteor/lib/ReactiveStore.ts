@@ -96,7 +96,7 @@ export class ReactiveStore<Key extends ProtectedString<any> | string, Value> {
 	/** Remove a value from the store */
 	private removeValue(key: Key) {
 		const key0 = key as unknown as string
-		let o = this._store[key0]
+		const o = this._store[key0]
 		if (o) {
 			o.computation?.stop()
 			delete this._store[key0]

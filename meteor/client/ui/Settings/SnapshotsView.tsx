@@ -124,7 +124,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 			reader.readAsText(file)
 		}
 		restoreStoredSnapshot = (snapshotId) => {
-			let snapshot = Snapshots.findOne(snapshotId)
+			const snapshot = Snapshots.findOne(snapshotId)
 			if (snapshot) {
 				doModalDialog({
 					title: 'Restore Snapshot',
@@ -201,7 +201,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 			})
 		}
 		removeStoredSnapshot = (snapshotId: SnapshotId) => {
-			let snapshot = Snapshots.findOne(snapshotId)
+			const snapshot = Snapshots.findOne(snapshotId)
 			if (snapshot) {
 				doModalDialog({
 					title: 'Remove Snapshot',

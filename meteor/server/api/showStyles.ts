@@ -60,7 +60,7 @@ export function createShowStyleCompound(
 ): ShowStyleCompound | undefined {
 	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
 
-	let configs = deepmerge(showStyleBase.blueprintConfig, showStyleVariant.blueprintConfig, {
+	const configs = deepmerge(showStyleBase.blueprintConfig, showStyleVariant.blueprintConfig, {
 		arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
 	})
 

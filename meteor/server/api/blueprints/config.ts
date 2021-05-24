@@ -57,7 +57,7 @@ export namespace ConfigRef {
 	}
 	function retrieveRef(reference: string, bailOnError?: boolean): ConfigItemValue | string | undefined {
 		if (!reference) return undefined
-		let m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
+		const m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
 		if (m) {
 			if (m[1] === 'studio' && _.isString(m[2]) && _.isString(m[3])) {
 				const studioId: StudioId = protectString(m[2])

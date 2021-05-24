@@ -109,8 +109,8 @@ export namespace mousetrapHelper {
 		let index = keys
 		if (action) index = keys + '_' + action
 
-		let tag = typeof callbackOrTag === 'string' ? callbackOrTag : undefined
-		let callback = typeof callbackOrTag === 'function' ? callbackOrTag : undefined
+		const tag = typeof callbackOrTag === 'string' ? callbackOrTag : undefined
+		const callback = typeof callbackOrTag === 'function' ? callbackOrTag : undefined
 
 		if (!callback && !tag) {
 			throw new Error(`Need to provide either a callback or a tag`)

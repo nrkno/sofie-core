@@ -74,7 +74,7 @@ function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
 			if (!existingIndex.name) return // ?
 
 			// Check if the existing index should be kept:
-			let found = _.find([...i.indexes, { _id: 1 }], (newIndex) => {
+			const found = _.find([...i.indexes, { _id: 1 }], (newIndex) => {
 				return _.isEqual(newIndex, existingIndex.key)
 			})
 
@@ -535,7 +535,7 @@ async function doSystemBenchmarkInner() {
 		waitTime(10)
 		{
 			// MongoDB test: Do a number of small writes:
-			let startTime = Date.now()
+			const startTime = Date.now()
 			const insertedIds: string[] = []
 			for (let i = 0; i < 100; i++) {
 				const objectToInsert = {
@@ -560,7 +560,7 @@ async function doSystemBenchmarkInner() {
 		waitTime(10)
 		{
 			// MongoDB test: Do a number of large writes:
-			let startTime = Date.now()
+			const startTime = Date.now()
 			const insertedIds: string[] = []
 			for (let i = 0; i < 10; i++) {
 				const objectToInsert = {
@@ -640,7 +640,7 @@ async function doSystemBenchmarkInner() {
 		waitTime(10)
 		// CPU test: arithmetic calculations:
 		{
-			let startTime = Date.now()
+			const startTime = Date.now()
 			const map: any = {}
 			let number = 0
 			for (let i = 0; i < 6e4; i++) {
@@ -667,7 +667,7 @@ async function doSystemBenchmarkInner() {
 					},
 				}
 			})
-			let startTime = Date.now()
+			const startTime = Date.now()
 
 			const strings: string[] = objectsToStringify.map((o) => JSON.stringify(o))
 			const newObjects = strings.map((str) => JSON.parse(str))
@@ -690,7 +690,7 @@ async function doSystemBenchmark(context: MethodContext, runCount: number = 1): 
 	if (runCount < 1) throw new Error(`runCount must be >= 1`)
 
 	const results: BenchmarkResult[] = []
-	for (let i of _.range(0, runCount)) {
+	for (const i of _.range(0, runCount)) {
 		results.push(await doSystemBenchmarkInner())
 		waitTime(50)
 	}

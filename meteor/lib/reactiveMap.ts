@@ -30,7 +30,7 @@ export class ReactiveMap<T> {
 
 	getAll(): { [key: string]: T } {
 		const result: { [key: string]: T } = {}
-		for (let [key, value] of this.baseMap.entries()) {
+		for (const [key, value] of this.baseMap.entries()) {
 			result[key] = value
 		}
 		this.globalDependency.depend()

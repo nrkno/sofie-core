@@ -32,14 +32,14 @@ export const addSteps = addMigrationSteps('0.19.0', [
 		},
 		migrate: () => {
 			// maybe copy from studio?
-			let studios = Studios.find().fetch()
-			let showStyles = ShowStyles.find().fetch()
+			const studios = Studios.find().fetch()
+			const showStyles = ShowStyles.find().fetch()
 			if (studios.length === 1) {
-				let studio = studios[0]
+				const studio = studios[0]
 
-				let showstyle: any = showStyles.length === 1 ? showStyles[0] : {}
+				const showstyle: any = showStyles.length === 1 ? showStyles[0] : {}
 
-				let id = showstyle.id || 'show0'
+				const id = showstyle.id || 'show0'
 				ShowStyleBases.insert({
 					_id: id,
 					name: showstyle.name || 'Default showstyle',
@@ -141,12 +141,12 @@ export const addSteps = addMigrationSteps('0.19.0', [
 			let fail: string | undefined = undefined
 
 			ros.forEach((item) => {
-				let showStyleBase =
+				const showStyleBase =
 					ShowStyleBases.findOne((item as any).showStyleId) ||
 					ShowStyleBases.findOne(protectString('show0')) ||
 					ShowStyleBases.findOne()
 				if (showStyleBase) {
-					let showStyleVariant = ShowStyleVariants.findOne({
+					const showStyleVariant = ShowStyleVariants.findOne({
 						showStyleBaseId: showStyleBase._id,
 					})
 

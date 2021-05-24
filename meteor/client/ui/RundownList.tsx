@@ -212,7 +212,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 				})
 
 				this.autorun(() => {
-					let subsReady = this.subscriptionsReady()
+					const subsReady = this.subscriptionsReady()
 					if (subsReady !== this.state.subsReady && !this.state.subsReady) {
 						this.setState({
 							subsReady: subsReady,

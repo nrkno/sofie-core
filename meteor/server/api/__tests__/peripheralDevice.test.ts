@@ -58,7 +58,7 @@ describe('test peripheralDevice general API methods', () => {
 		device = env.ingestDevice
 		rundownID = protectString('rundown0')
 		rundownPlaylistID = protectString('rundownPlaylist0')
-		let rundownExternalID: string = 'rundown0'
+		const rundownExternalID: string = 'rundown0'
 		RundownPlaylists.insert({
 			_id: rundownPlaylistID,
 			externalId: 'mock_rpl',
@@ -93,8 +93,8 @@ describe('test peripheralDevice general API methods', () => {
 			externalNRCSName: 'mockNRCS',
 			organizationId: protectString(''),
 		})
-		let segmentID: SegmentId = protectString('segment0')
-		let segmentExternalID = 'segment0'
+		const segmentID: SegmentId = protectString('segment0')
+		const segmentExternalID = 'segment0'
 		Segments.insert({
 			_id: segmentID,
 			externalId: segmentExternalID,
@@ -159,7 +159,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
 
-		let options: PeripheralDeviceAPI.InitOptions = {
+		const options: PeripheralDeviceAPI.InitOptions = {
 			category: PeripheralDeviceAPI.DeviceCategory.INGEST,
 			type: PeripheralDeviceAPI.DeviceType.MOS,
 			subType: 'mos_connection',
@@ -170,7 +170,7 @@ describe('test peripheralDevice general API methods', () => {
 			},
 		}
 		Meteor.call(PeripheralDeviceAPIMethods.initialize, device._id, device.token, options)
-		let initDevice = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		const initDevice = PeripheralDevices.findOne(device._id) as PeripheralDevice
 		expect(initDevice).toBeTruthy()
 		expect(initDevice.lastSeen).toBeGreaterThan(getCurrentTime() - 100)
 		expect(initDevice.lastConnected).toBeGreaterThan(getCurrentTime() - 100)
@@ -193,7 +193,7 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('getPeripheralDevice', () => {
-		let gotDevice: PeripheralDevice = Meteor.call(
+		const gotDevice: PeripheralDevice = Meteor.call(
 			PeripheralDeviceAPIMethods.getPeripheralDevice,
 			device._id,
 			device.token
@@ -204,7 +204,7 @@ describe('test peripheralDevice general API methods', () => {
 
 	testInFiber('ping', () => {
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
-		let lastSeen = (PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen
+		const lastSeen = (PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen
 		Meteor.call(PeripheralDeviceAPIMethods.ping, device._id, device.token)
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
 	})
@@ -241,23 +241,23 @@ describe('test peripheralDevice general API methods', () => {
 
 		let resultErr = undefined
 		let resultMessage = undefined
-		let pingCompleted = (err, msg) => {
+		const pingCompleted = (err, msg) => {
 			resultErr = err
 			resultMessage = msg
 		}
 
 		// This is very odd. Ping command is sent and lastSeen updated before response
-		let device2 = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		const device2 = PeripheralDevices.findOne(device._id) as PeripheralDevice
 		expect(device2).toBeTruthy()
 		// Decrease lastSeen to ensure that the call below updates it
-		let lastSeen = device2.lastSeen - 100
+		const lastSeen = device2.lastSeen - 100
 		PeripheralDevices.update(device._id, { $set: { lastSeen: lastSeen } })
 
-		let message = 'Waving!'
+		const message = 'Waving!'
 		// Note: the null is so that Metor doesnt try to use pingCompleted  as a callback instead of blocking
 		Meteor.call(PeripheralDeviceAPIMethods.pingWithCommand, device._id, device.token, message, pingCompleted, null)
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
-		let command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0]
+		const command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0]
 		expect(command).toBeTruthy()
 		expect(command.hasReply).toBeFalsy()
 		expect(command.functionName).toBe('pingResponse')
@@ -266,7 +266,7 @@ describe('test peripheralDevice general API methods', () => {
 		expect(resultErr).toBeUndefined()
 		expect(resultMessage).toBeUndefined()
 
-		let replyMessage = 'Waving back!'
+		const replyMessage = 'Waving back!'
 		Meteor.call(
 			PeripheralDeviceAPIMethods.functionReply,
 			device._id,
@@ -291,7 +291,7 @@ describe('test peripheralDevice general API methods', () => {
 		expect(playlist).toBeTruthy()
 		const currentPartInstance = playlist?.getSelectedPartInstances()?.currentPartInstance as PartInstance
 		expect(currentPartInstance).toBeTruthy()
-		let partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
+		const partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
 			rundownPlaylistId: rundownPlaylistID,
 			partInstanceId: currentPartInstance._id,
 			time: getCurrentTime(),
@@ -312,7 +312,7 @@ describe('test peripheralDevice general API methods', () => {
 		expect(playlist).toBeTruthy()
 		const currentPartInstance = playlist?.getSelectedPartInstances().currentPartInstance as PartInstance
 		expect(currentPartInstance).toBeTruthy()
-		let partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
+		const partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
 			rundownPlaylistId: rundownPlaylistID,
 			partInstanceId: currentPartInstance._id,
 			time: getCurrentTime(),
@@ -337,7 +337,7 @@ describe('test peripheralDevice general API methods', () => {
 		const pieces = PieceInstances.find({
 			partInstanceId: currentPartInstance._id,
 		}).fetch()
-		let piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
+		const piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
 			rundownPlaylistId: rundownPlaylistID,
 			pieceInstanceId: pieces[0]._id,
 			time: getCurrentTime(),
@@ -367,7 +367,7 @@ describe('test peripheralDevice general API methods', () => {
 		const pieces = PieceInstances.find({
 			partInstanceId: currentPartInstance._id,
 		}).fetch()
-		let piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
+		const piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
 			rundownPlaylistId: rundownPlaylistID,
 			pieceInstanceId: pieces[0]._id,
 			time: getCurrentTime(),
@@ -404,7 +404,7 @@ describe('test peripheralDevice general API methods', () => {
 				)) ||
 			[]
 		expect(timelineObjs.length).toBe(1)
-		let timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = timelineObjs.map((tObj) => ({
+		const timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = timelineObjs.map((tObj) => ({
 			id: tObj.id,
 			time: getCurrentTime(),
 		}))
@@ -442,7 +442,7 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLoggerLevel('debug')
 		let throwPlease = false
 		try {
-			let result = Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european')
+			const result = Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european')
 			expect(result).toBe('european')
 			throwPlease = true
 			Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european', throwPlease)
@@ -481,7 +481,7 @@ describe('test peripheralDevice general API methods', () => {
 			},
 		})
 		Meteor.call(PeripheralDeviceAPIMethods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
-		let deviceWithAccessToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		const deviceWithAccessToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
 		expect(deviceWithAccessToken).toBeTruthy()
 		expect(deviceWithAccessToken.accessTokenUrl).toBe('http://auth.url/')
 
@@ -509,7 +509,7 @@ describe('test peripheralDevice general API methods', () => {
 		})
 
 		Meteor.call(PeripheralDeviceAPIMethods.storeAccessToken, device._id, device.token, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-		let deviceWithSecretToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		const deviceWithSecretToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
 		expect(deviceWithSecretToken).toBeTruthy()
 		expect(deviceWithSecretToken.accessTokenUrl).toBe('')
 		expect((deviceWithSecretToken.secretSettings as IngestDeviceSecretSettings).accessToken).toBe(
@@ -685,7 +685,7 @@ describe('test peripheralDevice general API methods', () => {
 				const workFlow = MediaWorkFlows.findOne(workFlowId)
 
 				expect(workFlow).toBeTruthy()
-				let newWorkFlow = Object.assign({}, workFlow)
+				const newWorkFlow = Object.assign({}, workFlow)
 				newWorkFlow._rev = '2'
 				newWorkFlow.comment = 'New comment'
 
@@ -722,7 +722,7 @@ describe('test peripheralDevice general API methods', () => {
 				const workStep = MediaWorkFlowSteps.findOne(workStepIds[0])
 
 				expect(workStep).toBeTruthy()
-				let newWorkStep = Object.assign({}, workStep)
+				const newWorkStep = Object.assign({}, workStep)
 				newWorkStep._rev = '2'
 				newWorkStep.status = MediaManagerAPI.WorkStepStatus.WORKING
 
@@ -883,7 +883,7 @@ describe('test peripheralDevice general API methods', () => {
 })
 
 // Note: The data below is copied straight from the test data in mos-connection
-let xmlApiData = {
+const xmlApiData = {
 	rundownCreate: literal<MOS.IMOSRunningOrder>({
 		ID: new MOS.MosString128('96857485'),
 		Slug: new MOS.MosString128('5PM RUNDOWN'),

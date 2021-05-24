@@ -271,7 +271,7 @@ export namespace ServerPeripheralDeviceAPI {
 		let lastTakeTime: number | undefined
 
 		// ------------------------------
-		let timelineObjs = cache.Timeline.findOne(cache.Studio.doc._id)?.timeline || []
+		const timelineObjs = cache.Timeline.findOne(cache.Studio.doc._id)?.timeline || []
 		let tlChanged = false
 
 		_.each(results, (o) => {
@@ -489,8 +489,8 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 	export const executeFunction: (deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => any =
 		Meteor.wrapAsync((deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => {
-			let args0 = args.slice(0, -1)
-			let cb = args.slice(-1)[0] // the last argument in ...args
+			const args0 = args.slice(0, -1)
+			const cb = args.slice(-1)[0] // the last argument in ...args
 			PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
 		})
 
@@ -641,7 +641,7 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 
 	let content = ''
 	try {
-		let deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
+		const deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
 		check(deviceId, String)
 
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
@@ -649,10 +649,10 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 		const peripheralDevice = PeripheralDevices.findOne(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
-		let url = new URL(req.url || '')
+		const url = new URL(req.url || '')
 
-		let fileNames = url.searchParams.get('name') || undefined
-		let fileName: string = (_.isArray(fileNames) ? fileNames[0] : fileNames) || ''
+		const fileNames = url.searchParams.get('name') || undefined
+		const fileName: string = (_.isArray(fileNames) ? fileNames[0] : fileNames) || ''
 
 		check(fileName, String)
 

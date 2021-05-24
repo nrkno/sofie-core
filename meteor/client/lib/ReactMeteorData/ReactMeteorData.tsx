@@ -157,7 +157,7 @@ class MeteorDataManager {
 			throw new Error('Expected object returned from getMeteorData')
 		}
 		// update componentData in place based on newData
-		for (let key in newData) {
+		for (const key in newData) {
 			component.data[key] = newData[key]
 		}
 		// if there is oldData (which is every time this method is called
@@ -166,7 +166,7 @@ class MeteorDataManager {
 		// co-existing with something else that writes to a component's
 		// this.data.
 		if (oldData) {
-			for (let key in oldData) {
+			for (const key in oldData) {
 				if (!(key in newData)) {
 					delete component.data[key]
 				}
@@ -240,9 +240,7 @@ export function withTracker<IProps, IState, TrackedProps>(
 ): (
 	WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>
 ) => new (props: IProps) => React.Component<IProps, IState> {
-	let expandedOptions: WithTrackerOptions<IProps, IState, TrackedProps>
-
-	expandedOptions = {
+	const expandedOptions: WithTrackerOptions<IProps, IState, TrackedProps> = {
 		getMeteorData: autorunFunction,
 		shouldComponentUpdate: checkUpdate,
 		queueTrackerUpdates,
@@ -266,7 +264,7 @@ export function withTracker<IProps, IState, TrackedProps>(
 				return true
 			}
 			render() {
-				let content = <WrappedComponent {...this.props} {...this.data} />
+				const content = <WrappedComponent {...this.props} {...this.data} />
 				// this._renderedContent = content
 				return content
 			}

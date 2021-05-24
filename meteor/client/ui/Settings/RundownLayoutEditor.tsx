@@ -1486,7 +1486,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					uploadFileKey: Date.now(),
 				})
 
-				let uploadFileContents = (e2.target as any).result
+				const uploadFileContents = (e2.target as any).result
 
 				doModalDialog({
 					title: t('Upload Layout?'),

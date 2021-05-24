@@ -72,7 +72,7 @@ import { i18nTranslator } from '../i18n'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
-		let size = {
+		const size = {
 			width: 0,
 			height: 0,
 		}
@@ -281,10 +281,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				showStyleVariantId = rundown.showStyleVariantId
 			}
 		}
-		let tOLayers: {
+		const tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
-		let tSLayers: {
+		const tSLayers: {
 			[key: string]: ISourceLayer
 		} = {}
 
@@ -493,7 +493,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						return
 					}
 
-					let sourceLayer = this.props.sourceLayers && this.props.sourceLayers[piece.sourceLayerId]
+					const sourceLayer = this.props.sourceLayers && this.props.sourceLayers[piece.sourceLayerId]
 
 					if (queue && sourceLayer && !sourceLayer.isQueueable) {
 						console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
@@ -651,7 +651,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						const draggedB = this.props.adLibPieces.find((b) => b._id === draggedId)
 
 						if (draggedOver && draggedB) {
-							var newRank = draggedOver._rank
+							let newRank = draggedOver._rank
 
 							// Dragged over into first place
 							if (newIndex === 0) {

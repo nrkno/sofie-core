@@ -78,7 +78,7 @@ PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: Serv
 
 		if (!Meteor.isTest) logger.info(`Got blueprint collection. ${Object.keys(body).length} blueprints`)
 
-		let errors: any[] = []
+		const errors: any[] = []
 		for (const id of _.keys(collection.blueprints)) {
 			try {
 				const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''
@@ -147,7 +147,7 @@ PickerPOST.route('/blueprints/assets', (params, req: IncomingMessage, res: Serve
 
 		if (!Meteor.isTest) logger.info(`Got blueprint assets. ${Object.keys(collection).length} assets`)
 
-		let errors: any[] = []
+		const errors: any[] = []
 		for (const id of _.keys(collection)) {
 			try {
 				const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''

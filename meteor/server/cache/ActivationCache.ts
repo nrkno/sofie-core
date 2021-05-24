@@ -29,7 +29,7 @@ export function getValidActivationCache(
 	studioId: StudioId,
 	playlistId?: RundownPlaylistId
 ): ActivationCache | undefined {
-	let activationCache = activationCaches.get(studioId)
+	const activationCache = activationCaches.get(studioId)
 	if (
 		activationCache &&
 		!activationCache.expired &&

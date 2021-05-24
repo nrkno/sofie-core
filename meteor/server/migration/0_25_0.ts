@@ -34,7 +34,7 @@ export const addSteps = addMigrationSteps('0.25.0', [
 		id: 'migrateDatabaseCollections',
 		canBeRunAutomatically: true,
 		validate: () => {
-			let databaseSystem = getCoreSystem()
+			const databaseSystem = getCoreSystem()
 
 			// Only run this if version is under 0.25.0, in order to not create the deprecated databases
 			if (databaseSystem && semver.satisfies(databaseSystem.version, '<0.25.0')) {

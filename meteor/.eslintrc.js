@@ -7,7 +7,6 @@ const commonRules = {
 }
 const tmpRules = {
 	// tmp to remove before commit
-	'prefer-const': 'off',
 	'@typescript-eslint/no-unused-vars': 'off',
 	'@typescript-eslint/no-var-requires': 'off',
 	'@typescript-eslint/no-empty-function': 'off',
@@ -15,7 +14,6 @@ const tmpRules = {
 	'@typescript-eslint/ban-ts-comment': 'off',
 	'no-useless-escape': 'off',
 	'@typescript-eslint/no-non-null-assertion': 'off',
-	'no-var': 'off',
 }
 
 const tsBase = {

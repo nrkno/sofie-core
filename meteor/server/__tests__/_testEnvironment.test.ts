@@ -42,7 +42,7 @@ describe('Basic test of test environment', () => {
 		const val = asynchronousFibersFunction(1, 2, 3)
 		expect(val).toEqual(1 + 2 + 3)
 
-		let p = Promise.resolve()
+		const p = Promise.resolve()
 			.then(() => {
 				expect(isInFiber()).toBeTruthy()
 				return 'a'
@@ -168,7 +168,7 @@ describe('Basic test of test environment', () => {
 		expect(Studios.find().fetch()).toHaveLength(0)
 	})
 	testInFiber('Promises in fibers', () => {
-		let p = new Promise((resolve) => {
+		const p = new Promise((resolve) => {
 			setTimeout(() => {
 				resolve('yup')
 			}, 10)

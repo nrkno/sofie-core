@@ -88,7 +88,7 @@ export class Part implements DBPart {
 	public identifier?: string
 
 	constructor(document: DBPart) {
-		for (let [key, value] of Object.entries(document)) {
+		for (const [key, value] of Object.entries(document)) {
 			this[key] = value
 		}
 	}

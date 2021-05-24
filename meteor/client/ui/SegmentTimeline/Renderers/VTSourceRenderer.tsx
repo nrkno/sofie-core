@@ -65,7 +65,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 		const innerPiece = props.piece.instance.piece
 
-		let labelItems = innerPiece.name.split('||')
+		const labelItems = innerPiece.name.split('||')
 
 		this.state = {
 			noticeLevel: getNoticeLevelForPieceStatus(innerPiece.status),
@@ -224,7 +224,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			innerPiece.name !== prevProps.piece.instance.piece.name ||
 			innerPiece.status !== prevProps.piece.instance.piece.status
 		) {
-			let labelItems = innerPiece.name.split('||')
+			const labelItems = innerPiece.name.split('||')
 			newState.noticeLevel = getNoticeLevelForPieceStatus(innerPiece.status)
 			newState.begin = labelItems[0] || ''
 			newState.end = labelItems[1] || ''

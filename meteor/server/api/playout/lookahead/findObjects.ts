@@ -61,7 +61,7 @@ export function findLookaheadObjectsForPart(
 	}
 	const span = profiler.startSpan('findObjectsForPart')
 
-	let allObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
+	const allObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 	for (const rawPiece of partInfo.pieces) {
 		const tmpPieceInstanceId = getBestPieceInstanceId(rawPiece)
 		for (const obj of rawPiece.piece.content?.timelineObjects ?? []) {

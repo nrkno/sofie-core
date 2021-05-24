@@ -30,10 +30,10 @@ export const AfterBroadcastForm = withTranslation()(
 		}
 		saveForm = (e: React.MouseEvent<HTMLElement>) => {
 			const { t } = this.props
-			let answers = this.state
+			const answers = this.state
 
 			const saveEvaluation = (snapshotId?: SnapshotId) => {
-				let evaluation: EvaluationBase = {
+				const evaluation: EvaluationBase = {
 					studioId: this.props.playlist.studioId,
 					playlistId: this.props.playlist._id,
 					answers: answers,
@@ -72,10 +72,10 @@ export const AfterBroadcastForm = withTranslation()(
 			}
 		}
 		onUpdateValue = (edit: any, newValue: any) => {
-			let attr = edit.props.attribute
+			const attr = edit.props.attribute
 
 			if (attr) {
-				let m = {}
+				const m = {}
 				m[attr] = newValue
 				this.setState(m)
 			}
@@ -83,7 +83,7 @@ export const AfterBroadcastForm = withTranslation()(
 		render() {
 			const { t } = this.props
 
-			let obj = this.state
+			const obj = this.state
 			return (
 				<div className="afterbroadcastform-container">
 					<div className="afterbroadcastform">

@@ -187,7 +187,7 @@ function processAndSaveTimelineObjects(
 			playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
 			studio.settings.forceSettingNowTime
 		) {
-			let worstLatency = Math.max(...playoutDevices.map((device) => getExpectedLatency(device).safe))
+			const worstLatency = Math.max(...playoutDevices.map((device) => getExpectedLatency(device).safe))
 
 			/** Add a little more latency, to account for network latency variability */
 			const ADD_SAFE_LATENCY = studio.settings.nowSafeLatency || 30
@@ -208,7 +208,7 @@ function processAndSaveTimelineObjects(
 	timelineObjs.forEach((tlo: TimelineObjGeneric) => {
 		// A timeline object is updated if found in both collections
 
-		let tloldo: TimelineObjGeneric | undefined = oldTimelineObjsMap[tlo.id]
+		const tloldo: TimelineObjGeneric | undefined = oldTimelineObjsMap[tlo.id]
 
 		let oldNow: TSR.Timeline.TimelineEnable['start'] | undefined
 		if (tloldo && tloldo.enable) {
@@ -385,12 +385,12 @@ async function getTimelineRundown(cache: CacheForPlayout): Promise<Array<Timelin
 function processTimelineObjects(studio: ReadonlyDeep<Studio>, timelineObjs: Array<TimelineObjGeneric>): void {
 	const span = profiler.startSpan('processTimelineObjects')
 	// first, split out any grouped objects, to make the timeline shallow:
-	let fixObjectChildren = (o: TimelineObjGeneric): void => {
+	const fixObjectChildren = (o: TimelineObjGeneric): void => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
 		if (o.isGroup && o.children && o.children.length) {
 			const children = o.children as TSR.TSRTimelineObjBase[]
 			_.each(children, (child: TSR.TSRTimelineObjBase) => {
-				let childFixed: TimelineObjGeneric = {
+				const childFixed: TimelineObjGeneric = {
 					...child,
 					objectType: o.objectType,
 					inGroup: o.id,
@@ -682,7 +682,7 @@ function buildTimelineObjsForRundown(
 
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (partInstancesInfo.next && partInstancesInfo.current.partInstance.part.autoNext) {
-			let nextPartGroup = createPartGroup(partInstancesInfo.next.partInstance, {})
+			const nextPartGroup = createPartGroup(partInstancesInfo.next.partInstance, {})
 			if (currentPartGroup) {
 				const overlapDuration = calcPartOverlapDuration(
 					partInstancesInfo.current.partInstance.part,
@@ -742,7 +742,7 @@ function createPartGroup(
 		// TODO - is this loose enough?
 		enable.start = 'now'
 	}
-	let partGrp = literal<TimelineObjGroupPart & OnGenerateTimelineObjExt>({
+	const partGrp = literal<TimelineObjGroupPart & OnGenerateTimelineObjExt>({
 		id: getPartGroupId(partInstance),
 		objectType: TimelineObjType.RUNDOWN,
 		enable: enable,
@@ -794,7 +794,7 @@ function createPartGroupFirstObject(
 function transformBaselineItemsIntoTimeline(
 	objs: RundownBaselineObj[]
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
-	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
+	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 	_.each(objs, (obj: RundownBaselineObj) => {
 		// the baseline objects are layed out without any grouping
 		_.each(obj.objects, (o: TimelineObjGeneric) => {
@@ -862,7 +862,7 @@ function transformPartIntoTimeline(
 	showHoldExcept?: boolean
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const span = profiler.startSpan('transformPartIntoTimeline')
-	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
+	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
 	const isHold = holdState === RundownHoldState.ACTIVE
 	const allowTransition =
@@ -1012,7 +1012,7 @@ function calcPartTargetDuration(prevPart: Part | undefined, currentPart: Part): 
 		return rawExpectedDuration + (currentPart.prerollDuration || 0)
 	}
 
-	let prerollDuration = currentPart.transitionPrerollDuration || currentPart.prerollDuration || 0
+	const prerollDuration = currentPart.transitionPrerollDuration || currentPart.prerollDuration || 0
 	return rawExpectedDuration + prerollDuration
 }
 function calcPartOverlapDuration(fromPart: Part, toPart: Part): number {

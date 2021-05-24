@@ -14,7 +14,7 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 	check(params.studioId, String)
 	response.setHeader('Content-Type', 'text/plain')
 
-	let content = ''
+	const content = ''
 	try {
 		let ingestRundown = req.body
 		if (!ingestRundown) throw new Meteor.Error(400, 'Upload rundown: Missing request body')

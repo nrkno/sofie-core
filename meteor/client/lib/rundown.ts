@@ -344,7 +344,7 @@ export namespace RundownUtils {
 
 		let autoNextPart = false
 
-		let segmentExtended = literal<SegmentExtended>({
+		const segmentExtended = literal<SegmentExtended>({
 			...segment,
 			/** Create maps for outputLayers and sourceLayers */
 			outputLayers: {},
@@ -401,7 +401,7 @@ export namespace RundownUtils {
 			)
 
 			// create a lookup map to match original pieces to their resolved counterparts
-			let piecesLookup = new Map<PieceId, PieceExtended>()
+			const piecesLookup = new Map<PieceId, PieceExtended>()
 			// a buffer to store durations for the displayDuration groups
 			const displayDurationGroups = new Map<string, number>()
 
@@ -432,10 +432,10 @@ export namespace RundownUtils {
 			const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
 			partsE = segmentInfo.partInstances.map((partInstance, itIndex) => {
-				let partTimeline: SuperTimeline.TimelineObject[] = []
+				const partTimeline: SuperTimeline.TimelineObject[] = []
 
 				// extend objects to match the Extended interface
-				let partE = literal<PartExtended>({
+				const partE = literal<PartExtended>({
 					partId: partInstance.part._id,
 					instance: partInstance,
 					pieces: [],
@@ -527,7 +527,7 @@ export namespace RundownUtils {
 					}
 
 					// find the target output layer
-					let outputLayer = outputLayers[piece.piece.outputLayerId] as IOutputLayerExtended | undefined
+					const outputLayer = outputLayers[piece.piece.outputLayerId] as IOutputLayerExtended | undefined
 					resPiece.outputLayer = outputLayer
 
 					if (!piece.piece.virtual && outputLayer) {
@@ -548,7 +548,7 @@ export namespace RundownUtils {
 							sourceLayer = sourceLayers[piece.piece.sourceLayerId]
 							if (sourceLayer) {
 								sourceLayer = { ...sourceLayer }
-								let partSourceLayer = sourceLayer
+								const partSourceLayer = sourceLayer
 								partSourceLayer.pieces = []
 								outputLayer.sourceLayers.push(partSourceLayer)
 							}
@@ -589,7 +589,7 @@ export namespace RundownUtils {
 						}
 					})
 				})
-				let tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, { time: 0 })
+				const tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, { time: 0 })
 				// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
 				let furthestDuration = 0
 				const objs = Object.values(tlResolved.objects)
@@ -696,7 +696,7 @@ export namespace RundownUtils {
 					})
 					// check if the Pieces should be cropped (as should be the case if an item on a layer is placed after
 					// an infinite Piece) and limit the width of the labels so that they dont go under or over the next Piece.
-					for (let [outputSourceCombination, layerItems] of Object.entries(itemsByLayer)) {
+					for (const [outputSourceCombination, layerItems] of Object.entries(itemsByLayer)) {
 						// sort on rendered in-point and then on priority
 						const sortedItems = layerItems.sort(
 							(a, b) =>

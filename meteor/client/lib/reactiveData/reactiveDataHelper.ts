@@ -91,7 +91,7 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 			})
 			return computation
 		})
-		let gc = Meteor.setInterval(() => {
+		const gc = Meteor.setInterval(() => {
 			if (!dep.hasDependents()) {
 				Meteor.clearInterval(gc)
 				computation.stop()

@@ -229,7 +229,7 @@ export const ComponentTimelineSimulate = withTracker<
 	ITimelineSimulateState,
 	ITimelineSimulateTrackedProps
 >((props: ITimelineSimulateProps) => {
-	let now = getCurrentTimeReactive()
+	const now = getCurrentTimeReactive()
 
 	try {
 		// These properties will be exposed under this.props
@@ -260,8 +260,8 @@ export const ComponentTimelineSimulate = withTracker<
 		const transformed = transformTimeline(timeline)
 
 		// TODO - dont repeat unless changed
-		let tl = Resolver.resolveTimeline(transformed, { time: tlComplete?.generated || now })
-		let allStates = Resolver.resolveAllStates(tl)
+		const tl = Resolver.resolveTimeline(transformed, { time: tlComplete?.generated || now })
+		const allStates = Resolver.resolveAllStates(tl)
 
 		return {
 			now: now,

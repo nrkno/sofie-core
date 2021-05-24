@@ -37,7 +37,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 					uploadFileKey: Date.now(),
 				})
 
-				let uploadFileContents = (e2.target as any).result
+				const uploadFileContents = (e2.target as any).result
 
 				fetchFrom(`/devices/${this.props.device._id}/uploadCredentials`, {
 					method: 'POST',
@@ -117,8 +117,8 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 		}
 		render() {
 			const { t } = this.props
-			let settings = (this.props.device.settings || {}) as IngestDeviceSettings
-			let device = this.props.device
+			const settings = (this.props.device.settings || {}) as IngestDeviceSettings
+			const device = this.props.device
 			return (
 				<div>
 					<div className="mod mvs mhn">

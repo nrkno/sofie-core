@@ -27,7 +27,7 @@ function extractExpectedPlayoutItems(
 	partId: PartId | undefined,
 	piece: Piece | AdLibPiece | AdLibAction | RundownBaselineAdLibAction
 ): ExpectedPlayoutItem[] {
-	let expectedPlayoutItemsGeneric: ExpectedPlayoutItem[] = []
+	const expectedPlayoutItemsGeneric: ExpectedPlayoutItem[] = []
 
 	if (piece.expectedPlayoutItems) {
 		_.each(piece.expectedPlayoutItems, (pieceItem, i) => {

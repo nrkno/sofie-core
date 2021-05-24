@@ -98,7 +98,7 @@ export function computeSegmentDuration(
 	partIds: PartId[],
 	display?: boolean
 ): number {
-	let partDurations = timingDurations.partDurations
+	const partDurations = timingDurations.partDurations
 
 	if (partDurations === undefined) return 0
 

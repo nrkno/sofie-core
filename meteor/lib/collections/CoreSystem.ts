@@ -117,12 +117,12 @@ export function getCoreSystemCursor(options?: FindOptions<ICoreSystem>) {
 	return CoreSystem.find(SYSTEM_ID, options)
 }
 export function setCoreSystemVersion(versionStr: string): string {
-	let system = getCoreSystem()
+	const system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, 'CoreSystem not found')
 
 	if (!Meteor.isServer) throw new Meteor.Error(500, 'This function can only be run server-side')
 
-	let version = parseVersion(versionStr)
+	const version = parseVersion(versionStr)
 
 	if (version === versionStr) {
 		logger.info(`Updating database version, from "${system.version}" to "${version}".`)
@@ -149,7 +149,7 @@ export function setCoreSystemVersion(versionStr: string): string {
 	}
 }
 export function setCoreSystemStorePath(storePath: string | undefined): void {
-	let system = getCoreSystem()
+	const system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, 'CoreSystem not found')
 	if (!Meteor.isServer) throw new Meteor.Error(500, 'This function can only be run server-side')
 

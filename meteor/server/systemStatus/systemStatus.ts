@@ -63,7 +63,7 @@ export interface StatusObjectInternal {
  * @param studioId (Optional) If provided, limits the status to what's affecting the studio
  */
 export function getSystemStatus(cred0: Credentials, studioId?: StudioId): StatusResponse {
-	let checks: Array<CheckObj> = []
+	const checks: Array<CheckObj> = []
 
 	SystemWriteAccess.systemStatusRead(cred0)
 
@@ -84,7 +84,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 		})
 	})
 
-	let statusObj: StatusResponse = {
+	const statusObj: StatusResponse = {
 		name: 'Sofie Automation system',
 		instanceId: instanceId,
 		updated: new Date(getCurrentTime()).toISOString(),
@@ -119,23 +119,23 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 		}
 	}
 	_.each(devices, (device: PeripheralDevice) => {
-		let deviceStatus: StatusCode = device.status.statusCode
-		let deviceStatusMessages: Array<string> = device.status.messages || []
+		const deviceStatus: StatusCode = device.status.statusCode
+		const deviceStatusMessages: Array<string> = device.status.messages || []
 
-		let checks: Array<CheckObj> = []
+		const checks: Array<CheckObj> = []
 
 		if (deviceStatus === StatusCode.GOOD) {
 			if (device.expectedVersions) {
 				if (!device.versions) device.versions = {}
-				let deviceVersions = device.versions
+				const deviceVersions = device.versions
 				_.each(device.expectedVersions, (expectedVersionStr, libraryName: string) => {
-					let versionStr = deviceVersions[libraryName]
+					const versionStr = deviceVersions[libraryName]
 
-					let version = parseVersion(versionStr || '0.0.0')
-					let expectedVersion = parseRange(expectedVersionStr)
+					const version = parseVersion(versionStr || '0.0.0')
+					const expectedVersion = parseRange(expectedVersionStr)
 
 					let statusCode = StatusCode.GOOD
-					let messages: Array<string> = []
+					const messages: Array<string> = []
 
 					if (semver.satisfies(version, '0.0.0')) {
 						// if the major version is 0.0.0, ignore it
@@ -185,7 +185,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 				})
 			}
 		}
-		let so: StatusResponse = {
+		const so: StatusResponse = {
 			name: device.name,
 			instanceId: device._id,
 			status: 'UNDEFINED',
@@ -221,7 +221,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 		statusObj.components.push(so)
 	})
 
-	let systemStatus: StatusCode = setStatus(statusObj)
+	const systemStatus: StatusCode = setStatus(statusObj)
 	statusObj._internal = {
 		// statusCode: systemStatus,
 		statusCodeString: StatusCode[systemStatus],
@@ -248,13 +248,13 @@ export function setSystemStatus(type: string, status: StatusObject) {
 		systemStatus.timestamp = getCurrentTime()
 	}
 
-	let messages: Array<{
+	const messages: Array<{
 		message: string
 		timestamp: Time
 	}> = []
 	if (status.messages) {
 		_.each(status.messages, (message) => {
-			let m = _.find(systemStatus.messages, (m) => m.message === message)
+			const m = _.find(systemStatus.messages, (m) => m.message === message)
 			if (m) {
 				messages.push(m)
 			} else {
@@ -284,7 +284,7 @@ function setStatus(statusObj: StatusResponse | Component): StatusCode {
 	}
 	if (statusObj.components) {
 		_.each(statusObj.components, (component: Component) => {
-			let s2: StatusCode = setStatus(component)
+			const s2: StatusCode = setStatus(component)
 			if (s2 > s) s = s2
 		})
 	}
@@ -293,7 +293,7 @@ function setStatus(statusObj: StatusResponse | Component): StatusCode {
 	return s
 }
 function collectMesages(statusObj: StatusResponse | Component): Array<string> {
-	let allMessages: Array<string> = []
+	const allMessages: Array<string> = []
 
 	if (statusObj._internal) {
 		_.each(statusObj._internal.messages, (msg) => {
@@ -311,7 +311,7 @@ function collectMesages(statusObj: StatusResponse | Component): Array<string> {
 	}
 	if (statusObj.components) {
 		_.each(statusObj.components, (component: Component) => {
-			let messages = collectMesages(component)
+			const messages = collectMesages(component)
 
 			_.each(messages, (msg) => {
 				allMessages.push(`${component.name}: ${msg}`)

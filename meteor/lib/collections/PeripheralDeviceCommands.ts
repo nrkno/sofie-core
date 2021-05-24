@@ -27,7 +27,7 @@ export const PeripheralDeviceCommands: TransformedCollection<PeripheralDeviceCom
 registerCollection('PeripheralDeviceCommands', PeripheralDeviceCommands)
 
 // Monitor and remove old, lingering commands:
-let removeOldCommands = () => {
+const removeOldCommands = () => {
 	PeripheralDeviceCommands.find().forEach((cmd) => {
 		if (getCurrentTime() - (cmd.time || 0) > 20 * 1000) {
 			// timeout a long time ago

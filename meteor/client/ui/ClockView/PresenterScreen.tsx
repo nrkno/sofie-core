@@ -85,7 +85,7 @@ function getShowStyleBaseIdSegmentPartUi(
 			// This registers a reactive dependency on infinites-capping pieces, so that the segment can be
 			// re-evaluated when a piece like that appears.
 
-			let o = RundownUtils.getResolvedSegment(
+			const o = RundownUtils.getResolvedSegment(
 				showStyleBase,
 				playlist,
 				orderedSegmentsAndParts.segments[segmentIndex],
@@ -126,7 +126,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 				restoredFromSnapshotId: 0,
 			},
 		})
-	let segments: Array<SegmentUi> = []
+	const segments: Array<SegmentUi> = []
 	let showStyleBaseIds: ShowStyleBaseId[] = []
 	let rundowns: Rundown[] = []
 	let rundownIds: RundownId[] = []
@@ -218,7 +218,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 
 	protected subscribeToData() {
 		this.autorun(() => {
-			let playlist = RundownPlaylists.findOne(this.props.playlistId, {
+			const playlist = RundownPlaylists.findOne(this.props.playlistId, {
 				fields: {
 					_id: 1,
 				},

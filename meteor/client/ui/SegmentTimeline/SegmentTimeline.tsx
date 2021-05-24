@@ -186,7 +186,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 
 	renderMiniLiveLine() {
 		if (this.props.isLiveSegment) {
-			let lineStyle = {
+			const lineStyle = {
 				left: ((this.props.livePosition / this.getSegmentDuration()) * 100).toString() + '%',
 			}
 
@@ -389,12 +389,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	onTimelineTouchMove = (e: TouchEvent) => {
 		if (e.touches.length === 2) {
-			let newSize = e.touches[1].clientX - e.touches[0].clientX
-			let prop = newSize / this._touchSize
+			const newSize = e.touches[1].clientX - e.touches[0].clientX
+			const prop = newSize / this._touchSize
 			this.props.onZoomChange(Math.min(500, this.props.timeScale * prop), e)
 			this._touchSize = newSize
 		} else if (e.touches.length === 1 && this._lastPointer) {
-			let scrollAmount = this._lastPointer.clientX - e.touches[0].clientX
+			const scrollAmount = this._lastPointer.clientX - e.touches[0].clientX
 			this.props.onScroll(Math.max(0, this.props.scrollLeft + scrollAmount / this.props.timeScale), e)
 			this._lastPointer = {
 				clientX: e.touches[0].clientX,
@@ -456,7 +456,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	onTimelineMouseMove = (e: React.MouseEvent<HTMLDivElement> & any) => {
-		let scrollAmount = e.movementX * -1 || (this._lastPointer ? this._lastPointer.clientX - e.clientX : 0)
+		const scrollAmount = e.movementX * -1 || (this._lastPointer ? this._lastPointer.clientX - e.clientX : 0)
 		this.props.onScroll(Math.max(0, this.props.scrollLeft + scrollAmount / this.props.timeScale), e)
 		if (e.movementX === 0) {
 			this._lastPointer = {
@@ -597,13 +597,13 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		const { t } = this.props
 
 		if (this.props.isLiveSegment) {
-			let pixelPostion = Math.floor(
+			const pixelPostion = Math.floor(
 				this.props.livePosition * this.props.timeScale -
 					(!(this.props.followLiveLine && !this.props.showingAllSegment)
 						? this.props.scrollLeft * this.props.timeScale
 						: 0)
 			)
-			let lineStyle = {
+			const lineStyle = {
 				left:
 					(this.props.followLiveLine && !this.props.showingAllSegment
 						? Math.min(pixelPostion, this.props.liveLineHistorySize).toString()
@@ -655,7 +655,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		return (
 			<React.Fragment>
 				{this.props.parts.map((part, index) => {
-					let previousPartIsLive = partIsLive
+					const previousPartIsLive = partIsLive
 					partIsLive = part.instance._id === this.props.playlist.currentPartInstanceId
 					return (
 						<SegmentTimelinePart
@@ -766,7 +766,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	render() {
-		let notes: Array<SegmentNote> = this.props.segmentNotes
+		const notes: Array<SegmentNote> = this.props.segmentNotes
 
 		const { t } = this.props
 

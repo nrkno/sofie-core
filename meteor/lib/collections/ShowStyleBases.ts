@@ -45,7 +45,7 @@ export class ShowStyleBase implements DBShowStyleBase {
 	public _rundownVersionHash: string
 
 	constructor(document: DBShowStyleBase) {
-		for (let [key, value] of Object.entries(document)) {
+		for (const [key, value] of Object.entries(document)) {
 			this[key] = value
 		}
 	}

@@ -568,7 +568,7 @@ export class ConfigManifestSettings<
 	}
 
 	finishEditItem = (item: ConfigManifestEntry) => {
-		let index = this.state.editedItems.indexOf(item.id)
+		const index = this.state.editedItems.indexOf(item.id)
 		if (index >= 0) {
 			this.state.editedItems.splice(index, 1)
 			this.setState({

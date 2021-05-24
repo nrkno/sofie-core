@@ -7,8 +7,8 @@
 export namespace TrackerMock {
 	type ComputationCallback = (computation: Computation) => void
 	type AutorunCallback = (computation: Computation) => void
-	export let currentComputation: Computation | null = null
-	export let active: boolean = false
+	export const currentComputation: Computation | null = null
+	export const active: boolean = false
 
 	export class Dependency {
 		private dependents: Computation[] = []

@@ -5,10 +5,10 @@ import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceIns
 import { IPropsHeader } from './PieceIcon'
 
 export function findPieceInstanceToShow(props: IPropsHeader, supportedLayers: Set<SourceLayerType>) {
-	let pieceInstances = PieceInstances.find({ partInstanceId: props.partInstanceId }).fetch()
-	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
+	const pieceInstances = PieceInstances.find({ partInstanceId: props.partInstanceId }).fetch()
+	const showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
 
-	let sourceLayers = showStyleBase
+	const sourceLayers = showStyleBase
 		? normalizeArray<ISourceLayer>(
 				showStyleBase.sourceLayers.map((layer) => ({ ...layer })),
 				'_id'
@@ -18,7 +18,7 @@ export function findPieceInstanceToShow(props: IPropsHeader, supportedLayers: Se
 	let foundPiece: PieceInstance | undefined
 
 	for (const pieceInstance of pieceInstances) {
-		let layer = sourceLayers[pieceInstance.piece.sourceLayerId]
+		const layer = sourceLayers[pieceInstance.piece.sourceLayerId]
 		if (layer && layer.onPresenterScreen && supportedLayers.has(layer.type)) {
 			if (foundSourceLayer && foundPiece) {
 				if (

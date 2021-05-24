@@ -114,8 +114,8 @@ export function getExpectedLatency(peripheralDevice: PeripheralDevice): {
 			return 0
 		})
 		const latencies = peripheralDevice.latencies
-		var total = 0
-		for (let latency of latencies) {
+		let total = 0
+		for (const latency of latencies) {
 			total += latency
 		}
 		const average = total / latencies.length

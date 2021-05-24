@@ -40,7 +40,7 @@ export namespace ServerClientAPI {
 		args: any[],
 		fcn: () => Result | Promise<Result>
 	): Result {
-		let startTime = Date.now()
+		const startTime = Date.now()
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
 
@@ -50,7 +50,7 @@ export namespace ServerClientAPI {
 			return waitForPromise(Promise.resolve(fcn()))
 		}
 
-		let actionId: UserActionsLogItemId = getRandomId()
+		const actionId: UserActionsLogItemId = getRandomId()
 
 		const { userId, organizationId } = getLoggedInCredentials(methodContext)
 
@@ -97,7 +97,7 @@ export namespace ServerClientAPI {
 		} catch (e) {
 			// allow the exception to be handled by the Client code
 			logger.error(`Error in ${methodName}`)
-			let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+			const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
 			logger.error(errMsg + '\n' + (e.stack || ''))
 			UserActionsLog.update(actionId, {
 				$set: {
@@ -123,8 +123,8 @@ export namespace ServerClientAPI {
 		check(functionName, String)
 		check(context, String)
 
-		let actionId: UserActionsLogItemId = getRandomId()
-		let startTime = Date.now()
+		const actionId: UserActionsLogItemId = getRandomId()
+		const startTime = Date.now()
 
 		return new Promise((resolve, reject) => {
 			if (!methodContext.connection) {
@@ -144,7 +144,7 @@ export namespace ServerClientAPI {
 					)
 				} catch (e) {
 					// allow the exception to be handled by the Client code
-					let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+					const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
 					logger.error(errMsg)
 					reject(e)
 				}
@@ -170,7 +170,7 @@ export namespace ServerClientAPI {
 					deviceId,
 					(err, result) => {
 						if (err) {
-							let errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+							const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
 							logger.error(errMsg)
 							UserActionsLog.update(actionId, {
 								$set: {
@@ -202,7 +202,7 @@ export namespace ServerClientAPI {
 				)
 			} catch (e) {
 				// allow the exception to be handled by the Client code
-				let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
 				logger.error(errMsg)
 				UserActionsLog.update(actionId, {
 					$set: {

@@ -132,10 +132,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>,
 		state: IState
 	): Partial<IState> | null {
-		let tOLayers: {
+		const tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
-		let tSLayers: {
+		const tSLayers: {
 			[key: string]: ISourceLayer
 		} = {}
 
@@ -233,7 +233,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			// If the outer selectedPiece is changing, we should check if it's present in this Panel. If it is
 			// we should change our inner selectedAdLib state. If it isn't, we should leave it be, so that it
 			// doesn't affect any selections the user may have made when using "displayTakeButtons".
-			let memberAdLib = DashboardPanelInner.filterOutAdLibs(this.props, this.state).find(
+			const memberAdLib = DashboardPanelInner.filterOutAdLibs(this.props, this.state).find(
 				(adLib) => adLib._id === selectedPiece._id
 			)
 			if (memberAdLib) {
@@ -278,7 +278,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (!this.props.studioMode) return
 		if (!this.props.registerHotkeys) return
 
-		let preventDefault = (e) => {
+		const preventDefault = (e) => {
 			e.preventDefault()
 		}
 
@@ -420,7 +420,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			return
 		}
 
-		let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
+		const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
 
 		if (queue && sourceLayer && !sourceLayer.isQueueable) {
 			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
@@ -506,7 +506,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		const { t } = this.props
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
-			let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
+			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
 					if (piece.isAction && piece.adlibAction) {
@@ -546,7 +546,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		const { t } = this.props
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
-			let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
+			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
 			if (sourceLayer && (sourceLayer.clearKeyboardHotkey || outButton)) {
 				this.onClearAllSourceLayers([sourceLayer], e)
 			}
@@ -729,7 +729,7 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
 			const piece = pieceInstance.piece
-			let end: number | undefined =
+			const end: number | undefined =
 				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
 					? pieceInstance.userDuration.end
 					: typeof piece.enable.duration === 'number'

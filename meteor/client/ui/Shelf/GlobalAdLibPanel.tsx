@@ -83,10 +83,10 @@ const AdLibListView = withTranslation()(
 		}
 
 		static getDerivedStateFromProps(props: IListViewPropsHeader) {
-			let tOLayers: {
+			const tOLayers: {
 				[key: string]: IOutputLayer
 			} = {}
-			let tSLayers: {
+			const tSLayers: {
 				[key: string]: ISourceLayer
 			} = {}
 
@@ -271,7 +271,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
 	// a hash to store various indices of the used hotkey lists
-	let sourceHotKeyUse: {
+	const sourceHotKeyUse: {
 		[key: string]: number
 	} = {}
 
@@ -292,7 +292,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			}
 		}
 
-		let rundownAdLibItems = RundownBaselineAdLibPieces.find(
+		const rundownAdLibItems = RundownBaselineAdLibPieces.find(
 			{
 				rundownId: currentRundown._id,
 			},
@@ -366,9 +366,9 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 		rundownAdLibs.forEach((uiAdLib) => {
 			// automatically assign hotkeys based on adLibItem index
-			let sourceLayer = uiAdLib.sourceLayerId && sourceLayerLookup[uiAdLib.sourceLayerId]
+			const sourceLayer = uiAdLib.sourceLayerId && sourceLayerLookup[uiAdLib.sourceLayerId]
 			if (sourceLayer && sourceLayer.activateKeyboardHotkeys && sourceLayer.assignHotkeysToGlobalAdlibs) {
-				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
+				const keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 				const sourceHotKeyUseLayerId =
 					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || uiAdLib.sourceLayerId
 				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
@@ -385,7 +385,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		})
 	}
 
-	for (let [key, value] of Object.entries(sourceHotKeyUse)) {
+	for (const [key, value] of Object.entries(sourceHotKeyUse)) {
 		GlobalAdLibHotkeyUseMap.set(key, value)
 	}
 
@@ -447,7 +447,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		refreshKeyboardHotkeys() {
 			if (!this.props.studioMode) return
 
-			let preventDefault = (e) => {
+			const preventDefault = (e) => {
 				e.preventDefault()
 			}
 

@@ -138,7 +138,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public trackedAbSessions?: ABSessionInfo[]
 
 	constructor(document: DBRundownPlaylist) {
-		for (let [key, value] of Object.entries(document)) {
+		for (const [key, value] of Object.entries(document)) {
 			this[key] = value
 		}
 	}
@@ -199,7 +199,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	/** Return the studio for this RundownPlaylist */
 	getStudio(): Studio {
 		if (!this.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
-		let studio = Studios.findOne(this.studioId)
+		const studio = Studios.findOne(this.studioId)
 		if (studio) {
 			return studio
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')

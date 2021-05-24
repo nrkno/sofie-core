@@ -31,7 +31,7 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	public _rundownVersionHash: string
 
 	constructor(document: DBShowStyleVariant) {
-		for (let [key, value] of Object.entries(document)) {
+		for (const [key, value] of Object.entries(document)) {
 			this[key] = value
 		}
 	}

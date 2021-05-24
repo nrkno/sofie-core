@@ -75,7 +75,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 						})
 					} else {
 						let count = 0
-						let affectedCollections: string[] = []
+						const affectedCollections: string[] = []
 						_.each(results, (result) => {
 							count += result.docsToRemove
 							if (result.docsToRemove > 0) {

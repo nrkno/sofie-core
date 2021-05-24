@@ -151,7 +151,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 			this.updateSubscription()
 		}
 		updateSubscription() {
-			let h = this.state.dateFrom + '_' + this.state.dateTo
+			const h = this.state.dateFrom + '_' + this.state.dateTo
 			if (h !== this._currentsub) {
 				this._currentsub = h
 				if (this._sub) {
@@ -182,7 +182,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 			MeteorCall.externalMessages.retry(msg._id).catch(console.error)
 		}
 		renderMessageRow(msg: ExternalMessageQueueObj) {
-			let classes: string[] = ['message-row']
+			const classes: string[] = ['message-row']
 			let info: JSX.Element | null = null
 			if (msg.sent) {
 				classes.push('sent')

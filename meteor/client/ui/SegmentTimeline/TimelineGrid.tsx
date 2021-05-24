@@ -61,9 +61,9 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 	contextResize = _.throttle((parentElementWidth: number, parentElementHeight: number) => {
 		if (this.ctx && this.canvasElement) {
-			let devicePixelRatio = window.devicePixelRatio || 1
+			const devicePixelRatio = window.devicePixelRatio || 1
 
-			let backingStoreRatio =
+			const backingStoreRatio =
 				(this.ctx as any).webkitBackingStorePixelRatio ||
 				(this.ctx as any).mozBackingStorePixelRatio ||
 				(this.ctx as any).msBackingStorePixelRatio ||
@@ -213,8 +213,8 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				interStep = fps || 25
 			}
 
-			let step = (secondsStep * secondTimeScale * this.pixelRatio) / interStep
-			let pixelOffset = this.props.scrollLeft * this.props.timeScale * this.pixelRatio
+			const step = (secondsStep * secondTimeScale * this.pixelRatio) / interStep
+			const pixelOffset = this.props.scrollLeft * this.props.timeScale * this.pixelRatio
 
 			this.ctx.clearRect(0, 0, this.width, this.height)
 
@@ -222,7 +222,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// "large" ticks (one's with label), so we divide the display width by the amount of large steps (step / interStep)
 			// and then after getting the ceil of the value, multiply it back for all the inter-steps,
 			// beacuse we do the paint iteration for every line
-			let maxTicks = Math.ceil(this.width / (step * interStep)) * interStep + interStep
+			const maxTicks = Math.ceil(this.width / (step * interStep)) * interStep + interStep
 
 			// We store the x-position of the 0-th line to know if a particular section is N or N+1
 			// and switch between base and baseN
@@ -234,13 +234,13 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			for (i = 0; i < maxTicks; i++) {
 				// we should offset the first step -1, as this is the one that will be dissaperaing as the
 				// timeline is moving
-				let xPosition = this.ring(i * step - pixelOffset, maxTicks * step) - step * interStep
+				const xPosition = this.ring(i * step - pixelOffset, maxTicks * step) - step * interStep
 				if (i === 0) breakX = xPosition
 
-				let isLabel = i % interStep === 0
+				const isLabel = i % interStep === 0
 
 				if (isLabel === true) {
-					let t = xPosition / this.pixelRatio / this.props.timeScale + this.props.scrollLeft
+					const t = xPosition / this.pixelRatio / this.props.timeScale + this.props.scrollLeft
 
 					this.ctx.fillText(
 						RundownUtils.formatDiffToTimecode(t, false, false, true, false, true),

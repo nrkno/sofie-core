@@ -99,7 +99,7 @@ const Blueprint = wrapSettingsNavigation(
 					.then((blueprintId) => {
 						this.props.obj['blueprintId'] = blueprintId
 						if (this.props.obj) {
-							let m = {}
+							const m = {}
 							m['blueprintId'] = blueprintId
 							Studios.update(this.props.obj['_id'], { $set: m })
 						}

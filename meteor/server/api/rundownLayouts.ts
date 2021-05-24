@@ -92,7 +92,7 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 })
 
 PickerGET.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, res: ServerResponse, next) => {
-	let layoutId: RundownLayoutId = protectString(params.id)
+	const layoutId: RundownLayoutId = protectString(params.id)
 
 	check(layoutId, String)
 

@@ -53,7 +53,7 @@ export namespace PrompterAPI {
 		const segmentsMap = normalizeArray(segments, '_id')
 		const groupedParts = _.groupBy(parts, (p) => p.segmentId)
 
-		let data: PrompterData = {
+		const data: PrompterData = {
 			title: playlist.name,
 			currentPartId: currentPartInstance ? currentPartInstance.part._id : null,
 			nextPartId: nextPartInstance ? nextPartInstance.part._id : null,

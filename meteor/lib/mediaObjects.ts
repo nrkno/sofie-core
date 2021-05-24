@@ -174,7 +174,7 @@ export function checkPieceContentStatus(
 	let metadata: MediaObject | null = null
 	let packageInfoToForward: ScanInfoForPackages | undefined = undefined
 	let message: string | null = null
-	let contentDuration: number | undefined = undefined
+	const contentDuration: number | undefined = undefined
 	const settings: IStudioSettings | undefined = studio?.settings
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus

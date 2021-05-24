@@ -235,7 +235,7 @@ export namespace MongoMock {
 				result: { numberAffected: number | undefined; insertedId: T['_id'] | undefined } | undefined
 			) => void
 		) {
-			let id = _.isString(query) ? query : query._id
+			const id = _.isString(query) ? query : query._id
 
 			const docs = this.find(id)._fetchRaw()
 

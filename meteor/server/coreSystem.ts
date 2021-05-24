@@ -34,11 +34,11 @@ import { createShowStyleCompound } from './api/showStyles'
 export { PackageInfo }
 
 function initializeCoreSystem() {
-	let system = getCoreSystem()
+	const system = getCoreSystem()
 	if (!system) {
 		// At this point, we probably have a system that is as fresh as it gets
 
-		let version = parseVersion(GENESIS_SYSTEM_VERSION)
+		const version = parseVersion(GENESIS_SYSTEM_VERSION)
 		CoreSystem.insert({
 			_id: SYSTEM_ID,
 			created: getCurrentTime(),
@@ -59,7 +59,7 @@ function initializeCoreSystem() {
 		})
 
 		// Check what migration has to provide:
-		let migration = prepareMigration(true)
+		const migration = prepareMigration(true)
 		if (migration.migrationNeeded && migration.manualStepCount === 0 && migration.chunks.length <= 1) {
 			// Since we've determined that the migration can be done automatically, and we have a fresh system, just do the migration automatically:
 			runMigration(migration.chunks, migration.hash, [])
@@ -67,7 +67,7 @@ function initializeCoreSystem() {
 	}
 
 	// Monitor database changes:
-	let systemCursor = getCoreSystemCursor()
+	const systemCursor = getCoreSystemCursor()
 	systemCursor.observeChanges({
 		added: checkDatabaseVersions,
 		changed: checkDatabaseVersions,
@@ -114,12 +114,12 @@ let lastDatabaseVersionBlueprintIds: { [id: string]: true } = {}
 function checkDatabaseVersions() {
 	// Core system
 
-	let databaseSystem = getCoreSystem()
+	const databaseSystem = getCoreSystem()
 	if (!databaseSystem) {
 		setSystemStatus('databaseVersion', { statusCode: StatusCode.BAD, messages: ['Database not set up'] })
 	} else {
-		let dbVersion = databaseSystem.version ? parseVersion(databaseSystem.version) : null
-		let currentVersion = parseVersion(CURRENT_SYSTEM_VERSION)
+		const dbVersion = databaseSystem.version ? parseVersion(databaseSystem.version) : null
+		const currentVersion = parseVersion(CURRENT_SYSTEM_VERSION)
 
 		setSystemStatus(
 			'databaseVersion',
@@ -127,7 +127,7 @@ function checkDatabaseVersions() {
 		)
 
 		// Blueprints:
-		let blueprintIds: { [id: string]: true } = {}
+		const blueprintIds: { [id: string]: true } = {}
 		Blueprints.find().forEach((blueprint) => {
 			if (blueprint.code) {
 				blueprintIds[unprotectString(blueprint._id)] = true
@@ -145,7 +145,7 @@ function checkDatabaseVersions() {
 					messages: [],
 				}
 
-				let studioIds: { [studioId: string]: true } = {}
+				const studioIds: { [studioId: string]: true } = {}
 				ShowStyleBases.find({
 					blueprintId: blueprint._id,
 				}).forEach((showStyleBase) => {
@@ -335,7 +335,7 @@ function queueCheckBlueprintsConfig() {
 
 let lastBlueprintConfigIds: { [id: string]: true } = {}
 const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig() {
-	let blueprintIds: { [id: string]: true } = {}
+	const blueprintIds: { [id: string]: true } = {}
 
 	// Studios
 	_.each(Studios.find({}).fetch(), (studio) => {
@@ -404,7 +404,7 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 	}
 	const versions: { [name: string]: string } = {}
 
-	let dependencies: any = PackageInfo.dependencies
+	const dependencies: any = PackageInfo.dependencies
 	if (dependencies) {
 		const libNames: string[] = ['mos-connection', 'superfly-timeline']
 

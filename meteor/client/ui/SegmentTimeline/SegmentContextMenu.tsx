@@ -131,12 +131,12 @@ export const SegmentContextMenu = withTranslation()(
 		}
 
 		onSetAsNextFromHere = (part: Part, e) => {
-			let offset = this.getTimePosition()
+			const offset = this.getTimePosition()
 			this.props.onSetNext(part, e, offset || 0)
 		}
 
 		onPlayFromHere = (part: Part, e) => {
-			let offset = this.getTimePosition()
+			const offset = this.getTimePosition()
 			this.props.onSetNext(part, e, offset || 0, true)
 		}
 

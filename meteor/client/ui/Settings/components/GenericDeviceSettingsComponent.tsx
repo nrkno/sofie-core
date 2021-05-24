@@ -51,7 +51,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 		}
 
 		finishEditItem = (path: EditId) => {
-			let index = this.state.editedObjects.indexOf(path)
+			const index = this.state.editedObjects.indexOf(path)
 			if (index >= 0) {
 				this.state.editedObjects.splice(index, 1)
 				this.setState({
@@ -94,7 +94,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 		}
 
 		removeItem = (itemPath: string) => {
-			let unsetObject = {}
+			const unsetObject = {}
 			unsetObject[itemPath] = ''
 			PeripheralDevices.update(this.props.device._id, {
 				$unset: unsetObject,
@@ -114,7 +114,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 
 		addNewItem = (itemConfig: TableConfigManifestEntry, path: string) => {
 			// create obj for db from defaults
-			let setObject = {}
+			const setObject = {}
 			const defaults = {}
 			const createDefault = (path: Array<string>, val: boolean | number | string, obj: any) => {
 				const prop = path.shift()!
@@ -329,7 +329,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 				]
 
 				const deviceTypesObj = {}
-				for (let i in deviceTypes) {
+				for (const i in deviceTypes) {
 					deviceTypesObj[deviceTypes[i]] = deviceTypes[i]
 				}
 
@@ -566,7 +566,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 				propNames.push(<th key="actions">&nbsp;</th>)
 
 				const configTypesObj = {}
-				for (let i in configTypes) {
+				for (const i in configTypes) {
 					configTypesObj[configTypes[i]] = configTypes[i]
 				}
 

@@ -106,11 +106,11 @@ export const SourceLayerItem = withTranslation()(
 					const piece = this.props.piece
 					const innerPiece = piece.instance.piece
 
-					let inTransitionDuration =
+					const inTransitionDuration =
 						innerPiece.transitions && innerPiece.transitions.inTransition
 							? innerPiece.transitions.inTransition.duration || 0
 							: 0
-					let outTransitionDuration =
+					const outTransitionDuration =
 						innerPiece.transitions && innerPiece.transitions.outTransition
 							? innerPiece.transitions.outTransition.duration || 0
 							: 0
@@ -143,7 +143,7 @@ export const SourceLayerItem = withTranslation()(
 								this.props.timeScale
 
 							// || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0)
-							let styleObj = {
+							const styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
@@ -181,7 +181,7 @@ export const SourceLayerItem = withTranslation()(
 								(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration) *
 								this.props.timeScale
 
-							let styleObj = {
+							const styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
@@ -217,7 +217,7 @@ export const SourceLayerItem = withTranslation()(
 								(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration) *
 								this.props.timeScale
 
-							let styleObj = {
+							const styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
@@ -242,7 +242,7 @@ export const SourceLayerItem = withTranslation()(
 
 							return styleObj
 						} else {
-							let styleObj = {
+							const styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
@@ -271,7 +271,7 @@ export const SourceLayerItem = withTranslation()(
 					const innerPiece = piece.instance.piece
 
 					// let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
-					let outTransitionDuration =
+					const outTransitionDuration =
 						innerPiece.transitions && innerPiece.transitions.outTransition
 							? innerPiece.transitions.outTransition.duration || 0
 							: 0
@@ -356,11 +356,11 @@ export const SourceLayerItem = withTranslation()(
 			const piece = this.props.piece
 			const innerPiece = piece.instance.piece
 
-			let inTransitionDuration =
+			const inTransitionDuration =
 				innerPiece.transitions && innerPiece.transitions.inTransition
 					? innerPiece.transitions.inTransition.duration || 0
 					: 0
-			let outTransitionDuration =
+			const outTransitionDuration =
 				innerPiece.transitions && innerPiece.transitions.outTransition
 					? innerPiece.transitions.outTransition.duration || 0
 					: 0
@@ -519,7 +519,7 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		itemMouseUp = (e: any) => {
-			let eM = e as MouseEvent
+			const eM = e as MouseEvent
 			if (eM.ctrlKey === true) {
 				eM.preventDefault()
 				eM.stopPropagation()

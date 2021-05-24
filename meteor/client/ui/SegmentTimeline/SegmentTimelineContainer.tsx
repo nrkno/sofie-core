@@ -190,7 +190,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				: Math.random() * 2000 + 500
 		)
 
-		let o = RundownUtils.getResolvedSegment(
+		const o = RundownUtils.getResolvedSegment(
 			props.showStyleBase,
 			props.playlist,
 			segment,
@@ -619,7 +619,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
-			let collapsedOutputs = { ...this.state.collapsedOutputs }
+			const collapsedOutputs = { ...this.state.collapsedOutputs }
 			collapsedOutputs[outputLayer._id] =
 				outputLayer.isDefaultCollapsed && collapsedOutputs[outputLayer._id] === undefined
 					? false
@@ -682,7 +682,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				const currentLivePartInstance = this.state.currentLivePart.instance
 				const currentLivePart = currentLivePartInstance.part
 
-				let simulationPercentage = this.playbackSimulationPercentage
+				const simulationPercentage = this.playbackSimulationPercentage
 				const partOffset =
 					(this.context.durations &&
 						this.context.durations.partDisplayStartsAt &&
@@ -712,7 +712,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					}
 				}
 
-				let newLivePosition =
+				const newLivePosition =
 					isExpectedToPlay && virtualStartedPlayback
 						? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
 						: partOffset + lastTakeOffset

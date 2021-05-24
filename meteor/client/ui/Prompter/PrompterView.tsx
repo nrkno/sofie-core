@@ -200,7 +200,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 
 		this.autorun(() => {
-			let playlist = RundownPlaylists.findOne(
+			const playlist = RundownPlaylists.findOne(
 				{
 					studioId: this.props.studioId,
 					activationId: { $exists: true },
@@ -219,7 +219,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		})
 
 		this.autorun(() => {
-			let subsReady = this.subscriptionsReady()
+			const subsReady = this.subscriptionsReady()
 			if (subsReady !== this.state.subsReady) {
 				this.setState({
 					subsReady: subsReady,
@@ -278,9 +278,9 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 
 	checkScrollToCurrent() {
-		let playlistId: RundownPlaylistId =
+		const playlistId: RundownPlaylistId =
 			(this.props.rundownPlaylist && this.props.rundownPlaylist._id) || protectString('')
-		let playlist = RundownPlaylists.findOne(playlistId)
+		const playlist = RundownPlaylists.findOne(playlistId)
 
 		if (this.configOptions.followTake) {
 			if (playlist) {
@@ -309,7 +309,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		return pixelMargin
 	}
 	calculateMarginPosition() {
-		let pixelMargin = ((this.configOptions.margin || 0) * window.innerHeight) / 100
+		const pixelMargin = ((this.configOptions.margin || 0) * window.innerHeight) / 100
 		return pixelMargin
 	}
 	scrollToLive() {
@@ -675,7 +675,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				}
 			}
 
-			let lines: React.ReactNode[] = []
+			const lines: React.ReactNode[] = []
 
 			prompterData.segments.forEach((segment) => {
 				if (segment.parts.length === 0) {
