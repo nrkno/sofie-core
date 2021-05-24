@@ -1,6 +1,6 @@
 import React from 'react'
 import { withTranslation } from 'react-i18next'
-import { RundownLayoutBase, RundownLayouts } from '../../../../../lib/collections/RundownLayouts'
+import { RundownLayoutBase, RundownLayouts, RundownLayoutType } from '../../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
@@ -18,6 +18,32 @@ export default withTranslation()(
 
 			return (
 				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Show Buckets')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'showBuckets'}
+								obj={this.props.item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Disable Context Menu')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'disableContextMenu'}
+								obj={this.props.item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"></EditAttribute>
+						</label>
+					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Expose layout as a standalone page')}
