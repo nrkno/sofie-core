@@ -40,6 +40,21 @@ exports["default"] = utils_1.createRule({
     defaultOptions: [],
     create: function (context) { return ({
         CallExpression: function (node) {
+            if (node.callee.type === experimental_utils_1.AST_NODE_TYPES.Identifier && node.callee.name === 'testInFiberOnly') {
+                context.report({
+                    messageId: 'focusedTest',
+                    node: node,
+                    suggest: [
+                        {
+                            messageId: 'suggestRemoveFocus',
+                            fix: function (fixer) {
+                                return fixer.removeRange([node.range[0], node.range[0] + 1]);
+                            }
+                        },
+                    ]
+                });
+                return;
+            }
             if (!utils_1.isDescribeCall(node) && !utils_1.isTestCaseCall(node)) {
                 return;
             }

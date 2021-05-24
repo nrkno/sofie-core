@@ -244,7 +244,7 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		...args: any[]
 	) {
 		return makePromise(() => {
-			const methodContext: MethodContext = this
+			const methodContext: MethodContext = this // eslint-disable-line @typescript-eslint/no-this-alias
 			if (!Settings.enableUserAccounts) {
 				// Note: This is a temporary hack to keep backwards compatibility.
 				// in the case of not enableUserAccounts, a token is needed, but not provided when called from client

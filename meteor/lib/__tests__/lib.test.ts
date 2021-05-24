@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { testInFiber } from '../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../__mocks__/helpers/jest'
 import { setLoggerLevel } from '../../server/api/logger'
 import {
 	getHash,

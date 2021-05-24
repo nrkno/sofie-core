@@ -6,7 +6,7 @@ import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerIte
 import { NoraContent } from '@sofie-automation/blueprints-integration'
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
 
-interface IProps extends ICustomLayerItemProps {}
+type IProps = ICustomLayerItemProps
 interface IState {}
 export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
 	leftLabel: HTMLElement

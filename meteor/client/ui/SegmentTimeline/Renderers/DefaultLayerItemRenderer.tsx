@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import { getElementWidth } from '../../../utils/dimensions'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
-interface IProps extends ICustomLayerItemProps {}
+type IProps = ICustomLayerItemProps
 interface IState {}
 
 export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IState> {

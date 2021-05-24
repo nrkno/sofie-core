@@ -32,7 +32,7 @@ export function testInFiber(testName: string, fcn: () => void | Promise<void>, t
 }
 
 export function testInFiberOnly(testName: string, fcn: () => void | Promise<void>, timeout?: number) {
-	// tslint:disable-next-line:no-focused-test
+	// eslint-disable-next-line custom-rules/no-focused-test
 	test.only(
 		testName,
 		async () => {

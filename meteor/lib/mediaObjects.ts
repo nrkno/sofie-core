@@ -430,7 +430,7 @@ export function checkPieceContentStatus(
 			// Fallback to MediaObject statuses:
 			switch (sourceLayer.type) {
 				case SourceLayerType.VT:
-				case SourceLayerType.LIVE_SPEAK:
+				case SourceLayerType.LIVE_SPEAK: {
 					const fileName = getMediaObjectMediaId(piece, sourceLayer)
 					const displayName = piece.name
 					const messages: Array<string> = []
@@ -596,6 +596,7 @@ export function checkPieceContentStatus(
 						message = messages.join('; ') + '.'
 					}
 					break
+				}
 			}
 		}
 	}

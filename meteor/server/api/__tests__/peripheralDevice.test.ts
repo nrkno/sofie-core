@@ -36,6 +36,7 @@ import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 
 const DEBUG = false
 
@@ -288,10 +289,11 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
+		const currentPartInstance = playlist?.getSelectedPartInstances()?.currentPartInstance as PartInstance
+		expect(currentPartInstance).toBeTruthy()
 		let partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
 			rundownPlaylistId: rundownPlaylistID,
-			partInstanceId: currentPartInstance?._id!,
+			partInstanceId: currentPartInstance._id,
 			time: getCurrentTime(),
 		}
 		Meteor.call(PeripheralDeviceAPIMethods.partPlaybackStarted, device._id, device.token, partPlaybackStartedResult)
@@ -308,10 +310,11 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
+		const currentPartInstance = playlist?.getSelectedPartInstances().currentPartInstance as PartInstance
+		expect(currentPartInstance).toBeTruthy()
 		let partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
 			rundownPlaylistId: rundownPlaylistID,
-			partInstanceId: currentPartInstance?._id!,
+			partInstanceId: currentPartInstance._id,
 			time: getCurrentTime(),
 		}
 
@@ -329,9 +332,10 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
+		const currentPartInstance = playlist?.getSelectedPartInstances().currentPartInstance as PartInstance
+		expect(currentPartInstance).toBeTruthy()
 		const pieces = PieceInstances.find({
-			partInstanceId: currentPartInstance?._id!,
+			partInstanceId: currentPartInstance._id,
 		}).fetch()
 		let piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
 			rundownPlaylistId: rundownPlaylistID,
@@ -358,9 +362,10 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
+		const currentPartInstance = playlist?.getSelectedPartInstances().currentPartInstance as PartInstance
+		expect(currentPartInstance).toBeTruthy()
 		const pieces = PieceInstances.find({
-			partInstanceId: currentPartInstance?._id!,
+			partInstanceId: currentPartInstance._id,
 		}).fetch()
 		let piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
 			rundownPlaylistId: rundownPlaylistID,

@@ -802,6 +802,7 @@ export function restartCore(
 	}
 
 	setTimeout(() => {
+		// eslint-disable-next-line no-process-exit
 		process.exit(0)
 	}, 3000)
 	return ClientAPI.responseSuccess(`Restarting Core in 3s.`)

@@ -464,7 +464,7 @@ function startupMessage() {
 }
 
 function startInstrumenting() {
-	if (!!process.env.JEST_WORKER_ID) {
+	if (process.env.JEST_WORKER_ID) {
 		return
 	}
 

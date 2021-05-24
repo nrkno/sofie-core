@@ -62,12 +62,12 @@ export interface SegmentUi extends SegmentExtended {
 		[key: string]: ISourceLayerUi
 	}
 }
-export interface PartUi extends PartExtended {}
+export type PartUi = PartExtended
 export interface IOutputLayerUi extends IOutputLayerExtended {
 	/** Is output layer group collapsed */
 	collapsed?: boolean
 }
-export interface ISourceLayerUi extends ISourceLayerExtended {}
+export type ISourceLayerUi = ISourceLayerExtended
 export interface PieceUi extends PieceExtended {
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean

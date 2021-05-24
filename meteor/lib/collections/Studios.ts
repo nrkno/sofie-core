@@ -27,7 +27,7 @@ import { ExpectedPackageDB } from './ExpectedPackages'
 export interface MappingsExt {
 	[layerName: string]: MappingExt
 }
-export interface MappingExt extends ProtectedStringProperties<BlueprintMapping, 'deviceId'> {}
+export type MappingExt = ProtectedStringProperties<BlueprintMapping, 'deviceId'>
 
 export interface IStudioSettings {
 	/** URL to endpoint where media preview are exposed */

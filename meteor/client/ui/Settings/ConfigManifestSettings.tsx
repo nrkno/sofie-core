@@ -113,18 +113,6 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, Doc
 				/>
 			)
 		case ConfigManifestEntryType.NUMBER:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute={attribute}
-					obj={object}
-					type="int"
-					collection={collection}
-					className="input text-input input-m"
-					mutateDisplayValue={(v) => (item.zeroBased ? v + 1 : v)}
-					mutateUpdateValue={(v) => (item.zeroBased ? v - 1 : v)}
-				/>
-			)
 		case ConfigManifestEntryType.INT:
 			return (
 				<EditAttribute
@@ -161,14 +149,13 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, Doc
 				/>
 			)
 		case ConfigManifestEntryType.ENUM:
-			const item2 = item as ConfigManifestEntryEnum
 			return (
 				<EditAttribute
 					modifiedClassName="bghl"
 					attribute={attribute}
 					obj={object}
 					type="dropdown"
-					options={item2.options || []}
+					options={item.options || []}
 					collection={collection}
 					className="input text-input input-l"
 				/>
@@ -186,28 +173,26 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, Doc
 				/>
 			)
 		case ConfigManifestEntryType.SELECT:
-			const selectFromOptions = item as ConfigManifestEntrySelectFromOptions<true | false>
 			return (
 				<EditAttribute
 					modifiedClassName="bghl"
 					attribute={attribute}
 					obj={object}
-					type={selectFromOptions.multiple ? 'multiselect' : 'dropdown'}
-					options={selectFromOptions.options}
+					type={item.multiple ? 'multiselect' : 'dropdown'}
+					options={item.options}
 					collection={collection}
 					className="input text-input dropdown input-l"
 				/>
 			)
 		case ConfigManifestEntryType.SOURCE_LAYERS:
-			const selectSourceLayer = item as ConfigManifestEntrySourceLayers<true | false>
 			if (sourceLayers) {
 				return (
 					<EditAttribute
 						modifiedClassName="bghl"
 						attribute={attribute}
 						obj={object}
-						type={selectSourceLayer.multiple ? 'multiselect' : 'dropdown'}
-						options={filterSourceLayers(selectSourceLayer, sourceLayers)}
+						type={item.multiple ? 'multiselect' : 'dropdown'}
+						options={filterSourceLayers(item, sourceLayers)}
 						collection={collection}
 						className="input text-input dropdown input-l"
 					/>
@@ -215,15 +200,14 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, Doc
 			}
 			break
 		case ConfigManifestEntryType.LAYER_MAPPINGS:
-			const selectLayerMappings = item as ConfigManifestEntryLayerMappings<true | false>
 			if (layerMappings) {
 				return (
 					<EditAttribute
 						modifiedClassName="bghl"
 						attribute={attribute}
 						obj={object}
-						type={selectLayerMappings.multiple ? 'multiselect' : 'dropdown'}
-						options={filterLayerMappings(selectLayerMappings, layerMappings)}
+						type={item.multiple ? 'multiselect' : 'dropdown'}
+						options={filterLayerMappings(item, layerMappings)}
 						collection={collection}
 						className="input text-input dropdown input-l"
 					/>
@@ -722,7 +706,6 @@ export class ConfigManifestSettings<
 		const { t, collection, object, i18n, tReady } = this.props
 		switch (item.type) {
 			case ConfigManifestEntryType.TABLE:
-				const item2 = item as ConfigManifestEntryTable
 				return (
 					<ConfigManifestTable
 						t={t}
@@ -731,7 +714,7 @@ export class ConfigManifestSettings<
 						collection={collection}
 						object={object}
 						baseAttribute={baseAttribute}
-						item={item2}
+						item={item}
 						layerMappings={this.props.layerMappings}
 						sourceLayers={this.props.sourceLayers}
 					/>

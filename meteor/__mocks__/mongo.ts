@@ -50,7 +50,7 @@ export namespace MongoMock {
 	}
 
 	const mockCollections: MockCollections<any> = {}
-	export interface MongoCollection<T extends CollectionObject> {}
+	export type MongoCollection<T extends CollectionObject> = {}
 	export class Collection<T extends CollectionObject> implements MongoCollection<T> {
 		public _name: string
 		private _options: any = {}

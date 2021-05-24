@@ -54,7 +54,7 @@ export default createRule({
   defaultOptions: [],
   create: context => ({
     CallExpression(node) {
-		if (node.type === AST_NODE_TYPES.Identifier && node.name === 'testInFiberOnly') {
+		if (node.callee.type === AST_NODE_TYPES.Identifier && node.callee.name === 'testInFiberOnly') {
 			context.report({
 				messageId: 'focusedTest',
 				node,

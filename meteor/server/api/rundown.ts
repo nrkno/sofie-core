@@ -277,11 +277,11 @@ export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments:
 				// Calculate the rank change per part
 				const dynamicPartCount = lastDynamicIndex - firstDynamicIndex + 1
 				const basePartRank =
-					beforePartIndex === -1 ? -1 : newPartsMap.get(remainingPreviousParts[beforePartIndex].id)?._rank!
+					beforePartIndex === -1 ? -1 : newPartsMap.get(remainingPreviousParts[beforePartIndex].id)?._rank! // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
 				const afterPartRank =
 					afterPartIndex === -1
 						? basePartRank + 1
-						: newPartsMap.get(remainingPreviousParts[afterPartIndex].id)?._rank!
+						: newPartsMap.get(remainingPreviousParts[afterPartIndex].id)?._rank! // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
 				const delta = (afterPartRank - basePartRank) / (dynamicPartCount + 1)
 
 				let prevRank = basePartRank

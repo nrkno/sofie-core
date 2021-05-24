@@ -8,7 +8,7 @@ import { getUser } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
 
-interface IResetPageProps extends RouteComponentProps<{ token: string }> {}
+type IResetPageProps = RouteComponentProps<{ token: string }>
 
 interface IResetPageState {
 	password: string
@@ -51,8 +51,8 @@ export const ResetPasswordPage = translateWithTracker((props: IResetPageProps) =
 			if (errors.length) {
 				this.handleError(
 					<React.Fragment>
-						{errors.map((e) => (
-							<span>{e}</span>
+						{errors.map((e, i) => (
+							<span key={i}>{e}</span>
 						))}
 					</React.Fragment>
 				)

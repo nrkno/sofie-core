@@ -11,7 +11,7 @@ import { Timeline, TimelineComplete, TimelineHash } from '../../lib/collections/
 import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
-import { parse as parseUrl } from 'url'
+import { URL } from 'url'
 import { RundownInput } from './ingest/rundownInput'
 import {
 	IngestRundown,
@@ -460,6 +460,7 @@ export namespace ServerPeripheralDeviceAPI {
 		if (really) {
 			this.logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
 			setTimeout(() => {
+				// eslint-disable-next-line no-process-exit
 				process.exit(0)
 			}, 1000)
 			return true
@@ -648,9 +649,9 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 		const peripheralDevice = PeripheralDevices.findOne(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
-		let url = parseUrl(req.url || '', true)
+		let url = new URL(req.url || '')
 
-		let fileNames = url.query['name'] || undefined
+		let fileNames = url.searchParams.get('name') || undefined
 		let fileName: string = (_.isArray(fileNames) ? fileNames[0] : fileNames) || ''
 
 		check(fileName, String)

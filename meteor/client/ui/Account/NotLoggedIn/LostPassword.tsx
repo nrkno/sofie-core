@@ -9,7 +9,7 @@ import { MeteorCall } from '../../../../lib/api/methods'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
 
-interface ILostPasswordPageProps extends RouteComponentProps {}
+type ILostPasswordPageProps = RouteComponentProps
 
 interface ILostPasswordPageState {
 	email: string

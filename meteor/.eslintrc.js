@@ -113,7 +113,7 @@ module.exports = {
 			},
 		},
 		{
-			files: ['**/__tests__/**/*.ts', '**/__mocks__/**/*.ts'],
+			files: ['**/__tests__/**/*.ts', '**/__tests__/**/*.js', '**/__mocks__/**/*.ts'],
 			env: {
 				jest: true,
 			},
@@ -124,6 +124,7 @@ module.exports = {
 				'no-use-before-define': 'off',
 				// custom
 				'node/no-unpublished-import': 'off',
+				'node/no-unpublished-require': 'off',
 				'@typescript-eslint/no-non-null-assertion': 'off',
 			},
 		},

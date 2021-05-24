@@ -52,7 +52,7 @@
 		"@jstarpl/react-contextmenu": "^2.14.3",
 		"@nrk/core-icons": "^9.2.2",
 		"@popperjs/core": "^2.9.1",
-		"@slack/client": "^5.0.2",
+		"@slack/webhook": "^5.0.2",
 		"@sofie-automation/blueprints-integration": "file:../packages/blueprints-integration",
 		"amqplib": "^0.7.1",
 		"bcrypt": "^5.0.1",
@@ -107,7 +107,8 @@
 		"vm2": "^3.9.2",
 		"webmidi": "^2.5.2",
 		"winston": "^3.3.3",
-		"xml2json": "^0.12.0"
+		"xml2json": "^0.12.0",
+		"xmlbuilder": "^15.1.1"
 	},
 	"devDependencies": {
 		"@sofie-automation/code-standard-preset": "^0.3.0",

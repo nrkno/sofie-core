@@ -28,7 +28,7 @@ export interface SplitSubItem {
 	content?: SplitsContentBoxProperties['geometry']
 }
 
-interface IProps extends ICustomLayerItemProps {}
+type IProps = ICustomLayerItemProps
 
 interface IState {
 	subItems: Array<SplitSubItem>

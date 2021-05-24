@@ -190,20 +190,21 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		message: string,
 		headers: { [headers: string]: string } | undefined
 	) {
-		return new Promise((resolve, reject) => {
-			this.channel.assertExchange(exchangeTopic, 'topic', { durable: true })
-
-			this.outgoingQueue.push({
-				_id: messageId,
-				exchangeTopic,
-				routingKey,
-				headers,
-				message,
-				resolve,
-				reject,
-			})
-			this.triggerHandleOutgoingQueue()
-		})
+		return this.channel.assertExchange(exchangeTopic, 'topic', { durable: true }).then(
+			() =>
+				new Promise((resolve, reject) => {
+					this.outgoingQueue.push({
+						_id: messageId,
+						exchangeTopic,
+						routingKey,
+						headers,
+						message,
+						resolve,
+						reject,
+					})
+					this.triggerHandleOutgoingQueue()
+				})
+		)
 	}
 
 	triggerHandleOutgoingQueue() {
@@ -223,7 +224,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 			let sent = this.channel.publish(
 				messageToSend.exchangeTopic,
 				messageToSend.routingKey,
-				new Buffer(messageToSend.message),
+				Buffer.from(messageToSend.message),
 				{
 					// options
 					headers: messageToSend.headers,

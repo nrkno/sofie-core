@@ -11,7 +11,7 @@ function stripEmptyStrings(obj: any) {
 		const res = {}
 
 		for (const key in obj) {
-			if (obj.hasOwnProperty(key)) {
+			if (Object.prototype.hasOwnProperty.call(obj, key)) {
 				const element = obj[key]
 				if (element !== '' || key === 'ObjectID') {
 					res[key] = element

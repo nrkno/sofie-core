@@ -420,7 +420,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				style={{
 					width: isList
 						? 'calc(100% - 8px)'
-						: !!this.props.widthScale
+						: this.props.widthScale
 						? //@ts-ignore: widthScale is in a weird state between a number and something else
 						  //		      because of the optional generic type argument
 						  (this.props.widthScale as number) * DEFAULT_BUTTON_WIDTH + 'em'

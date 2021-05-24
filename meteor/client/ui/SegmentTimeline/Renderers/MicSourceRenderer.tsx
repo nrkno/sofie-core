@@ -7,7 +7,7 @@ import * as _ from 'underscore'
 
 import { getElementWidth } from '../../../utils/dimensions'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
-interface IProps extends ICustomLayerItemProps {}
+type IProps = ICustomLayerItemProps
 interface IState {}
 
 export const MicSourceRenderer = withTranslation()(

@@ -194,7 +194,7 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 						{this.state.scriptLoaded ? (
 							this.renderTimeline()
 						) : this.state.scriptError ? (
-							<div>'Unable to load script'</div>
+							<div>Unable to load script</div>
 						) : null}
 					</div>
 					<div className="details">

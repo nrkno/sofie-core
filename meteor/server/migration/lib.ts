@@ -51,7 +51,6 @@ export function ensureCollectionProperty<T = any>(
 						`Migration: Setting ${collectionName} object "${obj._id}".${property} to ${defaultValue}`
 					)
 					collection.update(obj._id, { $set: m })
-				} else {
 				}
 			})
 		},

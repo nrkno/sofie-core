@@ -4,7 +4,7 @@ import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 
-export interface RundownBaselineAdLibItem extends AdLibPiece {}
+export type RundownBaselineAdLibItem = AdLibPiece
 
 export const RundownBaselineAdLibPieces: TransformedCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem> =
 	createMongoCollection<RundownBaselineAdLibItem>('rundownBaselineAdLibPieces')

@@ -127,7 +127,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 							<div className="mdi">
 								<div>{t(device.configManifest.deviceOAuthFlow!.credentialsHelp)}</div>
 								<div>
-									<a href={device.configManifest.deviceOAuthFlow!.credentialsURL} target="_blank">
+									<a href={device.configManifest.deviceOAuthFlow!.credentialsURL} target="_blank" rel="noreferrer">
 										{device.configManifest.deviceOAuthFlow!.credentialsURL}
 									</a>
 								</div>
@@ -151,7 +151,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 									</div>
 									<div>
 										{device.accessTokenUrl ? (
-											<a href={device.accessTokenUrl} target="_blank">
+											<a href={device.accessTokenUrl} target="_blank" rel="noreferrer">
 												{device.accessTokenUrl}
 											</a>
 										) : (
