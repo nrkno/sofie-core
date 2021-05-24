@@ -470,8 +470,8 @@ export namespace ClientRundownAPI {
 		const showStyleVariantsMap = normalizeArray(showStyleVariants, '_id')
 		const showStyleBlueprintsMap = normalizeArray(showStyleBlueprints, '_id')
 
-		const showStyleWarnings: RundownPlaylistValidateBlueprintConfigResult['showStyles'] = uniqueShowStyleCompounds.map(
-			(rundown) => {
+		const showStyleWarnings: RundownPlaylistValidateBlueprintConfigResult['showStyles'] =
+			uniqueShowStyleCompounds.map((rundown) => {
 				const showStyleBase = showStyleBasesMap[unprotectString(rundown.showStyleBaseId)]
 				const showStyleVariant = showStyleVariantsMap[unprotectString(rundown.showStyleVariantId)]
 				const id = `${rundown.showStyleBaseId}-${rundown.showStyleVariantId}`
@@ -514,8 +514,7 @@ export namespace ClientRundownAPI {
 						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig),
 					}
 				}
-			}
-		)
+			})
 
 		return {
 			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studio.blueprintConfig),

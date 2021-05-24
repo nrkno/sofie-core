@@ -43,8 +43,6 @@ export interface TranslationsBundle {
 	data: Translation[]
 }
 
-export const TranslationsBundles: TransformedCollection<
-	TranslationsBundle,
-	TranslationsBundle
-> = createMongoCollection<TranslationsBundle>('translationsBundles')
+export const TranslationsBundles: TransformedCollection<TranslationsBundle, TranslationsBundle> =
+	createMongoCollection<TranslationsBundle>('translationsBundles')
 registerCollection('TranslationsBundles', TranslationsBundles)

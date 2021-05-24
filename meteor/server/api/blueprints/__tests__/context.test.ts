@@ -284,7 +284,7 @@ describe('Test blueprint api context', () => {
 			const blueprint = generateFakeBlueprint(
 				unprotectString(showStyleBase.blueprintId),
 				BlueprintManifestType.SHOWSTYLE,
-				(manifest as any) as () => SomeBlueprintManifest
+				manifest as any as () => SomeBlueprintManifest
 			)
 			Blueprints.update(blueprint._id, blueprint)
 

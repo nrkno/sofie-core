@@ -209,7 +209,7 @@ export const addSteps = addMigrationSteps('0.25.0', [
 	),
 	renamePropertiesInCollection(
 		'Timeline',
-		(Timeline120 as unknown) as TransformedCollection<TimelineObjGeneric_1_11_0, TimelineObjGeneric_1_11_0>,
+		Timeline120 as unknown as TransformedCollection<TimelineObjGeneric_1_11_0, TimelineObjGeneric_1_11_0>,
 		'Timeline',
 		{
 			studioId: 'siId',
@@ -332,7 +332,7 @@ export const addSteps = addMigrationSteps('0.25.0', [
 						OTHER = 2, // i.e. sub-devices
 						MEDIA_MANAGER = 3,
 					}
-					const oldDeviceType = (device.type as any) as OLDDeviceType
+					const oldDeviceType = device.type as any as OLDDeviceType
 
 					if (oldDeviceType === OLDDeviceType.MOSDEVICE) {
 						m.category = PeripheralDeviceAPI.DeviceCategory.INGEST

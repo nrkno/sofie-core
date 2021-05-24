@@ -33,7 +33,7 @@ export namespace PackageManagerIntegration {
 		workStatus0: ExpectedPackageStatusAPI.WorkStatus
 	): void {
 		type FromPackage = Omit<ExpectedPackageStatusAPI.WorkBaseInfoFromPackage, 'id'> & { id: ExpectedPackageId }
-		const workStatus = (workStatus0 as any) as Omit<ExpectedPackageStatusAPI.WorkStatus, 'fromPackages'> & {
+		const workStatus = workStatus0 as any as Omit<ExpectedPackageStatusAPI.WorkStatus, 'fromPackages'> & {
 			fromPackages: FromPackage[]
 		}
 
@@ -71,10 +71,7 @@ export namespace PackageManagerIntegration {
 		workStatus0: Partial<ExpectedPackageStatusAPI.WorkStatus>
 	): boolean {
 		type FromPackage = Omit<ExpectedPackageStatusAPI.WorkBaseInfoFromPackage, 'id'> & { id: ExpectedPackageId }
-		const workStatus = (workStatus0 as any) as Omit<
-			Partial<ExpectedPackageStatusAPI.WorkStatus>,
-			'fromPackages'
-		> & {
+		const workStatus = workStatus0 as any as Omit<Partial<ExpectedPackageStatusAPI.WorkStatus>, 'fromPackages'> & {
 			fromPackages?: FromPackage[]
 		}
 

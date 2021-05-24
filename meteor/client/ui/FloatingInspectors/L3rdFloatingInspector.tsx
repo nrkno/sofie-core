@@ -121,7 +121,7 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 										{RundownUtils.formatTimeToShortTime(
 											pieceRenderedDuration ||
 												(_.isNumber(innerPiece.enable.duration)
-													? parseFloat((innerPiece.enable.duration as any) as string)
+													? parseFloat(innerPiece.enable.duration as any as string)
 													: 0)
 										)}
 									</span>

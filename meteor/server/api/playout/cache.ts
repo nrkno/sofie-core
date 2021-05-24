@@ -235,9 +235,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	}
 }
 
-export function getOrderedSegmentsAndPartsFromPlayoutCache(
-	cache: CacheForPlayout
-): {
+export function getOrderedSegmentsAndPartsFromPlayoutCache(cache: CacheForPlayout): {
 	segments: Segment[]
 	parts: Part[]
 } {
@@ -255,9 +253,7 @@ export function getOrderedSegmentsAndPartsFromPlayoutCache(
 export function getRundownIDsFromCache(cache: CacheForPlayout) {
 	return cache.Rundowns.findFetch({}).map((r) => r._id)
 }
-export function getSelectedPartInstancesFromCache(
-	cache: CacheForPlayout
-): {
+export function getSelectedPartInstancesFromCache(cache: CacheForPlayout): {
 	currentPartInstance: PartInstance | undefined
 	nextPartInstance: PartInstance | undefined
 	previousPartInstance: PartInstance | undefined

@@ -219,11 +219,8 @@ export function resetShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<Sh
 	getShowStyleBlueprintConfig(showStyleCompound)
 }
 export function getShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<ShowStyleCompound>): unknown {
-	let blueprintConfigMap:
-		| Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>>
-		| undefined = showStyleCompound.blueprintId
-		? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId)
-		: new Map()
+	let blueprintConfigMap: Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>> | undefined =
+		showStyleCompound.blueprintId ? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId) : new Map()
 	if (!blueprintConfigMap) {
 		blueprintConfigMap = new Map()
 		showStyleBlueprintConfigCache.set(showStyleCompound.blueprintId, blueprintConfigMap)

@@ -106,7 +106,8 @@ export const RundownTimingProvider = withTracker<
 			IRundownTimingProviderProps & IRundownTimingProviderTrackedProps,
 			IRundownTimingProviderState
 		>
-		implements React.ChildContextProvider<IRundownTimingProviderChildContext> {
+		implements React.ChildContextProvider<IRundownTimingProviderChildContext>
+	{
 		static childContextTypes = {
 			durations: PropTypes.object.isRequired,
 		}

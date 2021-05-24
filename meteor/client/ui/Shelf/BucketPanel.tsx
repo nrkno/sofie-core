@@ -513,7 +513,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							)
 						} else {
 							if (
-								!this.isAdLibOnAir((piece as any) as AdLibPieceUi) ||
+								!this.isAdLibOnAir(piece as any as AdLibPieceUi) ||
 								!(sourceLayer && sourceLayer.clearKeyboardHotkey)
 							) {
 								const currentPartInstanceId = this.props.playlist.currentPartInstanceId
@@ -800,7 +800,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 												holdToDisplay={contextMenuHoldToDisplayTime()}
 											>
 												<BucketPieceButton
-													piece={(adlib as any) as IAdLibListItem}
+													piece={adlib as any as IAdLibListItem}
 													studio={this.props.studio}
 													bucketId={adlib.bucketId}
 													layer={this.props.sourceLayers[adlib.sourceLayerId]}
@@ -808,7 +808,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 													onToggleAdLib={this.onToggleAdLib as any}
 													onSelectAdLib={this.onSelectAdLib as any}
 													playlist={this.props.playlist}
-													isOnAir={this.isAdLibOnAir((adlib as any) as AdLibPieceUi)}
+													isOnAir={this.isAdLibOnAir(adlib as any as AdLibPieceUi)}
 													mediaPreviewUrl={
 														this.props.studio
 															? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''

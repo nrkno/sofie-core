@@ -35,11 +35,9 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		this._translator = t
 
 		this._notificationList = new NotificationList([])
-		this._notifier = NotificationCenter.registerNotifier(
-			(): NotificationList => {
-				return this._notificationList
-			}
-		)
+		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
+			return this._notificationList
+		})
 
 		// internal registry for service messages
 		this._serviceMessageRegistry = {}

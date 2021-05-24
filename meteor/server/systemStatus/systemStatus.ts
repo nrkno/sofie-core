@@ -67,16 +67,13 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 			status: status2ExternalStatus(status.statusCode),
 			updated: new Date(status.timestamp).toISOString(),
 			_status: status.statusCode,
-			errors: _.map(
-				status.messages || [],
-				(m): CheckError => {
-					return {
-						type: 'message',
-						time: new Date(m.timestamp).toISOString(),
-						message: m.message,
-					}
+			errors: _.map(status.messages || [], (m): CheckError => {
+				return {
+					type: 'message',
+					time: new Date(m.timestamp).toISOString(),
+					message: m.message,
 				}
-			),
+			}),
 		})
 	})
 
@@ -170,16 +167,13 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 						status: status2ExternalStatus(statusCode),
 						updated: new Date(device.lastSeen).toISOString(),
 						_status: statusCode,
-						errors: _.map(
-							messages,
-							(message: string): CheckError => {
-								return {
-									type: 'version-differ',
-									time: new Date(device.lastSeen).toISOString(),
-									message: message,
-								}
+						errors: _.map(messages, (message: string): CheckError => {
+							return {
+								type: 'version-differ',
+								time: new Date(device.lastSeen).toISOString(),
+								message: message,
 							}
-						),
+						}),
 					})
 				})
 			}

@@ -230,11 +230,13 @@ export class PresenterScreenBase extends MeteorReactComponent<
 
 				this.autorun(() => {
 					const rundownIds = playlist!.getRundownIDs()
-					const showStyleBaseIds = (playlist!.getRundowns(undefined, {
-						fields: {
-							showStyleBaseId: 1,
-						},
-					}) as Pick<Rundown, 'showStyleBaseId'>[]).map((r) => r.showStyleBaseId)
+					const showStyleBaseIds = (
+						playlist!.getRundowns(undefined, {
+							fields: {
+								showStyleBaseId: 1,
+							},
+						}) as Pick<Rundown, 'showStyleBaseId'>[]
+					).map((r) => r.showStyleBaseId)
 
 					this.subscribe(PubSub.segments, {
 						rundownId: { $in: rundownIds },

@@ -33,9 +33,8 @@ export interface AdLibAction extends AdLibActionCommon {
 	partId: PartId
 }
 
-export const AdLibActions: TransformedCollection<AdLibAction, AdLibAction> = createMongoCollection<AdLibAction>(
-	'adLibActions'
-)
+export const AdLibActions: TransformedCollection<AdLibAction, AdLibAction> =
+	createMongoCollection<AdLibAction>('adLibActions')
 registerCollection('AdLibActions', AdLibActions)
 registerIndex(AdLibActions, {
 	rundownId: 1,

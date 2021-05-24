@@ -473,12 +473,10 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	}
 }
 
-export const RundownPlaylists: TransformedCollection<
-	RundownPlaylist,
-	DBRundownPlaylist
-> = createMongoCollection<RundownPlaylist>('rundownPlaylists', {
-	transform: (doc) => applyClassToDocument(RundownPlaylist, doc),
-})
+export const RundownPlaylists: TransformedCollection<RundownPlaylist, DBRundownPlaylist> =
+	createMongoCollection<RundownPlaylist>('rundownPlaylists', {
+		transform: (doc) => applyClassToDocument(RundownPlaylist, doc),
+	})
 registerCollection('RundownPlaylists', RundownPlaylists)
 
 registerIndex(RundownPlaylists, {

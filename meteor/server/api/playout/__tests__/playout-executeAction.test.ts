@@ -23,7 +23,8 @@ import {
 	fetchPiecesThatMayBeActiveForPart,
 } from '../../playout/infinites'
 type TsyncPlayheadInfinitesForNextPartInstance = jest.MockedFunction<typeof syncPlayheadInfinitesForNextPartInstance>
-const syncPlayheadInfinitesForNextPartInstanceMock = syncPlayheadInfinitesForNextPartInstance as TsyncPlayheadInfinitesForNextPartInstance
+const syncPlayheadInfinitesForNextPartInstanceMock =
+	syncPlayheadInfinitesForNextPartInstance as TsyncPlayheadInfinitesForNextPartInstance
 type TgetPieceInstancesForPart = jest.MockedFunction<typeof getPieceInstancesForPart>
 type TfetchPiecesThatMayBeActiveForPart = jest.MockedFunction<typeof fetchPiecesThatMayBeActiveForPart>
 const {

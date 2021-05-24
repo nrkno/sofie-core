@@ -182,7 +182,7 @@ export const addSteps = addMigrationSteps('0.19.0', [
 		validate: () => {
 			let validate: boolean | string = false
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.mediaPreviewsUrl) {
 					if (_.find(studio.config, (c) => c._id === 'media_previews_url')) {
 						validate = `mediaPreviewsUrl not set on studio ${studio._id}`
@@ -193,7 +193,7 @@ export const addSteps = addMigrationSteps('0.19.0', [
 		},
 		migrate: () => {
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.mediaPreviewsUrl) {
 					const value = _.find(studio.config, (c) => c._id === 'media_previews_url')
 					if (value) {
@@ -221,7 +221,7 @@ export const addSteps = addMigrationSteps('0.19.0', [
 		validate: () => {
 			let validate: boolean | string = false
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.sofieUrl) {
 					if (_.find(studio.config, (c) => c._id === 'sofie_url')) {
 						validate = `sofieUrl not set on studio ${studio._id}`
@@ -232,7 +232,7 @@ export const addSteps = addMigrationSteps('0.19.0', [
 		},
 		migrate: () => {
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.sofieUrl) {
 					const value = _.find(studio.config, (c) => c._id === 'sofie_url')
 					if (value) {

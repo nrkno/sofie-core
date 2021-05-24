@@ -486,15 +486,12 @@ export namespace ServerPeripheralDeviceAPI {
 			return returnValue
 		}
 	}
-	export const executeFunction: (
-		deviceId: PeripheralDeviceId,
-		functionName: string,
-		...args: any[]
-	) => any = Meteor.wrapAsync((deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => {
-		let args0 = args.slice(0, -1)
-		let cb = args.slice(-1)[0] // the last argument in ...args
-		PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
-	})
+	export const executeFunction: (deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => any =
+		Meteor.wrapAsync((deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => {
+			let args0 = args.slice(0, -1)
+			let cb = args.slice(-1)[0] // the last argument in ...args
+			PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
+		})
 
 	export function requestUserAuthToken(
 		context: MethodContext,

@@ -29,10 +29,8 @@ export interface ExpectedPackageWorkStatusFromPackage
 	id: ExpectedPackageDBBase['_id']
 }
 
-export const ExpectedPackageWorkStatuses: TransformedCollection<
-	ExpectedPackageWorkStatus,
-	ExpectedPackageWorkStatus
-> = createMongoCollection<ExpectedPackageWorkStatus>('expectedPackageWorkStatuses')
+export const ExpectedPackageWorkStatuses: TransformedCollection<ExpectedPackageWorkStatus, ExpectedPackageWorkStatus> =
+	createMongoCollection<ExpectedPackageWorkStatus>('expectedPackageWorkStatuses')
 registerCollection('ExpectedPackageStatuses', ExpectedPackageWorkStatuses)
 
 registerIndex(ExpectedPackageWorkStatuses, {

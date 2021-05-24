@@ -440,7 +440,7 @@ export function toc(name: string = 'default', logStr?: string | Promise<any>[]) 
  *
  * creds: https://github.com/rsp/node-caught/blob/master/index.js
  */
-export const caught: <T>(v: Promise<T>) => Promise<T> = ((f) => (p) => (p.catch(f), p))(() => {
+export const caught: <T>(v: Promise<T>) => Promise<T> = ((f) => (p) => p.catch(f), p)(() => {
 	// nothing
 })
 
@@ -636,9 +636,9 @@ export function mongoFindOptions<Class extends DBInterface, DBInterface extends 
 
 		if (options.fields !== undefined) {
 			const idVal = options.fields['_id']
-			const includeKeys = (_.keys(options.fields).filter(
+			const includeKeys = _.keys(options.fields).filter(
 				(key) => key !== '_id' && options.fields![key] !== 0
-			) as any) as (keyof DBInterface)[]
+			) as any as (keyof DBInterface)[]
 			const excludeKeys: string[] = _.keys(options.fields).filter(
 				(key) => key !== '_id' && options.fields![key] === 0
 			)
@@ -963,24 +963,24 @@ export function protectString<T extends ProtectedString<any>>(str: string): T
 export function protectString<T extends ProtectedString<any>>(str: string | null): T | null
 export function protectString<T extends ProtectedString<any>>(str: string | undefined): T | undefined
 export function protectString<T extends ProtectedString<any>>(str: string | undefined | null): T | undefined | null {
-	return (str as any) as T
+	return str as any as T
 }
 export function protectStringArray<T extends ProtectedString<any>>(arr: string[]): T[] {
-	return (arr as any) as T[]
+	return arr as any as T[]
 }
 export function protectStringObject<O extends object, Props extends keyof O>(
 	obj: O
 ): ProtectedStringProperties<O, Props> {
-	return (obj as any) as ProtectedStringProperties<O, Props>
+	return obj as any as ProtectedStringProperties<O, Props>
 }
 export function unprotectString(protectedStr: ProtectedString<any>): string
 export function unprotectString(protectedStr: ProtectedString<any> | null): string | null
 export function unprotectString(protectedStr: ProtectedString<any> | undefined): string | undefined
 export function unprotectString(protectedStr: ProtectedString<any> | undefined | null): string | undefined | null {
-	return (protectedStr as any) as string
+	return protectedStr as any as string
 }
 export function unprotectStringArray(protectedStrs: Array<ProtectedString<any>>): string[] {
-	return (protectedStrs as any) as string[]
+	return protectedStrs as any as string[]
 }
 export function unDeepString<T extends ProtectedString<any>>(str: ReadonlyDeep<T> | PartialDeep<T>): T {
 	return str as T

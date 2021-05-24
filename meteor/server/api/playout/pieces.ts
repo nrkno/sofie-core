@@ -115,7 +115,7 @@ function resolvePieceTimeline(
 
 	let unresolvedIds: string[] = []
 	_.each(tlResolved.objects, (obj0) => {
-		const obj = (obj0 as any) as TimelineObjRundown
+		const obj = obj0 as any as TimelineObjRundown
 		const id = unprotectString((obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
 
 		if (!id) return

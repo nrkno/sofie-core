@@ -51,12 +51,10 @@ export class ShowStyleBase implements DBShowStyleBase {
 	}
 }
 
-export const ShowStyleBases: TransformedCollection<
-	ShowStyleBase,
-	DBShowStyleBase
-> = createMongoCollection<ShowStyleBase>('showStyleBases', {
-	transform: (doc) => applyClassToDocument(ShowStyleBase, doc),
-})
+export const ShowStyleBases: TransformedCollection<ShowStyleBase, DBShowStyleBase> =
+	createMongoCollection<ShowStyleBase>('showStyleBases', {
+		transform: (doc) => applyClassToDocument(ShowStyleBase, doc),
+	})
 registerCollection('ShowStyleBases', ShowStyleBases)
 
 registerIndex(ShowStyleBases, {

@@ -532,7 +532,7 @@ function restoreFromDeprecatedRundownSnapshot(snapshot0: DeprecatedRundownSnapsh
 	// Convert the Rundown snaphost into a rundown playlist
 	// This is somewhat of a hack, it's just to be able to import older snapshots into the system
 
-	const snapshot = (_.clone(snapshot0) as any) as RundownPlaylistSnapshot
+	const snapshot = _.clone(snapshot0) as any as RundownPlaylistSnapshot
 
 	// Make up a rundownPlaylist:
 	snapshot.playlist = makePlaylistFromRundown_1_0_0(snapshot0.rundown)
@@ -617,7 +617,7 @@ export function restoreFromRundownPlaylistSnapshot(
 		partSegmentIds[unprotectString(part._id)] = part.segmentId
 	})
 	_.each(snapshot.pieces, (piece) => {
-		const pieceOld = (piece as any) as Partial<Piece_1_11_0>
+		const pieceOld = piece as any as Partial<Piece_1_11_0>
 		if (pieceOld.rundownId) {
 			piece.startRundownId = pieceOld.rundownId
 			delete pieceOld.rundownId

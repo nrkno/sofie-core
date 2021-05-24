@@ -169,11 +169,11 @@ export abstract class WithManagedTracker {
 		func: (comp: Tracker.Computation) => void,
 		options?: { onError: Function | undefined } | undefined
 	): Tracker.Computation {
-		return (Tracker.nonreactive(() => {
+		return Tracker.nonreactive(() => {
 			const comp = Tracker.autorun(func, options)
 			this._autoruns.push(comp)
 			return comp
-		}) as any) as Tracker.Computation
+		}) as any as Tracker.Computation
 	}
 }
 

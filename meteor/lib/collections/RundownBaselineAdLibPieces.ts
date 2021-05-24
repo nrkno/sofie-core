@@ -6,10 +6,8 @@ import { registerIndex } from '../database'
 
 export interface RundownBaselineAdLibItem extends AdLibPiece {}
 
-export const RundownBaselineAdLibPieces: TransformedCollection<
-	RundownBaselineAdLibItem,
-	RundownBaselineAdLibItem
-> = createMongoCollection<RundownBaselineAdLibItem>('rundownBaselineAdLibPieces')
+export const RundownBaselineAdLibPieces: TransformedCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem> =
+	createMongoCollection<RundownBaselineAdLibItem>('rundownBaselineAdLibPieces')
 registerCollection('RundownBaselineAdLibPieces', RundownBaselineAdLibPieces)
 registerIndex(RundownBaselineAdLibPieces, {
 	rundownId: 1,

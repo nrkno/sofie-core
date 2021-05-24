@@ -296,7 +296,7 @@ describe('Test blueprint api context', () => {
 							expect(cache2).toBe(cache)
 							expect(showStyleBase).toBeTruthy()
 							mockCalledIds.push(partInstance._id)
-							return (['abc'] as any) as ResolvedPieceInstance[]
+							return ['abc'] as any as ResolvedPieceInstance[]
 						}
 					)
 

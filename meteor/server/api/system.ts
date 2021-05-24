@@ -575,8 +575,7 @@ async function doSystemBenchmarkInner() {
 							data4: 'wvklwjnserolvjwn3erlkvjwnerlkvn',
 							data5: '3oig23oi45ugnf2o3iu4nf2o3iu4nf',
 							data6: '5g2987543hg9285hg3',
-							data7:
-								'20359gj2834hf2390874fh203874hf02387h4f02837h4f0238h028h428734f0273h4f08723h4tpo2n,mnbsdfljbvslfkvnkjgv',
+							data7: '20359gj2834hf2390874fh203874hf02387h4f02837h4f0238h028h428734f0273h4f08723h4tpo2n,mnbsdfljbvslfkvnkjgv',
 						}
 					}),
 					prop0: 'asdf',
@@ -604,8 +603,7 @@ async function doSystemBenchmarkInner() {
 					objs: _.range(0, 100).map((j) => {
 						return {
 							id: 'innerObj' + j,
-							data0:
-								'asdfkawhbeckjawhefkjashvdfckasdf9q37246fg2w9375fhg209485hf0238757h834h08273h50235h4gf+0237h5u7hg2475hg082475hgt',
+							data0: 'asdfkawhbeckjawhefkjashvdfckasdf9q37246fg2w9375fhg209485hf0238757h834h08273h50235h4gf+0237h5u7hg2475hg082475hgt',
 						}
 					}),
 					prop0: i,

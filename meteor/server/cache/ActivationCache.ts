@@ -256,7 +256,7 @@ export class ActivationCache {
 		modifiedHash: string,
 		updateFcn: (identifier: ID) => Promise<T>
 	): Promise<T> {
-		const id = (identifier as any) as string
+		const id = identifier as any as string
 		let o = cache[id]
 		if (!o || o.modifiedHash !== modifiedHash) {
 			o = {

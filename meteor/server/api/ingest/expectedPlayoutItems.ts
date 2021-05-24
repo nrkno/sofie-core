@@ -82,17 +82,15 @@ export function updateBaselineExpectedPlayoutItemsOnRundown(
 	saveIntoCache<ExpectedPlayoutItem, ExpectedPlayoutItem>(
 		cache.ExpectedPlayoutItems,
 		{ baseline: 'rundown' },
-		(items || []).map(
-			(item): ExpectedPlayoutItemRundown => {
-				return {
-					...item,
-					_id: getRandomId(),
-					studioId: cache.Studio.doc._id,
-					rundownId: cache.RundownId,
-					baseline: 'rundown',
-				}
+		(items || []).map((item): ExpectedPlayoutItemRundown => {
+			return {
+				...item,
+				_id: getRandomId(),
+				studioId: cache.Studio.doc._id,
+				rundownId: cache.RundownId,
+				baseline: 'rundown',
 			}
-		)
+		})
 	)
 }
 export function updateBaselineExpectedPlayoutItemsOnStudio(
@@ -103,16 +101,14 @@ export function updateBaselineExpectedPlayoutItemsOnStudio(
 		saveIntoDb(
 			ExpectedPlayoutItems,
 			{ studioId: cache.Studio.doc._id, baseline: 'studio' },
-			(items || []).map(
-				(item): ExpectedPlayoutItemStudio => {
-					return {
-						...item,
-						_id: getRandomId(),
-						studioId: cache.Studio.doc._id,
-						baseline: 'studio',
-					}
+			(items || []).map((item): ExpectedPlayoutItemStudio => {
+				return {
+					...item,
+					_id: getRandomId(),
+					studioId: cache.Studio.doc._id,
+					baseline: 'studio',
 				}
-			)
+			})
 		)
 	})
 }

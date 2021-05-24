@@ -217,9 +217,7 @@ export namespace ServerClientAPI {
 			}
 		})
 	}
-	function getLoggedInCredentials(
-		methodContext: MethodContext
-	): {
+	function getLoggedInCredentials(methodContext: MethodContext): {
 		userId: UserId | null
 		organizationId: OrganizationId | null
 	} {

@@ -163,7 +163,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 		}
 
 		updateObjectId = (edit: EditAttributeBase, newValue: string) => {
-			const objectGet = _.property(((edit.props.attribute || 'devices').split('.') as any) as string)
+			const objectGet = _.property((edit.props.attribute || 'devices').split('.') as any as string)
 			const objs = objectGet(this.props.device)
 			const oldObjId = edit.props.overrideDisplayValue
 			const newObjId = newValue + ''

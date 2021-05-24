@@ -162,12 +162,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				[
 					memoizedIsolatedAutorun(
 						(_playlistId: RundownPlaylistId) =>
-							(props.playlist.getAllOrderedParts(undefined, {
-								fields: {
-									segmentId: 1,
-									_rank: 1,
-								},
-							}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]).map((part) => part._id),
+							(
+								props.playlist.getAllOrderedParts(undefined, {
+									fields: {
+										segmentId: 1,
+										_rank: 1,
+									},
+								}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]
+							).map((part) => part._id),
 						'playlist.getAllOrderedParts',
 						props.playlist._id
 					),
