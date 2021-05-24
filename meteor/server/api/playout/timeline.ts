@@ -5,6 +5,7 @@ import {
 	TSR,
 	PieceLifespan,
 	BlueprintResultBaseline,
+	OnGenerateTimelineObj,
 } from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../../../lib/logging'
@@ -341,9 +342,9 @@ async function getTimelineRundown(cache: CacheForPlayout): Promise<Array<Timelin
 						currentPartInstance?.previousPartEndState,
 						unprotectObjectArray(resolvedPieces.pieces)
 					)
-					timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObjExt) => {
+					timelineObjs = tlGenRes.timeline.map((object: OnGenerateTimelineObj) => {
 						return literal<TimelineObjGeneric & OnGenerateTimelineObjExt>({
-							...object,
+							...(object as OnGenerateTimelineObjExt),
 							objectType: TimelineObjType.RUNDOWN,
 						})
 					})
@@ -387,7 +388,8 @@ function processTimelineObjects(studio: ReadonlyDeep<Studio>, timelineObjs: Arra
 	let fixObjectChildren = (o: TimelineObjGeneric): void => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
 		if (o.isGroup && o.children && o.children.length) {
-			_.each(o.children, (child: TSR.TSRTimelineObjBase) => {
+			const children = o.children as TSR.TSRTimelineObjBase[]
+			_.each(children, (child: TSR.TSRTimelineObjBase) => {
 				let childFixed: TimelineObjGeneric = {
 					...child,
 					objectType: o.objectType,

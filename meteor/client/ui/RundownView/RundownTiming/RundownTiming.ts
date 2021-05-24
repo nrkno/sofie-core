@@ -8,6 +8,13 @@ export interface TimeEventArgs {
 
 export type TimingEvent = CustomEvent<TimeEventArgs>
 
+declare global {
+	interface WindowEventMap {
+		[RundownTiming.Events.timeupdate]: TimingEvent
+		[RundownTiming.Events.timeupdateHR]: TimingEvent
+	}
+}
+
 export namespace RundownTiming {
 	/**
 	 * Events used by the RundownTimingProvider

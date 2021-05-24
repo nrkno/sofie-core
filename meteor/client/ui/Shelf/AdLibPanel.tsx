@@ -1071,7 +1071,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			}
 		}
 
-		onFilterChange = (filter: string) => {
+		onFilterChange = (filter: string | undefined) => {
 			this.setState({
 				searchFilter: filter,
 			})

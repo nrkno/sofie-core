@@ -47,7 +47,6 @@ export interface RundownPlaylistUi extends RundownPlaylist {
 	unsyncedRundowns: Rundown[]
 	studioName: string
 	showStyles: Array<{ id: ShowStyleBaseId; baseName?: string; variantName?: string }>
-	handleRundownDrop: (id: string) => void
 }
 
 export interface IRundownPlaylistUiProps {

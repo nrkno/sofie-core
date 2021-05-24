@@ -14,7 +14,7 @@ import { withTranslation } from 'react-i18next'
 interface IUserActionsListProps {
 	logItems: UserActionsLogItem[]
 	onItemClick?: (item: UserActionsLogItem) => void
-	renderButtons?: (item: UserActionsLogItem) => React.Component
+	renderButtons?: (item: UserActionsLogItem) => React.ReactElement
 }
 
 export const UserActionsList = withTranslation()(

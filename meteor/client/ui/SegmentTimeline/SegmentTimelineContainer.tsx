@@ -588,7 +588,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.partInstanceSubPartInstanceIds = partInstanceIds
 			})
 		}
-		private partInstanceSubDebounce: NodeJS.Timeout | undefined
+		private partInstanceSubDebounce: number | undefined
 		private subscribeToPieceInstances(partInstanceIds: PartInstanceId[]) {
 			// run the first subscribe immediately, to avoid unneccessary wait time during bootup
 			if (this.partInstanceSub === undefined) {

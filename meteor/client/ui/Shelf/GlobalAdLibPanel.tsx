@@ -529,7 +529,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			}
 		}
 
-		onFilterChange = (filter: string) => {
+		onFilterChange = (filter: string | undefined) => {
 			this.setState({
 				filter,
 			})

@@ -230,13 +230,12 @@ export interface WithTrackerOptions<IProps, IState, TrackedProps> {
 }
 // @todo: add withTrackerPure()
 type IWrappedComponent<IProps, IState, TrackedProps> =
-	| (new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>)
+	| React.ComponentClass<IProps & TrackedProps, IState>
+	// | (new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>)
 	| ((props: IProps & TrackedProps) => JSX.Element)
 export function withTracker<IProps, IState, TrackedProps>(
 	autorunFunction: (props: IProps) => TrackedProps,
-	checkUpdate?:
-		| ((data: any, props: IProps, nextProps: IProps) => boolean)
-		| ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean),
+	checkUpdate?: (data: any, props: IProps, nextProps: IProps, state?: IState, nextState?: IState) => boolean,
 	queueTrackerUpdates?: boolean
 ): (
 	WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>
@@ -279,16 +278,16 @@ export function withTracker<IProps, IState, TrackedProps>(
 	}
 }
 export function translateWithTracker<IProps, IState, TrackedProps>(
-	autorunFunction: (props: IProps, state?: IState) => TrackedProps,
-	checkUpdate?:
-		| ((data: any, props: IProps, nextProps: IProps) => boolean)
-		| ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean),
+	autorunFunction: (props: Translated<IProps>, state?: IState) => TrackedProps,
+	checkUpdate?: (data: any, props: IProps, nextProps: IProps, state?: IState, nextState?: IState) => boolean,
 	queueTrackerUpdates?: boolean
 ) {
 	return (WrappedComponent: IWrappedComponent<Translated<IProps>, IState, TrackedProps>) => {
-		const inner = withTracker(autorunFunction, checkUpdate, queueTrackerUpdates)(WrappedComponent) as new (
-			props: IProps & WithTranslation
-		) => React.Component<IProps & WithTranslation, IState, any>
+		const inner = withTracker<Translated<IProps>, IState, TrackedProps>(
+			autorunFunction,
+			checkUpdate,
+			queueTrackerUpdates
+		)(WrappedComponent)
 		return withTranslation()(inner)
 	}
 }

@@ -396,7 +396,7 @@ export const ExternalFramePanel = withTranslation()(
 			e.preventDefault()
 		}
 
-		onDragLeave = (e: DragEvent) => {
+		onDragLeave = (_e: Event) => {
 			this.failedDragTimeout = undefined
 			const event = new CustomEvent<{}>(MOSEvents.dragleave, {
 				cancelable: false,

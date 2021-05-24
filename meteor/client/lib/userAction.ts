@@ -215,7 +215,7 @@ export function doUserAction<Result>(
 	}
 
 	fcn(eventContextForLog(userEvent))
-		.then((res: ClientAPI.ClientResponseSuccess<Result>) => {
+		.then((res: ClientAPI.ClientResponse<Result>) => {
 			clearMethodTimeout()
 
 			if (ClientAPI.isClientResponseError(res)) {

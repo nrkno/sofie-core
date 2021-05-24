@@ -292,7 +292,11 @@ describe('Test blueprint api context', () => {
 
 					let mockCalledIds: PartInstanceId[] = []
 					getResolvedPiecesMock.mockImplementation(
-						(cache2: CacheForPlayout, showStyleBase: ShowStyleBase, partInstance: PartInstance) => {
+						(
+							cache2: CacheForPlayout,
+							showStyleBase: ReadonlyDeep<ShowStyleBase>,
+							partInstance: PartInstance
+						) => {
 							expect(cache2).toBe(cache)
 							expect(showStyleBase).toBeTruthy()
 							mockCalledIds.push(partInstance._id)

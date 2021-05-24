@@ -5,7 +5,7 @@ import { isModalShowing } from './ModalDialog'
 interface IWrappedCallback {
 	allowInModal: boolean
 	isGlobal: boolean
-	original: (e: Event) => void
+	original: (e: mousetrap.ExtendedKeyboardEvent) => void
 	tag?: string
 }
 
@@ -28,7 +28,7 @@ export namespace mousetrapHelper {
 
 	export function bindGlobal(
 		keys: string,
-		callback: (e: Event) => void,
+		callback: (e: mousetrap.ExtendedKeyboardEvent) => void,
 		action?: string,
 		tag?: string,
 		allowInModal?: boolean
@@ -61,7 +61,7 @@ export namespace mousetrapHelper {
 
 	export function bind(
 		keys: string,
-		callback: (e: Event) => void,
+		callback: (e: mousetrap.ExtendedKeyboardEvent) => void,
 		action?: string,
 		tag?: string,
 		allowInModal?: boolean
@@ -101,7 +101,11 @@ export namespace mousetrapHelper {
 		})
 	}
 
-	export function unbind(keys: string, callbackOrTag: ((e: Event) => void) | string, action?: string) {
+	export function unbind(
+		keys: string,
+		callbackOrTag: ((e: mousetrap.ExtendedKeyboardEvent) => void) | string,
+		action?: string
+	) {
 		let index = keys
 		if (action) index = keys + '_' + action
 

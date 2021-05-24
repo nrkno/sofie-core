@@ -24,7 +24,7 @@ function determineDiffTimeInner(config: Config): Promise<DiffTimeResult> {
 	let host = config.host || ''
 	let port = config.port || 0
 
-	return new Promise((resolve, reject) => {
+	return new Promise<Array<ServerTime>>((resolve, reject) => {
 		let results: Array<ServerTime> = []
 		let tryCount = 0
 		let pushTime = () => {

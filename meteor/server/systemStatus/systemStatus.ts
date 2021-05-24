@@ -4,7 +4,14 @@ import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/Perip
 import { getCurrentTime, Time, unprotectString, getRandomId, assertNever } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { parseVersion, parseRange } from '../../lib/collections/CoreSystem'
-import { StatusResponse, CheckObj, ExternalStatus, CheckError, SystemInstanceId } from '../../lib/api/systemStatus'
+import {
+	StatusResponse,
+	CheckObj,
+	ExternalStatus,
+	CheckError,
+	SystemInstanceId,
+	Component,
+} from '../../lib/api/systemStatus'
 import { getRelevantSystemVersions } from '../coreSystem'
 import * as semver from 'semver'
 import { StudioId } from '../../lib/collections/Studios'
@@ -267,7 +274,7 @@ export function removeSystemStatus(type: string) {
 const instanceId: SystemInstanceId = getRandomId()
 /** Map of surrent system statuses */
 const systemStatuses: { [key: string]: StatusObjectInternal } = {}
-function setStatus(statusObj: StatusResponse): StatusCode {
+function setStatus(statusObj: StatusResponse | Component): StatusCode {
 	let s: StatusCode = statusObj._status
 
 	if (statusObj.checks) {
@@ -276,7 +283,7 @@ function setStatus(statusObj: StatusResponse): StatusCode {
 		})
 	}
 	if (statusObj.components) {
-		_.each(statusObj.components, (component: StatusResponse) => {
+		_.each(statusObj.components, (component: Component) => {
 			let s2: StatusCode = setStatus(component)
 			if (s2 > s) s = s2
 		})
@@ -285,7 +292,7 @@ function setStatus(statusObj: StatusResponse): StatusCode {
 	statusObj._status = s
 	return s
 }
-function collectMesages(statusObj: StatusResponse): Array<string> {
+function collectMesages(statusObj: StatusResponse | Component): Array<string> {
 	let allMessages: Array<string> = []
 
 	if (statusObj._internal) {
@@ -303,7 +310,7 @@ function collectMesages(statusObj: StatusResponse): Array<string> {
 		})
 	}
 	if (statusObj.components) {
-		_.each(statusObj.components, (component: StatusResponse) => {
+		_.each(statusObj.components, (component: Component) => {
 			let messages = collectMesages(component)
 
 			_.each(messages, (msg) => {

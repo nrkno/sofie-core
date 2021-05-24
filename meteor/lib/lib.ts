@@ -435,16 +435,6 @@ export function toc(name: string = 'default', logStr?: string | Promise<any>[]) 
 }
 
 /**
- * Supresses the "UnhandledPromiseRejectionWarning" warning
- * ref: https://stackoverflow.com/questions/40920179/should-i-refrain-from-handling-promise-rejection-asynchronously
- *
- * creds: https://github.com/rsp/node-caught/blob/master/index.js
- */
-export const caught: <T>(v: Promise<T>) => Promise<T> = ((f) => (p) => p.catch(f), p)(() => {
-	// nothing
-})
-
-/**
  * Blocks the fiber until all the Promises have resolved
  */
 export function waitForPromiseAll<T1, T2, T3, T4, T5, T6>(
@@ -671,7 +661,7 @@ export function mongoModify<DBInterface extends { _id: ProtectedString<any> }>(
 	modifier: MongoModifier<DBInterface>
 ): DBInterface {
 	let replace = false
-	_.each(modifier, (value: any, key: string) => {
+	for (const [key, value] of Object.entries(modifier)) {
 		if (key === '$set') {
 			_.each(value, (value: any, key: string) => {
 				setOntoPath(doc, key, selector, value)
@@ -699,7 +689,7 @@ export function mongoModify<DBInterface extends { _id: ProtectedString<any> }>(
 				replace = true
 			}
 		}
-	})
+	}
 	if (replace) {
 		const newDoc = modifier as any
 		if (!newDoc._id) newDoc._id = doc._id

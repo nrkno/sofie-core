@@ -128,7 +128,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	static getDerivedStateFromProps(props: IAdLibPanelProps, state: IState): Partial<IState> | null {
+	static getDerivedStateFromProps(
+		props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>,
+		state: IState
+	): Partial<IState> | null {
 		let tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
@@ -493,7 +496,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	protected onFilterChange = (filter: string) => {
+	protected onFilterChange = (filter: string | undefined) => {
 		this.setState({
 			searchFilter: filter,
 		})

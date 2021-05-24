@@ -302,7 +302,7 @@ class NotificationCenter0 {
 		if (filters && filters.length) {
 			const matchers = filters.map((filter) => _.matches(filter))
 			n = n.filter((v, _index, _array) =>
-				_.reduce(
+				_.reduce<boolean, boolean>(
 					matchers.map((m) => m(v)),
 					(value, memo) => value || memo,
 					false

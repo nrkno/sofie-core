@@ -27,19 +27,10 @@ import {
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
-interface IState {
-	outputLayers: {
-		[key: string]: IOutputLayer
-	}
-	sourceLayers: {
-		[key: string]: ISourceLayer
-	}
-	searchFilter: string | undefined
-}
 
 export const TimelineDashboardPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IDashboardPanelProps>,
-	IState,
+	DashboardPanelInner['state'],
 	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {

@@ -1395,7 +1395,7 @@ interface IState {
 	isInspectorShelfExpanded: boolean
 	isClipTrimmerOpen: boolean
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
-	rundownLayout: RundownLayout | undefined
+	rundownLayout: RundownLayoutBase | undefined
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
@@ -1594,7 +1594,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		static getDerivedStateFromProps(props: Translated<IProps & ITrackedProps>) {
+		static getDerivedStateFromProps(props: Translated<IProps & ITrackedProps>): Partial<IState> {
 			let selectedLayout: RundownLayoutBase | undefined = undefined
 
 			if (props.rundownLayouts) {
@@ -2102,7 +2102,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 		}
 
-		onSetNext = (part: Part, e: any, offset?: number, take?: boolean) => {
+		onSetNext = (part: Part | undefined, e: any, offset?: number, take?: boolean) => {
 			const { t } = this.props
 			if (this.state.studioMode && part && part._id && this.props.playlist) {
 				const playlistId = this.props.playlist._id
