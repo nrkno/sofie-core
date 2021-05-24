@@ -26,14 +26,14 @@ tracker@1.2.0                       # Meteor's client-side reactive programming 
 session@1.2.0
 fourseven:scss@4.12.0
 
-hwillson:stub-collections
-nerdmed:catiline
-runisland:static-assets
+#hwillson:stub-collections
+#nerdmed:catiline
+#runisland:static-assets
 dynamic-import@0.6.0
 #peerlibrary:computed-field
 meteorhacks:picker
 ostrio:meteor-root
-underscore@1.0.10
+#underscore@1.0.10
 #mdg:validated-method
 accounts-password@1.7.0
 kschingiz:meteor-elastic-apm

@@ -33,7 +33,6 @@ geojson-utils@1.0.10
 hot-code-push@1.0.4
 html-tools@1.0.11
 htmljs@1.0.11
-hwillson:stub-collections@1.0.9
 id-map@1.1.0
 inter-process-messaging@0.1.1
 kschingiz:meteor-elastic-apm@2.4.1
@@ -58,7 +57,6 @@ mongo-decimal@0.1.2
 mongo-dev-server@1.1.0
 mongo-id@1.0.7
 mongo-livedata@1.0.12
-nerdmed:catiline@0.0.1
 npm-bcrypt@0.9.3
 npm-mongo@3.8.1
 ordered-dict@1.1.0
@@ -73,7 +71,6 @@ reactive-var@1.0.11
 reload@1.3.1
 retry@1.1.0
 routepolicy@1.1.0
-runisland:static-assets@0.1.5
 service-configuration@1.0.11
 session@1.2.0
 sha@1.0.9
