@@ -58,9 +58,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		basicFields(item: RundownLayoutBase, tab: RundownLayoutElementBase, index: number) {
 			const { t } = this.props
 			return {
-				checkbox: (prop: string, label: string) => (
+				checkbox: (prop: string, label: string, title?: string) => (
 					<div className="mod mvs mhs" key={prop}>
-						<label className="field">
+						<label className="field" title={title}>
 							{t(label)}
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -336,6 +336,28 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							checkbox('displayTakeButtons', 'Display Take buttons'),
 							checkbox('queueAllAdlibs', 'Queue all adlibs'),
 							checkbox('toggleOnSingleClick', 'Toggle AdLibs on single mouse click'),
+							checkbox('hideDuplicates', 'Hide duplicated AdLibs'),
+							checkbox(
+								'nextInCurrentPart',
+								'Current part can contain next pieces',
+								'eg. when pieces in current part serve as data stores for adlibing'
+							),
+							checkbox('oneNextPerSourceLayer', 'Indicate only one next piece per source layer'),
+							<div className="mod mvs mhs" key="lineBreak">
+								<label className="field">
+									{t('Button label line break')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.lineBreak`}
+										obj={item}
+										type="text"
+										collection={RundownLayouts}
+										className="input text-input input-l"
+										mutateDisplayValue={(v) => (!v ? '' : JSON.stringify(v).slice(1, -1))}
+										mutateUpdateValue={(v) => (v === '' ? undefined : JSON.parse(`"${v}"`))}
+									/>
+								</label>
+							</div>,
 						]}
 				</React.Fragment>
 			)
