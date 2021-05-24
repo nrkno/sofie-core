@@ -424,6 +424,16 @@ body.tv2 {
 		top: 3.375rem;
 	}
 
+	.notification-pop-ups {
+		max-height: unset;
+	}
+
+	@media screen and (min-height: 1441px) { // Expanding over second screen
+		.notification-center-panel {
+			bottom: 50vh;
+		}
+	}
+
 	.rundown-view__shelf__contents__pane.shelf-inspector {
 		display: none;
 	}
