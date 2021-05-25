@@ -1731,50 +1731,6 @@ const StudioPackageManagerSettings = withTranslation()(
 												</div>
 												<div className="mod mvs mhs">
 													<label className="field">
-														{t('Default request method')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.method`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">{t('get, post etc...')}</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Defaults request headers')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.headers`}
-															obj={this.props.studio}
-															type="json"
-															storeJsonAsObject={true}
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">{t('')}</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Defaults request body')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.requestBody`}
-															obj={this.props.studio}
-															type="json"
-															storeJsonAsObject={true}
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">{t('')}</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
 														{t('Network Id')}
 														<EditAttribute
 															modifiedClassName="bghl"
