@@ -26,7 +26,7 @@ export default class GraphicsInputIcon extends React.Component<{ abbreviation?: 
 						style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 100 }}
 						className="label"
 					>
-						{this.props.abbreviation ? this.props.abbreviation : 'G '}
+						{this.props.abbreviation ? this.props.abbreviation : 'G'}
 					</tspan>
 				</text>
 			</svg>

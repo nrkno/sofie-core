@@ -32,7 +32,9 @@ export default class RemoteInputIcon extends React.Component<{ inputIndex?: stri
 						className="label"
 					>
 						{this.props.abbreviation ? this.props.abbreviation : 'LIVE'}
-						{this.props.inputIndex !== undefined ? this.props.inputIndex : ''}
+						<tspan style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>
+							{this.props.inputIndex !== undefined ? this.props.inputIndex : ''}
+						</tspan>
 					</tspan>
 				</text>
 			</svg>
