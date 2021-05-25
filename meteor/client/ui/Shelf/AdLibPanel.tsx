@@ -513,6 +513,7 @@ export function actionToAdLibPieceUi(
 		nextPieceTags: action.display.nextPieceTags,
 		uniquenessId: action.display.uniquenessId,
 		lifespan: PieceLifespan.WithinPart, // value doesn't matter
+		noHotKey: action.display.noHotKey,
 	})
 }
 
@@ -715,7 +716,7 @@ export function fetchAndFilter(props: Translated<IAdLibFetchAndFilterParams>): A
 				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 				const sourceHotKeyUseLayerId =
 					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || item.sourceLayerId
-				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
+				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length && !item.noHotKey) {
 					item.hotkey = keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0]
 					// add one to the usage hash table
 					sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
@@ -790,6 +791,7 @@ export function fetchAndFilter(props: Translated<IAdLibFetchAndFilterParams>): A
 									sourceLayerId: layer._id,
 									outputLayerId: '',
 									_rank: 0,
+									noHotKey: false,
 								})
 							)
 					)
@@ -827,7 +829,11 @@ export function fetchAndFilter(props: Translated<IAdLibFetchAndFilterParams>): A
 								let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 								const sourceHotKeyUseLayerId =
 									sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || item.sourceLayerId
-								if (!uiAdLib.isSticky && (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
+								if (
+									!uiAdLib.isSticky &&
+									(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length &&
+									!item.noHotKey
+								) {
 									uiAdLib.hotkey = keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0]
 									// add one to the usage hash table
 									sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
@@ -876,6 +882,7 @@ export function fetchAndFilter(props: Translated<IAdLibFetchAndFilterParams>): A
 								sourceLayerId: layer._id,
 								outputLayerId: '',
 								_rank: 0,
+								noHotKey: false,
 							})
 						)
 				},

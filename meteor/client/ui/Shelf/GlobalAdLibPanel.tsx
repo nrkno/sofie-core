@@ -146,6 +146,7 @@ const AdLibListView = withTranslation()(
 										outputLayerId: '',
 										rundownId: protectString(''),
 										_rank: layer._rank,
+										noHotKey: false,
 									})
 								)
 						)
@@ -436,6 +437,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					currentPieceTags: action.display.currentPieceTags,
 					nextPieceTags: action.display.nextPieceTags,
 					uniquenessId: action.display.uniquenessId,
+					noHotKey: action.display.noHotKey,
 				})
 			})
 
