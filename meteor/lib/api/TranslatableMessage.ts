@@ -1,5 +1,11 @@
 import { TFunction } from 'i18next'
-import { ITranslatableMessage as IBlueprintTranslatableMessage } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintActionManifest,
+	ITranslatableMessage as IBlueprintTranslatableMessage,
+} from '@sofie-automation/blueprints-integration'
+import { ArrayElement, unprotectString } from '../lib'
+import { BlueprintId } from '../collections/Blueprints'
+import { BucketAdLibAction } from '../collections/BucketAdlibActions'
 
 /**
  * @enum - A translatable message (i18next)
@@ -93,11 +99,76 @@ export function isTranslatableMessage(obj: any): obj is ITranslatableMessage {
 	return true
 }
 
+/**
+ * A utility function to add namespaces to ITranslatableMessages found in AdLib Actions
+ *
+ * @export
+ * @template K
+ * @template T
+ * @param {T} itemOrig
+ * @param {BlueprintId} blueprintId
+ * @param {number} [rank]
+ * @return {*}  {(Pick<K, 'display' | 'triggerModes'>)}
+ */
+export function processAdLibActionITranslatableMessages<
+	K extends {
+		display: IBlueprintActionManifest['display'] & {
+			label: ITranslatableMessage
+			triggerLabel?: ITranslatableMessage
+			description?: ITranslatableMessage
+		}
+		triggerModes?: (ArrayElement<IBlueprintActionManifest['triggerModes']> & {
+			display: ArrayElement<IBlueprintActionManifest['triggerModes']>['display'] & {
+				label: ITranslatableMessage
+				description?: ITranslatableMessage
+			}
+		})[]
+	},
+	T extends IBlueprintActionManifest
+>(itemOrig: T, blueprintId: BlueprintId, rank?: number): Pick<K, 'display' | 'triggerModes'> {
+	return {
+		display: {
+			...itemOrig.display,
+			_rank: rank ?? itemOrig.display._rank,
+			label: {
+				...itemOrig.display.label,
+				namespaces: [unprotectString(blueprintId)],
+			},
+			triggerLabel: itemOrig.display.triggerLabel && {
+				...itemOrig.display.triggerLabel,
+				namespaces: [unprotectString(blueprintId)],
+			},
+			description: itemOrig.display.description && {
+				...itemOrig.display.description,
+				namespaces: [unprotectString(blueprintId)],
+			},
+		},
+		triggerModes:
+			itemOrig.triggerModes &&
+			itemOrig.triggerModes.map(
+				(triggerMode): ArrayElement<BucketAdLibAction['triggerModes']> => ({
+					...triggerMode,
+					display: {
+						...triggerMode.display,
+						label: {
+							...triggerMode.display.label,
+							namespaces: [unprotectString(blueprintId)],
+						},
+						description: triggerMode.display.description && {
+							...triggerMode.display.description,
+							namespaces: [unprotectString(blueprintId)],
+						},
+					},
+				})
+			),
+	}
+}
+
 function checkArgs(args: any): args is { [key: string]: any } {
 	if (args === undefined || args === null) {
 		return false
 	}
 
-	// this is good enough for object literals, which is what args essentially is
-	return args.constructor === Object
+	// this is good enough for object literals and arrays, which is what args can be
+	return args.constructor === Object || Array.isArray(args)
 }

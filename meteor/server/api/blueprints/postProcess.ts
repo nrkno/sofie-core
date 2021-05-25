@@ -28,6 +28,7 @@ import { profiler } from '../profiler'
 import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { CommonContext, ShowStyleContext } from './context'
 import { ReadonlyDeep } from 'type-fest'
+import { processAdLibActionITranslatableMessages } from '../../../lib/api/TranslatableMessage'
 
 /**
  *
@@ -213,6 +214,7 @@ export function postProcessGlobalAdLibActions(
 			_id: protectString(innerContext.getHashId(`${blueprintId}_global_adlib_action_${i}`)),
 			rundownId: rundownId,
 			partId: undefined,
+			...processAdLibActionITranslatableMessages(action, blueprintId),
 		})
 	)
 }
@@ -231,6 +233,7 @@ export function postProcessAdLibActions(
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_action_${i}`)),
 			rundownId: rundownId,
 			partId: partId,
+			...processAdLibActionITranslatableMessages(action, blueprintId),
 		})
 	)
 }
@@ -264,11 +267,11 @@ export function postProcessBucketAdLib(
 		...itemOrig,
 		_id: protectString(
 			innerContext.getHashId(
-				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${externalId}`
+				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
 			)
 		),
 		externalId,
-		studioId: innerContext.studioId,
+		studioId: innerContext.studioIdProtected,
 		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
@@ -292,7 +295,7 @@ export function postProcessBucketAction(
 	innerContext: ShowStyleContext,
 	itemOrig: IBlueprintActionManifest,
 	externalId: string,
-	_blueprintId: BlueprintId,
+	blueprintId: BlueprintId,
 	bucketId: BucketId,
 	rank: number | undefined,
 	importVersions: RundownImportVersions
@@ -301,18 +304,15 @@ export function postProcessBucketAction(
 		...itemOrig,
 		_id: protectString(
 			innerContext.getHashId(
-				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${externalId}`
+				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
 			)
 		),
 		externalId,
-		studioId: innerContext.studioId,
+		studioId: innerContext.studioIdProtected,
 		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
-		display: {
-			...itemOrig.display,
-			_rank: rank ?? itemOrig.display._rank,
-		},
+		...processAdLibActionITranslatableMessages(itemOrig, blueprintId, rank),
 	}
 
 	return action

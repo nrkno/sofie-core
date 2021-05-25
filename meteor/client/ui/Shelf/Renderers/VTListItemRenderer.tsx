@@ -112,6 +112,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 			<td className="adlib-panel__list-view__list__table__cell--name">
 				{props.adLibListItem.name}
 				<VTFloatingInspector
+					status={props.status || RundownAPI.PieceStatusCode.UNKNOWN}
 					showMiniInspector={showMiniInspector}
 					timePosition={hoverScrubTimePosition}
 					content={vtContent}

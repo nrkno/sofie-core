@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { SourceLayerType, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import {
@@ -73,7 +72,7 @@ export namespace ServerPlayoutAdLibAPI {
 				if (playlist.currentPartInstanceId !== partInstanceId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
 			},
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
@@ -164,7 +163,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 				cache.PieceInstances.insert(newPieceInstance)
 
-				syncPlayheadInfinitesForNextPartInstance(cache)
+				await syncPlayheadInfinitesForNextPartInstance(cache)
 
 				updateTimeline(cache)
 			}
@@ -311,7 +310,7 @@ export namespace ServerPlayoutAdLibAPI {
 			)
 			innerStartAdLibPiece(cache, rundown, currentPartInstance, newPieceInstance)
 
-			syncPlayheadInfinitesForNextPartInstance(cache)
+			await syncPlayheadInfinitesForNextPartInstance(cache)
 		}
 
 		updateTimeline(cache)
@@ -508,7 +507,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 		// Find and insert any rundown defined infinites that we should inherit
 		newPartInstance = cache.PartInstances.findOne(newPartInstance._id)!
-		const possiblePieces = await fetchPiecesThatMayBeActiveForPart(cache, newPartInstance.part)
+		const possiblePieces = await fetchPiecesThatMayBeActiveForPart(cache, undefined, newPartInstance.part)
 		const infinitePieceInstances = getPieceInstancesForPart(
 			cache,
 			currentPartInstance,
@@ -608,7 +607,7 @@ export namespace ServerPlayoutAdLibAPI {
 							`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt} with a virtual`
 						)
 
-						const pieceId: PieceId = protectString(Random.id())
+						const pieceId: PieceId = getRandomId()
 						cache.PieceInstances.insert({
 							...rewrapPieceToInstance(
 								{

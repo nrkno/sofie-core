@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-04-16T08:23:25.082Z\n"
-"PO-Revision-Date: 2021-04-16 10:24+0200\n"
+"POT-Creation-Date: 2021-04-26T13:33:57.514Z\n"
+"PO-Revision-Date: 2021-04-30 10:54+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -293,13 +293,13 @@ msgstr "Køyreplan"
 msgid "Problems"
 msgstr "Problem"
 
-msgid "Show style"
+msgid "Show Style"
 msgstr "Showstyle"
 
 msgid "On Air Start Time"
 msgstr "Sendestart"
 
-msgid "Last updated"
+msgid "Last Updated"
 msgstr "Sist oppdatert"
 
 msgid "Shelf Layout"
@@ -390,6 +390,12 @@ msgstr "Denne køyreplanen er allereie aktiv"
 msgid "Not set"
 msgstr "Ikkje angjeve"
 
+msgid "This rundown will loop indefinitely"
+msgstr "Denne køyreplanen vil gå i ein uendeleg loop"
+
+msgid "({{timecode}})"
+msgstr "({{timecode}})"
+
 msgid "Re-sync rundown data with {{nrcsName}}"
 msgstr "Ikkje synkronisert med MOS/{{nrcsName}}"
 
@@ -439,6 +445,15 @@ msgid ""
 msgstr ""
 "Du er i testmodus og sendinga startar om mindre enn eitt minutt. Vil du "
 "laste inn køyreplanen på nytt og gjere klar til sending?"
+
+msgid "{{currentRundownName}} - {{rundownPlaylistName}} (Looping)"
+msgstr "{{currentRundownName}} - {{rundownPlaylistName}} (Looper)"
+
+msgid "{{currentRundownName}} - {{rundownPlaylistName}}"
+msgstr "{{currentRundownName}} - {{rundownPlaylistName}}"
+
+msgid "{{rundownPlaylistName}} (Looping)"
+msgstr "{{rundownPlaylistName}} (Looper)"
 
 msgid "Started"
 msgstr "Starta"
@@ -695,6 +710,12 @@ msgstr ""
 "Er du sikker på at du vil slette køyreplanen {{rundownName}} i lista "
 "{{playlistName}} frå Sofie? Denne handlinga kan du ikkje angre!"
 
+msgid "Loop Start"
+msgstr "Start for loop"
+
+msgid "Loop End"
+msgstr "Slutt for loop"
+
 msgid "(in: {{time}})"
 msgstr "(om: {{time}})"
 
@@ -703,9 +724,6 @@ msgstr "(for {{time}} sidan)"
 
 msgid "Planned Duration"
 msgstr "Planlagt varigheit"
-
-msgid "Looping"
-msgstr "Loopmodus"
 
 msgid ""
 "The rundown \"{{rundownName}}\" is not published or activated in "
@@ -1378,6 +1396,15 @@ msgstr "Cue alle adliber"
 msgid "Toggle AdLibs on single mouse click"
 msgstr "Veksle mellom adliber med enkelt museklikk"
 
+msgid "Hide duplicated AdLibs"
+msgstr "Skjul dupliserte adliber"
+
+msgid ""
+"Picks the first instance of an adLib per rundown, identified by uniqueness Id"
+msgstr ""
+"Velger den første førekomsten av ein adlib i kvar køyreplan, identifisert av "
+"unik id"
+
 msgid "URL"
 msgstr "Adresse (url)"
 
@@ -1728,6 +1755,12 @@ msgstr "Lag-id"
 msgid "ID of the timeline-layer to map to some output"
 msgstr "Lag-id for tidslinjelaget som skal mappast til ein utgang"
 
+msgid "Layer Name"
+msgstr "Lagnamn"
+
+msgid "Human-readable name of the layer"
+msgstr "Lesarvenleg lagnamn"
+
 msgid "The type of device to use for the output"
 msgstr "Einingtype som skal nyttast for utgangen"
 
@@ -1972,6 +2005,30 @@ msgstr "Passord for autentisering"
 
 msgid ""
 "(Optional) A name/identifier of the local network where the share is located"
+msgstr ""
+
+msgid "Quantel gateway URL"
+msgstr "Quantel Gateway-adresse (url)"
+
+msgid "URL to the Quantel Gateway"
+msgstr "Start Quantel-gateway om att"
+
+msgid "ISA URLs"
+msgstr "ISA-adresse (url)"
+
+msgid "URLs to the ISAs (in order of importance)"
+msgstr "Adresser (url-er) for ISA-ene (i prioritert rekkefølgje)"
+
+msgid "Zone ID"
+msgstr "Sone-id"
+
+msgid "Zone ID (default value: \"default\")"
+msgstr "Sone-id (standardverdi: \"default\")"
+
+msgid "Server ID"
+msgstr "Server-id"
+
+msgid "Server id (Can be omitted for sources, as clip-searches are zone-wide.)"
 msgstr ""
 
 msgid "Allow Read access"
@@ -2597,6 +2654,9 @@ msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
+#~ msgid "Show style"
+#~ msgstr "Showstyle"
+
 #~ msgid "Clip can't be played because the filename is missing"
 #~ msgstr "Klippet kan ikkje spelast av fordi filnamnet mangler"
 
@@ -2806,9 +2866,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 #~ msgid "Ready"
 #~ msgstr "Klar"
 
-#~ msgid "Start"
-#~ msgstr "Start"
-
 #~ msgid "Are you sure you want to delete recording \"{{name}}\"?"
 #~ msgstr "Er du sikker på at du vil slette opptaket \"{{name}}\"?"
 
@@ -2954,14 +3011,8 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 #~ msgid "Media Scanner Port"
 #~ msgstr "Port for mediascanner"
 
-#~ msgid "Quantel Gateway URL"
-#~ msgstr "Quantel Gateway-adresse (url)"
-
 #~ msgid "Quantel ISA URL"
 #~ msgstr "Quantel ISA-adresse (url)"
-
-#~ msgid "Zone ID (leave blank for default)"
-#~ msgstr "Sone-id (la denne vere tom for standardval)"
 
 #~ msgid "Quantel Server ID"
 #~ msgstr "Quantel server-id"
@@ -3058,12 +3109,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
 #~ msgid "Interval"
 #~ msgstr "Intervall"
-
-#~ msgid "ISA URL"
-#~ msgstr "ISA-adresse (url)"
-
-#~ msgid "Zone ID"
-#~ msgstr "Sone-id"
 
 #~ msgid "(Optional) REST port"
 #~ msgstr "(Valfri) REST-port"
@@ -3307,9 +3352,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
 #~ msgid "Templates"
 #~ msgstr "Templates"
-
-#~ msgid "Server"
-#~ msgstr "Serveren"
 
 #, fuzzy
 #~| msgid "Devices"

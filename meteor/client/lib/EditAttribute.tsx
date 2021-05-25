@@ -10,6 +10,7 @@ import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { Random } from 'meteor/random'
+import { assertNever } from '../../lib/lib'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -56,6 +57,8 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeIconPicker {...this.props} />
 		} else if (this.props.type === 'array') {
 			return <EditAttributeArray {...this.props} />
+		} else {
+			assertNever(this.props.type)
 		}
 
 		return <div>Unknown edit type {this.props.type}</div>

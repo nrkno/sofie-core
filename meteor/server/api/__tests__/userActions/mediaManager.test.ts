@@ -1,10 +1,9 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
-import { protectString, getCurrentTime } from '../../../../lib/lib'
+import { getCurrentTime, getRandomId } from '../../../../lib/lib'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
 import { ClientAPI } from '../../../../lib/api/client'
-import { MediaWorkFlows } from '../../../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowId, MediaWorkFlows } from '../../../../lib/collections/MediaWorkFlows'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 
@@ -25,7 +24,7 @@ namespace UserActionAPI {
 describe('User Actions - Media Manager', () => {
 	let env: DefaultEnvironment
 	function setupMockWorkFlow(env: DefaultEnvironment) {
-		const workFlowId = protectString(Random.id())
+		const workFlowId: MediaWorkFlowId = getRandomId()
 		const workFlow = {
 			_id: workFlowId,
 			_rev: '',

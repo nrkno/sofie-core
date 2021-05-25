@@ -191,6 +191,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					</span>
 				)}
 				<VTFloatingInspector
+					status={this.props.piece.status}
 					showMiniInspector={this.state.isHovered}
 					timePosition={this.state.timePosition}
 					content={adLib.content as VTContent | undefined}

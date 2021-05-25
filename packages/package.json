@@ -20,12 +20,12 @@
 		"set-version": "lerna version --no-changelog --no-git-tag-version --no-push --yes",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck --allowPackages \"cycle@1.0.3;caniuse-lite@1.0.30001204\"",
+		"license-validate": "yarn sofie-licensecheck --allowPackages \"cycle@1.0.3;caniuse-lite@1.0.30001214;mos-gateway@1.34.0-in-testing;playout-gateway@1.34.0-in-testing\"",
 		"lint": "lerna run --concurrency 4 --stream lint",
 		"test": "lerna run --concurrency 2 --stream test"
 	},
 	"devDependencies": {
-		"@sofie-automation/code-standard-preset": "^0.2.1",
+		"@sofie-automation/code-standard-preset": "^0.2.5",
 		"@strictsoftware/typedoc-plugin-monorepo": "^0.4.2",
 		"@types/ejson": "^2.1.2",
 		"@types/got": "^9.6.11",

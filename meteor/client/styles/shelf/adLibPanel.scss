@@ -340,6 +340,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 							bottom: 0;
 							right: 0;
 							border: 1px solid $adlib-item-selected-color;
+							pointer-events: none;
 						}
 					}
 

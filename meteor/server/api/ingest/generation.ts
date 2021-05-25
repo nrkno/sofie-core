@@ -32,6 +32,7 @@ import { profiler } from '../profiler'
 import { selectShowStyleVariant } from '../rundown'
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import { CacheForIngest } from './cache'
+import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { LocalIngestRundown, LocalIngestSegment } from './ingestCache'
 import {
 	getSegmentId,
@@ -463,7 +464,7 @@ export async function updateRundownFromIngestData(
 		identifier: `rundownId=${dbRundown._id}`,
 	})
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)
-	logger.info(`... got ${rundownRes.baseline.length} objects from baseline.`)
+	logger.info(`... got ${rundownRes.baseline.timelineObjects.length} objects from baseline.`)
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
 	logger.info(`... got ${(rundownRes.globalActions || []).length} adLib actions from baseline.`)
 
@@ -475,7 +476,7 @@ export async function updateRundownFromIngestData(
 				objects: postProcessRundownBaselineItems(
 					blueprintRundownContext,
 					showStyle.base.blueprintId,
-					rundownRes.baseline
+					rundownRes.baseline.timelineObjects
 				),
 			},
 		]),
@@ -536,6 +537,8 @@ export async function updateRundownFromIngestData(
 		segmentChanges.adlibPieces.push(...cache.AdLibPieces.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
 		segmentChanges.adlibActions.push(...cache.AdLibActions.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
 	}
+
+	updateBaselineExpectedPackagesOnRundown(cache, rundownRes.baseline)
 
 	await saveSegmentChangesToCache(cache, segmentChanges, true)
 

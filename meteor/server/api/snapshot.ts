@@ -434,7 +434,10 @@ function storeSnaphot(
 
 	// Store to the persistant file storage
 	logger.info(`Save snapshot file ${filePath}`)
-	fsWriteFile(filePath, str)
+	if (!Meteor.isTest) {
+		// If we're running in a unit-test, don't write to disk
+		fsWriteFile(filePath, str)
+	}
 
 	let id = Snapshots.insert({
 		_id: protectString(fileName),
@@ -478,7 +481,9 @@ function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): AnySnapsh
 
 	let filePath = Path.join(system.storePath, snapshot.fileName)
 
-	let dataStr = fsReadFile(filePath).toString()
+	let dataStr = !Meteor.isTest // If we're running in a unit-test, don't access files
+		? fsReadFile(filePath).toString()
+		: ''
 
 	let readSnapshot = JSON.parse(dataStr)
 
@@ -578,8 +583,6 @@ export function restoreFromRundownPlaylistSnapshot(
 	const playlistId = (snapshot.playlist._id = getRandomId())
 	snapshot.playlist.restoredFromSnapshotId = snapshot.playlistId
 	delete snapshot.playlist.activationId
-	snapshot.playlist.currentPartInstanceId = null
-	snapshot.playlist.nextPartInstanceId = null
 
 	snapshot.rundowns.forEach((rd) => {
 		if (!rd.orphaned) {
@@ -674,6 +677,22 @@ export function restoreFromRundownPlaylistSnapshot(
 		}
 	})
 
+	if (snapshot.playlist.currentPartInstanceId) {
+		snapshot.playlist.currentPartInstanceId =
+			partInstanceIdMap[unprotectString(snapshot.playlist.currentPartInstanceId)] ||
+			snapshot.playlist.currentPartInstanceId
+	}
+	if (snapshot.playlist.nextPartInstanceId) {
+		snapshot.playlist.nextPartInstanceId =
+			partInstanceIdMap[unprotectString(snapshot.playlist.nextPartInstanceId)] ||
+			snapshot.playlist.nextPartInstanceId
+	}
+	if (snapshot.playlist.previousPartInstanceId) {
+		snapshot.playlist.previousPartInstanceId =
+			partInstanceIdMap[unprotectString(snapshot.playlist.previousPartInstanceId)] ||
+			snapshot.playlist.previousPartInstanceId
+	}
+
 	const rundownIds = snapshot.rundowns.map((r) => r._id)
 
 	// Apply the updates of any properties to any document
@@ -683,8 +702,8 @@ export function restoreFromRundownPlaylistSnapshot(
 			rundownId?: RundownId
 			partId?: PartId
 			segmentId?: SegmentId
-			part?: T
-			piece?: T
+			part?: unknown
+			piece?: unknown
 		}
 	>(objs: undefined | T[], updateId: boolean): T[] {
 		const updateIds = (obj: T) => {
@@ -704,10 +723,10 @@ export function restoreFromRundownPlaylistSnapshot(
 			}
 
 			if (obj.part) {
-				updateIds(obj.part)
+				updateIds(obj.part as any)
 			}
 			if (obj.piece) {
-				updateIds(obj.piece)
+				updateIds(obj.piece as any)
 			}
 
 			return obj
@@ -732,9 +751,9 @@ export function restoreFromRundownPlaylistSnapshot(
 	)
 	saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.segments, false))
 	saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.parts, false))
-	saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, snapshot.partInstances)
+	saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.partInstances, false))
 	saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false))
-	saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, snapshot.pieceInstances)
+	saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieceInstances, false))
 	saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true))
 	saveIntoDb(AdLibActions, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibActions, true))
 	saveIntoDb(
@@ -859,7 +878,10 @@ export function removeSnapshot(context: MethodContext, snapshotId: SnapshotId) {
 		try {
 			logger.info(`Removing snapshot file ${filePath}`)
 
-			fsUnlinkFile(filePath)
+			if (!Meteor.isTest) {
+				// If we're running in a unit-test, don't access files
+				fsUnlinkFile(filePath)
+			}
 		} catch (e) {
 			// Log the error, but continue
 			logger.error('Error in removeSnapshot')

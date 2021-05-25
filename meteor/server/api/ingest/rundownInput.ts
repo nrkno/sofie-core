@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { PeripheralDevice, PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { getCurrentTime, waitForPromise } from '../../../lib/lib'
+import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { getCurrentTime, unprotectString, waitForPromise } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
@@ -26,6 +26,8 @@ import { MethodContext } from '../../../lib/api/methods'
 import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownAction } from './lockFunction'
 import { CacheForIngest } from './cache'
 import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
+import { removeRundownsFromDb } from '../rundownPlaylist'
+import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 export namespace RundownInput {
 	// Get info on the current rundowns from this device:
@@ -252,7 +254,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 
 	return handleRemovedRundownFromStudio(studio._id, rundownExternalId)
 }
-export function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: string, forceDelete?: boolean) {
+function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: string, forceDelete?: boolean) {
 	return runIngestOperationWithCache(
 		'handleRemovedRundown',
 		studioId,
@@ -276,6 +278,23 @@ export function handleRemovedRundownFromStudio(studioId: StudioId, rundownExtern
 		}
 	)
 }
+export function handleRemovedRundownByRundown(rundown: DBRundown, forceDelete?: boolean) {
+	if (rundown.restoredFromSnapshotId) {
+		// It's from a snapshot, so should be removed directly, as that means it cannot run ingest operations
+		// Note: this bypasses activation checks, but that probably doesnt matter
+		waitForPromise(removeRundownsFromDb([rundown._id]))
+
+		// check if the playlist is now empty
+		const rundownCount = Rundowns.find({ playlistId: rundown.playlistId }).count()
+		if (rundownCount === 0) {
+			// A lazy approach, but good enough for snapshots
+			RundownPlaylists.remove(rundown.playlistId)
+		}
+	} else {
+		handleRemovedRundownFromStudio(rundown.studioId, rundown.externalId, forceDelete)
+	}
+}
+
 /** Handle an updated (or inserted) Rundown */
 export function handleUpdatedRundown(
 	studio0: Studio | undefined,
