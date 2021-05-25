@@ -7,8 +7,10 @@
 export namespace TrackerMock {
 	type ComputationCallback = (computation: Computation) => void
 	type AutorunCallback = (computation: Computation) => void
-	export const currentComputation: Computation | null = null
-	export const active: boolean = false
+	// eslint-disable-next-line prefer-const
+	export let currentComputation: Computation | null = null
+	// eslint-disable-next-line prefer-const
+	export let active: boolean = false
 
 	export class Dependency {
 		private dependents: Computation[] = []
