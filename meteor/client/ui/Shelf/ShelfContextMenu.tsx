@@ -9,8 +9,8 @@ import { BucketAdLibItem, BucketAdLibActionUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents } from '../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
 import { isActionItem } from './Inspector/ItemRenderers/ActionItemRenderer'
-import { AdLibPieceUi } from './AdLibPanel'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 export enum ContextType {
 	BUCKET = 'bucket',

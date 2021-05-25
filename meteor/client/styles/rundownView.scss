@@ -7,7 +7,6 @@ $output-layer-group-collapse-animation-duration: 0.3s;
 
 $segment-header-height: 2.3em;
 $segment-header-width: 12.5rem;
-$segment-background-color: #000;
 $segment-timeline-background-color: #1f1f1f;
 $segment-next-preview-background-color: #181818;
 $segment-title-background-color: #4b4b4b;
@@ -356,6 +355,11 @@ body.no-overflow {
 
 					> strong {
 						margin-right: 0.4em;
+					}
+
+					> svg.icon.looping {
+						width: 1.4em;
+						height: 1.4em;
 					}
 				}
 			}
@@ -2281,6 +2285,45 @@ body.no-overflow {
 				$output-layer-group-collapse-animation-duration margin 0;
 		}
 	}
+}
+
+.playlist-looping-header {
+	color: $rundown-divider-color;
+	background: $rundown-divider-background-color;
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+	align-items: stretch;
+	align-content: space-between;
+	overflow: hidden;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+
+	width: auto;
+	margin: 0;
+	padding: 0.3em 1em 0.3em 1.3em;
+
+	&.multi-rundown {
+		margin-bottom: -1.9em;
+		padding-bottom: 0;
+	}
+
+	> .playlist-looping-header__label {
+		margin: 0;
+		padding: 0;
+		font-size: 1.05em;
+		font-weight: 500;
+
+		> svg.icon {
+			width: 1.4em;
+		}
+	}
+}
+
+.segment-timeline-container + .playlist-looping-header {
+	margin-bottom: 0 !important;
+	padding-bottom: 0.3em !important;
 }
 
 .rundown-divider-timeline {

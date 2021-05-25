@@ -11,6 +11,9 @@ import { iconDragHandle, iconRemove, iconResync } from './icons'
 import JonasFormattedTime from './JonasFormattedTime'
 import { EyeIcon } from '../../lib/ui/icons/rundownList'
 import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
+import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { LoopingIcon } from '../../lib/ui/icons/looping'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
@@ -19,6 +22,7 @@ interface IRundownListItemViewProps {
 	connectDragSource: (content: ReactElement) => ReactElement | null
 	rundownViewUrl?: string
 	rundown: Rundown
+	rundownLayouts: Array<RundownLayoutBase>
 	showStyleBaseURL?: string
 	showStyleName: string | undefined
 	confirmReSyncRundownHandler?: () => void
@@ -26,6 +30,7 @@ interface IRundownListItemViewProps {
 	isDragLayer: boolean
 	connectDropTarget: (content: ReactElement) => ReactElement | null
 	renderTooltips: boolean
+	isOnlyRundownInPlaylist?: boolean
 }
 
 export default withTranslation()(function RundownListItemView(props: Translated<IRundownListItemViewProps>) {
@@ -39,9 +44,13 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		showStyleBaseURL,
 		showStyleName,
 		rundown,
+		rundownLayouts,
 		confirmReSyncRundownHandler,
 		confirmDeleteRundownHandler,
+		isOnlyRundownInPlaylist,
 	} = props
+
+	const playlist = rundown.getRundownPlaylist()
 
 	const classNames = props.classNames.slice()
 	classNames.push('rundown-list-item')
@@ -49,7 +58,14 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		classNames.push('dragging')
 	}
 
-	const rundownNameContent = rundownViewUrl ? <Link to={rundownViewUrl}>{props.rundown.name}</Link> : props.rundown.name
+	const rundownNameContent = rundownViewUrl ? (
+		<Link to={rundownViewUrl}>
+			{isOnlyRundownInPlaylist && playlist.loop && <LoopingIcon />}
+			{props.rundown.name}
+		</Link>
+	) : (
+		props.rundown.name
+	)
 
 	// const [warnings, errors] = getAllNotes(rundown)
 
@@ -101,7 +117,25 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			</span>
 			<span className="rundown-list-item__text">
 				{rundown.expectedDuration ? (
-					RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)
+					isOnlyRundownInPlaylist && playlist.loop ? (
+						<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+							<span>
+								{t('({{timecode}})', {
+									timecode: RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true),
+								})}
+								&nbsp;
+								<LoopingIcon />
+							</span>
+						</Tooltip>
+					) : (
+						RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)
+					)
+				) : isOnlyRundownInPlaylist && playlist.loop ? (
+					<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+						<span>
+							<LoopingIcon />
+						</span>
+					</Tooltip>
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
@@ -109,9 +143,19 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			<span className="rundown-list-item__text">
 				<JonasFormattedTime timestamp={rundown.modified} t={t} />
 			</span>
-			<span className="rundown-list-item__text">
-				<RundownShelfLayoutSelection rundown={props.rundown} />
-			</span>
+			{rundownLayouts.some(
+				(l) => RundownLayoutsAPI.IsLayoutForShelf(l) && (l.exposeAsShelf || l.exposeAsStandalone)
+			) && (
+				<span className="rundown-list-item__text">
+					{isOnlyRundownInPlaylist && (
+						<RundownShelfLayoutSelection
+							rundowns={[rundown]}
+							rundownLayouts={rundownLayouts}
+							playlistId={rundown.playlistId}
+						/>
+					)}
+				</span>
+			)}
 			<span className="rundown-list-item__actions">
 				{confirmReSyncRundownHandler ? (
 					<Tooltip

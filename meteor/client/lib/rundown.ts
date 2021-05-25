@@ -25,7 +25,6 @@ import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { literal, normalizeArray, getCurrentTime, applyToArray } from '../../lib/lib'
 import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
-import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { createPieceGroupAndCap, PieceGroupMetadata } from '../../lib/rundown/pieces'
@@ -33,6 +32,7 @@ import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstan
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { FindOptions } from '../../lib/typings/meteor'
+import { AdLibPieceUi } from './shelf'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId

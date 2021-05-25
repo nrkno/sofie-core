@@ -52,6 +52,7 @@ body.tv2 {
 		margin: 0.25em 1.5em;
 		grid-template-columns: [segment-name] 16.875em [segment-group-controls] 10em [timeline] auto [end];
 		grid-template-rows: [header] 1.8em [main-view] auto [zoom-area] auto [end];
+		box-shadow: unset;
 
 		.segment-timeline__title__label.identifier::before {
 			display: none;
@@ -266,6 +267,31 @@ body.tv2 {
 			color: #fff;
 		}
 	}
+	.rundown-view-shelf {
+		margin: 0.75em 1.5em 0.75em 2.5em;
+		border-radius: 0;
+		box-shadow: unset;
+	}
+	.segment-timeline-wraper--hidden .rundown-view-shelf .rundown-view-shelf__identifier {
+		display: block;
+		font-size: 1.4em;
+		font-weight: 400;
+		margin-left: 0.3em;
+		line-height: 1.4em;
+		position: absolute;
+		z-index: 3;
+		text-shadow: -1px -1px 0px rgba(0, 0, 0, 0.5), 1px 1px 0px rgba(0, 0, 0, 0.5), 1px -1px 0px rgba(0, 0, 0, 0.5),
+			1px -1px 0px rgba(0, 0, 0, 0.5), 0.5px 0.5px 2px rgba(0, 0, 0, 1);
+	}
+	.segment-timeline-wraper--shelf.segment-timeline-wraper--hidden
+		+ .segment-timeline-wraper--shelf.segment-timeline-wraper--hidden
+		.rundown-view-shelf.dashboard-panel {
+		margin-top: -0.5em;
+	}
+	.segment-timeline + .rundown-view-shelf {
+		margin: -0.25em 1.5em 0.75em 1.5em;
+		padding-left: 16.875em;
+	}
 	.rundown-system-status {
 		left: calc(50% + 118px);
 		top: 16px;
@@ -351,27 +377,6 @@ body.tv2 {
 			}
 		}
 
-		&:not(.list) {
-			.dashboard-panel__panel__button__sub-label {
-				width: 100%;
-				text-align: right;
-			}
-		}
-
-		&.list {
-			&.selected {
-				box-shadow: inset 0 0 0 2px var(--general-next-color), 2px 2px 0 var(--general-next-color),
-					-2px -2px 0 var(--general-next-color), -2px 2px 0 var(--general-next-color),
-					2px -2px 0 var(--general-next-color);
-			}
-
-			&.live {
-				box-shadow: inset 0 0 0 2px var(--general-live-color), 2px 2px 0 var(--general-live-color),
-					-2px -2px 0 var(--general-live-color), -2px 2px 0 var(--general-live-color),
-					2px -2px 0 var(--general-live-color);
-			}
-		}
-
 		&.uninteractive {
 			background: gray;
 
@@ -412,6 +417,20 @@ body.tv2 {
 			box-shadow: none;
 		}
 	}
+	.rundown-view-shelf .dashboard-panel__panel__button,
+	.dashboard-panel__panel__button.list {
+		&.selected {
+			box-shadow: inset 0 0 0 2px var(--general-next-color), 2px 2px 0 var(--general-next-color),
+				-2px -2px 0 var(--general-next-color), -2px 2px 0 var(--general-next-color),
+				2px -2px 0 var(--general-next-color);
+		}
+
+		&.live {
+			box-shadow: inset 0 0 0 2px var(--general-live-color), 2px 2px 0 var(--general-live-color),
+				-2px -2px 0 var(--general-live-color), -2px 2px 0 var(--general-live-color),
+				2px -2px 0 var(--general-live-color);
+		}
+	}
 	.rundown-view {
 		.status-bar {
 			top: 3.375rem;
@@ -428,7 +447,8 @@ body.tv2 {
 		max-height: unset;
 	}
 
-	@media screen and (min-height: 1441px) { // Expanding over second screen
+	@media screen and (min-height: 1441px) {
+		// Expanding over second screen
 		.notification-center-panel {
 			bottom: 50vh;
 		}

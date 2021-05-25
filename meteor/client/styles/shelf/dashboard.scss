@@ -412,6 +412,10 @@ $dashboard-button-height: 5.625em;
 				height: 100%;
 				width: 100%;
 			}
+
+			> .dashboard-panel__panel__button__hotkey {
+				display: none;
+			}
 		}
 
 		&.list {

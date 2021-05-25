@@ -7,17 +7,9 @@ import {
 	RundownLayoutAdLibRegionRole,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import {
-	dashboardElementPosition,
-	IDashboardPanelTrackedProps,
-	getUnfinishedPieceInstancesGrouped,
-	getNextPieceInstancesGrouped,
-	isAdLibOnAir,
-	isAdLibNext,
-	isAdLibDisplayedAsOnAir,
-} from './DashboardPanel'
+import { dashboardElementPosition, IDashboardPanelTrackedProps, isAdLibDisplayedAsOnAir } from './DashboardPanel'
 import ClassNames from 'classnames'
-import { AdLibPieceUi, IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, matchFilter } from './AdLibPanel'
+import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, matchFilter } from './AdLibPanel'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -29,6 +21,13 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ensureHasTrailingSlash } from '../../lib/lib'
+import {
+	getUnfinishedPieceInstancesGrouped,
+	getNextPieceInstancesGrouped,
+	AdLibPieceUi,
+	isAdLibNext,
+	isAdLibOnAir,
+} from '../../lib/shelf'
 
 interface IState {
 	objId?: string
@@ -174,11 +173,12 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 	}
 
 	render() {
+		const liveSegment = this.props.uiSegments.find((i) => i.isLive === true)
 		const piece =
 			this.props.panel.tags && this.props.rundownBaselineAdLibs
 				? this.props.rundownBaselineAdLibs
 						.concat(_.flatten(this.props.uiSegments.map((seg) => seg.pieces)))
-						.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))[
+						.filter((item) => matchFilter(item, this.props.showStyleBase, liveSegment, this.props.filter))[
 						this.props.adlibRank ? this.props.adlibRank : 0
 				  ]
 				: undefined

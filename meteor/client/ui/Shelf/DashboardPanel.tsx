@@ -7,18 +7,17 @@ import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownViewKbdShortcuts } from '../RundownView'
+import { RundownViewKbdShortcuts } from '../RundownViewKbdShortcuts'
 import { IOutputLayer, ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
-import { unprotectString, getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime, unprotectString } from '../../../lib/lib'
 import {
 	IAdLibPanelProps,
 	AdLibFetchAndFilterProps,
 	fetchAndFilter,
-	AdLibPieceUi,
 	matchFilter,
 	AdLibPanelToolbar,
 } from './AdLibPanel'
@@ -26,16 +25,17 @@ import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { PieceId, Pieces } from '../../../lib/collections/Pieces'
-import { invalidateAt } from '../../lib/invalidatingTime'
-import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
-import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../../lib/hotkeyRegistry'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
+import { AdLibPieceUi } from '../../lib/shelf'
+import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
+import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { invalidateAt } from '../../lib/invalidatingTime'
 
 interface IState {
 	outputLayers: {
@@ -567,6 +567,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
 			const uniquenessIds = new Set<string>()
+			const liveSegment = this.props.uiSegments.find((i) => i.isLive === true)
 			if (!this.props.uiSegments || !this.props.playlist) {
 				return <Spinner />
 			} else {
@@ -589,7 +590,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 										matchFilter(
 											item,
 											this.props.showStyleBase,
-											this.props.uiSegments,
+											liveSegment,
 											this.props.filter,
 											this.state.searchFilter,
 											uniquenessIds

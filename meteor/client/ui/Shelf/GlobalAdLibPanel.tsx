@@ -17,7 +17,7 @@ import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { faTh, faList, faTimes } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { RundownViewKbdShortcuts } from '../RundownView'
+import { RundownViewKbdShortcuts } from '../RundownViewKbdShortcuts'
 
 import { Spinner } from '../../lib/Spinner'
 import { literal, normalizeArray, unprotectString, protectString, Omit } from '../../../lib/lib'
@@ -37,7 +37,7 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { PartInstances } from '../../../lib/collections/PartInstances'
-import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
+import { AdlibSegmentUi } from './AdLibPanel'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
@@ -48,6 +48,7 @@ import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../../lib/hotkeyRegistry'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void

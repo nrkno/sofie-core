@@ -50,6 +50,8 @@ import { Settings } from '../../../lib/Settings'
 import { defaultColorPickerPalette } from '../../lib/colorPicker'
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { RundownLayoutType } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 interface IProps {
 	match: {
@@ -231,11 +233,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<HotkeyLegendSettings showStyleBase={showStyleBase} />
 						</div>
 					</div>
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<RundownLayoutEditor showStyleBase={showStyleBase} studios={this.props.compatibleStudios} />
-						</div>
-					</div>
+					{RundownLayoutsAPI.GetSettingsManifest().map((region) => {
+						return (
+							<div className="row" key={region._id}>
+								<div className="col c12 r1-c12">
+									<RundownLayoutEditor
+										showStyleBase={showStyleBase}
+										studios={this.props.compatibleStudios}
+										customRegion={region}
+									/>
+								</div>
+							</div>
+						)
+					})}
 					<div className="row">
 						<div className="col c12 r1-c12">
 							<ConfigManifestSettings

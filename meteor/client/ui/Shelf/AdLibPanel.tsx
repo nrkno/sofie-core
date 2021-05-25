@@ -18,7 +18,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownViewKbdShortcuts } from '../RundownView'
+import { RundownViewKbdShortcuts } from '../RundownViewKbdShortcuts'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import {
 	IOutputLayer,
@@ -60,6 +60,7 @@ import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -88,25 +89,25 @@ interface IListViewStateHeader {
 	sourceLayers: {
 		[key: string]: ISourceLayer
 	}
+	liveSegment?: AdlibSegmentUi
 }
 
 export function matchFilter(
 	item: AdLibPieceUi,
 	showStyleBase: ShowStyleBase,
-	uiSegments: Array<AdlibSegmentUi>,
+	liveSegment?: AdlibSegmentUi,
 	filter?: RundownLayoutFilterBase,
 	searchFilter?: string,
 	uniquenessIds?: Set<string>
 ) {
 	if (!searchFilter && !filter) return true
-	const liveSegment = uiSegments.find((i) => i.isLive === true)
 	const uppercaseLabel = item.name.toUpperCase()
 	if (filter) {
 		// Filter currentSegment only
 		if (
 			filter.currentSegment === true &&
 			item.partId &&
-			((liveSegment && liveSegment.parts.find((i) => item.partId === i.part._id) === undefined) || !liveSegment)
+			((liveSegment && liveSegment._id !== item.segmentId) || !liveSegment)
 		) {
 			return false
 		}
@@ -206,6 +207,8 @@ const AdLibListView = withTranslation()(
 				[key: string]: ISourceLayer
 			} = {}
 
+			const liveSegment = props.uiSegments.find((i) => i.isLive === true)
+
 			if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
 				props.showStyleBase.outputLayers.forEach((outputLayer) => {
 					tOLayers[outputLayer._id] = outputLayer
@@ -217,9 +220,10 @@ const AdLibListView = withTranslation()(
 				return {
 					outputLayers: tOLayers,
 					sourceLayers: tSLayers,
+					liveSegment,
 				}
 			}
-			return null
+			return { liveSegment }
 		}
 
 		scrollToCurrentSegment() {
@@ -257,7 +261,7 @@ const AdLibListView = withTranslation()(
 								matchFilter(
 									item,
 									this.props.showStyleBase,
-									this.props.uiSegments,
+									this.state.liveSegment,
 									this.props.filter,
 									this.props.searchFilter,
 									uniquenessIds
@@ -312,7 +316,7 @@ const AdLibListView = withTranslation()(
 										matchFilter(
 											item,
 											this.props.showStyleBase,
-											this.props.uiSegments,
+											this.state.liveSegment,
 											this.props.filter,
 											this.props.searchFilter,
 											uniquenessIds
@@ -442,21 +446,6 @@ export const AdLibPanelToolbar = withTranslation()(
 	}
 )
 
-export interface AdLibPieceUi extends AdLibPiece {
-	hotkey?: string
-	sourceLayer?: ISourceLayer
-	outputLayer?: IOutputLayer
-	isGlobal?: boolean
-	isHidden?: boolean
-	isSticky?: boolean
-	isAction?: boolean
-	isClearSourceLayer?: boolean
-	adlibAction?: AdLibAction | RundownBaselineAdLibAction
-	contentMetaData?: any
-	message?: string | null
-	uniquenessId?: string
-}
-
 export interface AdlibSegmentUi extends DBSegment {
 	/** Pieces belonging to this part */
 	parts: Array<PartInstance>
@@ -465,15 +454,11 @@ export interface AdlibSegmentUi extends DBSegment {
 	isNext: boolean
 }
 
-export interface IAdLibPanelProps {
+export interface IAdLibPanelProps extends IAdLibFetchAndFilterParams {
 	// liveSegment: Segment | undefined
 	visible: boolean
-	playlist: RundownPlaylist
 	studio: Studio
-	showStyleBase: ShowStyleBase
 	studioMode: boolean
-	filter?: RundownLayoutFilterBase
-	includeGlobalAdLibs?: boolean
 	registerHotkeys?: boolean
 	hotkeyGroup: string
 	selectedPiece: BucketAdLibUi | BucketAdLibActionUi | IAdLibListItem | PieceUi | undefined
@@ -487,20 +472,13 @@ interface IState {
 	searchFilter: string | undefined
 }
 
-type SourceLayerLookup = { [id: string]: ISourceLayer }
-
-export interface AdLibFetchAndFilterProps {
-	uiSegments: Array<AdlibSegmentUi>
-	liveSegment: AdlibSegmentUi | undefined
-	sourceLayerLookup: SourceLayerLookup
-	rundownBaselineAdLibs: Array<AdLibPieceUi>
-}
+export type SourceLayerLookup = { [id: string]: ISourceLayer }
 
 interface IAdLibPanelTrackedProps extends AdLibFetchAndFilterProps {
 	studio: Studio
 }
 
-function actionToAdLibPieceUi(
+export function actionToAdLibPieceUi(
 	action: AdLibAction | RundownBaselineAdLibAction,
 	sourceLayers: _.Dictionary<ISourceLayer>,
 	outputLayers: _.Dictionary<IOutputLayer>
@@ -538,7 +516,22 @@ function actionToAdLibPieceUi(
 	})
 }
 
-export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchAndFilterProps {
+export interface AdLibFetchAndFilterProps {
+	uiSegments: Array<AdlibSegmentUi>
+	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
+	liveSegment: AdlibSegmentUi | undefined
+	sourceLayerLookup: SourceLayerLookup
+	rundownBaselineAdLibs: Array<AdLibPieceUi>
+}
+
+export interface IAdLibFetchAndFilterParams {
+	playlist: RundownPlaylist
+	showStyleBase: ShowStyleBase
+	filter?: RundownLayoutFilterBase
+	includeGlobalAdLibs?: boolean
+}
+
+export function fetchAndFilter(props: Translated<IAdLibFetchAndFilterParams>): AdLibFetchAndFilterProps {
 	const { t } = props
 
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
@@ -550,6 +543,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 	if (!props.playlist || !props.showStyleBase) {
 		return {
 			uiSegments: [],
+			uiSegmentMap: new Map(),
 			liveSegment: undefined,
 			sourceLayerLookup,
 			rundownBaselineAdLibs: [],
@@ -560,14 +554,15 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 	const segments = props.playlist.getSegments()
 
-	const { uiSegments, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun(
+	const { uiSegments, uiSegmentMap, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun(
 		(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null, segments: Segment[]) => {
 			// This is a map of partIds mapped onto segments they are part of
 			const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
 
 			if (!segments) {
 				return {
-					uiSegments: [],
+					uiSegments: [] as AdlibSegmentUi[],
+					uiSegmentMap: new Map(),
 					liveSegment: undefined,
 					uiPartSegmentMap,
 				}
@@ -632,6 +627,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 			return {
 				uiSegments,
+				uiSegmentMap,
 				liveSegment,
 				uiPartSegmentMap,
 			}
@@ -669,6 +665,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					...piece,
 					sourceLayer: sourceLayerLookup[piece.sourceLayerId],
 					outputLayer: outputLayerLookup[piece.outputLayerId],
+					segmentId: segment._id,
 				})
 			}
 		})
@@ -702,7 +699,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 		const segment = uiPartSegmentMap.get(action[0] as PartId)
 
 		if (segment) {
-			segment.pieces.push(action[1] as AdLibPieceUi)
+			segment.pieces.push({ ...action[1], segmentId: segment._id } as AdLibPieceUi)
 		}
 	})
 
@@ -891,6 +888,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 	return {
 		uiSegments: props.filter && props.filter.rundownBaseline === 'only' ? [] : uiSegments,
+		uiSegmentMap,
 		liveSegment,
 		sourceLayerLookup,
 		rundownBaselineAdLibs,

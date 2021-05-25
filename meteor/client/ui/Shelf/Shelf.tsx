@@ -11,10 +11,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { RundownViewKbdShortcuts } from '../RundownView'
+import { RundownViewKbdShortcuts } from '../RundownViewKbdShortcuts'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { RundownLayoutBase, RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutFilter, RundownLayoutShelfBase } from '../../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
@@ -51,7 +51,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 		key: string
 		label: string
 	}>
-	rundownLayout?: RundownLayoutBase
+	rundownLayout?: RundownLayoutShelfBase
 	fullViewport?: boolean
 	shelfDisplayOptions: {
 		buckets: boolean

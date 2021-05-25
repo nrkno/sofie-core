@@ -16,7 +16,6 @@ import {
 	SplitsContent,
 	NoraContent,
 } from '@sofie-automation/blueprints-integration'
-import { AdLibPieceUi } from './AdLibPanel'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -34,6 +33,7 @@ import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { isTouchDevice } from '../../lib/lib'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
@@ -123,7 +123,9 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		return (
 			<>
 				{thumbnailUrl && renderThumbnail && (
-					<img src={thumbnailUrl} className="dashboard-panel__panel__button__thumbnail" />
+					<div className="dashboard-panel__panel__button__thumbnail">
+						<img src={thumbnailUrl} />
+					</div>
 				)}
 			</>
 		)
@@ -140,9 +142,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 		return (
 			<>
-				{thumbnailUrl && renderThumbnail && (
-					<img src={thumbnailUrl} className="dashboard-panel__panel__button__thumbnail" />
-				)}
 				{sourceDuration && (
 					<span className="dashboard-panel__panel__button__sub-label">
 						{sourceDuration ? <StyledTimecode time={sourceDuration || 0} /> : null}
@@ -168,6 +167,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					}
 					mediaPreviewUrl={this.props.mediaPreviewUrl}
 				/>
+				{thumbnailUrl && renderThumbnail && (
+					<div className="dashboard-panel__panel__button__thumbnail">
+						<img src={thumbnailUrl} />
+					</div>
+				)}
 			</>
 		)
 	}
@@ -311,6 +315,12 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
+	renderHotkey() {
+		if (this.props.piece.hotkey) {
+			return <div className="dashboard-panel__panel__button__hotkey">{this.props.piece.hotkey.toUpperCase()}</div>
+		}
+	}
+
 	render() {
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
@@ -371,7 +381,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						  this.props.layer.type === SourceLayerType.LOWER_THIRD
 						? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
 						: null}
-
+					{this.renderHotkey()}
 					<div className="dashboard-panel__panel__button__label-container">
 						{this.props.editableName ? (
 							<textarea
