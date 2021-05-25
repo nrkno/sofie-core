@@ -1445,8 +1445,8 @@ const StudioPackageManagerSettings = withTranslation()(
 												</label>
 											</div>
 											<div className="mod mvs mhs">
-												<label className="field">
-													{t('Playout devices which uses this package container')}
+												<div className="field">
+													<label>{t('Playout devices which uses this package container')}</label>
 													<EditAttribute
 														attribute={`packageContainers.${containerId}.deviceIds`}
 														obj={this.props.studio}
@@ -1458,7 +1458,7 @@ const StudioPackageManagerSettings = withTranslation()(
 													<span className="text-s dimmed">
 														{t('Select which playout devices are using this package container')}
 													</span>
-												</label>
+												</div>
 											</div>
 
 											<div className="mdi"></div>
@@ -1995,8 +1995,8 @@ const StudioPackageManagerSettings = withTranslation()(
 						<h3 className="mhn">{t('Studio Settings')}</h3>
 
 						<div>
-							<label className="field">
-								{t('Package Containers to use for previews')}
+							<div className="field mvs">
+								<label>{t('Package Containers to use for previews')}</label>
 								<div className="mdi">
 									<EditAttribute
 										attribute="previewContainerIds"
@@ -2007,9 +2007,9 @@ const StudioPackageManagerSettings = withTranslation()(
 										collection={Studios}
 									></EditAttribute>
 								</div>
-							</label>
-							<label className="field">
-								{t('Package Containers to use for thumbnails')}
+							</div>
+							<div className="field mvs">
+								<label>{t('Package Containers to use for thumbnails')}</label>
 								<div className="mdi">
 									<EditAttribute
 										attribute="thumbnailContainerIds"
@@ -2020,11 +2020,11 @@ const StudioPackageManagerSettings = withTranslation()(
 										collection={Studios}
 									></EditAttribute>
 								</div>
-							</label>
+							</div>
 						</div>
 
 						<h3 className="mhn">{t('Package Containers')}</h3>
-						<table className="expando settings-studio-package-containers-table">
+						<table className="table expando settings-studio-package-containers-table">
 							<tbody>{this.renderPackageContainers()}</tbody>
 						</table>
 						<div className="mod mhs">
