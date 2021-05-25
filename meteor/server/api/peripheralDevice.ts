@@ -649,7 +649,7 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 		const peripheralDevice = PeripheralDevices.findOne(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
-		const url = new URL(req.url || '')
+		const url = new URL(req.url || '', 'http://localhost')
 
 		const fileNames = url.searchParams.get('name') || undefined
 		const fileName: string = (_.isArray(fileNames) ? fileNames[0] : fileNames) || ''

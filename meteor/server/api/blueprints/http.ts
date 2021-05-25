@@ -18,7 +18,7 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 	let content = ''
 	try {
 		const blueprintId = params.blueprintId
-		const url = new URL(req.url || '')
+		const url = new URL(req.url || '', 'http://localhost')
 		const force = url.searchParams.get('force') === '1' || url.searchParams.get('force') === 'true'
 
 		const blueprintNames = url.searchParams.get('name') || undefined
