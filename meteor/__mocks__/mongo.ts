@@ -17,6 +17,7 @@ import {
 	ObserveChangesCallbacks,
 	ObserveCallbacks,
 	FindOneOptions,
+	TransformedCollection,
 } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
@@ -58,7 +59,7 @@ export namespace MongoMock {
 		private _isMock: true = true // used in test to check that it's a mock
 		private observers: ObserverEntry<T>[] = []
 
-		public asyncWriteDelay = 0
+		public asyncBulkWriteDelay = 100
 
 		private _transform?: (o: T) => T
 
@@ -276,7 +277,7 @@ export namespace MongoMock {
 				// stats: () => {}
 				// drop: () => {}
 				bulkWrite: async (updates: BulkWriteOperation<any>[], _options) => {
-					await sleep(this.asyncWriteDelay)
+					await sleep(this.asyncBulkWriteDelay)
 
 					for (let update of updates) {
 						if (update['insertOne']) {
@@ -347,6 +348,26 @@ export namespace MongoMock {
 		Object.keys(mockCollections).forEach((id) => {
 			mockCollections[id] = {}
 		})
+	}
+
+	/**
+	 * The Mock Collection type does a sleep before starting on executing the bulkWrite.
+	 * This simulates the async nature of writes to mongo, and aims to detect race conditions in our code.
+	 * This method will change the duration of the sleep, and returns the old delay value
+	 */
+	export function setCollectionAsyncBulkWriteDelay(
+		collection: TransformedCollection<any, any>,
+		delay: number
+	): number {
+		const collection2 = collection as any
+		if (typeof collection2.asyncWriteDelay !== 'number') {
+			throw new Error(
+				"asyncWriteDelay must be defined already, or this won't do anything. Perhaps some refactoring?"
+			)
+		}
+		const oldDelay = collection2.asyncWriteDelay
+		collection2.asyncWriteDelay = delay
+		return oldDelay
 	}
 }
 export function setup() {

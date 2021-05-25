@@ -150,13 +150,7 @@ export async function CommitIngestOperation(
 
 						if (newPlaylist) {
 							// ensure the 'old' playout is updated to remove any references to the rundown
-							updatePlayoutAfterChangingRundownInPlaylist(
-								newPlaylist,
-								oldPlaylistLock,
-								null,
-								showStyle,
-								blueprint
-							)
+							updatePlayoutAfterChangingRundownInPlaylist(newPlaylist, oldPlaylistLock, null)
 						}
 					}
 				}
@@ -248,7 +242,7 @@ export async function CommitIngestOperation(
 					)
 
 					// Start the save
-					const pSave = ingestCache.saveAllToDatabase()
+					const pSaveIngest = ingestCache.saveAllToDatabase()
 
 					try {
 						// Get the final copy of the rundown
@@ -259,25 +253,38 @@ export async function CommitIngestOperation(
 							segmentId: id,
 							oldPartIdsAndRanks: beforePartMap.get(id) ?? [],
 						}))
-						applyChangesToPlayout(
+
+						// ensure instances are updated for rundown changes
+						updatePartInstancesBasicProperties(playoutCache, newRundown._id, data.renamedSegments)
+
+						updatePartInstanceRanks(playoutCache, changedSegmentsInfo)
+
+						// sync changes to the 'selected' partInstances
+						syncChangesToPartInstances(
 							playoutCache,
 							ingestCache,
-							newRundown,
 							showStyle,
-							blueprint,
-							data.renamedSegments,
-							changedSegmentsInfo
+							blueprint.blueprint,
+							newRundown
 						)
 
 						playoutCache.deferAfterSave(() => {
 							reportRundownDataHasChanged(playoutCache.Playlist.doc, newRundown)
+
+							triggerUpdateTimelineAfterIngestData(playoutCache.PlaylistId)
 						})
 
-						// wait for it all to save in parallel
-						await Promise.all([pSave, playoutCache.saveAllToDatabase()])
+						// wait for the ingest changes to save
+						await pSaveIngest
+
+						// do some final playout checks, which may load back some Parts data
+						ensureNextPartIsValid(playoutCache)
+
+						// save the final playout changes
+						await playoutCache.saveAllToDatabase()
 					} finally {
 						// Wait for the save to complete. We need it to be completed, otherwise the rundown will be in a broken state
-						await pSave
+						await pSaveIngest
 					}
 				}
 			)
@@ -388,32 +395,6 @@ async function generatePlaylistAndRundownsCollectionInner(
 	}
 }
 
-function applyChangesToPlayout(
-	playoutCache: CacheForPlayout,
-	ingestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'> | null,
-	newRundown: ReadonlyDeep<Rundown> | null,
-	showStyle: ReadonlyDeep<ShowStyleCompound>,
-	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
-	renamedSegments: ReadonlyMap<SegmentId, SegmentId>,
-	changedSegmentsInfo: ChangedSegmentsRankInfo
-) {
-	if (newRundown) {
-		// If a rundown has changes, ensure instances are updated
-		updatePartInstancesBasicProperties(playoutCache, newRundown._id, renamedSegments)
-	}
-
-	updatePartInstanceRanks(playoutCache, changedSegmentsInfo)
-
-	ensureNextPartIsValid(playoutCache)
-
-	if (ingestCache && newRundown) {
-		// If we have updated the rundown, then sync to the selected partInstances
-		syncChangesToPartInstances(playoutCache, ingestCache, showStyle, blueprint.blueprint, newRundown)
-	}
-
-	triggerUpdateTimelineAfterIngestData(playoutCache.PlaylistId)
-}
-
 function canRemoveSegment(
 	currentPartInstance: ReadonlyDeep<PartInstance> | undefined,
 	nextPartInstance: ReadonlyDeep<PartInstance> | undefined,
@@ -511,9 +492,7 @@ export async function regeneratePlaylistAndRundownOrder(
 export function updatePlayoutAfterChangingRundownInPlaylist(
 	playlist: RundownPlaylist,
 	playlistLock: PlaylistLock,
-	newRundown: ReadonlyDeep<Rundown> | null,
-	showStyle: ReadonlyDeep<ShowStyleCompound> | undefined,
-	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint> | undefined
+	insertedRundown: ReadonlyDeep<Rundown> | null
 ) {
 	// ensure the 'old' playout is updated to remove any references to the rundown
 	runPlayoutOperationWithCacheFromStudioOperation(
@@ -536,18 +515,16 @@ export function updatePlayoutAfterChangingRundownInPlaylist(
 			}
 
 			// Ensure playout is in sync
+
+			if (insertedRundown) {
+				// If a rundown has changes, ensure instances are updated
+				updatePartInstancesBasicProperties(playoutCache, insertedRundown._id, new Map())
+			}
+
+			ensureNextPartIsValid(playoutCache)
+
 			if (playoutCache.Playlist.doc.activationId) {
-				const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(playoutCache)
-				const targetRundownId = currentPartInstance?.rundownId ?? nextPartInstance?.rundownId
-
-				// Find the active rundown, or just the first
-				const rundown2 = playoutCache.Rundowns.findOne(targetRundownId)
-				if (rundown2) {
-					const showStyle2 = showStyle ?? (await playoutCache.activationCache.getShowStyleCompound(rundown2))
-					const blueprint2 = (showStyle && blueprint ? blueprint : null) ?? loadShowStyleBlueprint(showStyle2)
-
-					applyChangesToPlayout(playoutCache, null, newRundown, showStyle2, blueprint2, new Map(), [])
-				}
+				triggerUpdateTimelineAfterIngestData(playoutCache.PlaylistId)
 			}
 		}
 	)
