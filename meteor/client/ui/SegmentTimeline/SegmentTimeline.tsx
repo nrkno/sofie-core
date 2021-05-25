@@ -748,6 +748,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							liveLineHistorySize={this.props.liveLineHistorySize}
 							isLastSegment={this.props.isLastSegment}
 							isLastInSegment={false}
+							timelineWidth={this.state.timelineWidth}
 						/>
 					)}
 					<SegmentTimelinePart
@@ -795,6 +796,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							liveLineHistorySize={this.props.liveLineHistorySize}
 							isLastSegment={this.props.isLastSegment}
 							isLastInSegment={true}
+							timelineWidth={this.state.timelineWidth}
 						/>
 					)}
 				</React.Fragment>

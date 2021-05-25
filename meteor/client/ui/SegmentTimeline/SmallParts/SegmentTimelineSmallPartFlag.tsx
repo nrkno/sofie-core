@@ -24,6 +24,7 @@ export const SegmentTimelineSmallPartFlag = ({
 	liveLineHistorySize,
 	isLastSegment,
 	isLastInSegment,
+	timelineWidth,
 }: {
 	t: TFunction
 	parts: [PartUi, number][]
@@ -43,6 +44,7 @@ export const SegmentTimelineSmallPartFlag = ({
 	liveLineHistorySize: number
 	isLastSegment: boolean
 	isLastInSegment: boolean
+	timelineWidth: number
 }) => {
 	const flagRef = useRef<HTMLDivElement>(null)
 
@@ -105,9 +107,7 @@ export const SegmentTimelineSmallPartFlag = ({
 				isLastSegment={isLastSegment}
 				isLastInSegment={isLastInSegment}
 				totalSegmentDuration={partDurations}
-				floatingInspectorStyle={{
-					left: `${partDurations * timeScale * -1}px`,
-				}}
+				parentTimeScale={timeScale}
 			/>
 		</div>
 	)

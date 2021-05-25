@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useLayoutEffect, useState } from 'react'
 import { TFunction } from 'i18next'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Studio } from '../../../../lib/collections/Studios'
@@ -12,7 +12,6 @@ export const SegmentTimelinePartHoverPreview = ({
 	showMiniInspector,
 	parts,
 	followingPart,
-	floatingInspectorStyle,
 	segment,
 	playlist,
 	studio,
@@ -22,12 +21,12 @@ export const SegmentTimelinePartHoverPreview = ({
 	isLastSegment,
 	isLastInSegment,
 	totalSegmentDuration,
+	parentTimeScale,
 }: {
 	t: TFunction
 	showMiniInspector: boolean
 	parts: PartUi[]
 	followingPart: PartUi | undefined
-	floatingInspectorStyle: React.CSSProperties
 
 	segment: SegmentUi
 	playlist: RundownPlaylist
@@ -40,14 +39,33 @@ export const SegmentTimelinePartHoverPreview = ({
 	isLastSegment: boolean
 	isLastInSegment: boolean
 	totalSegmentDuration: number
+	parentTimeScale: number
 }) => {
+	const [miniInspectorEl, setMiniInnspectorEl] = useState<HTMLDivElement | null>(null)
+	const [containOffset, setContainOffset] = useState(0)
 	const followingPartPreviewDuration = 0.15 * totalSegmentDuration
 	const previewWindowDuration =
 		totalSegmentDuration + (followingPart || isLastInSegment ? followingPartPreviewDuration : 0)
+
+	useLayoutEffect(() => {
+		if (miniInspectorEl) {
+			const inspectorRect = miniInspectorEl.getBoundingClientRect()
+			const timelineRect = miniInspectorEl.parentElement?.parentElement?.parentElement?.getBoundingClientRect()
+			if (timelineRect && timelineRect.right < inspectorRect.right) {
+				setContainOffset(inspectorRect.right - timelineRect.right - containOffset)
+			}
+		} else {
+			setContainOffset(0)
+		}
+	}, [miniInspectorEl, parentTimeScale, totalSegmentDuration])
+
 	return showMiniInspector ? (
 		<div
 			className="segment-timeline__mini-inspector segment-timeline__mini-inspector--small-parts"
-			style={floatingInspectorStyle}
+			style={{
+				left: `${totalSegmentDuration * parentTimeScale * -1 - containOffset}px`,
+			}}
+			ref={(el) => setMiniInnspectorEl(el)}
 		>
 			<div className="segment-timeline__mini-inspector--small-parts__duration">
 				<span className="segment-timeline__mini-inspector--small-parts__duration__label">{t('Parts Duration')}</span>
