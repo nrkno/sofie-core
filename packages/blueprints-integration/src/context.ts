@@ -1,4 +1,4 @@
-import { PackageInfo } from '@sofie-automation/blueprints-integration/src/packageInfo'
+import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import { IBlueprintExternalMessageQueueObj } from './message'
 import {
 	IBlueprintPart,
@@ -168,10 +168,7 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 /** Actions */
 export interface ISyncIngestUpdateToPartInstanceContext extends IRundownUserContext {
 	/** Sync a pieceInstance. Inserts the pieceInstance if new, updates if existing. Optionally pass in a mutated Piece, to change the content of the instance */
-	syncPieceInstance(
-		pieceInstanceId: string,
-		mutatedPiece?: Omit<IBlueprintPiece, 'lifespan'>
-	): IBlueprintPieceInstance
+	syncPieceInstance(pieceInstanceId: string, mutatedPiece?: Omit<IBlueprintPiece, 'lifespan'>): IBlueprintPieceInstance
 
 	/** Insert a pieceInstance. Returns id of new PieceInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
 	insertPieceInstance(piece: IBlueprintPiece): IBlueprintPieceInstance

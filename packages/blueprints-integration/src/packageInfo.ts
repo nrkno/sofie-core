@@ -23,7 +23,7 @@ export namespace PackageInfo {
 	export interface FFOther extends Base {
 		// placeholder
 		type: Type.OTHER
-		payload: {}
+		payload: unknown
 	}
 
 	export interface FFProbeInfo {
