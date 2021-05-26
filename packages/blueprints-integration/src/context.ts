@@ -80,7 +80,7 @@ export interface IStudioContext extends ICommonContext {
 	/** Get the mappings for the studio */
 	getStudioMappings: () => Readonly<BlueprintMappings>
 
-	getPackageInfo: (packageId: string) =>Readonly<PackageInfo.Any[]>
+	getPackageInfo: (packageId: string) => Readonly<PackageInfo.Any[]>
 }
 
 export interface IStudioUserContext extends IUserNotesContext, IStudioContext {}
