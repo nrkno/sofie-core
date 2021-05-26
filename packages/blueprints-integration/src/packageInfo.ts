@@ -27,8 +27,8 @@ export namespace PackageInfo {
 	}
 
 	export interface FFProbeInfo {
-        /** Path to the file */
-        filePath?: string
+		/** Path to the file */
+		filePath?: string
 		streams?: FFProbeScanStream[]
 		format?: FFProbeScanFormat
 	}
