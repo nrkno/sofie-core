@@ -1145,9 +1145,6 @@ export function updateSegmentFromCache(rundownId: RundownId, segmentId: SegmentI
 		const ingestSegment: LocalIngestSegment = loadCachedIngestSegment(rundown._id, rundown.externalId, segmentId)
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-		cache.defer(() => {
-			saveSegmentCache(rundown._id, segmentId, makeNewIngestSegment(ingestSegment))
-		})
 
 		const blueprint = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
 
