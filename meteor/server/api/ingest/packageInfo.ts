@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import { ListenToPackageUpdate } from '@sofie-automation/blueprints-integration'
 import { ExpectedPackageId } from '../../../lib/collections/ExpectedPackages'
 import { MediaObject, MediaObjId } from '../../../lib/collections/MediaObjects'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
