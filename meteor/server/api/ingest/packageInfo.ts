@@ -75,7 +75,7 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageI
 	})
 
 	logger.debug(
-		`"${packageId}" will trigger update of segments: ${Array(segmentsToUpdate.keys())
+		`PackageInfo "${packageId}" will trigger update of segments: ${Array.from(segmentsToUpdate.keys())
 			.map((key) => `"${key}"`)
 			.join(', ')}`
 	)

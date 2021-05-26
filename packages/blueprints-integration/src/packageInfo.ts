@@ -37,6 +37,7 @@ export namespace PackageInfo {
 		codec_type?: string // Example: 'video', 'audio'
 
 		// video
+		/** In pixels */
 		width?: number // Example: 1920
 		height?: number // Example: 1080
 		sample_aspect_ratio?: string // Example: '1:1'
@@ -83,23 +84,39 @@ export namespace PackageInfo {
 		max_bit_rate?: string // ?
 	}
 	export interface FFProbeScanFormat {
-		filename?: string // Example: 'C:\\media\\AMB.mp4'
-		nb_streams?: number // Example: 1
-		nb_programs?: number // Example: 0
-		format_name?: string // Example: 'mov,mp4,m4a,3gp,3g2,mj2'
-		format_long_name?: string // Example: 'QuickTime / MOV'
-		start_time?: string // Example: '0.000000'
-		duration?: string // Example: '10.720000'
-		size?: string // Example: '6445960'
-		bit_rate?: string // Example: '4810417'
-		max_bit_rate?: number // ?
-		probe_score?: number // Example: 100
+		/** Example: 'C:\\media\\AMB.mp4' */
+		filename?: string
+		/** Number of media streams, Example: 1 */
+		nb_streams?: number
+		/** Number of programmes, Example: 0 */
+		nb_programs?: number
+		/** Format name, Example: 'mov,mp4,m4a,3gp,3g2,mj2' */
+		format_name?: string
+		/** Long format name, Example: 'QuickTime / MOV' */
+		format_long_name?: string
+		/** Start timecode, in seconds, Example: '0.000000' */
+		start_time?: string
+		/** Duration, in seconds, Example: '10.720000' */
+		duration?: string
+		/** File size, in bytes, Example: '6445960' */
+		size?: string
+		/** Bitrate, in bytes/second, Example: '4810417' */
+		bit_rate?: string
+		/** Max Bitrate, in bytes/second, Example: 4810417 */
+		max_bit_rate?: number
+		/** FFProbe probe score, Example: 100 */
+		probe_score?: number
 		tags?: {
-			major_brand?: string // Example: 'mp42'
-			minor_version?: string // Example: '0'
-			compatible_brands?: string // Example: 'mp42isomavc1'
-			creation_time?: string // Example: '2012-10-23T08:11:18.000000Z'
-			encoder?: string // Example: 'HandBrake 0.9.8 2012071800'
+			/** Example: 'mp42' */
+			major_brand?: string
+			/** Example: '0' */
+			minor_version?: string
+			/** Example: 'mp42isomavc1' */
+			compatible_brands?: string
+			/** Example: '2012-10-23T08:11:18.000000Z' */
+			creation_time?: string
+			/** Example: 'HandBrake 0.9.8 2012071800' */
+			encoder?: string
 		}
 	}
 
