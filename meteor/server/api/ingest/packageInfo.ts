@@ -1,22 +1,11 @@
 import * as _ from 'underscore'
-import {
-	ExpectedPackageDB,
-	ExpectedPackageDBType,
-	ExpectedPackageFromRundown,
-	ExpectedPackageId,
-	ExpectedPackages,
-} from '../../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDBType, ExpectedPackageId, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { MediaObject, MediaObjId } from '../../../lib/collections/MediaObjects'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { Pieces } from '../../../lib/collections/Pieces'
-import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
-import { SegmentId, Segments } from '../../../lib/collections/Segments'
-import { assertNever, lazyIgnore, unprotectString, unprotectStringArray } from '../../../lib/lib'
+import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { SegmentId } from '../../../lib/collections/Segments'
+import { assertNever, lazyIgnore, unprotectString } from '../../../lib/lib'
 import { logger } from '../../logging'
-import { updateSegmentFromCache } from './rundownInput'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { CommitIngestData, runIngestOperationWithCache } from './lockFunction'
 import { Meteor } from 'meteor/meteor'
 import { updateSegmentFromIngestData } from './generation'
@@ -62,9 +51,28 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageI
 	switch (pkg.fromPieceType) {
 		case ExpectedPackageDBType.PIECE:
 		case ExpectedPackageDBType.ADLIB_ACTION:
-		case ExpectedPackageDBType.BASELINE_ADLIB_ACTION:
-			onUpdatedPackageInfoForRundown(pkg, doc)
+		case ExpectedPackageDBType.BASELINE_ADLIB_ACTION: {
+			const existingEntry = pendingPackageUpdates.get(pkg.rundownId)
+			if (existingEntry) {
+				// already queued, add to the batch
+				existingEntry.push(pkg._id)
+			} else {
+				pendingPackageUpdates.set(pkg.rundownId, [pkg._id])
+			}
+
+			lazyIgnore(
+				`onUpdatedPackageInfoForRundown${pkg.rundownId}`,
+				() => {
+					const packageIds = pendingPackageUpdates.get(pkg.rundownId)
+					if (packageIds) {
+						pendingPackageUpdates.delete(pkg.rundownId)
+						onUpdatedPackageInfoForRundown(pkg.rundownId, packageIds)
+					}
+				},
+				1000
+			)
 			break
+		}
 		case ExpectedPackageDBType.BUCKET_ADLIB:
 		case ExpectedPackageDBType.BUCKET_ADLIB_ACTION:
 			// Ignore, as we can't handle that for now
@@ -75,17 +83,16 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageI
 	}
 }
 
-function onUpdatedPackageInfoForRundown(pkg: ExpectedPackageFromRundown, _doc: PackageInfoDB | null) {
-	const packageId = pkg._id
+const pendingPackageUpdates = new Map<RundownId, Array<ExpectedPackageId>>()
 
-	const tmpRundown = Rundowns.findOne(pkg.rundownId)
+function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<ExpectedPackageId>) {
+	const tmpRundown = Rundowns.findOne(rundownId)
 	if (!tmpRundown) {
 		// TODO - error
 		return
 	}
 
 	// TODO - can we avoid loading the cache for package info we know doesnt affect anything?
-	// TODO - batch calls to the below when multiple docs for a rundown change
 
 	return runIngestOperationWithCache(
 		'onUpdatedPackageInfoForRundown',
@@ -97,20 +104,25 @@ function onUpdatedPackageInfoForRundown(pkg: ExpectedPackageFromRundown, _doc: P
 			return ingestRundown // don't mutate any ingest data
 		},
 		async (cache, ingestRundown) => {
-			const processedPackageId = unprotectString(packageId).split('_')[1] || unprotectString(packageId) // TODO: A temporary hack -- Jan Starzak, 2021-05-26
+			const processedPackageIds: string[] = []
+
+			for (const packageId of packageIds) {
+				const processedPackageId = unprotectString(packageId).split('_')[1] || unprotectString(packageId) // TODO: A temporary hack -- Jan Starzak, 2021-05-26
+				processedPackageIds.push(processedPackageId)
+			}
 
 			/** All segments that need updating */
 			const segmentsToUpdate = new Set<SegmentId>()
 
 			cache.Pieces.findFetch({
-				listenToPackageInfoUpdates: { $elemMatch: { packageId: processedPackageId } },
+				listenToPackageInfoUpdates: { $elemMatch: { packageId: { $in: processedPackageIds } } },
 			}).forEach((piece) => {
 				segmentsToUpdate.add(piece.startSegmentId)
 			})
 
 			logger.debug(
-				`PackageInfo "${packageId}" will trigger update of segments: ${unprotectStringArray(
-					Array.from(segmentsToUpdate)
+				`PackageInfo for "${packageIds.join(', ')}" will trigger update of segments: ${Array.from(
+					segmentsToUpdate
 				).join(', ')}`
 			)
 
