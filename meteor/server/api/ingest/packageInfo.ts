@@ -1,13 +1,16 @@
+import * as _ from 'underscore'
 import { ListenToPackageUpdate } from '@sofie-automation/blueprints-integration'
 import { ExpectedPackageId } from '../../../lib/collections/ExpectedPackages'
 import { MediaObject, MediaObjId } from '../../../lib/collections/MediaObjects'
-import { PackageInfoDB, PackageInfoId } from '../../../lib/collections/PackageInfos'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
+import { PieceInstances } from '../../../lib/collections/PieceInstances'
+import { Pieces } from '../../../lib/collections/Pieces'
 import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { SegmentId, Segments } from '../../../lib/collections/Segments'
 import { lazyIgnore, unprotectString } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { updateSegmentFromCache } from './rundownInput'
+import { PartInstances } from '../../../lib/collections/PartInstances'
 
 /** to-be @deprecated hack for backwards-compatibility*/
 export function onUpdatedMediaObject(_id: MediaObjId, _newDocument: MediaObject | null) {
@@ -39,18 +42,34 @@ export function onUpdatedMediaObject(_id: MediaObjId, _newDocument: MediaObject 
 }
 
 export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageInfoDB | null) {
-	// Find Pieces that listen to these packageInfo updates:
-	const pieces = Pieces.find({
-		listenToPackageInfoUpdates: { $elemMatch: { packageId: unprotectString(packageId) } },
-	}).fetch()
-	// TODO: also check for pieceInstances?
-
 	/** All segments that need updating */
 	const segmentsToUpdate = new Map<SegmentId, RundownId>()
 
-	for (const piece of pieces) {
+	// Find Pieces that listen to these packageInfo updates:
+	Pieces.find({
+		listenToPackageInfoUpdates: { $elemMatch: { packageId: unprotectString(packageId) } },
+	}).map((piece) => {
 		segmentsToUpdate.set(piece.startSegmentId, piece.startRundownId)
-	}
+	})
+
+	// Find the PieceInstances affected by these packageInfo updates, and get all of their parent partInstance Ids
+	const partInstanceIds = _.uniq(
+		PieceInstances.find({
+			// we only care about active PieceInstances
+			reset: {
+				$eq: false,
+			},
+			'piece.listenToPackageInfoUpdates': { $elemMatch: { packageId: unprotectString(packageId) } },
+		}).map((pieceInstance) => pieceInstance.partInstanceId)
+	)
+
+	PartInstances.find({
+		_id: {
+			$in: partInstanceIds,
+		},
+	}).map((partInstance) => {
+		segmentsToUpdate.set(partInstance.segmentId, partInstance.rundownId)
+	})
 
 	const rundowns = new Map<RundownId, Rundown | undefined>()
 

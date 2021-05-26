@@ -243,6 +243,6 @@ export namespace PackageManagerIntegration {
 
 		PackageInfos.remove(id)
 
-		onUpdatedPackageInfo(packageId) // ?
+		onUpdatedPackageInfo(packageId, null) // ?
 	}
 }

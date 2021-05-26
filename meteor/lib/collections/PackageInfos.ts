@@ -41,6 +41,7 @@ registerCollection('PackageInfos', PackageInfos)
 
 registerIndex(PackageInfos, {
 	studioId: 1,
+	packageId: 1,
 })
 export function getPackageInfoId(packageId: ExpectedPackageId, type: string): PackageInfoId {
 	return protectString(`${packageId}_${type}`)
