@@ -94,6 +94,8 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 
 	// TODO - can we avoid loading the cache for package info we know doesnt affect anything?
 
+	// TODO - what if type was BASELINE_ADLIB_ACTION?
+
 	return runIngestOperationWithCache(
 		'onUpdatedPackageInfoForRundown',
 		tmpRundown.studioId,
@@ -104,21 +106,28 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 			return ingestRundown // don't mutate any ingest data
 		},
 		async (cache, ingestRundown) => {
-			const processedPackageIds: string[] = []
-
-			for (const packageId of packageIds) {
-				const processedPackageId = unprotectString(packageId).split('_')[1] || unprotectString(packageId) // TODO: A temporary hack -- Jan Starzak, 2021-05-26
-				processedPackageIds.push(processedPackageId)
-			}
-
 			/** All segments that need updating */
 			const segmentsToUpdate = new Set<SegmentId>()
 
-			cache.Pieces.findFetch({
-				listenToPackageInfoUpdates: { $elemMatch: { packageId: { $in: processedPackageIds } } },
-			}).forEach((piece) => {
-				segmentsToUpdate.add(piece.startSegmentId)
-			})
+			for (const packageId of packageIds) {
+				const processedPackageId = unprotectString(packageId).split('_')[1] || unprotectString(packageId) // TODO: A temporary hack -- Jan Starzak, 2021-05-26
+
+				const pkg = cache.ExpectedPackages.findOne(packageId)
+				if (pkg) {
+					const piece = cache.Pieces.findOne(pkg.pieceId)
+					if (piece) {
+						const segmentId = piece.startSegmentId
+
+						const listeningPieces = cache.Pieces.findFetch({
+							startSegmentId: segmentId,
+							listenToPackageInfoUpdates: { $elemMatch: { packageId: processedPackageId } },
+						})
+						if (listeningPieces.length > 0) {
+							segmentsToUpdate.add(segmentId)
+						}
+					}
+				}
+			}
 
 			logger.debug(
 				`PackageInfo for "${packageIds.join(', ')}" will trigger update of segments: ${Array.from(
