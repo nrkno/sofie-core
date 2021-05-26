@@ -41,12 +41,16 @@ export function onUpdatedMediaObject(_id: MediaObjId, _newDocument: MediaObject 
 }
 
 export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageInfoDB | null) {
+	logger.debug(`PackegeInfo updated "${packageId}"`)
+
+	const processedPackageId = unprotectString(packageId).split('_')[1] || unprotectString(packageId) // TODO: A temporary hack -- Jan Starzak, 2021-05-26
+
 	/** All segments that need updating */
 	const segmentsToUpdate = new Map<SegmentId, RundownId>()
 
 	// Find Pieces that listen to these packageInfo updates:
 	Pieces.find({
-		listenToPackageInfoUpdates: { $elemMatch: { packageId: unprotectString(packageId) } },
+		listenToPackageInfoUpdates: { $elemMatch: { packageId: processedPackageId } },
 	}).map((piece) => {
 		segmentsToUpdate.set(piece.startSegmentId, piece.startRundownId)
 	})
@@ -58,7 +62,7 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageI
 			reset: {
 				$eq: false,
 			},
-			'piece.listenToPackageInfoUpdates': { $elemMatch: { packageId: unprotectString(packageId) } },
+			'piece.listenToPackageInfoUpdates': { $elemMatch: { packageId: processedPackageId } },
 		}).map((pieceInstance) => pieceInstance.partInstanceId)
 	)
 
@@ -69,6 +73,12 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageI
 	}).map((partInstance) => {
 		segmentsToUpdate.set(partInstance.segmentId, partInstance.rundownId)
 	})
+
+	logger.debug(
+		`"${packageId}" will trigger update of segments: ${Array(segmentsToUpdate.keys())
+			.map((key) => `"${key}"`)
+			.join(', ')}`
+	)
 
 	const rundowns = new Map<RundownId, Rundown | undefined>()
 
