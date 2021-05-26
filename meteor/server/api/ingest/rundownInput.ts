@@ -435,22 +435,7 @@ export function handleRemovedSegment(
 		}
 	)
 }
-export function updateSegmentFromCache(rundownExternalId: string, studioId: StudioId, segment: Segment) {
-	return runIngestOperationWithCache(
-		'updateSegmentFromCache',
-		studioId,
-		rundownExternalId,
-		(ingestRundown) => {
-			if (!ingestRundown) throw new Meteor.Error('updateSegmentFromCache called but ingestData is undefined')
-			return ingestRundown // don't mutate any ingest data
-		},
-		async (cache, ingestRundown) => {
-			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segment.externalId)
-			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segment.externalId}" is missing!`)
-			return updateSegmentFromIngestData(cache, ingestSegment, false)
-		}
-	)
-}
+
 export function handleUpdatedSegment(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
