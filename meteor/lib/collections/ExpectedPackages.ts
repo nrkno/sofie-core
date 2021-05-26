@@ -21,10 +21,13 @@ import { RundownBaselineAdLibActionId } from './RundownBaselineAdLibActions'
 
 export type ExpectedPackageId = ProtectedString<'ExpectedPackageId'>
 
-export type ExpectedPackageDB =
+export type ExpectedPackageFromRundown =
 	| ExpectedPackageDBFromPiece
 	| ExpectedPackageDBFromAdLibAction
 	| ExpectedPackageDBFromBaselineAdLibAction
+
+export type ExpectedPackageDB =
+	| ExpectedPackageFromRundown
 	| ExpectedPackageDBFromBucketAdLib
 	| ExpectedPackageDBFromBucketAdLibAction
 
