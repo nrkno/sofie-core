@@ -7,6 +7,7 @@ import {
 	protectString,
 	mongoModify,
 	mongoFindOptions,
+	sleep,
 } from '../lib/lib'
 import { RandomMock } from './random'
 import {
@@ -56,6 +57,8 @@ export namespace MongoMock {
 		private _options: any = {}
 		private _isMock: true = true // used in test to check that it's a mock
 		private observers: ObserverEntry<T>[] = []
+
+		public asyncWriteDelay = 0
 
 		private _transform?: (o: T) => T
 
@@ -146,12 +149,7 @@ export namespace MongoMock {
 		findOne(query, options?: FindOneOptions<T>) {
 			return this.find(query, options).fetch()[0]
 		}
-		update(
-			query: any,
-			modifier,
-			options?: UpdateOptions,
-			cb?: (err: any, affectedCount: number | undefined) => void
-		) {
+		update(query: any, modifier, options?: UpdateOptions): number {
 			try {
 				const unimplementedUsedOptions = _.without(_.keys(options), 'multi')
 				if (unimplementedUsedOptions.length > 0) {
@@ -184,14 +182,12 @@ export namespace MongoMock {
 					})
 				})
 
-				if (cb) cb(undefined, docs.length)
-				else return docs.length
+				return docs.length
 			} catch (error) {
-				if (cb) cb(error, undefined)
-				else throw error
+				throw error
 			}
 		}
-		insert(doc: T, cb?: (err: any, idInserted: T['_id'] | undefined) => void) {
+		insert(doc: T): T['_id'] {
 			try {
 				const d = _.clone(doc)
 				if (!d._id) d._id = protectString(RandomMock.id())
@@ -219,50 +215,30 @@ export namespace MongoMock {
 					})
 				})
 
-				if (cb) cb(undefined, d._id)
-				else return d._id
+				return d._id
 			} catch (error) {
-				if (cb) cb(error, undefined)
-				else throw error
+				throw error
 			}
 		}
 		upsert(
 			query: any,
 			modifier,
-			options?: UpsertOptions,
-			cb?: (
-				err: any,
-				result: { numberAffected: number | undefined; insertedId: T['_id'] | undefined } | undefined
-			) => void
-		) {
+			options?: UpsertOptions
+		): { numberAffected: number | undefined; insertedId: T['_id'] | undefined } {
 			let id = _.isString(query) ? query : query._id
 
 			const docs = this.find(id)._fetchRaw()
 
 			if (docs.length) {
-				this.update(
-					docs[0]._id,
-					modifier,
-					options,
-					cb
-						? (err, count) =>
-								err ? cb(err, undefined) : cb(null, { insertedId: undefined, numberAffected: count })
-						: undefined
-				)
+				const count = this.update(docs[0]._id, modifier, options)
+				return { insertedId: undefined, numberAffected: count }
 			} else {
 				const doc = mongoModify(query, { _id: id }, modifier)
-				this.insert(
-					doc,
-					cb
-						? (err, insertedId) =>
-								err
-									? cb(err, undefined)
-									: cb(null, { insertedId: insertedId, numberAffected: undefined })
-						: undefined
-				)
+				const insertedId = this.insert(doc)
+				return { insertedId: insertedId, numberAffected: undefined }
 			}
 		}
-		remove(query: any, cb?: Function) {
+		remove(query: any): number {
 			try {
 				const docs = this.find(query)._fetchRaw()
 
@@ -282,11 +258,9 @@ export namespace MongoMock {
 						})
 					})
 				})
-				if (cb) cb(undefined, docs.length)
-				else return docs.length
+				return docs.length
 			} catch (error) {
-				if (cb) cb(error, undefined)
-				else throw error
+				throw error
 			}
 		}
 
@@ -301,7 +275,9 @@ export namespace MongoMock {
 				// indexes: () => {}
 				// stats: () => {}
 				// drop: () => {}
-				bulkWrite: (updates: BulkWriteOperation<any>[], _options) => {
+				bulkWrite: async (updates: BulkWriteOperation<any>[], _options) => {
+					await sleep(this.asyncWriteDelay)
+
 					for (let update of updates) {
 						if (update['insertOne']) {
 							update = update as BulkWriteInsertOneOperation<any>
