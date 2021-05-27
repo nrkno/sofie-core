@@ -40,6 +40,7 @@ export enum ExpectedPackageDBType {
 }
 export interface ExpectedPackageDBBase extends Omit<ExpectedPackage.Base, '_id'> {
 	_id: ExpectedPackageId
+	blueprintPackageId: string
 
 	/** The studio of the Rundown of the Piece this package belongs to */
 	studioId: StudioId

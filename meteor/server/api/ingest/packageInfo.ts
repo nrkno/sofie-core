@@ -110,8 +110,6 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 			const segmentsToUpdate = new Set<SegmentId>()
 
 			for (const packageId of packageIds) {
-				const processedPackageId = unprotectString(packageId).split('_')[1] || unprotectString(packageId) // TODO: A temporary hack -- Jan Starzak, 2021-05-26
-
 				const pkg = cache.ExpectedPackages.findOne(packageId)
 				if (pkg) {
 					const piece = cache.Pieces.findOne(pkg.pieceId)
@@ -120,7 +118,7 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 
 						const listeningPieces = cache.Pieces.findFetch({
 							startSegmentId: segmentId,
-							listenToPackageInfoUpdates: { $elemMatch: { packageId: processedPackageId } },
+							listenToPackageInfoUpdates: { $elemMatch: { packageId: pkg.blueprintPackageId } },
 						})
 						if (listeningPieces.length > 0) {
 							segmentsToUpdate.add(segmentId)
