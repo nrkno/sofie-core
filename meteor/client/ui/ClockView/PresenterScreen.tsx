@@ -79,6 +79,8 @@ function getShowStyleBaseIdSegmentPartUi(
 
 	const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === partInstance.segmentId)
 	if (currentRundown && segmentIndex >= 0) {
+		const rundownOrder = playlist.getRundownIDs()
+		const rundownIndex = rundownOrder.indexOf(partInstance.rundownId)
 		const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 
 		if (showStyleBase) {
@@ -88,8 +90,10 @@ function getShowStyleBaseIdSegmentPartUi(
 			let o = RundownUtils.getResolvedSegment(
 				showStyleBase,
 				playlist,
+				currentRundown,
 				orderedSegmentsAndParts.segments[segmentIndex],
 				new Set(orderedSegmentsAndParts.segments.map((s) => s._id).slice(0, segmentIndex)),
+				new Set(rundownOrder.slice(0, rundownIndex)),
 				orderedSegmentsAndParts.parts.map((part) => part._id),
 				currentPartInstance,
 				nextPartInstance,

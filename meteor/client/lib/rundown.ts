@@ -35,6 +35,7 @@ import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { Mongo } from 'meteor/mongo'
 import { FindOptions } from '../../lib/typings/meteor'
 import { getShowHiddenSourceLayers } from './localStorage'
+import { Rundown, RundownId } from '../../lib/collections/Rundowns'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
@@ -305,8 +306,10 @@ export namespace RundownUtils {
 	export function getResolvedSegment(
 		showStyleBase: ShowStyleBase,
 		playlist: RundownPlaylist,
+		rundown: Rundown,
 		segment: DBSegment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
+		rundownsBeforeThisInPlaylistSet: Set<RundownId>,
 		orderedAllPartIds: PartId[],
 		currentPartInstance: PartInstance | undefined,
 		nextPartInstance: PartInstance | undefined,
@@ -475,9 +478,11 @@ export namespace RundownUtils {
 
 				const rawPieceInstances = getPieceInstancesForPartInstance(
 					playlist.activationId,
+					rundown,
 					partInstance,
 					new Set(partIds.slice(0, itIndex)),
 					segmentsBeforeThisInRundownSet,
+					rundownsBeforeThisInPlaylistSet,
 					orderedAllPartIds,
 					nextPartIsAfterCurrentPart,
 					currentPartInstance,

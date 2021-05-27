@@ -2261,10 +2261,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												rundownId={rundownAndSegments.rundown._id}
 												segmentId={segment._id}
 												playlist={this.props.playlist}
+												rundown={rundownAndSegments.rundown}
 												timeScale={this.state.timeScale}
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
 												segmentsIdsBefore={rundownAndSegments.segmentIdsBeforeEachSegment[segmentIndex]}
+												rundownIdsBefore={new Set(rundownArray.slice(0, rundownIndex).map((r) => r.rundown._id))}
 												isLastSegment={
 													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
 												}

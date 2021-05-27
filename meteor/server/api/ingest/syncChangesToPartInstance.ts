@@ -94,6 +94,7 @@ export function syncChangesToPartInstances(
 				const proposedPieceInstances = getPieceInstancesForPart(
 					cache,
 					previousPartInstance,
+					rundown as Rundown,
 					newPart,
 					waitForPromise(piecesThatMayBeActive),
 					existingPartInstance._id,

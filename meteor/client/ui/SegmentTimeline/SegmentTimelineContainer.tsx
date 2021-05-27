@@ -27,7 +27,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
-import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { Parts, PartId, Part } from '../../../lib/collections/Parts'
@@ -81,9 +81,11 @@ interface IProps {
 	rundownId: RundownId
 	segmentId: SegmentId
 	segmentsIdsBefore: Set<SegmentId>
+	rundownIdsBefore: Set<RundownId>
 	studio: Studio
 	showStyleBase: ShowStyleBase
 	playlist: RundownPlaylist
+	rundown: Rundown
 	timeScale: number
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -150,7 +152,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			},
 			'infinite.fromPreviousPart': false,
 			'piece.lifespan': {
-				$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange],
+				$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange, PieceLifespan.OutOnShowStyleEnd],
 			},
 			reset: {
 				$ne: true,
@@ -188,11 +190,16 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				: Math.random() * 2000 + 500
 		)
 
+		const rundownOrder = props.playlist.getRundownIDs()
+		const rundownIndex = rundownOrder.indexOf(segment.rundownId)
+
 		let o = RundownUtils.getResolvedSegment(
 			props.showStyleBase,
 			props.playlist,
+			props.rundown,
 			segment,
 			props.segmentsIdsBefore,
+			new Set(rundownOrder.slice(0, rundownIndex)),
 			orderedAllPartIds,
 			currentPartInstance,
 			nextPartInstance,
@@ -375,13 +382,29 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				})
 				segment &&
 					this.subscribe(PubSub.pieces, {
-						startRundownId: segment.rundownId,
-						startSegmentId: { $in: Array.from(this.props.segmentsIdsBefore.values()) },
 						invalid: {
 							$ne: true,
 						},
-						// same rundown, and previous segment
-						lifespan: { $in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange] },
+						$or: [
+							// same rundown, and previous segment
+							{
+								startSegmentId: { $in: Array.from(this.props.segmentsIdsBefore.values()) },
+								lifespan: {
+									$in: [
+										PieceLifespan.OutOnRundownEnd,
+										PieceLifespan.OutOnRundownChange,
+										PieceLifespan.OutOnShowStyleEnd,
+									],
+								},
+							},
+							// Previous rundown
+							{
+								startRundownId: { $in: Array.from(this.props.rundownIdsBefore.values()) },
+								lifespan: {
+									$in: [PieceLifespan.OutOnShowStyleEnd],
+								},
+							},
+						],
 					})
 			})
 			SpeechSynthesiser.init()
@@ -518,7 +541,11 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.onFollowLiveLine(true, {})
 			}
 
-			if (this.pastInfinitesComp && !equalSets(this.props.segmentsIdsBefore, prevProps.segmentsIdsBefore)) {
+			if (
+				this.pastInfinitesComp &&
+				(!equalSets(this.props.segmentsIdsBefore, prevProps.segmentsIdsBefore) ||
+					!equalSets(this.props.rundownIdsBefore, prevProps.rundownIdsBefore))
+			) {
 				this.pastInfinitesComp.invalidate()
 			}
 

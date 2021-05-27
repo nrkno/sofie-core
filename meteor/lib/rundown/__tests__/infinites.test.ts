@@ -115,18 +115,26 @@ describe('Infinites', () => {
 		})
 		testInFiber('onEnd type override', () => {
 			const pieceInstances = [
-				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnRundownEnd),
+				createPieceInstance('zero', { start: 0 }, 'one', PieceLifespan.OutOnShowStyleEnd),
+				createPieceInstance('one', { start: 500 }, 'one', PieceLifespan.OutOnRundownEnd),
 				createPieceInstance('two', { start: 1000, duration: 5000 }, 'one', PieceLifespan.OutOnSegmentEnd),
 				createPieceInstance('four', { start: 2000, duration: 2000 }, 'one', PieceLifespan.WithinPart),
 				createPieceInstance('three', { start: 3000 }, 'one', PieceLifespan.OutOnRundownEnd),
+				createPieceInstance('five', { start: 4000 }, 'one', PieceLifespan.OutOnShowStyleEnd),
 			]
 
 			const resolvedInstances = runAndTidyResult(pieceInstances, 500)
 			expect(resolvedInstances).toEqual([
 				{
+					_id: 'zero',
+					priority: 0,
+					start: 0,
+					end: 4000,
+				},
+				{
 					_id: 'one',
 					priority: 1,
-					start: 0,
+					start: 500,
 					end: 3000,
 				},
 				{
@@ -147,22 +155,36 @@ describe('Infinites', () => {
 					start: 3000,
 					end: undefined,
 				},
+				{
+					_id: 'five',
+					priority: 0,
+					start: 4000,
+					end: undefined,
+				},
 			])
 		})
 		testInFiber('clear onEnd', () => {
 			const pieceInstances = [
-				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnRundownEnd),
+				createPieceInstance('zero', { start: 0 }, 'one', PieceLifespan.OutOnShowStyleEnd),
+				createPieceInstance('one', { start: 500 }, 'one', PieceLifespan.OutOnRundownEnd),
 				createPieceInstance('two', { start: 1000 }, 'one', PieceLifespan.OutOnSegmentEnd),
 				createPieceInstance('three', { start: 3000 }, 'one', PieceLifespan.OutOnRundownEnd, true),
 				createPieceInstance('two', { start: 5000 }, 'one', PieceLifespan.OutOnSegmentEnd, true),
+				createPieceInstance('zero', { start: 6000 }, 'one', PieceLifespan.OutOnShowStyleEnd, true),
 			]
 
 			const resolvedInstances = runAndTidyResult(pieceInstances, 500)
 			expect(resolvedInstances).toEqual([
 				{
+					_id: 'zero',
+					priority: 0,
+					start: 0,
+					end: 6000,
+				},
+				{
 					_id: 'one',
 					priority: 1,
-					start: 0,
+					start: 500,
 					end: 3000,
 				},
 				{
@@ -175,18 +197,26 @@ describe('Infinites', () => {
 		})
 		testInFiber('clear onEnd; include virtuals', () => {
 			const pieceInstances = [
-				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnRundownEnd),
+				createPieceInstance('zero', { start: 0 }, 'one', PieceLifespan.OutOnShowStyleEnd),
+				createPieceInstance('one', { start: 500 }, 'one', PieceLifespan.OutOnRundownEnd),
 				createPieceInstance('two', { start: 1000 }, 'one', PieceLifespan.OutOnSegmentEnd),
 				createPieceInstance('three', { start: 3000 }, 'one', PieceLifespan.OutOnRundownEnd, true),
 				createPieceInstance('four', { start: 5000 }, 'one', PieceLifespan.OutOnSegmentEnd, true),
+				createPieceInstance('five', { start: 6000 }, 'one', PieceLifespan.OutOnShowStyleEnd, true),
 			]
 
 			const resolvedInstances = runAndTidyResult(pieceInstances, 500, true)
 			expect(resolvedInstances).toEqual([
 				{
+					_id: 'zero',
+					priority: 0,
+					start: 0,
+					end: 6000,
+				},
+				{
 					_id: 'one',
 					priority: 1,
-					start: 0,
+					start: 500,
 					end: 3000,
 				},
 				{
@@ -207,22 +237,36 @@ describe('Infinites', () => {
 					start: 5000,
 					end: undefined,
 				},
+				{
+					_id: 'five',
+					priority: 0,
+					start: 6000,
+					end: undefined,
+				},
 			])
 		})
 		testInFiber('stop onSegmentChange with onEnd', () => {
 			const pieceInstances = [
-				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnSegmentEnd),
+				createPieceInstance('zero', { start: 0 }, 'one', PieceLifespan.OutOnShowStyleEnd),
+				createPieceInstance('one', { start: 500 }, 'one', PieceLifespan.OutOnSegmentEnd),
 				createPieceInstance('two', { start: 1000 }, 'one', PieceLifespan.OutOnSegmentChange),
 				createPieceInstance('three', { start: 2000 }, 'one', PieceLifespan.OutOnRundownEnd),
 				createPieceInstance('four', { start: 5000 }, 'one', PieceLifespan.OutOnSegmentEnd),
+				createPieceInstance('five', { start: 6000 }, 'one', PieceLifespan.OutOnShowStyleEnd),
 			]
 
 			const resolvedInstances = runAndTidyResult(pieceInstances, 500)
 			expect(resolvedInstances).toEqual([
 				{
+					_id: 'zero',
+					priority: 0,
+					start: 0,
+					end: 6000,
+				},
+				{
 					_id: 'one',
 					priority: 2,
-					start: 0,
+					start: 500,
 					end: 5000,
 				},
 				{
@@ -241,6 +285,12 @@ describe('Infinites', () => {
 					_id: 'four',
 					priority: 2,
 					start: 5000,
+					end: undefined,
+				},
+				{
+					_id: 'five',
+					priority: 0,
+					start: 6000,
 					end: undefined,
 				},
 			])
@@ -274,6 +324,22 @@ describe('Infinites', () => {
 				{
 					_id: 'three',
 					priority: 5,
+					start: 1000,
+					end: undefined,
+				},
+			])
+		})
+		testInFiber('prefer newer adlib3', () => {
+			const pieceInstances = [
+				createPieceInstance('one', { start: 1000 }, 'one', PieceLifespan.OutOnShowStyleEnd, 6000),
+				createPieceInstance('two', { start: 1000 }, 'one', PieceLifespan.OutOnShowStyleEnd, 5500),
+			]
+
+			const resolvedInstances = runAndTidyResult(pieceInstances, 500)
+			expect(resolvedInstances).toEqual([
+				{
+					_id: 'one',
+					priority: 0,
 					start: 1000,
 					end: undefined,
 				},

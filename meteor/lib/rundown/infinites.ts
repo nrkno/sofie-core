@@ -18,8 +18,9 @@ import {
 import { Mongo } from 'meteor/mongo'
 import { ShowStyleBase } from '../collections/ShowStyleBases'
 import { getPieceGroupId } from './timeline'
-import { RundownPlaylistActivationId } from '../collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistActivationId } from '../collections/RundownPlaylists'
 import { ReadonlyDeep } from 'type-fest'
+import { Rundown, RundownId, Rundowns } from '../collections/Rundowns'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
 	return { startPartId: part._id }
@@ -28,7 +29,8 @@ export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Pi
 export function buildPastInfinitePiecesForThisPartQuery(
 	part: DBPart,
 	partsIdsBeforeThisInSegment: PartId[],
-	segmentsIdsBeforeThisInRundown: SegmentId[]
+	segmentsIdsBeforeThisInRundown: SegmentId[],
+	rundownIdsBeforeThisInPlaylist: RundownId[]
 ): Mongo.Query<Piece> {
 	return {
 		invalid: { $ne: true },
@@ -42,6 +44,7 @@ export function buildPastInfinitePiecesForThisPartQuery(
 						PieceLifespan.OutOnSegmentChange,
 						PieceLifespan.OutOnRundownEnd,
 						PieceLifespan.OutOnRundownChange,
+						PieceLifespan.OutOnShowStyleEnd,
 					],
 				},
 				startRundownId: part.rundownId,
@@ -50,14 +53,24 @@ export function buildPastInfinitePiecesForThisPartQuery(
 			},
 			{
 				// same rundown, and previous segment
-				lifespan: { $in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange] },
+				lifespan: {
+					$in: [
+						PieceLifespan.OutOnRundownEnd,
+						PieceLifespan.OutOnRundownChange,
+						PieceLifespan.OutOnRundownChange,
+						PieceLifespan.OutOnShowStyleEnd,
+					],
+				},
 				startRundownId: part.rundownId,
 				startSegmentId: { $in: segmentsIdsBeforeThisInRundown },
 			},
-			// {
-			// 	// previous rundown
-			//  // Potential future scope
-			// }
+			{
+				// previous rundown
+				lifespan: {
+					$in: [PieceLifespan.OutOnShowStyleEnd],
+				},
+				startRundownId: { $in: rundownIdsBeforeThisInPlaylist },
+			},
 		],
 	}
 }
@@ -66,6 +79,7 @@ export function getPlayheadTrackingInfinitesForPart(
 	playlistActivationId: RundownPlaylistActivationId,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
+	rundownsBeforeThisInPlaylistSet: Set<RundownId>,
 	currentPartInstance: PartInstance,
 	currentPartPieceInstances: PieceInstance[],
 	part: DBPart,
@@ -75,6 +89,7 @@ export function getPlayheadTrackingInfinitesForPart(
 ): PieceInstance[] {
 	const canContinueAdlibOnEnds = nextPartIsAfterCurrentPart
 	interface InfinitePieceSet {
+		[PieceLifespan.OutOnShowStyleEnd]?: PieceInstance
 		[PieceLifespan.OutOnRundownEnd]?: PieceInstance
 		[PieceLifespan.OutOnSegmentEnd]?: PieceInstance
 		onChange?: PieceInstance
@@ -130,8 +145,15 @@ export function getPlayheadTrackingInfinitesForPart(
 		// Check if we should persist any adlib onEnd infinites
 		if (canContinueAdlibOnEnds) {
 			const piecesByInfiniteMode = _.groupBy(pieceInstances, (p) => p.piece.lifespan)
-			for (const mode0 of [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnSegmentEnd]) {
-				const mode = mode0 as PieceLifespan.OutOnRundownEnd | PieceLifespan.OutOnSegmentEnd
+			for (const mode0 of [
+				PieceLifespan.OutOnRundownEnd,
+				PieceLifespan.OutOnSegmentEnd,
+				PieceLifespan.OutOnShowStyleEnd,
+			]) {
+				const mode = mode0 as
+					| PieceLifespan.OutOnRundownEnd
+					| PieceLifespan.OutOnSegmentEnd
+					| PieceLifespan.OutOnShowStyleEnd
 				const pieces = (piecesByInfiniteMode[mode] || []).filter(
 					(p) => p.infinite && (p.infinite.fromPreviousPlayhead || p.dynamicallyInserted)
 				)
@@ -152,6 +174,9 @@ export function getPlayheadTrackingInfinitesForPart(
 								candidatePiece.rundownId === part.rundownId &&
 								(segmentsBeforeThisInRundownSet.has(currentPartInstance.segmentId) ||
 									currentPartInstance.segmentId === part.segmentId)
+							break
+						case PieceLifespan.OutOnShowStyleEnd:
+							isValid = rundownsBeforeThisInPlaylistSet.has(currentPartInstance.rundownId)
 							break
 					}
 
@@ -209,6 +234,8 @@ export function isPiecePotentiallyActiveInPart(
 	previousPartInstance: PartInstance | undefined,
 	partsBeforeThisInSegment: Set<PartId>,
 	segmentsBeforeThisInRundown: Set<SegmentId>,
+	rundownsBeforeThisInPlaylistSet: Set<RundownId>,
+	rundown: Rundown,
 	part: DBPart,
 	pieceToCheck: Piece
 ): boolean {
@@ -259,6 +286,25 @@ export function isPiecePotentiallyActiveInPart(
 					segmentsBeforeThisInRundown.has(pieceToCheck.startSegmentId)
 				)
 			}
+		case PieceLifespan.OutOnShowStyleEnd:
+			if (pieceToCheck.startRundownId === part.rundownId) {
+				return true
+			}
+
+			const rundownsBeforeThisInPlaylist = Array.from(rundownsBeforeThisInPlaylistSet.values())
+			const prevRundownId = rundownsBeforeThisInPlaylist[rundownsBeforeThisInPlaylist.length - 1]
+
+			if (!prevRundownId) {
+				return false
+			}
+
+			const prevRundown = Rundowns.findOne(prevRundownId, { fields: { showStyleBaseId: 1 } })
+
+			if (!prevRundown) {
+				return false
+			}
+
+			return prevRundown.showStyleBaseId === rundown.showStyleBaseId
 		default:
 			assertNever(pieceToCheck.lifespan)
 			return false
@@ -269,9 +315,11 @@ export function getPieceInstancesForPart(
 	playlistActivationId: RundownPlaylistActivationId,
 	playingPartInstance: PartInstance | undefined,
 	playingPieceInstances: PieceInstance[] | undefined,
+	rundown: Rundown,
 	part: DBPart,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
+	rundownsBeforeThisInPlaylistSet: Set<RundownId>,
 	possiblePieces: Piece[],
 	orderedPartIds: PartId[],
 	newInstanceId: PartInstanceId,
@@ -297,6 +345,7 @@ export function getPieceInstancesForPart(
 	}
 
 	interface InfinitePieceSet {
+		[PieceLifespan.OutOnShowStyleEnd]?: Piece
 		[PieceLifespan.OutOnRundownEnd]?: Piece
 		[PieceLifespan.OutOnSegmentEnd]?: Piece
 		// onChange?: PieceInstance
@@ -307,13 +356,16 @@ export function getPieceInstancesForPart(
 	for (const candidatePiece of possiblePieces) {
 		if (
 			candidatePiece.startPartId !== part._id &&
-			(candidatePiece.lifespan === PieceLifespan.OutOnRundownEnd ||
+			(candidatePiece.lifespan === PieceLifespan.OutOnShowStyleEnd ||
+				candidatePiece.lifespan === PieceLifespan.OutOnRundownEnd ||
 				candidatePiece.lifespan === PieceLifespan.OutOnSegmentEnd)
 		) {
 			const useIt = isPiecePotentiallyActiveInPart(
 				playingPartInstance,
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
+				rundownsBeforeThisInPlaylistSet,
+				rundown,
 				part,
 				candidatePiece
 			)
@@ -335,6 +387,7 @@ export function getPieceInstancesForPart(
 				playlistActivationId,
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
+				rundownsBeforeThisInPlaylistSet,
 				playingPartInstance,
 				playingPieceInstances || [],
 				part,
@@ -384,6 +437,7 @@ export function getPieceInstancesForPart(
 	const result = normalPieces.map(wrapPiece).concat(infinitesFromPrevious)
 	for (const pieceSet of Array.from(piecesOnSourceLayers.values())) {
 		const onEndPieces = _.compact([
+			pieceSet[PieceLifespan.OutOnShowStyleEnd],
 			pieceSet[PieceLifespan.OutOnRundownEnd],
 			pieceSet[PieceLifespan.OutOnSegmentEnd],
 		])
@@ -453,7 +507,11 @@ export function processAndPrunePieceInstanceTimings(
 				activePieces[key] = newPiece
 				result.push(newPiece)
 
-				if (key === 'onSegmentEnd' || (key === 'onRundownEnd' && !activePieces.onSegmentEnd)) {
+				if (
+					key === 'onSegmentEnd' ||
+					(key === 'onRundownEnd' && !activePieces.onSegmentEnd) ||
+					(key === 'onShowStyleEnd' && !activePieces.onSegmentEnd && !activePieces.onRundownEnd)
+				) {
 					// when start === 0, we are likely to have multiple infinite continuations. Only stop the 'other' if it should not be considered for being on air
 					if (
 						activePieces.other &&
@@ -507,6 +565,7 @@ export function processAndPrunePieceInstanceTimings(
 			updateWithNewPieces(activePieces, newPieces, 'other', start)
 			updateWithNewPieces(activePieces, newPieces, 'onSegmentEnd', start)
 			updateWithNewPieces(activePieces, newPieces, 'onRundownEnd', start)
+			updateWithNewPieces(activePieces, newPieces, 'onShowStyleEnd', start)
 		}
 	}
 
@@ -555,6 +614,7 @@ function isCandidateBetterToBeContinued(best: PieceInstance, candidate: PieceIns
 }
 
 interface PieceInstanceOnInfiniteLayers {
+	onShowStyleEnd?: PieceInstanceWithTimings
 	onRundownEnd?: PieceInstanceWithTimings
 	onSegmentEnd?: PieceInstanceWithTimings
 	other?: PieceInstanceWithTimings
@@ -568,6 +628,14 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 
 	for (const piece of pieces) {
 		switch (piece.piece.lifespan) {
+			case PieceLifespan.OutOnShowStyleEnd:
+				if (!res.onShowStyleEnd || isCandidateBetterToBeContinued(res.onShowStyleEnd, piece)) {
+					res.onShowStyleEnd = {
+						...piece,
+						priority: 0,
+					}
+				}
+				break
 			case PieceLifespan.OutOnRundownEnd:
 				if (!res.onRundownEnd || isCandidateBetterToBeContinued(res.onRundownEnd, piece)) {
 					res.onRundownEnd = {

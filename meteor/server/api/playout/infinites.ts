@@ -21,6 +21,8 @@ import { asyncCollectionFindFetch } from '../../lib/database'
 import { getCurrentTime } from '../../../lib/lib'
 import { CacheForIngest } from '../ingest/cache'
 import { ReadOnlyCache } from '../../cache/CacheBase'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { Rundown } from '../../../lib/collections/Rundowns'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -86,10 +88,18 @@ function getIdsBeforeThisPart(cache: CacheForPlayout, nextPart: DBPart) {
 		  }).map((p) => p._id)
 		: []
 
+	const currentRundown = cache.Rundowns.findOne(nextPart.rundownId)
+	const rundownsBeforeThisInPlaylist = currentRundown
+		? cache.Rundowns.findFetch({ playlistId: cache.Playlist.doc._id, _rank: { $lt: currentRundown._rank } }).map(
+				(p) => p._id
+		  )
+		: []
+
 	if (span) span.end()
 	return {
 		partsBeforeThisInSegment: _.sortBy(partsBeforeThisInSegment, (p) => p._rank).map((p) => p._id),
 		segmentsBeforeThisInRundown,
+		rundownsBeforeThisInPlaylist,
 	}
 }
 
@@ -105,21 +115,42 @@ export async function fetchPiecesThatMayBeActiveForPart(
 		? Promise.resolve(unsavedIngestCache.Pieces.findFetch(thisPiecesQuery))
 		: asyncCollectionFindFetch(Pieces, thisPiecesQuery)
 
-	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
+	const {
+		partsBeforeThisInSegment,
+		segmentsBeforeThisInRundown,
+		rundownsBeforeThisInPlaylist,
+	} = getIdsBeforeThisPart(cache, part)
 
 	const infinitePiecesQuery = buildPastInfinitePiecesForThisPartQuery(
 		part,
 		partsBeforeThisInSegment,
-		segmentsBeforeThisInRundown
+		segmentsBeforeThisInRundown,
+		rundownsBeforeThisInPlaylist
 	)
 	// Future scope: Once there is a longer than Rundown infinite mode, this will need to split the query to search everywhere
 	const pInfinitePieces = unsavedIngestCache
 		? Promise.resolve(unsavedIngestCache.Pieces.findFetch(infinitePiecesQuery))
 		: asyncCollectionFindFetch(Pieces, infinitePiecesQuery)
 
-	const [piecesStartingInPart, infinitePieces] = await Promise.all([pPiecesStartingInPart, pInfinitePieces])
+	// If searching through the unsavedIngestCache above, run a second query for infinites that span across rundowns.
+	const pPastRundownInfinites = unsavedIngestCache
+		? asyncCollectionFindFetch(Pieces, {
+				invalid: { $ne: true },
+				startPartId: { $ne: part._id }, // previous rundown
+				lifespan: {
+					$in: [PieceLifespan.OutOnShowStyleEnd],
+				},
+				startRundownId: { $in: rundownsBeforeThisInPlaylist },
+		  })
+		: Promise.resolve([])
+
+	const [piecesStartingInPart, infinitePieces, pastRundownInfinitePieces] = await Promise.all([
+		pPiecesStartingInPart,
+		pInfinitePieces,
+		pPastRundownInfinites,
+	])
 	if (span) span.end()
-	return [...piecesStartingInPart, ...infinitePieces]
+	return [...piecesStartingInPart, ...infinitePieces, ...pastRundownInfinitePieces]
 }
 
 export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout): Promise<void> {
@@ -129,10 +160,11 @@ export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPl
 		const playlist = cache.Playlist.doc
 		if (!playlist.activationId) throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is not active`)
 
-		const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(
-			cache,
-			nextPartInstance.part
-		)
+		const {
+			partsBeforeThisInSegment,
+			segmentsBeforeThisInRundown,
+			rundownsBeforeThisInPlaylist,
+		} = getIdsBeforeThisPart(cache, nextPartInstance.part)
 
 		const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${currentPartInstance.rundownId}" not found!`)
@@ -165,6 +197,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPl
 			playlist.activationId,
 			new Set(partsBeforeThisInSegment),
 			new Set(segmentsBeforeThisInRundown),
+			new Set(rundownsBeforeThisInPlaylist),
 			currentPartInstance,
 			prunedPieceInstances,
 			nextPartInstance.part,
@@ -188,13 +221,18 @@ export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPl
 export function getPieceInstancesForPart(
 	cache: CacheForPlayout,
 	playingPartInstance: PartInstance | undefined,
+	rundown: Rundown,
 	part: DBPart,
 	possiblePieces: Piece[],
 	newInstanceId: PartInstanceId,
 	isTemporary: boolean
 ): PieceInstance[] {
 	const span = profiler.startSpan('getPieceInstancesForPart')
-	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
+	const {
+		partsBeforeThisInSegment,
+		segmentsBeforeThisInRundown,
+		rundownsBeforeThisInPlaylist,
+	} = getIdsBeforeThisPart(cache, part)
 
 	const playlist = cache.Playlist.doc
 	if (!playlist.activationId) throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is not active`)
@@ -215,9 +253,11 @@ export function getPieceInstancesForPart(
 		playlist.activationId,
 		playingPartInstance,
 		playingPieceInstances,
+		rundown,
 		part,
 		new Set(partsBeforeThisInSegment),
 		new Set(segmentsBeforeThisInRundown),
+		new Set(rundownsBeforeThisInPlaylist),
 		possiblePieces,
 		orderedPartsAndSegments.parts.map((p) => p._id),
 		newInstanceId,
