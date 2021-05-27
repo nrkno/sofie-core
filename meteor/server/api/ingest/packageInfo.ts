@@ -6,9 +6,9 @@ import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { assertNever, lazyIgnore } from '../../../lib/lib'
 import { logger } from '../../logging'
-import { CommitIngestData, runIngestOperationWithCache } from './lockFunction'
+import { runIngestOperationWithCache } from './lockFunction'
 import { Meteor } from 'meteor/meteor'
-import { updateSegmentFromIngestData } from './generation'
+import { regenerateSegmentsFromIngestData } from './generation'
 
 /** to-be @deprecated hack for backwards-compatibility*/
 export function onUpdatedMediaObject(_id: MediaObjId, _newDocument: MediaObject | null) {
@@ -112,6 +112,9 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 			return ingestRundown // don't mutate any ingest data
 		},
 		async (cache, ingestRundown) => {
+			if (!ingestRundown)
+				throw new Meteor.Error('onUpdatedPackageInfoForRundown called but ingestData is undefined')
+
 			/** All segments that need updating */
 			const segmentsToUpdate = new Set<SegmentId>()
 
@@ -142,41 +145,27 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 			}
 
 			logger.info(
-				`PackageInfo for "${packageIds.join(', ')}" will trigger update of segments: ${Array.from(
-					segmentsToUpdate
-				).join(', ')}`
+				`onUpdatedPackageInfoForRundown: PackageInfo for "${packageIds.join(
+					', '
+				)}" will trigger update of segments: ${Array.from(segmentsToUpdate).join(', ')}`
 			)
 
-			const segmentChanges: Array<Promise<CommitIngestData | null>> = []
+			const { result, skippedSegments } = await regenerateSegmentsFromIngestData(
+				cache,
+				ingestRundown,
+				Array.from(segmentsToUpdate)
+			)
 
-			for (const segmentId of segmentsToUpdate) {
-				const segment = cache.Segments.findOne(segmentId)
-				if (segment) {
-					const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segment.externalId)
-					if (ingestSegment) {
-						// TODO - do this batching better, this is a bit inefficient in some loading/processing
-						segmentChanges.push(updateSegmentFromIngestData(cache, ingestSegment, false))
-					} else {
-						logger.error(`Ingest data for Segment "${segmentId}" not found`)
-					}
-				} else {
-					logger.error(`Segment "${segmentId}" not found`)
-				}
+			if (skippedSegments.length > 0) {
+				logger.warn(
+					`onUpdatedPackageInfoForRundown: Some segments were skipped during update: ${skippedSegments.join(
+						', '
+					)}`
+				)
 			}
 
-			const segmentChanges2 = _.compact(await Promise.all(segmentChanges))
-
-			const result = segmentChanges2.shift()
-			if (result) {
-				for (const res of segmentChanges2) {
-					// Cheat and only update properties we know are set. Ideally we could batch the call to updateSegmentFromIngestData instead
-					result.changedSegmentIds.push(...res.changedSegmentIds)
-				}
-
-				return result
-			} else {
-				return null
-			}
+			logger.warn(`onUpdatedPackageInfoForRundown: Changed ${result?.changedSegmentIds.length ?? 0} segments`)
+			return result
 		}
 	)
 }
