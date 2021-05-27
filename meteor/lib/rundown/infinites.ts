@@ -82,6 +82,7 @@ export function getPlayheadTrackingInfinitesForPart(
 	rundownsBeforeThisInPlaylistSet: Set<RundownId>,
 	currentPartInstance: PartInstance,
 	currentPartPieceInstances: PieceInstance[],
+	rundown: Rundown,
 	part: DBPart,
 	newInstanceId: PartInstanceId,
 	nextPartIsAfterCurrentPart: boolean,
@@ -176,8 +177,32 @@ export function getPlayheadTrackingInfinitesForPart(
 									currentPartInstance.segmentId === part.segmentId)
 							break
 						case PieceLifespan.OutOnShowStyleEnd:
-							isValid = rundownsBeforeThisInPlaylistSet.has(currentPartInstance.rundownId)
-							break
+							if (!rundownsBeforeThisInPlaylistSet.has(currentPartInstance.rundownId)) {
+								isValid = false
+								break
+							}
+
+							if (candidatePiece.rundownId === part.rundownId) {
+								isValid = true
+								break
+							}
+
+							const rundownsBeforeThisInPlaylist = Array.from(rundownsBeforeThisInPlaylistSet.values())
+							const prevRundownId = rundownsBeforeThisInPlaylist[rundownsBeforeThisInPlaylist.length - 1]
+
+							if (!prevRundownId) {
+								isValid = false
+								break
+							}
+
+							const prevRundown = Rundowns.findOne(prevRundownId, { fields: { showStyleBaseId: 1 } })
+
+							if (!prevRundown) {
+								isValid = false
+								break
+							}
+
+							isValid = prevRundown.showStyleBaseId === rundown.showStyleBaseId
 					}
 
 					if (isValid) {
@@ -390,6 +415,7 @@ export function getPieceInstancesForPart(
 				rundownsBeforeThisInPlaylistSet,
 				playingPartInstance,
 				playingPieceInstances || [],
+				rundown,
 				part,
 				newInstanceId,
 				nextPartIsAfterCurrentPart,

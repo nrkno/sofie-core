@@ -200,6 +200,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPl
 			new Set(rundownsBeforeThisInPlaylist),
 			currentPartInstance,
 			prunedPieceInstances,
+			rundown,
 			nextPartInstance.part,
 			nextPartInstance._id,
 			canContinueAdlibOnEnds,
