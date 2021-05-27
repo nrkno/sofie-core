@@ -40,7 +40,7 @@ export function onUpdatedMediaObject(_id: MediaObjId, _newDocument: MediaObject 
 }
 
 export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageInfoDB | null) {
-	logger.debug(`PackegeInfo updated "${packageId}"`)
+	logger.info(`PackegeInfo updated "${packageId}"`)
 
 	const pkg = ExpectedPackages.findOne(packageId)
 	if (!pkg) {
@@ -116,18 +116,25 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 					if (piece) {
 						const segmentId = piece.startSegmentId
 
-						const listeningPieces = cache.Pieces.findFetch({
-							startSegmentId: segmentId,
-							listenToPackageInfoUpdates: { $elemMatch: { packageId: pkg.blueprintPackageId } },
-						})
+						const listeningPieces = cache.Pieces.findFetch(
+							(p) =>
+								p.startSegmentId === segmentId &&
+								p.listenToPackageInfoUpdates &&
+								p.listenToPackageInfoUpdates.find((u) => u.packageId === pkg.blueprintPackageId)
+						)
+						logger.warn(`Listening pieces: "${listeningPieces.length}"`)
 						if (listeningPieces.length > 0) {
 							segmentsToUpdate.add(segmentId)
 						}
+					} else {
+						logger.warn(`Missing raw piece: "${pkg.pieceId}"`)
 					}
+				} else {
+					logger.warn(`Missing package: "${packageId}"`)
 				}
 			}
 
-			logger.debug(
+			logger.info(
 				`PackageInfo for "${packageIds.join(', ')}" will trigger update of segments: ${Array.from(
 					segmentsToUpdate
 				).join(', ')}`
