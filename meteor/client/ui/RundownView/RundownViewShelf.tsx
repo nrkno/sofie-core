@@ -71,7 +71,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 	}
 
 	isAdLibNext(adLib: AdLibPieceUi) {
-		return isAdLibNext(this.props.nextAdLibIds, this.props.unfinishedTags, this.props.nextTags, adLib)
+		return isAdLibNext(this.props.nextAdLibIds, this.props.nextTags, adLib)
 	}
 
 	onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {

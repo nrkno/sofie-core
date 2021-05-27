@@ -32,7 +32,7 @@ import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../../lib/hotkeyRegistry'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
-import { AdLibPieceUi } from '../../lib/shelf'
+import { AdLibPieceUi, isAdLibOnAir } from '../../lib/shelf'
 import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
 import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { invalidateAt } from '../../lib/invalidatingTime'
@@ -825,20 +825,6 @@ export function getNextPieceInstancesGrouped(
 	return { nextAdLibIds, nextTags, nextPieceInstances }
 }
 
-export function isAdLibOnAir(
-	unfinishedAdLibIds: IDashboardPanelTrackedProps['unfinishedAdLibIds'],
-	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
-	adLib: AdLibPieceUi
-) {
-	if (
-		unfinishedAdLibIds.includes(adLib._id) ||
-		(adLib.currentPieceTags && adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
-	) {
-		return true
-	}
-	return false
-}
-
 export function isAdLibDisplayedAsOnAir(
 	unfinishedAdLibIds: IDashboardPanelTrackedProps['unfinishedAdLibIds'],
 	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
@@ -846,22 +832,6 @@ export function isAdLibDisplayedAsOnAir(
 ) {
 	const isOnAir = isAdLibOnAir(unfinishedAdLibIds, unfinishedTags, adLib)
 	return adLib.invertOnAirState ? !isOnAir : isOnAir
-}
-
-export function isAdLibNext(
-	nextAdLibIds: IDashboardPanelTrackedProps['nextAdLibIds'],
-	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
-	nextTags: IDashboardPanelTrackedProps['nextTags'],
-	adLib: AdLibPieceUi
-) {
-	if (
-		nextAdLibIds.includes(adLib._id) ||
-		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => unfinishedTags.includes(tag))) ||
-		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
-	) {
-		return true
-	}
-	return false
 }
 
 export function findNext(
