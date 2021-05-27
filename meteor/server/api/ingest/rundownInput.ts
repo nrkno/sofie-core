@@ -518,15 +518,6 @@ function updateRundownFromIngestData(
 			logger.warn(`Blocking updating rundown "${existingDbRundown._id}" because it is unsynced`)
 			return false
 		}
-
-		const existingPlaylist = RundownPlaylists.findOne(existingDbRundown.playlistId)
-
-		if (existingPlaylist && existingPlaylist.active) {
-			logger.warn(
-				`Blocking updating rundown "${existingDbRundown._id}" because playlist "${existingDbRundown.playlistId}" is active`
-			)
-			return false
-		}
 	}
 
 	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, existingDbRundown)
