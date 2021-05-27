@@ -4,7 +4,7 @@ import { MediaObject, MediaObjId } from '../../../lib/collections/MediaObjects'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { assertNever, lazyIgnore, unprotectString } from '../../../lib/lib'
+import { assertNever, lazyIgnore } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { CommitIngestData, runIngestOperationWithCache } from './lockFunction'
 import { Meteor } from 'meteor/meteor'
@@ -40,11 +40,11 @@ export function onUpdatedMediaObject(_id: MediaObjId, _newDocument: MediaObject 
 }
 
 export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageInfoDB | null) {
-	logger.info(`PackegeInfo updated "${packageId}"`)
+	logger.info(`PackageInfo updated "${packageId}"`)
 
 	const pkg = ExpectedPackages.findOne(packageId)
 	if (!pkg) {
-		// TODO - error
+		logger.error(`onUpdatedPackageInfo: Received update for missing package: "${packageId}"`)
 		return
 	}
 
@@ -86,9 +86,15 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageI
 const pendingPackageUpdates = new Map<RundownId, Array<ExpectedPackageId>>()
 
 function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<ExpectedPackageId>) {
+	if (packageIds.length === 0) {
+		return
+	}
+
 	const tmpRundown = Rundowns.findOne(rundownId)
 	if (!tmpRundown) {
-		// TODO - error
+		logger.error(
+			`onUpdatedPackageInfoForRundown: Missing rundown "${rundownId}" for packages "${packageIds.join(', ')}"`
+		)
 		return
 	}
 
@@ -122,15 +128,16 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 								p.listenToPackageInfoUpdates &&
 								p.listenToPackageInfoUpdates.find((u) => u.packageId === pkg.blueprintPackageId)
 						)
-						logger.warn(`Listening pieces: "${listeningPieces.length}"`)
 						if (listeningPieces.length > 0) {
 							segmentsToUpdate.add(segmentId)
 						}
 					} else {
-						logger.warn(`Missing raw piece: "${pkg.pieceId}"`)
+						logger.warn(
+							`onUpdatedPackageInfoForRundown: Missing raw piece: "${pkg.pieceId}" for package "${packageId}"`
+						)
 					}
 				} else {
-					logger.warn(`Missing package: "${packageId}"`)
+					logger.warn(`onUpdatedPackageInfoForRundown: Missing package: "${packageId}"`)
 				}
 			}
 
@@ -162,7 +169,7 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 			const result = segmentChanges2.shift()
 			if (result) {
 				for (const res of segmentChanges2) {
-					// Cheat and only update properties we know are set
+					// Cheat and only update properties we know are set. Ideally we could batch the call to updateSegmentFromIngestData instead
 					result.changedSegmentIds.push(...res.changedSegmentIds)
 				}
 
