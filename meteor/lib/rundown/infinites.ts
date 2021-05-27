@@ -16,7 +16,7 @@ import {
 	getRandomId,
 } from '../lib'
 import { Mongo } from 'meteor/mongo'
-import { ShowStyleBase } from '../collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBaseId } from '../collections/ShowStyleBases'
 import { getPieceGroupId } from './timeline'
 import { RundownPlaylist, RundownPlaylistActivationId } from '../collections/RundownPlaylists'
 import { ReadonlyDeep } from 'type-fest'
@@ -80,6 +80,7 @@ export function getPlayheadTrackingInfinitesForPart(
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
 	rundownsBeforeThisInPlaylistSet: Set<RundownId>,
+	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	currentPartInstance: PartInstance,
 	currentPartPieceInstances: PieceInstance[],
 	rundown: Rundown,
@@ -195,14 +196,14 @@ export function getPlayheadTrackingInfinitesForPart(
 								break
 							}
 
-							const prevRundown = Rundowns.findOne(prevRundownId, { fields: { showStyleBaseId: 1 } })
+							const prevRundownShowstyle = rundownsToShowstyles.get(prevRundownId)
 
-							if (!prevRundown) {
+							if (!prevRundownShowstyle) {
 								isValid = false
 								break
 							}
 
-							isValid = prevRundown.showStyleBaseId === rundown.showStyleBaseId
+							isValid = prevRundownShowstyle === rundown.showStyleBaseId
 					}
 
 					if (isValid) {
@@ -260,6 +261,7 @@ export function isPiecePotentiallyActiveInPart(
 	partsBeforeThisInSegment: Set<PartId>,
 	segmentsBeforeThisInRundown: Set<SegmentId>,
 	rundownsBeforeThisInPlaylistSet: Set<RundownId>,
+	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	rundown: Rundown,
 	part: DBPart,
 	pieceToCheck: Piece
@@ -323,13 +325,13 @@ export function isPiecePotentiallyActiveInPart(
 				return false
 			}
 
-			const prevRundown = Rundowns.findOne(prevRundownId, { fields: { showStyleBaseId: 1 } })
+			const prevRundownShowstyle = rundownsToShowstyles.get(prevRundownId)
 
-			if (!prevRundown) {
+			if (!prevRundownShowstyle) {
 				return false
 			}
 
-			return prevRundown.showStyleBaseId === rundown.showStyleBaseId
+			return prevRundownShowstyle === rundown.showStyleBaseId
 		default:
 			assertNever(pieceToCheck.lifespan)
 			return false
@@ -345,6 +347,7 @@ export function getPieceInstancesForPart(
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
 	rundownsBeforeThisInPlaylistSet: Set<RundownId>,
+	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	possiblePieces: Piece[],
 	orderedPartIds: PartId[],
 	newInstanceId: PartInstanceId,
@@ -390,6 +393,7 @@ export function getPieceInstancesForPart(
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
 				rundownsBeforeThisInPlaylistSet,
+				rundownsToShowstyles,
 				rundown,
 				part,
 				candidatePiece
@@ -413,6 +417,7 @@ export function getPieceInstancesForPart(
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
 				rundownsBeforeThisInPlaylistSet,
+				rundownsToShowstyles,
 				playingPartInstance,
 				playingPieceInstances || [],
 				rundown,

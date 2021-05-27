@@ -16,6 +16,7 @@ import { invalidateAfter } from '../client/lib/invalidatingTime'
 import { getCurrentTime, protectString, unprotectString } from './lib'
 import { RundownPlaylistActivationId } from './collections/RundownPlaylists'
 import { Rundown, RundownId } from './collections/Rundowns'
+import { ShowStyleBaseId } from './collections/ShowStyleBases'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -123,6 +124,7 @@ export function getPieceInstancesForPartInstance(
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
 	rundownsBeforeThisInPlaylistSet: Set<RundownId>,
+	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	orderedAllParts: PartId[],
 	nextPartIsAfterCurrentPart: boolean,
 	currentPartInstance: PartInstance | undefined,
@@ -140,6 +142,7 @@ export function getPieceInstancesForPartInstance(
 			partsBeforeThisInSegmentSet,
 			segmentsBeforeThisInRundownSet,
 			rundownsBeforeThisInPlaylistSet,
+			rundownsToShowstyles,
 			fetchPiecesThatMayBeActiveForPart(
 				partInstance.part,
 				partsBeforeThisInSegmentSet,
@@ -182,6 +185,7 @@ export function getPieceInstancesForPartInstance(
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
 				rundownsBeforeThisInPlaylistSet,
+				rundownsToShowstyles,
 				fetchPiecesThatMayBeActiveForPart(
 					partInstance.part,
 					partsBeforeThisInSegmentSet,

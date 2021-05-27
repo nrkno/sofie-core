@@ -15,7 +15,12 @@ import {
 } from '../../../lib/rundown/infinites'
 import { profiler } from '../profiler'
 import { Meteor } from 'meteor/meteor'
-import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
+import {
+	CacheForPlayout,
+	getOrderedSegmentsAndPartsFromPlayoutCache,
+	getSelectedPartInstancesFromCache,
+	getShowStyleIdsRundownMappingFromCache,
+} from './cache'
 import { ReadonlyDeep } from 'type-fest'
 import { asyncCollectionFindFetch } from '../../lib/database'
 import { getCurrentTime } from '../../../lib/lib'
@@ -193,11 +198,14 @@ export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPl
 			true
 		)
 
+		const rundownIdsToShowstyleIds = getShowStyleIdsRundownMappingFromCache(cache)
+
 		const infinites = libgetPlayheadTrackingInfinitesForPart(
 			playlist.activationId,
 			new Set(partsBeforeThisInSegment),
 			new Set(segmentsBeforeThisInRundown),
 			new Set(rundownsBeforeThisInPlaylist),
+			rundownIdsToShowstyleIds,
 			currentPartInstance,
 			prunedPieceInstances,
 			rundown,
@@ -250,6 +258,8 @@ export function getPieceInstancesForPart(
 		part
 	)
 
+	const rundownIdsToShowstyleIds = getShowStyleIdsRundownMappingFromCache(cache)
+
 	const res = libgetPieceInstancesForPart(
 		playlist.activationId,
 		playingPartInstance,
@@ -259,6 +269,7 @@ export function getPieceInstancesForPart(
 		new Set(partsBeforeThisInSegment),
 		new Set(segmentsBeforeThisInRundown),
 		new Set(rundownsBeforeThisInPlaylist),
+		rundownIdsToShowstyleIds,
 		possiblePieces,
 		orderedPartsAndSegments.parts.map((p) => p._id),
 		newInstanceId,

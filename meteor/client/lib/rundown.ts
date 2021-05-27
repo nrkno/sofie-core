@@ -21,7 +21,7 @@ import {
 } from '../../lib/Rundown'
 import { DBSegment, Segment, SegmentId, Segments } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { literal, normalizeArray, getCurrentTime, applyToArray, unprotectString, protectString } from '../../lib/lib'
 import { PartInstance, wrapPartToTemporaryInstance } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
@@ -310,6 +310,7 @@ export namespace RundownUtils {
 		segment: DBSegment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
 		rundownsBeforeThisInPlaylistSet: Set<RundownId>,
+		rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 		orderedAllPartIds: PartId[],
 		currentPartInstance: PartInstance | undefined,
 		nextPartInstance: PartInstance | undefined,
@@ -483,6 +484,7 @@ export namespace RundownUtils {
 					new Set(partIds.slice(0, itIndex)),
 					segmentsBeforeThisInRundownSet,
 					rundownsBeforeThisInPlaylistSet,
+					rundownsToShowstyles,
 					orderedAllPartIds,
 					nextPartIsAfterCurrentPart,
 					currentPartInstance,

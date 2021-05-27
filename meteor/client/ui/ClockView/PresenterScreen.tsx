@@ -54,6 +54,7 @@ function getShowStyleBaseIdSegmentPartUi(
 		segments: Segment[]
 		parts: Part[]
 	},
+	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	currentPartInstance: PartInstance | undefined,
 	nextPartInstance: PartInstance | undefined
 ): {
@@ -94,6 +95,7 @@ function getShowStyleBaseIdSegmentPartUi(
 				orderedSegmentsAndParts.segments[segmentIndex],
 				new Set(orderedSegmentsAndParts.segments.map((s) => s._id).slice(0, segmentIndex)),
 				new Set(rundownOrder.slice(0, rundownIndex)),
+				rundownsToShowstyles,
 				orderedSegmentsAndParts.parts.map((part) => part._id),
 				currentPartInstance,
 				nextPartInstance,
@@ -147,6 +149,10 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 		rundowns = playlist.getRundowns()
 		const orderedSegmentsAndParts = playlist.getSegmentsAndPartsSync()
 		rundownIds = rundowns.map((rundown) => rundown._id)
+		const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
+		for (let rundown of rundowns) {
+			rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
+		}
 		showStyleBaseIds = rundowns.map((rundown) => rundown.showStyleBaseId)
 		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 		const partInstance = currentPartInstance || nextPartInstance
@@ -173,6 +179,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 					currentPartInstance,
 					playlist,
 					orderedSegmentsAndParts,
+					rundownsToShowstyles,
 					currentPartInstance,
 					nextPartInstance
 				)
@@ -186,6 +193,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 					nextPartInstance,
 					playlist,
 					orderedSegmentsAndParts,
+					rundownsToShowstyles,
 					currentPartInstance,
 					nextPartInstance
 				)

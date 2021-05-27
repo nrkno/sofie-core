@@ -18,7 +18,7 @@ import {
 	SegmentExtended,
 } from '../../../lib/Rundown'
 import { IContextMenuContext, MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
@@ -82,6 +82,7 @@ interface IProps {
 	segmentId: SegmentId
 	segmentsIdsBefore: Set<SegmentId>
 	rundownIdsBefore: Set<RundownId>
+	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio: Studio
 	showStyleBase: ShowStyleBase
 	playlist: RundownPlaylist
@@ -200,6 +201,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			segment,
 			props.segmentsIdsBefore,
 			new Set(rundownOrder.slice(0, rundownIndex)),
+			props.rundownsToShowstyles,
 			orderedAllPartIds,
 			currentPartInstance,
 			nextPartInstance,

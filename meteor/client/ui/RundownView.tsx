@@ -53,7 +53,7 @@ import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
-import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
 import {
 	RONotificationEvent,
@@ -1412,6 +1412,7 @@ interface ITrackedProps {
 	rundowns: Rundown[]
 	playlist?: RundownPlaylist
 	matchedSegments: MatchedSegment[]
+	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
@@ -1454,6 +1455,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		? undefined
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
 
+	const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
+	for (let rundown of rundowns) {
+		rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
+	}
+
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
 		rundownPlaylistId: playlistId,
@@ -1478,6 +1484,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						),
 					}))
 			: [],
+		rundownsToShowstyles,
 		playlist,
 		studio: studio,
 		showStyleBase: rundowns.length > 0 ? ShowStyleBases.findOne(rundowns[0].showStyleBaseId) : undefined,
@@ -2267,6 +2274,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												onSegmentScroll={this.onSegmentScroll}
 												segmentsIdsBefore={rundownAndSegments.segmentIdsBeforeEachSegment[segmentIndex]}
 												rundownIdsBefore={new Set(rundownArray.slice(0, rundownIndex).map((r) => r.rundown._id))}
+												rundownsToShowstyles={this.props.rundownsToShowstyles}
 												isLastSegment={
 													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
 												}
