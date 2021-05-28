@@ -108,21 +108,21 @@ export interface TransformedCollection<Class extends DBInterface, DBInterface ex
 		selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'],
 		options?: Omit<FindOptions<DBInterface>, 'limit'>
 	): Class | undefined
-	insert(doc: DBInterface, callback?: Function): DBInterface['_id']
+	insert(doc: DBInterface /*, callback?: Function*/): DBInterface['_id']
 	rawCollection(): RawCollection<DBInterface>
 	rawDatabase(): any
-	remove(selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], callback?: Function): number
+	remove(selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'] /*, callback?: Function*/): number
 	update(
 		selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'],
 		modifier: MongoModifier<DBInterface>,
-		options?: UpdateOptions,
-		callback?: Function
+		options?: UpdateOptions
+		/*callback?: Function*/
 	): number
 	upsert(
 		selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'],
 		modifier: MongoModifier<DBInterface>,
-		options?: UpsertOptions,
-		callback?: Function
+		options?: UpsertOptions
+		/*callback?: Function*/
 	): {
 		numberAffected?: number
 		insertedId?: DBInterface['_id']
