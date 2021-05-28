@@ -12,7 +12,8 @@ import {
 import { Piece } from '../../../lib/collections/Pieces'
 import { PartInstance, PartInstanceId } from '../../collections/PartInstances'
 import { DBPart, Part, PartId } from '../../collections/Parts'
-import { RundownId } from '../../collections/Rundowns'
+import { DBRundown, Rundown, RundownId } from '../../collections/Rundowns'
+import { RundownPlaylistId } from '../../collections/RundownPlaylists'
 
 describe('Infinites', () => {
 	let env: DefaultEnvironment
@@ -406,6 +407,7 @@ describe('Infinites', () => {
 		function runAndTidyResult(
 			previousPartInstance: Pick<PartInstance, 'rundownId' | 'segmentId'> & { partId: PartId },
 			previousPartPieces: PieceInstance[],
+			rundown: Rundown,
 			part: Pick<DBPart, 'rundownId' | 'segmentId'>,
 			newInstanceId: PartInstanceId
 		) {
@@ -413,8 +415,11 @@ describe('Infinites', () => {
 				protectString('activation0'),
 				new Set([previousPartInstance.partId]),
 				new Set(),
+				new Set(),
+				new Map(),
 				previousPartInstance as any,
 				previousPartPieces,
+				rundown,
 				part as any,
 				newInstanceId,
 				true,
@@ -463,7 +468,39 @@ describe('Infinites', () => {
 			})
 		}
 
+		function createRundown(
+			id: RundownId,
+			playlistId: RundownPlaylistId,
+			name: string,
+			externalId: string
+		): Rundown {
+			return new Rundown(
+				literal<DBRundown>({
+					_rank: 0,
+					_id: id,
+					externalId,
+					organizationId: protectString('test'),
+					name,
+					showStyleVariantId: protectString('test-variant'),
+					showStyleBaseId: protectString('test-base'),
+					studioId: protectString('studio0'),
+					created: 0,
+					modified: 0,
+					importVersions: {
+						studio: '0.0.0',
+						showStyleBase: '0.0.0',
+						showStyleVariant: '0.0.0',
+						blueprint: '0.0.0',
+						core: '0.0.0`',
+					},
+					externalNRCSName: 'test',
+					playlistId,
+				})
+			)
+		}
+
 		testInFiber('multiple continued pieces starting at 0 should preserve the newest', () => {
+			const playlistId = protectString('playlist0')
 			const rundownId = protectString('rundown0')
 			const segmentId = protectString('segment0')
 			const partId = protectString('part0')
@@ -500,8 +537,15 @@ describe('Infinites', () => {
 			]
 			const part = { rundownId, segmentId }
 			const instanceId = protectString('newInstance0')
+			const rundown = createRundown(rundownId, playlistId, 'Test Rundown', 'rundown0')
 
-			const continuedInstances = runAndTidyResult(previousPartInstance, previousPartPieces, part, instanceId)
+			const continuedInstances = runAndTidyResult(
+				previousPartInstance,
+				previousPartPieces,
+				rundown,
+				part,
+				instanceId
+			)
 			expect(continuedInstances).toEqual([
 				{
 					_id: 'newInstance0_three_p_continue',
@@ -514,6 +558,7 @@ describe('Infinites', () => {
 			])
 		})
 		testInFiber('ignore pieces that have stopped', () => {
+			const playlistId = protectString('playlist0')
 			const rundownId = protectString('rundown0')
 			const segmentId = protectString('segment0')
 			const partId = protectString('part0')
@@ -553,8 +598,15 @@ describe('Infinites', () => {
 			]
 			const part = { rundownId, segmentId }
 			const instanceId = protectString('newInstance0')
+			const rundown = createRundown(rundownId, playlistId, 'Test Rundown', 'rundown0')
 
-			const continuedInstances = runAndTidyResult(previousPartInstance, previousPartPieces, part, instanceId)
+			const continuedInstances = runAndTidyResult(
+				previousPartInstance,
+				previousPartPieces,
+				rundown,
+				part,
+				instanceId
+			)
 			expect(continuedInstances).toEqual([
 				{
 					_id: 'newInstance0_one_p_continue',
