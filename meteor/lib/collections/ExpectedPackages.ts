@@ -21,10 +21,13 @@ import { RundownBaselineAdLibActionId } from './RundownBaselineAdLibActions'
 
 export type ExpectedPackageId = ProtectedString<'ExpectedPackageId'>
 
-export type ExpectedPackageDB =
+export type ExpectedPackageFromRundown =
 	| ExpectedPackageDBFromPiece
 	| ExpectedPackageDBFromAdLibAction
 	| ExpectedPackageDBFromBaselineAdLibAction
+
+export type ExpectedPackageDB =
+	| ExpectedPackageFromRundown
 	| ExpectedPackageDBFromBucketAdLib
 	| ExpectedPackageDBFromBucketAdLibAction
 	| ExpectedPackageDBFromRundownBaselineObjects
@@ -41,6 +44,7 @@ export enum ExpectedPackageDBType {
 }
 export interface ExpectedPackageDBBase extends Omit<ExpectedPackage.Base, '_id'> {
 	_id: ExpectedPackageId
+	blueprintPackageId: string
 
 	/** The studio of the Rundown of the Piece this package belongs to */
 	studioId: StudioId
@@ -103,6 +107,11 @@ registerCollection('ExpectedPackages', ExpectedPackages)
 
 registerIndex(ExpectedPackages, {
 	studioId: 1,
+	pieceId: 1,
+})
+registerIndex(ExpectedPackages, {
+	rundownId: 1,
+	pieceId: 1,
 })
 export function getContentVersionHash(expectedPackage: Omit<ExpectedPackage.Any, '_id'>): string {
 	return hashObj({

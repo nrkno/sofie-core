@@ -5,20 +5,14 @@ import {
 	ISourceLayer,
 	IBlueprintPieceGeneric,
 	ExpectedPackageStatusAPI,
+	PackageInfo,
 } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from './api/rundown'
-import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
+import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
 import * as i18next from 'i18next'
 import { IStudioSettings, routeExpectedPackages, Studio } from './collections/Studios'
 import { NoteType } from './api/notes'
-import {
-	FFProbeDeepScan,
-	FFProbeScanStream,
-	PackageInfoDBType,
-	PackageInfoFFProbeDeepScan,
-	PackageInfoFFProbeScan,
-	PackageInfos,
-} from './collections/PackageInfos'
+import { PackageInfos } from './collections/PackageInfos'
 import { protectString, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
 
@@ -29,10 +23,10 @@ import { getPackageContainerPackageStatus } from './globalStores'
 export function buildFormatString(mediainfo: MediaInfo, stream: MediaStream): string {
 	let format = `${stream.width || 0}x${stream.height || 0}`
 	switch (mediainfo.field_order) {
-		case FieldOrder.Progressive:
+		case PackageInfo.FieldOrder.Progressive:
 			format += 'p'
 			break
-		case FieldOrder.Unknown:
+		case PackageInfo.FieldOrder.Unknown:
 			format += '?'
 			break
 		default:
@@ -46,10 +40,10 @@ export function buildFormatString(mediainfo: MediaInfo, stream: MediaStream): st
 		format += fps
 	}
 	switch (mediainfo.field_order) {
-		case FieldOrder.BFF:
+		case PackageInfo.FieldOrder.BFF:
 			format += 'bff'
 			break
-		case FieldOrder.TFF:
+		case PackageInfo.FieldOrder.TFF:
 			format += 'tff'
 			break
 		default:
@@ -58,13 +52,16 @@ export function buildFormatString(mediainfo: MediaInfo, stream: MediaStream): st
 
 	return format
 }
-export function buildPackageFormatString(deepScan: FFProbeDeepScan, stream: FFProbeScanStream): string {
+export function buildPackageFormatString(
+	deepScan: PackageInfo.FFProbeDeepScan,
+	stream: PackageInfo.FFProbeScanStream
+): string {
 	let format = `${stream.width || 0}x${stream.height || 0}`
 	switch (deepScan.field_order) {
-		case FieldOrder.Progressive:
+		case PackageInfo.FieldOrder.Progressive:
 			format += 'p'
 			break
-		case FieldOrder.Unknown:
+		case PackageInfo.FieldOrder.Unknown:
 			format += '?'
 			break
 		default:
@@ -78,10 +75,10 @@ export function buildPackageFormatString(deepScan: FFProbeDeepScan, stream: FFPr
 		format += fps
 	}
 	switch (deepScan.field_order) {
-		case FieldOrder.BFF:
+		case PackageInfo.FieldOrder.BFF:
 			format += 'bff'
 			break
-		case FieldOrder.TFF:
+		case PackageInfo.FieldOrder.TFF:
 			format += 'tff'
 			break
 		default:
@@ -156,8 +153,8 @@ export interface ScanInfoForPackages {
 export interface ScanInfoForPackage {
 	/** Display name of the package  */
 	packageName: string
-	scan?: PackageInfoFFProbeScan['payload']
-	deepScan?: PackageInfoFFProbeDeepScan['payload']
+	scan?: PackageInfo.FFProbeScan['payload']
+	deepScan?: PackageInfo.FFProbeDeepScan['payload']
 	timebase?: number // derived from scan
 }
 
@@ -277,12 +274,12 @@ export function checkPieceContentStatus(
 								studio: studio._id,
 								packageId: protectString(expectedPackage._id),
 								type: {
-									$in: [PackageInfoDBType.SCAN, PackageInfoDBType.DEEPSCAN] as any,
+									$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN] as any,
 								},
 							}).forEach((packageInfo) => {
-								if (packageInfo.type === PackageInfoDBType.SCAN) {
+								if (packageInfo.type === PackageInfo.Type.SCAN) {
 									packageInfos[expectedPackage._id].scan = packageInfo.payload
-								} else if (packageInfo.type === PackageInfoDBType.DEEPSCAN) {
+								} else if (packageInfo.type === PackageInfo.Type.DEEPSCAN) {
 									packageInfos[expectedPackage._id].deepScan = packageInfo.payload
 								}
 							})
@@ -360,7 +357,11 @@ export function checkPieceContentStatus(
 						}
 						if (timebase) {
 							// check for black/freeze frames
-							const addFrameWarning = (anomalies: Array<Anomaly>, type: string, t: i18next.TFunction) => {
+							const addFrameWarning = (
+								anomalies: Array<PackageInfo.Anomaly>,
+								type: string,
+								t: i18next.TFunction
+							) => {
 								if (anomalies.length === 1) {
 									const frames = Math.round((anomalies[0].duration * 1000) / timebase)
 									if (anomalies[0].start === 0) {
@@ -511,7 +512,7 @@ export function checkPieceContentStatus(
 									if (timebase) {
 										// check for black/freeze frames
 										const addFrameWarning = (
-											arr: Array<Anomaly>,
+											arr: Array<PackageInfo.Anomaly>,
 											type: string,
 											t: i18next.TFunction
 										) => {
