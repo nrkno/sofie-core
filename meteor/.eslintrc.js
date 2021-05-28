@@ -1,12 +1,18 @@
-const commonRules = {
-	'prettier/prettier': 'error',
-	'no-unused-vars': 'off',
-	'no-extra-semi': 'off',
-	'node/no-unsupported-features/es-syntax': ['error', { ignores: ['modules'] }],
-	'no-use-before-define': 'off',
-}
+const {
+	commonPlugins,
+	tsPlugins,
+	commonExtends,
+	tsExtends,
+	commonRules,
+	tsRules,
+	tsParser,
+} = require('./node_modules/@sofie-automation/code-standard-preset/eslint/fragments') // eslint-disable-line node/no-unpublished-require
+
 const tmpRules = {
-	// tmp to remove before commit
+	// Temporary rules to be removed over time
+	'@typescript-eslint/ban-types': 'off',
+	'@typescript-eslint/explicit-module-boundary-types': 'off',
+	'@typescript-eslint/no-namespace': 'off',
 	'@typescript-eslint/no-unused-vars': 'off',
 	'@typescript-eslint/no-var-requires': 'off',
 	'@typescript-eslint/no-empty-function': 'off',
@@ -14,32 +20,25 @@ const tmpRules = {
 	'@typescript-eslint/ban-ts-comment': 'off',
 	'no-useless-escape': 'off',
 	'@typescript-eslint/no-non-null-assertion': 'off',
+	'jest/no-jasmine-globals': 'off', // we have been using `fail('...')` instead of expect(() => something()).toThrowError('[404] Nothing')
 }
 
 const tsBase = {
-	extends: [
-		'eslint:recommended',
-		'plugin:@typescript-eslint/eslint-recommended',
-		'plugin:@typescript-eslint/recommended',
-		'plugin:node/recommended',
-		'prettier',
-		'plugin:prettier/recommended',
-		'plugin:custom-rules/all',
-	],
-	plugins: ['@typescript-eslint', 'prettier'],
-	parser: '@typescript-eslint/parser',
-	parserOptions: { project: './tsconfig.json' },
+	extends: [...tsExtends, 'plugin:custom-rules/all'],
+	plugins: tsPlugins,
+	...tsParser,
 	settings: {
 		node: {
 			tryExtensions: ['.js', '.json', '.node', '.ts', '.tsx', '.d.ts'],
 		},
 	},
+	env: {
+		'jest/globals': false, // Block jest from this
+	},
 	rules: {
 		...commonRules,
-		'@typescript-eslint/no-explicit-any': 'off',
-		'@typescript-eslint/interface-name-prefix': 'off',
-		'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-		'@typescript-eslint/no-floating-promises': 'error',
+		...tsRules,
+
 		// custom
 		'no-inner-declarations': 'off', // some functions are unexported and placed inside a namespace next to related ones
 		'node/no-missing-import': [
@@ -49,21 +48,14 @@ const tsBase = {
 				tryExtensions: ['.js', '.json', '.node', '.ts', '.tsx', '.d.ts'],
 			},
 		],
-		'@typescript-eslint/ban-types': 'off',
-		'@typescript-eslint/explicit-module-boundary-types': 'off',
-		'@typescript-eslint/no-namespace': 'off',
+		'jest/no-standalone-expect': 'off', // testInFiber confuses the rule
 		...tmpRules,
 	},
 }
 
 module.exports = {
-	extends: [
-		'eslint:recommended',
-		'plugin:node/recommended',
-		'plugin:prettier/recommended',
-		'plugin:react/recommended',
-	],
-	plugins: ['prettier'],
+	extends: [...commonExtends, 'plugin:react/recommended'],
+	plugins: [...commonPlugins, 'react'],
 	rules: {
 		'prettier/prettier': 'error',
 	},
@@ -100,6 +92,9 @@ module.exports = {
 		},
 		{
 			files: ['*.js'],
+			env: {
+				'jest/globals': false, // Block jest from this
+			},
 			settings: {
 				node: {
 					tryExtensions: ['.js', '.json', '.node', '.ts', '.tsx'],
@@ -112,26 +107,21 @@ module.exports = {
 		},
 		{
 			files: ['**/__tests__/**/*.ts', '**/__tests__/**/*.js', '**/__mocks__/**/*.ts'],
+			...tsBase,
 			env: {
+				'jest/globals': true,
 				jest: true,
 			},
 			rules: {
-				'prettier/prettier': 'error',
+				...tsBase.rules,
 				'@typescript-eslint/ban-ts-ignore': 'off',
 				'@typescript-eslint/ban-ts-comment': 'off',
-				'no-use-before-define': 'off',
+
 				// custom
 				'node/no-unpublished-import': 'off',
 				'node/no-unpublished-require': 'off',
 				'@typescript-eslint/no-non-null-assertion': 'off',
-			},
-		},
-		{
-			files: ['examples/**/*.ts'],
-			rules: {
-				'prettier/prettier': 'error',
-				'no-process-exit': 'off',
-				'node/no-missing-import': 'off',
+				...tmpRules,
 			},
 		},
 	],
