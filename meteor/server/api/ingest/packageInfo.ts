@@ -51,7 +51,8 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageI
 	switch (pkg.fromPieceType) {
 		case ExpectedPackageDBType.PIECE:
 		case ExpectedPackageDBType.ADLIB_ACTION:
-		case ExpectedPackageDBType.BASELINE_ADLIB_ACTION: {
+		case ExpectedPackageDBType.BASELINE_ADLIB_ACTION:
+		case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS: {
 			const existingEntry = pendingPackageUpdates.get(pkg.rundownId)
 			if (existingEntry) {
 				// already queued, add to the batch
@@ -75,7 +76,6 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageI
 		}
 		case ExpectedPackageDBType.BUCKET_ADLIB:
 		case ExpectedPackageDBType.BUCKET_ADLIB_ACTION:
-		case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS:
 		case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS:
 			// Ignore, as we can't handle that for now
 			break
