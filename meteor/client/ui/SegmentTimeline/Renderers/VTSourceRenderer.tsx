@@ -6,7 +6,8 @@ import { getElementWidth } from '../../../utils/dimensions'
 
 import ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
-import { MediaObject, Anomaly } from '../../../../lib/collections/MediaObjects'
+import { MediaObject } from '../../../../lib/collections/MediaObjects'
+import { PackageInfo } from '@sofie-automation/blueprints-integration'
 
 import { Lottie } from '@crello/react-lottie'
 // @ts-ignore Not recognized by Typescript
@@ -28,8 +29,8 @@ interface IProps extends ICustomLayerItemProps {
 }
 interface IState {
 	scenes?: Array<number>
-	blacks?: Array<Anomaly>
-	freezes?: Array<Anomaly>
+	blacks?: Array<PackageInfo.Anomaly>
+	freezes?: Array<PackageInfo.Anomaly>
 
 	rightLabelIsAppendage?: boolean
 	noticeLevel: NoticeLevel | null
@@ -313,19 +314,19 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
-	getFreezes = (): Array<Anomaly> | undefined => {
+	getFreezes = (): Array<PackageInfo.Anomaly> | undefined => {
 		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
 			const piece = this.props.piece
 			if (piece.contentPackageInfos) {
-				let items: Array<Anomaly> = []
+				let items: Array<PackageInfo.Anomaly> = []
 				// add freezes
 				// TODO: support multiple packages:
 				if (piece.contentPackageInfos[0]?.deepScan?.freezes) {
 					items = piece.contentPackageInfos[0].deepScan.freezes
 						.filter((i) => i.start < itemDuration)
 						.map(
-							(i): Anomaly => {
+							(i): PackageInfo.Anomaly => {
 								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
 							}
 						)
@@ -334,13 +335,13 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			} else {
 				// Fallback to media objects:
 				const metadata = piece.contentMetaData as MediaObject
-				let items: Array<Anomaly> = []
+				let items: Array<PackageInfo.Anomaly> = []
 				// add freezes
 				if (metadata && metadata.mediainfo && metadata.mediainfo.freezes) {
 					items = metadata.mediainfo.freezes
 						.filter((i) => i.start < itemDuration)
 						.map(
-							(i): Anomaly => {
+							(i): PackageInfo.Anomaly => {
 								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
 							}
 						)
@@ -350,12 +351,12 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
-	getBlacks = (): Array<Anomaly> | undefined => {
+	getBlacks = (): Array<PackageInfo.Anomaly> | undefined => {
 		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
 			const piece = this.props.piece
 			if (piece.contentPackageInfos) {
-				let items: Array<Anomaly> = []
+				let items: Array<PackageInfo.Anomaly> = []
 				// add blacks
 				// TODO: support multiple packages:
 				if (piece.contentPackageInfos[0]?.deepScan?.blacks) {
@@ -364,7 +365,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 						...piece.contentPackageInfos[0].deepScan.blacks
 							.filter((i) => i.start < itemDuration)
 							.map(
-								(i): Anomaly => {
+								(i): PackageInfo.Anomaly => {
 									return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
 								}
 							),
@@ -374,7 +375,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			} else {
 				// Fallback to media objects:
 				const metadata = piece.contentMetaData as MediaObject
-				let items: Array<Anomaly> = []
+				let items: Array<PackageInfo.Anomaly> = []
 				// add blacks
 				if (metadata && metadata.mediainfo && metadata.mediainfo.blacks) {
 					items = [
@@ -382,7 +383,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 						...metadata.mediainfo.blacks
 							.filter((i) => i.start < itemDuration)
 							.map(
-								(i): Anomaly => {
+								(i): PackageInfo.Anomaly => {
 									return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
 								}
 							),
