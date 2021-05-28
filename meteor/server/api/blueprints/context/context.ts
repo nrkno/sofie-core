@@ -155,7 +155,7 @@ export class StudioContext extends CommonContext implements IStudioContext {
 	getPackageInfo(packageId: string): readonly PackageInfo.Any[] {
 		return PackageInfos.find({
 			packageId: new RegExp(`${packageId}$`), // TODO: A temporary hack -- Jan Starzak, 2021-05-26
-			studioId: this.studioId,
+			studioId: this.studio._id,
 		}).fetch()
 	}
 }

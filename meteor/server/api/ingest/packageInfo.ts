@@ -75,6 +75,8 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageI
 		}
 		case ExpectedPackageDBType.BUCKET_ADLIB:
 		case ExpectedPackageDBType.BUCKET_ADLIB_ACTION:
+		case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS:
+		case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS:
 			// Ignore, as we can't handle that for now
 			break
 		default:
@@ -121,23 +123,25 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 			for (const packageId of packageIds) {
 				const pkg = cache.ExpectedPackages.findOne(packageId)
 				if (pkg) {
-					const piece = cache.Pieces.findOne(pkg.pieceId)
-					if (piece) {
-						const segmentId = piece.startSegmentId
+					if (pkg.fromPieceType === ExpectedPackageDBType.PIECE) {
+						const piece = cache.Pieces.findOne(pkg.pieceId)
+						if (piece) {
+							const segmentId = piece.startSegmentId
 
-						const listeningPieces = cache.Pieces.findFetch(
-							(p) =>
-								p.startSegmentId === segmentId &&
-								p.listenToPackageInfoUpdates &&
-								p.listenToPackageInfoUpdates.find((u) => u.packageId === pkg.blueprintPackageId)
-						)
-						if (listeningPieces.length > 0) {
-							segmentsToUpdate.add(segmentId)
+							const listeningPieces = cache.Pieces.findFetch(
+								(p) =>
+									p.startSegmentId === segmentId &&
+									p.listenToPackageInfoUpdates &&
+									p.listenToPackageInfoUpdates.find((u) => u.packageId === pkg.blueprintPackageId)
+							)
+							if (listeningPieces.length > 0) {
+								segmentsToUpdate.add(segmentId)
+							}
+						} else {
+							logger.warn(
+								`onUpdatedPackageInfoForRundown: Missing raw piece: "${pkg.pieceId}" for package "${packageId}"`
+							)
 						}
-					} else {
-						logger.warn(
-							`onUpdatedPackageInfoForRundown: Missing raw piece: "${pkg.pieceId}" for package "${packageId}"`
-						)
 					}
 				} else {
 					logger.warn(`onUpdatedPackageInfoForRundown: Missing package: "${packageId}"`)
