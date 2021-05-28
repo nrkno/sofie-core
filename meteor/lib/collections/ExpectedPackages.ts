@@ -1,6 +1,6 @@
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString, hashObj } from '../lib'
+import { registerCollection, ProtectedString, hashObj, assertNever } from '../lib'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { StudioId } from './Studios'
@@ -27,6 +27,8 @@ export type ExpectedPackageDB =
 	| ExpectedPackageDBFromBaselineAdLibAction
 	| ExpectedPackageDBFromBucketAdLib
 	| ExpectedPackageDBFromBucketAdLibAction
+	| ExpectedPackageDBFromRundownBaselineObjects
+	| ExpectedPackageDBFromStudioBaselineObjects
 
 export enum ExpectedPackageDBType {
 	PIECE = 'piece',
@@ -34,6 +36,8 @@ export enum ExpectedPackageDBType {
 	BASELINE_ADLIB_ACTION = 'baseline_adlib_action',
 	BUCKET_ADLIB = 'bucket_adlib',
 	BUCKET_ADLIB_ACTION = 'bucket_adlib_action',
+	RUNDOWN_BASELINE_OBJECTS = 'rundown_baseline_objects',
+	STUDIO_BASELINE_OBJECTS = 'studio_baseline_objects',
 }
 export interface ExpectedPackageDBBase extends Omit<ExpectedPackage.Base, '_id'> {
 	_id: ExpectedPackageId
@@ -44,7 +48,7 @@ export interface ExpectedPackageDBBase extends Omit<ExpectedPackage.Base, '_id'>
 	/** Hash that changes whenever the content or version changes. See getContentVersionHash() */
 	contentVersionHash: string
 
-	pieceId: ProtectedString<any>
+	pieceId: ProtectedString<any> | null
 	fromPieceType: ExpectedPackageDBType
 }
 export interface ExpectedPackageDBFromPiece extends ExpectedPackageDBBase {
@@ -69,6 +73,18 @@ export interface ExpectedPackageDBFromBaselineAdLibAction extends ExpectedPackag
 	/** The rundown of the Piece this package belongs to */
 	rundownId: RundownId
 }
+
+export interface ExpectedPackageDBFromRundownBaselineObjects extends ExpectedPackageDBBase {
+	fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
+	/** The rundown of the Piece this package belongs to */
+	rundownId: RundownId
+	pieceId: null
+}
+export interface ExpectedPackageDBFromStudioBaselineObjects extends ExpectedPackageDBBase {
+	fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS
+	pieceId: null
+}
+
 export interface ExpectedPackageDBFromBucketAdLib extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB
 	/** The Bucket adlib this package belongs to */
@@ -104,6 +120,8 @@ export function getPreviewPackageSettings(
 		packagePath = expectedPackage.content.filePath
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
 		packagePath = expectedPackage.content.guid || expectedPackage.content.title
+	} else {
+		assertNever(expectedPackage)
 	}
 	if (packagePath) {
 		return {
@@ -121,6 +139,8 @@ export function getThumbnailPackageSettings(
 		packagePath = expectedPackage.content.filePath
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
 		packagePath = expectedPackage.content.guid || expectedPackage.content.title
+	} else {
+		assertNever(expectedPackage)
 	}
 	if (packagePath) {
 		return {

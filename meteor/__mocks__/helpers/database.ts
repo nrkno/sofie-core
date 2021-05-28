@@ -254,8 +254,10 @@ export function setupMockStudioBlueprint(
 
 				studioConfigManifest: [],
 				studioMigrations: [],
-				getBaseline: (): TSR.TSRTimelineObjBase[] => {
-					return []
+				getBaseline: () => {
+					return {
+						timelineObjects: [],
+					}
 				},
 				getShowStyleId: (): string | null => {
 					return SHOW_STYLE_ID
@@ -306,10 +308,15 @@ export function setupMockShowStyleBlueprint(
 						// expectedDuration?: number;
 						metaData: ingestRundown.payload,
 					}
+
+					// Allow the rundown to specify a playlistExternalId that should be used
+					const playlistId = ingestRundown.payload?.ForcePlaylistExternalId
+					if (playlistId) rundown.playlistExternalId = playlistId
+
 					return {
 						rundown,
 						globalAdLibPieces: [],
-						baseline: [],
+						baseline: { timelineObjects: [] },
 					}
 				},
 				getSegment: (context: unknown, ingestSegment: IngestSegment): BlueprintResultSegment => {
@@ -340,7 +347,7 @@ export function setupMockShowStyleBlueprint(
 							// displayDuration?: number;
 							// invalid?: boolean
 						}
-						const pieces: IBlueprintPiece[] = []
+						const pieces: IBlueprintPiece[] = ingestPart.payload?.pieces ?? []
 						const adLibPieces: IBlueprintAdLibPiece[] = []
 						parts.push({
 							part,

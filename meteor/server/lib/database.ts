@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { BulkWriteOperation } from 'mongodb'
 import _ from 'underscore'
-import { DBObj, waitForPromise, normalizeArrayToMap, ProtectedString, makePromise, waitTime } from '../../lib/lib'
+import { DBObj, waitForPromise, normalizeArrayToMap, ProtectedString, makePromise, sleep } from '../../lib/lib'
 import {
 	TransformedCollection,
 	MongoQuery,
@@ -273,7 +273,7 @@ export function saveIntoBase<DocClass extends DBInterface, DBInterface extends D
 	return changes
 }
 
-export function asyncCollectionFindFetch<
+export async function asyncCollectionFindFetch<
 	DocClass extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> }
 >(
@@ -286,7 +286,7 @@ export function asyncCollectionFindFetch<
 		return collection.find(selector as any, options).fetch()
 	})
 	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-	waitTime(0)
+	await sleep(0)
 	return p
 }
 export async function asyncCollectionFindOne<
@@ -300,84 +300,89 @@ export async function asyncCollectionFindOne<
 	const arr = await asyncCollectionFindFetch(collection, selector, { ...options, limit: 1 })
 	return arr[0]
 }
-export function asyncCollectionInsert<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
-	collection: TransformedCollection<DocClass, DBInterface>,
-	doc: DBInterface
-): Promise<string> {
-	return new Promise((resolve, reject) => {
-		collection.insert(doc, (err: any, idInserted) => {
-			if (err) reject(err)
-			else resolve(idInserted)
-		})
+export async function asyncCollectionInsert<
+	DocClass extends DBInterface,
+	DBInterface extends { _id: ProtectedString<any> }
+>(collection: TransformedCollection<DocClass, DBInterface>, doc: DBInterface): Promise<DBInterface['_id']> {
+	const p = makePromise(() => {
+		return collection.insert(doc)
 	})
+	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+	await sleep(0)
+	return p
 }
 export function asyncCollectionInsertMany<
 	DocClass extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> }
->(collection: TransformedCollection<DocClass, DBInterface>, docs: DBInterface[]): Promise<string[]> {
+>(collection: TransformedCollection<DocClass, DBInterface>, docs: DBInterface[]): Promise<Array<DBInterface['_id']>> {
 	return Promise.all(_.map(docs, (doc) => asyncCollectionInsert(collection, doc)))
 }
 /** Insert document, and ignore if document already exists */
-export function asyncCollectionInsertIgnore<
+export async function asyncCollectionInsertIgnore<
 	DocClass extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> }
->(collection: TransformedCollection<DocClass, DBInterface>, doc: DBInterface): Promise<string> {
-	return new Promise((resolve, reject) => {
-		collection.insert(doc, (err: any, idInserted) => {
-			if (err) {
-				if (err.toString().match(/duplicate key/i)) {
-					// @ts-ignore id duplicate, doc._id must exist
-					resolve(doc._id)
-				} else {
-					reject(err)
-				}
-			} else resolve(idInserted)
-		})
+>(collection: TransformedCollection<DocClass, DBInterface>, doc: DBInterface): Promise<DBInterface['_id']> {
+	const p = makePromise(() => {
+		return collection.insert(doc)
+	}).catch((err) => {
+		if (err.toString().match(/duplicate key/i)) {
+			// @ts-ignore id duplicate, doc._id must exist
+			return doc._id
+		} else {
+			throw err
+		}
 	})
+	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+	await sleep(0)
+	return p
 }
-export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
+export async function asyncCollectionUpdate<
+	DocClass extends DBInterface,
+	DBInterface extends { _id: ProtectedString<any> }
+>(
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoQuery<DBInterface> | DBInterface['_id'],
 	modifier: MongoModifier<DBInterface>,
 	options?: UpdateOptions
 ): Promise<number> {
-	return new Promise((resolve, reject) => {
-		collection.update(selector, modifier, options, (err: any, affectedCount: number) => {
-			if (err) reject(err)
-			else resolve(affectedCount)
-		})
+	const p = makePromise(() => {
+		return collection.update(selector, modifier, options)
 	})
+	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+	await sleep(0)
+	return p
 }
 
-export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
+export async function asyncCollectionUpsert<
+	DocClass extends DBInterface,
+	DBInterface extends { _id: ProtectedString<any> }
+>(
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoQuery<DBInterface> | DBInterface['_id'],
 	modifier: MongoModifier<DBInterface>,
 	options?: UpsertOptions
-): Promise<{ numberAffected: number; insertedId: string }> {
-	return new Promise((resolve, reject) => {
-		collection.upsert(
-			selector,
-			modifier,
-			options,
-			(err: any, returnValue: { numberAffected: number; insertedId: string }) => {
-				if (err) reject(err)
-				else resolve(returnValue)
-			}
-		)
+): Promise<{ numberAffected?: number; insertedId?: DBInterface['_id'] }> {
+	const p = makePromise(() => {
+		return collection.upsert(selector, modifier, options)
 	})
+	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+	await sleep(0)
+	return p
 }
 
-export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
+export async function asyncCollectionRemove<
+	DocClass extends DBInterface,
+	DBInterface extends { _id: ProtectedString<any> }
+>(
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoQuery<DBInterface> | DBInterface['_id']
 ): Promise<number> {
-	return new Promise((resolve, reject) => {
-		collection.remove(selector, (err: any, count: number) => {
-			if (err) reject(err)
-			else resolve(count)
-		})
+	const p = makePromise(() => {
+		return collection.remove(selector)
 	})
+	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+	await sleep(0)
+	return p
 }
 
 export async function asyncCollectionBulkWrite<

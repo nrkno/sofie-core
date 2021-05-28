@@ -186,8 +186,8 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 		if (ingestCache) {
 			// Populate the collections with the cached data instead
-			this.Segments.fillWithDataFromArray(ingestCache.Segments.findFetch())
-			this.Parts.fillWithDataFromArray(ingestCache.Parts.findFetch())
+			this.Segments.fillWithDataFromArray(ingestCache.Segments.findFetch(), true)
+			this.Parts.fillWithDataFromArray(ingestCache.Parts.findFetch(), true)
 		}
 	}
 

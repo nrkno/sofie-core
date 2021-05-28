@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
+
+
+
+# [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
+
+
+
+# [1.33.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.33.0-in-development.0) (2021-04-22)
+
+
+### Features
+
+* import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
+* zero-based config settings ([31bb2c3](https://github.com/nrkno/tv-automation-server-core/commit/31bb2c30b5790770d3ad630afb75ac0d57b9d306))
+
+
+
+
+
 # [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
 
 **Note:** Version bump only for package @sofie-automation/server-core-integration
@@ -35,6 +55,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 # Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [1.32.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.32.1) (2021-05-20)
 
 ## [1.32.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0-in-testing.1...v1.32.0) (2021-05-05)
 
