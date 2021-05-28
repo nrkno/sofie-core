@@ -90,6 +90,11 @@ registerCollection('ExpectedPackages', ExpectedPackages)
 
 registerIndex(ExpectedPackages, {
 	studioId: 1,
+	pieceId: 1,
+})
+registerIndex(ExpectedPackages, {
+	rundownId: 1,
+	pieceId: 1,
 })
 export function getContentVersionHash(expectedPackage: Omit<ExpectedPackage.Any, '_id'>): string {
 	return hashObj({
