@@ -19,7 +19,7 @@ import { PartEndState, ShowStyleBlueprintManifest, VTContent } from '@sofie-auto
 import { getResolvedPieces } from './pieces'
 import { PieceInstance, PieceInstanceId, PieceInstanceInfiniteId } from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
-import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance, unprotectPartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartInstanceHasStarted } from '../blueprints/events'
@@ -304,7 +304,7 @@ export function updatePartInstanceOnTake(
 		previousPartEndState = blueprint.getEndStateForPart(
 			context,
 			playlist.previousPersistentState,
-			currentPartInstance.previousPartEndState,
+			unprotectPartInstance(clone(currentPartInstance)),
 			unprotectObjectArray(resolvedPieces),
 			time
 		)
