@@ -42,8 +42,8 @@ export function ensureNextPartIsValid(cache: CacheForPlayout) {
 				// The 'new' next part is before the current next, so move the next point
 				ServerPlayoutAPI.setNextPartInner(cache, newNextPart.part)
 			}
-		} else if (!nextPartInstance) {
-			// Don't have a currentPart or a nextPart, so set next to first in the show
+		} else if (!nextPartInstance || nextPartInstance.orphaned === 'deleted') {
+			// Don't have a nextPart or it has been deleted, so autoselect something
 			const newNextPart = selectNextPart(playlist, currentPartInstance ?? null, allPartsAndSegments)
 			ServerPlayoutAPI.setNextPartInner(cache, newNextPart?.part ?? null)
 		}

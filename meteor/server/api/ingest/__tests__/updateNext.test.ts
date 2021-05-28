@@ -7,7 +7,7 @@ import { literal, protectString, waitForPromise } from '../../../../lib/lib'
 import { ensureNextPartIsValid as ensureNextPartIsValidRaw } from '../updateNext'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownPlaylists, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances'
+import { PartInstances, DBPartInstance, PartInstanceId } from '../../../../lib/collections/PartInstances'
 import { Studios } from '../../../../lib/collections/Studios'
 import { defaultStudio } from '../../../../__mocks__/defaultCollectionObjects'
 import { removeRundownsFromDb } from '../../rundownPlaylist'
@@ -297,7 +297,7 @@ function createMockRO() {
 	return rundownId
 }
 
-describe('Test ingest update next part helpers', () => {
+describe('ensureNextPartIsValid', () => {
 	beforeAllInFiber(() => {
 		createMockRO()
 	})
@@ -306,14 +306,14 @@ describe('Test ingest update next part helpers', () => {
 	})
 
 	function resetPartIds(
-		currentPartInstanceId: string | null,
-		nextPartInstanceId: string | null,
+		currentPartInstanceId: string | PartInstanceId | null,
+		nextPartInstanceId: string | PartInstanceId | null,
 		nextPartManual?: boolean
 	) {
 		RundownPlaylists.update(rundownPlaylistId, {
 			$set: {
-				nextPartInstanceId: protectString(nextPartInstanceId),
-				currentPartInstanceId: protectString(currentPartInstanceId),
+				nextPartInstanceId: nextPartInstanceId as any,
+				currentPartInstanceId: currentPartInstanceId as any,
 				previousPartInstanceId: null,
 				nextPartManual: nextPartManual || false,
 			},
@@ -330,7 +330,7 @@ describe('Test ingest update next part helpers', () => {
 		)
 	}
 
-	testInFiber('ensureNextPartIsValid: Start with null', () => {
+	testInFiber('Start with null', () => {
 		resetPartIds(null, null)
 
 		ensureNextPartIsValid()
@@ -341,7 +341,7 @@ describe('Test ingest update next part helpers', () => {
 			expect.objectContaining({ _id: 'mock_part1' })
 		)
 	})
-	testInFiber('ensureNextPartIsValid: Missing next PartInstance', () => {
+	testInFiber('Missing next PartInstance', () => {
 		resetPartIds('mock_part_instance3', 'fake_part')
 
 		ensureNextPartIsValid()
@@ -354,21 +354,21 @@ describe('Test ingest update next part helpers', () => {
 
 		// expectNextPartId('mock_part4')
 	})
-	// testInFiber('ensureNextPartIsValid: Missing distant future part', () => {
+	// testInFiber('Missing distant future part', () => {
 	// 	resetPartIds('mock_part_instance3', 'mock_part_instance4')
 
 	// 	UpdateNext.ensureNextPartIsValid(getRundownPlaylist())
 
 	// 	expectNextPartId(null)
 	// })
-	testInFiber('ensureNextPartIsValid: Missing current PartInstance with valid next', () => {
+	testInFiber('Missing current PartInstance with valid next', () => {
 		resetPartIds('fake_part', 'mock_part_instance4')
 
 		ensureNextPartIsValid()
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(0)
 	})
-	testInFiber('ensureNextPartIsValid: Missing current and next PartInstance', () => {
+	testInFiber('Missing current and next PartInstance', () => {
 		resetPartIds('fake_part', 'not_real_either')
 
 		ensureNextPartIsValid()
@@ -379,21 +379,21 @@ describe('Test ingest update next part helpers', () => {
 			expect.objectContaining({ _id: 'mock_part1' })
 		)
 	})
-	testInFiber('ensureNextPartIsValid: Ensure correct PartInstance doesnt change', () => {
+	testInFiber('Ensure correct PartInstance doesnt change', () => {
 		resetPartIds('mock_part_instance3', 'mock_part_instance4')
 
 		ensureNextPartIsValid()
 
 		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled()
 	})
-	testInFiber('ensureNextPartIsValid: Ensure manual PartInstance doesnt change', () => {
+	testInFiber('Ensure manual PartInstance doesnt change', () => {
 		resetPartIds('mock_part_instance3', 'mock_part_instance5', true)
 
 		ensureNextPartIsValid()
 
 		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled()
 	})
-	testInFiber('ensureNextPartIsValid: Ensure non-manual PartInstance does change', () => {
+	testInFiber('Ensure non-manual PartInstance does change', () => {
 		resetPartIds('mock_part_instance3', 'mock_part_instance5', false)
 
 		ensureNextPartIsValid()
@@ -404,7 +404,7 @@ describe('Test ingest update next part helpers', () => {
 			expect.objectContaining({ _id: 'mock_part4' })
 		)
 	})
-	testInFiber('ensureNextPartIsValid: Ensure manual but missing PartInstance does change', () => {
+	testInFiber('Ensure manual but missing PartInstance does change', () => {
 		resetPartIds('mock_part_instance3', 'fake_part', true)
 
 		ensureNextPartIsValid()
@@ -415,7 +415,7 @@ describe('Test ingest update next part helpers', () => {
 			expect.objectContaining({ _id: 'mock_part4' })
 		)
 	})
-	testInFiber('ensureNextPartIsValid: Ensure manual but floated PartInstance does change', () => {
+	testInFiber('Ensure manual but floated PartInstance does change', () => {
 		resetPartIds('mock_part_instance7', 'mock_part_instance8', true)
 
 		ensureNextPartIsValid()
@@ -426,7 +426,7 @@ describe('Test ingest update next part helpers', () => {
 			expect.objectContaining({ _id: 'mock_part9' })
 		)
 	})
-	testInFiber('ensureNextPartIsValid: Ensure floated PartInstance does change', () => {
+	testInFiber('Ensure floated PartInstance does change', () => {
 		resetPartIds('mock_part_instance7', 'mock_part_instance8', false)
 
 		ensureNextPartIsValid()
@@ -436,5 +436,44 @@ describe('Test ingest update next part helpers', () => {
 			expect.objectContaining({ PlaylistId: rundownPlaylistId }),
 			expect.objectContaining({ _id: 'mock_part9' })
 		)
+	})
+	testInFiber('Next part instance is orphaned: "deleted"', () => {
+		// Insert a temporary instance
+		const instanceId: PartInstanceId = protectString('orphaned_first_part')
+		PartInstances.insert(
+			literal<DBPartInstance>({
+				_id: instanceId,
+				rundownId: rundownId,
+				segmentId: protectString('mock_segment1'),
+				playlistActivationId: protectString('active'),
+				segmentPlayoutId: protectString(''),
+				takeCount: 0,
+				rehearsal: false,
+				part: literal<DBPart>({
+					_id: protectString('orphan_1'),
+					_rank: 1.5,
+					rundownId: rundownId,
+					segmentId: protectString('mock_segment4'),
+					externalId: 'o1',
+					title: 'Orphan 1',
+				}),
+				orphaned: 'deleted',
+			})
+		)
+
+		try {
+			resetPartIds(null, instanceId, false)
+
+			ensureNextPartIsValid()
+
+			expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
+			expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
+				expect.objectContaining({ PlaylistId: rundownPlaylistId }),
+				expect.objectContaining({ _id: 'mock_part1' })
+			)
+		} finally {
+			// Cleanup to not mess with other tests
+			PartInstances.remove(instanceId)
+		}
 	})
 })
