@@ -237,6 +237,7 @@ describe('Test sending messages to mocked endpoints', () => {
 
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
+	/* eslint-disable jest/no-commented-out-tests */
 	/*
 	describe('failing to send a message and retrying', () => {
 		let message: ExternalMessageQueueObj
@@ -622,4 +623,5 @@ describe('Test sending messages to mocked endpoints', () => {
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
 	*/
+	/* eslint-enable jest/no-commented-out-tests */
 })

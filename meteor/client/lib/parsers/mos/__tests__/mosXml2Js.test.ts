@@ -27,26 +27,6 @@ function stripEmptyStrings(obj: any) {
 
 describe('MOS XML to JavaScript object parser', () => {
 	describe('mosXml2Js', () => {
-		// it('should return an object', () => {
-		// 	const doc = domParser.parseFromString('<root />', 'text/xml')
-
-		// 	const actual = mosXml2Js(doc)
-
-		// 	expect(actual).toBeInstanceOf(Object)
-		// })
-
-		// describe('ReqAppInfo', () => {
-		// 	const doc = domParser.parseFromString(mosReqAppInfoXmlString, 'text/xml')
-
-		// 	it('should contain an empty ncsReqAppInfo node', () => {
-		// 		const expected = {mos: {ncsReqAppInfo: {}}}
-
-		// 		const actual = mosXml2Js(doc)
-
-		// 		expect(actual).toEqual(expected)
-		// 	})
-		// })
-
 		describe('Sample1', () => {
 			const sample1XmlStr = readFileSync(join(__dirname, './mosSample1.xml'), 'utf-8')
 			const sample1JsonStr = readFileSync(join(__dirname, './mosSample1.json'), 'utf-8')

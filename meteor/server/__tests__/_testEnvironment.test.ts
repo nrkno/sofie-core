@@ -55,7 +55,7 @@ describe('Basic test of test environment', () => {
 			})
 		expect(waitForPromise(p)).toEqual('a')
 	})
-	test('Test Meteor Random mock', () => {
+	test('Meteor Random mock', () => {
 		RandomMock.mockIds = ['superRandom']
 		expect(tempTestRandom()).toEqual('superRandom')
 	})
@@ -109,7 +109,7 @@ describe('Basic test of test environment', () => {
 		// @ts-ignore
 		expect(UserActionsLog._isMock).toBeTruthy()
 	})
-	test('Test Mock collection data', () => {
+	test('Mock collection data', () => {
 		expect(Studios.find().fetch()).toHaveLength(0)
 
 		MongoMock.mockSetData<DBStudio>(Studios, [
@@ -243,6 +243,6 @@ const innerAsynchronousFiberFunction = Meteor.wrapAsync((val0, val1, cb) => {
 	}, 10)
 })
 
-export function tempTestRandom() {
+function tempTestRandom() {
 	return Random.id()
 }

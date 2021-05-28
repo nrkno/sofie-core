@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-export, jest/valid-title, jest/expect-expect, jest/no-focused-tests */
 import { runInFiber } from '../Fibers'
 
 export function beforeAllInFiber(fcn: () => void | Promise<void>, timeout?: number) {
