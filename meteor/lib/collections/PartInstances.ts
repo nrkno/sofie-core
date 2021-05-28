@@ -68,7 +68,6 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 
 	part: DBPart
 
-
 	/** The transition props as used when entering this PartInstance */
 	allowedToUseTransition?: boolean
 }
