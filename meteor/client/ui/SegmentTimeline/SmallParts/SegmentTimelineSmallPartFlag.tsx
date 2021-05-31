@@ -1,4 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react'
+import { SmallPartFlag } from '../../../lib/ui/icons/segment'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineSmallPartFlagIcon } from './SegmentTimelineSmallPartFlagIcon'
 import { unprotectString } from '../../../../lib/lib'
@@ -91,6 +92,7 @@ export const SegmentTimelineSmallPartFlag = ({
 					transform: `translateX(${(partDurations * timeScale) / -2}px)`,
 				}}
 			>
+				<SmallPartFlag className="segment-timeline__small-parts-flag-pointer" />
 				{partFlags}
 			</div>
 			<SegmentTimelinePartHoverPreview

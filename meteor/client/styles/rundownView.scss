@@ -1194,26 +1194,20 @@ svg.icon {
 				transition: 0.2s background-color ease-out;
 			}
 
-			&::before {
-				top: 0;
-				left: 0;
-				display: block;
-				content: ' ';
-				width: 0;
-				height: 0;
-				border-left: 0.4em solid transparent;
-				border-right: 0.4em solid #fff;
-				border-top: 0.4em solid transparent;
-				margin-right: 0.3em;
-				margin-left: -0.3em;
-				margin-top: 0.5em;
+			.segment-timeline__small-parts-flag-pointer {
+				position: relative;
+				width: 0.7em;
+				height: 0.8em;
+				top: 0.6em;
 			}
 
 			.segment-timeline__small-parts-flag__part {
 				display: flex;
 				margin-right: 0.1em;
-				cursor: default;
 				cursor: pointer;
+				cursor: zoom-in;
+				cursor: url(/images/cursor_zoom_in.png), zoom-in;
+				cursor: url(/images/cursor_zoom_in.png) 8 8, zoom-in;
 
 				--invalid-reason-color-transparent: transparent;
 				--invalid-reason-color-opaque: black;
