@@ -207,7 +207,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 
 	render() {
 		const stepContent = this.state.noraContent?.payload?.step
-		const isMultiStep = !!this.state.noraContent?.payload?.step?.enabled
+		const isMultiStep = this.state.noraContent?.payload?.step?.enabled === true
 
 		return (
 			<React.Fragment>

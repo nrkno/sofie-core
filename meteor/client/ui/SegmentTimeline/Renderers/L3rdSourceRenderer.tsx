@@ -53,7 +53,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 		const noraContent = innerPiece.content as NoraContent | undefined
 
 		const stepContent = noraContent?.payload.step
-		const isMultiStep = !!(stepContent && stepContent.enabled)
+		const isMultiStep = stepContent?.enabled === true
 
 		return (
 			<React.Fragment>
