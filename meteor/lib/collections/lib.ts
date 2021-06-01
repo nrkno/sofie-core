@@ -1,9 +1,19 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { TransformedCollection } from '../typings/meteor'
-import { stringifyObjects, getHash, ProtectedString } from '../lib'
+import {
+	FindOptions,
+	Mongocursor,
+	MongoModifier,
+	MongoQuery,
+	MongoSelector,
+	TransformedCollection,
+	UpdateOptions,
+	UpsertOptions,
+} from '../typings/meteor'
+import { stringifyObjects, getHash, ProtectedString, makePromise, sleep } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
+import { BulkWriteOperation, Collection as RawCollection } from 'mongodb'
 
 const ObserveChangeBufferTimeout = 2000
 
@@ -63,45 +73,255 @@ export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: Protected
 	}
 }
 
-export function createMongoCollection<T>(
-	name: string,
+export function createMongoCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
+	name: string | null,
 	options?: {
 		connection?: Object | null
 		idGeneration?: string
 		transform?: Function
 	}
-): TransformedCollection<T, any> {
+): AsyncTransformedCollection<Class, DBInterface> {
+	const collection: TransformedCollection<Class, DBInterface> = new Mongo.Collection<Class>(name, options) as any
+
 	// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
+	return new WrappedAsyncTransformedCollection(collection, name)
+}
 
-	const overrideMethod = <C>(collection: C, key: keyof C) => {
-		const originalFcn: any = collection[key]
+export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
+	collection: Mongo.Collection<DBInterface>,
+	name: string
+): AsyncTransformedCollection<DBInterface, DBInterface> {
+	return new WrappedAsyncTransformedCollection<DBInterface, DBInterface>(collection as any, name)
+}
 
-		// @ts-ignore
-		collection[key] = (...args) => {
-			try {
-				return originalFcn.call(collection, ...args)
-			} catch (e) {
+class WrappedTransformedCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>
+	implements TransformedCollection<Class, DBInterface> {
+	readonly #collection: TransformedCollection<Class, DBInterface>
+
+	public readonly name: string | null
+
+	constructor(collection: TransformedCollection<Class, DBInterface>, name: string | null) {
+		this.#collection = collection
+		this.name = name
+	}
+
+	private wrapMongoError(e: any): never {
+		throw new Meteor.Error((e && e.error) || 500, (e && e.reason) || e.toString() || e || 'Unknown MongoDB Error')
+	}
+
+	allow(...args: Parameters<TransformedCollection<Class, DBInterface>['allow']>): boolean {
+		return this.#collection.allow(...args)
+	}
+	deny(...args: Parameters<TransformedCollection<Class, DBInterface>['deny']>): boolean {
+		return this.#collection.deny(...args)
+	}
+	find(...args: Parameters<TransformedCollection<Class, DBInterface>['find']>): Mongocursor<Class> {
+		try {
+			return this.#collection.find(...args)
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
+	findOne(...args: Parameters<TransformedCollection<Class, DBInterface>['findOne']>): Class | undefined {
+		try {
+			return this.#collection.findOne(...args)
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
+	insert(...args: Parameters<TransformedCollection<Class, DBInterface>['insert']>): DBInterface['_id'] {
+		try {
+			return this.#collection.insert(...args)
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
+	rawCollection(): RawCollection<DBInterface> {
+		return this.#collection.rawCollection()
+	}
+	rawDatabase(): any {
+		return this.#collection.rawDatabase()
+	}
+	remove(...args: Parameters<TransformedCollection<Class, DBInterface>['remove']>): number {
+		try {
+			return this.#collection.remove(...args)
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
+	update(...args: Parameters<TransformedCollection<Class, DBInterface>['update']>): number {
+		try {
+			return this.#collection.update(...args)
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
+	upsert(
+		...args: Parameters<TransformedCollection<Class, DBInterface>['upsert']>
+	): {
+		numberAffected?: number
+		insertedId?: DBInterface['_id']
+	} {
+		try {
+			return this.#collection.upsert(...args)
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
+
+	_ensureIndex(...args: Parameters<TransformedCollection<Class, DBInterface>['_ensureIndex']>): void {
+		try {
+			return this.#collection._ensureIndex(...args)
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
+	_dropIndex(...args: Parameters<TransformedCollection<Class, DBInterface>['_dropIndex']>): void {
+		try {
+			return this.#collection._dropIndex(...args)
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
+}
+
+class WrappedAsyncTransformedCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>
+	extends WrappedTransformedCollection<Class, DBInterface>
+	implements AsyncTransformedCollection<Class, DBInterface> {
+	async findFetchAsync(
+		selector: MongoQuery<DBInterface> | string,
+		options?: FindOptions<DBInterface>
+	): Promise<Array<Class>> {
+		// Make the collection fethcing in another Fiber:
+		const p = makePromise(() => {
+			return this.find(selector as any, options).fetch()
+		})
+		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+		await sleep(0)
+		return p
+	}
+
+	async findOneAsync(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		options?: FindOptions<DBInterface>
+	): Promise<Class | undefined> {
+		const arr = await this.findFetchAsync(selector, { ...options, limit: 1 })
+		return arr[0]
+	}
+
+	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
+		const p = makePromise(() => {
+			return this.insert(doc)
+		})
+		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+		await sleep(0)
+		return p
+	}
+
+	insertManyAsync(docs: DBInterface[]): Promise<Array<DBInterface['_id']>> {
+		return Promise.all(docs.map((doc) => this.insert(doc)))
+	}
+
+	async insertIgnoreAsync(doc: DBInterface): Promise<DBInterface['_id']> {
+		const p = makePromise(() => {
+			return this.insert(doc)
+		}).catch((err) => {
+			if (err.toString().match(/duplicate key/i)) {
+				// @ts-ignore id duplicate, doc._id must exist
+				return doc._id
+			} else {
+				throw err
+			}
+		})
+		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+		await sleep(0)
+		return p
+	}
+
+	async updateAsync(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		modifier: MongoModifier<DBInterface>,
+		options?: UpdateOptions
+	): Promise<number> {
+		const p = makePromise(() => {
+			return this.update(selector, modifier, options)
+		})
+		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+		await sleep(0)
+		return p
+	}
+
+	async upsertAsync(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		modifier: MongoModifier<DBInterface>,
+		options?: UpsertOptions
+	): Promise<{ numberAffected?: number; insertedId?: DBInterface['_id'] }> {
+		const p = makePromise(() => {
+			return this.upsert(selector, modifier, options)
+		})
+		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+		await sleep(0)
+		return p
+	}
+
+	async removeAsync(selector: MongoQuery<DBInterface> | DBInterface['_id']): Promise<number> {
+		const p = makePromise(() => {
+			return this.remove(selector)
+		})
+		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+		await sleep(0)
+		return p
+	}
+
+	async bulkWriteAsync(ops: Array<BulkWriteOperation<DBInterface>>): Promise<void> {
+		if (ops.length > 0) {
+			const rawCollection = this.rawCollection()
+			const bulkWriteResult = await rawCollection.bulkWrite(ops, {
+				ordered: false,
+			})
+			if (
+				bulkWriteResult &&
+				_.isArray(bulkWriteResult.result?.writeErrors) &&
+				bulkWriteResult.result.writeErrors.length
+			) {
 				throw new Meteor.Error(
-					(e && e.error) || 500,
-					(e && e.reason) || e.toString() || e || 'Unknown MongoDB Error'
+					500,
+					`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`
 				)
 			}
 		}
 	}
+}
 
-	const collection: TransformedCollection<T, any> = new Mongo.Collection<T>(name, options) as any
+export interface AsyncTransformedCollection<
+	Class extends DBInterface,
+	DBInterface extends { _id: ProtectedString<any> }
+> extends TransformedCollection<Class, DBInterface> {
+	findFetchAsync(selector: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<Array<Class>>
+	findOneAsync(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		options?: FindOptions<DBInterface>
+	): Promise<Class | undefined>
 
-	// @ts-ignore temp hack too
-	collection.name = name
+	insertAsync(doc: DBInterface): Promise<DBInterface['_id']>
 
-	overrideMethod(collection, 'find')
-	overrideMethod(collection, 'findOne')
-	overrideMethod(collection, 'insert')
-	overrideMethod(collection, 'update')
-	overrideMethod(collection, 'upsert')
-	overrideMethod(collection, 'remove')
-	overrideMethod(collection, '_ensureIndex')
-	overrideMethod(collection, '_dropIndex')
+	insertManyAsync(doc: DBInterface[]): Promise<Array<DBInterface['_id']>>
 
-	return collection
+	insertIgnoreAsync(doc: DBInterface): Promise<DBInterface['_id']>
+
+	updateAsync(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		modifier: MongoModifier<DBInterface>,
+		options?: UpdateOptions
+	): Promise<number>
+
+	upsertAsync(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		modifier: MongoModifier<DBInterface>,
+		options?: UpsertOptions
+	): Promise<{ numberAffected?: number; insertedId?: DBInterface['_id'] }>
+
+	removeAsync(selector: MongoQuery<DBInterface> | DBInterface['_id']): Promise<number>
+
+	bulkWriteAsync(ops: Array<BulkWriteOperation<DBInterface>>): Promise<void>
 }
