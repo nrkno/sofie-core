@@ -78,7 +78,7 @@ function getShowStyleBaseIdSegmentPartUi(
 	showStyleBaseId = currentRundown?.showStyleBaseId
 
 	const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === partInstance.segmentId)
-	if (currentRundown) {
+	if (currentRundown && segmentIndex >= 0) {
 		const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 
 		if (showStyleBase) {

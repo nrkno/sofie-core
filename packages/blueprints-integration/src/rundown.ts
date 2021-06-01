@@ -3,6 +3,7 @@ import { Time } from './common'
 import { ExpectedPackage, ListenToPackageUpdate } from './package'
 import { SomeTimelineContent } from './content'
 import { ITranslatableMessage } from './translations'
+import { PartEndState } from './api'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -192,6 +193,9 @@ export interface IBlueprintPartInstance<TMetadata = unknown> {
 	rehearsal: boolean
 	/** Playout timings, in here we log times when playout happens */
 	timings?: IBlueprintPartInstanceTimings
+
+	/** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
+	previousPartEndState?: PartEndState
 
 	/** Whether the PartInstance is an orphan (the Part referenced does not exist). Indicates the reason it is orphaned */
 	orphaned?: 'adlib-part' | 'deleted'

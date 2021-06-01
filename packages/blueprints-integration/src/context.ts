@@ -8,6 +8,7 @@ import {
 	IBlueprintRundownDB,
 	IBlueprintMutatablePart,
 	IBlueprintSegmentDB,
+	IBlueprintPieceDB,
 } from './rundown'
 import { BlueprintMappings } from './studio'
 import { OnGenerateTimelineObj } from './timeline'
@@ -139,8 +140,10 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 			pieceMetaDataFilter?: any
 		}
 	): IBlueprintPiece | undefined
-	/** Gets the PartInstance for a PieceInstane retrieved from findLastPieceOnLayer. This primarily allows for accessing metadata of the PartInstance */
+	/** Gets the PartInstance for a PieceInstance retrieved from findLastPieceOnLayer. This primarily allows for accessing metadata of the PartInstance */
 	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance
+	/** Gets the Part for a Piece retrieved from findLastScriptedPieceOnLayer. This primarily allows for accessing metadata of the Part */
+	getPartForPreviousPiece(piece: IBlueprintPieceDB): IBlueprintPart | undefined
 	/** Fetch the showstyle config for the specified part */
 	// getNextShowStyleConfig(): Readonly<{ [key: string]: ConfigItemValue }>
 
