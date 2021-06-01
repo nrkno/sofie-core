@@ -322,9 +322,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							/>
 						</label>
 					</div>
+					{(isDashboardLayout || isMiniShelfLayout) && checkbox('assignHotKeys', 'Register Shortcuts for this Panel')}
 					{!isMiniShelfLayout &&
 						isDashboardLayout && [
-							checkbox('assignHotKeys', 'Register Shortcuts for this Panel'),
 							checkbox('hide', 'Hide Panel from view'),
 							checkbox('showAsTimeline', 'Show panel as a timeline'),
 						]}

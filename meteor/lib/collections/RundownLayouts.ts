@@ -179,6 +179,13 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	lineBreak?: string
 }
 
+export interface MiniShelfLayoutFilter extends RundownLayoutFilterBase {
+	buttonWidthScale: number
+	buttonHeightScale: number
+
+	assignHotKeys: boolean
+}
+
 /** A string, identifying a RundownLayout */
 export type RundownLayoutId = ProtectedString<'RundownLayoutId'>
 

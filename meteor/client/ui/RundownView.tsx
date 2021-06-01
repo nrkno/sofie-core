@@ -1359,6 +1359,7 @@ interface ITrackedProps {
 	rundownHeaderLayoutId?: RundownLayoutId
 	miniShelfLayoutId?: RundownLayoutId
 	miniShelfLayout: RundownLayoutShelfBase | undefined
+	miniShelfFilter: RundownLayoutFilterBase | undefined
 	shelfDisplayOptions: {
 		buckets: boolean
 		layout: boolean
@@ -1509,6 +1510,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			selectedMiniShelfLayout && RundownLayoutsAPI.IsLayoutForMiniShelf(selectedMiniShelfLayout)
 				? selectedMiniShelfLayout
 				: undefined,
+		miniShelfFilter: filter,
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
 			layout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
@@ -2395,6 +2397,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 														: undefined
 												}
 												studioMode={this.state.studioMode}
+												miniShelfFilter={this.props.miniShelfFilter}
 											/>
 										</VirtualElement>
 									</ErrorBoundary>
