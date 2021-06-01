@@ -1,6 +1,4 @@
 import * as React from 'react'
-
-// @todo: use colours from the scss
 export default class GraphicsInputIcon extends React.Component<{ abbreviation?: string }> {
 	render() {
 		return (

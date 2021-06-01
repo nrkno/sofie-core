@@ -1,7 +1,5 @@
 import * as React from 'react'
 
-// @todo: use colours from the scss
-// @todo: use dynamic data
 export default class RemoteInputIcon extends React.Component<{ inputIndex?: string; abbreviation?: string }> {
 	render() {
 		return (

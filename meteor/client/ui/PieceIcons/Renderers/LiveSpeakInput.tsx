@@ -1,7 +1,5 @@
 import * as React from 'react'
 
-// @todo: use colours from the scss
-// @todo: split can use any source (rather than cam + live)
 export default class LiveSpeakInputIcon extends React.Component<{ abbreviation?: string }> {
 	render() {
 		return (
