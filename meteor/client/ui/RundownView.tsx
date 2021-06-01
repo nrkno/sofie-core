@@ -1359,6 +1359,7 @@ interface ITrackedProps {
 	rundownHeaderLayoutId?: RundownLayoutId
 	miniShelfLayoutId?: RundownLayoutId
 	miniShelfLayout: RundownLayoutShelfBase | undefined
+	miniShelfFilter: RundownLayoutFilterBase | undefined
 	shelfDisplayOptions: {
 		buckets: boolean
 		layout: boolean
@@ -1441,7 +1442,14 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		uiSegments.forEach((segment) => {
 			const uniquenessIds = new Set<string>()
 			const filteredPieces = segment.pieces.filter((piece) =>
-				matchFilter(piece, showStyleBase, liveSegment, filter, undefined, uniquenessIds)
+				matchFilter(
+					piece,
+					showStyleBase,
+					liveSegment,
+					filter && { ...filter, currentSegment: !(segment.isHidden && segment.showShelf) && filter.currentSegment },
+					undefined,
+					uniquenessIds
+				)
 			)
 			const filteredSegment = {
 				...segment,
@@ -1509,6 +1517,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			selectedMiniShelfLayout && RundownLayoutsAPI.IsLayoutForMiniShelf(selectedMiniShelfLayout)
 				? selectedMiniShelfLayout
 				: undefined,
+		miniShelfFilter: filter,
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
 			layout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
@@ -2395,6 +2404,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 														: undefined
 												}
 												studioMode={this.state.studioMode}
+												miniShelfFilter={this.props.miniShelfFilter}
 											/>
 										</VirtualElement>
 									</ErrorBoundary>

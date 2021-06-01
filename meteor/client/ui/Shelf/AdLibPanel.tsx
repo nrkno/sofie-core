@@ -501,6 +501,7 @@ export function actionToAdLibPieceUi(
 		expectedDuration: 0,
 		externalId: unprotectString(action._id),
 		rundownId: action.rundownId,
+		partId: action.partId,
 		sourceLayer: sourceLayers[sourceLayerId],
 		outputLayer: outputLayers[outputLayerId],
 		sourceLayerId,

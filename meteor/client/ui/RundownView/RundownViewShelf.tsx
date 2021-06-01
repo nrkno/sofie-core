@@ -39,6 +39,7 @@ interface IRundownViewShelfProps {
 	adLibSegmentUi: AdlibSegmentUi
 	hotkeyGroup: string
 	studioMode: boolean
+	registerHotkeys?: boolean
 }
 
 interface IRundownViewShelfTrackedProps {
@@ -209,6 +210,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 
 	refreshKeyboardHotkeys() {
 		if (!this.props.studioMode) return
+		if (!this.props.registerHotkeys) return
 
 		RegisteredHotkeys.remove({
 			tag: this.props.hotkeyGroup,

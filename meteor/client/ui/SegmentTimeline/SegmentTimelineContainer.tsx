@@ -43,6 +43,7 @@ import RundownViewEventBus, {
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { AdlibSegmentUi } from '../Shelf/AdLibPanel'
+import { MiniShelfLayoutFilter, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -94,6 +95,7 @@ interface IProps {
 	ownNextPartInstance: PartInstance | undefined
 	adLibSegmentUi?: AdlibSegmentUi
 	studioMode: boolean
+	miniShelfFilter?: RundownLayoutFilterBase
 }
 interface IState {
 	scrollLeft: number
@@ -240,7 +242,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.timeScale !== nextProps.timeScale ||
 			props.ownCurrentPartInstance !== nextProps.ownCurrentPartInstance ||
 			props.ownNextPartInstance !== nextProps.ownNextPartInstance ||
-			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore)
+			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
+			props.miniShelfFilter !== nextProps.miniShelfFilter
 		) {
 			return true
 		}
@@ -916,6 +919,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								showStyleBase={this.props.showStyleBase}
 								hotkeyGroup={unprotectString(this.props.segmentui._id) + '_RundownViewShelf'}
 								studioMode={this.props.studioMode}
+								registerHotkeys={(this.props.miniShelfFilter as MiniShelfLayoutFilter | undefined)?.assignHotKeys}
 							/>
 						)}
 					</>
