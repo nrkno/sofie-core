@@ -654,7 +654,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	getLayerStyle() {
-		// this.props.part.expectedDuration ||
 		const actualPartDuration = SegmentTimelinePartClass.getPartDuration(this.props, this.state.liveDuration)
 		const partDuration = this.props.cropDuration
 			? Math.min(this.props.cropDuration, actualPartDuration)
@@ -662,13 +661,11 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		if (this.props.relative) {
 			return {
 				width: ((partDuration / (this.props.totalSegmentDuration || 1)) * 100).toString() + '%',
-				// width: (Math.max(this.state.liveDuration, this.props.part.duration || this.props.part.expectedDuration || 3000) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
 				willChange: this.state.isLive ? 'width' : undefined,
 			}
 		} else {
 			return {
 				minWidth: Math.floor(partDuration * this.props.timeScale).toString() + 'px',
-				// minWidth: (Math.max(this.state.liveDuration, this.props.part.duration || this.props.part.expectedDuration || 3000) * this.props.timeScale).toString() + 'px',
 				willChange: this.state.isLive ? 'minWidth' : undefined,
 			}
 		}
@@ -685,8 +682,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	static getPartDuration(props: WithTiming<IProps>, liveDuration: number): number {
-		// const part = this.props.part
-
 		return Math.max(
 			!props.isPreview ? liveDuration : 0,
 			SegmentTimelinePartClass.getPartDisplayDuration(props.part, props.timingDurations)
@@ -851,7 +846,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		)
 	}
 
-	static convertHexToRgba(hexColor: string): { red: number; green: number; blue: number } | undefined {
+	static convertHexToRgb(hexColor: string): { red: number; green: number; blue: number } | undefined {
 		if (hexColor.substr(0, 1) !== '#') return
 		if (hexColor.length !== 7) return
 
@@ -874,7 +869,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		const isEndOfLoopingShow = this.props.isLastSegment && this.props.isLastInSegment && this.props.playlist.loop
 		let invalidReasonColorVars: CSSProperties | undefined = undefined
 		if (innerPart.invalidReason && innerPart.invalidReason.color) {
-			const invalidColor = SegmentTimelinePartClass.convertHexToRgba(innerPart.invalidReason.color)
+			const invalidColor = SegmentTimelinePartClass.convertHexToRgb(innerPart.invalidReason.color)
 			if (invalidColor) {
 				invalidReasonColorVars = {
 					['--invalid-reason-color-opaque']: `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 1)`,
