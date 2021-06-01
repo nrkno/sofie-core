@@ -2565,6 +2565,7 @@ svg.icon {
 	animation-iteration-count: 1;
 	border: 1px black solid;
 	max-width: 26em;
+	font-weight: 400;
 
 	--popdown: 2em;
 
@@ -2872,12 +2873,14 @@ svg.icon {
 		text-align: right;
 	}
 	.mini-inspector__label {
-		font-weight: 300;
+		font-weight: 200;
+		font-size: 0.9em;
 		text-transform: capitalize;
-		padding-right: 1em;
+		padding-right: 0.5em;
 	}
 	.mini-inspector__value {
-		font-weight: 500;
+		font-weight: 300;
+		font-size: 0.9em;
 		max-width: 60vw;
 		overflow: hidden;
 		text-overflow: ellipsis;
