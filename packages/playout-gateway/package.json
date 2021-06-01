@@ -50,7 +50,7 @@
 		"cov": "Run tests, generate the HTML coverage report, and open it in a browser"
 	},
 	"engines": {
-		"node": ">=12"
+		"node": ">=12.20"
 	},
 	"keywords": [
 		"broadcast",

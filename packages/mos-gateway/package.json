@@ -59,7 +59,7 @@
 		"validate:dependencies": "Scan dependencies for vulnerabilities and check licenses"
 	},
 	"engines": {
-		"node": ">=12"
+		"node": ">=12.20"
 	},
 	"keywords": [
 		"mos",
