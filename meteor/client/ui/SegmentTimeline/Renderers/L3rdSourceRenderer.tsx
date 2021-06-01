@@ -52,7 +52,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 		const innerPiece = this.props.piece.instance.piece
 		const noraContent = innerPiece.content as NoraContent | undefined
 
-		const stepContent = noraContent?.payload.step
+		const stepContent = noraContent?.payload?.step
 		const isMultiStep = stepContent?.enabled === true
 
 		return (
