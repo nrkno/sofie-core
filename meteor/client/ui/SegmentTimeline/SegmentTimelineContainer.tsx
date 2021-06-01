@@ -29,7 +29,7 @@ import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
-import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
+import { unprotectString, equalSets, equivalentArrays, protectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
@@ -59,9 +59,14 @@ export const LIVELINE_HISTORY_SIZE = 100
 export const TIMELINE_RIGHT_PADDING =
 	// TODO: This is only temporary, for hands-on tweaking -- Jan Starzak, 2021-06-01
 	parseInt(localStorage.getItem('EXP_timeline_right_padding')!) || LIVELINE_HISTORY_SIZE + LIVE_LINE_TIME_PADDING
-export const MINIMUM_ZOOM_FACTOR =
-	// TODO: This is only temporary, for hands-on tweaking -- Jan Starzak, 2021-06-01
-	parseInt(localStorage.getItem('EXP_timeline_min_time_scale')!) || MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale
+const FALLBACK_ZOOM_FACTOR = MAGIC_TIME_SCALE_FACTOR
+export let MINIMUM_ZOOM_FACTOR = FALLBACK_ZOOM_FACTOR
+
+Meteor.startup(() => {
+	MINIMUM_ZOOM_FACTOR = // TODO: This is only temporary, for hands-on tweaking -- Jan Starzak, 2021-06-01
+		parseInt(localStorage.getItem('EXP_timeline_min_time_scale')!) ||
+		MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale
+})
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -824,6 +829,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				((computeSegmentDisplayDuration(this.context.durations, this.props.parts) || 1) -
 					(this.state.isLiveSegment ? this.state.livePosition : 0))
 			newScale = Math.min(MINIMUM_ZOOM_FACTOR, newScale)
+			if (!Number.isFinite(newScale) || newScale === 0) {
+				newScale = FALLBACK_ZOOM_FACTOR
+			}
 			return newScale
 		}
 
