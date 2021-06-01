@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { TransformedCollection, FindOptions, MongoQuery } from '../typings/meteor'
+import { FindOptions, MongoQuery } from '../typings/meteor'
 import { RundownId } from './Rundowns'
 import { Piece, Pieces } from './Pieces'
 import { SegmentId } from './Segments'
@@ -161,7 +161,7 @@ export function isPartPlayable(part: DBPart) {
 	return !part.invalid && !part.floated
 }
 
-export const Parts: TransformedCollection<Part, DBPart> = createMongoCollection<Part>('parts', {
+export const Parts = createMongoCollection<Part, DBPart>('parts', {
 	transform: (doc) => applyClassToDocument(Part, doc),
 })
 registerCollection('Parts', Parts)

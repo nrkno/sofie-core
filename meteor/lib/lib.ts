@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
-import { TransformedCollection, MongoQuery, MongoModifier, FindOptions } from './typings/meteor'
+import { MongoQuery, MongoModifier, FindOptions } from './typings/meteor'
 import { logger } from './logging'
 import { Timecode } from 'timecode'
 import { Settings } from './Settings'
@@ -10,6 +10,7 @@ import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-i
 import * as crypto from 'crypto'
 import { ReadonlyDeep, PartialDeep } from 'type-fest'
 import { ITranslatableMessage } from './api/TranslatableMessage'
+import { AsyncTransformedCollection } from './collections/lib'
 
 const cloneOrg = require('fast-clone')
 
@@ -238,8 +239,8 @@ export function stringifyObjects(objs: any): string {
 		return objs + ''
 	}
 }
-export const Collections: { [name: string]: TransformedCollection<any, any> } = {}
-export function registerCollection(name: string, collection: TransformedCollection<any, any>) {
+export const Collections: { [name: string]: AsyncTransformedCollection<any, any> } = {}
+export function registerCollection(name: string, collection: AsyncTransformedCollection<any, any>) {
 	Collections[name] = collection
 }
 // export const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
@@ -248,8 +249,8 @@ export function registerCollection(name: string, collection: TransformedCollecti
 // 		raw.indexes(cb) // TODO - invalid
 // 	}
 // )
-export const getCollectionStats: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
-	function getCollectionStats(collection: TransformedCollection<any, any>, cb) {
+export const getCollectionStats: (collection: AsyncTransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
+	function getCollectionStats(collection: AsyncTransformedCollection<any, any>, cb) {
 		let raw = collection.rawCollection()
 		raw.stats(cb)
 	}

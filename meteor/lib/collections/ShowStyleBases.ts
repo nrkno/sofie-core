@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
 import {
 	IBlueprintConfig,
@@ -51,10 +50,7 @@ export class ShowStyleBase implements DBShowStyleBase {
 	}
 }
 
-export const ShowStyleBases: TransformedCollection<
-	ShowStyleBase,
-	DBShowStyleBase
-> = createMongoCollection<ShowStyleBase>('showStyleBases', {
+export const ShowStyleBases = createMongoCollection<ShowStyleBase, DBShowStyleBase>('showStyleBases', {
 	transform: (doc) => applyClassToDocument(ShowStyleBase, doc),
 })
 registerCollection('ShowStyleBases', ShowStyleBases)

@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
@@ -197,10 +196,7 @@ export interface DashboardLayout extends RundownLayoutBase {
 	actionButtons?: DashboardLayoutActionButton[]
 }
 
-export const RundownLayouts: TransformedCollection<
-	RundownLayoutBase,
-	RundownLayoutBase
-> = createMongoCollection<RundownLayoutBase>('rundownLayouts')
+export const RundownLayouts = createMongoCollection<RundownLayoutBase, RundownLayoutBase>('rundownLayouts')
 registerCollection('RundownLayouts', RundownLayouts)
 
 // addIndex(RundownLayouts, {

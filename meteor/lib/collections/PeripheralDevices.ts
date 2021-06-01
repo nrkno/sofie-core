@@ -1,6 +1,5 @@
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
 import { Time, registerCollection, ProtectedString, assertNever } from '../lib'
-import { TransformedCollection } from '../typings/meteor'
 
 import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
 import { IngestDeviceSettings, IngestDeviceSecretSettings } from './PeripheralDeviceSettings/ingestDevice'
@@ -70,10 +69,7 @@ export interface PeripheralDevice {
 	accessTokenUrl?: string
 }
 
-export const PeripheralDevices: TransformedCollection<
-	PeripheralDevice,
-	PeripheralDevice
-> = createMongoCollection<PeripheralDevice>('peripheralDevices')
+export const PeripheralDevices = createMongoCollection<PeripheralDevice, PeripheralDevice>('peripheralDevices')
 registerCollection('PeripheralDevices', PeripheralDevices)
 
 registerIndex(PeripheralDevices, {

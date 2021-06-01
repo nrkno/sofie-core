@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString, Time } from '../lib'
 import { TimelineObjectCoreExt, TSR, OnGenerateTimelineObj } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
@@ -156,10 +155,7 @@ export interface TimelineComplete {
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')
-export const Timeline: TransformedCollection<
-	TimelineComplete,
-	TimelineComplete
-> = createMongoCollection<TimelineComplete>('timeline')
+export const Timeline = createMongoCollection<TimelineComplete, TimelineComplete>('timeline')
 registerCollection('Timeline', Timeline)
 
 // Note: this index is always created by default, so it's not needed.

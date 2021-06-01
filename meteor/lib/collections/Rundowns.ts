@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { Time, applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
-import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
+import { FindOptions, MongoQuery } from '../typings/meteor'
 import { Studios, Studio, StudioId } from './Studios'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintRundownDB } from '@sofie-automation/blueprints-integration'
@@ -229,7 +229,7 @@ export class Rundown implements DBRundown {
 }
 
 // export const Rundowns = createMongoCollection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
-export const Rundowns: TransformedCollection<Rundown, DBRundown> = createMongoCollection<Rundown>('rundowns', {
+export const Rundowns = createMongoCollection<Rundown, DBRundown>('rundowns', {
 	transform: (doc) => applyClassToDocument(Rundown, doc),
 })
 registerCollection('Rundowns', Rundowns)

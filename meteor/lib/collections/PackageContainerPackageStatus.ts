@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString, Time, protectString } from '../lib'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
@@ -36,10 +35,10 @@ export interface PackageContainerPackageStatusDB {
 	modified: Time
 }
 
-export const PackageContainerPackageStatuses: TransformedCollection<
+export const PackageContainerPackageStatuses = createMongoCollection<
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageStatusDB
-> = createMongoCollection<PackageContainerPackageStatusDB>('packageContainerStatuses')
+>('packageContainerStatuses')
 registerCollection('PackageContainerStatuses', PackageContainerPackageStatuses)
 
 registerIndex(PackageContainerPackageStatuses, {

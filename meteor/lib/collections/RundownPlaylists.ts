@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { TransformedCollection, MongoQuery, FindOptions } from '../typings/meteor'
+import { MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
 import {
 	Time,
@@ -473,10 +473,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	}
 }
 
-export const RundownPlaylists: TransformedCollection<
-	RundownPlaylist,
-	DBRundownPlaylist
-> = createMongoCollection<RundownPlaylist>('rundownPlaylists', {
+export const RundownPlaylists = createMongoCollection<RundownPlaylist, DBRundownPlaylist>('rundownPlaylists', {
 	transform: (doc) => applyClassToDocument(RundownPlaylist, doc),
 })
 registerCollection('RundownPlaylists', RundownPlaylists)
