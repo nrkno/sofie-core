@@ -706,10 +706,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								0)
 
 						if (e.zoomInToFit) {
+							const timelineWidth = getElementWidth(this.timelineDiv)
 							newScale =
-								(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING * 2 || 1) /
+								(Math.max(0, timelineWidth - TIMELINE_RIGHT_PADDING * 2) / 3 || 1) /
 								(SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
-							newScale = MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale // Math.min(MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale, newScale)
 
 							scrollLeft = Math.max(0, scrollLeft - TIMELINE_RIGHT_PADDING / newScale)
 						}
@@ -717,6 +717,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						this.setState({
 							scrollLeft,
 							timeScale: newScale ?? this.state.timeScale,
+							showingAllSegment: newScale !== undefined ? false : this.state.showingAllSegment,
 						})
 					}
 				}
