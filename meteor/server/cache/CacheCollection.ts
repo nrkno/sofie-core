@@ -9,14 +9,15 @@ import {
 	protectString,
 	clone,
 } from '../../lib/lib'
-import { MongoQuery, TransformedCollection, FindOptions, MongoModifier, FindOneOptions } from '../../lib/typings/meteor'
+import { MongoQuery, FindOptions, MongoModifier, FindOneOptions } from '../../lib/typings/meteor'
 import _ from 'underscore'
 import { profiler } from '../api/profiler'
 import { Meteor } from 'meteor/meteor'
 import { BulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../logging'
-import { asyncCollectionFindFetch, Changes, asyncCollectionBulkWrite } from '../lib/database'
+import { Changes } from '../lib/database'
+import { AsyncTransformedCollection } from '../../lib/collections/lib'
 
 type SelectorFunction<DBInterface> = (doc: DBInterface) => boolean
 type DbCacheCollectionDocument<Class> = {
@@ -39,7 +40,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
 	protected isToBeRemoved = false
 
-	constructor(protected _collection: TransformedCollection<Class, DBInterface>) {
+	constructor(protected _collection: AsyncTransformedCollection<Class, DBInterface>) {
 		//
 	}
 	get name(): string | undefined {
@@ -137,7 +138,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	}
 
 	async fillWithDataFromDatabase(selector: MongoQuery<DBInterface>): Promise<number> {
-		const docs = await asyncCollectionFindFetch(this._collection, selector)
+		const docs = await this._collection.findFetchAsync(selector)
 
 		this.fillWithDataFromArray(docs as any)
 		return docs.length
@@ -414,7 +415,7 @@ export class DbCacheWriteCollection<
 			})
 		}
 
-		const pBulkWriteResult = asyncCollectionBulkWrite(this._collection, updates)
+		const pBulkWriteResult = this._collection.bulkWriteAsync(updates)
 
 		_.each(removedDocs, (_id) => {
 			this.documents.delete(_id)

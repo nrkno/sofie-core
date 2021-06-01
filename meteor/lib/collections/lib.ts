@@ -5,7 +5,6 @@ import {
 	Mongocursor,
 	MongoModifier,
 	MongoQuery,
-	MongoSelector,
 	TransformedCollection,
 	UpdateOptions,
 	UpsertOptions,
@@ -20,7 +19,7 @@ const ObserveChangeBufferTimeout = 2000
 type Timeout = number
 
 export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: ProtectedString<any> }>(
-	collection: TransformedCollection<Ta, Tb>,
+	collection: AsyncTransformedCollection<Ta, Tb>,
 	hashName: string,
 	hashFields: string[],
 	skipEnsureUpdatedOnStart?: boolean
