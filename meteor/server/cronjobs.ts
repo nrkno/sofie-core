@@ -14,10 +14,10 @@ import { Studios } from '../lib/collections/Studios'
 import { removeEmptyPlaylists } from './api/rundownPlaylist'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
 
-let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
+let lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
 	Meteor.setTimeout(() => {
-		fcn(...args)
+		fcn()
 	}, Math.random() * 10 * 1000)
 }
 
@@ -45,7 +45,9 @@ Meteor.startup(() => {
 			IngestDataCache.find({
 				rundownId: { $nin: rundownIds },
 			}).forEach((roc) => {
-				lowPrioFcn(IngestDataCache.remove, roc._id)
+				lowPrioFcn(() => {
+					IngestDataCache.remove(roc._id)
+				})
 				rundownCacheCount++
 			})
 			if (rundownCacheCount)

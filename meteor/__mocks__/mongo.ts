@@ -31,6 +31,7 @@ import {
 	BulkWriteDeleteManyOperation,
 } from 'mongodb'
 import { AsyncTransformedCollection } from '../lib/collections/lib'
+import { MeteorMethodSignatures } from '../server/methods'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
@@ -325,12 +326,14 @@ export namespace MongoMock {
 	}
 	// Mock functions:
 	export function mockSetData<T extends CollectionObject>(
-		collection: string | MongoCollection<T>,
+		collection: AsyncTransformedCollection<T, T>,
 		data: MockCollection<T> | Array<T> | null
 	) {
-		const collectionName: string = _.isString(collection)
-			? collection
-			: (collection as MongoMock.Collection<any>)._name
+		const collectionName = collection.name
+		if (collectionName === null) {
+			throw new Meteor.Error(500, 'mockSetData can only be done for named collections')
+		}
+
 		data = data || {}
 		if (_.isArray(data)) {
 			const collectionData = {}

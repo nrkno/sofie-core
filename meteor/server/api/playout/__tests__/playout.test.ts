@@ -126,15 +126,11 @@ describe('Playout API', () => {
 			rehearsal: false,
 		})
 
-		expect(Timeline.insert).not.toHaveBeenCalled()
-		expect(Timeline.upsert).not.toHaveBeenCalled()
-		expect(Timeline.update).not.toHaveBeenCalled()
+		expect(Timeline.bulkWriteAsync).not.toHaveBeenCalled()
 
 		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
-		expect(Timeline.insert).not.toHaveBeenCalled()
-		expect(Timeline.upsert).not.toHaveBeenCalled()
-		expect(Timeline.update).not.toHaveBeenCalled()
+		expect(Timeline.bulkWriteAsync).not.toHaveBeenCalled()
 
 		const orgRundownData = getAllRundownData(getRundown0())
 
@@ -155,8 +151,7 @@ describe('Playout API', () => {
 			})
 		}
 
-		expect(Timeline.insert).toHaveBeenCalled()
-		expect(Timeline.upsert).toHaveBeenCalled()
+		expect(Timeline.bulkWriteAsync).toHaveBeenCalled()
 		// expect(Timeline.update).toHaveBeenCalled() - complete replacement of timeline with single object
 		Timeline.mockClear()
 
@@ -172,8 +167,7 @@ describe('Playout API', () => {
 		}
 
 		// expect(Timeline.insert).toHaveBeenCalled() - complete replacement of timeline with single object
-		expect(Timeline.upsert).toHaveBeenCalled()
-		expect(Timeline.update).toHaveBeenCalled()
+		expect(Timeline.bulkWriteAsync).toHaveBeenCalled()
 		Timeline.mockClear()
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
@@ -196,8 +190,7 @@ describe('Playout API', () => {
 		expect(fixSnapshot(getRundown0())).toMatchSnapshot()
 
 		// expect(Timeline.insert).toHaveBeenCalled() - complete replacement of timeline with single object
-		expect(Timeline.upsert).toHaveBeenCalled()
-		expect(Timeline.update).toHaveBeenCalled()
+		expect(Timeline.bulkWriteAsync).toHaveBeenCalled()
 
 		// lastly: reset rundown
 		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0)

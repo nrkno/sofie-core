@@ -43,8 +43,8 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	constructor(protected _collection: AsyncTransformedCollection<Class, DBInterface>) {
 		//
 	}
-	get name(): string | undefined {
-		return this._collection['name']
+	get name(): string | null {
+		return this._collection.name
 	}
 
 	get initialized(): boolean {
@@ -415,7 +415,7 @@ export class DbCacheWriteCollection<
 			})
 		}
 
-		const pBulkWriteResult = this._collection.bulkWriteAsync(updates)
+		const pBulkWriteResult = updates.length > 0 ? this._collection.bulkWriteAsync(updates) : Promise.resolve()
 
 		_.each(removedDocs, (_id) => {
 			this.documents.delete(_id)

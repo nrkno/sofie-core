@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
@@ -89,7 +89,7 @@ describe('User Actions - General', () => {
 		env = setupDefaultStudioEnvironment()
 		setMinimumTakeSpan(0)
 	})
-	testInFiber('Basic rundown control', () => {
+	testInFiberOnly('Basic rundown control', () => {
 		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
 		const { rundownId: rundownId1, playlistId: playlistId1 } = setupDefaultRundownPlaylist(env)
 		expect(rundownId0).toBeTruthy()

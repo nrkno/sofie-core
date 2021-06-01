@@ -25,6 +25,15 @@ const METHOD_NAMES = [
 	'upsert',
 	'_ensureIndex',
 	'_dropIndex',
+	'findFetchAsync',
+	'findOneAsync',
+	'insertAsync',
+	'insertManyAsync',
+	'insertIgnoreAsync',
+	'updateAsync',
+	'upsertAsync',
+	'removeAsync',
+	'bulkWriteAsync',
 ]
 
 /**

@@ -104,6 +104,16 @@ class WrappedTransformedCollection<Class extends DBInterface, DBInterface extend
 		this.name = name
 	}
 
+	private get _isMock() {
+		// @ts-expect-error re-export private property
+		return this.#collection._isMock
+	}
+
+	private get _transform() {
+		// @ts-expect-error re-export private property
+		return this.#collection._transform
+	}
+
 	private wrapMongoError(e: any): never {
 		throw new Meteor.Error((e && e.error) || 500, (e && e.reason) || e.toString() || e || 'Unknown MongoDB Error')
 	}
@@ -296,6 +306,8 @@ export interface AsyncTransformedCollection<
 	Class extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> }
 > extends TransformedCollection<Class, DBInterface> {
+	name: string | null
+
 	findFetchAsync(selector: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<Array<Class>>
 	findOneAsync(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
