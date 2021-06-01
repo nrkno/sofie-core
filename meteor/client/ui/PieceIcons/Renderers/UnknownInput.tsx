@@ -1,12 +1,12 @@
 import * as React from 'react'
 
-export default class VTInputIcon extends React.Component<{ abbreviation?: string }> {
+export default class UnknownInputIcon extends React.Component<{ abbreviation?: string }> {
 	render() {
 		return (
 			<svg className="piece_icon" version="1.1" viewBox="0 0 126.5 89" xmlns="http://www.w3.org/2000/svg">
-				<rect width="126.5" height="89" className="vt" />
+				<rect width="126.5" height="89" className="unknown" />
 				<text
-					x="5.25"
+					x="37.5"
 					y="71.513954"
 					style={{
 						fill: '#ffffff',
@@ -21,11 +21,11 @@ export default class VTInputIcon extends React.Component<{ abbreviation?: string
 					className="label"
 				>
 					<tspan
-						x="5.25"
+						x="45.5"
 						y="71.513954"
-						style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 100 }}
+						style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 500 }}
 					>
-						{this.props.abbreviation ? this.props.abbreviation : 'VT'}
+						?
 					</tspan>
 				</text>
 			</svg>
