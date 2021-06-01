@@ -2276,7 +2276,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 													onContextMenu={this.onContextMenu}
 													onSegmentScroll={this.onSegmentScroll}
 													segmentsIdsBefore={rundownAndSegments.segmentIdsBeforeEachSegment[segmentIndex]}
-													rundownIdsBefore={new Set(rundownIdsBefore)}
+													rundownIdsBefore={rundownIdsBefore}
 													rundownsToShowstyles={this.props.rundownsToShowstyles}
 													isLastSegment={
 														rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1

@@ -253,16 +253,6 @@ export function isPiecePotentiallyActiveInPart(
 		return true
 	}
 
-	const canContinueShowStyleEndInfinties =
-		previousPartInstance && pieceToCheck.lifespan === PieceLifespan.OutOnShowStyleEnd
-			? continueShowStyleEndInfinites(
-					rundownsBeforeThisInPlaylist,
-					rundownsToShowstyles,
-					previousPartInstance.rundownId,
-					rundown
-			  )
-			: false
-
 	switch (pieceToCheck.lifespan) {
 		case PieceLifespan.WithinPart:
 			// This must be from another part
@@ -306,7 +296,14 @@ export function isPiecePotentiallyActiveInPart(
 				)
 			}
 		case PieceLifespan.OutOnShowStyleEnd:
-			return canContinueShowStyleEndInfinties
+			return previousPartInstance && pieceToCheck.lifespan === PieceLifespan.OutOnShowStyleEnd
+				? continueShowStyleEndInfinites(
+						rundownsBeforeThisInPlaylist,
+						rundownsToShowstyles,
+						previousPartInstance.rundownId,
+						rundown
+				  )
+				: false
 		default:
 			assertNever(pieceToCheck.lifespan)
 			return false
