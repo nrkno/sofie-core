@@ -242,7 +242,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.timeScale !== nextProps.timeScale ||
 			props.ownCurrentPartInstance !== nextProps.ownCurrentPartInstance ||
 			props.ownNextPartInstance !== nextProps.ownNextPartInstance ||
-			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore)
+			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
+			props.miniShelfFilter !== nextProps.miniShelfFilter
 		) {
 			return true
 		}
