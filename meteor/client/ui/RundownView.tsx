@@ -2239,74 +2239,78 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		renderSegments() {
 			if (this.props.matchedSegments) {
 				let globalIndex = 0
-				return this.props.matchedSegments.map((rundownAndSegments, rundownIndex, rundownArray) => (
-					<React.Fragment key={unprotectString(rundownAndSegments.rundown._id)}>
-						{this.props.matchedSegments.length > 1 && (
-							<RundownDividerHeader
-								key={`rundown_${rundownAndSegments.rundown._id}`}
-								rundown={rundownAndSegments.rundown}
-								playlist={this.props.playlist!}
-							/>
-						)}
-						{rundownAndSegments.segments.map((segment, segmentIndex, segmentArray) => {
-							if (this.props.studio && this.props.playlist && this.props.showStyleBase) {
-								return (
-									<ErrorBoundary key={unprotectString(segment._id)}>
-										<VirtualElement
-											id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-											margin={'100% 0px 100% 0px'}
-											initialShow={globalIndex++ < window.innerHeight / 260}
-											placeholderHeight={260}
-											placeholderClassName="placeholder-shimmer-element segment-timeline-placeholder"
-											width="auto"
-										>
-											<SegmentTimelineContainer
+				const rundowns = this.props.matchedSegments.map((m) => m.rundown._id)
+				return this.props.matchedSegments.map((rundownAndSegments, rundownIndex, rundownArray) => {
+					const rundownIdsBefore = rundowns.slice(0, rundownIndex)
+					return (
+						<React.Fragment key={unprotectString(rundownAndSegments.rundown._id)}>
+							{this.props.matchedSegments.length > 1 && (
+								<RundownDividerHeader
+									key={`rundown_${rundownAndSegments.rundown._id}`}
+									rundown={rundownAndSegments.rundown}
+									playlist={this.props.playlist!}
+								/>
+							)}
+							{rundownAndSegments.segments.map((segment, segmentIndex, segmentArray) => {
+								if (this.props.studio && this.props.playlist && this.props.showStyleBase) {
+									return (
+										<ErrorBoundary key={unprotectString(segment._id)}>
+											<VirtualElement
 												id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-												studio={this.props.studio}
-												showStyleBase={this.props.showStyleBase}
-												followLiveSegments={this.state.followLiveSegments}
-												rundownId={rundownAndSegments.rundown._id}
-												segmentId={segment._id}
-												playlist={this.props.playlist}
-												rundown={rundownAndSegments.rundown}
-												timeScale={this.state.timeScale}
-												onContextMenu={this.onContextMenu}
-												onSegmentScroll={this.onSegmentScroll}
-												segmentsIdsBefore={rundownAndSegments.segmentIdsBeforeEachSegment[segmentIndex]}
-												rundownIdsBefore={new Set(rundownArray.slice(0, rundownIndex).map((r) => r.rundown._id))}
-												rundownsToShowstyles={this.props.rundownsToShowstyles}
-												isLastSegment={
-													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
-												}
-												onPieceClick={this.onSelectPiece}
-												onPieceDoubleClick={this.onPieceDoubleClick}
-												onHeaderNoteClick={this.onHeaderNoteClick}
-												ownCurrentPartInstance={
-													// feed the currentPartInstance into the SegmentTimelineContainer component, if the currentPartInstance
-													// is a part of the segment
-													(this.props.currentPartInstance &&
-														this.props.currentPartInstance.segmentId === segment._id) ||
-													// or the nextPartInstance is a part of this segment, and the currentPartInstance is autoNext
-													(this.props.nextPartInstance &&
-														this.props.nextPartInstance.segmentId === segment._id &&
-														this.props.currentPartInstance &&
-														this.props.currentPartInstance.part.autoNext)
-														? this.props.currentPartInstance
-														: undefined
-												}
-												ownNextPartInstance={
-													this.props.nextPartInstance && this.props.nextPartInstance.segmentId === segment._id
-														? this.props.nextPartInstance
-														: undefined
-												}
-											/>
-										</VirtualElement>
-									</ErrorBoundary>
-								)
-							}
-						})}
-					</React.Fragment>
-				))
+												margin={'100% 0px 100% 0px'}
+												initialShow={globalIndex++ < window.innerHeight / 260}
+												placeholderHeight={260}
+												placeholderClassName="placeholder-shimmer-element segment-timeline-placeholder"
+												width="auto"
+											>
+												<SegmentTimelineContainer
+													id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+													studio={this.props.studio}
+													showStyleBase={this.props.showStyleBase}
+													followLiveSegments={this.state.followLiveSegments}
+													rundownId={rundownAndSegments.rundown._id}
+													segmentId={segment._id}
+													playlist={this.props.playlist}
+													rundown={rundownAndSegments.rundown}
+													timeScale={this.state.timeScale}
+													onContextMenu={this.onContextMenu}
+													onSegmentScroll={this.onSegmentScroll}
+													segmentsIdsBefore={rundownAndSegments.segmentIdsBeforeEachSegment[segmentIndex]}
+													rundownIdsBefore={new Set(rundownIdsBefore)}
+													rundownsToShowstyles={this.props.rundownsToShowstyles}
+													isLastSegment={
+														rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
+													}
+													onPieceClick={this.onSelectPiece}
+													onPieceDoubleClick={this.onPieceDoubleClick}
+													onHeaderNoteClick={this.onHeaderNoteClick}
+													ownCurrentPartInstance={
+														// feed the currentPartInstance into the SegmentTimelineContainer component, if the currentPartInstance
+														// is a part of the segment
+														(this.props.currentPartInstance &&
+															this.props.currentPartInstance.segmentId === segment._id) ||
+														// or the nextPartInstance is a part of this segment, and the currentPartInstance is autoNext
+														(this.props.nextPartInstance &&
+															this.props.nextPartInstance.segmentId === segment._id &&
+															this.props.currentPartInstance &&
+															this.props.currentPartInstance.part.autoNext)
+															? this.props.currentPartInstance
+															: undefined
+													}
+													ownNextPartInstance={
+														this.props.nextPartInstance && this.props.nextPartInstance.segmentId === segment._id
+															? this.props.nextPartInstance
+															: undefined
+													}
+												/>
+											</VirtualElement>
+										</ErrorBoundary>
+									)
+								}
+							})}
+						</React.Fragment>
+					)
+				})
 			} else {
 				return <div></div>
 			}

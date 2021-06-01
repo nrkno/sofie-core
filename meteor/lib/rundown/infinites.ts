@@ -21,6 +21,7 @@ import { getPieceGroupId } from './timeline'
 import { RundownPlaylist, RundownPlaylistActivationId } from '../collections/RundownPlaylists'
 import { ReadonlyDeep } from 'type-fest'
 import { Rundown, RundownId, Rundowns } from '../collections/Rundowns'
+import { Meteor } from 'meteor/meteor'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
 	return { startPartId: part._id }
@@ -57,7 +58,6 @@ export function buildPastInfinitePiecesForThisPartQuery(
 					$in: [
 						PieceLifespan.OutOnRundownEnd,
 						PieceLifespan.OutOnRundownChange,
-						PieceLifespan.OutOnRundownChange,
 						PieceLifespan.OutOnShowStyleEnd,
 					],
 				},
@@ -79,11 +79,11 @@ export function getPlayheadTrackingInfinitesForPart(
 	playlistActivationId: RundownPlaylistActivationId,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
-	rundownsBeforeThisInPlaylistSet: Set<RundownId>,
+	rundownsBeforeThisInPlaylist: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	currentPartInstance: PartInstance,
 	currentPartPieceInstances: PieceInstance[],
-	rundown: Rundown,
+	rundown: ReadonlyDeep<Rundown>,
 	part: DBPart,
 	newInstanceId: PartInstanceId,
 	nextPartIsAfterCurrentPart: boolean,
@@ -97,6 +97,13 @@ export function getPlayheadTrackingInfinitesForPart(
 		onChange?: PieceInstance
 	}
 	const piecesOnSourceLayers = new Map<string, InfinitePieceSet>()
+
+	let canContinueShowStyleEndInfinites = continueShowStyleEndInfinites(
+		rundownsBeforeThisInPlaylist,
+		rundownsToShowstyles,
+		currentPartInstance.rundownId,
+		rundown
+	)
 
 	const groupedPlayingPieceInstances = _.groupBy(currentPartPieceInstances, (p) => p.piece.sourceLayerId)
 	for (const [sourceLayerId, pieceInstances] of Object.entries(groupedPlayingPieceInstances)) {
@@ -178,32 +185,7 @@ export function getPlayheadTrackingInfinitesForPart(
 									currentPartInstance.segmentId === part.segmentId)
 							break
 						case PieceLifespan.OutOnShowStyleEnd:
-							if (!rundownsBeforeThisInPlaylistSet.has(currentPartInstance.rundownId)) {
-								isValid = false
-								break
-							}
-
-							if (candidatePiece.rundownId === part.rundownId) {
-								isValid = true
-								break
-							}
-
-							const rundownsBeforeThisInPlaylist = Array.from(rundownsBeforeThisInPlaylistSet.values())
-							const prevRundownId = rundownsBeforeThisInPlaylist[rundownsBeforeThisInPlaylist.length - 1]
-
-							if (!prevRundownId) {
-								isValid = false
-								break
-							}
-
-							const prevRundownShowstyle = rundownsToShowstyles.get(prevRundownId)
-
-							if (!prevRundownShowstyle) {
-								isValid = false
-								break
-							}
-
-							isValid = prevRundownShowstyle === rundown.showStyleBaseId
+							isValid = canContinueShowStyleEndInfinites
 					}
 
 					if (isValid) {
@@ -260,9 +242,9 @@ export function isPiecePotentiallyActiveInPart(
 	previousPartInstance: PartInstance | undefined,
 	partsBeforeThisInSegment: Set<PartId>,
 	segmentsBeforeThisInRundown: Set<SegmentId>,
-	rundownsBeforeThisInPlaylistSet: Set<RundownId>,
+	rundownsBeforeThisInPlaylist: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
-	rundown: Rundown,
+	rundown: ReadonlyDeep<Rundown>,
 	part: DBPart,
 	pieceToCheck: Piece
 ): boolean {
@@ -270,6 +252,16 @@ export function isPiecePotentiallyActiveInPart(
 	if (pieceToCheck.startPartId === part._id) {
 		return true
 	}
+
+	const canContinueShowStyleEndInfinties =
+		previousPartInstance && pieceToCheck.lifespan === PieceLifespan.OutOnShowStyleEnd
+			? continueShowStyleEndInfinites(
+					rundownsBeforeThisInPlaylist,
+					rundownsToShowstyles,
+					previousPartInstance.rundownId,
+					rundown
+			  )
+			: false
 
 	switch (pieceToCheck.lifespan) {
 		case PieceLifespan.WithinPart:
@@ -314,24 +306,7 @@ export function isPiecePotentiallyActiveInPart(
 				)
 			}
 		case PieceLifespan.OutOnShowStyleEnd:
-			if (pieceToCheck.startRundownId === part.rundownId) {
-				return true
-			}
-
-			const rundownsBeforeThisInPlaylist = Array.from(rundownsBeforeThisInPlaylistSet.values())
-			const prevRundownId = rundownsBeforeThisInPlaylist[rundownsBeforeThisInPlaylist.length - 1]
-
-			if (!prevRundownId) {
-				return false
-			}
-
-			const prevRundownShowstyle = rundownsToShowstyles.get(prevRundownId)
-
-			if (!prevRundownShowstyle) {
-				return false
-			}
-
-			return prevRundownShowstyle === rundown.showStyleBaseId
+			return canContinueShowStyleEndInfinties
 		default:
 			assertNever(pieceToCheck.lifespan)
 			return false
@@ -342,11 +317,11 @@ export function getPieceInstancesForPart(
 	playlistActivationId: RundownPlaylistActivationId,
 	playingPartInstance: PartInstance | undefined,
 	playingPieceInstances: PieceInstance[] | undefined,
-	rundown: Rundown,
+	rundown: ReadonlyDeep<Rundown>,
 	part: DBPart,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
-	rundownsBeforeThisInPlaylistSet: Set<RundownId>,
+	rundownsBeforeThisInPlaylist: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	possiblePieces: Piece[],
 	orderedPartIds: PartId[],
@@ -392,7 +367,7 @@ export function getPieceInstancesForPart(
 				playingPartInstance,
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
-				rundownsBeforeThisInPlaylistSet,
+				rundownsBeforeThisInPlaylist,
 				rundownsToShowstyles,
 				rundown,
 				part,
@@ -416,7 +391,7 @@ export function getPieceInstancesForPart(
 				playlistActivationId,
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
-				rundownsBeforeThisInPlaylistSet,
+				rundownsBeforeThisInPlaylist,
 				rundownsToShowstyles,
 				playingPartInstance,
 				playingPieceInstances || [],
@@ -699,4 +674,23 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 	}
 
 	return res
+}
+
+function continueShowStyleEndInfinites(
+	rundownsBeforeThisInPlaylist: RundownId[],
+	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
+	previousRundownId: RundownId,
+	rundown: ReadonlyDeep<Rundown>
+): boolean {
+	let canContinueShowStyleEndInfinites = true
+	if (rundown.showStyleBaseId !== rundownsToShowstyles.get(previousRundownId)) {
+		canContinueShowStyleEndInfinites = false
+	} else {
+		const targetShowStyle = rundown.showStyleBaseId
+		canContinueShowStyleEndInfinites = rundownsBeforeThisInPlaylist
+			.slice(rundownsBeforeThisInPlaylist.indexOf(previousRundownId))
+			.every((r) => rundownsToShowstyles.get(r) === targetShowStyle)
+	}
+
+	return canContinueShowStyleEndInfinites
 }

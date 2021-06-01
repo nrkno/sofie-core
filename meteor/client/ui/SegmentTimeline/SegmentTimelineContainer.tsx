@@ -81,7 +81,7 @@ interface IProps {
 	rundownId: RundownId
 	segmentId: SegmentId
 	segmentsIdsBefore: Set<SegmentId>
-	rundownIdsBefore: Set<RundownId>
+	rundownIdsBefore: RundownId[]
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio: Studio
 	showStyleBase: ShowStyleBase
@@ -200,7 +200,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.rundown,
 			segment,
 			props.segmentsIdsBefore,
-			new Set(rundownOrder.slice(0, rundownIndex)),
+			rundownOrder.slice(0, rundownIndex),
 			props.rundownsToShowstyles,
 			orderedAllPartIds,
 			currentPartInstance,
@@ -390,6 +390,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						$or: [
 							// same rundown, and previous segment
 							{
+								startRundownId: this.props.rundownId,
 								startSegmentId: { $in: Array.from(this.props.segmentsIdsBefore.values()) },
 								lifespan: {
 									$in: [
@@ -546,7 +547,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			if (
 				this.pastInfinitesComp &&
 				(!equalSets(this.props.segmentsIdsBefore, prevProps.segmentsIdsBefore) ||
-					!equalSets(this.props.rundownIdsBefore, prevProps.rundownIdsBefore))
+					!_.isEqual(this.props.rundownIdsBefore, prevProps.rundownIdsBefore))
 			) {
 				this.pastInfinitesComp.invalidate()
 			}

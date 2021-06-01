@@ -132,7 +132,7 @@ export async function fetchPiecesThatMayBeActiveForPart(
 		segmentsBeforeThisInRundown,
 		rundownsBeforeThisInPlaylist
 	)
-	// Future scope: Once there is a longer than Rundown infinite mode, this will need to split the query to search everywhere
+
 	const pInfinitePieces = unsavedIngestCache
 		? Promise.resolve(unsavedIngestCache.Pieces.findFetch(infinitePiecesQuery))
 		: asyncCollectionFindFetch(Pieces, infinitePiecesQuery)
@@ -204,7 +204,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPl
 			playlist.activationId,
 			new Set(partsBeforeThisInSegment),
 			new Set(segmentsBeforeThisInRundown),
-			new Set(rundownsBeforeThisInPlaylist),
+			rundownsBeforeThisInPlaylist,
 			rundownIdsToShowstyleIds,
 			currentPartInstance,
 			prunedPieceInstances,
@@ -230,7 +230,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPl
 export function getPieceInstancesForPart(
 	cache: CacheForPlayout,
 	playingPartInstance: PartInstance | undefined,
-	rundown: Rundown,
+	rundown: ReadonlyDeep<Rundown>,
 	part: DBPart,
 	possiblePieces: Piece[],
 	newInstanceId: PartInstanceId,
@@ -268,7 +268,7 @@ export function getPieceInstancesForPart(
 		part,
 		new Set(partsBeforeThisInSegment),
 		new Set(segmentsBeforeThisInRundown),
-		new Set(rundownsBeforeThisInPlaylist),
+		rundownsBeforeThisInPlaylist,
 		rundownIdsToShowstyleIds,
 		possiblePieces,
 		orderedPartsAndSegments.parts.map((p) => p._id),

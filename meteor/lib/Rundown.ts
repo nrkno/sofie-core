@@ -77,13 +77,12 @@ export function fetchPiecesThatMayBeActiveForPart(
 	part: DBPart,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
-	rundownsBeforeThisInPlaylistSet: Set<RundownId>
+	rundownsBeforeThisInPlaylist: RundownId[]
 ): Piece[] {
 	const piecesStartingInPart = Pieces.find(buildPiecesStartingInThisPartQuery(part)).fetch()
 
 	const partsBeforeThisInSegment = Array.from(partsBeforeThisInSegmentSet.values())
 	const segmentsBeforeThisInRundown = Array.from(segmentsBeforeThisInRundownSet.values())
-	const rundownsBeforeThisInPlaylist = Array.from(rundownsBeforeThisInPlaylistSet.values())
 
 	const infinitePieces = Pieces.find(
 		buildPastInfinitePiecesForThisPartQuery(
@@ -123,7 +122,7 @@ export function getPieceInstancesForPartInstance(
 	partInstance: PartInstanceLimited,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
-	rundownsBeforeThisInPlaylistSet: Set<RundownId>,
+	rundownsBeforeThisInPlaylist: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	orderedAllParts: PartId[],
 	nextPartIsAfterCurrentPart: boolean,
@@ -141,13 +140,13 @@ export function getPieceInstancesForPartInstance(
 			partInstance.part,
 			partsBeforeThisInSegmentSet,
 			segmentsBeforeThisInRundownSet,
-			rundownsBeforeThisInPlaylistSet,
+			rundownsBeforeThisInPlaylist,
 			rundownsToShowstyles,
 			fetchPiecesThatMayBeActiveForPart(
 				partInstance.part,
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
-				rundownsBeforeThisInPlaylistSet
+				rundownsBeforeThisInPlaylist
 			),
 			orderedAllParts,
 			partInstance._id,
@@ -184,13 +183,13 @@ export function getPieceInstancesForPartInstance(
 				partInstance.part,
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
-				rundownsBeforeThisInPlaylistSet,
+				rundownsBeforeThisInPlaylist,
 				rundownsToShowstyles,
 				fetchPiecesThatMayBeActiveForPart(
 					partInstance.part,
 					partsBeforeThisInSegmentSet,
 					segmentsBeforeThisInRundownSet,
-					rundownsBeforeThisInPlaylistSet
+					rundownsBeforeThisInPlaylist
 				),
 				orderedAllParts,
 				partInstance._id,
