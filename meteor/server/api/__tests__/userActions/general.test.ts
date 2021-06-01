@@ -89,7 +89,7 @@ describe('User Actions - General', () => {
 		env = setupDefaultStudioEnvironment()
 		setMinimumTakeSpan(0)
 	})
-	testInFiberOnly('Basic rundown control', () => {
+	testInFiber('Basic rundown control', () => {
 		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
 		const { rundownId: rundownId1, playlistId: playlistId1 } = setupDefaultRundownPlaylist(env)
 		expect(rundownId0).toBeTruthy()
