@@ -57,12 +57,11 @@ const SIMULATED_PLAYBACK_CROSSFADE_STEP = 0.02
 export const LIVE_LINE_TIME_PADDING = 150
 export const LIVELINE_HISTORY_SIZE = 100
 export const TIMELINE_RIGHT_PADDING =
-	// TODO: This is only temporary, for hands-on tweaking
+	// TODO: This is only temporary, for hands-on tweaking -- Jan Starzak, 2021-06-01
 	parseInt(localStorage.getItem('EXP_timeline_right_padding')!) || LIVELINE_HISTORY_SIZE + LIVE_LINE_TIME_PADDING
 export const MINIMUM_ZOOM_FACTOR =
-	// TODO: This is only temporary, for hands-on tweaking
-	// parseInt(localStorage.getItem('EXP_timeline_min_time_scale')!) ||
-	MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale
+	// TODO: This is only temporary, for hands-on tweaking -- Jan Starzak, 2021-06-01
+	parseInt(localStorage.getItem('EXP_timeline_min_time_scale')!) || MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -824,13 +823,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
 				((computeSegmentDisplayDuration(this.context.durations, this.props.parts) || 1) -
 					(this.state.isLiveSegment ? this.state.livePosition : 0))
-			// TODO: This is only temporary, for hands-on tweaking
-			newScale = Math.min(
-				parseInt(localStorage.getItem('EXP_timeline_min_time_scale')!) ||
-					MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale,
-				newScale
-			)
-			// newScale = Math.min(MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale, newScale)
+			newScale = Math.min(MINIMUM_ZOOM_FACTOR, newScale)
 			return newScale
 		}
 

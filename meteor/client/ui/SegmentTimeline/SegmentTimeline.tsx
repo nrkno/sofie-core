@@ -34,10 +34,8 @@ import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
-import * as VelocityReact from 'velocity-react'
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { SegmentTimelineSmallPartFlagIcon } from './SmallParts/SegmentTimelineSmallPartFlagIcon'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 
 interface IProps {
@@ -1041,26 +1039,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				<ErrorBoundary>
 					<SegmentTimelineZoomButtons {...this.props} />
 				</ErrorBoundary>
-				{/* <ErrorBoundary>
-					<SegmentNextPreview
-						rundown={this.props.rundown}
-						collapsedOutputs={this.props.collapsedOutputs}
-						isCollapsed={this.props.isCollapsed}
-						outputGroups={this.props.segment.outputLayers}
-						sourceLayers={this.props.segment.sourceLayers}
-						part={this.props.followingPart} />
-				</ErrorBoundary> */}
 				<ErrorBoundary>
-					{/* <VelocityReact.VelocityTransitionGroup
-						enter={{ animation: 'slideDown', easing: 'ease-out', duration: 250 }}
-						leave={{ animation: 'slideUp', easing: 'ease-in', duration: 250 }}
-					> */}
 					<SegmentTimelineZoom
 						onZoomDblClick={this.onZoomNormalize}
 						timelineWidth={this.state.timelineWidth}
 						{...this.props}
 					/>
-					{/* </VelocityReact.VelocityTransitionGroup> */}
 				</ErrorBoundary>
 			</div>
 		)
