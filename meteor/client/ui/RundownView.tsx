@@ -1442,7 +1442,14 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		uiSegments.forEach((segment) => {
 			const uniquenessIds = new Set<string>()
 			const filteredPieces = segment.pieces.filter((piece) =>
-				matchFilter(piece, showStyleBase, liveSegment, filter, undefined, uniquenessIds)
+				matchFilter(
+					piece,
+					showStyleBase,
+					liveSegment,
+					filter && { ...filter, currentSegment: !(segment.isHidden && segment.showShelf) && filter.currentSegment },
+					undefined,
+					uniquenessIds
+				)
 			)
 			const filteredSegment = {
 				...segment,
