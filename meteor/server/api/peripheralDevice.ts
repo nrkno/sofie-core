@@ -1095,45 +1095,28 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 			MediaManagerIntegration.updateMediaWorkFlowStep(this, deviceId, deviceToken, docId, obj)
 		)
 	}
-	insertExpectedPackageWorkStatus(
+	updateExpectedPackageWorkStatuses(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId,
-		workStatus: ExpectedPackageStatusAPI.WorkStatus
-	) {
+		changes: (
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'delete'
+			  }
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'insert'
+					status: ExpectedPackageStatusAPI.WorkStatus
+			  }
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'update'
+					status: Partial<ExpectedPackageStatusAPI.WorkStatus>
+			  }
+		)[]
+	): Promise<void> {
 		return makePromise(() =>
-			PackageManagerIntegration.insertExpectedPackageWorkStatus(
-				this,
-				deviceId,
-				deviceToken,
-				workStatusId,
-				workStatus
-			)
-		)
-	}
-	updateExpectedPackageWorkStatus(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId,
-		workStatus: Partial<ExpectedPackageStatusAPI.WorkStatus>
-	) {
-		return makePromise(() =>
-			PackageManagerIntegration.updateExpectedPackageWorkStatus(
-				this,
-				deviceId,
-				deviceToken,
-				workStatusId,
-				workStatus
-			)
-		)
-	}
-	removeExpectedPackageWorkStatus(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId
-	) {
-		return makePromise(() =>
-			PackageManagerIntegration.removeExpectedPackageWorkStatus(this, deviceId, deviceToken, workStatusId)
+			PackageManagerIntegration.updateExpectedPackageWorkStatuses(this, deviceId, deviceToken, changes)
 		)
 	}
 	removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
@@ -1141,22 +1124,25 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 			PackageManagerIntegration.removeAllExpectedPackageWorkStatusOfDevice(this, deviceId, deviceToken)
 		)
 	}
-	updatePackageContainerPackageStatus(
+	updatePackageContainerPackageStatuses(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		containerId: string,
-		packageId: string,
-		packageStatus: ExpectedPackageStatusAPI.PackageContainerPackageStatus | null
-	) {
+		changes: (
+			| {
+					containerId: string
+					packageId: string
+					type: 'delete'
+			  }
+			| {
+					containerId: string
+					packageId: string
+					type: 'update'
+					status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
+			  }
+		)[]
+	): Promise<void> {
 		return makePromise(() =>
-			PackageManagerIntegration.updatePackageContainerPackageStatus(
-				this,
-				deviceId,
-				deviceToken,
-				containerId,
-				packageId,
-				packageStatus
-			)
+			PackageManagerIntegration.updatePackageContainerPackageStatuses(this, deviceId, deviceToken, changes)
 		)
 	}
 	fetchPackageInfoMetadata(

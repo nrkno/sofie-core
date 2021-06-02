@@ -1,5 +1,5 @@
 import {
-	PackageContainerId,
+	PackageContainerPackageId,
 	PackageContainerPackageStatusDB,
 	getPackageContainerPackageId,
 	PackageContainerPackageStatuses,
@@ -8,7 +8,7 @@ import { StudioId } from './collections/Studios'
 import { ReactiveStore } from './ReactiveStore'
 
 const storePackageContainerPackageStatuses = new ReactiveStore<
-	PackageContainerId,
+	PackageContainerPackageId,
 	PackageContainerPackageStatusDB | undefined
 >({
 	delayUpdateTime: 1000, // delay and batch updates

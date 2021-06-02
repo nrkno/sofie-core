@@ -155,12 +155,10 @@ export namespace PeripheralDeviceAPI {
 		'getMediaWorkFlowStepRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowStepRevisions',
 		'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep',
 
-		'insertExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.insertExpectedPackageWorkStatus',
-		'updateExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.updateExpectedPackageWorkStatus',
-		'removeExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.removeExpectedPackageWorkStatus',
+		'updateExpectedPackageWorkStatuses' = 'peripheralDevice.packageManager.updateExpectedPackageWorkStatuses',
 		'removeAllExpectedPackageWorkStatusOfDevice' = 'peripheralDevice.packageManager.removeAllExpectedPackageWorkStatusOfDevice',
 
-		'updatePackageContainerPackageStatus' = 'peripheralDevice.packageManager.updatePackageContainerPackageStatus',
+		'updatePackageContainerPackageStatuses' = 'peripheralDevice.packageManager.updatePackageContainerPackageStatuses',
 		'fetchPackageInfoMetadata' = 'peripheralDevice.packageManager.fetchPackageInfoMetadata',
 		'updatePackageInfo' = 'peripheralDevice.packageManager.updatePackageInfo',
 		'removePackageInfo' = 'peripheralDevice.packageManager.removePackageInfo',
