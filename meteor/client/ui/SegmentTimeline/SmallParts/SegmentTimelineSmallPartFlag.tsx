@@ -57,7 +57,7 @@ export const SegmentTimelineSmallPartFlag = ({
 		setHover(false)
 	}
 
-	const onFlagClick = (e: React.MouseEvent<HTMLDivElement>) => {
+	const onClickFlagIcon = (e: React.MouseEvent<HTMLDivElement>) => {
 		const partInstanceId = e.currentTarget.dataset['partInstanceId'] // note this needs to match the contents of the data prop in SegmentTimelineSmallPartFlagIcon
 		if (partInstanceId) {
 			RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART_INSTANCE, {
@@ -79,7 +79,7 @@ export const SegmentTimelineSmallPartFlag = ({
 				sourceLayers={sourceLayers}
 				isNext={playlist.nextPartInstanceId === part.instance._id}
 				isLive={playlist.currentPartInstanceId === part.instance._id}
-				onClick={onFlagClick}
+				onClick={onClickFlagIcon}
 				data={{
 					'data-part-instance-id': part.instance._id, // this needs to match with onFlagClick handler
 				}}

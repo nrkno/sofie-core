@@ -682,48 +682,51 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
+		onGoToPartInner = (part: PartUi, timingDurations: RundownTiming.RundownTimingContext, zoomInToFit?: boolean) => {
+			let newScale: number | undefined
+
+			let scrollLeft =
+				((timingDurations.partDisplayStartsAt && timingDurations.partDisplayStartsAt[unprotectString(part.partId)]) ||
+					0) -
+				((timingDurations.partDisplayStartsAt &&
+					timingDurations.partDisplayStartsAt[unprotectString(this.props.parts[0].partId)]) ||
+					0)
+
+			if (zoomInToFit) {
+				const timelineWidth = getElementWidth(this.timelineDiv)
+				newScale =
+					(Math.max(0, timelineWidth - TIMELINE_RIGHT_PADDING * 2) / 3 || 1) /
+					(SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
+
+				scrollLeft = Math.max(0, scrollLeft - TIMELINE_RIGHT_PADDING / newScale)
+			}
+
+			this.setState({
+				scrollLeft,
+				timeScale: newScale ?? this.state.timeScale,
+				showingAllSegment: newScale !== undefined ? false : this.state.showingAllSegment,
+			})
+		}
+
 		onGoToPart = (e: GoToPartEvent) => {
 			if (this.props.segmentId === e.segmentId) {
+				const timingDurations = this.context?.durations as RundownTiming.RundownTimingContext
+
 				const part = this.props.parts.find((part) => part.partId === e.partId)
 				if (part) {
-					this.setState({
-						scrollLeft: part.startsAt,
-					})
+					this.onGoToPartInner(part, timingDurations, e.zoomInToFit)
 				}
 			}
 		}
 
 		onGoToPartInstance = (e: GoToPartInstanceEvent) => {
-			const timingDurations = this.context?.durations as RundownTiming.RundownTimingContext
-
 			if (this.props.segmentId === e.segmentId) {
-				for (const part of this.props.parts) {
-					if (part.instance._id === e.partInstanceId) {
-						let newScale: number | undefined
+				const timingDurations = this.context?.durations as RundownTiming.RundownTimingContext
 
-						let scrollLeft =
-							((timingDurations.partDisplayStartsAt &&
-								timingDurations.partDisplayStartsAt[unprotectString(part.partId)]) ||
-								0) -
-							((timingDurations.partDisplayStartsAt &&
-								timingDurations.partDisplayStartsAt[unprotectString(this.props.parts[0].partId)]) ||
-								0)
+				const part = this.props.parts.find((part) => part.instance._id === e.partInstanceId)
 
-						if (e.zoomInToFit) {
-							const timelineWidth = getElementWidth(this.timelineDiv)
-							newScale =
-								(Math.max(0, timelineWidth - TIMELINE_RIGHT_PADDING * 2) / 3 || 1) /
-								(SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
-
-							scrollLeft = Math.max(0, scrollLeft - TIMELINE_RIGHT_PADDING / newScale)
-						}
-
-						this.setState({
-							scrollLeft,
-							timeScale: newScale ?? this.state.timeScale,
-							showingAllSegment: newScale !== undefined ? false : this.state.showingAllSegment,
-						})
-					}
+				if (part) {
+					this.onGoToPartInner(part, timingDurations, e.zoomInToFit)
 				}
 			}
 		}

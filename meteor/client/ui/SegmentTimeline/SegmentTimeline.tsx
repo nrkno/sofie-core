@@ -588,8 +588,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onClickSegmentIdent = (partId: PartId) => {
-		scrollToPart(partId, false, true).catch((error) => {
+	onClickPartIdent = (partId: PartId) => {
+		scrollToPart(partId, false, true, true).catch((error) => {
 			if (!error.toString().match(/another scroll/)) console.error(error)
 		})
 	}
@@ -980,7 +980,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								<div
 									className="segment-timeline__part-identifiers__identifier"
 									key={ident.partId + ''}
-									onClick={() => this.onClickSegmentIdent(ident.partId)}
+									onClick={() => this.onClickPartIdent(ident.partId)}
 								>
 									{ident.ident}
 								</div>
