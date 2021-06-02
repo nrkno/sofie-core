@@ -7,7 +7,7 @@ import {
 	getRandomId,
 	mongoModify,
 	protectString,
-	clone
+	clone,
 } from '../../lib/lib'
 import { MongoQuery, TransformedCollection, FindOptions, MongoModifier, FindOneOptions } from '../../lib/typings/meteor'
 import _ from 'underscore'
@@ -211,7 +211,7 @@ export class DbCacheWriteCollection<
 		this.documents.set(doc._id, {
 			inserted: existing !== null,
 			updated: existing === null,
-			document: this._transform(clone(doc)) // Unlinke a normal collection, this class stores the transformed objects
+			document: this._transform(clone(doc)), // Unlinke a normal collection, this class stores the transformed objects
 		})
 		if (span) span.end()
 		return doc._id
@@ -295,7 +295,7 @@ export class DbCacheWriteCollection<
 
 	/** Returns true if a doc was replace, false if inserted */
 	replace(doc: DBInterface | ReadonlyDeep<DBInterface>): boolean {
-		this.assertNotToBeRemoved('repolace')
+		this.assertNotToBeRemoved('replace')
 
 		const span = profiler.startSpan(`DBCache.replace.${this.name}`)
 		waitForPromise(this._initialize())
@@ -306,11 +306,12 @@ export class DbCacheWriteCollection<
 		const oldDoc = this.documents.get(_id)
 		if (oldDoc) {
 			oldDoc.updated = true
+			delete oldDoc.removed
 			oldDoc.document = this._transform(clone(doc))
 		} else {
 			this.documents.set(_id, {
 				inserted: true,
-				document: this._transform(clone(doc))
+				document: this._transform(clone(doc)),
 			})
 		}
 
@@ -363,7 +364,7 @@ export class DbCacheWriteCollection<
 		} = {
 			added: 0,
 			updated: 0,
-			removed: 0
+			removed: 0,
 		}
 
 		if (this.isToBeRemoved) {
@@ -382,21 +383,21 @@ export class DbCacheWriteCollection<
 					updates.push({
 						replaceOne: {
 							filter: {
-								_id: id as any
+								_id: id as any,
 							},
 							replacement: doc.document,
-							upsert: true
-						}
+							upsert: true,
+						},
 					})
 					changes.added++
 				} else if (doc.updated) {
 					updates.push({
 						replaceOne: {
 							filter: {
-								_id: id as any
+								_id: id as any,
 							},
-							replacement: doc.document
-						}
+							replacement: doc.document,
+						},
 					})
 					changes.updated++
 				}
@@ -408,9 +409,9 @@ export class DbCacheWriteCollection<
 			updates.push({
 				deleteMany: {
 					filter: {
-						_id: { $in: removedDocs as any }
-					}
-				}
+						_id: { $in: removedDocs as any },
+					},
+				},
 			})
 		}
 
