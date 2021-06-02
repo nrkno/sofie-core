@@ -295,7 +295,7 @@ export class DbCacheWriteCollection<
 
 	/** Returns true if a doc was replace, false if inserted */
 	replace(doc: DBInterface | ReadonlyDeep<DBInterface>): boolean {
-		this.assertNotToBeRemoved('repolace')
+		this.assertNotToBeRemoved('replace')
 
 		const span = profiler.startSpan(`DBCache.replace.${this.name}`)
 		waitForPromise(this._initialize())
@@ -306,6 +306,7 @@ export class DbCacheWriteCollection<
 		const oldDoc = this.documents.get(_id)
 		if (oldDoc) {
 			oldDoc.updated = true
+			delete oldDoc.removed
 			oldDoc.document = this._transform(clone(doc))
 		} else {
 			this.documents.set(_id, {
