@@ -394,6 +394,7 @@ export enum PeripheralDeviceAPIMethods {
 	'mosRoReadyToAir' = 'peripheralDevice.mos.roReadyToAir',
 	'mosRoFullStory' = 'peripheralDevice.mos.roFullStory',
 
+	'dataPlaylistGet' = 'peripheralDevice.playlist.playlistGet',
 	'dataRundownList' = 'peripheralDevice.rundown.rundownList',
 	'dataRundownGet' = 'peripheralDevice.rundown.rundownGet',
 	'dataRundownDelete' = 'peripheralDevice.rundown.rundownDelete',
