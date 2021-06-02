@@ -181,7 +181,7 @@ export namespace MosIntegration {
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
-		logger.info(`mosRoStoryInsert after "${Action.StoryID}" Stories: ${Stories}`)
+		logger.info(`mosRoStoryInsert after "${Action.StoryID}" Stories: ${Stories.map((s) => s.ID)}`)
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
@@ -200,7 +200,7 @@ export namespace MosIntegration {
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
-		logger.info(`mosRoStoryReplace "${Action.StoryID}" Stories: ${Stories}`)
+		logger.info(`mosRoStoryReplace "${Action.StoryID}" Stories: ${Stories.map((s) => s.ID)}`)
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
