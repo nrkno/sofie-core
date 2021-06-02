@@ -7,7 +7,7 @@ import {
 	getRandomId,
 	mongoModify,
 	protectString,
-	clone
+	clone,
 } from '../../lib/lib'
 import { MongoQuery, TransformedCollection, FindOptions, MongoModifier, FindOneOptions } from '../../lib/typings/meteor'
 import _ from 'underscore'
@@ -211,7 +211,7 @@ export class DbCacheWriteCollection<
 		this.documents.set(doc._id, {
 			inserted: existing !== null,
 			updated: existing === null,
-			document: this._transform(clone(doc)) // Unlinke a normal collection, this class stores the transformed objects
+			document: this._transform(clone(doc)), // Unlinke a normal collection, this class stores the transformed objects
 		})
 		if (span) span.end()
 		return doc._id
@@ -311,7 +311,7 @@ export class DbCacheWriteCollection<
 		} else {
 			this.documents.set(_id, {
 				inserted: true,
-				document: this._transform(clone(doc))
+				document: this._transform(clone(doc)),
 			})
 		}
 
@@ -364,7 +364,7 @@ export class DbCacheWriteCollection<
 		} = {
 			added: 0,
 			updated: 0,
-			removed: 0
+			removed: 0,
 		}
 
 		if (this.isToBeRemoved) {
@@ -383,21 +383,21 @@ export class DbCacheWriteCollection<
 					updates.push({
 						replaceOne: {
 							filter: {
-								_id: id as any
+								_id: id as any,
 							},
 							replacement: doc.document,
-							upsert: true
-						}
+							upsert: true,
+						},
 					})
 					changes.added++
 				} else if (doc.updated) {
 					updates.push({
 						replaceOne: {
 							filter: {
-								_id: id as any
+								_id: id as any,
 							},
-							replacement: doc.document
-						}
+							replacement: doc.document,
+						},
 					})
 					changes.updated++
 				}
@@ -409,9 +409,9 @@ export class DbCacheWriteCollection<
 			updates.push({
 				deleteMany: {
 					filter: {
-						_id: { $in: removedDocs as any }
-					}
-				}
+						_id: { $in: removedDocs as any },
+					},
+				},
 			})
 		}
 

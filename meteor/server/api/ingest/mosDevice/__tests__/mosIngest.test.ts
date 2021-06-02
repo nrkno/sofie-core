@@ -1341,9 +1341,9 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(playlist2.name).toEqual(rundown2.name)
 		expect(playlist2.name).not.toEqual(playlist.name)
 	})
-	
+
 	testInFiber('mosRoStoryReplace: Combine into start of segment', async () => {
-		resetOrphanedRundown()
+		await resetOrphanedRundown()
 
 		const mosRO = mockRO.roCreate()
 		// regenerate the rundown

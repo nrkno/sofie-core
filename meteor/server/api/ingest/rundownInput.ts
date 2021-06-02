@@ -12,7 +12,7 @@ import {
 	LocalIngestRundown,
 	makeNewIngestSegment,
 	makeNewIngestPart,
-	makeNewIngestRundown
+	makeNewIngestRundown,
 } from './ingestCache'
 import {
 	getSegmentId,
@@ -20,7 +20,7 @@ import {
 	canRundownBeUpdated,
 	canSegmentBeUpdated,
 	checkAccessAndGetPeripheralDevice,
-	getRundown
+	getRundown,
 } from './lib'
 import { MethodContext } from '../../../lib/api/methods'
 import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownAction } from './lockFunction'
@@ -198,7 +198,7 @@ export namespace RundownInput {
 function getIngestRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string): IngestRundown {
 	const rundown = Rundowns.findOne({
 		peripheralDeviceId: peripheralDevice._id,
-		externalId: rundownExternalId
+		externalId: rundownExternalId,
 	})
 	if (!rundown) {
 		throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
@@ -217,7 +217,7 @@ function getIngestSegment(
 ): IngestSegment {
 	const rundown = Rundowns.findOne({
 		peripheralDeviceId: peripheralDevice._id,
-		externalId: rundownExternalId
+		externalId: rundownExternalId,
 	})
 	if (!rundown) {
 		throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
@@ -225,7 +225,7 @@ function getIngestSegment(
 
 	const segment = Segments.findOne({
 		externalId: segmentExternalId,
-		rundownId: rundown._id
+		rundownId: rundown._id,
 	})
 
 	if (!segment) {
@@ -243,7 +243,7 @@ function getIngestSegment(
 }
 function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
 	const rundowns = Rundowns.find({
-		peripheralDeviceId: peripheralDevice._id
+		peripheralDeviceId: peripheralDevice._id,
 	}).fetch()
 
 	return rundowns.map((r) => r.externalId)
@@ -273,7 +273,7 @@ function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: s
 				removeRundown: forceDelete || canRundownBeUpdated(rundown, false),
 
 				showStyle: undefined,
-				blueprint: undefined
+				blueprint: undefined,
 			}
 		}
 	)
@@ -373,7 +373,7 @@ export function regenerateRundown(
 				(cache.Rundown.doc?.peripheralDeviceId
 					? PeripheralDevices.findOne({
 							_id: cache.Rundown.doc.peripheralDeviceId,
-							studioId: cache.Studio.doc._id
+							studioId: cache.Studio.doc._id,
 					  })
 					: undefined)
 
@@ -429,7 +429,7 @@ export function handleRemovedSegment(
 					removeRundown: false,
 
 					showStyle: undefined,
-					blueprint: undefined
+					blueprint: undefined,
 				}
 			}
 		}
@@ -498,8 +498,8 @@ export function handleUpdatedSegmentRanks(
 				const segmentId = getSegmentId(cache.RundownId, externalId)
 				const changed = cache.Segments.update(segmentId, {
 					$set: {
-						_rank: rank
-					}
+						_rank: rank,
+					},
 				})
 
 				if (changed.length === 0) {
@@ -516,7 +516,7 @@ export function handleUpdatedSegmentRanks(
 				removeRundown: false,
 
 				showStyle: undefined,
-				blueprint: undefined
+				blueprint: undefined,
 			}
 		}
 	)

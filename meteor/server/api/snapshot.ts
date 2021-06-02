@@ -13,7 +13,7 @@ import {
 	SnapshotDebug,
 	SnapshotBase,
 	SnapshotRundownPlaylist,
-	SnapshotId
+	SnapshotId,
 } from '../../lib/collections/Snapshots'
 import { Rundowns, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
@@ -32,7 +32,7 @@ import {
 	unprotectString,
 	makePromise,
 	ProtectedString,
-	protectStringArray
+	protectStringArray,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -76,7 +76,7 @@ import { Piece as Piece_1_11_0 } from '../migration/deprecatedDataTypes/1_11_0'
 import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
 import {
 	RundownBaselineAdLibActions,
-	RundownBaselineAdLibAction
+	RundownBaselineAdLibAction,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
 import { saveIntoDb, sumChanges } from '../lib/database'
@@ -177,8 +177,8 @@ function createRundownPlaylistSnapshot(
 					.concat(playlistId as any)
 					.map((i) => `"${i}"`)
 					.join('|') +
-				`).*`
-		}
+				`).*`,
+		},
 	}).fetch()
 
 	const segments = playlist.getSegments()
@@ -193,7 +193,7 @@ function createRundownPlaylistSnapshot(
 	const mediaObjectIds: Array<string> = [
 		..._.compact(pieces.map((piece) => (piece.content as VTContent | undefined)?.fileName)),
 		..._.compact(adLibPieces.map((adLibPiece) => (adLibPiece.content as VTContent | undefined)?.fileName)),
-		..._.compact(baselineAdlibs.map((adLibPiece) => (adLibPiece.content as VTContent | undefined)?.fileName))
+		..._.compact(baselineAdlibs.map((adLibPiece) => (adLibPiece.content as VTContent | undefined)?.fileName)),
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
 	const expectedMediaItems = ExpectedMediaItems.find({ partId: { $in: parts.map((i) => i._id) } }).fetch()
@@ -213,7 +213,7 @@ function createRundownPlaylistSnapshot(
 			playlistId,
 			studioId: playlist.studioId,
 			name: `Rundown_${playlist.name}_${playlist._id}_${formatDateTime(getCurrentTime())}`,
-			version: CURRENT_SYSTEM_VERSION
+			version: CURRENT_SYSTEM_VERSION,
 		},
 		playlist,
 		rundowns,
@@ -232,7 +232,7 @@ function createRundownPlaylistSnapshot(
 		mediaObjects,
 		expectedMediaItems,
 		expectedPlayoutItems,
-		expectedPackages
+		expectedPackages,
 	}
 }
 
@@ -269,7 +269,7 @@ function createSystemSnapshot(studioId: StudioId | null, organizationId: Organiz
 			ids = ids.concat(studio.supportedShowStyleBase)
 		})
 		queryShowStyleBases = {
-			_id: { $in: ids }
+			_id: { $in: ids },
 		}
 	} else if (organizationId) {
 		queryShowStyleBases = { organizationId: organizationId }
@@ -293,17 +293,17 @@ function createSystemSnapshot(studioId: StudioId | null, organizationId: Organiz
 			blueprintIds = blueprintIds.concat(showStyleBase.blueprintId)
 		})
 		queryBlueprints = {
-			_id: { $in: blueprintIds }
+			_id: { $in: blueprintIds },
 		}
 	} else if (organizationId) {
 		queryBlueprints = {
-			organizationId: organizationId
+			organizationId: organizationId,
 		}
 	}
 	const blueprints = Blueprints.find(queryBlueprints).fetch()
 
 	const deviceCommands = PeripheralDeviceCommands.find({
-		deviceId: { $in: _.map(devices, (device) => device._id) }
+		deviceId: { $in: _.map(devices, (device) => device._id) },
 	}).fetch()
 
 	logger.info(`Snapshot generation done`)
@@ -316,7 +316,7 @@ function createSystemSnapshot(studioId: StudioId | null, organizationId: Organiz
 			type: SnapshotType.SYSTEM,
 			created: getCurrentTime(),
 			name: `System` + (studioId ? `_${studioId}` : '') + `_${formatDateTime(getCurrentTime())}`,
-			version: CURRENT_SYSTEM_VERSION
+			version: CURRENT_SYSTEM_VERSION,
 		},
 		studios,
 		showStyleBases,
@@ -325,7 +325,7 @@ function createSystemSnapshot(studioId: StudioId | null, organizationId: Organiz
 		rundownLayouts,
 		devices,
 		coreSystem,
-		deviceCommands: deviceCommands
+		deviceCommands: deviceCommands,
 	}
 }
 
@@ -344,7 +344,7 @@ function createDebugSnapshot(studioId: StudioId, organizationId: OrganizationId 
 
 	let activePlaylists = RundownPlaylists.find({
 		studioId: studio._id,
-		activationId: { $exists: true }
+		activationId: { $exists: true },
 	}).fetch()
 
 	let activePlaylistSnapshots = _.map(activePlaylists, (playlist) => {
@@ -354,8 +354,8 @@ function createDebugSnapshot(studioId: StudioId, organizationId: OrganizationId 
 	let timeline = Timeline.find().fetch()
 	let userActionLogLatest = UserActionsLog.find({
 		timestamp: {
-			$gt: getCurrentTime() - 1000 * 3600 * 3 // latest 3 hours
-		}
+			$gt: getCurrentTime() - 1000 * 3600 * 3, // latest 3 hours
+		},
 	}).fetch()
 
 	// Also fetch debugInfo from devices:
@@ -369,7 +369,7 @@ function createDebugSnapshot(studioId: StudioId, organizationId: OrganizationId 
 				deviceId: device._id,
 				created: startTime,
 				replyTime: getCurrentTime(),
-				content: deviceSnapshot
+				content: deviceSnapshot,
 			})
 			logger.info('Got snapshot from device "' + device._id + '"')
 		}
@@ -385,13 +385,13 @@ function createDebugSnapshot(studioId: StudioId, organizationId: OrganizationId 
 			type: SnapshotType.DEBUG,
 			created: getCurrentTime(),
 			name: `Debug_${studioId}_${formatDateTime(getCurrentTime())}`,
-			version: CURRENT_SYSTEM_VERSION
+			version: CURRENT_SYSTEM_VERSION,
 		},
 		system: systemSnapshot,
 		activeRundownPlaylists: activePlaylistSnapshots,
 		timeline: timeline,
 		userActionLog: userActionLogLatest,
-		deviceSnaphots: deviceSnaphots
+		deviceSnaphots: deviceSnaphots,
 	}
 }
 
@@ -445,7 +445,7 @@ function storeSnaphot(
 		name: snapshot.snapshot.name,
 		description: snapshot.snapshot.description,
 		version: CURRENT_SYSTEM_VERSION,
-		comment: comment
+		comment: comment,
 	})
 
 	return id
