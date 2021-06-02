@@ -16,7 +16,8 @@ export const SegmentTimelineSmallPartFlagIcon = (props: {
 	sourceLayers: {
 		[key: string]: ISourceLayer
 	}
-	onClick?: (e: any) => void
+	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
+	data?: Record<`data-${string}`, string>
 }) => {
 	return (
 		<div
@@ -27,6 +28,7 @@ export const SegmentTimelineSmallPartFlagIcon = (props: {
 			})}
 			onMouseDownCapture={noop}
 			onMouseUpCapture={props.onClick}
+			{...props.data}
 		>
 			<PieceIconContainerNoSub
 				pieceInstances={props.partInstance.pieces.map((piece) => piece.instance)}

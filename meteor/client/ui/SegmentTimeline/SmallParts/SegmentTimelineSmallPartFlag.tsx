@@ -2,7 +2,7 @@ import React, { useRef, useState, useCallback } from 'react'
 import { SmallPartFlag } from '../../../lib/ui/icons/segment'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineSmallPartFlagIcon } from './SegmentTimelineSmallPartFlagIcon'
-import { unprotectString } from '../../../../lib/lib'
+import { protectString, unprotectString } from '../../../../lib/lib'
 import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Studio } from '../../../../lib/collections/Studios'
@@ -57,6 +57,18 @@ export const SegmentTimelineSmallPartFlag = ({
 		setHover(false)
 	}
 
+	const onFlagClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		const partInstanceId = e.currentTarget.dataset['partInstanceId'] // note this needs to match the contents of the data prop in SegmentTimelineSmallPartFlagIcon
+		if (partInstanceId) {
+			RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART_INSTANCE, {
+				segmentId: segment._id,
+				partInstanceId: protectString(partInstanceId),
+				zoomInToFit: true,
+				context: e,
+			})
+		}
+	}
+
 	let partDurations = 0
 	const partFlags = parts.map(([part, duration]) => {
 		partDurations += duration
@@ -67,17 +79,10 @@ export const SegmentTimelineSmallPartFlag = ({
 				sourceLayers={sourceLayers}
 				isNext={playlist.nextPartInstanceId === part.instance._id}
 				isLive={playlist.currentPartInstanceId === part.instance._id}
-				onClick={useCallback(
-					(e) => {
-						RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART_INSTANCE, {
-							segmentId: part.instance.segmentId,
-							partInstanceId: part.instance._id,
-							zoomInToFit: true,
-							context: e,
-						})
-					},
-					[part.instance._id]
-				)}
+				onClick={onFlagClick}
+				data={{
+					'data-part-instance-id': part.instance._id, // this needs to match with onFlagClick handler
+				}}
 			/>
 		)
 	})
