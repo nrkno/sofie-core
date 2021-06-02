@@ -34,7 +34,7 @@ describe('client/lib/rundown', () => {
 			rundown,
 			segment,
 			new Set(segments.slice(0, 0).map((segment) => segment._id)),
-			new Set(),
+			[],
 			new Map(),
 			parts.map((part) => part._id),
 			currentPartInstance,
