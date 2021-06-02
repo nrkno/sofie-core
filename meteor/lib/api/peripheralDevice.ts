@@ -3,7 +3,7 @@ import { getCurrentTime, getRandomId } from '../lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 import { DeviceConfigManifest } from './deviceConfig'
-import { ExpectedPackageStatusAPI, TSR } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackageStatusAPI, IngestPlaylist, TSR } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PeripheralDeviceId, PeripheralDevice } from '../collections/PeripheralDevices'
 import { PieceInstanceId } from '../collections/PieceInstances'
@@ -95,6 +95,11 @@ export interface NewPeripheralDeviceAPI {
 		resolveDuration: number
 	)
 
+	dataPlaylistGet(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		playlistExternalId: string
+	): Promise<IngestPlaylist>
 	dataRundownList(deviceId: PeripheralDeviceId, deviceToken: string): Promise<string[]>
 	dataRundownGet(deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string): Promise<IngestRundown>
 	dataRundownDelete(deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string): Promise<void>

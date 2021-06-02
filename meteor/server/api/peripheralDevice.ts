@@ -825,6 +825,9 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	}
 
 	// ------ Ingest methods: ------------
+	dataPlaylistGet(deviceId: PeripheralDeviceId, deviceToken: string, playlistExternalId: string) {
+		return makePromise(() => RundownInput.dataPlaylistGet(this, deviceId, deviceToken, playlistExternalId))
+	}
 	dataRundownList(deviceId: PeripheralDeviceId, deviceToken: string) {
 		return makePromise(() => RundownInput.dataRundownList(this, deviceId, deviceToken))
 	}
