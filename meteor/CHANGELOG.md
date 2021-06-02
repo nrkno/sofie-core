@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.32.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.1...v1.32.2-0) (2021-05-26)
+
+
+### Bug Fixes
+
+* presenter screen crashes if segment can't be found ([2ab2238](https://github.com/nrkno/tv-automation-server-core/commit/2ab2238ec16e25dc4d9416639193eb1ae8f6a3aa))
+
 ### [1.32.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.32.1) (2021-05-20)
 
 
