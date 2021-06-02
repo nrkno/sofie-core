@@ -40,7 +40,12 @@ import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs
 import * as _ from 'underscore'
 import { getLookeaheadObjects } from './lookahead'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
-import { StudioContext, TimelineEventContext } from '../blueprints/context'
+import {
+	StudioBaselineContext,
+	StudioContext,
+	TimelineEventContext,
+	WatchedPackagesHelper,
+} from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds } from './lib'
@@ -61,6 +66,9 @@ import { CacheForStudio, CacheForStudioBase } from '../studio/cache'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCacheFromStudioOperation } from './lockFunction'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackages'
+import { DbCacheReadCollection } from '../../cache/CacheCollection'
+import { ExpectedPackageDB, ExpectedPackageDBType, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
+import { PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
 
 export function updateStudioOrPlaylistTimeline(cache: CacheForStudio) {
 	const playlists = cache.getActiveRundownPlaylists()
@@ -107,9 +115,19 @@ export function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout) {
 
 	const studioBlueprint = loadStudioBlueprint(studio)
 	if (studioBlueprint) {
+		const watchedPackages = waitForPromise(
+			WatchedPackagesHelper.create(studio._id, {
+				fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
+			})
+		)
+
 		const blueprint = studioBlueprint.blueprint
 		studioBaseline = blueprint.getBaseline(
-			new StudioContext({ name: 'studioBaseline', identifier: `studioId=${studio._id}` }, studio)
+			new StudioBaselineContext(
+				{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
+				studio,
+				watchedPackages
+			)
 		)
 		baselineObjects = postProcessStudioBaselineObjects(studio, studioBaseline.timelineObjects)
 

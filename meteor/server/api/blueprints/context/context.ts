@@ -12,13 +12,13 @@ import {
 	unpartialString,
 	protectStringArray,
 	unDeepString,
+	waitForPromise,
 } from '../../../../lib/lib'
 import { PartId } from '../../../../lib/collections/Parts'
 import { check } from '../../../../lib/check'
 import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
-	IUserNotesContext,
 	IStudioContext,
 	IStudioUserContext,
 	BlueprintMappings,
@@ -36,6 +36,8 @@ import {
 	IRundownDataChangedEventContext,
 	IRundownTimingEventContext,
 	PackageInfo,
+	IStudioBaselineContext,
+	IShowStyleUserContext,
 } from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
@@ -68,7 +70,15 @@ import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
 import _ from 'underscore'
 import { Segments } from '../../../../lib/collections/Segments'
 import { Meteor } from 'meteor/meteor'
-import { PackageInfos } from '../../../../lib/collections/PackageInfos'
+import { PackageInfoDB, PackageInfos } from '../../../../lib/collections/PackageInfos'
+import { DbCacheReadCollection } from '../../../cache/CacheCollection'
+import {
+	ExpectedPackageDB,
+	ExpectedPackageDBBase,
+	ExpectedPackages,
+} from '../../../../lib/collections/ExpectedPackages'
+import { MongoQuery } from '../../../../lib/typings/meteor'
+import { CacheForIngest } from '../../ingest/cache'
 
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
@@ -78,6 +88,76 @@ export interface ContextInfo {
 }
 export interface UserContextInfo extends ContextInfo {
 	tempSendUserNotesIntoBlackHole?: boolean // TODO-CONTEXT remove this
+}
+
+export class WatchedPackagesHelper {
+	private constructor(
+		private readonly packages: DbCacheReadCollection<ExpectedPackageDB, ExpectedPackageDB>,
+		private readonly packageInfos: DbCacheReadCollection<PackageInfoDB, PackageInfoDB>
+	) {}
+
+	static async create<T extends ExpectedPackageDBBase = ExpectedPackageDBBase>(
+		studioId: StudioId,
+		filter: MongoQuery<Omit<T, 'studioId'>>
+	): Promise<WatchedPackagesHelper> {
+		const watchedPackages = new DbCacheReadCollection<ExpectedPackageDB, ExpectedPackageDB>(ExpectedPackages)
+		const watchedPackageInfos = new DbCacheReadCollection<PackageInfoDB, PackageInfoDB>(PackageInfos)
+
+		// Load all the packages and the infos that are watched
+		await watchedPackages.prepareInit({ ...filter, studioId: studioId } as any, true)
+		await watchedPackageInfos.prepareInit(
+			{ studioId: studioId, packageId: { $in: watchedPackages.findFetch().map((p) => p._id) } },
+			true
+		)
+
+		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
+	}
+
+	static async createForIngest(
+		cache: CacheForIngest,
+		func: ((pkg: ExpectedPackageDB) => boolean) | undefined
+	): Promise<WatchedPackagesHelper> {
+		const watchedPackages = new DbCacheReadCollection<ExpectedPackageDB, ExpectedPackageDB>(ExpectedPackages)
+		const watchedPackageInfos = new DbCacheReadCollection<PackageInfoDB, PackageInfoDB>(PackageInfos)
+
+		const packages = cache.ExpectedPackages.findFetch(func)
+
+		// Load all the packages and the infos that are watched
+		watchedPackages.fillWithDataFromArray(packages)
+		await watchedPackageInfos.prepareInit(
+			{ studioId: cache.Studio.doc._id, packageId: { $in: packages.map((p) => p._id) } },
+			true
+		)
+
+		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
+	}
+
+	filter(func: (pkg: ExpectedPackageDB) => boolean): WatchedPackagesHelper {
+		const watchedPackages = new DbCacheReadCollection<ExpectedPackageDB, ExpectedPackageDB>(ExpectedPackages)
+		const watchedPackageInfos = new DbCacheReadCollection<PackageInfoDB, PackageInfoDB>(PackageInfos)
+
+		watchedPackages.fillWithDataFromArray(this.packages.findFetch(func))
+		const newPackageIds = new Set(watchedPackages.findFetch().map((p) => p._id))
+		watchedPackageInfos.fillWithDataFromArray(
+			this.packageInfos.findFetch((info) => newPackageIds.has(info.packageId))
+		)
+
+		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
+	}
+
+	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
+		const pkg = this.packages.findOne({
+			blueprintPackageId: packageId,
+		})
+		if (pkg) {
+			const info = this.packageInfos.findFetch({
+				packageId: pkg._id,
+			})
+			return unprotectObjectArray(info)
+		} else {
+			return []
+		}
+	}
 }
 
 /** Common */
@@ -152,11 +232,37 @@ export class StudioContext extends CommonContext implements IStudioContext {
 		// @ts-ignore ProtectedString deviceId not compatible with string
 		return this.studio.mappings
 	}
+}
+
+export class StudioBaselineContext extends StudioContext implements IStudioBaselineContext {
+	constructor(
+		contextInfo: UserContextInfo,
+		studio: ReadonlyDeep<Studio>,
+		private readonly watchedPackages: WatchedPackagesHelper
+	) {
+		super(contextInfo, studio)
+	}
+
+	/**
+	 *
+	 */
 	getPackageInfo(packageId: string): readonly PackageInfo.Any[] {
-		return PackageInfos.find({
-			packageId: new RegExp(`${packageId}$`), // TODO: A temporary hack -- Jan Starzak, 2021-05-26
-			studioId: this.studio._id,
-		}).fetch()
+		return this.watchedPackages.getPackageInfo(packageId)
+		// /**
+		//  * TODO - reimplement this using proper ids
+		//  * At times when creating this context we already have an CacheForIngest with its collection of ExpectedPackages. When we do, that should be used to limit the scope of this.
+		//  * We should probably be loading in the array of all packageInfos that the segment(/rundown?) is listening for when loading the cache/before calling the blueprints,
+		//  * as this will make the result be more performant and predictable (from a single point in time, not spread over a few seconds).
+		//  * This will also let us figure out what to load without adding a segmentId to the packages.
+		//  *
+		//  * But what about baselines or other places that could reasonably call this?
+		//  */
+		// return PackageInfos.find({
+
+		// 	studioId: this.studio._id,
+		// 	segmentId: asdf
+		// 	packageId: new RegExp(`${packageId}$`), // TODO: A temporary hack -- Jan Starzak, 2021-05-26
+		// }).fetch()
 	}
 }
 
@@ -219,14 +325,15 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	}
 }
 
-export class ShowStyleUserContext extends ShowStyleContext implements IUserNotesContext {
+export class ShowStyleUserContext extends ShowStyleContext implements IShowStyleUserContext {
 	public readonly notes: INoteBase[] = []
 	private readonly tempSendNotesIntoBlackHole: boolean
 
 	constructor(
 		contextInfo: UserContextInfo,
 		studio: ReadonlyDeep<Studio>,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		private readonly watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, studio, showStyleCompound)
 	}
@@ -256,6 +363,10 @@ export class ShowStyleUserContext extends ShowStyleContext implements IUserNotes
 				},
 			})
 		}
+	}
+
+	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
+		return this.watchedPackages.getPackageInfo(packageId)
 	}
 }
 
@@ -315,7 +426,8 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 		contextInfo: ContextInfo,
 		studio: ReadonlyDeep<Studio>,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		rundown: ReadonlyDeep<Rundown>
+		rundown: ReadonlyDeep<Rundown>,
+		private readonly watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, studio, showStyleCompound, rundown)
 	}
@@ -339,6 +451,10 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 			},
 			partExternalId: partExternalId,
 		})
+	}
+
+	getPackageInfo(packageId): Readonly<Array<PackageInfo.Any>> {
+		return this.watchedPackages.getPackageInfo(packageId)
 	}
 }
 

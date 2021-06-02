@@ -29,6 +29,9 @@ export namespace ExpectedPackage {
 		/** What type of package it is */
 		type: PackageType
 
+		/** Whether the blueprints should be notified (re-run) on any package info updates */
+		listenToPackageInfoUpdates?: boolean
+
 		/** Definition of the content of the Package.
 		 * With "content", we mean what's the basic definition of a package. For a media file, think "filename".
 		 */
@@ -329,9 +332,4 @@ export namespace ExpectedPackageStatusAPI {
 		/** All good, the package is in place and ready to play*/
 		READY = 'ready',
 	}
-}
-
-export interface ListenToPackageUpdate {
-	/** Same type of _id as in expectedPackages */
-	packageId: string
 }

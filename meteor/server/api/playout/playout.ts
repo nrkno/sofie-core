@@ -74,6 +74,8 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { CacheForStudio } from '../studio/cache'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
+import { WatchedPackagesHelper } from '../blueprints/context'
+import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -1118,7 +1120,7 @@ export namespace ServerPlayoutAPI {
 		})
 	}
 
-	export function executeActionInner(
+	function executeActionInner(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		func: (
@@ -1159,7 +1161,15 @@ export namespace ServerPlayoutAPI {
 				if (!rundown)
 					throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
 
-				const showStyle = await cache.activationCache.getShowStyleCompound(rundown)
+				const [showStyle, watchedPackages] = await Promise.all([
+					cache.activationCache.getShowStyleCompound(rundown),
+					WatchedPackagesHelper.create(cache.Studio.doc._id, {
+						// TODO:packages - we need a source id for the action, so we can filter by pieceId here
+						fromPieceType: {
+							$in: [ExpectedPackageDBType.ADLIB_ACTION, ExpectedPackageDBType.BASELINE_ADLIB_ACTION],
+						},
+					}),
+				])
 				const actionContext = new ActionExecutionContext(
 					{
 						name: `${rundown.name}(${playlist.name})`,
@@ -1170,7 +1180,8 @@ export namespace ServerPlayoutAPI {
 					},
 					cache,
 					showStyle,
-					rundown
+					rundown,
+					watchedPackages
 				)
 
 				// If any action cannot be done due to timings, that needs to be rejected by the context

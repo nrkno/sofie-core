@@ -9,6 +9,7 @@ import {
 	ExpectedPackageDBBase,
 	ExpectedPackageDBFromAdLibAction,
 	ExpectedPackageDBFromBaselineAdLibAction,
+	ExpectedPackageDBFromBaselineAdLibPiece,
 	ExpectedPackageDBFromBucketAdLib,
 	ExpectedPackageDBFromBucketAdLibAction,
 	ExpectedPackageDBFromPiece,
@@ -38,6 +39,9 @@ import { saveIntoCache } from '../../cache/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayout } from '../playout/cache'
 import { CacheForStudio } from '../studio/cache'
+import { SegmentId } from '../../../lib/collections/Segments'
+import { PartId } from '../../../lib/collections/Parts'
+import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
 
 export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	// @todo: this call is for backwards compatibility and soon to be removed
@@ -52,14 +56,31 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	const baselineAdlibs = cache.RundownBaselineAdLibPieces.findFetch({})
 	const baselineActions = cache.RundownBaselineAdLibActions.findFetch({})
 
+	const partToSegmentIdMap = new Map<PartId, SegmentId>()
+	for (const part of cache.Parts.findFetch({})) {
+		partToSegmentIdMap.set(part._id, part.segmentId)
+	}
+
 	// todo: keep expectedPackage of the currently playing partInstance
 
 	const expectedPackages: ExpectedPackageDB[] = [
-		...generateExpectedPackagesForPiece(studio, cache.RundownId, pieces),
-		...generateExpectedPackagesForPiece(studio, cache.RundownId, adlibs),
-		...generateExpectedPackagesForAdlibAction(studio, cache.RundownId, actions),
+		...generateExpectedPackagesForPiece(
+			studio,
+			cache.RundownId,
+			partToSegmentIdMap,
+			pieces,
+			ExpectedPackageDBType.PIECE
+		),
+		...generateExpectedPackagesForPiece(
+			studio,
+			cache.RundownId,
+			partToSegmentIdMap,
+			adlibs,
+			ExpectedPackageDBType.ADLIB_PIECE
+		),
+		...generateExpectedPackagesForAdlibAction(studio, cache.RundownId, partToSegmentIdMap, actions),
 
-		...generateExpectedPackagesForPiece(studio, cache.RundownId, baselineAdlibs),
+		...generateExpectedPackagesForBaselineAdlibPiece(studio, cache.RundownId, baselineAdlibs),
 		...generateExpectedPackagesForBaselineAdlibAction(studio, cache.RundownId, baselineActions),
 	]
 
@@ -95,6 +116,7 @@ export function generateExpectedPackagesForPartInstance(
 				packages.push({
 					...base,
 					rundownId,
+					segmentId: partInstance.part.segmentId,
 					pieceId: pieceInstance.piece._id,
 					fromPieceType: ExpectedPackageDBType.PIECE,
 				})
@@ -106,9 +128,37 @@ export function generateExpectedPackagesForPartInstance(
 function generateExpectedPackagesForPiece(
 	studio: ReadonlyDeep<Studio>,
 	rundownId: RundownId,
-	pieces: (Piece | AdLibPiece)[]
+	partToSegmentIdMap: Map<PartId, SegmentId>,
+	pieces: (Piece | AdLibPiece)[],
+	type: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
 ) {
 	const packages: ExpectedPackageDBFromPiece[] = []
+	for (const piece of pieces) {
+		const partId = 'startPartId' in piece ? piece.startPartId : piece.partId
+		if (piece.expectedPackages && partId) {
+			const segmentId = partToSegmentIdMap.get(partId)
+			if (segmentId) {
+				const bases = generateExpectedPackageBases(studio, piece._id, piece.expectedPackages)
+				for (const base of bases) {
+					packages.push({
+						...base,
+						rundownId,
+						segmentId,
+						pieceId: piece._id,
+						fromPieceType: type,
+					})
+				}
+			}
+		}
+	}
+	return packages
+}
+function generateExpectedPackagesForBaselineAdlibPiece(
+	studio: ReadonlyDeep<Studio>,
+	rundownId: RundownId,
+	pieces: RundownBaselineAdLibItem[]
+) {
+	const packages: ExpectedPackageDBFromBaselineAdLibPiece[] = []
 	for (const piece of pieces) {
 		if (piece.expectedPackages) {
 			const bases = generateExpectedPackageBases(studio, piece._id, piece.expectedPackages)
@@ -117,7 +167,7 @@ function generateExpectedPackagesForPiece(
 					...base,
 					rundownId,
 					pieceId: piece._id,
-					fromPieceType: ExpectedPackageDBType.PIECE,
+					fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_PIECE,
 				})
 			}
 		}
@@ -127,19 +177,24 @@ function generateExpectedPackagesForPiece(
 function generateExpectedPackagesForAdlibAction(
 	studio: ReadonlyDeep<Studio>,
 	rundownId: RundownId,
+	partToSegmentIdMap: Map<PartId, SegmentId>,
 	actions: AdLibAction[]
 ) {
 	const packages: ExpectedPackageDBFromAdLibAction[] = []
 	for (const action of actions) {
 		if (action.expectedPackages) {
-			const bases = generateExpectedPackageBases(studio, action._id, action.expectedPackages)
-			for (const base of bases) {
-				packages.push({
-					...base,
-					rundownId,
-					pieceId: action._id,
-					fromPieceType: ExpectedPackageDBType.ADLIB_ACTION,
-				})
+			const segmentId = partToSegmentIdMap.get(action.partId)
+			if (segmentId) {
+				const bases = generateExpectedPackageBases(studio, action._id, action.expectedPackages)
+				for (const base of bases) {
+					packages.push({
+						...base,
+						rundownId,
+						segmentId,
+						pieceId: action._id,
+						fromPieceType: ExpectedPackageDBType.ADLIB_ACTION,
+					})
+				}
 			}
 		}
 	}

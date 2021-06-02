@@ -7,7 +7,7 @@ import {
 import { protectString, unprotectString, waitForPromise, getRandomId, getCurrentTime } from '../../../../lib/lib'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { ActionExecutionContext, ActionPartChange } from '../context'
+import { ActionExecutionContext, ActionPartChange, WatchedPackagesHelper } from '../context'
 import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../../lib/collections/PartInstances'
 import {
@@ -135,6 +135,12 @@ describe('Test blueprint api context', () => {
 
 		const showStyle = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
 
+		const watchedPackages = waitForPromise(
+			WatchedPackagesHelper.create(studio._id, {
+				fakeQuery: true,
+			})
+		)
+
 		const context = new ActionExecutionContext(
 			{
 				name: 'fakeContext',
@@ -142,7 +148,8 @@ describe('Test blueprint api context', () => {
 			},
 			cache,
 			showStyle,
-			rundown
+			rundown,
+			watchedPackages
 		)
 		expect(context.studio).toBeTruthy()
 

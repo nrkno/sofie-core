@@ -83,9 +83,13 @@ export interface IStudioContext extends ICommonContext {
 
 	/** Get the mappings for the studio */
 	getStudioMappings: () => Readonly<BlueprintMappings>
+}
 
+export interface IPackageInfoContext {
 	getPackageInfo: (packageId: string) => Readonly<PackageInfo.Any[]>
 }
+
+export interface IStudioBaselineContext extends IStudioContext, IPackageInfoContext {}
 
 export interface IStudioUserContext extends IUserNotesContext, IStudioContext {}
 
@@ -98,7 +102,7 @@ export interface IShowStyleContext extends ICommonContext, IStudioContext {
 	getShowStyleConfigRef(configKey: string): string
 }
 
-export interface IShowStyleUserContext extends IUserNotesContext, IShowStyleContext {}
+export interface IShowStyleUserContext extends IUserNotesContext, IShowStyleContext, IPackageInfoContext {}
 
 /** Rundown */
 
@@ -109,7 +113,7 @@ export interface IRundownContext extends IShowStyleContext {
 
 export interface IRundownUserContext extends IUserNotesContext, IRundownContext {}
 
-export interface ISegmentUserContext extends IUserNotesContext, IRundownContext {
+export interface ISegmentUserContext extends IUserNotesContext, IRundownContext, IPackageInfoContext {
 	/** Display a notification to the user of an error */
 	notifyUserError: (message: string, params?: { [key: string]: any }, partExternalId?: string) => void
 	/** Display a notification to the user of an warning */

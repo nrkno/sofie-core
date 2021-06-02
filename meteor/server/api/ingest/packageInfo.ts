@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { ExpectedPackageDBType, ExpectedPackageId, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { MediaObject, MediaObjId } from '../../../lib/collections/MediaObjects'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
@@ -48,40 +47,44 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageI
 		return
 	}
 
-	switch (pkg.fromPieceType) {
-		case ExpectedPackageDBType.PIECE:
-		case ExpectedPackageDBType.ADLIB_ACTION:
-		case ExpectedPackageDBType.BASELINE_ADLIB_ACTION:
-		case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS: {
-			const existingEntry = pendingPackageUpdates.get(pkg.rundownId)
-			if (existingEntry) {
-				// already queued, add to the batch
-				existingEntry.push(pkg._id)
-			} else {
-				pendingPackageUpdates.set(pkg.rundownId, [pkg._id])
-			}
+	if (pkg.listenToPackageInfoUpdates) {
+		switch (pkg.fromPieceType) {
+			case ExpectedPackageDBType.PIECE:
+			case ExpectedPackageDBType.ADLIB_PIECE:
+			case ExpectedPackageDBType.ADLIB_ACTION:
+			case ExpectedPackageDBType.BASELINE_ADLIB_PIECE:
+			case ExpectedPackageDBType.BASELINE_ADLIB_ACTION:
+			case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS: {
+				const existingEntry = pendingPackageUpdates.get(pkg.rundownId)
+				if (existingEntry) {
+					// already queued, add to the batch
+					existingEntry.push(pkg._id)
+				} else {
+					pendingPackageUpdates.set(pkg.rundownId, [pkg._id])
+				}
 
-			lazyIgnore(
-				`onUpdatedPackageInfoForRundown${pkg.rundownId}`,
-				() => {
-					const packageIds = pendingPackageUpdates.get(pkg.rundownId)
-					if (packageIds) {
-						pendingPackageUpdates.delete(pkg.rundownId)
-						onUpdatedPackageInfoForRundown(pkg.rundownId, packageIds)
-					}
-				},
-				1000
-			)
-			break
+				lazyIgnore(
+					`onUpdatedPackageInfoForRundown${pkg.rundownId}`,
+					() => {
+						const packageIds = pendingPackageUpdates.get(pkg.rundownId)
+						if (packageIds) {
+							pendingPackageUpdates.delete(pkg.rundownId)
+							onUpdatedPackageInfoForRundown(pkg.rundownId, packageIds)
+						}
+					},
+					1000
+				)
+				break
+			}
+			case ExpectedPackageDBType.BUCKET_ADLIB:
+			case ExpectedPackageDBType.BUCKET_ADLIB_ACTION:
+			case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS:
+				// Ignore, as we can't handle that for now
+				break
+			default:
+				assertNever(pkg)
+				break
 		}
-		case ExpectedPackageDBType.BUCKET_ADLIB:
-		case ExpectedPackageDBType.BUCKET_ADLIB_ACTION:
-		case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS:
-			// Ignore, as we can't handle that for now
-			break
-		default:
-			assertNever(pkg)
-			break
 	}
 }
 
@@ -128,13 +131,8 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 						if (piece) {
 							const segmentId = piece.startSegmentId
 
-							const listeningPieces = cache.Pieces.findFetch(
-								(p) =>
-									p.startSegmentId === segmentId &&
-									p.listenToPackageInfoUpdates &&
-									p.listenToPackageInfoUpdates.find((u) => u.packageId === pkg.blueprintPackageId)
-							)
-							if (listeningPieces.length > 0) {
+							const listeningPieces = cache.Pieces.findOne((p) => p.startSegmentId === segmentId)
+							if (listeningPieces) {
 								segmentsToUpdate.add(segmentId)
 							}
 						} else {
