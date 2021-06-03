@@ -82,8 +82,12 @@ export function createMongoCollection<Class extends DBInterface, DBInterface ext
 ): AsyncTransformedCollection<Class, DBInterface> {
 	const collection: TransformedCollection<Class, DBInterface> = new Mongo.Collection<Class>(name, options) as any
 
-	// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
-	return new WrappedAsyncTransformedCollection(collection, name)
+	if ((collection as any)._isMock) {
+		return new WrappedMockCollection(collection, name)
+	} else {
+		// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
+		return new WrappedAsyncTransformedCollection(collection, name)
+	}
 }
 
 export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
@@ -104,7 +108,7 @@ class WrappedTransformedCollection<Class extends DBInterface, DBInterface extend
 		this.name = name
 	}
 
-	private get _isMock() {
+	protected get _isMock() {
 		// @ts-expect-error re-export private property
 		return this.#collection._isMock
 	}
@@ -280,6 +284,98 @@ class WrappedAsyncTransformedCollection<Class extends DBInterface, DBInterface e
 		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
 		await sleep(0)
 		return p
+	}
+
+	async bulkWriteAsync(ops: Array<BulkWriteOperation<DBInterface>>): Promise<void> {
+		if (ops.length > 0) {
+			const rawCollection = this.rawCollection()
+			const bulkWriteResult = await rawCollection.bulkWrite(ops, {
+				ordered: false,
+			})
+			if (
+				bulkWriteResult &&
+				_.isArray(bulkWriteResult.result?.writeErrors) &&
+				bulkWriteResult.result.writeErrors.length
+			) {
+				throw new Meteor.Error(
+					500,
+					`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`
+				)
+			}
+		}
+	}
+}
+
+/** This is for the mock mongo collection, as internally it is sync and so we dont need or want to play around with fibers */
+class WrappedMockCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>
+	extends WrappedTransformedCollection<Class, DBInterface>
+	implements AsyncTransformedCollection<Class, DBInterface> {
+	constructor(collection: TransformedCollection<Class, DBInterface>, name: string | null) {
+		super(collection, name)
+
+		if (!this._isMock) throw new Meteor.Error(500, 'WrappedMockCollection is only valid for a mock collection')
+	}
+	async findFetchAsync(
+		selector: MongoQuery<DBInterface> | string,
+		options?: FindOptions<DBInterface>
+	): Promise<Array<Class>> {
+		await sleep(0)
+		return this.find(selector as any, options).fetch()
+	}
+
+	async findOneAsync(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		options?: FindOptions<DBInterface>
+	): Promise<Class | undefined> {
+		const arr = await this.findFetchAsync(selector, { ...options, limit: 1 })
+		return arr[0]
+	}
+
+	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
+		await sleep(0)
+		return this.insert(doc)
+	}
+
+	async insertManyAsync(docs: DBInterface[]): Promise<Array<DBInterface['_id']>> {
+		await sleep(0)
+		return Promise.all(docs.map((doc) => this.insert(doc)))
+	}
+
+	async insertIgnoreAsync(doc: DBInterface): Promise<DBInterface['_id']> {
+		await sleep(0)
+		try {
+			return this.insert(doc)
+		} catch (err) {
+			if (err.toString().match(/duplicate key/i)) {
+				// @ts-ignore id duplicate, doc._id must exist
+				return doc._id
+			} else {
+				throw err
+			}
+		}
+	}
+
+	async updateAsync(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		modifier: MongoModifier<DBInterface>,
+		options?: UpdateOptions
+	): Promise<number> {
+		await sleep(0)
+		return this.update(selector, modifier, options)
+	}
+
+	async upsertAsync(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		modifier: MongoModifier<DBInterface>,
+		options?: UpsertOptions
+	): Promise<{ numberAffected?: number; insertedId?: DBInterface['_id'] }> {
+		await sleep(0)
+		return this.upsert(selector, modifier, options)
+	}
+
+	async removeAsync(selector: MongoQuery<DBInterface> | DBInterface['_id']): Promise<number> {
+		await sleep(0)
+		return this.remove(selector)
 	}
 
 	async bulkWriteAsync(ops: Array<BulkWriteOperation<DBInterface>>): Promise<void> {
