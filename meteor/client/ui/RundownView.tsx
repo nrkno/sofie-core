@@ -338,7 +338,7 @@ const TimingDisplay = withTranslation()(
 								) : null}
 							</span>
 						)}
-						{rundownPlaylist.expectedDuration ? (
+						{rundownPlaylist.expectedEnd || rundownPlaylist.expectedDuration ? (
 							<React.Fragment>
 								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration ? (
 									<span className="timing-clock plan-end right visual-last-child">
@@ -348,6 +348,11 @@ const TimingDisplay = withTranslation()(
 											format="HH:mm:ss"
 											date={rundownPlaylist.expectedStart + rundownPlaylist.expectedDuration}
 										/>
+									</span>
+								) : !rundownPlaylist.loop && rundownPlaylist.expectedEnd ? (
+									<span className="timing-clock plan-end right visual-last-child">
+										<span className="timing-clock-label right">{t('Planned End')}</span>
+										<Moment interval={0} format="HH:mm:ss" date={rundownPlaylist.expectedEnd} />
 									</span>
 								) : null}
 								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration ? (
@@ -407,14 +412,17 @@ const TimingDisplay = withTranslation()(
 											</span>
 										) : null
 									) : (
-										<span className="timing-clock plan-end right visual-last-child">
-											<span className="timing-clock-label right">{t('Expected End')}</span>
-											<Moment
-												interval={0}
-												format="HH:mm:ss"
-												date={getCurrentTime() + (this.props.timingDurations.remainingRundownDuration || 0)}
-											/>
-										</span>
+									    <span className="timing-clock plan-end right visual-last-child">
+										    <span className="timing-clock-label right">{t('Expected End')}</span>
+										    <Moment
+											    interval={0}
+											    format="HH:mm:ss"
+											    date={
+												    this.props.rundownPlaylist.expectedEnd ??
+												    getCurrentTime() + (this.props.timingDurations.remainingRundownDuration || 0)
+											    }
+										    />
+									    </span>
 									)
 								) : null}
 								{this.props.timingDurations && this.props.rundownCount < 2 ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06

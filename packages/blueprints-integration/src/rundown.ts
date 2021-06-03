@@ -13,6 +13,8 @@ export interface IBlueprintRundownPlaylistInfo {
 	expectedStart?: Time
 	/** Expected duration of the rundown playlist */
 	expectedDuration?: number
+	/** Expected end time of the rundown playlist */
+	expectedEnd?: Time
 	/** Should the rundown playlist use out-of-order timing mode (unplayed content will be played eventually) as opposed to normal timing mode (unplayed content behind the OnAir line has been skipped) */
 	outOfOrderTiming?: boolean
 	/** Should the rundown playlist loop at the end */
@@ -34,6 +36,8 @@ export interface IBlueprintRundown<TMetadata = unknown> {
 	expectedStart?: Time
 	/** Expected duration of the rundown */
 	expectedDuration?: number
+	/** Expected end time of the rundown */
+	expectedEnd?: Time
 
 	/** Arbitrary data storage for plugins */
 	metaData?: TMetadata

@@ -74,6 +74,7 @@ function getShowStyleBaseIdSegmentPartUi(
 			name: 1,
 			expectedStart: 1,
 			expectedDuration: 1,
+			expectedEnd: 1,
 		},
 	})
 	showStyleBaseId = currentRundown?.showStyleBaseId

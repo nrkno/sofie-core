@@ -340,7 +340,9 @@ export const RundownPlaylistUi = DropTarget(
 							</span>
 							<span className="rundown-list-item__text">
 								{playlist.expectedStart ? (
-									<DisplayFormattedTime displayTimestamp={playlist.expectedStart} t={t} />
+									<DisplayFormattedTime timestamp={playlist.expectedStart} t={t} />
+								) : playlist.expectedEnd && playlist.expectedDuration ? (
+									<DisplayFormattedTime timestamp={playlist.expectedEnd - playlist.expectedDuration} t={t} />
 								) : (
 									<span className="dimmed">{t('Not set')}</span>
 								)}
@@ -357,7 +359,16 @@ export const RundownPlaylistUi = DropTarget(
 								)}
 							</span>
 							<span className="rundown-list-item__text">
-								<DisplayFormattedTime displayTimestamp={playlist.modified} t={t} />
+								{playlist.expectedEnd ? (
+									<DisplayFormattedTime timestamp={playlist.expectedEnd} t={t} />
+								) : playlist.expectedStart && playlist.expectedDuration ? (
+									<DisplayFormattedTime timestamp={playlist.expectedStart + playlist.expectedDuration} t={t} />
+								) : (
+									<span className="dimmed">{t('Not set')}</span>
+								)}
+							</span>
+							<span className="rundown-list-item__text">
+								<DisplayFormattedTime timestamp={playlist.modified} t={t} />
 							</span>
 							{rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
 								<span className="rundown-list-item__text">

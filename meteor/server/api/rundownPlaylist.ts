@@ -171,6 +171,7 @@ export function produceRundownPlaylistInfoFromRundown(
 			name: playlistInfo.playlist.name,
 			expectedStart: playlistInfo.playlist.expectedStart,
 			expectedDuration: playlistInfo.playlist.expectedDuration,
+			expectedEnd: playlistInfo.playlist.expectedEnd,
 
 			loop: playlistInfo.playlist.loop,
 
@@ -213,6 +214,7 @@ function defaultPlaylistForRundown(
 		name: rundown.name,
 		expectedStart: rundown.expectedStart,
 		expectedDuration: rundown.expectedDuration,
+		expectedEnd: rundown.expectedEnd,
 
 		modified: getCurrentTime(),
 	}
@@ -487,6 +489,7 @@ function sortDefaultRundownInPlaylistOrder(rundowns: ReadonlyDeep<Array<DBRundow
 	return mongoFindOptions<ReadonlyDeep<DBRundown>, ReadonlyDeep<DBRundown>>(rundowns, {
 		sort: {
 			expectedStart: 1,
+			expectedEnd: 1,
 			name: 1,
 			_id: 1,
 		},

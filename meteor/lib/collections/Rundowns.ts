@@ -86,6 +86,7 @@ export class Rundown implements DBRundown {
 	public description?: string
 	public expectedStart?: Time
 	public expectedDuration?: number
+	public expectedEnd?: Time
 	public metaData?: unknown
 	// From IBlueprintRundownDB:
 	public _id: RundownId

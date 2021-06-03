@@ -303,6 +303,9 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 											<span>{t('Show Style')}</span>
 											<span>{t('On Air Start Time')}</span>
 											<span>{t('Duration')}</span>
+											{this.props.rundownPlaylists.some(
+												(p) => !!p.expectedEnd || p.rundowns.some((r) => r.expectedEnd)
+											) && <span>{t('Expected End Time')}</span>}
 											<span>{t('Last Updated')}</span>
 											{this.props.rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
 												<span>{t('Shelf Layout')}</span>
