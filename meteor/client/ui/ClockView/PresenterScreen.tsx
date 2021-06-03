@@ -94,7 +94,7 @@ function getShowStyleBaseIdSegmentPartUi(
 				currentRundown,
 				orderedSegmentsAndParts.segments[segmentIndex],
 				new Set(orderedSegmentsAndParts.segments.map((s) => s._id).slice(0, segmentIndex)),
-				new Set(rundownOrder.slice(0, rundownIndex)),
+				rundownOrder.slice(0, rundownIndex),
 				rundownsToShowstyles,
 				orderedSegmentsAndParts.parts.map((part) => part._id),
 				currentPartInstance,
