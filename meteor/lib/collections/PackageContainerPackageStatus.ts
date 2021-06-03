@@ -16,10 +16,10 @@ import { ExpectedPackageId } from './ExpectedPackages'
  */
 
 /** Id of a package container */
-export type PackageContainerId = ProtectedString<'PackageContainerId'>
+export type PackageContainerPackageId = ProtectedString<'PackageContainerPackageId'>
 
 export interface PackageContainerPackageStatusDB {
-	_id: PackageContainerId // unique id, see getPackageContainerPackageId()
+	_id: PackageContainerPackageId // unique id, see getPackageContainerPackageId()
 
 	/** The studio this PackageContainer is defined in */
 	studioId: StudioId
@@ -39,8 +39,8 @@ export interface PackageContainerPackageStatusDB {
 export const PackageContainerPackageStatuses: TransformedCollection<
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageStatusDB
-> = createMongoCollection<PackageContainerPackageStatusDB>('packageContainerStatuses')
-registerCollection('PackageContainerStatuses', PackageContainerPackageStatuses)
+> = createMongoCollection<PackageContainerPackageStatusDB>('packageContainerPackageStatuses')
+registerCollection('PackageContainerPackageStatuses', PackageContainerPackageStatuses)
 
 registerIndex(PackageContainerPackageStatuses, {
 	studioId: 1,
@@ -52,6 +52,6 @@ export function getPackageContainerPackageId(
 	studioId: StudioId,
 	containerId: string,
 	packageId: string | ExpectedPackageId
-): PackageContainerId {
+): PackageContainerPackageId {
 	return protectString(`${studioId}_${containerId}_${packageId}`)
 }

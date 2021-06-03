@@ -7,7 +7,12 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
-import { RundownTiming, computeSegmentDuration, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
+import {
+	RundownTiming,
+	computeSegmentDuration,
+	TimingEvent,
+	computeSegmentDisplayDuration,
+} from '../RundownView/RundownTiming/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import {
@@ -24,7 +29,7 @@ import { NoteType, SegmentNote, TrackedNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
-import { unprotectString, equalSets, equivalentArrays, equalArrays } from '../../../lib/lib'
+import { unprotectString, equalSets, equivalentArrays, protectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
@@ -43,14 +48,25 @@ import RundownViewEventBus, {
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
+import { SegmentTimelinePartClass } from './SegmentTimelinePart'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
 const SIMULATED_PLAYBACK_CROSSFADE_STEP = 0.02
 
 export const LIVE_LINE_TIME_PADDING = 150
-const LIVELINE_HISTORY_SIZE = 100
-const TIMELINE_RIGHT_PADDING = LIVELINE_HISTORY_SIZE + LIVE_LINE_TIME_PADDING
+export const LIVELINE_HISTORY_SIZE = 100
+export const TIMELINE_RIGHT_PADDING =
+	// TODO: This is only temporary, for hands-on tweaking -- Jan Starzak, 2021-06-01
+	parseInt(localStorage.getItem('EXP_timeline_right_padding')!) || LIVELINE_HISTORY_SIZE + LIVE_LINE_TIME_PADDING
+const FALLBACK_ZOOM_FACTOR = MAGIC_TIME_SCALE_FACTOR
+export let MINIMUM_ZOOM_FACTOR = FALLBACK_ZOOM_FACTOR
+
+Meteor.startup(() => {
+	MINIMUM_ZOOM_FACTOR = // TODO: This is only temporary, for hands-on tweaking -- Jan Starzak, 2021-06-01
+		parseInt(localStorage.getItem('EXP_timeline_min_time_scale')!) ||
+		MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale
+})
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -417,6 +433,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				}
 			})
 			window.addEventListener('resize', this.onWindowResize)
+			this.updateMaxTimeScale()
+				.then(() => this.showEntireSegment())
+				.catch(console.error)
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps) {
@@ -468,7 +487,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.stopLive()
 				if (Settings.autoRewindLeavingSegment) {
 					this.onRewindSegment()
-					this.onShowEntireSegment('', true)
+					this.onShowEntireSegment('componentDidUpdate')
 				}
 
 				if (this.props.segmentui && this.props.segmentui.orphaned) {
@@ -646,7 +665,18 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		/** The user has scrolled scrollLeft seconds to the left in a child component */
 		onScroll = (scrollLeft: number, event: any) => {
 			this.setState({
-				scrollLeft: scrollLeft,
+				scrollLeft: Math.max(
+					0,
+					Math.min(
+						scrollLeft,
+						(computeSegmentDuration(
+							this.context.durations,
+							this.props.parts.map((i) => i.instance.part._id),
+							true
+						) || 1) -
+							LIVELINE_HISTORY_SIZE / this.state.timeScale
+					)
+				),
 				followLiveLine: false,
 			})
 			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
@@ -666,25 +696,51 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
+		onGoToPartInner = (part: PartUi, timingDurations: RundownTiming.RundownTimingContext, zoomInToFit?: boolean) => {
+			let newScale: number | undefined
+
+			let scrollLeft =
+				((timingDurations.partDisplayStartsAt && timingDurations.partDisplayStartsAt[unprotectString(part.partId)]) ||
+					0) -
+				((timingDurations.partDisplayStartsAt &&
+					timingDurations.partDisplayStartsAt[unprotectString(this.props.parts[0].partId)]) ||
+					0)
+
+			if (zoomInToFit) {
+				const timelineWidth = getElementWidth(this.timelineDiv)
+				newScale =
+					(Math.max(0, timelineWidth - TIMELINE_RIGHT_PADDING * 2) / 3 || 1) /
+					(SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
+
+				scrollLeft = Math.max(0, scrollLeft - TIMELINE_RIGHT_PADDING / newScale)
+			}
+
+			this.setState({
+				scrollLeft,
+				timeScale: newScale ?? this.state.timeScale,
+				showingAllSegment: newScale !== undefined ? false : this.state.showingAllSegment,
+			})
+		}
+
 		onGoToPart = (e: GoToPartEvent) => {
 			if (this.props.segmentId === e.segmentId) {
+				const timingDurations = this.context?.durations as RundownTiming.RundownTimingContext
+
 				const part = this.props.parts.find((part) => part.partId === e.partId)
 				if (part) {
-					this.setState({
-						scrollLeft: part.startsAt,
-					})
+					this.onGoToPartInner(part, timingDurations, e.zoomInToFit)
 				}
 			}
 		}
 
 		onGoToPartInstance = (e: GoToPartInstanceEvent) => {
 			if (this.props.segmentId === e.segmentId) {
-				for (const part of this.props.parts) {
-					if (part.instance._id === e.partInstanceId) {
-						this.setState({
-							scrollLeft: part.startsAt,
-						})
-					}
+				const timingDurations = this.context?.durations as RundownTiming.RundownTimingContext
+
+				const part = this.props.parts.find((part) => part.instance._id === e.partInstanceId)
+
+				if (part) {
+					this.onGoToPartInner(part, timingDurations, e.zoomInToFit)
 				}
 			}
 		}
@@ -787,32 +843,38 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		getShowAllTimeScale = () => {
 			let newScale =
 				(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
-				(computeSegmentDuration(
-					this.context.durations,
-					this.props.parts.map((i) => i.instance.part._id),
-					true
-				) || 1)
-			newScale = Math.min(MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale, newScale)
+				((computeSegmentDisplayDuration(this.context.durations, this.props.parts) || 1) -
+					(this.state.isLiveSegment ? this.state.livePosition : 0))
+			newScale = Math.min(MINIMUM_ZOOM_FACTOR, newScale)
+			if (!Number.isFinite(newScale) || newScale === 0) {
+				newScale = FALLBACK_ZOOM_FACTOR
+			}
 			return newScale
 		}
 
 		updateMaxTimeScale = () => {
-			const maxTimeScale = this.getShowAllTimeScale()
 			return new Promise<number>((resolve) =>
 				this.setState(
-					{
-						maxTimeScale,
+					() => {
+						const maxTimeScale = this.getShowAllTimeScale()
+						return {
+							maxTimeScale,
+						}
 					},
-					() => resolve(maxTimeScale)
+					() => resolve(this.state.maxTimeScale)
 				)
 			)
 		}
 
 		showEntireSegment = () => {
-			this.onTimeScaleChange(this.getShowAllTimeScale())
+			this.updateMaxTimeScale()
+				.then(() => {
+					this.onTimeScaleChange(this.getShowAllTimeScale())
+				})
+				.catch(console.error)
 		}
 
-		onShowEntireSegment = (event: any, limitScale?: boolean) => {
+		onShowEntireSegment = (event: any) => {
 			this.setState({
 				scrollLeft: 0,
 				followLiveLine: this.state.isLiveSegment ? true : this.state.followLiveLine,

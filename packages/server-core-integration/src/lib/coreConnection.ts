@@ -451,7 +451,7 @@ export class CoreConnection extends EventEmitter {
 		this.callMethod(PeripheralDeviceAPI.methods.pingWithCommand, [message])
 		.catch(e => this._emitError('watchdogPing' + e))
 
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			let i = 0
 			let checkPingReply = () => {
 				if (this._watchDogPingResponse === message) {

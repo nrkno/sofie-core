@@ -267,11 +267,11 @@ export function postProcessBucketAdLib(
 		...itemOrig,
 		_id: protectString(
 			innerContext.getHashId(
-				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${externalId}`
+				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
 			)
 		),
 		externalId,
-		studioId: innerContext.studioId,
+		studioId: innerContext.studioIdProtected,
 		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
@@ -304,11 +304,11 @@ export function postProcessBucketAction(
 		...itemOrig,
 		_id: protectString(
 			innerContext.getHashId(
-				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${externalId}`
+				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
 			)
 		),
 		externalId,
-		studioId: innerContext.studioId,
+		studioId: innerContext.studioIdProtected,
 		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,

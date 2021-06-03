@@ -32,6 +32,7 @@ import { profiler } from '../profiler'
 import { selectShowStyleVariant } from '../rundown'
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import { CacheForIngest } from './cache'
+import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { LocalIngestRundown, LocalIngestSegment } from './ingestCache'
 import {
 	getSegmentId,
@@ -246,18 +247,35 @@ export async function calculateSegmentsFromIngestData(
  * @param data The data to save
  * @param isWholeRundownUpdate Whether this is a whole rundown change (This will remove any stray items)
  */
-export async function saveSegmentChangesToCache(
+export function saveSegmentChangesToCache(
 	cache: CacheForIngest,
 	data: UpdateSegmentsResult,
 	isWholeRundownUpdate: boolean
-): Promise<void> {
+): void {
 	const newPartIds = data.parts.map((p) => p._id)
 	const newSegmentIds = data.segments.map((p) => p._id)
 
-	// Note: These are done in this order to ensure that the afterRemoveAll don't delete anything that was simply moved
+	const partChanges = saveIntoCache<Part, DBPart>(
+		cache.Parts,
+		isWholeRundownUpdate ? {} : { $or: [{ segmentId: { $in: newSegmentIds } }, { _id: { $in: newPartIds } }] },
+		data.parts,
+		{
+			afterInsert(part) {
+				logger.debug('inserted part ' + part._id)
+			},
+			afterUpdate(part) {
+				logger.debug('updated part ' + part._id)
+			},
+			afterRemove(part) {
+				logger.debug('deleted part ' + part._id)
+			},
+		}
+	)
+	const affectedPartIds = [...partChanges.removed, ...newPartIds]
+
 	saveIntoCache<Piece, Piece>(
 		cache.Pieces,
-		isWholeRundownUpdate ? {} : { startPartId: { $in: newPartIds } },
+		isWholeRundownUpdate ? {} : { startPartId: { $in: affectedPartIds } },
 		data.pieces,
 		{
 			afterInsert(piece) {
@@ -274,7 +292,7 @@ export async function saveSegmentChangesToCache(
 	)
 	saveIntoCache<AdLibAction, AdLibAction>(
 		cache.AdLibActions,
-		isWholeRundownUpdate ? {} : { partId: { $in: newPartIds } },
+		isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
 		data.adlibActions,
 		{
 			afterInsert(adlibAction) {
@@ -291,7 +309,7 @@ export async function saveSegmentChangesToCache(
 	)
 	saveIntoCache<AdLibPiece, AdLibPiece>(
 		cache.AdLibPieces,
-		isWholeRundownUpdate ? {} : { partId: { $in: newPartIds } },
+		isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
 		data.adlibPieces,
 		{
 			afterInsert(adLibPiece) {
@@ -303,22 +321,6 @@ export async function saveSegmentChangesToCache(
 			},
 			afterRemove(adLibPiece) {
 				logger.debug('deleted adLibPiece ' + adLibPiece._id)
-			},
-		}
-	)
-	saveIntoCache<Part, DBPart>(
-		cache.Parts,
-		isWholeRundownUpdate ? {} : { $or: [{ segmentId: { $in: newSegmentIds } }, { _id: { $in: newPartIds } }] },
-		data.parts,
-		{
-			afterInsert(part) {
-				logger.debug('inserted part ' + part._id)
-			},
-			afterUpdate(part) {
-				logger.debug('updated part ' + part._id)
-			},
-			afterRemove(part) {
-				logger.debug('deleted part ' + part._id)
 			},
 		}
 	)
@@ -345,7 +347,7 @@ export async function updateSegmentFromIngestData(
 	if (!canSegmentBeUpdated(rundown, segment, isNewSegment)) return null
 
 	const segmentChanges = await calculateSegmentsFromIngestData(cache, [ingestSegment])
-	await saveSegmentChangesToCache(cache, segmentChanges, false)
+	saveSegmentChangesToCache(cache, segmentChanges, false)
 
 	span?.end()
 	return {
@@ -463,7 +465,7 @@ export async function updateRundownFromIngestData(
 		identifier: `rundownId=${dbRundown._id}`,
 	})
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)
-	logger.info(`... got ${rundownRes.baseline.length} objects from baseline.`)
+	logger.info(`... got ${rundownRes.baseline.timelineObjects.length} objects from baseline.`)
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
 	logger.info(`... got ${(rundownRes.globalActions || []).length} adLib actions from baseline.`)
 
@@ -475,7 +477,7 @@ export async function updateRundownFromIngestData(
 				objects: postProcessRundownBaselineItems(
 					blueprintRundownContext,
 					showStyle.base.blueprintId,
-					rundownRes.baseline
+					rundownRes.baseline.timelineObjects
 				),
 			},
 		]),
@@ -537,7 +539,9 @@ export async function updateRundownFromIngestData(
 		segmentChanges.adlibActions.push(...cache.AdLibActions.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
 	}
 
-	await saveSegmentChangesToCache(cache, segmentChanges, true)
+	updateBaselineExpectedPackagesOnRundown(cache, rundownRes.baseline)
+
+	saveSegmentChangesToCache(cache, segmentChanges, true)
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)
 

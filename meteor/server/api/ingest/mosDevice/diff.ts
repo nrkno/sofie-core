@@ -38,8 +38,8 @@ export async function diffAndApplyChanges(
 	oldIngestRundown: ReadonlyDeep<LocalIngestRundown> | undefined
 	// newIngestParts: AnnotatedIngestPart[]
 ): Promise<CommitIngestData | null> {
-	if (!newIngestRundown) throw new Meteor.Error(`handleMosDeleteStory lost the new IngestRundown...`)
-	if (!oldIngestRundown) throw new Meteor.Error(`handleMosDeleteStory lost the old IngestRundown...`)
+	if (!newIngestRundown) throw new Meteor.Error(`diffAndApplyChanges lost the new IngestRundown...`)
+	if (!oldIngestRundown) throw new Meteor.Error(`diffAndApplyChanges lost the old IngestRundown...`)
 
 	const rundown = getRundown(cache)
 	if (!canRundownBeUpdated(rundown, false)) return null
@@ -47,7 +47,7 @@ export async function diffAndApplyChanges(
 	const span = profiler.startSpan('mosDevice.ingest.diffAndApplyChanges')
 
 	// Fetch all existing segments:
-	const oldSegments = cache.Segments.findFetch({ rundownId: rundown._id })
+	const oldSegments = cache.Segments.findFetch()
 
 	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
 	const newSegmentEntries = compileSegmentEntries(newIngestRundown.segments)
@@ -87,7 +87,7 @@ export async function diffAndApplyChanges(
 		removeSegmentContents(cache, segmentIdsToRemove)
 	}
 
-	await saveSegmentChangesToCache(cache, segmentChanges, false)
+	saveSegmentChangesToCache(cache, segmentChanges, false)
 
 	span?.end()
 	return literal<CommitIngestData>({
@@ -118,7 +118,7 @@ function applyExternalIdDiff(
 		renamedSegments.set(oldSegmentId, newSegmentId)
 		if (oldSegment) {
 			cache.Segments.remove(oldSegmentId)
-			cache.Segments.insert({
+			cache.Segments.replace({
 				...oldSegment,
 				_id: newSegmentId,
 			})

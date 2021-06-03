@@ -147,9 +147,13 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	 * Note: this wipes the current collection first
 	 * @param documents The documents to store
 	 */
-	fillWithDataFromArray(documents: ReadonlyDeep<Array<Class>>) {
-		this.originalDocuments = documents
-		this.documents = new Map()
+	fillWithDataFromArray(documents: ReadonlyDeep<Array<Class>>, append = false) {
+		if (append) {
+			this.originalDocuments = this.originalDocuments.concat(documents)
+		} else {
+			this.originalDocuments = documents
+			this.documents = new Map()
+		}
 		_.each(documents, (doc) => {
 			const id = doc._id
 			if (this.documents.has(id)) {
@@ -291,7 +295,7 @@ export class DbCacheWriteCollection<
 
 	/** Returns true if a doc was replace, false if inserted */
 	replace(doc: DBInterface | ReadonlyDeep<DBInterface>): boolean {
-		this.assertNotToBeRemoved('repolace')
+		this.assertNotToBeRemoved('replace')
 
 		const span = profiler.startSpan(`DBCache.replace.${this.name}`)
 		waitForPromise(this._initialize())
@@ -302,6 +306,7 @@ export class DbCacheWriteCollection<
 		const oldDoc = this.documents.get(_id)
 		if (oldDoc) {
 			oldDoc.updated = true
+			delete oldDoc.removed
 			oldDoc.document = this._transform(clone(doc))
 		} else {
 			this.documents.set(_id, {

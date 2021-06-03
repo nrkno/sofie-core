@@ -8,6 +8,7 @@ import {
 	IBlueprintRundownDB,
 	IBlueprintMutatablePart,
 	IBlueprintSegmentDB,
+	IBlueprintPieceDB,
 } from './rundown'
 import { BlueprintMappings } from './studio'
 import { OnGenerateTimelineObj } from './timeline'
@@ -71,6 +72,9 @@ export function isUserNotesContext(obj: unknown): obj is IUserNotesContext {
 /** Studio */
 
 export interface IStudioContext extends ICommonContext {
+	/** The id of the studio */
+	readonly studioId: string
+
 	/** Returns the Studio blueprint config. If StudioBlueprintManifest.preprocessConfig is provided, a config preprocessed by that function is returned, otherwise it is returned unprocessed */
 	getStudioConfig: () => unknown
 	/** Returns a reference to a studio config value, that can later be resolved in Core */
@@ -136,8 +140,10 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 			pieceMetaDataFilter?: any
 		}
 	): IBlueprintPiece | undefined
-	/** Gets the PartInstance for a PieceInstane retrieved from findLastPieceOnLayer. This primarily allows for accessing metadata of the PartInstance */
+	/** Gets the PartInstance for a PieceInstance retrieved from findLastPieceOnLayer. This primarily allows for accessing metadata of the PartInstance */
 	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance
+	/** Gets the Part for a Piece retrieved from findLastScriptedPieceOnLayer. This primarily allows for accessing metadata of the Part */
+	getPartForPreviousPiece(piece: IBlueprintPieceDB): IBlueprintPart | undefined
 	/** Fetch the showstyle config for the specified part */
 	// getNextShowStyleConfig(): Readonly<{ [key: string]: ConfigItemValue }>
 

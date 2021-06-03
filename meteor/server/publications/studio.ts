@@ -82,6 +82,7 @@ meteorPublish(PubSub.mediaObjects, function (studioId, selector, token) {
 	return null
 })
 meteorPublish(PubSub.expectedPackages, function (selector, token) {
+	// Note: This differs from the expected packages sent to the Package Manager, instead @see PubSub.expectedPackagesForDevice
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<ExpectedPackageDBBase> = {
 		fields: {},

@@ -50,11 +50,13 @@ export interface SwitchToShelfTabEvent extends IEventContext {
 export interface GoToPartEvent extends IEventContext {
 	segmentId: SegmentId
 	partId: PartId
+	zoomInToFit?: boolean
 }
 
 export interface GoToPartInstanceEvent extends IEventContext {
 	segmentId: SegmentId
 	partInstanceId: PartInstanceId
+	zoomInToFit?: boolean
 }
 
 export interface SelectPieceEvent extends IEventContext {

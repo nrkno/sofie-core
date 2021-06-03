@@ -50,6 +50,9 @@ import deepExtend from 'deep-extend'
 import { logger } from '../logging'
 import { generateExpectedPackagesForPartInstance } from '../api/ingest/expectedPackages'
 import { PartInstance } from '../../lib/collections/PartInstances'
+/*
+ * This file contains publications for the peripheralDevices, such as playout-gateway, mos-gateway and package-manager
+ */
 
 function checkAccess(cred: Credentials | ResolvedCredentials, selector) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -197,8 +200,8 @@ meteorCustomPublishArray(
 									_id: 1,
 									activationId: 1,
 									rehearsal: 1,
-									currentPartInstanceId: 1,
-									nextPartInstanceId: 1,
+									currentPartInstanceId: 1, // So that it invalidates when the current changes
+									nextPartInstanceId: 1, // So that it invalidates when the next changes
 								},
 							}
 						).observe({
@@ -245,6 +248,7 @@ meteorCustomPublishArray(
 					studio: Studio | undefined
 					expectedPackages: ExpectedPackageDB[]
 					routedExpectedPackages: ResultingExpectedPackage[]
+					/** ExpectedPackages relevant for playout */
 					routedPlayoutExpectedPackages: ResultingExpectedPackage[]
 					activePlaylist: DBRundownPlaylist | undefined
 					activeRundowns: DBRundown[]
@@ -287,12 +291,11 @@ meteorCustomPublishArray(
 							)
 						}
 					}
-
 					if (context.invalidateRundownPlaylist) {
 						context.invalidateRundownPlaylist = false
 						const activePlaylist = RundownPlaylists.findOne({
 							studioId: studioId,
-							active: true,
+							activationId: { $exists: true },
 						})
 						context.activePlaylist = activePlaylist
 						context.activeRundowns = context.activePlaylist
@@ -310,15 +313,11 @@ meteorCustomPublishArray(
 
 					const studio: Studio = context.studio
 
-					interface MappingsExtWithPackage {
-						[layerName: string]: MappingExt & { expectedPackages: ExpectedPackageDB[] }
-					}
-
 					if (invalidateRoutedExpectedPackages) {
 						// Map the expectedPackages onto their specified layer:
 						const routedMappingsWithPackages = routeExpectedPackages(studio, context.expectedPackages)
 
-						if (!Object.keys(routedMappingsWithPackages).length) {
+						if (context.expectedPackages.length && !Object.keys(routedMappingsWithPackages).length) {
 							logger.info(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
 						}
 
@@ -326,42 +325,62 @@ meteorCustomPublishArray(
 							context.studio,
 							filterPlayoutDeviceIds,
 							routedMappingsWithPackages,
-							1
+							Priorities.OTHER // low priority
 						)
 					}
 					if (invalidateRoutedPlayoutExpectedPackages) {
 						// Use the expectedPackages of the Current and Next Parts:
-						const playoutExpectedPackages: ExpectedPackageDB[] = [
-							...(context.nextPartInstance
-								? generateExpectedPackagesForPartInstance(
-										context.studio,
-										context.nextPartInstance.rundownId,
-										context.nextPartInstance
-								  )
-								: []),
-							...(context.currentPartInstance
-								? generateExpectedPackagesForPartInstance(
-										context.studio,
-										context.currentPartInstance.rundownId,
-										context.currentPartInstance
-								  )
-								: []),
-						]
+						const playoutNextExpectedPackages: ExpectedPackageDB[] = context.nextPartInstance
+							? generateExpectedPackagesForPartInstance(
+									context.studio,
+									context.nextPartInstance.rundownId,
+									context.nextPartInstance
+							  )
+							: []
+
+						const playoutCurrentExpectedPackages: ExpectedPackageDB[] = context.currentPartInstance
+							? generateExpectedPackagesForPartInstance(
+									context.studio,
+									context.currentPartInstance.rundownId,
+									context.currentPartInstance
+							  )
+							: []
 
 						// Map the expectedPackages onto their specified layer:
-						const routedMappingsWithPackages = routeExpectedPackages(studio, playoutExpectedPackages)
+						const currentRoutedMappingsWithPackages = routeExpectedPackages(
+							studio,
+							playoutCurrentExpectedPackages
+						)
+						const nextRoutedMappingsWithPackages = routeExpectedPackages(
+							studio,
+							playoutNextExpectedPackages
+						)
 
-						if (!Object.keys(routedMappingsWithPackages).length) {
-							logger.info(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
+						if (
+							context.currentPartInstance &&
+							!Object.keys(currentRoutedMappingsWithPackages).length &&
+							!Object.keys(nextRoutedMappingsWithPackages).length
+						) {
+							logger.debug(
+								`Pub.expectedPackagesForDevice: Both currentRoutedMappingsWithPackages and nextRoutedMappingsWithPackages are empty`
+							)
 						}
 
 						// Filter, keep only the routed mappings for this device:
-						context.routedPlayoutExpectedPackages = generateExpectedPackages(
-							context.studio,
-							filterPlayoutDeviceIds,
-							routedMappingsWithPackages,
-							0
-						)
+						context.routedPlayoutExpectedPackages = [
+							...generateExpectedPackages(
+								context.studio,
+								filterPlayoutDeviceIds,
+								currentRoutedMappingsWithPackages,
+								Priorities.PLAYOUT_CURRENT
+							),
+							...generateExpectedPackages(
+								context.studio,
+								filterPlayoutDeviceIds,
+								nextRoutedMappingsWithPackages,
+								Priorities.PLAYOUT_NEXT
+							),
+						]
 					}
 
 					const packageContainers: { [containerId: string]: PackageContainer } = {}
@@ -432,11 +451,21 @@ interface ResultingExpectedPackage {
 	playoutDeviceId: PeripheralDeviceId
 }
 
+enum Priorities {
+	// Lower priorities are done first
+
+	/** Highest priority */
+	PLAYOUT_CURRENT = 0,
+	/** Second-to-highest priority */
+	PLAYOUT_NEXT = 1,
+	OTHER = 9,
+}
+
 function generateExpectedPackages(
 	studio: Studio,
 	filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
 	routedMappingsWithPackages: MappingsExtWithPackage,
-	priority: number
+	priority: Priorities
 ) {
 	const routedExpectedPackages: ResultingExpectedPackage[] = []
 
@@ -459,18 +488,19 @@ function generateExpectedPackages(
 							containerId: packageSource.containerId,
 						}
 
+						/** Array of both the accessors of the expected package and the source */
 						const accessorIds = _.uniq(
-							Object.keys(lookedUpSource.container.accessors).concat(Object.keys(packageSource.accessors))
+							Object.keys(lookedUpSource.container.accessors).concat(
+								Object.keys(packageSource.accessors || {})
+							)
 						)
 
 						for (const accessorId of accessorIds) {
-							const sourceAccessor = lookedUpSource.container.accessors[accessorId] as
-								| Accessor.Any
-								| undefined
+							const sourceAccessor: Accessor.Any | undefined =
+								lookedUpSource.container.accessors[accessorId]
 
-							const packageAccessor = packageSource.accessors[accessorId] as
-								| AccessorOnPackage.Any
-								| undefined
+							const packageAccessor: AccessorOnPackage.Any | undefined =
+								packageSource.accessors?.[accessorId]
 
 							if (packageAccessor && sourceAccessor && packageAccessor.type === sourceAccessor.type) {
 								combinedSource.accessors[accessorId] = deepExtend({}, sourceAccessor, packageAccessor)
@@ -540,9 +570,9 @@ function generateExpectedPackages(
 
 						routedExpectedPackages.push({
 							expectedPackage: unprotectObject(expectedPackage),
-							priority: priority,
 							sources: combinedSources,
 							targets: combinedTargets,
+							priority: priority,
 							playoutDeviceId: mapping.deviceId,
 						})
 					} else {

@@ -10,11 +10,11 @@ import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { setMinimumTakeSpan } from '../../userActions'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { RESTART_SALT } from '../../../../lib/api/userActions'
-import { getHash, waitForPromise, protectString } from '../../../../lib/lib'
+import { getHash, waitForPromise, protectString, getRandomId } from '../../../../lib/lib'
 import { UserActionsLog } from '../../../../lib/collections/UserActionsLog'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { ClientAPI } from '../../../../lib/api/client'
-import { Bucket, Buckets } from '../../../../lib/collections/Buckets'
+import { Bucket, BucketId, Buckets } from '../../../../lib/collections/Buckets'
 import { Random } from 'meteor/random'
 import { BucketAdLibs } from '../../../../lib/collections/BucketAdlibs'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
@@ -40,7 +40,7 @@ namespace UserActionAPI {
 describe('User Actions - Buckets', () => {
 	let env: DefaultEnvironment
 	function setUpMockBucket() {
-		const bucketId = protectString(Random.id())
+		const bucketId: BucketId = getRandomId()
 		const bucket: Bucket = {
 			_id: bucketId,
 			_rank: 0,
@@ -55,7 +55,7 @@ describe('User Actions - Buckets', () => {
 
 		for (let i = 0; i < 3; i++) {
 			BucketAdLibs.insert({
-				_id: protectString(Random.id()),
+				_id: getRandomId(),
 				_rank: 0,
 				bucketId: bucketId,
 				externalId: `FAKE_EXTERNAL_ID_${i}`,
