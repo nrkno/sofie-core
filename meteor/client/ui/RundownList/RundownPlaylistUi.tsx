@@ -341,6 +341,8 @@ export const RundownPlaylistUi = DropTarget(
 							<span className="rundown-list-item__text">
 								{playlist.expectedStart ? (
 									<JonasFormattedTime timestamp={playlist.expectedStart} t={t} />
+								) : playlist.expectedEnd && playlist.expectedDuration ? (
+									<JonasFormattedTime timestamp={playlist.expectedEnd - playlist.expectedDuration} t={t} />
 								) : (
 									<span className="dimmed">{t('Not set')}</span>
 								)}
@@ -352,6 +354,15 @@ export const RundownPlaylistUi = DropTarget(
 									<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
 										<LoopingIcon />
 									</Tooltip>
+								) : (
+									<span className="dimmed">{t('Not set')}</span>
+								)}
+							</span>
+							<span className="rundown-list-item__text">
+								{playlist.expectedEnd ? (
+									<JonasFormattedTime timestamp={playlist.expectedEnd} t={t} />
+								) : playlist.expectedStart && playlist.expectedDuration ? (
+									<JonasFormattedTime timestamp={playlist.expectedStart + playlist.expectedDuration} t={t} />
 								) : (
 									<span className="dimmed">{t('Not set')}</span>
 								)}

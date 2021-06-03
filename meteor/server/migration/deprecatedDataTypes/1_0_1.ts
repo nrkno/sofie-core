@@ -14,6 +14,7 @@ export interface Rundown {
 	name: string
 	expectedStart?: Time
 	expectedDuration?: number
+	expectedEnd?: Time
 	metaData?: {
 		[key: string]: any
 	}
@@ -61,6 +62,7 @@ export function makePlaylistFromRundown_1_0_0(
 		nextPartInstanceId: null,
 		expectedDuration: rundown.expectedDuration,
 		expectedStart: rundown.expectedStart,
+		expectedEnd: rundown.expectedEnd,
 		holdState: rundown.holdState,
 		name: rundown.name,
 		nextPartManual: rundown.nextPartManual,

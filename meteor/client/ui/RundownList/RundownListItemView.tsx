@@ -109,6 +109,8 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			<span className="rundown-list-item__text">
 				{rundown.expectedStart ? (
 					<JonasFormattedTime timestamp={rundown.expectedStart} t={t} />
+				) : rundown.expectedEnd && rundown.expectedDuration ? (
+					<JonasFormattedTime timestamp={rundown.expectedEnd - rundown.expectedDuration} t={t} />
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
@@ -134,6 +136,15 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 							<LoopingIcon />
 						</span>
 					</Tooltip>
+				) : (
+					<span className="dimmed">{t('Not set')}</span>
+				)}
+			</span>
+			<span className="rundown-list-item__text">
+				{rundown.expectedEnd ? (
+					<JonasFormattedTime timestamp={rundown.expectedEnd} t={t} />
+				) : rundown.expectedStart && rundown.expectedDuration ? (
+					<JonasFormattedTime timestamp={rundown.expectedStart + rundown.expectedDuration} t={t} />
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
