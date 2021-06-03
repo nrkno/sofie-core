@@ -200,7 +200,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 					{props.noticeLevel !== null ? renderNotice(props.noticeLevel, props.noticeMessage) : null}
 					{props.status !== RundownAPI.PieceStatusCode.SOURCE_NOT_SET ? (
 						<div className="segment-timeline__mini-inspector__properties">
-							<span className="mini-inspector__label">{t('File name')}</span>
+							<span className="mini-inspector__label">{t('Clip:')}</span>
 							<span className="mini-inspector__value">{props.content && props.content.fileName}</span>
 						</div>
 					) : null}

@@ -108,6 +108,16 @@ All notable changes to this project will be documented in this file. See [standa
 * **PresenterScreen:** LiveSpeak piece Icon uses old styling ([0775268](https://github.com/nrkno/tv-automation-server-core/commit/0775268552cda88cdbbc8aa641c24d5db7e05527))
 * **PresenterScreen:** showStyleBases subscription is not reactive ([6c0490b](https://github.com/nrkno/tv-automation-server-core/commit/6c0490b84e574736bd8d49af87ef94930e9f7ba3))
 
+### [1.32.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.1...v1.32.2) (2021-06-02)
+
+
+### Bug Fixes
+
+* deleting first part before take will not reset the nexted part ([323587b](https://github.com/nrkno/tv-automation-server-core/commit/323587b8b5a963e5a9f591e52abf1f7f8dd7e5a2))
+* improve mos operation logging showing `[object object]` ([1d3122d](https://github.com/nrkno/tv-automation-server-core/commit/1d3122d5a31187b7cb6d630ead17f2d8e4316abb))
+* mos operation merging two segments ([792dbdd](https://github.com/nrkno/tv-automation-server-core/commit/792dbdd24c916f897a209b4101a7a18af9406dd5))
+* presenter screen crashes if segment can't be found ([2ab2238](https://github.com/nrkno/tv-automation-server-core/commit/2ab2238ec16e25dc4d9416639193eb1ae8f6a3aa))
+
 ### [1.32.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.32.1) (2021-05-20)
 
 

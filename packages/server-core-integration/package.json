@@ -65,7 +65,7 @@
 		"precommit": "lint-staged"
 	},
 	"engines": {
-		"node": ">=10.10"
+		"node": ">=12.20"
 	},
 	"files": [
 		"/dist",
@@ -89,7 +89,7 @@
 	"dependencies": {
 		"data-store": "^4.0.3",
 		"ejson": "^2.2.0",
-		"faye-websocket": "^0.11.3",
+		"faye-websocket": "^0.11.4",
 		"got": "^11.8.2",
 		"tslib": "^2.0.3",
 		"underscore": "^1.12.1"

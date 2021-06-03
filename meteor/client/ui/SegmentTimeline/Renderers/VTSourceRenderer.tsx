@@ -398,7 +398,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		let show = false
 		let msgBlacks = ''
 		let msgFreezes = ''
-		let timebase: number | undefined
+		let timebase: number
 		if (this.props.piece.contentPackageInfos) {
 			timebase = this.props.piece.contentPackageInfos[0]?.timebase || 25
 		} else {
@@ -575,7 +575,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 		const realCursorTimePosition = this.props.cursorTimePosition + seek
 
-		if (!this.props.relative) {
+		if ((!this.props.relative && !this.props.isTooSmallForText) || this.props.isPreview) {
 			this.leftLabelNodes = this.renderLeftLabel()
 			this.rightLabelNodes = this.renderRightLabel()
 		}

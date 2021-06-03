@@ -182,7 +182,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	getEndStateForPart?: (
 		context: IRundownContext,
 		previousPersistentState: TimelinePersistentState | undefined,
-		previousPartEndState: PartEndState | undefined,
+		partInstance: IBlueprintPartInstance,
 		resolvedPieces: IBlueprintResolvedPieceInstance[],
 		time: number
 	) => PartEndState
