@@ -31,7 +31,7 @@ import { PieceInstance, wrapPieceToInstance } from '../../../../lib/collections/
 import { PartInstanceId, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { ShowStyleUserContext, UserContextInfo, WatchedPackagesHelper } from './context'
+import { ShowStyleUserContext, UserContextInfo } from './context'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
@@ -42,6 +42,7 @@ import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { Piece, Pieces } from '../../../../lib/collections/Pieces'
+import { WatchedPackagesHelper } from './watchedPackages'
 
 export enum ActionPartChange {
 	NONE = 0,

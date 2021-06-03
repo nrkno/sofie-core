@@ -7,7 +7,7 @@ import {
 import { protectString, unprotectString, waitForPromise, getRandomId, getCurrentTime } from '../../../../lib/lib'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { ActionExecutionContext, ActionPartChange, WatchedPackagesHelper } from '../context'
+import { ActionExecutionContext, ActionPartChange } from '../context'
 import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../../lib/collections/PartInstances'
 import {
@@ -51,6 +51,7 @@ const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 jest.mock('../postProcess')
 import { postProcessPieces } from '../postProcess'
 import { Pieces } from '../../../../lib/collections/Pieces'
+import { WatchedPackagesHelper } from '../context/watchedPackages'
 
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
@@ -135,11 +136,7 @@ describe('Test blueprint api context', () => {
 
 		const showStyle = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
 
-		const watchedPackages = waitForPromise(
-			WatchedPackagesHelper.create(studio._id, {
-				fakeQuery: true,
-			})
-		)
+		const watchedPackages = WatchedPackagesHelper.empty() // Not needed by the tests for now
 
 		const context = new ActionExecutionContext(
 			{

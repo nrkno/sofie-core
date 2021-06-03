@@ -74,7 +74,7 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { CacheForStudio } from '../studio/cache'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
-import { WatchedPackagesHelper } from '../blueprints/context'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
 
 /**

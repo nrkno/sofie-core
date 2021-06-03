@@ -21,13 +21,8 @@ import { PackageInfo } from '../../coreSystem'
 import { sumChanges, anythingChanged } from '../../lib/database'
 import { logger } from '../../logging'
 import { WrappedShowStyleBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
-import {
-	CommonContext,
-	SegmentUserContext,
-	ShowStyleUserContext,
-	StudioUserContext,
-	WatchedPackagesHelper,
-} from '../blueprints/context'
+import { CommonContext, SegmentUserContext, ShowStyleUserContext, StudioUserContext } from '../blueprints/context'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import {
 	postProcessPieces,
 	postProcessAdLibPieces,

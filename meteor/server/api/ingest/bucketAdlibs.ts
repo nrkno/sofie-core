@@ -23,8 +23,9 @@ import {
 	updateExpectedPackagesForBucketAdLib,
 	updateExpectedPackagesForBucketAdLibAction,
 } from './expectedPackages'
-import { ShowStyleUserContext, WatchedPackagesHelper } from '../blueprints/context'
+import { ShowStyleUserContext } from '../blueprints/context'
 import { asyncCollectionFindFetch, asyncCollectionRemove } from '../../lib/database'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 
 function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
 	return !!(adlib as IBlueprintActionManifest).actionId
@@ -38,12 +39,7 @@ export function updateBucketAdlibFromIngestData(
 ): void {
 	const { blueprint, blueprintId } = loadShowStyleBlueprint(showStyle)
 
-	const watchedPackages = waitForPromise(
-		WatchedPackagesHelper.create(studio._id, {
-			// TODO: This should be implemented at some point once there is a need for it
-			ignoreEverything: true,
-		})
-	)
+	const watchedPackages = WatchedPackagesHelper.empty()
 
 	const context = new ShowStyleUserContext(
 		{

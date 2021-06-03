@@ -40,12 +40,7 @@ import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs
 import * as _ from 'underscore'
 import { getLookeaheadObjects } from './lookahead'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
-import {
-	StudioBaselineContext,
-	StudioContext,
-	TimelineEventContext,
-	WatchedPackagesHelper,
-} from '../blueprints/context'
+import { StudioBaselineContext, TimelineEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds } from './lib'
@@ -69,6 +64,7 @@ import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackag
 import { DbCacheReadCollection } from '../../cache/CacheCollection'
 import { ExpectedPackageDB, ExpectedPackageDBType, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 
 export function updateStudioOrPlaylistTimeline(cache: CacheForStudio) {
 	const playlists = cache.getActiveRundownPlaylists()
