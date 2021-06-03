@@ -2062,10 +2062,10 @@ at-least-node@^1.0.0:
   resolved "https://registry.yarnpkg.com/at-least-node/-/at-least-node-1.0.0.tgz#602cd4b46e844ad4effc92a8011a3c46e0238dc2"
   integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
 
-atem-connection@^2.1.0:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/atem-connection/-/atem-connection-2.2.2.tgz#3814ddeed30b560d808e501e5450e2f0dc25f733"
-  integrity sha512-p/Diwsjymv1y7FvBzDSY4Yq06+8vZ03QEoxrcoFlNrYI6WCsCt64MeoBAQu5TEExGXLwffksQyyXbQUOEU4qNw==
+atem-connection@2.3.0-nightly-v2-x-20210602-074504-fb9c3f4.0:
+  version "2.3.0-nightly-v2-x-20210602-074504-fb9c3f4.0"
+  resolved "https://registry.yarnpkg.com/atem-connection/-/atem-connection-2.3.0-nightly-v2-x-20210602-074504-fb9c3f4.0.tgz#984ee35757b2312014cc56f7a4a2d4907bbf2fe3"
+  integrity sha512-G1s5ozcI84iOexd+kE8P6cBjdTW6Fp0+SC8tQWWNic5mRkNcim11alP34W+4/zPdukhJGHtCJiV9jOmWN2OKkw==
   dependencies:
     big-integer "^1.6.48"
     eventemitter3 "^4.0.4"
@@ -2075,14 +2075,14 @@ atem-connection@^2.1.0:
     tslib "^1.13.0"
     wavefile "^8.4.4"
 
-atem-state@^0.10.1:
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.10.1.tgz#8259d50bc2e0d55bce9a80ac8ec7016f1ced984d"
-  integrity sha512-0d+eVmE4u9u24w/JVoUp6AUh/j6uXvKZK+64h4OABiHJRISgveU0YUeUfa0EnTaD5S2aSb8ucS6WVx1xhP2r9g==
+atem-state@0.12.0-nightly-latest-20210602-094426-6fea863.0:
+  version "0.12.0-nightly-latest-20210602-094426-6fea863.0"
+  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.12.0-nightly-latest-20210602-094426-6fea863.0.tgz#ce7b312c5a4fb8015f44aaf9cdd1f6644f2f0f21"
+  integrity sha512-XcUaT33dFPRLrgiCZWzFw37xfCFs8PGunFIaOp8B0mMlzxbCC76iiBcYE/7AfIM74QPuIiOwWD1IZObdHr5aNw==
   dependencies:
-    atem-connection "^2.1.0"
-    tslib "^1.13"
-    underscore "^1.9.1"
+    deepmerge "^4.2.2"
+    tslib "^2.2.0"
+    type-fest "^1.1.3"
 
 atob@^2.1.2:
   version "2.1.2"
@@ -6204,7 +6204,12 @@ minimist-options@^3.0.1:
     arrify "^1.0.1"
     is-plain-obj "^1.1.0"
 
-minimist@^0.1.0, minimist@^1.1.1, minimist@^1.1.3, minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5:
+minimist@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-0.1.0.tgz#99df657a52574c21c9057497df742790b2b4c0de"
+  integrity sha1-md9lelJXTCHJBXSX33QnkLK0wN4=
+
+minimist@^1.1.1, minimist@^1.1.3, minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
@@ -8794,6 +8799,13 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6, through@^2.3.8:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
+timeline-state-resolver-types@6.0.0-nightly-release35-20210603-085814-5536cfcd9.0:
+  version "6.0.0-nightly-release35-20210603-085814-5536cfcd9.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.0.0-nightly-release35-20210603-085814-5536cfcd9.0.tgz#f5741e23fb0654f4d95ea6d14f00aa4d199565d1"
+  integrity sha512-3BRibQcoJ5QgNSwDPfMpl3JXif+YhEJxUWpJRAUV4RXkwNQfCkZAqfqfathBkt7CSZtza7nHkvNPDb7YZVpd/A==
+  dependencies:
+    tslib "^2.1.0"
+
 timeline-state-resolver-types@6.0.0-nightly-wip-r35-publish-20210517-130919-935b31e53.0:
   version "6.0.0-nightly-wip-r35-publish-20210517-130919-935b31e53.0"
   resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.0.0-nightly-wip-r35-publish-20210517-130919-935b31e53.0.tgz#6bb1a674655293bcb2a99417f6d6bbdb26bc7625"
@@ -8801,12 +8813,13 @@ timeline-state-resolver-types@6.0.0-nightly-wip-r35-publish-20210517-130919-935b
   dependencies:
     tslib "^2.1.0"
 
-timeline-state-resolver@6.0.0-nightly-wip-r35-publish-20210517-130919-935b31e53.0:
-  version "6.0.0-nightly-wip-r35-publish-20210517-130919-935b31e53.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.0.0-nightly-wip-r35-publish-20210517-130919-935b31e53.0.tgz#96f73accd63e721bde6830188c283e828be311db"
-  integrity sha512-VIwuFFQjArL0sJxCEgpfqprgBGVrY7t20onxe6Qg7i5VeTps1uluc5KxmIMbyJzSd00ob6ERueGz+SgfyLAZzA==
+timeline-state-resolver@6.0.0-nightly-release35-20210603-085814-5536cfcd9.0:
+  version "6.0.0-nightly-release35-20210603-085814-5536cfcd9.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.0.0-nightly-release35-20210603-085814-5536cfcd9.0.tgz#ee93500915cba9e25aaf341cfcd3e8d106de1190"
+  integrity sha512-sCiTIBSjD3tBMjYH+WWtrXGw8CaVijZqH3V6bvnebH7+/VNRjnj+ud+LNFRJQXdptqZXTMEuXKhTmgeGkstsEA==
   dependencies:
-    atem-state "^0.10.1"
+    atem-connection "2.3.0-nightly-v2-x-20210602-074504-fb9c3f4.0"
+    atem-state "0.12.0-nightly-latest-20210602-094426-6fea863.0"
     casparcg-connection "^5.1.0"
     casparcg-state "^2.1.0"
     debug "^4.3.1"
@@ -8821,7 +8834,7 @@ timeline-state-resolver@6.0.0-nightly-wip-r35-publish-20210517-130919-935b31e53.
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.1"
     threadedclass "0.8.3"
-    timeline-state-resolver-types "6.0.0-nightly-wip-r35-publish-20210517-130919-935b31e53.0"
+    timeline-state-resolver-types "6.0.0-nightly-release35-20210603-085814-5536cfcd9.0"
     tslib "^2.1.0"
     tv-automation-quantel-gateway-client "^1.0.12"
     underscore "^1.12.0"
@@ -8968,7 +8981,7 @@ tslib@1.9.0:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.9.0.tgz#e37a86fda8cbbaf23a057f473c9f4dc64e5fc2e8"
   integrity sha512-f/qGG2tUkrISBlQZEjEqoZ3B2+npJjIf04H1wuAv9iA8i04Icp+61KRXxFdha22670NJopsZCIjhC3SnjPRKrQ==
 
-tslib@^1.13, tslib@^1.13.0, tslib@^1.8.1, tslib@^1.9.0:
+tslib@^1.13.0, tslib@^1.8.1, tslib@^1.9.0:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
@@ -9113,7 +9126,7 @@ type-fest@^0.8.1:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.8.1.tgz#09e249ebde851d3b1e48d27c105444667f17b83d"
   integrity sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==
 
-type-fest@^1.0.1, type-fest@^1.0.2:
+type-fest@^1.0.1, type-fest@^1.0.2, type-fest@^1.1.3:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-1.2.0.tgz#4cdf38ef9b047922c26038080cb269752ae359a2"
   integrity sha512-++0N6KyAj0t2webXst0PE0xuXb4Dv3z1Z+4SGzK+j/epeWBZCfkQbkW/ezscZwpinmBQ5wu/l4TqagKSVcAGCA==
@@ -9328,9 +9341,9 @@ uuid@^8.0.0, uuid@^8.3.0:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
-"v-connection@git+https://github.com/olzzon/v-connection#v20200515_1":
+"v-connection@git+https://github.com/olzzon/v-connection.git#v20200515_1":
   version "0.0.11"
-  resolved "git+https://github.com/olzzon/v-connection#8f6cb135096cf36630713b1582ed4928d2754812"
+  resolved "git+https://github.com/olzzon/v-connection.git#8f6cb135096cf36630713b1582ed4928d2754812"
   dependencies:
     koa "^2.11.0"
     request "^2.88.0"
