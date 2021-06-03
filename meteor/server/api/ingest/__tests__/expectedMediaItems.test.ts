@@ -16,9 +16,6 @@ import {
 	defaultPart,
 	defaultPiece,
 	defaultAdLibPiece,
-	// } from '../../../__mocks__/defaultCollectionObjects'
-	// import { updateExpectedPackagesOnRundown } from '../expectedPackages'
-	// import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 } from '../../../../__mocks__/defaultCollectionObjects'
 import { runIngestOperationFromRundown } from '../lockFunction'
 import { updateExpectedPackagesOnRundown } from '../expectedPackages'
@@ -100,7 +97,7 @@ describe('Expected Media Items', () => {
 		)
 		Parts.insert(
 			literal<DBPart>({
-				...defaultPart(protectString(rdId + '_' + mockPart0), rd._id, protectString('')),
+				...defaultPart(protectString(rdId + '_' + mockPart0), rd._id, protectString('segment1')),
 				_rank: 1,
 				title: '',
 			})
@@ -130,7 +127,7 @@ describe('Expected Media Items', () => {
 		)
 		Parts.insert(
 			literal<DBPart>({
-				...defaultPart(protectString(rdId + '_' + mockPart1), rd._id, protectString('')),
+				...defaultPart(protectString(rdId + '_' + mockPart1), rd._id, protectString('segment1')),
 				_rank: 1,
 				externalId: '',
 				title: '',

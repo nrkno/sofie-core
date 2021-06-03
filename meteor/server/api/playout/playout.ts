@@ -1,6 +1,6 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
-import { Rundown, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
+import { RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
 import { PieceId } from '../../../lib/collections/Pieces'
 import {
@@ -76,6 +76,8 @@ import { CacheForStudio } from '../studio/cache'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
+import { AdLibActionId } from '../../../lib/collections/AdLibActions'
+import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -1096,40 +1098,17 @@ export namespace ServerPlayoutAPI {
 	export function executeAction(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
+		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: any,
 		triggerMode?: string
 	) {
 		check(rundownPlaylistId, String)
+		check(actionDocId, String)
 		check(actionId, String)
 		check(userData, Match.Any)
 		check(triggerMode, Match.Maybe(String))
 
-		return executeActionInner(access, rundownPlaylistId, async (actionContext, cache, rundown) => {
-			const blueprint = loadShowStyleBlueprint(actionContext.showStyleCompound)
-			if (!blueprint.blueprint.executeAction) {
-				throw new Meteor.Error(
-					400,
-					`ShowStyle blueprint "${blueprint.blueprintId}" does not support executing actions`
-				)
-			}
-
-			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
-
-			blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
-		})
-	}
-
-	function executeActionInner(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		func: (
-			context: ActionExecutionContext,
-			cache: CacheForPlayout,
-			rundown: Rundown,
-			currentPartInstance: PartInstance
-		) => Promise<void>
-	) {
 		const now = getCurrentTime()
 
 		runPlayoutOperationWithCache(
@@ -1164,7 +1143,7 @@ export namespace ServerPlayoutAPI {
 				const [showStyle, watchedPackages] = await Promise.all([
 					cache.activationCache.getShowStyleCompound(rundown),
 					WatchedPackagesHelper.create(cache.Studio.doc._id, {
-						// TODO:packages - we need a source id for the action, so we can filter by pieceId here
+						pieceId: actionDocId,
 						fromPieceType: {
 							$in: [ExpectedPackageDBType.ADLIB_ACTION, ExpectedPackageDBType.BASELINE_ADLIB_ACTION],
 						},
@@ -1185,7 +1164,17 @@ export namespace ServerPlayoutAPI {
 				)
 
 				// If any action cannot be done due to timings, that needs to be rejected by the context
-				await func(actionContext, cache, rundown, currentPartInstance)
+				const blueprint = loadShowStyleBlueprint(actionContext.showStyleCompound)
+				if (!blueprint.blueprint.executeAction) {
+					throw new Meteor.Error(
+						400,
+						`ShowStyle blueprint "${blueprint.blueprintId}" does not support executing actions`
+					)
+				}
+
+				logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
+
+				blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
 
 				if (
 					actionContext.currentPartState !== ActionPartChange.NONE ||

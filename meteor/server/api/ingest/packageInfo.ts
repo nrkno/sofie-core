@@ -64,7 +64,7 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageI
 				}
 
 				lazyIgnore(
-					`onUpdatedPackageInfoForRundown${pkg.rundownId}`,
+					`onUpdatedPackageInfoForRundown_${pkg.rundownId}`,
 					() => {
 						const packageIds = pendingPackageUpdates.get(pkg.rundownId)
 						if (packageIds) {
@@ -103,10 +103,6 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 		return
 	}
 
-	// TODO - can we avoid loading the cache for package info we know doesnt affect anything?
-
-	// TODO - what if type was BASELINE_ADLIB_ACTION?
-
 	return runIngestOperationWithCache(
 		'onUpdatedPackageInfoForRundown',
 		tmpRundown.studioId,
@@ -126,21 +122,13 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 			for (const packageId of packageIds) {
 				const pkg = cache.ExpectedPackages.findOne(packageId)
 				if (pkg) {
-					if (pkg.fromPieceType === ExpectedPackageDBType.PIECE) {
-						const piece = cache.Pieces.findOne(pkg.pieceId)
-						if (piece) {
-							const segmentId = piece.startSegmentId
-
-							const listeningPieces = cache.Pieces.findOne((p) => p.startSegmentId === segmentId)
-							if (listeningPieces) {
-								segmentsToUpdate.add(segmentId)
-							}
-						} else {
-							logger.warn(
-								`onUpdatedPackageInfoForRundown: Missing raw piece: "${pkg.pieceId}" for package "${packageId}"`
-							)
-						}
+					if (
+						pkg.fromPieceType === ExpectedPackageDBType.PIECE ||
+						pkg.fromPieceType === ExpectedPackageDBType.ADLIB_PIECE
+					) {
+						segmentsToUpdate.add(pkg.segmentId)
 					}
+					// TODO - trigger baseline regenerateion
 				} else {
 					logger.warn(`onUpdatedPackageInfoForRundown: Missing package: "${packageId}"`)
 				}

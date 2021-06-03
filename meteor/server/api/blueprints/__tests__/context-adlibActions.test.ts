@@ -26,7 +26,8 @@ import { isTooCloseToAutonext } from '../../playout/lib'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../../playout/lockFunction'
-import { ReadonlyDeep } from 'type-fest'
+import { Pieces } from '../../../../lib/collections/Pieces'
+import { WatchedPackagesHelper } from '../context/watchedPackages'
 
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 ServerPlayoutAdLibAPI.innerStopPieces = jest.fn()
@@ -50,8 +51,6 @@ const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
 import { postProcessPieces } from '../postProcess'
-import { Pieces } from '../../../../lib/collections/Pieces'
-import { WatchedPackagesHelper } from '../context/watchedPackages'
 
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
@@ -158,7 +157,7 @@ describe('Test blueprint api context', () => {
 		}
 	}
 
-	function wrapWithCache<T>(fcn: (cache: CacheForPlayout, playlist: ReadonlyDeep<RundownPlaylist>) => T) {
+	function wrapWithCache<T>(fcn: (cache: CacheForPlayout) => T) {
 		const defaultSetup = setupDefaultRundownPlaylist(env)
 
 		// Mark playlist as active
@@ -182,7 +181,7 @@ describe('Test blueprint api context', () => {
 			tmpPlaylist._id,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => fcn(cache, cache.Playlist.doc)
+			fcn
 		)
 	}
 

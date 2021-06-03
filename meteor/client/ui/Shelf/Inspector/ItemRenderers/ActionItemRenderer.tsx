@@ -204,6 +204,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 					MeteorCall.userAction.executeAction(
 						e,
 						this.props.rundownPlaylist._id,
+						targetAction._id,
 						targetAction.actionId,
 						targetAction.transformedUserData,
 						mode?.data
