@@ -415,7 +415,7 @@ describe('Infinites', () => {
 				protectString('activation0'),
 				new Set([previousPartInstance.partId]),
 				new Set(),
-				new Set(),
+				[],
 				new Map(),
 				previousPartInstance as any,
 				previousPartPieces,
