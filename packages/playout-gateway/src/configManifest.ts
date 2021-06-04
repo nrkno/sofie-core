@@ -332,6 +332,11 @@ const PLAYOUT_SUBDEVICE_CONFIG: SubDeviceConfigManifest['config'] = {
 			type: ConfigManifestEntryType.NUMBER,
 		},
 		{
+			id: 'options.engineRestPort',
+			name: '(Optional) Viz Engines REST port',
+			type: ConfigManifestEntryType.INT,
+		},
+		{
 			id: 'options.showID',
 			name: 'Show ID',
 			type: ConfigManifestEntryType.STRING,
@@ -372,8 +377,8 @@ const PLAYOUT_SUBDEVICE_CONFIG: SubDeviceConfigManifest['config'] = {
 			type: ConfigManifestEntryType.BOOLEAN,
 		},
 		{
-			id: 'options.onlyPreloadActiveRundown',
-			name: 'Only preload elements in active Rundown',
+			id: 'options.onlyPreloadActivePlaylist',
+			name: 'Only preload elements in active Playlist',
 			type: ConfigManifestEntryType.BOOLEAN,
 		},
 		{
