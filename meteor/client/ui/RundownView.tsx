@@ -269,19 +269,6 @@ const TimingDisplay = withTranslation()(
 				)
 			}
 
-			private getEndTimeDiff(expectedDuration: number) {
-				let diff = 0
-				if (this.props.rundownPlaylist.expectedEnd) {
-					let nowDiff = getCurrentTime() - this.props.rundownPlaylist.expectedEnd
-					let durationDiff = expectedDuration - (this.props.timingDurations.asPlayedRundownDuration ?? 0)
-					diff = nowDiff + durationDiff
-				} else {
-					diff = (this.props.timingDurations.asPlayedRundownDuration || 0) - expectedDuration
-				}
-
-				return diff
-			}
-
 			render() {
 				const { t, rundownPlaylist } = this.props
 
@@ -373,7 +360,9 @@ const TimingDisplay = withTranslation()(
 									(rundownPlaylist.expectedEnd ? (
 										<span className="timing-clock countdown plan-end right">
 											{RundownUtils.formatDiffToTimecode(
-												getCurrentTime() - rundownPlaylist.expectedEnd,
+												getCurrentTime() -
+													rundownPlaylist.expectedEnd +
+													(this.props.timingDurations.asPlayedRundownDuration ?? 0),
 												true,
 												true,
 												true
@@ -402,7 +391,7 @@ const TimingDisplay = withTranslation()(
 									>
 										<span className="timing-clock-label right">{t('Diff')}</span>
 										{RundownUtils.formatDiffToTimecode(
-											this.getEndTimeDiff(rundownPlaylist.expectedDuration),
+											(this.props.timingDurations.asPlayedRundownDuration || 0) - rundownPlaylist.expectedDuration,
 											true,
 											false,
 											true,
