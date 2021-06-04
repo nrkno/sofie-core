@@ -26,47 +26,52 @@ export class DbCacheReadObject<
 > {
 	protected _document: Class
 	protected _rawDocument: Class
-	private _initialized = false
 
 	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
 	protected isToBeRemoved = false
 
-	constructor(
+	protected constructor(
 		protected readonly _collection: AsyncTransformedCollection<Class, DBInterface>,
-		private readonly _optional: DocOptional
+		private readonly _optional: DocOptional,
+		doc: DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class>
 	) {
-		//
+		this._document = clone(doc as any)
+		this._rawDocument = clone(doc as any)
 	}
 	get name(): string | null {
 		return this._collection.name
 	}
 
-	async _initialize(id: DBInterface['_id']): Promise<void> {
-		if (!this._initialized) {
-			const doc = await this._collection.findOneAsync(id)
-			if (!doc) {
-				if (!this._optional) {
-					throw new Meteor.Error(
-						404,
-						`DbCacheReadObject population for "${this.name}" failed. Document "${id}" was not found`
-					)
-				}
-			} else {
-				this._document = doc
-				this._rawDocument = clone(doc)
-			}
-			this._initialized = true
-		}
+	public static createFromDoc<
+		Class extends DBInterface,
+		DBInterface extends { _id: ProtectedString<any> },
+		DocOptional extends boolean = false
+	>(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		optional: DocOptional,
+		doc: DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class>
+	): DbCacheReadObject<Class, DBInterface, DocOptional> {
+		return new DbCacheReadObject<Class, DBInterface, DocOptional>(collection, optional, doc)
 	}
 
-	_fromDoc(doc: ReadonlyDeep<Class>) {
-		if (this._initialized) {
-			throw new Meteor.Error(500, `DbCacheReadObject population for "${this.name}" failed. Already initialized`)
+	public static async createFromDatabase<
+		Class extends DBInterface,
+		DBInterface extends { _id: ProtectedString<any> },
+		DocOptional extends boolean = false
+	>(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		optional: DocOptional,
+		id: DBInterface['_id']
+	): Promise<DbCacheReadObject<Class, DBInterface, DocOptional>> {
+		const doc = await collection.findOneAsync(id)
+		if (!doc && !optional) {
+			throw new Meteor.Error(
+				404,
+				`DbCacheReadObject population for "${collection['name']}" failed. Document "${id}" was not found`
+			)
 		}
 
-		this._document = clone(doc)
-		this._rawDocument = clone(doc)
-		this._initialized = true
+		return DbCacheReadObject.createFromDoc<Class, DBInterface, DocOptional>(collection, optional, doc as any)
 	}
 
 	get doc(): DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class> {
@@ -90,8 +95,44 @@ export class DbCacheWriteObject<
 > extends DbCacheReadObject<Class, DBInterface, DocOptional> {
 	private _updated = false
 
-	constructor(collection: AsyncTransformedCollection<Class, DBInterface>, optional: DocOptional) {
-		super(collection, optional)
+	constructor(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		optional: DocOptional,
+		doc: DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class>
+	) {
+		super(collection, optional, doc)
+	}
+
+	public static createFromDoc<
+		Class extends DBInterface,
+		DBInterface extends { _id: ProtectedString<any> },
+		DocOptional extends boolean = false
+	>(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		optional: DocOptional,
+		doc: DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class>
+	): DbCacheWriteObject<Class, DBInterface, DocOptional> {
+		return new DbCacheWriteObject<Class, DBInterface, DocOptional>(collection, optional, doc)
+	}
+
+	public static async createFromDatabase<
+		Class extends DBInterface,
+		DBInterface extends { _id: ProtectedString<any> },
+		DocOptional extends boolean = false
+	>(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		optional: DocOptional,
+		id: DBInterface['_id']
+	): Promise<DbCacheWriteObject<Class, DBInterface, DocOptional>> {
+		const doc = await collection.findOneAsync(id)
+		if (!doc && !optional) {
+			throw new Meteor.Error(
+				404,
+				`DbCacheWriteObject population for "${collection['name']}" failed. Document "${id}" was not found`
+			)
+		}
+
+		return DbCacheWriteObject.createFromDoc<Class, DBInterface, DocOptional>(collection, optional, doc as any)
 	}
 
 	protected assertNotToBeRemoved(methodName: string): void {
@@ -189,8 +230,30 @@ export class DbCacheWriteOptionalObject<
 > extends DbCacheWriteObject<Class, DBInterface, true> {
 	private _inserted = false
 
-	constructor(collection: AsyncTransformedCollection<Class, DBInterface>) {
-		super(collection, true)
+	constructor(collection: AsyncTransformedCollection<Class, DBInterface>, doc: ReadonlyDeep<Class> | undefined) {
+		super(collection, true, doc)
+	}
+
+	public static createOptionalFromDoc<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		doc: ReadonlyDeep<Class> | undefined
+	): DbCacheWriteOptionalObject<Class, DBInterface> {
+		return new DbCacheWriteOptionalObject<Class, DBInterface>(collection, doc)
+	}
+
+	public static async createOptionalFromDatabase<
+		Class extends DBInterface,
+		DBInterface extends { _id: ProtectedString<any> }
+	>(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		id: DBInterface['_id']
+	): Promise<DbCacheWriteOptionalObject<Class, DBInterface>> {
+		const doc = await collection.findOneAsync(id)
+
+		return DbCacheWriteOptionalObject.createOptionalFromDoc<Class, DBInterface>(
+			collection,
+			doc as ReadonlyDeep<Class> | undefined
+		)
 	}
 
 	replace(doc: DBInterface): ReadonlyDeep<Class> {

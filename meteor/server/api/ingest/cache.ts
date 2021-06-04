@@ -99,6 +99,8 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 
 	private constructor(
 		rundownExternalId: string,
+		studio: DbCacheReadObject<Studio, Studio>,
+		rundown: DbCacheWriteOptionalObject<Rundown, DBRundown>,
 		segments: DbCacheWriteCollection<Segment, DBSegment>,
 		parts: DbCacheWriteCollection<Part, DBPart>,
 		pieces: DbCacheWriteCollection<Piece, Piece>,
@@ -110,8 +112,8 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	) {
 		super()
 
-		this.Studio = new DbCacheReadObject(Studios, false)
-		this.Rundown = new DbCacheWriteOptionalObject(Rundowns)
+		this.Studio = studio
+		this.Rundown = rundown
 		this.RundownExternalId = rundownExternalId
 
 		this.Segments = segments
@@ -138,6 +140,12 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 
 	static async create(studioId: StudioId, rundownExternalId: string): Promise<CacheForIngest> {
 		const rundownId = getRundownId(studioId, rundownExternalId)
+
+		const [studio, rundown] = await Promise.all([
+			DbCacheReadObject.createFromDatabase(Studios, false, studioId),
+			DbCacheWriteOptionalObject.createOptionalFromDatabase(Rundowns, rundownId),
+		])
+
 		const collections = await Promise.all([
 			DbCacheWriteCollection.createFromDatabase(Segments, { rundownId: rundownId }),
 			DbCacheWriteCollection.createFromDatabase(Parts, { rundownId: rundownId }),
@@ -151,9 +159,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 			DbCacheWriteCollection.createFromDatabase(ExpectedPackages, { rundownId: rundownId }),
 		])
 
-		const res = new CacheForIngest(rundownExternalId, ...collections)
-
-		await Promise.all([res.Studio._initialize(studioId), res.Rundown._initialize(rundownId)])
+		const res = new CacheForIngest(rundownExternalId, studio, rundown, ...collections)
 
 		return res
 	}
