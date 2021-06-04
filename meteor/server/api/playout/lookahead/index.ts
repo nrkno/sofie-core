@@ -25,12 +25,20 @@ import { getOrderedPartsAfterPlayhead, PartInstanceAndPieceInstances } from './u
 import { findLookaheadForLayer, LookaheadResult } from './findForLayer'
 import { CacheForPlayout, getRundownIDsFromCache } from '../cache'
 import { asyncCollectionFindFetch } from '../../../lib/database'
+import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '../../../../lib/constants'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
+function parseSearchDistance(rawVal: number | undefined): number {
+	if (typeof rawVal !== 'number' || rawVal <= -1) {
+		return LOOKAHEAD_DEFAULT_SEARCH_DISTANCE
+	} else {
+		return rawVal
+	}
+}
+
 function findLargestLookaheadDistance(mappings: Array<[string, MappingExt]>): number {
-	const defaultSearchDistance = 10
-	const values = mappings.map(([id, m]) => m.lookaheadMaxSearchDistance ?? defaultSearchDistance)
+	const values = mappings.map(([id, m]) => parseSearchDistance(m.lookaheadMaxSearchDistance))
 	return _.max(values)
 }
 
@@ -114,10 +122,10 @@ export async function getLookeaheadObjects(
 	for (const [layerId, mapping] of mappingsToConsider) {
 		if (mapping.lookahead !== LookaheadMode.NONE) {
 			const lookaheadTargetObjects = mapping.lookaheadDepth || 1
-			const lookaheadMaxSearchDistance =
-				mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0
-					? mapping.lookaheadMaxSearchDistance
-					: futurePartCount
+			const lookaheadMaxSearchDistance = Math.min(
+				parseSearchDistance(mapping.lookaheadMaxSearchDistance),
+				futurePartCount
+			)
 
 			const lookaheadObjs = findLookaheadForLayer(
 				cache.Playlist.doc.currentPartInstanceId,
