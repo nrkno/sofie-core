@@ -96,6 +96,7 @@ export namespace ExpectedPackage {
 					| AccessorOnPackage.LocalFolder
 					| AccessorOnPackage.FileShare
 					| AccessorOnPackage.HTTP
+					| AccessorOnPackage.FTP
 			}
 		}[]
 	}
@@ -142,16 +143,15 @@ export interface PackageContainer {
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Accessor {
-	export type Any = LocalFolder | FileShare | HTTP | Quantel | CorePackageCollection
+	export type Any = LocalFolder | FileShare | HTTP | Quantel | CorePackageCollection | FTP
 
 	export enum AccessType {
 		LOCAL_FOLDER = 'local_folder',
 		FILE_SHARE = 'file_share',
 		HTTP = 'http',
-
 		QUANTEL = 'quantel',
-
 		CORE_PACKAGE_INFO = 'core_package_info',
+		FTP = 'ftp',
 	}
 
 	/** Generic (used in extends) */
@@ -224,6 +224,19 @@ export namespace Accessor {
 		type: Accessor.AccessType.CORE_PACKAGE_INFO
 		// empty
 	}
+
+	export interface FTP extends Base {
+		type: AccessType.FTP
+
+		/** Base url (url to the host), for example ftp://myhost.com/fileShare/ */
+		baseUrl: string
+
+		/** Any headers to send along with the request */
+		// headers?: { [name: string]: any } // Not implemented (yet)
+
+		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible. */
+		networkId?: string
+	}
 }
 /**
  * AccessorOnPackage contains interfaces for Accessor definitions that are put ON the Package.
@@ -231,7 +244,7 @@ export namespace Accessor {
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AccessorOnPackage {
-	export type Any = LocalFolder | FileShare | HTTP | Quantel | CorePackageCollection
+	export type Any = LocalFolder | FileShare | HTTP | Quantel | CorePackageCollection | FTP
 
 	export interface LocalFolder extends Partial<Accessor.LocalFolder> {
 		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
@@ -252,6 +265,11 @@ export namespace AccessorOnPackage {
 	// eslint-disable-next-line @typescript-eslint/no-empty-interface
 	export interface CorePackageCollection extends Partial<Accessor.CorePackageCollection> {
 		// empty
+	}
+
+	export interface FTP extends Partial<Accessor.FTP> {
+		/** URL path to resource (combined with .baseUrl gives the full URL), for example: /folder/myFile */
+		url?: string
 	}
 }
 
