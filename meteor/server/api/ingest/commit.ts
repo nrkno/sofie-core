@@ -232,7 +232,7 @@ export async function CommitIngestOperation(
 					])
 
 					// Create the full playout cache, now we have the rundowns and playlist updated
-					const playoutCache = await CacheForPlayout.from(
+					const playoutCache = await CacheForPlayout.fromIngest(
 						newPlaylist,
 						rundownsCollection.findFetch({}),
 						ingestCache
@@ -348,13 +348,13 @@ async function generatePlaylistAndRundownsCollectionInner(
 	}
 
 	// Load existing playout data
-	const rundownsCollection = existingRundownsCollection ?? new DbCacheWriteCollection(Rundowns)
-	const [existingPlaylist, studioBlueprint] = await Promise.all([
+	const [existingPlaylist, studioBlueprint, rundownsCollection] = await Promise.all([
 		existingPlaylist0
 			? existingPlaylist0
 			: (RundownPlaylists.findOneAsync(newPlaylistId) as Promise<ReadonlyDeep<RundownPlaylist>>),
 		loadStudioBlueprint(studio),
-		existingRundownsCollection ? null : rundownsCollection.prepareInit({ playlistId: newPlaylistId }, true),
+		existingRundownsCollection ??
+			DbCacheWriteCollection.createFromDatabase(Rundowns, { playlistId: newPlaylistId }),
 	])
 	if (changedRundown) {
 		rundownsCollection.replace(changedRundown)

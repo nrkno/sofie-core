@@ -336,10 +336,11 @@ export function moveRundownIntoPlaylist(
 				intoPlaylist,
 				PlayoutLockFunctionPriority.MISC,
 				async (intoPlaylistLock) => {
-					const rundownsCollection = new DbCacheWriteCollection(Rundowns)
-					const [playlist] = await Promise.all([
+					const [playlist, rundownsCollection] = await Promise.all([
 						RundownPlaylists.findOneAsync(intoPlaylistLock._playlistId),
-						rundownsCollection.prepareInit({ playlistId: intoPlaylistLock._playlistId }, true),
+						DbCacheWriteCollection.createFromDatabase(Rundowns, {
+							playlistId: intoPlaylistLock._playlistId,
+						}),
 					])
 
 					if (!playlist)

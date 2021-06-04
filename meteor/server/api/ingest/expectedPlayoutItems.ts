@@ -9,7 +9,7 @@ import * as _ from 'underscore'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { PartId } from '../../../lib/collections/Parts'
-import { getRandomId, protectString } from '../../../lib/lib'
+import { getRandomId, protectString, waitForPromiseAll } from '../../../lib/lib'
 import { CacheForIngest } from './cache'
 import { saveIntoCache } from '../../cache/lib'
 import { StudioId } from '../../../lib/collections/Studios'
@@ -51,19 +51,25 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest): void
 	const studioId = cache.Studio.doc._id
 	const rundownId = cache.RundownId
 
+	// It isn't great to have to load these unnecessarily, but expectedPackages will resolve this
+	const [baselineAdlibPieces, baselineAdlibActions] = waitForPromiseAll([
+		cache.RundownBaselineAdLibPieces.get(),
+		cache.RundownBaselineAdLibActions.get(),
+	])
+
 	for (const piece of cache.Pieces.findFetch({})) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, piece.startPartId, piece))
 	}
 	for (const piece of cache.AdLibPieces.findFetch({})) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, piece.partId, piece))
 	}
-	for (const piece of cache.RundownBaselineAdLibPieces.findFetch({})) {
+	for (const piece of baselineAdlibPieces.findFetch({})) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, piece))
 	}
 	for (const action of cache.AdLibActions.findFetch({})) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, action.partId, action))
 	}
-	for (const action of cache.RundownBaselineAdLibActions.findFetch({})) {
+	for (const action of baselineAdlibActions.findFetch({})) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, action))
 	}
 

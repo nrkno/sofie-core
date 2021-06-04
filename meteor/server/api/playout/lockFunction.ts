@@ -232,17 +232,17 @@ function playoutLockFunctionInner<T>(
 	options?: PlayoutLockOptions
 ): Awaited<T> {
 	async function doPlaylistInner() {
-		const cache = await CacheForPlayout.create(tmpPlaylist)
+		const initCache = await CacheForPlayout.createPreInit(tmpPlaylist)
 
 		if (preInitFcn) {
-			await preInitFcn(cache)
+			await preInitFcn(initCache)
 		}
 
-		await cache.initContent(null)
+		const fullCache = await CacheForPlayout.fromInit(initCache)
 
-		const res = await fcn(cache)
+		const res = await fcn(fullCache)
 
-		await cache.saveAllToDatabase()
+		await fullCache.saveAllToDatabase()
 
 		return res
 	}
