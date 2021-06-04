@@ -47,8 +47,7 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 	}
 
 	static async create(studioId: StudioId): Promise<CacheForStudio> {
-		const studio = new DbCacheReadObject(Studios, false)
-		await studio._initialize(studioId)
+		const studio = await DbCacheReadObject.createFromDatabase(Studios, false, studioId)
 
 		const collections = await Promise.all([
 			DbCacheReadCollection.createFromDatabase(PeripheralDevices, { studioId }),

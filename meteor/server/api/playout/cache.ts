@@ -81,17 +81,20 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 	> {
 		const activationCache = getActivationCache(tmpPlaylist.studioId, tmpPlaylist._id)
 
-		const studio = new DbCacheReadObject(Studios, false)
-		const playlist = new DbCacheWriteObject(RundownPlaylists, false)
-
-		const [_playlist, rundowns] = await Promise.all([
-			reloadPlaylist ? playlist._initialize(tmpPlaylist._id) : playlist._fromDoc(tmpPlaylist),
+		const [playlist, rundowns] = await Promise.all([
+			reloadPlaylist
+				? await DbCacheWriteObject.createFromDatabase(RundownPlaylists, false, tmpPlaylist._id)
+				: DbCacheWriteObject.createFromDoc<RundownPlaylist, DBRundownPlaylist>(
+						RundownPlaylists,
+						false,
+						tmpPlaylist
+				  ),
 			existingRundowns ?? DbCacheReadCollection.createFromDatabase(Rundowns, { playlistId: tmpPlaylist._id }),
 		])
 
 		await activationCache.initialize(playlist.doc, rundowns.findFetch())
 
-		studio._fromDoc(activationCache.getStudio())
+		const studio = DbCacheReadObject.createFromDoc(Studios, false, activationCache.getStudio())
 		const rawPeripheralDevices = await activationCache.getPeripheralDevices()
 		const peripheralDevices = DbCacheReadCollection.createFromArray(PeripheralDevices, rawPeripheralDevices)
 
