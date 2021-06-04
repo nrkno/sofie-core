@@ -49,8 +49,6 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	const pieces = cache.Pieces.findFetch({})
 	const adlibs = cache.AdLibPieces.findFetch({})
 	const actions = cache.AdLibActions.findFetch({})
-	const baselineAdlibs = cache.RundownBaselineAdLibPieces.findFetch({})
-	const baselineActions = cache.RundownBaselineAdLibActions.findFetch({})
 
 	// todo: keep expectedPackage of the currently playing partInstance
 
@@ -58,16 +56,37 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 		...generateExpectedPackagesForPiece(studio, cache.RundownId, pieces),
 		...generateExpectedPackagesForPiece(studio, cache.RundownId, adlibs),
 		...generateExpectedPackagesForAdlibAction(studio, cache.RundownId, actions),
-
-		...generateExpectedPackagesForPiece(studio, cache.RundownId, baselineAdlibs),
-		...generateExpectedPackagesForBaselineAdlibAction(studio, cache.RundownId, baselineActions),
 	]
+
+	const omitTypes = [ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS]
+
+	// Only regenerate the baseline types if they are already loaded into memory
+	const baselineAdlibPieceCache = cache.RundownBaselineAdLibPieces.getIfLoaded()
+	if (baselineAdlibPieceCache) {
+		expectedPackages.push(
+			...generateExpectedPackagesForPiece(studio, cache.RundownId, baselineAdlibPieceCache.findFetch())
+		)
+	} else {
+		omitTypes.push(ExpectedPackageDBType.BASELINE_ADLIB_ACTION) // TODO - should be BASELINE_ADLIB_PIECE
+	}
+	const baselineAdlibActionCache = cache.RundownBaselineAdLibActions.getIfLoaded()
+	if (baselineAdlibActionCache) {
+		expectedPackages.push(
+			...generateExpectedPackagesForBaselineAdlibAction(
+				studio,
+				cache.RundownId,
+				baselineAdlibActionCache.findFetch()
+			)
+		)
+	} else {
+		omitTypes.push(ExpectedPackageDBType.BASELINE_ADLIB_ACTION)
+	}
 
 	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(
 		cache.ExpectedPackages,
 		{
 			// RUNDOWN_BASELINE_OBJECTS follow their own flow
-			fromPieceType: { $ne: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS },
+			fromPieceType: { $nin: omitTypes as any },
 		},
 		expectedPackages
 	)

@@ -264,11 +264,12 @@ export namespace ServerPeripheralDeviceAPI {
 								const rundownIDs = Rundowns.find({ playlistId }).map((r) => r._id)
 
 								// We only need the PieceInstances, so load just them
-								const pieceInstanceCache = new DbCacheWriteCollection<PieceInstance, PieceInstance>(
-									PieceInstances
+								const pieceInstanceCache = await DbCacheWriteCollection.createFromDatabase(
+									PieceInstances,
+									{
+										rundownId: { $in: rundownIDs },
+									}
 								)
-
-								await pieceInstanceCache.prepareInit({ rundownId: { $in: rundownIDs } }, true)
 
 								// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
 								timelineTriggerTimeInner(studioCache, results, pieceInstanceCache, activePlaylist)

@@ -432,8 +432,9 @@ export async function updateRundownFromIngestData(
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
 	logger.info(`... got ${(rundownRes.globalActions || []).length} adLib actions from baseline.`)
 
+	const { baselineObjects, baselineAdlibPieces, baselineAdlibActions } = await cache.loadBaselineCollections()
 	const rundownBaselineChanges = sumChanges(
-		saveIntoCache<RundownBaselineObj, RundownBaselineObj>(cache.RundownBaselineObjs, {}, [
+		saveIntoCache<RundownBaselineObj, RundownBaselineObj>(baselineObjects, {}, [
 			{
 				_id: protectString<RundownBaselineObjId>(Random.id(7)),
 				rundownId: dbRundown._id,
@@ -446,7 +447,7 @@ export async function updateRundownFromIngestData(
 		]),
 		// Save the global adlibs
 		saveIntoCache<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
-			cache.RundownBaselineAdLibPieces,
+			baselineAdlibPieces,
 			{},
 			postProcessAdLibPieces(
 				blueprintRundownContext,
@@ -457,7 +458,7 @@ export async function updateRundownFromIngestData(
 			)
 		),
 		saveIntoCache<RundownBaselineAdLibAction, RundownBaselineAdLibAction>(
-			cache.RundownBaselineAdLibActions,
+			baselineAdlibActions,
 			{},
 			postProcessGlobalAdLibActions(
 				blueprintRundownContext,

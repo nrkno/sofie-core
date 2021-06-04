@@ -1,4 +1,3 @@
-import { clone } from 'underscore'
 import { ContextInfo, RundownContext } from './context'
 import {
 	IBlueprintPiece,
@@ -24,6 +23,7 @@ import {
 	protectStringArray,
 	unprotectStringArray,
 	normalizeArrayToMap,
+	clone,
 } from '../../../../lib/lib'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { DbCacheWriteCollection } from '../../../cache/CacheCollection'
@@ -60,11 +60,8 @@ export class SyncIngestUpdateToPartInstanceContext
 		super(contextInfo, studio, showStyleCompound, rundown)
 
 		// Create temporary cache databases
-		this._pieceInstanceCache = new DbCacheWriteCollection(PieceInstances)
-		this._pieceInstanceCache.fillWithDataFromArray(pieceInstances)
-
-		this._partInstanceCache = new DbCacheWriteCollection(PartInstances)
-		this._partInstanceCache.fillWithDataFromArray([partInstance])
+		this._pieceInstanceCache = DbCacheWriteCollection.createFromArray(PieceInstances, pieceInstances)
+		this._partInstanceCache = DbCacheWriteCollection.createFromArray(PartInstances, [partInstance])
 
 		this._proposedPieceInstances = normalizeArrayToMap(proposedPieceInstances, '_id')
 	}

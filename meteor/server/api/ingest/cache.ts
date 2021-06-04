@@ -16,7 +16,6 @@ import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collection
 import { Rundown, DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { Segment, DBSegment, Segments } from '../../../lib/collections/Segments'
 import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
-import { protectString } from '../../../lib/lib'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { DbCacheReadObject, DbCacheWriteOptionalObject } from '../../cache/CacheObject'
 import { CacheBase } from '../../cache/CacheBase'
@@ -24,6 +23,48 @@ import { profiler } from '../profiler'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 import { getRundownId } from './lib'
 import { ExpectedPackageDB, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
+import PLazy from 'p-lazy'
+
+export class Lazy<T> {
+	private value!: T
+	private loading: PLazy<void> | undefined
+
+	public constructor(init: () => Promise<T>) {
+		this.loading = new PLazy((resolve, reject) => {
+			try {
+				init()
+					.then((v) => {
+						this.value = v
+						this.loading = undefined
+						resolve()
+					})
+					.catch(() => reject())
+			} catch (e) {
+				reject()
+			}
+		})
+	}
+
+	public async get(): Promise<T> {
+		if (this.loading) {
+			await this.loading
+		}
+
+		return this.value
+	}
+
+	public getIfLoaded(): T | undefined {
+		if (!this.loading) {
+			return this.value
+		} else {
+			return undefined
+		}
+	}
+
+	public isLoaded(): boolean {
+		return !this.loading
+	}
+}
 
 export class CacheForIngest extends CacheBase<CacheForIngest> {
 	public readonly isIngest = true
@@ -44,78 +85,95 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	public readonly ExpectedPlayoutItems: DbCacheWriteCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>
 	public readonly ExpectedPackages: DbCacheWriteCollection<ExpectedPackageDB, ExpectedPackageDB>
 
-	public readonly RundownBaselineObjs: DbCacheWriteCollection<RundownBaselineObj, RundownBaselineObj>
-	public readonly RundownBaselineAdLibPieces: DbCacheWriteCollection<
-		RundownBaselineAdLibItem,
-		RundownBaselineAdLibItem
+	public readonly RundownBaselineObjs: Lazy<DbCacheWriteCollection<RundownBaselineObj, RundownBaselineObj>>
+	public readonly RundownBaselineAdLibPieces: Lazy<
+		DbCacheWriteCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>
 	>
-	public readonly RundownBaselineAdLibActions: DbCacheWriteCollection<
-		RundownBaselineAdLibAction,
-		RundownBaselineAdLibAction
+	public readonly RundownBaselineAdLibActions: Lazy<
+		DbCacheWriteCollection<RundownBaselineAdLibAction, RundownBaselineAdLibAction>
 	>
 
 	public get RundownId() {
 		return this.Rundown.doc?._id ?? getRundownId(this.Studio.doc, this.RundownExternalId)
 	}
 
-	private constructor(rundownExternalId: string) {
+	private constructor(
+		rundownExternalId: string,
+		segments: DbCacheWriteCollection<Segment, DBSegment>,
+		parts: DbCacheWriteCollection<Part, DBPart>,
+		pieces: DbCacheWriteCollection<Piece, Piece>,
+		adLibPieces: DbCacheWriteCollection<AdLibPiece, AdLibPiece>,
+		adLibActions: DbCacheWriteCollection<AdLibAction, AdLibAction>,
+		expectedMediaItems: DbCacheWriteCollection<ExpectedMediaItem, ExpectedMediaItem>,
+		expectedPlayoutItems: DbCacheWriteCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>,
+		expectedPackages: DbCacheWriteCollection<ExpectedPackageDB, ExpectedPackageDB>
+	) {
 		super()
 
 		this.Studio = new DbCacheReadObject(Studios, false)
 		this.Rundown = new DbCacheWriteOptionalObject(Rundowns)
 		this.RundownExternalId = rundownExternalId
 
-		this.Segments = new DbCacheWriteCollection(Segments)
-		this.Parts = new DbCacheWriteCollection(Parts)
-		this.Pieces = new DbCacheWriteCollection(Pieces)
+		this.Segments = segments
+		this.Parts = parts
+		this.Pieces = pieces
 
-		this.AdLibPieces = new DbCacheWriteCollection(AdLibPieces)
-		this.AdLibActions = new DbCacheWriteCollection(AdLibActions)
+		this.AdLibPieces = adLibPieces
+		this.AdLibActions = adLibActions
 
-		this.ExpectedMediaItems = new DbCacheWriteCollection(ExpectedMediaItems)
-		this.ExpectedPlayoutItems = new DbCacheWriteCollection(ExpectedPlayoutItems)
-		this.ExpectedPackages = new DbCacheWriteCollection(ExpectedPackages)
+		this.ExpectedMediaItems = expectedMediaItems
+		this.ExpectedPlayoutItems = expectedPlayoutItems
+		this.ExpectedPackages = expectedPackages
 
-		this.RundownBaselineObjs = new DbCacheWriteCollection(RundownBaselineObjs)
-		this.RundownBaselineAdLibPieces = new DbCacheWriteCollection(RundownBaselineAdLibPieces)
-		this.RundownBaselineAdLibActions = new DbCacheWriteCollection(RundownBaselineAdLibActions)
+		this.RundownBaselineObjs = new Lazy(async () =>
+			DbCacheWriteCollection.createFromDatabase(RundownBaselineObjs, { rundownId: this.RundownId })
+		)
+		this.RundownBaselineAdLibPieces = new Lazy(async () =>
+			DbCacheWriteCollection.createFromDatabase(RundownBaselineAdLibPieces, { rundownId: this.RundownId })
+		)
+		this.RundownBaselineAdLibActions = new Lazy(async () =>
+			DbCacheWriteCollection.createFromDatabase(RundownBaselineAdLibActions, { rundownId: this.RundownId })
+		)
 	}
 
 	static async create(studioId: StudioId, rundownExternalId: string): Promise<CacheForIngest> {
-		const res = new CacheForIngest(rundownExternalId)
+		const rundownId = getRundownId(studioId, rundownExternalId)
+		const collections = await Promise.all([
+			DbCacheWriteCollection.createFromDatabase(Segments, { rundownId: rundownId }),
+			DbCacheWriteCollection.createFromDatabase(Parts, { rundownId: rundownId }),
+			DbCacheWriteCollection.createFromDatabase(Pieces, { startRundownId: rundownId }),
 
-		await Promise.all([
-			res.Studio._initialize(studioId),
-			res.Rundown._initialize(getRundownId(studioId, rundownExternalId)),
+			DbCacheWriteCollection.createFromDatabase(AdLibPieces, { rundownId: rundownId }),
+			DbCacheWriteCollection.createFromDatabase(AdLibActions, { rundownId: rundownId }),
+
+			DbCacheWriteCollection.createFromDatabase(ExpectedMediaItems, { rundownId: rundownId }),
+			DbCacheWriteCollection.createFromDatabase(ExpectedPlayoutItems, { rundownId: rundownId }),
+			DbCacheWriteCollection.createFromDatabase(ExpectedPackages, { rundownId: rundownId }),
 		])
 
-		const rundownId = res.Rundown.doc?._id ?? protectString('')
-		await Promise.all([
-			res.Segments.prepareInit({ rundownId: rundownId }, true),
-			res.Parts.prepareInit({ rundownId: rundownId }, true),
-			res.Pieces.prepareInit({ startRundownId: rundownId }, true),
+		const res = new CacheForIngest(rundownExternalId, ...collections)
 
-			res.AdLibPieces.prepareInit({ rundownId: rundownId }, true),
-			res.AdLibActions.prepareInit({ rundownId: rundownId }, true),
-
-			res.ExpectedMediaItems.prepareInit({ rundownId: rundownId }, true),
-			res.ExpectedPlayoutItems.prepareInit({ rundownId: rundownId }, true),
-			res.ExpectedPackages.prepareInit({ rundownId: rundownId }, true),
-
-			res.RundownBaselineObjs.prepareInit({ rundownId: rundownId }, false),
-			res.RundownBaselineAdLibPieces.prepareInit({ rundownId: rundownId }, false),
-			res.RundownBaselineAdLibActions.prepareInit({ rundownId: rundownId }, false),
-		])
+		await Promise.all([res.Studio._initialize(studioId), res.Rundown._initialize(rundownId)])
 
 		return res
 	}
 
-	async loadBaselineCollections(): Promise<void> {
-		await Promise.all([
-			this.RundownBaselineObjs._initialize(),
-			this.RundownBaselineAdLibPieces._initialize(),
-			this.RundownBaselineAdLibActions._initialize(),
+	async loadBaselineCollections(): Promise<{
+		baselineObjects: DbCacheWriteCollection<RundownBaselineObj, RundownBaselineObj>
+		baselineAdlibPieces: DbCacheWriteCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>
+		baselineAdlibActions: DbCacheWriteCollection<RundownBaselineAdLibAction, RundownBaselineAdLibAction>
+	}> {
+		const [baselineObjects, baselineAdlibPieces, baselineAdlibActions] = await Promise.all([
+			this.RundownBaselineObjs.get(),
+			this.RundownBaselineAdLibPieces.get(),
+			this.RundownBaselineAdLibActions.get(),
 		])
+
+		return {
+			baselineObjects,
+			baselineAdlibPieces,
+			baselineAdlibActions,
+		}
 	}
 
 	/**
