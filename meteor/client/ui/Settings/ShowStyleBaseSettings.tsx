@@ -335,8 +335,8 @@ const SourceLayerSettings = withTranslation()(
 					return t('Split Screen')
 				case SourceLayerType.VT:
 					return t('Clips')
-				// case SourceLayerType.METADATA:
-				// 	return t('Metadata')
+				case SourceLayerType.METADATA:
+					return t('Metadata')
 				// case SourceLayerType.CAMERA_MOVEMENT:
 				// 	return t('Camera Movement')
 				case SourceLayerType.UNKNOWN:

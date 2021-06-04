@@ -50,6 +50,9 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 			case PieceLifespan.OutOnRundownEnd:
 				sourceDuration = t('Until end of rundown') as string
 				break
+			case PieceLifespan.OutOnShowStyleEnd:
+				sourceDuration = t('Until end of showstyle') as string
+				break
 			default:
 				assertNever(props.adLibListItem.lifespan)
 		}
