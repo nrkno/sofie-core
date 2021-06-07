@@ -337,6 +337,8 @@ export interface IBlueprintAdLibPiece<TMetadata = unknown> extends IBlueprintPie
 	uniquenessId?: string
 	/** When not playing, display in the UI as playing, and vice versa. Useful for Adlibs that toggle something off when taken */
 	invertOnAirState?: boolean
+	/** Do not assign a hotkey to this adlib */
+	noHotKey?: boolean
 }
 /** The AdLib piece sent from Core */
 export interface IBlueprintAdLibPieceDB<TMetadata = unknown> extends IBlueprintAdLibPiece<TMetadata> {

@@ -19,6 +19,7 @@ import { wrapWithCacheForRundownPlaylistFromRundown, wrapWithCacheForRundownPlay
 import { removeRundownPlaylistFromCache } from '../../playout/lib'
 import { MethodContext } from '../../../../lib/api/methods'
 import { Settings } from '../../../../lib/Settings'
+import { IngestCacheType, IngestDataCache } from '../../../../lib/collections/IngestDataCache'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -1004,6 +1005,36 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Segments.findOne({ externalId: 'segment3' })?._rank).toBe(4)
 		expect(Segments.findOne({ externalId: 'segment4' })?._rank).toBe(5)
 		expect(Segments.findOne({ externalId: 'segment5' })?._rank).toBe(3)
+		expect(
+			(IngestDataCache.findOne({ type: IngestCacheType.SEGMENT, 'data.externalId': 'segment0' })?.data as
+				| IngestSegment
+				| undefined)?.rank
+		).toBe(6)
+		expect(
+			(IngestDataCache.findOne({ type: IngestCacheType.SEGMENT, 'data.externalId': 'segment1' })?.data as
+				| IngestSegment
+				| undefined)?.rank
+		).toBe(2)
+		expect(
+			(IngestDataCache.findOne({ type: IngestCacheType.SEGMENT, 'data.externalId': 'segment2' })?.data as
+				| IngestSegment
+				| undefined)?.rank
+		).toBe(1)
+		expect(
+			(IngestDataCache.findOne({ type: IngestCacheType.SEGMENT, 'data.externalId': 'segment3' })?.data as
+				| IngestSegment
+				| undefined)?.rank
+		).toBe(4)
+		expect(
+			(IngestDataCache.findOne({ type: IngestCacheType.SEGMENT, 'data.externalId': 'segment4' })?.data as
+				| IngestSegment
+				| undefined)?.rank
+		).toBe(5)
+		expect(
+			(IngestDataCache.findOne({ type: IngestCacheType.SEGMENT, 'data.externalId': 'segment5' })?.data as
+				| IngestSegment
+				| undefined)?.rank
+		).toBe(3)
 
 		Rundowns.remove({})
 		expect(Rundowns.findOne()).toBeFalsy()

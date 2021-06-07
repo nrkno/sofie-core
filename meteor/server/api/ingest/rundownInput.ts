@@ -137,7 +137,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from '../playout/infinites'
-import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
+import { IngestCacheType, IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
@@ -516,15 +516,6 @@ function updateRundownFromIngestData(
 	if (existingDbRundown) {
 		if (existingDbRundown.unsynced) {
 			logger.warn(`Blocking updating rundown "${existingDbRundown._id}" because it is unsynced`)
-			return false
-		}
-
-		const existingPlaylist = RundownPlaylists.findOne(existingDbRundown.playlistId)
-
-		if (existingPlaylist && existingPlaylist.active) {
-			logger.warn(
-				`Blocking updating rundown "${existingDbRundown._id}" because playlist "${existingDbRundown.playlistId}" is active`
-			)
 			return false
 		}
 	}
@@ -1145,9 +1136,6 @@ export function updateSegmentFromCache(rundownId: RundownId, segmentId: SegmentI
 		const ingestSegment: LocalIngestSegment = loadCachedIngestSegment(rundown._id, rundown.externalId, segmentId)
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-		cache.defer(() => {
-			saveSegmentCache(rundown._id, segmentId, makeNewIngestSegment(ingestSegment))
-		})
 
 		const blueprint = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
 
@@ -1648,19 +1636,31 @@ export function handleUpdatedSegmentRanks(
 			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
 			for (const [externalId, rank] of Object.entries(newRanks)) {
-				const changed = cache.Segments.update(
-					{
-						externalId,
-						rundownId,
-					},
-					{
-						$set: {
-							_rank: rank,
-						},
-					}
-				)
+				const segment = cache.Segments.findOne({
+					externalId,
+					rundownId,
+				})
 
-				if (changed === 0) {
+				if (segment) {
+					logger.debug(`Update rank of segment "${externalId}" (${rundownExternalId}) to ${rank}`)
+					cache.Segments.update(
+						{
+							externalId,
+							rundownId,
+						},
+						{
+							$set: {
+								_rank: rank,
+							},
+						}
+					)
+					cache.defer(() => {
+						IngestDataCache.update(
+							{ type: IngestCacheType.SEGMENT, segmentId: segment._id, rundownId },
+							{ $set: { 'data.rank': rank } }
+						)
+					})
+				} else {
 					logger.warn(`Failed to update rank of segment "${externalId}" (${rundownExternalId})`)
 				}
 			}
