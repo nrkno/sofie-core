@@ -447,6 +447,13 @@ $segment-layer-background-guest: #008a92;
 		}
 	}
 
+	&.vt.source-broken,
+	&.vt.source-missing {
+		&::after {
+			opacity: 0.6;
+		}
+	}
+
 	&.source-broken {
 		&::after {
 			background-image: repeating-linear-gradient(
