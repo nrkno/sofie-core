@@ -1405,26 +1405,35 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	let uiSegments: AdlibSegmentUi[] = []
 	let sourceLayerLookup: SourceLayerLookup = {}
 
-	const rundownLayouts =
-		rundowns.length > 0 ? RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() : undefined
+	const { rundownLayouts, miniShelfFilter, selectedMiniShelfLayout, miniShelfLayoutId } = memoizedIsolatedAutorun(
+		(rundowns: Rundown[]) => {
+			const rundownLayouts =
+				rundowns.length > 0 ? RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() : undefined
 
-	let selectedMiniShelfLayout: RundownLayoutBase | undefined = undefined
-	const miniShelfLayoutId = protectString((params['miniShelfLayout'] as string) || '')
+			let selectedMiniShelfLayout: RundownLayoutBase | undefined = undefined
+			const miniShelfLayoutId = protectString((params['miniShelfLayout'] as string) || '')
 
-	if (rundownLayouts) {
-		if (miniShelfLayoutId) {
-			selectedMiniShelfLayout = rundownLayouts.find((i) => i._id === miniShelfLayoutId)
-			if (!selectedMiniShelfLayout) {
-				selectedMiniShelfLayout = rundownLayouts.find((i) => i.name.indexOf(unprotectString(miniShelfLayoutId!)) >= 0)
+			if (rundownLayouts) {
+				if (miniShelfLayoutId) {
+					selectedMiniShelfLayout = rundownLayouts.find((i) => i._id === miniShelfLayoutId)
+					if (!selectedMiniShelfLayout) {
+						selectedMiniShelfLayout = rundownLayouts.find(
+							(i) => i.name.indexOf(unprotectString(miniShelfLayoutId!)) >= 0
+						)
+					}
+				}
+				if (!selectedMiniShelfLayout) {
+					selectedMiniShelfLayout = rundownLayouts.filter((i) => i.type === RundownLayoutType.MINI_SHELF_LAYOUT)[0]
+				}
 			}
-		}
-		if (!selectedMiniShelfLayout) {
-			selectedMiniShelfLayout = rundownLayouts.filter((i) => i.type === RundownLayoutType.MINI_SHELF_LAYOUT)[0]
-		}
-	}
-	const filter = selectedMiniShelfLayout?.filters.find((filter) => RundownLayoutsAPI.isFilter(filter)) as
-		| RundownLayoutFilterBase
-		| undefined
+			const miniShelfFilter = selectedMiniShelfLayout?.filters.find((filter) => RundownLayoutsAPI.isFilter(filter)) as
+				| RundownLayoutFilterBase
+				| undefined
+			return { rundownLayouts, miniShelfFilter, selectedMiniShelfLayout, miniShelfLayoutId }
+		},
+		'getMiniShelfFilter',
+		rundowns
+	)
 
 	const filteredUiSegmentMap = new Map<SegmentId, AdlibSegmentUi>()
 	const filteredUiSegments: AdlibSegmentUi[] = []
@@ -1436,7 +1445,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			playlist,
 			showStyleBase,
 			includeGlobalAdLibs: false,
-			filter,
+			filter: miniShelfFilter,
 		}))
 		const liveSegment = uiSegments.find((i) => i.isLive === true)
 		uiSegments.forEach((segment) => {
@@ -1446,7 +1455,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					piece,
 					showStyleBase,
 					liveSegment,
-					filter && { ...filter, currentSegment: !(segment.isHidden && segment.showShelf) && filter.currentSegment },
+					miniShelfFilter && {
+						...miniShelfFilter,
+						currentSegment: !(segment.isHidden && segment.showShelf) && miniShelfFilter.currentSegment,
+					},
 					undefined,
 					uniquenessIds
 				)
@@ -1517,7 +1529,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			selectedMiniShelfLayout && RundownLayoutsAPI.IsLayoutForMiniShelf(selectedMiniShelfLayout)
 				? selectedMiniShelfLayout
 				: undefined,
-		miniShelfFilter: filter,
+		miniShelfFilter,
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
 			layout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
