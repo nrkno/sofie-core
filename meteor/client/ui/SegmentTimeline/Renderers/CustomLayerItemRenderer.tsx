@@ -141,7 +141,7 @@ export class CustomLayerItemRenderer<
 					style={{
 						left: this.props.relative
 							? (((vtContent.sourceDuration - seek) / (this.getItemDuration() || 1)) * 100).toString() + '%'
-							: ((vtContent.sourceDuration - seek) * this.props.timeScale).toString() + 'px',
+							: Math.round((vtContent.sourceDuration - seek) * this.props.timeScale).toString() + 'px',
 					}}
 				></div>
 			)
