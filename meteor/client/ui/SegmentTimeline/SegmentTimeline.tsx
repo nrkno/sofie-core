@@ -706,7 +706,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		let partIsLive = false
 		let smallPartsAccumulator: [PartUi, number][] = []
 		return this.props.parts.map((part, index) => {
-			let previousPartIsLive = partIsLive
+			const previousPartIsLive = partIsLive
 			partIsLive = part.instance._id === this.props.playlist.currentPartInstanceId
 			let emitSmallPartsInFlag: [PartUi, number][] | undefined = undefined
 			let emitSmallPartsInFlagAtEnd: boolean = false

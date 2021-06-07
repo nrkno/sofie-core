@@ -67,7 +67,7 @@ export namespace ServerClientAPI {
 			})
 		)
 		try {
-			let result = waitForPromise(fcn())
+			const result = waitForPromise(fcn())
 
 			// check the nature of the result
 			if (ClientAPI.isClientResponseError(result)) {

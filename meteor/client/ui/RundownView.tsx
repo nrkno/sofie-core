@@ -1456,7 +1456,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
 
 	const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
-	for (let rundown of rundowns) {
+	for (const rundown of rundowns) {
 		rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
 	}
 

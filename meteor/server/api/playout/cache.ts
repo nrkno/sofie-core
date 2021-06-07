@@ -277,7 +277,7 @@ export function getShowStyleIdsRundownMappingFromCache(cache: CacheForPlayout): 
 	const rundowns = cache.Rundowns.findFetch({})
 	const ret = new Map()
 
-	for (let rundown of rundowns) {
+	for (const rundown of rundowns) {
 		ret.set(rundown._id, rundown.showStyleBaseId)
 	}
 

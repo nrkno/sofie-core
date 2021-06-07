@@ -46,7 +46,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			// Note: in versions <1.35, the collection PackageContainerPackageStatuses had mistankenly been created at the mongo-collection
 			// "packageContainerStatuses" instead of "packageContainerPackageStatuses"
 
-			let databaseSystem = getCoreSystem()
+			const databaseSystem = getCoreSystem()
 
 			// Only run this if version is under 1.33.0, in order to not create the deprecated databases
 			if (databaseSystem && semver.satisfies(databaseSystem.version, '<1.33.0')) {

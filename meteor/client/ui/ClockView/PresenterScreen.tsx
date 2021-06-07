@@ -150,7 +150,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 		const orderedSegmentsAndParts = playlist.getSegmentsAndPartsSync()
 		rundownIds = rundowns.map((rundown) => rundown._id)
 		const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
-		for (let rundown of rundowns) {
+		for (const rundown of rundowns) {
 			rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
 		}
 		showStyleBaseIds = rundowns.map((rundown) => rundown.showStyleBaseId)
