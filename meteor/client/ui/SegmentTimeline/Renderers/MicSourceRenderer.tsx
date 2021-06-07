@@ -17,8 +17,8 @@ export const MicSourceRenderer = withTranslation()(
 		itemElement: HTMLElement | null
 		lineItem: HTMLElement
 		linePosition: number
-		leftLabel: HTMLSpanElement
-		rightLabel: HTMLSpanElement
+		leftLabel: HTMLSpanElement | null
+		rightLabel: HTMLSpanElement | null
 
 		readTime: number
 		lastPartDuration: number
@@ -101,8 +101,8 @@ export const MicSourceRenderer = withTranslation()(
 		}
 
 		updateAnchoredElsWidths = () => {
-			const leftLabelWidth = getElementWidth(this.leftLabel)
-			const rightLabelWidth = getElementWidth(this.rightLabel)
+			const leftLabelWidth = this.leftLabel ? getElementWidth(this.leftLabel) : 0
+			const rightLabelWidth = this.rightLabel ? getElementWidth(this.rightLabel) : 0
 
 			this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 		}
@@ -181,23 +181,27 @@ export const MicSourceRenderer = withTranslation()(
 			const content = this.props.piece.instance.piece.content as ScriptContent | undefined
 
 			return (
-				<React.Fragment>
-					<span
-						className="segment-timeline__piece__label first-words overflow-label"
-						ref={this.setLeftLabelRef}
-						style={this.getItemLabelOffsetLeft()}
-					>
-						{begin}
-					</span>
-					<span
-						className="segment-timeline__piece__label right-side"
-						ref={this.setRightLabelRef}
-						style={this.getItemLabelOffsetRight()}
-					>
-						<span className="segment-timeline__piece__label last-words">{end}</span>
-						{this.renderInfiniteIcon()}
-						{this.renderOverflowTimeLabel()}
-					</span>
+				<>
+					{!this.props.isTooSmallForText && (
+						<>
+							<span
+								className="segment-timeline__piece__label first-words overflow-label"
+								ref={this.setLeftLabelRef}
+								style={this.getItemLabelOffsetLeft()}
+							>
+								{begin}
+							</span>
+							<span
+								className="segment-timeline__piece__label right-side"
+								ref={this.setRightLabelRef}
+								style={this.getItemLabelOffsetRight()}
+							>
+								<span className="segment-timeline__piece__label last-words">{end}</span>
+								{this.renderInfiniteIcon()}
+								{this.renderOverflowTimeLabel()}
+							</span>
+						</>
+					)}
 					{content && (
 						<MicFloatingInspector
 							content={content}
@@ -207,7 +211,7 @@ export const MicSourceRenderer = withTranslation()(
 							typeClass={this.props.typeClass}
 						/>
 					)}
-				</React.Fragment>
+				</>
 			)
 		}
 	}

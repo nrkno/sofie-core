@@ -100,6 +100,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 						out: 'auto',
 						timeIn: '00:00',
 					},
+					step: noraContent.payload.step,
 				},
 			},
 			'*'
@@ -205,6 +206,9 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	}
 
 	render() {
+		const stepContent = this.state.noraContent?.payload?.step
+		const isMultiStep = this.state.noraContent?.payload?.step?.enabled === true
+
 		return (
 			<React.Fragment>
 				<Escape to={this.state.displayOn}>
@@ -222,6 +226,16 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 								height="1080"
 							></iframe>
 						</div>
+						{isMultiStep && stepContent ? (
+							<div className="segment-timeline__mini-inspector--graphics--preview__step-chevron">
+								{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
+								{typeof stepContent.total === 'number' && stepContent.total > 0 ? (
+									<span className="segment-timeline__mini-inspector--graphics--preview__step-chevron__total">
+										/{stepContent.total}
+									</span>
+								) : null}
+							</div>
+						) : null}
 					</div>
 				</Escape>
 			</React.Fragment>

@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { assertNever, waitForPromise } from '../../../lib/lib'
+import { assertNever, Awaited, waitForPromise } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
@@ -70,7 +70,7 @@ export function runPlayoutOperationWithCache<T>(
 	priority: PlayoutLockFunctionPriority,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
 	fcn: (cache: CacheForPlayout) => Promise<T> | T
-): T {
+): Awaited<Awaited<T>> {
 	let tmpPlaylist: RundownPlaylist
 	if (access) {
 		tmpPlaylist = access.playlist
@@ -106,7 +106,7 @@ export function runPlayoutOperationWithLock<T>(
 	rundownPlaylistId: RundownPlaylistId,
 	priority: PlayoutLockFunctionPriority,
 	fcn: (lock: PlaylistLock, tmpPlaylist: ReadonlyDeep<RundownPlaylist>) => Promise<T> | T
-): T {
+): Awaited<Awaited<T>> {
 	let tmpPlaylist: RundownPlaylist
 	if (access) {
 		tmpPlaylist = access.playlist
@@ -147,7 +147,7 @@ export function runPlayoutOperationWithCacheFromStudioOperation<T>(
 	priority: PlayoutLockFunctionPriority,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
 	fcn: (cache: CacheForPlayout) => Promise<T> | T
-): T {
+): Awaited<T> {
 	// Validate the lock is correct
 	const options: PlayoutLockOptions = {}
 	const lockStudioId = getStudioIdFromCacheOrLock(cacheOrLock)
@@ -186,7 +186,7 @@ export function runPlayoutOperationWithLockFromStudioOperation<T>(
 	tmpPlaylist: Pick<ReadonlyDeep<RundownPlaylist>, '_id' | 'studioId'>,
 	priority: PlayoutLockFunctionPriority,
 	fcn: (lock: PlaylistLock) => Promise<T> | T
-): T {
+): Awaited<T> {
 	const lockStudioId = getStudioIdFromCacheOrLock(studioCacheOrLock)
 	if (lockStudioId != tmpPlaylist.studioId)
 		throw new Meteor.Error(
@@ -224,7 +224,7 @@ function playoutLockFunctionInner<T>(
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
 	fcn: (cache: CacheForPlayout) => Promise<T> | T,
 	options?: PlayoutLockOptions
-): T {
+): Awaited<T> {
 	async function doPlaylistInner() {
 		const cache = await CacheForPlayout.create(tmpPlaylist)
 

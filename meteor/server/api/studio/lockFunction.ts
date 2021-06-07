@@ -1,5 +1,5 @@
 import { StudioId } from '../../../lib/collections/Studios'
-import { waitForPromise } from '../../../lib/lib'
+import { Awaited, waitForPromise } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
 import { CacheForStudio } from './cache'
@@ -43,7 +43,7 @@ export function runStudioOperationWithCache<T>(
 	studioId: StudioId,
 	priority: StudioLockFunctionPriority,
 	fcn: (cache: CacheForStudio) => Promise<T> | T
-): T {
+): Awaited<T> {
 	return runStudioOperationWithLock(context, studioId, priority, async () => {
 		const cache = await CacheForStudio.create(studioId)
 
@@ -66,7 +66,7 @@ export function runStudioOperationWithLock<T>(
 	studioId: StudioId,
 	priority: StudioLockFunctionPriority,
 	fcn: (lock: StudioLock) => Promise<T> | T
-): T {
+): Awaited<T> {
 	return syncFunction(
 		() => waitForPromise(fcn({ _studioId: studioId })),
 		context,

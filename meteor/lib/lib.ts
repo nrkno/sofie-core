@@ -468,14 +468,16 @@ export function waitForPromiseObj<T extends object>(obj: Promisify<T>): T {
 	return _.object(_.keys(obj), values)
 }
 
+export type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T
+
 /**
  * Convert a promise to a "synchronous" Fiber function
  * Makes the Fiber wait for the promise to resolve, then return the value of the promise.
  * If the fiber rejects, the function in the Fiber will "throw"
  */
-export const waitForPromise: <T>(p: Promise<T> | T) => T = Meteor.wrapAsync(function waitForPromise<T>(
+export const waitForPromise: <T>(p: Promise<T> | T) => Awaited<T> = Meteor.wrapAsync(function waitForPromise<T>(
 	p: Promise<T> | T,
-	cb: (err: any | null, result?: any) => T
+	cb: (err: any | null, result?: any) => Awaited<T>
 ) {
 	if (Meteor.isClient) throw new Meteor.Error(500, `waitForPromise can't be used client-side`)
 	if (cb === undefined && typeof p === 'function') {

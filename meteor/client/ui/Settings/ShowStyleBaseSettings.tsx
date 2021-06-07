@@ -146,6 +146,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		renderEditForm(showStyleBase: ShowStyleBase) {
 			const { t } = this.props
 
+			const layerMappings = this.getLayerMappingsFlat()
+			const sourceLayers = this.getSourceLayersFlat()
+
 			return (
 				<div className="studio-edit mod mhl mvn">
 					<div>
@@ -235,8 +238,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								manifest={this.props.blueprintConfigManifest}
 								object={showStyleBase}
 								collection={ShowStyleBases}
-								layerMappings={this.getLayerMappingsFlat()}
-								sourceLayers={this.getSourceLayersFlat()}
+								layerMappings={layerMappings}
+								sourceLayers={sourceLayers}
 								configPath={'blueprintConfig'}
 							/>
 						</div>
@@ -247,6 +250,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								showStyleVariants={this.props.showStyleVariants}
 								blueprintConfigManifest={this.props.blueprintConfigManifest}
 								showStyleBase={showStyleBase}
+								layerMappings={layerMappings}
+								sourceLayers={sourceLayers}
 							/>
 						</div>
 					</div>
@@ -1149,6 +1154,9 @@ interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
 	showStyleVariants: Array<ShowStyleVariant>
 	blueprintConfigManifest: ConfigManifestEntry[]
+
+	layerMappings?: { [key: string]: MappingsExt }
+	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
 }
 interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]
@@ -1262,6 +1270,8 @@ const ShowStyleVariantsSettings = withTranslation()(
 												collection={ShowStyleVariants}
 												configPath={'blueprintConfig'}
 												object={showStyleVariant}
+												layerMappings={this.props.layerMappings}
+												sourceLayers={this.props.sourceLayers}
 												subPanel={true}
 											/>
 										</div>

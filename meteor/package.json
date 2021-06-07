@@ -54,7 +54,7 @@
 		"@popperjs/core": "^2.9.1",
 		"@slack/webhook": "^5.0.2",
 		"@sofie-automation/blueprints-integration": "file:../packages/blueprints-integration",
-		"amqplib": "^0.7.1",
+		"amqplib": "^0.8.0",
 		"bcrypt": "^5.0.1",
 		"body-parser": "^1.19.0",
 		"classnames": "^2.2.6",

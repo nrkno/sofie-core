@@ -272,10 +272,17 @@ export function setNextPart(
 				consumesNextSegmentId: newNextPart?.consumesNextSegmentId,
 			})
 
+			const rundown = cache.Rundowns.findOne(nextPart.rundownId)
+
+			if (!rundown) {
+				throw new Meteor.Error(400, `Could not find rundown ${nextPart.rundownId}`)
+			}
+
 			const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, undefined, nextPart))
 			const newPieceInstances = getPieceInstancesForPart(
 				cache,
 				currentPartInstance,
+				rundown,
 				nextPart,
 				possiblePieces,
 				newInstanceId,

@@ -123,9 +123,8 @@ export class Part implements DBPart {
 			  ]
 			: []
 	}
-	getMinimumReactiveNotes(studio: Studio, showStyleBase: ShowStyleBase): Array<PartNote> {
+	getMinimumReactivePieceNotes(studio: Studio, showStyleBase: ShowStyleBase): Array<PartNote> {
 		let notes: Array<PartNote> = []
-		notes = notes.concat(this.notes || [])
 
 		const pieces = this.getPieces()
 		const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')

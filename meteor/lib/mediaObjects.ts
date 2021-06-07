@@ -185,14 +185,12 @@ export function checkPieceContentStatus(
 			const messages: Array<string> = []
 			const packageInfos: ScanInfoForPackages = {}
 
-			// const missingPackageNames: string[] = []
 			if (piece.expectedPackages.length) {
 				// Route the mappings
 				const routedMappingsWithPackages = routeExpectedPackages(studio, piece.expectedPackages)
 
 				const checkedPackageContainers: { [containerId: string]: true } = {}
 
-				// const deviceIdsMap = new Map<string, true>()
 				for (const mapping of Object.values(routedMappingsWithPackages)) {
 					const mappingDeviceId = unprotectString(mapping.deviceId)
 					let packageContainerId: string | undefined
@@ -215,10 +213,6 @@ export function checkPieceContentStatus(
 					checkedPackageContainers[packageContainerId] = true
 
 					for (const expectedPackage of mapping.expectedPackages) {
-						// for (const packageSource of expectedPackage.sources) {
-						// 	packageSource.containerId
-						// }
-
 						const packageOnPackageContainer = getPackageContainerPackageStatus(
 							studio._id,
 							packageContainerId,

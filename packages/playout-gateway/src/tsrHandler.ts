@@ -827,6 +827,12 @@ export class TSRHandler {
 		const expectedItems = expectedPlayoutItems.find({
 			studioId: peripheralDevice.studioId,
 		})
+		const rundowns = _.indexBy(
+			this._coreHandler.core.getCollection('rundowns').find({
+				studioId: peripheralDevice.studioId,
+			}),
+			'_id'
+		)
 
 		this.logger.debug(`VIZDEBUG: Items after filter ${JSON.stringify(expectedItems)}`)
 
@@ -848,7 +854,8 @@ export class TSRHandler {
 								const newItem: ExpectedPlayoutItem = {
 									...itemContent,
 									rundownId: item.rundownId,
-									playlistId: item.playlistId,
+									playlistId: item.rundownId && rundowns[item.rundownId]?.playlistId,
+									baseline: item.baseline,
 								}
 								return newItem
 							}

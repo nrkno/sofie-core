@@ -188,7 +188,7 @@ export function getBasicNotesForSegment(
 	}
 
 	for (const part of parts) {
-		const newNotes = part.notes || []
+		const newNotes = part.notes?.slice() || []
 
 		if (part.invalidReason) {
 			newNotes.push({

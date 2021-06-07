@@ -21,7 +21,7 @@ import {
 } from '../../lib/Rundown'
 import { DBSegment, Segment, SegmentId, Segments } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { literal, normalizeArray, getCurrentTime, applyToArray, unprotectString, protectString } from '../../lib/lib'
 import { PartInstance, wrapPartToTemporaryInstance } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
@@ -35,6 +35,7 @@ import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { Mongo } from 'meteor/mongo'
 import { FindOptions } from '../../lib/typings/meteor'
 import { getShowHiddenSourceLayers } from './localStorage'
+import { Rundown, RundownId } from '../../lib/collections/Rundowns'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
@@ -305,8 +306,11 @@ export namespace RundownUtils {
 	export function getResolvedSegment(
 		showStyleBase: ShowStyleBase,
 		playlist: RundownPlaylist,
+		rundown: Rundown,
 		segment: DBSegment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
+		rundownsBeforeThisInPlaylist: RundownId[],
+		rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 		orderedAllPartIds: PartId[],
 		currentPartInstance: PartInstance | undefined,
 		nextPartInstance: PartInstance | undefined,
@@ -475,9 +479,12 @@ export namespace RundownUtils {
 
 				const rawPieceInstances = getPieceInstancesForPartInstance(
 					playlist.activationId,
+					rundown,
 					partInstance,
 					new Set(partIds.slice(0, itIndex)),
 					segmentsBeforeThisInRundownSet,
+					rundownsBeforeThisInPlaylist,
+					rundownsToShowstyles,
 					orderedAllPartIds,
 					nextPartIsAfterCurrentPart,
 					currentPartInstance,

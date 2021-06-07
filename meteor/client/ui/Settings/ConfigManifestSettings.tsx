@@ -425,6 +425,8 @@ export class ConfigManifestTable<
 							return (a as string).localeCompare(b as string)
 						}
 					case ConfigManifestEntryType.NUMBER:
+					case ConfigManifestEntryType.INT:
+					case ConfigManifestEntryType.FLOAT:
 						return (a as number) - (b as number)
 					default:
 						return 0
@@ -447,7 +449,10 @@ export class ConfigManifestTable<
 									(col, i) => (
 										<th key={col.id}>
 											<span title={col.description}>{col.name} </span>
-											{(col.type === ConfigManifestEntryType.STRING || col.type === ConfigManifestEntryType.NUMBER) && (
+											{(col.type === ConfigManifestEntryType.STRING ||
+												col.type === ConfigManifestEntryType.NUMBER ||
+												col.type === ConfigManifestEntryType.INT ||
+												col.type === ConfigManifestEntryType.FLOAT) && (
 												<button
 													className={ClassNames('action-btn', {
 														disabled: this.state.sortColumn !== i,
