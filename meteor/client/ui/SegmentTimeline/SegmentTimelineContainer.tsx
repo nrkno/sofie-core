@@ -780,7 +780,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				const currentLivePartInstance = this.state.currentLivePart.instance
 				const currentLivePart = currentLivePartInstance.part
 
-				let simulationPercentage = this.playbackSimulationPercentage
 				const partOffset =
 					(this.context.durations &&
 						this.context.durations.partDisplayStartsAt &&
@@ -788,7 +787,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 							this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)]) ||
 					0
 
-				let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
 				const lastTake = currentLivePartInstance.timings?.take
 				const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
 				const lastTakeOffset = currentLivePartInstance.timings?.playOffset || 0
@@ -798,26 +796,11 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						: lastStartedPlayback
 						? lastStartedPlayback - lastTakeOffset
 						: undefined
-				if (lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
-					isExpectedToPlay = true
-
-					// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through
-					if (lastStartedPlayback && lastTake + SIMULATED_PLAYBACK_SOFT_MARGIN < e.detail.currentTime) {
-						if (lastTake < lastStartedPlayback && simulationPercentage < 1) {
-							virtualStartedPlayback =
-								simulationPercentage * lastStartedPlayback + (1 - simulationPercentage) * lastTake
-						}
-					}
-				}
 
 				let newLivePosition =
-					isExpectedToPlay && virtualStartedPlayback
+					virtualStartedPlayback
 						? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
 						: partOffset + lastTakeOffset
-
-				if (lastStartedPlayback && simulationPercentage < 1) {
-					this.playbackSimulationPercentage = Math.min(simulationPercentage + SIMULATED_PLAYBACK_CROSSFADE_STEP, 1)
-				}
 
 				this.setState({
 					livePosition: newLivePosition,
@@ -835,6 +818,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			} else {
 				this.isVisible = true
 			}
+		}
+
+		calcTimeScale = (time: number) => {
+			return Math.round(this.props.timeScale * time)
 		}
 
 		startLive = () => {

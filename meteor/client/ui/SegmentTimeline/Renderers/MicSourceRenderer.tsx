@@ -46,10 +46,10 @@ export const MicSourceRenderer = withTranslation()(
 				this.itemPosition = this.itemElement.offsetLeft
 				const content = this.props.piece.instance.piece.content as ScriptContent | undefined
 				if (content && content.sourceDuration) {
-					const scriptReadTime = content.sourceDuration * this.props.timeScale
+					const scriptReadTime = Math.round(content.sourceDuration * this.props.timeScale)
 					this.readTime = content.sourceDuration
 					const positionByReadTime = this.itemPosition + scriptReadTime
-					const positionByPartEnd = this.props.partDuration * this.props.timeScale
+					const positionByPartEnd = Math.round(this.props.partDuration * this.props.timeScale)
 
 					if (
 						positionByReadTime !== this.linePosition ||

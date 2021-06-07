@@ -121,6 +121,9 @@ export const RundownTimingProvider = withTracker<
 		private temporaryPartInstances: Map<PartId, PartInstance> = new Map<PartId, PartInstance>()
 
 		private linearParts: Array<[PartId, number | null]> = []
+		private prevPartId: string = ''
+		private lastTakeAt: number | undefined = undefined
+
 		// look at the comments on RundownTimingContext to understand what these do
 		private partDurations: Record<string, number> = {}
 		private partExpectedDurations: Record<string, number> = {}
@@ -145,8 +148,12 @@ export const RundownTimingProvider = withTracker<
 			}
 		}
 
+		calmDownTiming = (time: number) => {
+			return Math.round(time / 40) * 40
+		}
+
 		onRefreshTimer = () => {
-			const now = getCurrentTime()
+			const now = this.calmDownTiming(getCurrentTime())
 			const isLowResolution = this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0
 			this.updateDurations(now, isLowResolution)
 			this.dispatchHREvent(now)
@@ -412,7 +419,22 @@ export const RundownTimingProvider = withTracker<
 					this.partDisplayDurations[partInstancePartId] = partDisplayDuration
 					this.partDisplayDurationsNoPlayback[partInstancePartId] = partDisplayDurationNoPlayback
 					startsAtAccumulator += this.partDurations[partInstancePartId]
-					displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId] // || this.props.defaultDuration || 3000
+
+					if (playlist.previousPartInstanceId !== partInstance._id) {
+						displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId]
+					} else {
+						if (this.prevPartId !== unprotectString(playlist.previousPartInstanceId)) {
+							this.lastTakeAt = now
+							this.prevPartId = unprotectString(playlist.previousPartInstanceId) || ''
+						}
+						let durationToTake =
+							this.lastTakeAt && lastStartedPlayback
+								? this.lastTakeAt - lastStartedPlayback
+								: this.partDisplayDurations[partInstancePartId]
+						this.partDisplayDurations[partInstancePartId] = durationToTake
+						displayStartsAtAccumulator += durationToTake
+					}
+
 					// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 					// always add the full duration, in case by some manual intervention this segment should play twice
 					if (memberOfDisplayDurationGroup) {
