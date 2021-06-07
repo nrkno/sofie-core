@@ -1,9 +1,10 @@
-import { DBObj } from '../../lib/lib'
+import { DBObj, ProtectedString } from '../../lib/lib'
 import * as _ from 'underscore'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection'
 import { DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
 import { SaveIntoDbHooks, ChangedIds, saveIntoBase } from '../lib/database'
+import { logger } from '../logging'
 
 export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)
@@ -26,4 +27,10 @@ export function saveIntoCache<DocClass extends DBInterface, DBInterface extends 
 		update: (doc) => collection.replace(doc),
 		remove: (doc) => collection.remove(doc._id),
 	})
+}
+
+export function logChanges(collection: string, changes: ChangedIds<ProtectedString<any>>): void {
+	logger.debug(
+		`Update collection of "${collection}". Inserted: [${changes.added}] Updated: [${changes.updated}] Removed: [${changes.removed}] Unchanged: ${changes.unchanged.length}`
+	)
 }

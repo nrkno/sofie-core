@@ -15,7 +15,7 @@ import { DBSegment } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { getCurrentTime, literal, protectString, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
-import { saveIntoCache } from '../../cache/lib'
+import { logChanges, saveIntoCache } from '../../cache/lib'
 import { PackageInfo } from '../../coreSystem'
 import { sumChanges, anythingChanged } from '../../lib/database'
 import { logger } from '../../logging'
@@ -258,71 +258,34 @@ export function saveSegmentChangesToCache(
 	const partChanges = saveIntoCache<Part, DBPart>(
 		cache.Parts,
 		isWholeRundownUpdate ? {} : { $or: [{ segmentId: { $in: newSegmentIds } }, { _id: { $in: newPartIds } }] },
-		data.parts,
-		{
-			afterInsert(part) {
-				logger.debug('inserted part ' + part._id)
-			},
-			afterUpdate(part) {
-				logger.debug('updated part ' + part._id)
-			},
-			afterRemove(part) {
-				logger.debug('deleted part ' + part._id)
-			},
-		}
+		data.parts
 	)
+	logChanges('Parts', partChanges)
 	const affectedPartIds = [...partChanges.removed, ...newPartIds]
 
-	saveIntoCache<Piece, Piece>(
-		cache.Pieces,
-		isWholeRundownUpdate ? {} : { startPartId: { $in: affectedPartIds } },
-		data.pieces,
-		{
-			afterInsert(piece) {
-				logger.debug('inserted piece ' + piece._id)
-				logger.debug(piece)
-			},
-			afterUpdate(piece) {
-				logger.debug('updated piece ' + piece._id)
-			},
-			afterRemove(piece) {
-				logger.debug('deleted piece ' + piece._id)
-			},
-		}
+	logChanges(
+		'Pieces',
+		saveIntoCache<Piece, Piece>(
+			cache.Pieces,
+			isWholeRundownUpdate ? {} : { startPartId: { $in: affectedPartIds } },
+			data.pieces
+		)
 	)
-	saveIntoCache<AdLibAction, AdLibAction>(
-		cache.AdLibActions,
-		isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
-		data.adlibActions,
-		{
-			afterInsert(adlibAction) {
-				logger.debug('inserted adlibAction ' + adlibAction._id)
-				logger.debug(adlibAction)
-			},
-			afterUpdate(adlibAction) {
-				logger.debug('updated adlibAction ' + adlibAction._id)
-			},
-			afterRemove(adlibAction) {
-				logger.debug('deleted adlibAction ' + adlibAction._id)
-			},
-		}
+	logChanges(
+		'AdLibActions',
+		saveIntoCache<AdLibAction, AdLibAction>(
+			cache.AdLibActions,
+			isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
+			data.adlibActions
+		)
 	)
-	saveIntoCache<AdLibPiece, AdLibPiece>(
-		cache.AdLibPieces,
-		isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
-		data.adlibPieces,
-		{
-			afterInsert(adLibPiece) {
-				logger.debug('inserted adLibPiece ' + adLibPiece._id)
-				logger.debug(adLibPiece)
-			},
-			afterUpdate(adLibPiece) {
-				logger.debug('updated adLibPiece ' + adLibPiece._id)
-			},
-			afterRemove(adLibPiece) {
-				logger.debug('deleted adLibPiece ' + adLibPiece._id)
-			},
-		}
+	logChanges(
+		'AdLibPieces',
+		saveIntoCache<AdLibPiece, AdLibPiece>(
+			cache.AdLibPieces,
+			isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
+			data.adlibPieces
+		)
 	)
 
 	// Update Segments: Only update, never remove
