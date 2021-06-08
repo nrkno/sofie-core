@@ -501,7 +501,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 			// segment is becoming live
 			if (this.state.isLiveSegment === false && isLiveSegment === true) {
-				this.state.isLiveSegment = true
+				this.setState({isLiveSegment: true})
 				this.onFollowLiveLine(true, {})
 				this.startLive()
 			}
