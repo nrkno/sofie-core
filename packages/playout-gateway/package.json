@@ -1,6 +1,6 @@
 {
 	"name": "playout-gateway",
-	"version": "1.35.0-in-development",
+	"version": "1.36.0-in-development",
 	"private": true,
 	"description": "Connect to Core, play stuff",
 	"license": "MIT",
@@ -66,8 +66,8 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "^1.35.0-in-development",
-		"@sofie-automation/server-core-integration": "^1.35.0-in-development",
+		"@sofie-automation/blueprints-integration": "^1.36.0-in-development",
+		"@sofie-automation/server-core-integration": "^1.36.0-in-development",
 		"fast-clone": "^1.5.13",
 		"timeline-state-resolver": "6.0.0-nightly-release35-20210608-165921-e8c0d0dbb.0",
 		"tslib": "^2.1.0",
