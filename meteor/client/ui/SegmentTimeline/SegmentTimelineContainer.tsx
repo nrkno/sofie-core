@@ -727,12 +727,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		onGoToPartInner = (part: PartUi, timingDurations: RundownTiming.RundownTimingContext, zoomInToFit?: boolean) => {
 			let newScale: number | undefined
 
-			let scrollLeft =
-				((timingDurations.partDisplayStartsAt && timingDurations.partDisplayStartsAt[unprotectString(part.partId)]) ||
-					0) -
-				((timingDurations.partDisplayStartsAt &&
-					timingDurations.partDisplayStartsAt[unprotectString(this.props.parts[0].partId)]) ||
-					0)
+			let scrollLeft = this.state.scrollLeft
 
 			if (zoomInToFit) {
 				const timelineWidth = getElementWidth(this.timelineDiv)
@@ -779,11 +774,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				const currentLivePart = currentLivePartInstance.part
 
 				const partOffset =
-					(this.context.durations &&
-						this.context.durations.partDisplayStartsAt &&
-						this.context.durations.partDisplayStartsAt[unprotectString(currentLivePart._id)] -
-							this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)]) ||
-					0
+					this.context.durations?.partDisplayStartsAt?.[unprotectString(currentLivePart._id)] -
+						this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] || 0
 
 				const lastTake = currentLivePartInstance.timings?.take
 				const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
@@ -795,7 +787,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						? lastStartedPlayback - lastTakeOffset
 						: undefined
 
-				let newLivePosition =
+				let newLivePosition = 
 					virtualStartedPlayback
 						? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
 						: partOffset + lastTakeOffset
