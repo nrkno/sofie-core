@@ -325,7 +325,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			durations: PropTypes.object.isRequired,
 		}
 
-		isLiveSegment: boolean
 		isVisible: boolean
 		rundownCurrentPartInstanceId: PartInstanceId | null
 		timelineDiv: HTMLDivElement
@@ -359,7 +358,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				showingAllSegment: true,
 			}
 
-			this.isLiveSegment = false
 			this.isVisible = false
 		}
 
@@ -443,7 +441,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			SpeechSynthesiser.init()
 
 			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInstanceId
-			if (this.isLiveSegment === true) {
+			if (this.state.isLiveSegment === true) {
 				this.onFollowLiveLine(true, {})
 				this.startLive()
 			}
@@ -452,7 +450,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			RundownViewEventBus.on(RundownViewEvents.GO_TO_PART_INSTANCE, this.onGoToPartInstance)
 			window.requestAnimationFrame(() => {
 				this.mountedTime = Date.now()
-				if (this.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
+				if (this.state.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
 					scrollToSegment(this.props.segmentId, true).catch((error) => {
 						if (!error.toString().match(/another scroll/)) console.warn(error)
 					})
@@ -502,14 +500,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInstanceId
 
 			// segment is becoming live
-			if (this.isLiveSegment === false && isLiveSegment === true) {
-				this.isLiveSegment = true
+			if (this.state.isLiveSegment === false && isLiveSegment === true) {
+				this.state.isLiveSegment = true
 				this.onFollowLiveLine(true, {})
 				this.startLive()
 			}
 			// segment is stopping from being live
-			if (this.isLiveSegment === true && isLiveSegment === false) {
-				this.isLiveSegment = false
+			if (this.state.isLiveSegment === true && isLiveSegment === false) {
+				this.setState({isLiveSegment: false})
 				this.stopLive()
 				if (Settings.autoRewindLeavingSegment) {
 					this.onRewindSegment()
@@ -713,7 +711,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		onRewindSegment = () => {
-			if (!this.isLiveSegment) {
+			if (!this.state.isLiveSegment) {
 				this.updateMaxTimeScale()
 					.then(() => {
 						this.showEntireSegment()
