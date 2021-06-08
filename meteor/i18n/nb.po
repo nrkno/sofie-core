@@ -1774,8 +1774,8 @@ msgstr "Lookahead-modus"
 msgid "Lookahead Target Objects (Default = 1)"
 msgstr "Lookahead målobjekter (standard = 1)"
 
-msgid "Lookahead Maximum Search Distance (Default = unlimited/-1)"
-msgstr "Lookahead maksimum søkelengde (standard = ubegrenset / -1)"
+msgid "Lookahead Maximum Search Distance (Default = {{limit}})"
+msgstr "Lookahead maksimum søkelengde (standard = {{limit}})"
 
 msgid "Layer Mappings"
 msgstr "Lagmappinger"

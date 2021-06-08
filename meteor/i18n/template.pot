@@ -1697,7 +1697,7 @@ msgstr ""
 msgid "Lookahead Target Objects (Default = 1)"
 msgstr ""
 
-msgid "Lookahead Maximum Search Distance (Default = unlimited/-1)"
+msgid "Lookahead Maximum Search Distance (Default = {{limit}})"
 msgstr ""
 
 msgid "Layer Mappings"

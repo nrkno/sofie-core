@@ -49,6 +49,7 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { ConfigManifestEntryType, MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
 import { renderEditAttribute } from './components/ConfigManifestEntryComponent'
+import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '../../../lib/constants'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -515,7 +516,9 @@ const StudioMappings = withTranslation()(
 										</div>
 										<div className="mod mvs mhs">
 											<label className="field">
-												{t('Lookahead Maximum Search Distance (Default = unlimited/-1)')}
+												{t('Lookahead Maximum Search Distance (Default = {{limit}})', {
+													limit: LOOKAHEAD_DEFAULT_SEARCH_DISTANCE,
+												})}
 												<EditAttribute
 													modifiedClassName="bghl"
 													attribute={'mappings.' + layerId + '.lookaheadMaxSearchDistance'}

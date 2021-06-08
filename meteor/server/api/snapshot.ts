@@ -700,6 +700,7 @@ export function restoreFromRundownPlaylistSnapshot(
 		T extends {
 			_id: ProtectedString<any>
 			rundownId?: RundownId
+			partInstanceId?: PartInstanceId
 			partId?: PartId
 			segmentId?: SegmentId
 			part?: unknown
@@ -716,6 +717,9 @@ export function restoreFromRundownPlaylistSnapshot(
 			}
 			if (obj.segmentId) {
 				obj.segmentId = segmentIdMap[unprotectString(obj.segmentId)]
+			}
+			if (obj.partInstanceId) {
+				obj.partInstanceId = partInstanceIdMap[unprotectString(obj.partInstanceId)]
 			}
 
 			if (updateId) {
