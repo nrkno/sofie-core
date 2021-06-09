@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/server-core-integration",
-	"version": "1.32.2",
+	"version": "1.32.3-0",
 	"description": "Library for connecting to Core",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",

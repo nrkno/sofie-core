@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.32.3-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.2...v1.32.3-0) (2021-06-09)
+
+
+### Bug Fixes
+
+* orphaned parts cause the Segment Timeline component to scroll beyond the timeline ([7935815](https://github.com/nrkno/tv-automation-server-core/commit/7935815d14ce40c0702cb61ec2288b636fafbf78))
+
 ### [1.32.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.1...v1.32.2) (2021-06-02)
 
 
