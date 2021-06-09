@@ -97,7 +97,7 @@ export const SourceLayerItem = withTranslation()(
 			})
 		}
 
-		calcTimeScale = (time: number) => {
+		convertTimeToPixels = (time: number) => {
 			return Math.round(this.props.timeScale * time)
 		}
 
@@ -146,7 +146,7 @@ export const SourceLayerItem = withTranslation()(
 								inPoint + duration + this.props.partStartsAt - outTransitionDuration
 						) {
 							const targetPos =
-								this.calcTimeScale(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration)
+								this.convertTimeToPixels(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration)
 
 							// || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0)
 							let styleObj = {
@@ -154,7 +154,7 @@ export const SourceLayerItem = withTranslation()(
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
 										: maxLabelWidth !== undefined
-										? this.calcTimeScale(maxLabelWidth).toString() + 'px'
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
 										: nextIsTouching
 										? '100%'
 										: 'none',
@@ -184,14 +184,14 @@ export const SourceLayerItem = withTranslation()(
 								inPoint + duration + this.props.partStartsAt - outTransitionDuration
 						) {
 							const targetPos =
-								this.calcTimeScale(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration)
+								this.convertTimeToPixels(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration)
 
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
 										: maxLabelWidth !== undefined
-										? this.calcTimeScale(maxLabelWidth).toString() + 'px'
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
 										: nextIsTouching
 										? '100%'
 										: 'none',
@@ -219,14 +219,14 @@ export const SourceLayerItem = withTranslation()(
 							this.props.scrollLeft < inPoint + duration + this.props.partStartsAt - outTransitionDuration
 						) {
 							const targetPos =
-								this.calcTimeScale(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration)
+								this.convertTimeToPixels(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration)
 
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
-										? this.calcTimeScale(maxLabelWidth).toString() + 'px'
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
 										: nextIsTouching
 										? '100%'
 										: 'none',
@@ -251,7 +251,7 @@ export const SourceLayerItem = withTranslation()(
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
-										? this.calcTimeScale(maxLabelWidth).toString() + 'px'
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
 										: nextIsTouching
 										? '100%'
 										: 'none',
@@ -386,9 +386,9 @@ export const SourceLayerItem = withTranslation()(
 			} else {
 				return {
 					left:
-						this.calcTimeScale(((piece.renderedInPoint || 0) + inTransitionDuration)).toString() + 'px',
+						this.convertTimeToPixels(((piece.renderedInPoint || 0) + inTransitionDuration)).toString() + 'px',
 					width:
-						this.calcTimeScale(
+						this.convertTimeToPixels(
 							(itemDuration - inTransitionDuration - outTransitionDuration)
 						).toString() + 'px',
 				}
@@ -761,7 +761,7 @@ export const SourceLayerItem = withTranslation()(
 									wipe: innerPiece.transitions.inTransition.type === PieceTransitionType.WIPE,
 								})}
 								style={{
-									width: this.calcTimeScale((innerPiece.transitions.inTransition.duration || 0)).toString() + 'px',
+									width: this.convertTimeToPixels((innerPiece.transitions.inTransition.duration || 0)).toString() + 'px',
 								}}
 							/>
 						) : null}
@@ -775,7 +775,7 @@ export const SourceLayerItem = withTranslation()(
 								})}
 								style={{
 									width:
-										this.calcTimeScale((innerPiece.transitions.outTransition.duration || 0)).toString() + 'px',
+										this.convertTimeToPixels((innerPiece.transitions.outTransition.duration || 0)).toString() + 'px',
 								}}
 							/>
 						) : null}

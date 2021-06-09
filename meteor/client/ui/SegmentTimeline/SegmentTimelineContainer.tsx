@@ -810,7 +810,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
-		calcTimeScale = (time: number) => {
+		convertTimeToPixels = (time: number) => {
 			return Math.round(this.props.timeScale * time)
 		}
 
