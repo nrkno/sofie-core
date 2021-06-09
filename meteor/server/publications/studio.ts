@@ -40,7 +40,7 @@ meteorPublish(PubSub.studios, function (selector0, token) {
 })
 meteorPublish(PubSub.studioOfDevice, function (deviceId: PeripheralDeviceId, token) {
 	if (PeripheralDeviceReadAccess.peripheralDevice({ _id: deviceId }, { userId: this.userId, token })) {
-		let peripheralDevice = PeripheralDevices.findOne(deviceId)
+		const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
@@ -82,6 +82,7 @@ meteorPublish(PubSub.mediaObjects, function (studioId, selector, token) {
 	return null
 })
 meteorPublish(PubSub.expectedPackages, function (selector, token) {
+	// Note: This differs from the expected packages sent to the Package Manager, instead @see PubSub.expectedPackagesForDevice
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<ExpectedPackageDBBase> = {
 		fields: {},
@@ -133,7 +134,7 @@ meteorCustomPublishArray(
 		if (
 			PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })
 		) {
-			let peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 

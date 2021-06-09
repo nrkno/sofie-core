@@ -15,7 +15,7 @@ export const addSteps = addMigrationSteps('1.7.0', [
 		canBeRunAutomatically: true,
 		validate: () => {
 			let validate: boolean | string = false
-			let count = Rundowns.find({
+			const count = Rundowns.find({
 				$or: [
 					{
 						playlistId: {

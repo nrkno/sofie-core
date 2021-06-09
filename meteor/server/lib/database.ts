@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { BulkWriteOperation } from 'mongodb'
+import { BulkWriteOperation, BulkWriteOpResultObject } from 'mongodb'
 import _ from 'underscore'
 import { AsyncTransformedCollection } from '../../lib/collections/lib'
 import { DBObj, waitForPromise, normalizeArrayToMap, ProtectedString } from '../../lib/lib'
@@ -26,7 +26,7 @@ export interface ChangedIds<T extends ProtectedString<any>> {
 }
 
 export function sumChanges(...changes: (Changes | ChangedIds<any> | null)[]): Changes {
-	let change: Changes = {
+	const change: Changes = {
 		added: 0,
 		updated: 0,
 		removed: 0,
@@ -104,7 +104,7 @@ async function savePreparedChanges<DocClass extends DBInterface, DBInterface ext
 	collection: AsyncTransformedCollection<DocClass, DBInterface>,
 	options: SaveIntoDbHooks<DocClass, DBInterface>
 ): Promise<Changes> {
-	let change: Changes = {
+	const change: Changes = {
 		added: 0,
 		updated: 0,
 		removed: 0,

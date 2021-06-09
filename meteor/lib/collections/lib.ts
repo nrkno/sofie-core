@@ -35,7 +35,7 @@ export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: Protected
 		}
 	}
 
-	let observedChangesTimeouts = new Map<Tb['_id'], Timeout>()
+	const observedChangesTimeouts = new Map<Tb['_id'], Timeout>()
 
 	collection.find().observeChanges({
 		changed: (id: Tb['_id'], changedFields) => {
@@ -43,7 +43,7 @@ export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: Protected
 			delete changedFields[hashName]
 
 			if (_.keys(changedFields).length > 0) {
-				let data: Timeout | undefined = observedChangesTimeouts.get(id)
+				const data: Timeout | undefined = observedChangesTimeouts.get(id)
 				if (data !== undefined) {
 					// Already queued, so do nothing
 				} else {
@@ -98,7 +98,8 @@ export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<a
 }
 
 class WrappedTransformedCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>
-	implements TransformedCollection<Class, DBInterface> {
+	implements TransformedCollection<Class, DBInterface>
+{
 	readonly #collection: TransformedCollection<Class, DBInterface>
 
 	public readonly name: string | null
@@ -169,9 +170,7 @@ class WrappedTransformedCollection<Class extends DBInterface, DBInterface extend
 			this.wrapMongoError(e)
 		}
 	}
-	upsert(
-		...args: Parameters<TransformedCollection<Class, DBInterface>['upsert']>
-	): {
+	upsert(...args: Parameters<TransformedCollection<Class, DBInterface>['upsert']>): {
 		numberAffected?: number
 		insertedId?: DBInterface['_id']
 	} {
@@ -200,7 +199,8 @@ class WrappedTransformedCollection<Class extends DBInterface, DBInterface extend
 
 class WrappedAsyncTransformedCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>
 	extends WrappedTransformedCollection<Class, DBInterface>
-	implements AsyncTransformedCollection<Class, DBInterface> {
+	implements AsyncTransformedCollection<Class, DBInterface>
+{
 	async findFetchAsync(
 		selector: MongoQuery<DBInterface> | string,
 		options?: FindOptions<DBInterface>
@@ -309,7 +309,8 @@ class WrappedAsyncTransformedCollection<Class extends DBInterface, DBInterface e
 /** This is for the mock mongo collection, as internally it is sync and so we dont need or want to play around with fibers */
 class WrappedMockCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>
 	extends WrappedTransformedCollection<Class, DBInterface>
-	implements AsyncTransformedCollection<Class, DBInterface> {
+	implements AsyncTransformedCollection<Class, DBInterface>
+{
 	constructor(collection: TransformedCollection<Class, DBInterface>, name: string | null) {
 		super(collection, name)
 

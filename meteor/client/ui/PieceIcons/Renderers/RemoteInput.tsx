@@ -1,7 +1,5 @@
 import * as React from 'react'
 
-// @todo: use colours from the scss
-// @todo: use dynamic data
 export default class RemoteInputIcon extends React.Component<{ inputIndex?: string; abbreviation?: string }> {
 	render() {
 		return (
@@ -29,9 +27,12 @@ export default class RemoteInputIcon extends React.Component<{ inputIndex?: stri
 						textLength="116.5"
 						lengthAdjust="spacing"
 						style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '62px', fontWeight: 100 }}
+						className="label"
 					>
 						{this.props.abbreviation ? this.props.abbreviation : 'LIVE'}
-						{this.props.inputIndex !== undefined ? this.props.inputIndex : ''}
+						<tspan style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>
+							{this.props.inputIndex !== undefined ? this.props.inputIndex : ''}
+						</tspan>
 					</tspan>
 				</text>
 			</svg>

@@ -219,7 +219,7 @@ export function setNextPart(
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	const newNextPartInstance = rawNextPart && 'playlistActivationId' in rawNextPart ? rawNextPart : null
-	let newNextPart = rawNextPart && 'playlistActivationId' in rawNextPart ? null : rawNextPart
+	const newNextPart = rawNextPart && 'playlistActivationId' in rawNextPart ? null : rawNextPart
 
 	if (newNextPart || newNextPartInstance) {
 		if (!cache.Playlist.doc.activationId)
@@ -272,10 +272,17 @@ export function setNextPart(
 				consumesNextSegmentId: newNextPart?.consumesNextSegmentId,
 			})
 
+			const rundown = cache.Rundowns.findOne(nextPart.rundownId)
+
+			if (!rundown) {
+				throw new Meteor.Error(400, `Could not find rundown ${nextPart.rundownId}`)
+			}
+
 			const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, undefined, nextPart))
 			const newPieceInstances = getPieceInstancesForPart(
 				cache,
 				currentPartInstance,
+				rundown,
 				nextPart,
 				possiblePieces,
 				newInstanceId,

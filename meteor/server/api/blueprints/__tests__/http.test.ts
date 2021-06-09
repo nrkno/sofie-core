@@ -45,7 +45,7 @@ describe('Test blueprint http api', () => {
 		}
 
 		function resetUploadMock() {
-			const uploadBlueprint = (api.uploadBlueprint as any) as jest.MockInstance<any, any>
+			const uploadBlueprint = api.uploadBlueprint as any as jest.MockInstance<any, any>
 			uploadBlueprint.mockClear()
 			return uploadBlueprint
 		}
@@ -164,7 +164,7 @@ describe('Test blueprint http api', () => {
 		}
 
 		function resetUploadMock() {
-			const uploadBlueprint = (api.uploadBlueprint as any) as jest.MockInstance<any, any>
+			const uploadBlueprint = api.uploadBlueprint as any as jest.MockInstance<any, any>
 			uploadBlueprint.mockClear()
 			return uploadBlueprint
 		}

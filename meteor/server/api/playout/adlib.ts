@@ -511,6 +511,7 @@ export namespace ServerPlayoutAdLibAPI {
 		const infinitePieceInstances = getPieceInstancesForPart(
 			cache,
 			currentPartInstance,
+			rundown,
 			newPartInstance.part,
 			possiblePieces,
 			newPartInstance._id,
@@ -602,7 +603,8 @@ export namespace ServerPlayoutAdLibAPI {
 						break
 					}
 					case PieceLifespan.OutOnSegmentEnd:
-					case PieceLifespan.OutOnRundownEnd: {
+					case PieceLifespan.OutOnRundownEnd:
+					case PieceLifespan.OutOnShowStyleEnd: {
 						logger.info(
 							`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt} with a virtual`
 						)

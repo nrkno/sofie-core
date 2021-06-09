@@ -37,7 +37,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 		throw new Meteor.Error(404, `Rundown Playlist "${cache.Playlist.doc._id}" is not active!`)
 	const playlistActivationId = cache.Playlist.doc.activationId
 
-	let timeOffset: number | null = cache.Playlist.doc.nextTimeOffset || null
+	const timeOffset: number | null = cache.Playlist.doc.nextTimeOffset || null
 
 	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
 
@@ -312,7 +312,7 @@ export function updatePartInstanceOnTake(
 		logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
 	}
 
-	let partInstanceM: any = {
+	const partInstanceM: any = {
 		$set: {
 			isTaken: true,
 			// set transition properties to what will be used to generate timeline later:

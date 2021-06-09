@@ -159,7 +159,7 @@ export namespace reactiveData {
 
 		Tracker.autorun(() => {
 			const rundowns = Rundowns.find({ playlistId }).fetch()
-			let now = getCurrentTime()
+			const now = getCurrentTime()
 			const unsentMessages = ExternalMessageQueue.find(
 				{
 					expires: { $gt: now },

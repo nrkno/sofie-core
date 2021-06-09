@@ -34,8 +34,9 @@ import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
-import * as VelocityReact from 'velocity-react'
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 
 interface IProps {
 	id: string
@@ -68,7 +69,7 @@ interface IProps {
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
-	onShowEntireSegment?: (event: any, limitScale?: boolean) => void
+	onShowEntireSegment?: (event: any) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -81,6 +82,8 @@ interface IStateHeader {
 	timelineWidth: number
 	mouseGrabbed: boolean
 	highlight: boolean
+	/** This map contains a list of parts that are too small to be displayed properly, paired with their durations */
+	smallParts: Map<PartInstanceId, number>
 }
 
 interface IZoomPropsHeader {
@@ -184,16 +187,6 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		})
 	}
 
-	renderMiniLiveLine() {
-		if (this.props.isLiveSegment) {
-			let lineStyle = {
-				left: ((this.props.livePosition / this.getSegmentDuration()) * 100).toString() + '%',
-			}
-
-			return <div className="segment-timeline__zoom-area__liveline" style={lineStyle}></div>
-		}
-	}
-
 	render() {
 		return (
 			<div
@@ -205,7 +198,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 				})}
 			>
 				<div className="segment-timeline__zoom-area" onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
-					<div className="segment-timeline__timeline">{this.renderZoomTimeline()}</div>
+					{/* <div className="segment-timeline__timeline">{this.renderZoomTimeline()}</div> */}
 					<SegmentTimelineZoomControls
 						scrollLeft={this.props.scrollLeft}
 						scrollWidth={this.props.timelineWidth / this.props.timeScale}
@@ -216,7 +209,6 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 						maxTimeScale={this.props.maxTimeScale}
 						onZoomChange={this.props.onZoomChange}
 					/>
-					{this.renderMiniLiveLine()}
 				</div>
 			</div>
 		)
@@ -252,7 +244,7 @@ function SegmentTimelineZoomButtons(props: IProps) {
 	}
 
 	const zoomNormalize = (e: React.MouseEvent<HTMLElement>) => {
-		props.onZoomChange(props.maxTimeScale, e)
+		props.onShowEntireSegment && props.onShowEntireSegment(e)
 		if (!props.isLiveSegment && props.scrollLeft > 0) {
 			props.onScroll(0, e)
 		}
@@ -311,6 +303,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			timelineWidth: 1,
 			mouseGrabbed: false,
 			highlight: false,
+			smallParts: new Map<PartInstanceId, number>(),
 		}
 	}
 
@@ -389,12 +382,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	onTimelineTouchMove = (e: TouchEvent) => {
 		if (e.touches.length === 2) {
-			let newSize = e.touches[1].clientX - e.touches[0].clientX
-			let prop = newSize / this._touchSize
+			const newSize = e.touches[1].clientX - e.touches[0].clientX
+			const prop = newSize / this._touchSize
 			this.props.onZoomChange(Math.min(500, this.props.timeScale * prop), e)
 			this._touchSize = newSize
 		} else if (e.touches.length === 1 && this._lastPointer) {
-			let scrollAmount = this._lastPointer.clientX - e.touches[0].clientX
+			const scrollAmount = this._lastPointer.clientX - e.touches[0].clientX
 			this.props.onScroll(Math.max(0, this.props.scrollLeft + scrollAmount / this.props.timeScale), e)
 			this._lastPointer = {
 				clientX: e.touches[0].clientX,
@@ -456,7 +449,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	onTimelineMouseMove = (e: React.MouseEvent<HTMLDivElement> & any) => {
-		let scrollAmount = e.movementX * -1 || (this._lastPointer ? this._lastPointer.clientX - e.clientX : 0)
+		const scrollAmount = e.movementX * -1 || (this._lastPointer ? this._lastPointer.clientX - e.clientX : 0)
 		this.props.onScroll(Math.max(0, this.props.scrollLeft + scrollAmount / this.props.timeScale), e)
 		if (e.movementX === 0) {
 			this._lastPointer = {
@@ -541,7 +534,29 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	onTimelineWheel = (e: WheelEvent) => {
 		if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
 			// ctrl + Scroll
-			this.props.onZoomChange(Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1))), e)
+			const nextTimeScale = Math.max(
+				this.props.maxTimeScale,
+				Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1)))
+			)
+			if (this.timeline?.parentElement) {
+				const clientPositon = this.timeline.parentElement.getBoundingClientRect()
+				let zoomOffset = Math.max(0, e.clientX - clientPositon.x) / this.state.timelineWidth
+
+				const currentlyVisibleArea = this.state.timelineWidth / this.props.timeScale
+				const nextVisibleArea = this.state.timelineWidth / nextTimeScale
+				const differenceOfVisibleArea = currentlyVisibleArea - nextVisibleArea
+
+				if ((zoomOffset * this.state.timelineWidth) / this.props.timeScale > this.getSegmentDuration()) {
+					zoomOffset = 0
+				}
+
+				if (differenceOfVisibleArea === 0) {
+					this.props.onScroll(Math.max(0, this.props.scrollLeft + (e.deltaY * -1) / this.props.timeScale), e)
+				} else {
+					this.props.onScroll(Math.max(0, this.props.scrollLeft + differenceOfVisibleArea * zoomOffset), e)
+				}
+			}
+			this.props.onZoomChange(nextTimeScale, e)
 			e.preventDefault()
 			e.stopPropagation()
 		} else if (
@@ -562,10 +577,34 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onClickSegmentIdent = (partId: PartId) => {
-		scrollToPart(partId, false, true).catch((error) => {
+	onClickPartIdent = (partId: PartId) => {
+		scrollToPart(partId, false, true, true).catch((error) => {
 			if (!error.toString().match(/another scroll/)) console.error(error)
 		})
+	}
+
+	onPartTooSmallChanged = (part: PartUi, isTooSmall: number | false) => {
+		if (isTooSmall === false) {
+			if (this.state.smallParts.has(part.instance._id)) {
+				this.setState((state) => {
+					const smallParts = new Map(state.smallParts)
+					smallParts.delete(part.instance._id)
+					return {
+						smallParts,
+					}
+				})
+			}
+		} else {
+			if (!this.state.smallParts.has(part.instance._id)) {
+				this.setState((state) => {
+					const smallParts = new Map(state.smallParts)
+					smallParts.set(part.instance._id, isTooSmall)
+					return {
+						smallParts,
+					}
+				})
+			}
+		}
 	}
 
 	getSegmentContext = (props) => {
@@ -597,16 +636,21 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		const { t } = this.props
 
 		if (this.props.isLiveSegment) {
-			let pixelPostion = Math.floor(
+			const historyTimeDuration = this.props.liveLineHistorySize / this.props.timeScale
+
+			const pixelPostion = Math.floor(
 				this.props.livePosition * this.props.timeScale -
-					(!(this.props.followLiveLine && !this.props.showingAllSegment)
-						? this.props.scrollLeft * this.props.timeScale
-						: 0)
+					(!this.props.followLiveLine ? this.props.scrollLeft * this.props.timeScale : 0)
 			)
-			let lineStyle = {
+			const lineStyle = {
 				left:
-					(this.props.followLiveLine && !this.props.showingAllSegment
-						? Math.min(pixelPostion, this.props.liveLineHistorySize).toString()
+					(this.props.followLiveLine
+						? // if the livePostion is greater than historyTimeDuration and followLiveLine is on
+						  // we always lock the onAirLine in place at liveLineHistorySize, so we can just return
+						  // a fixed value here
+						  this.props.livePosition > historyTimeDuration
+							? this.props.liveLineHistorySize
+							: Math.min(pixelPostion, this.props.liveLineHistorySize).toString()
 						: pixelPostion.toString()) + 'px',
 			}
 
@@ -615,10 +659,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					className="segment-timeline__liveline-shade"
 					key={this.props.segment._id + '-liveline-shade'}
 					style={{
-						width:
-							(this.props.followLiveLine && !this.props.showingAllSegment
-								? Math.min(Math.max(0, pixelPostion), this.props.liveLineHistorySize).toString()
-								: Math.max(0, pixelPostion).toString()) + 'px',
+						width: lineStyle.left,
 					}}
 				/>,
 				<div className="segment-timeline__liveline" key={this.props.segment._id + '-liveline'} style={lineStyle}>
@@ -651,47 +692,105 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	renderTimeline() {
+		const { smallParts } = this.state
+		const { t } = this.props
 		let partIsLive = false
-		return (
-			<React.Fragment>
-				{this.props.parts.map((part, index) => {
-					let previousPartIsLive = partIsLive
-					partIsLive = part.instance._id === this.props.playlist.currentPartInstanceId
-					return (
-						<SegmentTimelinePart
-							key={unprotectString(part.partId)}
-							segment={this.props.segment}
-							playlist={this.props.playlist}
-							studio={this.props.studio}
-							collapsedOutputs={this.props.collapsedOutputs}
-							scrollLeft={this.props.scrollLeft}
+		let smallPartsAccumulator: [PartUi, number][] = []
+		return this.props.parts.map((part, index) => {
+			const previousPartIsLive = partIsLive
+			partIsLive = part.instance._id === this.props.playlist.currentPartInstanceId
+			let emitSmallPartsInFlag: [PartUi, number][] | undefined = undefined
+			let emitSmallPartsInFlagAtEnd: boolean = false
+			// if this is not undefined, it means that the part is on the list of small keys
+			const partDuration = smallParts.get(part.instance._id)
+			if (partDuration !== undefined) {
+				smallPartsAccumulator.push([part, partDuration])
+			}
+
+			if (partDuration === undefined && smallPartsAccumulator.length > 0) {
+				emitSmallPartsInFlag = smallPartsAccumulator
+				smallPartsAccumulator = []
+			} else if (
+				partDuration !== undefined &&
+				smallPartsAccumulator.length > 0 &&
+				this.props.parts.length === index + 1
+			) {
+				emitSmallPartsInFlag = smallPartsAccumulator
+				emitSmallPartsInFlagAtEnd = true
+				smallPartsAccumulator = []
+			}
+
+			return (
+				<React.Fragment key={unprotectString(part.instance._id)}>
+					{emitSmallPartsInFlag && !emitSmallPartsInFlagAtEnd && (
+						<SegmentTimelineSmallPartFlag
+							t={t}
+							parts={emitSmallPartsInFlag}
+							followingPart={part}
+							sourceLayers={this.props.segment.sourceLayers}
 							timeScale={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
-							followLiveLine={this.props.followLiveLine}
+							collapsedOutputs={this.props.collapsedOutputs}
+							playlist={this.props.playlist}
+							studio={this.props.studio}
+							segment={this.props.segment}
 							liveLineHistorySize={this.props.liveLineHistorySize}
-							livePosition={this.props.livePosition}
-							onScroll={this.props.onScroll}
-							onCollapseOutputToggle={this.props.onCollapseOutputToggle}
-							onFollowLiveLine={this.props.onFollowLiveLine}
-							onContextMenu={this.props.onContextMenu}
-							relative={false}
-							onPieceClick={this.props.onItemClick}
-							onPieceDoubleClick={this.props.onItemDoubleClick}
-							scrollWidth={this.state.timelineWidth / this.props.timeScale}
-							firstPartInSegment={this.props.parts[0]}
 							isLastSegment={this.props.isLastSegment}
-							isLastInSegment={index === this.props.parts.length - 1}
-							isAfterLastValidInSegmentAndItsLive={
-								index === (this.props.lastValidPartIndex || 0) + 1 &&
-								previousPartIsLive &&
-								!!this.props.playlist.nextPartInstanceId
-							}
-							part={part}
+							isLastInSegment={false}
+							timelineWidth={this.state.timelineWidth}
 						/>
-					)
-				})}
-			</React.Fragment>
-		)
+					)}
+					<SegmentTimelinePart
+						segment={this.props.segment}
+						playlist={this.props.playlist}
+						studio={this.props.studio}
+						collapsedOutputs={this.props.collapsedOutputs}
+						scrollLeft={this.props.scrollLeft}
+						timeScale={this.props.timeScale}
+						autoNextPart={this.props.autoNextPart}
+						followLiveLine={this.props.followLiveLine}
+						liveLineHistorySize={this.props.liveLineHistorySize}
+						livePosition={this.props.livePosition}
+						onScroll={this.props.onScroll}
+						onCollapseOutputToggle={this.props.onCollapseOutputToggle}
+						onFollowLiveLine={this.props.onFollowLiveLine}
+						onContextMenu={this.props.onContextMenu}
+						relative={false}
+						onPieceClick={this.props.onItemClick}
+						onPieceDoubleClick={this.props.onItemDoubleClick}
+						onPartTooSmallChanged={this.onPartTooSmallChanged}
+						scrollWidth={this.state.timelineWidth / this.props.timeScale}
+						firstPartInSegment={this.props.parts[0]}
+						isLastSegment={this.props.isLastSegment}
+						isLastInSegment={index === this.props.parts.length - 1}
+						isAfterLastValidInSegmentAndItsLive={
+							index === (this.props.lastValidPartIndex || 0) + 1 &&
+							previousPartIsLive &&
+							!!this.props.playlist.nextPartInstanceId
+						}
+						part={part}
+					/>
+					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
+						<SegmentTimelineSmallPartFlag
+							t={t}
+							parts={emitSmallPartsInFlag}
+							followingPart={undefined}
+							sourceLayers={this.props.segment.sourceLayers}
+							timeScale={this.props.timeScale}
+							autoNextPart={this.props.autoNextPart}
+							collapsedOutputs={this.props.collapsedOutputs}
+							playlist={this.props.playlist}
+							studio={this.props.studio}
+							segment={this.props.segment}
+							liveLineHistorySize={this.props.liveLineHistorySize}
+							isLastSegment={this.props.isLastSegment}
+							isLastInSegment={true}
+							timelineWidth={this.state.timelineWidth}
+						/>
+					)}
+				</React.Fragment>
+			)
+		})
 	}
 
 	renderEndOfSegment() {
@@ -766,7 +865,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	render() {
-		let notes: Array<SegmentNote> = this.props.segmentNotes
+		const notes: Array<SegmentNote> = this.props.segmentNotes
 
 		const { t } = this.props
 
@@ -872,7 +971,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								<div
 									className="segment-timeline__part-identifiers__identifier"
 									key={ident.partId + ''}
-									onClick={() => this.onClickSegmentIdent(ident.partId)}
+									onClick={() => this.onClickPartIdent(ident.partId)}
 								>
 									{ident.ident}
 								</div>
@@ -912,7 +1011,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						'segment-timeline__timeline-container--grabbable': Settings.allowGrabbingTimeline,
 						'segment-timeline__timeline-container--grabbed': this.state.mouseGrabbed,
 					})}
-					onMouseDownCapture={this.onTimelineMouseDown}
+					onMouseDown={this.onTimelineMouseDown}
 					onTouchStartCapture={this.onTimelineTouchStart}
 				>
 					<div
@@ -931,26 +1030,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				<ErrorBoundary>
 					<SegmentTimelineZoomButtons {...this.props} />
 				</ErrorBoundary>
-				{/* <ErrorBoundary>
-					<SegmentNextPreview
-						rundown={this.props.rundown}
-						collapsedOutputs={this.props.collapsedOutputs}
-						isCollapsed={this.props.isCollapsed}
-						outputGroups={this.props.segment.outputLayers}
-						sourceLayers={this.props.segment.sourceLayers}
-						part={this.props.followingPart} />
-				</ErrorBoundary> */}
 				<ErrorBoundary>
-					<VelocityReact.VelocityTransitionGroup
-						enter={{ animation: 'slideDown', easing: 'ease-out', duration: 250 }}
-						leave={{ animation: 'slideUp', easing: 'ease-in', duration: 250 }}
-					>
-						<SegmentTimelineZoom
-							onZoomDblClick={this.onZoomNormalize}
-							timelineWidth={this.state.timelineWidth}
-							{...this.props}
-						/>
-					</VelocityReact.VelocityTransitionGroup>
+					<SegmentTimelineZoom
+						onZoomDblClick={this.onZoomNormalize}
+						timelineWidth={this.state.timelineWidth}
+						{...this.props}
+					/>
 				</ErrorBoundary>
 			</div>
 		)

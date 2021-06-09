@@ -28,7 +28,7 @@ export function getValidActivationCache(
 	studioId: StudioId,
 	playlistId?: RundownPlaylistId
 ): ActivationCache | undefined {
-	let activationCache = activationCaches.get(studioId)
+	const activationCache = activationCaches.get(studioId)
 	if (
 		activationCache &&
 		!activationCache.expired &&
@@ -255,7 +255,7 @@ export class ActivationCache {
 		modifiedHash: string,
 		updateFcn: (identifier: ID) => Promise<T>
 	): Promise<T> {
-		const id = (identifier as any) as string
+		const id = identifier as any as string
 		let o = cache[id]
 		if (!o || o.modifiedHash !== modifiedHash) {
 			o = {

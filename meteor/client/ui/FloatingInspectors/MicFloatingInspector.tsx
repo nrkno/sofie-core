@@ -58,6 +58,8 @@ export function MicFloatingInspector(props: IProps) {
 						) : (
 							<span className="mini-inspector__full-text">{props.content.fullScript}</span>
 						)
+					) : props.content.lastWords ? (
+						<span className="mini-inspector__full-text">{props.content.lastWords}</span>
 					) : (
 						<span className="mini-inspector__system">{t('Script is empty')}</span>
 					)}

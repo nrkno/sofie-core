@@ -32,6 +32,8 @@ export interface ICustomLayerItemProps {
 	cursorPosition: OffsetPosition
 	cursorTimePosition: number
 	layerIndex: number
+	isTooSmallForText: boolean
+	isPreview: boolean
 	getItemLabelOffsetLeft?: () => React.CSSProperties
 	getItemLabelOffsetRight?: () => React.CSSProperties
 	getItemDuration?: (returnInfinite?: boolean) => number
@@ -151,7 +153,8 @@ export class CustomLayerItemRenderer<
 		const uiPiece = this.props.piece
 		const innerPiece = uiPiece.instance.piece
 
-		return innerPiece.lifespan === PieceLifespan.OutOnRundownEnd &&
+		return (innerPiece.lifespan === PieceLifespan.OutOnRundownEnd ||
+			innerPiece.lifespan === PieceLifespan.OutOnShowStyleEnd) &&
 			!uiPiece.instance.userDuration &&
 			uiPiece.renderedDuration === null ? (
 			<div className="segment-timeline__piece__label label-icon label-infinite-icon">

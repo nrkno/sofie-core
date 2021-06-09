@@ -538,7 +538,7 @@
 	"ID of the device (corresponds to the device ID in the peripheralDevice settings)": "Eining-id (korresponderer med enhets-id under enhetsinnstillinger)",
 	"Lookahead Mode": "Lookahead-modus",
 	"Lookahead Target Objects (Default = 1)": "Lookahead målobjekter (standard = 1)",
-	"Lookahead Maximum Search Distance (Default = unlimited/-1)": "Lookahead maksimum søkelengde (standard = ubegrensa / -1)",
+	"Lookahead Maximum Search Distance (Default = {{limit}})": "Lookahead maksimum søkelengde (standard = {{limit}})",
 	"Layer Mappings": "Lagmapping",
 	"Add a playout device to the studio in order to edit the layer mappings": "For å kunne redigere lagmappingar, må du leggje til ein playout-eining til studio",
 	"Remove this Exclusivity Group?": "Fjern frå denne eksklusivitetgruppa?",

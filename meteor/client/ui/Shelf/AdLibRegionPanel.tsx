@@ -32,7 +32,7 @@ interface IAdLibRegionPanelProps {
 	adlibRank?: number
 }
 
-interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {}
+type IAdLibRegionPanelTrackedProps = IDashboardPanelTrackedProps
 
 export class AdLibRegionPanelInner extends MeteorReactComponent<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
@@ -47,7 +47,7 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 	}
 
 	isAdLibNext(adLib: AdLibPieceUi) {
-		return isAdLibNext(this.props.nextAdLibIds, this.props.unfinishedTags, this.props.nextTags, adLib)
+		return isAdLibNext(this.props.nextAdLibIds, this.props.nextTags, adLib)
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {

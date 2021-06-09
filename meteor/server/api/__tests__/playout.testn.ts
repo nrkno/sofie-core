@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-commented-out-tests */
 // import * as chai from 'chai'
 import * as _ from 'underscore'
 // import {} from 'mocha'

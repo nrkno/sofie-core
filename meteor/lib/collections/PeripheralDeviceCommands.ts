@@ -21,13 +21,12 @@ export interface PeripheralDeviceCommand {
 
 	time: Time // time
 }
-export const PeripheralDeviceCommands = createMongoCollection<PeripheralDeviceCommand, PeripheralDeviceCommand>(
-	'peripheralDeviceCommands'
-)
+export const PeripheralDeviceCommands =
+	createMongoCollection<PeripheralDeviceCommand, PeripheralDeviceCommand>('peripheralDeviceCommands')
 registerCollection('PeripheralDeviceCommands', PeripheralDeviceCommands)
 
 // Monitor and remove old, lingering commands:
-let removeOldCommands = () => {
+const removeOldCommands = () => {
 	PeripheralDeviceCommands.find().forEach((cmd) => {
 		if (getCurrentTime() - (cmd.time || 0) > 20 * 1000) {
 			// timeout a long time ago

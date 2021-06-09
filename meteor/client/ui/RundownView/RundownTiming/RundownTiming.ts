@@ -1,12 +1,21 @@
 import { PartId } from '../../../../lib/collections/Parts'
 import { unprotectString } from '../../../../lib/lib'
 import { Settings } from '../../../../lib/Settings'
+import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
+import { SegmentTimelinePartClass } from '../../SegmentTimeline/SegmentTimelinePart'
 
 export interface TimeEventArgs {
 	currentTime: number
 }
 
 export type TimingEvent = CustomEvent<TimeEventArgs>
+
+declare global {
+	interface WindowEventMap {
+		[RundownTiming.Events.timeupdate]: TimingEvent
+		[RundownTiming.Events.timeupdateHR]: TimingEvent
+	}
+}
 
 export namespace RundownTiming {
 	/**
@@ -91,7 +100,7 @@ export function computeSegmentDuration(
 	partIds: PartId[],
 	display?: boolean
 ): number {
-	let partDurations = timingDurations.partDurations
+	const partDurations = timingDurations.partDurations
 
 	if (partDurations === undefined) return 0
 
@@ -102,4 +111,14 @@ export function computeSegmentDuration(
 			(display ? Settings.defaultDisplayDuration : 0)
 		return memo + partDuration
 	}, 0)
+}
+
+export function computeSegmentDisplayDuration(
+	timingDurations: RundownTiming.RundownTimingContext,
+	parts: PartUi[]
+): number {
+	return parts.reduce(
+		(memo, part) => memo + SegmentTimelinePartClass.getPartDisplayDuration(part, timingDurations),
+		0
+	)
 }

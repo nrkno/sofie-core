@@ -1,5 +1,11 @@
 import { IBlueprintRundownDBData } from './rundown'
 
+export interface IngestPlaylist {
+	/** Id of the playlist. */
+	externalId: string
+	/** Ingest cache of rundowns in this playlist. */
+	rundowns: IngestRundown[]
+}
 export interface IngestRundown {
 	/** Id of the rundown as reported by the ingest gateway. Must be unique for each rundown owned by the gateway */
 	externalId: string

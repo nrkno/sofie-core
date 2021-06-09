@@ -31,7 +31,7 @@ const statistics: Array<{
 function traceDebuggingData() {
 	// Collect a set of data that can be useful for performance debugging
 
-	let debugData: any = {
+	const debugData: any = {
 		connectionCount: 0,
 		namedSubscriptionCount: 0,
 		universalSubscriptionCount: 0,
@@ -41,11 +41,11 @@ function traceDebuggingData() {
 		connections: [],
 	}
 	// @ts-ignore
-	let connections = Meteor.server.stream_server.open_sockets
+	const connections = Meteor.server.stream_server.open_sockets
 	_.each(connections, (connection: any) => {
 		debugData.connectionCount++
 
-		let conn = {
+		const conn = {
 			address: connection.address,
 			clientAddress: null,
 			clientPort: connection.clientclientPort,
@@ -56,7 +56,7 @@ function traceDebuggingData() {
 		debugData.connections.push(conn)
 		// named subscriptions
 
-		let session = connection._meteorSession
+		const session = connection._meteorSession
 
 		if (session) {
 			// if (session.clientAddress) conn.clientAddress = session.clientAddress()
@@ -71,13 +71,13 @@ function traceDebuggingData() {
 						documents: {},
 					}
 				}
-				let sub0 = debugData.subscriptions[sub._name]
+				const sub0 = debugData.subscriptions[sub._name]
 
 				sub0.count++
 
 				_.each(sub._documents, (collection, collectionName: string) => {
 					if (!sub0.documents[collectionName]) sub0.documents[collectionName] = 0
-					let count = _.keys(collection).length || 0
+					const count = _.keys(collection).length || 0
 					sub0.documents[collectionName] += count
 					conn.documentCount += count
 				})
@@ -93,7 +93,7 @@ function traceDebuggingData() {
 	return debugData
 }
 function updateStatistics(onlyReturn?: boolean) {
-	let stat = {
+	const stat = {
 		timestamp: Date.now(),
 		count: statisticsDelays.length,
 		average: 0,
@@ -126,7 +126,7 @@ function updateStatistics(onlyReturn?: boolean) {
 	return stat
 }
 function getStatistics() {
-	let stat = {
+	const stat = {
 		timestamp: Date.now(),
 		count: 0,
 		average: 0,
@@ -139,7 +139,7 @@ function getStatistics() {
 		periods: [],
 	}
 
-	let periods = [updateStatistics(true)]
+	const periods = [updateStatistics(true)]
 	_.each(statistics, (s) => {
 		periods.push(s)
 	})
@@ -167,16 +167,16 @@ function getStatistics() {
 }
 
 let lastTime = 0
-let monitorBlockedThread = () => {
+const monitorBlockedThread = () => {
 	if (lastTime) {
-		let timeSinceLast = Date.now() - lastTime
+		const timeSinceLast = Date.now() - lastTime
 
-		let delayTime = timeSinceLast - PERMORMANCE_CHECK_INTERVAL
+		const delayTime = timeSinceLast - PERMORMANCE_CHECK_INTERVAL
 
 		if (delayTime > ACCEPTED_DELAY) {
 			logger.warn('Main thread was blocked for ' + delayTime + ' ms')
-			let trace: string[] = []
-			let runningMethods = getRunningMethods()
+			const trace: string[] = []
+			const runningMethods = getRunningMethods()
 			if (!_.isEmpty(runningMethods)) {
 				_.each(runningMethods, (m) => {
 					trace.push(m.method + ': ' + (Date.now() - m.startTime) + ' ms ago')

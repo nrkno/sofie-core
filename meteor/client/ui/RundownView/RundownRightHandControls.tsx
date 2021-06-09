@@ -175,7 +175,7 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 		const exclusivityGroups: {
 			[id: string]: Array<[string, StudioRouteSet]>
 		} = {}
-		for (let [id, routeSet] of availableRouteSets) {
+		for (const [id, routeSet] of availableRouteSets) {
 			const group = routeSet.exclusivityGroup || '__noGroup'
 			if (exclusivityGroups[group] === undefined) exclusivityGroups[group] = []
 			exclusivityGroups[group].push([id, routeSet])

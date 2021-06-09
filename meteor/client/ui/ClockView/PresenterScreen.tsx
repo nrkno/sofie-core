@@ -54,6 +54,7 @@ function getShowStyleBaseIdSegmentPartUi(
 		segments: Segment[]
 		parts: Part[]
 	},
+	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	currentPartInstance: PartInstance | undefined,
 	nextPartInstance: PartInstance | undefined
 ): {
@@ -79,17 +80,22 @@ function getShowStyleBaseIdSegmentPartUi(
 
 	const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === partInstance.segmentId)
 	if (currentRundown && segmentIndex >= 0) {
+		const rundownOrder = playlist.getRundownIDs()
+		const rundownIndex = rundownOrder.indexOf(partInstance.rundownId)
 		const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 
 		if (showStyleBase) {
 			// This registers a reactive dependency on infinites-capping pieces, so that the segment can be
 			// re-evaluated when a piece like that appears.
 
-			let o = RundownUtils.getResolvedSegment(
+			const o = RundownUtils.getResolvedSegment(
 				showStyleBase,
 				playlist,
+				currentRundown,
 				orderedSegmentsAndParts.segments[segmentIndex],
 				new Set(orderedSegmentsAndParts.segments.map((s) => s._id).slice(0, segmentIndex)),
+				rundownOrder.slice(0, rundownIndex),
+				rundownsToShowstyles,
 				orderedSegmentsAndParts.parts.map((part) => part._id),
 				currentPartInstance,
 				nextPartInstance,
@@ -126,7 +132,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 				restoredFromSnapshotId: 0,
 			},
 		})
-	let segments: Array<SegmentUi> = []
+	const segments: Array<SegmentUi> = []
 	let showStyleBaseIds: ShowStyleBaseId[] = []
 	let rundowns: Rundown[] = []
 	let rundownIds: RundownId[] = []
@@ -143,6 +149,10 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 		rundowns = playlist.getRundowns()
 		const orderedSegmentsAndParts = playlist.getSegmentsAndPartsSync()
 		rundownIds = rundowns.map((rundown) => rundown._id)
+		const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
+		for (const rundown of rundowns) {
+			rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
+		}
 		showStyleBaseIds = rundowns.map((rundown) => rundown.showStyleBaseId)
 		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 		const partInstance = currentPartInstance || nextPartInstance
@@ -169,6 +179,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 					currentPartInstance,
 					playlist,
 					orderedSegmentsAndParts,
+					rundownsToShowstyles,
 					currentPartInstance,
 					nextPartInstance
 				)
@@ -182,6 +193,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 					nextPartInstance,
 					playlist,
 					orderedSegmentsAndParts,
+					rundownsToShowstyles,
 					currentPartInstance,
 					nextPartInstance
 				)
@@ -218,7 +230,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 
 	protected subscribeToData() {
 		this.autorun(() => {
-			let playlist = RundownPlaylists.findOne(this.props.playlistId, {
+			const playlist = RundownPlaylists.findOne(this.props.playlistId, {
 				fields: {
 					_id: 1,
 				},
@@ -230,11 +242,13 @@ export class PresenterScreenBase extends MeteorReactComponent<
 
 				this.autorun(() => {
 					const rundownIds = playlist!.getRundownIDs()
-					const showStyleBaseIds = (playlist!.getRundowns(undefined, {
-						fields: {
-							showStyleBaseId: 1,
-						},
-					}) as Pick<Rundown, 'showStyleBaseId'>[]).map((r) => r.showStyleBaseId)
+					const showStyleBaseIds = (
+						playlist!.getRundowns(undefined, {
+							fields: {
+								showStyleBaseId: 1,
+							},
+						}) as Pick<Rundown, 'showStyleBaseId'>[]
+					).map((r) => r.showStyleBaseId)
 
 					this.subscribe(PubSub.segments, {
 						rundownId: { $in: rundownIds },

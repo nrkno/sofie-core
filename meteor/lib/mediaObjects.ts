@@ -174,7 +174,7 @@ export function checkPieceContentStatus(
 	let metadata: MediaObject | null = null
 	let packageInfoToForward: ScanInfoForPackages | undefined = undefined
 	let message: string | null = null
-	let contentDuration: number | undefined = undefined
+	const contentDuration: number | undefined = undefined
 	const settings: IStudioSettings | undefined = studio?.settings
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
@@ -185,14 +185,12 @@ export function checkPieceContentStatus(
 			const messages: Array<string> = []
 			const packageInfos: ScanInfoForPackages = {}
 
-			// const missingPackageNames: string[] = []
 			if (piece.expectedPackages.length) {
 				// Route the mappings
 				const routedMappingsWithPackages = routeExpectedPackages(studio, piece.expectedPackages)
 
 				const checkedPackageContainers: { [containerId: string]: true } = {}
 
-				// const deviceIdsMap = new Map<string, true>()
 				for (const mapping of Object.values(routedMappingsWithPackages)) {
 					const mappingDeviceId = unprotectString(mapping.deviceId)
 					let packageContainerId: string | undefined
@@ -215,10 +213,6 @@ export function checkPieceContentStatus(
 					checkedPackageContainers[packageContainerId] = true
 
 					for (const expectedPackage of mapping.expectedPackages) {
-						// for (const packageSource of expectedPackage.sources) {
-						// 	packageSource.containerId
-						// }
-
 						const packageOnPackageContainer = getPackageContainerPackageStatus(
 							studio._id,
 							packageContainerId,
@@ -430,7 +424,7 @@ export function checkPieceContentStatus(
 			// Fallback to MediaObject statuses:
 			switch (sourceLayer.type) {
 				case SourceLayerType.VT:
-				case SourceLayerType.LIVE_SPEAK:
+				case SourceLayerType.LIVE_SPEAK: {
 					const fileName = getMediaObjectMediaId(piece, sourceLayer)
 					const displayName = piece.name
 					const messages: Array<string> = []
@@ -596,6 +590,7 @@ export function checkPieceContentStatus(
 						message = messages.join('; ') + '.'
 					}
 					break
+				}
 			}
 		}
 	}

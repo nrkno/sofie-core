@@ -11,7 +11,7 @@ import { Timeline, TimelineComplete, TimelineHash } from '../../lib/collections/
 import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
-import { parse as parseUrl } from 'url'
+import { URL } from 'url'
 import { RundownInput } from './ingest/rundownInput'
 import {
 	IngestRundown,
@@ -271,7 +271,7 @@ export namespace ServerPeripheralDeviceAPI {
 		let lastTakeTime: number | undefined
 
 		// ------------------------------
-		let timelineObjs = cache.Timeline.findOne(cache.Studio.doc._id)?.timeline || []
+		const timelineObjs = cache.Timeline.findOne(cache.Studio.doc._id)?.timeline || []
 		let tlChanged = false
 
 		_.each(results, (o) => {
@@ -460,6 +460,7 @@ export namespace ServerPeripheralDeviceAPI {
 		if (really) {
 			this.logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
 			setTimeout(() => {
+				// eslint-disable-next-line no-process-exit
 				process.exit(0)
 			}, 1000)
 			return true
@@ -486,15 +487,12 @@ export namespace ServerPeripheralDeviceAPI {
 			return returnValue
 		}
 	}
-	export const executeFunction: (
-		deviceId: PeripheralDeviceId,
-		functionName: string,
-		...args: any[]
-	) => any = Meteor.wrapAsync((deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => {
-		let args0 = args.slice(0, -1)
-		let cb = args.slice(-1)[0] // the last argument in ...args
-		PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
-	})
+	export const executeFunction: (deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => any =
+		Meteor.wrapAsync((deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => {
+			const args0 = args.slice(0, -1)
+			const cb = args.slice(-1)[0] // the last argument in ...args
+			PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
+		})
 
 	export function requestUserAuthToken(
 		context: MethodContext,
@@ -643,7 +641,7 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 
 	let content = ''
 	try {
-		let deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
+		const deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
 		check(deviceId, String)
 
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
@@ -651,10 +649,10 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 		const peripheralDevice = PeripheralDevices.findOne(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
-		let url = parseUrl(req.url || '', true)
+		const url = new URL(req.url || '', 'http://localhost')
 
-		let fileNames = url.query['name'] || undefined
-		let fileName: string = (_.isArray(fileNames) ? fileNames[0] : fileNames) || ''
+		const fileNames = url.searchParams.get('name') || undefined
+		const fileName: string = (_.isArray(fileNames) ? fileNames[0] : fileNames) || ''
 
 		check(fileName, String)
 
@@ -825,6 +823,9 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	}
 
 	// ------ Ingest methods: ------------
+	dataPlaylistGet(deviceId: PeripheralDeviceId, deviceToken: string, playlistExternalId: string) {
+		return makePromise(() => RundownInput.dataPlaylistGet(this, deviceId, deviceToken, playlistExternalId))
+	}
 	dataRundownList(deviceId: PeripheralDeviceId, deviceToken: string) {
 		return makePromise(() => RundownInput.dataRundownList(this, deviceId, deviceToken))
 	}
@@ -1095,45 +1096,28 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 			MediaManagerIntegration.updateMediaWorkFlowStep(this, deviceId, deviceToken, docId, obj)
 		)
 	}
-	insertExpectedPackageWorkStatus(
+	updateExpectedPackageWorkStatuses(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId,
-		workStatus: ExpectedPackageStatusAPI.WorkStatus
-	) {
+		changes: (
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'delete'
+			  }
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'insert'
+					status: ExpectedPackageStatusAPI.WorkStatus
+			  }
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'update'
+					status: Partial<ExpectedPackageStatusAPI.WorkStatus>
+			  }
+		)[]
+	): Promise<void> {
 		return makePromise(() =>
-			PackageManagerIntegration.insertExpectedPackageWorkStatus(
-				this,
-				deviceId,
-				deviceToken,
-				workStatusId,
-				workStatus
-			)
-		)
-	}
-	updateExpectedPackageWorkStatus(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId,
-		workStatus: Partial<ExpectedPackageStatusAPI.WorkStatus>
-	) {
-		return makePromise(() =>
-			PackageManagerIntegration.updateExpectedPackageWorkStatus(
-				this,
-				deviceId,
-				deviceToken,
-				workStatusId,
-				workStatus
-			)
-		)
-	}
-	removeExpectedPackageWorkStatus(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId
-	) {
-		return makePromise(() =>
-			PackageManagerIntegration.removeExpectedPackageWorkStatus(this, deviceId, deviceToken, workStatusId)
+			PackageManagerIntegration.updateExpectedPackageWorkStatuses(this, deviceId, deviceToken, changes)
 		)
 	}
 	removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
@@ -1141,22 +1125,25 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 			PackageManagerIntegration.removeAllExpectedPackageWorkStatusOfDevice(this, deviceId, deviceToken)
 		)
 	}
-	updatePackageContainerPackageStatus(
+	updatePackageContainerPackageStatuses(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		containerId: string,
-		packageId: string,
-		packageStatus: ExpectedPackageStatusAPI.PackageContainerPackageStatus | null
-	) {
+		changes: (
+			| {
+					containerId: string
+					packageId: string
+					type: 'delete'
+			  }
+			| {
+					containerId: string
+					packageId: string
+					type: 'update'
+					status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
+			  }
+		)[]
+	): Promise<void> {
 		return makePromise(() =>
-			PackageManagerIntegration.updatePackageContainerPackageStatus(
-				this,
-				deviceId,
-				deviceToken,
-				containerId,
-				packageId,
-				packageStatus
-			)
+			PackageManagerIntegration.updatePackageContainerPackageStatuses(this, deviceId, deviceToken, changes)
 		)
 	}
 	fetchPackageInfoMetadata(

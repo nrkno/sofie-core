@@ -225,7 +225,7 @@ export class DbCacheWriteCollection<
 		const span = profiler.startSpan(`DBCache.remove.${this.name}`)
 		waitForPromise(this._initialize())
 
-		let removedIds: DBInterface['_id'][] = []
+		const removedIds: DBInterface['_id'][] = []
 		if (isProtectedString(selector)) {
 			if (this.documents.get(selector)) {
 				this.documents.set(selector, null)
@@ -296,7 +296,7 @@ export class DbCacheWriteCollection<
 
 	/** Returns true if a doc was replace, false if inserted */
 	replace(doc: DBInterface | ReadonlyDeep<DBInterface>): boolean {
-		this.assertNotToBeRemoved('repolace')
+		this.assertNotToBeRemoved('replace')
 
 		const span = profiler.startSpan(`DBCache.replace.${this.name}`)
 		waitForPromise(this._initialize())
@@ -307,6 +307,7 @@ export class DbCacheWriteCollection<
 		const oldDoc = this.documents.get(_id)
 		if (oldDoc) {
 			oldDoc.updated = true
+			delete oldDoc.removed
 			oldDoc.document = this._transform(clone(doc))
 		} else {
 			this.documents.set(_id, {

@@ -149,7 +149,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 
 	componentDidMount() {
-		let preventDefault = (e) => {
+		const preventDefault = (e) => {
 			e.preventDefault()
 			e.stopImmediatePropagation()
 			e.stopPropagation()

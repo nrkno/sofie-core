@@ -53,7 +53,7 @@ export namespace MongoMock {
 	}
 
 	const mockCollections: MockCollections<any> = {}
-	export interface MongoCollection<T extends CollectionObject> {}
+	export type MongoCollection<T extends CollectionObject> = {}
 	export class Collection<T extends CollectionObject> implements MongoCollection<T> {
 		public _name: string
 		private _options: any = {}
@@ -152,82 +152,74 @@ export namespace MongoMock {
 			return this.find(query, options).fetch()[0]
 		}
 		update(query: any, modifier, options?: UpdateOptions): number {
-			try {
-				const unimplementedUsedOptions = _.without(_.keys(options), 'multi')
-				if (unimplementedUsedOptions.length > 0) {
-					throw new Error(`update being performed using unimplemented options: ${unimplementedUsedOptions}`)
-				}
-
-				// todo
-				let docs = this.find(query)._fetchRaw()
-
-				// By default mongo only updates one doc, unless told multi
-				if (this.documents.length && !options?.multi) {
-					docs = [docs[0]]
-				}
-
-				_.each(docs, (doc) => {
-					const modifiedDoc = mongoModify(query, doc, modifier)
-					this.documents[unprotectString(doc._id)] = modifiedDoc
-
-					Meteor.defer(() => {
-						_.each(_.clone(this.observers), (obs) => {
-							if (mongoWhere(doc, obs.query)) {
-								if (obs.callbacksChanges?.changed) {
-									obs.callbacksChanges.changed(doc._id, {}) // TODO - figure out what changed
-								}
-								if (obs.callbacksObserve?.changed) {
-									obs.callbacksObserve.changed(modifiedDoc, doc)
-								}
-							}
-						})
-					})
-				})
-
-				return docs.length
-			} catch (error) {
-				throw error
+			const unimplementedUsedOptions = _.without(_.keys(options), 'multi')
+			if (unimplementedUsedOptions.length > 0) {
+				throw new Error(`update being performed using unimplemented options: ${unimplementedUsedOptions}`)
 			}
-		}
-		insert(doc: T): T['_id'] {
-			try {
-				const d = _.clone(doc)
-				if (!d._id) d._id = protectString(RandomMock.id())
 
-				if (this.documents[unprotectString(d._id)]) {
-					throw new MeteorMock.Error(500, `Duplicate key '${d._id}'`)
-				}
+			// todo
+			let docs = this.find(query)._fetchRaw()
 
-				this.documents[unprotectString(d._id)] = d
+			// By default mongo only updates one doc, unless told multi
+			if (this.documents.length && !options?.multi) {
+				docs = [docs[0]]
+			}
+
+			_.each(docs, (doc) => {
+				const modifiedDoc = mongoModify(query, doc, modifier)
+				this.documents[unprotectString(doc._id)] = modifiedDoc
 
 				Meteor.defer(() => {
 					_.each(_.clone(this.observers), (obs) => {
-						if (mongoWhere(d, obs.query)) {
-							const fields = _.keys(_.omit(d, '_id'))
-							if (obs.callbacksChanges?.addedBefore) {
-								obs.callbacksChanges.addedBefore(d._id, fields, null as any)
+						if (mongoWhere(doc, obs.query)) {
+							if (obs.callbacksChanges?.changed) {
+								obs.callbacksChanges.changed(doc._id, {}) // TODO - figure out what changed
 							}
-							if (obs.callbacksChanges?.added) {
-								obs.callbacksChanges.added(d._id, fields)
-							}
-							if (obs.callbacksObserve?.added) {
-								obs.callbacksObserve.added(d)
+							if (obs.callbacksObserve?.changed) {
+								obs.callbacksObserve.changed(modifiedDoc, doc)
 							}
 						}
 					})
 				})
+			})
 
-				return d._id
-			} catch (error) {
-				throw error
+			return docs.length
+		}
+		insert(doc: T): T['_id'] {
+			const d = _.clone(doc)
+			if (!d._id) d._id = protectString(RandomMock.id())
+
+			if (this.documents[unprotectString(d._id)]) {
+				throw new MeteorMock.Error(500, `Duplicate key '${d._id}'`)
 			}
+
+			this.documents[unprotectString(d._id)] = d
+
+			Meteor.defer(() => {
+				_.each(_.clone(this.observers), (obs) => {
+					if (mongoWhere(d, obs.query)) {
+						const fields = _.keys(_.omit(d, '_id'))
+						if (obs.callbacksChanges?.addedBefore) {
+							obs.callbacksChanges.addedBefore(d._id, fields, null as any)
+						}
+						if (obs.callbacksChanges?.added) {
+							obs.callbacksChanges.added(d._id, fields)
+						}
+						if (obs.callbacksObserve?.added) {
+							obs.callbacksObserve.added(d)
+						}
+					}
+				})
+			})
+
+			return d._id
 		}
 		upsert(
 			query: any,
 			modifier,
 			options?: UpsertOptions
 		): { numberAffected: number | undefined; insertedId: T['_id'] | undefined } {
-			let id = _.isString(query) ? query : query._id
+			const id = _.isString(query) ? query : query._id
 
 			const docs = this.find(id)._fetchRaw()
 
@@ -241,29 +233,25 @@ export namespace MongoMock {
 			}
 		}
 		remove(query: any): number {
-			try {
-				const docs = this.find(query)._fetchRaw()
+			const docs = this.find(query)._fetchRaw()
 
-				_.each(docs, (doc) => {
-					delete this.documents[unprotectString(doc._id)]
+			_.each(docs, (doc) => {
+				delete this.documents[unprotectString(doc._id)]
 
-					Meteor.defer(() => {
-						_.each(_.clone(this.observers), (obs) => {
-							if (mongoWhere(doc, obs.query)) {
-								if (obs.callbacksChanges?.removed) {
-									obs.callbacksChanges.removed(doc._id)
-								}
-								if (obs.callbacksObserve?.removed) {
-									obs.callbacksObserve.removed(doc)
-								}
+				Meteor.defer(() => {
+					_.each(_.clone(this.observers), (obs) => {
+						if (mongoWhere(doc, obs.query)) {
+							if (obs.callbacksChanges?.removed) {
+								obs.callbacksChanges.removed(doc._id)
 							}
-						})
+							if (obs.callbacksObserve?.removed) {
+								obs.callbacksObserve.removed(doc)
+							}
+						}
 					})
 				})
-				return docs.length
-			} catch (error) {
-				throw error
-			}
+			})
+			return docs.length
 		}
 
 		_ensureIndex(obj: any) {

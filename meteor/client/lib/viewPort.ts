@@ -17,7 +17,7 @@ export function maintainFocusOnPartInstance(
 	forceScroll?: boolean,
 	noAnimation?: boolean
 ) {
-	let startTime = Date.now()
+	const startTime = Date.now()
 	const focus = () => {
 		if (Date.now() - startTime < timeWindow) {
 			_dontClearInterval = true
@@ -64,15 +64,21 @@ export function scrollToPartInstance(
 	return Promise.reject('Could not find PartInstance')
 }
 
-export async function scrollToPart(partId: PartId, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
+export async function scrollToPart(
+	partId: PartId,
+	forceScroll?: boolean,
+	noAnimation?: boolean,
+	zoomInToFit?: boolean
+): Promise<boolean> {
 	quitFocusOnPart()
-	let part = Parts.findOne(partId)
+	const part = Parts.findOne(partId)
 	if (part) {
 		await scrollToSegment(part.segmentId, forceScroll, noAnimation)
 
 		RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART, {
 			segmentId: part.segmentId,
 			partId: partId,
+			zoomInToFit,
 		})
 
 		return true // rather meaningless as we don't know what happened
@@ -132,8 +138,8 @@ export function scrollToSegment(
 		return elementToScrollToOrSegmentId
 	}
 
-	let elementToScrollTo: HTMLElement | null = getElementToScrollTo(false)
-	let historyTarget: HTMLElement | null = getElementToScrollTo(true)
+	const elementToScrollTo: HTMLElement | null = getElementToScrollTo(false)
+	const historyTarget: HTMLElement | null = getElementToScrollTo(true)
 
 	// historyTarget will be === to elementToScrollTo if history is not used / not found
 	if (!elementToScrollTo || !historyTarget) {
@@ -211,7 +217,7 @@ function innerScrollToSegment(
 }
 
 function regionInViewport(topElement: HTMLElement, bottomElement: HTMLElement) {
-	let { top, bottom } = getRegionPosition(topElement, bottomElement)
+	const { top, bottom } = getRegionPosition(topElement, bottomElement)
 
 	const headerHeight = Math.floor(getHeaderHeight())
 

@@ -67,7 +67,7 @@ export function queueExternalMessages(
 				triggerdoMessageQueue() // trigger processing of the queue
 			}
 		} else {
-			let now = getCurrentTime()
+			const now = getCurrentTime()
 			let message2: ExternalMessageQueueObj = {
 				_id: getRandomId(),
 
@@ -111,11 +111,11 @@ Meteor.startup(() => {
 	triggerdoMessageQueue(5000)
 })
 function doMessageQueue() {
-	let tryInterval = 1 * 60 * 1000 // 1 minute
-	let limit = errorOnLastRunCount === 0 ? 100 : 5 // if there were errors on last send, don't run too many next time
+	const tryInterval = 1 * 60 * 1000 // 1 minute
+	const limit = errorOnLastRunCount === 0 ? 100 : 5 // if there were errors on last send, don't run too many next time
 	let probablyHasMoreToSend = false
 	try {
-		let now = getCurrentTime()
+		const now = getCurrentTime()
 		let messagesToSend = ExternalMessageQueue.find(
 			{
 				sent: { $not: { $gt: 0 } },
@@ -137,7 +137,7 @@ function doMessageQueue() {
 
 		errorOnLastRunCount = 0
 
-		let ps: Array<Promise<any>> = []
+		const ps: Array<Promise<any>> = []
 
 		messagesToSend = _.filter(messagesToSend, (msg: ExternalMessageQueueObj): boolean => {
 			return msg.retryUntil === undefined || msg.manualRetry || now < msg.retryUntil
@@ -291,7 +291,7 @@ function retry(context: MethodContext, messageId: ExternalMessageQueueObjId): vo
 	const m = access.message
 	if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
 
-	let tryGap = getCurrentTime() - 1 * 60 * 1000
+	const tryGap = getCurrentTime() - 1 * 60 * 1000
 	ExternalMessageQueue.update(messageId, {
 		$set: {
 			manualRetry: true,

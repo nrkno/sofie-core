@@ -15,7 +15,7 @@ import { DBSegment } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { getCurrentTime, literal, protectString, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
-import { saveIntoCache } from '../../cache/lib'
+import { logChanges, saveIntoCache } from '../../cache/lib'
 import { PackageInfo } from '../../coreSystem'
 import { sumChanges, anythingChanged } from '../../lib/database'
 import { logger } from '../../logging'
@@ -82,7 +82,7 @@ export async function calculateSegmentsFromIngestData(
 		const showStyle = await getShowStyleCompoundForRundown(rundown)
 		const blueprint = loadShowStyleBlueprint(showStyle)
 
-		for (let ingestSegment of ingestSegments) {
+		for (const ingestSegment of ingestSegments) {
 			const segmentId = getSegmentId(cache.RundownId, ingestSegment.externalId)
 
 			// Ensure the parts are sorted by rank
@@ -247,82 +247,45 @@ export async function calculateSegmentsFromIngestData(
  * @param data The data to save
  * @param isWholeRundownUpdate Whether this is a whole rundown change (This will remove any stray items)
  */
-export async function saveSegmentChangesToCache(
+export function saveSegmentChangesToCache(
 	cache: CacheForIngest,
 	data: UpdateSegmentsResult,
 	isWholeRundownUpdate: boolean
-): Promise<void> {
+): void {
 	const newPartIds = data.parts.map((p) => p._id)
 	const newSegmentIds = data.segments.map((p) => p._id)
 
 	const partChanges = saveIntoCache<Part, DBPart>(
 		cache.Parts,
 		isWholeRundownUpdate ? {} : { $or: [{ segmentId: { $in: newSegmentIds } }, { _id: { $in: newPartIds } }] },
-		data.parts,
-		{
-			afterInsert(part) {
-				logger.debug('inserted part ' + part._id)
-			},
-			afterUpdate(part) {
-				logger.debug('updated part ' + part._id)
-			},
-			afterRemove(part) {
-				logger.debug('deleted part ' + part._id)
-			},
-		}
+		data.parts
 	)
+	logChanges('Parts', partChanges)
 	const affectedPartIds = [...partChanges.removed, ...newPartIds]
 
-	saveIntoCache<Piece, Piece>(
-		cache.Pieces,
-		isWholeRundownUpdate ? {} : { startPartId: { $in: affectedPartIds } },
-		data.pieces,
-		{
-			afterInsert(piece) {
-				logger.debug('inserted piece ' + piece._id)
-				logger.debug(piece)
-			},
-			afterUpdate(piece) {
-				logger.debug('updated piece ' + piece._id)
-			},
-			afterRemove(piece) {
-				logger.debug('deleted piece ' + piece._id)
-			},
-		}
+	logChanges(
+		'Pieces',
+		saveIntoCache<Piece, Piece>(
+			cache.Pieces,
+			isWholeRundownUpdate ? {} : { startPartId: { $in: affectedPartIds } },
+			data.pieces
+		)
 	)
-	saveIntoCache<AdLibAction, AdLibAction>(
-		cache.AdLibActions,
-		isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
-		data.adlibActions,
-		{
-			afterInsert(adlibAction) {
-				logger.debug('inserted adlibAction ' + adlibAction._id)
-				logger.debug(adlibAction)
-			},
-			afterUpdate(adlibAction) {
-				logger.debug('updated adlibAction ' + adlibAction._id)
-			},
-			afterRemove(adlibAction) {
-				logger.debug('deleted adlibAction ' + adlibAction._id)
-			},
-		}
+	logChanges(
+		'AdLibActions',
+		saveIntoCache<AdLibAction, AdLibAction>(
+			cache.AdLibActions,
+			isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
+			data.adlibActions
+		)
 	)
-	saveIntoCache<AdLibPiece, AdLibPiece>(
-		cache.AdLibPieces,
-		isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
-		data.adlibPieces,
-		{
-			afterInsert(adLibPiece) {
-				logger.debug('inserted adLibPiece ' + adLibPiece._id)
-				logger.debug(adLibPiece)
-			},
-			afterUpdate(adLibPiece) {
-				logger.debug('updated adLibPiece ' + adLibPiece._id)
-			},
-			afterRemove(adLibPiece) {
-				logger.debug('deleted adLibPiece ' + adLibPiece._id)
-			},
-		}
+	logChanges(
+		'AdLibPieces',
+		saveIntoCache<AdLibPiece, AdLibPiece>(
+			cache.AdLibPieces,
+			isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
+			data.adlibPieces
+		)
 	)
 
 	// Update Segments: Only update, never remove
@@ -347,7 +310,7 @@ export async function updateSegmentFromIngestData(
 	if (!canSegmentBeUpdated(rundown, segment, isNewSegment)) return null
 
 	const segmentChanges = await calculateSegmentsFromIngestData(cache, [ingestSegment])
-	await saveSegmentChangesToCache(cache, segmentChanges, false)
+	saveSegmentChangesToCache(cache, segmentChanges, false)
 
 	span?.end()
 	return {
@@ -541,7 +504,7 @@ export async function updateRundownFromIngestData(
 
 	updateBaselineExpectedPackagesOnRundown(cache, rundownRes.baseline)
 
-	await saveSegmentChangesToCache(cache, segmentChanges, true)
+	saveSegmentChangesToCache(cache, segmentChanges, true)
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)
 

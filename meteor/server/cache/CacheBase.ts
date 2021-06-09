@@ -29,8 +29,8 @@ export type ReadOnlyCache<T extends CacheBase<any>> = Omit<
 >
 
 /** This cache contains data relevant in a studio */
-export abstract class ReadOnlyCacheBase {
-	protected _deferredFunctions: DeferredFunction<ReadOnlyCacheBase>[] = []
+export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
+	protected _deferredFunctions: DeferredFunction<T>[] = []
 	protected _deferredAfterSaveFunctions: (() => void)[] = []
 	private _activeTimeout: number | null = null
 	private _hasTimedOut = false
@@ -89,7 +89,7 @@ export abstract class ReadOnlyCacheBase {
 
 		// Execute cache.defer()'s
 		for (let i = 0; i < this._deferredFunctions.length; i++) {
-			this._deferredFunctions[i](this)
+			this._deferredFunctions[i](this as any)
 		}
 		this._deferredFunctions.length = 0 // clear the array
 
@@ -194,7 +194,7 @@ export abstract class ReadOnlyCacheBase {
 		if (span) span.end()
 	}
 }
-export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheBase {
+export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheBase<T> {
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
 	defer(fcn: DeferredFunction<T>): void {
 		this._deferredFunctions.push(fcn)

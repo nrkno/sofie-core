@@ -3,7 +3,7 @@ import { getCurrentTime, getRandomId } from '../lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 import { DeviceConfigManifest } from './deviceConfig'
-import { ExpectedPackageStatusAPI, TSR } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackageStatusAPI, IngestPlaylist, TSR } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PeripheralDeviceId, PeripheralDevice } from '../collections/PeripheralDevices'
 import { PieceInstanceId } from '../collections/PieceInstances'
@@ -95,6 +95,11 @@ export interface NewPeripheralDeviceAPI {
 		resolveDuration: number
 	)
 
+	dataPlaylistGet(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		playlistExternalId: string
+	): Promise<IngestPlaylist>
 	dataRundownList(deviceId: PeripheralDeviceId, deviceToken: string): Promise<string[]>
 	dataRundownGet(deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string): Promise<IngestRundown>
 	dataRundownDelete(deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string): Promise<void>
@@ -277,31 +282,44 @@ export interface NewPeripheralDeviceAPI {
 		obj: MediaWorkFlowStep | null
 	): Promise<void>
 
-	insertExpectedPackageWorkStatus(
+	updateExpectedPackageWorkStatuses(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId,
-		workStatus: ExpectedPackageStatusAPI.WorkStatus
-	): Promise<void>
-	updateExpectedPackageWorkStatus(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId,
-		workStatus: Partial<ExpectedPackageStatusAPI.WorkStatus>
-	): Promise<boolean>
-	removeExpectedPackageWorkStatus(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId
+		changes: (
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'delete'
+			  }
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'insert'
+					status: ExpectedPackageStatusAPI.WorkStatus
+			  }
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'update'
+					status: Partial<ExpectedPackageStatusAPI.WorkStatus>
+			  }
+		)[]
 	): Promise<void>
 	removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
 
-	updatePackageContainerPackageStatus(
+	updatePackageContainerPackageStatuses(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		containerId: string,
-		packageId: string,
-		packageStatus: ExpectedPackageStatusAPI.PackageContainerPackageStatus | null
+		changes: (
+			| {
+					containerId: string
+					packageId: string
+					type: 'delete'
+			  }
+			| {
+					containerId: string
+					packageId: string
+					type: 'update'
+					status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
+			  }
+		)[]
 	): Promise<void>
 
 	fetchPackageInfoMetadata(
@@ -376,6 +394,7 @@ export enum PeripheralDeviceAPIMethods {
 	'mosRoReadyToAir' = 'peripheralDevice.mos.roReadyToAir',
 	'mosRoFullStory' = 'peripheralDevice.mos.roFullStory',
 
+	'dataPlaylistGet' = 'peripheralDevice.playlist.playlistGet',
 	'dataRundownList' = 'peripheralDevice.rundown.rundownList',
 	'dataRundownGet' = 'peripheralDevice.rundown.rundownGet',
 	'dataRundownDelete' = 'peripheralDevice.rundown.rundownDelete',
@@ -402,12 +421,10 @@ export enum PeripheralDeviceAPIMethods {
 	'getMediaWorkFlowStepRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowStepRevisions',
 	'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep',
 
-	'insertExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.insertExpectedPackageWorkStatus',
-	'updateExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.updateExpectedPackageWorkStatus',
-	'removeExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.removeExpectedPackageWorkStatus',
+	'updateExpectedPackageWorkStatuses' = 'peripheralDevice.packageManager.updateExpectedPackageWorkStatuses',
 	'removeAllExpectedPackageWorkStatusOfDevice' = 'peripheralDevice.packageManager.removeAllExpectedPackageWorkStatusOfDevice',
 
-	'updatePackageContainerPackageStatus' = 'peripheralDevice.packageManager.updatePackageContainerPackageStatus',
+	'updatePackageContainerPackageStatuses' = 'peripheralDevice.packageManager.updatePackageContainerPackageStatuses',
 	'fetchPackageInfoMetadata' = 'peripheralDevice.packageManager.fetchPackageInfoMetadata',
 	'updatePackageInfo' = 'peripheralDevice.packageManager.updatePackageInfo',
 	'removePackageInfo' = 'peripheralDevice.packageManager.removePackageInfo',
@@ -519,7 +536,7 @@ export namespace PeripheralDeviceAPI {
 	) {
 		const timeoutTime: number = timeoutTime0 || 3000 // also handles null
 
-		let commandId: PeripheralDeviceCommandId = getRandomId()
+		const commandId: PeripheralDeviceCommandId = getRandomId()
 
 		let subscription: Meteor.SubscriptionHandle | null = null
 		if (Meteor.isClient) {
@@ -531,7 +548,7 @@ export namespace PeripheralDeviceAPI {
 		let timeoutCheck: number = 0
 		// we've sent the command, let's just wait for the reply
 		const checkReply = () => {
-			let cmd = PeripheralDeviceCommands.findOne(commandId)
+			const cmd = PeripheralDeviceCommands.findOne(commandId)
 			// if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
 			// logger.debug('checkReply')
 

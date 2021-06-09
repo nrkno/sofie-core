@@ -20,7 +20,7 @@ import { PeripheralDeviceCommands } from '../../../../lib/collections/Peripheral
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { AdLibPieces } from '../../../../lib/collections/AdLibPieces'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import { PartInstances, PartInstanceId } from '../../../../lib/collections/PartInstances'
+import { PartInstances, PartInstanceId, PartInstance } from '../../../../lib/collections/PartInstances'
 import { IngestActions } from '../../ingest/actions'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { protectString } from '../../../../lib/lib'
@@ -492,11 +492,12 @@ describe('Playout API', () => {
 				expect(playlist.startedPlayback).toBe(now)
 
 				// the currentPartInstance timings are set
-				const { currentPartInstance } = playlist.getSelectedPartInstances()
-				expect(currentPartInstance?.timings?.startedPlayback).toBe(now)
+				const currentPartInstance = playlist.getSelectedPartInstances().currentPartInstance as PartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.timings?.startedPlayback).toBe(now)
 
 				// the piece instances timings are set
-				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstance?._id!)
+				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstance._id)
 				expect(pieceInstances).toHaveLength(2)
 				pieceInstances.forEach((pieceInstance) => {
 					expect(pieceInstance.startedPlayback).toBeTruthy()
@@ -507,7 +508,8 @@ describe('Playout API', () => {
 			{
 				const nowBuf = now
 				const { currentPartInstance } = getPlaylist0().getSelectedPartInstances()
-				now += currentPartInstance?.part.expectedDuration! - 500
+				expect(currentPartInstance?.part.expectedDuration).toBeTruthy()
+				now += (currentPartInstance?.part.expectedDuration ?? 0) - 500
 				// try to take just before an autonext
 				const response = ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 				expect(response).toBeTruthy()
@@ -524,7 +526,8 @@ describe('Playout API', () => {
 				const currentPartInstanceBeforeTakeId = currentPartInstanceBeforeTake?._id
 				const nextPartInstanceBeforeTakeId = nextPartInstanceBeforeTake?._id
 
-				now += currentPartInstanceBeforeTake?.part.expectedDuration!
+				expect(currentPartInstanceBeforeTake?.part.expectedDuration).toBeTruthy()
+				now += currentPartInstanceBeforeTake?.part.expectedDuration ?? 0
 				ServerPlayoutAPI.onPartPlaybackStarted(
 					DEFAULT_CONTEXT,
 					playoutDevice,

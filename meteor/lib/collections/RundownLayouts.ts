@@ -88,6 +88,8 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	showThumbnailsInList: boolean
 	hideDuplicates: boolean
 	currentSegment: boolean
+	nextInCurrentPart: boolean
+	oneNextPerSourceLayer: boolean
 	/**
 	 * true: include Rundown Baseline AdLib Pieces
 	 * false: do not include Rundown Baseline AdLib Pieces

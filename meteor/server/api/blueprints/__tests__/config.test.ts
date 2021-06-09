@@ -57,18 +57,12 @@ describe('Test blueprint config', () => {
 		test('undefined - bail', () => {
 			const modifier = jest.fn((v) => v)
 
-			try {
-				expect(ConfigRef.retrieveRefs('${studio.one.two}_extra', modifier, true)).toEqual('undefined_extra')
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(`[404] Ref \"\${studio.one.two}\": Studio \"one\" not found`)
-			}
-			try {
-				expect(ConfigRef.retrieveRefs('${showStyle.one.two}_extra', modifier, true)).toEqual('undefined_extra')
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(`[404] Ref \"\${showStyle.one.two}\": Showstyle variant \"one\" not found`)
-			}
+			expect(() => ConfigRef.retrieveRefs('${studio.one.two}_extra', modifier, true)).toThrowError(
+				`[404] Ref \"\${studio.one.two}\": Studio \"one\" not found`
+			)
+			expect(() => ConfigRef.retrieveRefs('${showStyle.one.two}_extra', modifier, true)).toThrowError(
+				`[404] Ref \"\${showStyle.one.two}\": Showstyle variant \"one\" not found`
+			)
 
 			expect(modifier).toHaveBeenCalledTimes(0)
 		})

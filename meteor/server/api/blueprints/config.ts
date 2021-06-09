@@ -57,7 +57,7 @@ export namespace ConfigRef {
 	}
 	function retrieveRef(reference: string, bailOnError?: boolean): ConfigItemValue | string | undefined {
 		if (!reference) return undefined
-		let m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
+		const m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
 		if (m) {
 			if (m[1] === 'studio' && _.isString(m[2]) && _.isString(m[3])) {
 				const studioId: StudioId = protectString(m[2])
@@ -219,11 +219,8 @@ export function resetShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<Sh
 	getShowStyleBlueprintConfig(showStyleCompound)
 }
 export function getShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<ShowStyleCompound>): unknown {
-	let blueprintConfigMap:
-		| Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>>
-		| undefined = showStyleCompound.blueprintId
-		? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId)
-		: new Map()
+	let blueprintConfigMap: Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>> | undefined =
+		showStyleCompound.blueprintId ? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId) : new Map()
 	if (!blueprintConfigMap) {
 		blueprintConfigMap = new Map()
 		showStyleBlueprintConfigCache.set(showStyleCompound.blueprintId, blueprintConfigMap)

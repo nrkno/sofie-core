@@ -62,16 +62,15 @@ function transformedAdLibActionToAction(transformed: TransformedAdLibAction): Ad
 }
 
 // create a temporary collection to store changes to the AdLib Actions
-const LocalActionItems: TransformedCollection<TransformedAdLibAction, TransformedAdLibAction> = createMongoCollection(
-	null
-)
+const LocalActionItems: TransformedCollection<TransformedAdLibAction, TransformedAdLibAction> =
+	createMongoCollection(null)
 
 export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
-	let piece = RundownUtils.isPieceInstance(props.piece)
+	const piece = RundownUtils.isPieceInstance(props.piece)
 		? (props.piece.instance.piece as Piece)
 		: (props.piece as AdLibPieceUi)
 
-	let action = (piece as AdLibPieceUi).adlibAction
+	const action = (piece as AdLibPieceUi).adlibAction
 
 	return {
 		targetAction: action ? LocalActionItems.findOne(action._id) : undefined,
@@ -149,11 +148,11 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		}
 
 		getActionItem() {
-			let piece = RundownUtils.isPieceInstance(this.props.piece)
+			const piece = RundownUtils.isPieceInstance(this.props.piece)
 				? (this.props.piece.instance.piece as Piece)
 				: (this.props.piece as AdLibPieceUi)
 
-			let action = (piece as AdLibPieceUi).adlibAction
+			const action = (piece as AdLibPieceUi).adlibAction
 
 			return action
 		}
@@ -186,7 +185,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		}
 
 		onRevealSelectedItem = () => {
-			let piece = RundownUtils.isPieceInstance(this.props.piece)
+			const piece = RundownUtils.isPieceInstance(this.props.piece)
 				? (this.props.piece.instance.piece as Piece)
 				: (this.props.piece as AdLibPieceUi)
 

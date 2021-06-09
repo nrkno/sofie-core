@@ -2,8 +2,6 @@ import * as React from 'react'
 import { PieceGeneric } from '../../../../lib/collections/Pieces'
 import { SplitsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 
-// @todo: use colours from the scss
-// @todo: split can use any source (rather than cam + live)
 export default class SplitInputIcon extends React.Component<{
 	abbreviation?: string
 	piece?: PieceGeneric
@@ -11,7 +9,7 @@ export default class SplitInputIcon extends React.Component<{
 }> {
 	getCameraLabel(piece: PieceGeneric | undefined) {
 		if (piece && piece.content) {
-			let c = piece.content as SplitsContent
+			const c = piece.content as SplitsContent
 			const camera = c.boxSourceConfiguration.find((i) => i.type === SourceLayerType.CAMERA)
 			if (camera && camera.studioLabel) {
 				const label = camera.studioLabel.match(/([a-zA-Z]+)?(\d+)/)
@@ -45,7 +43,7 @@ export default class SplitInputIcon extends React.Component<{
 
 	getLeftSourceType(piece: PieceGeneric | undefined): string {
 		if (piece && piece.content) {
-			let c = piece.content as SplitsContent
+			const c = piece.content as SplitsContent
 			const left = (c.boxSourceConfiguration && c.boxSourceConfiguration[0])?.type || SourceLayerType.CAMERA
 			return this.getSourceType(left)
 		}
@@ -54,7 +52,7 @@ export default class SplitInputIcon extends React.Component<{
 
 	getRightSourceType(piece: PieceGeneric | undefined): string {
 		if (piece && piece.content) {
-			let c = piece.content as SplitsContent
+			const c = piece.content as SplitsContent
 			const right = (c.boxSourceConfiguration && c.boxSourceConfiguration[1])?.type || SourceLayerType.REMOTE
 			const sourceType = this.getSourceType(right)
 			return sourceType + (this.getLeftSourceType(piece) === sourceType ? ' second' : '')
@@ -89,6 +87,7 @@ export default class SplitInputIcon extends React.Component<{
 							textShadow: '0 2px 9px rgba(0, 0, 0, 0.5)',
 						}}
 						xmlSpace="preserve"
+						className="label"
 					>
 						<tspan
 							x="63.25"

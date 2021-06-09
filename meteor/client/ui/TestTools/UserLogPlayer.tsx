@@ -71,7 +71,7 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 		}
 		updateSubscription() {
 			if (this.props.match && this.props.match.params) {
-				let h = this.state.dateFrom + '_' + this.state.dateTo + '_' + this.props.match.params.rundownPlaylistId
+				const h = this.state.dateFrom + '_' + this.state.dateTo + '_' + this.props.match.params.rundownPlaylistId
 				if (h !== this._currentsub) {
 					this._currentsub = h
 					if (this._sub) {

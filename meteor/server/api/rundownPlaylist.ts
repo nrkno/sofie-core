@@ -228,7 +228,7 @@ export function updateRundownsInPlaylist(
 	rundownCollection: DbCacheWriteCollection<Rundown, DBRundown>
 ) {
 	let maxRank: number = Number.NEGATIVE_INFINITY
-	let unrankedRundowns: DBRundown[] = []
+	const unrankedRundowns: DBRundown[] = []
 
 	for (const rundown of rundownCollection.findFetch({})) {
 		const rundownRank = rundownRanks[unprotectString(rundown._id)]
@@ -379,7 +379,7 @@ export function moveRundownIntoPlaylist(
 						const rundownAfter: Rundown | undefined =
 							rundownIdAfter && rundownsCollection.findOne(rundownIdAfter)
 
-						let newRank: number | undefined = getRank(rundownBefore, rundownAfter)
+						const newRank: number | undefined = getRank(rundownBefore, rundownAfter)
 
 						if (newRank === undefined) throw new Meteor.Error(500, `newRank is undefined`)
 

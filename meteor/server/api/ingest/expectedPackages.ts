@@ -282,16 +282,14 @@ export function updateBaselineExpectedPackagesOnRundown(
 		{
 			fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
 		},
-		bases.map(
-			(item): ExpectedPackageDBFromRundownBaselineObjects => {
-				return {
-					...item,
-					fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
-					rundownId: cache.RundownId,
-					pieceId: null,
-				}
+		bases.map((item): ExpectedPackageDBFromRundownBaselineObjects => {
+			return {
+				...item,
+				fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
+				rundownId: cache.RundownId,
+				pieceId: null,
 			}
-		)
+		})
 	)
 }
 
@@ -310,15 +308,13 @@ export function updateBaselineExpectedPackagesOnStudio(
 				studioId: cache.Studio.doc._id,
 				fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
 			},
-			bases.map(
-				(item): ExpectedPackageDBFromStudioBaselineObjects => {
-					return {
-						...item,
-						fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
-						pieceId: null,
-					}
+			bases.map((item): ExpectedPackageDBFromStudioBaselineObjects => {
+				return {
+					...item,
+					fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
+					pieceId: null,
 				}
-			)
+			})
 		)
 	})
 }

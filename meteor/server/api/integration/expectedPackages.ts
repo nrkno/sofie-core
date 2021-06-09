@@ -10,11 +10,12 @@ import {
 	ExpectedPackageWorkStatuses,
 	ExpectedPackageWorkStatusId,
 } from '../../../lib/collections/ExpectedPackageWorkStatuses'
-import { getCurrentTime, literal } from '../../../lib/lib'
+import { assertNever, getCurrentTime, literal, waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatuses,
 	PackageContainerPackageStatusDB,
+	PackageContainerPackageId,
 } from '../../../lib/collections/PackageContainerPackageStatus'
 import {
 	getPackageInfoId,
@@ -23,93 +24,118 @@ import {
 	PackageInfoDBType,
 	PackageInfos,
 } from '../../../lib/collections/PackageInfos'
+import { BulkWriteOperation } from 'mongodb'
+import { asyncCollectionBulkWrite, asyncCollectionFindOne, asyncCollectionRemove } from '../../lib/database'
 
 export namespace PackageManagerIntegration {
-	export function insertExpectedPackageWorkStatus(
+	export function updateExpectedPackageWorkStatuses(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId,
-		workStatus0: ExpectedPackageStatusAPI.WorkStatus
+		changes: (
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'delete'
+			  }
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'insert'
+					status: ExpectedPackageStatusAPI.WorkStatus
+			  }
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'update'
+					status: Partial<ExpectedPackageStatusAPI.WorkStatus>
+			  }
+		)[]
 	): void {
 		type FromPackage = Omit<ExpectedPackageStatusAPI.WorkBaseInfoFromPackage, 'id'> & { id: ExpectedPackageId }
-		const workStatus = (workStatus0 as any) as Omit<ExpectedPackageStatusAPI.WorkStatus, 'fromPackages'> & {
-			fromPackages: FromPackage[]
-		}
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 
-		check(workStatus.fromPackages, Array)
-		const fromPackageIds = workStatus.fromPackages.map((p) => p.id)
-		const expPackage = ExpectedPackages.findOne({ _id: { $in: fromPackageIds } })
-		if (!expPackage) throw new Meteor.Error(404, `ExpectedPackages "${fromPackageIds}" not found`)
+		const bulkChanges: BulkWriteOperation<ExpectedPackageWorkStatus>[] = []
+		const removedIds: ExpectedPackageWorkStatusId[] = []
 
-		const doc: ExpectedPackageWorkStatus = {
-			...workStatus,
+		const ps: Promise<void>[] = []
+		for (const change of changes) {
+			check(change.id, String)
+			check(change, Object)
 
-			_id: workStatusId,
-			studioId: expPackage.studioId,
-			// rundownId: expPackage.rundownId,
-			// pieceId: expPackage.pieceId,
-			deviceId: peripheralDevice._id,
+			if (change.type === 'delete') {
+				removedIds.push(change.id)
+			} else {
+				const workStatus = change.status as any as Omit<ExpectedPackageStatusAPI.WorkStatus, 'fromPackages'> & {
+					fromPackages: FromPackage[]
+				}
 
-			modified: getCurrentTime(),
+				if (change.type === 'update') {
+					// Partial update only:
+					bulkChanges.push({
+						updateOne: {
+							filter: {
+								_id: change.id,
+							},
+							update: {
+								$set: {
+									...workStatus,
+									modified: getCurrentTime(),
+								},
+							},
+						},
+					})
+				} else if (change.type === 'insert') {
+					// For inserts, we need to look up the ExpectedPackage in order to put it in the right studio:
+					check(workStatus.fromPackages, Array)
+					const fromPackageIds = workStatus.fromPackages.map((p) => p.id)
+					if (fromPackageIds.length) {
+						ps.push(
+							asyncCollectionFindOne(ExpectedPackages, { _id: { $in: fromPackageIds } }).then(
+								(expPackage) => {
+									if (!expPackage)
+										throw new Meteor.Error(404, `ExpectedPackages "${fromPackageIds}" not found`)
+
+									const doc: ExpectedPackageWorkStatus = {
+										...workStatus,
+
+										_id: change.id,
+										studioId: expPackage.studioId,
+										deviceId: peripheralDevice._id,
+
+										modified: getCurrentTime(),
+									}
+									bulkChanges.push({
+										replaceOne: {
+											filter: {
+												_id: change.id,
+											},
+											replacement: doc,
+											upsert: true,
+										},
+									})
+								}
+							)
+						)
+					}
+				} else {
+					assertNever(change)
+				}
+			}
 		}
-		ExpectedPackageWorkStatuses.upsert(workStatusId, { $set: doc })
-	}
-	/**
-	 * Update ExpectedPackageWorkStatus
-	 * Returns true if update successful, false if the document to update isn't found (ie an insert should then be sent as well)
-	 */
-	export function updateExpectedPackageWorkStatus(
-		context: MethodContext,
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId,
-		workStatus0: Partial<ExpectedPackageStatusAPI.WorkStatus>
-	): boolean {
-		type FromPackage = Omit<ExpectedPackageStatusAPI.WorkBaseInfoFromPackage, 'id'> & { id: ExpectedPackageId }
-		const workStatus = (workStatus0 as any) as Omit<
-			Partial<ExpectedPackageStatusAPI.WorkStatus>,
-			'fromPackages'
-		> & {
-			fromPackages?: FromPackage[]
+		if (removedIds.length) {
+			bulkChanges.push({
+				deleteMany: {
+					filter: {
+						_id: { $in: removedIds as any },
+					},
+				},
+			})
 		}
-
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		if (!peripheralDevice.studioId)
-			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
-
-		check(workStatusId, String)
-		check(workStatus, Object)
-
-		// Update progress only:
-
-		const updateCount = ExpectedPackageWorkStatuses.update(workStatusId, {
-			$set: {
-				...workStatus,
-				modified: getCurrentTime(),
-			},
-		})
-		if (updateCount === 0) return false // No document found, insertExpectedPackageStatus should be called by the device
-		return true
+		waitForPromiseAll(ps)
+		waitForPromise(asyncCollectionBulkWrite(ExpectedPackageWorkStatuses, bulkChanges))
 	}
-	export function removeExpectedPackageWorkStatus(
-		context: MethodContext,
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		workStatusId: ExpectedPackageWorkStatusId
-	): void {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		check(workStatusId, String)
 
-		ExpectedPackageWorkStatuses.remove({
-			_id: workStatusId,
-			deviceId: peripheralDevice._id,
-		})
-	}
 	export function removeAllExpectedPackageWorkStatusOfDevice(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
@@ -122,48 +148,74 @@ export namespace PackageManagerIntegration {
 		})
 	}
 
-	export function updatePackageContainerPackageStatus(
+	export function updatePackageContainerPackageStatuses(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		containerId: string,
-		packageId: string,
-		packageStatus: ExpectedPackageStatusAPI.PackageContainerPackageStatus | null
-	): void {
+		changes: (
+			| {
+					containerId: string
+					packageId: string
+					type: 'delete'
+			  }
+			| {
+					containerId: string
+					packageId: string
+					type: 'update'
+					status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
+			  }
+		)[]
+	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
-		check(containerId, String)
-		check(packageId, String)
 
-		const id = getPackageContainerPackageId(peripheralDevice.studioId, containerId, packageId)
+		const studioId = peripheralDevice.studioId
 
-		if (packageStatus) {
-			const updateCount = PackageContainerPackageStatuses.update(id, {
-				$set: {
-					status: packageStatus,
-					modified: getCurrentTime(),
-				},
-			})
-			if (updateCount === 0) {
-				// The PackageContainerStatus doesn't exist
-				// Create it on the fly:
+		const removedIds: PackageContainerPackageId[] = []
+		const ps: Promise<any>[] = []
+		for (const change of changes) {
+			check(change.containerId, String)
+			check(change.packageId, String)
 
-				PackageContainerPackageStatuses.upsert(id, {
-					$set: literal<PackageContainerPackageStatusDB>({
-						_id: id,
-						studioId: peripheralDevice.studioId,
-						containerId: containerId,
-						packageId: packageId,
-						status: packageStatus,
-						modified: getCurrentTime(),
-					}),
-				})
+			const id = getPackageContainerPackageId(peripheralDevice.studioId, change.containerId, change.packageId)
+
+			if (change.type === 'delete') {
+				removedIds.push(id)
+			} else if (change.type === 'update') {
+				ps.push(
+					Promise.resolve().then(() => {
+						const updateCount = PackageContainerPackageStatuses.update(id, {
+							$set: {
+								status: change.status,
+								modified: getCurrentTime(),
+							},
+						})
+						if (updateCount === 0) {
+							// The PackageContainerStatus doesn't exist
+							// Create it on the fly:
+
+							PackageContainerPackageStatuses.upsert(id, {
+								$set: literal<PackageContainerPackageStatusDB>({
+									_id: id,
+									studioId: studioId,
+									containerId: change.containerId,
+									packageId: change.packageId,
+									status: change.status,
+									modified: getCurrentTime(),
+								}),
+							})
+						}
+					})
+				)
+			} else {
+				assertNever(change)
 			}
-		} else {
-			// removed
-			PackageContainerPackageStatuses.remove(id)
 		}
+		if (removedIds.length) {
+			ps.push(asyncCollectionRemove(PackageContainerPackageStatuses, { _id: { $in: removedIds } }))
+		}
+		waitForPromiseAll(ps)
 	}
 	export function fetchPackageInfoMetadata(
 		context: MethodContext,

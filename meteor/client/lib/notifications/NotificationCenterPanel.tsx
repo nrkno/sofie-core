@@ -278,8 +278,11 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		}
 
 		UNSAFE_componentWillUpdate() {
-			Array.from(document.querySelectorAll('.notification-pop-up.is-highlighted')).forEach((element: HTMLElement) => {
-				element.style.animationName = ''
+			Array.from(document.querySelectorAll('.notification-pop-up.is-highlighted')).forEach((element0: Element) => {
+				const element = element0 as HTMLElement
+				if ('style' in element) {
+					element.style.animationName = ''
+				}
 			})
 		}
 

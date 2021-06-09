@@ -14,7 +14,7 @@ import { withTranslation } from 'react-i18next'
 interface IUserActionsListProps {
 	logItems: UserActionsLogItem[]
 	onItemClick?: (item: UserActionsLogItem) => void
-	renderButtons?: (item: UserActionsLogItem) => React.Component
+	renderButtons?: (item: UserActionsLogItem) => React.ReactElement
 }
 
 export const UserActionsList = withTranslation()(
@@ -129,7 +129,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 			this.updateSubscription()
 		}
 		updateSubscription() {
-			let h = this.state.dateFrom + '_' + this.state.dateTo
+			const h = this.state.dateFrom + '_' + this.state.dateTo
 			if (h !== this._currentsub) {
 				this._currentsub = h
 				if (this._sub) {

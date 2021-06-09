@@ -373,7 +373,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const rundownExternalId = 'fakeId'
 		expect(Rundowns.findOne({ externalId: rundownExternalId })).toBeFalsy()
 
-		let part = Parts.findOne() as Part
+		const part = Parts.findOne() as Part
 		expect(part).toBeTruthy()
 		expect(part.status).not.toEqual(newStatus.toString())
 
@@ -1340,5 +1340,79 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(playlist2.name).toEqual(rundown2.name)
 		expect(playlist2.name).not.toEqual(playlist.name)
+	})
+
+	testInFiber('mosRoStoryReplace: Combine into start of segment', async () => {
+		await resetOrphanedRundown()
+
+		const mosRO = mockRO.roCreate()
+		// regenerate the rundown
+		await MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mosRO)
+
+		const playlist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(playlist).toBeTruthy()
+		const rundowns = playlist.getRundowns()
+		expect(rundowns).toHaveLength(1)
+		const rundown = rundowns[0]
+		expect(rundown.orphaned).toBeFalsy()
+		expect(rundown.getSegments()).toHaveLength(4)
+
+		// insert a part after segment1
+		const newPartData = mockRO.newItem('ro1;s2a;newPart1', 'SEGMENT2pre;new1')
+		const action = literal<MOS.IMOSStoryAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+			StoryID: new MOS.MosString128('ro1;s2;p1'),
+		})
+		await MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData])
+
+		{
+			const segments = rundown.getSegments()
+			expect(segments).toHaveLength(5)
+
+			// Make sure we inserted, not replaced
+			const firstSegment = segments[0]
+			expect(firstSegment).toBeTruthy()
+			const firstSegmentParts = firstSegment.getParts()
+			expect(firstSegmentParts).toHaveLength(3)
+
+			const refSegment = segments[2]
+			expect(refSegment).toBeTruthy()
+			const refSegmentParts = refSegment.getParts()
+			expect(refSegmentParts).toHaveLength(2)
+
+			// Check the insert was ok
+			const newSegment = segments[1]
+			expect(newSegment).toBeTruthy()
+			const newSegmentParts = newSegment.getParts()
+			expect(newSegmentParts).toHaveLength(1)
+			expect(newSegmentParts[0].externalId).toBe('ro1;s2a;newPart1')
+		}
+
+		// Replace the story with itself, but different slug
+		const replacementPartData = mockRO.newItem('ro1;s2a;newPart1', 'SEGMENT2;new1')
+		const replaceAction = literal<MOS.IMOSStoryAction>({
+			RunningOrderID: new MOS.MosString128(rundown.externalId),
+			StoryID: replacementPartData.ID,
+		})
+		await MeteorCall.peripheralDevice.mosRoStoryReplace(device._id, device.token, replaceAction, [
+			replacementPartData,
+		])
+
+		{
+			const segments = rundown.getSegments()
+			expect(segments).toHaveLength(4)
+
+			// Make sure first segment is unchanged
+			const firstSegment = segments[0]
+			expect(firstSegment).toBeTruthy()
+			const firstSegmentParts = firstSegment.getParts()
+			expect(firstSegmentParts).toHaveLength(3)
+
+			// Make sure segment combiend ok
+			const refSegment = segments[1]
+			expect(refSegment).toBeTruthy()
+			const refSegmentParts = refSegment.getParts()
+			expect(refSegmentParts).toHaveLength(3)
+		}
 	})
 })

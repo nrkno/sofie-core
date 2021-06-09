@@ -53,7 +53,7 @@ import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
-import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
 import {
 	RONotificationEvent,
@@ -583,7 +583,7 @@ const RundownHeader = withTranslation()(
 			}
 		}
 		componentDidMount() {
-			let preventDefault = (e: Event) => {
+			const preventDefault = (e: Event) => {
 				e.preventDefault()
 				e.stopImmediatePropagation()
 				e.stopPropagation()
@@ -1014,7 +1014,7 @@ const RundownHeader = withTranslation()(
 				const onSuccess = () => {
 					if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 				}
-				let doActivateRehersal = () => {
+				const doActivateRehersal = () => {
 					doUserAction(
 						t,
 						e,
@@ -1120,7 +1120,7 @@ const RundownHeader = withTranslation()(
 			const { t } = this.props
 			if (e.persist) e.persist()
 
-			let doReset = () => {
+			const doReset = () => {
 				this.rewindSegments() // Do a rewind right away
 				doUserAction(
 					t,
@@ -1395,7 +1395,7 @@ interface IState {
 	isInspectorShelfExpanded: boolean
 	isClipTrimmerOpen: boolean
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
-	rundownLayout: RundownLayout | undefined
+	rundownLayout: RundownLayoutBase | undefined
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
@@ -1412,6 +1412,7 @@ interface ITrackedProps {
 	rundowns: Rundown[]
 	playlist?: RundownPlaylist
 	matchedSegments: MatchedSegment[]
+	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
@@ -1454,6 +1455,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		? undefined
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
 
+	const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
+	for (const rundown of rundowns) {
+		rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
+	}
+
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
 		rundownPlaylistId: playlistId,
@@ -1478,6 +1484,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						),
 					}))
 			: [],
+		rundownsToShowstyles,
 		playlist,
 		studio: studio,
 		showStyleBase: rundowns.length > 0 ? ShowStyleBases.findOne(rundowns[0].showStyleBaseId) : undefined,
@@ -1594,7 +1601,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		static getDerivedStateFromProps(props: Translated<IProps & ITrackedProps>) {
+		static getDerivedStateFromProps(props: Translated<IProps & ITrackedProps>): Partial<IState> {
 			let selectedLayout: RundownLayoutBase | undefined = undefined
 
 			if (props.rundownLayouts) {
@@ -1636,7 +1643,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		componentDidMount() {
-			let playlistId = this.props.rundownPlaylistId
+			const playlistId = this.props.rundownPlaylistId
 
 			this.subscribe(PubSub.rundownPlaylists, {
 				_id: playlistId,
@@ -1645,7 +1652,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				playlistId,
 			})
 			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId, {
+				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						_id: 1,
 						studioId: 1,
@@ -1664,7 +1671,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 
 			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId, {
+				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						_id: 1,
 					},
@@ -1728,7 +1735,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			})
 			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId, {
+				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						currentPartInstanceId: 1,
 						nextPartInstanceId: 1,
@@ -1767,7 +1774,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			})
 			this.autorun(() => {
-				let subsReady = this.subscriptionsReady()
+				const subsReady = this.subscriptionsReady()
 				if (subsReady !== this.state.subsReady) {
 					this.setState({
 						subsReady: subsReady,
@@ -1777,7 +1784,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			document.body.classList.add('dark', 'vertical-overflow-only')
 
-			let preventDefault = (e) => {
+			const preventDefault = (e) => {
 				e.preventDefault()
 				e.stopImmediatePropagation()
 				e.stopPropagation()
@@ -2102,7 +2109,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 		}
 
-		onSetNext = (part: Part, e: any, offset?: number, take?: boolean) => {
+		onSetNext = (part: Part | undefined, e: any, offset?: number, take?: boolean) => {
 			const { t } = this.props
 			if (this.state.studioMode && part && part._id && this.props.playlist) {
 				const playlistId = this.props.playlist._id
@@ -2175,7 +2182,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				if (!segmentId) {
 					if (e.sourceLocator.partId) {
-						let part = Parts.findOne(e.sourceLocator.partId)
+						const part = Parts.findOne(e.sourceLocator.partId)
 						if (part) {
 							segmentId = part.segmentId
 						}
@@ -2232,71 +2239,78 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		renderSegments() {
 			if (this.props.matchedSegments) {
 				let globalIndex = 0
-				return this.props.matchedSegments.map((rundownAndSegments, rundownIndex, rundownArray) => (
-					<React.Fragment key={unprotectString(rundownAndSegments.rundown._id)}>
-						{this.props.matchedSegments.length > 1 && (
-							<RundownDividerHeader
-								key={`rundown_${rundownAndSegments.rundown._id}`}
-								rundown={rundownAndSegments.rundown}
-								playlist={this.props.playlist!}
-							/>
-						)}
-						{rundownAndSegments.segments.map((segment, segmentIndex, segmentArray) => {
-							if (this.props.studio && this.props.playlist && this.props.showStyleBase) {
-								return (
-									<ErrorBoundary key={unprotectString(segment._id)}>
-										<VirtualElement
-											id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-											margin={'100% 0px 100% 0px'}
-											initialShow={globalIndex++ < window.innerHeight / 260}
-											placeholderHeight={260}
-											placeholderClassName="placeholder-shimmer-element segment-timeline-placeholder"
-											width="auto"
-										>
-											<SegmentTimelineContainer
+				const rundowns = this.props.matchedSegments.map((m) => m.rundown._id)
+				return this.props.matchedSegments.map((rundownAndSegments, rundownIndex, rundownArray) => {
+					const rundownIdsBefore = rundowns.slice(0, rundownIndex)
+					return (
+						<React.Fragment key={unprotectString(rundownAndSegments.rundown._id)}>
+							{this.props.matchedSegments.length > 1 && (
+								<RundownDividerHeader
+									key={`rundown_${rundownAndSegments.rundown._id}`}
+									rundown={rundownAndSegments.rundown}
+									playlist={this.props.playlist!}
+								/>
+							)}
+							{rundownAndSegments.segments.map((segment, segmentIndex, segmentArray) => {
+								if (this.props.studio && this.props.playlist && this.props.showStyleBase) {
+									return (
+										<ErrorBoundary key={unprotectString(segment._id)}>
+											<VirtualElement
 												id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-												studio={this.props.studio}
-												showStyleBase={this.props.showStyleBase}
-												followLiveSegments={this.state.followLiveSegments}
-												rundownId={rundownAndSegments.rundown._id}
-												segmentId={segment._id}
-												playlist={this.props.playlist}
-												timeScale={this.state.timeScale}
-												onContextMenu={this.onContextMenu}
-												onSegmentScroll={this.onSegmentScroll}
-												segmentsIdsBefore={rundownAndSegments.segmentIdsBeforeEachSegment[segmentIndex]}
-												isLastSegment={
-													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
-												}
-												onPieceClick={this.onSelectPiece}
-												onPieceDoubleClick={this.onPieceDoubleClick}
-												onHeaderNoteClick={this.onHeaderNoteClick}
-												ownCurrentPartInstance={
-													// feed the currentPartInstance into the SegmentTimelineContainer component, if the currentPartInstance
-													// is a part of the segment
-													(this.props.currentPartInstance &&
-														this.props.currentPartInstance.segmentId === segment._id) ||
-													// or the nextPartInstance is a part of this segment, and the currentPartInstance is autoNext
-													(this.props.nextPartInstance &&
-														this.props.nextPartInstance.segmentId === segment._id &&
-														this.props.currentPartInstance &&
-														this.props.currentPartInstance.part.autoNext)
-														? this.props.currentPartInstance
-														: undefined
-												}
-												ownNextPartInstance={
-													this.props.nextPartInstance && this.props.nextPartInstance.segmentId === segment._id
-														? this.props.nextPartInstance
-														: undefined
-												}
-											/>
-										</VirtualElement>
-									</ErrorBoundary>
-								)
-							}
-						})}
-					</React.Fragment>
-				))
+												margin={'100% 0px 100% 0px'}
+												initialShow={globalIndex++ < window.innerHeight / 260}
+												placeholderHeight={260}
+												placeholderClassName="placeholder-shimmer-element segment-timeline-placeholder"
+												width="auto"
+											>
+												<SegmentTimelineContainer
+													id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+													studio={this.props.studio}
+													showStyleBase={this.props.showStyleBase}
+													followLiveSegments={this.state.followLiveSegments}
+													rundownId={rundownAndSegments.rundown._id}
+													segmentId={segment._id}
+													playlist={this.props.playlist}
+													rundown={rundownAndSegments.rundown}
+													timeScale={this.state.timeScale}
+													onContextMenu={this.onContextMenu}
+													onSegmentScroll={this.onSegmentScroll}
+													segmentsIdsBefore={rundownAndSegments.segmentIdsBeforeEachSegment[segmentIndex]}
+													rundownIdsBefore={rundownIdsBefore}
+													rundownsToShowstyles={this.props.rundownsToShowstyles}
+													isLastSegment={
+														rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
+													}
+													onPieceClick={this.onSelectPiece}
+													onPieceDoubleClick={this.onPieceDoubleClick}
+													onHeaderNoteClick={this.onHeaderNoteClick}
+													ownCurrentPartInstance={
+														// feed the currentPartInstance into the SegmentTimelineContainer component, if the currentPartInstance
+														// is a part of the segment
+														(this.props.currentPartInstance &&
+															this.props.currentPartInstance.segmentId === segment._id) ||
+														// or the nextPartInstance is a part of this segment, and the currentPartInstance is autoNext
+														(this.props.nextPartInstance &&
+															this.props.nextPartInstance.segmentId === segment._id &&
+															this.props.currentPartInstance &&
+															this.props.currentPartInstance.part.autoNext)
+															? this.props.currentPartInstance
+															: undefined
+													}
+													ownNextPartInstance={
+														this.props.nextPartInstance && this.props.nextPartInstance.segmentId === segment._id
+															? this.props.nextPartInstance
+															: undefined
+													}
+												/>
+											</VirtualElement>
+										</ErrorBoundary>
+									)
+								}
+							})}
+						</React.Fragment>
+					)
+				})
 			} else {
 				return <div></div>
 			}
@@ -2837,7 +2851,7 @@ function handleRundownPlaylistReloadResponse(t: i18next.TFunction, result: Reloa
 		}
 	}
 
-	let actionsTaken: RundownReloadResponseUserAction[] = []
+	const actionsTaken: RundownReloadResponseUserAction[] = []
 	function onActionTaken(action: RundownReloadResponseUserAction): void {
 		actionsTaken.push(action)
 		if (actionsTaken.length === rundownsInNeedOfHandling.length) {

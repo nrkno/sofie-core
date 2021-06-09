@@ -51,8 +51,8 @@ function PLAYLIST_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownP
 describe('Test ingest actions for rundowns and segments', () => {
 	let device: PeripheralDevice
 	let device2: PeripheralDevice
-	let externalId = 'abcde'
-	let segExternalId = 'zyxwv'
+	const externalId = 'abcde'
+	const segExternalId = 'zyxwv'
 	beforeAll(() => {
 		const env = setupDefaultStudioEnvironment()
 		device = env.ingestDevice
@@ -1156,7 +1156,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		expect(Parts.find({ rundownId: rundown._id, segmentId: segment._id }).count()).toBe(2)
 
-		let part = Parts.findOne({ externalId: 'party' }) as Part
+		const part = Parts.findOne({ externalId: 'party' }) as Part
 		expect(part).toMatchObject({
 			externalId: ingestPart.externalId,
 			title: ingestPart.name,
@@ -1185,7 +1185,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		expect(Parts.find({ rundownId: rundown._id, segmentId: segment._id }).count()).toBe(2)
 
-		let part = Parts.findOne({ externalId: 'party' }) as Part
+		const part = Parts.findOne({ externalId: 'party' }) as Part
 		expect(part).toMatchObject({
 			externalId: ingestPart.externalId,
 			title: ingestPart.name,

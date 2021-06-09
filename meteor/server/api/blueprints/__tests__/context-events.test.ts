@@ -171,7 +171,7 @@ describe('Test blueprint api context', () => {
 			)
 		}
 
-		test('getFirstPartInstanceInRundown ', async () => {
+		test('getFirstPartInstanceInRundown', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -193,7 +193,7 @@ describe('Test blueprint api context', () => {
 			expect(() => context2.getFirstPartInstanceInRundown()).toThrowError('No PartInstances found for Rundown')
 		})
 
-		test('getPartInstancesInSegmentPlayoutId ', async () => {
+		test('getPartInstancesInSegmentPlayoutId', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -222,7 +222,7 @@ describe('Test blueprint api context', () => {
 			expect(context.getPartInstancesInSegmentPlayoutId(unprotectPartInstance(partInstance2))).toHaveLength(1)
 		})
 
-		test('getPieceInstances ', async () => {
+		test('getPieceInstances', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()

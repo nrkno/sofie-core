@@ -85,7 +85,7 @@ function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource:
 
 	index.push(routeType + ' ' + indexResource)
 	route.route(resource, (params: Params, req: IncomingMessage, res: ServerResponse, next) => {
-		let p: any[] = []
+		const p: any[] = []
 		for (let i = 0; i < 20; i++) {
 			if (_.has(params, 'param' + i)) {
 				p.push(params['param' + i])
@@ -94,7 +94,7 @@ function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource:
 			}
 		}
 		try {
-			let p: any[] = []
+			const p: any[] = []
 			for (let i = 0; i < 20; i++) {
 				if (_.has(params, 'param' + i)) {
 					p.push(params['param' + i])

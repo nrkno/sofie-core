@@ -91,11 +91,9 @@ class RundownViewNotifier extends WithManagedTracker {
 		this._unsentExternalMessageStatusDep = new Tracker.Dependency()
 		this._notesDep = new Tracker.Dependency()
 
-		this._notifier = NotificationCenter.registerNotifier(
-			(): NotificationList => {
-				return this._notificationList
-			}
-		)
+		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
+			return this._notificationList
+		})
 
 		this.autorun(() => {
 			if (playlistId) {
@@ -175,7 +173,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 			if (playlist && rundowns) {
 				rundowns.forEach((rundown) => {
-					let unsyncedId = rundown._id + '_unsynced'
+					const unsyncedId = rundown._id + '_unsynced'
 					let unsyncedNotification: Notification | undefined = undefined
 
 					if (rundown.orphaned) {
@@ -238,7 +236,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						this._rundownStatusDep.changed()
 					}
 
-					let rundownNotesId = rundown._id + '_ronotes_'
+					const rundownNotesId = rundown._id + '_ronotes_'
 					if (rundown.notes) {
 						rundown.notes.forEach((note) => {
 							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.message + '_' + note.type
@@ -418,6 +416,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		this.autorun(() => {
 			const newNoteIds: Array<string> = []
 			const combined = fullNotes.get().concat(localNotes.get())
+
 			combined.forEach((item: TrackedNote) => {
 				const { origin, message, type: itemType, rank } = item
 				const { pieceId, partId, segmentId, rundownId, name, segmentName } = origin
@@ -426,7 +425,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 				const notificationId = `${translatedMessage}-${pieceId || partId || segmentId || rundownId}-${name}-${itemType}`
 
-				let newNotification = new Notification(
+				const newNotification = new Notification(
 					notificationId,
 					itemType === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
 					(
@@ -522,9 +521,9 @@ class RundownViewNotifier extends WithManagedTracker {
 			}, MEDIAOBJECTS_POLL_INTERVAL)
 		})
 		this.autorun((comp: Tracker.Computation) => {
+			const localStatus: IMediaObjectIssue[] = []
 			const pieces = rPieces.get()
 			pieces.forEach((piece) => {
-				const localStatus: IMediaObjectIssue[] = []
 				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === piece.sourceLayerId)
 				const part = Parts.findOne(piece.startPartId, {
 					fields: {
@@ -551,42 +550,40 @@ class RundownViewNotifier extends WithManagedTracker {
 							})
 						}
 						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
-						localStatus.push({
-							name: piece.name,
-							rundownId: part.rundownId,
-							pieceId: piece._id,
-							partId: part._id,
-							segmentId: segment._id,
-							segmentRank: segment._rank,
-							segmentName: segment.name,
-							partRank: part._rank,
-							status,
-							message,
-						})
+						if (status !== RundownAPI.PieceStatusCode.UNKNOWN || message) {
+							localStatus.push({
+								name: piece.name,
+								rundownId: part.rundownId,
+								pieceId: piece._id,
+								partId: part._id,
+								segmentId: segment._id,
+								segmentRank: segment._rank,
+								segmentName: segment.name,
+								partRank: part._rank,
+								status,
+								message,
+							})
+						}
 					})
 				}
-				localMediaStatus.set(localStatus)
 			})
+
+			localMediaStatus.set(localStatus)
 		})
 		this.autorun(() => {
 			const allIssues = fullMediaStatus.get().concat(localMediaStatus.get())
 			const newPieceIds = _.unique(allIssues.map((item) => item.pieceId))
-
 			allIssues.forEach((issue) => {
 				const { status, message } = issue
 
 				let newNotification: Notification | undefined = undefined
-				if (
-					status !== RundownAPI.PieceStatusCode.OK &&
-					status !== RundownAPI.PieceStatusCode.UNKNOWN &&
-					status !== RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-				) {
+				if (status !== RundownAPI.PieceStatusCode.OK && status !== RundownAPI.PieceStatusCode.UNKNOWN) {
 					newNotification = new Notification(
 						issue.pieceId,
 						getNoticeLevelForPieceStatus(status) || NoticeLevel.WARNING,
 						(
 							<>
-								<h5>{`${issue.segmentName}${SEGMENT_DELIMITER}${issue.name}`}</h5>
+								<h5>{`${issue.segmentName}${issue.name ? SEGMENT_DELIMITER + issue.name : ''}`}</h5>
 								<div>{message || t('There is an unspecified problem with the source.')}</div>
 							</>
 						),
@@ -658,9 +655,8 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactiveQueueStatus(studioId: StudioId, playlistId: RundownPlaylistId) {
-		let reactiveUnsentMessageCount: ReactiveVar<number>
 		meteorSubscribe(PubSub.externalMessageQueue, { studioId: studioId, playlistId })
-		reactiveUnsentMessageCount = reactiveData.getUnsentExternalMessageCount(studioId, playlistId)
+		const reactiveUnsentMessageCount = reactiveData.getUnsentExternalMessageCount(studioId, playlistId)
 		this.autorun(() => {
 			if (reactiveUnsentMessageCount.get() > 0 && this._unsentExternalMessagesStatus === undefined) {
 				this._unsentExternalMessagesStatus = new Notification(
@@ -729,7 +725,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			})
 			.catch((err) => {
 				console.error(err)
-				let newNotification = new Notification(
+				const newNotification = new Notification(
 					'rundown_importVersions',
 					NoticeLevel.WARNING,
 					t('Unable to check the system configuration for changes'),

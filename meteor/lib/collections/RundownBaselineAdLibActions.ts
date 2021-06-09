@@ -10,10 +10,8 @@ export interface RundownBaselineAdLibAction extends AdLibActionCommon {
 	_id: RundownBaselineAdLibActionId
 }
 
-export const RundownBaselineAdLibActions = createMongoCollection<
-	RundownBaselineAdLibAction,
-	RundownBaselineAdLibAction
->('rundownBaselineAdLibActions')
+export const RundownBaselineAdLibActions =
+	createMongoCollection<RundownBaselineAdLibAction, RundownBaselineAdLibAction>('rundownBaselineAdLibActions')
 registerCollection('RundownBaselineAdLibActions', RundownBaselineAdLibActions)
 registerIndex(RundownBaselineAdLibActions, {
 	rundownId: 1,

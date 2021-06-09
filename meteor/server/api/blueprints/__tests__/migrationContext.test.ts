@@ -800,13 +800,13 @@ describe('Test blueprint migrationContext', () => {
 				expect(variantId).toEqual(ctx.getVariantId('variant2'))
 
 				initialVariants.push(
-					(literal<ShowStyleVariant>({
+					literal<ShowStyleVariant>({
 						_id: protectString(variantId),
 						showStyleBaseId: getShowStyle(ctx)._id,
 						name: 'test2',
 						blueprintConfig: {},
 						_rundownVersionHash: '',
-					}) as any) as IBlueprintShowStyleVariant
+					}) as any as IBlueprintShowStyleVariant
 				)
 				expect(ctx.getAllVariants()).toEqual(initialVariants)
 			})

@@ -104,7 +104,7 @@ export function getRoutedTimeline(
 ): TimelineObjGeneric[] {
 	const outputTimelineObjs: TimelineObjGeneric[] = []
 
-	for (let obj of inputTimelineObjs) {
+	for (const obj of inputTimelineObjs) {
 		let inputLayer = obj.layer + ''
 		if (obj.isLookahead && obj.lookaheadForLayer) {
 			// For lookahead objects, .layer doesn't point to any real layer

@@ -214,8 +214,8 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 			const frameTime = timestamp - this.lastFrameTime
 			const { infoElement, infoElementSize } = this.state
 			let { targetSpeedVector } = this.state
-			let { x, y } = this.position
-			let speedVector = this.speedVector
+			const { x, y } = this.position
+			const speedVector = this.speedVector
 			const windowWidth = window.innerWidth
 			const windowHeight = window.innerHeight
 			if (infoElement && infoElementSize.width && infoElementSize.height) {
