@@ -121,7 +121,7 @@ export const RundownTimingProvider = withTracker<
 		private temporaryPartInstances: Map<PartId, PartInstance> = new Map<PartId, PartInstance>()
 
 		private linearParts: Array<[PartId, number | null]> = []
-		private prevPartId: string = ''
+		private prevPartId: string | null = null
 		private lastTakeAt: number | undefined = undefined
 
 		// look at the comments on RundownTimingContext to understand what these do
