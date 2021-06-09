@@ -27,7 +27,7 @@ describe('codeControl rundown', () => {
 		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
 		expect(playlist).toBeTruthy()
 
-		let sync1 = (name: string, priority: PlayoutLockFunctionPriority) => {
+		const sync1 = (name: string, priority: PlayoutLockFunctionPriority) => {
 			return runPlayoutOperationWithLockFromStudioOperation(
 				'testRundownSyncFn',
 				{ _studioId: playlist.studioId },
@@ -37,7 +37,7 @@ describe('codeControl rundown', () => {
 			)
 		}
 
-		let res: any[] = []
+		const res: any[] = []
 		Meteor.setTimeout(() => {
 			res.push(sync1('ingest0', PlayoutLockFunctionPriority.MISC))
 		}, 10)

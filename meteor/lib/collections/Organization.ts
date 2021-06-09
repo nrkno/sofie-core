@@ -41,7 +41,6 @@ export interface UserRoles {
 
 export type Organization = DBOrganization // to be replaced by a class some time later?
 
-export const Organizations: TransformedCollection<Organization, DBOrganization> = createMongoCollection<DBOrganization>(
-	'organizations'
-)
+export const Organizations: TransformedCollection<Organization, DBOrganization> =
+	createMongoCollection<DBOrganization>('organizations')
 registerCollection('Organizations', Organizations)

@@ -15,9 +15,8 @@ export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
 	partId?: PartId
 }
 
-export const AdLibPieces: TransformedCollection<AdLibPiece, AdLibPiece> = createMongoCollection<AdLibPiece>(
-	'adLibPieces'
-)
+export const AdLibPieces: TransformedCollection<AdLibPiece, AdLibPiece> =
+	createMongoCollection<AdLibPiece>('adLibPieces')
 registerCollection('AdLibPieces', AdLibPieces)
 
 registerIndex(AdLibPieces, {

@@ -148,7 +148,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	renderGraphics(renderThumbnail?: boolean) {
-		const adLib = (this.props.piece as any) as AdLibPieceUi
+		const adLib = this.props.piece as any as AdLibPieceUi
 		const noraContent = adLib.content as NoraContent | undefined
 		return (
 			<>
@@ -174,7 +174,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	renderVTLiveSpeak(renderThumbnail?: boolean) {
 		let thumbnailUrl: string | undefined
 		let sourceDuration: number | undefined
-		const adLib = (this.props.piece as any) as AdLibPieceUi
+		const adLib = this.props.piece as any as AdLibPieceUi
 		if (this.props.piece.content) {
 			thumbnailUrl = this.getThumbnailUrl()
 			const vtContent = adLib.content as VTContent | undefined
@@ -420,7 +420,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				style={{
 					width: isList
 						? 'calc(100% - 8px)'
-						: !!this.props.widthScale
+						: this.props.widthScale
 						? //@ts-ignore: widthScale is in a weird state between a number and something else
 						  //		      because of the optional generic type argument
 						  (this.props.widthScale as number) * DEFAULT_BUTTON_WIDTH + 'em'

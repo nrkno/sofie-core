@@ -120,11 +120,8 @@ export async function fetchPiecesThatMayBeActiveForPart(
 		? Promise.resolve(unsavedIngestCache.Pieces.findFetch(thisPiecesQuery))
 		: asyncCollectionFindFetch(Pieces, thisPiecesQuery)
 
-	const {
-		partsBeforeThisInSegment,
-		segmentsBeforeThisInRundown,
-		rundownsBeforeThisInPlaylist,
-	} = getIdsBeforeThisPart(cache, part)
+	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown, rundownsBeforeThisInPlaylist } =
+		getIdsBeforeThisPart(cache, part)
 
 	const infinitePiecesQuery = buildPastInfinitePiecesForThisPartQuery(
 		part,
@@ -165,11 +162,8 @@ export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPl
 		const playlist = cache.Playlist.doc
 		if (!playlist.activationId) throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is not active`)
 
-		const {
-			partsBeforeThisInSegment,
-			segmentsBeforeThisInRundown,
-			rundownsBeforeThisInPlaylist,
-		} = getIdsBeforeThisPart(cache, nextPartInstance.part)
+		const { partsBeforeThisInSegment, segmentsBeforeThisInRundown, rundownsBeforeThisInPlaylist } =
+			getIdsBeforeThisPart(cache, nextPartInstance.part)
 
 		const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${currentPartInstance.rundownId}" not found!`)
@@ -237,11 +231,8 @@ export function getPieceInstancesForPart(
 	isTemporary: boolean
 ): PieceInstance[] {
 	const span = profiler.startSpan('getPieceInstancesForPart')
-	const {
-		partsBeforeThisInSegment,
-		segmentsBeforeThisInRundown,
-		rundownsBeforeThisInPlaylist,
-	} = getIdsBeforeThisPart(cache, part)
+	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown, rundownsBeforeThisInPlaylist } =
+		getIdsBeforeThisPart(cache, part)
 
 	const playlist = cache.Playlist.doc
 	if (!playlist.activationId) throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is not active`)

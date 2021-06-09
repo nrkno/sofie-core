@@ -26,7 +26,7 @@ export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: Protected
 		}
 	}
 
-	let observedChangesTimeouts = new Map<Tb['_id'], Timeout>()
+	const observedChangesTimeouts = new Map<Tb['_id'], Timeout>()
 
 	collection.find().observeChanges({
 		changed: (id: Tb['_id'], changedFields) => {
@@ -34,7 +34,7 @@ export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: Protected
 			delete changedFields[hashName]
 
 			if (_.keys(changedFields).length > 0) {
-				let data: Timeout | undefined = observedChangesTimeouts.get(id)
+				const data: Timeout | undefined = observedChangesTimeouts.get(id)
 				if (data !== undefined) {
 					// Already queued, so do nothing
 				} else {

@@ -267,7 +267,7 @@ const StudioMappings = withTranslation()(
 			return this.state.editedMappings.indexOf(layerId) >= 0
 		}
 		finishEditItem = (layerId: string) => {
-			let index = this.state.editedMappings.indexOf(layerId)
+			const index = this.state.editedMappings.indexOf(layerId)
 			if (index >= 0) {
 				this.state.editedMappings.splice(index, 1)
 				this.setState({
@@ -303,7 +303,7 @@ const StudioMappings = withTranslation()(
 			})
 		}
 		removeLayer = (mappingId: string) => {
-			let unsetObject = {}
+			const unsetObject = {}
 			unsetObject['mappings.' + mappingId] = ''
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
@@ -311,12 +311,12 @@ const StudioMappings = withTranslation()(
 		}
 		addNewLayer = () => {
 			// find free key name
-			let newLayerKeyName = 'newLayer'
+			const newLayerKeyName = 'newLayer'
 			let iter = 0
 			while ((this.props.studio.mappings || {})[newLayerKeyName + iter.toString()]) {
 				iter++
 			}
-			let setObject = {}
+			const setObject = {}
 			setObject['mappings.' + newLayerKeyName + iter.toString()] = {
 				device: TSR.DeviceType.CASPARCG,
 				deviceId: 'newDeviceId',
@@ -327,16 +327,16 @@ const StudioMappings = withTranslation()(
 			})
 		}
 		updateLayerId = (edit: EditAttributeBase, newValue: string) => {
-			let oldLayerId = edit.props.overrideDisplayValue
-			let newLayerId = newValue + ''
-			let layer = this.props.studio.mappings[oldLayerId]
+			const oldLayerId = edit.props.overrideDisplayValue
+			const newLayerId = newValue + ''
+			const layer = this.props.studio.mappings[oldLayerId]
 
 			if (this.props.studio.mappings[newLayerId]) {
 				throw new Meteor.Error(400, 'Layer "' + newLayerId + '" already exists')
 			}
 
-			let mSet = {}
-			let mUnset = {}
+			const mSet = {}
+			const mUnset = {}
 			mSet['mappings.' + newLayerId] = layer
 			mUnset['mappings.' + oldLayerId] = 1
 
@@ -359,7 +359,7 @@ const StudioMappings = withTranslation()(
 						{m
 							.filter((entry) => entry.includeInSummary)
 							.map((entry) => {
-								let summary = entry.name + ': '
+								const summary = entry.name + ': '
 
 								let mappingValue = entry.values && entry.values[mapping[entry.id]]
 								if (!mappingValue) {
@@ -596,7 +596,7 @@ const StudioRoutings = withTranslation()(
 			return this.state.editedItems.indexOf(routeSetId) >= 0
 		}
 		finishEditItem = (routeSetId: string) => {
-			let index = this.state.editedItems.indexOf(routeSetId)
+			const index = this.state.editedItems.indexOf(routeSetId)
 			if (index >= 0) {
 				this.state.editedItems.splice(index, 1)
 				this.setState({
@@ -678,7 +678,7 @@ const StudioRoutings = withTranslation()(
 			})
 		}
 		removeExclusivityGroup = (eGroupId: string) => {
-			let unsetObject = {}
+			const unsetObject = {}
 			_.forEach(this.props.studio.routeSets, (routeSet, routeSetId) => {
 				if (routeSet.exclusivityGroup === eGroupId) {
 					unsetObject['routeSets.' + routeSetId + '.exclusivityGroup'] = 1
@@ -690,7 +690,7 @@ const StudioRoutings = withTranslation()(
 			})
 		}
 		removeRouteSetRoute = (routeId: string, index: number) => {
-			let unsetObject = {}
+			const unsetObject = {}
 			const newRoutes = this.props.studio.routeSets[routeId].routes.slice()
 			newRoutes.splice(index, 1)
 			unsetObject['routeSets.' + routeId + '.routes'] = newRoutes
@@ -699,25 +699,25 @@ const StudioRoutings = withTranslation()(
 			})
 		}
 		removeRouteSet = (routeId: string) => {
-			let unsetObject = {}
+			const unsetObject = {}
 			unsetObject['routeSets.' + routeId] = ''
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
 			})
 		}
 		addNewRouteInSet = (routeId: string) => {
-			let newRouteKeyName = 'newRouteSet'
+			const newRouteKeyName = 'newRouteSet'
 			let iter: number = 0
 			while ((this.props.studio.routeSets || {})[newRouteKeyName + iter]) {
 				iter++
 			}
 
-			let newRoute: RouteMapping = {
+			const newRoute: RouteMapping = {
 				mappedLayer: '',
 				outputMappedLayer: '',
 				remapping: {},
 			}
-			let setObject = {}
+			const setObject = {}
 			setObject['routeSets.' + routeId + '.routes'] = newRoute
 
 			Studios.update(this.props.studio._id, {
@@ -726,19 +726,19 @@ const StudioRoutings = withTranslation()(
 		}
 		addNewRouteSet = () => {
 			// find free key name
-			let newRouteKeyName = 'newRouteSet'
+			const newRouteKeyName = 'newRouteSet'
 			let iter: number = 0
 			while ((this.props.studio.routeSets || {})[newRouteKeyName + iter]) {
 				iter++
 			}
 
-			let newRoute: StudioRouteSet = {
+			const newRoute: StudioRouteSet = {
 				name: 'New Route Set',
 				active: false,
 				routes: [],
 				behavior: StudioRouteBehavior.TOGGLE,
 			}
-			let setObject: Partial<DBStudio> = {}
+			const setObject: Partial<DBStudio> = {}
 			setObject['routeSets.' + newRouteKeyName + iter] = newRoute
 
 			Studios.update(this.props.studio._id, {
@@ -746,16 +746,16 @@ const StudioRoutings = withTranslation()(
 			})
 		}
 		addNewExclusivityGroup = () => {
-			let newEGroupKeyName = 'exclusivityGroup'
+			const newEGroupKeyName = 'exclusivityGroup'
 			let iter: number = 0
 			while ((this.props.studio.routeSetExclusivityGroups || {})[newEGroupKeyName + iter]) {
 				iter++
 			}
 
-			let newGroup: StudioRouteSetExclusivityGroup = {
+			const newGroup: StudioRouteSetExclusivityGroup = {
 				name: 'New Exclusivity Group',
 			}
-			let setObject: Partial<DBStudio> = {}
+			const setObject: Partial<DBStudio> = {}
 			setObject['routeSetExclusivityGroups.' + newEGroupKeyName + iter] = newGroup
 
 			Studios.update(this.props.studio._id, {
@@ -763,16 +763,16 @@ const StudioRoutings = withTranslation()(
 			})
 		}
 		updateRouteSetId = (edit: EditAttributeBase, newValue: string) => {
-			let oldRouteId = edit.props.overrideDisplayValue
-			let newRouteId = newValue + ''
-			let route = this.props.studio.routeSets[oldRouteId]
+			const oldRouteId = edit.props.overrideDisplayValue
+			const newRouteId = newValue + ''
+			const route = this.props.studio.routeSets[oldRouteId]
 
 			if (this.props.studio.routeSets[newRouteId]) {
 				throw new Meteor.Error(400, 'Route Set "' + newRouteId + '" already exists')
 			}
 
-			let mSet = {}
-			let mUnset = {}
+			const mSet = {}
+			const mUnset = {}
 			mSet['routeSets.' + newRouteId] = route
 			mUnset['routeSets.' + oldRouteId] = 1
 
@@ -787,16 +787,16 @@ const StudioRoutings = withTranslation()(
 			this.editItem(newRouteId)
 		}
 		updateExclusivityGroupId = (edit: EditAttributeBase, newValue: string) => {
-			let oldRouteId = edit.props.overrideDisplayValue
-			let newRouteId = newValue + ''
-			let route = this.props.studio.routeSetExclusivityGroups[oldRouteId]
+			const oldRouteId = edit.props.overrideDisplayValue
+			const newRouteId = newValue + ''
+			const route = this.props.studio.routeSetExclusivityGroups[oldRouteId]
 
 			if (this.props.studio.routeSetExclusivityGroups[newRouteId]) {
 				throw new Meteor.Error(400, 'Exclusivity Group "' + newRouteId + '" already exists')
 			}
 
-			let mSet = {}
-			let mUnset = {}
+			const mSet = {}
+			const mUnset = {}
 			mSet['routeSetExclusivityGroups.' + newRouteId] = route
 			mUnset['routeSetExclusivityGroups.' + oldRouteId] = 1
 
@@ -1265,7 +1265,7 @@ const StudioPackageManagerSettings = withTranslation()(
 			return this.state.editedPackageContainer.indexOf(containerId) >= 0
 		}
 		finishEditPackageContainer = (containerId: string) => {
-			let index = this.state.editedPackageContainer.indexOf(containerId)
+			const index = this.state.editedPackageContainer.indexOf(containerId)
 			if (index >= 0) {
 				this.state.editedPackageContainer.splice(index, 1)
 				this.setState({
@@ -1305,7 +1305,7 @@ const StudioPackageManagerSettings = withTranslation()(
 			})
 		}
 		removePackageContainer = (containerId: string) => {
-			let unsetObject = {}
+			const unsetObject = {}
 			unsetObject['packageContainers.' + containerId] = ''
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
@@ -1313,20 +1313,20 @@ const StudioPackageManagerSettings = withTranslation()(
 		}
 		addNewPackageContainer = () => {
 			// find free key name
-			let newKeyName = 'newContainer'
+			const newKeyName = 'newContainer'
 			let iter: number = 0
 			while ((this.props.studio.packageContainers || {})[newKeyName + iter]) {
 				iter++
 			}
 
-			let newPackageContainer: StudioPackageContainer = {
+			const newPackageContainer: StudioPackageContainer = {
 				deviceIds: [],
 				container: {
 					label: 'New Package Container',
 					accessors: {},
 				},
 			}
-			let setObject: Partial<DBStudio> = {}
+			const setObject: Partial<DBStudio> = {}
 			setObject['packageContainers.' + newKeyName + iter] = newPackageContainer
 
 			Studios.update(this.props.studio._id, {
@@ -1342,8 +1342,8 @@ const StudioPackageManagerSettings = withTranslation()(
 				throw new Meteor.Error(400, 'PackageContainer "' + newContainerId + '" already exists')
 			}
 
-			let mSet = {}
-			let mUnset = {}
+			const mSet = {}
+			const mUnset = {}
 			mSet['packageContainers.' + newContainerId] = packageContainer
 			mUnset['packageContainers.' + oldContainerId] = 1
 
@@ -1491,7 +1491,7 @@ const StudioPackageManagerSettings = withTranslation()(
 			return this.state.editedAccessors.indexOf(containerId + accessorId) >= 0
 		}
 		finishEditAccessor = (containerId: string, accessorId: string) => {
-			let index = this.state.editedAccessors.indexOf(containerId + accessorId)
+			const index = this.state.editedAccessors.indexOf(containerId + accessorId)
 			if (index >= 0) {
 				this.state.editedAccessors.splice(index, 1)
 				this.setState({
@@ -1531,7 +1531,7 @@ const StudioPackageManagerSettings = withTranslation()(
 			})
 		}
 		removeAccessor = (containerId: string, accessorId: string) => {
-			let unsetObject = {}
+			const unsetObject = {}
 			unsetObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = ''
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
@@ -1539,7 +1539,7 @@ const StudioPackageManagerSettings = withTranslation()(
 		}
 		addNewAccessor = (containerId: string) => {
 			// find free key name
-			let newKeyName = 'local'
+			const newKeyName = 'local'
 			let iter: number = 0
 			const packageContainer = this.props.studio.packageContainers[containerId]
 			if (!packageContainer) throw new Error(`Can't add an accessor to nonexistant Package Container "${containerId}"`)
@@ -1549,14 +1549,14 @@ const StudioPackageManagerSettings = withTranslation()(
 			}
 			const accessorId = newKeyName + iter
 
-			let newAccessor: Accessor.LocalFolder = {
+			const newAccessor: Accessor.LocalFolder = {
 				type: Accessor.AccessType.LOCAL_FOLDER,
 				label: 'Local folder',
 				allowRead: true,
 				allowWrite: false,
 				folderPath: '',
 			}
-			let setObject: Partial<DBStudio> = {}
+			const setObject: Partial<DBStudio> = {}
 			setObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = newAccessor
 
 			Studios.update(this.props.studio._id, {
@@ -1564,21 +1564,21 @@ const StudioPackageManagerSettings = withTranslation()(
 			})
 		}
 		updateAccessorId = (edit: EditAttributeBase, newValue: string) => {
-			let oldAccessorId = edit.props.overrideDisplayValue
-			let newAccessorId = newValue + ''
+			const oldAccessorId = edit.props.overrideDisplayValue
+			const newAccessorId = newValue + ''
 			const containerId = edit.props.attribute
 			if (!containerId) throw new Error(`containerId not set`)
-			let packageContainer = this.props.studio.packageContainers[containerId]
+			const packageContainer = this.props.studio.packageContainers[containerId]
 			if (!packageContainer) throw new Error(`Can't edit an accessor to nonexistant Package Container "${containerId}"`)
 
-			let accessor = this.props.studio.packageContainers[containerId].container.accessors[oldAccessorId]
+			const accessor = this.props.studio.packageContainers[containerId].container.accessors[oldAccessorId]
 
 			if (this.props.studio.packageContainers[containerId].container.accessors[newAccessorId]) {
 				throw new Meteor.Error(400, 'Accessor "' + newAccessorId + '" already exists')
 			}
 
-			let mSet = {}
-			let mUnset = {}
+			const mSet = {}
+			const mUnset = {}
 			mSet[`packageContainers.${containerId}.container.accessors.${newAccessorId}`] = accessor
 			mUnset[`packageContainers.${containerId}.container.accessors.${oldAccessorId}`] = 1
 
@@ -2208,7 +2208,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		getBlueprintOptions() {
 			const { t } = this.props
 
-			let options: { name: string; value: BlueprintId | null }[] = [
+			const options: { name: string; value: BlueprintId | null }[] = [
 				{
 					name: t('None'),
 					value: protectString(''),
@@ -2229,10 +2229,10 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 
 		renderShowStyleEditButtons() {
 			const { t } = this.props
-			let buttons: JSX.Element[] = []
+			const buttons: JSX.Element[] = []
 			if (this.props.studio) {
 				this.props.studio.supportedShowStyleBase.map((style) => {
-					let base = this.props.availableShowStyleBases.find((base) => base.showStyleBase._id === style)
+					const base = this.props.availableShowStyleBases.find((base) => base.showStyleBase._id === style)
 					if (base) {
 						buttons.push(
 							<SettingsNavigation
@@ -2502,7 +2502,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 )
 
 export function setProperty(studio: Studio, property: string, value: any) {
-	let m = {}
+	const m = {}
 	if (value !== undefined) {
 		m[property] = value
 		Studios.update(studio._id, { $set: m })

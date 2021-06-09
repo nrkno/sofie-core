@@ -12,7 +12,7 @@ export const addSteps = addMigrationSteps('1.11.0', [
 		validate: () => {
 			const core = CoreSystem.findOne()
 			if (core) {
-				for (let [key, message] of Object.entries(core.serviceMessages)) {
+				for (const [key, message] of Object.entries(core.serviceMessages)) {
 					if (typeof message.timestamp === 'string') {
 						return `Message "${message.message}" has string timestamp.`
 					}
@@ -25,7 +25,7 @@ export const addSteps = addMigrationSteps('1.11.0', [
 			const core = CoreSystem.findOne()
 			const updateObj = {}
 			if (core) {
-				for (let [key, message] of Object.entries(core.serviceMessages)) {
+				for (const [key, message] of Object.entries(core.serviceMessages)) {
 					if (typeof message.timestamp !== 'number') {
 						updateObj[`serviceMessages.${key}.timestamp`] = new Date(message.timestamp).getTime()
 					}

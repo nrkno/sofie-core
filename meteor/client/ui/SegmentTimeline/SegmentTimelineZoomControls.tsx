@@ -67,7 +67,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 	}
 
 	outsideZoomAreaClick = (e: Event & any) => {
-		let offset = getElementDocumentOffset(this.parentElement)
+		const offset = getElementDocumentOffset(this.parentElement)
 		const maxScrollLeft = this.props.segmentDuration - LIVELINE_HISTORY_SIZE / this.props.timeScale
 		if (offset) {
 			this.parentOffsetX = offset.left
@@ -181,9 +181,9 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 	}
 
 	zoomAreaLeftMove = (e: Event & any) => {
-		let begin = Math.max(0, Math.min(1, (e.clientX - this.parentOffsetX) / this.state.width))
-		let end = (this.props.scrollLeft + this.props.scrollWidth) / this.props.segmentDuration
-		let newScale = (this.props.scrollWidth / ((end - begin) * this.props.segmentDuration)) * this.props.timeScale
+		const begin = Math.max(0, Math.min(1, (e.clientX - this.parentOffsetX) / this.state.width))
+		const end = (this.props.scrollLeft + this.props.scrollWidth) / this.props.segmentDuration
+		const newScale = (this.props.scrollWidth / ((end - begin) * this.props.segmentDuration)) * this.props.timeScale
 		if (this.props.onZoomChange) {
 			this.props.onScroll(begin * this.props.segmentDuration, e)
 			this.props.onZoomChange(newScale, e)
@@ -211,7 +211,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 			{ once: true }
 		)
 
-		let offset = getElementDocumentOffset(this.parentElement)
+		const offset = getElementDocumentOffset(this.parentElement)
 		if (offset) {
 			this.parentOffsetX = offset.left
 			this.parentOffsetY = offset.top
@@ -230,9 +230,9 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 	}
 
 	zoomAreaRightMove = (e: Event & any) => {
-		let end = Math.max(0, Math.min(1, (e.clientX - this.parentOffsetX) / this.state.width))
-		let begin = this.props.scrollLeft / this.props.segmentDuration
-		let newScale = (this.props.scrollWidth / ((end - begin) * this.props.segmentDuration)) * this.props.timeScale
+		const end = Math.max(0, Math.min(1, (e.clientX - this.parentOffsetX) / this.state.width))
+		const begin = this.props.scrollLeft / this.props.segmentDuration
+		const newScale = (this.props.scrollWidth / ((end - begin) * this.props.segmentDuration)) * this.props.timeScale
 		if (this.props.onZoomChange) {
 			this.props.onZoomChange(newScale, e)
 		}
@@ -251,7 +251,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 			{ once: true }
 		)
 
-		let offset = getElementDocumentOffset(this.parentElement)
+		const offset = getElementDocumentOffset(this.parentElement)
 		if (offset) {
 			this.parentOffsetX = offset.left
 			this.parentOffsetY = offset.top

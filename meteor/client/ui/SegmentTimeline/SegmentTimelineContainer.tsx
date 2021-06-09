@@ -78,12 +78,12 @@ export interface SegmentUi extends SegmentExtended {
 		[key: string]: ISourceLayerUi
 	}
 }
-export interface PartUi extends PartExtended {}
+export type PartUi = PartExtended
 export interface IOutputLayerUi extends IOutputLayerExtended {
 	/** Is output layer group collapsed */
 	collapsed?: boolean
 }
-export interface ISourceLayerUi extends ISourceLayerExtended {}
+export type ISourceLayerUi = ISourceLayerExtended
 export interface PieceUi extends PieceExtended {
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean
@@ -181,12 +181,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				[
 					memoizedIsolatedAutorun(
 						(_playlistId: RundownPlaylistId) =>
-							(props.playlist.getAllOrderedParts(undefined, {
-								fields: {
-									segmentId: 1,
-									_rank: 1,
-								},
-							}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]).map((part) => part._id),
+							(
+								props.playlist.getAllOrderedParts(undefined, {
+									fields: {
+										segmentId: 1,
+										_rank: 1,
+									},
+								}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]
+							).map((part) => part._id),
 						'playlist.getAllOrderedParts',
 						props.playlist._id
 					),
@@ -210,7 +212,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		const rundownOrder = props.playlist.getRundownIDs()
 		const rundownIndex = rundownOrder.indexOf(segment.rundownId)
 
-		let o = RundownUtils.getResolvedSegment(
+		const o = RundownUtils.getResolvedSegment(
 			props.showStyleBase,
 			props.playlist,
 			props.rundown,
@@ -649,7 +651,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.partInstanceSubPartInstanceIds = partInstanceIds
 			})
 		}
-		private partInstanceSubDebounce: NodeJS.Timeout | undefined
+		private partInstanceSubDebounce: number | undefined
 		private subscribeToPieceInstances(partInstanceIds: PartInstanceId[]) {
 			// run the first subscribe immediately, to avoid unneccessary wait time during bootup
 			if (this.partInstanceSub === undefined) {
@@ -680,7 +682,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
-			let collapsedOutputs = { ...this.state.collapsedOutputs }
+			const collapsedOutputs = { ...this.state.collapsedOutputs }
 			collapsedOutputs[outputLayer._id] =
 				outputLayer.isDefaultCollapsed && collapsedOutputs[outputLayer._id] === undefined
 					? false
@@ -780,7 +782,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				const currentLivePartInstance = this.state.currentLivePart.instance
 				const currentLivePart = currentLivePartInstance.part
 
-				let simulationPercentage = this.playbackSimulationPercentage
+				const simulationPercentage = this.playbackSimulationPercentage
 				const partOffset =
 					(this.context.durations &&
 						this.context.durations.partDisplayStartsAt &&
@@ -810,7 +812,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					}
 				}
 
-				let newLivePosition =
+				const newLivePosition =
 					isExpectedToPlay && virtualStartedPlayback
 						? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
 						: partOffset + lastTakeOffset

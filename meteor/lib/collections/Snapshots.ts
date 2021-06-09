@@ -56,9 +56,8 @@ export interface SnapshotDebug extends SnapshotBase {
 	type: SnapshotType.DEBUG
 }
 
-export const Snapshots: TransformedCollection<SnapshotItem, SnapshotItem> = createMongoCollection<SnapshotItem>(
-	'snapshots'
-)
+export const Snapshots: TransformedCollection<SnapshotItem, SnapshotItem> =
+	createMongoCollection<SnapshotItem>('snapshots')
 registerCollection('Snapshots', Snapshots)
 
 registerIndex(Snapshots, {

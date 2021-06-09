@@ -191,7 +191,7 @@ export class JoyConController extends ControllerAbstract {
 
 	private getDataFromJoycons() {
 		if (navigator.getGamepads) {
-			let gamepads = navigator.getGamepads()
+			const gamepads = navigator.getGamepads()
 			if (!(gamepads && typeof gamepads === 'object' && gamepads.length)) return
 
 			// try to re-use old index, if the id mathces
@@ -233,7 +233,7 @@ export class JoyConController extends ControllerAbstract {
 		const newButtons = input.buttons.map((i) => i.value)
 
 		if (this.lastButtonArray.length) {
-			for (let i in newButtons) {
+			for (const i in newButtons) {
 				const oldBtn = this.lastButtonArray[i]
 				const newBtn = newButtons[i]
 				if (oldBtn === newBtn) continue

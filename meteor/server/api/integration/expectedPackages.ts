@@ -66,10 +66,7 @@ export namespace PackageManagerIntegration {
 			if (change.type === 'delete') {
 				removedIds.push(change.id)
 			} else {
-				const workStatus = (change.status as any) as Omit<
-					ExpectedPackageStatusAPI.WorkStatus,
-					'fromPackages'
-				> & {
+				const workStatus = change.status as any as Omit<ExpectedPackageStatusAPI.WorkStatus, 'fromPackages'> & {
 					fromPackages: FromPackage[]
 				}
 

@@ -24,7 +24,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		validate: () => {
 			let validate: boolean | string = false
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.slackEvaluationUrls) {
 					if (_.find(studio.config, (c) => c._id === 'slack_evaluation')) {
 						validate = `slackEvaluationUrls not set on studio ${studio._id}`
@@ -35,7 +35,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		},
 		migrate: () => {
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.slackEvaluationUrls) {
 					const value = _.find(studio.config, (c) => c._id === 'slack_evaluation')
 					if (value) {
@@ -74,7 +74,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		validate: () => {
 			let validate: boolean | string = false
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.supportedMediaFormats) {
 					if (_.find(studio.config, (c) => c._id === 'mediaResolutions')) {
 						validate = `supportedMediaFormats not set on studio ${studio._id}`
@@ -85,7 +85,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		},
 		migrate: () => {
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.supportedMediaFormats) {
 					const value = _.find(studio.config, (c) => c._id === 'mediaResolutions')
 					if (value) {
@@ -124,7 +124,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		validate: () => {
 			let validate: boolean | string = false
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.supportedAudioStreams) {
 					if (_.find(studio.config, (c) => c._id === 'audioStreams')) {
 						validate = `supportedAudioStreams not set on studio ${studio._id}`
@@ -135,7 +135,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		},
 		migrate: () => {
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.supportedAudioStreams) {
 					const value = _.find(studio.config, (c) => c._id === 'audioStreams')
 					if (value) {

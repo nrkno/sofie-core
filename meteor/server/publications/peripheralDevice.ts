@@ -145,7 +145,7 @@ meteorCustomPublishArray(
 		if (
 			PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })
 		) {
-			let peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 

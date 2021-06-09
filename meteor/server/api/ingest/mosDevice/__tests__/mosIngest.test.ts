@@ -373,7 +373,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const rundownExternalId = 'fakeId'
 		expect(Rundowns.findOne({ externalId: rundownExternalId })).toBeFalsy()
 
-		let part = Parts.findOne() as Part
+		const part = Parts.findOne() as Part
 		expect(part).toBeTruthy()
 		expect(part.status).not.toEqual(newStatus.toString())
 

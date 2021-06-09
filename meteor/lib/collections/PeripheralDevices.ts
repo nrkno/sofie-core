@@ -70,10 +70,8 @@ export interface PeripheralDevice {
 	accessTokenUrl?: string
 }
 
-export const PeripheralDevices: TransformedCollection<
-	PeripheralDevice,
-	PeripheralDevice
-> = createMongoCollection<PeripheralDevice>('peripheralDevices')
+export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice> =
+	createMongoCollection<PeripheralDevice>('peripheralDevices')
 registerCollection('PeripheralDevices', PeripheralDevices)
 
 registerIndex(PeripheralDevices, {
@@ -104,9 +102,11 @@ export function getStudioIdFromDevice(peripheralDevice: PeripheralDevice): Studi
  * Calculate what the expected latency is going to be for a device.
  * The returned latency represents the amount of time we expect the device will need to receive, process and execute a timeline
  */
-export function getExpectedLatency(
-	peripheralDevice: PeripheralDevice
-): { average: number; safe: number; fastest: number } {
+export function getExpectedLatency(peripheralDevice: PeripheralDevice): {
+	average: number
+	safe: number
+	fastest: number
+} {
 	if (peripheralDevice.latencies && peripheralDevice.latencies.length) {
 		peripheralDevice.latencies.sort((a, b) => {
 			if (a > b) return 1
@@ -114,8 +114,8 @@ export function getExpectedLatency(
 			return 0
 		})
 		const latencies = peripheralDevice.latencies
-		var total = 0
-		for (let latency of latencies) {
+		let total = 0
+		for (const latency of latencies) {
 			total += latency
 		}
 		const average = total / latencies.length

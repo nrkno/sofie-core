@@ -83,7 +83,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 
 		statusCodeString(statusCode: PeripheralDeviceAPI.StatusCode) {
-			let t = this.props.t
+			const t = this.props.t
 
 			switch (statusCode) {
 				case PeripheralDeviceAPI.StatusCode.UNKNOWN:
@@ -132,7 +132,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 
 		connectedString(connected: boolean) {
-			let t = this.props.t
+			const t = this.props.t
 
 			if (connected) {
 				return t('Connected')
@@ -142,7 +142,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 
 		deviceTypeString(type: PeripheralDeviceAPI.DeviceType) {
-			let t = this.props.t
+			const t = this.props.t
 
 			switch (type) {
 				case PeripheralDeviceAPI.DeviceType.MOS:

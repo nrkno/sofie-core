@@ -27,7 +27,7 @@ import { ExpectedPackageDB } from './ExpectedPackages'
 export interface MappingsExt {
 	[layerName: string]: MappingExt
 }
-export interface MappingExt extends ProtectedStringProperties<BlueprintMapping, 'deviceId'> {}
+export type MappingExt = ProtectedStringProperties<BlueprintMapping, 'deviceId'>
 
 export interface IStudioSettings {
 	/** URL to endpoint where media preview are exposed */
@@ -150,7 +150,7 @@ export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
 		inserted: [],
 	}
 
-	let i = 0
+	const i = 0
 
 	const exclusivityGroups: { [groupId: string]: true } = {}
 	_.each(studio.routeSets, (routeSet) => {
@@ -191,12 +191,12 @@ export function getRoutedMappings<M extends MappingExt>(
 	const outputMappings: { [layerName: string]: M } = {}
 
 	// Re-route existing layers:
-	for (let inputLayer of Object.keys(inputMappings)) {
+	for (const inputLayer of Object.keys(inputMappings)) {
 		const inputMapping: M = inputMappings[inputLayer]
 
 		const routes = mappingRoutes.existing[inputLayer]
 		if (routes) {
-			for (let route of routes) {
+			for (const route of routes) {
 				const routedMapping: M = {
 					...inputMapping,
 					...(route.remapping || {}),
@@ -209,7 +209,7 @@ export function getRoutedMappings<M extends MappingExt>(
 		}
 	}
 	// also insert new routed layers:
-	for (let route of mappingRoutes.inserted) {
+	for (const route of mappingRoutes.inserted) {
 		if (route.remapping && route.deviceType && route.remapping.deviceId) {
 			const routedMapping: MappingExt = {
 				lookahead: route.remapping.lookahead || LookaheadMode.NONE,
@@ -273,7 +273,7 @@ export class Studio implements DBStudio {
 	public thumbnailContainerIds: string[]
 
 	constructor(document: DBStudio) {
-		for (let [key, value] of Object.entries(document)) {
+		for (const [key, value] of Object.entries(document)) {
 			this[key] = value
 		}
 	}

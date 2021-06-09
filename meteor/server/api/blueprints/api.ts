@@ -93,7 +93,7 @@ export function uploadBlueprintAsset(_context: Credentials, fileId: string, body
 	check(fileId, String)
 	check(body, String)
 
-	let system = getCoreSystem()
+	const system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
@@ -111,7 +111,7 @@ export function uploadBlueprintAsset(_context: Credentials, fileId: string, body
 export function retrieveBlueprintAsset(_context: Credentials, fileId: string) {
 	check(fileId, String)
 
-	let system = getCoreSystem()
+	const system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 

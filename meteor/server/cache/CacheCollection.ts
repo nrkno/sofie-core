@@ -224,7 +224,7 @@ export class DbCacheWriteCollection<
 		const span = profiler.startSpan(`DBCache.remove.${this.name}`)
 		waitForPromise(this._initialize())
 
-		let removedIds: DBInterface['_id'][] = []
+		const removedIds: DBInterface['_id'][] = []
 		if (isProtectedString(selector)) {
 			if (this.documents.get(selector)) {
 				this.documents.set(selector, null)

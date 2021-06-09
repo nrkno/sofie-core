@@ -24,7 +24,7 @@ export function fixMosData(o: any): any {
 			return fixMosData(val)
 		})
 	} else if (_.isObject(o)) {
-		let o2: any = {}
+		const o2: any = {}
 		_.each(o, (val, key) => {
 			o2[key] = fixMosData(val)
 		})

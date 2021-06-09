@@ -37,15 +37,8 @@ export const OverlayScreen = withTranslation()(
 				protected bodyClassList: string[] = ['transparent']
 
 				render() {
-					const {
-						playlist,
-						segments,
-						nextShowStyleBaseId,
-						t,
-						playlistId,
-						currentPartInstance,
-						nextPartInstance,
-					} = this.props
+					const { playlist, segments, nextShowStyleBaseId, t, playlistId, currentPartInstance, nextPartInstance } =
+						this.props
 
 					if (playlist && playlistId && segments) {
 						const currentPart = currentPartInstance

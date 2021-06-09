@@ -93,7 +93,7 @@ export class MidiPedalController extends ControllerAbstract {
 		// Nothing
 	}
 
-	private setupMidiListeners(err: Error) {
+	private setupMidiListeners(err: Error | undefined) {
 		if (err) {
 			console.error('Error enabling WebMIDI', err)
 			return

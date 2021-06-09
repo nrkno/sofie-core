@@ -15,7 +15,7 @@ export const renderEditAttribute = (
 	obj: object,
 	prefix?: string
 ) => {
-	let attribute = prefix + configField.id
+	const attribute = prefix + configField.id
 	const opts = {
 		modifiedClassName: 'bghl',
 		attribute,

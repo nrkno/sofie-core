@@ -12,7 +12,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 interface IStatusMenuProps {
 	match?: any
 }
-interface IStatusMenuState {}
+type IStatusMenuState = {}
 const StatusMenu = withTranslation()(
 	class StatusMenu extends React.Component<Translated<IStatusMenuProps>, IStatusMenuState> {
 		render() {

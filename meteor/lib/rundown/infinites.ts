@@ -98,7 +98,7 @@ export function getPlayheadTrackingInfinitesForPart(
 	}
 	const piecesOnSourceLayers = new Map<string, InfinitePieceSet>()
 
-	let canContinueShowStyleEndInfinites = continueShowStyleEndInfinites(
+	const canContinueShowStyleEndInfinites = continueShowStyleEndInfinites(
 		rundownsBeforeThisInPlaylist,
 		rundownsToShowstyles,
 		currentPartInstance.rundownId,

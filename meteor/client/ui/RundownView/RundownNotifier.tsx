@@ -91,11 +91,9 @@ class RundownViewNotifier extends WithManagedTracker {
 		this._unsentExternalMessageStatusDep = new Tracker.Dependency()
 		this._notesDep = new Tracker.Dependency()
 
-		this._notifier = NotificationCenter.registerNotifier(
-			(): NotificationList => {
-				return this._notificationList
-			}
-		)
+		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
+			return this._notificationList
+		})
 
 		this.autorun(() => {
 			if (playlistId) {
@@ -175,7 +173,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 			if (playlist && rundowns) {
 				rundowns.forEach((rundown) => {
-					let unsyncedId = rundown._id + '_unsynced'
+					const unsyncedId = rundown._id + '_unsynced'
 					let unsyncedNotification: Notification | undefined = undefined
 
 					if (rundown.orphaned) {
@@ -238,7 +236,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						this._rundownStatusDep.changed()
 					}
 
-					let rundownNotesId = rundown._id + '_ronotes_'
+					const rundownNotesId = rundown._id + '_ronotes_'
 					if (rundown.notes) {
 						rundown.notes.forEach((note) => {
 							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.message + '_' + note.type
@@ -427,7 +425,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 				const notificationId = `${translatedMessage}-${pieceId || partId || segmentId || rundownId}-${name}-${itemType}`
 
-				let newNotification = new Notification(
+				const newNotification = new Notification(
 					notificationId,
 					itemType === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
 					(
@@ -657,9 +655,8 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactiveQueueStatus(studioId: StudioId, playlistId: RundownPlaylistId) {
-		let reactiveUnsentMessageCount: ReactiveVar<number>
 		meteorSubscribe(PubSub.externalMessageQueue, { studioId: studioId, playlistId })
-		reactiveUnsentMessageCount = reactiveData.getUnsentExternalMessageCount(studioId, playlistId)
+		const reactiveUnsentMessageCount = reactiveData.getUnsentExternalMessageCount(studioId, playlistId)
 		this.autorun(() => {
 			if (reactiveUnsentMessageCount.get() > 0 && this._unsentExternalMessagesStatus === undefined) {
 				this._unsentExternalMessagesStatus = new Notification(
@@ -728,7 +725,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			})
 			.catch((err) => {
 				console.error(err)
-				let newNotification = new Notification(
+				const newNotification = new Notification(
 					'rundown_importVersions',
 					NoticeLevel.WARNING,
 					t('Unable to check the system configuration for changes'),

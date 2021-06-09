@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { MeteorMock } from '../../../__mocks__/meteor'
-import { UserActionsLog } from '../../../lib/collections/UserActionsLog'
+import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
 import { ClientAPIMethods } from '../../../lib/api/client'
 import { protectString, makePromise } from '../../../lib/lib'
 import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
@@ -161,37 +161,35 @@ describe('ClientAPI', () => {
 				expect(pdc.functionName).toBe(mockFailingFunctionName)
 				expect(pdc.args).toMatchObject(mockArgs)
 			})
-			testInFiber('Resolves the returned promise once a response from the peripheralDevice is received', () => {
-				PeripheralDeviceCommands.update(
-					{
-						deviceId: mockDeviceId,
-						functionName: mockFailingFunctionName,
-					},
-					{
-						$set: {
-							hasReply: true,
-							replyError: 'Failed',
+			testInFiber(
+				'Resolves the returned promise once a response from the peripheralDevice is received',
+				async () => {
+					PeripheralDeviceCommands.update(
+						{
+							deviceId: mockDeviceId,
+							functionName: mockFailingFunctionName,
 						},
-					}
-				)
-				// This will probably resolve after around 3s, since that is the timeout time
-				// of checkReply and the observeChanges is not implemented in the mock
-				return promise.catch((value) => {
+						{
+							$set: {
+								hasReply: true,
+								replyError: 'Failed',
+							},
+						}
+					)
+
+					// This will probably resolve after around 3s, since that is the timeout time
+					// of checkReply and the observeChanges is not implemented in the mock
+					await expect(promise).rejects.toBe('Failed')
+
 					const log = UserActionsLog.findOne({
 						method: logMethodName,
-					})
-					if (!log) {
-						fail('Log entry not found')
-						return
-					}
+					}) as UserActionsLogItem
+					expect(log).toBeTruthy()
 
 					expect(log.success).toBe(false)
 					expect(log.doneTime).toBeDefined()
-					expect(value).toBe('Failed')
-				})
-			})
+				}
+			)
 		})
 	})
-
-	return
 })

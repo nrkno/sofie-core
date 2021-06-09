@@ -277,11 +277,11 @@ export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments:
 				// Calculate the rank change per part
 				const dynamicPartCount = lastDynamicIndex - firstDynamicIndex + 1
 				const basePartRank =
-					beforePartIndex === -1 ? -1 : newPartsMap.get(remainingPreviousParts[beforePartIndex].id)?._rank!
+					beforePartIndex === -1 ? -1 : newPartsMap.get(remainingPreviousParts[beforePartIndex].id)?._rank! // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
 				const afterPartRank =
 					afterPartIndex === -1
 						? basePartRank + 1
-						: newPartsMap.get(remainingPreviousParts[afterPartIndex].id)?._rank!
+						: newPartsMap.get(remainingPreviousParts[afterPartIndex].id)?._rank! // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
 				const delta = (afterPartRank - basePartRank) / (dynamicPartCount + 1)
 
 				let prevRank = basePartRank
@@ -470,8 +470,8 @@ export namespace ClientRundownAPI {
 		const showStyleVariantsMap = normalizeArray(showStyleVariants, '_id')
 		const showStyleBlueprintsMap = normalizeArray(showStyleBlueprints, '_id')
 
-		const showStyleWarnings: RundownPlaylistValidateBlueprintConfigResult['showStyles'] = uniqueShowStyleCompounds.map(
-			(rundown) => {
+		const showStyleWarnings: RundownPlaylistValidateBlueprintConfigResult['showStyles'] =
+			uniqueShowStyleCompounds.map((rundown) => {
 				const showStyleBase = showStyleBasesMap[unprotectString(rundown.showStyleBaseId)]
 				const showStyleVariant = showStyleVariantsMap[unprotectString(rundown.showStyleVariantId)]
 				const id = `${rundown.showStyleBaseId}-${rundown.showStyleVariantId}`
@@ -514,8 +514,7 @@ export namespace ClientRundownAPI {
 						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig),
 					}
 				}
-			}
-		)
+			})
 
 		return {
 			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studio.blueprintConfig),

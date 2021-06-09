@@ -31,17 +31,15 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	public _rundownVersionHash: string
 
 	constructor(document: DBShowStyleVariant) {
-		for (let [key, value] of Object.entries(document)) {
+		for (const [key, value] of Object.entries(document)) {
 			this[key] = value
 		}
 	}
 }
-export const ShowStyleVariants: TransformedCollection<
-	ShowStyleVariant,
-	DBShowStyleVariant
-> = createMongoCollection<ShowStyleVariant>('showStyleVariants', {
-	transform: (doc) => applyClassToDocument(ShowStyleVariant, doc),
-})
+export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, DBShowStyleVariant> =
+	createMongoCollection<ShowStyleVariant>('showStyleVariants', {
+		transform: (doc) => applyClassToDocument(ShowStyleVariant, doc),
+	})
 registerCollection('ShowStyleVariants', ShowStyleVariants)
 
 registerIndex(ShowStyleVariants, {

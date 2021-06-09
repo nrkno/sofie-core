@@ -42,7 +42,7 @@ export class Segment implements DBSegment {
 	public identifier?: string
 
 	constructor(document: DBSegment) {
-		for (let [key, value] of Object.entries(document)) {
+		for (const [key, value] of Object.entries(document)) {
 			this[key] = value
 		}
 	}

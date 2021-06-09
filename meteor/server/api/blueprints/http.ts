@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { BlueprintManifestSet } from '@sofie-automation/blueprints-integration'
 import { ServerResponse, IncomingMessage } from 'http'
 import { check, Match } from '../../../lib/check'
-import { parse as parseUrl } from 'url'
+import { URL } from 'url'
 import { retrieveBlueprintAsset, uploadBlueprint, uploadBlueprintAsset } from './api'
 import { protectString } from '../../../lib/lib'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
@@ -18,10 +18,10 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 	let content = ''
 	try {
 		const blueprintId = params.blueprintId
-		const url = parseUrl(req.url || '', true)
-		const force = url.query.force === '1' || url.query.force === 'true'
+		const url = new URL(req.url || '', 'http://localhost')
+		const force = url.searchParams.get('force') === '1' || url.searchParams.get('force') === 'true'
 
-		const blueprintNames = url.query['name'] || undefined
+		const blueprintNames = url.searchParams.get('name') || undefined
 		const blueprintName: string | undefined = _.isArray(blueprintNames) ? blueprintNames[0] : blueprintNames
 
 		check(blueprintId, String)
@@ -78,7 +78,7 @@ PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: Serv
 
 		if (!Meteor.isTest) logger.info(`Got blueprint collection. ${Object.keys(body).length} blueprints`)
 
-		let errors: any[] = []
+		const errors: any[] = []
 		for (const id of _.keys(collection.blueprints)) {
 			try {
 				const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''
@@ -147,7 +147,7 @@ PickerPOST.route('/blueprints/assets', (params, req: IncomingMessage, res: Serve
 
 		if (!Meteor.isTest) logger.info(`Got blueprint assets. ${Object.keys(collection).length} assets`)
 
-		let errors: any[] = []
+		const errors: any[] = []
 		for (const id of _.keys(collection)) {
 			try {
 				const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''

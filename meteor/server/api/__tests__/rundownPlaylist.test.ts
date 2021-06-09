@@ -66,9 +66,9 @@ describe('Rundown', () => {
 		expect(rundown00.playlistId).toEqual(playlistId0)
 
 		// This should set the default sorting of the rundowns in the plylist:
-		let rundownsCollection = new DbCacheWriteCollection(Rundowns)
+		const rundownsCollection = new DbCacheWriteCollection(Rundowns)
 		waitForPromise(rundownsCollection.prepareInit({ playlistId: playlist0._id }, true))
-		let rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(
+		const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(
 			env.studio,
 			undefined,
 			playlist0,
@@ -80,7 +80,7 @@ describe('Rundown', () => {
 		waitForPromise(rundownsCollection.updateDatabaseWithData())
 
 		// Expect the rundowns to be in the right order:
-		let rundownsInPLaylist0 = playlist0.getRundowns()
+		const rundownsInPLaylist0 = playlist0.getRundowns()
 		expect(rundownsInPLaylist0[0]).toMatchObject({ _id: 'rundown00', _rank: 1 })
 		expect(rundownsInPLaylist0[1]).toMatchObject({ _id: 'rundown01', _rank: 2 })
 		expect(rundownsInPLaylist0[2]).toMatchObject({ _id: 'rundown02', _rank: 3 })

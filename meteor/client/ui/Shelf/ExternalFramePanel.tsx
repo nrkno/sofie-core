@@ -283,7 +283,7 @@ export const ExternalFramePanel = withTranslation()(
 						})
 						.catch((e) => console.warn)
 					break
-				case SofieExternalMessageType.FOCUS_IN:
+				case SofieExternalMessageType.FOCUS_IN: {
 					this.sendSofieMessage(
 						literal<SofieExternalMessage>({
 							id: Random.id(),
@@ -294,6 +294,7 @@ export const ExternalFramePanel = withTranslation()(
 					const randomEl = document.querySelector('button')
 					if (randomEl) randomEl.focus()
 					break
+				}
 			}
 		}
 
@@ -396,7 +397,7 @@ export const ExternalFramePanel = withTranslation()(
 			e.preventDefault()
 		}
 
-		onDragLeave = (e: DragEvent) => {
+		onDragLeave = (_e: Event) => {
 			this.failedDragTimeout = undefined
 			const event = new CustomEvent<{}>(MOSEvents.dragleave, {
 				cancelable: false,

@@ -8,7 +8,7 @@ import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
 import { createUser } from '../../../../lib/api/user'
 
-interface ISignupPageProps extends RouteComponentProps {}
+type ISignupPageProps = RouteComponentProps
 
 interface ISignupPageState {
 	email: string

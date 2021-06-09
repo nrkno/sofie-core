@@ -112,7 +112,8 @@ export const RundownTimingProvider = withTracker<
 			IRundownTimingProviderProps & IRundownTimingProviderTrackedProps,
 			IRundownTimingProviderState
 		>
-		implements React.ChildContextProvider<IRundownTimingProviderChildContext> {
+		implements React.ChildContextProvider<IRundownTimingProviderChildContext>
+	{
 		static childContextTypes = {
 			durations: PropTypes.object.isRequired,
 		}
@@ -240,7 +241,7 @@ export const RundownTimingProvider = withTracker<
 			Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
 			this.linearParts.length = 0
 
-			let debugConsole = ''
+			const debugConsole = ''
 
 			const { playlist, parts, partInstancesMap } = this.props
 

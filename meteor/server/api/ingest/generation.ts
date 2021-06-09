@@ -82,7 +82,7 @@ export async function calculateSegmentsFromIngestData(
 		const showStyle = await getShowStyleCompoundForRundown(rundown)
 		const blueprint = loadShowStyleBlueprint(showStyle)
 
-		for (let ingestSegment of ingestSegments) {
+		for (const ingestSegment of ingestSegments) {
 			const segmentId = getSegmentId(cache.RundownId, ingestSegment.externalId)
 
 			// Ensure the parts are sorted by rank

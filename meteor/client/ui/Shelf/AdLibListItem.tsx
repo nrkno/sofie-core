@@ -45,7 +45,7 @@ interface IListViewItemProps {
 	studio: Studio
 	layer: ISourceLayer | undefined
 	selected: boolean
-	onSelectAdLib: (aSLine: PieceGeneric) => void
+	onSelectAdLib: (aSLine: IAdLibListItem) => void
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
 	playlist: RundownPlaylist
 }

@@ -109,7 +109,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 								</div>
 							</div>
 						) : (
-							<div className="workflow__header">Unknown package "{packageId}"</div>
+							<div className="workflow__header">Unknown package &quot;{packageId}&quot;</div>
 						)}
 
 						<div className="package__statuses">

@@ -20,10 +20,10 @@ import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 // import { setLoggerLevel } from '../../../server/api/logger'
 
 describe('Test external message queue static methods', () => {
-	let studioEnv = setupDefaultStudioEnvironment()
+	const studioEnv = setupDefaultStudioEnvironment()
 	let rundown: Rundown
 	beforeAllInFiber(() => {
-		let now = getCurrentTime()
+		const now = getCurrentTime()
 		RundownPlaylists.insert({
 			_id: protectString('playlist_1'),
 			externalId: 'mock_rpl',
@@ -77,7 +77,7 @@ describe('Test external message queue static methods', () => {
 		queueExternalMessages(rundown, [slackMessage])
 
 		expect(ExternalMessageQueue.findOne()).toBeTruthy()
-		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		const message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message).toMatchObject({
 			type: 'slack',
@@ -149,7 +149,7 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('remove', () => {
-		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		const message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 
 		Meteor.call(ExternalMessageQueueAPIMethods.remove, message._id)
@@ -161,7 +161,7 @@ describe('Test external message queue static methods', () => {
 describe('Test sending messages to mocked endpoints', () => {
 	jest.useFakeTimers()
 
-	let studioEnv = setupDefaultStudioEnvironment()
+	const studioEnv = setupDefaultStudioEnvironment()
 	let rundown: Rundown
 	beforeAllInFiber(() => {
 		MeteorMock.mockRunMeteorStartup()
@@ -169,7 +169,7 @@ describe('Test sending messages to mocked endpoints', () => {
 		RundownPlaylists.remove(protectString('playlist_1'))
 		Rundowns.remove(protectString('rundown_1'))
 
-		let now = getCurrentTime()
+		const now = getCurrentTime()
 		RundownPlaylists.insert({
 			_id: protectString('playlist_1'),
 			externalId: 'mock_rpl',
@@ -227,7 +227,7 @@ describe('Test sending messages to mocked endpoints', () => {
 		await runAllTimers()
 		expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(1)
 		await (sendSlackMessageToWebhook as jest.Mock).mock.results[0].value
-		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		const message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message.sent).toBeGreaterThanOrEqual(sendTime)
 		expect(message.lastTry).toBeGreaterThanOrEqual(sendTime)
@@ -237,6 +237,7 @@ describe('Test sending messages to mocked endpoints', () => {
 
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
+	/* eslint-disable jest/no-commented-out-tests */
 	/*
 	describe('failing to send a message and retrying', () => {
 		let message: ExternalMessageQueueObj
@@ -622,4 +623,5 @@ describe('Test sending messages to mocked endpoints', () => {
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
 	*/
+	/* eslint-enable jest/no-commented-out-tests */
 })

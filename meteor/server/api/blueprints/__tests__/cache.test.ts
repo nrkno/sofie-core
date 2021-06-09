@@ -381,8 +381,8 @@ describe('Test blueprint cache', () => {
 				showStyleConfigManifest: [],
 				showStyleMigrations: [],
 				getShowStyleVariantId: () => null,
-				getRundown: () => (null as any) as BlueprintResultRundown,
-				getSegment: () => (null as any) as BlueprintResultSegment,
+				getRundown: () => null as any as BlueprintResultRundown,
+				getSegment: () => null as any as BlueprintResultSegment,
 			})
 
 			Blueprints.remove(protectString('fake_id'))

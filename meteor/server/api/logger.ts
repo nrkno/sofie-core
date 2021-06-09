@@ -5,7 +5,7 @@ import * as _ from 'underscore'
 Meteor.methods({
 	logger: (type: string, ...args: any[]) => {
 		// @ts-ignore
-		let loggerFunction: any = logger[type] || logger.log
+		const loggerFunction: any = logger[type] || logger.log
 		loggerFunction(...args)
 	},
 })

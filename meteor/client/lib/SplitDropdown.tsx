@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 interface IProps {
 	selectedKey: string
 	className?: string
-	children?: SplitDropdownItemObj[]
+	options?: SplitDropdownItemObj[]
 }
 
 interface IState {
@@ -16,13 +16,13 @@ interface IState {
 
 interface SplitDropdownItemObj {
 	key?: string
-	children?: ReactNode
+	node?: ReactNode
 }
 
 export function SplitDropdownItem(props: SplitDropdownItemObj): SplitDropdownItemObj {
 	return {
 		key: props.key,
-		children: props.children,
+		node: props.node,
 	}
 }
 
@@ -31,9 +31,9 @@ export function SplitDropdown(props: IProps) {
 
 	function getSelected() {
 		const selectedChild =
-			props.children &&
-			Array.isArray(props.children) &&
-			props.children.find((element) => element.key === props.selectedKey)?.children
+			props.options &&
+			Array.isArray(props.options) &&
+			props.options.find((element) => element.key === props.selectedKey)?.node
 		return selectedChild ? <>{selectedChild}</> : <div className="expco-item"></div>
 	}
 
@@ -56,8 +56,8 @@ export function SplitDropdown(props: IProps) {
 				<FontAwesomeIcon icon={faChevronUp} />
 			</div>
 			<div className="expco-body bd">
-				{props.children?.map((child, index) => (
-					<React.Fragment key={child.key || index}>{child.children}</React.Fragment>
+				{props.options?.map((child, index) => (
+					<React.Fragment key={child.key || index}>{child.node}</React.Fragment>
 				))}
 			</div>
 		</div>

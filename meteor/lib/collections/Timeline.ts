@@ -105,7 +105,7 @@ export function getRoutedTimeline(
 ): TimelineObjGeneric[] {
 	const outputTimelineObjs: TimelineObjGeneric[] = []
 
-	for (let obj of inputTimelineObjs) {
+	for (const obj of inputTimelineObjs) {
 		let inputLayer = obj.layer + ''
 		if (obj.isLookahead && obj.lookaheadForLayer) {
 			// For lookahead objects, .layer doesn't point to any real layer
@@ -156,10 +156,8 @@ export interface TimelineComplete {
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')
-export const Timeline: TransformedCollection<
-	TimelineComplete,
-	TimelineComplete
-> = createMongoCollection<TimelineComplete>('timeline')
+export const Timeline: TransformedCollection<TimelineComplete, TimelineComplete> =
+	createMongoCollection<TimelineComplete>('timeline')
 registerCollection('Timeline', Timeline)
 
 // Note: this index is always created by default, so it's not needed.

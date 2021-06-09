@@ -536,7 +536,7 @@ export namespace PeripheralDeviceAPI {
 	) {
 		const timeoutTime: number = timeoutTime0 || 3000 // also handles null
 
-		let commandId: PeripheralDeviceCommandId = getRandomId()
+		const commandId: PeripheralDeviceCommandId = getRandomId()
 
 		let subscription: Meteor.SubscriptionHandle | null = null
 		if (Meteor.isClient) {
@@ -548,7 +548,7 @@ export namespace PeripheralDeviceAPI {
 		let timeoutCheck: number = 0
 		// we've sent the command, let's just wait for the reply
 		const checkReply = () => {
-			let cmd = PeripheralDeviceCommands.findOne(commandId)
+			const cmd = PeripheralDeviceCommands.findOne(commandId)
 			// if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
 			// logger.debug('checkReply')
 

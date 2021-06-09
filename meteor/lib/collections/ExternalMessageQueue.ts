@@ -56,10 +56,8 @@ export interface ExternalMessageQueueObj extends ProtectedStringProperties<IBlue
 	manualRetry?: boolean
 }
 
-export const ExternalMessageQueue: TransformedCollection<
-	ExternalMessageQueueObj,
-	ExternalMessageQueueObj
-> = createMongoCollection<ExternalMessageQueueObj>('externalMessageQueue')
+export const ExternalMessageQueue: TransformedCollection<ExternalMessageQueueObj, ExternalMessageQueueObj> =
+	createMongoCollection<ExternalMessageQueueObj>('externalMessageQueue')
 registerCollection('ExternalMessageQueue', ExternalMessageQueue)
 
 registerIndex(ExternalMessageQueue, {

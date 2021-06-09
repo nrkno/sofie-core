@@ -26,7 +26,7 @@ export interface ChangedIds<T extends ProtectedString<any>> {
 }
 
 export function sumChanges(...changes: (Changes | ChangedIds<any> | null)[]): Changes {
-	let change: Changes = {
+	const change: Changes = {
 		added: 0,
 		updated: 0,
 		removed: 0,
@@ -104,7 +104,7 @@ async function savePreparedChanges<DocClass extends DBInterface, DBInterface ext
 	collection: TransformedCollection<DocClass, DBInterface>,
 	options: SaveIntoDbHooks<DocClass, DBInterface>
 ): Promise<Changes> {
-	let change: Changes = {
+	const change: Changes = {
 		added: 0,
 		updated: 0,
 		removed: 0,

@@ -40,7 +40,7 @@ meteorPublish(PubSub.studios, function (selector0, token) {
 })
 meteorPublish(PubSub.studioOfDevice, function (deviceId: PeripheralDeviceId, token) {
 	if (PeripheralDeviceReadAccess.peripheralDevice({ _id: deviceId }, { userId: this.userId, token })) {
-		let peripheralDevice = PeripheralDevices.findOne(deviceId)
+		const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
@@ -134,7 +134,7 @@ meteorCustomPublishArray(
 		if (
 			PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })
 		) {
-			let peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 

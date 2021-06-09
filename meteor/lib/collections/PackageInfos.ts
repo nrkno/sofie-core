@@ -54,9 +54,8 @@ export enum PackageInfoDBType {
 	OTHER = 'other',
 }
 
-export const PackageInfos: TransformedCollection<PackageInfoDB, PackageInfoDB> = createMongoCollection<PackageInfoDB>(
-	'packageInfos'
-)
+export const PackageInfos: TransformedCollection<PackageInfoDB, PackageInfoDB> =
+	createMongoCollection<PackageInfoDB>('packageInfos')
 registerCollection('PackageInfos', PackageInfos)
 
 registerIndex(PackageInfos, {

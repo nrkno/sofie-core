@@ -73,8 +73,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					uploadFileKey: Date.now(),
 				})
 
-				let uploadFileContents = (e2.target as any).result
-				let blueprint = this.props.blueprint
+				const uploadFileContents = (e2.target as any).result
+				const blueprint = this.props.blueprint
 
 				// First attempt
 				doModalDialog({

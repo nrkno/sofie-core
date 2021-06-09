@@ -97,14 +97,14 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				.then((r: GetMigrationStatusResult) => {
 					if (this.cancelRequests) return
 
-					let inputValues = this.state.inputValues
+					const inputValues = this.state.inputValues
 					_.each(r.migration.manualInputs, (manualInput: MigrationStepInput) => {
 						if (manualInput.stepId && manualInput.inputType && manualInput.attribute) {
-							let stepId = manualInput.stepId
+							const stepId = manualInput.stepId
 
 							if (!inputValues[stepId]) inputValues[stepId] = {}
 
-							let value = inputValues[stepId][manualInput.attribute]
+							const value = inputValues[stepId][manualInput.attribute]
 							if (_.isUndefined(value)) {
 								inputValues[stepId][manualInput.attribute] = manualInput.defaultValue
 							}
@@ -126,7 +126,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				})
 		}
 		runMigration() {
-			let inputResults: Array<MigrationStepInputResult> = []
+			const inputResults: Array<MigrationStepInputResult> = []
 
 			// _.each(this.state.inputValues, (iv, stepId: string) => {
 			// 	_.each(iv, (value: any, attribute: string) => {
@@ -141,7 +141,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				_.each(this.state.migration.manualInputs, (manualInput) => {
 					if (manualInput.stepId && manualInput.attribute) {
 						let value: any
-						let step = this.state.inputValues[manualInput.stepId]
+						const step = this.state.inputValues[manualInput.stepId]
 						if (step) {
 							value = step[manualInput.attribute]
 						}
@@ -221,7 +221,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				let rank = 0
 				return _.map(this.state.migration.manualInputs, (manualInput: MigrationStepInput) => {
 					if (manualInput.stepId) {
-						let stepId = manualInput.stepId
+						const stepId = manualInput.stepId
 						let value
 						if (manualInput.attribute) {
 							value = (this.state.inputValues[stepId] || {})[manualInput.attribute]
@@ -239,7 +239,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 											overrideDisplayValue={value}
 											updateFunction={(edit: EditAttributeBase, newValue: any) => {
 												if (manualInput.attribute) {
-													let inputValues = this.state.inputValues
+													const inputValues = this.state.inputValues
 													if (!inputValues[stepId]) inputValues[stepId] = {}
 													inputValues[stepId][manualInput.attribute] = newValue
 
@@ -269,7 +269,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 							<div>
 								{this.state.migration
 									? _.map(this.state.migration.chunks, (chunk, i) => {
-											let str = t('Version for {{name}}: From {{fromVersion}} to {{toVersion}}', {
+											const str = t('Version for {{name}}: From {{fromVersion}} to {{toVersion}}', {
 												name: chunk.sourceName,
 												fromVersion: chunk._dbVersion,
 												toVersion: chunk._targetVersion,

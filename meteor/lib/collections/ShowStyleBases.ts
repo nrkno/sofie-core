@@ -45,18 +45,16 @@ export class ShowStyleBase implements DBShowStyleBase {
 	public _rundownVersionHash: string
 
 	constructor(document: DBShowStyleBase) {
-		for (let [key, value] of Object.entries(document)) {
+		for (const [key, value] of Object.entries(document)) {
 			this[key] = value
 		}
 	}
 }
 
-export const ShowStyleBases: TransformedCollection<
-	ShowStyleBase,
-	DBShowStyleBase
-> = createMongoCollection<ShowStyleBase>('showStyleBases', {
-	transform: (doc) => applyClassToDocument(ShowStyleBase, doc),
-})
+export const ShowStyleBases: TransformedCollection<ShowStyleBase, DBShowStyleBase> =
+	createMongoCollection<ShowStyleBase>('showStyleBases', {
+		transform: (doc) => applyClassToDocument(ShowStyleBase, doc),
+	})
 registerCollection('ShowStyleBases', ShowStyleBases)
 
 registerIndex(ShowStyleBases, {

@@ -190,20 +190,21 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		message: string,
 		headers: { [headers: string]: string } | undefined
 	) {
-		return new Promise((resolve, reject) => {
-			this.channel.assertExchange(exchangeTopic, 'topic', { durable: true })
-
-			this.outgoingQueue.push({
-				_id: messageId,
-				exchangeTopic,
-				routingKey,
-				headers,
-				message,
-				resolve,
-				reject,
-			})
-			this.triggerHandleOutgoingQueue()
-		})
+		return this.channel.assertExchange(exchangeTopic, 'topic', { durable: true }).then(
+			() =>
+				new Promise((resolve, reject) => {
+					this.outgoingQueue.push({
+						_id: messageId,
+						exchangeTopic,
+						routingKey,
+						headers,
+						message,
+						resolve,
+						reject,
+					})
+					this.triggerHandleOutgoingQueue()
+				})
+		)
 	}
 
 	triggerHandleOutgoingQueue() {
@@ -215,15 +216,15 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		}
 	}
 	handleOutgoingQueue() {
-		let firstMessageInQueue: Message | undefined = this.outgoingQueue.shift()
+		const firstMessageInQueue: Message | undefined = this.outgoingQueue.shift()
 
 		if (firstMessageInQueue) {
-			let messageToSend: Message = firstMessageInQueue
+			const messageToSend: Message = firstMessageInQueue
 
-			let sent = this.channel.publish(
+			const sent = this.channel.publish(
 				messageToSend.exchangeTopic,
 				messageToSend.routingKey,
-				new Buffer(messageToSend.message),
+				Buffer.from(messageToSend.message),
 				{
 					// options
 					headers: messageToSend.headers,
@@ -274,13 +275,13 @@ async function getChannelManager(hostURL: string) {
 	return connectionManager.channelManager
 }
 export async function sendRabbitMQMessage(msg0: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj) {
-	let msg: ExternalMessageQueueObjRabbitMQ = msg0 // for typings
+	const msg: ExternalMessageQueueObjRabbitMQ = msg0 // for typings
 
 	let hostURL: string = msg.receiver.host
 	const exchangeTopic: string = msg.receiver.topic
 	const routingKey: string = msg.message.routingKey
 	let message: any = msg.message.message
-	let headers: { [header: string]: string } = msg.message.headers
+	const headers: { [header: string]: string } = msg.message.headers
 
 	if (!hostURL) throw new Meteor.Error(400, `RabbitMQ: Message host not set`)
 	if (!exchangeTopic) throw new Meteor.Error(400, `RabbitMQ: Message topic not set`)
