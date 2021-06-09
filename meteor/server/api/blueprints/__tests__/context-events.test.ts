@@ -822,7 +822,7 @@ describe('Test blueprint api context', () => {
 			expect(getAllKnownSessions(context)).toEqual(existingSessions)
 		})
 
-		test('getTimelineObjectAbSessionId - lookahead', async () => {
+		test('getTimelineObjectAbSessionId - lookahead2', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()

@@ -4,7 +4,7 @@ import {
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 } from '../../../../__mocks__/helpers/database'
-import { protectString, unprotectString, getRandomId, getCurrentTime } from '../../../../lib/lib'
+import { protectString, unprotectString, getRandomId, getCurrentTime, Awaited } from '../../../../lib/lib'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { ActionExecutionContext, ActionPartChange } from '../context'
@@ -50,6 +50,7 @@ const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 jest.mock('../postProcess')
 import { postProcessPieces } from '../postProcess'
 import { Pieces } from '../../../../lib/collections/Pieces'
+import { ReadonlyDeep } from 'type-fest'
 
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
@@ -153,7 +154,7 @@ describe('Test blueprint api context', () => {
 		}
 	}
 
-	async function wrapWithCache<T>(fcn: (cache: CacheForPlayout) => Promise<T>): Promise<T> {
+	async function wrapWithCache<T>(fcn: (cache: CacheForPlayout) => Promise<T>): Promise<Awaited<T>> {
 		const defaultSetup = setupDefaultRundownPlaylist(env)
 
 		// Mark playlist as active
@@ -183,8 +184,8 @@ describe('Test blueprint api context', () => {
 
 	describe('ActionExecutionContext', () => {
 		describe('getPartInstance', () => {
-			testInFiber('invalid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('invalid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					// @ts-ignore
@@ -198,8 +199,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('valid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('valid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
@@ -222,8 +223,8 @@ describe('Test blueprint api context', () => {
 			})
 		})
 		describe('getPieceInstances', () => {
-			testInFiber('invalid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('invalid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					// @ts-ignore
@@ -237,8 +238,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('valid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('valid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
@@ -261,8 +262,8 @@ describe('Test blueprint api context', () => {
 			})
 		})
 		describe('getResolvedPieceInstances', () => {
-			testInFiber('invalid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('invalid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					// @ts-ignore
@@ -276,8 +277,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('valid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('valid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
@@ -324,8 +325,8 @@ describe('Test blueprint api context', () => {
 			})
 		})
 		describe('findLastPieceOnLayer', () => {
-			testInFiber('invalid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('invalid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
@@ -338,8 +339,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('basic and original only', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('basic and original only', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context, rundown, activationId } = await getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
@@ -419,8 +420,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('excludeCurrentPart', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('excludeCurrentPart', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context, rundown, activationId } = await getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
@@ -500,8 +501,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('pieceMetaDataFilter', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('pieceMetaDataFilter', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context, rundown, activationId } = await getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
@@ -591,8 +592,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		describe('findLastScriptedPieceOnLayer', () => {
-			testInFiber('No Current Part', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('No Current Part', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context, rundown, activationId } = await getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
@@ -607,8 +608,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('First Part', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('First Part', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context, rundown, activationId } = await getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
@@ -665,8 +666,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('First Part, Ignore Current Part', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('First Part, Ignore Current Part', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context, rundown, activationId } = await getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
@@ -694,8 +695,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('Second Part', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('Second Part', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context, rundown, activationId } = await getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
@@ -753,8 +754,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		describe('getPartInstanceForPreviousPiece', () => {
-			testInFiber('invalid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('invalid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					// @ts-ignore
@@ -784,8 +785,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('valid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('valid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
@@ -807,8 +808,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		describe('getPartForPreviousPiece', () => {
-			testInFiber('invalid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('invalid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					// @ts-ignore
@@ -836,8 +837,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('valid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('valid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					const partInstances = cache.PartInstances.findFetch({})
@@ -870,8 +871,8 @@ describe('Test blueprint api context', () => {
 				innerStartAdLibPieceMock.mockClear()
 			})
 
-			testInFiber('bad parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('bad parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					const partInstance = cache.PartInstances.findOne() as PartInstance
@@ -897,8 +898,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('good', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('good', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					const partInstance = cache.PartInstances.findOne() as PartInstance
@@ -938,8 +939,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		describe('updatePieceInstance', () => {
-			testInFiber('bad parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('bad parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					const pieceInstance = cache.PieceInstances.findOne() as PieceInstance
@@ -1002,8 +1003,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('good', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('good', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					// Setup the rundown and find a piece to modify
@@ -1055,8 +1056,8 @@ describe('Test blueprint api context', () => {
 				innerStartQueuedAdLibMock.mockClear()
 			})
 
-			testInFiber('bad parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('bad parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					// No next-part
@@ -1130,8 +1131,8 @@ describe('Test blueprint api context', () => {
 					expect(context.currentPartState).toEqual(ActionPartChange.NONE)
 				})
 			})
-			testInFiber('good', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('good', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context, playlist } = await getActionExecutionContext(cache)
 
 					const partInstance = cache.PartInstances.findOne() as PartInstance
@@ -1186,8 +1187,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		describe('stopPiecesOnLayers', () => {
-			testInFiber('invalid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('invalid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					// Bad instance id
@@ -1206,8 +1207,8 @@ describe('Test blueprint api context', () => {
 					expect(context.currentPartState).toEqual(ActionPartChange.NONE)
 				})
 			})
-			testInFiber('valid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('valid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					const currentPartInstance = cache.PartInstances.findOne() as PartInstance
@@ -1245,8 +1246,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		describe('stopPieceInstances', () => {
-			testInFiber('invalid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('invalid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					// Bad instance id
@@ -1265,8 +1266,8 @@ describe('Test blueprint api context', () => {
 					expect(context.currentPartState).toEqual(ActionPartChange.NONE)
 				})
 			})
-			testInFiber('valid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('valid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					const currentPartInstance = cache.PartInstances.findOne() as PartInstance
@@ -1303,8 +1304,8 @@ describe('Test blueprint api context', () => {
 			})
 		})
 		describe('removePieceInstances', () => {
-			testInFiber('invalid parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('invalid parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					// No instance id
@@ -1326,8 +1327,8 @@ describe('Test blueprint api context', () => {
 				})
 			})
 
-			testInFiber('good', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('good', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					expect(cache.PieceInstances.findFetch().length).not.toEqual(0)
@@ -1349,8 +1350,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		describe('updatePartInstance', () => {
-			testInFiber('bad parameters', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('bad parameters', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					const partInstance = cache.PartInstances.findOne() as PartInstance
@@ -1378,8 +1379,8 @@ describe('Test blueprint api context', () => {
 					context.updatePartInstance('current', { title: 'new' })
 				})
 			})
-			testInFiber('good', () => {
-				wrapWithCache(async (cache) => {
+			testInFiber('good', async () => {
+				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
 					// Setup the rundown and find an instance to modify
