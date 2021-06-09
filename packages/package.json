@@ -55,6 +55,7 @@
 		}
 	},
 	"resolutions": {
-		"node-license-validator/**/minimist": "^1.2.3"
+		"node-license-validator/**/minimist": "^1.2.3",
+		"ws": "^7.4.6"
 	}
 }
