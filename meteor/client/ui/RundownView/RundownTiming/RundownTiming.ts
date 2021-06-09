@@ -87,38 +87,3 @@ export namespace RundownTiming {
 		timingDurations: RundownTimingContext
 	}
 }
-
-/**
- * Computes the actual (as-played fallbacking to expected) duration of a segment, consisting of given parts
- * @export
- * @param  {RundownTiming.RundownTimingContext} timingDurations The timing durations calculated for the Rundown
- * @param  {Array<string>} partIds The IDs of parts that are members of the segment
- * @return number
- */
-export function computeSegmentDuration(
-	timingDurations: RundownTiming.RundownTimingContext,
-	partIds: PartId[],
-	display?: boolean
-): number {
-	const partDurations = timingDurations.partDurations
-
-	if (partDurations === undefined) return 0
-
-	return partIds.reduce((memo, partId) => {
-		const pId = unprotectString(partId)
-		const partDuration =
-			(partDurations ? (partDurations[pId] !== undefined ? partDurations[pId] : 0) : 0) ||
-			(display ? Settings.defaultDisplayDuration : 0)
-		return memo + partDuration
-	}, 0)
-}
-
-export function computeSegmentDisplayDuration(
-	timingDurations: RundownTiming.RundownTimingContext,
-	parts: PartUi[]
-): number {
-	return parts.reduce(
-		(memo, part) => memo + SegmentTimelinePartClass.getPartDisplayDuration(part, timingDurations),
-		0
-	)
-}

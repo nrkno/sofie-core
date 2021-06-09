@@ -7,12 +7,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
-import {
-	RundownTiming,
-	computeSegmentDuration,
-	TimingEvent,
-	computeSegmentDisplayDuration,
-} from '../RundownView/RundownTiming/RundownTiming'
+import { RundownTiming, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import {
@@ -48,9 +43,7 @@ import RundownViewEventBus, {
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { checkPieceContentStatus, getNoteTypeForPieceStatus, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
-import { SegmentTimelinePartClass } from './SegmentTimelinePart'
-import { RundownAPI } from '../../../lib/api/rundown'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { computeSegmentDuration } from '../../../lib/rundown/rundownTiming'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
