@@ -2,7 +2,7 @@ import { TFunction } from 'i18next'
 import moment from 'moment'
 import { getCurrentTime } from '../../../lib/lib'
 
-export function JonasFormattedTimeInner(
+export function DisplayFormattedTimeInner(
 	t: TFunction,
 	/** Timestamp to display */
 	displayTimestamp: number,
