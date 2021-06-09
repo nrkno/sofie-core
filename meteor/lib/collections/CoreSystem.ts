@@ -173,26 +173,47 @@ export function setCoreSystemStorePath(storePath: string | undefined): void {
 export type Version = string
 export type VersionRange = string
 
+function isReferenceOrUndefined(v: string | undefined): boolean {
+	return !v || v.startsWith('http') || v.startsWith('git') || v.startsWith('file')
+}
+
 export function stripVersion(v: string): string {
-	if (v.match(/git/i) || v.match(/http/i)) {
+	if (isReferenceOrUndefined(v)) {
 		return '0.0.0'
 	} else {
-		return v.replace(/[^\d.]/g, '') || '0.0.0'
+		const valid = semver.parse(v)
+		if (!valid) throw new Meteor.Error(500, `Invalid version: "${v}"`)
+
+		return `${valid.major}.${valid.minor}.${valid.patch}`
 	}
 }
-export function parseRange(r: string | VersionRange): VersionRange {
-	if ((r + '').match(/git:\/\//) || (r + '').match(/git\+https:\/\//)) {
+export function parseRange(r: string | VersionRange | undefined): VersionRange {
+	if (isReferenceOrUndefined(r)) {
 		return '^0.0.0' // anything goes..
 	}
 	const range = semver.validRange(r)
 	if (!range) throw new Meteor.Error(500, `Invalid range: "${r}"`)
 	return range
 }
-export function parseVersion(v: string | Version): Version {
-	if ((v + '').match(/git:\/\//) || (v + '').match(/http/)) {
+export function parseVersion(v: string | Version | undefined): Version {
+	if (isReferenceOrUndefined(v)) {
 		return '0.0.0' // fallback
 	}
 	const valid = semver.valid(v)
 	if (!valid) throw new Meteor.Error(500, `Invalid version: "${v}"`)
 	return valid
+}
+
+export function parseCoreIntegrationCompatabilityRange(v: string): string {
+	if (isReferenceOrUndefined(v)) {
+		return '0.0'
+	} else {
+		const valid = semver.parse(v)
+		if (!valid) throw new Meteor.Error(500, `Invalid version: "${v}"`)
+
+		// patch releases shouldn't break things, so we always want to accept an older patch
+		valid.patch = 0
+
+		return `~${valid.format()}`
+	}
 }
