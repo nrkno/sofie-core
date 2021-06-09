@@ -647,7 +647,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			const historyTimeDuration = this.props.liveLineHistorySize / this.props.timeScale
 
 
-			let pixelPostion = Math.floor(
+			const pixelPostion = Math.floor(
 				this.convertTimeToPixels(this.props.livePosition) -
 					(!this.props.followLiveLine ? this.convertTimeToPixels(this.props.scrollLeft) : 0)
 			)
