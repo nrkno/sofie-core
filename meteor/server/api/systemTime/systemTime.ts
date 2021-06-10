@@ -2,10 +2,11 @@ import { Meteor } from 'meteor/meteor'
 const ntpClient: NtpClient = require('ntp-client')
 import { NtpClient } from '../../typings/ntp-client'
 import { systemTime, getCurrentTime } from '../../../lib/lib'
-import { StatusCode, setSystemStatus } from '../../systemStatus/systemStatus'
+import { setSystemStatus } from '../../systemStatus/systemStatus'
 import { logger } from '../../logging'
 import { TimeDiff, DiffTimeResult } from '../../../lib/api/peripheralDevice'
 import { env } from 'process'
+import { StatusCode } from '../../../lib/api/systemStatus'
 
 /** How often the system-time should be updated */
 const UPDATE_SYSTEM_TIME_INTERVAL = 3600 * 1000

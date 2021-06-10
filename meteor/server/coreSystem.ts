@@ -10,12 +10,13 @@ import {
 	VersionRange,
 	GENESIS_SYSTEM_VERSION,
 	parseCoreIntegrationCompatabilityRange,
+	compareSemverVersions,
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime, unprotectString, waitForPromiseAll } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from './migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './migration/currentSystemVersion'
-import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus/systemStatus'
+import { setSystemStatus, removeSystemStatus } from './systemStatus/systemStatus'
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
@@ -30,6 +31,7 @@ import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 import { profiler } from './api/profiler'
 import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
 import { createShowStyleCompound } from './api/showStyles'
+import { StatusCode } from '../lib/api/systemStatus'
 
 export { PackageInfo }
 
@@ -191,86 +193,6 @@ function checkDatabaseVersions() {
 		lastDatabaseVersionBlueprintIds = blueprintIds
 	}
 }
-/**
- * Compares two versions and returns a system Status
- * @param currentVersion
- * @param targetRange
- */
-function compareSemverVersions(
-	currentVersion: Version | null,
-	targetRange: VersionRange,
-	fixMessage: string,
-	meName: string,
-	theyName: string
-): { statusCode: StatusCode; messages: string[] } {
-	if (currentVersion) currentVersion = semver.clean(currentVersion)
-
-	if (currentVersion) {
-		if (semver.satisfies(currentVersion, targetRange)) {
-			return {
-				statusCode: StatusCode.GOOD,
-				messages: [`${meName} version: ${currentVersion}`],
-			}
-		} else {
-			const currentV = new semver.SemVer(currentVersion, { includePrerelease: true })
-
-			try {
-				const expectV = new semver.SemVer(stripVersion(targetRange), { includePrerelease: true })
-
-				const message =
-					`Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version of ${theyName}: "${targetRange}"` +
-					(fixMessage ? ` (${fixMessage})` : '')
-
-				if (!expectV || !currentV) {
-					return {
-						statusCode: StatusCode.BAD,
-						messages: [message],
-					}
-				} else if (expectV.major !== currentV.major) {
-					return {
-						statusCode: StatusCode.BAD,
-						messages: [message],
-					}
-				} else if (expectV.minor !== currentV.minor) {
-					return {
-						statusCode: StatusCode.WARNING_MAJOR,
-						messages: [message],
-					}
-				} else if (expectV.patch !== currentV.patch) {
-					return {
-						statusCode: StatusCode.WARNING_MINOR,
-						messages: [message],
-					}
-				} else if (!_.isEqual(expectV.prerelease, currentV.prerelease)) {
-					return {
-						statusCode: StatusCode.WARNING_MINOR,
-						messages: [message],
-					}
-				} else {
-					return {
-						statusCode: StatusCode.BAD,
-						messages: [message],
-					}
-				}
-				// the expectedVersion may be a proper range, in which case the new semver.SemVer will throw an error, even though the semver.satisfies check would work.
-			} catch (e) {
-				const message =
-					`Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version range of ${theyName}: "${targetRange}"` +
-					(fixMessage ? ` (${fixMessage})` : '')
-
-				return {
-					statusCode: StatusCode.BAD,
-					messages: [message],
-				}
-			}
-		}
-	} else {
-		return {
-			statusCode: StatusCode.FATAL,
-			messages: [`Current ${meName} version missing (when comparing with ${theyName})`],
-		}
-	}
-}
 
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
 
@@ -284,7 +206,7 @@ function checkBlueprintCompability(blueprint: Blueprint) {
 		parseRange(integrationVersionRange),
 		'Blueprint has to be updated',
 		'blueprint.integrationVersion',
-		'core.@sofie-automation/blueprints-integration'
+		'@sofie-automation/blueprints-integration'
 	)
 
 	if (integrationStatus.statusCode >= StatusCode.WARNING_MAJOR) {

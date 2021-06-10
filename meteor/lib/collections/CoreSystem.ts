@@ -5,6 +5,8 @@ import { logger } from '../logging'
 import * as semver from 'semver'
 import { createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
+import _ from 'underscore'
+import { StatusCode } from '../api/systemStatus'
 
 export const SYSTEM_ID = protectString('core')
 
@@ -215,5 +217,84 @@ export function parseCoreIntegrationCompatabilityRange(v: string): string {
 		valid.patch = 0
 
 		return `~${valid.format()}`
+	}
+}
+/**
+ * Compares two versions and returns a system Status
+ * @param currentVersion
+ * @param targetRange
+ */
+export function compareSemverVersions(
+	currentVersion: Version | null,
+	targetRange: VersionRange,
+	fixMessage: string,
+	meName: string,
+	theyName: string
+): { statusCode: StatusCode; messages: string[] } {
+	if (currentVersion) currentVersion = semver.clean(currentVersion)
+
+	if (currentVersion) {
+		if (semver.satisfies(currentVersion, targetRange)) {
+			return {
+				statusCode: StatusCode.GOOD,
+				messages: [`${meName} version: ${currentVersion}`],
+			}
+		} else {
+			try {
+				const currentV = new semver.SemVer(currentVersion, { includePrerelease: true })
+				const expectV = new semver.SemVer(stripVersion(targetRange), { includePrerelease: true })
+
+				const message =
+					`Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version of ${theyName}: "${targetRange}"` +
+					(fixMessage ? ` (${fixMessage})` : '')
+
+				if (!expectV || !currentV) {
+					return {
+						statusCode: StatusCode.BAD,
+						messages: [message],
+					}
+				} else if (expectV.major !== currentV.major) {
+					return {
+						statusCode: StatusCode.BAD,
+						messages: [message],
+					}
+				} else if (expectV.minor !== currentV.minor) {
+					return {
+						statusCode: StatusCode.WARNING_MAJOR,
+						messages: [message],
+					}
+				} else if (expectV.patch !== currentV.patch) {
+					return {
+						statusCode: StatusCode.WARNING_MINOR,
+						messages: [message],
+					}
+				} else if (!_.isEqual(expectV.prerelease, currentV.prerelease)) {
+					return {
+						statusCode: StatusCode.WARNING_MINOR,
+						messages: [message],
+					}
+				} else {
+					return {
+						statusCode: StatusCode.BAD,
+						messages: [message],
+					}
+				}
+				// the expectedVersion may be a proper range, in which case the new semver.SemVer will throw an error, even though the semver.satisfies check would work.
+			} catch (e) {
+				const message =
+					`Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version range of ${theyName}: "${targetRange}"` +
+					(fixMessage ? ` (${fixMessage})` : '')
+
+				return {
+					statusCode: StatusCode.BAD,
+					messages: [message],
+				}
+			}
+		}
+	} else {
+		return {
+			statusCode: StatusCode.FATAL,
+			messages: [`Current ${meName} version missing (when comparing with ${theyName})`],
+		}
 	}
 }

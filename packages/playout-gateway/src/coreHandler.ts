@@ -509,7 +509,6 @@ export class CoreHandler {
 		}
 
 		const pkgNames = [
-			'@sofie-automation/server-core-integration',
 			'timeline-state-resolver',
 			'atem-connection',
 			'atem-state',
