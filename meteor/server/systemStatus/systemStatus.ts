@@ -76,20 +76,29 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		})
 	}
 
-	if (deviceStatus === StatusCode.GOOD) {
+	if (deviceStatus === StatusCode.GOOD && !device.disableVersionChecks) {
 		if (!device.versions) device.versions = {}
 		const deviceVersions = device.versions
 
 		// Check core-integration version is as expected
-		const integrationVersion = parseVersion(deviceVersions['@sofie-automation/server-core-integration'])
-		const checkMessage = compareSemverVersions(
-			integrationVersion,
-			integrationVersionRange,
-			`Device has to be updated`,
-			`Device "${device.name}"`,
-			'@sofie-automation/server-core-integration'
-		)
-		pushStatusAsCheck('@sofie-automation/server-core-integration', checkMessage.statusCode, checkMessage.messages)
+		if (
+			device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS ||
+			deviceVersions['@sofie-automation/server-core-integration']
+		) {
+			const integrationVersion = parseVersion(deviceVersions['@sofie-automation/server-core-integration'])
+			const checkMessage = compareSemverVersions(
+				integrationVersion,
+				integrationVersionRange,
+				`Device has to be updated`,
+				`Device "${device.name}"`,
+				'@sofie-automation/server-core-integration'
+			)
+			pushStatusAsCheck(
+				'@sofie-automation/server-core-integration',
+				checkMessage.statusCode,
+				checkMessage.messages
+			)
+		}
 
 		// Check blueprint-integration version is as expected, if it exposes that
 		if (deviceVersions['@sofie-automation/blueprint-integration']) {
