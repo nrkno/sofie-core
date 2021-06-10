@@ -18,7 +18,7 @@ import {
 	Component,
 	StatusCode,
 } from '../../lib/api/systemStatus'
-import { getRelevantSystemVersions, PackageInfo } from '../coreSystem'
+import { getRelevantSystemVersions } from '../coreSystem'
 import { StudioId } from '../../lib/collections/Studios'
 import { Settings } from '../../lib/Settings'
 import { StudioReadAccess } from '../security/studio'
@@ -26,6 +26,7 @@ import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
 import { SystemWriteAccess } from '../security/system'
 
+const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
 
 // Any libraries that if a gateway uses should match a certain version
