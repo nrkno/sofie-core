@@ -95,7 +95,7 @@ import { AdlibSegmentUi, fetchAndFilter, matchFilter, SourceLayerLookup } from '
 import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { documentTitle } from '../lib/DocumentTitleProvider'
-import { PartInstance } from '../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
@@ -1336,6 +1336,8 @@ interface IState {
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
 	keyboardQueuedPiece: AdLibPieceUi | undefined
+	keyboardQueuedPartInstanceId: PartInstanceId | undefined
+	keyboardRequeue: boolean
 }
 
 type MatchedSegment = {
@@ -1638,6 +1640,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				currentRundown: undefined,
 				wasShelfResizedByUser: false,
 				keyboardQueuedPiece: undefined,
+				keyboardQueuedPartInstanceId: undefined,
+				keyboardRequeue: false,
 			}
 		}
 
@@ -2008,6 +2012,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 			if (this.props.currentPartInstance?.segmentId !== prevProps.currentPartInstance?.segmentId) {
 				this.setState({ keyboardQueuedPiece: undefined })
+			} else if (this.props.playlist && prevProps.playlist && this.state.keyboardQueuedPartInstanceId) {
+				if (
+					(prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId &&
+						this.props.playlist.currentPartInstanceId !== this.state.keyboardQueuedPartInstanceId) ||
+					(prevProps.playlist.currentPartInstanceId === this.props.playlist.currentPartInstanceId &&
+						prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId &&
+						this.props.playlist.nextPartInstanceId !== this.state.keyboardQueuedPartInstanceId)
+				) {
+					this.setState({ keyboardRequeue: true, keyboardQueuedPartInstanceId: undefined })
+				}
 			}
 		}
 
@@ -2640,6 +2654,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
+		onPieceQueued = (err: any, res: { queuedPartInstanceId?: PartInstanceId; taken?: boolean }) => {
+			if (!err && res) {
+				if (res.taken) {
+					this.setState({ keyboardQueuedPartInstanceId: undefined })
+				} else {
+					this.setState({ keyboardQueuedPartInstanceId: res.queuedPartInstanceId })
+				}
+			}
+		}
+
 		queueAdLibPiece = (adlibPiece: AdLibPieceUi, e: any) => {
 			const { t } = this.props
 
@@ -2650,36 +2674,29 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				if (!(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
 					if (adlibPiece.isAction && adlibPiece.adlibAction) {
 						const action = adlibPiece.adlibAction
-						doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-							MeteorCall.userAction.executeAction(e, this.props.playlist!._id, action.actionId, action.userData)
+						doUserAction(
+							t,
+							e,
+							adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB,
+							(e) => MeteorCall.userAction.executeAction(e, this.props.playlist!._id, action.actionId, action.userData),
+							this.onPieceQueued
 						)
 					} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
-						doUserAction(t, e, UserAction.START_ADLIB, (e) =>
-							MeteorCall.userAction.segmentAdLibPieceStart(
-								e,
-								this.props.playlist!._id,
-								currentPartInstanceId,
-								adlibPiece._id,
-								true
-							)
+						doUserAction(
+							t,
+							e,
+							UserAction.START_ADLIB,
+							(e) =>
+								MeteorCall.userAction.segmentAdLibPieceStart(
+									e,
+									this.props.playlist!._id,
+									currentPartInstanceId,
+									adlibPiece._id,
+									true
+								),
+							this.onPieceQueued
 						)
-					} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
-						doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
-							MeteorCall.userAction.baselineAdLibPieceStart(
-								e,
-								this.props.playlist!._id,
-								currentPartInstanceId,
-								adlibPiece._id,
-								true
-							)
-						)
-					} else if (adlibPiece.isSticky) {
-						// this.onToggleSticky(adlibPiece.sourceLayerId, e)
 					}
-				} else {
-					// if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
-					// 	this.onClearAllSourceLayers([sourceLayer], e)
-					// }
 				}
 			}
 		}
@@ -2705,7 +2722,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			let pieceToQueue: AdLibPieceUi | undefined
 			let currentSegmentId: SegmentId | undefined
 			if (keyboardQueuedPiece) {
-				if (keyboardQueuedPiece.segmentId && uiSegmentMap.has(keyboardQueuedPiece.segmentId)) {
+				if (this.state.keyboardRequeue) {
+					pieceToQueue = keyboardQueuedPiece
+				} else if (keyboardQueuedPiece.segmentId && uiSegmentMap.has(keyboardQueuedPiece.segmentId)) {
 					const pieces = uiSegmentMap
 						.get(keyboardQueuedPiece.segmentId)!
 						.pieces.filter(this.isAdLibQueueableAndNonFloated)
@@ -2736,7 +2755,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 			if (pieceToQueue) {
 				this.queueAdLibPiece(pieceToQueue, e)
-				this.setState({ keyboardQueuedPiece: pieceToQueue })
+				this.setState({ keyboardQueuedPiece: pieceToQueue, keyboardRequeue: false })
 			}
 		}
 

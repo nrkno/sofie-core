@@ -1169,7 +1169,7 @@ export namespace ServerPlayoutAPI {
 	) {
 		const now = getCurrentTime()
 
-		rundownPlaylistSyncFunction(
+		return rundownPlaylistSyncFunction(
 			rundownPlaylistId,
 			RundownSyncFunctionPriority.USER_PLAYOUT,
 			'executeActionInner',
@@ -1221,7 +1221,11 @@ export namespace ServerPlayoutAPI {
 				}
 
 				if (actionContext.takeAfterExecute) {
-					return ServerPlayoutAPI.callTakeWithCache(context, rundownPlaylistId, now, cache)
+					ServerPlayoutAPI.callTakeWithCache(context, rundownPlaylistId, now, cache)
+					return ClientAPI.responseSuccess({
+						queuedPartInstanceId: actionContext.queuedPartInstanceId,
+						taken: true,
+					})
 				} else {
 					if (
 						actionContext.currentPartState !== ActionPartChange.NONE ||
@@ -1231,6 +1235,14 @@ export namespace ServerPlayoutAPI {
 					}
 
 					waitForPromise(cache.saveAllToDatabase())
+
+					if (actionContext.nextPartState !== ActionPartChange.NONE && actionContext.queuedPartInstanceId) {
+						return ClientAPI.responseSuccess({
+							queuedPartInstanceId: actionContext.queuedPartInstanceId,
+						})
+					} else {
+						return ClientAPI.responseSuccess({})
+					}
 				}
 			}
 		)
