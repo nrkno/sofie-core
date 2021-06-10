@@ -131,7 +131,7 @@ Blueprints.allow({
 		return false
 	},
 	update(userId, doc, fields, _modifier) {
-		return allowOnlyFields(doc, fields, ['name'])
+		return allowOnlyFields(doc, fields, ['name', 'disableVersionChecks'])
 	},
 	remove(_userId, _doc) {
 		return false

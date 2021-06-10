@@ -4,7 +4,15 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, waitForPromise, getRandomId, applyToArray } from '../../lib/lib'
+import {
+	getCurrentTime,
+	protectString,
+	makePromise,
+	waitForPromise,
+	getRandomId,
+	applyToArray,
+	stringifyObjects,
+} from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete, TimelineHash } from '../../lib/collections/Timeline'
@@ -77,6 +85,9 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug('Initialize device ' + deviceId, _.omit(options, 'versions', 'configManifest'))
 
 		if (existingDevice) {
+			const newVersionsStr = stringifyObjects(options.versions)
+			const oldVersionsStr = stringifyObjects(existingDevice.versions)
+
 			PeripheralDevices.update(deviceId, {
 				$set: {
 					lastSeen: getCurrentTime(),
@@ -99,6 +110,12 @@ export namespace ServerPeripheralDeviceAPI {
 
 					configManifest: options.configManifest,
 				},
+				$unset:
+					newVersionsStr !== oldVersionsStr
+						? {
+								disableVersionChecks: 1,
+						  }
+						: undefined,
 			})
 		} else {
 			PeripheralDevices.insert({

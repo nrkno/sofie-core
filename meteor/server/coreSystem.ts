@@ -197,26 +197,31 @@ function checkDatabaseVersions() {
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
 
 function checkBlueprintCompability(blueprint: Blueprint) {
-	if (!PackageInfo.dependencies) throw new Meteor.Error(500, `Package.dependencies not set`)
-
 	const systemStatusId = 'blueprintCompability_' + blueprint._id
 
-	const integrationStatus = compareSemverVersions(
-		parseVersion(blueprint.integrationVersion),
-		parseRange(integrationVersionRange),
-		'Blueprint has to be updated',
-		'blueprint.integrationVersion',
-		'@sofie-automation/blueprints-integration'
-	)
-
-	if (integrationStatus.statusCode >= StatusCode.WARNING_MAJOR) {
-		integrationStatus.messages[0] = 'Integration version: ' + integrationStatus.messages[0]
-		setSystemStatus(systemStatusId, integrationStatus)
-	} else {
+	if (blueprint.disableVersionChecks) {
 		setSystemStatus(systemStatusId, {
 			statusCode: StatusCode.GOOD,
-			messages: ['Versions match'],
+			messages: ['Version checks have been disabled'],
 		})
+	} else {
+		const integrationStatus = compareSemverVersions(
+			parseVersion(blueprint.integrationVersion),
+			parseRange(integrationVersionRange),
+			'Blueprint has to be updated',
+			'blueprint.integrationVersion',
+			'@sofie-automation/blueprints-integration'
+		)
+
+		if (integrationStatus.statusCode >= StatusCode.WARNING_MAJOR) {
+			integrationStatus.messages[0] = 'Integration version: ' + integrationStatus.messages[0]
+			setSystemStatus(systemStatusId, integrationStatus)
+		} else {
+			setSystemStatus(systemStatusId, {
+				statusCode: StatusCode.GOOD,
+				messages: ['Versions match'],
+			})
+		}
 	}
 }
 

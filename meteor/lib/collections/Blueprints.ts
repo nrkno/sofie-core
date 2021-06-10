@@ -34,6 +34,8 @@ export interface Blueprint {
 	blueprintVersion: string
 	integrationVersion: string
 	TSRVersion: string
+	/** Whether version checks should be disabled for this version */
+	disableVersionChecks?: boolean
 }
 
 export const Blueprints = createMongoCollection<Blueprint, Blueprint>('blueprints')

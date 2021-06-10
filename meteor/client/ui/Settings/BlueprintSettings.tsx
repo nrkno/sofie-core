@@ -309,6 +309,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								</p>
 							</div>
 						) : null}
+						<div className="mod mtn mbm mhn">
+							<label className="field">
+								{t('Disable version check')}
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="disableVersionChecks"
+									obj={blueprint}
+									type="checkbox"
+									collection={Blueprints}
+									className="input"
+								/>
+							</label>
+						</div>
 
 						<div className="mod mvs mhn">
 							<UploadButton

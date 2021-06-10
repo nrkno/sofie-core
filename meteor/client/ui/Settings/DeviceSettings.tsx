@@ -157,6 +157,19 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 							</div>
 						</div>
 					</div>
+					<div className="mod mhv mhs">
+						<label className="field">
+							{t('Disable version check')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute="disableVersionChecks"
+								obj={this.props.device}
+								type="checkbox"
+								collection={PeripheralDevices}
+								className="input"
+							/>
+						</label>
+					</div>
 
 					{this.renderSpecifics()}
 				</div>
