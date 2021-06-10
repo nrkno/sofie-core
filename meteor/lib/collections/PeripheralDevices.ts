@@ -35,10 +35,6 @@ export interface PeripheralDevice {
 	versions?: {
 		[libraryName: string]: string
 	}
-	/** Expected versions (at least this) */
-	expectedVersions?: {
-		[libraryName: string]: string
-	}
 
 	created: Time
 	status: PeripheralDeviceAPI.StatusObject

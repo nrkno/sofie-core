@@ -174,51 +174,10 @@ export function setExpectedVersion(
 		id: id,
 		canBeRunAutomatically: true,
 		validate: () => {
-			const minVersion = getMinVersion(versionStr)
-
-			const devices = PeripheralDevices.find({
-				type: deviceType,
-				subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
-			}).fetch()
-
-			for (const i in devices) {
-				const device = devices[i]
-				if (!device.expectedVersions) device.expectedVersions = {}
-
-				const expectedVersion = device.expectedVersions[libraryName] || '0.0.0'
-				const minExpectedVersion = getMinVersion(expectedVersion)
-
-				if (expectedVersion) {
-					try {
-						if (semver.lt(minExpectedVersion, minVersion)) {
-							return `Expected version ${libraryName}: ${expectedVersion} should be at least ${versionStr}`
-						}
-					} catch (e) {
-						return 'Error: ' + e.toString()
-					}
-				} else return `Expected version ${libraryName}: not set`
-			}
-			return false
+			throw new Error('TODO - remove')
 		},
 		migrate: () => {
-			const devices = PeripheralDevices.find({ type: deviceType }).fetch()
-			const minVersion = getMinVersion(versionStr)
-
-			_.each(devices, (device) => {
-				if (!device.expectedVersions) device.expectedVersions = {}
-
-				const expectedVersion = device.expectedVersions[libraryName] || '0.0.0'
-				const minExpectedVersion = getMinVersion(expectedVersion)
-
-				if (!expectedVersion || semver.lt(minExpectedVersion, minVersion)) {
-					const m = {}
-					m['expectedVersions.' + libraryName] = versionStr
-					logger.info(
-						`Migration: Updating expectedVersion ${libraryName} of device ${device._id} from "${expectedVersion}" to "${versionStr}"`
-					)
-					PeripheralDevices.update(device._id, { $set: m })
-				}
-			})
+			throw new Error('TODO - remove')
 		},
 		overrideSteps: [id],
 	}

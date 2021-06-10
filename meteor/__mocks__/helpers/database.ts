@@ -1,7 +1,6 @@
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { StatusCode } from '../../server/systemStatus/systemStatus'
 import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
 import {
 	PieceLifespan,
@@ -55,6 +54,7 @@ import {
 	defaultStudio,
 } from '../defaultCollectionObjects'
 import { OrganizationId } from '../../lib/collections/Organization'
+import { StatusCode } from '../../lib/api/systemStatus'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',

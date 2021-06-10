@@ -267,7 +267,6 @@ PeripheralDevices.allow({
 			'type',
 			'parentDeviceId',
 			'versions',
-			'expectedVersions',
 			'created',
 			'status',
 			'lastSeen',
