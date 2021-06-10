@@ -1,7 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
-import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // Release 23
 export const addSteps = addMigrationSteps('1.11.0', [
@@ -35,6 +33,4 @@ export const addSteps = addMigrationSteps('1.11.0', [
 			}
 		},
 	},
-	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.10.0'),
-	// setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^1.4.3'),
 ])
