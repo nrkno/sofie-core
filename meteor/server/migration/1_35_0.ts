@@ -11,6 +11,8 @@ import {
 import { MongoSelector } from '../../lib/typings/meteor'
 import { literal } from '../../lib/lib'
 import { dropDeprecatedDatabase, getDeprecatedDatabase } from './deprecatedDatabases/1_35_0'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { setExpectedVersion } from './lib'
 
 /*
  * **************************************************************************************
@@ -23,21 +25,12 @@ import { dropDeprecatedDatabase, getDeprecatedDatabase } from './deprecatedDatab
  */
 // Release X
 export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
-	//                     ^--- To be set to an absolute version number when doing the release
-	// add steps here:
-	// {
-	// 	id: 'my fancy step',
-	// 	canBeRunAutomatically: true,
-	// 	validate: () => {
-	// 		return false
-	// 	},
-	// 	migrate: () => {
-	// 		//
-	// 	}
-	// },
-	//
-	//
-	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
+	setExpectedVersion(
+		'expectedVersion.mediaManager',
+		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+		'_process',
+		'^1.10.0'
+	),
 
 	{
 		id: 'Fix badly named collection PackageContainerStatuses',
