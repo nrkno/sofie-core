@@ -1,14 +1,16 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import { check } from '../../lib/check'
 import * as _ from 'underscore'
-import { Rundowns } from '../collections/Rundowns'
-import { Part, PartId } from '../collections/Parts'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
-import { normalizeArray, protectString, unprotectString, getRandomId } from '../lib'
-import { SegmentId } from '../collections/Segments'
+import { RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
+import { getRandomId } from '../lib'
+import { SegmentId, Segments } from '../collections/Segments'
 import { PieceId } from '../collections/Pieces'
+import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../Rundown'
+import { PartInstanceId } from '../collections/PartInstances'
+import { PartId } from '../collections/Parts'
+import { FindOptions } from '../typings/meteor'
+import { PieceInstance, PieceInstances } from '../collections/PieceInstances'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>
@@ -23,7 +25,7 @@ export interface PrompterDataSegment {
 	parts: PrompterDataPart[]
 }
 export interface PrompterDataPart {
-	id: PartId
+	id: PartInstanceId
 	title: string | undefined
 	pieces: PrompterDataPiece[]
 }
@@ -33,8 +35,8 @@ export interface PrompterDataPiece {
 }
 export interface PrompterData {
 	title: string
-	currentPartId: PartId | null
-	nextPartId: PartId | null
+	currentPartInstanceId: PartInstanceId | null
+	nextPartInstanceId: PartInstanceId | null
 	segments: Array<PrompterDataSegment>
 }
 
@@ -48,43 +50,103 @@ export namespace PrompterAPI {
 
 		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 
-		const { parts, segments } = playlist.getSegmentsAndPartsSync()
-		// let parts = playlist.getAllOrderedParts().filter(p => !p.floated)
-		const segmentsMap = normalizeArray(segments, '_id')
-		const groupedParts = _.groupBy(parts, (p) => p.segmentId)
+		const groupedParts = getSegmentsWithPartInstances(
+			playlist,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			{
+				fields: {
+					isTaken: 0,
+					previousPartEndState: 0,
+					takeCount: 0,
+				},
+			}
+		)
+
+		// const groupedParts = _.groupBy(parts, (p) => p.segmentId)
 
 		let data: PrompterData = {
 			title: playlist.name,
-			currentPartId: currentPartInstance ? currentPartInstance.part._id : null,
-			nextPartId: nextPartInstance ? nextPartInstance.part._id : null,
+			currentPartInstanceId: currentPartInstance ? currentPartInstance._id : null,
+			nextPartInstanceId: nextPartInstance ? nextPartInstance._id : null,
 			segments: [],
 		}
 
 		const piecesIncluded: PieceId[] = []
+		const segmentIds: SegmentId[] = groupedParts.map(({ segment }) => segment._id)
+		const orderedAllPartIds: PartId[] = _.flatten(
+			groupedParts.map(({ partInstances }) => partInstances.map((partInstance) => partInstance.part._id))
+		)
 
-		Object.entries(groupedParts).forEach(([segmentId, parts]) => {
-			const segment = segmentsMap[segmentId]
+		let nextPartIsAfterCurrentPart = false
+		if (nextPartInstance && currentPartInstance) {
+			if (nextPartInstance.segmentId === currentPartInstance.segmentId) {
+				nextPartIsAfterCurrentPart = currentPartInstance.part._rank < nextPartInstance.part._rank
+			} else {
+				const nextPartSegmentIndex = segmentIds.indexOf(nextPartInstance.segmentId)
+				const currentPartSegmentIndex = segmentIds.indexOf(currentPartInstance.segmentId)
+				if (nextPartSegmentIndex >= 0 && currentPartSegmentIndex >= 0) {
+					nextPartIsAfterCurrentPart = currentPartSegmentIndex < nextPartSegmentIndex
+				}
+			}
+		}
+
+		groupedParts.forEach(({ segment, partInstances }, segmentIndex) => {
+			console.log(segment)
+			const segmentId = segment._id
 			if (segment && segment.isHidden) {
 				// Skip if is hidden
 				return
 			}
 
 			const segmentData: PrompterDataSegment = {
-				id: protectString(segmentId),
+				id: segmentId,
 				title: segment ? segment.name : undefined,
 				parts: [],
 			}
 
-			for (const part of parts) {
+			const partIds = partInstances.map((part) => part.part._id)
+
+			for (let partIndex = 0; partIndex < partInstances.length; partIndex++) {
+				const partInstance = partInstances[partIndex]
 				const partData: PrompterDataPart = {
-					id: part._id,
-					title: part.title,
+					id: partInstance._id,
+					title: partInstance.part.title,
 					pieces: [],
 				}
 
-				const allPieces = part.getAllPieces()
+				const pieceInstanceFieldOptions: FindOptions<PieceInstance> = {
+					fields: {
+						startedPlayback: 0,
+						stoppedPlayback: 0,
+					},
+				}
 
-				for (const piece of allPieces) {
+				const allPieceInstances = getPieceInstancesForPartInstance(
+					playlist.activationId,
+					partInstance,
+					new Set(partIds.slice(0, partIndex)),
+					new Set(segmentIds.slice(0, segmentIndex)),
+					orderedAllPartIds,
+					nextPartIsAfterCurrentPart,
+					currentPartInstance,
+					currentPartInstance
+						? PieceInstances.find(
+								{
+									partInstanceId: currentPartInstance._id,
+								},
+								pieceInstanceFieldOptions
+						  ).fetch()
+						: undefined,
+					pieceInstanceFieldOptions,
+					true
+				)
+
+				allPieceInstances.forEach((pieceInstance) => {
+					const piece = pieceInstance.piece
 					if (piece.content) {
 						const content = piece.content as ScriptContent
 						if (content.fullScript) {
@@ -98,7 +160,7 @@ export namespace PrompterAPI {
 							})
 						}
 					}
-				}
+				})
 
 				if (partData.pieces.length === 0) {
 					// insert an empty line
