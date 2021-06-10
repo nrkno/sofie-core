@@ -8,7 +8,7 @@ enum LocalStorageProperty {
 	TESTING = 'testingMode',
 	SPEAKING = 'speakingMode',
 	SERVICE = 'serviceMode',
-	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers',
+	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers'
 }
 
 export function setAllowStudio(studioMode: boolean) {
@@ -88,4 +88,11 @@ export function setShowHiddenSourceLayers(show: boolean) {
 }
 export function getShowHiddenSourceLayers(): boolean {
 	return localStorage.getItem(LocalStorageProperty.SHOW_HIDDEN_SOURCE_LAYERS) === '1'
+}
+
+export function getUseWallClockCountdowns(): boolean {
+	return localStorage.getItem('useWallClockCountdowns') === '1'
+}
+export function setUseWallClockCountdowns(useWallClockCountdowns: boolean) {
+	localStorage.setItem('useWallClockCountdowns', useWallClockCountdowns ? '1' : '0')
 }
