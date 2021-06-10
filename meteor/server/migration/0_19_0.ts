@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
 import { Studios } from '../../lib/collections/Studios'
-import { ensureCollectionProperty, ensureCollectionPropertyManual, setExpectedVersion } from './lib'
+import { ensureCollectionProperty, ensureCollectionPropertyManual } from './lib'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyles } from './deprecatedDataTypes/0_18_0'
@@ -9,7 +9,6 @@ import { Rundowns } from '../../lib/collections/Rundowns'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { getRandomId, protectString } from '../../lib/lib'
 import { Studio as Studio_1_10_0 } from './deprecatedDataTypes/1_10_0'
 
@@ -332,7 +331,4 @@ export const addSteps = addMigrationSteps('0.19.0', [
 			)
 		},
 	},
-
-	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.15.0'),
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '0.4.6'),
 ])

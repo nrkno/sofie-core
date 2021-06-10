@@ -10,7 +10,6 @@ import { Meteor } from 'meteor/meteor'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
-import * as semver from 'semver'
 import { TransformedCollection } from '../../lib/typings/meteor'
 
 /**
@@ -158,28 +157,6 @@ export function removeCollectionProperty<T = any>(
 			})
 		},
 		dependOnResultFrom: dependOnResultFrom,
-	}
-}
-function getMinVersion(versionStr: string | undefined): string {
-	return (semver.minVersion(versionStr || '0.0.0') || { version: '0.0.0' }).version
-}
-
-export function setExpectedVersion(
-	id: string,
-	deviceType: PeripheralDeviceAPI.DeviceType,
-	libraryName: string,
-	versionStr: string
-): MigrationStepBase {
-	return {
-		id: id,
-		canBeRunAutomatically: true,
-		validate: () => {
-			throw new Error('TODO - remove')
-		},
-		migrate: () => {
-			throw new Error('TODO - remove')
-		},
-		overrideSteps: [id],
 	}
 }
 
