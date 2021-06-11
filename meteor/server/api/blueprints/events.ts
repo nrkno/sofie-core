@@ -16,6 +16,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { asyncCollectionFindOne, asyncCollectionUpdate } from '../../lib/database'
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import debounceFn, { DebouncedFunction } from 'debounce-fn'
+import { LOW_PRIO_DEFER_TIME } from '../playout/lib'
 
 const EVENT_WAIT_TIME = 500
 
@@ -190,7 +191,9 @@ export function reportPartInstanceHasStarted(cache: CacheForPlayout, partInstanc
 		})
 
 		cache.deferAfterSave(() => {
-			handlePartInstanceTimingEvent(cache.PlaylistId, partInstance._id)
+			Meteor.setTimeout(() => {
+				handlePartInstanceTimingEvent(cache.PlaylistId, partInstance._id)
+			}, LOW_PRIO_DEFER_TIME)
 		})
 	}
 }

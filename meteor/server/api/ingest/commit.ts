@@ -10,7 +10,7 @@ import { CommitIngestData } from './lockFunction'
 import { ensureNextPartIsValid } from './updateNext'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { logger } from '../../logging'
-import { isTooCloseToAutonext } from '../playout/lib'
+import { isTooCloseToAutonext, LOW_PRIO_DEFER_TIME } from '../playout/lib'
 import { DBRundown, Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { ReadonlyDeep } from 'type-fest'
 import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
@@ -269,7 +269,9 @@ export async function CommitIngestOperation(
 						)
 
 						playoutCache.deferAfterSave(() => {
-							reportRundownDataHasChanged(playoutCache.Playlist.doc, newRundown)
+							Meteor.setTimeout(() => {
+								reportRundownDataHasChanged(playoutCache.Playlist.doc, newRundown)
+							}, LOW_PRIO_DEFER_TIME)
 
 							triggerUpdateTimelineAfterIngestData(playoutCache.PlaylistId)
 						})
