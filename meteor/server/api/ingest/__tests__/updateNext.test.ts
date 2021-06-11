@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { testInFiber, beforeAllInFiber } from '../../../../__mocks__/helpers/jest'
 import { Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segments, DBSegment } from '../../../../lib/collections/Segments'

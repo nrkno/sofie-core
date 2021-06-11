@@ -52,7 +52,7 @@ export function removeRundownLayout(layoutId: RundownLayoutId) {
 	RundownLayouts.remove(layoutId)
 }
 
-PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	const showStyleBaseId: ShowStyleBaseId = protectString(params.showStyleBaseId)
@@ -91,7 +91,7 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 	res.end(content)
 })
 
-PickerGET.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerGET.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, res: ServerResponse) => {
 	const layoutId: RundownLayoutId = protectString(params.id)
 
 	check(layoutId, String)

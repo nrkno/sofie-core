@@ -38,7 +38,7 @@ function parseSearchDistance(rawVal: number | undefined): number {
 }
 
 function findLargestLookaheadDistance(mappings: Array<[string, MappingExt]>): number {
-	const values = mappings.map(([id, m]) => parseSearchDistance(m.lookaheadMaxSearchDistance))
+	const values = mappings.map(([_id, m]) => parseSearchDistance(m.lookaheadMaxSearchDistance))
 	return _.max(values)
 }
 
@@ -50,7 +50,7 @@ export async function getLookeaheadObjects(
 ): Promise<Array<TimelineObjRundown & OnGenerateTimelineObjExt>> {
 	const span = profiler.startSpan('getLookeaheadObjects')
 	const mappingsToConsider = Object.entries(cache.Studio.doc.mappings ?? {}).filter(
-		([id, map]) => map.lookahead !== LookaheadMode.NONE && map.lookahead !== undefined
+		([_id, map]) => map.lookahead !== LookaheadMode.NONE && map.lookahead !== undefined
 	)
 	if (mappingsToConsider.length === 0) {
 		if (span) span.end()
@@ -177,6 +177,7 @@ function mutateLookaheadObject(
 		obj.keyframes = obj.keyframes.filter((kf) => kf.preserveForLookahead)
 	}
 	delete obj.inGroup // force it to be cleared
+	obj.disabled = disabled
 
 	if (mode === LookaheadMode.PRELOAD) {
 		// Set lookaheadForLayer to reference the original layer:

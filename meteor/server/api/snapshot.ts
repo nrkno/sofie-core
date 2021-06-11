@@ -2,7 +2,6 @@ import * as Path from 'path'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
-import * as bodyParser from 'body-parser'
 import { check, Match } from '../../lib/check'
 import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
 import {

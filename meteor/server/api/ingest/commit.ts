@@ -1,8 +1,7 @@
-import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import { loadShowStyleBlueprint, loadStudioBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
-import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
+import { loadShowStyleBlueprint, loadStudioBlueprint } from '../blueprints/cache'
+import { CacheForPlayout } from '../playout/cache'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
-import { allowedToMoveRundownOutOfPlaylist, ChangedSegmentsRankInfo, updatePartInstanceRanks } from '../rundown'
+import { allowedToMoveRundownOutOfPlaylist, updatePartInstanceRanks } from '../rundown'
 import { CacheForIngest } from './cache'
 import { getRundown } from './lib'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
@@ -20,7 +19,6 @@ import {
 	removeRundownsFromDb,
 } from '../rundownPlaylist'
 import { clone, makePromise, max, protectString, unprotectString } from '../../../lib/lib'
-import { ReadOnlyCache } from '../../cache/CacheBase'
 import { reportRundownDataHasChanged } from '../blueprints/events'
 import { removeSegmentContents } from './cleanup'
 import { Settings } from '../../../lib/Settings'
@@ -184,7 +182,7 @@ export async function CommitIngestOperation(
 				studioLock,
 				{ _id: newPlaylistId[0], studioId: studioLock._studioId },
 				PlayoutLockFunctionPriority.MISC,
-				async (lock) => {
+				async () => {
 					// Ensure the rundown has the correct playlistId
 					ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId[0] } })
 

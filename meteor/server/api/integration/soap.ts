@@ -63,7 +63,7 @@ export async function sendSOAPMessage(msg: ExternalMessageQueueObjSOAP0 & Extern
 		if (fcn) {
 			const args = _.omit(msg.message, ['fcn'])
 
-			fcn(args, (err: any, result: any, raw: any, soapHeader: any) => {
+			fcn(args, (err: any, result: any, _raw: any, _soapHeader: any) => {
 				if (err) {
 					logger.debug('Sent SOAP message', args)
 					reject(err)
@@ -85,7 +85,7 @@ async function resolveSOAPFcnData(soapClient: soap.Client, valFcn: ExternalMessa
 			if (fcn) {
 				const args = fetchFrom.attrs
 
-				fcn(args, (err: any, result: any, raw: any, soapHeader: any) => {
+				fcn(args, (err: any, result: any, _raw: any, _soapHeader: any) => {
 					if (err) {
 						reject(err)
 					} else {

@@ -1,7 +1,6 @@
-import { TransformedCollection, FindOptions } from '../typings/meteor'
+import { FindOptions } from '../typings/meteor'
 import { registerCollection, ProtectedString, protectString } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { logger } from '../logging'
 import * as semver from 'semver'
 import { createMongoCollection } from './lib'
@@ -106,8 +105,7 @@ export const GENESIS_SYSTEM_VERSION = '0.0.0'
 // The CoreSystem collection will contain one (exactly 1) object.
 // This represents the "system"
 
-export const CoreSystem: TransformedCollection<ICoreSystem, ICoreSystem> =
-	createMongoCollection<ICoreSystem>('coreSystem')
+export const CoreSystem = createMongoCollection<ICoreSystem, ICoreSystem>('coreSystem')
 registerCollection('CoreSystem', CoreSystem)
 
 export function getCoreSystem(): ICoreSystem | undefined {

@@ -1,13 +1,12 @@
 import { AdLibPiece } from './AdLibPieces'
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 
 export type RundownBaselineAdLibItem = AdLibPiece
 
-export const RundownBaselineAdLibPieces: TransformedCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem> =
-	createMongoCollection<RundownBaselineAdLibItem>('rundownBaselineAdLibPieces')
+export const RundownBaselineAdLibPieces =
+	createMongoCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>('rundownBaselineAdLibPieces')
 registerCollection('RundownBaselineAdLibPieces', RundownBaselineAdLibPieces)
 registerIndex(RundownBaselineAdLibPieces, {
 	rundownId: 1,

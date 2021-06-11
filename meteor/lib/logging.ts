@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { MeteorCall } from './api/methods'
 import * as _ from 'underscore'
 
 export interface LoggerInstanceFixed {
@@ -75,7 +74,7 @@ if (Meteor.isServer) {
 		}
 	}
 
-	const noop = (type) => {
+	const noop = (_type) => {
 		// do nothing
 		return logger
 	}

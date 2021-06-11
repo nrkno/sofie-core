@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import {
 	applyClassToDocument,
 	registerCollection,
@@ -150,8 +149,6 @@ export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
 		inserted: [],
 	}
 
-	const i = 0
-
 	const exclusivityGroups: { [groupId: string]: true } = {}
 	_.each(studio.routeSets, (routeSet) => {
 		if (routeSet.active) {
@@ -279,7 +276,7 @@ export class Studio implements DBStudio {
 	}
 }
 
-export const Studios: TransformedCollection<Studio, DBStudio> = createMongoCollection<Studio>('studios', {
+export const Studios = createMongoCollection<Studio, DBStudio>('studios', {
 	transform: (doc) => applyClassToDocument(Studio, doc),
 })
 registerCollection('Studios', Studios)

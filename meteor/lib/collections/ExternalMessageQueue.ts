@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import {
 	IBlueprintExternalMessageQueueObj,
@@ -56,8 +55,8 @@ export interface ExternalMessageQueueObj extends ProtectedStringProperties<IBlue
 	manualRetry?: boolean
 }
 
-export const ExternalMessageQueue: TransformedCollection<ExternalMessageQueueObj, ExternalMessageQueueObj> =
-	createMongoCollection<ExternalMessageQueueObj>('externalMessageQueue')
+export const ExternalMessageQueue =
+	createMongoCollection<ExternalMessageQueueObj, ExternalMessageQueueObj>('externalMessageQueue')
 registerCollection('ExternalMessageQueue', ExternalMessageQueue)
 
 registerIndex(ExternalMessageQueue, {

@@ -510,7 +510,7 @@ let mongoTest: TransformedCollection<any, any> | undefined = undefined
 /** Runs a set of system benchmarks, that are designed to test various aspects of the hardware-performance on the server */
 async function doSystemBenchmarkInner() {
 	if (!mongoTest) {
-		mongoTest = createMongoCollection<any>('benchmark-test')
+		mongoTest = createMongoCollection<any, any>('benchmark-test')
 		mongoTest._ensureIndex({
 			indexedProp: 1,
 		})
@@ -670,7 +670,7 @@ async function doSystemBenchmarkInner() {
 			const startTime = Date.now()
 
 			const strings: string[] = objectsToStringify.map((o) => JSON.stringify(o))
-			const newObjects = strings.map((str) => JSON.parse(str))
+			const _newObjects = strings.map((str) => JSON.parse(str))
 
 			result.cpuStringifying = Date.now() - startTime
 		}
@@ -690,7 +690,7 @@ async function doSystemBenchmark(context: MethodContext, runCount: number = 1): 
 	if (runCount < 1) throw new Error(`runCount must be >= 1`)
 
 	const results: BenchmarkResult[] = []
-	for (const i of _.range(0, runCount)) {
+	for (const _i of _.range(0, runCount)) {
 		results.push(await doSystemBenchmarkInner())
 		waitTime(50)
 	}

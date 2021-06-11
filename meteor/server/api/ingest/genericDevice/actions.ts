@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { Rundown } from '../../../../lib/collections/Rundowns'
-import { NewUserActionAPI, TriggerReloadDataResponse } from '../../../../lib/api/userActions'
+import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { WrapAsyncCallback } from '../../../../lib/lib'
 import { logger } from '../../../logging'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'

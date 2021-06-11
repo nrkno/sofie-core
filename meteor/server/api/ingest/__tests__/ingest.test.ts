@@ -3,7 +3,7 @@ import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../../lib
 import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segment, SegmentId, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts } from '../../../../lib/collections/Parts'
 import {
@@ -25,7 +25,6 @@ import { VerifiedRundownPlaylistContentAccess } from '../../lib'
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import { literal } from '../../../../lib/lib'
-import { TransformedCollection } from '../../../../lib/typings/meteor'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 

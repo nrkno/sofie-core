@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString, protectString } from '../lib'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
@@ -54,8 +53,7 @@ export enum PackageInfoDBType {
 	OTHER = 'other',
 }
 
-export const PackageInfos: TransformedCollection<PackageInfoDB, PackageInfoDB> =
-	createMongoCollection<PackageInfoDB>('packageInfos')
+export const PackageInfos = createMongoCollection<PackageInfoDB, PackageInfoDB>('packageInfos')
 registerCollection('PackageInfos', PackageInfos)
 
 registerIndex(PackageInfos, {

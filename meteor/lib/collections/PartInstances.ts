@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import { TransformedCollection } from '../typings/meteor'
 import {
 	applyClassToDocument,
 	registerCollection,
@@ -152,10 +151,9 @@ export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance
 	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(protectString(''), part) as T)
 }
 
-export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> = createMongoCollection<PartInstance>(
-	'partInstances',
-	{ transform: (doc) => applyClassToDocument(PartInstance, doc) }
-)
+export const PartInstances = createMongoCollection<PartInstance, DBPartInstance>('partInstances', {
+	transform: (doc) => applyClassToDocument(PartInstance, doc),
+})
 registerCollection('PartInstances', PartInstances)
 registerIndex(PartInstances, {
 	rundownId: 1,

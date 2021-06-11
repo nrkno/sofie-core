@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
 import { Studios } from '../../lib/collections/Studios'
-import { ensureCollectionProperty, ensureCollectionPropertyManual, setExpectedVersion } from './lib'
+import { ensureCollectionPropertyManual, setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Studio as Studio_1_10_0 } from './deprecatedDataTypes/1_10_0'
 

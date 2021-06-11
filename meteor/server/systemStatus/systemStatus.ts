@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { getCurrentTime, Time, unprotectString, getRandomId, assertNever } from '../../lib/lib'
+import { getCurrentTime, Time, getRandomId, assertNever } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { parseVersion, parseRange } from '../../lib/collections/CoreSystem'
 import {
@@ -15,12 +15,10 @@ import {
 import { getRelevantSystemVersions } from '../coreSystem'
 import * as semver from 'semver'
 import { StudioId } from '../../lib/collections/Studios'
-import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { SystemWriteAccess } from '../security/system'
 
 /**

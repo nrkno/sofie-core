@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
-import { TransformedCollection, MongoQuery, MongoModifier, FindOptions } from './typings/meteor'
+import { MongoQuery, MongoModifier, FindOptions } from './typings/meteor'
 import { logger } from './logging'
 import { Timecode } from 'timecode'
 import { Settings } from './Settings'
@@ -10,6 +10,7 @@ import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-i
 import * as crypto from 'crypto'
 import { ReadonlyDeep, PartialDeep } from 'type-fest'
 import { ITranslatableMessage } from './api/TranslatableMessage'
+import { AsyncTransformedCollection } from './collections/lib'
 
 const cloneOrg = require('fast-clone')
 
@@ -184,7 +185,7 @@ export function formatDateTime(time: Time) {
  * @param obj
  */
 export function removeNullyProperties<T>(obj: T): T {
-	iterateDeeply(obj, (val, key) => {
+	iterateDeeply(obj, (val, _key) => {
 		if (_.isArray(val)) {
 			return iterateDeeplyEnum.CONTINUE
 		} else if (_.isObject(val)) {
@@ -238,8 +239,8 @@ export function stringifyObjects(objs: any): string {
 		return objs + ''
 	}
 }
-export const Collections: { [name: string]: TransformedCollection<any, any> } = {}
-export function registerCollection(name: string, collection: TransformedCollection<any, any>) {
+export const Collections: { [name: string]: AsyncTransformedCollection<any, any> } = {}
+export function registerCollection(name: string, collection: AsyncTransformedCollection<any, any>) {
 	Collections[name] = collection
 }
 // export const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
@@ -248,8 +249,8 @@ export function registerCollection(name: string, collection: TransformedCollecti
 // 		raw.indexes(cb) // TODO - invalid
 // 	}
 // )
-export const getCollectionStats: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
-	function getCollectionStats(collection: TransformedCollection<any, any>, cb) {
+export const getCollectionStats: (collection: AsyncTransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
+	function getCollectionStats(collection: AsyncTransformedCollection<any, any>, cb) {
 		const raw = collection.rawCollection()
 		raw.stats(cb)
 	}
@@ -592,18 +593,19 @@ export function mongoFindOptions<Class extends DBInterface, DBInterface extends 
 ): Class[] {
 	let docs = [...docs0] // Shallow clone it
 	if (options) {
-		if (options.sort) {
+		const sortOptions = options.sort
+		if (sortOptions) {
 			// Underscore doesnt support desc order, or multiple fields, so we have to do it manually
-			const keys = _.keys(options.sort).filter((k) => options.sort)
+			const keys = Object.keys(sortOptions).filter((k) => sortOptions[k])
 			const doSort = (a: any, b: any, i: number): number => {
 				if (i >= keys.length) return 0
 
 				const key = keys[i]
-				const order = options!.sort![key]
+				const order = sortOptions[key]
 
 				// Get the values, and handle asc vs desc
-				const val1 = objectPath.get(order! > 0 ? a : b, key)
-				const val2 = objectPath.get(order! > 0 ? b : a, key)
+				const val1 = objectPath.get(order > 0 ? a : b, key)
+				const val2 = objectPath.get(order > 0 ? b : a, key)
 
 				if (_.isEqual(val1, val2)) {
 					return doSort(a, b, i + 1)

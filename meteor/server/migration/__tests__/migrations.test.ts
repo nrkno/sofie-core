@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { setupEmptyEnvironment, setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
-import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
 import { clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../currentSystemVersion'
@@ -405,7 +405,7 @@ describe('Migrations', () => {
 
 		expect(migration.migrationNeeded).toEqual(true)
 
-		const steps = migration.steps as MigrationStep[]
+		const _steps = migration.steps as MigrationStep[]
 
 		// Note: This test is temporarily disabled, pending discussion regarding migrations
 		// /@nytamin 2020-08-27
