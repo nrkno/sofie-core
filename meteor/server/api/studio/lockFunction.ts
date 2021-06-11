@@ -2,6 +2,7 @@ import { StudioId } from '../../../lib/collections/Studios'
 import { waitForPromise } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
+import { profiler } from '../profiler'
 import { CacheForStudio } from './cache'
 
 /** Priority for handling of synchronous events. Higher value means higher priority */
@@ -68,7 +69,12 @@ export function runStudioOperationWithLock<T>(
 	fcn: (lock: StudioLock) => Promise<T> | T
 ): T {
 	return syncFunction(
-		() => waitForPromise(fcn({ _studioId: studioId })),
+		() => {
+			const span = profiler.startSpan(`studioLockFunction.${context}`)
+			const res = waitForPromise(fcn({ _studioId: studioId }))
+			span?.end()
+			return res
+		},
 		context,
 		`studio_${studioId}`,
 		undefined,
