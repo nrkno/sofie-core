@@ -24,7 +24,6 @@ import {
 	updateExpectedPackagesForBucketAdLibAction,
 } from './expectedPackages'
 import { ShowStyleUserContext } from '../blueprints/context'
-import { asyncCollectionFindFetch, asyncCollectionRemove } from '../../lib/database'
 
 function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
 	return !!(adlib as IBlueprintActionManifest).actionId
@@ -60,13 +59,13 @@ export function updateBucketAdlibFromIngestData(
 
 	bucketSyncFunction(bucketId, 'updateBucketAdlibFromIngestData', () => {
 		const [oldAdLibPieces, oldAdLibActions] = waitForPromiseAll([
-			asyncCollectionFindFetch(BucketAdLibs, {
+			BucketAdLibs.findFetchAsync({
 				externalId: ingestData.externalId,
 				showStyleVariantId: showStyle.showStyleVariantId,
 				studioId: studio._id,
 				bucketId,
 			}),
-			asyncCollectionFindFetch(BucketAdLibActions, {
+			BucketAdLibActions.findFetchAsync({
 				externalId: ingestData.externalId,
 				showStyleVariantId: showStyle.showStyleVariantId,
 				studioId: studio._id,
@@ -82,14 +81,14 @@ export function updateBucketAdlibFromIngestData(
 				cleanUpExpectedPackagesForBucketAdLibs(oldAdLibPieces.map((adlib) => adlib._id)),
 				cleanUpExpectedPackagesForBucketAdLibsActions(oldAdLibActions.map((adlib) => adlib._id)),
 				oldAdLibPieces.length > 0
-					? asyncCollectionRemove(BucketAdLibs, {
+					? BucketAdLibs.removeAsync({
 							_id: {
 								$in: oldAdLibPieces.map((adlib) => adlib._id),
 							},
 					  })
 					: undefined,
 				oldAdLibActions.length > 0
-					? asyncCollectionRemove(BucketAdLibActions, {
+					? BucketAdLibActions.removeAsync({
 							_id: {
 								$in: oldAdLibActions.map((adlib) => adlib._id),
 							},
@@ -99,8 +98,7 @@ export function updateBucketAdlibFromIngestData(
 			return null
 		} else {
 			const [highestAdlib, highestAction] = waitForPromiseAll([
-				asyncCollectionFindFetch(
-					BucketAdLibs,
+				BucketAdLibs.findFetchAsync(
 					{
 						bucketId,
 					},
@@ -114,8 +112,7 @@ export function updateBucketAdlibFromIngestData(
 						limit: 1,
 					}
 				),
-				asyncCollectionFindFetch(
-					BucketAdLibActions,
+				BucketAdLibActions.findFetchAsync(
 					{
 						bucketId,
 					},
@@ -198,8 +195,8 @@ export function updateBucketAdlibFromIngestData(
 				cleanUpExpectedMediaItemForBucketAdLibActions(actionIdsToRemove),
 				cleanUpExpectedPackagesForBucketAdLibs(adlibIdsToRemove),
 				cleanUpExpectedPackagesForBucketAdLibsActions(actionIdsToRemove),
-				asyncCollectionRemove(BucketAdLibs, { _id: { $in: adlibIdsToRemove } }),
-				asyncCollectionRemove(BucketAdLibActions, { _id: { $in: actionIdsToRemove } }),
+				BucketAdLibs.removeAsync({ _id: { $in: adlibIdsToRemove } }),
+				BucketAdLibActions.removeAsync({ _id: { $in: actionIdsToRemove } }),
 			])
 		}
 	})

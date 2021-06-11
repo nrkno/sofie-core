@@ -25,7 +25,7 @@ import {
 import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { CacheForIngest } from './cache'
 import { saveIntoCache } from '../../cache/lib'
-import { asyncCollectionRemove, saveIntoDb } from '../../lib/database'
+import { saveIntoDb } from '../../lib/database'
 import { interpollateTranslation, translateMessage } from '../../../lib/api/TranslatableMessage'
 
 export enum PieceType {
@@ -133,7 +133,7 @@ function generateExpectedMediaItemsFull(
 export async function cleanUpExpectedMediaItemForBucketAdLibPiece(adLibIds: PieceId[]): Promise<void> {
 	check(adLibIds, [String])
 
-	const removedItems = await asyncCollectionRemove(ExpectedMediaItems, {
+	const removedItems = await ExpectedMediaItems.removeAsync({
 		bucketAdLibPieceId: {
 			$in: adLibIds,
 		},
@@ -145,7 +145,7 @@ export async function cleanUpExpectedMediaItemForBucketAdLibPiece(adLibIds: Piec
 export async function cleanUpExpectedMediaItemForBucketAdLibActions(actionIds: AdLibActionId[]): Promise<void> {
 	check(actionIds, [String])
 
-	const removedItems = await asyncCollectionRemove(ExpectedMediaItems, {
+	const removedItems = await ExpectedMediaItems.removeAsync({
 		bucketAdLibActionId: {
 			$in: actionIds,
 		},

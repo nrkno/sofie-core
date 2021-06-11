@@ -36,7 +36,6 @@ import {
 import { Meteor } from 'meteor/meteor'
 import { runStudioOperationWithLock, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { getTranslatedMessage, ServerTranslatedMesssages } from '../../../lib/rundownNotifications'
-import { asyncCollectionUpsert, asyncCollectionFindOne, asyncCollectionRemove } from '../../lib/database'
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
 import { Studio } from '../../../lib/collections/Studios'
@@ -229,7 +228,7 @@ export async function CommitIngestOperation(
 					// This will reorder the rundowns a little before the playlist and the contents, but that is ok
 					await Promise.all([
 						rundownsCollection.updateDatabaseWithData(),
-						asyncCollectionUpsert(RundownPlaylists, newPlaylist._id, newPlaylist),
+						RundownPlaylists.upsertAsync(newPlaylist._id, newPlaylist),
 					])
 
 					// Create the full playout cache, now we have the rundowns and playlist updated
@@ -350,7 +349,7 @@ async function generatePlaylistAndRundownsCollectionInner(
 	const [existingPlaylist, studioBlueprint] = await Promise.all([
 		existingPlaylist0
 			? existingPlaylist0
-			: (asyncCollectionFindOne(RundownPlaylists, newPlaylistId) as Promise<ReadonlyDeep<RundownPlaylist>>),
+			: (RundownPlaylists.findOneAsync(newPlaylistId) as Promise<ReadonlyDeep<RundownPlaylist>>),
 		makePromise(() => loadStudioBlueprint(studio)),
 		existingRundownsCollection ? null : rundownsCollection.prepareInit({ playlistId: newPlaylistId }, true),
 	])
@@ -472,13 +471,13 @@ export async function regeneratePlaylistAndRundownOrder(
 		// Save the changes
 		await Promise.all([
 			!existingRundownsCollection ? rundownsCollection.updateDatabaseWithData() : null,
-			asyncCollectionUpsert(RundownPlaylists, newPlaylist._id, newPlaylist),
+			RundownPlaylists.upsertAsync(newPlaylist._id, newPlaylist),
 		])
 
 		return newPlaylist
 	} else {
 		// Playlist is empty and should be removed
-		await asyncCollectionRemove(RundownPlaylists, oldPlaylist._id)
+		await RundownPlaylists.removeAsync(oldPlaylist._id)
 
 		return null
 	}
@@ -507,7 +506,7 @@ export function updatePlayoutAfterChangingRundownInPlaylist(
 						`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`
 					)
 				// Remove an empty playlist
-				await asyncCollectionRemove(RundownPlaylists, { _id: playoutCache.PlaylistId })
+				await RundownPlaylists.removeAsync({ _id: playoutCache.PlaylistId })
 				playoutCache.assertNoChanges()
 				return
 			}

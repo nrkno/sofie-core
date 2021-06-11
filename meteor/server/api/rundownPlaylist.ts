@@ -52,7 +52,6 @@ import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { regeneratePlaylistAndRundownOrder, updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { Random } from 'meteor/random'
-import { asyncCollectionRemove, asyncCollectionFindOne } from '../lib/database'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { checkAccessToPlaylist } from './lib'
 
@@ -99,30 +98,27 @@ export async function removeRundownPlaylistFromDb(playlist: ReadonlyDeep<Rundown
 	// We assume we have the master lock at this point
 	const rundownIds = Rundowns.find({ playlistId: playlist._id }, { fields: { _id: 1 } }).map((r) => r._id)
 
-	await Promise.allSettled([
-		asyncCollectionRemove(RundownPlaylists, { _id: playlist._id }),
-		removeRundownsFromDb(rundownIds),
-	])
+	await Promise.allSettled([RundownPlaylists.removeAsync({ _id: playlist._id }), removeRundownsFromDb(rundownIds)])
 }
 export async function removeRundownsFromDb(rundownIds: RundownId[]): Promise<void> {
 	// Note: playlists are not removed by this, one could be left behind empty
 	if (rundownIds.length > 0) {
 		await Promise.allSettled([
-			asyncCollectionRemove(Rundowns, { _id: { $in: rundownIds } }),
-			asyncCollectionRemove(AdLibActions, { rundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(AdLibPieces, { rundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(ExpectedMediaItems, { rundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(ExpectedPlayoutItems, { rundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(ExpectedPackages, { rundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(IngestDataCache, { rundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(RundownBaselineAdLibPieces, { rundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(Segments, { rundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(Parts, { rundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(PartInstances, { rundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(Pieces, { startRundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(PieceInstances, { rundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(RundownBaselineAdLibActions, { rundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(RundownBaselineObjs, { rundownId: { $in: rundownIds } }),
+			Rundowns.removeAsync({ _id: { $in: rundownIds } }),
+			AdLibActions.removeAsync({ rundownId: { $in: rundownIds } }),
+			AdLibPieces.removeAsync({ rundownId: { $in: rundownIds } }),
+			ExpectedMediaItems.removeAsync({ rundownId: { $in: rundownIds } }),
+			ExpectedPlayoutItems.removeAsync({ rundownId: { $in: rundownIds } }),
+			ExpectedPackages.removeAsync({ rundownId: { $in: rundownIds } }),
+			IngestDataCache.removeAsync({ rundownId: { $in: rundownIds } }),
+			RundownBaselineAdLibPieces.removeAsync({ rundownId: { $in: rundownIds } }),
+			Segments.removeAsync({ rundownId: { $in: rundownIds } }),
+			Parts.removeAsync({ rundownId: { $in: rundownIds } }),
+			PartInstances.removeAsync({ rundownId: { $in: rundownIds } }),
+			Pieces.removeAsync({ startRundownId: { $in: rundownIds } }),
+			PieceInstances.removeAsync({ rundownId: { $in: rundownIds } }),
+			RundownBaselineAdLibActions.removeAsync({ rundownId: { $in: rundownIds } }),
+			RundownBaselineObjs.removeAsync({ rundownId: { $in: rundownIds } }),
 		])
 	}
 }
@@ -342,7 +338,7 @@ export function moveRundownIntoPlaylist(
 				async (intoPlaylistLock) => {
 					const rundownsCollection = new DbCacheWriteCollection(Rundowns)
 					const [playlist] = await Promise.all([
-						asyncCollectionFindOne(RundownPlaylists, intoPlaylistLock._playlistId),
+						RundownPlaylists.findOneAsync(intoPlaylistLock._playlistId),
 						rundownsCollection.prepareInit({ playlistId: intoPlaylistLock._playlistId }, true),
 					])
 
@@ -457,7 +453,7 @@ export function restoreRundownsInPlaylistToDefaultOrder(context: MethodContext, 
 		playlistId,
 		PlayoutLockFunctionPriority.MISC,
 		async (playlistLock, tmpPlaylist) => {
-			const studio = await asyncCollectionFindOne(Studios, tmpPlaylist.studioId)
+			const studio = await Studios.findOneAsync(tmpPlaylist.studioId)
 
 			if (!studio)
 				throw new Meteor.Error(

@@ -33,7 +33,7 @@ import {
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { CacheForIngest } from './cache'
-import { asyncCollectionRemove, saveIntoDb } from '../../lib/database'
+import { saveIntoDb } from '../../lib/database'
 import { saveIntoCache } from '../../cache/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayout } from '../playout/cache'
@@ -253,7 +253,7 @@ export function updateExpectedPackagesForBucketAdLibAction(actionId: BucketAdLib
 export async function cleanUpExpectedPackagesForBucketAdLibs(adLibIds: PieceId[]): Promise<void> {
 	check(adLibIds, [String])
 
-	await asyncCollectionRemove(ExpectedPackages, {
+	await ExpectedPackages.removeAsync({
 		pieceId: {
 			$in: adLibIds,
 		},
@@ -262,7 +262,7 @@ export async function cleanUpExpectedPackagesForBucketAdLibs(adLibIds: PieceId[]
 export async function cleanUpExpectedPackagesForBucketAdLibsActions(adLibIds: AdLibActionId[]): Promise<void> {
 	check(adLibIds, [String])
 
-	await asyncCollectionRemove(ExpectedPackages, {
+	await ExpectedPackages.removeAsync({
 		pieceId: {
 			$in: adLibIds,
 		},

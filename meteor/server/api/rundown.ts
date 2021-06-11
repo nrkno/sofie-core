@@ -50,7 +50,6 @@ import { ReadonlyDeep } from 'type-fest'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithLock } from './playout/lockFunction'
 import { runIngestOperationFromRundown } from './ingest/lockFunction'
 import { getRundown } from './ingest/lib'
-import { asyncCollectionFindFetch } from '../lib/database'
 import { createShowStyleCompound } from './showStyles'
 import { checkAccessToPlaylist } from './lib'
 
@@ -455,10 +454,10 @@ export namespace ClientRundownAPI {
 
 		// Load all variants/compounds
 		const { showStyleBases, showStyleVariants } = waitForPromiseObj({
-			showStyleBases: asyncCollectionFindFetch(ShowStyleBases, {
+			showStyleBases: ShowStyleBases.findFetchAsync({
 				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleBaseId) },
 			}),
-			showStyleVariants: asyncCollectionFindFetch(ShowStyleVariants, {
+			showStyleVariants: ShowStyleVariants.findFetchAsync({
 				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleVariantId) },
 			}),
 		})

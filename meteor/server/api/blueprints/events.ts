@@ -13,7 +13,6 @@ import { profiler } from '../profiler'
 import { CacheForPlayout } from '../playout/cache'
 import { Studios } from '../../../lib/collections/Studios'
 import { ReadonlyDeep } from 'type-fest'
-import { asyncCollectionFindOne, asyncCollectionUpdate } from '../../lib/database'
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import debounceFn, { DebouncedFunction } from 'debounce-fn'
 
@@ -24,8 +23,8 @@ async function getBlueprintAndDependencies(rundown: ReadonlyDeep<Rundown>) {
 
 	const [showStyle, studio, playlist, blueprint] = waitForPromiseAll([
 		pShowStyle,
-		asyncCollectionFindOne(Studios, rundown.studioId),
-		asyncCollectionFindOne(RundownPlaylists, rundown.playlistId),
+		Studios.findOneAsync(rundown.studioId),
+		RundownPlaylists.findOneAsync(rundown.playlistId),
 		pShowStyle.then((ss) => loadShowStyleBlueprint(ss).blueprint),
 	])
 
@@ -65,8 +64,7 @@ function handlePartInstanceTimingEventInner(playlistId: RundownPlaylistId, partI
 		if (blueprint.onRundownTimingEvent) {
 			// The the PartInstances(events) before and after the one we are processing
 			const [previousPartInstance, nextPartInstance] = waitForPromiseAll([
-				asyncCollectionFindOne(
-					PartInstances,
+				PartInstances.findOneAsync(
 					{
 						rundownId: partInstance.rundownId,
 						playlistActivationId: partInstance.playlistActivationId,
@@ -78,8 +76,7 @@ function handlePartInstanceTimingEventInner(playlistId: RundownPlaylistId, partI
 						},
 					}
 				),
-				asyncCollectionFindOne(
-					PartInstances,
+				PartInstances.findOneAsync(
 					{
 						rundownId: partInstance.rundownId,
 						playlistActivationId: partInstance.playlistActivationId,
@@ -196,7 +193,7 @@ export function reportPartInstanceHasStarted(cache: CacheForPlayout, partInstanc
 }
 export function reportPartHasStopped(playlistId: RundownPlaylistId, partInstance: PartInstance, timestamp: Time) {
 	waitForPromise(
-		asyncCollectionUpdate(PartInstances, partInstance._id, {
+		PartInstances.updateAsync(partInstance._id, {
 			$set: {
 				'timings.stoppedPlayback': timestamp,
 			},
@@ -212,7 +209,7 @@ export function reportPieceHasStarted(
 	timestamp: Time
 ) {
 	waitForPromiseAll([
-		asyncCollectionUpdate(PieceInstances, pieceInstance._id, {
+		PieceInstances.updateAsync(pieceInstance._id, {
 			$set: {
 				startedPlayback: timestamp,
 				stoppedPlayback: 0,
@@ -221,8 +218,7 @@ export function reportPieceHasStarted(
 
 		// Update the copy in the next-part if there is one, so that the infinite has the same start after a take
 		pieceInstance.infinite && playlist?.nextPartInstanceId
-			? asyncCollectionUpdate(
-					PieceInstances,
+			? PieceInstances.updateAsync(
 					{
 						partInstanceId: playlist.nextPartInstanceId,
 						'infinite.infiniteInstanceId': pieceInstance.infinite.infiniteInstanceId,

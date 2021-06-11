@@ -20,7 +20,6 @@ import {
 	updateExpectedMediaItemForBucketAdLibAction,
 	updateExpectedMediaItemForBucketAdLibPiece,
 } from './ingest/expectedMediaItems'
-import { asyncCollectionRemove } from '../lib/database'
 import { getShowStyleCompoundForRundown } from './showStyles'
 import {
 	cleanUpExpectedPackagesForBucketAdLibs,
@@ -54,7 +53,7 @@ export namespace BucketsAPI {
 
 		bucketSyncFunction(adlib.bucketId, 'removeBucketAdLib', () => {
 			waitForPromiseAll([
-				asyncCollectionRemove(BucketAdLibs, { _id: id }),
+				BucketAdLibs.removeAsync( { _id: id }),
 				cleanUpExpectedMediaItemForBucketAdLibPiece([id]),
 				cleanUpExpectedPackagesForBucketAdLibs([id]),
 			])
@@ -72,7 +71,7 @@ export namespace BucketsAPI {
 
 		bucketSyncFunction(adlib.bucketId, 'removeBucketAdLibAction', () => {
 			waitForPromiseAll([
-				asyncCollectionRemove(BucketAdLibActions, { _id: id }),
+				BucketAdLibActions.removeAsync( { _id: id }),
 				cleanUpExpectedMediaItemForBucketAdLibActions([id]),
 				cleanUpExpectedPackagesForBucketAdLibsActions([id]),
 			])
@@ -107,9 +106,9 @@ export namespace BucketsAPI {
 
 	function emptyBucketInner(id: BucketId) {
 		waitForPromiseAll([
-			asyncCollectionRemove(BucketAdLibs, { bucketId: id }),
-			asyncCollectionRemove(BucketAdLibActions, { bucketId: id }),
-			asyncCollectionRemove(ExpectedMediaItems, { bucketId: id }),
+			BucketAdLibs.removeAsync({ bucketId: id }),
+			BucketAdLibActions.removeAsync({ bucketId: id }),
+			ExpectedMediaItems.removeAsync({ bucketId: id }),
 		])
 	}
 

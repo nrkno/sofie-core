@@ -24,7 +24,6 @@ import { Mongo } from 'meteor/mongo'
 import { getOrderedPartsAfterPlayhead, PartInstanceAndPieceInstances } from './util'
 import { findLookaheadForLayer, LookaheadResult } from './findForLayer'
 import { CacheForPlayout, getRundownIDsFromCache } from '../cache'
-import { asyncCollectionFindFetch } from '../../../lib/database'
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '../../../../lib/constants'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
@@ -65,7 +64,7 @@ export async function getLookeaheadObjects(
 		startRundownId: { $in: getRundownIDsFromCache(cache) },
 		invalid: { $ne: true },
 	}
-	const pPiecesToSearch = asyncCollectionFindFetch(Pieces, piecesToSearchQuery)
+	const pPiecesToSearch = Pieces.findFetchAsync(piecesToSearchQuery)
 
 	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
 		if (!info.partInstance.timings?.startedPlayback) {

@@ -26,7 +26,6 @@ import { Studios } from '../../lib/collections/Studios'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { TimelineObjGeneric as TimelineObjGeneric_1_11_0 } from './deprecatedDataTypes/1_12_0'
 import { TransformedCollection } from '../../lib/typings/meteor'
-import { asyncCollectionInsertIgnore } from '../lib/database'
 
 // 0.25.0 (Release 10) // This is a big refactoring, with a LOT of renamings
 export const addSteps = addMigrationSteps('0.25.0', [
@@ -61,22 +60,22 @@ export const addSteps = addMigrationSteps('0.25.0', [
 				const ps: Promise<unknown>[] = []
 
 				dbs.SegmentLines.find().forEach((doc) => {
-					ps.push(asyncCollectionInsertIgnore(Parts, doc))
+					ps.push(Parts.insertIgnoreAsync(doc))
 				})
 				dbs.SegmentLines.remove({})
 
 				dbs.SegmentLineItems.find().forEach((doc) => {
-					ps.push(asyncCollectionInsertIgnore(Pieces, doc))
+					ps.push(Pieces.insertIgnoreAsync(doc))
 				})
 				dbs.SegmentLineItems.remove({})
 
 				dbs.SegmentLineAdLibItems.find().forEach((doc) => {
-					ps.push(asyncCollectionInsertIgnore(AdLibPieces, doc))
+					ps.push(AdLibPieces.insertIgnoreAsync(doc))
 				})
 				dbs.SegmentLineAdLibItems.remove({})
 
 				dbs.RunningOrderBaselineItems.find().forEach((doc) => {
-					ps.push(asyncCollectionInsertIgnore(RundownBaselineObjs, doc))
+					ps.push(RundownBaselineObjs.insertIgnoreAsync(doc))
 				})
 				dbs.RunningOrderBaselineItems.remove({})
 
@@ -84,7 +83,7 @@ export const addSteps = addMigrationSteps('0.25.0', [
 				// dbs.RunningOrderBaselineAdLibItems.remove({})
 
 				dbs.StudioInstallations.find().forEach((doc) => {
-					ps.push(asyncCollectionInsertIgnore(Studios, doc))
+					ps.push(Studios.insertIgnoreAsync(doc))
 				})
 				dbs.StudioInstallations.remove({})
 

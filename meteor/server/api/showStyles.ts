@@ -19,7 +19,6 @@ import { OrganizationId } from '../../lib/collections/Organization'
 import deepmerge from 'deepmerge'
 import { ReadonlyDeep } from 'type-fest'
 import { DBRundown } from '../../lib/collections/Rundowns'
-import { asyncCollectionFindOne } from '../lib/database'
 
 export function getShowStyleCompound(showStyleVariantId: ShowStyleVariantId): ShowStyleCompound | undefined {
 	const showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
@@ -33,8 +32,8 @@ export async function getShowStyleCompoundForRundown(
 	rundown: Pick<ReadonlyDeep<DBRundown>, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>
 ): Promise<ShowStyleCompound> {
 	const [showStyleBase, showStyleVariant] = await Promise.all([
-		asyncCollectionFindOne(ShowStyleBases, { _id: rundown.showStyleBaseId }),
-		asyncCollectionFindOne(ShowStyleVariants, { _id: rundown.showStyleVariantId }),
+		ShowStyleBases.findOneAsync({ _id: rundown.showStyleBaseId }),
+		ShowStyleVariants.findOneAsync({ _id: rundown.showStyleVariantId }),
 	])
 	if (!showStyleBase)
 		throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" for Rundown "${rundown._id}" not found`)
