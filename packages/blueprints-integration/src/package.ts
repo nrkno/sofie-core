@@ -313,8 +313,8 @@ export namespace ExpectedPackageStatusAPI {
 	export interface WorkStatusInfo {
 		/** Short description on what the current status is. Example "working", "fulfilled" */
 		status: string
-		/** Longer reason as to why the status is what it is */
-		statusReason: string
+		/** The reason as to why the status is what it is */
+		statusReason: Reason
 
 		/** Progress, 0-1 */
 		progress?: number
@@ -335,8 +335,8 @@ export namespace ExpectedPackageStatusAPI {
 		/** Calculated time left, used when status = TRANSFERRING_* */
 		expectedLeft?: number
 
-		/** Longer reason as to why the status is what it is */
-		statusReason: string
+		/** The reason as to why the status is what it is */
+		statusReason: Reason
 	}
 	export enum PackageContainerPackageStatusStatus {
 		/** The Package source isn't found at all */
@@ -349,5 +349,12 @@ export namespace ExpectedPackageStatusAPI {
 		TRANSFERRING_NOT_READY = 'transferring_not_ready',
 		/** All good, the package is in place and ready to play*/
 		READY = 'ready',
+	}
+	/** Contains textual descriptions for statuses. */
+	export interface Reason {
+		/** User-readable reason (to be displayed in GUI:s, to regular humans ) */
+		user: string
+		/** Technical reason  (to be displayed in GUI:s, but to super-users only ) */
+		tech: string
 	}
 }
