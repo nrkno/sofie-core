@@ -1,3 +1,4 @@
+/// <reference types="mousetrap/plugins/global-bind/mousetrap-global-bind" />
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { parse as queryStringParse } from 'query-string'

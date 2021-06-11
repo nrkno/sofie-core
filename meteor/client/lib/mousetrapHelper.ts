@@ -1,3 +1,4 @@
+/// <reference types="mousetrap/plugins/global-bind/mousetrap-global-bind" />
 import * as mousetrap from 'mousetrap'
 import { isEventInInputField } from './lib'
 import { isModalShowing } from './ModalDialog'
