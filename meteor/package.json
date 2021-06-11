@@ -3,7 +3,7 @@
 	"version": "1.36.0-in-development",
 	"private": true,
 	"engines": {
-		"node": "^12.21.0 || 14"
+		"node": "^12.22.1 || 14"
 	},
 	"scripts": {
 		"start": "concurrently --prefix \"[{name}]\" --names \"METEOR,TSC\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run debug --\" \"npm run watch-types -- --preserveWatchOutput\"",

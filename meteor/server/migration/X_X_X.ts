@@ -1,6 +1,16 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import * as _ from 'underscore'
+import { getCoreSystem } from '../../lib/collections/CoreSystem'
+import * as semver from 'semver'
+import { Mongo } from 'meteor/mongo'
+import {
+	PackageContainerPackageStatusDB,
+	PackageContainerPackageStatuses,
+} from '../../lib/collections/PackageContainerPackageStatus'
+import { MongoSelector } from '../../lib/typings/meteor'
+import { literal } from '../../lib/lib'
+import { dropDeprecatedDatabase, getDeprecatedDatabase } from './deprecatedDatabases/1_35_0'
 
 /*
  * **************************************************************************************
