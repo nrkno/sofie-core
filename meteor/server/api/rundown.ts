@@ -13,6 +13,7 @@ import {
 	normalizeArray,
 	normalizeArrayToMap,
 	clone,
+	waitForPromise,
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
@@ -73,7 +74,7 @@ export function selectShowStyleVariant(
 		return null
 	}
 
-	const studioBlueprint = loadStudioBlueprint(studio)
+	const studioBlueprint = waitForPromise(loadStudioBlueprint(studio))
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
 	if (!studioBlueprint.blueprint.getShowStyleId)
@@ -96,7 +97,7 @@ export function selectShowStyleVariant(
 	const showStyleVariants = ShowStyleVariants.find({ showStyleBaseId: showStyleBase._id }).fetch()
 	if (!showStyleVariants.length) throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" has no variants`)
 
-	const showStyleBlueprint = loadShowStyleBlueprint(showStyleBase)
+	const showStyleBlueprint = waitForPromise(loadShowStyleBlueprint(showStyleBase))
 	if (!showStyleBlueprint)
 		throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
 

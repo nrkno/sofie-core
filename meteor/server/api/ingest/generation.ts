@@ -80,7 +80,7 @@ export async function calculateSegmentsFromIngestData(
 
 	if (ingestSegments.length > 0) {
 		const showStyle = await getShowStyleCompoundForRundown(rundown)
-		const blueprint = loadShowStyleBlueprint(showStyle)
+		const blueprint = await loadShowStyleBlueprint(showStyle)
 
 		for (const ingestSegment of ingestSegments) {
 			const segmentId = getSegmentId(cache.RundownId, ingestSegment.externalId)
@@ -351,7 +351,7 @@ export async function updateRundownFromIngestData(
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
 	}
 
-	const showStyleBlueprint = loadShowStyleBlueprint(showStyle.base)
+	const showStyleBlueprint = await loadShowStyleBlueprint(showStyle.base)
 	const blueprintContext = new ShowStyleUserContext(
 		{
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,

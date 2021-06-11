@@ -65,7 +65,7 @@ export async function CommitIngestOperation(
 	}
 
 	const showStyle = data.showStyle ?? (await getShowStyleCompoundForRundown(rundown))
-	const blueprint = (data.showStyle ? data.blueprint : undefined) ?? loadShowStyleBlueprint(showStyle)
+	const blueprint = (data.showStyle ? data.blueprint : undefined) ?? (await loadShowStyleBlueprint(showStyle))
 
 	const targetPlaylistId: [RundownPlaylistId, string] = (beforeRundown?.playlistIdIsSetInSofie
 		? [beforeRundown.playlistId, beforeRundown.externalId]
@@ -350,7 +350,7 @@ async function generatePlaylistAndRundownsCollectionInner(
 		existingPlaylist0
 			? existingPlaylist0
 			: (RundownPlaylists.findOneAsync(newPlaylistId) as Promise<ReadonlyDeep<RundownPlaylist>>),
-		makePromise(() => loadStudioBlueprint(studio)),
+		loadStudioBlueprint(studio),
 		existingRundownsCollection ? null : rundownsCollection.prepareInit({ playlistId: newPlaylistId }, true),
 	])
 	if (changedRundown) {

@@ -16,7 +16,7 @@ import {
 	ShowStyleVariant,
 	ShowStyleVariants,
 } from '../../../lib/collections/ShowStyleVariants'
-import { protectString, objectPathGet, objectPathSet } from '../../../lib/lib'
+import { protectString, objectPathGet, objectPathSet, waitForPromise } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './cache'
 import { ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
@@ -196,7 +196,7 @@ export function getStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): unknown 
 	}
 
 	logger.debug('Building Studio config')
-	const studioBlueprint = loadStudioBlueprint(studio)
+	const studioBlueprint = waitForPromise(loadStudioBlueprint(studio))
 	if (studioBlueprint) {
 		const diffs = findMissingConfigs(studioBlueprint.blueprint.studioConfigManifest, studio.blueprintConfig)
 		if (diffs && diffs.length) {
@@ -237,7 +237,7 @@ export function getShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<Show
 		return cachedConfig.config
 	}
 
-	const showStyleBlueprint = loadShowStyleBlueprint(showStyleCompound)
+	const showStyleBlueprint = waitForPromise(loadShowStyleBlueprint(showStyleCompound))
 	if (showStyleBlueprint) {
 		const diffs = findMissingConfigs(
 			showStyleBlueprint.blueprint.showStyleConfigManifest,

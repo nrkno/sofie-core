@@ -915,7 +915,7 @@ export namespace ServerPlayoutAPI {
 							? cache.Rundowns.findOne(currentPartInstance.rundownId)
 							: undefined
 						const showStyle = await cache.activationCache.getShowStyleCompound(currentRundown ?? rundown)
-						const blueprint = loadShowStyleBlueprint(showStyle)
+						const blueprint = await loadShowStyleBlueprint(showStyle)
 						updatePartInstanceOnTake(
 							cache,
 							showStyle,
@@ -1104,7 +1104,7 @@ export namespace ServerPlayoutAPI {
 		check(triggerMode, Match.Maybe(String))
 
 		return executeActionInner(access, rundownPlaylistId, async (actionContext, _cache, _rundown) => {
-			const blueprint = loadShowStyleBlueprint(actionContext.showStyleCompound)
+			const blueprint = await loadShowStyleBlueprint(actionContext.showStyleCompound)
 			if (!blueprint.blueprint.executeAction) {
 				throw new Meteor.Error(
 					400,

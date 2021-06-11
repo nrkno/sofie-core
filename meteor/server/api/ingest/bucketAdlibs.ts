@@ -15,7 +15,7 @@ import {
 	updateExpectedMediaItemForBucketAdLibPiece,
 } from './expectedMediaItems'
 import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
-import { waitForPromiseAll } from '../../../lib/lib'
+import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { bucketSyncFunction } from '../buckets'
 import {
 	cleanUpExpectedPackagesForBucketAdLibs,
@@ -35,7 +35,7 @@ export function updateBucketAdlibFromIngestData(
 	bucketId: BucketId,
 	ingestData: IngestAdlib
 ): void {
-	const { blueprint, blueprintId } = loadShowStyleBlueprint(showStyle)
+	const { blueprint, blueprintId } = waitForPromise(loadShowStyleBlueprint(showStyle))
 
 	const context = new ShowStyleUserContext(
 		{

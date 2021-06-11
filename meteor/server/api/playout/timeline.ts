@@ -106,7 +106,7 @@ export function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout) {
 	let baselineObjects: TimelineObjRundown[] = []
 	let studioBaseline: BlueprintResultBaseline | undefined
 
-	const studioBlueprint = loadStudioBlueprint(studio)
+	const studioBlueprint = waitForPromise(loadStudioBlueprint(studio))
 	if (studioBlueprint) {
 		const blueprint = studioBlueprint.blueprint
 		studioBaseline = blueprint.getBaseline(
