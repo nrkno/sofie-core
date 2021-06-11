@@ -20,6 +20,7 @@ import {
 	PartInstanceLimited,
 	getSegmentsWithPartInstances,
 } from '../../lib/Rundown'
+import { PartInstance } from '../../lib/collections/PartInstances'
 import { DBSegment, Segment, SegmentId, Segments } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
