@@ -11,6 +11,7 @@ import {
 	PartInstance,
 	wrapPartToTemporaryInstance,
 	findPartInstanceInMapOrWrapToTemporary,
+	PartInstanceId,
 } from '../../../../lib/collections/PartInstances'
 import { Settings } from '../../../../lib/Settings'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
@@ -121,7 +122,9 @@ export const RundownTimingProvider = withTracker<
 		private temporaryPartInstances: Map<PartId, PartInstance> = new Map<PartId, PartInstance>()
 
 		private linearParts: Array<[PartId, number | null]> = []
-		private prevPartId: string | null = null
+
+		// this.previousPartInstanceId is used to check if the previousPart has changed since last iteration.
+		private previousPartInstanceId: PartInstanceId | null = null
 		private lastTakeAt: number | undefined = undefined
 
 		// look at the comments on RundownTimingContext to understand what these do
@@ -423,9 +426,9 @@ export const RundownTimingProvider = withTracker<
 					if (playlist.previousPartInstanceId !== partInstance._id) {
 						displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId]
 					} else {
-						if (this.prevPartId !== unprotectString(playlist.previousPartInstanceId)) {
+						if (this.previousPartInstanceId !== playlist.previousPartInstanceId) {
 							this.lastTakeAt = now
-							this.prevPartId = unprotectString(playlist.previousPartInstanceId) || ''
+							this.previousPartInstanceId = playlist.previousPartInstanceId || ''
 						}
 						let durationToTake =
 							this.lastTakeAt && lastStartedPlayback
