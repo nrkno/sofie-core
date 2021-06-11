@@ -11,6 +11,7 @@ export namespace ExpectedPackage {
 	export enum PackageType {
 		MEDIA_FILE = 'media_file',
 		QUANTEL_CLIP = 'quantel_clip',
+		JSON_DATA = 'json_data',
 
 		// TALLY_LABEL = 'tally_label'
 
@@ -122,6 +123,25 @@ export namespace ExpectedPackage {
 			accessors: { [accessorId: string]: AccessorOnPackage.Quantel }
 		}[]
 	}
+
+	export interface ExpectedPackageJSONData extends Base {
+		type: PackageType.JSON_DATA
+		content: {
+			/** Local path on the package container */
+			path: string
+		}
+		version: {}
+		sources: {
+			containerId: string
+			accessors: {
+				[accessorId: string]:
+					| AccessorOnPackage.HTTP
+					| AccessorOnPackage.LocalFolder
+					| AccessorOnPackage.FileShare
+				// | AccessorOnPackage.FTP
+			}
+		}[]
+	}
 }
 
 /** A PackageContainer defines a place that contains Packages, that can be read or written to.
@@ -143,12 +163,13 @@ export interface PackageContainer {
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Accessor {
-	export type Any = LocalFolder | FileShare | HTTP | Quantel | CorePackageCollection | FTP
+	export type Any = LocalFolder | FileShare | HTTP | HTTPProxy | Quantel | CorePackageCollection | FTP
 
 	export enum AccessType {
 		LOCAL_FOLDER = 'local_folder',
 		FILE_SHARE = 'file_share',
 		HTTP = 'http',
+		HTTP_PROXY = 'http_proxy',
 		QUANTEL = 'quantel',
 		CORE_PACKAGE_INFO = 'core_package_info',
 		FTP = 'ftp',
@@ -187,14 +208,22 @@ export namespace Accessor {
 		userName?: string
 		password?: string
 	}
+	/** Definition of an Accessor to a generix HTTP enpoint*/
 	export interface HTTP extends Base {
 		type: AccessType.HTTP
 
 		/** Base url (url to the host), for example http://myhost.com/fileShare/ */
 		baseUrl: string
 
-		/** Any headers to send along with the request */
-		// headers?: { [name: string]: any } // Not implemented (yet)
+		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible. */
+		networkId?: string
+	}
+	/** Definition of an Accessor to the Package Manager HTTP proxy */
+	export interface HTTPProxy extends Base {
+		type: AccessType.HTTP_PROXY
+
+		/** Base url (url to the host), for example http://myhost.com/fileShare/ */
+		baseUrl: string
 
 		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible. */
 		networkId?: string
@@ -244,7 +273,7 @@ export namespace Accessor {
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AccessorOnPackage {
-	export type Any = LocalFolder | FileShare | HTTP | Quantel | CorePackageCollection | FTP
+	export type Any = LocalFolder | FileShare | HTTP | HTTPProxy | Quantel | CorePackageCollection | FTP
 
 	export interface LocalFolder extends Partial<Accessor.LocalFolder> {
 		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
@@ -253,6 +282,10 @@ export namespace AccessorOnPackage {
 	export interface FileShare extends Partial<Accessor.FileShare> {
 		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
 		filePath?: string
+	}
+	export interface HTTPProxy extends Partial<Accessor.HTTPProxy> {
+		/** URL path to resource (combined with .baseUrl gives the full URL), for example: /folder/myFile */
+		url?: string
 	}
 	export interface HTTP extends Partial<Accessor.HTTP> {
 		/** URL path to resource (combined with .baseUrl gives the full URL), for example: /folder/myFile */
