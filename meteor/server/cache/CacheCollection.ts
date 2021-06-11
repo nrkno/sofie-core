@@ -147,6 +147,8 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		const span = profiler.startSpan(`DBCache.fillWithDataFromDatabase.${this.name}`)
 		const docs = await asyncCollectionFindFetch(this._collection, selector)
 
+		span?.addLabels({ count: docs.length })
+
 		this.fillWithDataFromArray(docs as any)
 		span?.end()
 		return docs.length
@@ -433,7 +435,7 @@ export class DbCacheWriteCollection<
 			})
 		}
 
-		const pBulkWriteResult = asyncCollectionBulkWrite(this._collection, updates)
+		const pBulkWriteResult = updates.length > 0 ? asyncCollectionBulkWrite(this._collection, updates) : null
 
 		_.each(removedDocs, (_id) => {
 			this.documents.delete(_id)

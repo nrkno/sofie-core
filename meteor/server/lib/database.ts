@@ -175,7 +175,7 @@ async function savePreparedChanges<DocClass extends DBInterface, DBInterface ext
 		})
 	}
 
-	const pBulkWriteResult = asyncCollectionBulkWrite(collection, updates)
+	const pBulkWriteResult = updates.length > 0 ? asyncCollectionBulkWrite(collection, updates) : null
 
 	await pBulkWriteResult
 
