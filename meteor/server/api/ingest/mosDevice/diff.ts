@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import { SegmentId, Segment } from '../../../../lib/collections/Segments'
-import { clone, literal, normalizeArray } from '../../../../lib/lib'
+import { clone, deleteAllUndefinedProperties, literal, normalizeArray } from '../../../../lib/lib'
 import { Settings } from '../../../../lib/Settings'
 import { profiler } from '../../profiler'
 import { CacheForIngest } from '../cache'
@@ -204,6 +204,11 @@ export function diffSegmentEntries(
 		}
 		if (oldSegmentEntry) {
 			const modifiedIsEqual = oldSegment ? newSegmentEntry.modified === oldSegment.externalModified : true
+
+			// ensure there are no 'undefined' properties
+			deleteAllUndefinedProperties(oldSegmentEntry)
+			deleteAllUndefinedProperties(newSegmentEntry)
+
 			// deep compare:
 			const ingestContentIsEqual = _.isEqual(_.omit(newSegmentEntry, 'rank'), _.omit(oldSegmentEntry, 'rank'))
 			const rankIsEqual = oldSegment
