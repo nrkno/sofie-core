@@ -17,17 +17,12 @@ import { protectString, waitForPromise } from '../../../../lib/lib'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
 import { removeRundownsFromDb } from '../../rundownPlaylist'
 
-// const Timeline = mockupCollection(OrgTimeline)
-
 describe('Playout Actions', () => {
 	let env: DefaultEnvironment
 	let playoutDevice: PeripheralDevice
 
 	function getPeripheralDeviceCommands(device: PeripheralDevice) {
 		return PeripheralDeviceCommands.find({ deviceId: device._id }, { sort: { time: 1 } }).fetch()
-	}
-	function clearPeripheralDeviceCommands(device: PeripheralDevice) {
-		return PeripheralDeviceCommands.remove({ deviceId: device._id })
 	}
 
 	beforeEachInFiber(() => {

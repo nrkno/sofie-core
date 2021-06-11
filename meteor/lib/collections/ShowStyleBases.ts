@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
 import {
 	IBlueprintConfig,

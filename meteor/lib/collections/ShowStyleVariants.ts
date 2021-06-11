@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { IBlueprintConfig, IBlueprintShowStyleVariant } from '@sofie-automation/blueprints-integration'
 import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
 import { ShowStyleBase, ShowStyleBaseId } from './ShowStyleBases'

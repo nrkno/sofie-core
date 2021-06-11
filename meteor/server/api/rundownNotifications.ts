@@ -3,14 +3,13 @@ import {
 	RundownNotificationsAPI,
 	IMediaObjectIssue,
 	RundownNotificationsAPIMethods,
-	RankedNote,
 } from '../../lib/api/rundownNotifications'
 import { registerClassToMeteorMethods } from '../methods'
 import { RundownId } from '../../lib/collections/Rundowns'
 import { PartNote } from '../../lib/api/notes'
 import { makePromise } from '../../lib/lib'
 import { getSegmentPartNotes, getMediaObjectIssues } from '../../lib/rundownNotifications'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { MethodContextAPI } from '../../lib/api/methods'
 import { RundownReadAccess } from '../security/rundown'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 

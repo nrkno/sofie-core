@@ -72,7 +72,6 @@ export const addSteps = addMigrationSteps('0.1.0', [
 			if (studios.length === 1) {
 				const studio = studios[0]
 
-				const missing: string | boolean = false
 				PeripheralDevices.find({
 					parentDeviceId: { $exists: false },
 				}).forEach((device) => {

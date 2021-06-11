@@ -149,8 +149,6 @@ export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
 		inserted: [],
 	}
 
-	const i = 0
-
 	const exclusivityGroups: { [groupId: string]: true } = {}
 	_.each(studio.routeSets, (routeSet) => {
 		if (routeSet.active) {

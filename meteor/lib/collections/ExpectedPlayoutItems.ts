@@ -4,7 +4,6 @@ import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integra
 import { StudioId } from './Studios'
 import { RundownId } from './Rundowns'
 import { PartId } from './Parts'
-import { PieceId } from './Pieces'
 import { registerIndex } from '../database'
 
 /** A string, identifying a Rundown

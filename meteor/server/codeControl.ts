@@ -125,7 +125,7 @@ function syncFunctionInner<T extends Function>(
 }
 function evaluateFunctions() {
 	const groups = _.groupBy(syncFunctionFcns, (fcn) => fcn.id)
-	_.each(groups, (group, id) => {
+	_.each(groups, (group) => {
 		const runningFcn = _.find(group, (fcn) => fcn.status === syncFunctionFcnStatus.RUNNING)
 		let startNext = false
 		if (runningFcn) {

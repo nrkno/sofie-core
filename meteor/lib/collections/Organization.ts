@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { UserId } from './Users'

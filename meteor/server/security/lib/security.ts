@@ -222,7 +222,7 @@ namespace AccessRules {
 			}
 		}
 	}
-	export function accessCurrentUser(cred0: Credentials | ResolvedCredentials, userId: UserId): Access<null> {
+	export function accessCurrentUser(cred0: Credentials | ResolvedCredentials, _userId: UserId): Access<null> {
 		let userId2: UserId | undefined = undefined
 		if (isResolvedCredentials(cred0) && cred0.user) {
 			userId2 = cred0.user._id
@@ -241,7 +241,7 @@ namespace AccessRules {
 		} else return noAccess('Requested user not found')
 	}
 
-	export function accessSystemStatus(cred0: Credentials | ResolvedCredentials): Access<null> {
+	export function accessSystemStatus(_cred0: Credentials | ResolvedCredentials): Access<null> {
 		// No restrictions on systemStatus
 		return allAccess(null)
 	}

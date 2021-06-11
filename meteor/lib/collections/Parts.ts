@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { FindOptions, MongoQuery } from '../typings/meteor'
 import { RundownId } from './Rundowns'
 import { Piece, Pieces } from './Pieces'

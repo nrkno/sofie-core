@@ -808,7 +808,7 @@ export function restartCore(
 	return ClientAPI.responseSuccess(`Restarting Core in 3s.`)
 }
 
-export function noop(context: MethodContext) {
+export function noop(_context: MethodContext) {
 	triggerWriteAccessBecauseNoCheckNecessary()
 	return ClientAPI.responseSuccess(undefined)
 }

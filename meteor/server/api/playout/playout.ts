@@ -1103,7 +1103,7 @@ export namespace ServerPlayoutAPI {
 		check(userData, Match.Any)
 		check(triggerMode, Match.Maybe(String))
 
-		return executeActionInner(access, rundownPlaylistId, async (actionContext, cache, rundown) => {
+		return executeActionInner(access, rundownPlaylistId, async (actionContext, _cache, _rundown) => {
 			const blueprint = loadShowStyleBlueprint(actionContext.showStyleCompound)
 			if (!blueprint.blueprint.executeAction) {
 				throw new Meteor.Error(

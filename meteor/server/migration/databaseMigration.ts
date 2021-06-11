@@ -20,7 +20,6 @@ import {
 	ValidateFunctionCore,
 	ValidateFunctionShowStyle,
 	ValidateFunctionStudio,
-	SomeBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
 import {
@@ -368,7 +367,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 
 	const manualInputs: Array<MigrationStepInput> = []
 	const stepsHash: Array<string> = []
-	_.each(migrationSteps, (step: MigrationStepInternal, id: string) => {
+	_.each(migrationSteps, (step: MigrationStepInternal) => {
 		stepsHash.push(step.id)
 		step.chunk._steps.push(step.id)
 		if (!step.canBeRunAutomatically) {

@@ -27,7 +27,6 @@ import { syncFunction } from './codeControl'
 const PackageInfo = require('../package.json')
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 import { profiler } from './api/profiler'
-import * as path from 'path'
 import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
 import { createShowStyleCompound } from './api/showStyles'
 

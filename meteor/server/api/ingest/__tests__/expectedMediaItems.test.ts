@@ -32,7 +32,7 @@ describe('Expected Media Items', () => {
 	const rdExtId0 = 'rundown0'
 	const rdExtId1 = 'rundown1'
 	let rdId0: RundownId = protectString('rundown0')
-	let rdId1: RundownId = protectString('rundown1')
+	// let rdId1: RundownId = protectString('rundown1')
 	const mockPart0: PartId = protectString('mockPart0')
 	const mockPiece0: PieceId = protectString('mockPiece0')
 	const mockPart1: PartId = protectString('mockPart1')
@@ -188,7 +188,7 @@ describe('Expected Media Items', () => {
 
 	beforeAllInFiber(() => {
 		rdId0 = setupRundown(rdExtId0, rplId0)
-		rdId1 = setupRundown(rdExtId1, rplId1)
+		setupRundown(rdExtId1, rplId1)
 	})
 
 	describe('Based on a Rundown', () => {

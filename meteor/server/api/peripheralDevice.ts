@@ -132,7 +132,7 @@ export namespace ServerPeripheralDeviceAPI {
 		deviceId: PeripheralDeviceId,
 		token: string
 	): PeripheralDeviceId {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		// TODO: Add an authorization for this?
 
@@ -180,7 +180,7 @@ export namespace ServerPeripheralDeviceAPI {
 		return status
 	}
 	export function ping(context: MethodContext, deviceId: PeripheralDeviceId, token: string): void {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(deviceId, String)
 		check(token, String)
@@ -374,7 +374,7 @@ export namespace ServerPeripheralDeviceAPI {
 		r: PeripheralDeviceAPI.PartPlaybackStoppedResult
 	) {
 		// This is called from the playout-gateway when an
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownPlaylistId, String)
@@ -389,7 +389,7 @@ export namespace ServerPeripheralDeviceAPI {
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
 	) {
 		// This is called from the playout-gateway when an auto-next event occurs
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownPlaylistId, String)
@@ -411,7 +411,7 @@ export namespace ServerPeripheralDeviceAPI {
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
 	) {
 		// This is called from the playout-gateway when an auto-next event occurs
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownPlaylistId, String)
@@ -475,7 +475,7 @@ export namespace ServerPeripheralDeviceAPI {
 		throwError?: boolean
 	): string {
 		// used for integration tests with core-connection
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(deviceId, String)
 		check(token, String)
@@ -636,7 +636,7 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 }
 
-PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''

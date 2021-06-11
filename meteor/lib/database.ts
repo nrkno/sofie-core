@@ -1,4 +1,3 @@
-import _ from 'underscore'
 import { IndexSpecifier } from './typings/meteor'
 import { ProtectedString } from './lib'
 import { Meteor } from 'meteor/meteor'

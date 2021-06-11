@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { BulkWriteOperation, BulkWriteOpResultObject } from 'mongodb'
+import { BulkWriteOperation } from 'mongodb'
 import _ from 'underscore'
 import { AsyncTransformedCollection } from '../../lib/collections/lib'
 import { DBObj, waitForPromise, normalizeArrayToMap, ProtectedString } from '../../lib/lib'

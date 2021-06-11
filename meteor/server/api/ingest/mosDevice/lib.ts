@@ -40,7 +40,7 @@ export function getSegmentExternalId(rundownId: RundownId, ingestPart: IngestPar
 
 export function fixIllegalObject(o: any) {
 	if (_.isArray(o)) {
-		_.each(o, (val, key) => {
+		_.each(o, (val, _key) => {
 			fixIllegalObject(val)
 		})
 	} else if (_.isObject(o)) {

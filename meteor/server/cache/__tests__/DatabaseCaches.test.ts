@@ -7,8 +7,6 @@ import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
 
 // setLoggerLevel('info')
 
-const orgSetTimeout = setTimeout
-
 describe('DatabaseCaches', () => {
 	beforeEach(() => {
 		setupDefaultStudioEnvironment()

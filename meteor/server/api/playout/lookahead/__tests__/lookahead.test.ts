@@ -33,7 +33,7 @@ import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '../../../../../lib/constants'
 describe('Lookahead', () => {
 	let env: DefaultEnvironment
 	let playlistId: RundownPlaylistId
-	let rundownId: RundownId
+	// let rundownId: RundownId
 	// let segmentId: SegmentId
 	let partIds: PartId[]
 
@@ -56,7 +56,7 @@ describe('Lookahead', () => {
 		}
 		Studios.update(env.studio._id, { $set: { mappings } })
 		env.studio.mappings = mappings
-		;({ playlistId, rundownId } = setupDefaultRundownPlaylist(
+		;({ playlistId } = setupDefaultRundownPlaylist(
 			env,
 			undefined,
 			(env: DefaultEnvironment, playlistId: RundownPlaylistId, rundownId: RundownId) => {

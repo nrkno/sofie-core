@@ -231,7 +231,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 					messageId: unprotectString(messageToSend._id),
 					persistent: true, // same thing as deliveryMode=2
 				},
-				(err, ok) => {
+				(err, _ok) => {
 					if (err) {
 						messageToSend.reject(err)
 					} else {

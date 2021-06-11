@@ -1,9 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import * as _ from 'underscore'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import * as semver from 'semver'
-import { Mongo } from 'meteor/mongo'
 import {
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageStatuses,

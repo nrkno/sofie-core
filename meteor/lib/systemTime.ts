@@ -1,7 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { logger } from './logging'
-import { PeripheralDeviceAPI } from './api/peripheralDevice'
 import { systemTime } from './lib'
 import { MeteorCall } from './api/methods'
 

@@ -1,7 +1,6 @@
 import { FindOptions } from '../typings/meteor'
 import { registerCollection, ProtectedString, protectString } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { logger } from '../logging'
 import * as semver from 'semver'
 import { createMongoCollection } from './lib'

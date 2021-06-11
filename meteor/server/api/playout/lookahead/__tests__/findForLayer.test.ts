@@ -1,7 +1,6 @@
 import '../../../../../__mocks__/_extendJest'
 import { Part, PartId } from '../../../../../lib/collections/Parts'
 import { Piece } from '../../../../../lib/collections/Pieces'
-import _ from 'underscore'
 import { findLookaheadForLayer } from '../findForLayer'
 import { PartAndPieces, PartInstanceAndPieceInstances } from '../util'
 import { Random } from 'meteor/random'

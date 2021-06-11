@@ -185,7 +185,7 @@ export function formatDateTime(time: Time) {
  * @param obj
  */
 export function removeNullyProperties<T>(obj: T): T {
-	iterateDeeply(obj, (val, key) => {
+	iterateDeeply(obj, (val, _key) => {
 		if (_.isArray(val)) {
 			return iterateDeeplyEnum.CONTINUE
 		} else if (_.isObject(val)) {
@@ -593,18 +593,19 @@ export function mongoFindOptions<Class extends DBInterface, DBInterface extends 
 ): Class[] {
 	let docs = [...docs0] // Shallow clone it
 	if (options) {
-		if (options.sort) {
+		const sortOptions = options.sort
+		if (sortOptions) {
 			// Underscore doesnt support desc order, or multiple fields, so we have to do it manually
-			const keys = _.keys(options.sort).filter((k) => options.sort)
+			const keys = Object.keys(sortOptions).filter((k) => sortOptions[k])
 			const doSort = (a: any, b: any, i: number): number => {
 				if (i >= keys.length) return 0
 
 				const key = keys[i]
-				const order = options!.sort![key]
+				const order = sortOptions[key]
 
 				// Get the values, and handle asc vs desc
-				const val1 = objectPath.get(order! > 0 ? a : b, key)
-				const val2 = objectPath.get(order! > 0 ? b : a, key)
+				const val1 = objectPath.get(order > 0 ? a : b, key)
+				const val2 = objectPath.get(order > 0 ? b : a, key)
 
 				if (_.isEqual(val1, val2)) {
 					return doSort(a, b, i + 1)

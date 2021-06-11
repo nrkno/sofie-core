@@ -4,14 +4,10 @@ import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mo
 import { PieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { literal, protectString, getCurrentTime } from '../../../lib/lib'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import {
-	getPieceInstancesForPart,
-	getPlayheadTrackingInfinitesForPart,
-	processAndPrunePieceInstanceTimings,
-} from '../infinites'
+import { getPlayheadTrackingInfinitesForPart, processAndPrunePieceInstanceTimings } from '../infinites'
 import { Piece } from '../../../lib/collections/Pieces'
 import { PartInstance, PartInstanceId } from '../../collections/PartInstances'
-import { DBPart, Part, PartId } from '../../collections/Parts'
+import { DBPart, PartId } from '../../collections/Parts'
 import { DBRundown, Rundown, RundownId } from '../../collections/Rundowns'
 import { RundownPlaylistId } from '../../collections/RundownPlaylists'
 

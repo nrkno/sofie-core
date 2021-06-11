@@ -2,13 +2,12 @@ import * as _ from 'underscore'
 import { Timeline as TimelineTypes, TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { OnGenerateTimelineObjExt, TimelineObjRundown, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { Part } from '../../../../lib/collections/Parts'
-import { Piece } from '../../../../lib/collections/Pieces'
 import { literal, protectString, unprotectString } from '../../../../lib/lib'
-import { PieceInstance, rewrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../../../lib/collections/PieceInstances'
 import { PartInstanceId } from '../../../../lib/collections/PartInstances'
 import { sortPieceInstancesByStart } from '../pieces'
 import { profiler } from '../../profiler'
-import { isPieceInstance, PartAndPieces } from './util'
+import { PartAndPieces } from './util'
 
 function getBestPieceInstanceId(piece: PieceInstance): string {
 	if (!piece.isTemporary || piece.partInstanceId) {

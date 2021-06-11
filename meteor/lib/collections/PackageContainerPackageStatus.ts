@@ -35,8 +35,10 @@ export interface PackageContainerPackageStatusDB {
 	modified: Time
 }
 
-export const PackageContainerPackageStatuses =
-	createMongoCollection<PackageContainerPackageStatusDB, PackageContainerPackageStatusDB>('packageContainerPackageStatuses')
+export const PackageContainerPackageStatuses = createMongoCollection<
+	PackageContainerPackageStatusDB,
+	PackageContainerPackageStatusDB
+>('packageContainerPackageStatuses')
 registerCollection('PackageContainerStatuses', PackageContainerPackageStatuses)
 
 registerIndex(PackageContainerPackageStatuses, {

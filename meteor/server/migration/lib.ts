@@ -5,7 +5,7 @@ import {
 	MigrationStepInputFilteredResult,
 	MigrationStepBase,
 } from '@sofie-automation/blueprints-integration'
-import { Collections, objectPathGet, DBObj, ProtectedString } from '../../lib/lib'
+import { Collections, objectPathGet, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
@@ -41,7 +41,7 @@ export function ensureCollectionProperty<T = any>(
 			// logger.info('')
 			return propertyMissing
 		},
-		migrate: (input: MigrationStepInputFilteredResult) => {
+		migrate: () => {
 			const objects = collection.find(selector).fetch()
 			_.each(objects, (obj: any) => {
 				if (obj && objectPathGet(obj, property) !== defaultValue) {
