@@ -8,6 +8,7 @@ import {
 	mongoModify,
 	protectString,
 	clone,
+	unprotectString,
 } from '../../lib/lib'
 import { MongoQuery, TransformedCollection, FindOptions, MongoModifier, FindOneOptions } from '../../lib/typings/meteor'
 import _ from 'underscore'
@@ -81,12 +82,18 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		}
 	}
 
+	protected ensureInitialized(): void {
+		if (!this._initialized) {
+			waitForPromise(this._initialize())
+		}
+	}
+
 	findFetch(
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		options?: FindOptions<DBInterface>
 	): Class[] {
 		const span = profiler.startSpan(`DBCache.findFetch.${this.name}`)
-		waitForPromise(this._initialize())
+		this.ensureInitialized()
 
 		selector = selector || {}
 		if (isProtectedString(selector)) {
@@ -201,7 +208,7 @@ export class DbCacheWriteCollection<
 		this.assertNotToBeRemoved('insert')
 
 		const span = profiler.startSpan(`DBCache.insert.${this.name}`)
-		waitForPromise(this._initialize())
+		this.ensureInitialized()
 
 		const existing = doc._id && this.documents.get(doc._id)
 		if (existing) {
@@ -222,7 +229,7 @@ export class DbCacheWriteCollection<
 		this.assertNotToBeRemoved('remove')
 
 		const span = profiler.startSpan(`DBCache.remove.${this.name}`)
-		waitForPromise(this._initialize())
+		this.ensureInitialized()
 
 		let removedIds: DBInterface['_id'][] = []
 		if (isProtectedString(selector)) {
@@ -249,7 +256,7 @@ export class DbCacheWriteCollection<
 		this.assertNotToBeRemoved('update')
 
 		const span = profiler.startSpan(`DBCache.update.${this.name}`)
-		waitForPromise(this._initialize())
+		this.ensureInitialized()
 
 		const selectorInModify: MongoQuery<DBInterface> = _.isFunction(selector)
 			? {}
@@ -298,7 +305,8 @@ export class DbCacheWriteCollection<
 		this.assertNotToBeRemoved('replace')
 
 		const span = profiler.startSpan(`DBCache.replace.${this.name}`)
-		waitForPromise(this._initialize())
+		span?.addLabels({ id: unprotectString(doc._id) })
+		this.ensureInitialized()
 
 		if (!doc._id) throw new Meteor.Error(500, `Error: The (immutable) field '_id' must be defined: "${doc._id}"`)
 		const _id = doc._id
@@ -330,7 +338,7 @@ export class DbCacheWriteCollection<
 		this.assertNotToBeRemoved('upsert')
 
 		const span = profiler.startSpan(`DBCache.upsert.${this.name}`)
-		waitForPromise(this._initialize())
+		this.ensureInitialized()
 
 		if (isProtectedString(selector)) {
 			selector = { _id: selector } as any
