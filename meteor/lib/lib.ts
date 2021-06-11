@@ -98,6 +98,8 @@ const systemTime = {
 }
 /**
  * Returns the current (synced) time
+ * The synced time differs from Date.now() in that it uses a time synced with the Sofie server,
+ * so it is unaffected of whether the client has a well-synced computer time or not.
  * @return {Time}
  */
 export function getCurrentTime(): Time {
