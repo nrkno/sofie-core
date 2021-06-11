@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Parts, DBPart } from './Parts'
 import { RundownId } from './Rundowns'
-import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
+import { FindOptions, MongoQuery } from '../typings/meteor'
 import { IBlueprintSegmentDB } from '@sofie-automation/blueprints-integration'
 import { SegmentNote } from '../api/notes'
 import { createMongoCollection } from './lib'
@@ -68,7 +68,7 @@ export class Segment implements DBSegment {
 }
 
 // export const Segments = createMongoCollection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
-export const Segments: TransformedCollection<Segment, DBSegment> = createMongoCollection<Segment>('segments', {
+export const Segments = createMongoCollection<Segment, DBSegment>('segments', {
 	transform: (doc) => applyClassToDocument(Segment, doc),
 })
 registerCollection('Segments', Segments)

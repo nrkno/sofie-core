@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import {
 	applyClassToDocument,
 	registerCollection,
@@ -279,7 +278,7 @@ export class Studio implements DBStudio {
 	}
 }
 
-export const Studios: TransformedCollection<Studio, DBStudio> = createMongoCollection<Studio>('studios', {
+export const Studios = createMongoCollection<Studio, DBStudio>('studios', {
 	transform: (doc) => applyClassToDocument(Studio, doc),
 })
 registerCollection('Studios', Studios)

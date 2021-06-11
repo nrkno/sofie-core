@@ -25,7 +25,6 @@ import { VerifiedRundownPlaylistContentAccess } from '../../lib'
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import { literal } from '../../../../lib/lib'
-import { TransformedCollection } from '../../../../lib/typings/meteor'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
