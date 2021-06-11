@@ -19,27 +19,25 @@ export function DisplayFormattedTimeInner(
 		timeToFormat.utcOffset(timeZone)
 	}
 
-	// Overrides to be able to display calendar based string with Moment without
-	// time of day. Because we override the strings from Moment they won't be
-	// automatically localized by Moment. Therefore we need to use the general
-	// translation functionality for this in order for localization to work.
-	// This is horrible, and hopefully will be replaced with something
-	// smoother when we replace Moment.
-	const momentCalendarOptions = {
-		sameDay: `[${t('Today')}] HH:mm:ss`,
-		lastDay: `[${t('Yesterday')}] HH:mm:ss`,
-		nextDay: `[${t('Tomorrow')}] HH:mm:ss`,
-		nextWeek: 'dddd HH:mm:ss',
-		lastWeek: `[${t('Last')}] dddd HH:mm:ss`,
-	}
-
-	const diff = now.diff(timeToFormat, 'days')
+	const diffDays = now.diff(timeToFormat, 'days')
 
 	let formattedDateString: string
-	if (Math.abs(diff) < 6) {
+	if (Math.abs(diffDays) < 6) {
+		// Overrides to be able to display calendar based string with Moment without
+		// time of day. Because we override the strings from Moment they won't be
+		// automatically localized by Moment. Therefore we need to use the general
+		// translation functionality for this in order for localization to work.
+		// This is horrible, and hopefully will be replaced with something
+		// smoother when we replace Moment.
+		const momentCalendarOptions = {
+			sameDay: `[${t('Today')}] HH:mm:ss`,
+			lastDay: `[${t('Yesterday')}] HH:mm:ss`,
+			nextDay: `[${t('Tomorrow')}] HH:mm:ss`,
+			nextWeek: 'dddd HH:mm:ss',
+			lastWeek: `[${t('Last')}] dddd HH:mm:ss`,
+		}
+
 		formattedDateString = timeToFormat.calendar(now, momentCalendarOptions)
-	} else if (now.isBefore(displayTimestamp)) {
-		formattedDateString = now.from(timeToFormat)
 	} else {
 		formattedDateString = now.to(timeToFormat)
 	}
