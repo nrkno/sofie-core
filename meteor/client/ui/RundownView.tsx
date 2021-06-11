@@ -1,4 +1,3 @@
-/// <reference types="mousetrap/plugins/global-bind/mousetrap-global-bind" />
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { parse as queryStringParse } from 'query-string'
@@ -38,6 +37,7 @@ import { getCurrentTime, unprotectString, protectString } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
 import * as mousetrap from 'mousetrap'
+import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'

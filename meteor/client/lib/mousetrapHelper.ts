@@ -1,4 +1,3 @@
-/// <reference types="mousetrap/plugins/global-bind/mousetrap-global-bind" />
 import * as mousetrap from 'mousetrap'
 import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
 import { isEventInInputField } from './lib'
