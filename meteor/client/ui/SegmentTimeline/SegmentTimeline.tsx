@@ -98,13 +98,13 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 	IZoomStateHeader
 > {
 	static contextTypes = {
-		durations: PropTypes.object.isRequired
+		durations: PropTypes.object.isRequired,
 	}
 
 	constructor(props, context) {
 		super(props, context)
 		this.state = {
-			totalSegmentDuration: 10
+			totalSegmentDuration: 10,
 		}
 	}
 
@@ -127,7 +127,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		const total = this.calculateSegmentDuration()
 		if (total !== this.state.totalSegmentDuration) {
 			this.setState({
-				totalSegmentDuration: total
+				totalSegmentDuration: total,
 			})
 		}
 	}
@@ -189,7 +189,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 	renderMiniLiveLine() {
 		if (this.props.isLiveSegment) {
 			let lineStyle = {
-				left: ((this.props.livePosition / this.getSegmentDuration()) * 100).toString() + '%'
+				left: ((this.props.livePosition / this.getSegmentDuration()) * 100).toString() + '%',
 			}
 
 			return <div className="segment-timeline__zoom-area__liveline" style={lineStyle}></div>
@@ -203,7 +203,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 					hidden:
 						this.props.scrollLeft === 0 &&
 						(this.props.showingAllSegment || this.props.timeScale === this.props.maxTimeScale) &&
-						!this.props.isLiveSegment
+						!this.props.isLiveSegment,
 				})}
 			>
 				<div className="segment-timeline__zoom-area" onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
@@ -317,7 +317,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				`rundownView.${props.playlist._id}`,
 				`segment.${props.segment._id}.useTimeOfDayCountdowns`,
 				!!props.playlist.timeOfDayCountdowns
-			)
+			),
 		}
 	}
 
@@ -350,12 +350,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	private onHighlight = (e: HighlightEvent) => {
 		if (e.segmentId === this.props.segment._id && !e.partId && !e.pieceId) {
 			this.setState({
-				highlight: true
+				highlight: true,
 			})
 			clearTimeout(this.highlightTimeout)
 			this.highlightTimeout = setTimeout(() => {
 				this.setState({
-					highlight: false
+					highlight: false,
 				})
 			}, 5000)
 		}
@@ -376,7 +376,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	onTimelineResize = (size: number[]) => {
 		this.setState({
-			timelineWidth: size[0]
+			timelineWidth: size[0],
 		})
 	}
 
@@ -405,7 +405,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			this.props.onScroll(Math.max(0, this.props.scrollLeft + scrollAmount / this.props.timeScale), e)
 			this._lastPointer = {
 				clientX: e.touches[0].clientX,
-				clientY: e.touches[0].clientY
+				clientY: e.touches[0].clientY,
 			}
 		}
 	}
@@ -429,7 +429,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			}
 			this._lastPointer = {
 				clientX: e.touches[0].clientX,
-				clientY: e.touches[0].clientY
+				clientY: e.touches[0].clientY,
 			}
 			e.preventDefault()
 			e.stopPropagation()
@@ -448,11 +448,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			document.addEventListener('mouseup', this.onTimelineMouseUp)
 			this._mouseAttached = true
 			this.setState({
-				mouseGrabbed: true
+				mouseGrabbed: true,
 			})
 			this._lastPointer = {
 				clientX: e.clientX,
-				clientY: e.clientY
+				clientY: e.clientY,
 			}
 			document.addEventListener('pointerlockchange', this.onTimelinePointerLockChange)
 			document.addEventListener('pointerlockerror', this.onTimelinePointerError)
@@ -468,7 +468,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		if (e.movementX === 0) {
 			this._lastPointer = {
 				clientX: e.clientX,
-				clientY: e.clientY
+				clientY: e.clientY,
 			}
 		}
 		if (e.movementX !== 0 || e.movementY !== 0) {
@@ -482,7 +482,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		this._mouseAttached = false
 		this._lastPointer = undefined
 		this.setState({
-			mouseGrabbed: false
+			mouseGrabbed: false,
 		})
 		unlockPointer()
 		hidePointerLockCursor()
@@ -548,7 +548,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	onTimeUntilClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		this.setState(
 			(state) => ({
-				useTimeOfDayCountdowns: !state.useTimeOfDayCountdowns
+				useTimeOfDayCountdowns: !state.useTimeOfDayCountdowns,
 			}),
 			() => {
 				UIStateStorage.setItem(
@@ -593,7 +593,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	getSegmentContext = (props) => {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
-			part: this.props.parts.find((p) => p.instance.part.isPlayable()) || null
+			part: this.props.parts.find((p) => p.instance.part.isPlayable()) || null,
 		})
 
 		if (this.props.onContextMenu && typeof this.props.onContextMenu === 'function') {
@@ -611,7 +611,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		return {
 			transform:
 				'translate3d(-' + Math.floor(this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0.1px)',
-			willChange: 'transform'
+			willChange: 'transform',
 		}
 	}
 
@@ -629,7 +629,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				left:
 					(this.props.followLiveLine && !this.props.showingAllSegment
 						? Math.min(pixelPostion, this.props.liveLineHistorySize).toString()
-						: pixelPostion.toString()) + 'px'
+						: pixelPostion.toString()) + 'px',
 			}
 
 			return [
@@ -640,7 +640,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						width:
 							(this.props.followLiveLine && !this.props.showingAllSegment
 								? Math.min(Math.max(0, pixelPostion), this.props.liveLineHistorySize).toString()
-								: Math.max(0, pixelPostion).toString()) + 'px'
+								: Math.max(0, pixelPostion).toString()) + 'px',
 					}}
 				/>,
 				<div className="segment-timeline__liveline" key={this.props.segment._id + '-liveline'} style={lineStyle}>
@@ -667,7 +667,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							</div>
 						) : null}
 					</div>
-				</div>
+				</div>,
 			]
 		}
 	}
@@ -740,7 +740,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 									collapsed:
 										this.props.collapsedOutputs[outputLayer._id] !== undefined
 											? this.props.collapsedOutputs[outputLayer._id] === true
-											: outputLayer.isDefaultCollapsed
+											: outputLayer.isDefaultCollapsed,
 								})}
 							>
 								<div
@@ -806,7 +806,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				p.instance.part.identifier
 					? {
 							partId: p.partId,
-							ident: p.instance.part.identifier
+							ident: p.instance.part.identifier,
 					  }
 					: null
 			)
@@ -845,7 +845,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					'has-identifiers': identifiers.length > 0,
 					'invert-flash': this.state.highlight,
 
-					'time-of-day-countdowns': this.state.useTimeOfDayCountdowns
+					'time-of-day-countdowns': this.state.useTimeOfDayCountdowns,
 				})}
 				data-obj-id={this.props.segment._id}
 				ref={this.setSegmentRef}
@@ -854,7 +854,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					id="segment-timeline-context-menu"
 					collect={this.getSegmentContext}
 					attributes={{
-						className: 'segment-timeline__title'
+						className: 'segment-timeline__title',
 					}}
 					holdToDisplay={contextMenuHoldToDisplayTime()}
 					renderTag="div"
@@ -943,7 +943,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				<div
 					className={ClassNames('segment-timeline__timeline-container', {
 						'segment-timeline__timeline-container--grabbable': Settings.allowGrabbingTimeline,
-						'segment-timeline__timeline-container--grabbed': this.state.mouseGrabbed
+						'segment-timeline__timeline-container--grabbed': this.state.mouseGrabbed,
 					})}
 					onMouseDownCapture={this.onTimelineMouseDown}
 					onTouchStartCapture={this.onTimelineTouchStart}

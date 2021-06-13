@@ -18,7 +18,7 @@ import {
 	setHelpMode,
 	setUIZoom,
 	getUIZoom,
-	setShowHiddenSourceLayers
+	setShowHiddenSourceLayers,
 } from '../lib/localStorage'
 import Status from './Status'
 import { Settings as SettingsView } from './Settings'
@@ -120,7 +120,7 @@ export const App = translateWithTracker(() => {
 				allowDeveloper: getAllowDeveloper(),
 				allowService: getAllowService(),
 				subscriptionsReady: false,
-				requestedRoute
+				requestedRoute,
 			}
 
 			this.lastStart = Date.now()
@@ -175,7 +175,7 @@ export const App = translateWithTracker(() => {
 				const ready = this.subscriptionsReady()
 				if (this.state.subscriptionsReady !== ready) {
 					this.setState({
-						subscriptionsReady: ready
+						subscriptionsReady: ready,
 					})
 				}
 			})
@@ -194,7 +194,7 @@ export const App = translateWithTracker(() => {
 					allowConfigure: getAllowConfigure(),
 					allowStudio: getAllowStudio(),
 					allowDeveloper: getAllowDeveloper(),
-					allowTesting: getAllowTesting()
+					allowTesting: getAllowTesting(),
 				}
 				const invalid = Object.keys(roles).findIndex((k) => roles[k] !== this.state[k])
 				if (invalid !== -1) this.setState({ ...roles })
@@ -217,7 +217,7 @@ export const App = translateWithTracker(() => {
 							},
 							onDiscard: () => {
 								callback(false)
-							}
+							},
 						})
 					}}
 				>
