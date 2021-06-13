@@ -2258,6 +2258,24 @@ svg.icon {
 			width: 1.4em;
 		}
 	}
+
+	> .playlist-looping-header__countdown {
+		font-size: 1.05em;
+		margin-right: 1em;
+		line-height: 1.4em;
+
+		&:first-of-type {
+			margin-left: 3em;
+		}
+
+		&.playlist-looping-header__countdown--time-of-day {
+			font-weight: 600;
+		}
+
+		&.playlist-looping-header__countdown--countdown {
+			font-weight: 300;
+		}
+	}
 }
 
 .segment-timeline-container + .playlist-looping-header {
@@ -2291,6 +2309,19 @@ svg.icon {
 		margin: 0 1em 0 0; // center vertically
 		padding: 0.3em;
 		line-height: 1.2em;
+		letter-spacing: 0px;
+		font-weight: 600;
+		hyphens: auto;
+		-webkit-hyphens: auto;
+		-ms-hyphens: auto;
+		display: inline-block;
+	}
+
+	> .rundown-divider-timeline__title--loop {
+		margin: 0 1em 0 0; // center vertically
+		padding: 0.3em;
+		line-height: 1.2em;
+		font-size: 1.2em;
 		letter-spacing: 0px;
 		font-weight: 600;
 		hyphens: auto;
@@ -2349,6 +2380,24 @@ svg.icon {
 
 	> .rundown-divider-timeline__expected-duration {
 		margin-left: auto;
+	}
+
+	> .rundown-divider-timeline__point {
+		font-size: 1.2em;
+		margin-right: 1em;
+		line-height: 1.8em;
+
+		&:first-of-type {
+			margin-left: 3em;
+		}
+
+		&.rundown-divider-timeline__point--time-of-day {
+			font-weight: 600;
+		}
+
+		&.rundown-divider-timeline__point--countdown {
+			font-weight: 300;
+		}
 	}
 }
 
