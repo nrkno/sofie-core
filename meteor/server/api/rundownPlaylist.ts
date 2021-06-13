@@ -3,7 +3,7 @@ import {
 	RundownPlaylists,
 	RundownPlaylistId,
 	DBRundownPlaylist,
-	RundownPlaylist
+	RundownPlaylist,
 } from '../../lib/collections/RundownPlaylists'
 import { DBRundown, Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import {
@@ -15,7 +15,7 @@ import {
 	unprotectObjectArray,
 	getRank,
 	unprotectString,
-	mongoFindOptions
+	mongoFindOptions,
 } from '../../lib/lib'
 import * as _ from 'underscore'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
@@ -34,12 +34,12 @@ import { Segments } from '../../lib/collections/Segments'
 import {
 	runStudioOperationWithCache,
 	runStudioOperationWithLock,
-	StudioLockFunctionPriority
+	StudioLockFunctionPriority,
 } from './studio/lockFunction'
 import {
 	PlayoutLockFunctionPriority,
 	runPlayoutOperationWithLock,
-	runPlayoutOperationWithLockFromStudioOperation
+	runPlayoutOperationWithLockFromStudioOperation,
 } from './playout/lockFunction'
 import { ReadonlyDeep } from 'type-fest'
 import { WrappedStudioBlueprint } from './blueprints/cache'
@@ -101,7 +101,7 @@ export async function removeRundownPlaylistFromDb(playlist: ReadonlyDeep<Rundown
 
 	await Promise.allSettled([
 		asyncCollectionRemove(RundownPlaylists, { _id: playlist._id }),
-		removeRundownsFromDb(rundownIds)
+		removeRundownsFromDb(rundownIds),
 	])
 }
 export async function removeRundownsFromDb(rundownIds: RundownId[]): Promise<void> {
@@ -122,7 +122,7 @@ export async function removeRundownsFromDb(rundownIds: RundownId[]): Promise<voi
 			asyncCollectionRemove(Pieces, { startRundownId: { $in: rundownIds } }),
 			asyncCollectionRemove(PieceInstances, { rundownId: { $in: rundownIds } }),
 			asyncCollectionRemove(RundownBaselineAdLibActions, { rundownId: { $in: rundownIds } }),
-			asyncCollectionRemove(RundownBaselineObjs, { rundownId: { $in: rundownIds } })
+			asyncCollectionRemove(RundownBaselineObjs, { rundownId: { $in: rundownIds } }),
 		])
 	}
 }
@@ -148,7 +148,7 @@ export function produceRundownPlaylistInfoFromRundown(
 						identifier: `studioId=${studio._id},playlistId=${playlistId},rundownIds=${rundowns
 							.map((r) => r._id)
 							.join(',')}`,
-						tempSendUserNotesIntoBlackHole: true
+						tempSendUserNotesIntoBlackHole: true,
 					},
 					studio
 				),
@@ -181,13 +181,13 @@ export function produceRundownPlaylistInfoFromRundown(
 			outOfOrderTiming: playlistInfo.playlist.outOfOrderTiming,
 			timeOfDayCountdowns: playlistInfo.playlist.timeOfDayCountdowns,
 
-			modified: getCurrentTime()
+			modified: getCurrentTime(),
 		}
 	} else {
 		newPlaylist = {
 			...defaultPlaylistForRundown(rundownsInDefaultOrder[0], studio, existingPlaylist),
 			_id: playlistId,
-			externalId: playlistExternalId
+			externalId: playlistExternalId,
 		}
 	}
 
@@ -196,7 +196,7 @@ export function produceRundownPlaylistInfoFromRundown(
 
 	return {
 		rundownPlaylist: newPlaylist,
-		order: order // Note: if playlist.rundownRanksAreSetInSofie is set, this order should be ignored later
+		order: order, // Note: if playlist.rundownRanksAreSetInSofie is set, this order should be ignored later
 	}
 }
 function defaultPlaylistForRundown(
@@ -218,7 +218,7 @@ function defaultPlaylistForRundown(
 		expectedStart: rundown.expectedStart,
 		expectedDuration: rundown.expectedDuration,
 
-		modified: getCurrentTime()
+		modified: getCurrentTime(),
 	}
 }
 
@@ -318,7 +318,7 @@ export function moveRundownIntoPlaylist(
 
 					// Quickly Remove it from the old playlist so that we can free the lock
 					Rundowns.update(rundown._id, {
-						$set: { playlistId: protectString('__TMP__'), playlistIdIsSetInSofie: true }
+						$set: { playlistId: protectString('__TMP__'), playlistIdIsSetInSofie: true },
 					})
 
 					// Regenerate the playlist
@@ -350,7 +350,7 @@ export function moveRundownIntoPlaylist(
 					const rundownsCollection = new DbCacheWriteCollection(Rundowns)
 					const [playlist] = await Promise.all([
 						asyncCollectionFindOne(RundownPlaylists, intoPlaylistLock._playlistId),
-						rundownsCollection.prepareInit({ playlistId: intoPlaylistLock._playlistId }, true)
+						rundownsCollection.prepareInit({ playlistId: intoPlaylistLock._playlistId }, true),
 					])
 
 					if (!playlist)
@@ -363,8 +363,8 @@ export function moveRundownIntoPlaylist(
 						playlist.rundownRanksAreSetInSofie = true
 						RundownPlaylists.update(playlist._id, {
 							$set: {
-								rundownRanksAreSetInSofie: true
-							}
+								rundownRanksAreSetInSofie: true,
+							},
 						})
 					}
 
@@ -392,8 +392,8 @@ export function moveRundownIntoPlaylist(
 
 						rundownsCollection.update(rundown._id, {
 							$set: {
-								_rank: newRank
-							}
+								_rank: newRank,
+							},
 						})
 					} else {
 						// Moving from another playlist
@@ -405,8 +405,8 @@ export function moveRundownIntoPlaylist(
 							$set: {
 								playlistId: playlist._id,
 								playlistIdIsSetInSofie: true,
-								_rank: 99999 // The rank will be set later, in updateRundownsInPlaylist
-							}
+								_rank: 99999, // The rank will be set later, in updateRundownsInPlaylist
+							},
 						})
 						rundown.playlistId = playlist._id
 						rundown.playlistIdIsSetInSofie = true
@@ -446,7 +446,7 @@ export function moveRundownIntoPlaylist(
 			const playlist: DBRundownPlaylist = {
 				...defaultPlaylistForRundown(rundown, studio),
 				externalId: externalId,
-				_id: getPlaylistIdFromExternalId(studio._id, externalId)
+				_id: getPlaylistIdFromExternalId(studio._id, externalId),
 			}
 			RundownPlaylists.insert(playlist)
 
@@ -454,8 +454,8 @@ export function moveRundownIntoPlaylist(
 				$set: {
 					playlistId: playlist._id,
 					playlistIdIsSetInSofie: true,
-					_rank: 1
-				}
+					_rank: 1,
+				},
 			})
 		}
 	})
@@ -481,8 +481,8 @@ export function restoreRundownsInPlaylistToDefaultOrder(context: MethodContext, 
 			// Update the playlist
 			RundownPlaylists.update(tmpPlaylist._id, {
 				$set: {
-					rundownRanksAreSetInSofie: false
-				}
+					rundownRanksAreSetInSofie: false,
+				},
 			})
 			const newPlaylist = clone<RundownPlaylist>(tmpPlaylist)
 			newPlaylist.rundownRanksAreSetInSofie = false
@@ -503,7 +503,7 @@ function sortDefaultRundownInPlaylistOrder(rundowns: ReadonlyDeep<Array<DBRundow
 		sort: {
 			expectedStart: 1,
 			name: 1,
-			_id: 1
-		}
+			_id: 1,
+		},
 	})
 }
