@@ -23,7 +23,7 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
-import { getAllowSpeaking, getShowHiddenSourceLayers, getUseWallClockCountdowns } from '../../lib/localStorage'
+import { getAllowSpeaking, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
 import { IContextMenuContext } from '../RundownView'
@@ -36,6 +36,7 @@ import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../Rundo
 
 import * as VelocityReact from 'velocity-react'
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
+import { UIStateStorage } from '../../lib/UIStateStorage'
 
 interface IProps {
 	id: string
@@ -81,6 +82,7 @@ interface IStateHeader {
 	timelineWidth: number
 	mouseGrabbed: boolean
 	highlight: boolean
+	useTimeOfDayCountdowns: boolean
 }
 
 interface IZoomPropsHeader {
@@ -310,7 +312,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		this.state = {
 			timelineWidth: 1,
 			mouseGrabbed: false,
-			highlight: false
+			highlight: false,
+			useTimeOfDayCountdowns: UIStateStorage.getItemBoolean(
+				`rundownView.${props.playlist._id}`,
+				`segment.${props.segment._id}.useTimeOfDayCountdowns`,
+				!!props.playlist.timeOfDayCountdowns
+			)
 		}
 	}
 
@@ -536,6 +543,21 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		} else {
 			this.onTimelineZoomOff()
 		}
+	}
+
+	onTimeUntilClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.setState(
+			(state) => ({
+				useTimeOfDayCountdowns: !state.useTimeOfDayCountdowns
+			}),
+			() => {
+				UIStateStorage.setItem(
+					`rundownView.${this.props.playlist._id}`,
+					`segment.${this.props.segment._id}.useTimeOfDayCountdowns`,
+					!!this.state.useTimeOfDayCountdowns
+				)
+			}
+		)
 	}
 
 	onTimelineWheel = (e: WheelEvent) => {
@@ -801,7 +823,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			}
 		}
 
-		const useWallClockCountdowns = getUseWallClockCountdowns()
+		const useTimeOfDayCountdowns = this.state.useTimeOfDayCountdowns
 
 		return (
 			<div
@@ -821,7 +843,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					'has-guest-items': this.props.hasGuestItems,
 					'has-remote-items': this.props.hasRemoteItems,
 					'has-identifiers': identifiers.length > 0,
-					'invert-flash': this.state.highlight
+					'invert-flash': this.state.highlight,
+
+					'time-of-day-countdowns': this.state.useTimeOfDayCountdowns
 				})}
 				data-obj-id={this.props.segment._id}
 				ref={this.setSegmentRef}
@@ -893,14 +917,14 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							/>
 						)}
 				</div>
-				<div className="segment-timeline__timeUntil">
+				<div className="segment-timeline__timeUntil" onClick={this.onTimeUntilClick}>
 					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (
 						<PartCountdown
 							partId={countdownToPartId}
-							hideOnZero={true}
-							useWallClock={useWallClockCountdowns}
+							hideOnZero={!useTimeOfDayCountdowns}
+							useWallClock={useTimeOfDayCountdowns}
 							label={
-								useWallClockCountdowns ? (
+								useTimeOfDayCountdowns ? (
 									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
 								) : (
 									<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>

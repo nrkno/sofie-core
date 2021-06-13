@@ -89,10 +89,3 @@ export function setShowHiddenSourceLayers(show: boolean) {
 export function getShowHiddenSourceLayers(): boolean {
 	return localStorage.getItem(LocalStorageProperty.SHOW_HIDDEN_SOURCE_LAYERS) === '1'
 }
-
-export function getUseWallClockCountdowns(): boolean {
-	return localStorage.getItem('useWallClockCountdowns') === '1'
-}
-export function setUseWallClockCountdowns(useWallClockCountdowns: boolean) {
-	localStorage.setItem('useWallClockCountdowns', useWallClockCountdowns ? '1' : '0')
-}

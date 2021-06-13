@@ -10,7 +10,7 @@ import {
 	getCurrentTime,
 	normalizeArrayFunc,
 	ProtectedString,
-	unprotectString,
+	unprotectString
 } from '../lib'
 import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Rundowns'
 import { Studio, Studios, StudioId } from './Studios'
@@ -74,6 +74,10 @@ export interface DBRundownPlaylist {
 	activationId?: RundownPlaylistActivationId
 	/** Should the playlist loop at the end */
 	loop?: boolean
+	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */
+	outOfOrderTiming?: boolean
+	/** Should time-of-day clocks be used instead of countdowns by default */
+	timeOfDayCountdowns?: boolean
 
 	/** the id of the Live Part - if empty, no part in this rundown is live */
 	currentPartInstanceId: PartInstanceId | null
@@ -86,8 +90,6 @@ export interface DBRundownPlaylist {
 	/** the id of the Previous Part */
 	previousPartInstanceId: PartInstanceId | null
 
-	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */
-	outOfOrderTiming?: boolean
 	/** The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment. */
 	nextSegmentId?: SegmentId
 
@@ -132,6 +134,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public previousPartInstanceId: PartInstanceId | null
 	public loop?: boolean
 	public outOfOrderTiming?: boolean
+	public timeOfDayCountdowns?: boolean
 	public rundownRanksAreSetInSofie?: boolean
 
 	public previousPersistentState?: TimelinePersistentState
@@ -147,7 +150,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		return Rundowns.find(
 			_.extend(
 				{
-					playlistId: this._id,
+					playlistId: this._id
 				},
 				selector
 			),
@@ -155,8 +158,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				{
 					sort: {
 						_rank: 1,
-						_id: 1,
-					},
+						_id: 1
+					}
 				},
 				options
 			)
@@ -170,12 +173,12 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				{
 					sort: {
 						_rank: 1,
-						_id: 1,
+						_id: 1
 					},
 					fields: {
 						_rank: 1,
-						_id: 1,
-					},
+						_id: 1
+					}
 				},
 				options
 			)
@@ -184,8 +187,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	getRundownUnorderedIDs(selector?: MongoQuery<DBRundown>): RundownId[] {
 		return this.getRundowns(selector, {
 			fields: {
-				_id: 1,
-			},
+				_id: 1
+			}
 		}).map((i) => i._id)
 	}
 	touch() {
@@ -218,15 +221,15 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				_rank: 1,
 				playlistId: 1,
 				expectedStart: 1,
-				expectedDuration: 1,
-			},
+				expectedDuration: 1
+			}
 		})
 		const segments = Segments.find(
 			_.extend(
 				{
 					rundownId: {
-						$in: rundowns.map((i) => i._id),
-					},
+						$in: rundowns.map((i) => i._id)
+					}
 				},
 				selector
 			),
@@ -234,8 +237,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				{
 					sort: {
 						rundownId: 1,
-						_rank: 1,
-					},
+						_rank: 1
+					}
 				},
 				options
 			)
@@ -247,15 +250,15 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
 				_rank: 1,
-				playlistId: 1,
-			},
+				playlistId: 1
+			}
 		})
 		const segments = Segments.find(
 			_.extend(
 				{
 					rundownId: {
-						$in: rundowns.map((i) => i._id),
-					},
+						$in: rundowns.map((i) => i._id)
+					}
 				},
 				selector
 			),
@@ -263,8 +266,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				{
 					sort: {
 						rundownId: 1,
-						_rank: 1,
-					},
+						_rank: 1
+					}
 				},
 				options
 			)
@@ -280,22 +283,22 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			fields: {
 				_id: 1,
 				_rank: 1,
-				name: 1,
-			},
+				name: 1
+			}
 		})
 		const parts = Parts.find(
 			{
 				...selector,
 				rundownId: {
-					$in: rundowns.map((i) => i._id),
-				},
+					$in: rundowns.map((i) => i._id)
+				}
 			},
 			{
 				...options,
 				sort: {
 					rundownId: 1,
-					_rank: 1,
-				},
+					_rank: 1
+				}
 			}
 		).fetch()
 		return parts
@@ -310,15 +313,15 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
 				_rank: 1,
-				playlistId: 1,
-			},
+				playlistId: 1
+			}
 		})
 		const segments = Segments.find(
 			{
 				rundownId: {
-					$in: rundowns.map((i) => i._id),
+					$in: rundowns.map((i) => i._id)
 				},
-				...segmentsQuery,
+				...segmentsQuery
 			},
 			{
 				...segmentsOptions,
@@ -327,23 +330,23 @@ export class RundownPlaylist implements DBRundownPlaylist {
 					? {
 							...segmentsOptions?.fields,
 							_rank: 1,
-							rundownId: 1,
+							rundownId: 1
 					  }
 					: undefined,
 				sort: {
 					...segmentsOptions?.sort,
 					rundownId: 1,
-					_rank: 1,
-				},
+					_rank: 1
+				}
 			}
 		).fetch()
 
 		const parts = Parts.find(
 			{
 				rundownId: {
-					$in: rundowns.map((i) => i._id),
+					$in: rundowns.map((i) => i._id)
 				},
-				...partsQuery,
+				...partsQuery
 			},
 			{
 				...partsOptions,
@@ -352,22 +355,22 @@ export class RundownPlaylist implements DBRundownPlaylist {
 					? {
 							...partsOptions?.fields,
 							rundownId: 1,
-							_rank: 1,
+							_rank: 1
 					  }
 					: undefined,
 				//@ts-ignore
 				sort: {
 					...segmentsOptions?.sort,
 					rundownId: 1,
-					_rank: 1,
-				},
+					_rank: 1
+				}
 			}
 		).fetch()
 
 		const sortedSegments = RundownPlaylist._sortSegments(segments, rundowns)
 		return {
 			segments: sortedSegments,
-			parts: RundownPlaylist._sortPartsInner(parts, sortedSegments),
+			parts: RundownPlaylist._sortPartsInner(parts, sortedSegments)
 		}
 	}
 	getSelectedPartInstances(rundownIds0?: RundownId[]) {
@@ -382,14 +385,14 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				? PartInstances.find({
 						rundownId: { $in: rundownIds },
 						_id: { $in: ids },
-						reset: { $ne: true },
+						reset: { $ne: true }
 				  }).fetch()
 				: []
 
 		return {
 			currentPartInstance: instances.find((inst) => inst._id === this.currentPartInstanceId),
 			nextPartInstance: instances.find((inst) => inst._id === this.nextPartInstanceId),
-			previousPartInstance: instances.find((inst) => inst._id === this.previousPartInstanceId),
+			previousPartInstance: instances.find((inst) => inst._id === this.previousPartInstanceId)
 		}
 	}
 	getAllPartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<PartInstance>) {
@@ -400,13 +403,13 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		return PartInstances.find(
 			_.extend(
 				{
-					rundownId: { $in: rundownIds },
+					rundownId: { $in: rundownIds }
 				},
 				selector
 			),
 			_.extend(
 				{
-					sort: { takeCount: 1 },
+					sort: { takeCount: 1 }
 				},
 				options
 			)
@@ -415,7 +418,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	getActivePartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<PartInstance>) {
 		const newSelector = {
 			...selector,
-			reset: { $ne: true },
+			reset: { $ne: true }
 		}
 		return this.getAllPartInstances(newSelector, options)
 	}
@@ -446,7 +449,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		rundowns.forEach((rundown) => {
 			rundownsMap.set(rundown._id, {
 				rundown,
-				segments: [],
+				segments: []
 			})
 		})
 		segments.forEach((segment) => {
@@ -473,15 +476,14 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	}
 }
 
-export const RundownPlaylists: TransformedCollection<
-	RundownPlaylist,
-	DBRundownPlaylist
-> = createMongoCollection<RundownPlaylist>('rundownPlaylists', {
-	transform: (doc) => applyClassToDocument(RundownPlaylist, doc),
+export const RundownPlaylists: TransformedCollection<RundownPlaylist, DBRundownPlaylist> = createMongoCollection<
+	RundownPlaylist
+>('rundownPlaylists', {
+	transform: (doc) => applyClassToDocument(RundownPlaylist, doc)
 })
 registerCollection('RundownPlaylists', RundownPlaylists)
 
 registerIndex(RundownPlaylists, {
 	studioId: 1,
-	activationId: 1,
+	activationId: 1
 })
