@@ -25,11 +25,11 @@ import {
 import { IContextMenuContext, MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
 import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { NoteType, SegmentNote, TrackedNote } from '../../../lib/api/notes'
+import { NoteType, PartNote, SegmentNote, TrackedNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
-import { unprotectString, equalSets, equivalentArrays, protectString } from '../../../lib/lib'
+import { unprotectString, equalSets, equivalentArrays, protectString, normalizeArray } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
@@ -46,9 +46,11 @@ import RundownViewEventBus, {
 	GoToPartInstanceEvent,
 } from '../RundownView/RundownViewEventBus'
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
-import { ScanInfoForPackages } from '../../../lib/mediaObjects'
+import { checkPieceContentStatus, getNoteTypeForPieceStatus, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 import { SegmentTimelinePartClass } from './SegmentTimelinePart'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -234,7 +236,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		)
 		o.parts.forEach((part) => {
 			notes.push(
-				...part.instance.part.getMinimumReactivePieceNotes(props.studio, props.showStyleBase).map(
+				...getMinimumReactivePieceNotesForPart(props.studio, props.showStyleBase, part.instance.part).map(
 					(note): TrackedNote => ({
 						...note,
 						rank: segment._rank,
@@ -965,3 +967,50 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 	}
 )
+
+function getMinimumReactivePieceNotesForPart(
+	studio: Studio,
+	showStyleBase: ShowStyleBase,
+	part: Part
+): Array<PartNote> {
+	const notes: Array<PartNote> = []
+
+	const pieces = Pieces.find(
+		{
+			startRundownId: part.rundownId,
+			startPartId: part._id,
+		},
+		{
+			fields: {
+				_id: 1,
+				name: 1,
+				sourceLayerId: 1,
+				content: 1,
+				expectedPackages: 1,
+			},
+		}
+	).fetch() as Array<Pick<Piece, '_id' | 'name' | 'sourceLayerId' | 'content' | 'expectedPackages'>>
+
+	const sourceLayerMap = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
+	for (const piece of pieces) {
+		// TODO: check statuses (like media availability) here
+
+		if (sourceLayerMap && piece.sourceLayerId && sourceLayerMap[piece.sourceLayerId]) {
+			const part = sourceLayerMap[piece.sourceLayerId]
+			const st = checkPieceContentStatus(piece, part, studio)
+			if (st.status !== RundownAPI.PieceStatusCode.OK && st.status !== RundownAPI.PieceStatusCode.UNKNOWN) {
+				notes.push({
+					type: getNoteTypeForPieceStatus(st.status) || NoteType.WARNING,
+					origin: {
+						name: 'Media Check',
+						pieceId: piece._id,
+					},
+					message: {
+						key: st.message || '',
+					},
+				})
+			}
+		}
+	}
+	return notes
+}

@@ -1,21 +1,9 @@
-import { FindOptions, MongoQuery } from '../typings/meteor'
 import { RundownId } from './Rundowns'
-import { Piece, Pieces } from './Pieces'
 import { SegmentId } from './Segments'
-import {
-	applyClassToDocument,
-	registerCollection,
-	normalizeArray,
-	ProtectedString,
-	ProtectedStringProperties,
-} from '../lib'
-import { RundownAPI } from '../api/rundown'
-import { checkPieceContentStatus, getNoteTypeForPieceStatus } from '../mediaObjects'
+import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { IBlueprintPartDB, PartHoldMode } from '@sofie-automation/blueprints-integration'
-import { PartNote, NoteType } from '../api/notes'
+import { PartNote } from '../api/notes'
 import { createMongoCollection } from './lib'
-import { Studio } from './Studios'
-import { ShowStyleBase } from './ShowStyleBases'
 import { registerIndex } from '../database'
 import { ITranslatableMessage } from '../api/TranslatableMessage'
 
@@ -91,65 +79,7 @@ export class Part implements DBPart {
 			this[key] = value
 		}
 	}
-	getPieces(selector?: MongoQuery<Piece>, options?: FindOptions<Piece>) {
-		selector = selector || {}
-		options = options || {}
-		return Pieces.find(
-			{
-				startRundownId: this.rundownId,
-				startPartId: this._id,
-				...selector,
-			},
-			{
-				...options,
-			}
-		).fetch()
-	}
-	getAllPieces() {
-		return this.getPieces()
-	}
 
-	getInvalidReasonNotes(): Array<PartNote> {
-		return this.invalidReason
-			? [
-					{
-						type: NoteType.ERROR,
-						message: this.invalidReason.message,
-						origin: {
-							name: this.title,
-						},
-					},
-			  ]
-			: []
-	}
-	getMinimumReactivePieceNotes(studio: Studio, showStyleBase: ShowStyleBase): Array<PartNote> {
-		const notes: Array<PartNote> = []
-
-		const pieces = this.getPieces()
-		const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
-		for (let i = 0; i < pieces.length; i++) {
-			const piece = pieces[i]
-			// TODO: check statuses (like media availability) here
-
-			if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
-				const part = partLookup[piece.sourceLayerId]
-				const st = checkPieceContentStatus(piece, part, studio)
-				if (st.status !== RundownAPI.PieceStatusCode.OK && st.status !== RundownAPI.PieceStatusCode.UNKNOWN) {
-					notes.push({
-						type: getNoteTypeForPieceStatus(st.status) || NoteType.WARNING,
-						origin: {
-							name: 'Media Check',
-							pieceId: piece._id,
-						},
-						message: {
-							key: st.message || '',
-						},
-					})
-				}
-			}
-		}
-		return notes
-	}
 	isPlayable() {
 		return isPartPlayable(this)
 	}

@@ -172,7 +172,10 @@ export function setNextSegment(
 			)
 		}
 
-		const partsInSegment = nextSegment.getParts()
+		const partsInSegment = Parts.find({
+			rundownId: nextSegment.rundownId,
+			segmentId: nextSegment._id,
+		}).fetch()
 		const firstValidPartInSegment = _.find(partsInSegment, (p) => p.isPlayable())
 
 		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')

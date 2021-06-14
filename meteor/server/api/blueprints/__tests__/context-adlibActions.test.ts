@@ -75,7 +75,7 @@ describe('Test blueprint api context', () => {
 				part,
 			})
 
-			part.getPieces().forEach((p) => {
+			Pieces.find({ startPartId: part._id, startRundownId: rundown._id }).forEach((p) => {
 				PieceInstances.insert({
 					_id: protectString(`${part._id}_piece_${p._id}`),
 					rundownId: rundown._id,

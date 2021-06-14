@@ -1,8 +1,6 @@
 import * as _ from 'underscore'
 import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { Parts, DBPart } from './Parts'
 import { RundownId } from './Rundowns'
-import { FindOptions, MongoQuery } from '../typings/meteor'
 import { IBlueprintSegmentDB } from '@sofie-automation/blueprints-integration'
 import { SegmentNote } from '../api/notes'
 import { createMongoCollection } from './lib'
@@ -45,25 +43,6 @@ export class Segment implements DBSegment {
 		for (const [key, value] of Object.entries(document)) {
 			this[key] = value
 		}
-	}
-	getParts(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBPart>) {
-		selector = selector || {}
-		options = options || {}
-		return Parts.find(
-			_.extend(
-				{
-					rundownId: this.rundownId,
-					segmentId: this._id,
-				},
-				selector
-			),
-			_.extend(
-				{
-					sort: { _rank: 1 },
-				},
-				options
-			)
-		).fetch()
 	}
 }
 
