@@ -188,14 +188,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			},
 		}).map((i) => i._id)
 	}
-	touch() {
-		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
-		if (getCurrentTime() - this.modified > 3600 * 1000) {
-			const m = getCurrentTime()
-			this.modified = m
-			RundownPlaylists.update(this._id, { $set: { modified: m } })
-		}
-	}
 	/** Return the studio for this RundownPlaylist */
 	getStudio(): Studio {
 		if (!this.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')

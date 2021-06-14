@@ -132,13 +132,6 @@ export class Rundown implements DBRundown {
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
 		return showStyleBase
 	}
-	getStudio(): Studio {
-		if (!this.studioId) throw new Meteor.Error(500, 'Rundown is not in a studio!')
-		const studio = Studios.findOne(this.studioId)
-		if (studio) {
-			return studio
-		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
-	}
 	getSegments(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBSegment>): Segment[] {
 		selector = selector || {}
 		options = options || {}
@@ -218,13 +211,6 @@ export class Rundown implements DBRundown {
 				options
 			)
 		).fetch()
-	}
-	appendNote(note: RundownNote): void {
-		Rundowns.update(this._id, {
-			$push: {
-				notes: note,
-			},
-		})
 	}
 }
 
