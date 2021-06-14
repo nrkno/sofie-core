@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 // tslint:disable-next-line:no-submodule-imports
 import * as tsrPkgInfo from 'timeline-state-resolver-types/package.json'
 
@@ -23,11 +22,11 @@ export function iterateDeeply(
 	const newValue = iteratee(obj, key)
 	if (newValue === iterateDeeplyEnum.CONTINUE) {
 		// Continue iterate deeper if possible
-		if (_.isObject(obj)) {
+		if (obj && typeof obj === 'object') {
 			// object or array
-			_.each(obj, (v, k) => {
+			for (const [k, v] of Object.entries(obj)) {
 				obj[k] = iterateDeeply(v, iteratee, k)
-			})
+			}
 		} else {
 			// don't change anything
 		}
@@ -50,10 +49,10 @@ export async function iterateDeeplyAsync(
 	const newValue = await iteratee(obj, key)
 	if (newValue === iterateDeeplyEnum.CONTINUE) {
 		// Continue iterate deeper if possible
-		if (_.isObject(obj)) {
+		if (obj && typeof obj === 'object') {
 			// object or array
 			await Promise.all(
-				_.map(obj, async (v, k) => {
+				Object.entries(obj).map(async ([k, v]) => {
 					obj[k] = await iterateDeeplyAsync(v, iteratee, k)
 				})
 			)
