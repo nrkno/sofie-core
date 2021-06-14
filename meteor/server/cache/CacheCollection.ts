@@ -320,42 +320,42 @@ export class DbCacheWriteCollection<
 		return !!oldDoc
 	}
 
-	upsert(
-		selector: MongoQuery<DBInterface> | DBInterface['_id'],
-		doc: DBInterface,
-		forceUpdate?: boolean
-	): {
-		numberAffected?: number
-		insertedId?: DBInterface['_id']
-	} {
-		this.assertNotToBeRemoved('upsert')
+	// upsert(
+	// 	selector: MongoQuery<DBInterface> | DBInterface['_id'],
+	// 	doc: DBInterface,
+	// 	forceUpdate?: boolean
+	// ): {
+	// 	numberAffected?: number
+	// 	insertedId?: DBInterface['_id']
+	// } {
+	// 	this.assertNotToBeRemoved('upsert')
 
-		const span = profiler.startSpan(`DBCache.upsert.${this.name}`)
-		waitForPromise(this._initialize())
+	// 	const span = profiler.startSpan(`DBCache.upsert.${this.name}`)
+	// 	waitForPromise(this._initialize())
 
-		if (isProtectedString(selector)) {
-			selector = { _id: selector } as any
-		}
+	// 	if (isProtectedString(selector)) {
+	// 		selector = { _id: selector } as any
+	// 	}
 
-		const updatedIds = this.update(selector, doc, forceUpdate)
-		if (updatedIds.length > 0) {
-			if (span) span.end()
-			return { numberAffected: updatedIds.length }
-		} else {
-			if (!selector['_id']) {
-				throw new Meteor.Error(500, `Can't upsert without selector._id`)
-			}
-			if (doc._id !== selector['_id']) {
-				throw new Meteor.Error(
-					500,
-					`Can't upsert, selector._id "${selector['_id']}" not matching doc._id "${doc._id}"`
-				)
-			}
+	// 	const updatedIds = this.update(selector, doc, forceUpdate)
+	// 	if (updatedIds.length > 0) {
+	// 		if (span) span.end()
+	// 		return { numberAffected: updatedIds.length }
+	// 	} else {
+	// 		if (!selector['_id']) {
+	// 			throw new Meteor.Error(500, `Can't upsert without selector._id`)
+	// 		}
+	// 		if (doc._id !== selector['_id']) {
+	// 			throw new Meteor.Error(
+	// 				500,
+	// 				`Can't upsert, selector._id "${selector['_id']}" not matching doc._id "${doc._id}"`
+	// 			)
+	// 		}
 
-			if (span) span.end()
-			return { numberAffected: 1, insertedId: this.insert(doc) }
-		}
-	}
+	// 		if (span) span.end()
+	// 		return { numberAffected: 1, insertedId: this.insert(doc) }
+	// 	}
+	// }
 	async updateDatabaseWithData(): Promise<Changes> {
 		const span = profiler.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
 		const changes: {
@@ -444,7 +444,7 @@ export class DbCacheWriteCollection<
 				this.documents.delete(id)
 			} else {
 				if (doc.inserted || doc.updated) {
-					otherCache.upsert(id, doc.document, true)
+					otherCache.replace(doc.document)
 				}
 				delete doc.inserted
 				delete doc.updated

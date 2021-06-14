@@ -86,7 +86,7 @@ function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	return !!cache2.isStudio
 }
 
-export function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout) {
+export function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout): void {
 	const span = profiler.startSpan('updateStudioTimeline')
 	logger.debug('updateStudioTimeline running...')
 	const studio = cache.Studio.doc
@@ -150,7 +150,7 @@ export function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout) {
  * @param studioId id of the studio to update
  * @param forceNowToTime if set, instantly forces all "now"-objects to that time (used in autoNext)
  */
-export function updateTimeline(cache: CacheForPlayout, forceNowToTime?: Time) {
+export function updateTimeline(cache: CacheForPlayout, forceNowToTime?: Time): void {
 	const span = profiler.startSpan('updateTimeline')
 	logger.debug('updateTimeline running...')
 
@@ -169,7 +169,7 @@ function processAndSaveTimelineObjects(
 	cache: CacheForStudioBase,
 	timelineObjs: Array<TimelineObjGeneric>,
 	forceNowToTime: Time | undefined
-) {
+): void {
 	const studio = cache.Studio.doc
 	processTimelineObjects(studio, timelineObjs)
 
@@ -227,18 +227,12 @@ function processAndSaveTimelineObjects(
 		}
 	})
 
-	cache.Timeline.upsert(
-		{
-			_id: studio._id,
-		},
-		{
-			_id: studio._id,
-			timelineHash: getRandomId(), // randomized on every timeline change
-			generated: getCurrentTime(),
-			timeline: timelineObjs,
-		},
-		true
-	)
+	cache.Timeline.replace({
+		_id: studio._id,
+		timelineHash: getRandomId(), // randomized on every timeline change
+		generated: getCurrentTime(),
+		timeline: timelineObjs,
+	})
 
 	logger.debug('updateTimeline done!')
 }

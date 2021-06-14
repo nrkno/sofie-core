@@ -418,7 +418,7 @@ function startHold(
 			}
 
 			// This gets deleted once the nextpart is activated, so it doesnt linger for long
-			cache.PieceInstances.upsert(newInstance._id, newInstance)
+			cache.PieceInstances.replace(newInstance)
 		}
 	})
 	if (span) span.end()
