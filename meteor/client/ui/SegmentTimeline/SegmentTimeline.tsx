@@ -35,8 +35,7 @@ import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifica
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
+import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 
 interface IProps {
 	id: string
@@ -136,7 +135,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 	calculateSegmentDuration(): number {
 		let total = 0
 		if (this.context && this.context.durations) {
-			const durations = this.context.durations as RundownTiming.RundownTimingContext
+			const durations = this.context.durations as RundownTimingContext
 			this.props.parts.forEach((item) => {
 				// total += durations.partDurations ? durations.partDurations[item._id] : (item.duration || item.renderedDuration || 1)
 				const duration = Math.max(

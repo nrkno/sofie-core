@@ -53,10 +53,11 @@ describe('rundown Timing Calculator', () => {
 		expect(result).toEqual(
 			literal<RundownTiming.RundownTimingContext>({
 				isLowResolution: false,
-				asDisplayedRundownDuration: 0,
-				asPlayedRundownDuration: 0,
+				asDisplayedPlaylistDuration: 0,
+				asPlayedPlaylistDuration: 0,
 				currentPartWillAutoNext: false,
 				currentTime: 0,
+				rundownExpectedDurations: {},
 				partCountdown: {},
 				partDisplayDurations: {},
 				partDisplayStartsAt: {},
@@ -64,8 +65,8 @@ describe('rundown Timing Calculator', () => {
 				partExpectedDurations: {},
 				partPlayed: {},
 				partStartsAt: {},
-				remainingRundownDuration: 0,
-				totalRundownDuration: 0,
+				remainingPlaylistDuration: 0,
+				totalPlaylistDuration: 0,
 			})
 		)
 	})
@@ -88,10 +89,13 @@ describe('rundown Timing Calculator', () => {
 		expect(result).toEqual(
 			literal<RundownTiming.RundownTimingContext>({
 				isLowResolution: false,
-				asDisplayedRundownDuration: 4000,
-				asPlayedRundownDuration: 4000,
+				asDisplayedPlaylistDuration: 4000,
+				asPlayedPlaylistDuration: 4000,
 				currentPartWillAutoNext: false,
 				currentTime: 0,
+				rundownExpectedDurations: {
+					[rundownId]: 4000,
+				},
 				partCountdown: {
 					part1: 0,
 					part2: 1000,
@@ -134,8 +138,8 @@ describe('rundown Timing Calculator', () => {
 					part3: 2000,
 					part4: 3000,
 				},
-				remainingRundownDuration: 4000,
-				totalRundownDuration: 4000,
+				remainingPlaylistDuration: 4000,
+				totalPlaylistDuration: 4000,
 			})
 		)
 	})
@@ -158,10 +162,13 @@ describe('rundown Timing Calculator', () => {
 		expect(result).toEqual(
 			literal<RundownTiming.RundownTimingContext>({
 				isLowResolution: false,
-				asDisplayedRundownDuration: 4000,
-				asPlayedRundownDuration: 4000,
+				asDisplayedPlaylistDuration: 4000,
+				asPlayedPlaylistDuration: 4000,
 				currentPartWillAutoNext: false,
 				currentTime: 0,
+				rundownExpectedDurations: {
+					[rundownId]: 4000,
+				},
 				partCountdown: {
 					part1: 0,
 					part2: 1000,
@@ -204,8 +211,8 @@ describe('rundown Timing Calculator', () => {
 					part3: 2000,
 					part4: 3000,
 				},
-				remainingRundownDuration: 4000,
-				totalRundownDuration: 4000,
+				remainingPlaylistDuration: 4000,
+				totalPlaylistDuration: 4000,
 			})
 		)
 	})
@@ -229,10 +236,14 @@ describe('rundown Timing Calculator', () => {
 		expect(result).toEqual(
 			literal<RundownTiming.RundownTimingContext>({
 				isLowResolution: false,
-				asDisplayedRundownDuration: 4000,
-				asPlayedRundownDuration: 4000,
+				asDisplayedPlaylistDuration: 4000,
+				asPlayedPlaylistDuration: 4000,
 				currentPartWillAutoNext: false,
 				currentTime: 0,
+				rundownExpectedDurations: {
+					[rundownId1]: 2000,
+					[rundownId2]: 2000,
+				},
 				partCountdown: {
 					part1: 0,
 					part2: 1000,
@@ -275,8 +286,8 @@ describe('rundown Timing Calculator', () => {
 					part3: 2000,
 					part4: 3000,
 				},
-				remainingRundownDuration: 4000,
-				totalRundownDuration: 4000,
+				remainingPlaylistDuration: 4000,
+				totalPlaylistDuration: 4000,
 			})
 		)
 	})
@@ -323,10 +334,13 @@ describe('rundown Timing Calculator', () => {
 		expect(result).toEqual(
 			literal<RundownTiming.RundownTimingContext>({
 				isLowResolution: false,
-				asDisplayedRundownDuration: 4000,
-				asPlayedRundownDuration: 4000,
+				asDisplayedPlaylistDuration: 4000,
+				asPlayedPlaylistDuration: 4000,
 				currentPartWillAutoNext: false,
 				currentTime: 0,
+				rundownExpectedDurations: {
+					[rundownId1]: 4000,
+				},
 				partCountdown: {
 					part1: 0,
 					part2: 2000,
@@ -369,8 +383,8 @@ describe('rundown Timing Calculator', () => {
 					part3: 2000,
 					part4: 3000,
 				},
-				remainingRundownDuration: 4000,
-				totalRundownDuration: 4000,
+				remainingPlaylistDuration: 4000,
+				totalPlaylistDuration: 4000,
 			})
 		)
 	})

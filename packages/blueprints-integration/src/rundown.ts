@@ -42,7 +42,11 @@ export interface IBlueprintRundown<TMetadata = unknown> {
 
 	/** A hint to the Core that the Rundown should be a part of a playlist */
 	playlistExternalId?: string
+
+	/** Whether the end of the rundown marks a commercial break */
+	endIsBreak?: boolean
 }
+
 /** The Rundown sent from Core */
 export interface IBlueprintRundownDB<TMetadata = unknown>
 	extends IBlueprintRundown<TMetadata>,
