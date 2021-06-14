@@ -44,6 +44,7 @@ import { RundownAPI } from '../../../lib/api/rundown'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { getPieceInstancesForPart } from './infinites'
+import { ClientAPI } from '../../../lib/api/client'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow(
@@ -195,9 +196,18 @@ export namespace ServerPlayoutAdLibAPI {
 				if (!queue && rundownPlaylist.currentPartInstanceId !== partInstanceId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a currently playing part!`)
 
-				innerStartOrQueueAdLibPiece(cache, rundownPlaylist, rundown, queue, partInstance, adLibPiece)
+				const queuedPartInstanceId = innerStartOrQueueAdLibPiece(
+					cache,
+					rundownPlaylist,
+					rundown,
+					queue,
+					partInstance,
+					adLibPiece
+				)
 
 				waitForPromise(cache.saveAllToDatabase())
+
+				return ClientAPI.responseSuccess({ queuedPartInstanceId })
 			}
 		)
 	}
@@ -248,9 +258,18 @@ export namespace ServerPlayoutAdLibAPI {
 						`Rundown Baseline AdLib-pieces can be only placed in a currently playing part!`
 					)
 
-				innerStartOrQueueAdLibPiece(cache, rundownPlaylist, rundown, queue, partInstance, adLibPiece)
+				const queuedPartInstanceId = innerStartOrQueueAdLibPiece(
+					cache,
+					rundownPlaylist,
+					rundown,
+					queue,
+					partInstance,
+					adLibPiece
+				)
 
 				waitForPromise(cache.saveAllToDatabase())
+
+				return ClientAPI.responseSuccess({ queuedPartInstanceId })
 			}
 		)
 	}
@@ -261,7 +280,8 @@ export namespace ServerPlayoutAdLibAPI {
 		queue: boolean,
 		currentPartInstance: PartInstance,
 		adLibPiece: AdLibPiece | BucketAdLib
-	) {
+	): PartInstanceId | undefined {
+		let queuedPartInstanceId: PartInstanceId | undefined = undefined
 		const span = profiler.startSpan('innerStartOrQueueAdLibPiece')
 		if (queue || adLibPiece.toBeQueued) {
 			const newPartInstance = new PartInstance({
@@ -291,7 +311,7 @@ export namespace ServerPlayoutAdLibAPI {
 			innerStartQueuedAdLib(cache, rundownPlaylist, rundown, currentPartInstance, newPartInstance, [
 				newPieceInstance,
 			])
-
+			queuedPartInstanceId = newPartInstance._id
 			// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 		} else {
 			const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, currentPartInstance, queue)
@@ -303,6 +323,7 @@ export namespace ServerPlayoutAdLibAPI {
 		updateTimeline(cache, rundownPlaylist.studioId)
 
 		if (span) span.end()
+		return queuedPartInstanceId
 	}
 
 	export function sourceLayerStickyPieceStart(rundownPlaylist: RundownPlaylist, sourceLayerId: string) {

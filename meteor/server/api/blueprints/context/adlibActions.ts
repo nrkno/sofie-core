@@ -59,6 +59,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the next partInstance */
 	public nextPartState: ActionPartChange = ActionPartChange.NONE
 	public takeAfterExecute: boolean
+	public queuedPartInstanceId: PartInstanceId | undefined = undefined
 
 	constructor(
 		cache: CacheForRundownPlaylist,
@@ -404,6 +405,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		)
 
 		this.nextPartState = ActionPartChange.SAFE_CHANGE
+		this.queuedPartInstanceId = newPartInstance._id
 
 		return clone(unprotectObject(newPartInstance))
 	}

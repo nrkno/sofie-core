@@ -5,8 +5,9 @@
 	margin: 1.5em;
 	padding: 0;
 	position: relative;
+	background: none;
+	border: none;
 
-	background: #161616;
 	-webkit-box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
 	-moz-box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
 	box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
@@ -142,10 +143,4 @@
 .segment-timeline + .rundown-view-shelf {
 	padding: 5px;
 	padding-left: 12.5em;
-}
-
-.segment-timeline-wraper--hidden {
-	.rundown-view-shelf.dashboard-panel {
-		background: $segment-background-color;
-	}
 }

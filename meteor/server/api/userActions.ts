@@ -431,9 +431,7 @@ export function executeAction(
 	if (!playlist.currentPartInstanceId)
 		return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
 
-	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.executeAction(context, rundownPlaylistId, actionId, userData, triggerMode)
-	)
+	return ServerPlayoutAPI.executeAction(context, rundownPlaylistId, actionId, userData, triggerMode)
 }
 export function segmentAdLibPieceStart(
 	context: MethodContext,

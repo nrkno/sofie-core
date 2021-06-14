@@ -44,13 +44,13 @@ export interface NewPlayoutAPI {
 		partInstanceId: PartInstanceId,
 		pieceId: PieceId,
 		queue: boolean
-	): Promise<void>
+	): Promise<ClientAPI.ClientResponse<{ queuedPartInstanceId?: PartInstanceId }>>
 	rundownBaselineAdLibPieceStart(
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		pieceId: PieceId,
 		queue: boolean
-	): Promise<void>
+	): Promise<ClientAPI.ClientResponse<{ queuedPartInstanceId?: PartInstanceId }>>
 	sourceLayerOnPartStop(
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
