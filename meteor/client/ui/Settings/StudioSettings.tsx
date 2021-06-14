@@ -104,7 +104,7 @@ const StudioDevices = withTranslation()(
 		}
 
 		renderDevices() {
-			return this.props.studioDevices.map((device, index) => {
+			return this.props.studioDevices.map((device) => {
 				return (
 					<tr key={unprotectString(device._id)}>
 						<th className="settings-studio-device__name c3">
@@ -115,7 +115,7 @@ const StudioDevices = withTranslation()(
 							<MomentFromNow date={device.lastSeen} />
 						</td>
 						<td className="settings-studio-device__actions table-item-actions c3">
-							<button className="action-btn" onClick={(e) => this.confirmRemove(device)}>
+							<button className="action-btn" onClick={() => this.confirmRemove(device)}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
@@ -166,7 +166,7 @@ const StudioDevices = withTranslation()(
 						<tbody>{this.renderDevices()}</tbody>
 					</table>
 					<div className="mod mhs">
-						<button className="btn btn-primary" onClick={(e) => this.showAvailableDevices()}>
+						<button className="btn btn-primary" onClick={() => this.showAvailableDevices()}>
 							<FontAwesomeIcon icon={faPlus} />
 						</button>
 						{this.state.showAvailableDevices && (
@@ -177,7 +177,7 @@ const StudioDevices = withTranslation()(
 											<div
 												className="ctx-menu-item"
 												key={unprotectString(device._id)}
-												onClick={(e) => this.onAddDevice(device)}
+												onClick={() => this.onAddDevice(device)}
 											>
 												<b>{device.name}</b> <MomentFromNow date={device.lastSeen} /> ({unprotectString(device._id)})
 											</div>
@@ -213,7 +213,7 @@ const DeviceMappingSettings = withTranslation()(
 					collection={collection}
 					className="mod mvn mhs"
 					mutateDisplayValue={(v) => (v === undefined ? false : true)}
-					mutateUpdateValue={(v) => undefined}
+					mutateUpdateValue={() => undefined}
 				/>
 			)
 		}
@@ -412,10 +412,10 @@ const StudioMappings = withTranslation()(
 							<td className="settings-studio-device__id c4">{this.renderSummary(manifest, mapping)}</td>
 
 							<td className="settings-studio-device__actions table-item-actions c3">
-								<button className="action-btn" onClick={(e) => this.editItem(layerId)}>
+								<button className="action-btn" onClick={() => this.editItem(layerId)}>
 									<FontAwesomeIcon icon={faPencilAlt} />
 								</button>
-								<button className="action-btn" onClick={(e) => this.confirmRemove(layerId)}>
+								<button className="action-btn" onClick={() => this.confirmRemove(layerId)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</td>
@@ -537,7 +537,7 @@ const StudioMappings = withTranslation()(
 										/>
 									</div>
 									<div className="mod alright">
-										<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(layerId)}>
+										<button className={ClassNames('btn btn-primary')} onClick={() => this.finishEditItem(layerId)}>
 											<FontAwesomeIcon icon={faCheck} />
 										</button>
 									</div>
@@ -563,7 +563,7 @@ const StudioMappings = withTranslation()(
 								<tbody>{this.renderMappings(this.props.manifest)}</tbody>
 							</table>
 							<div className="mod mhs">
-								<button className="btn btn-primary" onClick={(e) => this.addNewLayer()}>
+								<button className="btn btn-primary" onClick={() => this.addNewLayer()}>
 									<FontAwesomeIcon icon={faPlus} />
 								</button>
 							</div>
@@ -837,7 +837,7 @@ const StudioRoutings = withTranslation()(
 							<div className="route-sets-editor mod pan mas" key={index}>
 								<button
 									className="action-btn right mod man pas"
-									onClick={(e) => this.confirmRemoveRoute(routeSetId, route, index)}
+									onClick={() => this.confirmRemoveRoute(routeSetId, route, index)}
 								>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
@@ -904,7 +904,7 @@ const StudioRoutings = withTranslation()(
 														collection={Studios}
 														className="mod mvn mhs"
 														mutateDisplayValue={(v) => (v === undefined ? false : true)}
-														mutateUpdateValue={(v) => undefined}
+														mutateUpdateValue={() => undefined}
 													/>
 													<EditAttribute
 														modifiedClassName="bghl"
@@ -965,18 +965,18 @@ const StudioRoutings = withTranslation()(
 									{
 										_.filter(
 											this.props.studio.routeSets,
-											(routeSet, id) => routeSet.exclusivityGroup === exclusivityGroupId
+											(routeSet) => routeSet.exclusivityGroup === exclusivityGroupId
 										).length
 									}
 								</td>
 
 								<td className="settings-studio-device__actions table-item-actions c3">
-									<button className="action-btn" onClick={(e) => this.editItem(exclusivityGroupId)}>
+									<button className="action-btn" onClick={() => this.editItem(exclusivityGroupId)}>
 										<FontAwesomeIcon icon={faPencilAlt} />
 									</button>
 									<button
 										className="action-btn"
-										onClick={(e) => this.confirmRemoveEGroup(exclusivityGroupId, exclusivityGroup)}
+										onClick={() => this.confirmRemoveEGroup(exclusivityGroupId, exclusivityGroup)}
 									>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
@@ -1017,7 +1017,7 @@ const StudioRoutings = withTranslation()(
 											</div>
 										</div>
 										<div className="mod alright">
-											<button className="btn btn-primary" onClick={(e) => this.finishEditItem(exclusivityGroupId)}>
+											<button className="btn btn-primary" onClick={() => this.finishEditItem(exclusivityGroupId)}>
 												<FontAwesomeIcon icon={faCheck} />
 											</button>
 										</div>
@@ -1064,10 +1064,10 @@ const StudioRoutings = withTranslation()(
 							</td>
 
 							<td className="settings-studio-device__actions table-item-actions c3">
-								<button className="action-btn" onClick={(e) => this.editItem(routeId)}>
+								<button className="action-btn" onClick={() => this.editItem(routeId)}>
 									<FontAwesomeIcon icon={faPencilAlt} />
 								</button>
-								<button className="action-btn" onClick={(e) => this.confirmRemove(routeId)}>
+								<button className="action-btn" onClick={() => this.confirmRemove(routeId)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</td>
@@ -1147,7 +1147,7 @@ const StudioRoutings = withTranslation()(
 													collection={Studios}
 													className="mod mas"
 													mutateDisplayValue={(v) => (v === undefined ? false : true)}
-													mutateUpdateValue={(v) => undefined}
+													mutateUpdateValue={() => undefined}
 												/>
 												<EditAttribute
 													modifiedClassName="bghl"
@@ -1185,10 +1185,10 @@ const StudioRoutings = withTranslation()(
 									</div>
 									{this.renderRoutes(routeSet, routeId, manifest)}
 									<div className="mod">
-										<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(routeId)}>
+										<button className="btn btn-primary right" onClick={() => this.finishEditItem(routeId)}>
 											<FontAwesomeIcon icon={faCheck} />
 										</button>
-										<button className="btn btn-secondary" onClick={(e) => this.addNewRouteInSet(routeId)}>
+										<button className="btn btn-secondary" onClick={() => this.addNewRouteInSet(routeId)}>
 											<FontAwesomeIcon icon={faPlus} />
 										</button>
 									</div>
@@ -1220,7 +1220,7 @@ const StudioRoutings = withTranslation()(
 								<tbody>{this.renderExclusivityGroups()}</tbody>
 							</table>
 							<div className="mod mhs">
-								<button className="btn btn-primary" onClick={(e) => this.addNewExclusivityGroup()}>
+								<button className="btn btn-primary" onClick={() => this.addNewExclusivityGroup()}>
 									<FontAwesomeIcon icon={faPlus} />
 								</button>
 							</div>
@@ -1229,7 +1229,7 @@ const StudioRoutings = withTranslation()(
 								<tbody>{this.renderRouteSets(this.props.manifest)}</tbody>
 							</table>
 							<div className="mod mhs">
-								<button className="btn btn-primary" onClick={(e) => this.addNewRouteSet()}>
+								<button className="btn btn-primary" onClick={() => this.addNewRouteSet()}>
 									<FontAwesomeIcon icon={faPlus} />
 								</button>
 							</div>
@@ -1406,10 +1406,10 @@ const StudioPackageManagerSettings = withTranslation()(
 								<td className="settings-studio-package-container__name c2">{packageContainer.container.label}</td>
 
 								<td className="settings-studio-package-container__actions table-item-actions c3">
-									<button className="action-btn" onClick={(e) => this.editPackageContainer(containerId)}>
+									<button className="action-btn" onClick={() => this.editPackageContainer(containerId)}>
 										<FontAwesomeIcon icon={faPencilAlt} />
 									</button>
-									<button className="action-btn" onClick={(e) => this.confirmRemovePackageContainer(containerId)}>
+									<button className="action-btn" onClick={() => this.confirmRemovePackageContainer(containerId)}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 								</td>
@@ -1473,7 +1473,7 @@ const StudioPackageManagerSettings = withTranslation()(
 													<tbody>{this.renderAccessors(containerId, packageContainer)}</tbody>
 												</table>
 												<div className="mod mhs">
-													<button className="btn btn-primary" onClick={(e) => this.addNewAccessor(containerId)}>
+													<button className="btn btn-primary" onClick={() => this.addNewAccessor(containerId)}>
 														<FontAwesomeIcon icon={faPlus} />
 													</button>
 												</div>
@@ -1626,10 +1626,10 @@ const StudioPackageManagerSettings = withTranslation()(
 							<td className="settings-studio-accessor__accessorContent c7">{accessorContent.join(', ')}</td>
 
 							<td className="settings-studio-accessor__actions table-item-actions c3">
-								<button className="action-btn" onClick={(e) => this.editAccessor(containerId, accessorId)}>
+								<button className="action-btn" onClick={() => this.editAccessor(containerId, accessorId)}>
 									<FontAwesomeIcon icon={faPencilAlt} />
 								</button>
-								<button className="action-btn" onClick={(e) => this.confirmRemoveAccessor(containerId, accessorId)}>
+								<button className="action-btn" onClick={() => this.confirmRemoveAccessor(containerId, accessorId)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</td>
@@ -1908,7 +1908,7 @@ const StudioPackageManagerSettings = withTranslation()(
 									<div className="mod">
 										<button
 											className="btn btn-primary right"
-											onClick={(e) => this.finishEditAccessor(containerId, accessorId)}
+											onClick={() => this.finishEditAccessor(containerId, accessorId)}
 										>
 											<FontAwesomeIcon icon={faCheck} />
 										</button>
@@ -1928,7 +1928,7 @@ const StudioPackageManagerSettings = withTranslation()(
 
 			for (const [containerId, packageContainer] of Object.entries(this.props.studio.packageContainers)) {
 				let hasHttpAccessor = false
-				for (const [accessorId, accessor] of Object.entries(packageContainer.container.accessors)) {
+				for (const accessor of Object.values(packageContainer.container.accessors)) {
 					if (accessor.type === Accessor.AccessType.HTTP) {
 						hasHttpAccessor = true
 						break
@@ -1987,7 +1987,7 @@ const StudioPackageManagerSettings = withTranslation()(
 							<tbody>{this.renderPackageContainers()}</tbody>
 						</table>
 						<div className="mod mhs">
-							<button className="btn btn-primary" onClick={(e) => this.addNewPackageContainer()}>
+							<button className="btn btn-primary" onClick={() => this.addNewPackageContainer()}>
 								<FontAwesomeIcon icon={faPlus} />
 							</button>
 						</div>
@@ -2110,7 +2110,7 @@ class StudioBaselineStatus extends MeteorReactComponent<
 					) : null}
 				</p>
 				<p className="mhn">
-					<button className="btn btn-primary" onClick={(e) => this.reloadBaseline()}>
+					<button className="btn btn-primary" onClick={() => this.reloadBaseline()}>
 						{t('Reload Baseline')}
 					</button>
 				</p>
@@ -2120,7 +2120,7 @@ class StudioBaselineStatus extends MeteorReactComponent<
 }
 
 export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, IStudioSettingsTrackedProps>(
-	(props: IStudioSettingsProps, state) => {
+	(props: IStudioSettingsProps) => {
 		const studio = Studios.findOne(props.match.params.studioId)
 		const blueprint = studio
 			? Blueprints.findOne({
@@ -2228,7 +2228,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		}
 
 		renderShowStyleEditButtons() {
-			const { t } = this.props
 			const buttons: JSX.Element[] = []
 			if (this.props.studio) {
 				this.props.studio.supportedShowStyleBase.map((style) => {
@@ -2501,22 +2500,11 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 	}
 )
 
-export function setProperty(studio: Studio, property: string, value: any) {
-	const m = {}
-	if (value !== undefined) {
-		m[property] = value
-		Studios.update(studio._id, { $set: m })
-	} else {
-		m[property] = 0
-		Studios.update(studio._id, { $unset: m })
-	}
-}
-
 export function findHighestRank(array: Array<{ _rank: number }>): { _rank: number } | null {
 	if (!array) return null
 	let max: { _rank: number } | null = null
 
-	array.forEach((value, index) => {
+	array.forEach((value) => {
 		if (max === null || max._rank < value._rank) {
 			max = value
 		}

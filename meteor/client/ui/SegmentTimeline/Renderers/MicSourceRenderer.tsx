@@ -168,7 +168,6 @@ export const MicSourceRenderer = withTranslation()(
 		}
 
 		render() {
-			const { t } = this.props
 			const labelItems = (this.props.piece.instance.piece.name || '').split('||')
 			const begin = labelItems[0] || ''
 			const end = labelItems[1] || ''

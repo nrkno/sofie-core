@@ -6,7 +6,7 @@ import { protectString, makePromise } from '../../../lib/lib'
 import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { setLoggerLevel } from '../logger'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
-import { PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
@@ -18,7 +18,7 @@ const orgSetTimeout = setTimeout
 
 describe('ClientAPI', () => {
 	let mockDeviceId: PeripheralDeviceId = protectString('not set yet')
-	let mockDeviceToken: string = 'Not set yet'
+	// let mockDeviceToken: string = 'Not set yet'
 	beforeAllInFiber(() => {
 		const mockDevice = setupMockPeripheralDevice(
 			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
@@ -26,7 +26,7 @@ describe('ClientAPI', () => {
 			PeripheralDeviceAPI.SUBTYPE_PROCESS
 		)
 		mockDeviceId = mockDevice._id
-		mockDeviceToken = mockDevice.token
+		// mockDeviceToken = mockDevice.token
 	})
 	describe('clientErrorReport', () => {
 		testInFiber('Exports a Meteor method to the client', () => {

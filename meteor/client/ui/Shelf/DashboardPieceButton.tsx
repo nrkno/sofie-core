@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import ClassNames from 'classnames'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -10,13 +9,11 @@ import {
 	IOutputLayer,
 	SourceLayerType,
 	VTContent,
-	SplitsContent,
 	NoraContent,
 	Accessor,
 } from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PubSub } from '../../../lib/api/pubsub'
 import { IAdLibListItem } from './AdLibListItem'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
@@ -147,7 +144,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		return undefined
 	}
 
-	renderGraphics(renderThumbnail?: boolean) {
+	renderGraphics() {
 		const adLib = this.props.piece as any as AdLibPieceUi
 		const noraContent = adLib.content as NoraContent | undefined
 		return (
@@ -222,7 +219,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	renderSplits(renderThumbnail: boolean = false) {
 		const splitAdLib = this.props.piece
 		if (splitAdLib && splitAdLib.content) {
-			const splitContent = splitAdLib.content as SplitsContent
 			return (
 				<>
 					{renderThumbnail ? (
@@ -249,7 +245,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	private handleOnMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+	private handleOnMouseEnter = (_e: React.MouseEvent<HTMLDivElement>) => {
 		if (this.element) {
 			const { top, left, width, height } = this.element.getBoundingClientRect()
 			this.positionAndSize = {
@@ -262,7 +258,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		this.setState({ isHovered: true })
 	}
 
-	private handleOnMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+	private handleOnMouseLeave = (_e: React.MouseEvent<HTMLDivElement>) => {
 		this.setState({ isHovered: false })
 		this.positionAndSize = null
 	}
@@ -447,7 +443,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					: this.props.layer.type === SourceLayerType.SPLITS
 					? this.renderSplits(isList && this.props.showThumbnailsInList)
 					: this.props.layer.type === SourceLayerType.GRAPHICS || this.props.layer.type === SourceLayerType.LOWER_THIRD
-					? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
+					? this.renderGraphics(/*(isButtons || (isList && this.props.showThumbnailsInList)*/)
 					: null}
 
 				{this.props.editableName ? (

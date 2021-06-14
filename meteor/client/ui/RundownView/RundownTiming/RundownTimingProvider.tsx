@@ -241,8 +241,6 @@ export const RundownTimingProvider = withTracker<
 			Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
 			this.linearParts.length = 0
 
-			const debugConsole = ''
-
 			const { playlist, parts, partInstancesMap } = this.props
 
 			let nextAIndex = -1

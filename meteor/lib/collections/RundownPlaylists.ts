@@ -7,7 +7,6 @@ import {
 	applyClassToDocument,
 	registerCollection,
 	normalizeArray,
-	getCurrentTime,
 	normalizeArrayFunc,
 	ProtectedString,
 	unprotectString,

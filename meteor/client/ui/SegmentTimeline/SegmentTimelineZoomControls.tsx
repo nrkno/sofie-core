@@ -121,7 +121,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		}
 	}
 
-	zoomAreaEndMove(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+	zoomAreaEndMove(_e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
 		if (!this._isTouch) {
 			document.removeEventListener('mousemove', this.zoomAreaMove)
 		} else {
@@ -190,7 +190,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		}
 	}
 
-	zoomAreaEndLeftMove(e: React.SyntheticEvent<HTMLDivElement>) {
+	zoomAreaEndLeftMove(_e: React.SyntheticEvent<HTMLDivElement>) {
 		document.removeEventListener('mousemove', this.zoomAreaLeftMove)
 		this.setState({
 			zoomAreaResizeBegin: false,
@@ -221,7 +221,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		})
 	}
 
-	zoomAreaEndRightMove(e: React.SyntheticEvent<HTMLDivElement>) {
+	zoomAreaEndRightMove(_e: React.SyntheticEvent<HTMLDivElement>) {
 		document.removeEventListener('mousemove', this.zoomAreaRightMove)
 		this.setState({
 			zoomAreaResizeEnd: false,

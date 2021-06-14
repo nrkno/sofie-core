@@ -3,7 +3,7 @@ import { Time, applyClassToDocument, registerCollection, ProtectedString, Protec
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { FindOptions, MongoQuery } from '../typings/meteor'
-import { Studios, Studio, StudioId } from './Studios'
+import { StudioId } from './Studios'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintRundownDB } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariantId, ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'

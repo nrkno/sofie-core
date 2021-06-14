@@ -18,7 +18,7 @@ import {
 	produceRundownPlaylistInfoFromRundown,
 	removeRundownsFromDb,
 } from '../rundownPlaylist'
-import { clone, makePromise, max, protectString, unprotectString } from '../../../lib/lib'
+import { clone, max, protectString, unprotectString } from '../../../lib/lib'
 import { reportRundownDataHasChanged } from '../blueprints/events'
 import { removeSegmentContents } from './cleanup'
 import { Settings } from '../../../lib/Settings'

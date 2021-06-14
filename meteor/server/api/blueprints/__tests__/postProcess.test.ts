@@ -22,7 +22,6 @@ import {
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 
 describe('Test blueprint post-process', () => {
@@ -59,18 +58,18 @@ describe('Test blueprint post-process', () => {
 			playlistId: protectString(''),
 			_rank: 0,
 		})
-		const playlist = new RundownPlaylist({
-			_id: protectString(''),
-			externalId: '',
-			organizationId: protectString(''),
-			studioId: env.studio._id,
-			name: 'playlistmock',
-			created: 0,
-			modified: 0,
-			currentPartInstanceId: null,
-			nextPartInstanceId: null,
-			previousPartInstanceId: null,
-		})
+		// const playlist = new RundownPlaylist({
+		// 	_id: protectString(''),
+		// 	externalId: '',
+		// 	organizationId: protectString(''),
+		// 	studioId: env.studio._id,
+		// 	name: 'playlistmock',
+		// 	created: 0,
+		// 	modified: 0,
+		// 	currentPartInstanceId: null,
+		// 	nextPartInstanceId: null,
+		// 	previousPartInstanceId: null,
+		// })
 
 		const studio = getStudio()
 		const showStyle = {} as ShowStyleCompound

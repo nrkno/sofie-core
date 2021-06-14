@@ -883,7 +883,7 @@ describe('test peripheralDevice general API methods', () => {
 })
 
 // Note: The data below is copied straight from the test data in mos-connection
-const xmlApiData = {
+const _xmlApiData = {
 	rundownCreate: literal<MOS.IMOSRunningOrder>({
 		ID: new MOS.MosString128('96857485'),
 		Slug: new MOS.MosString128('5PM RUNDOWN'),

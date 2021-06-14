@@ -12,7 +12,6 @@ import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
 import { StudioId } from '../../../lib/collections/Studios'
-import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 
 interface ITimelineViewProps {
 	match?: {
@@ -22,7 +21,7 @@ interface ITimelineViewProps {
 	}
 }
 interface ITimelineViewState {}
-const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState, {}>((props: ITimelineViewProps) => {
+const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState, {}>((_props: ITimelineViewProps) => {
 	return {}
 })(
 	class TimelineView extends MeteorReactComponent<Translated<ITimelineViewProps>, ITimelineViewState> {

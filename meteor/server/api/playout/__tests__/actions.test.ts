@@ -1,5 +1,5 @@
 import '../../../../__mocks__/_extendJest'
-import { testInFiber, beforeEachInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
@@ -13,7 +13,7 @@ import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
-import { protectString, waitForPromise } from '../../../../lib/lib'
+import { protectString } from '../../../../lib/lib'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
 import { removeRundownsFromDb } from '../../rundownPlaylist'
 

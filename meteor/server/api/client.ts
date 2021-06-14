@@ -1,5 +1,4 @@
 import { check } from '../../lib/check'
-import * as _ from 'underscore'
 
 import { literal, getCurrentTime, Time, getRandomId, makePromise, waitForPromise, Awaited } from '../../lib/lib'
 

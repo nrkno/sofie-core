@@ -52,7 +52,7 @@ export const UserActionsList = withTranslation()(
 								<tr
 									className={this.props.onItemClick ? 'clickable' : undefined}
 									key={unprotectString(msg._id)}
-									onClick={(e) => this.props.onItemClick && this.props.onItemClick(msg)}
+									onClick={() => this.props.onItemClick && this.props.onItemClick(msg)}
 								>
 									<td className="user-action-log__timestamp">
 										<Moment format="YYYY/MM/DD HH:mm:ss.SSS">{msg.timestamp}</Moment>
@@ -94,7 +94,7 @@ interface IUserActivityTrackedProps {
 }
 
 const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState, IUserActivityTrackedProps>(
-	(props: IUserActivityProps) => {
+	(_props: IUserActivityProps) => {
 		return {
 			log: UserActionsLog.find(
 				{},

@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { RundownId } from './Rundowns'
 import { IBlueprintSegmentDB } from '@sofie-automation/blueprints-integration'

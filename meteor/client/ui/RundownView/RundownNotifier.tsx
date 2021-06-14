@@ -122,7 +122,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			}
 		})
 
-		this.autorun((comp) => {
+		this.autorun(() => {
 			this._mediaStatusDep.depend()
 			this._deviceStatusDep.depend()
 			this._rundownStatusDep.depend()
@@ -404,7 +404,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						fullNotes.set(result)
 						allNotesPollLock = false
 					})
-					.catch((e) => console.error)
+					.catch((e) => console.error(e))
 			}, NOTES_POLL_INTERVAL)
 		})
 

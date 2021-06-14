@@ -11,7 +11,7 @@ import {
 	waitForPromise,
 	UnprotectedStringProperties,
 } from '../../../../lib/lib'
-import { Part, Parts } from '../../../../lib/collections/Parts'
+import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
 import {
 	IEventContext,

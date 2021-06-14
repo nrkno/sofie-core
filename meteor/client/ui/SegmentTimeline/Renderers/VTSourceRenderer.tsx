@@ -479,7 +479,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	}
 
 	renderRightLabel() {
-		const { begin, end } = this.state
+		const { end } = this.state
 		const { isLiveLine, part } = this.props
 
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined

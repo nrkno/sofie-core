@@ -594,7 +594,7 @@ describe('Test blueprint api context', () => {
 		describe('findLastScriptedPieceOnLayer', () => {
 			testInFiber('No Current Part', async () => {
 				await wrapWithCache(async (cache) => {
-					const { context, rundown, activationId } = await getActionExecutionContext(cache)
+					const { context } = await getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
@@ -610,7 +610,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('First Part', async () => {
 				await wrapWithCache(async (cache) => {
-					const { context, rundown, activationId } = await getActionExecutionContext(cache)
+					const { context } = await getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
@@ -668,7 +668,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('First Part, Ignore Current Part', async () => {
 				await wrapWithCache(async (cache) => {
-					const { context, rundown, activationId } = await getActionExecutionContext(cache)
+					const { context } = await getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
@@ -697,7 +697,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('Second Part', async () => {
 				await wrapWithCache(async (cache) => {
-					const { context, rundown, activationId } = await getActionExecutionContext(cache)
+					const { context } = await getActionExecutionContext(cache)
 
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()

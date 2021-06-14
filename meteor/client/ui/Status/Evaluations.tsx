@@ -20,7 +20,7 @@ interface IEvaluationTrackedProps {
 }
 
 const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, IEvaluationTrackedProps>(
-	(props: IEvaluationProps) => {
+	(_props: IEvaluationProps) => {
 		return {
 			evaluations: Evaluations.find(
 				{},

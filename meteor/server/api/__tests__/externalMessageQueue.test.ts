@@ -5,17 +5,13 @@ import { ExternalMessageQueueAPIMethods } from '../../../lib/api/ExternalMessage
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import {
-	ExternalMessageQueueObjSOAP,
 	IBlueprintExternalMessageQueueType,
-	ExternalMessageQueueObjRabbitMQ,
 	ExternalMessageQueueObjSlack,
 } from '@sofie-automation/blueprints-integration'
 import { testInFiber, runAllTimers, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
 import { getCurrentTime, protectString } from '../../../lib/lib'
-import { sendSOAPMessage } from '../integration/soap'
 import { sendSlackMessageToWebhook } from '../integration/slack'
-import { sendRabbitMQMessage } from '../integration/rabbitMQ'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 // import { setLoggerLevel } from '../../../server/api/logger'
 
@@ -74,7 +70,6 @@ describe('Test external message queue static methods', () => {
 			message: 'whats up doc?',
 		}
 		expect(rundown).toBeTruthy()
-		const sendTime = getCurrentTime()
 		queueExternalMessages(rundown, [slackMessage])
 
 		expect(ExternalMessageQueue.findOne()).toBeTruthy()

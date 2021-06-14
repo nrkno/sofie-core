@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import * as _ from 'underscore'
 import { WithTranslation, withTranslation } from 'react-i18next'
 import { unprotectString } from '../../lib/lib'
 import { doModalDialog } from '../lib/ModalDialog'
@@ -49,7 +48,7 @@ interface ISettingsMenuTrackedProps {
 	peripheralDevices: Array<PeripheralDevice>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps>(
-	(props: ISettingsMenuProps) => {
+	(_props: ISettingsMenuProps) => {
 		// TODO: add organizationId:
 
 		meteorSubscribe(PubSub.studios, {})

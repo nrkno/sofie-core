@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import '../../../../__mocks__/_extendJest'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { Rundown, DBRundown } from '../../../../lib/collections/Rundowns'

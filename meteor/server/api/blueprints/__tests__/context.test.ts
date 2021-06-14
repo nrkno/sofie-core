@@ -14,7 +14,6 @@ import { ConfigRef } from '../config'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleCompound, ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 import { RundownId } from '../../../../lib/collections/Rundowns'
-import { PartId } from '../../../../lib/collections/Parts'
 import { SegmentId } from '../../../../lib/collections/Segments'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Blueprints } from '../../../../lib/collections/Blueprints'
@@ -197,13 +196,7 @@ describe('Test blueprint api context', () => {
 			})
 		}
 
-		function getContext(
-			studio: Studio,
-			contextName?: string,
-			rundownId?: RundownId,
-			segmentId?: SegmentId,
-			partId?: PartId
-		) {
+		function getContext(studio: Studio, contextName?: string, rundownId?: RundownId, segmentId?: SegmentId) {
 			const showStyleVariant = ShowStyleVariants.findOne() as ShowStyleVariant
 			expect(showStyleVariant).toBeTruthy()
 

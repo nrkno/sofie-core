@@ -4,7 +4,6 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
-import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import {
 	IAdLibPanelProps,
@@ -16,7 +15,6 @@ import {
 } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
 import {
 	DashboardPanelInner,
 	dashboardElementPosition,

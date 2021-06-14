@@ -256,7 +256,7 @@ export const RundownViewBuckets = withTranslation()(
 			this.resize(e.touches[0].clientX, e.touches[0].clientY)
 		}
 
-		touchOffHandle = (e: TouchEvent) => {
+		touchOffHandle = (_e: TouchEvent) => {
 			document.removeEventListener('touchmove', this.touchMoveHandle)
 			document.removeEventListener('touchcancel', this.touchOffHandle)
 			document.removeEventListener('touchend', this.touchOffHandle)
@@ -292,7 +292,7 @@ export const RundownViewBuckets = withTranslation()(
 			this.resize(e.clientX, e.clientY)
 		}
 
-		dropHandle = (e: MouseEvent) => {
+		dropHandle = (_e: MouseEvent) => {
 			document.removeEventListener('mouseup', this.dropHandle)
 			document.removeEventListener('mouseleave', this.dropHandle)
 			document.removeEventListener('mousemove', this.dragHandle)
@@ -543,7 +543,7 @@ export const RundownViewBuckets = withTranslation()(
 		}
 
 		render() {
-			const { playlist, showStyleBase, shouldQueue, t } = this.props
+			const { playlist, showStyleBase, shouldQueue } = this.props
 			const { localBuckets: buckets } = this.state
 			return (
 				<>

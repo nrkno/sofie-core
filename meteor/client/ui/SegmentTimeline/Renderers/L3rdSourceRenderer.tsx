@@ -1,11 +1,9 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { getElementWidth } from '../../../utils/dimensions'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { NoraContent } from '@sofie-automation/blueprints-integration'
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
-import classNames from 'classnames'
 
 type IProps = ICustomLayerItemProps
 interface IState {}

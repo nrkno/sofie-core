@@ -157,7 +157,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 	}
 
 	renderZoomTimeline() {
-		return this.props.parts.map((part, index, array) => {
+		return this.props.parts.map((part) => {
 			return (
 				<SegmentTimelinePart
 					key={unprotectString(part.partId)}
@@ -480,7 +480,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		this._lastClick = this._mouseMoved ? 0 : now
 	}
 
-	onTimelinePointerLockChange = (e: Event) => {
+	onTimelinePointerLockChange = () => {
 		if (!document.pointerLockElement) {
 			hidePointerLockCursor()
 			document.removeEventListener('pointerlockchange', this.onTimelinePointerLockChange)
@@ -488,7 +488,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelinePointerError = (e: Event) => {
+	onTimelinePointerError = () => {
 		hidePointerLockCursor()
 		document.removeEventListener('pointerlockchange', this.onTimelinePointerLockChange)
 		document.removeEventListener('pointerlockerror', this.onTimelinePointerError)
@@ -523,7 +523,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	// doubleclick is simulated by onTimelineMouseUp, because we use pointer lock and that prevents dblclick events
-	onTimelineDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+	onTimelineDoubleClick = (_e: React.MouseEvent<HTMLDivElement>) => {
 		if (SegmentTimelineClass._zoomOutLatch === undefined || SegmentTimelineClass._zoomOutLatchId !== this.props.id) {
 			this.onTimelineZoomOn()
 		} else {
@@ -607,7 +607,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	getSegmentContext = (props) => {
+	getSegmentContext = (_props) => {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
 			part: this.props.parts.find((p) => p.instance.part.isPlayable()) || null,
@@ -943,7 +943,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							{criticalNotes > 0 && (
 								<div
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
-									onClick={(e) =>
+									onClick={() =>
 										this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(this.props.segment._id, NoteType.ERROR)
 									}
 								>
@@ -954,7 +954,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							{warningNotes > 0 && (
 								<div
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
-									onClick={(e) =>
+									onClick={() =>
 										this.props.onHeaderNoteClick &&
 										this.props.onHeaderNoteClick(this.props.segment._id, NoteType.WARNING)
 									}

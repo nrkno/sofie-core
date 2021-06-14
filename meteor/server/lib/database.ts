@@ -3,14 +3,7 @@ import { BulkWriteOperation } from 'mongodb'
 import _ from 'underscore'
 import { AsyncTransformedCollection } from '../../lib/collections/lib'
 import { DBObj, waitForPromise, normalizeArrayToMap, ProtectedString } from '../../lib/lib'
-import {
-	MongoQuery,
-	FindOptions,
-	MongoModifier,
-	UpdateOptions,
-	UpsertOptions,
-	FindOneOptions,
-} from '../../lib/typings/meteor'
+import { MongoQuery } from '../../lib/typings/meteor'
 import { profiler } from '../api/profiler'
 
 export interface Changes {

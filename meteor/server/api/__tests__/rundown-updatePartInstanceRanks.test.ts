@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import {

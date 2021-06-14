@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Rundowns, Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import {
@@ -21,8 +21,6 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import {
 	IOutputLayer,
 	ISourceLayer,
-	SomeContent,
-	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
 	SomeTimelineContent,
@@ -104,7 +102,7 @@ const bucketSource = {
 }
 
 const bucketTarget = {
-	canDrop(props: IBucketPanelProps, monitor: DropTargetMonitor) {
+	canDrop(_props: IBucketPanelProps, _monitor: DropTargetMonitor) {
 		return true
 	},
 
@@ -463,7 +461,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					}
 				}
 
-				onSelectAdLib = (piece: BucketAdLibItem, e: any) => {}
+				onSelectAdLib = (_piece: BucketAdLibItem, _e: any) => {}
 
 				onToggleAdLib = (piece: BucketAdLibItem, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 					const { t } = this.props
@@ -741,8 +739,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 
 				render() {
-					const { isDragging, connectDragSource, connectDragPreview, connectDropTarget } = this.props
-					const opacity = isDragging ? 0 : 1
+					const { connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
 					if (this.props.showStyleBase) {
 						return connectDragPreview(

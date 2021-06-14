@@ -29,7 +29,7 @@ import { NoteType, PartNote, SegmentNote, TrackedNote } from '../../../lib/api/n
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
-import { unprotectString, equalSets, equivalentArrays, protectString, normalizeArray } from '../../../lib/lib'
+import { unprotectString, equalSets, equivalentArrays, normalizeArray } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
@@ -164,7 +164,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		// This registers a reactive dependency on infinites-capping pieces, so that the segment can be
 		// re-evaluated when a piece like that appears.
-		const infinitesEndingPieces = PieceInstances.find({
+		const _infinitesEndingPieces = PieceInstances.find({
 			rundownId: segment.rundownId,
 			dynamicallyInserted: {
 				$exists: true,
@@ -448,7 +448,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInstanceId
 			if (this.isLiveSegment === true) {
-				this.onFollowLiveLine(true, {})
+				this.onFollowLiveLine(true)
 				this.startLive()
 			}
 			RundownViewEventBus.on(RundownViewEvents.REWIND_SEGMENTS, this.onRewindSegment)
@@ -508,7 +508,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			// segment is becoming live
 			if (this.isLiveSegment === false && isLiveSegment === true) {
 				this.isLiveSegment = true
-				this.onFollowLiveLine(true, {})
+				this.onFollowLiveLine(true)
 				this.startLive()
 			}
 			// segment is stopping from being live
@@ -517,14 +517,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.stopLive()
 				if (Settings.autoRewindLeavingSegment) {
 					this.onRewindSegment()
-					this.onShowEntireSegment('componentDidUpdate')
+					this.onShowEntireSegment()
 				}
 
 				if (this.props.segmentui && this.props.segmentui.orphaned) {
 					const { t } = this.props
 					// TODO: This doesn't seem right? componentDidUpdate can be triggered in a lot of different ways.
 					// What is this supposed to do?
-					doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, (e) =>
+					doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, () =>
 						MeteorCall.userAction.resyncSegment('', this.props.segmentui!.rundownId, this.props.segmentui!._id)
 					)
 				}
@@ -578,7 +578,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 
 			if (this.props.followLiveSegments && !prevProps.followLiveSegments) {
-				this.onFollowLiveLine(true, {})
+				this.onFollowLiveLine(true)
 			}
 
 			if (
@@ -697,7 +697,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			this.setState({ collapsedOutputs })
 		}
 		/** The user has scrolled scrollLeft seconds to the left in a child component */
-		onScroll = (scrollLeft: number, event: any) => {
+		onScroll = (scrollLeft: number) => {
 			this.setState({
 				scrollLeft: Math.max(
 					0,
@@ -863,14 +863,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
-		onFollowLiveLine = (state: boolean, event: any) => {
+		onFollowLiveLine = (state: boolean) => {
 			this.setState({
 				followLiveLine: state,
 				scrollLeft: Math.max(this.state.livePosition - LIVELINE_HISTORY_SIZE / this.state.timeScale, 0),
 			})
 		}
 
-		segmentRef = (el: SegmentTimelineClass, segmentId: SegmentId) => {
+		segmentRef = (el: SegmentTimelineClass, _segmentId: SegmentId) => {
 			this.timelineDiv = el.timeline
 		}
 
@@ -908,7 +908,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				.catch(console.error)
 		}
 
-		onShowEntireSegment = (event: any) => {
+		onShowEntireSegment = () => {
 			this.setState({
 				scrollLeft: 0,
 				followLiveLine: this.state.isLiveSegment ? true : this.state.followLiveLine,
@@ -916,7 +916,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			this.showEntireSegment()
 		}
 
-		onZoomChange = (newScale: number, e: any) => {
+		onZoomChange = (newScale: number) => {
 			this.onTimeScaleChange(newScale)
 		}
 

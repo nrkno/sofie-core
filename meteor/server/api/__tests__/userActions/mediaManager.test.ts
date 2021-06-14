@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { getCurrentTime, getRandomId } from '../../../../lib/lib'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
 import { ClientAPI } from '../../../../lib/api/client'
@@ -173,7 +173,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Restart all workflows', async () => {
-		const { workFlowId } = setupMockWorkFlow(env)
+		setupMockWorkFlow(env)
 
 		{
 			// should execute function on all the target devices
@@ -194,7 +194,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Abort all workflows', async () => {
-		const { workFlowId } = setupMockWorkFlow(env)
+		setupMockWorkFlow(env)
 
 		{
 			// should execute function on all the target devices

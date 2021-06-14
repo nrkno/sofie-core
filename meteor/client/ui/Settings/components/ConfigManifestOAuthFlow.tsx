@@ -46,7 +46,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 						'content-type': 'text/javascript',
 					},
 				})
-					.then((res) => {
+					.then(() => {
 						NotificationCenter.push(
 							new Notification(
 								undefined,

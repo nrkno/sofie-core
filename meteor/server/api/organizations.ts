@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { literal, getRandomId, makePromise, getCurrentTime, waitForPromise } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewOrganizationAPI, OrganizationAPIMethods } from '../../lib/api/organization'

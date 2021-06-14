@@ -30,7 +30,7 @@ import {
 	USER_AGENT_POINTER_PROPERTY,
 } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
-import { PieceId, Pieces } from '../../../lib/collections/Pieces'
+import { PieceId } from '../../../lib/collections/Pieces'
 import { invalidateAt } from '../../lib/invalidatingTime'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -50,9 +50,6 @@ interface IState {
 	selectedAdLib?: AdLibPieceUi
 	singleClickMode: boolean
 }
-
-const BUTTON_GRID_WIDTH = 1
-const BUTTON_GRID_HEIGHT = 0.61803
 
 export interface IDashboardPanelProps {
 	shouldQueue: boolean
@@ -131,8 +128,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 
 	static getDerivedStateFromProps(
-		props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>,
-		state: IState
+		props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>
 	): Partial<IState> | null {
 		const tOLayers: {
 			[key: string]: IOutputLayer
@@ -552,7 +548,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 
 	protected onOut = (e: any, outButton?: boolean) => {
-		const { t } = this.props
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
 			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
@@ -562,7 +557,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	protected onSelectAdLib = (piece: AdLibPieceUi, e: any) => {
+	protected onSelectAdLib = (piece: AdLibPieceUi, _e: any) => {
 		this.setState({
 			selectedAdLib: piece,
 		})

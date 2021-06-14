@@ -352,10 +352,10 @@ describe('Test blueprint api context', () => {
 
 			return sessions.map((s) => _.omit(s, 'keep'))
 		}
-		function overwriteKnownSessions(context: TimelineEventContext, sessions: ABSessionInfo[]): void {
-			const context2 = context as any
-			context2._knownSessions = sessions
-		}
+		// function overwriteKnownSessions(context: TimelineEventContext, sessions: ABSessionInfo[]): void {
+		// 	const context2 = context as any
+		// 	context2._knownSessions = sessions
+		// }
 		function createPieceInstance(
 			partInstanceId: PartInstanceId | string,
 			infiniteInstanceId?: PieceInstanceInfiniteId

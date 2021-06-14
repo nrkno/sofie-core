@@ -5,7 +5,6 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import ClassNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faClipboardCheck, faDatabase, faCoffee, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
-import { Meteor } from 'meteor/meteor'
 import { logger } from '../../../lib/logging'
 import { GetMigrationStatusResult, RunMigrationResult, MigrationChunk } from '../../../lib/api/migration'
 import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
@@ -45,7 +44,7 @@ interface IState {
 	}
 }
 interface ITrackedProps {}
-export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
+export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>((_props: IProps) => {
 	return {}
 })(
 	class MigrationView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -339,7 +338,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 											<td className="table-item-actions c3">
 												<button
 													className="action-btn"
-													onClick={(e) => this.setState({ showAllSteps: !this.state.showAllSteps })}
+													onClick={() => this.setState({ showAllSteps: !this.state.showAllSteps })}
 												>
 													<FontAwesomeIcon icon={this.state.showAllSteps ? faEyeSlash : faEye} />
 												</button>

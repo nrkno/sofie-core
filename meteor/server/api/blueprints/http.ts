@@ -11,7 +11,7 @@ import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PickerGET, PickerPOST } from '../http'
 import path from 'path'
 
-PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 	logger.debug(`/blueprints/restore/:${params?.blueprintId}`)
 
@@ -53,7 +53,7 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 
 	res.end(content)
 })
-PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
@@ -129,7 +129,7 @@ PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: Serv
 })
 
 // TODO - should these be based on blueprintId?
-PickerPOST.route('/blueprints/assets', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerPOST.route('/blueprints/assets', (_params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''

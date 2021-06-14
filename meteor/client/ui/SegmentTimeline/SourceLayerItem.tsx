@@ -486,7 +486,7 @@ export const SourceLayerItem = withTranslation()(
 			clearTimeout(this.highlightTimeout)
 		}
 
-		componentDidUpdate(prevProps: ISourceLayerItemProps, prevState: ISourceLayerItemState) {
+		componentDidUpdate(prevProps: ISourceLayerItemProps, _prevState: ISourceLayerItemState) {
 			if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
 				const scrollLeftOffset = this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft)
 				const cursorTimePosition = this.state.cursorTimePosition + (this.props.scrollLeft - prevProps.scrollLeft)

@@ -36,7 +36,6 @@ import RundownLayoutEditor from './RundownLayoutEditor'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { MeteorCall } from '../../../lib/api/methods'
-import { Settings } from '../../../lib/Settings'
 
 interface IProps {
 	match: {

@@ -33,7 +33,7 @@ const DEFAULT_POSITIONS = [
 	},
 ]
 
-export const DashboardPieceButtonSplitPreview = translateWithTracker<IProps, {}, {}>((props: IProps) => {
+export const DashboardPieceButtonSplitPreview = translateWithTracker<IProps, {}, {}>((_props: IProps) => {
 	return {}
 })(
 	class DashboardPieceButtonSplitPreview extends MeteorReactComponent<Translated<IProps>> {

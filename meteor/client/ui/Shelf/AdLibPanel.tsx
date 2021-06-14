@@ -213,7 +213,7 @@ const AdLibListView = withTranslation()(
 			}
 		}
 
-		static getDerivedStateFromProps(props: IListViewPropsHeader, state) {
+		static getDerivedStateFromProps(props: IListViewPropsHeader) {
 			const tOLayers: {
 				[key: string]: IOutputLayer
 			} = {}
@@ -262,8 +262,6 @@ const AdLibListView = withTranslation()(
 		}
 
 		renderRundownAdLibs(uniquenessIds: Set<string>) {
-			const { t } = this.props
-
 			return (
 				<tbody className="adlib-panel__list-view__list__segment adlib-panel__list-view__item__rundown-baseline">
 					{this.props.rundownAdLibs &&
@@ -363,7 +361,6 @@ const AdLibListView = withTranslation()(
 		}
 
 		render() {
-			const selected = this.props.selectedPiece
 			const uniquenessIds = new Set<string>()
 
 			return (
@@ -565,8 +562,6 @@ function actionToAdLibPieceUi(
 }
 
 export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchAndFilterProps {
-	const { t } = props
-
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
@@ -1191,7 +1186,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 									return part.timings?.startedPlayback && part.timings?.duration ? memo : false
 								}, true) === true,
 						})}
-						onClick={(e) => this.onSelectSegment(item)}
+						onClick={() => this.onSelectSegment(item)}
 						key={unprotectString(item._id)}
 						tabIndex={0}
 					>

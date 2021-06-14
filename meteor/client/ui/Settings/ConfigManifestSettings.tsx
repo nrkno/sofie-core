@@ -3,30 +3,24 @@ import ClassNames from 'classnames'
 import * as React from 'react'
 import * as _ from 'underscore'
 import Tooltip from 'rc-tooltip'
-import { Studio, Studios, MappingsExt, StudioId } from '../../../lib/collections/Studios'
+import { MappingsExt } from '../../../lib/collections/Studios'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Blueprints } from '../../../lib/collections/Blueprints'
 import {
 	ConfigManifestEntry,
 	ConfigManifestEntryType,
 	IBlueprintConfig,
 	BasicConfigManifestEntry,
-	ConfigManifestEntryEnum,
 	ConfigItemValue,
 	ConfigManifestEntryTable,
 	TableConfigItemValue,
 	ConfigManifestEntrySourceLayers,
 	ConfigManifestEntryLayerMappings,
 	SourceLayerType,
-	ConfigManifestEntrySelectFromOptions,
 } from '@sofie-automation/blueprints-integration'
-import { literal, DBObj, KeysByType, ProtectedString, objectPathGet } from '../../../lib/lib'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import { logger } from '../../../lib/logging'
+import { DBObj, ProtectedString, objectPathGet } from '../../../lib/lib'
 import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { getHelpMode } from '../../lib/localStorage'
@@ -617,14 +611,14 @@ export class ConfigManifestSettings<
 		})
 	}
 
-	handleConfirmAddItemCancel = (e) => {
+	handleConfirmAddItemCancel = () => {
 		this.setState({
 			addItemId: undefined,
 			showAddItem: false,
 		})
 	}
 
-	handleConfirmAddItemAccept = (e) => {
+	handleConfirmAddItemAccept = () => {
 		if (this.state.addItemId) {
 			const item = this.props.manifest.find((c) => c.id === this.state.addItemId)
 			const m: any = {
@@ -649,14 +643,14 @@ export class ConfigManifestSettings<
 		})
 	}
 
-	handleConfirmDeleteCancel = (e) => {
+	handleConfirmDeleteCancel = () => {
 		this.setState({
 			deleteConfirmItem: undefined,
 			showDeleteConfirm: false,
 		})
 	}
 
-	handleConfirmDeleteAccept = (e) => {
+	handleConfirmDeleteAccept = () => {
 		if (this.state.deleteConfirmItem) {
 			const m: any = {
 				$unset: {
@@ -761,7 +755,7 @@ export class ConfigManifestSettings<
 		const { t } = this.props
 
 		const values = this.getObjectConfig()
-		return this.props.manifest.map((item, index) => {
+		return this.props.manifest.map((item) => {
 			const configItem = objectPathGet(values, item.id)
 			if (configItem === undefined && !item.required) return undefined
 
@@ -779,11 +773,11 @@ export class ConfigManifestSettings<
 						<td className="settings-studio-custom-config-table__actions table-item-actions c3">
 							{configItem !== undefined ? (
 								<React.Fragment>
-									<button className="action-btn" onClick={(e) => this.editItem(item)}>
+									<button className="action-btn" onClick={() => this.editItem(item)}>
 										<FontAwesomeIcon icon={faPencilAlt} />
 									</button>
 									{!item.required && (
-										<button className="action-btn" onClick={(e) => this.confirmDelete(item)}>
+										<button className="action-btn" onClick={() => this.confirmDelete(item)}>
 											<FontAwesomeIcon icon={faTrash} />
 										</button>
 									)}
@@ -793,7 +787,7 @@ export class ConfigManifestSettings<
 									className={ClassNames('btn btn-primary', {
 										'btn-tight': this.props.subPanel,
 									})}
-									onClick={(e) => this.createItem(item)}
+									onClick={() => this.createItem(item)}
 								>
 									<FontAwesomeIcon icon={faPlus} /> {t('Create')}
 								</button>
@@ -810,7 +804,7 @@ export class ConfigManifestSettings<
 									<div className="mod mvs mhs">{this.renderEditableArea(item, item.id)}</div>
 								</div>
 								<div className="mod alright">
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
+									<button className={ClassNames('btn btn-primary')} onClick={() => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -839,8 +833,8 @@ export class ConfigManifestSettings<
 					acceptText={t('Add')}
 					secondaryText={t('Cancel')}
 					show={this.state.showAddItem}
-					onAccept={(e) => this.handleConfirmAddItemAccept(e)}
-					onSecondary={(e) => this.handleConfirmAddItemCancel(e)}
+					onAccept={() => this.handleConfirmAddItemAccept()}
+					onSecondary={() => this.handleConfirmAddItemCancel()}
 				>
 					<div className="mod mvs mhs">
 						<label className="field">
@@ -862,8 +856,8 @@ export class ConfigManifestSettings<
 					acceptText={t('Delete')}
 					secondaryText={t('Cancel')}
 					show={this.state.showDeleteConfirm}
-					onAccept={(e) => this.handleConfirmDeleteAccept(e)}
-					onSecondary={(e) => this.handleConfirmDeleteCancel(e)}
+					onAccept={() => this.handleConfirmDeleteAccept()}
+					onSecondary={() => this.handleConfirmDeleteCancel()}
 				>
 					<p>
 						{t('Are you sure you want to delete this config item "{{configId}}"?', {

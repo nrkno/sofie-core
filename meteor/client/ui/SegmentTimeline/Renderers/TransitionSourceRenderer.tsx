@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { getElementWidth } from '../../../utils/dimensions'
 
 import { TransitionContent } from '@sofie-automation/blueprints-integration'

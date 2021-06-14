@@ -1,6 +1,4 @@
-import { Rundown, RundownId } from '../collections/Rundowns'
-import { NoteType } from './notes'
-import * as _ from 'underscore'
+import { RundownId } from '../collections/Rundowns'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from './userActions'
 import { SegmentId } from '../collections/Segments'
