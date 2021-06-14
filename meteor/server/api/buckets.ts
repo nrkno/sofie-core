@@ -53,7 +53,7 @@ export namespace BucketsAPI {
 
 		bucketSyncFunction(adlib.bucketId, 'removeBucketAdLib', () => {
 			waitForPromiseAll([
-				BucketAdLibs.removeAsync( { _id: id }),
+				BucketAdLibs.removeAsync({ _id: id }),
 				cleanUpExpectedMediaItemForBucketAdLibPiece([id]),
 				cleanUpExpectedPackagesForBucketAdLibs([id]),
 			])
@@ -71,7 +71,7 @@ export namespace BucketsAPI {
 
 		bucketSyncFunction(adlib.bucketId, 'removeBucketAdLibAction', () => {
 			waitForPromiseAll([
-				BucketAdLibActions.removeAsync( { _id: id }),
+				BucketAdLibActions.removeAsync({ _id: id }),
 				cleanUpExpectedMediaItemForBucketAdLibActions([id]),
 				cleanUpExpectedPackagesForBucketAdLibsActions([id]),
 			])
