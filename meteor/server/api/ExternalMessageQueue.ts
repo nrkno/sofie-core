@@ -13,7 +13,7 @@ import {
 	IBlueprintExternalMessageQueueType,
 	ExternalMessageQueueObjRabbitMQ,
 } from '@sofie-automation/blueprints-integration'
-import { getCurrentTime, removeNullyProperties, getRandomId, makePromise, protectString, omit } from '../../lib/lib'
+import { getCurrentTime, removeNullyProperties, getRandomId, protectString, omit } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../../lib/api/ExternalMessageQueue'
@@ -267,32 +267,32 @@ Meteor.startup(() => {
 	updateExternalMessageQueueStatus()
 })
 
-function removeExternalMessage(context: MethodContext, messageId: ExternalMessageQueueObjId): void {
+async function removeExternalMessage(context: MethodContext, messageId: ExternalMessageQueueObjId): Promise<void> {
 	check(messageId, String)
-	StudioContentWriteAccess.externalMessage(context, messageId)
+	await StudioContentWriteAccess.externalMessage(context, messageId)
 
-	ExternalMessageQueue.remove(messageId)
+	await ExternalMessageQueue.removeAsync(messageId)
 }
-function toggleHold(context: MethodContext, messageId: ExternalMessageQueueObjId): void {
+async function toggleHold(context: MethodContext, messageId: ExternalMessageQueueObjId): Promise<void> {
 	check(messageId, String)
-	const access = StudioContentWriteAccess.externalMessage(context, messageId)
+	const access = await StudioContentWriteAccess.externalMessage(context, messageId)
 	const m = access.message
 	if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
 
-	ExternalMessageQueue.update(messageId, {
+	await ExternalMessageQueue.updateAsync(messageId, {
 		$set: {
 			hold: !m.hold,
 		},
 	})
 }
-function retry(context: MethodContext, messageId: ExternalMessageQueueObjId): void {
+async function retry(context: MethodContext, messageId: ExternalMessageQueueObjId): Promise<void> {
 	check(messageId, String)
-	const access = StudioContentWriteAccess.externalMessage(context, messageId)
+	const access = await StudioContentWriteAccess.externalMessage(context, messageId)
 	const m = access.message
 	if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
 
 	const tryGap = getCurrentTime() - 1 * 60 * 1000
-	ExternalMessageQueue.update(messageId, {
+	await ExternalMessageQueue.updateAsync(messageId, {
 		$set: {
 			manualRetry: true,
 			hold: false,
@@ -302,7 +302,7 @@ function retry(context: MethodContext, messageId: ExternalMessageQueueObjId): vo
 	})
 	triggerdoMessageQueue(1000)
 }
-function setRunMessageQueue(_context: MethodContext, value: boolean): void {
+async function setRunMessageQueue(_context: MethodContext, value: boolean): Promise<void> {
 	check(value, Boolean)
 	triggerWriteAccessBecauseNoCheckNecessary()
 
@@ -315,16 +315,16 @@ function setRunMessageQueue(_context: MethodContext, value: boolean): void {
 
 class ServerExternalMessageQueueAPI extends MethodContextAPI implements NewExternalMessageQueueAPI {
 	remove(messageId: ExternalMessageQueueObjId) {
-		return makePromise(() => removeExternalMessage(this, messageId))
+		return removeExternalMessage(this, messageId)
 	}
 	toggleHold(messageId: ExternalMessageQueueObjId) {
-		return makePromise(() => toggleHold(this, messageId))
+		return toggleHold(this, messageId)
 	}
 	retry(messageId: ExternalMessageQueueObjId) {
-		return makePromise(() => retry(this, messageId))
+		return retry(this, messageId)
 	}
 	setRunMessageQueue(value: boolean) {
-		return makePromise(() => setRunMessageQueue(this, value))
+		return setRunMessageQueue(this, value)
 	}
 }
 registerClassToMeteorMethods(ExternalMessageQueueAPIMethods, ServerExternalMessageQueueAPI, false)
