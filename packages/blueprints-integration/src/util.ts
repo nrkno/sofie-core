@@ -24,8 +24,14 @@ export function iterateDeeply(
 		// Continue iterate deeper if possible
 		if (obj && typeof obj === 'object') {
 			// object or array
-			for (const [k, v] of Object.entries(obj)) {
-				obj[k] = iterateDeeply(v, iteratee, k)
+			if (Array.isArray(obj)) {
+				obj.forEach((v, k) => {
+					obj[k] = iterateDeeply(v, iteratee, k)
+				})
+			} else {
+				for (const [k, v] of Object.entries(obj)) {
+					obj[k] = iterateDeeply(v, iteratee, k)
+				}
 			}
 		} else {
 			// don't change anything
@@ -50,12 +56,19 @@ export async function iterateDeeplyAsync(
 	if (newValue === iterateDeeplyEnum.CONTINUE) {
 		// Continue iterate deeper if possible
 		if (obj && typeof obj === 'object') {
-			// object or array
-			await Promise.all(
-				Object.entries(obj).map(async ([k, v]) => {
-					obj[k] = await iterateDeeplyAsync(v, iteratee, k)
-				})
-			)
+			if (Array.isArray(obj)) {
+				await Promise.all(
+					obj.map(async (v, k) => {
+						obj[k] = await iterateDeeplyAsync(v, iteratee, k)
+					})
+				)
+			} else {
+				await Promise.all(
+					Object.entries(obj).map(async ([k, v]) => {
+						obj[k] = await iterateDeeplyAsync(v, iteratee, k)
+					})
+				)
+			}
 		} else {
 			// don't change anything
 		}
