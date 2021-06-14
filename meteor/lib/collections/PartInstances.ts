@@ -44,6 +44,7 @@ export function protectPartInstance(partInstance: IBlueprintPartInstance): Parti
 export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	_id: PartInstanceId
 	rundownId: RundownId
+	segmentId: SegmentId
 
 	/** The id of the playlist activation session */
 	playlistActivationId: RundownPlaylistActivationId

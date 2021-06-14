@@ -1,11 +1,4 @@
-import {
-	applyClassToDocument,
-	registerCollection,
-	ProtectedString,
-	omit,
-	ProtectedStringProperties,
-	unprotectObject,
-} from '../lib'
+import { registerCollection, ProtectedString, omit, ProtectedStringProperties, unprotectObject } from '../lib'
 import * as _ from 'underscore'
 import {
 	IBlueprintConfig,
@@ -250,35 +243,8 @@ export function routeExpectedPackages(
 	return getRoutedMappings(mappingsWithPackages, routes)
 }
 
-export class Studio implements DBStudio {
-	public _id: StudioId
-	public organizationId: OrganizationId | null
-	public name: string
-	public blueprintId?: BlueprintId
-	public mappings: MappingsExt
-	public mappingsHash?: MappingsHash
-	public supportedShowStyleBase: Array<ShowStyleBaseId>
-	public blueprintConfig: IBlueprintConfig
-	public settings: IStudioSettings
-
-	public _rundownVersionHash: string
-
-	public routeSets: Record<string, StudioRouteSet>
-	public routeSetExclusivityGroups: Record<string, StudioRouteSetExclusivityGroup>
-	public packageContainers: Record<string, StudioPackageContainer>
-	public previewContainerIds: string[]
-	public thumbnailContainerIds: string[]
-
-	constructor(document: DBStudio) {
-		for (const [key, value] of Object.entries(document)) {
-			this[key] = value
-		}
-	}
-}
-
-export const Studios = createMongoCollection<Studio, DBStudio>('studios', {
-	transform: (doc) => applyClassToDocument(Studio, doc),
-})
+export type Studio = DBStudio
+export const Studios = createMongoCollection<Studio, DBStudio>('studios')
 registerCollection('Studios', Studios)
 
 registerIndex(Studios, {

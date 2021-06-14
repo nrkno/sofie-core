@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintConfig, IBlueprintShowStyleVariant } from '@sofie-automation/blueprints-integration'
-import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
+import { IBlueprintShowStyleVariant } from '@sofie-automation/blueprints-integration'
+import { registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { ShowStyleBase, ShowStyleBaseId } from './ShowStyleBases'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { registerIndex } from '../database'
@@ -21,22 +21,8 @@ export interface ShowStyleCompound extends ShowStyleBase {
 	_rundownVersionHashVariant: string
 }
 
-export class ShowStyleVariant implements DBShowStyleVariant {
-	public _id: ShowStyleVariantId
-	public name: string
-	public showStyleBaseId: ShowStyleBaseId
-	public blueprintConfig: IBlueprintConfig
-	public _rundownVersionHash: string
-
-	constructor(document: DBShowStyleVariant) {
-		for (const [key, value] of Object.entries(document)) {
-			this[key] = value
-		}
-	}
-}
-export const ShowStyleVariants = createMongoCollection<ShowStyleVariant, DBShowStyleVariant>('showStyleVariants', {
-	transform: (doc) => applyClassToDocument(ShowStyleVariant, doc),
-})
+export type ShowStyleVariant = DBShowStyleVariant
+export const ShowStyleVariants = createMongoCollection<ShowStyleVariant, DBShowStyleVariant>('showStyleVariants')
 registerCollection('ShowStyleVariants', ShowStyleVariants)
 
 registerIndex(ShowStyleVariants, {
