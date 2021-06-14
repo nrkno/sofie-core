@@ -260,11 +260,14 @@ export namespace Accessor {
 		/** Base url (url to the host), for example ftp://myhost.com/fileShare/ */
 		baseUrl: string
 
-		/** Any headers to send along with the request */
-		// headers?: { [name: string]: any } // Not implemented (yet)
+		/** Optional username, if not provided a regular anonymous login will be used */
+		userName?: string
 
-		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible. */
-		networkId?: string
+		/** Optional password to use for login */
+		password?: string
+
+		/** Force encrypted connection attempt. Will fail instead of fall back to unencrypted if unsupported by server */
+		requireTLS?: boolean
 	}
 }
 /**
@@ -301,8 +304,8 @@ export namespace AccessorOnPackage {
 	}
 
 	export interface FTP extends Partial<Accessor.FTP> {
-		/** URL path to resource (combined with .baseUrl gives the full URL), for example: /folder/myFile */
-		url?: string
+		/** Path to resource (combined with .baseUrl gives the full URL), for example: folder/myFile */
+		path: string
 	}
 }
 
