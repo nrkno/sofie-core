@@ -55,6 +55,7 @@ import { getActiveRundownPlaylistsInStudio } from './playout/studio'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { createMongoCollection } from '../../lib/collections/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { nightlyCronjobInner } from '../cronjobs'
 
 function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
@@ -485,6 +486,11 @@ export function cleanupOldData(
 
 	return cleanupOldDataInner(actuallyRemoveOldData)
 }
+export function runCronjob(context: MethodContext): void {
+	SystemWriteAccess.coreSystem(context)
+
+	return nightlyCronjobInner()
+}
 
 let mongoTest: TransformedCollection<any, any> | undefined = undefined
 /** Runs a set of system benchmarks, that are designed to test various aspects of the hardware-performance on the server */
@@ -741,6 +747,9 @@ class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 	}
 	cleanupOldData(actuallyRemoveOldData: boolean) {
 		return makePromise(() => cleanupOldData(this, actuallyRemoveOldData))
+	}
+	runCronjob() {
+		return makePromise(() => runCronjob(this))
 	}
 	async doSystemBenchmark(runCount: number = 1) {
 		return doSystemBenchmark(this, runCount)
