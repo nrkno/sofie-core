@@ -8,8 +8,8 @@ import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
 // setLoggerLevel('info')
 
 describe('DatabaseCaches', () => {
-	beforeEach(() => {
-		setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		await setupDefaultStudioEnvironment()
 	})
 	describe('CacheForStudio', () => {
 		testInFiber('Insert, update & remove', async () => {

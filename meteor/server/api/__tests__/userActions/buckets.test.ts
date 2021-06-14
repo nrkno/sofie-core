@@ -86,8 +86,8 @@ describe('User Actions - Buckets', () => {
 			}).fetch(),
 		}
 	}
-	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 		jest.resetAllMocks()
 	})
 	testInFiber('createBucket', () => {

@@ -6,7 +6,7 @@ import { ServerResponse, IncomingMessage } from 'http'
 import { check, Match } from '../../../lib/check'
 import { URL } from 'url'
 import { retrieveBlueprintAsset, uploadBlueprint, uploadBlueprintAsset } from './api'
-import { protectString } from '../../../lib/lib'
+import { protectString, waitForPromise } from '../../../lib/lib'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PickerGET, PickerPOST } from '../http'
 import path from 'path'
@@ -34,12 +34,14 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 		if (!_.isString(body) || body.length < 10)
 			throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
-		uploadBlueprint(
-			{ userId: protectString(userId) },
-			protectString<BlueprintId>(blueprintId),
-			body,
-			blueprintName,
-			force
+		waitForPromise(
+			uploadBlueprint(
+				{ userId: protectString(userId) },
+				protectString<BlueprintId>(blueprintId),
+				body,
+				blueprintName,
+				force
+			)
 		)
 
 		res.statusCode = 200
@@ -82,11 +84,13 @@ PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: Serv
 		for (const id of _.keys(collection.blueprints)) {
 			try {
 				const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''
-				uploadBlueprint(
-					{ userId: protectString(userId) },
-					protectString<BlueprintId>(id),
-					collection.blueprints[id],
-					id
+				waitForPromise(
+					uploadBlueprint(
+						{ userId: protectString(userId) },
+						protectString<BlueprintId>(id),
+						collection.blueprints[id],
+						id
+					)
 				)
 			} catch (e) {
 				logger.error('Blueprint restore failed: ' + e)

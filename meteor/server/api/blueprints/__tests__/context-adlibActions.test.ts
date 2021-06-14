@@ -113,8 +113,8 @@ describe('Test blueprint api context', () => {
 	}
 
 	let env: DefaultEnvironment
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 	})
 
 	async function getActionExecutionContext(cache: CacheForPlayout) {

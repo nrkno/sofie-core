@@ -27,8 +27,8 @@ import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants
 
 describe('Test blueprint post-process', () => {
 	let env: DefaultEnvironment
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 	})
 
 	function getStudio() {

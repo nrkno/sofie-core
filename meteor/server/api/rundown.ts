@@ -13,7 +13,6 @@ import {
 	normalizeArray,
 	normalizeArrayToMap,
 	clone,
-	waitForPromise,
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
@@ -54,18 +53,18 @@ import { getRundown } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
 import { checkAccessToPlaylist } from './lib'
 
-export function selectShowStyleVariant(
+export async function selectShowStyleVariant(
 	context: StudioUserContext,
 	ingestRundown: ExtendedIngestRundown
-): { variant: ShowStyleVariant; base: ShowStyleBase; compound: ShowStyleCompound } | null {
+): Promise<{ variant: ShowStyleVariant; base: ShowStyleBase; compound: ShowStyleCompound } | null> {
 	const studio = context.studio
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
 		return null
 	}
-	const showStyleBases = ShowStyleBases.find({
+	const showStyleBases = await ShowStyleBases.findFetchAsync({
 		_id: { $in: clone<Array<ShowStyleBaseId>>(studio.supportedShowStyleBase) },
-	}).fetch()
+	})
 	let showStyleBase = _.first(showStyleBases)
 	if (!showStyleBase) {
 		logger.debug(
@@ -74,7 +73,7 @@ export function selectShowStyleVariant(
 		return null
 	}
 
-	const studioBlueprint = waitForPromise(loadStudioBlueprint(studio))
+	const studioBlueprint = await loadStudioBlueprint(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
 	if (!studioBlueprint.blueprint.getShowStyleId)
@@ -94,10 +93,10 @@ export function selectShowStyleVariant(
 		)
 		return null
 	}
-	const showStyleVariants = ShowStyleVariants.find({ showStyleBaseId: showStyleBase._id }).fetch()
+	const showStyleVariants = await ShowStyleVariants.findFetchAsync({ showStyleBaseId: showStyleBase._id })
 	if (!showStyleVariants.length) throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" has no variants`)
 
-	const showStyleBlueprint = waitForPromise(loadShowStyleBlueprint(showStyleBase))
+	const showStyleBlueprint = await loadShowStyleBlueprint(showStyleBase)
 	if (!showStyleBlueprint)
 		throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
 

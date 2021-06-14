@@ -37,11 +37,11 @@ describe('Lookahead', () => {
 	// let segmentId: SegmentId
 	let partIds: PartId[]
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		findLookaheadForLayerMock.mockReset().mockReturnValue({ timed: [], future: [] }) // Default mock
 		getOrderedPartsAfterPlayheadMock.mockReset().mockReturnValue([])
 
-		env = setupDefaultStudioEnvironment()
+		env = await setupDefaultStudioEnvironment()
 		const mappings: MappingsExt = {}
 		for (const k of Object.keys(LookaheadMode)) {
 			if (isNaN(parseInt(k))) {

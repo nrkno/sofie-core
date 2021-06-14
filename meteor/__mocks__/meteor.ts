@@ -305,6 +305,11 @@ export namespace MeteorMock {
 				cb(e)
 			})
 	})
+
+	/** Wait for time to pass ( unaffected by jest.useFakeTimers() ) */
+	export function sleepNoFakeTimers(time: number): Promise<void> {
+		return new Promise<void>((resolve) => $.orgSetTimeout(resolve, time))
+	}
 }
 export function setup() {
 	return {
@@ -313,8 +318,8 @@ export function setup() {
 }
 
 /** Wait for time to pass ( unaffected by jest.useFakeTimers() ) */
-export function waitTimeNoFakeTimers(time: number) {
-	waitForPromise(new Promise((resolve) => $.orgSetTimeout(resolve, time)))
+export function waitTimeNoFakeTimers(time: number): void {
+	waitForPromise(MeteorMock.sleepNoFakeTimers(time))
 }
 export const waitForPromise: <T>(p: Promise<T>) => T = MeteorMock.wrapAsync(function waitForPromises<T>(
 	p: Promise<T>,

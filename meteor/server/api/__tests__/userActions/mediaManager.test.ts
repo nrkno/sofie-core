@@ -40,7 +40,7 @@ describe('User Actions - Media Manager', () => {
 
 		return { workFlow, workFlowId }
 	}
-	beforeEach(() => {
+	beforeEach(async () => {
 		// clean up old peripheral devices and MediaWorkFlows
 		PeripheralDevices.remove({
 			_id: {
@@ -52,7 +52,7 @@ describe('User Actions - Media Manager', () => {
 				$exists: true,
 			},
 		})
-		env = setupDefaultStudioEnvironment()
+		env = await setupDefaultStudioEnvironment()
 		jest.resetAllMocks()
 	})
 	testInFiber('Restart workflow', async () => {

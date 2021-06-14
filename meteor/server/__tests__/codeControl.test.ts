@@ -21,8 +21,8 @@ describe('codeControl rundown', () => {
 	beforeEach(() => {
 		jest.useFakeTimers()
 	})
-	testInFiber('rundownSyncFunction', () => {
-		const env = setupDefaultStudioEnvironment()
+	testInFiber('rundownSyncFunction', async () => {
+		const env = await setupDefaultStudioEnvironment()
 		const { playlistId } = setupDefaultRundownPlaylist(env)
 		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
 		expect(playlist).toBeTruthy()

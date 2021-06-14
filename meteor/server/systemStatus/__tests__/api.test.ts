@@ -47,8 +47,8 @@ describe('systemStatus API', () => {
 			return resStr
 		}
 
-		testInFiber('REST /health with state BAD', () => {
-			env = setupDefaultStudioEnvironment()
+		testInFiber('REST /health with state BAD', async () => {
+			env = await setupDefaultStudioEnvironment()
 			MeteorMock.mockRunMeteorStartup()
 
 			// The system is uninitialized, the status will be BAD
@@ -102,8 +102,8 @@ describe('systemStatus API', () => {
 			return resStr
 		}
 
-		testInFiber('REST /health with state GOOD', () => {
-			env = setupDefaultStudioEnvironment()
+		testInFiber('REST /health with state GOOD', async () => {
+			env = await setupDefaultStudioEnvironment()
 			MeteorMock.mockRunMeteorStartup()
 
 			// simulate initialized system

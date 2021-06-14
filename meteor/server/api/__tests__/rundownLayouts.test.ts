@@ -23,8 +23,8 @@ enum RundownLayoutsAPIMethods { // Using our own method definition, to catch ext
 
 describe('Rundown Layouts', () => {
 	let env: DefaultEnvironment
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 	})
 	let rundownLayoutId: string
 	testInFiber('Create rundown layout', () => {

@@ -9,6 +9,7 @@ import { BlueprintAPIMethods } from '../../../../lib/api/blueprint'
 import { Meteor } from 'meteor/meteor'
 import { insertBlueprint, uploadBlueprint } from '../api'
 import { MethodContext } from '../../../../lib/api/methods'
+import '../../../../__mocks__/_extendJest'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -27,8 +28,8 @@ const DEFAULT_CONTEXT: MethodContext = {
 }
 
 describe('Test blueprint management api', () => {
-	beforeAll(() => {
-		setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		await setupDefaultStudioEnvironment()
 	})
 
 	function getCurrentBlueprintIds() {
@@ -174,9 +175,9 @@ describe('Test blueprint management api', () => {
 			expect(blueprint.name).toBeTruthy()
 			expect(blueprint.blueprintType).toBeFalsy()
 		})
-		testInFiber('with name', () => {
+		testInFiber('with name', async () => {
 			const rawName = 'some_fake_name'
-			const newId = insertBlueprint(DEFAULT_CONTEXT, undefined, rawName)
+			const newId = await insertBlueprint(DEFAULT_CONTEXT, undefined, rawName)
 			expect(newId).toBeTruthy()
 
 			// Check some props
@@ -185,9 +186,9 @@ describe('Test blueprint management api', () => {
 			expect(blueprint.name).toEqual(rawName)
 			expect(blueprint.blueprintType).toBeFalsy()
 		})
-		testInFiber('with type', () => {
+		testInFiber('with type', async () => {
 			const type = BlueprintManifestType.STUDIO
-			const newId = insertBlueprint(DEFAULT_CONTEXT, type, undefined)
+			const newId = await insertBlueprint(DEFAULT_CONTEXT, type, undefined)
 			expect(newId).toBeTruthy()
 
 			// Check some props
@@ -199,22 +200,24 @@ describe('Test blueprint management api', () => {
 	})
 
 	describe('uploadBlueprint', () => {
-		testInFiber('empty id', () => {
-			expect(() => uploadBlueprint(DEFAULT_CONTEXT, protectString(''), '0')).toThrowError(
-				'[400] Blueprint id "" is not valid'
+		testInFiber('empty id', async () => {
+			await expect(uploadBlueprint(DEFAULT_CONTEXT, protectString(''), '0')).rejects.toThrowMeteor(
+				400,
+				'Blueprint id "" is not valid'
 			)
 		})
-		testInFiber('empty body', () => {
-			expect(() => uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), '')).toThrowError(
-				'[400] Blueprint blueprint99 failed to parse'
+		testInFiber('empty body', async () => {
+			await expect(uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), '')).rejects.toThrowMeteor(
+				400,
+				'Blueprint blueprint99 failed to parse'
 			)
 		})
-		testInFiber('body not a manifest', () => {
-			expect(() =>
+		testInFiber('body not a manifest', async () => {
+			await expect(
 				uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), `({default: (() => 5)()})`)
-			).toThrowError('[400] Blueprint blueprint99 returned a manifest of type number')
+			).rejects.toThrowMeteor(400, 'Blueprint blueprint99 returned a manifest of type number')
 		})
-		testInFiber('manifest missing blueprintType', () => {
+		testInFiber('manifest missing blueprintType', async () => {
 			const blueprintStr = packageBlueprint({}, () => {
 				return {
 					blueprintType: undefined as any,
@@ -232,11 +235,14 @@ describe('Test blueprint management api', () => {
 					// }
 				}
 			})
-			expect(() => uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), blueprintStr)).toThrowError(
-				`[400] Blueprint blueprint99 returned a manifest of unknown blueprintType "undefined"`
+			await expect(
+				uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), blueprintStr)
+			).rejects.toThrowMeteor(
+				400,
+				`Blueprint blueprint99 returned a manifest of unknown blueprintType "undefined"`
 			)
 		})
-		testInFiber('replace existing with different type', () => {
+		testInFiber('replace existing with different type', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.STUDIO
 			const blueprintStr = packageBlueprint(
 				{
@@ -257,11 +263,12 @@ describe('Test blueprint management api', () => {
 			}) as Blueprint
 			expect(existingBlueprint).toBeTruthy()
 
-			expect(() => uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)).toThrowError(
-				`[400] Cannot replace old blueprint (of type \"showstyle\") with new blueprint of type \"studio\"`
+			await expect(uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)).rejects.toThrowMeteor(
+				400,
+				`Cannot replace old blueprint (of type \"showstyle\") with new blueprint of type \"studio\"`
 			)
 		})
-		testInFiber('success - showstyle', () => {
+		testInFiber('success - showstyle', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const blueprintStr = packageBlueprint(
 				{
@@ -280,7 +287,7 @@ describe('Test blueprint management api', () => {
 				}
 			)
 
-			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, protectString('tmp_showstyle'), blueprintStr)
+			const blueprint = await uploadBlueprint(DEFAULT_CONTEXT, protectString('tmp_showstyle'), blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
@@ -298,7 +305,7 @@ describe('Test blueprint management api', () => {
 				})
 			)
 		})
-		testInFiber('success - studio', () => {
+		testInFiber('success - studio', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.STUDIO
 			const blueprintStr = packageBlueprint(
 				{
@@ -316,7 +323,12 @@ describe('Test blueprint management api', () => {
 				}
 			)
 
-			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, protectString('tmp_studio'), blueprintStr, 'tmp name')
+			const blueprint = await uploadBlueprint(
+				DEFAULT_CONTEXT,
+				protectString('tmp_studio'),
+				blueprintStr,
+				'tmp name'
+			)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
@@ -334,7 +346,7 @@ describe('Test blueprint management api', () => {
 				})
 			)
 		})
-		testInFiber('success - system', () => {
+		testInFiber('success - system', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SYSTEM
 			const blueprintStr = packageBlueprint(
 				{
@@ -353,7 +365,12 @@ describe('Test blueprint management api', () => {
 				}
 			)
 
-			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, protectString('tmp_system'), blueprintStr, 'tmp name')
+			const blueprint = await uploadBlueprint(
+				DEFAULT_CONTEXT,
+				protectString('tmp_system'),
+				blueprintStr,
+				'tmp name'
+			)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
@@ -371,7 +388,7 @@ describe('Test blueprint management api', () => {
 				})
 			)
 		})
-		testInFiber('update - studio', () => {
+		testInFiber('update - studio', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.STUDIO
 			const blueprintStr = packageBlueprint(
 				{
@@ -393,7 +410,7 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeFalsy()
 
-			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
+			const blueprint = await uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
@@ -411,7 +428,7 @@ describe('Test blueprint management api', () => {
 				})
 			)
 		})
-		testInFiber('update - matching blueprintId', () => {
+		testInFiber('update - matching blueprintId', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const blueprintStr = packageBlueprint(
 				{
@@ -437,7 +454,7 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()
 
-			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
+			const blueprint = await uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
@@ -455,7 +472,7 @@ describe('Test blueprint management api', () => {
 				})
 			)
 		})
-		testInFiber('update - change blueprintId', () => {
+		testInFiber('update - change blueprintId', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const blueprintStr = packageBlueprint(
 				{
@@ -481,11 +498,12 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()
 
-			expect(() => uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)).toThrowError(
-				`[422] Cannot replace old blueprint \"${existingBlueprint._id}\" (\"ss1\") with new blueprint \"show2\"`
+			await expect(uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)).rejects.toThrowMeteor(
+				422,
+				`Cannot replace old blueprint \"${existingBlueprint._id}\" (\"ss1\") with new blueprint \"show2\"`
 			)
 		})
-		testInFiber('update - drop blueprintId', () => {
+		testInFiber('update - drop blueprintId', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const blueprintStr = packageBlueprint(
 				{
@@ -510,8 +528,9 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()
 
-			expect(() => uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)).toThrowError(
-				`[422] Cannot replace old blueprint \"${existingBlueprint._id}\" (\"ss1\") with new blueprint \"\"`
+			await expect(uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)).rejects.toThrowMeteor(
+				422,
+				`Cannot replace old blueprint \"${existingBlueprint._id}\" (\"ss1\") with new blueprint \"\"`
 			)
 		})
 	})

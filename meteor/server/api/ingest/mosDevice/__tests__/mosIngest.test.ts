@@ -45,12 +45,12 @@ function getPartIdMap(segments: DBSegment[], parts: DBPart[]) {
 
 describe('Test recieved mos ingest payloads', () => {
 	let device: PeripheralDevice
-	beforeAll(() => {
+	beforeAll(async () => {
 		// Start with ids not at the beginning
 		resetRandomId()
 		resetRandomId()
 
-		device = setupDefaultStudioEnvironment().ingestDevice
+		device = (await setupDefaultStudioEnvironment()).ingestDevice
 	})
 	beforeEach(() => {
 		restartRandomId()

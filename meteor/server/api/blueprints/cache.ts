@@ -14,7 +14,7 @@ import {
 	SystemBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
-import { unprotectString, waitForPromise } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
 
 export const BLUEPRINT_CACHE_CONTROL = { disable: false }

@@ -53,8 +53,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 	let device2: PeripheralDevice
 	const externalId = 'abcde'
 	const segExternalId = 'zyxwv'
-	beforeAll(() => {
-		const env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		const env = await setupDefaultStudioEnvironment()
 		device = env.ingestDevice
 
 		device2 = setupMockPeripheralDevice(

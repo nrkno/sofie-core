@@ -23,7 +23,6 @@ import {
 	BlueprintResultPart,
 	IBlueprintPart,
 	IBlueprintPiece,
-	TSR,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -35,7 +34,7 @@ import {
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
-import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
+import { literal, getCurrentTime, protectString, unprotectString, getRandomId, waitForPromise } from '../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
@@ -229,10 +228,10 @@ export function packageBlueprint<T extends BlueprintManifestBase>(
 	})
 	return `({default: (${code})()})`
 }
-export function setupMockStudioBlueprint(
+export async function setupMockStudioBlueprint(
 	showStyleBaseId: ShowStyleBaseId,
 	organizationId: OrganizationId | null = null
-): Blueprint {
+): Promise<Blueprint> {
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.STUDIO
@@ -375,7 +374,7 @@ export function setupMockShowStyleBlueprint(
 	const blueprintId: BlueprintId = protectString('mockBlueprint' + dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return internalUploadBlueprint(blueprintId, code, blueprintName, true, organizationId)
+	return waitForPromise(internalUploadBlueprint(blueprintId, code, blueprintName, true, organizationId))
 }
 export interface DefaultEnvironment {
 	showStyleBaseId: ShowStyleBaseId
@@ -389,13 +388,15 @@ export interface DefaultEnvironment {
 
 	ingestDevice: PeripheralDevice
 }
-export function setupDefaultStudioEnvironment(organizationId: OrganizationId | null = null): DefaultEnvironment {
+export async function setupDefaultStudioEnvironment(
+	organizationId: OrganizationId | null = null
+): Promise<DefaultEnvironment> {
 	const core = setupMockCore({})
 
 	const showStyleBaseId: ShowStyleBaseId = getRandomId()
 	const showStyleVariantId: ShowStyleVariantId = getRandomId()
 
-	const studioBlueprint = setupMockStudioBlueprint(showStyleBaseId, organizationId)
+	const studioBlueprint = await setupMockStudioBlueprint(showStyleBaseId, organizationId)
 	const showStyleBlueprint = setupMockShowStyleBlueprint(showStyleVariantId, organizationId)
 
 	const showStyleBase = setupMockShowStyleBase(showStyleBlueprint._id, {

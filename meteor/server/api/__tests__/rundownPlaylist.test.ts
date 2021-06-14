@@ -32,8 +32,8 @@ export enum RundownAPIMethods { // Using our own method definition, to catch ext
 
 describe('Rundown', () => {
 	let env: DefaultEnvironment
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 	})
 	testInFiber('moveRundown', () => {
 		// Set up a playlist:

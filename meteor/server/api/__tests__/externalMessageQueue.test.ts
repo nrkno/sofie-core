@@ -10,8 +10,8 @@ import {
 	ExternalMessageQueueObjRabbitMQ,
 	ExternalMessageQueueObjSlack,
 } from '@sofie-automation/blueprints-integration'
-import { testInFiber, runAllTimers, testInFiberOnly, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
+import { testInFiber, runAllTimers, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
+import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
 import { getCurrentTime, protectString } from '../../../lib/lib'
 import { sendSOAPMessage } from '../integration/soap'
 import { sendSlackMessageToWebhook } from '../integration/slack'
@@ -20,9 +20,10 @@ import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 // import { setLoggerLevel } from '../../../server/api/logger'
 
 describe('Test external message queue static methods', () => {
-	const studioEnv = setupDefaultStudioEnvironment()
+	let studioEnv: DefaultEnvironment
 	let rundown: Rundown
-	beforeAllInFiber(() => {
+	beforeAll(async () => {
+		studioEnv = await setupDefaultStudioEnvironment()
 		const now = getCurrentTime()
 		RundownPlaylists.insert({
 			_id: protectString('playlist_1'),
@@ -161,9 +162,10 @@ describe('Test external message queue static methods', () => {
 describe('Test sending messages to mocked endpoints', () => {
 	jest.useFakeTimers()
 
-	const studioEnv = setupDefaultStudioEnvironment()
+	let studioEnv: DefaultEnvironment
 	let rundown: Rundown
-	beforeAllInFiber(() => {
+	beforeAllInFiber(async () => {
+		studioEnv = await setupDefaultStudioEnvironment()
 		MeteorMock.mockRunMeteorStartup()
 
 		RundownPlaylists.remove(protectString('playlist_1'))

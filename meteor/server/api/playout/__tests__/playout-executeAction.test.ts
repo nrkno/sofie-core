@@ -54,10 +54,10 @@ describe('Playout API', () => {
 		let rundownId: RundownId
 		let blueprintId: BlueprintId
 
-		beforeEachInFiber(() => {
+		beforeEachInFiber(async () => {
 			BLUEPRINT_CACHE_CONTROL.disable = true
 
-			env = setupDefaultStudioEnvironment()
+			env = await setupDefaultStudioEnvironment()
 
 			const { playlistId: playlistId0, rundownId: rundownId0 } = setupDefaultRundownPlaylist(env)
 			playlistId = playlistId0

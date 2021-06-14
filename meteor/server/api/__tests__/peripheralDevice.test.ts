@@ -53,8 +53,8 @@ describe('test peripheralDevice general API methods', () => {
 	let rundownID: RundownId
 	let rundownPlaylistID: RundownPlaylistId
 	let env: DefaultEnvironment
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 		device = env.ingestDevice
 		rundownID = protectString('rundown0')
 		rundownPlaylistID = protectString('rundownPlaylist0')
@@ -518,12 +518,12 @@ describe('test peripheralDevice general API methods', () => {
 		expect((deviceWithSecretToken.settings as IngestDeviceSettings).secretAccessToken).toBe(true)
 	})
 
-	testInFiber('uninitialize', () => {
+	testInFiber('uninitialize', async () => {
 		if (DEBUG) setLoggerLevel('debug')
 		Meteor.call(PeripheralDeviceAPIMethods.unInitialize, device._id, device.token)
 		expect(PeripheralDevices.findOne()).toBeFalsy()
 
-		device = setupDefaultStudioEnvironment().ingestDevice
+		device = (await setupDefaultStudioEnvironment()).ingestDevice
 		expect(PeripheralDevices.findOne()).toBeTruthy()
 	})
 
@@ -591,11 +591,11 @@ describe('test peripheralDevice general API methods', () => {
 		let workStepIds: ProtectedString<any>[]
 		let deviceId: ProtectedString<any>
 		let device: PeripheralDevice
-		beforeEach(() => {
+		beforeEach(async () => {
 			workFlowId = getRandomId()
 			workStepIds = [getRandomId(), getRandomId()]
 			deviceId = getRandomId()
-			env = setupDefaultStudioEnvironment()
+			env = await setupDefaultStudioEnvironment()
 			PeripheralDevices.insert({
 				_id: deviceId,
 				organizationId: null,
@@ -762,9 +762,9 @@ describe('test peripheralDevice general API methods', () => {
 		const MOCK_COLLECTION = 'MockCollection'
 		const MOCK_MEDIA_ID = 'SOME_FILE'.toUpperCase()
 		const MOCK_OBJID = Random.id()
-		beforeEach(() => {
+		beforeEach(async () => {
 			deviceId = getRandomId()
-			env = setupDefaultStudioEnvironment()
+			env = await setupDefaultStudioEnvironment()
 			PeripheralDevices.insert({
 				_id: deviceId,
 				organizationId: null,

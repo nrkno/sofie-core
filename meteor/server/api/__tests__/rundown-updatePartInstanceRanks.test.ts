@@ -23,8 +23,8 @@ describe('updatePartInstanceRanks', () => {
 	let rundownId!: RundownId
 	let segmentId!: SegmentId
 
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 
 		// Set up a playlist:
 		const info = setupDefaultRundownPlaylist(env, protectString('rundown00'))

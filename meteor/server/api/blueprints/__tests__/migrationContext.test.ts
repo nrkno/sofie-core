@@ -21,8 +21,8 @@ import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowS
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 
 describe('Test blueprint migrationContext', () => {
-	beforeAll(() => {
-		setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		await setupDefaultStudioEnvironment()
 	})
 
 	describe('MigrationContextStudio', () => {

@@ -6,8 +6,8 @@ import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { protectString } from '../../../../lib/lib'
 
 describe('Test blueprint config', () => {
-	beforeAll(() => {
-		setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		await setupDefaultStudioEnvironment()
 	})
 
 	test('compileStudioConfig', () => {

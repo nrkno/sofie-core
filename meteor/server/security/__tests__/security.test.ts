@@ -118,8 +118,8 @@ describe('Security', () => {
 		expect(fcn).not.toThrowError()
 	}
 	let env: DefaultEnvironment
-	beforeAllInFiber(() => {
-		env = setupDefaultStudioEnvironment(org0._id)
+	beforeAllInFiber(async () => {
+		env = await setupDefaultStudioEnvironment(org0._id)
 
 		Organizations.insert(org0)
 		Organizations.insert(org1)

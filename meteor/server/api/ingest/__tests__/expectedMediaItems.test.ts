@@ -1,5 +1,5 @@
 import { literal, protectString, getRandomId } from '../../../../lib/lib'
-import { setupDefaultStudioEnvironment, LAYER_IDS } from '../../../../__mocks__/helpers/database'
+import { setupDefaultStudioEnvironment, LAYER_IDS, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
 import { DBPart, Parts, PartId } from '../../../../lib/collections/Parts'
 import { VTContent, PieceLifespan, WithTimeline, ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { Segments, DBSegment } from '../../../../lib/collections/Segments'
@@ -38,7 +38,6 @@ describe('Expected Media Items', () => {
 	const mockPart1: PartId = protectString('mockPart1')
 	const mockPiece1: PieceId = protectString('mockPiece1')
 	const mockAdLibPiece0: PieceId = protectString('mockAdLib0')
-	const env = setupDefaultStudioEnvironment()
 
 	const mockBase = '\\RAZ_DWA_TRZY\\C\\'
 	const mockFileName0 = 'mockFileName0'
@@ -48,6 +47,11 @@ describe('Expected Media Items', () => {
 
 	const mockFlow0 = 'mockFlow0'
 	const mockFlow1 = 'mockFlow1'
+
+	let env: DefaultEnvironment
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
+	})
 
 	const getExpectedPackage = (id: string, filePath: string) => {
 		return literal<ExpectedPackage.ExpectedPackageMediaFile>({

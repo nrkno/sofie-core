@@ -26,8 +26,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 	let segmentId2: SegmentId
 	let partIds: PartId[]
 
-	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 
 		const mappings: MappingsExt = {}
 		for (const k of Object.keys(LookaheadMode)) {

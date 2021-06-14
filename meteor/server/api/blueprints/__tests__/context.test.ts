@@ -22,8 +22,8 @@ import { generateFakeBlueprint } from './lib'
 import { createShowStyleCompound } from '../../showStyles'
 
 describe('Test blueprint api context', () => {
-	beforeAll(() => {
-		setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		await setupDefaultStudioEnvironment()
 	})
 
 	describe('CommonContext', () => {

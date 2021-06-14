@@ -311,16 +311,22 @@ class WrappedMockCollection<Class extends DBInterface, DBInterface extends { _id
 	extends WrappedTransformedCollection<Class, DBInterface>
 	implements AsyncTransformedCollection<Class, DBInterface>
 {
+	private readonly realSleep: (time: number) => Promise<void>
+
 	constructor(collection: TransformedCollection<Class, DBInterface>, name: string | null) {
 		super(collection, name)
 
 		if (!this._isMock) throw new Meteor.Error(500, 'WrappedMockCollection is only valid for a mock collection')
+
+		const realSleep = (Meteor as any).sleepNoFakeTimers
+		if (!realSleep) throw new Error('Missing Meteor.sleepNoFakeTimers, looks like the mock is broken?')
+		this.realSleep = realSleep
 	}
 	async findFetchAsync(
 		selector: MongoQuery<DBInterface> | string,
 		options?: FindOptions<DBInterface>
 	): Promise<Array<Class>> {
-		await sleep(0)
+		await this.realSleep(0)
 		return this.find(selector as any, options).fetch()
 	}
 
@@ -333,17 +339,17 @@ class WrappedMockCollection<Class extends DBInterface, DBInterface extends { _id
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
-		await sleep(0)
+		await this.realSleep(0)
 		return this.insert(doc)
 	}
 
 	async insertManyAsync(docs: DBInterface[]): Promise<Array<DBInterface['_id']>> {
-		await sleep(0)
+		await this.realSleep(0)
 		return Promise.all(docs.map((doc) => this.insert(doc)))
 	}
 
 	async insertIgnoreAsync(doc: DBInterface): Promise<DBInterface['_id']> {
-		await sleep(0)
+		await this.realSleep(0)
 		try {
 			return this.insert(doc)
 		} catch (err) {
@@ -361,7 +367,7 @@ class WrappedMockCollection<Class extends DBInterface, DBInterface extends { _id
 		modifier: MongoModifier<DBInterface>,
 		options?: UpdateOptions
 	): Promise<number> {
-		await sleep(0)
+		await this.realSleep(0)
 		return this.update(selector, modifier, options)
 	}
 
@@ -370,12 +376,12 @@ class WrappedMockCollection<Class extends DBInterface, DBInterface extends { _id
 		modifier: MongoModifier<DBInterface>,
 		options?: UpsertOptions
 	): Promise<{ numberAffected?: number; insertedId?: DBInterface['_id'] }> {
-		await sleep(0)
+		await this.realSleep(0)
 		return this.upsert(selector, modifier, options)
 	}
 
 	async removeAsync(selector: MongoQuery<DBInterface> | DBInterface['_id']): Promise<number> {
-		await sleep(0)
+		await this.realSleep(0)
 		return this.remove(selector)
 	}
 

@@ -78,8 +78,8 @@ describe('Playout API', () => {
 	beforeAll(() => {
 		Timeline = mockupCollection(OrgTimeline)
 	})
-	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 		playoutDevice = setupMockPeripheralDevice(
 			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 			PeripheralDeviceAPI.DeviceType.PLAYOUT,

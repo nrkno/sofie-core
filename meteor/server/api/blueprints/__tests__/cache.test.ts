@@ -22,8 +22,8 @@ import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowS
 import { generateFakeBlueprint } from './lib'
 
 describe('Test blueprint cache', () => {
-	beforeAll(() => {
-		setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		await setupDefaultStudioEnvironment()
 	})
 	beforeEach(() => {
 		BLUEPRINT_CACHE_CONTROL.disable = true

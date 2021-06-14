@@ -25,8 +25,8 @@ describe('Playout Actions', () => {
 		return PeripheralDeviceCommands.find({ deviceId: device._id }, { sort: { time: 1 } }).fetch()
 	}
 
-	beforeEachInFiber(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 
 		playoutDevice = setupMockPeripheralDevice(
 			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
@@ -35,12 +35,10 @@ describe('Playout Actions', () => {
 			env.studio
 		)
 
-		waitForPromise(
-			removeRundownsFromDb(
-				Rundowns.find()
-					.fetch()
-					.map((r) => r._id)
-			)
+		await removeRundownsFromDb(
+			Rundowns.find()
+				.fetch()
+				.map((r) => r._id)
 		)
 	})
 	testInFiber('activateRundown', () => {

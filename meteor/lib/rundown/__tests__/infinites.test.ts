@@ -13,8 +13,8 @@ import { RundownPlaylistId } from '../../collections/RundownPlaylists'
 
 describe('Infinites', () => {
 	let env: DefaultEnvironment
-	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 	})
 
 	function createPieceInstance(

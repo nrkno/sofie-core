@@ -24,8 +24,8 @@ require('../../../peripheralDevice.ts') // include in order to create the Meteor
 describe('Test sending mos actions', () => {
 	let device: PeripheralDevice
 	let observer: Meteor.LiveQueryHandle | null = null
-	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().ingestDevice
+	beforeAll(async () => {
+		device = (await setupDefaultStudioEnvironment()).ingestDevice
 	})
 	afterEach(() => {
 		if (observer != null) {
