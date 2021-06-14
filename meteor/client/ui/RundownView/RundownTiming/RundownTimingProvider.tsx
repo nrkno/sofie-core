@@ -9,7 +9,7 @@ import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
-import { RundownTimingCalculator } from '../../../../lib/rundown/rundownTiming'
+import { RundownTimingCalculator, RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every
@@ -31,7 +31,7 @@ interface IRundownTimingProviderProps {
 	defaultDuration?: number
 }
 interface IRundownTimingProviderChildContext {
-	durations: RundownTiming.RundownTimingContext
+	durations: RundownTimingContext
 }
 interface IRundownTimingProviderState {}
 interface IRundownTimingProviderTrackedProps {
@@ -111,7 +111,7 @@ export const RundownTimingProvider = withTracker<
 			durations: PropTypes.object.isRequired,
 		}
 
-		durations: RundownTiming.RundownTimingContext = {
+		durations: RundownTimingContext = {
 			isLowResolution: false,
 		}
 		refreshTimer: number

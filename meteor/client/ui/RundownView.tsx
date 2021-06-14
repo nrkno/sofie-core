@@ -203,6 +203,7 @@ interface ITimingDisplayProps {
 	rundownPlaylist: RundownPlaylist
 	currentRundown: Rundown | undefined
 	rundownCount: number
+	isLastRundownInPlaylist: boolean
 }
 
 export enum RundownViewKbdShortcuts {
@@ -268,9 +269,8 @@ const TimingDisplay = withTranslation()(
 					</span>
 				)
 			}
-
 			render() {
-				const { t, rundownPlaylist } = this.props
+				const { t, rundownPlaylist, currentRundown } = this.props
 
 				if (!rundownPlaylist) return null
 
@@ -285,6 +285,15 @@ const TimingDisplay = withTranslation()(
 							<span className="timing-clock plan-start left">
 								<span className="timing-clock-label left">{t('Planned Start')}</span>
 								<Moment interval={0} format="HH:mm:ss" date={rundownPlaylist.expectedStart} />
+							</span>
+						) : rundownPlaylist.expectedEnd && rundownPlaylist.expectedDuration ? (
+							<span className="timing-clock plan-start left">
+								<span className="timing-clock-label left">{t('Expected Start')}</span>
+								<Moment
+									interval={0}
+									format="HH:mm:ss"
+									date={rundownPlaylist.expectedEnd - rundownPlaylist.expectedDuration}
+								/>
 							</span>
 						) : null}
 						{rundownPlaylist.startedPlayback && rundownPlaylist.activationId && !rundownPlaylist.rehearsal ? (
@@ -339,68 +348,22 @@ const TimingDisplay = withTranslation()(
 								) : null}
 							</span>
 						)}
-						{rundownPlaylist.expectedEnd || rundownPlaylist.expectedDuration ? (
+						{rundownPlaylist.expectedDuration ? (
 							<React.Fragment>
-								{!rundownPlaylist.loop && rundownPlaylist.expectedEnd ? (
-									<span className="timing-clock plan-end right visual-last-child">
-										<span className="timing-clock-label right">{t('Planned End')}</span>
-										<Moment interval={0} format="HH:mm:ss" date={rundownPlaylist.expectedEnd} />
-									</span>
-								) : !rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration ? (
-									<span className="timing-clock plan-end right visual-last-child">
-										<span className="timing-clock-label right">{t('Planned End')}</span>
-										<Moment
-											interval={0}
-											format="HH:mm:ss"
-											date={rundownPlaylist.expectedStart + rundownPlaylist.expectedDuration}
-										/>
-									</span>
+								{!rundownPlaylist.startedPlayback ||
+								this.props.isLastRundownInPlaylist ||
+								!currentRundown?.endIsBreak ? ( // TODO: Setting
+									<PlaylistEndTiming
+										loop={rundownPlaylist.loop}
+										expectedStart={rundownPlaylist.expectedStart}
+										expectedEnd={rundownPlaylist.expectedEnd}
+										expectedDuration={rundownPlaylist.expectedDuration}
+									></PlaylistEndTiming>
 								) : null}
-								{!rundownPlaylist.loop &&
-									(rundownPlaylist.expectedEnd ? (
-										<span className="timing-clock countdown plan-end right">
-											{RundownUtils.formatDiffToTimecode(
-												getCurrentTime() -
-													rundownPlaylist.expectedEnd +
-													(this.props.timingDurations.asPlayedRundownDuration ?? 0),
-												true,
-												true,
-												true
-											)}
-										</span>
-									) : rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration ? (
-										<span className="timing-clock countdown plan-end right">
-											{RundownUtils.formatDiffToTimecode(
-												getCurrentTime() - (rundownPlaylist.expectedStart + rundownPlaylist.expectedDuration),
-												true,
-												true,
-												true
-											)}
-										</span>
-									) : null)}
-								{rundownPlaylist.expectedDuration ? (
-									<span
-										className={ClassNames('timing-clock heavy-light right', {
-											heavy:
-												(this.props.timingDurations.asPlayedRundownDuration || 0) <
-												(rundownPlaylist.expectedDuration || 0),
-											light:
-												(this.props.timingDurations.asPlayedRundownDuration || 0) >
-												(rundownPlaylist.expectedDuration || 0),
-										})}
-									>
-										<span className="timing-clock-label right">{t('Diff')}</span>
-										{RundownUtils.formatDiffToTimecode(
-											(this.props.timingDurations.asPlayedRundownDuration || 0) - rundownPlaylist.expectedDuration,
-											true,
-											false,
-											true,
-											true,
-											true,
-											undefined,
-											true
-										)}
-									</span>
+								{rundownPlaylist.startedPlayback &&
+								currentRundown?.endIsBreak &&
+								!this.props.isLastRundownInPlaylist ? ( // TODO: Setting // TODO: Find next break in higher-order component, so next breaks reflects next rundown in playlist marked as break.
+									<NextBreakTiming breakRundown={currentRundown} />
 								) : null}
 							</React.Fragment>
 						) : (
@@ -430,31 +393,25 @@ const TimingDisplay = withTranslation()(
 										    <Moment
 											    interval={0}
 											    format="HH:mm:ss"
-											    date={getCurrentTime() + (this.props.timingDurations.remainingRundownDuration || 0)}
+											    date={getCurrentTime() + (this.props.timingDurations.remainingPlaylistDuration || 0)}
 										    />
 									    </span>
-								) : null}
-								{!rundownPlaylist.loop && this.props.rundownPlaylist.expectedEnd ? (
-									<span className="timing-clock plan-end right visual-last-child">
-										<span className="timing-clock-label right">{t('Planned End')}</span>
-										<Moment interval={0} format="HH:mm:ss" date={this.props.rundownPlaylist.expectedEnd} />
-									</span>
 								) : null}
 								{this.props.timingDurations && this.props.rundownCount < 2 ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 									<span
 										className={ClassNames('timing-clock heavy-light right', {
 											heavy:
-												(this.props.timingDurations.asPlayedRundownDuration || 0) <
-												(this.props.timingDurations.totalRundownDuration || 0),
+												(this.props.timingDurations.asPlayedPlaylistDuration || 0) <
+												(this.props.timingDurations.totalPlaylistDuration || 0),
 											light:
-												(this.props.timingDurations.asPlayedRundownDuration || 0) >
-												(this.props.timingDurations.totalRundownDuration || 0),
+												(this.props.timingDurations.asPlayedPlaylistDuration || 0) >
+												(this.props.timingDurations.totalPlaylistDuration || 0),
 										})}
 									>
 										<span className="timing-clock-label right">{t('Diff')}</span>
 										{RundownUtils.formatDiffToTimecode(
-											(this.props.timingDurations.asPlayedRundownDuration || 0) -
-												(this.props.timingDurations.totalRundownDuration || 0),
+											(this.props.timingDurations.asPlayedPlaylistDuration || 0) -
+												(this.props.timingDurations.totalPlaylistDuration || 0),
 											true,
 											false,
 											true,
@@ -468,6 +425,128 @@ const TimingDisplay = withTranslation()(
 							</React.Fragment>
 						)}
 					</div>
+				)
+			}
+		}
+	)
+)
+
+interface IEndTimingProps {
+	loop?: boolean
+	expectedStart?: number
+	expectedDuration: number
+	expectedEnd?: number
+}
+
+const PlaylistEndTiming = withTranslation()(
+	withTiming<IEndTimingProps & WithTranslation, {}>()(
+		class PlaylistEndTiming extends React.Component<Translated<WithTiming<IEndTimingProps>>> {
+			render() {
+				let { t } = this.props
+
+				return (
+					<React.Fragment>
+						{!this.props.loop && this.props.expectedStart ? (
+							<span className="timing-clock plan-end right visual-last-child">
+								<span className="timing-clock-label right">{t('Planned End')}</span>
+								<Moment interval={0} format="HH:mm:ss" date={this.props.expectedStart + this.props.expectedDuration} />
+							</span>
+						) : !this.props.loop && this.props.expectedEnd ? (
+							<span className="timing-clock plan-end right visual-last-child">
+								<span className="timing-clock-label right">{t('Planned End')}</span>
+								<Moment interval={0} format="HH:mm:ss" date={this.props.expectedEnd} />
+							</span>
+						) : null}
+						{!this.props.loop && this.props.expectedStart && this.props.expectedDuration ? (
+							<span className="timing-clock countdown plan-end right">
+								{RundownUtils.formatDiffToTimecode(
+									getCurrentTime() - (this.props.expectedStart + this.props.expectedDuration),
+									true,
+									true,
+									true
+								)}
+							</span>
+						) : !this.props.loop && this.props.expectedEnd ? (
+							<span className="timing-clock countdown plan-end right">
+								{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.expectedEnd, true, true, true)}
+							</span>
+						) : null}
+						{this.props.expectedDuration ? (
+							<span
+								className={ClassNames('timing-clock heavy-light right', {
+									heavy:
+										(this.props.timingDurations.asPlayedPlaylistDuration || 0) < (this.props.expectedDuration || 0),
+									light:
+										(this.props.timingDurations.asPlayedPlaylistDuration || 0) > (this.props.expectedDuration || 0),
+								})}
+							>
+								<span className="timing-clock-label right">{t('Diff')}</span>
+								{RundownUtils.formatDiffToTimecode(
+									(this.props.timingDurations.asPlayedPlaylistDuration || 0) - this.props.expectedDuration,
+									true,
+									false,
+									true,
+									true,
+									true,
+									undefined,
+									true
+								)}
+							</span>
+						) : null}
+					</React.Fragment>
+				)
+			}
+		}
+	)
+)
+
+interface INextBreakTimingProps {
+	loop?: boolean
+	breakRundown: Rundown
+}
+
+const NextBreakTiming = withTranslation()(
+	withTiming<INextBreakTimingProps & WithTranslation, {}>()(
+		class PlaylistEndTiming extends React.Component<Translated<WithTiming<INextBreakTimingProps>>> {
+			render() {
+				let { t, breakRundown } = this.props
+
+				const rundownAsPlayedDuration = this.props.timingDurations.rundownAsPlayedDurations
+					? this.props.timingDurations.rundownAsPlayedDurations[unprotectString(breakRundown._id)]
+					: undefined
+
+				return (
+					<React.Fragment>
+						<span className="timing-clock plan-end right">
+							<span className="timing-clock-label right">{t('Next Break')}</span>
+							<Moment interval={0} format="HH:mm:ss" date={breakRundown.expectedEnd} />
+						</span>
+						{!this.props.loop && breakRundown.expectedEnd ? (
+							<span className="timing-clock countdown plan-end right">
+								{RundownUtils.formatDiffToTimecode(getCurrentTime() - breakRundown.expectedEnd, true, true, true)}
+							</span>
+						) : null}
+						{breakRundown.expectedDuration ? (
+							<span
+								className={ClassNames('timing-clock heavy-light right', {
+									heavy: (rundownAsPlayedDuration || 0) < (breakRundown.expectedDuration || 0),
+									light: (rundownAsPlayedDuration || 0) > (breakRundown.expectedDuration || 0),
+								})}
+							>
+								<span className="timing-clock-label right">{t('Diff')}</span>
+								{RundownUtils.formatDiffToTimecode(
+									(rundownAsPlayedDuration || 0) - breakRundown.expectedDuration,
+									true,
+									false,
+									true,
+									true,
+									true,
+									undefined,
+									true
+								)}
+							</span>
+						) : null}
+					</React.Fragment>
 				)
 			}
 		}
@@ -1377,6 +1456,10 @@ const RundownHeader = withTranslation()(
 									rundownPlaylist={this.props.playlist}
 									currentRundown={this.props.currentRundown}
 									rundownCount={this.props.rundownIds.length}
+									isLastRundownInPlaylist={
+										!!this.props.currentRundown?._id &&
+										this.props.rundownIds.indexOf(this.props.currentRundown._id) === this.props.rundownIds.length - 1
+									}
 								/>
 								<RundownSystemStatus
 									studio={this.props.studio}
