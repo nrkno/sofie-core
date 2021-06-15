@@ -97,7 +97,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 	const showStyleBases = ShowStyleBases.find().fetch()
 	const showStyleVariants = ShowStyleVariants.find().fetch()
 	const rundownLayouts = RundownLayouts.find({
-		$or: [{ exposeAsStandalone: true }, { exposeAsShelf: true }],
+		$or: [{ exposeAsSelectableLayout: true }, { exposeAsShelf: true }],
 	}).fetch()
 
 	return {
@@ -306,8 +306,10 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 											<span>{t('Duration')}</span>
 											<span>{t('Last updated')}</span>
 											{this.props.rundownLayouts.some(
-												(l) => RundownLayoutsAPI.IsLayoutForShelf(l) && (l.exposeAsShelf || l.exposeAsStandalone)
-											) && <span>{t('Shelf Layout')}</span>}
+												(l) =>
+													(RundownLayoutsAPI.IsLayoutForShelf(l) && l.exposeAsStandalone) ||
+													(RundownLayoutsAPI.IsLayoutForRundownView(l) && l.exposeAsSelectableLayout)
+											) && <span>{t('View Layout')}</span>}
 											<span>&nbsp;</span>
 										</header>
 										{this.renderRundownPlaylists(rundownPlaylists)}

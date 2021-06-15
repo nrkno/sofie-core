@@ -22,6 +22,13 @@ export enum RundownLayoutType {
 	RUNDOWN_HEADER_LAYOUT = 'rundown_header_layout',
 }
 
+export enum CustomizableRegions {
+	RundownView = 'rundown_view_layouts',
+	Shelf = 'shelf_layouts',
+	MiniShelf = 'mini_shelf_layouts',
+	RundownHeader = 'rundown_header_layouts',
+}
+
 /**
  * Display style to be used by this filter
  *
@@ -165,11 +172,15 @@ export interface RundownLayoutBase {
 export interface RundownViewLayout extends RundownLayoutBase {
 	type: RundownLayoutType.RUNDOWN_VIEW_LAYOUT
 	expectedEndText: string
+	/** Expose as a layout that can be selected by the user in the lobby view */
+	exposeAsSelectableLayout: boolean
+	shelfLayout: RundownLayoutId
+	miniShelfLayout: RundownLayoutId
+	rundownHeaderLayout: RundownLayoutId
 }
 
 export interface RundownLayoutShelfBase extends RundownLayoutBase {
 	exposeAsStandalone: boolean
-	exposeAsShelf: boolean
 	openByDefault: boolean
 	startingHeight?: number
 }

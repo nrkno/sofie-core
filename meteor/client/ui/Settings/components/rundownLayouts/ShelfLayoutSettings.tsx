@@ -33,19 +33,6 @@ export default withTranslation()(
 					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
-							{t('Expose as a layout for the shelf')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'exposeAsShelf'}
-								obj={this.props.item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
 							{t('Open shelf by default')}
 							<EditAttribute
 								modifiedClassName="bghl"
