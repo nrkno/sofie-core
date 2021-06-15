@@ -209,6 +209,8 @@ const WarningDisplay = withTranslation()(
 interface ITimingDisplayProps {
 	rundownPlaylist: RundownPlaylist
 	currentRundown: Rundown | undefined
+	/** Rundowns between current rundown and rundown with next break (inclusive of both). Undefined if there's no break in the future. */
+	rundownsBeforeNextBreak: Rundown[] | undefined
 	rundownCount: number
 	isLastRundownInPlaylist: boolean
 	layout: RundownLayoutRundownHeader | undefined
@@ -360,7 +362,7 @@ const TimingDisplay = withTranslation()(
 							<React.Fragment>
 								{!rundownPlaylist.startedPlayback ||
 								this.props.isLastRundownInPlaylist ||
-								!(currentRundown?.endIsBreak && this.props.layout?.hideExpectedEndBeforeBreak) ? (
+								!(this.props.rundownsBeforeNextBreak && this.props.layout?.hideExpectedEndBeforeBreak) ? (
 									<PlaylistEndTiming
 										loop={rundownPlaylist.loop}
 										expectedStart={rundownPlaylist.expectedStart}
@@ -370,10 +372,13 @@ const TimingDisplay = withTranslation()(
 									></PlaylistEndTiming>
 								) : null}
 								{rundownPlaylist.startedPlayback &&
-								currentRundown?.endIsBreak &&
+								this.props.rundownsBeforeNextBreak &&
 								this.props.layout?.showNextBreakTiming &&
-								!(this.props.isLastRundownInPlaylist && this.props.layout.lastRundownIsNotBreak) ? ( // TODO: Find next break in higher-order component, so next breaks reflects next rundown in playlist marked as break.
-									<NextBreakTiming breakRundown={currentRundown} breakText={this.props.layout?.nextBreakText} />
+								!(this.props.isLastRundownInPlaylist && this.props.layout.lastRundownIsNotBreak) ? (
+									<NextBreakTiming
+										rundownsBeforeBreak={this.props.rundownsBeforeNextBreak}
+										breakText={this.props.layout?.nextBreakText}
+									/>
 								) : null}
 							</React.Fragment>
 						) : (
@@ -496,7 +501,7 @@ const PlaylistEndTiming = withTranslation()(
 
 interface INextBreakTimingProps {
 	loop?: boolean
-	breakRundown: Rundown
+	rundownsBeforeBreak: Rundown[]
 	breakText?: string
 }
 
@@ -504,11 +509,26 @@ const NextBreakTiming = withTranslation()(
 	withTiming<INextBreakTimingProps & WithTranslation, {}>()(
 		class PlaylistEndTiming extends React.Component<Translated<WithTiming<INextBreakTimingProps>>> {
 			render() {
-				let { t, breakRundown } = this.props
+				let { t, rundownsBeforeBreak } = this.props
+				let breakRundown = rundownsBeforeBreak.length ? rundownsBeforeBreak[rundownsBeforeBreak.length - 1] : undefined
 
 				const rundownAsPlayedDuration = this.props.timingDurations.rundownAsPlayedDurations
-					? this.props.timingDurations.rundownAsPlayedDurations[unprotectString(breakRundown._id)]
+					? rundownsBeforeBreak.reduce(
+							(prev, curr) => (prev += this.props.timingDurations.rundownAsPlayedDurations![unprotectString(curr._id)]),
+							0
+					  )
 					: undefined
+
+				const accumulatedExpectedDurations = this.props.timingDurations.rundownExpectedDurations
+					? rundownsBeforeBreak.reduce(
+							(prev, curr) => (prev += this.props.timingDurations.rundownExpectedDurations![unprotectString(curr._id)]),
+							0
+					  )
+					: undefined
+
+				if (!breakRundown) {
+					return null
+				}
 
 				return (
 					<React.Fragment>
@@ -521,16 +541,16 @@ const NextBreakTiming = withTranslation()(
 								{RundownUtils.formatDiffToTimecode(getCurrentTime() - breakRundown.expectedEnd, true, true, true)}
 							</span>
 						) : null}
-						{breakRundown.expectedDuration ? (
+						{accumulatedExpectedDurations ? (
 							<span
 								className={ClassNames('timing-clock heavy-light right', {
-									heavy: (rundownAsPlayedDuration || 0) < (breakRundown.expectedDuration || 0),
-									light: (rundownAsPlayedDuration || 0) > (breakRundown.expectedDuration || 0),
+									heavy: (rundownAsPlayedDuration || 0) < (accumulatedExpectedDurations || 0),
+									light: (rundownAsPlayedDuration || 0) > (accumulatedExpectedDurations || 0),
 								})}
 							>
 								<span className="timing-clock-label right">{t('Diff')}</span>
 								{RundownUtils.formatDiffToTimecode(
-									(rundownAsPlayedDuration || 0) - breakRundown.expectedDuration,
+									(rundownAsPlayedDuration || 0) - accumulatedExpectedDurations,
 									true,
 									false,
 									true,
@@ -558,6 +578,8 @@ interface IRundownHeaderProps {
 	currentRundown: Rundown | undefined
 	studio: Studio
 	rundownIds: RundownId[]
+	/** Rundowns between current rundown and rundown with next break (inclusive of both). Undefined if there's no break in the future. */
+	rundownsBeforeNextBreak: Rundown[] | undefined
 	firstRundown: Rundown | undefined
 	onActivate?: (isRehearsal: boolean) => void
 	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
@@ -1451,6 +1473,7 @@ const RundownHeader = withTranslation()(
 								<TimingDisplay
 									rundownPlaylist={this.props.playlist}
 									currentRundown={this.props.currentRundown}
+									rundownsBeforeNextBreak={this.props.rundownsBeforeNextBreak}
 									rundownCount={this.props.rundownIds.length}
 									isLastRundownInPlaylist={
 										!!this.props.currentRundown?._id &&
@@ -2738,6 +2761,31 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
+		private getRundownsBeforeNextBreak(
+			currentRundown: Rundown | undefined,
+			breakRundowns: Rundown[]
+		): Rundown[] | undefined {
+			if (!currentRundown) {
+				return undefined
+			}
+
+			let currentRundownIndex = this.props.rundowns.findIndex((r) => r._id === currentRundown._id)
+
+			if (currentRundownIndex === -1) {
+				return undefined
+			}
+
+			let nextBreakIndex = this.props.rundowns.findIndex((rundown, index) => {
+				if (index < currentRundownIndex) {
+					return false
+				}
+
+				return breakRundowns.some((r) => r._id == rundown._id)
+			})
+
+			return this.props.rundowns.slice(currentRundownIndex, nextBreakIndex + 1)
+		}
+
 		render() {
 			const { t } = this.props
 
@@ -2868,6 +2916,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											playlist={this.props.playlist}
 											studio={this.props.studio}
 											rundownIds={this.props.rundowns.map((r) => r._id)}
+											rundownsBeforeNextBreak={this.getRundownsBeforeNextBreak(
+												this.state.currentRundown || this.props.rundowns[0],
+												this.props.rundowns.filter((r) => r.endIsBreak)
+											)}
 											firstRundown={this.props.rundowns[0]}
 											onActivate={this.onActivate}
 											studioMode={this.state.studioMode}
