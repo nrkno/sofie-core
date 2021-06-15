@@ -47,7 +47,7 @@ export function getRundownWithShelfLayoutLink(
 	const encodedRundownId = encodeURIComponent(encodeURIComponent(unprotectString(rundownId)))
 	const encodedLayoutId = encodeURIComponent(encodeURIComponent(unprotectString(layoutId)))
 
-	return `/rundown/${encodedRundownId}?shelfLayout=${encodedLayoutId}`
+	return `/rundown/${encodedRundownId}?rundownViewLayout=${encodedLayoutId}`
 }
 
 export function confirmDeleteRundown(rundown: Rundown, t: TFunction) {

@@ -10,7 +10,7 @@ import { iconDragHandle, iconRemove, iconResync } from './icons'
 import { DisplayFormattedTime } from './DisplayFormattedTime'
 import { EyeIcon } from '../../lib/ui/icons/rundownList'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
-import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
+import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
@@ -153,11 +153,13 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				<DisplayFormattedTime timestamp={rundown.modified} t={t} />
 			</span>
 			{rundownLayouts.some(
-				(l) => RundownLayoutsAPI.IsLayoutForShelf(l) && (l.exposeAsShelf || l.exposeAsStandalone)
+				(l) =>
+					(RundownLayoutsAPI.IsLayoutForShelf(l) && l.exposeAsStandalone) ||
+					(RundownLayoutsAPI.IsLayoutForRundownView(l) && l.exposeAsSelectableLayout)
 			) && (
 				<span className="rundown-list-item__text">
 					{isOnlyRundownInPlaylist && (
-						<RundownShelfLayoutSelection
+						<RundownViewLayoutSelection
 							rundowns={[rundown]}
 							rundownLayouts={rundownLayouts}
 							playlistId={rundown.playlistId}

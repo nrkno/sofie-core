@@ -38,7 +38,7 @@ import PlaylistRankMethodToggle from './PlaylistRankMethodToggle'
 import { DisplayFormattedTime } from './DisplayFormattedTime'
 import { getAllowStudio } from '../../lib/localStorage'
 import { doUserAction, UserAction } from '../../lib/userAction'
-import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
+import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
@@ -372,10 +372,12 @@ export const RundownPlaylistUi = DropTarget(
 								<DisplayFormattedTime timestamp={playlist.modified} t={t} />
 							</span>
 							{rundownLayouts.some(
-								(l) => RundownLayoutsAPI.IsLayoutForShelf(l) && (l.exposeAsShelf || l.exposeAsStandalone)
+								(l) =>
+									(RundownLayoutsAPI.IsLayoutForShelf(l) && l.exposeAsStandalone) ||
+									(RundownLayoutsAPI.IsLayoutForRundownView(l) && l.exposeAsSelectableLayout)
 							) && (
 								<span className="rundown-list-item__text">
-									<RundownShelfLayoutSelection
+									<RundownViewLayoutSelection
 										rundowns={playlist.rundowns}
 										rundownLayouts={rundownLayouts}
 										playlistId={playlist._id}
