@@ -360,18 +360,20 @@ const TimingDisplay = withTranslation()(
 							<React.Fragment>
 								{!rundownPlaylist.startedPlayback ||
 								this.props.isLastRundownInPlaylist ||
-								!currentRundown?.endIsBreak ? ( // TODO: Setting
+								!(currentRundown?.endIsBreak && this.props.layout?.hideExpectedEndBeforeBreak) ? (
 									<PlaylistEndTiming
 										loop={rundownPlaylist.loop}
 										expectedStart={rundownPlaylist.expectedStart}
 										expectedEnd={rundownPlaylist.expectedEnd}
 										expectedDuration={rundownPlaylist.expectedDuration}
+										endLabel={this.props.layout?.expectedEndText}
 									></PlaylistEndTiming>
 								) : null}
 								{rundownPlaylist.startedPlayback &&
 								currentRundown?.endIsBreak &&
-								!this.props.isLastRundownInPlaylist ? ( // TODO: Setting // TODO: Find next break in higher-order component, so next breaks reflects next rundown in playlist marked as break.
-									<NextBreakTiming breakRundown={currentRundown} />
+								this.props.layout?.showNextBreakTiming &&
+								!(this.props.isLastRundownInPlaylist && this.props.layout.lastRundownIsNotBreak) ? ( // TODO: Find next break in higher-order component, so next breaks reflects next rundown in playlist marked as break.
+									<NextBreakTiming breakRundown={currentRundown} breakText={this.props.layout?.nextBreakText} />
 								) : null}
 							</React.Fragment>
 						) : (
@@ -427,6 +429,7 @@ interface IEndTimingProps {
 	expectedStart?: number
 	expectedDuration: number
 	expectedEnd?: number
+	endLabel?: string
 }
 
 const PlaylistEndTiming = withTranslation()(
@@ -439,12 +442,12 @@ const PlaylistEndTiming = withTranslation()(
 					<React.Fragment>
 						{!this.props.loop && this.props.expectedStart ? (
 							<span className="timing-clock plan-end right visual-last-child">
-								<span className="timing-clock-label right">{t('Planned End')}</span>
+								<span className="timing-clock-label right">{t(this.props.endLabel ?? 'Planned End')}</span>
 								<Moment interval={0} format="HH:mm:ss" date={this.props.expectedStart + this.props.expectedDuration} />
 							</span>
 						) : !this.props.loop && this.props.expectedEnd ? (
 							<span className="timing-clock plan-end right visual-last-child">
-								<span className="timing-clock-label right">{t('Planned End')}</span>
+								<span className="timing-clock-label right">{t(this.props.endLabel ?? 'Planned End')}</span>
 								<Moment interval={0} format="HH:mm:ss" date={this.props.expectedEnd} />
 							</span>
 						) : null}
@@ -494,6 +497,7 @@ const PlaylistEndTiming = withTranslation()(
 interface INextBreakTimingProps {
 	loop?: boolean
 	breakRundown: Rundown
+	breakText?: string
 }
 
 const NextBreakTiming = withTranslation()(
@@ -509,7 +513,7 @@ const NextBreakTiming = withTranslation()(
 				return (
 					<React.Fragment>
 						<span className="timing-clock plan-end right">
-							<span className="timing-clock-label right">{t('Next Break')}</span>
+							<span className="timing-clock-label right">{t(this.props.breakText ?? 'Next Break')}</span>
 							<Moment interval={0} format="HH:mm:ss" date={breakRundown.expectedEnd} />
 						</span>
 						{!this.props.loop && breakRundown.expectedEnd ? (
