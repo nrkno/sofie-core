@@ -96,8 +96,8 @@ export function updateBaselineExpectedPlayoutItemsOnStudio(
 	cache: CacheForStudio | CacheForPlayout,
 	items?: ExpectedPlayoutItemGeneric[]
 ) {
-	cache.deferAfterSave(() => {
-		saveIntoDb(
+	cache.deferAfterSave(async () => {
+		await saveIntoDb(
 			ExpectedPlayoutItems,
 			{ studioId: cache.Studio.doc._id, baseline: 'studio' },
 			(items || []).map((item): ExpectedPlayoutItemStudio => {

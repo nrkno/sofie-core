@@ -7,7 +7,7 @@ import {
 	setupDefaultRundownPlaylist,
 	setupDefaultRundown,
 } from '../../../__mocks__/helpers/database'
-import { protectString, waitForPromise } from '../../../lib/lib'
+import { protectString } from '../../../lib/lib'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { produceRundownPlaylistInfoFromRundown, updateRundownsInPlaylist } from '../rundownPlaylist'
@@ -35,7 +35,7 @@ describe('Rundown', () => {
 	beforeAll(async () => {
 		env = await setupDefaultStudioEnvironment()
 	})
-	testInFiber('moveRundown', () => {
+	testInFiber('moveRundown', async () => {
 		// Set up a playlist:
 		const { rundownId: rundownId00, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
 			env,
@@ -67,7 +67,7 @@ describe('Rundown', () => {
 
 		// This should set the default sorting of the rundowns in the plylist:
 		const rundownsCollection = new DbCacheWriteCollection(Rundowns)
-		waitForPromise(rundownsCollection.prepareInit({ playlistId: playlist0._id }, true))
+		await rundownsCollection.prepareInit({ playlistId: playlist0._id }, true)
 		const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(
 			env.studio,
 			undefined,
@@ -77,7 +77,7 @@ describe('Rundown', () => {
 			rundownsCollection.findFetch()
 		)
 		updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundownsCollection)
-		waitForPromise(rundownsCollection.updateDatabaseWithData())
+		await rundownsCollection.updateDatabaseWithData()
 
 		// Expect the rundowns to be in the right order:
 		const rundownsInPLaylist0 = playlist0.getRundowns()

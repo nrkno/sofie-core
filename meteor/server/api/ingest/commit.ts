@@ -257,7 +257,7 @@ export async function CommitIngestOperation(
 						updatePartInstanceRanks(playoutCache, changedSegmentsInfo)
 
 						// sync changes to the 'selected' partInstances
-						syncChangesToPartInstances(
+						await syncChangesToPartInstances(
 							playoutCache,
 							ingestCache,
 							showStyle,

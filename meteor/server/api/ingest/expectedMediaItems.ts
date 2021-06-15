@@ -12,7 +12,7 @@ import {
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { getCurrentTime, getHash, protectString, waitForPromise, Subtract, ProtectedString } from '../../../lib/lib'
+import { getCurrentTime, getHash, protectString, Subtract, ProtectedString } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { StudioId } from '../../../lib/collections/Studios'
@@ -154,12 +154,12 @@ export async function cleanUpExpectedMediaItemForBucketAdLibActions(actionIds: A
 	logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib actions`)
 }
 
-export function updateExpectedMediaItemForBucketAdLibPiece(adLibId: PieceId): void {
+export async function updateExpectedMediaItemForBucketAdLibPiece(adLibId: PieceId): Promise<void> {
 	check(adLibId, String)
 
-	const piece = BucketAdLibs.findOne(adLibId)
+	const piece = await BucketAdLibs.findOneAsync(adLibId)
 	if (!piece) {
-		waitForPromise(cleanUpExpectedMediaItemForBucketAdLibPiece([adLibId]))
+		await cleanUpExpectedMediaItemForBucketAdLibPiece([adLibId])
 		throw new Meteor.Error(404, `Bucket AdLib "${adLibId}" not found!`)
 	}
 
@@ -175,7 +175,7 @@ export function updateExpectedMediaItemForBucketAdLibPiece(adLibId: PieceId): vo
 		PieceType.ADLIB
 	)
 
-	saveIntoDb(
+	await saveIntoDb(
 		ExpectedMediaItems,
 		{
 			bucketAdLibPieceId: adLibId,
@@ -184,12 +184,12 @@ export function updateExpectedMediaItemForBucketAdLibPiece(adLibId: PieceId): vo
 	)
 }
 
-export function updateExpectedMediaItemForBucketAdLibAction(actionId: AdLibActionId): void {
+export async function updateExpectedMediaItemForBucketAdLibAction(actionId: AdLibActionId): Promise<void> {
 	check(actionId, String)
 
-	const action = BucketAdLibActions.findOne(actionId)
+	const action = await BucketAdLibActions.findOneAsync(actionId)
 	if (!action) {
-		waitForPromise(cleanUpExpectedMediaItemForBucketAdLibActions([actionId]))
+		await cleanUpExpectedMediaItemForBucketAdLibActions([actionId])
 		throw new Meteor.Error(404, `Bucket Action "${actionId}" not found!`)
 	}
 
@@ -205,7 +205,7 @@ export function updateExpectedMediaItemForBucketAdLibAction(actionId: AdLibActio
 		PieceType.ADLIB
 	)
 
-	saveIntoDb(
+	await saveIntoDb(
 		ExpectedMediaItems,
 		{
 			bucketAdLibActionId: actionId,

@@ -1,7 +1,7 @@
 import { check } from '../../../lib/check'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { protectString, waitForPromise, ProtectedString } from '../../../lib/lib'
+import { protectString, ProtectedString } from '../../../lib/lib'
 import { AdLibAction, AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
 import {
@@ -220,35 +220,35 @@ function generateExpectedPackageBases(
 	return bases
 }
 
-export function updateExpectedPackagesForBucketAdLib(adlibId: BucketAdLibId): void {
+export async function updateExpectedPackagesForBucketAdLib(adlibId: BucketAdLibId): Promise<void> {
 	check(adlibId, String)
 
-	const adlib = BucketAdLibs.findOne(adlibId)
+	const adlib = await BucketAdLibs.findOneAsync(adlibId)
 	if (!adlib) {
-		waitForPromise(cleanUpExpectedPackagesForBucketAdLibs([adlibId]))
+		await cleanUpExpectedPackagesForBucketAdLibs([adlibId])
 		throw new Meteor.Error(404, `Bucket Adlib "${adlibId}" not found!`)
 	}
-	const studio = Studios.findOne(adlib.studioId)
+	const studio = await Studios.findOneAsync(adlib.studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${adlib.studioId}" not found!`)
 
 	const packages = generateExpectedPackagesForBucketAdlib(studio, [adlib])
 
-	saveIntoDb(ExpectedPackages, { pieceId: adlibId }, packages)
+	await saveIntoDb(ExpectedPackages, { pieceId: adlibId }, packages)
 }
-export function updateExpectedPackagesForBucketAdLibAction(actionId: BucketAdLibActionId): void {
+export async function updateExpectedPackagesForBucketAdLibAction(actionId: BucketAdLibActionId): Promise<void> {
 	check(actionId, String)
 
-	const action = BucketAdLibActions.findOne(actionId)
+	const action = await BucketAdLibActions.findOneAsync(actionId)
 	if (!action) {
-		waitForPromise(cleanUpExpectedPackagesForBucketAdLibsActions([actionId]))
+		await cleanUpExpectedPackagesForBucketAdLibsActions([actionId])
 		throw new Meteor.Error(404, `Bucket Action "${actionId}" not found!`)
 	}
-	const studio = Studios.findOne(action.studioId)
+	const studio = await Studios.findOneAsync(action.studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${action.studioId}" not found!`)
 
 	const packages = generateExpectedPackagesForBucketAdlibAction(studio, [action])
 
-	saveIntoDb(ExpectedPackages, { pieceId: actionId }, packages)
+	await saveIntoDb(ExpectedPackages, { pieceId: actionId }, packages)
 }
 export async function cleanUpExpectedPackagesForBucketAdLibs(adLibIds: PieceId[]): Promise<void> {
 	check(adLibIds, [String])
@@ -301,8 +301,8 @@ export function updateBaselineExpectedPackagesOnStudio(
 	updateBaselineExpectedPlayoutItemsOnStudio(cache, baseline.expectedPlayoutItems)
 
 	const bases = generateExpectedPackageBases(cache.Studio.doc, cache.Studio.doc._id, baseline.expectedPackages ?? [])
-	cache.deferAfterSave(() => {
-		saveIntoDb<ExpectedPackageDB, ExpectedPackageDB>(
+	cache.deferAfterSave(async () => {
+		await saveIntoDb<ExpectedPackageDB, ExpectedPackageDB>(
 			ExpectedPackages,
 			{
 				studioId: cache.Studio.doc._id,

@@ -94,10 +94,10 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 
 	updateTimeline(cache)
 
-	cache.defer((cache) => {
+	cache.defer(async (cache) => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
-		const showStyle = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
-		const { blueprint } = waitForPromise(loadShowStyleBlueprint(showStyle))
+		const showStyle = await cache.activationCache.getShowStyleCompound(rundown)
+		const { blueprint } = await loadShowStyleBlueprint(showStyle)
 		const context = new RundownEventContext(cache.Studio.doc, showStyle, rundown)
 		context.wipeCache()
 		if (blueprint.onRundownActivate) {
@@ -110,10 +110,10 @@ export function deactivateRundownPlaylist(cache: CacheForPlayout): void {
 
 	updateStudioTimeline(cache)
 
-	cache.defer((cache) => {
+	cache.defer(async (cache) => {
 		if (rundown) {
-			const showStyle = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
-			const { blueprint } = waitForPromise(loadShowStyleBlueprint(showStyle))
+			const showStyle = await cache.activationCache.getShowStyleCompound(rundown)
+			const { blueprint } = await loadShowStyleBlueprint(showStyle)
 			if (blueprint.onRundownDeActivate) {
 				Promise.resolve(
 					blueprint.onRundownDeActivate(new RundownEventContext(cache.Studio.doc, showStyle, rundown))

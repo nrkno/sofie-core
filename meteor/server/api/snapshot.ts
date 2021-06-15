@@ -32,6 +32,7 @@ import {
 	makePromise,
 	ProtectedString,
 	protectStringArray,
+	waitForPromiseAll,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -737,48 +738,50 @@ export function restoreFromRundownPlaylistSnapshot(
 		return (objs || []).map((obj) => updateIds(obj))
 	}
 
-	saveIntoDb(RundownPlaylists, { _id: playlistId }, [snapshot.playlist])
-	saveIntoDb(Rundowns, { playlistId }, snapshot.rundowns)
-	saveIntoDb(IngestDataCache, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.ingestData, true))
-	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
-	saveIntoDb(RundownBaselineObjs, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.baselineObjs, true))
-	saveIntoDb(
-		RundownBaselineAdLibPieces,
-		{ rundownId: { $in: rundownIds } },
-		updateItemIds(snapshot.baselineAdlibs, true)
-	)
-	saveIntoDb(
-		RundownBaselineAdLibActions,
-		{ rundownId: { $in: rundownIds } },
-		updateItemIds(snapshot.baselineAdLibActions, true)
-	)
-	saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.segments, false))
-	saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.parts, false))
-	saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.partInstances, false))
-	saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false))
-	saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieceInstances, false))
-	saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true))
-	saveIntoDb(AdLibActions, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibActions, true))
-	saveIntoDb(
-		MediaObjects,
-		{ _id: { $in: _.map(snapshot.mediaObjects, (mediaObject) => mediaObject._id) } },
-		snapshot.mediaObjects
-	)
-	saveIntoDb(
-		ExpectedMediaItems,
-		{ partId: { $in: protectStringArray(_.keys(partIdMap)) } },
-		updateItemIds(snapshot.expectedMediaItems, true)
-	)
-	saveIntoDb(
-		ExpectedPlayoutItems,
-		{ rundownId: { $in: rundownIds } },
-		updateItemIds(snapshot.expectedPlayoutItems || [], true)
-	)
-	saveIntoDb(
-		ExpectedPackages,
-		{ rundownId: { $in: rundownIds } },
-		updateItemIds(snapshot.expectedPackages || [], true)
-	)
+	waitForPromiseAll([
+		saveIntoDb(RundownPlaylists, { _id: playlistId }, [snapshot.playlist]),
+		saveIntoDb(Rundowns, { playlistId }, snapshot.rundowns),
+		saveIntoDb(IngestDataCache, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.ingestData, true)),
+		// saveIntoDb(UserActionsLog, {}, snapshot.userActions),
+		saveIntoDb(RundownBaselineObjs, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.baselineObjs, true)),
+		saveIntoDb(
+			RundownBaselineAdLibPieces,
+			{ rundownId: { $in: rundownIds } },
+			updateItemIds(snapshot.baselineAdlibs, true)
+		),
+		saveIntoDb(
+			RundownBaselineAdLibActions,
+			{ rundownId: { $in: rundownIds } },
+			updateItemIds(snapshot.baselineAdLibActions, true)
+		),
+		saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.segments, false)),
+		saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.parts, false)),
+		saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.partInstances, false)),
+		saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false)),
+		saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieceInstances, false)),
+		saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true)),
+		saveIntoDb(AdLibActions, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibActions, true)),
+		saveIntoDb(
+			MediaObjects,
+			{ _id: { $in: _.map(snapshot.mediaObjects, (mediaObject) => mediaObject._id) } },
+			snapshot.mediaObjects
+		),
+		saveIntoDb(
+			ExpectedMediaItems,
+			{ partId: { $in: protectStringArray(_.keys(partIdMap)) } },
+			updateItemIds(snapshot.expectedMediaItems, true)
+		),
+		saveIntoDb(
+			ExpectedPlayoutItems,
+			{ rundownId: { $in: rundownIds } },
+			updateItemIds(snapshot.expectedPlayoutItems || [], true)
+		),
+		saveIntoDb(
+			ExpectedPackages,
+			{ rundownId: { $in: rundownIds } },
+			updateItemIds(snapshot.expectedPackages || [], true)
+		),
+	])
 
 	logger.info(`Restore done`)
 }
@@ -803,13 +806,15 @@ function restoreFromSystemSnapshot(snapshot: SystemSnapshot) {
 	})
 
 	const changes = sumChanges(
-		saveIntoDb(Studios, studioId ? { _id: studioId } : {}, snapshot.studios),
-		saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases),
-		saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants),
-		snapshot.blueprints ? saveIntoDb(Blueprints, {}, snapshot.blueprints) : null,
-		snapshot.rundownLayouts ? saveIntoDb(RundownLayouts, {}, snapshot.rundownLayouts) : null,
-		saveIntoDb(PeripheralDevices, studioId ? { studioId: studioId } : {}, snapshot.devices),
-		saveIntoDb(CoreSystem, {}, [snapshot.coreSystem])
+		...waitForPromiseAll([
+			saveIntoDb(Studios, studioId ? { _id: studioId } : {}, snapshot.studios),
+			saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases),
+			saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants),
+			snapshot.blueprints ? saveIntoDb(Blueprints, {}, snapshot.blueprints) : null,
+			snapshot.rundownLayouts ? saveIntoDb(RundownLayouts, {}, snapshot.rundownLayouts) : null,
+			saveIntoDb(PeripheralDevices, studioId ? { studioId: studioId } : {}, snapshot.devices),
+			saveIntoDb(CoreSystem, {}, [snapshot.coreSystem]),
+		])
 	)
 	// saveIntoDb(PeripheralDeviceCommands, {}, snapshot.deviceCommands) // ignored
 

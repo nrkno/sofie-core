@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { BulkWriteOperation } from 'mongodb'
 import _ from 'underscore'
 import { AsyncTransformedCollection } from '../../lib/collections/lib'
-import { DBObj, waitForPromise, normalizeArrayToMap, ProtectedString } from '../../lib/lib'
+import { DBObj, normalizeArrayToMap, ProtectedString } from '../../lib/lib'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { profiler } from '../api/profiler'
 
@@ -49,12 +49,10 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	options?: SaveIntoDbHooks<DocClass, DBInterface>
-): Changes {
+): Promise<Changes> {
 	const preparedChanges = prepareSaveIntoDb(collection, filter, newData, options)
 
-	const changes = savePreparedChanges(preparedChanges, collection, options ?? {})
-
-	return waitForPromise(changes)
+	return savePreparedChanges(preparedChanges, collection, options ?? {})
 }
 
 export interface PreparedChanges<T> {

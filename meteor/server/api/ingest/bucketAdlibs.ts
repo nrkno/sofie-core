@@ -157,8 +157,8 @@ export function updateBucketAdlibFromIngestData(
 					action
 				)
 
-				updateExpectedMediaItemForBucketAdLibAction(action._id)
-				updateExpectedPackagesForBucketAdLibAction(action._id)
+				waitForPromise(updateExpectedMediaItemForBucketAdLibAction(action._id))
+				waitForPromise(updateExpectedPackagesForBucketAdLibAction(action._id))
 
 				// Preserve this one
 				actionIdsToRemove = actionIdsToRemove.filter((id) => id !== action._id)
@@ -182,8 +182,8 @@ export function updateBucketAdlibFromIngestData(
 					adlib
 				)
 
-				updateExpectedMediaItemForBucketAdLibPiece(adlib._id)
-				updateExpectedPackagesForBucketAdLib(adlib._id)
+				waitForPromise(updateExpectedMediaItemForBucketAdLibPiece(adlib._id))
+				waitForPromise(updateExpectedPackagesForBucketAdLib(adlib._id))
 
 				// Preserve this one
 				adlibIdsToRemove = adlibIdsToRemove.filter((id) => id !== adlib._id)

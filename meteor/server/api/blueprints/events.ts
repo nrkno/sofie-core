@@ -1,8 +1,7 @@
 import { Meteor } from 'meteor/meteor'
-import { getCurrentTime, Time, unprotectString, waitForPromise, waitForPromiseAll } from '../../../lib/lib'
+import { getCurrentTime, Time, unprotectString } from '../../../lib/lib'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { logger } from '../../../lib/logging'
-import { IBlueprintExternalMessageQueueObj } from '@sofie-automation/blueprints-integration'
 import { queueExternalMessages } from '../ExternalMessageQueue'
 import { loadShowStyleBlueprint } from './cache'
 import { RundownTimingEventContext, RundownDataChangedEventContext } from './context'
@@ -21,7 +20,7 @@ const EVENT_WAIT_TIME = 500
 async function getBlueprintAndDependencies(rundown: ReadonlyDeep<Rundown>) {
 	const pShowStyle = getShowStyleCompoundForRundown(rundown)
 
-	const [showStyle, studio, playlist, blueprint] = waitForPromiseAll([
+	const [showStyle, studio, playlist, blueprint] = await Promise.all([
 		pShowStyle,
 		Studios.findOneAsync(rundown.studioId),
 		RundownPlaylists.findOneAsync(rundown.playlistId),
@@ -42,18 +41,21 @@ async function getBlueprintAndDependencies(rundown: ReadonlyDeep<Rundown>) {
 
 const partInstanceTimingDebounceFunctions = new Map<string, DebouncedFunction<[], void>>()
 
-function handlePartInstanceTimingEventInner(playlistId: RundownPlaylistId, partInstanceId: PartInstanceId): void {
+async function handlePartInstanceTimingEventInner(
+	playlistId: RundownPlaylistId,
+	partInstanceId: PartInstanceId
+): Promise<void> {
 	const span = profiler.startSpan('handlePartInstanceTimingEvent')
 	try {
 		const timestamp = getCurrentTime()
 
-		const partInstance = PartInstances.findOne(partInstanceId)
+		const partInstance = await PartInstances.findOneAsync(partInstanceId)
 		if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 
-		const rundown = Rundowns.findOne(partInstance.rundownId)
+		const rundown = await Rundowns.findOneAsync(partInstance.rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
 
-		const { studio, showStyle, playlist, blueprint } = waitForPromise(getBlueprintAndDependencies(rundown))
+		const { studio, showStyle, playlist, blueprint } = await getBlueprintAndDependencies(rundown)
 
 		if (playlist._id !== playlistId)
 			throw new Meteor.Error(
@@ -63,7 +65,7 @@ function handlePartInstanceTimingEventInner(playlistId: RundownPlaylistId, partI
 
 		if (blueprint.onRundownTimingEvent) {
 			// The the PartInstances(events) before and after the one we are processing
-			const [previousPartInstance, nextPartInstance] = waitForPromiseAll([
+			const [previousPartInstance, nextPartInstance] = await Promise.all([
 				PartInstances.findOneAsync(
 					{
 						rundownId: partInstance.rundownId,
@@ -102,11 +104,13 @@ function handlePartInstanceTimingEventInner(playlistId: RundownPlaylistId, partI
 				partInstance,
 				nextPartInstance
 			)
-			Promise.resolve(blueprint.onRundownTimingEvent(context))
-				.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
-					queueExternalMessages(rundown, messages)
-				})
-				.catch((error) => logger.error(error))
+
+			try {
+				const messages = await blueprint.onRundownTimingEvent(context)
+				queueExternalMessages(rundown, messages)
+			} catch (error) {
+				logger.error(error)
+			}
 		}
 	} catch (e) {
 		logger.error(`handlePartInstanceTimingEvent: ${e}`)
@@ -124,7 +128,14 @@ function handlePartInstanceTimingEvent(playlistId: RundownPlaylistId, partInstan
 		cachedFunc()
 	} else {
 		const newFunc = debounceFn(
-			Meteor.bindEnvironment(() => handlePartInstanceTimingEventInner(playlistId, partInstanceId)),
+			Meteor.bindEnvironment(() => {
+				handlePartInstanceTimingEventInner(playlistId, partInstanceId).catch((e) => {
+					let msg = `Error in handlePartInstanceTimingEvent "${funcId}": "${e.toString()}"`
+					if (e.stack) msg += '\n' + e.stack
+					logger.error(msg)
+					throw e
+				})
+			}),
 			{
 				before: false,
 				after: true,
@@ -135,39 +146,49 @@ function handlePartInstanceTimingEvent(playlistId: RundownPlaylistId, partInstan
 		newFunc()
 	}
 }
-export function reportRundownDataHasChanged(playlist: ReadonlyDeep<RundownPlaylist>, rundown: ReadonlyDeep<Rundown>) {
-	// Called when the data in rundown is changed
+export function reportRundownDataHasChanged(
+	playlist: ReadonlyDeep<RundownPlaylist>,
+	rundown: ReadonlyDeep<Rundown>
+): void {
+	Meteor.defer(async () => {
+		// Called when the data in rundown is changed
 
-	if (!rundown) {
-		logger.error(`rundown argument missing in reportRundownDataHasChanged`)
-	} else if (!playlist) {
-		logger.error(`playlist argument missing in reportRundownDataHasChanged`)
-	} else {
-		const timestamp = getCurrentTime()
+		if (!rundown) {
+			logger.error(`rundown argument missing in reportRundownDataHasChanged`)
+		} else if (!playlist) {
+			logger.error(`playlist argument missing in reportRundownDataHasChanged`)
+		} else {
+			const timestamp = getCurrentTime()
 
-		const { studio, showStyle, blueprint } = waitForPromise(getBlueprintAndDependencies(rundown))
+			const { studio, showStyle, blueprint } = await getBlueprintAndDependencies(rundown)
 
-		if (blueprint.onRundownDataChangedEvent) {
-			const context = new RundownDataChangedEventContext(
-				{
-					name: rundown.name,
-					identifier: `rundownId=${rundown._id},timestamp=${timestamp}`,
-				},
-				studio,
-				showStyle,
-				rundown
-			)
+			if (blueprint.onRundownDataChangedEvent) {
+				const context = new RundownDataChangedEventContext(
+					{
+						name: rundown.name,
+						identifier: `rundownId=${rundown._id},timestamp=${timestamp}`,
+					},
+					studio,
+					showStyle,
+					rundown
+				)
 
-			Promise.resolve(blueprint.onRundownDataChangedEvent(context))
-				.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
+				try {
+					const messages = await blueprint.onRundownDataChangedEvent(context)
 					queueExternalMessages(rundown, messages)
-				})
-				.catch((error) => logger.error(error))
+				} catch (error) {
+					logger.error(error)
+				}
+			}
 		}
-	}
+	})
 }
 
-export function reportPartInstanceHasStarted(cache: CacheForPlayout, partInstance: PartInstance, timestamp: Time) {
+export function reportPartInstanceHasStarted(
+	cache: CacheForPlayout,
+	partInstance: PartInstance,
+	timestamp: Time
+): void {
 	if (partInstance) {
 		cache.PartInstances.update(partInstance._id, {
 			$set: {
@@ -191,24 +212,26 @@ export function reportPartInstanceHasStarted(cache: CacheForPlayout, partInstanc
 		})
 	}
 }
-export function reportPartHasStopped(playlistId: RundownPlaylistId, partInstance: PartInstance, timestamp: Time) {
-	waitForPromise(
-		PartInstances.updateAsync(partInstance._id, {
-			$set: {
-				'timings.stoppedPlayback': timestamp,
-			},
-		})
-	)
+export async function reportPartInstanceHasStopped(
+	playlistId: RundownPlaylistId,
+	partInstance: PartInstance,
+	timestamp: Time
+): Promise<void> {
+	await PartInstances.updateAsync(partInstance._id, {
+		$set: {
+			'timings.stoppedPlayback': timestamp,
+		},
+	})
 
 	handlePartInstanceTimingEvent(playlistId, partInstance._id)
 }
 
-export function reportPieceHasStarted(
+export async function reportPieceHasStarted(
 	playlist: ReadonlyDeep<RundownPlaylist>,
 	pieceInstance: PieceInstance,
 	timestamp: Time
-) {
-	waitForPromiseAll([
+): Promise<void> {
+	await Promise.all([
 		PieceInstances.updateAsync(pieceInstance._id, {
 			$set: {
 				startedPlayback: timestamp,
@@ -230,17 +253,17 @@ export function reportPieceHasStarted(
 						},
 					}
 			  )
-			: (Promise.resolve() as Promise<any>),
+			: null,
 	])
 
 	handlePartInstanceTimingEvent(playlist._id, pieceInstance.partInstanceId)
 }
-export function reportPieceHasStopped(
+export async function reportPieceHasStopped(
 	playlist: ReadonlyDeep<RundownPlaylist>,
 	pieceInstance: PieceInstance,
 	timestamp: Time
-) {
-	PieceInstances.update(pieceInstance._id, {
+): Promise<void> {
+	await PieceInstances.updateAsync(pieceInstance._id, {
 		$set: {
 			stoppedPlayback: timestamp,
 		},

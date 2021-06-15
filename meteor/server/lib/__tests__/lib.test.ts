@@ -5,7 +5,7 @@ import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { SaveIntoDbHooks, saveIntoDb, sumChanges, anythingChanged } from '../database'
 
 describe('server/lib', () => {
-	testInFiber('saveIntoDb', () => {
+	testInFiber('saveIntoDb', async () => {
 		const mystudioObjs: Array<TimelineObjGeneric> = [
 			{
 				id: 'abc',
@@ -71,7 +71,7 @@ describe('server/lib', () => {
 			}),
 		}
 
-		const changes = saveIntoDb(
+		const changes = await saveIntoDb(
 			Timeline,
 			{
 				_id: protectString('myStudio'),

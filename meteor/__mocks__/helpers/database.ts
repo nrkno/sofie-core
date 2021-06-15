@@ -34,7 +34,7 @@ import {
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
-import { literal, getCurrentTime, protectString, unprotectString, getRandomId, waitForPromise } from '../../lib/lib'
+import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
@@ -271,10 +271,10 @@ export async function setupMockStudioBlueprint(
 
 	return internalUploadBlueprint(blueprintId, code, blueprintName, true, organizationId)
 }
-export function setupMockShowStyleBlueprint(
+export async function setupMockShowStyleBlueprint(
 	showStyleVariantId: ShowStyleVariantId,
 	organizationId?: OrganizationId | null
-): Blueprint {
+): Promise<Blueprint> {
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
@@ -374,7 +374,7 @@ export function setupMockShowStyleBlueprint(
 	const blueprintId: BlueprintId = protectString('mockBlueprint' + dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return waitForPromise(internalUploadBlueprint(blueprintId, code, blueprintName, true, organizationId))
+	return internalUploadBlueprint(blueprintId, code, blueprintName, true, organizationId)
 }
 export interface DefaultEnvironment {
 	showStyleBaseId: ShowStyleBaseId
@@ -397,7 +397,7 @@ export async function setupDefaultStudioEnvironment(
 	const showStyleVariantId: ShowStyleVariantId = getRandomId()
 
 	const studioBlueprint = await setupMockStudioBlueprint(showStyleBaseId, organizationId)
-	const showStyleBlueprint = setupMockShowStyleBlueprint(showStyleVariantId, organizationId)
+	const showStyleBlueprint = await setupMockShowStyleBlueprint(showStyleVariantId, organizationId)
 
 	const showStyleBase = setupMockShowStyleBase(showStyleBlueprint._id, {
 		_id: showStyleBaseId,

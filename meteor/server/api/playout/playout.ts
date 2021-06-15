@@ -22,7 +22,7 @@ import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportPartInstanceHasStarted,
 	reportPieceHasStarted,
-	reportPartHasStopped,
+	reportPartInstanceHasStopped,
 	reportPieceHasStopped,
 } from '../blueprints/events'
 import { Blueprints } from '../../../lib/collections/Blueprints'
@@ -737,11 +737,11 @@ export namespace ServerPlayoutAPI {
 			'onPiecePlaybackStarted',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-			(_lock, playlist) => {
-				const rundowns = Rundowns.find({ playlistId: playlist._id }).fetch()
+			async (_lock, playlist) => {
+				const rundowns = await Rundowns.findFetchAsync({ playlistId: playlist._id })
 				// This method is called when an auto-next event occurs
 
-				const pieceInstance = PieceInstances.findOne({
+				const pieceInstance = await PieceInstances.findOneAsync({
 					_id: pieceInstanceId,
 					rundownId: { $in: rundowns.map((r) => r._id) },
 				})
@@ -759,7 +759,7 @@ export namespace ServerPlayoutAPI {
 							startedPlayback
 						).toISOString()}`
 					)
-					reportPieceHasStarted(playlist, pieceInstance, startedPlayback)
+					await reportPieceHasStarted(playlist, pieceInstance, startedPlayback)
 
 					// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
 				}
@@ -787,11 +787,11 @@ export namespace ServerPlayoutAPI {
 			'onPiecePlaybackStopped',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-			(_lock, playlist) => {
-				const rundowns = Rundowns.find({ playlistId: playlist._id }).fetch()
+			async (_lock, playlist) => {
+				const rundowns = await Rundowns.findFetchAsync({ playlistId: playlist._id })
 
 				// This method is called when an auto-next event occurs
-				const pieceInstance = PieceInstances.findOne({
+				const pieceInstance = await PieceInstances.findOneAsync({
 					_id: pieceInstanceId,
 					rundownId: { $in: rundowns.map((r) => r._id) },
 				})
@@ -810,7 +810,7 @@ export namespace ServerPlayoutAPI {
 						).toISOString()}`
 					)
 
-					reportPieceHasStopped(playlist, pieceInstance, stoppedPlayback)
+					await reportPieceHasStopped(playlist, pieceInstance, stoppedPlayback)
 				}
 			}
 		)
@@ -992,11 +992,11 @@ export namespace ServerPlayoutAPI {
 			'onPartPlaybackStopped',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-			() => {
+			async () => {
 				// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
-				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
+				const rundowns = await Rundowns.findFetchAsync({ playlistId: rundownPlaylistId })
 
-				const partInstance = PartInstances.findOne({
+				const partInstance = await PartInstances.findOneAsync({
 					_id: partInstanceId,
 					rundownId: { $in: rundowns.map((r) => r._id) },
 				})
@@ -1012,7 +1012,7 @@ export namespace ServerPlayoutAPI {
 							).toISOString()}`
 						)
 
-						reportPartHasStopped(rundownPlaylistId, partInstance, stoppedPlayback)
+						await reportPartInstanceHasStopped(rundownPlaylistId, partInstance, stoppedPlayback)
 					}
 				} else {
 					throw new Meteor.Error(

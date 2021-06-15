@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import '../../__mocks__/_extendJest'
 import { testInFiber, runAllTimers, runTimersUntilNow } from '../../__mocks__/helpers/jest'
 import { syncFunction, Callback } from '../codeControl'
-import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime } from '../../lib/lib'
+import { tic, toc, makePromise, waitTime } from '../../lib/lib'
 import { useControllableDefer, useNextTickDefer } from '../../__mocks__/meteor'
 import { setupDefaultRundownPlaylist, setupDefaultStudioEnvironment } from '../../__mocks__/helpers/database'
 import {
@@ -49,18 +49,18 @@ describe('codeControl rundown', () => {
 		}, 50)
 
 		jest.advanceTimersByTime(350)
-		waitForPromise(runTimersUntilNow())
+		await runTimersUntilNow()
 		expect(res).toEqual(['result yo ingest0'])
 
 		jest.advanceTimersByTime(300)
-		waitForPromise(runTimersUntilNow())
+		await runTimersUntilNow()
 		expect(res).toEqual([
 			'result yo ingest0', // Pushed to queue first
 			'result yo playout0', // High priority bumps it above ingest1
 		])
 
 		jest.advanceTimersByTime(300)
-		waitForPromise(runTimersUntilNow())
+		await runTimersUntilNow()
 		expect(res).toEqual([
 			'result yo ingest0', // Pushed to queue first
 			'result yo playout0', // High priority bumps it above ingest1
@@ -213,7 +213,7 @@ describe('codeControl', () => {
 
 		jest.advanceTimersByTime(600)
 		await runAllTimers()
-		waitForPromiseAll(ps)
+		await Promise.all(ps)
 
 		expect(res).toMatchObject(['a', 'b', 'a', 'b'])
 	})
@@ -239,7 +239,7 @@ describe('codeControl', () => {
 
 		jest.advanceTimersByTime(600)
 		await runAllTimers()
-		waitForPromiseAll(ps)
+		await Promise.all(ps)
 
 		expect(res).toMatchObject([1, 2, 3, 1])
 	})
