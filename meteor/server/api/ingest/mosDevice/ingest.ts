@@ -263,13 +263,13 @@ export function handleMosDeleteStory(
 		(ingestRundown) => {
 			if (ingestRundown) {
 				const ingestParts = getAnnotatedIngestParts(ingestRundown)
-				const ingestPartIds = ingestParts.map((part) => part.externalId)
+				const ingestPartIds = new Set(ingestParts.map((part) => part.externalId))
 
 				const storyIds = stories.map(parseMosString)
 
 				logger.debug(`handleMosDeleteStory storyIds: [${storyIds.join(',')}]`)
 
-				const missingIds = storyIds.filter((id) => ingestPartIds.indexOf(id) === -1)
+				const missingIds = storyIds.filter((id) => !ingestPartIds.has(id))
 				if (missingIds.length > 0) {
 					throw new Meteor.Error(
 						404,
@@ -278,8 +278,9 @@ export function handleMosDeleteStory(
 				}
 
 				ingestRundown.segments = makeChangeToIngestParts(rundownId, ingestParts, (rundownParts) => {
-					const filteredParts = rundownParts.filter((p) => storyIds.indexOf(p.externalId) === -1)
-					// if (filteredParts.length === ingestParts.length) return // Nothing was removed
+					const storyIdsSet = new Set(storyIds)
+					const filteredParts = rundownParts.filter((p) => !storyIdsSet.has(p.externalId))
+
 					logger.debug(
 						`handleMosDeleteStory, new part count ${filteredParts.length} (was ${rundownParts.length})`
 					)
@@ -351,7 +352,6 @@ export function handleMosInsertParts(
 				const newParts = storiesToIngestParts(rundownId, newStories || [], true, ingestParts).filter(
 					(p): p is AnnotatedIngestPart => !!p // remove falsy values from array
 				)
-				const newPartExtenalIds = newParts.map((part) => part.externalId)
 
 				ingestRundown.segments = makeChangeToIngestParts(rundownId, ingestParts, (ingestPartsToModify) => {
 					const modifiedIngestParts = [...ingestPartsToModify] // clone
@@ -360,8 +360,9 @@ export function handleMosInsertParts(
 						modifiedIngestParts.splice(insertIndex, 1) // Replace the previous part with new parts
 					}
 
+					const newPartExtenalIds = new Set(newParts.map((part) => part.externalId))
 					const collidingPartIds = modifiedIngestParts
-						.filter((part) => newPartExtenalIds.indexOf(part.externalId) > -1)
+						.filter((part) => newPartExtenalIds.has(part.externalId))
 						.map((part) => part.externalId)
 
 					if (collidingPartIds.length > 0) {

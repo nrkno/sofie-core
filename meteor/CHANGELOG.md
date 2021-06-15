@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.32.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.3-0...v1.32.3) (2021-06-10)
+
+### [1.32.3-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.2...v1.32.3-0) (2021-06-09)
+
+
+### Bug Fixes
+
+* orphaned parts cause the Segment Timeline component to scroll beyond the timeline ([7935815](https://github.com/nrkno/tv-automation-server-core/commit/7935815d14ce40c0702cb61ec2288b636fafbf78))
+
+### [1.32.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.1...v1.32.2) (2021-06-02)
+
+
+### Bug Fixes
+
+* deleting first part before take will not reset the nexted part ([323587b](https://github.com/nrkno/tv-automation-server-core/commit/323587b8b5a963e5a9f591e52abf1f7f8dd7e5a2))
+* improve mos operation logging showing `[object object]` ([1d3122d](https://github.com/nrkno/tv-automation-server-core/commit/1d3122d5a31187b7cb6d630ead17f2d8e4316abb))
+* mos operation merging two segments ([792dbdd](https://github.com/nrkno/tv-automation-server-core/commit/792dbdd24c916f897a209b4101a7a18af9406dd5))
+* presenter screen crashes if segment can't be found ([2ab2238](https://github.com/nrkno/tv-automation-server-core/commit/2ab2238ec16e25dc4d9416639193eb1ae8f6a3aa))
+
+### [1.32.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.1...v1.32.2-0) (2021-05-26)
+
+
+### Bug Fixes
+
+* presenter screen crashes if segment can't be found ([2ab2238](https://github.com/nrkno/tv-automation-server-core/commit/2ab2238ec16e25dc4d9416639193eb1ae8f6a3aa))
+
 ### [1.32.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.32.1) (2021-05-20)
 
 

@@ -246,11 +246,11 @@ export async function calculateSegmentsFromIngestData(
  * @param data The data to save
  * @param isWholeRundownUpdate Whether this is a whole rundown change (This will remove any stray items)
  */
-export async function saveSegmentChangesToCache(
+export function saveSegmentChangesToCache(
 	cache: CacheForIngest,
 	data: UpdateSegmentsResult,
 	isWholeRundownUpdate: boolean
-): Promise<void> {
+): void {
 	const newPartIds = data.parts.map((p) => p._id)
 	const newSegmentIds = data.segments.map((p) => p._id)
 
@@ -345,7 +345,7 @@ export async function updateSegmentFromIngestData(
 	if (!canSegmentBeUpdated(rundown, segment, isNewSegment)) return null
 
 	const segmentChanges = await calculateSegmentsFromIngestData(cache, [ingestSegment])
-	await saveSegmentChangesToCache(cache, segmentChanges, false)
+	saveSegmentChangesToCache(cache, segmentChanges, false)
 
 	span?.end()
 	return {
@@ -590,7 +590,7 @@ export async function updateRundownFromIngestData(
 		segmentChanges.adlibActions.push(...cache.AdLibActions.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
 	}
 
-	await saveSegmentChangesToCache(cache, segmentChanges, true)
+	saveSegmentChangesToCache(cache, segmentChanges, true)
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)
 
