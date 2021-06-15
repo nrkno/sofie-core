@@ -2998,6 +2998,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								<NoraPreviewRenderer />
 							</ErrorBoundary>
 							<ErrorBoundary>
+								{this.state.studioMode && !Settings.disableBlurBorderInShelf && (
+									<KeyboardFocusIndicator>
+										<div className="rundown-view__focus-lost-frame"></div>
+									</KeyboardFocusIndicator>
+								)}
 								<div onContextMenu={this.onContextMenuTop}>
 									<Shelf
 										buckets={this.props.buckets}
