@@ -49,6 +49,7 @@ export type SomeContent =
 	| SplitsContent
 	| LiveSpeakContent
 	| TransitionContent
+	| GraphicsContent
 	| UnknownContent
 export type SomeTimelineContent = WithTimeline<SomeContent>
 
@@ -62,6 +63,24 @@ export interface VTContent extends BaseContent {
 	seek?: number
 	editable?: VTEditableParameters
 }
+
+// @tbd: do we need this? copied over from TV 2
+export interface MetadataElement {
+	_id: string
+	key: string
+	value: string
+	source: string
+}
+
+export interface GraphicsContent extends BaseContent {
+	fileName: string
+	path: string
+	thumbnail?: string
+	templateData?: object
+	metadata?: MetadataElement[] // @todo: why is this in the TV 2 types?
+	timelineObjects: TimelineObjectCoreExt[]
+}
+
 
 export interface CameraContent extends BaseContent {
 	studioLabel: string
