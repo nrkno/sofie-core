@@ -63,7 +63,7 @@ describe('Rundown Layouts', () => {
 				icon: '',
 				iconColor: '',
 				openByDefault: false,
-				regionId: 'shelf_layouts'
+				regionId: 'shelf_layouts',
 			})
 			return { rundownLayout: mockLayout, rundownLayoutId }
 		}
