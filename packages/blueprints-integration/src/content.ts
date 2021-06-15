@@ -64,23 +64,9 @@ export interface VTContent extends BaseContent {
 	editable?: VTEditableParameters
 }
 
-// @tbd: do we need this? copied over from TV 2
-export interface MetadataElement {
-	_id: string
-	key: string
-	value: string
-	source: string
-}
-
 export interface GraphicsContent extends BaseContent {
 	fileName: string
-	path: string
-	thumbnail?: string
-	templateData?: object
-	metadata?: MetadataElement[] // @todo: why is this in the TV 2 types?
-	timelineObjects: TimelineObjectCoreExt[]
 }
-
 
 export interface CameraContent extends BaseContent {
 	studioLabel: string
@@ -98,14 +84,6 @@ export interface ScriptContent extends BaseContent {
 	fullScript?: string
 	lastModified?: Time | null
 }
-
-// export interface GraphicsContent extends BaseContent {
-// 	fileName: string
-// 	path: string
-// 	mediaFlowIds?: string[]
-// 	thumbnail?: string
-// 	templateData?: object
-// }
 
 /** Data describing a Nora template's step attributes */
 export interface NoraPayloadStepData {
