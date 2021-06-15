@@ -1797,7 +1797,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				// Try to load defaults from rundown view layouts
 				if (selectedViewLayout && RundownLayoutsAPI.IsLayoutForRundownView(selectedViewLayout)) {
-					let rundownLayout = selectedViewLayout as RundownViewLayout
+					const rundownLayout = selectedViewLayout as RundownViewLayout
 					if (!selectedShelfLayout && rundownLayout.shelfLayout) {
 						selectedShelfLayout = props.rundownLayouts.find((i) => i._id === rundownLayout.shelfLayout)
 					}

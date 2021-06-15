@@ -24,7 +24,7 @@ interface IState {}
 export default withTranslation()(
 	class RundownViewLayoutSettings extends MeteorReactComponent<Translated<IProps>, IState> {
 		render() {
-			let { t } = this.props
+			const { t } = this.props
 
 			return (
 				<React.Fragment>
