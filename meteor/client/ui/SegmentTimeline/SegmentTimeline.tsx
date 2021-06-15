@@ -36,6 +36,8 @@ import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../Rundo
 
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
 import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 
 interface IProps {
 	id: string

@@ -191,13 +191,11 @@ export class RundownTimingCalculator {
 
 					asPlayedRundownDuration += valToAddToAsPlayedDuration
 					if (!rundownAsPlayedDurations[unprotectString(partInstance.part.rundownId)]) {
-						rundownAsPlayedDurations[
-							unprotectString(partInstance.part.rundownId)
-						] = valToAddToAsPlayedDuration
+						rundownAsPlayedDurations[unprotectString(partInstance.part.rundownId)] =
+							valToAddToAsPlayedDuration
 					} else {
-						rundownAsPlayedDurations[
-							unprotectString(partInstance.part.rundownId)
-						] += valToAddToAsPlayedDuration
+						rundownAsPlayedDurations[unprotectString(partInstance.part.rundownId)] +=
+							valToAddToAsPlayedDuration
 					}
 				}
 
@@ -433,7 +431,7 @@ export interface RundownTimingContext {
 /**
  * Computes the actual (as-played fallbacking to expected) duration of a segment, consisting of given parts
  * @export
- * @param  {RundownTiming.RundownTimingContext} timingDurations The timing durations calculated for the Rundown
+ * @param  {RundownTimingContext} timingDurations The timing durations calculated for the Rundown
  * @param  {Array<string>} partIds The IDs of parts that are members of the segment
  * @return number
  */

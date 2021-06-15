@@ -2,7 +2,7 @@ import { PartInstance } from '../../collections/PartInstances'
 import { DBPart, Part, PartId } from '../../collections/Parts'
 import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
 import { literal, protectString } from '../../lib'
-import { RundownTiming, RundownTimingCalculator } from '../rundownTiming'
+import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
 
 const DEFAULT_DURATION = 4000
 
@@ -51,7 +51,7 @@ describe('rundown Timing Calculator', () => {
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
 		const result = timing.updateDurations(0, false, playlist, parts, partInstancesMap, DEFAULT_DURATION)
 		expect(result).toEqual(
-			literal<RundownTiming.RundownTimingContext>({
+			literal<RundownTimingContext>({
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 0,
 				asPlayedPlaylistDuration: 0,
@@ -87,7 +87,7 @@ describe('rundown Timing Calculator', () => {
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
 		const result = timing.updateDurations(0, false, playlist, parts, partInstancesMap, DEFAULT_DURATION)
 		expect(result).toEqual(
-			literal<RundownTiming.RundownTimingContext>({
+			literal<RundownTimingContext>({
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 4000,
 				asPlayedPlaylistDuration: 4000,
@@ -160,7 +160,7 @@ describe('rundown Timing Calculator', () => {
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
 		const result = timing.updateDurations(0, false, playlist, parts, partInstancesMap, DEFAULT_DURATION)
 		expect(result).toEqual(
-			literal<RundownTiming.RundownTimingContext>({
+			literal<RundownTimingContext>({
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 4000,
 				asPlayedPlaylistDuration: 4000,
@@ -234,7 +234,7 @@ describe('rundown Timing Calculator', () => {
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
 		const result = timing.updateDurations(0, false, playlist, parts, partInstancesMap, DEFAULT_DURATION)
 		expect(result).toEqual(
-			literal<RundownTiming.RundownTimingContext>({
+			literal<RundownTimingContext>({
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 4000,
 				asPlayedPlaylistDuration: 4000,
@@ -332,7 +332,7 @@ describe('rundown Timing Calculator', () => {
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
 		const result = timing.updateDurations(0, false, playlist, parts, partInstancesMap, DEFAULT_DURATION)
 		expect(result).toEqual(
-			literal<RundownTiming.RundownTimingContext>({
+			literal<RundownTimingContext>({
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 4000,
 				asPlayedPlaylistDuration: 4000,
