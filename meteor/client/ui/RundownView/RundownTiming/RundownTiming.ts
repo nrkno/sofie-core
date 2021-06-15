@@ -1,4 +1,6 @@
 import { RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
+import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
+import { SegmentTimelinePartClass } from '../../SegmentTimeline/SegmentTimelinePart'
 
 export interface TimeEventArgs {
 	currentTime: number
@@ -36,4 +38,11 @@ export namespace RundownTiming {
 	export interface InjectedROTimingProps {
 		timingDurations: RundownTimingContext
 	}
+}
+
+export function computeSegmentDisplayDuration(timingDurations: RundownTimingContext, parts: PartUi[]): number {
+	return parts.reduce(
+		(memo, part) => memo + SegmentTimelinePartClass.getPartDisplayDuration(part, timingDurations),
+		0
+	)
 }
