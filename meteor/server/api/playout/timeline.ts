@@ -187,7 +187,7 @@ function processAndSaveTimelineObjects(
 			playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
 			studio.settings.forceSettingNowTime
 		) {
-			const worstLatency = Math.max(...playoutDevices.map((device) => getExpectedLatency(device).safe))
+			const worstLatency = Math.max(0, ...playoutDevices.map((device) => getExpectedLatency(device).safe))
 
 			/** Add a little more latency, to account for network latency variability */
 			const ADD_SAFE_LATENCY = studio.settings.nowSafeLatency || 30

@@ -8,7 +8,7 @@ import { getAllowStudio } from '../../lib/localStorage'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
-import JonasFormattedTime from './JonasFormattedTime'
+import { DisplayFormattedTime } from './DisplayFormattedTime'
 import { EyeIcon } from '../../lib/ui/icons/rundownList'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
 import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
@@ -108,7 +108,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			</span>
 			<span className="rundown-list-item__text">
 				{rundown.expectedStart ? (
-					<JonasFormattedTime timestamp={rundown.expectedStart} t={t} />
+					<DisplayFormattedTime displayTimestamp={rundown.expectedStart} t={t} />
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
@@ -139,7 +139,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				)}
 			</span>
 			<span className="rundown-list-item__text">
-				<JonasFormattedTime timestamp={rundown.modified} t={t} />
+				<DisplayFormattedTime displayTimestamp={rundown.modified} t={t} />
 			</span>
 			{rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
 				<span className="rundown-list-item__text">

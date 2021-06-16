@@ -35,7 +35,7 @@ import {
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownUtils } from '../../lib/rundown'
 import PlaylistRankMethodToggle from './PlaylistRankMethodToggle'
-import JonasFormattedTime from './JonasFormattedTime'
+import { DisplayFormattedTime } from './DisplayFormattedTime'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
@@ -340,7 +340,7 @@ export const RundownPlaylistUi = DropTarget(
 							</span>
 							<span className="rundown-list-item__text">
 								{playlist.expectedStart ? (
-									<JonasFormattedTime timestamp={playlist.expectedStart} t={t} />
+									<DisplayFormattedTime displayTimestamp={playlist.expectedStart} t={t} />
 								) : (
 									<span className="dimmed">{t('Not set')}</span>
 								)}
@@ -357,7 +357,7 @@ export const RundownPlaylistUi = DropTarget(
 								)}
 							</span>
 							<span className="rundown-list-item__text">
-								<JonasFormattedTime timestamp={playlist.modified} t={t} />
+								<DisplayFormattedTime displayTimestamp={playlist.modified} t={t} />
 							</span>
 							{rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
 								<span className="rundown-list-item__text">
