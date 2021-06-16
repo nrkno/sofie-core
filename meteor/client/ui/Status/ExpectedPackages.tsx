@@ -6,16 +6,18 @@ import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
 } from '../../../lib/collections/ExpectedPackageWorkStatuses'
-import { unprotectString } from '../../../lib/lib'
+import { assertNever, unprotectString } from '../../../lib/lib'
 import { ExpectedPackageDB, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import Tooltip from 'rc-tooltip'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faRedo, faStopCircle } from '@fortawesome/free-solid-svg-icons'
+import { faRedo, faStopCircle, faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import { MeteorCall } from '../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { Studios } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import ClassNames from 'classnames'
+import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
+import { withTranslation } from 'react-i18next'
 
 interface IExpectedPackagesStatusProps {}
 
@@ -28,6 +30,7 @@ interface IPackageManagerStatusState {
 	expanded: {
 		[expectedPackaStatuseId: string]: boolean
 	}
+	openPackages: { [packageId: string]: true }
 }
 
 export const ExpectedPackagesStatus = translateWithTracker<
@@ -49,6 +52,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 
 			this.state = {
 				expanded: {},
+				openPackages: {},
 			}
 		}
 
@@ -78,12 +82,12 @@ export const ExpectedPackagesStatus = translateWithTracker<
 			} = {}
 			for (const work of this.props.expectedPackageWorkStatuses) {
 				// todo: make this better:
-				const packageId = unprotectString(work.fromPackages[0]?.id) || 'N/A'
+				const key = unprotectString(work.fromPackages[0]?.id) || 'unknown_work_' + work._id
 				// const referencedPackage = packageRef[packageId]
-				let packageWithWorkStatus = packagesWithWorkStatuses[packageId]
+				let packageWithWorkStatus = packagesWithWorkStatuses[key]
 				if (!packageWithWorkStatus) {
-					packagesWithWorkStatuses[packageId] = packageWithWorkStatus = {
-						package: packageRef[packageId] || undefined,
+					packagesWithWorkStatuses[key] = packageWithWorkStatus = {
+						package: packageRef[key] || undefined,
 						statuses: [],
 					}
 				}
@@ -96,64 +100,177 @@ export const ExpectedPackagesStatus = translateWithTracker<
 
 			return Object.keys(packagesWithWorkStatuses).map((packageId) => {
 				const p = packagesWithWorkStatuses[packageId]
+				const viewed = this.isPackageViewed(packageId)
 				return (
-					<div key={packageId} className="package mbs">
+					<React.Fragment key={packageId}>
 						{p.package ? (
-							<div className="package__header">
-								<div className="package__header__summary">
-									<div className="package__header__name">
-										<div className="package__header__name__name">{p.package._id}</div>
-										<div className="package__header__name__content">{JSON.stringify(p.package.content)}</div>
-										<div className="package__header__name__version">{JSON.stringify(p.package.version)}</div>
-									</div>
-								</div>
-							</div>
+							<>
+								<tr className={ClassNames('package')}>
+									<td>{this.getPackageStatus(p)}</td>
+									<td>{this.getPackageName(p.package)}</td>
+									<td>
+										<a
+											href="#"
+											onClick={(e) => {
+												e.preventDefault()
+												this.toggleViewPackage(packageId)
+											}}
+										>
+											{t('{{jobCount}} jobs', { jobCount: p.statuses.length })}
+											&nbsp;
+											{viewed ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
+										</a>
+									</td>
+								</tr>
+								{viewed
+									? p.statuses.map((status) => {
+											return (
+												<tr key={unprotectString(status._id)} className="package-job">
+													<td colSpan={2}>
+														<span className="package-job__status">
+															<Tooltip overlay={status.statusReason} placement="top">
+																<JobStatus status={status} />
+															</Tooltip>
+														</span>
+														<span className="package-job__description">
+															<Tooltip overlay={status.description} placement="top">
+																<span>{status.label}</span>
+															</Tooltip>
+														</span>
+													</td>
+													<td>
+														<Tooltip overlay={t('Restart')} placement="top">
+															<button className="action-btn" onClick={(e) => this.restartExpectation(e, status)}>
+																<FontAwesomeIcon icon={faRedo} />
+															</button>
+														</Tooltip>
+														<Tooltip overlay={t('Abort')} placement="top">
+															<button
+																className="action-btn"
+																// disabled={status.status !== 'fullfilled'}
+																onClick={(e) => this.abortExpectation(e, status)}
+															>
+																<FontAwesomeIcon icon={faStopCircle} />
+															</button>
+														</Tooltip>
+													</td>
+												</tr>
+											)
+									  })
+									: null}
+							</>
 						) : (
-							<div className="workflow__header">Unknown package &quot;{packageId}&quot;</div>
+							<tr className="package">
+								<td colSpan={99}>{t('Unknown Package "{{packageId}}"', { packageId })}</td>
+							</tr>
 						)}
-
-						<div className="package__statuses">
-							{p.statuses.map((status) => {
-								return (
-									<div className="package__statuses__status" key={unprotectString(status._id)}>
-										<div className="package__statuses__status__labels">
-											<div className="package__statuses__status__label">{status.label}</div>
-											<div className="package__statuses__status__progress">
-												{status.status === 'fulfilled'
-													? '100%'
-													: status.status === 'working' && status.progress
-													? `${Math.round(status.progress * 100)}%`
-													: '-'}
-											</div>
-											<div className="package__statuses__status__status">{status.status}</div>
-											<div className="package__statuses__status__actions">
-												<Tooltip overlay={t('Restart')} placement="top">
-													<button className="action-btn" onClick={(e) => this.restartExpectation(e, status)}>
-														<FontAwesomeIcon icon={faRedo} />
-													</button>
-												</Tooltip>
-												<Tooltip overlay={t('Abort')} placement="top">
-													<button
-														className="action-btn"
-														// disabled={status.status !== 'fullfilled'}
-														onClick={(e) => this.abortExpectation(e, status)}
-													>
-														<FontAwesomeIcon icon={faStopCircle} />
-													</button>
-												</Tooltip>
-											</div>
-										</div>
-										<div className="package__statuses__status__descriptions">
-											<div className="package__statuses__status__description">{status.description}</div>
-											<div className="package__statuses__status__reason">{status.statusReason}</div>
-										</div>
-									</div>
-								)
-							})}
-						</div>
-					</div>
+					</React.Fragment>
 				)
 			})
+		}
+		getPackageStatus(p: { package: ExpectedPackageDB | undefined; statuses: ExpectedPackageWorkStatus[] }) {
+			const getProgress = (onlyRequired: boolean) => {
+				let count = 0
+				let progress = 0
+				for (const status of p.statuses) {
+					if (onlyRequired && !status.requiredForPlayout) {
+						continue
+					}
+					count++
+					if (status.status === 'fulfilled') {
+						progress += 1
+					} else if (status.status === 'working') {
+						progress += status.progress || 0.1
+					} else {
+						progress += 0
+					}
+				}
+				if (count) {
+					return progress / count
+				} else {
+					return 1
+				}
+			}
+
+			const requiredProgress = getProgress(true)
+			const allProgress = getProgress(false)
+
+			return (
+				<>
+					{this.getPackageStatusIcon(requiredProgress)}
+					{this.getPackageStatusIcon(allProgress)}
+				</>
+			)
+		}
+		getPackageStatusIcon(progress: number) {
+			const { t } = this.props
+
+			const svgCircleSector = (x: number, y: number, radius: number, v: number, color: string) => {
+				if (v >= 1) {
+					return <circle cx={x} cy={y} r={radius} fill={color}></circle>
+				}
+				if (v <= 0) return null
+
+				const x0 = x + radius * Math.sin(v * Math.PI * 2)
+				const y0 = y - radius * Math.cos(v * Math.PI * 2)
+
+				const flags = v > 0.5 ? '1,1' : '0,1'
+				return (
+					<path
+						d={`M${x},${y}
+						L${x},${y - radius}
+						A${radius},${radius} 0 ${flags} ${x0},${y0}
+						z`}
+						fill={color}
+					></path>
+				)
+			}
+
+			if (progress < 1) {
+				return (
+					<div className="package-progress">
+						<svg width="100%" viewBox="-50 -50 100 100">
+							<circle cx="0" cy="0" r="50" fill="#A2F8B0"></circle>
+							{svgCircleSector(0, 0, 50, progress, '#00BA1E')}
+							<circle cx="0" cy="0" r="35" fill="#fff"></circle>
+						</svg>
+						<div className="label">{Math.floor(progress * 100)}%</div>
+					</div>
+				)
+			} else {
+				return (
+					<div className="package-progress">
+						<svg width="100%" viewBox="-50 -50 100 100">
+							<circle cx="0" cy="0" r="50" fill="#00BA1E"></circle>
+						</svg>
+						<div className="label label-done">{t('Done')}</div>
+					</div>
+				)
+			}
+		}
+		getPackageName(p: ExpectedPackageDB): string {
+			const p2: ExpectedPackage.Any = p as any
+			if (p2.type === ExpectedPackage.PackageType.MEDIA_FILE) {
+				return p2.content.filePath || unprotectString(p._id)
+			} else if (p2.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
+				return p2.content.guid || p2.content.title || unprotectString(p._id)
+			} else {
+				assertNever(p2)
+				return unprotectString(p._id)
+			}
+		}
+		toggleViewPackage(packageId: string) {
+			if (!this.state.openPackages[packageId]) {
+				this.state.openPackages[packageId] = true
+			} else {
+				delete this.state.openPackages[packageId]
+			}
+			this.setState({
+				openPackages: this.state.openPackages,
+			})
+		}
+		isPackageViewed(packageId: string) {
+			return this.state.openPackages[packageId] || false
 		}
 		renderExpectedPackageStatusesSummary() {
 			const packageRef: { [packageId: string]: ExpectedPackageDB } = {}
@@ -260,8 +377,22 @@ export const ExpectedPackagesStatus = translateWithTracker<
 							{t('Restart All')}
 						</button>
 					</div>
-					<div className="mod mvl">{this.renderExpectedPackageStatusesSummary()}</div>
-					<div className="mod mvl">{this.renderExpectedPackageStatuses()}</div>
+					{/* <div className="mod mvl">{this.renderExpectedPackageStatusesSummary()}</div> */}
+
+					<table className="mod mvl package-statuses-list">
+						<tbody>
+							<tr className="package-statuses__header">
+								<th>{t('Status')}</th>
+								<th>{t('Name')}</th>
+								<th></th>
+								{/* <th>{t('Info')}</th> */}
+								{/* <th>{t('Created')}</th> */}
+							</tr>
+							{this.renderExpectedPackageStatuses()}
+						</tbody>
+					</table>
+
+					<div></div>
 				</div>
 			)
 		}
@@ -280,3 +411,57 @@ function compareWorkStatus(a: ExpectedPackageWorkStatus, b: ExpectedPackageWorkS
 
 	return 0
 }
+
+interface IJobStatusProps {
+	status: ExpectedPackageWorkStatus
+}
+interface JobStatusState {
+	open: boolean
+}
+const JobStatus = withTranslation()(
+	class JobStatus extends React.Component<Translated<IJobStatusProps>, JobStatusState> {
+		constructor(props) {
+			super(props)
+
+			this.state = {
+				open: false,
+			}
+		}
+		getProgressbar() {
+			const { t } = this.props
+
+			let progress: number
+			let label: string
+			if (this.props.status.status === 'fulfilled') {
+				progress = 1
+				label = t('Done')
+			} else if (this.props.status.status === 'working') {
+				progress = this.props.status.progress || 0
+				label = Math.floor(progress * 100) + '%'
+			} else {
+				progress = 0
+				label = this.props.status.status
+			}
+
+			return (
+				<div
+					className="job-status"
+					style={{
+						width: '10em',
+					}}
+				>
+					<div
+						className="job-status__progress"
+						style={{
+							width: progress * 100 + '%',
+						}}
+					></div>
+					<div className="job-status__label">{label}</div>
+				</div>
+			)
+		}
+		render() {
+			return <>{this.getProgressbar()}</>
+		}
+	}
+)

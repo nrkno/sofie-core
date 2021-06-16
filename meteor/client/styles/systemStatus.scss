@@ -534,170 +534,110 @@
 			}
 		}
 	}
-	.package {
-		background: #ffffff;
-		border-radius: 3px;
-		position: relative;
-		overflow: hidden;
-		overflow-y: auto;
-		box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.25);
 
-		> .package__header {
-			display: flex;
+	.package-statuses-list {
+		width: 100%;
 
-			> .package__header__summary {
-				display: flex;
-				flex-direction: row;
-				flex-wrap: wrap;
-				flex: 1 1;
+		.package-statuses__header {
+			background-color: #898989;
+			color: #fff;
+
+			> th {
+				padding: 0.25em 0.5em 0.25em 0.5em;
 			}
+		}
 
-			.package__header__name,
-			.package__header__status {
-				flex: 1 1;
+		.package {
+			> td {
+				padding: 0.5em 0.5em 0.5em 0.5em;
+				background-color: #f6f6f6;
+				vertical-align: middle;
+
+				border-bottom: 1px solid #bbbbbb;
 			}
+			.package-progress {
+				display: inline-block;
+				margin-left: 0.25em;
+				margin-right: 0.25em;
 
-			.package__header__name {
-				> div {
+				position: relative;
+
+				width: 2.5em;
+				height: 2.5em;
+
+				> .label {
+					position: absolute;
+					top: 50%;
+					transform: translate(-0%, -50%);
+					font-size: 90%;
+
+					left: 0;
+					right: 0;
+					text-align: center;
+
+					&.label-done {
+						color: #fff;
+						font-weight: bold;
+					}
+				}
+			}
+		}
+		.package-job {
+			> td {
+				padding: 0.5em 0.5em 0.5em 0em;
+				background-color: #c6c6c6;
+				vertical-align: middle;
+				border-bottom: 1px solid #919191;
+
+				font-size: 90%;
+
+				&:first-child {
+					padding-left: 2em;
+				}
+
+				.package-job__status {
+					display: inline-block;
+					margin-right: 0.5em;
+				}
+				.package-job__description {
 					display: inline-block;
 				}
-				.package__header__name__name {
-					font-weight: bold;
-				}
-				.package__header__name__content {
-					font-size: 0.7em;
-				}
-				.package__header__name__version {
-					font-size: 0.7em;
-				}
-			}
-		}
-
-		> .package__statuses {
-			background-color: #eee;
-
-			> .package__statuses__status {
-				border-top: 1px solid #999;
-				padding-left: 1em;
-
-				> .package__statuses__status__labels {
-					display: flex;
-
-					> div {
-						margin: 0 0.5em;
-						flex-grow: 1;
-						flex-shrink: 1;
-						flex-basis: 0;
-					}
-
-					> .package__statuses__status__label {
-						flex: 5 5;
-					}
-					> .package__statuses__status__progress {
-					}
-					> .package__statuses__status__status {
-					}
-					> .package__statuses__status__actions {
-						flex: 0.5 0;
-					}
-				}
-				> .package__statuses__status__descriptions {
-					display: flex;
-					font-size: 75%;
-					> .package__statuses__status__description {
-						flex: 5 5 0;
-						color: grey;
-						max-width: 70%;
-						max-height: 1em;
-						overflow: hidden;
-						text-overflow: ellipsis;
-					}
-
-					> .package__statuses__status__reason {
-						flex: 3 3;
-					}
-				}
-			}
-		}
-
-		&.ok {
-			> .package__header {
-				.package__header__status {
-					color: $color-status-good;
-
-					> svg {
-						> path {
-							stroke: $color-status-good;
-						}
-					}
-				}
-			}
-		}
-
-		&.error {
-			> .package__header {
-				.package__header__status {
-					color: $color-status-fatal;
-
-					> svg {
-						transform: translate(0, 2px);
-
-						> path {
-							stroke: $color-status-fatal;
-						}
-					}
-				}
-			}
-		}
-
-		.package__step {
-			display: flex;
-			flex-direction: row;
-			flex-wrap: wrap;
-			flex: 1 1;
-			background: #f9f9f9;
-			border-top: 1px solid #f0f0f0;
-
-			> .package__step__action,
-			> .package__step__status {
-				flex: 1 1;
-			}
-
-			> .package__step__status {
-				text-align: right;
-			}
-
-			> .package__step__messages {
-				flex: 0 1 100%;
-				background: #fff;
-			}
-
-			> .package__header__progress {
-				flex: 0 1 100%;
 			}
 		}
 	}
+}
+.job-status {
+	display: inline-block;
+	min-width: 5em;
+	height: 1.3em;
+	margin-bottom: -3px;
+	margin-top: -3px;
 
-	// .package {
-	// 	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.25);
-	// 	background: #ffffff;
-	// 	border-radius: 3px;
+	border-radius: 2em;
+	overflow: hidden;
 
-	// 	.package__header {
-	// 		background: #eeeeee;
-	// 		border-bottom: 1px solid grey;
-	// 	}
+	position: relative;
 
-	// 	.package-status {
-	// 		display: none;
+	background: #f7f7f7;
+	box-shadow: inset 2px 0px 3px rgba(0, 0, 0, 0.15);
 
-	// 		margin-left: 1em;
-	// 		margin-top: 0.5em;
-	// 		margin-bottom: 0.5em;
-	// 		padding: 0.5em;
+	.job-status__progress {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		border-radius: 2em;
+		background: #00ba1e;
 
-	// 		border: 1px solid #333333;
-	// 		border-radius: 5px;
-	// 	}
-	// }
+		transition: width 0.5s;
+	}
+	.job-status__label {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		text-align: center;
+		vertical-align: middle;
+	}
 }
