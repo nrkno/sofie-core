@@ -463,6 +463,10 @@ $dashboard-button-height: 5.625em;
 				> .dashboard-panel__panel__button__thumbnail {
 					height: 100%;
 					right: auto;
+
+					img {
+						height: 100%;
+					}
 				}
 
 				> .video-preview {
