@@ -8,6 +8,8 @@ import {
 	mongoModify,
 	protectString,
 	clone,
+	unprotectString,
+	deleteAllUndefinedProperties,
 } from '../../lib/lib'
 import { MongoQuery, TransformedCollection, FindOptions, MongoModifier, FindOneOptions } from '../../lib/typings/meteor'
 import _ from 'underscore'
@@ -22,7 +24,6 @@ type SelectorFunction<DBInterface> = (doc: DBInterface) => boolean
 type DbCacheCollectionDocument<Class> = {
 	inserted?: boolean
 	updated?: boolean
-	removed?: boolean
 
 	document: Class
 } | null // removed
@@ -81,12 +82,19 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		}
 	}
 
+	protected ensureInitialized(): void {
+		if (!this._initialized) {
+			// Only wait for the promise if there is something to do, otherwise we yield the fiber for no reason
+			waitForPromise(this._initialize())
+		}
+	}
+
 	findFetch(
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		options?: FindOptions<DBInterface>
 	): Class[] {
 		const span = profiler.startSpan(`DBCache.findFetch.${this.name}`)
-		waitForPromise(this._initialize())
+		this.ensureInitialized()
 
 		selector = selector || {}
 		if (isProtectedString(selector)) {
@@ -137,9 +145,13 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	}
 
 	async fillWithDataFromDatabase(selector: MongoQuery<DBInterface>): Promise<number> {
+		const span = profiler.startSpan(`DBCache.fillWithDataFromDatabase.${this.name}`)
 		const docs = await asyncCollectionFindFetch(this._collection, selector)
 
+		span?.addLabels({ count: docs.length })
+
 		this.fillWithDataFromArray(docs as any)
+		span?.end()
 		return docs.length
 	}
 	/**
@@ -201,17 +213,22 @@ export class DbCacheWriteCollection<
 		this.assertNotToBeRemoved('insert')
 
 		const span = profiler.startSpan(`DBCache.insert.${this.name}`)
-		waitForPromise(this._initialize())
+		this.ensureInitialized()
 
 		const existing = doc._id && this.documents.get(doc._id)
 		if (existing) {
 			throw new Meteor.Error(500, `Error in cache insert to "${this.name}": _id "${doc._id}" already exists`)
 		}
 		if (!doc._id) doc._id = getRandomId()
+		const newDoc = clone(doc)
+
+		// ensure no properties are 'undefined'
+		deleteAllUndefinedProperties(newDoc)
+
 		this.documents.set(doc._id, {
 			inserted: existing !== null,
 			updated: existing === null,
-			document: this._transform(clone(doc)), // Unlinke a normal collection, this class stores the transformed objects
+			document: this._transform(newDoc), // Unlinke a normal collection, this class stores the transformed objects
 		})
 		if (span) span.end()
 		return doc._id
@@ -222,7 +239,7 @@ export class DbCacheWriteCollection<
 		this.assertNotToBeRemoved('remove')
 
 		const span = profiler.startSpan(`DBCache.remove.${this.name}`)
-		waitForPromise(this._initialize())
+		this.ensureInitialized()
 
 		let removedIds: DBInterface['_id'][] = []
 		if (isProtectedString(selector)) {
@@ -249,7 +266,7 @@ export class DbCacheWriteCollection<
 		this.assertNotToBeRemoved('update')
 
 		const span = profiler.startSpan(`DBCache.update.${this.name}`)
-		waitForPromise(this._initialize())
+		this.ensureInitialized()
 
 		const selectorInModify: MongoQuery<DBInterface> = _.isFunction(selector)
 			? {}
@@ -271,21 +288,20 @@ export class DbCacheWriteCollection<
 				)
 			}
 
+			// ensure no properties are 'undefined'
+			deleteAllUndefinedProperties(newDoc)
+
 			if (forceUpdate || !_.isEqual(doc, newDoc)) {
-				newDoc = this._transform(newDoc)
-
-				_.each(_.uniq([..._.keys(newDoc), ..._.keys(doc)]), (key) => {
-					if (newDoc[key] === undefined) {
-						delete doc[key]
-					} else {
-						doc[key] = newDoc[key]
-					}
-				})
-
 				const docEntry = this.documents.get(_id)
-				if (docEntry) {
-					docEntry.updated = true
+				if (!docEntry) {
+					throw new Meteor.Error(
+						500,
+						`Error: Trying to update a document "${newDoc._id}", that went missing half-way through!`
+					)
 				}
+
+				docEntry.document = this._transform(newDoc)
+				docEntry.updated = true
 			}
 			changedIds.push(_id)
 		})
@@ -298,20 +314,25 @@ export class DbCacheWriteCollection<
 		this.assertNotToBeRemoved('replace')
 
 		const span = profiler.startSpan(`DBCache.replace.${this.name}`)
-		waitForPromise(this._initialize())
+		span?.addLabels({ id: unprotectString(doc._id) })
+		this.ensureInitialized()
 
 		if (!doc._id) throw new Meteor.Error(500, `Error: The (immutable) field '_id' must be defined: "${doc._id}"`)
 		const _id = doc._id
 
+		const newDoc = clone(doc)
+
+		// ensure no properties are 'undefined'
+		deleteAllUndefinedProperties(newDoc)
+
 		const oldDoc = this.documents.get(_id)
 		if (oldDoc) {
 			oldDoc.updated = true
-			delete oldDoc.removed
-			oldDoc.document = this._transform(clone(doc))
+			oldDoc.document = this._transform(newDoc)
 		} else {
 			this.documents.set(_id, {
 				inserted: true,
-				document: this._transform(clone(doc)),
+				document: this._transform(newDoc),
 			})
 		}
 
@@ -330,7 +351,7 @@ export class DbCacheWriteCollection<
 		this.assertNotToBeRemoved('upsert')
 
 		const span = profiler.startSpan(`DBCache.upsert.${this.name}`)
-		waitForPromise(this._initialize())
+		this.ensureInitialized()
 
 		if (isProtectedString(selector)) {
 			selector = { _id: selector } as any
@@ -415,7 +436,7 @@ export class DbCacheWriteCollection<
 			})
 		}
 
-		const pBulkWriteResult = asyncCollectionBulkWrite(this._collection, updates)
+		const pBulkWriteResult = updates.length > 0 ? asyncCollectionBulkWrite(this._collection, updates) : null
 
 		_.each(removedDocs, (_id) => {
 			this.documents.delete(_id)
@@ -443,7 +464,7 @@ export class DbCacheWriteCollection<
 				this.documents.delete(id)
 			} else {
 				if (doc.inserted || doc.updated) {
-					otherCache.upsert(id, doc.document, true)
+					otherCache.replace(doc.document)
 				}
 				delete doc.inserted
 				delete doc.updated

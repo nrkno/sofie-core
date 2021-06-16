@@ -5,6 +5,7 @@ import { assertNever, waitForPromise } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
+import { profiler } from '../profiler'
 import { CacheForStudio } from '../studio/cache'
 import {
 	getStudioIdFromCacheOrLock,
@@ -195,7 +196,12 @@ export function runPlayoutOperationWithLockFromStudioOperation<T>(
 		)
 
 	return syncFunction(
-		() => waitForPromise(fcn({ _studioId: lockStudioId, _playlistId: tmpPlaylist._id })),
+		() => {
+			const span = profiler.startSpan(`playoutLockFunction.${context}`)
+			const res = waitForPromise(fcn({ _studioId: lockStudioId, _playlistId: tmpPlaylist._id }))
+			span?.end()
+			return res
+		},
 		context,
 		`rundown_playlist_${tmpPlaylist._id}`,
 		undefined,
@@ -242,7 +248,10 @@ function playoutLockFunctionInner<T>(
 	}
 
 	if (options?.skipPlaylistLock) {
-		return waitForPromise(doPlaylistInner())
+		const span = profiler.startSpan(`playoutLockFunction.skipped.${context}`)
+		const res = waitForPromise(doPlaylistInner())
+		span?.end()
+		return res
 	} else {
 		return runPlayoutOperationWithLockFromStudioOperation(context, lock, tmpPlaylist, priority, doPlaylistInner)
 	}
