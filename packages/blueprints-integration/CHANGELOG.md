@@ -68,7 +68,39 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 # [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
+# [1.33.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.2...v1.33.0) (2021-06-15)
 
+
+
+# [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
+
+
+
+# [1.33.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.33.0-in-development.0) (2021-04-22)
+
+
+### Bug Fixes
+
+* Issues from review ([018a50b](https://github.com/nrkno/tv-automation-server-core/commit/018a50b6c3a5ec04518c41ec2151afbca634fb29))
+* PM: fix quantel types and add GUI settings ([9c4bb37](https://github.com/nrkno/tv-automation-server-core/commit/9c4bb37be6f27beaff9f9db387f357fc5148f509))
+
+
+### Features
+
+* Add duplicate AdLibs filtering ([5ecdaa8](https://github.com/nrkno/tv-automation-server-core/commit/5ecdaa823fef5a19ec264eedf234106914e16853))
+* blueprint static assets upload ([9033b7d](https://github.com/nrkno/tv-automation-server-core/commit/9033b7dba1f24edf03d027b8f4ed1a4e6d65d86e))
+* findLastScriptedPieceOnLayer ([897ddb9](https://github.com/nrkno/tv-automation-server-core/commit/897ddb9ccd856987041debe63d1d9868b0922bf2))
+* import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
+* support expectedPlayoutItems for adlib actions ([b0b866a](https://github.com/nrkno/tv-automation-server-core/commit/b0b866a4ff10de5301bfd94f1cc9f3a6d4844911))
+* translatable AdLib Actions ([#494](https://github.com/nrkno/tv-automation-server-core/issues/494)) [publish] ([4ca0904](https://github.com/nrkno/tv-automation-server-core/commit/4ca090406ae5604e32b84394dd57692e1bced9ba))
+
+
+
+
+
+# [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
 
 ### Features
 

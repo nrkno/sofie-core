@@ -1,7 +1,15 @@
 import { Meteor } from 'meteor/meteor'
 import { BulkWriteOperation, BulkWriteOpResultObject } from 'mongodb'
 import _ from 'underscore'
-import { DBObj, waitForPromise, normalizeArrayToMap, ProtectedString, makePromise, sleep } from '../../lib/lib'
+import {
+	DBObj,
+	waitForPromise,
+	normalizeArrayToMap,
+	ProtectedString,
+	makePromise,
+	sleep,
+	deleteAllUndefinedProperties,
+} from '../../lib/lib'
 import {
 	TransformedCollection,
 	MongoQuery,
@@ -167,7 +175,7 @@ async function savePreparedChanges<DocClass extends DBInterface, DBInterface ext
 		})
 	}
 
-	const pBulkWriteResult = asyncCollectionBulkWrite(collection, updates)
+	const pBulkWriteResult = updates.length > 0 ? asyncCollectionBulkWrite(collection, updates) : null
 
 	await pBulkWriteResult
 
@@ -227,10 +235,12 @@ export function saveIntoBase<DocClass extends DBInterface, DBInterface extends D
 	const objectsToRemove = normalizeArrayToMap(oldDocs, '_id')
 
 	for (const o of newData) {
+		// const span2 = profiler.startSpan(`DBCache.saveIntoBase.${collectionName}.do.${o._id}`)
 		const oldObj = objectsToRemove.get(o._id)
 
 		if (oldObj) {
 			const o2 = options.beforeDiff ? options.beforeDiff(o, oldObj) : o
+			deleteAllUndefinedProperties(o2)
 			const eql = _.isEqual(oldObj, o2)
 
 			if (!eql) {
@@ -249,6 +259,8 @@ export function saveIntoBase<DocClass extends DBInterface, DBInterface extends D
 			changes.added.push(oInsert._id)
 		}
 		objectsToRemove.delete(o._id)
+
+		// span2?.end()
 	}
 	for (const obj of objectsToRemove.values()) {
 		if (obj) {

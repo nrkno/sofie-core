@@ -45,8 +45,11 @@ import { PlayoutLockFunctionPriority, runPlayoutOperationWithLockFromStudioOpera
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { CacheForStudio } from './studio/cache'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { profiler } from './profiler'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
+
+const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
 	export function initialize(
 		context: MethodContext,
@@ -208,6 +211,8 @@ export namespace ServerPeripheralDeviceAPI {
 		token: string,
 		results: PeripheralDeviceAPI.TimelineTriggerTimeResult
 	) {
+		const transaction = profiler.startTransaction('timelineTriggerTime', apmNamespace)
+
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		if (!peripheralDevice.studioId)
@@ -260,6 +265,8 @@ export namespace ServerPeripheralDeviceAPI {
 				}
 			)
 		}
+
+		transaction?.end()
 	}
 
 	function timelineTriggerTimeInner(
@@ -357,6 +364,8 @@ export namespace ServerPeripheralDeviceAPI {
 		token: string,
 		r: PeripheralDeviceAPI.PartPlaybackStartedResult
 	) {
+		const transaction = profiler.startTransaction('partPlaybackStarted', apmNamespace)
+
 		// This is called from the playout-gateway when a part starts playing.
 		// Note that this function can / might be called several times from playout-gateway for the same part
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
@@ -366,6 +375,8 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.partInstanceId, String)
 
 		ServerPlayoutAPI.onPartPlaybackStarted(context, peripheralDevice, r.rundownPlaylistId, r.partInstanceId, r.time)
+
+		transaction?.end()
 	}
 	export function partPlaybackStopped(
 		context: MethodContext,
@@ -373,6 +384,8 @@ export namespace ServerPeripheralDeviceAPI {
 		token: string,
 		r: PeripheralDeviceAPI.PartPlaybackStoppedResult
 	) {
+		const transaction = profiler.startTransaction('partPlaybackStopped', apmNamespace)
+
 		// This is called from the playout-gateway when an
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
@@ -381,6 +394,8 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.partInstanceId, String)
 
 		ServerPlayoutAPI.onPartPlaybackStopped(context, r.rundownPlaylistId, r.partInstanceId, r.time)
+
+		transaction?.end()
 	}
 	export function piecePlaybackStarted(
 		context: MethodContext,
@@ -388,6 +403,8 @@ export namespace ServerPeripheralDeviceAPI {
 		token: string,
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
 	) {
+		const transaction = profiler.startTransaction('piecePlaybackStarted', apmNamespace)
+
 		// This is called from the playout-gateway when an auto-next event occurs
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
@@ -403,6 +420,8 @@ export namespace ServerPeripheralDeviceAPI {
 			!!r.dynamicallyInserted,
 			r.time
 		)
+
+		transaction?.end()
 	}
 	export function piecePlaybackStopped(
 		context: MethodContext,
@@ -410,6 +429,8 @@ export namespace ServerPeripheralDeviceAPI {
 		token: string,
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
 	) {
+		const transaction = profiler.startTransaction('piecePlaybackStopped', apmNamespace)
+
 		// This is called from the playout-gateway when an auto-next event occurs
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
@@ -425,6 +446,8 @@ export namespace ServerPeripheralDeviceAPI {
 			!!r.dynamicallyInserted,
 			r.time
 		)
+
+		transaction?.end()
 	}
 	export function pingWithCommand(
 		context: MethodContext,
