@@ -511,6 +511,11 @@ export const ExternalFramePanel = withTranslation()(
 
 		render() {
 			const scale = this.props.panel.scale || 1
+			const frameStyle = {
+				transform: `scale(${scale})`,
+				width: `calc(100% / ${scale})`,
+				height: `calc(100% / ${scale})`,
+			}
 			return (
 				<div
 					className="external-frame-panel"
@@ -527,11 +532,8 @@ export const ExternalFramePanel = withTranslation()(
 						className="external-frame-panel__iframe"
 						src={this.props.panel.url}
 						sandbox="allow-forms allow-popups allow-scripts allow-same-origin"
-						style={{
-							transform: `scale(${scale})`,
-							width: `calc(100% / ${scale})`,
-							height: `calc(100% / ${scale})`,
-						}}></iframe>
+						style={frameStyle}></iframe>
+					{this.props.panel.disableFocus && <div className="external-frame-panel__overlay" style={frameStyle}></div>}
 				</div>
 			)
 		}

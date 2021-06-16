@@ -453,12 +453,6 @@ const RundownHeader = withTranslation()(
 			const { t } = props
 			if (this.props.studioMode) {
 				this.bindKeys = [
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_TAKE,
-						up: this.keyTake,
-						label: t('Take'),
-						global: true,
-					},
 					/*{
 						key: RundownViewKbdShortcuts.RUNDOWN_HOLD,
 						up: this.keyHold,
@@ -651,9 +645,6 @@ const RundownHeader = withTranslation()(
 					mousetrapHelper.unbind(k.key, 'RundownHeader', 'keydown')
 				}
 			})
-		}
-		keyTake = (e: mousetrap.ExtendedKeyboardEvent) => {
-			if (!isModalShowing()) this.take(e)
 		}
 		keyHold = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.hold(e)
@@ -3026,6 +3017,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								<NoraPreviewRenderer />
 							</ErrorBoundary>
 							<ErrorBoundary>
+								{this.state.studioMode && !Settings.disableBlurBorderInShelf && (
+									<KeyboardFocusIndicator>
+										<div className="rundown-view__focus-lost-frame"></div>
+									</KeyboardFocusIndicator>
+								)}
 								<div onContextMenu={this.onContextMenuTop}>
 									<Shelf
 										buckets={this.props.buckets}

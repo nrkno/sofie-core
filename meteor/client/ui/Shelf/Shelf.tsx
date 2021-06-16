@@ -32,6 +32,9 @@ import { Studio } from '../../../lib/collections/Studios'
 import RundownViewEventBus, { RundownViewEvents, SelectPieceEvent } from '../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
 import ShelfContextMenu from './ShelfContextMenu'
+import { isModalShowing } from '../../lib/ModalDialog'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { MeteorCall } from '../../../lib/api/methods'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -135,6 +138,12 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 		this.bindKeys = [
 			{
+				key: RundownViewKbdShortcuts.RUNDOWN_TAKE,
+				up: this.keyTake,
+				label: t('Take'),
+				global: true,
+			},
+			{
 				key: RundownViewKbdShortcuts.RUNDOWN_TOGGLE_SHELF,
 				up: this.keyToggleShelf,
 				label: t('Toggle Shelf'),
@@ -146,6 +155,17 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			// 	global: true
 			// }
 		]
+	}
+
+	keyTake = (e: mousetrap.ExtendedKeyboardEvent) => {
+		if (!isModalShowing()) this.take(e)
+	}
+
+	take = (e: any) => {
+		const { t } = this.props
+		if (this.props.studioMode) {
+			doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+		}
 	}
 
 	componentDidMount() {

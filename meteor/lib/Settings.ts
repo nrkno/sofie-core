@@ -24,6 +24,8 @@ export interface ISettings {
 	autoExpandCurrentNextSegment: boolean
 	/** Disable blur border in RundownView */
 	disableBlurBorder: boolean
+	/** Disable blur border in the standalone Shelf */
+	disableBlurBorderInShelf: boolean
 	/** Default time scale zooming for the UI. Default: 1  */
 	defaultTimeScale: number
 	// Allow grabbing the entire timeline
@@ -57,6 +59,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	autoExpandCurrentNextSegment: false,
 	autoRewindLeavingSegment: false,
 	disableBlurBorder: false,
+	disableBlurBorderInShelf: true,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
 	enableUserAccounts: false,

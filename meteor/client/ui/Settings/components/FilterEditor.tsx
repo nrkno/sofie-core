@@ -370,7 +370,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
-			const { float, text } = this.basicFields(item, tab, index)
+			const { float, text, checkbox } = this.basicFields(item, tab, index)
 			return (
 				<React.Fragment>
 					{text('name', 'Name')}
@@ -383,6 +383,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						float('rank', 'Display Rank'),
 					]}
 					{float('scale', 'Scale')}
+					{checkbox('disableFocus', 'Disable focus')}
 				</React.Fragment>
 			)
 		}
