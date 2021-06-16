@@ -1,6 +1,6 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
-import { RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
 import { PieceId } from '../../../lib/collections/Pieces'
 import {
@@ -22,7 +22,7 @@ import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportPartInstanceHasStarted,
 	reportPieceHasStarted,
-	reportPartHasStopped,
+	reportPartInstanceHasStopped,
 	reportPieceHasStopped,
 } from '../blueprints/events'
 import { Blueprints } from '../../../lib/collections/Blueprints'
@@ -662,13 +662,13 @@ export namespace ServerPlayoutAPI {
 
 					const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(
 						_.sortBy(filteredPieces, (piece: PieceInstance) => {
-							let sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+							const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
 							return sourceLayer?._rank || -9999
 						}),
 						nowInPart
 					)
 
-					let findLast: boolean = !!undo
+					const findLast: boolean = !!undo
 
 					if (findLast) sortedPieces.reverse()
 
@@ -741,11 +741,11 @@ export namespace ServerPlayoutAPI {
 			'onPiecePlaybackStarted',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-			(_lock, playlist) => {
-				const rundowns = Rundowns.find({ playlistId: playlist._id }).fetch()
+			async (_lock, playlist) => {
+				const rundowns = await Rundowns.findFetchAsync({ playlistId: playlist._id })
 				// This method is called when an auto-next event occurs
 
-				const pieceInstance = PieceInstances.findOne({
+				const pieceInstance = await PieceInstances.findOneAsync({
 					_id: pieceInstanceId,
 					rundownId: { $in: rundowns.map((r) => r._id) },
 				})
@@ -763,7 +763,7 @@ export namespace ServerPlayoutAPI {
 							startedPlayback
 						).toISOString()}`
 					)
-					reportPieceHasStarted(playlist, pieceInstance, startedPlayback)
+					await reportPieceHasStarted(playlist, pieceInstance, startedPlayback)
 
 					// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
 				}
@@ -791,11 +791,11 @@ export namespace ServerPlayoutAPI {
 			'onPiecePlaybackStopped',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-			(_lock, playlist) => {
-				const rundowns = Rundowns.find({ playlistId: playlist._id }).fetch()
+			async (_lock, playlist) => {
+				const rundowns = await Rundowns.findFetchAsync({ playlistId: playlist._id })
 
 				// This method is called when an auto-next event occurs
-				const pieceInstance = PieceInstances.findOne({
+				const pieceInstance = await PieceInstances.findOneAsync({
 					_id: pieceInstanceId,
 					rundownId: { $in: rundowns.map((r) => r._id) },
 				})
@@ -814,7 +814,7 @@ export namespace ServerPlayoutAPI {
 						).toISOString()}`
 					)
 
-					reportPieceHasStopped(playlist, pieceInstance, stoppedPlayback)
+					await reportPieceHasStopped(playlist, pieceInstance, stoppedPlayback)
 				}
 			}
 		)
@@ -919,7 +919,7 @@ export namespace ServerPlayoutAPI {
 							? cache.Rundowns.findOne(currentPartInstance.rundownId)
 							: undefined
 						const showStyle = await cache.activationCache.getShowStyleCompound(currentRundown ?? rundown)
-						const blueprint = loadShowStyleBlueprint(showStyle)
+						const blueprint = await loadShowStyleBlueprint(showStyle)
 						updatePartInstanceOnTake(
 							cache,
 							showStyle,
@@ -996,11 +996,11 @@ export namespace ServerPlayoutAPI {
 			'onPartPlaybackStopped',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-			() => {
+			async () => {
 				// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
-				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
+				const rundowns = await Rundowns.findFetchAsync({ playlistId: rundownPlaylistId })
 
-				const partInstance = PartInstances.findOne({
+				const partInstance = await PartInstances.findOneAsync({
 					_id: partInstanceId,
 					rundownId: { $in: rundowns.map((r) => r._id) },
 				})
@@ -1016,7 +1016,7 @@ export namespace ServerPlayoutAPI {
 							).toISOString()}`
 						)
 
-						reportPartHasStopped(rundownPlaylistId, partInstance, stoppedPlayback)
+						await reportPartInstanceHasStopped(rundownPlaylistId, partInstance, stoppedPlayback)
 					}
 				} else {
 					throw new Meteor.Error(
@@ -1109,6 +1109,32 @@ export namespace ServerPlayoutAPI {
 		check(userData, Match.Any)
 		check(triggerMode, Match.Maybe(String))
 
+		return executeActionInner(access, rundownPlaylistId, actionDocId, async (actionContext, _cache, _rundown) => {
+			const blueprint = await loadShowStyleBlueprint(actionContext.showStyleCompound)
+			if (!blueprint.blueprint.executeAction) {
+				throw new Meteor.Error(
+					400,
+					`ShowStyle blueprint "${blueprint.blueprintId}" does not support executing actions`
+				)
+			}
+
+			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
+
+			blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
+		})
+	}
+
+	export function executeActionInner(
+		access: VerifiedRundownPlaylistContentAccess,
+		rundownPlaylistId: RundownPlaylistId,
+		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
+		func: (
+			context: ActionExecutionContext,
+			cache: CacheForPlayout,
+			rundown: Rundown,
+			currentPartInstance: PartInstance
+		) => Promise<void>
+	) {
 		const now = getCurrentTime()
 
 		runPlayoutOperationWithCache(
@@ -1164,17 +1190,7 @@ export namespace ServerPlayoutAPI {
 				)
 
 				// If any action cannot be done due to timings, that needs to be rejected by the context
-				const blueprint = loadShowStyleBlueprint(actionContext.showStyleCompound)
-				if (!blueprint.blueprint.executeAction) {
-					throw new Meteor.Error(
-						400,
-						`ShowStyle blueprint "${blueprint.blueprintId}" does not support executing actions`
-					)
-				}
-
-				logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
-
-				blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
+				await func(actionContext, cache, rundown, currentPartInstance)
 
 				if (
 					actionContext.currentPartState !== ActionPartChange.NONE ||

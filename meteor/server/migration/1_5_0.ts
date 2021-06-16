@@ -16,7 +16,7 @@ export const addSteps = addMigrationSteps('1.5.0', [
 		id: 'SourceLayers remove unlimited & onPGMClean',
 		canBeRunAutomatically: true,
 		validate: () => {
-			let showStyles = ShowStyleBases.find({
+			const showStyles = ShowStyleBases.find({
 				$or: [
 					{ 'sourceLayers.unlimited': { $exists: true } },
 					{ 'sourceLayers.onPGMClean': { $exists: true } },
@@ -54,7 +54,7 @@ export const addSteps = addMigrationSteps('1.5.0', [
 		id: 'Blueprints.blueprintId default',
 		canBeRunAutomatically: true,
 		validate: () => {
-			let blueprints = Blueprints.find({
+			const blueprints = Blueprints.find({
 				blueprintId: { $exists: false },
 			}).count()
 			if (blueprints) {

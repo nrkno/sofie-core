@@ -28,7 +28,7 @@ type Data =
  */
 export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 	if (_.isArray(data)) {
-		let dataArray = _.map(data, fixSnapshot)
+		const dataArray = _.map(data, fixSnapshot)
 		if (sortData) {
 			dataArray.sort((a: Data, b: Data) => {
 				if (!a && b) return 1
@@ -50,7 +50,7 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 		}
 		return dataArray
 	} else {
-		let o = cloneOrg(data)
+		const o = cloneOrg(data)
 		if (!o) return o
 		if (isTimelineComplete(o)) {
 			if (o.generated) o.generated = 12345

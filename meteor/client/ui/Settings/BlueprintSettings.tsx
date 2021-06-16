@@ -2,7 +2,6 @@ import * as React from 'react'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint, Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
@@ -73,8 +72,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					uploadFileKey: Date.now(),
 				})
 
-				let uploadFileContents = (e2.target as any).result
-				let blueprint = this.props.blueprint
+				const uploadFileContents = (e2.target as any).result
+				const blueprint = this.props.blueprint
 
 				// First attempt
 				doModalDialog({

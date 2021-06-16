@@ -171,7 +171,6 @@ export class CustomLayerItemRenderer<
 	renderContentTrimmed() {
 		const innerPiece = this.props.piece.instance.piece
 		const vtContent = innerPiece.content as VTContent | undefined
-		const duration = this.props.partDuration
 
 		return vtContent &&
 			vtContent.editable &&

@@ -15,7 +15,6 @@ import { saveIntoCache } from '../../cache/lib'
 import { StudioId } from '../../../lib/collections/Studios'
 import { AdLibAction } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { Random } from 'meteor/random'
 import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integration'
 import { CacheForPlayout } from '../playout/cache'
 import { CacheForStudio } from '../studio/cache'
@@ -27,7 +26,7 @@ function extractExpectedPlayoutItems(
 	partId: PartId | undefined,
 	piece: Piece | AdLibPiece | AdLibAction | RundownBaselineAdLibAction
 ): ExpectedPlayoutItem[] {
-	let expectedPlayoutItemsGeneric: ExpectedPlayoutItem[] = []
+	const expectedPlayoutItemsGeneric: ExpectedPlayoutItem[] = []
 
 	if (piece.expectedPlayoutItems) {
 		_.each(piece.expectedPlayoutItems, (pieceItem, i) => {
@@ -82,37 +81,33 @@ export function updateBaselineExpectedPlayoutItemsOnRundown(
 	saveIntoCache<ExpectedPlayoutItem, ExpectedPlayoutItem>(
 		cache.ExpectedPlayoutItems,
 		{ baseline: 'rundown' },
-		(items || []).map(
-			(item): ExpectedPlayoutItemRundown => {
-				return {
-					...item,
-					_id: getRandomId(),
-					studioId: cache.Studio.doc._id,
-					rundownId: cache.RundownId,
-					baseline: 'rundown',
-				}
+		(items || []).map((item): ExpectedPlayoutItemRundown => {
+			return {
+				...item,
+				_id: getRandomId(),
+				studioId: cache.Studio.doc._id,
+				rundownId: cache.RundownId,
+				baseline: 'rundown',
 			}
-		)
+		})
 	)
 }
 export function updateBaselineExpectedPlayoutItemsOnStudio(
 	cache: CacheForStudio | CacheForPlayout,
 	items?: ExpectedPlayoutItemGeneric[]
 ) {
-	cache.deferAfterSave(() => {
-		saveIntoDb(
+	cache.deferAfterSave(async () => {
+		await saveIntoDb(
 			ExpectedPlayoutItems,
 			{ studioId: cache.Studio.doc._id, baseline: 'studio' },
-			(items || []).map(
-				(item): ExpectedPlayoutItemStudio => {
-					return {
-						...item,
-						_id: getRandomId(),
-						studioId: cache.Studio.doc._id,
-						baseline: 'studio',
-					}
+			(items || []).map((item): ExpectedPlayoutItemStudio => {
+				return {
+					...item,
+					_id: getRandomId(),
+					studioId: cache.Studio.doc._id,
+					baseline: 'studio',
 				}
-			)
+			})
 		)
 	})
 }

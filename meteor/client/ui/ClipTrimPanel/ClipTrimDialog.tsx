@@ -47,7 +47,6 @@ export const ClipTrimDialog = withTranslation()(
 			const { t, selectedPiece } = this.props
 
 			this.props.onClose && this.props.onClose()
-			let pendingInOutPoints: NodeJS.Timer
 			doUserAction(
 				this.props.t,
 				e,
@@ -116,7 +115,7 @@ export const ClipTrimDialog = withTranslation()(
 					return false // do not use default doUserAction failure handler
 				}
 			)
-			pendingInOutPoints = setTimeout(() => {
+			const pendingInOutPoints = setTimeout(() => {
 				NotificationCenter.push(
 					new Notification(
 						undefined,

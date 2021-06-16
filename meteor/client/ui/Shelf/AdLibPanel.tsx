@@ -213,11 +213,11 @@ const AdLibListView = withTranslation()(
 			}
 		}
 
-		static getDerivedStateFromProps(props: IListViewPropsHeader, state) {
-			let tOLayers: {
+		static getDerivedStateFromProps(props: IListViewPropsHeader) {
+			const tOLayers: {
 				[key: string]: IOutputLayer
 			} = {}
-			let tSLayers: {
+			const tSLayers: {
 				[key: string]: ISourceLayer
 			} = {}
 
@@ -262,8 +262,6 @@ const AdLibListView = withTranslation()(
 		}
 
 		renderRundownAdLibs(uniquenessIds: Set<string>) {
-			const { t } = this.props
-
 			return (
 				<tbody className="adlib-panel__list-view__list__segment adlib-panel__list-view__item__rundown-baseline">
 					{this.props.rundownAdLibs &&
@@ -363,7 +361,6 @@ const AdLibListView = withTranslation()(
 		}
 
 		render() {
-			const selected = this.props.selectedPiece
 			const uniquenessIds = new Set<string>()
 
 			return (
@@ -565,13 +562,11 @@ function actionToAdLibPieceUi(
 }
 
 export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchAndFilterProps {
-	const { t } = props
-
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
 	// a hash to store various indices of the used hotkey lists
-	let sourceHotKeyUse: { [key: string]: number } = GlobalAdLibHotkeyUseMap.getAll()
+	const sourceHotKeyUse: { [key: string]: number } = GlobalAdLibHotkeyUseMap.getAll()
 
 	if (!props.playlist || !props.showStyleBase) {
 		return {
@@ -737,10 +732,10 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 	if (liveSegment) {
 		liveSegment.pieces = liveSegment.pieces.map((piece) => {
-			let sourceLayer = piece.sourceLayerId && sourceLayerLookup[piece.sourceLayerId]
+			const sourceLayer = piece.sourceLayerId && sourceLayerLookup[piece.sourceLayerId]
 
 			if (sourceLayer && sourceLayer.activateKeyboardHotkeys) {
-				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
+				const keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 				const sourceHotKeyUseLayerId =
 					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || piece.sourceLayerId
 				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
@@ -796,7 +791,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					sourceLayers: ISourceLayer[],
 					sourceHotKeyUse: { [key: string]: number }
 				) => {
-					let rundownAdLibItems: RundownBaselineAdLibItem[] = RundownBaselineAdLibPieces.find(
+					const rundownAdLibItems: RundownBaselineAdLibItem[] = RundownBaselineAdLibPieces.find(
 						{
 							rundownId: currentRundownId,
 						},
@@ -858,11 +853,11 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 							const uiAdLib: AdLibPieceUi = _.clone(item)
 							uiAdLib.isGlobal = true
 
-							let sourceLayer = (uiAdLib.sourceLayer =
+							const sourceLayer = (uiAdLib.sourceLayer =
 								(item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]) || undefined)
 							uiAdLib.outputLayer = (item.outputLayerId && outputLayerLookup[item.outputLayerId]) || undefined
 							if (sourceLayer && sourceLayer.activateKeyboardHotkeys && sourceLayer.assignHotkeysToGlobalAdlibs) {
-								let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
+								const keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 								const sourceHotKeyUseLayerId =
 									sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || item.sourceLayerId
 								if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
@@ -1071,7 +1066,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			}
 		}
 
-		onFilterChange = (filter: string) => {
+		onFilterChange = (filter: string | undefined) => {
 			this.setState({
 				searchFilter: filter,
 			})
@@ -1192,7 +1187,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 									return part.timings?.startedPlayback && part.timings?.duration ? memo : false
 								}, true) === true,
 						})}
-						onClick={(e) => this.onSelectSegment(item)}
+						onClick={() => this.onSelectSegment(item)}
 						key={unprotectString(item._id)}
 						tabIndex={0}
 					>

@@ -1,11 +1,12 @@
 import { ProtectedString, mongoModify, unprotectString, getRandomId, clone } from '../../lib/lib'
-import { TransformedCollection, MongoModifier } from '../../lib/typings/meteor'
+import { MongoModifier } from '../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { profiler } from '../api/profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../logging'
-import { asyncCollectionFindOne, Changes, asyncCollectionUpdate, asyncCollectionUpsert } from '../lib/database'
+import { Changes } from '../lib/database'
+import { AsyncTransformedCollection } from '../../lib/collections/lib'
 
 /**
  * Caches a single object, allowing reads from cache, but not writes
@@ -24,18 +25,18 @@ export class DbCacheReadObject<
 	protected isToBeRemoved = false
 
 	constructor(
-		protected readonly _collection: TransformedCollection<Class, DBInterface>,
+		protected readonly _collection: AsyncTransformedCollection<Class, DBInterface>,
 		private readonly _optional: DocOptional
 	) {
 		//
 	}
-	get name(): string | undefined {
-		return this._collection['name']
+	get name(): string | null {
+		return this._collection.name
 	}
 
 	async _initialize(id: DBInterface['_id']): Promise<void> {
 		if (!this._initialized) {
-			const doc = await asyncCollectionFindOne<Class, DBInterface>(this._collection, id)
+			const doc = await this._collection.findOneAsync(id)
 			if (!doc) {
 				if (!this._optional) {
 					throw new Meteor.Error(
@@ -82,7 +83,7 @@ export class DbCacheWriteObject<
 > extends DbCacheReadObject<Class, DBInterface, DocOptional> {
 	private _updated = false
 
-	constructor(collection: TransformedCollection<Class, DBInterface>, optional: DocOptional) {
+	constructor(collection: AsyncTransformedCollection<Class, DBInterface>, optional: DocOptional) {
 		super(collection, optional)
 	}
 
@@ -132,7 +133,7 @@ export class DbCacheWriteObject<
 		if (this._updated && !this.isToBeRemoved) {
 			const span = profiler.startSpan(`DbCacheWriteObject.updateDatabaseWithData.${this.name}`)
 
-			const pUpdate = await asyncCollectionUpdate(this._collection, this._document._id, this._document)
+			const pUpdate = await this._collection.updateAsync(this._document._id, this._document)
 			if (pUpdate < 1) {
 				throw new Meteor.Error(500, `Failed to update`)
 			}
@@ -182,7 +183,7 @@ export class DbCacheWriteOptionalObject<
 > extends DbCacheWriteObject<Class, DBInterface, true> {
 	private _inserted = false
 
-	constructor(collection: TransformedCollection<Class, DBInterface>) {
+	constructor(collection: AsyncTransformedCollection<Class, DBInterface>) {
 		super(collection, true)
 	}
 
@@ -202,7 +203,7 @@ export class DbCacheWriteOptionalObject<
 		if (this._inserted && !this.isToBeRemoved) {
 			const span = profiler.startSpan(`DbCacheWriteOptionalObject.updateDatabaseWithData.${this.name}`)
 
-			await asyncCollectionUpsert(this._collection, this._document._id, this._document)
+			await this._collection.upsertAsync(this._document._id, this._document)
 
 			if (span) span.end()
 

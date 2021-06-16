@@ -3,7 +3,7 @@ import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../../lib
 import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segment, SegmentId, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts } from '../../../../lib/collections/Parts'
 import {
@@ -25,7 +25,6 @@ import { VerifiedRundownPlaylistContentAccess } from '../../lib'
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import { literal } from '../../../../lib/lib'
-import { TransformedCollection } from '../../../../lib/typings/meteor'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -52,10 +51,10 @@ function PLAYLIST_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownP
 describe('Test ingest actions for rundowns and segments', () => {
 	let device: PeripheralDevice
 	let device2: PeripheralDevice
-	let externalId = 'abcde'
-	let segExternalId = 'zyxwv'
-	beforeAll(() => {
-		const env = setupDefaultStudioEnvironment()
+	const externalId = 'abcde'
+	const segExternalId = 'zyxwv'
+	beforeAll(async () => {
+		const env = await setupDefaultStudioEnvironment()
 		device = env.ingestDevice
 
 		device2 = setupMockPeripheralDevice(
@@ -1157,7 +1156,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		expect(Parts.find({ rundownId: rundown._id, segmentId: segment._id }).count()).toBe(2)
 
-		let part = Parts.findOne({ externalId: 'party' }) as Part
+		const part = Parts.findOne({ externalId: 'party' }) as Part
 		expect(part).toMatchObject({
 			externalId: ingestPart.externalId,
 			title: ingestPart.name,
@@ -1186,7 +1185,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		expect(Parts.find({ rundownId: rundown._id, segmentId: segment._id }).count()).toBe(2)
 
-		let part = Parts.findOne({ externalId: 'party' }) as Part
+		const part = Parts.findOne({ externalId: 'party' }) as Part
 		expect(part).toMatchObject({
 			externalId: ingestPart.externalId,
 			title: ingestPart.name,

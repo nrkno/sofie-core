@@ -11,7 +11,7 @@ import { Timeline, TimelineComplete, TimelineHash } from '../../lib/collections/
 import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
-import { parse as parseUrl } from 'url'
+import { URL } from 'url'
 import { RundownInput } from './ingest/rundownInput'
 import {
 	IngestRundown,
@@ -132,7 +132,7 @@ export namespace ServerPeripheralDeviceAPI {
 		deviceId: PeripheralDeviceId,
 		token: string
 	): PeripheralDeviceId {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		// TODO: Add an authorization for this?
 
@@ -180,7 +180,7 @@ export namespace ServerPeripheralDeviceAPI {
 		return status
 	}
 	export function ping(context: MethodContext, deviceId: PeripheralDeviceId, token: string): void {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(deviceId, String)
 		check(token, String)
@@ -271,7 +271,7 @@ export namespace ServerPeripheralDeviceAPI {
 		let lastTakeTime: number | undefined
 
 		// ------------------------------
-		let timelineObjs = cache.Timeline.findOne(cache.Studio.doc._id)?.timeline || []
+		const timelineObjs = cache.Timeline.findOne(cache.Studio.doc._id)?.timeline || []
 		let tlChanged = false
 
 		_.each(results, (o) => {
@@ -374,7 +374,7 @@ export namespace ServerPeripheralDeviceAPI {
 		r: PeripheralDeviceAPI.PartPlaybackStoppedResult
 	) {
 		// This is called from the playout-gateway when an
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownPlaylistId, String)
@@ -389,7 +389,7 @@ export namespace ServerPeripheralDeviceAPI {
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
 	) {
 		// This is called from the playout-gateway when an auto-next event occurs
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownPlaylistId, String)
@@ -411,7 +411,7 @@ export namespace ServerPeripheralDeviceAPI {
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
 	) {
 		// This is called from the playout-gateway when an auto-next event occurs
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownPlaylistId, String)
@@ -460,6 +460,7 @@ export namespace ServerPeripheralDeviceAPI {
 		if (really) {
 			this.logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
 			setTimeout(() => {
+				// eslint-disable-next-line no-process-exit
 				process.exit(0)
 			}, 1000)
 			return true
@@ -474,7 +475,7 @@ export namespace ServerPeripheralDeviceAPI {
 		throwError?: boolean
 	): string {
 		// used for integration tests with core-connection
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(deviceId, String)
 		check(token, String)
@@ -486,15 +487,12 @@ export namespace ServerPeripheralDeviceAPI {
 			return returnValue
 		}
 	}
-	export const executeFunction: (
-		deviceId: PeripheralDeviceId,
-		functionName: string,
-		...args: any[]
-	) => any = Meteor.wrapAsync((deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => {
-		let args0 = args.slice(0, -1)
-		let cb = args.slice(-1)[0] // the last argument in ...args
-		PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
-	})
+	export const executeFunction: (deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => any =
+		Meteor.wrapAsync((deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => {
+			const args0 = args.slice(0, -1)
+			const cb = args.slice(-1)[0] // the last argument in ...args
+			PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
+		})
 
 	export function requestUserAuthToken(
 		context: MethodContext,
@@ -638,12 +636,12 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 }
 
-PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
 	try {
-		let deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
+		const deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
 		check(deviceId, String)
 
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
@@ -651,10 +649,10 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 		const peripheralDevice = PeripheralDevices.findOne(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
-		let url = parseUrl(req.url || '', true)
+		const url = new URL(req.url || '', 'http://localhost')
 
-		let fileNames = url.query['name'] || undefined
-		let fileName: string = (_.isArray(fileNames) ? fileNames[0] : fileNames) || ''
+		const fileNames = url.searchParams.get('name') || undefined
+		const fileName: string = (_.isArray(fileNames) ? fileNames[0] : fileNames) || ''
 
 		check(fileName, String)
 

@@ -2,7 +2,6 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { RundownTiming } from './RundownTiming'
-import { JsxEmit } from 'typescript'
 
 export type TimingFilterFunction = (durations: RundownTiming.RundownTimingContext) => any
 
@@ -102,7 +101,7 @@ export function withTiming<IProps, IState>(
 				// To bring it back to sync, we mark the component as dirty, which will
 				// force an update on the next low resoluton tick, regardless of what
 				// the filter says.
-				if (this.filterGetter && durations.isLowResolution !== !expandedOptions.isHighResolution) {
+				if (!!this.filterGetter && durations.isLowResolution !== !expandedOptions.isHighResolution) {
 					this.isDirty = true
 				}
 

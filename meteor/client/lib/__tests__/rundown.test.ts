@@ -10,8 +10,8 @@ import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/Ru
 describe('client/lib/rundown', () => {
 	let env: DefaultEnvironment
 	let playlistId: RundownPlaylistId
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 		playlistId = setupDefaultRundownPlaylist(env).playlistId
 	})
 	testInFiber('RundownUtils.getResolvedSegment', () => {

@@ -45,12 +45,12 @@ function getPartIdMap(segments: DBSegment[], parts: DBPart[]) {
 
 describe('Test recieved mos ingest payloads', () => {
 	let device: PeripheralDevice
-	beforeAll(() => {
+	beforeAll(async () => {
 		// Start with ids not at the beginning
 		resetRandomId()
 		resetRandomId()
 
-		device = setupDefaultStudioEnvironment().ingestDevice
+		device = (await setupDefaultStudioEnvironment()).ingestDevice
 	})
 	beforeEach(() => {
 		restartRandomId()
@@ -373,7 +373,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const rundownExternalId = 'fakeId'
 		expect(Rundowns.findOne({ externalId: rundownExternalId })).toBeFalsy()
 
-		let part = Parts.findOne() as Part
+		const part = Parts.findOne() as Part
 		expect(part).toBeTruthy()
 		expect(part.status).not.toEqual(newStatus.toString())
 
@@ -1372,18 +1372,18 @@ describe('Test recieved mos ingest payloads', () => {
 			// Make sure we inserted, not replaced
 			const firstSegment = segments[0]
 			expect(firstSegment).toBeTruthy()
-			const firstSegmentParts = firstSegment.getParts()
+			const firstSegmentParts = Parts.find({ segmentId: firstSegment._id }).fetch()
 			expect(firstSegmentParts).toHaveLength(3)
 
 			const refSegment = segments[2]
 			expect(refSegment).toBeTruthy()
-			const refSegmentParts = refSegment.getParts()
+			const refSegmentParts = Parts.find({ segmentId: refSegment._id }).fetch()
 			expect(refSegmentParts).toHaveLength(2)
 
 			// Check the insert was ok
 			const newSegment = segments[1]
 			expect(newSegment).toBeTruthy()
-			const newSegmentParts = newSegment.getParts()
+			const newSegmentParts = Parts.find({ segmentId: newSegment._id }).fetch()
 			expect(newSegmentParts).toHaveLength(1)
 			expect(newSegmentParts[0].externalId).toBe('ro1;s2a;newPart1')
 		}
@@ -1405,13 +1405,13 @@ describe('Test recieved mos ingest payloads', () => {
 			// Make sure first segment is unchanged
 			const firstSegment = segments[0]
 			expect(firstSegment).toBeTruthy()
-			const firstSegmentParts = firstSegment.getParts()
+			const firstSegmentParts = Parts.find({ segmentId: firstSegment._id }).fetch()
 			expect(firstSegmentParts).toHaveLength(3)
 
 			// Make sure segment combiend ok
 			const refSegment = segments[1]
 			expect(refSegment).toBeTruthy()
-			const refSegmentParts = refSegment.getParts()
+			const refSegmentParts = Parts.find({ segmentId: refSegment._id }).fetch()
 			expect(refSegmentParts).toHaveLength(3)
 		}
 	})

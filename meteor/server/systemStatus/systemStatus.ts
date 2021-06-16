@@ -1,19 +1,24 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { getCurrentTime, Time, unprotectString, getRandomId, assertNever } from '../../lib/lib'
+import { getCurrentTime, Time, getRandomId, assertNever } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { parseVersion, parseRange } from '../../lib/collections/CoreSystem'
-import { StatusResponse, CheckObj, ExternalStatus, CheckError, SystemInstanceId } from '../../lib/api/systemStatus'
+import {
+	StatusResponse,
+	CheckObj,
+	ExternalStatus,
+	CheckError,
+	SystemInstanceId,
+	Component,
+} from '../../lib/api/systemStatus'
 import { getRelevantSystemVersions } from '../coreSystem'
 import * as semver from 'semver'
 import { StudioId } from '../../lib/collections/Studios'
-import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { SystemWriteAccess } from '../security/system'
 
 /**
@@ -56,7 +61,7 @@ export interface StatusObjectInternal {
  * @param studioId (Optional) If provided, limits the status to what's affecting the studio
  */
 export function getSystemStatus(cred0: Credentials, studioId?: StudioId): StatusResponse {
-	let checks: Array<CheckObj> = []
+	const checks: Array<CheckObj> = []
 
 	SystemWriteAccess.systemStatusRead(cred0)
 
@@ -67,20 +72,17 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 			status: status2ExternalStatus(status.statusCode),
 			updated: new Date(status.timestamp).toISOString(),
 			_status: status.statusCode,
-			errors: _.map(
-				status.messages || [],
-				(m): CheckError => {
-					return {
-						type: 'message',
-						time: new Date(m.timestamp).toISOString(),
-						message: m.message,
-					}
+			errors: _.map(status.messages || [], (m): CheckError => {
+				return {
+					type: 'message',
+					time: new Date(m.timestamp).toISOString(),
+					message: m.message,
 				}
-			),
+			}),
 		})
 	})
 
-	let statusObj: StatusResponse = {
+	const statusObj: StatusResponse = {
 		name: 'Sofie Automation system',
 		instanceId: instanceId,
 		updated: new Date(getCurrentTime()).toISOString(),
@@ -115,23 +117,23 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 		}
 	}
 	_.each(devices, (device: PeripheralDevice) => {
-		let deviceStatus: StatusCode = device.status.statusCode
-		let deviceStatusMessages: Array<string> = device.status.messages || []
+		const deviceStatus: StatusCode = device.status.statusCode
+		const deviceStatusMessages: Array<string> = device.status.messages || []
 
-		let checks: Array<CheckObj> = []
+		const checks: Array<CheckObj> = []
 
 		if (deviceStatus === StatusCode.GOOD) {
 			if (device.expectedVersions) {
 				if (!device.versions) device.versions = {}
-				let deviceVersions = device.versions
+				const deviceVersions = device.versions
 				_.each(device.expectedVersions, (expectedVersionStr, libraryName: string) => {
-					let versionStr = deviceVersions[libraryName]
+					const versionStr = deviceVersions[libraryName]
 
-					let version = parseVersion(versionStr || '0.0.0')
-					let expectedVersion = parseRange(expectedVersionStr)
+					const version = parseVersion(versionStr || '0.0.0')
+					const expectedVersion = parseRange(expectedVersionStr)
 
 					let statusCode = StatusCode.GOOD
-					let messages: Array<string> = []
+					const messages: Array<string> = []
 
 					if (semver.satisfies(version, '0.0.0')) {
 						// if the major version is 0.0.0, ignore it
@@ -170,21 +172,18 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 						status: status2ExternalStatus(statusCode),
 						updated: new Date(device.lastSeen).toISOString(),
 						_status: statusCode,
-						errors: _.map(
-							messages,
-							(message: string): CheckError => {
-								return {
-									type: 'version-differ',
-									time: new Date(device.lastSeen).toISOString(),
-									message: message,
-								}
+						errors: _.map(messages, (message: string): CheckError => {
+							return {
+								type: 'version-differ',
+								time: new Date(device.lastSeen).toISOString(),
+								message: message,
 							}
-						),
+						}),
 					})
 				})
 			}
 		}
-		let so: StatusResponse = {
+		const so: StatusResponse = {
 			name: device.name,
 			instanceId: device._id,
 			status: 'UNDEFINED',
@@ -220,7 +219,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 		statusObj.components.push(so)
 	})
 
-	let systemStatus: StatusCode = setStatus(statusObj)
+	const systemStatus: StatusCode = setStatus(statusObj)
 	statusObj._internal = {
 		// statusCode: systemStatus,
 		statusCodeString: StatusCode[systemStatus],
@@ -247,13 +246,13 @@ export function setSystemStatus(type: string, status: StatusObject) {
 		systemStatus.timestamp = getCurrentTime()
 	}
 
-	let messages: Array<{
+	const messages: Array<{
 		message: string
 		timestamp: Time
 	}> = []
 	if (status.messages) {
 		_.each(status.messages, (message) => {
-			let m = _.find(systemStatus.messages, (m) => m.message === message)
+			const m = _.find(systemStatus.messages, (m) => m.message === message)
 			if (m) {
 				messages.push(m)
 			} else {
@@ -273,7 +272,7 @@ export function removeSystemStatus(type: string) {
 const instanceId: SystemInstanceId = getRandomId()
 /** Map of surrent system statuses */
 const systemStatuses: { [key: string]: StatusObjectInternal } = {}
-function setStatus(statusObj: StatusResponse): StatusCode {
+function setStatus(statusObj: StatusResponse | Component): StatusCode {
 	let s: StatusCode = statusObj._status
 
 	if (statusObj.checks) {
@@ -282,8 +281,8 @@ function setStatus(statusObj: StatusResponse): StatusCode {
 		})
 	}
 	if (statusObj.components) {
-		_.each(statusObj.components, (component: StatusResponse) => {
-			let s2: StatusCode = setStatus(component)
+		_.each(statusObj.components, (component: Component) => {
+			const s2: StatusCode = setStatus(component)
 			if (s2 > s) s = s2
 		})
 	}
@@ -291,8 +290,8 @@ function setStatus(statusObj: StatusResponse): StatusCode {
 	statusObj._status = s
 	return s
 }
-function collectMesages(statusObj: StatusResponse): Array<string> {
-	let allMessages: Array<string> = []
+function collectMesages(statusObj: StatusResponse | Component): Array<string> {
+	const allMessages: Array<string> = []
 
 	if (statusObj._internal) {
 		_.each(statusObj._internal.messages, (msg) => {
@@ -309,8 +308,8 @@ function collectMesages(statusObj: StatusResponse): Array<string> {
 		})
 	}
 	if (statusObj.components) {
-		_.each(statusObj.components, (component: StatusResponse) => {
-			let messages = collectMesages(component)
+		_.each(statusObj.components, (component: Component) => {
+			const messages = collectMesages(component)
 
 			_.each(messages, (msg) => {
 				allMessages.push(`${component.name}: ${msg}`)

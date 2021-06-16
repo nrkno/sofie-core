@@ -96,13 +96,16 @@ export async function calculateSegmentsFromIngestData(
 	}
 
 	if (ingestSegments.length > 0) {
-		const [showStyle, allRundownWatchedPackages] = await Promise.all([
-			getShowStyleCompoundForRundown(rundown),
-			getWatchedPackagesHelper(allRundownWatchedPackages0, cache, ingestSegments),
-		])
-		const blueprint = loadShowStyleBlueprint(showStyle)
+		const pShowStyle = getShowStyleCompoundForRundown(rundown)
+		const pAllRundownWatchedPackages = getWatchedPackagesHelper(allRundownWatchedPackages0, cache, ingestSegments)
 
-		for (let ingestSegment of ingestSegments) {
+		const showStyle = await pShowStyle
+		const pBlueprint = loadShowStyleBlueprint(showStyle)
+
+		const blueprint = await pBlueprint
+		const allRundownWatchedPackages = await pAllRundownWatchedPackages
+
+		for (const ingestSegment of ingestSegments) {
 			const segmentId = getSegmentId(cache.RundownId, ingestSegment.externalId)
 
 			// Ensure the parts are sorted by rank
@@ -424,7 +427,7 @@ export async function updateRundownFromIngestData(
 		cache.Studio.doc
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
-	const showStyle = selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
+	const showStyle = await selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
@@ -432,8 +435,9 @@ export async function updateRundownFromIngestData(
 
 	const pAllRundownWatchedPackages = WatchedPackagesHelper.createForIngest(cache, undefined)
 
-	const showStyleBlueprint = loadShowStyleBlueprint(showStyle.base)
-	const allRundownWatchedPackages = waitForPromise(pAllRundownWatchedPackages)
+	const showStyleBlueprint = await loadShowStyleBlueprint(showStyle.base)
+	const allRundownWatchedPackages = await pAllRundownWatchedPackages
+
 	const rundownBaselinePackages = allRundownWatchedPackages.filter(
 		(pkg) =>
 			pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_ACTION ||

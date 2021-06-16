@@ -173,7 +173,10 @@ export function setNextSegment(
 			)
 		}
 
-		const partsInSegment = nextSegment.getParts()
+		const partsInSegment = Parts.find({
+			rundownId: nextSegment.rundownId,
+			segmentId: nextSegment._id,
+		}).fetch()
 		const firstValidPartInSegment = _.find(partsInSegment, (p) => p.isPlayable())
 
 		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')
@@ -382,7 +385,7 @@ export function pieceTakeNow(
 	})
 	if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 
-	let showStyleBase = rundown.getShowStyleBase()
+	const showStyleBase = rundown.getShowStyleBase()
 	const sourceLayerId = pieceToCopy.sourceLayerId
 	const sourceL = showStyleBase.sourceLayers.find((i) => i._id === sourceLayerId)
 	if (sourceL && (sourceL.type !== SourceLayerType.GRAPHICS || sourceL.exclusiveGroup))
@@ -590,28 +593,28 @@ export function userStoreRundownSnapshot(context: MethodContext, playlistId: Run
 	return ClientAPI.responseSuccess(storeRundownPlaylistSnapshot(context, playlistId, reason))
 }
 export function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
-	let playlist = checkAccessAndGetPlaylist(context, playlistId)
+	const playlist = checkAccessAndGetPlaylist(context, playlistId)
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.removeRundownPlaylist(context, playlist._id))
 }
 export function resyncRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
-	let playlist = checkAccessAndGetPlaylist(context, playlistId)
+	const playlist = checkAccessAndGetPlaylist(context, playlistId)
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncRundownPlaylist(context, playlist._id))
 }
 export function removeRundown(context: MethodContext, rundownId: RundownId) {
-	let rundown = checkAccessAndGetRundown(context, rundownId)
+	const rundown = checkAccessAndGetRundown(context, rundownId)
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.removeRundown(context, rundown._id))
 }
 export function resyncRundown(context: MethodContext, rundownId: RundownId) {
-	let rundown = checkAccessAndGetRundown(context, rundownId)
+	const rundown = checkAccessAndGetRundown(context, rundownId)
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncRundown(context, rundown._id))
 }
 export function resyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId) {
 	rundownContentAllowWrite(context.userId, { rundownId })
-	let segment = Segments.findOne(segmentId)
+	const segment = Segments.findOne(segmentId)
 	if (!segment) throw new Meteor.Error(404, `Rundown "${segmentId}" not found!`)
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncSegment(context, segment.rundownId, segmentId))
@@ -805,12 +808,13 @@ export function restartCore(
 	}
 
 	setTimeout(() => {
+		// eslint-disable-next-line no-process-exit
 		process.exit(0)
 	}, 3000)
 	return ClientAPI.responseSuccess(`Restarting Core in 3s.`)
 }
 
-export function noop(context: MethodContext) {
+export function noop(_context: MethodContext) {
 	triggerWriteAccessBecauseNoCheckNecessary()
 	return ClientAPI.responseSuccess(undefined)
 }

@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor'
 import '../server/api/logger'
 
 // Include this file in to get access to the extended functions
@@ -17,6 +18,14 @@ expect.extend({
 			pass: pass,
 		}
 	},
+	toThrowMeteor(received, error, ...args) {
+		const expected = new Meteor.Error(error, ...args)
+		const pass = expected.toString() === received.toString()
+		return {
+			message: () => `expected ${received} to be ${expected}`,
+			pass: pass,
+		}
+	},
 })
 declare global {
 	namespace jest {
@@ -25,6 +34,8 @@ declare global {
 
 			toBeWithinRange(floor: number, ceiling: number): R
 			toBeFuzzy(target: number, fuzzyness: number): R
+
+			toThrowMeteor(...args: ConstructorParameters<typeof Meteor.Error>): R
 		}
 	}
 }

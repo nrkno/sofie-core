@@ -37,6 +37,7 @@ import { getCurrentTime, unprotectString, protectString } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
 import * as mousetrap from 'mousetrap'
+import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
@@ -583,7 +584,7 @@ const RundownHeader = withTranslation()(
 			}
 		}
 		componentDidMount() {
-			let preventDefault = (e: Event) => {
+			const preventDefault = (e: Event) => {
 				e.preventDefault()
 				e.stopImmediatePropagation()
 				e.stopPropagation()
@@ -1014,7 +1015,7 @@ const RundownHeader = withTranslation()(
 				const onSuccess = () => {
 					if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 				}
-				let doActivateRehersal = () => {
+				const doActivateRehersal = () => {
 					doUserAction(
 						t,
 						e,
@@ -1120,7 +1121,7 @@ const RundownHeader = withTranslation()(
 			const { t } = this.props
 			if (e.persist) e.persist()
 
-			let doReset = () => {
+			const doReset = () => {
 				this.rewindSegments() // Do a rewind right away
 				doUserAction(
 					t,
@@ -1395,7 +1396,7 @@ interface IState {
 	isInspectorShelfExpanded: boolean
 	isClipTrimmerOpen: boolean
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
-	rundownLayout: RundownLayout | undefined
+	rundownLayout: RundownLayoutBase | undefined
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
@@ -1456,7 +1457,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
 
 	const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
-	for (let rundown of rundowns) {
+	for (const rundown of rundowns) {
 		rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
 	}
 
@@ -1601,7 +1602,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		static getDerivedStateFromProps(props: Translated<IProps & ITrackedProps>) {
+		static getDerivedStateFromProps(props: Translated<IProps & ITrackedProps>): Partial<IState> {
 			let selectedLayout: RundownLayoutBase | undefined = undefined
 
 			if (props.rundownLayouts) {
@@ -1643,7 +1644,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		componentDidMount() {
-			let playlistId = this.props.rundownPlaylistId
+			const playlistId = this.props.rundownPlaylistId
 
 			this.subscribe(PubSub.rundownPlaylists, {
 				_id: playlistId,
@@ -1652,7 +1653,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				playlistId,
 			})
 			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId, {
+				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						_id: 1,
 						studioId: 1,
@@ -1671,7 +1672,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 
 			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId, {
+				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						_id: 1,
 					},
@@ -1735,7 +1736,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			})
 			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId, {
+				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						currentPartInstanceId: 1,
 						nextPartInstanceId: 1,
@@ -1774,7 +1775,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			})
 			this.autorun(() => {
-				let subsReady = this.subscriptionsReady()
+				const subsReady = this.subscriptionsReady()
 				if (subsReady !== this.state.subsReady) {
 					this.setState({
 						subsReady: subsReady,
@@ -1784,7 +1785,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			document.body.classList.add('dark', 'vertical-overflow-only')
 
-			let preventDefault = (e) => {
+			const preventDefault = (e) => {
 				e.preventDefault()
 				e.stopImmediatePropagation()
 				e.stopPropagation()
@@ -2109,7 +2110,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 		}
 
-		onSetNext = (part: Part, e: any, offset?: number, take?: boolean) => {
+		onSetNext = (part: Part | undefined, e: any, offset?: number, take?: boolean) => {
 			const { t } = this.props
 			if (this.state.studioMode && part && part._id && this.props.playlist) {
 				const playlistId = this.props.playlist._id
@@ -2182,7 +2183,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				if (!segmentId) {
 					if (e.sourceLocator.partId) {
-						let part = Parts.findOne(e.sourceLocator.partId)
+						const part = Parts.findOne(e.sourceLocator.partId)
 						if (part) {
 							segmentId = part.segmentId
 						}
@@ -2851,7 +2852,7 @@ function handleRundownPlaylistReloadResponse(t: i18next.TFunction, result: Reloa
 		}
 	}
 
-	let actionsTaken: RundownReloadResponseUserAction[] = []
+	const actionsTaken: RundownReloadResponseUserAction[] = []
 	function onActionTaken(action: RundownReloadResponseUserAction): void {
 		actionsTaken.push(action)
 		if (actionsTaken.length === rundownsInNeedOfHandling.length) {

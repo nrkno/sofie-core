@@ -1,5 +1,4 @@
 import { addMigrationSteps } from './databaseMigration'
-import * as _ from 'underscore'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { setExpectedVersion } from './lib'

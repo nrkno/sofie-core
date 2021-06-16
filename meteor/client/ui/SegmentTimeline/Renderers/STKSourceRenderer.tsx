@@ -1,8 +1,5 @@
-import React from 'react'
 import { VTSourceRendererBase } from './VTSourceRenderer'
-
 import { withTranslation } from 'react-i18next'
-
 export const STKSourceRenderer = withTranslation()(
 	class STKSourceRenderer extends VTSourceRendererBase {
 		constructor(props) {

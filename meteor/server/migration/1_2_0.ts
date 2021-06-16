@@ -1,5 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
-import { ensureCollectionProperty, setExpectedVersion } from './lib'
+import { setExpectedVersion } from './lib'
 import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
@@ -10,14 +10,14 @@ export const addSteps = addMigrationSteps('1.2.0', [
 		// Fix a bug where CoreSystemPath is the string "undefined", ref (https://github.com/nrkno/tv-automation-server-core/pull/91)
 		canBeRunAutomatically: true,
 		validate: () => {
-			let system = getCoreSystem()
+			const system = getCoreSystem()
 			if (system && system.storePath === 'undefined') {
 				return 'CoreSystem.storePath is "undefined"'
 			}
 			return false
 		},
 		migrate: () => {
-			let system = getCoreSystem()
+			const system = getCoreSystem()
 			if (system && system.storePath === 'undefined') {
 				setCoreSystemStorePath(undefined)
 			}

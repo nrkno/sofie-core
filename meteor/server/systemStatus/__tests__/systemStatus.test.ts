@@ -1,12 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../__mocks__/_extendJest'
-import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../__mocks__/helpers/database'
-import { getHash, waitForPromise, protectString, literal, unprotectString } from '../../../lib/lib'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
+import { literal, unprotectString } from '../../../lib/lib'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { StatusCode, status2ExternalStatus, setSystemStatus } from '../systemStatus'
 import { StatusResponse } from '../../../lib/api/systemStatus'
@@ -32,8 +28,8 @@ describe('systemStatus', () => {
 		})
 		expect(result0.checks).toHaveLength(0)
 	})
-	testInFiber('getSystemStatus: after startup', () => {
-		env = setupDefaultStudioEnvironment()
+	testInFiber('getSystemStatus: after startup', async () => {
+		env = await setupDefaultStudioEnvironment()
 		MeteorMock.mockRunMeteorStartup()
 
 		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)

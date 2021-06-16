@@ -17,7 +17,7 @@ export function maintainFocusOnPartInstance(
 	forceScroll?: boolean,
 	noAnimation?: boolean
 ) {
-	let startTime = Date.now()
+	const startTime = Date.now()
 	const focus = () => {
 		if (Date.now() - startTime < timeWindow) {
 			_dontClearInterval = true
@@ -71,7 +71,7 @@ export async function scrollToPart(
 	zoomInToFit?: boolean
 ): Promise<boolean> {
 	quitFocusOnPart()
-	let part = Parts.findOne(partId)
+	const part = Parts.findOne(partId)
 	if (part) {
 		await scrollToSegment(part.segmentId, forceScroll, noAnimation)
 
@@ -138,8 +138,8 @@ export function scrollToSegment(
 		return elementToScrollToOrSegmentId
 	}
 
-	let elementToScrollTo: HTMLElement | null = getElementToScrollTo(false)
-	let historyTarget: HTMLElement | null = getElementToScrollTo(true)
+	const elementToScrollTo: HTMLElement | null = getElementToScrollTo(false)
+	const historyTarget: HTMLElement | null = getElementToScrollTo(true)
 
 	// historyTarget will be === to elementToScrollTo if history is not used / not found
 	if (!elementToScrollTo || !historyTarget) {
@@ -217,7 +217,7 @@ function innerScrollToSegment(
 }
 
 function regionInViewport(topElement: HTMLElement, bottomElement: HTMLElement) {
-	let { top, bottom } = getRegionPosition(topElement, bottomElement)
+	const { top, bottom } = getRegionPosition(topElement, bottomElement)
 
 	const headerHeight = Math.floor(getHeaderHeight())
 

@@ -63,7 +63,7 @@ export const LoginPage = translateWithTracker((props: ILoginProps) => {
 			Meteor.loginWithPassword(this.state.email, this.state.password, this.handleLoginAttempt)
 		}
 
-		private handleLoginAttempt(error: Error) {
+		private handleLoginAttempt(error: Error | undefined) {
 			if (error) {
 				this.HandleError('Incorrect email or password')
 			}
