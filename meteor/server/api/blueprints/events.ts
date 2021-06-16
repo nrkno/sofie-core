@@ -191,6 +191,7 @@ export function reportPartInstanceHasStarted(cache: CacheForPlayout, partInstanc
 		})
 
 		cache.deferAfterSave(() => {
+			// Run in the background, we don't want to hold onto the lock to do this
 			Meteor.setTimeout(() => {
 				handlePartInstanceTimingEvent(cache.PlaylistId, partInstance._id)
 			}, LOW_PRIO_DEFER_TIME)

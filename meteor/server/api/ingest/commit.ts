@@ -269,6 +269,7 @@ export async function CommitIngestOperation(
 						)
 
 						playoutCache.deferAfterSave(() => {
+							// Run in the background, we don't want to hold onto the lock to do this
 							Meteor.setTimeout(() => {
 								reportRundownDataHasChanged(playoutCache.Playlist.doc, newRundown)
 							}, LOW_PRIO_DEFER_TIME)

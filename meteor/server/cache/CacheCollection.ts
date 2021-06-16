@@ -84,6 +84,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 
 	protected ensureInitialized(): void {
 		if (!this._initialized) {
+			// Only wait for the promise if there is something to do, otherwise we yield the fiber for no reason
 			waitForPromise(this._initialize())
 		}
 	}
