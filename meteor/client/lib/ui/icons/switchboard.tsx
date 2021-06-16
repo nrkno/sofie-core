@@ -32,7 +32,8 @@ export function RouteSetOverrideIcon(props: React.SVGProps<SVGSVGElement>) {
 			{...props}
 			style={{
 				filter: 'drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5))',
-			}}>
+			}}
+		>
 			<g clipPath="url(#clip0)">
 				<path
 					d="M23.63 12.82C23.63 7.39 19.24 3 13.82 3C8.4 3 4 7.39 4 12.82C4 18.25 8.39 22.64 13.82 22.64C19.25 22.64 23.63 18.24 23.63 12.82Z"

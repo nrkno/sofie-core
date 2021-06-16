@@ -1,0 +1,85 @@
+{
+	"name": "playout-gateway",
+	"version": "1.33.0",
+	"private": true,
+	"description": "Connect to Core, play stuff",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"directory": "packages/playout-gateway"
+	},
+	"bugs": {
+		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+	},
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/playout-gateway#readme",
+	"author": {
+		"name": "Johan Nyman",
+		"email": "johan@superfly.tv",
+		"url": "http://superfly.tv"
+	},
+	"contributors": [],
+	"scripts": {
+		"info": "npm-scripts-info",
+		"build": "rimraf dist && yarn build:main",
+		"buildstart": "yarn build && yarn start",
+		"buildinspect": "yarn build && yarn inspect",
+		"build:main": "tsc -p tsconfig.build.json",
+		"lint": "eslint . --ext .ts --ext .js --ignore-pattern dist",
+		"unit": "jest",
+		"test": "yarn lint && yarn unit",
+		"watch": "jest --watch",
+		"cov": "jest; open-cli coverage/lcov-report/index.html",
+		"cov-open": "open-cli coverage/lcov-report/index.html",
+		"send-coverage": "codecov -p ../..",
+		"ci": "yarn test",
+		"inspect": "node --inspect dist/index.js",
+		"start": "node dist/index.js",
+		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
+		"validate:dev-dependencies": "yarn audit --groups devDependencies",
+		"license-validate": "yarn sofie-licensecheck --allowPackages cycle@1.0.3",
+		"precommit": "lint-staged"
+	},
+	"scripts-info": {
+		"info": "Display information about the scripts",
+		"build": "(Trash and re)build the library",
+		"lint": "Lint all typescript source files",
+		"unit": "Build the library and run unit tests",
+		"test": "Lint, build, and test the library",
+		"watch": "Watch source files, rebuild library on changes, rerun relevant tests",
+		"cov": "Run tests, generate the HTML coverage report, and open it in a browser"
+	},
+	"engines": {
+		"node": ">=12"
+	},
+	"keywords": [
+		"broadcast",
+		"socket",
+		"typescript",
+		"javascript",
+		"open",
+		"source",
+		"automation",
+		"ncs",
+		"nrcs",
+		"rundown",
+		"production"
+	],
+	"dependencies": {
+		"@sofie-automation/blueprints-integration": "^1.33.0",
+		"@sofie-automation/server-core-integration": "^1.33.0",
+		"fast-clone": "^1.5.13",
+		"timeline-state-resolver": "5.8.0",
+		"tslib": "^2.1.0",
+		"underscore": "^1.12.1",
+		"winston": "^2.4.2"
+	},
+	"lint-staged": {
+		"*.{js,css,json,md,scss}": [
+			"prettier --write"
+		],
+		"*.{ts,tsx}": [
+			"yarn lint --fix"
+		]
+	}
+}

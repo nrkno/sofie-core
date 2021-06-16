@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/blueprints-integration",
-	"version": "1.32.2",
+	"version": "1.33.0",
 	"description": "Library to define the interaction between core and the blueprints.",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -24,12 +24,10 @@
 		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
 		"send-coverage": "codecov -p ../..",
-		"changelog": "standard-version",
-		"release": "yarn reset && yarn test && yarn changelog",
-		"reset": "git clean -dfx && git reset --hard && yarn",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck"
+		"license-validate": "yarn sofie-licensecheck",
+		"precommit": "lint-staged"
 	},
 	"engines": {
 		"node": ">=10.10"
@@ -40,32 +38,11 @@
 		"/README.md",
 		"/LICENSE"
 	],
-	"devDependencies": {
-		"@sofie-automation/code-standard-preset": "^0.2.4",
-		"@types/jest": "^26.0.21",
-		"@types/node": "^12.20.6",
-		"@types/underscore": "^1.11.0",
-		"codecov": "^3.8.1",
-		"jest": "^26.6.3",
-		"jest-haste-map": "^26.6.2",
-		"jest-resolve": "^26.6.2",
-		"open-cli": "^6.0.1",
-		"rimraf": "^3.0.2",
-		"standard-version": "^9.1.1",
-		"ts-jest": "^26.5.4",
-		"typescript": "~4.0"
-	},
 	"dependencies": {
 		"moment": "2.29.1",
-		"timeline-state-resolver-types": "5.7.0",
+		"timeline-state-resolver-types": "5.8.0",
 		"tslib": "^2.1.0",
 		"underscore": "1.12.1"
-	},
-	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged"
-		}
 	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [

@@ -27,6 +27,7 @@ export type EditAttributeType =
 	| 'json'
 	| 'colorpicker'
 	| 'iconpicker'
+	| 'array'
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render() {
 		if (this.props.type === 'text') {
@@ -53,6 +54,8 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeColorPicker {...this.props} />
 		} else if (this.props.type === 'iconpicker') {
 			return <EditAttributeIconPicker {...this.props} />
+		} else if (this.props.type === 'array') {
+			return <EditAttributeArray {...this.props} />
 		}
 
 		return <div>Unknown edit type {this.props.type}</div>
@@ -77,6 +80,8 @@ interface IEditAttributeBaseProps {
 	mutateUpdateValue?: (v: any) => any
 	disabled?: boolean
 	storeJsonAsObject?: boolean
+	/** Defaults to string */
+	arrayType?: 'boolean' | 'int' | 'float' | 'string'
 }
 interface IEditAttributeBaseState {
 	value: any
@@ -417,7 +422,8 @@ const EditAttributeCheckbox = wrapEditAttribute(
 							(this.props.className || '') +
 							' ' +
 							(this.state.editing ? this.props.modifiedClassName || '' : '')
-						}>
+						}
+					>
 						<input
 							type="checkbox"
 							className="form-control"
@@ -466,7 +472,8 @@ const EditAttributeSwitch = wrapEditAttribute(
 						' ' +
 						(this.props.disabled ? 'disabled' : '')
 					}
-					onClick={this.handleClick}>
+					onClick={this.handleClick}
+				>
 					{this.props.label}
 				</div>
 			)
@@ -579,7 +586,8 @@ const EditAttributeDropdown = wrapEditAttribute(
 					}
 					value={this.getAttributeText()}
 					onChange={this.handleChange}
-					disabled={this.props.disabled}>
+					disabled={this.props.disabled}
+				>
 					{this.getOptions(true).map((o, j) =>
 						Array.isArray(o.value) ? (
 							<optgroup key={j} label={o.name}>
@@ -816,7 +824,8 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 					availableOptions={this.getOptions()}
 					value={this.getAttribute()}
 					placeholder={this.props.label}
-					onChange={this.handleChange}></MultiSelect>
+					onChange={this.handleChange}
+				></MultiSelect>
 			)
 		}
 	}
@@ -909,6 +918,113 @@ const EditAttributeJson = wrapEditAttribute(
 		}
 	}
 )
+const EditAttributeArray = wrapEditAttribute(
+	class EditAttributeArray extends EditAttributeBase {
+		constructor(props) {
+			super(props)
+
+			this.handleChange = this.handleChange.bind(this)
+			this.handleBlur = this.handleBlur.bind(this)
+			this.handleEscape = this.handleEscape.bind(this)
+		}
+		isArray(strOrg: string): { parsed: any[] } | false {
+			if (!(strOrg + '').trim().length) return { parsed: [] }
+
+			const values: any[] = []
+			const strs = (strOrg + '').split(',')
+
+			for (const str of strs) {
+				// Check that the values in the array are of the right type:
+
+				if (this.props.arrayType === 'boolean') {
+					const parsed = JSON.parse(str)
+					if (typeof parsed !== 'boolean') return false // type check failed
+					values.push(parsed)
+				} else if (this.props.arrayType === 'int') {
+					const parsed = parseInt(str, 10)
+
+					if (Number.isNaN(parsed)) return false // type check failed
+					values.push(parsed)
+				} else if (this.props.arrayType === 'float') {
+					const parsed = parseFloat(str)
+					if (Number.isNaN(parsed)) return false // type check failed
+					values.push(parsed)
+				} else {
+					// else this.props.arrayType is 'string'
+					const parsed = str + ''
+					if (typeof parsed !== 'string') return false // type check failed
+					values.push(parsed.trim())
+				}
+			}
+			return { parsed: values }
+		}
+		handleChange(event) {
+			let v = event.target.value
+
+			const arrayObj = this.isArray(v)
+			if (arrayObj) {
+				this.handleEdit(v, arrayObj.parsed)
+				this.setState({
+					valueError: false,
+				})
+			} else {
+				this.handleUpdateButDontSave(v, true)
+			}
+		}
+		handleBlur(event) {
+			let v = event.target.value
+
+			const arrayObj = this.isArray(v)
+			if (arrayObj) {
+				this.handleUpdate(v, arrayObj.parsed)
+				this.setState({
+					valueError: false,
+				})
+			} else {
+				this.handleUpdateButDontSave(v, true)
+				this.setState({
+					valueError: true,
+				})
+			}
+		}
+		handleEscape(event) {
+			let e = event as KeyboardEvent
+			if (e.key === 'Escape') {
+				this.handleDiscard()
+			}
+		}
+		getAttribute() {
+			const value = super.getAttribute()
+			if (Array.isArray(value)) {
+				return value.join(', ')
+			} else {
+				return ''
+			}
+		}
+		render() {
+			return (
+				<input
+					type="text"
+					className={ClassNames(
+						'form-control',
+						this.props.className,
+						this.state.valueError && this.props.invalidClassName
+							? this.props.invalidClassName
+							: this.state.editing
+							? this.props.modifiedClassName || ''
+							: ''
+					)}
+					placeholder={this.props.label}
+					value={this.getEditAttribute() || ''}
+					onChange={this.handleChange}
+					onBlur={this.handleBlur}
+					onKeyUp={this.handleEscape}
+					disabled={this.props.disabled}
+				/>
+			)
+		}
+	}
+)
 
 const EditAttributeColorPicker = wrapEditAttribute(
 	class EditAttributeColorPicker extends EditAttributeBase {
@@ -927,7 +1043,8 @@ const EditAttributeColorPicker = wrapEditAttribute(
 					availableOptions={this.props.options}
 					value={this.getAttribute()}
 					placeholder={this.props.label}
-					onChange={this.handleChange}></ColorPicker>
+					onChange={this.handleChange}
+				></ColorPicker>
 			)
 		}
 	}
@@ -949,7 +1066,8 @@ const EditAttributeIconPicker = wrapEditAttribute(
 					availableOptions={this.props.options}
 					value={this.getAttribute()}
 					placeholder={this.props.label}
-					onChange={this.handleChange}></IconPicker>
+					onChange={this.handleChange}
+				></IconPicker>
 			)
 		}
 	}

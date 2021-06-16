@@ -69,9 +69,10 @@ export interface ExpectedMediaItemBucketAction extends ExpectedMediaItemBase {
 /** @deprecated */
 export type ExpectedMediaItem = ExpectedMediaItemRundown | ExpectedMediaItemBucketPiece | ExpectedMediaItemBucketAction
 /** @deprecated */
-export const ExpectedMediaItems: TransformedCollection<ExpectedMediaItem, ExpectedMediaItem> = createMongoCollection<
+export const ExpectedMediaItems: TransformedCollection<
+	ExpectedMediaItem,
 	ExpectedMediaItem
->('expectedMediaItems')
+> = createMongoCollection<ExpectedMediaItem>('expectedMediaItems')
 registerCollection('ExpectedMediaItems', ExpectedMediaItems)
 
 registerIndex(ExpectedMediaItems, {

@@ -20,7 +20,8 @@ export default class LiveSpeakInputIcon extends React.Component<{ abbreviation?:
 						wordSpacing: '0px',
 						textShadow: '0 2px 9px rgba(0, 0, 0, 0.5)',
 					}}
-					xmlSpace="preserve">
+					xmlSpace="preserve"
+				>
 					<tspan x="5" y="66.514" style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '62px', fontWeight: 100 }}>
 						{this.props.abbreviation ? this.props.abbreviation : 'LSK'}
 					</tspan>

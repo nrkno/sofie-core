@@ -184,7 +184,8 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 			<div className="status-bar">
 				<VelocityReact.VelocityTransitionGroup
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
-					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}>
+					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}
+				>
 					<NotificationCenterPanelToggle
 						onClick={(e) =>
 							this.props.onToggleNotifications && this.props.onToggleNotifications(e, NoticeLevel.CRITICAL)
@@ -216,7 +217,8 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 						onMouseEnter={this.onRewindEnter}
 						onMouseLeave={this.onRewindLeave}
 						onClick={this.onRewindClick}
-						tabIndex={0}>
+						tabIndex={0}
+					>
 						<FontAwesomeIcon icon={faFastBackward} />
 					</button>
 					{!this.props.isFollowingOnAir && (
@@ -226,7 +228,8 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 							onMouseEnter={this.onOnAirMouseEnter}
 							onMouseLeave={this.onOnAirMouseLeave}
 							onClick={this.onOnAirClick}
-							tabIndex={0}>
+							tabIndex={0}
+						>
 							{this.state.onAirHover ? <Lottie config={this.onAirOver} /> : <Lottie config={this.onAirOut} />}
 						</button>
 					)}
@@ -238,13 +241,15 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 				</div>
 				<VelocityReact.VelocityTransitionGroup
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
-					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}>
+					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}
+				>
 					{this.props.isStudioMode && (
 						<button
 							className="status-bar__controls__button status-bar__controls__button--take"
 							role="button"
 							onClick={this.onTakeClick}
-							tabIndex={0}>
+							tabIndex={0}
+						>
 							Take
 						</button>
 					)}
@@ -264,7 +269,8 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 									)}
 									role="button"
 									onClick={this.onRouteSetsToggle}
-									tabIndex={0}>
+									tabIndex={0}
+								>
 									<SwitchboardIcon />
 									{nonDefaultRoutes > 0 && (
 										<RouteSetOverrideIcon className="status-bar__controls__button--switchboard-panel__notification" />
@@ -284,7 +290,8 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 										},
 										easing: 'ease-in',
 										duration: 500,
-									}}>
+									}}
+								>
 									{this.state.isSwitchboardOpen && (
 										<SwitchboardPopUp
 											availableRouteSets={availableRouteSets}

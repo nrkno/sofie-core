@@ -1,7 +1,7 @@
-name: 'Setup Meteor'
-description: 'Setup Meteor'
+name: "Setup Meteor"
+description: "Setup Meteor"
 runs:
   using: "composite"
-  steps: 
-    - run: curl "https://install.meteor.com/?release=1.12.1" | sh
-      shell: bash 
+  steps:
+    - run: curl "https://install.meteor.com/?release=2.1" | sh
+      shell: bash

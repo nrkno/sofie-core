@@ -11,6 +11,7 @@ import { IAdLibListItem } from './AdLibListItem'
 import { isActionItem } from './Inspector/ItemRenderers/ActionItemRenderer'
 import { AdLibPieceUi } from './AdLibPanel'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
+import { translateMessage } from '../../../lib/api/TranslatableMessage'
 
 export enum ContextType {
 	BUCKET = 'bucket',
@@ -80,9 +81,12 @@ export default function ShelfContextMenu() {
 		onToggle: (adLib: T, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => void
 	}) {
 		if (isActionItem(item.adLib)) {
-			const triggerModes = getActionItem(item.adLib)
-				?.triggerModes?.sort(
-					(a, b) => a.display._rank - b.display._rank || a.display.label.localeCompare(b.display.label)
+			const adLibAction = getActionItem(item.adLib)
+			const triggerModes = adLibAction?.triggerModes
+				?.sort(
+					(a, b) =>
+						a.display._rank - b.display._rank ||
+						translateMessage(a.display.label, t).localeCompare(translateMessage(b.display.label, t))
 				)
 				.map((mode) => (
 					<MenuItem
@@ -90,8 +94,9 @@ export default function ShelfContextMenu() {
 						onClick={(e) => {
 							e.persist()
 							item.onToggle(item.adLib, false, e, mode)
-						}}>
-						{mode.display.label}
+						}}
+					>
+						{translateMessage(mode.display.label, t)}
 					</MenuItem>
 				))
 			return (
@@ -100,8 +105,10 @@ export default function ShelfContextMenu() {
 						onClick={(e) => {
 							e.persist()
 							item.onToggle(item.adLib, false, e)
-						}}>
-						{t('Execute')}
+						}}
+					>
+						{(adLibAction?.display.triggerLabel && translateMessage(adLibAction?.display.triggerLabel, t)) ??
+							t('Execute')}
 					</MenuItem>
 				)
 			)
@@ -112,7 +119,8 @@ export default function ShelfContextMenu() {
 						onClick={(e) => {
 							e.persist()
 							item.onToggle(item.adLib, false, e)
-						}}>
+						}}
+					>
 						{t('Start this AdLib')}
 					</MenuItem>
 					{item.adLib.sourceLayer && item.adLib.sourceLayer?.isQueueable && (
@@ -120,7 +128,8 @@ export default function ShelfContextMenu() {
 							onClick={(e) => {
 								e.persist()
 								item.onToggle(item.adLib, true, e)
-							}}>
+							}}
+						>
 							{t('Queue this AdLib')}
 						</MenuItem>
 					)}
@@ -151,7 +160,8 @@ export default function ShelfContextMenu() {
 									piece: context.details.adLib,
 									context: e,
 								})
-							}}>
+							}}
+						>
 							{t('Inspect this AdLib')}
 						</MenuItem>
 					</>
@@ -166,7 +176,8 @@ export default function ShelfContextMenu() {
 									bucket: context.details.bucket,
 									context: e,
 								})
-							}}>
+							}}
+						>
 							{t('Rename this AdLib')}
 						</MenuItem>
 						<MenuItem
@@ -177,7 +188,8 @@ export default function ShelfContextMenu() {
 									bucket: context.details.bucket,
 									context: e,
 								})
-							}}>
+							}}
+						>
 							{t('Delete this AdLib')}
 						</MenuItem>
 						<hr />
@@ -192,7 +204,8 @@ export default function ShelfContextMenu() {
 									bucket: context.details.bucket,
 									context: e,
 								})
-							}}>
+							}}
+						>
 							{t('Empty this Bucket')}
 						</MenuItem>
 						<MenuItem
@@ -202,7 +215,8 @@ export default function ShelfContextMenu() {
 									bucket: context.details.bucket,
 									context: e,
 								})
-							}}>
+							}}
+						>
 							{t('Rename this Bucket')}
 						</MenuItem>
 						<MenuItem
@@ -212,7 +226,8 @@ export default function ShelfContextMenu() {
 									bucket: context.details.bucket,
 									context: e,
 								})
-							}}>
+							}}
+						>
 							{t('Delete this Bucket')}
 						</MenuItem>
 						<hr />
@@ -224,7 +239,8 @@ export default function ShelfContextMenu() {
 						RundownViewEventBus.emit(RundownViewEvents.CREATE_BUCKET, {
 							context: e,
 						})
-					}}>
+					}}
+				>
 					{t('Create new Bucket')}
 				</MenuItem>
 			</ContextMenu>

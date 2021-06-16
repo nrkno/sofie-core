@@ -33,37 +33,43 @@ const StatusMenu = withTranslation()(
 					<NavLink
 						activeClassName="selectable-selected"
 						className="status-menu__status-menu-item selectable clickable"
-						to={'/status/system'}>
+						to={'/status/system'}
+					>
 						<h3>{t('System')}</h3>
 					</NavLink>
 					<NavLink
 						activeClassName="selectable-selected"
 						className="status-menu__status-menu-item selectable clickable"
-						to={'/status/media'}>
+						to={'/status/media'}
+					>
 						<h3>{t('Media')}</h3>
 					</NavLink>
 					<NavLink
 						activeClassName="selectable-selected"
 						className="status-menu__status-menu-item selectable clickable"
-						to={'/status/expected-packages'}>
+						to={'/status/expected-packages'}
+					>
 						<h3>{t('Packages')}</h3>
 					</NavLink>
 					<NavLink
 						activeClassName="selectable-selected"
 						className="status-menu__status-menu-item selectable clickable"
-						to={'/status/messages'}>
+						to={'/status/messages'}
+					>
 						<h3>{t('Messages')}</h3>
 					</NavLink>
 					<NavLink
 						activeClassName="selectable-selected"
 						className="status-menu__status-menu-item selectable clickable"
-						to={'/status/userLog'}>
+						to={'/status/userLog'}
+					>
 						<h3>{t('User Log')}</h3>
 					</NavLink>
 					<NavLink
 						activeClassName="selectable-selected"
 						className="status-menu__status-menu-item selectable clickable"
-						to={'/status/evaluations'}>
+						to={'/status/evaluations'}
+					>
 						<h3>{t('Evaluations')}</h3>
 					</NavLink>
 				</div>

@@ -101,8 +101,8 @@ if (!Settings.enableUserAccounts) {
 				id,
 				PlayoutLockFunctionPriority.MISC,
 				null,
-				(cache) => {
-					syncPlayheadInfinitesForNextPartInstance(cache)
+				async (cache) => {
+					await syncPlayheadInfinitesForNextPartInstance(cache)
 				}
 			)
 		},

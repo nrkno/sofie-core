@@ -41,6 +41,7 @@ import { getTranslatedMessage, ServerTranslatedMesssages } from '../../../lib/ru
 import { asyncCollectionUpsert, asyncCollectionFindOne, asyncCollectionRemove } from '../../lib/database'
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
+import { Studio } from '../../../lib/collections/Studios'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -144,14 +145,19 @@ export async function CommitIngestOperation(
 					})
 
 					if (playlist) {
-						// ensure the 'old' playout is updated to remove any references to the rundown
-						updatePlayoutAfterChangingRundownInPlaylist(
-							playlist,
-							oldPlaylistLock,
-							null,
-							showStyle,
-							blueprint
-						)
+						// Ensure playlist is regenerated
+						const newPlaylist = await regeneratePlaylistAndRundownOrder(ingestCache.Studio.doc, playlist)
+
+						if (newPlaylist) {
+							// ensure the 'old' playout is updated to remove any references to the rundown
+							updatePlayoutAfterChangingRundownInPlaylist(
+								newPlaylist,
+								oldPlaylistLock,
+								null,
+								showStyle,
+								blueprint
+							)
+						}
 					}
 				}
 			}
@@ -185,7 +191,6 @@ export async function CommitIngestOperation(
 				{ _id: newPlaylistId[0], studioId: studioLock._studioId },
 				PlayoutLockFunctionPriority.MISC,
 				async (lock) => {
-					//
 					// Ensure the rundown has the correct playlistId
 					ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId[0] } })
 
@@ -286,46 +291,101 @@ async function generatePlaylistAndRundownsCollection(
 ): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown, DBRundown>]> {
 	// Load existing playout data
 	const finalRundown = getRundown(ingestCache)
-	const rundownsCollection = new DbCacheWriteCollection(Rundowns)
-	const [existingPlaylist, studioBlueprint] = await Promise.all([
-		asyncCollectionFindOne(RundownPlaylists, newPlaylistId),
-		makePromise(() => loadStudioBlueprint(ingestCache.Studio.doc)),
-		rundownsCollection.prepareInit({ playlistId: newPlaylistId }, true),
-	])
-	rundownsCollection.replace(finalRundown)
 
-	// Generate the new playlist, and ranks for the rundowns
-	const { rundownPlaylist: newPlaylist0, order: newRundownOrder } = produceRundownPlaylistInfoFromRundown(
+	const result = await generatePlaylistAndRundownsCollectionInner(
 		ingestCache.Studio.doc,
-		studioBlueprint,
-		existingPlaylist,
+		finalRundown,
 		newPlaylistId,
-		newPlaylistExternalId,
-		rundownsCollection.findFetch({})
+		newPlaylistExternalId
 	)
-	const newPlaylist = new RundownPlaylist(newPlaylist0)
 
-	// Update the ranks of the rundowns
-	if (!newPlaylist.rundownRanksAreSetInSofie) {
-		// Update the rundown ranks
-		for (const [id, rank] of Object.entries(newRundownOrder)) {
-			const id2 = protectString(id)
-			rundownsCollection.update(id2, { $set: { _rank: rank } })
-			if (id2 === ingestCache.RundownId) {
-				// Update the ingestCache to keep them in sync
-				ingestCache.Rundown.update({ $set: { _rank: rank } })
-			}
-		}
-	} else {
-		// This rundown is new, so push to the end of the manually ordered playlist
-		const otherRundowns = rundownsCollection.findFetch((r) => r._id !== ingestCache.RundownId)
-		const last = max(otherRundowns, (r) => r._rank)?._rank ?? -1
-		rundownsCollection.update(ingestCache.RundownId, { $set: { _rank: last + 1 } })
-		// Update the ingestCache to keep them in sync
-		ingestCache.Rundown.update({ $set: { _rank: last + 1 } })
+	if (!result) {
+		throw new Meteor.Error(500, `RundownPlaylist had no rundowns, even though ingest created one`)
+	}
+
+	const [newPlaylist, rundownsCollection] = result
+
+	// Update the ingestCache to keep them in sync
+	const updatedRundown = rundownsCollection.findOne(ingestCache.RundownId)
+	if (updatedRundown) {
+		ingestCache.Rundown.update((r) => {
+			r._rank = updatedRundown._rank
+			return r
+		})
 	}
 
 	return [newPlaylist, rundownsCollection]
+}
+
+async function generatePlaylistAndRundownsCollectionInner(
+	studio: ReadonlyDeep<Studio>,
+	changedRundown: ReadonlyDeep<Rundown> | undefined,
+	newPlaylistId: RundownPlaylistId,
+	newPlaylistExternalId: string,
+	existingPlaylist0?: ReadonlyDeep<RundownPlaylist>,
+	existingRundownsCollection?: DbCacheWriteCollection<Rundown, DBRundown>
+): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown, DBRundown>] | null> {
+	if (existingPlaylist0) {
+		if (existingPlaylist0._id !== newPlaylistId) {
+			throw new Meteor.Error(
+				500,
+				`ingest.generatePlaylistAndRundownsCollection requires existingPlaylist0("${existingPlaylist0._id}") newPlaylistId("${newPlaylistId}") to be the same`
+			)
+		}
+		if (existingPlaylist0.externalId !== newPlaylistExternalId) {
+			throw new Meteor.Error(
+				500,
+				`ingest.generatePlaylistAndRundownsCollection requires existingPlaylist0("${existingPlaylist0.externalId}") newPlaylistExternalId("${newPlaylistExternalId}") to be the same`
+			)
+		}
+	}
+
+	// Load existing playout data
+	const rundownsCollection = existingRundownsCollection ?? new DbCacheWriteCollection(Rundowns)
+	const [existingPlaylist, studioBlueprint] = await Promise.all([
+		existingPlaylist0
+			? existingPlaylist0
+			: (asyncCollectionFindOne(RundownPlaylists, newPlaylistId) as Promise<ReadonlyDeep<RundownPlaylist>>),
+		makePromise(() => loadStudioBlueprint(studio)),
+		existingRundownsCollection ? null : rundownsCollection.prepareInit({ playlistId: newPlaylistId }, true),
+	])
+	if (changedRundown) {
+		rundownsCollection.replace(changedRundown)
+	}
+	const changedRundownId = changedRundown?._id
+
+	const allRundowns = rundownsCollection.findFetch({})
+	if (allRundowns.length > 0) {
+		// Skip the update, if there are no rundowns left
+		// Generate the new playlist, and ranks for the rundowns
+		const { rundownPlaylist: newPlaylist0, order: newRundownOrder } = produceRundownPlaylistInfoFromRundown(
+			studio,
+			studioBlueprint,
+			existingPlaylist,
+			newPlaylistId,
+			newPlaylistExternalId,
+			allRundowns
+		)
+		const newPlaylist = new RundownPlaylist(newPlaylist0)
+
+		// Update the ranks of the rundowns
+		if (!newPlaylist.rundownRanksAreSetInSofie) {
+			// Update the rundown ranks
+			for (const [id, rank] of Object.entries(newRundownOrder)) {
+				const id2 = protectString(id)
+				rundownsCollection.update(id2, { $set: { _rank: rank } })
+			}
+		} else if (changedRundownId) {
+			// This rundown is new, so push to the end of the manually ordered playlist
+			const otherRundowns = rundownsCollection.findFetch((r) => r._id !== changedRundownId)
+			const last = max(otherRundowns, (r) => r._rank)?._rank ?? -1
+			rundownsCollection.update(changedRundownId, { $set: { _rank: last + 1 } })
+		}
+
+		return [newPlaylist, rundownsCollection]
+	} else {
+		return null
+	}
 }
 
 function applyChangesToPlayout(
@@ -409,6 +469,45 @@ function updatePartInstancesBasicProperties(
 	}
 }
 
+/**
+ * Regenerate the supplied rundown playlist and update the order of its rundowns (if not manual)
+ * This saves directly to the db (or to the supplied cache collection)
+ */
+export async function regeneratePlaylistAndRundownOrder(
+	studio: ReadonlyDeep<Studio>,
+	oldPlaylist: ReadonlyDeep<RundownPlaylist>,
+	existingRundownsCollection?: DbCacheWriteCollection<Rundown, DBRundown>
+): Promise<RundownPlaylist | null> {
+	const result = await generatePlaylistAndRundownsCollectionInner(
+		studio,
+		undefined,
+		oldPlaylist._id,
+		oldPlaylist.externalId,
+		oldPlaylist,
+		existingRundownsCollection
+	)
+
+	if (result) {
+		const [newPlaylist, rundownsCollection] = result
+
+		// Save the changes
+		await Promise.all([
+			!existingRundownsCollection ? rundownsCollection.updateDatabaseWithData() : null,
+			asyncCollectionUpsert(RundownPlaylists, newPlaylist._id, newPlaylist),
+		])
+
+		return newPlaylist
+	} else {
+		// Playlist is empty and should be removed
+		await asyncCollectionRemove(RundownPlaylists, oldPlaylist._id)
+
+		return null
+	}
+}
+
+/**
+ * Ensure that the playlist triggers a playout update if it is active
+ */
 export function updatePlayoutAfterChangingRundownInPlaylist(
 	playlist: RundownPlaylist,
 	playlistLock: PlaylistLock,
@@ -433,7 +532,11 @@ export function updatePlayoutAfterChangingRundownInPlaylist(
 				// Remove an empty playlist
 				await asyncCollectionRemove(RundownPlaylists, { _id: playoutCache.PlaylistId })
 				playoutCache.assertNoChanges()
-			} else if (playoutCache.Playlist.doc.activationId) {
+				return
+			}
+
+			// Ensure playout is in sync
+			if (playoutCache.Playlist.doc.activationId) {
 				const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(playoutCache)
 				const targetRundownId = currentPartInstance?.rundownId ?? nextPartInstance?.rundownId
 

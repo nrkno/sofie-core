@@ -146,9 +146,9 @@ function updateServerTime(retries: number = 0) {
 			// if result.stdDev is less than one frame-time, it should be okay:
 			if (result.stdDev < 1000 / 50) {
 				logger.info(
-					`System time: Setting diff to ${Math.round(result.mean)} ms (std. dev: ${Math.floor(
-						result.stdDev * 10
-					) / 10} ms)`
+					`System time: Setting diff to ${Math.round(result.mean)} ms (std. dev: ${
+						Math.floor(result.stdDev * 10) / 10
+					} ms)`
 				)
 
 				systemTime.hasBeenSet = true
@@ -164,9 +164,9 @@ function updateServerTime(retries: number = 0) {
 					systemTime.diff = result.mean
 					systemTime.stdDev = result.stdDev
 				}
-				let message = `Unable to accuire NTP-time with good enough accuracy (standard deviation: ${Math.floor(
-					result.stdDev * 10
-				) / 10} ms)`
+				let message = `Unable to accuire NTP-time with good enough accuracy (standard deviation: ${
+					Math.floor(result.stdDev * 10) / 10
+				} ms)`
 				if (systemTime.stdDev < 200) {
 					setSystemStatus('systemTime', { statusCode: StatusCode.WARNING_MAJOR, messages: [message] })
 				} else {

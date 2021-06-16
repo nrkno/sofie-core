@@ -76,10 +76,12 @@ export const DashboardPieceButtonSplitPreview = translateWithTracker<IProps, {},
 									height: ((item.content && item.content.scale) * 100).toString() + '%',
 									clipPath:
 										item.content && item.content.crop
-											? `inset(${item.content.crop.top * 100}% ${item.content.crop.right * 100}% ${item.content.crop
-													.bottom * 100}% ${item.content.crop.left * 100}%)`
+											? `inset(${item.content.crop.top * 100}% ${item.content.crop.right * 100}% ${
+													item.content.crop.bottom * 100
+											  }% ${item.content.crop.left * 100}%)`
 											: undefined,
-								}}></div>
+								}}
+							></div>
 						)
 					})}
 				</div>

@@ -1303,7 +1303,7 @@ let xmlApiData = {
 	rundownElementAction_swap_items_ItemId1: new MOS.MosString128('24'),
 }
 
-describe('peripheralDevice: MOS Basic functions', function() {
+describe('peripheralDevice: MOS Basic functions', function () {
 	// beforeEach(function () {
 	// 	StubCollections.stub(Rundowns)
 	// 	StubCollections.stub(Segments)
@@ -1542,7 +1542,7 @@ describe('peripheralDevice: MOS Basic functions', function() {
 	// 	expect(getRank(after, null, 1, 2)).to.be.greaterThan(22)
 	// })
 })
-describe('peripheralDevice: MOS API methods', function() {
+describe('peripheralDevice: MOS API methods', function () {
 	// it('mosRoCreate', function () {
 	// 	// Test data:
 	// 	let rundown = xmlApiData.rundownCreate

@@ -1,7 +1,18 @@
 {
-  "name": "Sofie Integration Libraries",
-  "out": "docs",
-  "theme": "default",
-  "exclude": ["*.spec.ts", "node_modules", "*/node_modules", "docs", "*/dist", "*/src/types", "*/examples"],
-  "external-modulemap": ".*packages\/([^\/]+)\/.*"
+	"name": "Sofie Integration Libraries",
+	"out": "docs",
+	"theme": "default",
+	"exclude": [
+		"*.spec.ts",
+		"node_modules",
+		"*/node_modules",
+		"docs",
+		"*/dist",
+		"*/src/types",
+		"*/examples",
+		"packages/*-gateway",
+		"packages/mos-gateway",
+		"packages/playout-gateway"
+	],
+	"external-modulemap": ".*packages/([^/]+)-integration/.*"
 }

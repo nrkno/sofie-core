@@ -22,7 +22,8 @@ export const OverUnderTimer = withTiming<IProps, {}>()(
 					className={ClassNames('prompter-timing-clock heavy-light', {
 						heavy: (this.props.timingDurations.asPlayedRundownDuration || 0) <= target,
 						light: (this.props.timingDurations.asPlayedRundownDuration || 0) > target,
-					})}>
+					})}
+				>
 					{RundownUtils.formatDiffToTimecode(
 						(this.props.timingDurations.asPlayedRundownDuration || 0) - target,
 						true,

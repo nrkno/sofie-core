@@ -272,9 +272,9 @@ export function withTracker<IProps, IState, TrackedProps>(
 				return content
 			}
 		}
-		HOC['displayName'] = `ReactMeteorComponentWrapper(${WrappedComponent['displayName'] ||
-			WrappedComponent.name ||
-			'Unnamed component'})`
+		HOC['displayName'] = `ReactMeteorComponentWrapper(${
+			WrappedComponent['displayName'] || WrappedComponent.name || 'Unnamed component'
+		})`
 		return HOC
 	}
 }

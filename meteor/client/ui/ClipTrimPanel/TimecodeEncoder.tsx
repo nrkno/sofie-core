@@ -152,7 +152,8 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 			<div
 				className={ClassNames('timecode-encoder', {
 					error: this.state.hasError || this.props.invalid,
-				})}>
+				})}
+			>
 				<div className="timecode-encoder__top-buttons">
 					<button onClick={() => this.add('01:00:00:00')}>
 						<FontAwesomeIcon icon={faCaretUp} />

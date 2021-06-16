@@ -65,7 +65,8 @@ export default withTranslation()(
 								disabled={this.state.editMode}
 								onClick={() => {
 									this.setEditMode(true)
-								}}>
+								}}
+							>
 								{t('Edit in Nora')}
 							</button>
 						</div>

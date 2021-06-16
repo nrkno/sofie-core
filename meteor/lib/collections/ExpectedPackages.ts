@@ -79,9 +79,10 @@ export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageD
 	/** The Bucket adlib-action this package belongs to */
 	pieceId: BucketAdLibActionId
 }
-export const ExpectedPackages: TransformedCollection<ExpectedPackageDB, ExpectedPackageDB> = createMongoCollection<
+export const ExpectedPackages: TransformedCollection<
+	ExpectedPackageDB,
 	ExpectedPackageDB
->('expectedPackages')
+> = createMongoCollection<ExpectedPackageDB>('expectedPackages')
 registerCollection('ExpectedPackages', ExpectedPackages)
 
 registerIndex(ExpectedPackages, {

@@ -140,7 +140,8 @@ export class CustomLayerItemRenderer<
 						left: this.props.relative
 							? (((vtContent.sourceDuration - seek) / (this.getItemDuration() || 1)) * 100).toString() + '%'
 							: ((vtContent.sourceDuration - seek) * this.props.timeScale).toString() + 'px',
-					}}></div>
+					}}
+				></div>
 			)
 		}
 		return null

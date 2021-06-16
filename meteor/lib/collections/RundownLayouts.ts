@@ -37,6 +37,7 @@ export enum RundownLayoutElementType {
 	EXTERNAL_FRAME = 'external_frame',
 	ADLIB_REGION = 'adlib_region',
 	PIECE_COUNTDOWN = 'piece_countdown',
+	NEXT_INFO = 'next_info',
 }
 
 export interface RundownLayoutElementBase {
@@ -71,6 +72,13 @@ export interface RundownLayoutPieceCountdown extends RundownLayoutElementBase {
 	sourceLayerIds: string[] | undefined
 }
 
+export interface RundownLayoutNextInfo extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.NEXT_INFO
+	showSegmentName: boolean
+	showPartTitle: boolean
+	hideForDynamicallyInsertedParts: boolean
+}
+
 /**
  * A filter to be applied against the AdLib Pieces. If a member is undefined, the pool is not tested
  * against that filter. A member must match all of the sub-filters to be included in a filter view
@@ -87,6 +95,7 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	tags: string[] | undefined
 	displayStyle: PieceDisplayStyle
 	showThumbnailsInList: boolean
+	hideDuplicates: boolean
 	currentSegment: boolean
 	/**
 	 * true: include Rundown Baseline AdLib Pieces
@@ -115,6 +124,13 @@ export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
 }
 
 export interface DashboardLayoutPieceCountdown extends RundownLayoutPieceCountdown {
+	x: number
+	y: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutNextInfo extends RundownLayoutNextInfo {
 	x: number
 	y: number
 	width: number
@@ -196,9 +212,10 @@ export interface DashboardLayout extends RundownLayoutBase {
 	actionButtons?: DashboardLayoutActionButton[]
 }
 
-export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase> = createMongoCollection<
+export const RundownLayouts: TransformedCollection<
+	RundownLayoutBase,
 	RundownLayoutBase
->('rundownLayouts')
+> = createMongoCollection<RundownLayoutBase>('rundownLayouts')
 registerCollection('RundownLayouts', RundownLayouts)
 
 // addIndex(RundownLayouts, {

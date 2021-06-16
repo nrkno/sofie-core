@@ -286,7 +286,8 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 						width:
 							Math.min(100, Math.max(0, (this.props.scrollLeft / this.props.segmentDuration) * 100)).toString() + '%',
 					}}
-					onClick={(e) => this.outsideZoomAreaClick(e)}></div>
+					onClick={(e) => this.outsideZoomAreaClick(e)}
+				></div>
 				<div
 					className="segment-timeline__zoom-area__controls__right-mask"
 					style={{
@@ -296,7 +297,8 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 								Math.max(0, (1 - (this.props.scrollLeft + this.props.scrollWidth) / this.props.segmentDuration) * 100)
 							).toString() + '%',
 					}}
-					onClick={(e) => this.outsideZoomAreaClick(e)}></div>
+					onClick={(e) => this.outsideZoomAreaClick(e)}
+				></div>
 				<div
 					className="segment-timeline__zoom-area__controls__selected-area"
 					style={{
@@ -305,7 +307,8 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 					}}
 					ref={this.setSelAreaRef}
 					onMouseDown={(e) => this.zoomAreaBeginMove(e)}
-					onTouchStart={(e) => this.zoomAreaBeginMove(e, true)}>
+					onTouchStart={(e) => this.zoomAreaBeginMove(e, true)}
+				>
 					<LeftArrow className="segment-timeline__zoom-area__controls__selected-area__left-arrow" />
 					<div className="segment-timeline__zoom-area__controls__selected-area__center-handle"></div>
 					<RightArrow className="segment-timeline__zoom-area__controls__selected-area__right-arrow" />

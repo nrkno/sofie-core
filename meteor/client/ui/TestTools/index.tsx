@@ -23,13 +23,15 @@ const StatusMenu = withTranslation()(
 					<NavLink
 						activeClassName="selectable-selected"
 						className="testTools-menu__testTools-menu-item selectable clickable"
-						to={'/testTools/timeline'}>
+						to={'/testTools/timeline'}
+					>
 						<h3>{t('Timeline')}</h3>
 					</NavLink>
 					<NavLink
 						activeClassName="selectable-selected"
 						className="testTools-menu__testTools-menu-item selectable clickable"
-						to={'/testTools/userlogplayer'}>
+						to={'/testTools/userlogplayer'}
+					>
 						<h3>{t('User Log Player')}</h3>
 					</NavLink>
 				</div>

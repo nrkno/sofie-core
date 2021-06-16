@@ -188,13 +188,15 @@ const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.Wit
 				keyOk: keyFinishedOK,
 				ok: finishedOK,
 				error: finishedError,
-			})}>
+			})}
+		>
 			<div className="workflow__header pas">
 				<div className="workflow__header__progress">
 					<VelocityReact.VelocityComponent
 						animation={finishedOK ? iconEnterAnimation : iconLeaveAnimation}
 						duration={300}
-						easing="easeIn">
+						easing="easeIn"
+					>
 						<div className="big-status ok">
 							<FontAwesomeIcon icon={faCheck} />
 						</div>
@@ -202,7 +204,8 @@ const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.Wit
 					<VelocityReact.VelocityComponent
 						animation={finishedError ? iconEnterAnimation : iconLeaveAnimation}
 						duration={300}
-						easing="easeIn">
+						easing="easeIn"
+					>
 						<div className="big-status error">
 							<WarningIcon />
 						</div>
@@ -210,7 +213,8 @@ const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.Wit
 					<VelocityReact.VelocityComponent
 						animation={!finishedOK && !finishedError ? iconEnterAnimation : iconLeaveAnimation}
 						duration={300}
-						easing="easeIn">
+						easing="easeIn"
+					>
 						<CircularProgressbar
 							value={progress * 100} // TODO: initialAnimation={true} removed, make the animation other way if needed
 							text={Math.round(progress * 100) + '%'}
@@ -225,7 +229,8 @@ const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.Wit
 					<VelocityReact.VelocityComponent
 						animation={!finishedOK && !finishedError && keyFinishedOK ? subIconEnterAnimation : subIconLeaveAnimation}
 						duration={300}
-						easing="easeIn">
+						easing="easeIn"
+					>
 						<div className="big-status sub-icon ok">
 							<FontAwesomeIcon icon={faCheck} />
 						</div>
@@ -269,7 +274,8 @@ const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.Wit
 						<button
 							className="action-btn"
 							disabled={mediaWorkflow.finished}
-							onClick={(e) => props.actionAbort(e, mediaWorkflow)}>
+							onClick={(e) => props.actionAbort(e, mediaWorkflow)}
+						>
 							<FontAwesomeIcon icon={faStopCircle} />
 						</button>
 					</Tooltip>
@@ -279,7 +285,8 @@ const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.Wit
 								prioritized: mediaWorkflow.priority > 1,
 							})}
 							disabled={mediaWorkflow.finished}
-							onClick={(e) => props.actionPrioritize(e, mediaWorkflow)}>
+							onClick={(e) => props.actionPrioritize(e, mediaWorkflow)}
+						>
 							<FontAwesomeIcon icon={faFlag} />
 						</button>
 					</Tooltip>
@@ -298,7 +305,8 @@ const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.Wit
 					easing: 'ease-in',
 					duration: 150,
 					overflow: 'hidden',
-				}}>
+				}}
+			>
 				{expanded && (
 					<div>
 						{mediaWorkflow.steps
@@ -310,7 +318,8 @@ const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.Wit
 										error: step.status === MediaManagerAPI.WorkStepStatus.ERROR,
 										working: step.status === MediaManagerAPI.WorkStepStatus.WORKING,
 									})}
-									key={unprotectString(step._id)}>
+									key={unprotectString(step._id)}
+								>
 									<div className="workflow__step__action pas">{actionLabel(t, step.action)}</div>
 									<div className="workflow__step__status pas">{workStepStatusLabel(t, step)}</div>
 									<div className="workflow__step__progress progress-bar">

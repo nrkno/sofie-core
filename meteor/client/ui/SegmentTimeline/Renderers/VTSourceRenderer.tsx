@@ -466,7 +466,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				<span
 					className={ClassNames('segment-timeline__piece__label', {
 						'overflow-label': end !== '',
-					})}>
+					})}
+				>
 					{begin}
 				</span>
 				{begin && end === '' && vtContent && vtContent.loop && (
@@ -497,7 +498,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					hidden: this.props.outputGroupCollapsed,
 				})}
 				ref={this.setRightLabelRef}
-				style={this.getItemLabelOffsetRight()}>
+				style={this.getItemLabelOffsetRight()}
+			>
 				{end && vtContent && vtContent.loop && (
 					<div className="segment-timeline__piece__label label-icon label-loop-icon">
 						<Lottie
@@ -510,8 +512,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				)}
 				<span className="segment-timeline__piece__label last-words">{end}</span>
 				{this.renderInfiniteIcon()}
-				{(!isLiveLine || part.instance.part.autoNext) &&
-					this.renderOverflowTimeLabel() /* do not render the overflow time label if the part is live and will not autonext */}
+				{
+					(!isLiveLine || part.instance.part.autoNext) &&
+						this.renderOverflowTimeLabel() /* do not render the overflow time label if the part is live and will not autonext */
+				}
 			</span>
 		)
 	}
@@ -549,7 +553,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 						className="segment-timeline__liveline__appendage segment-timeline__liveline__appendage--piece-countdown"
 						style={{
 							top: `calc(${this.props.layerIndex} * var(--segment-layer-height))`,
-						}}>
+						}}
+					>
 						<span className="segment-timeline__liveline__appendage--piece-countdown__content">
 							{RundownUtils.formatDiffToTimecode(counter || 0, false, false, true, false, true, '', false, false)}
 						</span>
@@ -586,7 +591,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 								<span
 									className="segment-timeline__piece__scene-marker"
 									key={i}
-									style={{ left: ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>
+									style={{ left: ((i - seek) * this.props.timeScale).toString() + 'px' }}
+								></span>
 							)
 					)}
 				{this.state.freezes &&
@@ -601,7 +607,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 										left: ((i.start - seek) * this.props.timeScale).toString() + 'px',
 										width:
 											(Math.min(itemDuration - i.start + seek, i.duration) * this.props.timeScale).toString() + 'px',
-									}}></span>
+									}}
+								></span>
 							)
 					)}
 				{this.state.blacks &&
@@ -616,7 +623,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 										left: ((i.start - seek) * this.props.timeScale).toString() + 'px',
 										width:
 											(Math.min(itemDuration - i.start + seek, i.duration) * this.props.timeScale).toString() + 'px',
-									}}></span>
+									}}
+								></span>
 							)
 					)}
 				{this.leftLabelNodes}

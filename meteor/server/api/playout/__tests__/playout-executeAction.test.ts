@@ -109,7 +109,7 @@ describe('Playout API', () => {
 							// Constants to into code:
 							BLUEPRINT_TYPE,
 						},
-						function(): any {
+						function (): any {
 							return {
 								blueprintType: BLUEPRINT_TYPE,
 								executeAction: () => {
@@ -142,7 +142,7 @@ describe('Playout API', () => {
 							STATE_NONE,
 							STATE_SAFE,
 						},
-						function(): any {
+						function (): any {
 							return {
 								blueprintType: BLUEPRINT_TYPE,
 								executeAction: (context0) => {
@@ -180,7 +180,7 @@ describe('Playout API', () => {
 							STATE_NONE,
 							STATE_SAFE,
 						},
-						function(): any {
+						function (): any {
 							return {
 								blueprintType: BLUEPRINT_TYPE,
 								executeAction: (context0) => {
@@ -220,7 +220,7 @@ describe('Playout API', () => {
 							STATE_NONE,
 							STATE_SAFE,
 						},
-						function(): any {
+						function (): any {
 							return {
 								blueprintType: BLUEPRINT_TYPE,
 								executeAction: (context0) => {
@@ -264,7 +264,7 @@ describe('Playout API', () => {
 							STATE_NONE,
 							STATE_SAFE,
 						},
-						function(): any {
+						function (): any {
 							return {
 								blueprintType: BLUEPRINT_TYPE,
 								executeAction: (context0) => {
@@ -304,7 +304,7 @@ describe('Playout API', () => {
 							STATE_NONE,
 							STATE_SAFE,
 						},
-						function(): any {
+						function (): any {
 							return {
 								blueprintType: BLUEPRINT_TYPE,
 								executeAction: (context0) => {

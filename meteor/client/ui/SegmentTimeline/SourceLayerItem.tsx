@@ -736,7 +736,8 @@ export const SourceLayerItem = withTranslation()(
 						onMouseMove={this.moveMiniInspector}
 						onMouseEnter={this.toggleMiniInspectorOn}
 						onMouseLeave={this.toggleMiniInspectorOff}
-						style={this.getItemStyle()}>
+						style={this.getItemStyle()}
+					>
 						{this.renderInsideItem(typeClass)}
 						{DEBUG_MODE && (
 							<div className="segment-timeline__debug-info">
@@ -783,7 +784,8 @@ export const SourceLayerItem = withTranslation()(
 						className="segment-timeline__piece"
 						data-obj-id={this.props.piece.instance._id}
 						ref={this.setRef}
-						style={this.getItemStyle()}></div>
+						style={this.getItemStyle()}
+					></div>
 				)
 			}
 		}

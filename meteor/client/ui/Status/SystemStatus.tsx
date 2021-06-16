@@ -216,7 +216,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 								!this.props.hasChildren &&
 								this.props.hasChildren !== undefined
 							}
-							placement="right">
+							placement="right"
+						>
 							{getAllowConfigure() ? (
 								<div className="value">
 									<Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link>
@@ -249,7 +250,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 											e.preventDefault()
 											e.stopPropagation()
 											this.onRestartCasparCG(this.props.device)
-										}}>
+										}}
+									>
 										{t('Restart')}
 										{/** IDK what this does, but it doesn't seem to make a lot of sense: JSON.stringify(this.props.device.settings) */}
 									</button>
@@ -265,7 +267,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 											e.preventDefault()
 											e.stopPropagation()
 											this.onFormatHyperdeck(this.props.device)
-										}}>
+										}}
+									>
 										{t('Format disks')}
 									</button>
 								</React.Fragment>
@@ -280,7 +283,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 											e.preventDefault()
 											e.stopPropagation()
 											this.onRestartQuantel(this.props.device)
-										}}>
+										}}
+									>
 										{t('Restart Quantel Gateway')}
 									</button>
 								</React.Fragment>
@@ -295,7 +299,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 										e.preventDefault()
 										e.stopPropagation()
 										this.onToggleIgnore(this.props.device)
-									}}>
+									}}
+								>
 									<FontAwesomeIcon icon={faEye} />
 								</button>
 							) : null}
@@ -320,7 +325,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 												MeteorCall.peripheralDevice.removePeripheralDevice(this.props.device._id).catch(console.error)
 											},
 										})
-									}}>
+									}}
+								>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							) : null}
@@ -365,7 +371,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 														})
 												},
 											})
-										}}>
+										}}
+									>
 										{t('Restart')}
 									</button>
 								</React.Fragment>
@@ -412,7 +419,8 @@ export const CoreItem = reacti18next.withTranslation()(
 										'device-status--warning': this.props.systemStatus.status === 'WARNING',
 										'device-status--fatal': this.props.systemStatus.status === 'FAIL',
 									}
-							)}>
+							)}
+						>
 							<div className="value">
 								<span className="pill device-status__label">
 									<a
@@ -421,7 +429,8 @@ export const CoreItem = reacti18next.withTranslation()(
 											this.props.systemStatus && this.props.systemStatus._internal.messages
 												? this.props.systemStatus._internal.messages.join('\n')
 												: undefined
-										}>
+										}
+									>
 										{this.props.systemStatus && this.props.systemStatus.status}
 									</a>
 								</span>
@@ -513,7 +522,8 @@ export const CoreItem = reacti18next.withTranslation()(
 												)
 											},
 										})
-									}}>
+									}}
+								>
 									{t('Restart')}
 								</button>
 							</div>

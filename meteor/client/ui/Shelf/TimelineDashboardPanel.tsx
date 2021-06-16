@@ -88,6 +88,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 		render() {
 			if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 				const filter = this.props.filter as DashboardLayoutFilter
+				const uniquenessIds = new Set<string>()
 				if (!this.props.uiSegments || !this.props.playlist) {
 					return <Spinner />
 				} else {
@@ -97,7 +98,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 							this.props.showStyleBase,
 							this.props.uiSegments,
 							this.props.filter,
-							this.state.searchFilter
+							this.state.searchFilter,
+							uniquenessIds
 						)
 					)
 
@@ -108,7 +110,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 							<div
 								className={ClassNames('dashboard-panel__panel', {
 									'dashboard-panel__panel--horizontal': filter.overflowHorizontally,
-								})}>
+								})}
+							>
 								{filteredRudownBaselineAdLibs.length > 0 && (
 									<div className="dashboard-panel__panel__group">
 										{filteredRudownBaselineAdLibs.map((adLibListItem: AdLibPieceUi) => {
@@ -138,7 +141,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 													heightScale={filter.buttonHeightScale}
 													displayStyle={PieceDisplayStyle.BUTTONS}
 													showThumbnailsInList={filter.showThumbnailsInList}
-													toggleOnSingleClick={this.state.singleClickMode}>
+													toggleOnSingleClick={this.state.singleClickMode}
+												>
 													{adLibListItem.name}
 												</DashboardPieceButton>
 											)
@@ -153,7 +157,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 													this.props.showStyleBase,
 													this.props.uiSegments,
 													this.props.filter,
-													this.state.searchFilter
+													this.state.searchFilter,
+													uniquenessIds
 												)
 										  )
 										: []
@@ -166,7 +171,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 											className={ClassNames('dashboard-panel__panel__group', {
 												live: seg.isLive,
 												next: seg.isNext && !this.props.playlist.currentPartInstanceId,
-											})}>
+											})}
+										>
 											{(seg.isLive || (seg.isNext && !this.props.playlist.currentPartInstanceId)) && (
 												<div className="dashboard-panel__panel__group__liveline" ref={this.setRef}></div>
 											)}
@@ -196,15 +202,14 @@ export const TimelineDashboardPanel = translateWithTracker<
 														displayStyle={PieceDisplayStyle.BUTTONS}
 														widthScale={filter.buttonWidthScale}
 														heightScale={filter.buttonHeightScale}
-														showThumbnailsInList={filter.showThumbnailsInList}>
+														showThumbnailsInList={filter.showThumbnailsInList}
+													>
 														{adLibListItem.name}
 													</DashboardPieceButton>
 												)
 											})}
 										</div>
-									) : (
-										undefined
-									)
+									) : undefined
 								})}
 							</div>
 						</div>

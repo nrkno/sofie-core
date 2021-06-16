@@ -91,7 +91,8 @@ import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/DocumentTitleProvider'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { RundownDividerHeader, RundownLoopingHeader } from './RundownView/RundownDividerHeader'
+import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
+import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownViewEventBus'
@@ -186,7 +187,8 @@ const WarningDisplay = withTranslation()(
 							this.state.plannedStartCloseShow &&
 							!(this.props.playlist.activationId && !this.props.playlist.rehearsal) &&
 							!!this.props.playlist.activationId
-						}>
+						}
+					>
 						<p>
 							{t(
 								'You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to reset the rundown and go into On-Air mode?'
@@ -234,20 +236,36 @@ const TimingDisplay = withTranslation()(
 	withTiming<ITimingDisplayProps & WithTranslation, {}>()(
 		class TimingDisplay extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 			private renderRundownName() {
-				const { rundownPlaylist, currentRundown, rundownCount } = this.props
+				const { rundownPlaylist, currentRundown, rundownCount, t } = this.props
 				return currentRundown && (rundownPlaylist.name !== currentRundown.name || rundownCount > 1) ? (
 					<span
 						className="timing-clock-label left hide-overflow rundown-name"
 						title={
 							rundownPlaylist.loop
-								? `${currentRundown.name} - ${rundownPlaylist.name} (Looped)`
-								: `${currentRundown.name} - ${rundownPlaylist.name}`
-						}>
-						<strong>{currentRundown.name}</strong> {rundownPlaylist.name} {rundownPlaylist.loop && <LoopingIcon />}
+								? t('{{currentRundownName}} - {{rundownPlaylistName}} (Looping)', {
+										currentRundownName: currentRundown.name,
+										rundownPlaylistName: rundownPlaylist.name,
+								  })
+								: t('{{currentRundownName}} - {{rundownPlaylistName}}', {
+										currentRundownName: currentRundown.name,
+										rundownPlaylistName: rundownPlaylist.name,
+								  })
+						}
+					>
+						{rundownPlaylist.loop && <LoopingIcon />} <strong>{currentRundown.name}</strong> {rundownPlaylist.name}
 					</span>
 				) : (
-					<span className="timing-clock-label left hide-overflow rundown-name" title={rundownPlaylist.name}>
-						{rundownPlaylist.name} {rundownPlaylist.loop && <LoopingIcon />}
+					<span
+						className="timing-clock-label left hide-overflow rundown-name"
+						title={
+							rundownPlaylist.loop
+								? t('{{rundownPlaylistName}} (Looping)', {
+										rundownPlaylistName: rundownPlaylist.name,
+								  })
+								: rundownPlaylist.name
+						}
+					>
+						{rundownPlaylist.loop && <LoopingIcon />} {rundownPlaylist.name}
 					</span>
 				)
 			}
@@ -290,7 +308,8 @@ const TimingDisplay = withTranslation()(
 								<span
 									className={ClassNames('timing-clock countdown plan-start left', {
 										heavy: getCurrentTime() > rundownPlaylist.expectedStart,
-									})}>
+									})}
+								>
 									{this.renderRundownName()}
 									{RundownUtils.formatDiffToTimecode(
 										getCurrentTime() - rundownPlaylist.expectedStart,
@@ -322,7 +341,7 @@ const TimingDisplay = withTranslation()(
 						)}
 						{rundownPlaylist.expectedDuration ? (
 							<React.Fragment>
-								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration && (
+								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration ? (
 									<span className="timing-clock plan-end right visual-last-child">
 										<span className="timing-clock-label right">{t('Planned End')}</span>
 										<Moment
@@ -331,8 +350,8 @@ const TimingDisplay = withTranslation()(
 											date={rundownPlaylist.expectedStart + rundownPlaylist.expectedDuration}
 										/>
 									</span>
-								)}
-								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration && (
+								) : null}
+								{!rundownPlaylist.loop && rundownPlaylist.expectedStart && rundownPlaylist.expectedDuration ? (
 									<span className="timing-clock countdown plan-end right">
 										{RundownUtils.formatDiffToTimecode(
 											getCurrentTime() - (rundownPlaylist.expectedStart + rundownPlaylist.expectedDuration),
@@ -341,8 +360,8 @@ const TimingDisplay = withTranslation()(
 											true
 										)}
 									</span>
-								)}
-								{rundownPlaylist.expectedDuration && (
+								) : null}
+								{rundownPlaylist.expectedDuration && this.props.rundownCount < 2 ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 									<span
 										className={ClassNames('timing-clock heavy-light right', {
 											heavy:
@@ -351,7 +370,8 @@ const TimingDisplay = withTranslation()(
 											light:
 												(this.props.timingDurations.asPlayedRundownDuration || 0) >
 												(rundownPlaylist.expectedDuration || 0),
-										})}>
+										})}
+									>
 										<span className="timing-clock-label right">{t('Diff')}</span>
 										{RundownUtils.formatDiffToTimecode(
 											(this.props.timingDurations.asPlayedRundownDuration || 0) - rundownPlaylist.expectedDuration,
@@ -364,7 +384,7 @@ const TimingDisplay = withTranslation()(
 											true
 										)}
 									</span>
-								)}
+								) : null}
 							</React.Fragment>
 						) : (
 							<React.Fragment>
@@ -378,7 +398,7 @@ const TimingDisplay = withTranslation()(
 										/>
 									</span>
 								) : null}
-								{this.props.timingDurations ? (
+								{this.props.timingDurations && this.props.rundownCount < 2 ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 									<span
 										className={ClassNames('timing-clock heavy-light right', {
 											heavy:
@@ -387,7 +407,8 @@ const TimingDisplay = withTranslation()(
 											light:
 												(this.props.timingDurations.asPlayedRundownDuration || 0) >
 												(this.props.timingDurations.totalRundownDuration || 0),
-										})}>
+										})}
+									>
 										<span className="timing-clock-label right">{t('Diff')}</span>
 										{RundownUtils.formatDiffToTimecode(
 											(this.props.timingDurations.asPlayedRundownDuration || 0) -
@@ -1273,13 +1294,15 @@ const RundownHeader = withTranslation()(
 							active: !!this.props.playlist.activationId,
 							'not-active': !this.props.playlist.activationId,
 							rehearsal: this.props.playlist.rehearsal,
-						})}>
+						})}
+					>
 						<ContextMenuTrigger
 							id="rundown-context-menu"
 							attributes={{
 								className: 'flex-col col-timing horizontal-align-center',
 							}}
-							holdToDisplay={contextMenuHoldToDisplayTime()}>
+							holdToDisplay={contextMenuHoldToDisplayTime()}
+						>
 							<WarningDisplay
 								studioMode={this.props.studioMode}
 								inActiveRundownView={this.props.inActiveRundownView}
@@ -1292,7 +1315,8 @@ const RundownHeader = withTranslation()(
 										<Tooltip
 											overlay={t('Add ?studio=1 to the URL to enter studio mode')}
 											visible={getHelpMode() && !getAllowStudio()}
-											placement="bottom">
+											placement="bottom"
+										>
 											<div className="media-elem mrs sofie-logo" />
 										</Tooltip>
 										<div className="bd mls">
@@ -1326,7 +1350,8 @@ const RundownHeader = withTranslation()(
 						acceptText={t('OK')}
 						show={!!this.state.isError}
 						onAccept={this.discardError}
-						onDiscard={this.discardError}>
+						onDiscard={this.discardError}
+					>
 						<p>{this.state.errorMessage}</p>
 					</ModalDialog>
 				</React.Fragment>
@@ -1393,7 +1418,6 @@ interface ITrackedProps {
 	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
 	rundownLayoutId?: RundownLayoutId
-	orderedPartsIds: PartId[]
 	shelfDisplayOptions: {
 		buckets: boolean
 		layout: boolean
@@ -1414,24 +1438,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	const playlist = RundownPlaylists.findOne(playlistId)
 	let rundowns: Rundown[] = []
 	let studio: Studio | undefined
-	let allParts: PartId[] = []
 	let currentPartInstance: PartInstance | undefined
 	let nextPartInstance: PartInstance | undefined
 
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun((_playlistId) => playlist.getRundowns(), 'playlist.getRundowns', playlistId)
-		allParts = memoizedIsolatedAutorun(
-			(_playlistId) =>
-				(playlist.getAllOrderedParts(undefined, {
-					fields: {
-						segmentId: 1,
-						_rank: 1,
-					},
-				}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]).map((part) => part._id),
-			'playlist.getAllOrderedParts',
-			playlistId
-		)
 		;({ currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances())
 	}
 
@@ -1499,7 +1511,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}).fetch()) ||
 			undefined,
 		rundownLayoutId: protectString((params['layout'] as string) || ''),
-		orderedPartsIds: allParts,
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
 			layout: displayOptions.includes('layout'),
@@ -1827,63 +1838,65 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps, prevState: IState) {
-			if (
-				this.props.playlist &&
-				prevProps.playlist &&
-				prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId &&
-				this.state.manualSetAsNext
-			) {
-				// reset followLiveSegments after a manual set as next
-				this.setState({
-					manualSetAsNext: false,
-					followLiveSegments: true,
-				})
-				if (this.props.playlist.currentPartInstanceId) {
+			if (!this.props.onlyShelf) {
+				if (
+					this.props.playlist &&
+					prevProps.playlist &&
+					prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId &&
+					this.state.manualSetAsNext
+				) {
+					// reset followLiveSegments after a manual set as next
+					this.setState({
+						manualSetAsNext: false,
+						followLiveSegments: true,
+					})
+					if (this.props.playlist.currentPartInstanceId) {
+						scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+							if (!error.toString().match(/another scroll/)) console.warn(error)
+						})
+					}
+				} else if (
+					this.props.playlist &&
+					prevProps.playlist &&
+					prevProps.playlist.activationId &&
+					!this.props.playlist.activationId
+				) {
+					// reset followLiveSegments after deactivating a rundown
+					this.setState({
+						followLiveSegments: true,
+					})
+				} else if (
+					this.props.playlist &&
+					prevProps.playlist &&
+					!prevProps.playlist.activationId &&
+					this.props.playlist.activationId &&
+					this.props.playlist.nextPartInstanceId
+				) {
+					// scroll to next after activation
+					scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
+						if (!error.toString().match(/another scroll/)) console.warn(error)
+					})
+				} else if (
+					// after take
+					this.props.playlist &&
+					prevProps.playlist &&
+					this.props.playlist.currentPartInstanceId !== prevProps.playlist.currentPartInstanceId &&
+					this.props.playlist.currentPartInstanceId &&
+					this.state.followLiveSegments
+				) {
 					scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
 						if (!error.toString().match(/another scroll/)) console.warn(error)
 					})
+				} else if (
+					// initial Rundown open
+					this.props.playlist &&
+					this.props.playlist.currentPartInstanceId &&
+					this.state.subsReady &&
+					!prevState.subsReady
+				) {
+					// allow for some time for the Rundown to render
+					maintainFocusOnPartInstance(this.props.playlist.currentPartInstanceId, 7000, true, true)
 				}
-			} else if (
-				this.props.playlist &&
-				prevProps.playlist &&
-				prevProps.playlist.activationId &&
-				!this.props.playlist.activationId
-			) {
-				// reset followLiveSegments after deactivating a rundown
-				this.setState({
-					followLiveSegments: true,
-				})
-			} else if (
-				this.props.playlist &&
-				prevProps.playlist &&
-				!prevProps.playlist.activationId &&
-				this.props.playlist.activationId &&
-				this.props.playlist.nextPartInstanceId
-			) {
-				// scroll to next after activation
-				scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
-					if (!error.toString().match(/another scroll/)) console.warn(error)
-				})
-			} else if (
-				// after take
-				this.props.playlist &&
-				prevProps.playlist &&
-				this.props.playlist.currentPartInstanceId !== prevProps.playlist.currentPartInstanceId &&
-				this.props.playlist.currentPartInstanceId &&
-				this.state.followLiveSegments
-			) {
-				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
-					if (!error.toString().match(/another scroll/)) console.warn(error)
-				})
-			} else if (
-				// initial Rundown open
-				this.props.playlist &&
-				this.props.playlist.currentPartInstanceId &&
-				this.state.subsReady &&
-				!prevState.subsReady
-			) {
-				// allow for some time for the Rundown to render
-				maintainFocusOnPartInstance(this.props.playlist.currentPartInstanceId, 7000, true, true)
 			}
 
 			if (
@@ -2186,7 +2199,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				isNotificationsCenterOpen: level === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
 			})
 			setTimeout(
-				function() {
+				function () {
 					NotificationCenter.highlightSource(
 						segmentId,
 						level === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING
@@ -2238,7 +2251,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											initialShow={globalIndex++ < window.innerHeight / 260}
 											placeholderHeight={260}
 											placeholderClassName="placeholder-shimmer-element segment-timeline-placeholder"
-											width="auto">
+											width="auto"
+										>
 											<SegmentTimelineContainer
 												id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 												studio={this.props.studio}
@@ -2250,7 +2264,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												timeScale={this.state.timeScale}
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
-												orderedAllPartIds={this.props.orderedPartsIds}
 												segmentsIdsBefore={rundownAndSegments.segmentIdsBeforeEachSegment[segmentIndex]}
 												isLastSegment={
 													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
@@ -2293,9 +2306,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			if (this.props.playlist && this.props.rundowns.length) {
 				return (
 					<React.Fragment>
-						{this.props.playlist?.loop && <RundownLoopingHeader playlist={this.props.playlist} />}
+						{this.props.playlist?.loop && (
+							<PlaylistLoopingHeader position="start" multiRundown={this.props.matchedSegments.length > 1} />
+						)}
 						<div className="segment-timeline-container">{this.renderSegments()}</div>
-						{this.props.playlist?.loop && <RundownLoopingHeader playlist={this.props.playlist} />}
+						{this.props.playlist?.loop && (
+							<PlaylistLoopingHeader position="end" multiRundown={this.props.matchedSegments.length > 1} />
+						)}
 					</React.Fragment>
 				)
 			} else {
@@ -2517,7 +2534,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									})}
 									style={this.getStyle()}
 									onWheelCapture={this.onWheel}
-									onContextMenu={this.onContextMenuTop}>
+									onContextMenu={this.onContextMenuTop}
+								>
 									<ErrorBoundary>
 										{this.state.studioMode && !Settings.disableBlurBorder && (
 											<KeyboardFocusIndicator>
@@ -2556,7 +2574,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												},
 												easing: 'ease-in',
 												duration: 500,
-											}}>
+											}}
+										>
 											{this.state.isNotificationsCenterOpen && (
 												<NotificationCenterPanel filter={this.state.isNotificationsCenterOpen} />
 											)}
@@ -2575,7 +2594,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												},
 												easing: 'ease-in',
 												duration: 500,
-											}}>
+											}}
+										>
 											{this.state.isSupportPanelOpen && (
 												<SupportPopUp>
 													<hr />
@@ -2654,7 +2674,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												<ModalDialog
 													onAccept={() => this.setState({ selectedPiece: undefined })}
 													title={t('Rundown not found')}
-													acceptText={t('Close')}>
+													acceptText={t('Close')}
+												>
 													{t('Rundown for piece "{{pieceLabel}}" could not be found.', {
 														pieceLabel: this.state.selectedPiece.instance.piece.name,
 													})}
@@ -2772,7 +2793,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												className="btn btn-primary"
 												onClick={() => {
 													history.push('/rundowns')
-												}}>
+												}}
+											>
 												{t('Return to list')}
 											</button>
 										)}

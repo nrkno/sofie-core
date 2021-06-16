@@ -51,9 +51,10 @@ export interface IngestDataCacheObjPart extends IngestDataCacheObjBase {
 }
 export type IngestDataCacheObj = IngestDataCacheObjRundown | IngestDataCacheObjSegment | IngestDataCacheObjPart
 
-export const IngestDataCache: TransformedCollection<IngestDataCacheObj, IngestDataCacheObj> = createMongoCollection<
+export const IngestDataCache: TransformedCollection<
+	IngestDataCacheObj,
 	IngestDataCacheObj
->('ingestDataCache')
+> = createMongoCollection<IngestDataCacheObj>('ingestDataCache')
 registerCollection('IngestDataCache', IngestDataCache)
 
 registerIndex(IngestDataCache, {

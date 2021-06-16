@@ -49,7 +49,8 @@ export function SplitDropdown(props: IProps) {
 					'expco-expanded': expanded,
 				},
 				props.className
-			)}>
+			)}
+		>
 			<div className="expco-title focusable-main">{getSelected()}</div>
 			<div className="action-btn right expco-expand subtle" onClick={toggleExpco}>
 				<FontAwesomeIcon icon={faChevronUp} />

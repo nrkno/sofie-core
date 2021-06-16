@@ -49,7 +49,7 @@ const dropTargetSpec: DropTargetSpec<IRundownDropZoneProps> = {
 	},
 }
 
-const dropTargetCollector: DropTargetCollector<IRundownDropZoneDropTargetProps, IRundownDropZoneProps> = function(
+const dropTargetCollector: DropTargetCollector<IRundownDropZoneDropTargetProps, IRundownDropZoneProps> = function (
 	connect: DropTargetConnector,
 	monitor: DropTargetMonitor,
 	props: IRundownDropZoneProps

@@ -94,9 +94,9 @@ export const take = syncFunction(function take(
 			const lastChange = Math.max(lastTake, lastStartedPlayback)
 			if (now - lastChange < MINIMUM_TAKE_SPAN) {
 				logger.debug(
-					`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${
-						currentPartInstance._id
-					}: ${getCurrentTime() - lastStartedPlayback}`
+					`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentPartInstance._id}: ${
+						getCurrentTime() - lastStartedPlayback
+					}`
 				)
 				logger.debug(`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`)
 				return ClientAPI.responseError(

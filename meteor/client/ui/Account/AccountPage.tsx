@@ -130,7 +130,8 @@ export const AccountPage = translateWithTracker(() => {
 						{user ? (
 							<form
 								className="flex-col"
-								onSubmit={(e: React.MouseEvent<HTMLFormElement>) => this.handleChangePassword(e)}>
+								onSubmit={(e: React.MouseEvent<HTMLFormElement>) => this.handleChangePassword(e)}
+							>
 								<p>{t('Name:')}</p>
 								<input type="text" value={user.profile.name} disabled={true} />
 								<p>{t('Email:')}</p>
@@ -160,7 +161,8 @@ export const AccountPage = translateWithTracker(() => {
 									<button
 										className="btn"
 										type="button"
-										onClick={() => this.setState({ edit: false, password: '', oldPassword: '' })}>
+										onClick={() => this.setState({ edit: false, password: '', oldPassword: '' })}
+									>
 										Cancel
 									</button>
 								)}

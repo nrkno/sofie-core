@@ -99,7 +99,8 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 				ref={itemIcon}
 				onMouseOver={handleOnMouseOver}
 				onMouseLeave={handleOnMouseLeave}
-				onMouseMove={handleOnMouseMove}>
+				onMouseMove={handleOnMouseMove}
+			>
 				{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--shortcut">

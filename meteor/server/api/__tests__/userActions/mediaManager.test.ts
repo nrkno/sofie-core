@@ -100,9 +100,11 @@ describe('User Actions - Media Manager', () => {
 		{
 			// should fail if the workflow doesn't exist
 			expect(() => {
-				Meteor.call(UserActionAPI.methods.mediaAbortWorkflow, '', 'FAKE_ID') as ClientAPI.ClientResponseSuccess<
-					void
-				>
+				Meteor.call(
+					UserActionAPI.methods.mediaAbortWorkflow,
+					'',
+					'FAKE_ID'
+				) as ClientAPI.ClientResponseSuccess<void>
 			}).toThrowError(/not found/gi)
 		}
 

@@ -67,6 +67,8 @@ import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { MongoFieldSpecifierOnes } from '../../../lib/typings/meteor'
+import { translateMessage } from '../../../lib/api/TranslatableMessage'
+import { i18nTranslator } from '../i18n'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
@@ -184,7 +186,7 @@ export function actionToAdLibPieceUi(
 
 	return literal<BucketAdLibActionUi>({
 		_id: protectString(`function_${action._id}`),
-		name: action.display.label,
+		name: translateMessage(action.display.label, i18nTranslator),
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
@@ -751,7 +753,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 										'dashboard-panel__panel--sort-dragging': this.props.isDragging,
 									})}
 									data-bucket-id={this.props.bucket._id}
-									ref={this.setRef}>
+									ref={this.setRef}
+								>
 									{this.props.editableName ? (
 										<input
 											className="h4 dashboard-panel__header"
@@ -794,7 +797,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 												}
 												renderTag="span"
 												key={unprotectString(adlib._id)}
-												holdToDisplay={contextMenuHoldToDisplayTime()}>
+												holdToDisplay={contextMenuHoldToDisplayTime()}
+											>
 												<BucketPieceButton
 													piece={(adlib as any) as IAdLibListItem}
 													studio={this.props.studio}
@@ -823,7 +827,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 														adlib._id === this.props.selectedPiece._id
 													}
 													toggleOnSingleClick={this.state.singleClickMode}
-													displayStyle={PieceDisplayStyle.BUTTONS}>
+													displayStyle={PieceDisplayStyle.BUTTONS}
+												>
 													{adlib.name}
 												</BucketPieceButton>
 											</ContextMenuTrigger>

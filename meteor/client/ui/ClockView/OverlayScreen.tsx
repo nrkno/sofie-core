@@ -68,7 +68,7 @@ export const OverlayScreen = withTranslation()(
 
 						return (
 							<div className="clocks-overlay">
-								<div className="clocks-half clocks-bottom">
+								<div className="clocks-lower-third bottom">
 									<div className="clocks-current-segment-countdown clocks-segment-countdown">
 										{currentPartCountdown !== null ? (
 											<Timediff time={currentPartCountdown} />
@@ -116,7 +116,7 @@ export const OverlayScreen = withTranslation()(
 					}
 					return (
 						<div className="clocks-overlay">
-							<div className="clocks-half clocks-bottom"></div>
+							<div className="clocks-lower-third bottom"></div>
 						</div>
 					)
 				}

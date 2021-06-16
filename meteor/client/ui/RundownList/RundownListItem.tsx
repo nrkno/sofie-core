@@ -76,7 +76,7 @@ const dragSpec: DragSourceSpec<IRundownListItemProps, IRundownDragObject> = {
 	},
 }
 
-const dragCollector: DragSourceCollector<IRundownDragSourceProps, IRundownListItemProps> = function(
+const dragCollector: DragSourceCollector<IRundownDragSourceProps, IRundownListItemProps> = function (
 	connect: DragSourceConnector,
 	monitor: DragSourceMonitor,
 	props: IRundownListItemProps
@@ -157,7 +157,7 @@ interface IRundownDragLayerProps {
 const dragLayerCollect: DragLayerCollector<
 	IRundownDragSourceProps & IRundownListItemProps,
 	IRundownDragLayerProps
-> = function(monitor, props) {
+> = function (monitor, props) {
 	let currentOffset: XYCoord | null = null
 	let clientOffset: XYCoord | null = null
 
@@ -273,6 +273,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 						isDragging,
 						rundownViewUrl,
 						rundownLayouts,
+						isOnlyRundownInPlaylist,
 					} = this.props
 					const userCanConfigure = getAllowConfigure()
 
@@ -304,6 +305,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 							renderTooltips={isDragging !== true}
 							rundownViewUrl={rundownViewUrl}
 							rundown={rundown}
+							isOnlyRundownInPlaylist={isOnlyRundownInPlaylist}
 							rundownLayouts={rundownLayouts}
 							showStyleName={showStyleLabel}
 							showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
