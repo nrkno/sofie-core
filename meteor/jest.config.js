@@ -19,7 +19,7 @@ const commonConfig = {
 			},
 		},
 	},
-	moduleFileExtensions: ['ts', 'js', 'tsx', 'jsx'],
+	moduleFileExtensions: ['ts', 'js'],
 	transform: {
 		'^.+\\.(ts|tsx)$': 'ts-jest',
 		'^.+\\.(js|jsx|mjs)$': path.resolve('./scripts/babel-jest.js'),
