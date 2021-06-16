@@ -14,6 +14,7 @@ import { Studios } from '../../../lib/collections/Studios'
 import { ReadonlyDeep } from 'type-fest'
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import debounceFn, { DebouncedFunction } from 'debounce-fn'
+import { LOW_PRIO_DEFER_TIME } from '../playout/lib'
 
 const EVENT_WAIT_TIME = 500
 
@@ -212,7 +213,10 @@ export function reportPartInstanceHasStarted(
 		})
 
 		cache.deferAfterSave(() => {
-			handlePartInstanceTimingEvent(cache.PlaylistId, partInstance._id)
+			// Run in the background, we don't want to hold onto the lock to do this
+			Meteor.setTimeout(() => {
+				handlePartInstanceTimingEvent(cache.PlaylistId, partInstance._id)
+			}, LOW_PRIO_DEFER_TIME)
 		})
 	}
 }

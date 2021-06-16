@@ -8,6 +8,6 @@ export const addSteps = addMigrationSteps('1.33.0', [
 		'expectedVersion.mediaManager',
 		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
 		'_process',
-		'1.8.0-release33.0'
+		'1.8.0'
 	),
 ])

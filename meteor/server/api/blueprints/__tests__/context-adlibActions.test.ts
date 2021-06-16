@@ -4,7 +4,7 @@ import {
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 } from '../../../../__mocks__/helpers/database'
-import { protectString, unprotectString, getRandomId, getCurrentTime, Awaited } from '../../../../lib/lib'
+import { protectString, unprotectString, getRandomId, getCurrentTime, Awaited, clone } from '../../../../lib/lib'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { ActionExecutionContext, ActionPartChange } from '../context'
@@ -1016,16 +1016,21 @@ describe('Test blueprint api context', () => {
 					expect(cache.PieceInstances.isModified()).toBeFalsy()
 
 					// Update it and expect it to match
-					const pieceInstance0Before = _.clone(pieceInstance0)
+					const pieceInstance0Before = clone(pieceInstance0)
 					const pieceInstance0Delta = {
 						_id: 'sdf', // This will be dropped
 						sourceLayerId: 'new',
 						enable: { start: 99, end: 123 },
 						badProperty: 9, // This will be dropped
 					}
-					expect(
-						context.updatePieceInstance(unprotectString(pieceInstance0._id), pieceInstance0Delta)
-					).toEqual(pieceInstance0)
+					const resultPiece = context.updatePieceInstance(
+						unprotectString(pieceInstance0._id),
+						pieceInstance0Delta
+					)
+					const pieceInstance1 = cache.PieceInstances.findOne(pieceInstance0._id) as PieceInstance
+					expect(pieceInstance1).toBeTruthy()
+
+					expect(resultPiece).toEqual(pieceInstance1)
 					const pieceInstance0After = {
 						...pieceInstance0Before,
 						piece: {
@@ -1033,13 +1038,13 @@ describe('Test blueprint api context', () => {
 							..._.omit(pieceInstance0Delta, 'badProperty', '_id'),
 						},
 					}
-					expect(pieceInstance0).toEqual(pieceInstance0After)
+					expect(pieceInstance1).toEqual(pieceInstance0After)
 					expect(
 						Array.from(cache.PieceInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
 					).toMatchObject([
 						{
 							updated: true,
-							document: { _id: pieceInstance0._id },
+							document: { _id: pieceInstance1._id },
 						},
 					])
 
@@ -1162,14 +1167,16 @@ describe('Test blueprint api context', () => {
 					// Create it with most of the real flow
 					postProcessPiecesMock.mockImplementationOnce(postProcessPiecesOrig)
 					innerStartQueuedAdLibMock.mockImplementationOnce(innerStartQueuedAdLibOrig)
-					expect(context.queuePart(newPart, [newPiece])._id).toEqual(playlist.nextPartInstanceId)
+					expect(context.queuePart(newPart, [newPiece])._id).toEqual(cache.Playlist.doc.nextPartInstanceId)
 
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
 					expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
 					expect(innerStartQueuedAdLibMock).toHaveBeenCalledTimes(1)
 
 					// Verify some properties not exposed to the blueprints
-					const newPartInstance = cache.PartInstances.findOne(playlist.nextPartInstanceId!) as PartInstance
+					const newPartInstance = cache.PartInstances.findOne(
+						cache.Playlist.doc.nextPartInstanceId!
+					) as PartInstance
 					expect(newPartInstance).toBeTruthy()
 					expect(newPartInstance.part._rank).toBeLessThan(9000)
 					expect(newPartInstance.part._rank).toBeGreaterThan(partInstance.part._rank)
@@ -1392,7 +1399,7 @@ describe('Test blueprint api context', () => {
 					expect(cache.PartInstances.isModified()).toBeFalsy()
 
 					// Update it and expect it to match
-					const partInstance0Before = _.clone(partInstance0)
+					const partInstance0Before = clone(partInstance0)
 					const partInstance0Delta = {
 						_id: 'sdf', // This will be dropped
 						title: 'abc',
@@ -1400,7 +1407,12 @@ describe('Test blueprint api context', () => {
 						classes: ['123'],
 						badProperty: 9, // This will be dropped
 					}
-					expect(context.updatePartInstance('next', partInstance0Delta)).toEqual(partInstance0)
+					const resultPiece = context.updatePartInstance('next', partInstance0Delta)
+					const partInstance1 = cache.PartInstances.findOne() as PartInstance
+					expect(partInstance1).toBeTruthy()
+
+					expect(resultPiece).toEqual(partInstance1)
+
 					const pieceInstance0After = {
 						...partInstance0Before,
 						part: {
@@ -1408,13 +1420,13 @@ describe('Test blueprint api context', () => {
 							..._.omit(partInstance0Delta, 'badProperty', '_id'),
 						},
 					}
-					expect(partInstance0).toEqual(pieceInstance0After)
+					expect(partInstance1).toEqual(pieceInstance0After)
 					expect(
 						Array.from(cache.PartInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
 					).toMatchObject([
 						{
 							updated: true,
-							document: { _id: partInstance0._id },
+							document: { _id: partInstance1._id },
 						},
 					])
 

@@ -20,7 +20,7 @@ export function findLookaheadForLayer(
 	lookaheadTargetFutureObjects: number,
 	lookaheadMaxSearchDistance: number
 ): LookaheadResult {
-	const span = profiler.startSpan('findLookaheadForlayer')
+	const span = profiler.startSpan(`findLookaheadForlayer.${layer}`)
 	const res: LookaheadResult = {
 		timed: [],
 		future: [],

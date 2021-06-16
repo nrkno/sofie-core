@@ -58,7 +58,39 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 # [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
+# [1.33.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.2...v1.33.0) (2021-06-15)
 
+
+### Bug Fixes
+
+* gateways not reporting package versions ([127881f](https://github.com/nrkno/tv-automation-server-core/commit/127881fea90645d9ad7b637c2ebcf6879ae8fd3d))
+* resend device statuses to core, on core reconnect ([601f095](https://github.com/nrkno/tv-automation-server-core/commit/601f095c8d85c4b0fba848514de4f7feba0ace07))
+
+
+
+# [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
+
+
+
+# [1.33.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.33.0-in-development.0) (2021-04-22)
+
+
+### Bug Fixes
+
+* update ci flow for lerna building and version bumping [publish] ([8494483](https://github.com/nrkno/tv-automation-server-core/commit/8494483be5ffa6d58e9761bcfea2210716afbab8))
+
+
+### Features
+
+* import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
+
+
+
+
+
+# [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
+
+**Note:** Version bump only for package mos-gateway
 
 ### Bug Fixes
 

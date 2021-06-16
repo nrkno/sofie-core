@@ -134,7 +134,7 @@ export function deactivateRundownPlaylistInner(cache: CacheForPlayout): Rundown 
 
 		// defer so that an error won't prevent deactivate
 		cache.deferAfterSave(() => {
-			// This is low-prio, deferring
+			// Run in the background, we don't want to hold onto the lock to do this
 			Meteor.setTimeout(() => {
 				const currentRundown = Rundowns.findOne(currentPartInstance.rundownId)
 

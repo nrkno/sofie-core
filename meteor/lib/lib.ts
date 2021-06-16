@@ -28,6 +28,27 @@ export function flatten<T>(vals: Array<T[] | undefined>): T[] {
 	)
 }
 
+/**
+ * Recursively delete all undefined properties from the supplied object.
+ * This is necessary as _.isEqual({ a: 1 }, { a: 1, b: undefined }) === false
+ */
+export function deleteAllUndefinedProperties<T>(obj: T): void {
+	if (Array.isArray(obj)) {
+		for (const v of obj) {
+			deleteAllUndefinedProperties(v)
+		}
+	} else if (obj && typeof obj === 'object') {
+		const keys = Object.keys(obj)
+		for (const key of keys) {
+			if (obj[key] === undefined) {
+				delete obj[key]
+			} else {
+				deleteAllUndefinedProperties(obj[key])
+			}
+		}
+	}
+}
+
 export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefined {
 	if (vals.length <= 1) {
 		return vals[0]

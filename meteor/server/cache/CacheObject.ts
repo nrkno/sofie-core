@@ -1,4 +1,11 @@
-import { ProtectedString, mongoModify, unprotectString, getRandomId, clone } from '../../lib/lib'
+import {
+	ProtectedString,
+	mongoModify,
+	unprotectString,
+	getRandomId,
+	clone,
+	deleteAllUndefinedProperties,
+} from '../../lib/lib'
 import { MongoModifier } from '../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
@@ -104,7 +111,7 @@ export class DbCacheWriteObject<
 		const localDoc: ReadonlyDeep<Class> | undefined = this.doc
 		if (!localDoc) throw new Meteor.Error(404, `Error: The document does not yet exist`)
 
-		let newDoc: DBInterface = _.isFunction(modifier)
+		const newDoc: DBInterface = _.isFunction(modifier)
 			? modifier(clone(localDoc))
 			: mongoModify({}, clone(localDoc), modifier)
 
@@ -115,12 +122,11 @@ export class DbCacheWriteObject<
 			)
 		}
 
-		if (!_.isEqual(this.doc, newDoc)) {
-			newDoc = this._transform(newDoc)
+		// ensure no properties are 'undefined'
+		deleteAllUndefinedProperties(newDoc)
 
-			_.each(_.uniq([..._.keys(newDoc), ..._.keys(this.doc)]), (key) => {
-				localDoc[key] = newDoc[key]
-			})
+		if (!_.isEqual(this.doc, newDoc)) {
+			this._document = this._transform(newDoc)
 
 			this._updated = true
 			return true
@@ -194,7 +200,12 @@ export class DbCacheWriteOptionalObject<
 
 		if (!doc._id) doc._id = getRandomId()
 
-		this._document = this._transform(clone(doc))
+		const newDoc = clone(doc)
+
+		// ensure no properties are 'undefined'
+		deleteAllUndefinedProperties(newDoc)
+
+		this._document = this._transform(newDoc)
 
 		return this._document as any
 	}

@@ -74,6 +74,7 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { CacheForStudio } from '../studio/cache'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
+import { profiler } from '../profiler'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -1381,7 +1382,8 @@ export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylist
 
 	data.timeout = Meteor.setTimeout(() => {
 		if (updateTimelineFromIngestDataTimeouts.delete(playlistId)) {
-			return runPlayoutOperationWithCache(
+			const transaction = profiler.startTransaction('triggerUpdateTimelineAfterIngestData', 'playout')
+			runPlayoutOperationWithCache(
 				null,
 				'triggerUpdateTimelineAfterIngestData',
 				playlistId,
@@ -1403,6 +1405,7 @@ export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylist
 					}
 				}
 			)
+			transaction?.end()
 		}
 	}, 1000)
 
