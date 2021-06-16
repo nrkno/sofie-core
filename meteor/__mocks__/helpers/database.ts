@@ -23,7 +23,6 @@ import {
 	BlueprintResultPart,
 	IBlueprintPart,
 	IBlueprintPiece,
-	TSR,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -64,15 +63,16 @@ export enum LAYER_IDS {
 }
 
 function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VERSION: string } {
-	const INTEGRATION_VERSION = require('../../node_modules/@sofie-automation/blueprints-integration/package.json')
-		.version
+	const INTEGRATION_VERSION =
+		require('../../node_modules/@sofie-automation/blueprints-integration/package.json').version
 
 	let TSR_VERSION = ''
 	try {
+		// eslint-disable-next-line node/no-missing-require
 		TSR_VERSION = require('../../node_modules/timeline-state-resolver-types/package.json').version
 	} catch (e) {
-		TSR_VERSION = require('../../node_modules/@sofie-automation/blueprints-integration/node_modules/timeline-state-resolver-types/package.json')
-			.version
+		TSR_VERSION =
+			require('../../node_modules/@sofie-automation/blueprints-integration/node_modules/timeline-state-resolver-types/package.json').version
 	}
 
 	return {
@@ -228,10 +228,10 @@ export function packageBlueprint<T extends BlueprintManifestBase>(
 	})
 	return `({default: (${code})()})`
 }
-export function setupMockStudioBlueprint(
+export async function setupMockStudioBlueprint(
 	showStyleBaseId: ShowStyleBaseId,
 	organizationId: OrganizationId | null = null
-): Blueprint {
+): Promise<Blueprint> {
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.STUDIO
@@ -271,10 +271,10 @@ export function setupMockStudioBlueprint(
 
 	return internalUploadBlueprint(blueprintId, code, blueprintName, true, organizationId)
 }
-export function setupMockShowStyleBlueprint(
+export async function setupMockShowStyleBlueprint(
 	showStyleVariantId: ShowStyleVariantId,
 	organizationId?: OrganizationId | null
-): Blueprint {
+): Promise<Blueprint> {
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
@@ -388,14 +388,16 @@ export interface DefaultEnvironment {
 
 	ingestDevice: PeripheralDevice
 }
-export function setupDefaultStudioEnvironment(organizationId: OrganizationId | null = null): DefaultEnvironment {
+export async function setupDefaultStudioEnvironment(
+	organizationId: OrganizationId | null = null
+): Promise<DefaultEnvironment> {
 	const core = setupMockCore({})
 
 	const showStyleBaseId: ShowStyleBaseId = getRandomId()
 	const showStyleVariantId: ShowStyleVariantId = getRandomId()
 
-	const studioBlueprint = setupMockStudioBlueprint(showStyleBaseId, organizationId)
-	const showStyleBlueprint = setupMockShowStyleBlueprint(showStyleVariantId, organizationId)
+	const studioBlueprint = await setupMockStudioBlueprint(showStyleBaseId, organizationId)
+	const showStyleBlueprint = await setupMockShowStyleBlueprint(showStyleVariantId, organizationId)
 
 	const showStyleBase = setupMockShowStyleBase(showStyleBlueprint._id, {
 		_id: showStyleBaseId,

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Studio } from '../../../lib/collections/Studios'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
@@ -154,23 +154,21 @@ interface IRundownDragLayerProps {
 	clientOffset: XYCoord | null
 }
 
-const dragLayerCollect: DragLayerCollector<
-	IRundownDragSourceProps & IRundownListItemProps,
-	IRundownDragLayerProps
-> = function (monitor, props) {
-	let currentOffset: XYCoord | null = null
-	let clientOffset: XYCoord | null = null
+const dragLayerCollect: DragLayerCollector<IRundownDragSourceProps & IRundownListItemProps, IRundownDragLayerProps> =
+	function (monitor, props) {
+		let currentOffset: XYCoord | null = null
+		let clientOffset: XYCoord | null = null
 
-	if (monitor.getItem()?.id === props.rundown._id) {
-		currentOffset = monitor.getDifferenceFromInitialOffset()
-		clientOffset = monitor.getClientOffset()
-	}
+		if (monitor.getItem()?.id === props.rundown._id) {
+			currentOffset = monitor.getDifferenceFromInitialOffset()
+			clientOffset = monitor.getClientOffset()
+		}
 
-	return {
-		currentOffset,
-		clientOffset,
+		return {
+			currentOffset,
+			clientOffset,
+		}
 	}
-}
 
 export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, IRundownListItemTrackedProps>(
 	(props: Translated<IRundownListItemProps>) => {
@@ -179,7 +177,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 		let showStyleVariant: ShowStyleVariant | undefined = undefined
 
 		try {
-			studio = props.rundown.getStudio()
+			studio = Studios.findOne(props.rundown.studioId)
 		} catch (e) {
 			// this is fine, we'll probably have it eventually and the component can render without it
 		}

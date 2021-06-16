@@ -25,7 +25,7 @@ export const addSteps = addMigrationSteps('1.32.0', [
 		id: 'Drop removed collections r32',
 		canBeRunAutomatically: true,
 		validate: () => {
-			let databaseSystem = getCoreSystem()
+			const databaseSystem = getCoreSystem()
 
 			// Only run this if version is under 1.13.0, in order to not create the deprecated databases
 			if (databaseSystem && semver.satisfies(databaseSystem.version, '<1.32.0')) {

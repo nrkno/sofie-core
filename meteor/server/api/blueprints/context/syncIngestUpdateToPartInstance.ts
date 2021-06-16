@@ -38,7 +38,8 @@ import { CacheForPlayout } from '../../playout/cache'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownContext
-	implements ISyncIngestUpdateToPartInstanceContext {
+	implements ISyncIngestUpdateToPartInstanceContext
+{
 	private readonly _partInstanceCache: DbCacheWriteCollection<PartInstance, DBPartInstance>
 	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance>
 	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>

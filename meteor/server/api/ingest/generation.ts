@@ -16,7 +16,7 @@ import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { getCurrentTime, literal, protectString, unprotectString, waitForPromise } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
-import { saveIntoCache } from '../../cache/lib'
+import { logChanges, saveIntoCache } from '../../cache/lib'
 import { PackageInfo } from '../../coreSystem'
 import { sumChanges, anythingChanged } from '../../lib/database'
 import { logger } from '../../logging'
@@ -96,13 +96,16 @@ export async function calculateSegmentsFromIngestData(
 	}
 
 	if (ingestSegments.length > 0) {
-		const [showStyle, allRundownWatchedPackages] = await Promise.all([
-			getShowStyleCompoundForRundown(rundown),
-			getWatchedPackagesHelper(allRundownWatchedPackages0, cache, ingestSegments),
-		])
-		const blueprint = loadShowStyleBlueprint(showStyle)
+		const pShowStyle = getShowStyleCompoundForRundown(rundown)
+		const pAllRundownWatchedPackages = getWatchedPackagesHelper(allRundownWatchedPackages0, cache, ingestSegments)
 
-		for (let ingestSegment of ingestSegments) {
+		const showStyle = await pShowStyle
+		const pBlueprint = loadShowStyleBlueprint(showStyle)
+
+		const blueprint = await pBlueprint
+		const allRundownWatchedPackages = await pAllRundownWatchedPackages
+
+		for (const ingestSegment of ingestSegments) {
 			const segmentId = getSegmentId(cache.RundownId, ingestSegment.externalId)
 
 			// Ensure the parts are sorted by rank
@@ -284,71 +287,34 @@ export function saveSegmentChangesToCache(
 	const partChanges = saveIntoCache<Part, DBPart>(
 		cache.Parts,
 		isWholeRundownUpdate ? {} : { $or: [{ segmentId: { $in: newSegmentIds } }, { _id: { $in: newPartIds } }] },
-		data.parts,
-		{
-			afterInsert(part) {
-				logger.debug('inserted part ' + part._id)
-			},
-			afterUpdate(part) {
-				logger.debug('updated part ' + part._id)
-			},
-			afterRemove(part) {
-				logger.debug('deleted part ' + part._id)
-			},
-		}
+		data.parts
 	)
+	logChanges('Parts', partChanges)
 	const affectedPartIds = [...partChanges.removed, ...newPartIds]
 
-	saveIntoCache<Piece, Piece>(
-		cache.Pieces,
-		isWholeRundownUpdate ? {} : { startPartId: { $in: affectedPartIds } },
-		data.pieces,
-		{
-			afterInsert(piece) {
-				logger.debug('inserted piece ' + piece._id)
-				logger.debug(piece)
-			},
-			afterUpdate(piece) {
-				logger.debug('updated piece ' + piece._id)
-			},
-			afterRemove(piece) {
-				logger.debug('deleted piece ' + piece._id)
-			},
-		}
+	logChanges(
+		'Pieces',
+		saveIntoCache<Piece, Piece>(
+			cache.Pieces,
+			isWholeRundownUpdate ? {} : { startPartId: { $in: affectedPartIds } },
+			data.pieces
+		)
 	)
-	saveIntoCache<AdLibAction, AdLibAction>(
-		cache.AdLibActions,
-		isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
-		data.adlibActions,
-		{
-			afterInsert(adlibAction) {
-				logger.debug('inserted adlibAction ' + adlibAction._id)
-				logger.debug(adlibAction)
-			},
-			afterUpdate(adlibAction) {
-				logger.debug('updated adlibAction ' + adlibAction._id)
-			},
-			afterRemove(adlibAction) {
-				logger.debug('deleted adlibAction ' + adlibAction._id)
-			},
-		}
+	logChanges(
+		'AdLibActions',
+		saveIntoCache<AdLibAction, AdLibAction>(
+			cache.AdLibActions,
+			isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
+			data.adlibActions
+		)
 	)
-	saveIntoCache<AdLibPiece, AdLibPiece>(
-		cache.AdLibPieces,
-		isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
-		data.adlibPieces,
-		{
-			afterInsert(adLibPiece) {
-				logger.debug('inserted adLibPiece ' + adLibPiece._id)
-				logger.debug(adLibPiece)
-			},
-			afterUpdate(adLibPiece) {
-				logger.debug('updated adLibPiece ' + adLibPiece._id)
-			},
-			afterRemove(adLibPiece) {
-				logger.debug('deleted adLibPiece ' + adLibPiece._id)
-			},
-		}
+	logChanges(
+		'AdLibPieces',
+		saveIntoCache<AdLibPiece, AdLibPiece>(
+			cache.AdLibPieces,
+			isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
+			data.adlibPieces
+		)
 	)
 
 	// Update Segments: Only update, never remove
@@ -461,7 +427,7 @@ export async function updateRundownFromIngestData(
 		cache.Studio.doc
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
-	const showStyle = selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
+	const showStyle = await selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
@@ -469,8 +435,9 @@ export async function updateRundownFromIngestData(
 
 	const pAllRundownWatchedPackages = WatchedPackagesHelper.createForIngest(cache, undefined)
 
-	const showStyleBlueprint = loadShowStyleBlueprint(showStyle.base)
-	const allRundownWatchedPackages = waitForPromise(pAllRundownWatchedPackages)
+	const showStyleBlueprint = await loadShowStyleBlueprint(showStyle.base)
+	const allRundownWatchedPackages = await pAllRundownWatchedPackages
+
 	const rundownBaselinePackages = allRundownWatchedPackages.filter(
 		(pkg) =>
 			pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_ACTION ||

@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { PeripheralDevice, PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { DBRundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
-import { getCurrentTime, unprotectString, waitForPromise } from '../../../lib/lib'
-import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
+import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { getCurrentTime, literal, waitForPromise } from '../../../lib/lib'
+import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
@@ -30,6 +30,17 @@ import { removeRundownsFromDb } from '../rundownPlaylist'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 export namespace RundownInput {
+	export function dataPlaylistGet(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		playlistExternalId: string
+	) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		logger.info('dataPlaylistGet', playlistExternalId)
+		check(playlistExternalId, String)
+		return getIngestPlaylist(peripheralDevice, playlistExternalId)
+	}
 	// Get info on the current rundowns from this device:
 	export function dataRundownList(context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
@@ -195,6 +206,27 @@ export namespace RundownInput {
 	}
 }
 
+function getIngestPlaylist(peripheralDevice: PeripheralDevice, playlistExternalId: string): IngestPlaylist {
+	const rundowns = Rundowns.find({
+		peripheralDeviceId: peripheralDevice._id,
+		playlistExternalId,
+	}).fetch()
+
+	const ingestPlaylist: IngestPlaylist = literal<IngestPlaylist>({
+		externalId: playlistExternalId,
+		rundowns: [],
+	})
+
+	for (const rundown of rundowns) {
+		const ingestCache = waitForPromise(RundownIngestDataCache.create(rundown._id))
+		const ingestData = ingestCache.fetchRundown()
+		if (ingestData) {
+			ingestPlaylist.rundowns.push(ingestData)
+		}
+	}
+
+	return ingestPlaylist
+}
 function getIngestRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string): IngestRundown {
 	const rundown = Rundowns.findOne({
 		peripheralDeviceId: peripheralDevice._id,

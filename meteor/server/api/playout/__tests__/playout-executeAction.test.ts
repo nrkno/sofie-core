@@ -23,7 +23,8 @@ import {
 	fetchPiecesThatMayBeActiveForPart,
 } from '../../playout/infinites'
 type TsyncPlayheadInfinitesForNextPartInstance = jest.MockedFunction<typeof syncPlayheadInfinitesForNextPartInstance>
-const syncPlayheadInfinitesForNextPartInstanceMock = syncPlayheadInfinitesForNextPartInstance as TsyncPlayheadInfinitesForNextPartInstance
+const syncPlayheadInfinitesForNextPartInstanceMock =
+	syncPlayheadInfinitesForNextPartInstance as TsyncPlayheadInfinitesForNextPartInstance
 type TgetPieceInstancesForPart = jest.MockedFunction<typeof getPieceInstancesForPart>
 type TfetchPiecesThatMayBeActiveForPart = jest.MockedFunction<typeof fetchPiecesThatMayBeActiveForPart>
 const {
@@ -55,10 +56,10 @@ describe('Playout API', () => {
 		let rundownId: RundownId
 		let blueprintId: BlueprintId
 
-		beforeEachInFiber(() => {
+		beforeEachInFiber(async () => {
 			BLUEPRINT_CACHE_CONTROL.disable = true
 
-			env = setupDefaultStudioEnvironment()
+			env = await setupDefaultStudioEnvironment()
 
 			const { playlistId: playlistId0, rundownId: rundownId0 } = setupDefaultRundownPlaylist(env)
 			playlistId = playlistId0

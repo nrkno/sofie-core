@@ -25,8 +25,8 @@ function DEFAULT_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPl
 
 describe('Timeline', () => {
 	let env: DefaultEnvironment
-	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 		setupMockPeripheralDevice(
 			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 			PeripheralDeviceAPI.DeviceType.PLAYOUT,

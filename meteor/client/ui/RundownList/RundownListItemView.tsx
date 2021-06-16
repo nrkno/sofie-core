@@ -8,7 +8,7 @@ import { getAllowStudio } from '../../lib/localStorage'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
-import JonasFormattedTime from './JonasFormattedTime'
+import { DisplayFormattedTime } from './DisplayFormattedTime'
 import { EyeIcon } from '../../lib/ui/icons/rundownList'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
 import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
@@ -66,8 +66,6 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		props.rundown.name
 	)
 
-	// const [warnings, errors] = getAllNotes(rundown)
-
 	return connectDropTarget(
 		<li id={htmlElementId} className={classNames.join(' ')}>
 			<span className="rundown-list-item__name">
@@ -110,7 +108,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			</span>
 			<span className="rundown-list-item__text">
 				{rundown.expectedStart ? (
-					<JonasFormattedTime timestamp={rundown.expectedStart} t={t} />
+					<DisplayFormattedTime displayTimestamp={rundown.expectedStart} t={t} />
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
@@ -141,7 +139,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				)}
 			</span>
 			<span className="rundown-list-item__text">
-				<JonasFormattedTime timestamp={rundown.modified} t={t} />
+				<DisplayFormattedTime displayTimestamp={rundown.modified} t={t} />
 			</span>
 			{rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
 				<span className="rundown-list-item__text">
@@ -178,51 +176,3 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		</li>
 	)
 })
-
-/**
- * Gets all notes associated with a rundown and returns two separate arrays of
- * notes for warnings and errors.
- * NOTE: fetching notes for parts and segments this way does not work, which is
- * the reason problems aren't currently displayed in the lobby. This function is
- * left for later reference, and can not be considered reliable.
- *
- * @param rundown the rundown to get notes for
- * @returns [warnings, errors]
- */
-function getAllNotes(rundown: Rundown): [INoteBase[], INoteBase[]] {
-	const allNotes: INoteBase[] = []
-
-	if (rundown.notes) {
-		allNotes.push(...rundown.notes)
-	}
-
-	for (const segment of rundown.getSegments()) {
-		if (segment.notes) {
-			allNotes.push(...segment.notes)
-		}
-
-		for (const part of segment.getParts()) {
-			if (part.notes) {
-				allNotes.push(...part.notes)
-			}
-		}
-	}
-
-	const warnings: INoteBase[] = []
-	const errors: INoteBase[] = []
-
-	for (const note of allNotes) {
-		if (!note) continue
-
-		switch (note.type) {
-			case NoteType.ERROR:
-				errors.push(note)
-				break
-			case NoteType.WARNING:
-				warnings.push(note)
-				break
-		}
-	}
-
-	return [warnings, errors]
-}

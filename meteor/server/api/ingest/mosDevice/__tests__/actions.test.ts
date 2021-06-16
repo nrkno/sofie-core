@@ -16,7 +16,6 @@ import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections
 
 import { mockRO } from './mock-mos-data'
 import { MeteorCall } from '../../../../../lib/api/methods'
-import { waitForPromise } from '../../../../../lib/lib'
 import { TriggerReloadDataResponse } from '../../../../../lib/api/userActions'
 
 require('../../../peripheralDevice.ts') // include in order to create the Meteor methods needed
@@ -24,8 +23,8 @@ require('../../../peripheralDevice.ts') // include in order to create the Meteor
 describe('Test sending mos actions', () => {
 	let device: PeripheralDevice
 	let observer: Meteor.LiveQueryHandle | null = null
-	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().ingestDevice
+	beforeAll(async () => {
+		device = (await setupDefaultStudioEnvironment()).ingestDevice
 	})
 	afterEach(() => {
 		if (observer != null) {
@@ -34,10 +33,10 @@ describe('Test sending mos actions', () => {
 		}
 	})
 
-	testInFiber('reloadRundown: expect error', () => {
+	testInFiber('reloadRundown: expect error', async () => {
 		// setLoggerLevel('debug')
 		// Ensure there is a rundown to start with
-		waitForPromise(MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate()))
+		await MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate())
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
@@ -67,10 +66,10 @@ describe('Test sending mos actions', () => {
 		}
 	})
 
-	testInFiber('reloadRundown: valid payload', () => {
+	testInFiber('reloadRundown: valid payload', async () => {
 		// setLoggerLevel('debug')
 		// Ensure there is a rundown to start with
-		waitForPromise(MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate()))
+		await MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate())
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
@@ -121,10 +120,10 @@ describe('Test sending mos actions', () => {
 		})
 	})
 
-	testInFiber('reloadRundown: receive incorrect response rundown id', () => {
+	testInFiber('reloadRundown: receive incorrect response rundown id', async () => {
 		// setLoggerLevel('debug')
 		// Ensure there is a rundown to start with
-		waitForPromise(MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate()))
+		await MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate())
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()

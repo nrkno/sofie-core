@@ -19,7 +19,6 @@ import {
 } from '../../../lib/collections/PackageContainerPackageStatus'
 import { getPackageInfoId, PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
 import { BulkWriteOperation } from 'mongodb'
-import { asyncCollectionBulkWrite, asyncCollectionFindOne, asyncCollectionRemove } from '../../lib/database'
 import { onUpdatedPackageInfo } from '../ingest/packageInfo'
 
 export namespace PackageManagerIntegration {
@@ -89,31 +88,31 @@ export namespace PackageManagerIntegration {
 					const fromPackageIds = workStatus.fromPackages.map((p) => p.id)
 					if (fromPackageIds.length) {
 						ps.push(
-							asyncCollectionFindOne(ExpectedPackages, { _id: { $in: fromPackageIds } }).then(
-								(expPackage) => {
-									if (!expPackage)
-										throw new Meteor.Error(404, `ExpectedPackages "${fromPackageIds}" not found`)
+							ExpectedPackages.findOneAsync({
+								_id: { $in: fromPackageIds },
+							}).then((expPackage) => {
+								if (!expPackage)
+									throw new Meteor.Error(404, `ExpectedPackages "${fromPackageIds}" not found`)
 
-									const doc: ExpectedPackageWorkStatus = {
-										...workStatus,
+								const doc: ExpectedPackageWorkStatus = {
+									...workStatus,
 
-										_id: change.id,
-										studioId: expPackage.studioId,
-										deviceId: peripheralDevice._id,
+									_id: change.id,
+									studioId: expPackage.studioId,
+									deviceId: peripheralDevice._id,
 
-										modified: getCurrentTime(),
-									}
-									bulkChanges.push({
-										replaceOne: {
-											filter: {
-												_id: change.id,
-											},
-											replacement: doc,
-											upsert: true,
-										},
-									})
+									modified: getCurrentTime(),
 								}
-							)
+								bulkChanges.push({
+									replaceOne: {
+										filter: {
+											_id: change.id,
+										},
+										replacement: doc,
+										upsert: true,
+									},
+								})
+							})
 						)
 					}
 				} else {
@@ -125,13 +124,13 @@ export namespace PackageManagerIntegration {
 			bulkChanges.push({
 				deleteMany: {
 					filter: {
-						_id: { $in: removedIds as any },
+						_id: { $in: removedIds },
 					},
 				},
 			})
 		}
 		waitForPromiseAll(ps)
-		waitForPromise(asyncCollectionBulkWrite(ExpectedPackageWorkStatuses, bulkChanges))
+		waitForPromise(ExpectedPackageWorkStatuses.bulkWriteAsync(bulkChanges))
 	}
 
 	export function removeAllExpectedPackageWorkStatusOfDevice(
@@ -171,7 +170,7 @@ export namespace PackageManagerIntegration {
 		const studioId = peripheralDevice.studioId
 
 		const removedIds: PackageContainerPackageId[] = []
-		const ps: Promise<any>[] = []
+		const ps: Promise<unknown>[] = []
 		for (const change of changes) {
 			check(change.containerId, String)
 			check(change.packageId, String)
@@ -211,7 +210,7 @@ export namespace PackageManagerIntegration {
 			}
 		}
 		if (removedIds.length) {
-			ps.push(asyncCollectionRemove(PackageContainerPackageStatuses, { _id: { $in: removedIds } }))
+			ps.push(PackageContainerPackageStatuses.removeAsync({ _id: { $in: removedIds } }))
 		}
 		waitForPromiseAll(ps)
 	}

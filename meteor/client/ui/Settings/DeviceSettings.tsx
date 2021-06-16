@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import {
 	PeripheralDevice,
@@ -74,7 +73,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 				no: t('Cancel'),
 				onAccept: (e: any) => {
 					PeripheralDevicesAPI.restartDevice(device, e)
-						.then((res) => {
+						.then(() => {
 							NotificationCenter.push(
 								new Notification(
 									undefined,
@@ -134,7 +133,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 						</div>
 						<div className="col c12 rl-c6 alright">
 							<div className="mbs">
-								<button className="btn btn-secondary btn-tight" onClick={(e) => device && this.restartDevice(device)}>
+								<button className="btn btn-secondary btn-tight" onClick={() => device && this.restartDevice(device)}>
 									{t('Restart Device')}
 								</button>
 							</div>

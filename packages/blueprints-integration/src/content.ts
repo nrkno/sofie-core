@@ -83,9 +83,9 @@ export interface ScriptContent extends BaseContent {
 // export interface GraphicsContent extends BaseContent {
 // 	fileName: string
 // 	path: string
+// 	mediaFlowIds?: string[]
 // 	thumbnail?: string
 // 	templateData?: object
-// 	metadata?: MetadataElement[]
 // }
 
 /** Data describing a Nora template's step attributes */
@@ -143,10 +143,7 @@ export interface SplitsContentBoxProperties {
 		}
 	}
 }
-export type SplitsContentBoxContent = Omit<
-	VTContent | CameraContent | RemoteContent | NoraContent, // | GraphicsContent,
-	'timelineObjects'
->
+export type SplitsContentBoxContent = Omit<VTContent | CameraContent | RemoteContent | NoraContent, 'timelineObjects'>
 export interface SplitsContent extends BaseContent {
 	/** Array of contents, 0 is towards the rear */
 	boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]

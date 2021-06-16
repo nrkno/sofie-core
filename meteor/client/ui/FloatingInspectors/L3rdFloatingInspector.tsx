@@ -68,10 +68,10 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 		) as Array<KeyValue>
 	}
 
-	let changed: Time | undefined = noraContent?.payload?.changed ?? undefined
+	const changed: Time | undefined = noraContent?.payload?.changed ?? undefined
 
-	let templateName = noraContent?.payload?.metadata?.templateName
-	let templateVariant = noraContent?.payload?.metadata?.templateVariant
+	const templateName = noraContent?.payload?.metadata?.templateName
+	const templateVariant = noraContent?.payload?.metadata?.templateVariant
 
 	return noraContent && noraContent.payload && noraContent.previewRenderer ? (
 		showMiniInspector && !!itemElement ? (
@@ -115,13 +115,16 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 									)) ||
 									(innerPiece.lifespan === PieceLifespan.OutOnRundownEnd && (
 										<span className="mini-inspector__duration">{t('Until end of rundown')}</span>
+									)) ||
+									(innerPiece.lifespan === PieceLifespan.OutOnShowStyleEnd && (
+										<span className="mini-inspector__duration">{t('Until end of showstyle')}</span>
 									))
 								) : (
 									<span className="mini-inspector__duration">
 										{RundownUtils.formatTimeToShortTime(
 											pieceRenderedDuration ||
 												(_.isNumber(innerPiece.enable.duration)
-													? parseFloat((innerPiece.enable.duration as any) as string)
+													? parseFloat(innerPiece.enable.duration as any as string)
 													: 0)
 										)}
 									</span>

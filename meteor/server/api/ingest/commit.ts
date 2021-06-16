@@ -1,8 +1,7 @@
-import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import { loadShowStyleBlueprint, loadStudioBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
-import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
+import { loadShowStyleBlueprint, loadStudioBlueprint } from '../blueprints/cache'
+import { CacheForPlayout } from '../playout/cache'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
-import { allowedToMoveRundownOutOfPlaylist, ChangedSegmentsRankInfo, updatePartInstanceRanks } from '../rundown'
+import { allowedToMoveRundownOutOfPlaylist, updatePartInstanceRanks } from '../rundown'
 import { CacheForIngest } from './cache'
 import { getRundown } from './lib'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
@@ -19,8 +18,7 @@ import {
 	produceRundownPlaylistInfoFromRundown,
 	removeRundownsFromDb,
 } from '../rundownPlaylist'
-import { clone, makePromise, max, protectString, unprotectString } from '../../../lib/lib'
-import { ReadOnlyCache } from '../../cache/CacheBase'
+import { clone, max, protectString, unprotectString } from '../../../lib/lib'
 import { reportRundownDataHasChanged } from '../blueprints/events'
 import { removeSegmentContents } from './cleanup'
 import { Settings } from '../../../lib/Settings'
@@ -38,7 +36,6 @@ import {
 import { Meteor } from 'meteor/meteor'
 import { runStudioOperationWithLock, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { getTranslatedMessage, ServerTranslatedMesssages } from '../../../lib/rundownNotifications'
-import { asyncCollectionUpsert, asyncCollectionFindOne, asyncCollectionRemove } from '../../lib/database'
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
 import { Studio } from '../../../lib/collections/Studios'
@@ -68,7 +65,7 @@ export async function CommitIngestOperation(
 	}
 
 	const showStyle = data.showStyle ?? (await getShowStyleCompoundForRundown(rundown))
-	const blueprint = (data.showStyle ? data.blueprint : undefined) ?? loadShowStyleBlueprint(showStyle)
+	const blueprint = (data.showStyle ? data.blueprint : undefined) ?? (await loadShowStyleBlueprint(showStyle))
 
 	const targetPlaylistId: [RundownPlaylistId, string] = (beforeRundown?.playlistIdIsSetInSofie
 		? [beforeRundown.playlistId, beforeRundown.externalId]
@@ -169,7 +166,7 @@ export async function CommitIngestOperation(
 	// Adopt the rundown into its new/retained playlist.
 	// We have to do the locking 'manually' because the playlist may not exist yet, but that is ok
 	const newPlaylistId: [RundownPlaylistId, string] = trappedInPlaylistId ?? targetPlaylistId
-	let tmpNewPlaylist: RundownPlaylist | undefined = RundownPlaylists.findOne(newPlaylistId[0])
+	const tmpNewPlaylist: RundownPlaylist | undefined = RundownPlaylists.findOne(newPlaylistId[0])
 	if (tmpNewPlaylist) {
 		if (tmpNewPlaylist.studioId !== ingestCache.Studio.doc._id)
 			throw new Meteor.Error(404, `Rundown Playlist "${newPlaylistId[0]}" exists but belongs to another studio!`)
@@ -184,7 +181,7 @@ export async function CommitIngestOperation(
 				studioLock,
 				{ _id: newPlaylistId[0], studioId: studioLock._studioId },
 				PlayoutLockFunctionPriority.MISC,
-				async (lock) => {
+				async () => {
 					// Ensure the rundown has the correct playlistId
 					ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId[0] } })
 
@@ -231,7 +228,7 @@ export async function CommitIngestOperation(
 					// This will reorder the rundowns a little before the playlist and the contents, but that is ok
 					await Promise.all([
 						rundownsCollection.updateDatabaseWithData(),
-						asyncCollectionUpsert(RundownPlaylists, newPlaylist._id, newPlaylist),
+						RundownPlaylists.upsertAsync(newPlaylist._id, newPlaylist),
 					])
 
 					// Create the full playout cache, now we have the rundowns and playlist updated
@@ -260,7 +257,7 @@ export async function CommitIngestOperation(
 						updatePartInstanceRanks(playoutCache, changedSegmentsInfo)
 
 						// sync changes to the 'selected' partInstances
-						syncChangesToPartInstances(
+						await syncChangesToPartInstances(
 							playoutCache,
 							ingestCache,
 							showStyle,
@@ -352,8 +349,8 @@ async function generatePlaylistAndRundownsCollectionInner(
 	const [existingPlaylist, studioBlueprint] = await Promise.all([
 		existingPlaylist0
 			? existingPlaylist0
-			: (asyncCollectionFindOne(RundownPlaylists, newPlaylistId) as Promise<ReadonlyDeep<RundownPlaylist>>),
-		makePromise(() => loadStudioBlueprint(studio)),
+			: (RundownPlaylists.findOneAsync(newPlaylistId) as Promise<ReadonlyDeep<RundownPlaylist>>),
+		loadStudioBlueprint(studio),
 		existingRundownsCollection ? null : rundownsCollection.prepareInit({ playlistId: newPlaylistId }, true),
 	])
 	if (changedRundown) {
@@ -474,13 +471,13 @@ export async function regeneratePlaylistAndRundownOrder(
 		// Save the changes
 		await Promise.all([
 			!existingRundownsCollection ? rundownsCollection.updateDatabaseWithData() : null,
-			asyncCollectionUpsert(RundownPlaylists, newPlaylist._id, newPlaylist),
+			RundownPlaylists.upsertAsync(newPlaylist._id, newPlaylist),
 		])
 
 		return newPlaylist
 	} else {
 		// Playlist is empty and should be removed
-		await asyncCollectionRemove(RundownPlaylists, oldPlaylist._id)
+		await RundownPlaylists.removeAsync(oldPlaylist._id)
 
 		return null
 	}
@@ -509,7 +506,7 @@ export function updatePlayoutAfterChangingRundownInPlaylist(
 						`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`
 					)
 				// Remove an empty playlist
-				await asyncCollectionRemove(RundownPlaylists, { _id: playoutCache.PlaylistId })
+				await RundownPlaylists.removeAsync({ _id: playoutCache.PlaylistId })
 				playoutCache.assertNoChanges()
 				return
 			}

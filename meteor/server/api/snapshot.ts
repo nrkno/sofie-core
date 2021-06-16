@@ -2,7 +2,6 @@ import * as Path from 'path'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
-import * as bodyParser from 'body-parser'
 import { check, Match } from '../../lib/check'
 import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
 import {
@@ -33,6 +32,7 @@ import {
 	makePromise,
 	ProtectedString,
 	protectStringArray,
+	waitForPromiseAll,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -161,7 +161,7 @@ function createRundownPlaylistSnapshot(
 	playlistId: RundownPlaylistId,
 	organizationId: OrganizationId | null
 ): RundownPlaylistSnapshot {
-	let snapshotId: SnapshotId = getRandomId()
+	const snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating RundownPlaylist snapshot "${snapshotId}" for RundownPlaylist "${playlistId}"`)
 
 	const playlist = RundownPlaylists.findOne(playlistId)
@@ -243,7 +243,7 @@ function createRundownPlaylistSnapshot(
  * @param studioId (Optional) Only generate for a certain studio
  */
 function createSystemSnapshot(studioId: StudioId | null, organizationId: OrganizationId | null): SystemSnapshot {
-	let snapshotId: SnapshotId = getRandomId()
+	const snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating System snapshot "${snapshotId}"` + (studioId ? `for studio "${studioId}"` : ''))
 
 	const coreSystem = getCoreSystem()
@@ -334,36 +334,36 @@ function createSystemSnapshot(studioId: StudioId | null, organizationId: Organiz
  * @param studioId
  */
 function createDebugSnapshot(studioId: StudioId, organizationId: OrganizationId | null): DebugSnapshot {
-	let snapshotId: SnapshotId = getRandomId()
+	const snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating Debug snapshot "${snapshotId}" for studio "${studioId}"`)
 
 	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} not found`)
 
-	let systemSnapshot = createSystemSnapshot(studioId, organizationId)
+	const systemSnapshot = createSystemSnapshot(studioId, organizationId)
 
-	let activePlaylists = RundownPlaylists.find({
+	const activePlaylists = RundownPlaylists.find({
 		studioId: studio._id,
 		activationId: { $exists: true },
 	}).fetch()
 
-	let activePlaylistSnapshots = _.map(activePlaylists, (playlist) => {
+	const activePlaylistSnapshots = _.map(activePlaylists, (playlist) => {
 		return createRundownPlaylistSnapshot(playlist._id, organizationId)
 	})
 
-	let timeline = Timeline.find().fetch()
-	let userActionLogLatest = UserActionsLog.find({
+	const timeline = Timeline.find().fetch()
+	const userActionLogLatest = UserActionsLog.find({
 		timestamp: {
 			$gt: getCurrentTime() - 1000 * 3600 * 3, // latest 3 hours
 		},
 	}).fetch()
 
 	// Also fetch debugInfo from devices:
-	let deviceSnaphots: Array<DeviceSnapshot> = []
+	const deviceSnaphots: Array<DeviceSnapshot> = []
 	_.each(systemSnapshot.devices, (device) => {
 		if (device.connected && device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS) {
-			let startTime = getCurrentTime()
-			let deviceSnapshot = ServerPeripheralDeviceAPI.executeFunction(device._id, 'getSnapshot')
+			const startTime = getCurrentTime()
+			const deviceSnapshot = ServerPeripheralDeviceAPI.executeFunction(device._id, 'getSnapshot')
 
 			deviceSnaphots.push({
 				deviceId: device._id,
@@ -398,14 +398,14 @@ function createDebugSnapshot(studioId: StudioId, organizationId: OrganizationId 
 // Setup endpoints:
 function handleResponse(response: ServerResponse, snapshotFcn: () => { snapshot: SnapshotBase }) {
 	try {
-		let s: any = snapshotFcn()
+		const s: any = snapshotFcn()
 		response.setHeader('Content-Type', 'application/json')
 		response.setHeader(
 			'Content-Disposition',
 			`attachment; filename*=UTF-8''${encodeURIComponent(s.snapshot.name)}.json`
 		)
 
-		let content = _.isString(s) ? s : JSON.stringify(s, null, 4)
+		const content = _.isString(s) ? s : JSON.stringify(s, null, 4)
 		response.statusCode = 200
 		response.end(content)
 	} catch (e) {
@@ -423,14 +423,14 @@ function storeSnaphot(
 	organizationId: OrganizationId | null,
 	comment: string
 ): SnapshotId {
-	let system = getCoreSystem()
+	const system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
-	let fileName = fixValidPath(snapshot.snapshot.name) + '.json'
-	let filePath = Path.join(system.storePath, fileName)
+	const fileName = fixValidPath(snapshot.snapshot.name) + '.json'
+	const filePath = Path.join(system.storePath, fileName)
 
-	let str = JSON.stringify(snapshot)
+	const str = JSON.stringify(snapshot)
 
 	// Store to the persistant file storage
 	logger.info(`Save snapshot file ${filePath}`)
@@ -439,7 +439,7 @@ function storeSnaphot(
 		fsWriteFile(filePath, str)
 	}
 
-	let id = Snapshots.insert({
+	const id = Snapshots.insert({
 		_id: protectString(fileName),
 		organizationId: organizationId,
 		fileName: fileName,
@@ -454,7 +454,7 @@ function storeSnaphot(
 	return id
 }
 function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): AnySnapshot {
-	let snapshot = Snapshots.findOne(snapshotId)
+	const snapshot = Snapshots.findOne(snapshotId)
 	if (!snapshot) throw new Meteor.Error(404, `Snapshot not found!`)
 
 	if (Settings.enableUserAccounts) {
@@ -475,17 +475,17 @@ function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): AnySnapsh
 		}
 	}
 
-	let system = getCoreSystem()
+	const system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
-	let filePath = Path.join(system.storePath, snapshot.fileName)
+	const filePath = Path.join(system.storePath, snapshot.fileName)
 
-	let dataStr = !Meteor.isTest // If we're running in a unit-test, don't access files
+	const dataStr = !Meteor.isTest // If we're running in a unit-test, don't access files
 		? fsReadFile(filePath).toString()
 		: ''
 
-	let readSnapshot = JSON.parse(dataStr)
+	const readSnapshot = JSON.parse(dataStr)
 
 	return readSnapshot
 }
@@ -532,7 +532,7 @@ function restoreFromDeprecatedRundownSnapshot(snapshot0: DeprecatedRundownSnapsh
 	// Convert the Rundown snaphost into a rundown playlist
 	// This is somewhat of a hack, it's just to be able to import older snapshots into the system
 
-	const snapshot = (_.clone(snapshot0) as any) as RundownPlaylistSnapshot
+	const snapshot = _.clone(snapshot0) as any as RundownPlaylistSnapshot
 
 	// Make up a rundownPlaylist:
 	snapshot.playlist = makePlaylistFromRundown_1_0_0(snapshot0.rundown)
@@ -617,7 +617,7 @@ export function restoreFromRundownPlaylistSnapshot(
 		partSegmentIds[unprotectString(part._id)] = part.segmentId
 	})
 	_.each(snapshot.pieces, (piece) => {
-		const pieceOld = (piece as any) as Partial<Piece_1_11_0>
+		const pieceOld = piece as any as Partial<Piece_1_11_0>
 		if (pieceOld.rundownId) {
 			piece.startRundownId = pieceOld.rundownId
 			delete pieceOld.rundownId
@@ -700,6 +700,7 @@ export function restoreFromRundownPlaylistSnapshot(
 		T extends {
 			_id: ProtectedString<any>
 			rundownId?: RundownId
+			partInstanceId?: PartInstanceId
 			partId?: PartId
 			segmentId?: SegmentId
 			part?: unknown
@@ -716,6 +717,9 @@ export function restoreFromRundownPlaylistSnapshot(
 			}
 			if (obj.segmentId) {
 				obj.segmentId = segmentIdMap[unprotectString(obj.segmentId)]
+			}
+			if (obj.partInstanceId) {
+				obj.partInstanceId = partInstanceIdMap[unprotectString(obj.partInstanceId)]
 			}
 
 			if (updateId) {
@@ -734,54 +738,56 @@ export function restoreFromRundownPlaylistSnapshot(
 		return (objs || []).map((obj) => updateIds(obj))
 	}
 
-	saveIntoDb(RundownPlaylists, { _id: playlistId }, [snapshot.playlist])
-	saveIntoDb(Rundowns, { playlistId }, snapshot.rundowns)
-	saveIntoDb(IngestDataCache, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.ingestData, true))
-	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
-	saveIntoDb(RundownBaselineObjs, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.baselineObjs, true))
-	saveIntoDb(
-		RundownBaselineAdLibPieces,
-		{ rundownId: { $in: rundownIds } },
-		updateItemIds(snapshot.baselineAdlibs, true)
-	)
-	saveIntoDb(
-		RundownBaselineAdLibActions,
-		{ rundownId: { $in: rundownIds } },
-		updateItemIds(snapshot.baselineAdLibActions, true)
-	)
-	saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.segments, false))
-	saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.parts, false))
-	saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.partInstances, false))
-	saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false))
-	saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieceInstances, false))
-	saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true))
-	saveIntoDb(AdLibActions, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibActions, true))
-	saveIntoDb(
-		MediaObjects,
-		{ _id: { $in: _.map(snapshot.mediaObjects, (mediaObject) => mediaObject._id) } },
-		snapshot.mediaObjects
-	)
-	saveIntoDb(
-		ExpectedMediaItems,
-		{ partId: { $in: protectStringArray(_.keys(partIdMap)) } },
-		updateItemIds(snapshot.expectedMediaItems, true)
-	)
-	saveIntoDb(
-		ExpectedPlayoutItems,
-		{ rundownId: { $in: rundownIds } },
-		updateItemIds(snapshot.expectedPlayoutItems || [], true)
-	)
-	saveIntoDb(
-		ExpectedPackages,
-		{ rundownId: { $in: rundownIds } },
-		updateItemIds(snapshot.expectedPackages || [], true)
-	)
+	waitForPromiseAll([
+		saveIntoDb(RundownPlaylists, { _id: playlistId }, [snapshot.playlist]),
+		saveIntoDb(Rundowns, { playlistId }, snapshot.rundowns),
+		saveIntoDb(IngestDataCache, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.ingestData, true)),
+		// saveIntoDb(UserActionsLog, {}, snapshot.userActions),
+		saveIntoDb(RundownBaselineObjs, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.baselineObjs, true)),
+		saveIntoDb(
+			RundownBaselineAdLibPieces,
+			{ rundownId: { $in: rundownIds } },
+			updateItemIds(snapshot.baselineAdlibs, true)
+		),
+		saveIntoDb(
+			RundownBaselineAdLibActions,
+			{ rundownId: { $in: rundownIds } },
+			updateItemIds(snapshot.baselineAdLibActions, true)
+		),
+		saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.segments, false)),
+		saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.parts, false)),
+		saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.partInstances, false)),
+		saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false)),
+		saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieceInstances, false)),
+		saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true)),
+		saveIntoDb(AdLibActions, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibActions, true)),
+		saveIntoDb(
+			MediaObjects,
+			{ _id: { $in: _.map(snapshot.mediaObjects, (mediaObject) => mediaObject._id) } },
+			snapshot.mediaObjects
+		),
+		saveIntoDb(
+			ExpectedMediaItems,
+			{ partId: { $in: protectStringArray(_.keys(partIdMap)) } },
+			updateItemIds(snapshot.expectedMediaItems, true)
+		),
+		saveIntoDb(
+			ExpectedPlayoutItems,
+			{ rundownId: { $in: rundownIds } },
+			updateItemIds(snapshot.expectedPlayoutItems || [], true)
+		),
+		saveIntoDb(
+			ExpectedPackages,
+			{ rundownId: { $in: rundownIds } },
+			updateItemIds(snapshot.expectedPackages || [], true)
+		),
+	])
 
 	logger.info(`Restore done`)
 }
 function restoreFromSystemSnapshot(snapshot: SystemSnapshot) {
 	logger.info(`Restoring from system snapshot "${snapshot.snapshot.name}"`)
-	let studioId = snapshot.studioId
+	const studioId = snapshot.studioId
 
 	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
@@ -799,14 +805,16 @@ function restoreFromSystemSnapshot(snapshot: SystemSnapshot) {
 		return migrateConfigToBlueprintConfigOnObject(showStyleVariant)
 	})
 
-	let changes = sumChanges(
-		saveIntoDb(Studios, studioId ? { _id: studioId } : {}, snapshot.studios),
-		saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases),
-		saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants),
-		snapshot.blueprints ? saveIntoDb(Blueprints, {}, snapshot.blueprints) : null,
-		snapshot.rundownLayouts ? saveIntoDb(RundownLayouts, {}, snapshot.rundownLayouts) : null,
-		saveIntoDb(PeripheralDevices, studioId ? { studioId: studioId } : {}, snapshot.devices),
-		saveIntoDb(CoreSystem, {}, [snapshot.coreSystem])
+	const changes = sumChanges(
+		...waitForPromiseAll([
+			saveIntoDb(Studios, studioId ? { _id: studioId } : {}, snapshot.studios),
+			saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases),
+			saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants),
+			snapshot.blueprints ? saveIntoDb(Blueprints, {}, snapshot.blueprints) : null,
+			snapshot.rundownLayouts ? saveIntoDb(RundownLayouts, {}, snapshot.rundownLayouts) : null,
+			saveIntoDb(PeripheralDevices, studioId ? { studioId: studioId } : {}, snapshot.devices),
+			saveIntoDb(CoreSystem, {}, [snapshot.coreSystem]),
+		])
 	)
 	// saveIntoDb(PeripheralDeviceCommands, {}, snapshot.deviceCommands) // ignored
 
@@ -831,13 +839,13 @@ export function internalStoreSystemSnapshot(
 ) {
 	if (!_.isNull(studioId)) check(studioId, String)
 
-	let s = createSystemSnapshot(studioId, organizationId)
+	const s = createSystemSnapshot(studioId, organizationId)
 	return storeSnaphot(s, organizationId, reason)
 }
 export function storeRundownPlaylistSnapshot(context: MethodContext, playlistId: RundownPlaylistId, reason: string) {
 	check(playlistId, String)
 	const { organizationId } = OrganizationContentWriteAccess.snapshot(context)
-	let s = createRundownPlaylistSnapshot(playlistId, organizationId)
+	const s = createRundownPlaylistSnapshot(playlistId, organizationId)
 	return storeSnaphot(s, organizationId, reason)
 }
 export function storeDebugSnapshot(context: MethodContext, studioId: StudioId, reason: string) {
@@ -846,7 +854,7 @@ export function storeDebugSnapshot(context: MethodContext, studioId: StudioId, r
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
-	let s = createDebugSnapshot(studioId, organizationId)
+	const s = createDebugSnapshot(studioId, organizationId)
 	return storeSnaphot(s, organizationId, reason)
 }
 export function restoreSnapshot(context: MethodContext, snapshotId: SnapshotId) {
@@ -855,7 +863,7 @@ export function restoreSnapshot(context: MethodContext, snapshotId: SnapshotId) 
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
-	let snapshot = retreiveSnapshot(snapshotId, context)
+	const snapshot = retreiveSnapshot(snapshotId, context)
 	return restoreFromSnapshot(snapshot)
 }
 export function removeSnapshot(context: MethodContext, snapshotId: SnapshotId) {
@@ -870,11 +878,11 @@ export function removeSnapshot(context: MethodContext, snapshotId: SnapshotId) {
 
 	if (snapshot.fileName) {
 		// remove from disk
-		let system = getCoreSystem()
+		const system = getCoreSystem()
 		if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 		if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
-		let filePath = Path.join(system.storePath, snapshot.fileName)
+		const filePath = Path.join(system.storePath, snapshot.fileName)
 		try {
 			logger.info(`Removing snapshot file ${filePath}`)
 
@@ -930,7 +938,7 @@ if (!Settings.enableUserAccounts) {
 	})
 }
 PickerPOST.route('/snapshot/restore', (params, req: IncomingMessage, response: ServerResponse) => {
-	let content = 'ok'
+	const content = 'ok'
 	try {
 		response.setHeader('Content-Type', 'text/plain')
 		let snapshot = req.body as any

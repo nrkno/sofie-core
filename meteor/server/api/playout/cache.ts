@@ -10,7 +10,7 @@ import {
 	RundownPlaylistId,
 	RundownPlaylists,
 } from '../../../lib/collections/RundownPlaylists'
-import { Rundown, DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown, DBRundown, Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Segment, DBSegment, Segments } from '../../../lib/collections/Segments'
 import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
@@ -24,6 +24,7 @@ import { CacheForStudioBase } from '../studio/cache'
 import { getRundownsSegmentsAndPartsFromCache } from './lib'
 import { CacheForIngest } from '../ingest/cache'
 import { Meteor } from 'meteor/meteor'
+import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 
 /**
  * This is a cache used for playout operations.
@@ -235,9 +236,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	}
 }
 
-export function getOrderedSegmentsAndPartsFromPlayoutCache(
-	cache: CacheForPlayout
-): {
+export function getOrderedSegmentsAndPartsFromPlayoutCache(cache: CacheForPlayout): {
 	segments: Segment[]
 	parts: Part[]
 } {
@@ -255,9 +254,7 @@ export function getOrderedSegmentsAndPartsFromPlayoutCache(
 export function getRundownIDsFromCache(cache: CacheForPlayout) {
 	return cache.Rundowns.findFetch({}).map((r) => r._id)
 }
-export function getSelectedPartInstancesFromCache(
-	cache: CacheForPlayout
-): {
+export function getSelectedPartInstancesFromCache(cache: CacheForPlayout): {
 	currentPartInstance: PartInstance | undefined
 	nextPartInstance: PartInstance | undefined
 	previousPartInstance: PartInstance | undefined
@@ -275,4 +272,14 @@ export function getSelectedPartInstancesFromCache(
 			? cache.PartInstances.findOne(playlist.previousPartInstanceId)
 			: undefined,
 	}
+}
+export function getShowStyleIdsRundownMappingFromCache(cache: CacheForPlayout): Map<RundownId, ShowStyleBaseId> {
+	const rundowns = cache.Rundowns.findFetch({})
+	const ret = new Map()
+
+	for (const rundown of rundowns) {
+		ret.set(rundown._id, rundown.showStyleBaseId)
+	}
+
+	return ret
 }

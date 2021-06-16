@@ -39,7 +39,7 @@ export const addSteps = addMigrationSteps('1.12.0', [
 				rundownId: { $exists: true },
 				partId: { $exists: true },
 			}).forEach((piece0) => {
-				const piece = (piece0 as any) as Piece_1_11_0
+				const piece = piece0 as any as Piece_1_11_0
 
 				let part: Part | undefined = parts[unprotectString(piece.partId)]
 				if (!part) {

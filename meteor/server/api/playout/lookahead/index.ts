@@ -13,7 +13,7 @@ import {
 } from '../../../../lib/collections/Timeline'
 import { PartId } from '../../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../../lib/collections/Pieces'
-import { clone } from '../../../../lib/lib'
+import { clone, protectString } from '../../../../lib/lib'
 import { profiler } from '../../profiler'
 import {
 	hasPieceInstanceDefinitelyEnded,
@@ -21,16 +21,25 @@ import {
 	SelectedPartInstanceTimelineInfo,
 } from '../timeline'
 import { Mongo } from 'meteor/mongo'
-import { getOrderedPartsAfterPlayhead, PartInstanceAndPieceInstances } from './util'
+import { getOrderedPartsAfterPlayhead, PartAndPieces, PartInstanceAndPieceInstances } from './util'
 import { findLookaheadForLayer, LookaheadResult } from './findForLayer'
 import { CacheForPlayout, getRundownIDsFromCache } from '../cache'
-import { asyncCollectionFindFetch } from '../../../lib/database'
+import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '../../../../lib/constants'
+import { PieceInstance, wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
+import { sortPieceInstancesByStart } from '../pieces'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
+function parseSearchDistance(rawVal: number | undefined): number {
+	if (typeof rawVal !== 'number' || rawVal <= -1) {
+		return LOOKAHEAD_DEFAULT_SEARCH_DISTANCE
+	} else {
+		return rawVal
+	}
+}
+
 function findLargestLookaheadDistance(mappings: Array<[string, MappingExt]>): number {
-	const defaultSearchDistance = 10
-	const values = mappings.map(([id, m]) => m.lookaheadMaxSearchDistance ?? defaultSearchDistance)
+	const values = mappings.map(([_id, m]) => parseSearchDistance(m.lookaheadMaxSearchDistance))
 	return _.max(values)
 }
 
@@ -42,7 +51,7 @@ export async function getLookeaheadObjects(
 ): Promise<Array<TimelineObjRundown & OnGenerateTimelineObjExt>> {
 	const span = profiler.startSpan('getLookeaheadObjects')
 	const mappingsToConsider = Object.entries(cache.Studio.doc.mappings ?? {}).filter(
-		([id, map]) => map.lookahead !== LookaheadMode.NONE && map.lookahead !== undefined
+		([_id, map]) => map.lookahead !== LookaheadMode.NONE && map.lookahead !== undefined
 	)
 	if (mappingsToConsider.length === 0) {
 		if (span) span.end()
@@ -57,7 +66,7 @@ export async function getLookeaheadObjects(
 		startRundownId: { $in: getRundownIDsFromCache(cache) },
 		invalid: { $ne: true },
 	}
-	const pPiecesToSearch = asyncCollectionFindFetch(Pieces, piecesToSearchQuery)
+	const pPiecesToSearch = Pieces.findFetchAsync(piecesToSearchQuery)
 
 	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
 		if (!info.partInstance.timings?.startedPlayback) {
@@ -99,32 +108,37 @@ export async function getLookeaheadObjects(
 	// In reality, there are not likely to be any/many conflicts if the blueprints are written well so it shouldnt be a problem
 	const piecesToSearch = await pPiecesToSearch
 
-	const piecesByPart = new Map<PartId, Piece[]>()
+	const piecesByPart = new Map<PartId, Array<PieceInstance>>()
 	for (const piece of piecesToSearch) {
+		const pieceInstance = wrapPieceToInstance(piece, protectString(''), protectString(''), true)
 		const existing = piecesByPart.get(piece.startPartId)
 		if (existing) {
-			existing.push(piece)
+			existing.push(pieceInstance)
 		} else {
-			piecesByPart.set(piece.startPartId, [piece])
+			piecesByPart.set(piece.startPartId, [pieceInstance])
 		}
 	}
 
+	const orderedPartInfos: Array<PartAndPieces> = orderedPartsFollowingPlayhead.map((part) => ({
+		part,
+		pieces: sortPieceInstancesByStart(piecesByPart.get(part._id) || [], 0),
+	}))
+
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
-	const futurePartCount = orderedPartsFollowingPlayhead.length + (partInstancesInfo0.next ? 1 : 0)
+	const futurePartCount = orderedPartInfos.length + (partInstancesInfo0.next ? 1 : 0)
 	for (const [layerId, mapping] of mappingsToConsider) {
 		if (mapping.lookahead !== LookaheadMode.NONE) {
 			const lookaheadTargetObjects = mapping.lookaheadDepth || 1
-			const lookaheadMaxSearchDistance =
-				mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0
-					? mapping.lookaheadMaxSearchDistance
-					: futurePartCount
+			const lookaheadMaxSearchDistance = Math.min(
+				parseSearchDistance(mapping.lookaheadMaxSearchDistance),
+				futurePartCount
+			)
 
 			const lookaheadObjs = findLookaheadForLayer(
 				cache.Playlist.doc.currentPartInstanceId,
 				partInstancesInfo,
 				previousPartInfo,
-				orderedPartsFollowingPlayhead,
-				piecesByPart,
+				orderedPartInfos,
 				layerId,
 				lookaheadTargetObjects,
 				lookaheadMaxSearchDistance
@@ -169,6 +183,7 @@ function mutateLookaheadObject(
 		obj.keyframes = obj.keyframes.filter((kf) => kf.preserveForLookahead)
 	}
 	delete obj.inGroup // force it to be cleared
+	obj.disabled = disabled
 
 	if (mode === LookaheadMode.PRELOAD) {
 		// Set lookaheadForLayer to reference the original layer:

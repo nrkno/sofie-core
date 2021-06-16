@@ -16,7 +16,7 @@ import {
 	ShowStyleVariant,
 	ShowStyleVariants,
 } from '../../../lib/collections/ShowStyleVariants'
-import { protectString, objectPathGet, objectPathSet } from '../../../lib/lib'
+import { protectString, objectPathGet, objectPathSet, waitForPromise } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './cache'
 import { ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
@@ -57,7 +57,7 @@ export namespace ConfigRef {
 	}
 	function retrieveRef(reference: string, bailOnError?: boolean): ConfigItemValue | string | undefined {
 		if (!reference) return undefined
-		let m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
+		const m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
 		if (m) {
 			if (m[1] === 'studio' && _.isString(m[2]) && _.isString(m[3])) {
 				const studioId: StudioId = protectString(m[2])
@@ -196,7 +196,7 @@ export function getStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): unknown 
 	}
 
 	logger.debug('Building Studio config')
-	const studioBlueprint = loadStudioBlueprint(studio)
+	const studioBlueprint = waitForPromise(loadStudioBlueprint(studio))
 	if (studioBlueprint) {
 		const diffs = findMissingConfigs(studioBlueprint.blueprint.studioConfigManifest, studio.blueprintConfig)
 		if (diffs && diffs.length) {
@@ -219,11 +219,8 @@ export function resetShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<Sh
 	getShowStyleBlueprintConfig(showStyleCompound)
 }
 export function getShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<ShowStyleCompound>): unknown {
-	let blueprintConfigMap:
-		| Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>>
-		| undefined = showStyleCompound.blueprintId
-		? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId)
-		: new Map()
+	let blueprintConfigMap: Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>> | undefined =
+		showStyleCompound.blueprintId ? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId) : new Map()
 	if (!blueprintConfigMap) {
 		blueprintConfigMap = new Map()
 		showStyleBlueprintConfigCache.set(showStyleCompound.blueprintId, blueprintConfigMap)
@@ -240,7 +237,7 @@ export function getShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<Show
 		return cachedConfig.config
 	}
 
-	const showStyleBlueprint = loadShowStyleBlueprint(showStyleCompound)
+	const showStyleBlueprint = waitForPromise(loadShowStyleBlueprint(showStyleCompound))
 	if (showStyleBlueprint) {
 		const diffs = findMissingConfigs(
 			showStyleBlueprint.blueprint.showStyleConfigManifest,

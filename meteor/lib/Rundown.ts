@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { Pieces, Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { DBSegment, SegmentId } from './collections/Segments'
@@ -15,6 +14,8 @@ import { FindOptions } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
 import { getCurrentTime, protectString } from './lib'
 import { RundownPlaylistActivationId } from './collections/RundownPlaylists'
+import { Rundown, RundownId } from './collections/Rundowns'
+import { ShowStyleBaseId } from './collections/ShowStyleBases'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -74,7 +75,8 @@ export interface PieceExtended {
 export function fetchPiecesThatMayBeActiveForPart(
 	part: DBPart,
 	partsBeforeThisInSegmentSet: Set<PartId>,
-	segmentsBeforeThisInRundownSet: Set<SegmentId>
+	segmentsBeforeThisInRundownSet: Set<SegmentId>,
+	rundownsBeforeThisInPlaylist: RundownId[]
 ): Piece[] {
 	const piecesStartingInPart = Pieces.find(buildPiecesStartingInThisPartQuery(part)).fetch()
 
@@ -82,7 +84,12 @@ export function fetchPiecesThatMayBeActiveForPart(
 	const segmentsBeforeThisInRundown = Array.from(segmentsBeforeThisInRundownSet.values())
 
 	const infinitePieces = Pieces.find(
-		buildPastInfinitePiecesForThisPartQuery(part, partsBeforeThisInSegment, segmentsBeforeThisInRundown)
+		buildPastInfinitePiecesForThisPartQuery(
+			part,
+			partsBeforeThisInSegment,
+			segmentsBeforeThisInRundown,
+			rundownsBeforeThisInPlaylist
+		)
 	).fetch()
 
 	return [...piecesStartingInPart, ...infinitePieces]
@@ -110,9 +117,12 @@ const SIMULATION_INVALIDATION = 3000
  */
 export function getPieceInstancesForPartInstance(
 	playlistActivationId: RundownPlaylistActivationId | undefined,
+	rundown: Rundown,
 	partInstance: PartInstanceLimited,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
+	rundownsBeforeThisInPlaylist: RundownId[],
+	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	orderedAllParts: PartId[],
 	nextPartIsAfterCurrentPart: boolean,
 	currentPartInstance: PartInstance | undefined,
@@ -125,13 +135,17 @@ export function getPieceInstancesForPartInstance(
 			playlistActivationId || protectString(''),
 			currentPartInstance,
 			currentPartInstancePieceInstances,
+			rundown,
 			partInstance.part,
 			partsBeforeThisInSegmentSet,
 			segmentsBeforeThisInRundownSet,
+			rundownsBeforeThisInPlaylist,
+			rundownsToShowstyles,
 			fetchPiecesThatMayBeActiveForPart(
 				partInstance.part,
 				partsBeforeThisInSegmentSet,
-				segmentsBeforeThisInRundownSet
+				segmentsBeforeThisInRundownSet,
+				rundownsBeforeThisInPlaylist
 			),
 			orderedAllParts,
 			partInstance._id,
@@ -164,13 +178,17 @@ export function getPieceInstancesForPartInstance(
 				playlistActivationId || protectString(''),
 				currentPartInstance,
 				currentPartInstancePieceInstances,
+				rundown,
 				partInstance.part,
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
+				rundownsBeforeThisInPlaylist,
+				rundownsToShowstyles,
 				fetchPiecesThatMayBeActiveForPart(
 					partInstance.part,
 					partsBeforeThisInSegmentSet,
-					segmentsBeforeThisInRundownSet
+					segmentsBeforeThisInRundownSet,
+					rundownsBeforeThisInPlaylist
 				),
 				orderedAllParts,
 				partInstance._id,

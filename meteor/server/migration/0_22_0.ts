@@ -1,5 +1,4 @@
 import { addMigrationSteps } from './databaseMigration'
-import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { setExpectedVersion } from './lib'
 

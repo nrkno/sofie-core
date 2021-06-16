@@ -153,7 +153,8 @@ export class CustomLayerItemRenderer<
 		const uiPiece = this.props.piece
 		const innerPiece = uiPiece.instance.piece
 
-		return innerPiece.lifespan === PieceLifespan.OutOnRundownEnd &&
+		return (innerPiece.lifespan === PieceLifespan.OutOnRundownEnd ||
+			innerPiece.lifespan === PieceLifespan.OutOnShowStyleEnd) &&
 			!uiPiece.instance.userDuration &&
 			uiPiece.renderedDuration === null ? (
 			<div className="segment-timeline__piece__label label-icon label-infinite-icon">
@@ -170,7 +171,6 @@ export class CustomLayerItemRenderer<
 	renderContentTrimmed() {
 		const innerPiece = this.props.piece.instance.piece
 		const vtContent = innerPiece.content as VTContent | undefined
-		const duration = this.props.partDuration
 
 		return vtContent &&
 			vtContent.editable &&
