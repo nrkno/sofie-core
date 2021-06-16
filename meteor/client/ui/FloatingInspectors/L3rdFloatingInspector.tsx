@@ -115,6 +115,9 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 									)) ||
 									(innerPiece.lifespan === PieceLifespan.OutOnRundownEnd && (
 										<span className="mini-inspector__duration">{t('Until end of rundown')}</span>
+									)) ||
+									(innerPiece.lifespan === PieceLifespan.OutOnShowStyleEnd && (
+										<span className="mini-inspector__duration">{t('Until end of showstyle')}</span>
 									))
 								) : (
 									<span className="mini-inspector__duration">

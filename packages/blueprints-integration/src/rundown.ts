@@ -375,4 +375,5 @@ export enum PieceLifespan {
 	OutOnSegmentEnd = 'segment-end',
 	OutOnRundownChange = 'rundown-change',
 	OutOnRundownEnd = 'rundown-end',
+	OutOnShowStyleEnd = 'showstyle-end',
 }

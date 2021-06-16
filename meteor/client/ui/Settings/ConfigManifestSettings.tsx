@@ -113,18 +113,6 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, Doc
 				/>
 			)
 		case ConfigManifestEntryType.NUMBER:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute={attribute}
-					obj={object}
-					type="int"
-					collection={collection}
-					className="input text-input input-m"
-					mutateDisplayValue={(v) => (item.zeroBased ? v + 1 : v)}
-					mutateUpdateValue={(v) => (item.zeroBased ? v - 1 : v)}
-				/>
-			)
 		case ConfigManifestEntryType.INT:
 			return (
 				<EditAttribute
@@ -441,6 +429,8 @@ export class ConfigManifestTable<
 							return (a as string).localeCompare(b as string)
 						}
 					case ConfigManifestEntryType.NUMBER:
+					case ConfigManifestEntryType.INT:
+					case ConfigManifestEntryType.FLOAT:
 						return (a as number) - (b as number)
 					default:
 						return 0
@@ -463,7 +453,10 @@ export class ConfigManifestTable<
 									(col, i) => (
 										<th key={col.id}>
 											<span title={col.description}>{col.name} </span>
-											{(col.type === ConfigManifestEntryType.STRING || col.type === ConfigManifestEntryType.NUMBER) && (
+											{(col.type === ConfigManifestEntryType.STRING ||
+												col.type === ConfigManifestEntryType.NUMBER ||
+												col.type === ConfigManifestEntryType.INT ||
+												col.type === ConfigManifestEntryType.FLOAT) && (
 												<button
 													className={ClassNames('action-btn', {
 														disabled: this.state.sortColumn !== i,

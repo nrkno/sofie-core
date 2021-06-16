@@ -1,7 +1,7 @@
 import { check } from '../../lib/check'
 import * as _ from 'underscore'
 
-import { literal, getCurrentTime, Time, getRandomId, makePromise, isPromise, waitForPromise } from '../../lib/lib'
+import { literal, getCurrentTime, Time, getRandomId, makePromise, waitForPromise, Awaited } from '../../lib/lib'
 
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
@@ -39,7 +39,7 @@ export namespace ServerClientAPI {
 		methodName: string,
 		args: any[],
 		fcn: () => Result | Promise<Result>
-	): Result {
+	): Awaited<Result> {
 		let startTime = Date.now()
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
@@ -67,11 +67,7 @@ export namespace ServerClientAPI {
 			})
 		)
 		try {
-			let result = fcn()
-
-			if (isPromise(result)) {
-				result = waitForPromise(result) as Result
-			}
+			let result = waitForPromise(fcn())
 
 			// check the nature of the result
 			if (ClientAPI.isClientResponseError(result)) {

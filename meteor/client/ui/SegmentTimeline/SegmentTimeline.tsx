@@ -187,16 +187,6 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		})
 	}
 
-	renderMiniLiveLine() {
-		if (this.props.isLiveSegment) {
-			let lineStyle = {
-				left: ((this.props.livePosition / this.getSegmentDuration()) * 100).toString() + '%',
-			}
-
-			return <div className="segment-timeline__zoom-area__liveline" style={lineStyle}></div>
-		}
-	}
-
 	render() {
 		return (
 			<div
@@ -219,7 +209,6 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 						maxTimeScale={this.props.maxTimeScale}
 						onZoomChange={this.props.onZoomChange}
 					/>
-					{this.renderMiniLiveLine()}
 				</div>
 			</div>
 		)
@@ -647,16 +636,21 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		const { t } = this.props
 
 		if (this.props.isLiveSegment) {
+			const historyTimeDuration = this.props.liveLineHistorySize / this.props.timeScale
+
 			let pixelPostion = Math.floor(
 				this.props.livePosition * this.props.timeScale -
-					(!(this.props.followLiveLine && !this.props.showingAllSegment)
-						? this.props.scrollLeft * this.props.timeScale
-						: 0)
+					(!this.props.followLiveLine ? this.props.scrollLeft * this.props.timeScale : 0)
 			)
 			let lineStyle = {
 				left:
-					(this.props.followLiveLine && !this.props.showingAllSegment
-						? Math.min(pixelPostion, this.props.liveLineHistorySize).toString()
+					(this.props.followLiveLine
+						? // if the livePostion is greater than historyTimeDuration and followLiveLine is on
+						  // we always lock the onAirLine in place at liveLineHistorySize, so we can just return
+						  // a fixed value here
+						  this.props.livePosition > historyTimeDuration
+							? this.props.liveLineHistorySize
+							: Math.min(pixelPostion, this.props.liveLineHistorySize).toString()
 						: pixelPostion.toString()) + 'px',
 			}
 
@@ -665,10 +659,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					className="segment-timeline__liveline-shade"
 					key={this.props.segment._id + '-liveline-shade'}
 					style={{
-						width:
-							(this.props.followLiveLine && !this.props.showingAllSegment
-								? Math.min(Math.max(0, pixelPostion), this.props.liveLineHistorySize).toString()
-								: Math.max(0, pixelPostion).toString()) + 'px',
+						width: lineStyle.left,
 					}}
 				/>,
 				<div className="segment-timeline__liveline" key={this.props.segment._id + '-liveline'} style={lineStyle}>

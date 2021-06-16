@@ -76,7 +76,13 @@ export const RundownTimingProvider = withTracker<
 						// mark that we have found parts from the segment we're looking for
 						foundSegment = true
 
-						if (parts[i]._rank > partInstance.part._rank) {
+						if (parts[i]._id === partInstance.part._id) {
+							// the PartInstance is orphaned, but there's still the underlying part in the collection
+							// let's skip for now.
+							// this needs to be updated at some time since it should be treated as a different part at
+							// this point.
+							break
+						} else if (parts[i]._rank > partInstance.part._rank) {
 							// we have found a part with a rank greater than the rank of the orphaned PartInstance
 							insertBefore = i
 							break

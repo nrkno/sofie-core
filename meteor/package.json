@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.35.0-in-development",
+	"version": "1.35.0-in-testing.1",
 	"private": true,
 	"engines": {
 		"node": "^12.21.0 || 14"
@@ -52,7 +52,7 @@
 		"@jstarpl/react-contextmenu": "^2.14.3",
 		"@nrk/core-icons": "^9.2.2",
 		"@popperjs/core": "^2.9.1",
-		"@slack/client": "^5.0.2",
+		"@slack/webhook": "^6.0.0",
 		"@sofie-automation/blueprints-integration": "file:../packages/blueprints-integration",
 		"amqplib": "^0.8.0",
 		"bcrypt": "^5.0.1",

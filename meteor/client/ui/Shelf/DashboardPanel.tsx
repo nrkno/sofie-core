@@ -30,7 +30,7 @@ import {
 	USER_AGENT_POINTER_PROPERTY,
 } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
-import { PieceId } from '../../../lib/collections/Pieces'
+import { PieceId, Pieces } from '../../../lib/collections/Pieces'
 import { invalidateAt } from '../../lib/invalidatingTime'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -73,6 +73,8 @@ interface DashboardPositionableElement {
 	width: number
 	height: number
 }
+
+type AdLibPieceUiWithNext = AdLibPieceUi & { isNext: boolean }
 
 export function dashboardElementPosition(el: DashboardPositionableElement): React.CSSProperties {
 	return {
@@ -267,8 +269,15 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
-	protected isAdLibNext(adLib: AdLibPieceUi) {
-		return isAdLibNext(this.props.nextAdLibIds, this.props.unfinishedTags, this.props.nextTags, adLib)
+	protected findNext(adLibs: AdLibPieceUi[]): AdLibPieceUiWithNext[] {
+		return findNext(
+			this.props.nextAdLibIds,
+			this.props.unfinishedTags,
+			this.props.nextTags,
+			adLibs,
+			!!this.props.filter?.nextInCurrentPart,
+			!!this.props.filter?.oneNextPerSourceLayer
+		)
 	}
 
 	protected refreshKeyboardHotkeys() {
@@ -582,7 +591,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	render() {
 		const { t } = this.props
 		const uniquenessIds = new Set<string>()
-		const filteredAdLibs = DashboardPanelInner.filterOutAdLibs(this.props, this.state, uniquenessIds)
+		const filteredAdLibs = this.findNext(DashboardPanelInner.filterOutAdLibs(this.props, this.state, uniquenessIds))
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
 			if (!this.props.uiSegments || !this.props.playlist) {
@@ -603,7 +612,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 								'dashboard-panel__panel--horizontal': filter.overflowHorizontally,
 							})}
 						>
-							{filteredAdLibs.map((adLibPiece: AdLibPieceUi) => {
+							{filteredAdLibs.map((adLibPiece: AdLibPieceUiWithNext) => {
 								return (
 									<ContextMenuTrigger
 										id="shelf-context-menu"
@@ -629,7 +638,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 											onSelectAdLib={this.onSelectAdLib}
 											playlist={this.props.playlist}
 											isOnAir={this.isAdLibOnAir(adLibPiece)}
-											isNext={this.isAdLibNext(adLibPiece)}
+											isNext={adLibPiece.isNext}
 											mediaPreviewUrl={
 												this.props.studio
 													? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
@@ -840,18 +849,56 @@ export function isAdLibOnAir(
 
 export function isAdLibNext(
 	nextAdLibIds: IDashboardPanelTrackedProps['nextAdLibIds'],
-	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
 	nextTags: IDashboardPanelTrackedProps['nextTags'],
 	adLib: AdLibPieceUi
 ) {
 	if (
 		nextAdLibIds.includes(adLib._id) ||
-		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => unfinishedTags.includes(tag))) ||
 		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
 	) {
 		return true
 	}
 	return false
+}
+
+export function findNext(
+	nextAdLibIds: IDashboardPanelTrackedProps['nextAdLibIds'],
+	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
+	nextTags: IDashboardPanelTrackedProps['nextTags'],
+	adLibs: AdLibPieceUi[],
+	nextInCurrentPart: boolean,
+	oneNextPerSourceLayer: boolean
+): Array<AdLibPieceUi & { isNext: boolean }> {
+	const nextAdlibs: Set<PieceId> = new Set()
+	const nextAdlibsPerLayer: Map<string, PieceId> = new Map()
+	const checkAndSet = (adLib: AdLibPieceUi) => {
+		if (oneNextPerSourceLayer) {
+			if (nextAdlibsPerLayer.has(adLib.sourceLayerId)) {
+				return
+			} else {
+				nextAdlibsPerLayer.set(adLib.sourceLayerId, adLib._id)
+			}
+		}
+		nextAdlibs.add(adLib._id)
+	}
+	adLibs.forEach((adLib) => {
+		if (isAdLibNext(nextAdLibIds, nextTags, adLib)) {
+			checkAndSet(adLib)
+		}
+	})
+	if (nextInCurrentPart) {
+		adLibs.forEach((adLib) => {
+			if (adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => unfinishedTags.includes(tag))) {
+				checkAndSet(adLib)
+			}
+		})
+	}
+	return adLibs.map((adLib) => {
+		return {
+			...adLib,
+			isNext: nextAdlibs.has(adLib._id),
+		}
+	})
 }
 
 export const DashboardPanel = translateWithTracker<

@@ -72,6 +72,7 @@ export class CoreHandler {
 	private _studioId: string | undefined
 	private _timelineSubscription: string | null = null
 	private _expectedItemsSubscription: string | null = null
+	private _rundownsSubscription: string | null = null
 
 	private _statusInitialized = false
 	private _statusDestroyed = false
@@ -276,6 +277,22 @@ export class CoreHandler {
 						this.logger.error(err)
 					})
 				this.logger.debug('VIZDEBUG: Subscription to expectedPlayoutItems done')
+				// Set up rundowns data subscription:
+				if (this._rundownsSubscription) {
+					this.core.unsubscribe(this._rundownsSubscription)
+					this._rundownsSubscription = null
+				}
+				this.core
+					.autoSubscribe('rundowns', {
+						studioId: studioId,
+					})
+					.then((subscriptionId) => {
+						this._rundownsSubscription = subscriptionId
+					})
+					.catch((err) => {
+						this.logger.error(err)
+					})
+				this.logger.debug('VIZDEBUG: Subscription to rundowns done')
 			}
 
 			if (this._tsrHandler) {
