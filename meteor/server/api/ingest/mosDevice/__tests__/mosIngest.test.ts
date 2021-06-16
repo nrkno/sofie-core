@@ -17,11 +17,11 @@ import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections
 import { getPartId } from '../../lib'
 import { PartInstance } from '../../../../../lib/collections/PartInstances'
 import { resetRandomId, restartRandomId } from '../../../../../__mocks__/random'
+import { UserActionsLog } from '../../../../../lib/collections/UserActionsLog'
+import { removeRundownPlaylistFromDb } from '../../../rundownPlaylist'
 
 jest.mock('../../updateNext')
 import { ensureNextPartIsValid } from '../../updateNext'
-import { UserActionsLog } from '../../../../../lib/collections/UserActionsLog'
-import { removeRundownPlaylistFromDb } from '../../../rundownPlaylist'
 type TensureNextPartIsValid = jest.MockedFunction<typeof ensureNextPartIsValid>
 const ensureNextPartIsValidMock = ensureNextPartIsValid as TensureNextPartIsValid
 

@@ -56,7 +56,7 @@ export abstract class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> 
 	}
 
 	protected async preInit(tmpPlaylist: ReadonlyDeep<RundownPlaylist>) {
-		await Promise.allSettled([
+		await Promise.all([
 			this.Playlist._initialize(tmpPlaylist._id),
 			this.Rundowns.prepareInit({ playlistId: tmpPlaylist._id }, true),
 		])
@@ -183,7 +183,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		// Future: This could be defered until we get to updateTimeline. It could be a small performance boost
 		ps.push(this.Timeline.prepareInit({ _id: playlist.studioId }, true))
 
-		await Promise.allSettled(ps)
+		await Promise.all(ps)
 
 		if (ingestCache) {
 			// Populate the collections with the cached data instead

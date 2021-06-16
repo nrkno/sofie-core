@@ -148,7 +148,7 @@ export class ActivationCache {
 			}
 			ps.push(this._getPeripheralDevices())
 
-			await Promise.allSettled(ps)
+			await Promise.all(ps)
 		}
 		const studio = await pStudio
 		if (!studio) {

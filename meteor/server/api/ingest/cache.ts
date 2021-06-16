@@ -111,7 +111,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	}
 
 	async loadBaselineCollections(): Promise<void> {
-		await Promise.allSettled([
+		await Promise.all([
 			this.RundownBaselineObjs._initialize(),
 			this.RundownBaselineAdLibPieces._initialize(),
 			this.RundownBaselineAdLibActions._initialize(),
