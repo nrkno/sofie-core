@@ -92,7 +92,7 @@ export namespace ExpectedPackage {
 		}
 		sources: {
 			containerId: string
-			accessors: {
+			accessors?: {
 				[accessorId: string]:
 					| AccessorOnPackage.LocalFolder
 					| AccessorOnPackage.FileShare
@@ -120,7 +120,7 @@ export namespace ExpectedPackage {
 		}
 		sources: {
 			containerId: string
-			accessors: { [accessorId: string]: AccessorOnPackage.Quantel }
+			accessors?: { [accessorId: string]: AccessorOnPackage.Quantel }
 		}[]
 	}
 
