@@ -33,8 +33,8 @@ export default function JonasFormattedTime(props: IJonasFormattedTimeProps) {
 	let formattedDateString: string
 	if (Math.abs(diff) < 6) {
 		formattedDateString = timeToFormat.calendar(now, momentCalendarOptions)
-	} else if (now.isBefore(timestamp)) {
-		formattedDateString = now.from(timeToFormat)
+		// } else if (now.isBefore(timestamp)) { // Note: This fix is replaced by another in Release 35
+		// 	formattedDateString = now.from(timeToFormat)
 	} else {
 		formattedDateString = now.to(timeToFormat)
 	}

@@ -4,12 +4,9 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
 
-
 ### Features
-
 * prevent scroll bubbling ([#506](https://github.com/nrkno/tv-automation-server-core/issues/506)) ([afc8245](https://github.com/nrkno/tv-automation-server-core/commit/afc82455cf9072fff3407a688a44e34380345c2d))
 * untimed Parts ([#512](https://github.com/nrkno/tv-automation-server-core/issues/512)) ([bd7d336](https://github.com/nrkno/tv-automation-server-core/commit/bd7d336d45bca1c92c45e2b2797722db956be1fb))
-
 
 ### Bug Fixes
 
@@ -34,6 +31,94 @@ All notable changes to this project will be documented in this file. See [standa
 * syncChangesToPartInstances sometimes missing changes ([c3d8d30](https://github.com/nrkno/tv-automation-server-core/commit/c3d8d30b9a789af1214315db8afbec321fcba861))
 * **presenter screen:** make piece icons visible in casparcg ([7779994](https://github.com/nrkno/tv-automation-server-core/commit/7779994cee88d39bb8c43546e52e1b5a336639f1))
 * update supertimeline. fixes issue with partial resolving ([ce0b832](https://github.com/nrkno/tv-automation-server-core/commit/ce0b832def0b9fc4f12f22ae4c5f1cbdc49fc59f))
+
+## [1.33.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-testing.1...v1.33.0) (2021-06-15)
+
+### Bug Fixes
+
+* adlib action trigger mode labels are not translated ([#504](https://github.com/nrkno/tv-automation-server-core/issues/504)) ([1b61e43](https://github.com/nrkno/tv-automation-server-core/commit/1b61e4372a148675362856f5d9245966cf40d246))
+* allow string arrays for TranslatableMessage args ([0b0731f](https://github.com/nrkno/tv-automation-server-core/commit/0b0731f33ddc6f0f1efec957af5906ed4b177abe))
+* Check if infinite has stopped before creating continuation ([07dccf8](https://github.com/nrkno/tv-automation-server-core/commit/07dccf81aa50c3e1dacdd84634927d0c81ba04f6))
+* gateways not reporting package versions ([127881f](https://github.com/nrkno/tv-automation-server-core/commit/127881fea90645d9ad7b637c2ebcf6879ae8fd3d))
+* hoverscrub doesn't always work on selected items in Shelf ([c463934](https://github.com/nrkno/tv-automation-server-core/commit/c46393409d1f3d69d6abd78abdb5a981c60ee381))
+* onEnd infinites replacing onChange infinite at incorrect times. ([819588f](https://github.com/nrkno/tv-automation-server-core/commit/819588f2737def102fee38e7b578a6355322be9c))
+* orphaned parts cause the Segment Timeline component to scroll beyond the timeline ([ea35d71](https://github.com/nrkno/tv-automation-server-core/commit/ea35d7147d5e0665033262c55dcdb0e9556643d0))
+* react warning in device config page ([4b7b619](https://github.com/nrkno/tv-automation-server-core/commit/4b7b6197496d8499ecb3065563cd59caf3dcfc2b))
+* Removed linebreak in some translations ([d8c8730](https://github.com/nrkno/tv-automation-server-core/commit/d8c8730f4aae6fa2fcf548080642b2ff3738c936))
+* resend device statuses to core, on core reconnect ([601f095](https://github.com/nrkno/tv-automation-server-core/commit/601f095c8d85c4b0fba848514de4f7feba0ace07))
+* Run run process and prune before getting infinites for part ([0b2fa5c](https://github.com/nrkno/tv-automation-server-core/commit/0b2fa5c70a96b6e1953ca6e68e1808e33e4774e9))
+* Stop OnRundownEnd infinites from continuing into next part when stopped ([7662ebf](https://github.com/nrkno/tv-automation-server-core/commit/7662ebfed1dccbaad390ffdb6ee1beb7878f9a28))
+* syncChangesToPartInstances sometimes missing changes ([c3d8d30](https://github.com/nrkno/tv-automation-server-core/commit/c3d8d30b9a789af1214315db8afbec321fcba861))
+* Update playlist after removing rundown ([#515](https://github.com/nrkno/tv-automation-server-core/issues/515)) ([3b89516](https://github.com/nrkno/tv-automation-server-core/commit/3b89516aafe7b185556980b77b7a7d5a1036a04d))
+* update supertimeline. fixes issue with partial resolving ([ce0b832](https://github.com/nrkno/tv-automation-server-core/commit/ce0b832def0b9fc4f12f22ae4c5f1cbdc49fc59f))
+* wrong formatting of future dates in GUI ([9eca140](https://github.com/nrkno/tv-automation-server-core/commit/9eca140a643ce3086c27963ca79f378efad10971))
+* **presenter screen:** make piece icons visible in casparcg ([7779994](https://github.com/nrkno/tv-automation-server-core/commit/7779994cee88d39bb8c43546e52e1b5a336639f1))
+
+## [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
+
+## [1.33.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.33.0-in-development.0) (2021-04-22)
+
+
+### Features
+* add `show_hidden_source_layers` url param to enable always showing hidden source layers (for debugging) ([6a90938](https://github.com/nrkno/tv-automation-server-core/commit/6a90938400ddd7faf294b6d6771f90e54d6c5d12))
+* Add duplicate AdLibs filtering ([5ecdaa8](https://github.com/nrkno/tv-automation-server-core/commit/5ecdaa823fef5a19ec264eedf234106914e16853))
+* add EditAttributeArray to support inputting of basic arrays. ([31829a6](https://github.com/nrkno/tv-automation-server-core/commit/31829a697699ba6beee4bb9870cf7f29501507b4))
+* add NextInfo dashboard panel ([5dc344a](https://github.com/nrkno/tv-automation-server-core/commit/5dc344ae89bf8f8c5f567d3e3b1d751fa0f3b4fd))
+* add styling capability to StyledTimecode ([f98aa22](https://github.com/nrkno/tv-automation-server-core/commit/f98aa22274abad3fe0e2b4389c37efcafda4f5e1))
+* blueprint static assets upload ([9033b7d](https://github.com/nrkno/tv-automation-server-core/commit/9033b7dba1f24edf03d027b8f4ed1a4e6d65d86e))
+* Config manifest for Sisyfos setLabelToLayerName ([d3d559e](https://github.com/nrkno/tv-automation-server-core/commit/d3d559ec8f733b38df4906ccf721ab2ba244c976))
+* findLastScriptedPieceOnLayer ([897ddb9](https://github.com/nrkno/tv-automation-server-core/commit/897ddb9ccd856987041debe63d1d9868b0922bf2))
+* getPartForPreviousPiece ([6060165](https://github.com/nrkno/tv-automation-server-core/commit/6060165a953bf870cd17e9a523571ccb08b6f562))
+* import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
+* improved presenter screen ([#499](https://github.com/nrkno/tv-automation-server-core/issues/499)) ([729cee2](https://github.com/nrkno/tv-automation-server-core/commit/729cee2c0a06e60bee122c4e960de945422996b0))
+* loop UI & lobby improvements ([#498](https://github.com/nrkno/tv-automation-server-core/issues/498)) ([22fe6d1](https://github.com/nrkno/tv-automation-server-core/commit/22fe6d1658e23b19f8d0e9645885f51ffba06fd1))
+* migrations to ensure the playout and mos gateways are matching the version of core ([074c5b8](https://github.com/nrkno/tv-automation-server-core/commit/074c5b8784749beecf1a88aa959871108e17c9ec))
+* move start scripts to a root package.json ([#497](https://github.com/nrkno/tv-automation-server-core/issues/497)) ([4182cd1](https://github.com/nrkno/tv-automation-server-core/commit/4182cd1c8cdd4a720c7f1e83671b26675d26a9a2))
+* playout-gw atem clip uploading ([ba602f5](https://github.com/nrkno/tv-automation-server-core/commit/ba602f55800bc7e07c6ea2f04645910528fb18c5))
+* playout-gw media objects ([e98e9ee](https://github.com/nrkno/tv-automation-server-core/commit/e98e9ee775f353d00df63bccdf0ccb55fff2743a))
+* staggered segment updates ([#470](https://github.com/nrkno/tv-automation-server-core/issues/470)) ([6dfb5ad](https://github.com/nrkno/tv-automation-server-core/commit/6dfb5ad92bf249231d868ad5ddea0ddd48a75c13))
+* Studio settings for layerName ([3803101](https://github.com/nrkno/tv-automation-server-core/commit/3803101e56f081bd5bf4f5d3a7aea6b28d294b82))
+* support expectedPlayoutItems for adlib actions ([b0b866a](https://github.com/nrkno/tv-automation-server-core/commit/b0b866a4ff10de5301bfd94f1cc9f3a6d4844911))
+* translatable AdLib Actions ([#494](https://github.com/nrkno/tv-automation-server-core/issues/494)) [publish] ([4ca0904](https://github.com/nrkno/tv-automation-server-core/commit/4ca090406ae5604e32b84394dd57692e1bced9ba))
+* update meteor ([008bbad](https://github.com/nrkno/tv-automation-server-core/commit/008bbad717eb866ce802dd89c65480500831d479))
+* Use layer names in layer mapping dropdown / mapping settings ([d5543d8](https://github.com/nrkno/tv-automation-server-core/commit/d5543d8c582403ca8373e19c7d609ab61d822ad6))
+
+
+### Bug Fixes
+
+* Failing tests ([a786d24](https://github.com/nrkno/tv-automation-server-core/commit/a786d242b87ca2b3bafa64761691ed07e44d0d8b))
+* **TimelineGrid:** timeline labels are non-monotonous under some conditions ([e1381de](https://github.com/nrkno/tv-automation-server-core/commit/e1381defa8162069e5c2efcb492b6eb873f306d5))
+* [object Object] in UI ([5d5c097](https://github.com/nrkno/tv-automation-server-core/commit/5d5c09770c67d1704e4a960a0703871afc0c72e7))
+* alignment and part title display ([4ee7873](https://github.com/nrkno/tv-automation-server-core/commit/4ee78732fab0ecfd38b94f8e6fcbf6e658457b05))
+* Check for existence of layerName and lint ([db949c7](https://github.com/nrkno/tv-automation-server-core/commit/db949c7f30e5ba7074416670e7d32713ec90ccd0))
+* Check item is not hidden ([92b4179](https://github.com/nrkno/tv-automation-server-core/commit/92b4179541d94d3f7f67ab13353ef409f57af601))
+* Don't find pieces in the future of the current part ([d6829dc](https://github.com/nrkno/tv-automation-server-core/commit/d6829dc2fb6f92b573f99152396e195a0867da7b))
+* don't scroll or maintain focus in shelf-only view ([9df92bd](https://github.com/nrkno/tv-automation-server-core/commit/9df92bd195900d2f19107303bb42ef8d8227a597))
+* Ensure slash in preview URL ([2b1a071](https://github.com/nrkno/tv-automation-server-core/commit/2b1a07177d13eb5ae86a4f31680e29a71545af8b))
+* generate expectedPlayoutItems for rundown baseline adlibs ([e939387](https://github.com/nrkno/tv-automation-server-core/commit/e939387a66e2555bd67f875a512d0845948a9e4b))
+* getRundownIDsFromCache ([40cdeb3](https://github.com/nrkno/tv-automation-server-core/commit/40cdeb3ea6061bb82d5dffbc2fbd44b6fb9908f3))
+* Issues from review ([018a50b](https://github.com/nrkno/tv-automation-server-core/commit/018a50b6c3a5ec04518c41ec2151afbca634fb29))
+* minor fixes after review ([403f318](https://github.com/nrkno/tv-automation-server-core/commit/403f318deac2895cb949631eb7b0a11107eca35c))
+* More issues from review ([eb6e550](https://github.com/nrkno/tv-automation-server-core/commit/eb6e5507231d007761c421f4e46366859aba459f))
+* onChange adlib started after an onEnd adlib would be lost after a take ([ccf60ca](https://github.com/nrkno/tv-automation-server-core/commit/ccf60cad9c1625a89f6b92cfadb6253de14d3f87))
+* replace dynamicallyInserted... with orphaned ([f90ed41](https://github.com/nrkno/tv-automation-server-core/commit/f90ed410f3bc245cbcf1d0dce0f49d24e36effa5))
+* RundownDividerHeader uses wrong time formatting of duration ([efb1b64](https://github.com/nrkno/tv-automation-server-core/commit/efb1b6450a1730b09dc56704202038eb8bdbce10))
+* Show piece duration in inspector ([de73656](https://github.com/nrkno/tv-automation-server-core/commit/de73656cf042d23c6635c15ea83c8f28f257423b))
+* Tests for getPartForPreviousPiece ([dd9e0ed](https://github.com/nrkno/tv-automation-server-core/commit/dd9e0edac0bf22b4cf4b8b96b2cf622571848bec))
+* update ci flow for lerna building and version bumping [publish] ([8494483](https://github.com/nrkno/tv-automation-server-core/commit/8494483be5ffa6d58e9761bcfea2210716afbab8))
+* **playout-gw:** upload files to the right atem ([47bc15b](https://github.com/nrkno/tv-automation-server-core/commit/47bc15bcb9d38234995d1c25105e4d71aef611f7))
+* splits renderer crashing when piece content is not a split ([09ef993](https://github.com/nrkno/tv-automation-server-core/commit/09ef99363aa4d639879f84b693c5bedfbf829d8b))
+* Use layerName instead of Id where specified ([e10e96e](https://github.com/nrkno/tv-automation-server-core/commit/e10e96e18d560c71ccfc25d046e33253c6966851))
+* **PresenterScreen:** LiveSpeak piece Icon uses old styling ([0775268](https://github.com/nrkno/tv-automation-server-core/commit/0775268552cda88cdbbc8aa641c24d5db7e05527))
+* **PresenterScreen:** showStyleBases subscription is not reactive ([6c0490b](https://github.com/nrkno/tv-automation-server-core/commit/6c0490b84e574736bd8d49af87ef94930e9f7ba3))
+* PM: fix quantel types and add GUI settings ([9c4bb37](https://github.com/nrkno/tv-automation-server-core/commit/9c4bb37be6f27beaff9f9db387f357fc5148f509))
+* Register shortcuts according to rank in adlib panels ([982cbd2](https://github.com/nrkno/tv-automation-server-core/commit/982cbd2e1a93e7d0f085ef3ab5a20625171f4cb9))
+* Tests for findLastScriptedPieceOnLayer ([903a2cb](https://github.com/nrkno/tv-automation-server-core/commit/903a2cbae8c698b69352e0b94b497f7d89168455))
+
+### [1.32.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.1...v1.32.2) (2021-06-02)
+
+
+
 
 ## [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
 
