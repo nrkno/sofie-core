@@ -533,7 +533,7 @@ export class TSRHandler {
 					if (deviceOptions.options) {
 						this.logger.info('Initializing device: ' + deviceId)
 						this.logger.info('new', deviceOptions)
-						keepTrack(this._addDevice(deviceId, deviceOptions, activeRundownPlaylistId), 'add_' + deviceId)
+						ps.push(keepTrack(this._addDevice(deviceId, deviceOptions, activeRundownPlaylistId), 'add_' + deviceId))
 					}
 				} else {
 					if (deviceOptions.options) {
