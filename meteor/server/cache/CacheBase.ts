@@ -8,7 +8,6 @@ import { profiler } from '../api/profiler'
 import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection'
 import { DbCacheReadObject, DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
 import { anythingChanged, sumChanges } from '../lib/database'
-import { Lazy } from '../api/ingest/cache'
 
 type DeferredFunction<Cache> = (cache: Cache) => void | Promise<void>
 

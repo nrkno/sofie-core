@@ -23,48 +23,7 @@ import { profiler } from '../profiler'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 import { getRundownId } from './lib'
 import { ExpectedPackageDB, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
-import PLazy from 'p-lazy'
-
-export class Lazy<T> {
-	private value!: T
-	private loading: PLazy<void> | undefined
-
-	public constructor(init: () => Promise<T>) {
-		this.loading = new PLazy((resolve, reject) => {
-			try {
-				init()
-					.then((v) => {
-						this.value = v
-						this.loading = undefined
-						resolve()
-					})
-					.catch(() => reject())
-			} catch (e) {
-				reject()
-			}
-		})
-	}
-
-	public async get(): Promise<T> {
-		if (this.loading) {
-			await this.loading
-		}
-
-		return this.value
-	}
-
-	public getIfLoaded(): T | undefined {
-		if (!this.loading) {
-			return this.value
-		} else {
-			return undefined
-		}
-	}
-
-	public isLoaded(): boolean {
-		return !this.loading
-	}
-}
+import { LazyInitialise } from '../../lib/lazy'
 
 export class CacheForIngest extends CacheBase<CacheForIngest> {
 	public readonly isIngest = true
@@ -85,11 +44,11 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	public readonly ExpectedPlayoutItems: DbCacheWriteCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>
 	public readonly ExpectedPackages: DbCacheWriteCollection<ExpectedPackageDB, ExpectedPackageDB>
 
-	public readonly RundownBaselineObjs: Lazy<DbCacheWriteCollection<RundownBaselineObj, RundownBaselineObj>>
-	public readonly RundownBaselineAdLibPieces: Lazy<
+	public readonly RundownBaselineObjs: LazyInitialise<DbCacheWriteCollection<RundownBaselineObj, RundownBaselineObj>>
+	public readonly RundownBaselineAdLibPieces: LazyInitialise<
 		DbCacheWriteCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>
 	>
-	public readonly RundownBaselineAdLibActions: Lazy<
+	public readonly RundownBaselineAdLibActions: LazyInitialise<
 		DbCacheWriteCollection<RundownBaselineAdLibAction, RundownBaselineAdLibAction>
 	>
 
@@ -127,13 +86,13 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 		this.ExpectedPlayoutItems = expectedPlayoutItems
 		this.ExpectedPackages = expectedPackages
 
-		this.RundownBaselineObjs = new Lazy(async () =>
+		this.RundownBaselineObjs = new LazyInitialise(async () =>
 			DbCacheWriteCollection.createFromDatabase(RundownBaselineObjs, { rundownId: this.RundownId })
 		)
-		this.RundownBaselineAdLibPieces = new Lazy(async () =>
+		this.RundownBaselineAdLibPieces = new LazyInitialise(async () =>
 			DbCacheWriteCollection.createFromDatabase(RundownBaselineAdLibPieces, { rundownId: this.RundownId })
 		)
-		this.RundownBaselineAdLibActions = new Lazy(async () =>
+		this.RundownBaselineAdLibActions = new LazyInitialise(async () =>
 			DbCacheWriteCollection.createFromDatabase(RundownBaselineAdLibActions, { rundownId: this.RundownId })
 		)
 	}
