@@ -60,7 +60,7 @@ export const ClipTrimDialog = withTranslation()(
 						this.state.inPoint,
 						this.state.duration
 					),
-				(err, res) => {
+				(err) => {
 					clearTimeout(pendingInOutPoints)
 
 					if (ClientAPI.isClientResponseError(err) && err.message && err.message.match(/timed out/)) {
@@ -143,8 +143,8 @@ export const ClipTrimDialog = withTranslation()(
 					acceptText={t('OK')}
 					secondaryText={t('Cancel')}
 					onAccept={this.handleAccept}
-					onDiscard={(e) => this.props.onClose && this.props.onClose()}
-					onSecondary={(e) => this.props.onClose && this.props.onClose()}
+					onDiscard={() => this.props.onClose && this.props.onClose()}
+					onSecondary={() => this.props.onClose && this.props.onClose()}
 					className="big"
 				>
 					<ClipTrimPanel

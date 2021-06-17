@@ -979,13 +979,8 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	mosRoReplace(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrder: MOS.IMOSRunningOrder) {
 		return makePromise(() => MosIntegration.mosRoReplace(this, deviceId, deviceToken, mosRunningOrder))
 	}
-	mosRoDelete(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		mosRunningOrderId: MOS.MosString128,
-		force?: boolean
-	) {
-		return makePromise(() => MosIntegration.mosRoDelete(this, deviceId, deviceToken, mosRunningOrderId, force))
+	mosRoDelete(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrderId: MOS.MosString128) {
+		return makePromise(() => MosIntegration.mosRoDelete(this, deviceId, deviceToken, mosRunningOrderId))
 	}
 	mosRoMetadata(deviceId: PeripheralDeviceId, deviceToken: string, metadata: MOS.IMOSRunningOrderBase) {
 		return makePromise(() => MosIntegration.mosRoMetadata(this, deviceId, deviceToken, metadata))

@@ -4,10 +4,7 @@ import {
 	SYSTEM_ID,
 	getCoreSystemCursor,
 	parseVersion,
-	Version,
 	parseRange,
-	stripVersion,
-	VersionRange,
 	GENESIS_SYSTEM_VERSION,
 	parseCoreIntegrationCompatabilityRange,
 	compareSemverVersions,
@@ -22,7 +19,6 @@ import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
 import { Studios, StudioId } from '../lib/collections/Studios'
 import { logger } from './logging'
-import * as semver from 'semver'
 import { findMissingConfigs } from './api/blueprints/config'
 import { ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
 import { syncFunction } from './codeControl'

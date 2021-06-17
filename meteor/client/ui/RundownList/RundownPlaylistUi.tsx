@@ -36,7 +36,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { RundownUtils } from '../../lib/rundown'
 import PlaylistRankMethodToggle from './PlaylistRankMethodToggle'
 import { DisplayFormattedTime } from './DisplayFormattedTime'
-import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
+import { getAllowStudio } from '../../lib/localStorage'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
 
@@ -71,7 +71,7 @@ const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
 	drop: (
 		props: IRundownPlaylistUiProps,
 		monitor: DropTargetMonitor,
-		component: any
+		_component: any
 	): IRundownPlaylistUiAction | undefined => {
 		if (monitor.didDrop()) {
 			return

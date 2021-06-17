@@ -233,8 +233,6 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		}
 
 		dismissAll() {
-			const displayNotifications = this.getNotificationsToDisplay()
-
 			const notificationsToDismiss: string[] = []
 
 			for (const notification of this.props.notifications) {
@@ -436,7 +434,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 							easing: 'ease-in',
 							duration: this.LEAVE_ANIMATION_DURATION,
 							display: 'flex',
-							complete: (elements) => this.checkKeepDisplaying(),
+							complete: () => this.checkKeepDisplaying(),
 						}}
 					>
 						{displayList}

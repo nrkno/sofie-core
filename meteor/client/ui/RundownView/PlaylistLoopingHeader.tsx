@@ -2,7 +2,6 @@ import React from 'react'
 import classNames from 'classnames'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { withTranslation } from 'react-i18next'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
 
 interface ILoopingHeaderProps {

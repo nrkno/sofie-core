@@ -42,7 +42,7 @@ export namespace TrackerMock {
 		invalidated: boolean = false
 		firstRun: boolean = true
 
-		constructor(computedFunc: AutorunCallback, parentComputation: Computation | null, onError?: (e: any) => void) {
+		constructor(computedFunc: AutorunCallback, parentComputation: Computation | null, _onError?: (e: any) => void) {
 			this.parentComputation = parentComputation
 			this.firstRun = true
 			this.func = computedFunc
@@ -67,7 +67,6 @@ export namespace TrackerMock {
 			this.onInvalidateClbs.length = 0
 			this.runAll(this.onStopClbs)
 			this.onStopClbs.length = 0
-			return
 		}
 		public invalidate = () => {
 			this.invalidated = true
@@ -79,7 +78,6 @@ export namespace TrackerMock {
 				this.stop()
 				this.parentComputation.invalidate()
 			}
-			return
 		}
 		public onInvalidate = (clb: ComputationCallback) => {
 			this.onInvalidateClbs.push(clb)
@@ -89,7 +87,7 @@ export namespace TrackerMock {
 		}
 	}
 
-	export function autorun<T>(runFunc: AutorunCallback, options = {}): TrackerMock.Computation {
+	export function autorun(runFunc: AutorunCallback, options = {}): TrackerMock.Computation {
 		if (Object.keys(options).length > 0) {
 			throw new Error(`Tracker.autorun using unimplemented options: ${Object.keys(options).join(', ')}`)
 		}
@@ -117,9 +115,8 @@ export namespace TrackerMock {
 		}
 
 		TrackerMock.currentComputation.onInvalidate(clb)
-		return
 	}
-	export function afterFlush(clb: Function) {
+	export function afterFlush(_clb: Function) {
 		throw new Error(`Tracker.afterFlush() is not implemented in the mock Tracker`)
 	}
 }

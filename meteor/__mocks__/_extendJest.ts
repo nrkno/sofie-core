@@ -30,8 +30,6 @@ expect.extend({
 declare global {
 	namespace jest {
 		interface Matchers<R> {
-			toMatchObject<E extends {}[]>(expected: Partial<R>): R
-
 			toBeWithinRange(floor: number, ceiling: number): R
 			toBeFuzzy(target: number, fuzzyness: number): R
 

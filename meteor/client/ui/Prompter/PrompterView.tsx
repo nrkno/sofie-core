@@ -342,7 +342,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	scrollToPrevious() {
 		const scrollMargin = this.calculateScrollPosition()
-		const screenMargin = this.calculateMarginPosition()
 		const anchors = this.listAnchorPositions(-1, 10 + scrollMargin)
 
 		const target = anchors[anchors.length - 2] || anchors[0]
@@ -357,7 +356,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	scrollToFollowing() {
 		const scrollMargin = this.calculateScrollPosition()
-		const screenMargin = this.calculateMarginPosition()
 		const anchors = this.listAnchorPositions(40 + scrollMargin, -1)
 
 		const target = anchors[0]
@@ -660,7 +658,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			}
 		}
 
-		shouldComponentUpdate(nextProps, nextState): boolean {
+		shouldComponentUpdate(_nextProps, _nextState): boolean {
 			clearTimeout(this._debounceUpdate)
 			this._debounceUpdate = setTimeout(() => this.forceUpdate(), 250)
 			return false

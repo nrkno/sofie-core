@@ -703,7 +703,7 @@ export namespace RundownUtils {
 					})
 					// check if the Pieces should be cropped (as should be the case if an item on a layer is placed after
 					// an infinite Piece) and limit the width of the labels so that they dont go under or over the next Piece.
-					for (const [outputSourceCombination, layerItems] of Object.entries(itemsByLayer)) {
+					for (const layerItems of Object.values(itemsByLayer)) {
 						// sort on rendered in-point and then on priority
 						const sortedItems = layerItems.sort(
 							(a, b) =>
@@ -747,11 +747,7 @@ export namespace RundownUtils {
 			segmentExtended.sourceLayers = sourceLayers
 
 			if (isNextSegment && !isLiveSegment && !autoNextPart && currentPartInstance) {
-				if (
-					currentPartInstance &&
-					currentPartInstance.part.expectedDuration &&
-					currentPartInstance.part.autoNext
-				) {
+				if (currentPartInstance.part.expectedDuration && currentPartInstance.part.autoNext) {
 					autoNextPart = true
 				}
 			}

@@ -7,8 +7,6 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { Collections, objectPathGet, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
 import { TransformedCollection } from '../../lib/typings/meteor'
 

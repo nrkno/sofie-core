@@ -441,11 +441,7 @@ export function setupDefaultRundownPlaylist(
 ): { rundownId: RundownId; playlistId: RundownPlaylistId } {
 	const rundownId: RundownId = rundownId0 || getRandomId()
 
-	const playlist: DBRundownPlaylist = defaultRundownPlaylist(
-		protectString('playlist_' + rundownId),
-		env.studio._id,
-		env.ingestDevice._id
-	)
+	const playlist: DBRundownPlaylist = defaultRundownPlaylist(protectString('playlist_' + rundownId), env.studio._id)
 
 	const playlistId = RundownPlaylists.insert(playlist)
 

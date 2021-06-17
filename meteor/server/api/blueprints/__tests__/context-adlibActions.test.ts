@@ -1138,7 +1138,7 @@ describe('Test blueprint api context', () => {
 			})
 			testInFiber('good', async () => {
 				await wrapWithCache(async (cache) => {
-					const { context, playlist } = await getActionExecutionContext(cache)
+					const { context } = await getActionExecutionContext(cache)
 
 					const partInstance = cache.PartInstances.findOne() as PartInstance
 					expect(partInstance).toBeTruthy()

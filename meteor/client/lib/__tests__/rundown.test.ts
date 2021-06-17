@@ -26,7 +26,7 @@ describe('client/lib/rundown', () => {
 		const parts = playlist.getAllOrderedParts()
 		const rundown = rundowns[0]
 		const segment = segments[0]
-		const nextSegment = segments[1]
+		// const nextSegment = segments[1]
 
 		const resolvedSegment = RundownUtils.getResolvedSegment(
 			showStyleBase,
