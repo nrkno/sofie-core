@@ -111,7 +111,7 @@
 		"xmlbuilder": "^15.1.1"
 	},
 	"devDependencies": {
-		"@sofie-automation/code-standard-preset": "^0.4.1",
+		"@sofie-automation/code-standard-preset": "^0.4.2",
 		"@types/amqplib": "^0.5.17",
 		"@types/body-parser": "^1.19.0",
 		"@types/classnames": "^2.3.1",

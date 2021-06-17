@@ -43,28 +43,34 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 	let properties: Array<KeyValue> = []
 	if (noraContent && noraContent.payload && noraContent.payload.content) {
 		properties = _.compact(
-			_.map(noraContent.payload.content, (value, key: string):
-				| {
-						key: string
-						value: string
-				  }
-				| undefined => {
-				let str: string
-				if (key.startsWith('_') || key.startsWith('@') || value === '') {
-					return undefined
-				} else {
-					if (_.isObject(value)) {
-						// @ts-ignore
-						str = JSON.stringify(value, '', 2)
+			_.map(
+				noraContent.payload.content,
+				(
+					value,
+					key: string
+				):
+					| {
+							key: string
+							value: string
+					  }
+					| undefined => {
+					let str: string
+					if (key.startsWith('_') || key.startsWith('@') || value === '') {
+						return undefined
 					} else {
-						str = value + ''
-					}
-					return {
-						key: key,
-						value: str,
+						if (_.isObject(value)) {
+							// @ts-ignore
+							str = JSON.stringify(value, '', 2)
+						} else {
+							str = value + ''
+						}
+						return {
+							key: key,
+							value: str,
+						}
 					}
 				}
-			})
+			)
 		) as Array<KeyValue>
 	}
 
