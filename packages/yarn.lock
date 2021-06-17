@@ -2052,10 +2052,10 @@ at-least-node@^1.0.0:
   resolved "https://registry.yarnpkg.com/at-least-node/-/at-least-node-1.0.0.tgz#602cd4b46e844ad4effc92a8011a3c46e0238dc2"
   integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
 
-atem-connection@2.3.0-nightly-v2-x-20210608-120229-97c45a9.0:
-  version "2.3.0-nightly-v2-x-20210608-120229-97c45a9.0"
-  resolved "https://registry.yarnpkg.com/atem-connection/-/atem-connection-2.3.0-nightly-v2-x-20210608-120229-97c45a9.0.tgz#4b73f121815f5cf42c942787a5d9fbc911d18f39"
-  integrity sha512-5CRVP71BLFTNLa1KGfMCa/GrogrVOYtvNFtIFPQCZJvOYz6N8c6QZvM7olwcCj3iJSu31JGR1GxiVXdkXeVV4w==
+atem-connection@^2.1.0:
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/atem-connection/-/atem-connection-2.2.2.tgz#3814ddeed30b560d808e501e5450e2f0dc25f733"
+  integrity sha512-p/Diwsjymv1y7FvBzDSY4Yq06+8vZ03QEoxrcoFlNrYI6WCsCt64MeoBAQu5TEExGXLwffksQyyXbQUOEU4qNw==
   dependencies:
     big-integer "^1.6.48"
     eventemitter3 "^4.0.4"
@@ -2065,14 +2065,14 @@ atem-connection@2.3.0-nightly-v2-x-20210608-120229-97c45a9.0:
     tslib "^1.13.0"
     wavefile "^8.4.4"
 
-atem-state@0.12.0-nightly-latest-20210608-103549-6217657.0:
-  version "0.12.0-nightly-latest-20210608-103549-6217657.0"
-  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.12.0-nightly-latest-20210608-103549-6217657.0.tgz#63fc0b6455792fff961fdc2ade29240d93320c33"
-  integrity sha512-TtSOyhhphB5yEUdRmQOY6ZXGlMv/YebktmHRDmfHzlxyaoVGYrbjFTdr2+JTS88bBRCPaj7H91AkdKz9Ov9iSQ==
+atem-state@^0.10.1:
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.10.1.tgz#8259d50bc2e0d55bce9a80ac8ec7016f1ced984d"
+  integrity sha512-0d+eVmE4u9u24w/JVoUp6AUh/j6uXvKZK+64h4OABiHJRISgveU0YUeUfa0EnTaD5S2aSb8ucS6WVx1xhP2r9g==
   dependencies:
-    deepmerge "^4.2.2"
-    tslib "^2.2.0"
-    type-fest "^1.1.3"
+    atem-connection "^2.1.0"
+    tslib "^1.13"
+    underscore "^1.9.1"
 
 atob@^2.1.2:
   version "2.1.2"
@@ -2289,6 +2289,13 @@ buffer@^5.5.0:
   dependencies:
     base64-js "^1.3.1"
     ieee754 "^1.1.13"
+
+bufferutil@^4.0.1:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/bufferutil/-/bufferutil-4.0.3.tgz#66724b756bed23cd7c28c4d306d7994f9943cc6b"
+  integrity sha512-yEYTwGndELGvfXsImMBLop58eaGW+YdONi1fNjTINSY98tmMmFijBG6WXgdkfuLNt4imzQNtIE+eBp1PVpMCSw==
+  dependencies:
+    node-gyp-build "^4.2.0"
 
 builtin-modules@^1.1.1:
   version "1.1.1"
@@ -8361,7 +8368,7 @@ stubs@^3.0.0:
   resolved "https://registry.yarnpkg.com/stubs/-/stubs-3.0.0.tgz#e8d2ba1fa9c90570303c030b6900f7d5f89abe5b"
   integrity sha1-6NK6H6nJBXAwPAMLaQD31fiavls=
 
-superfly-timeline@^8.2.1:
+superfly-timeline@^8.2.0:
   version "8.2.1"
   resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.1.tgz#07c0dfee351ae0597c9dcf0a33794ff53f90829e"
   integrity sha512-cwd5mGL/2KP8JSBxdxU1bIG4zB3KtWUB/DwhyxBKtTQksAxgplZmWxSqkrE69LfmEQ/8nYBct2NFZ0fCTZzEnQ==
@@ -8550,13 +8557,12 @@ timeline-state-resolver-types@6.0.0-nightly-release35-20210608-165921-e8c0d0dbb.
   dependencies:
     tslib "^2.1.0"
 
-timeline-state-resolver@6.0.0-nightly-release35-20210608-165921-e8c0d0dbb.0:
-  version "6.0.0-nightly-release35-20210608-165921-e8c0d0dbb.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.0.0-nightly-release35-20210608-165921-e8c0d0dbb.0.tgz#a9f92eebd4dad722e3188d8e3f9a45aecc38112a"
-  integrity sha512-8Ty+6/ovf3685Xmws5coe+9DbrtNoLPFeajQuBwDOL0ApVMMmTLR3clfsm6jMyCMw+/Lq4rmHcKd79nDIaab7A==
+"timeline-state-resolver@git+https://github.com/olzzon/tv-automation-state-timeline-resolver#dist-test/vizFixes20210617_1":
+  version "5.7.0-release32"
+  resolved "git+https://github.com/olzzon/tv-automation-state-timeline-resolver#936b7ab0459c786f26ee362351c44baf1dc78a93"
   dependencies:
-    atem-connection "2.3.0-nightly-v2-x-20210608-120229-97c45a9.0"
-    atem-state "0.12.0-nightly-latest-20210608-103549-6217657.0"
+    atem-state "^0.10.1"
+    bufferutil "^4.0.1"
     casparcg-connection "^5.1.0"
     casparcg-state "^2.1.0"
     debug "^4.3.1"
@@ -8569,16 +8575,15 @@ timeline-state-resolver@6.0.0-nightly-release35-20210608-165921-e8c0d0dbb.0:
     p-timeout "^3.2.0"
     request "^2.88.0"
     sprintf-js "^1.1.2"
-    superfly-timeline "^8.2.1"
+    superfly-timeline "^8.2.0"
     threadedclass "0.8.3"
-    timeline-state-resolver-types "6.0.0-nightly-release35-20210608-165921-e8c0d0dbb.0"
-    tslib "^2.1.0"
+    tslib "^1.10.0"
     tv-automation-quantel-gateway-client "^1.0.12"
     underscore "^1.12.0"
     underscore-deep-extend "^1.1.5"
     utf-8-validate "^5.0.2"
-    v-connection "git+https://github.com/olzzon/v-connection#v20210604_1"
-    ws "^7.4.6"
+    v-connection "git+https://github.com/olzzon/v-connection#vtest20210617_1"
+    ws "^7.1.1"
     xml-js "^1.6.11"
 
 tmp@^0.0.33:
@@ -8713,7 +8718,7 @@ tslib@1.9.0:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.9.0.tgz#e37a86fda8cbbaf23a057f473c9f4dc64e5fc2e8"
   integrity sha512-f/qGG2tUkrISBlQZEjEqoZ3B2+npJjIf04H1wuAv9iA8i04Icp+61KRXxFdha22670NJopsZCIjhC3SnjPRKrQ==
 
-tslib@^1.13.0, tslib@^1.8.1, tslib@^1.9.0:
+tslib@^1.10.0, tslib@^1.13, tslib@^1.13.0, tslib@^1.8.1, tslib@^1.9.0:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
@@ -8853,7 +8858,7 @@ type-fest@^0.8.1:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.8.1.tgz#09e249ebde851d3b1e48d27c105444667f17b83d"
   integrity sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==
 
-type-fest@^1.0.1, type-fest@^1.0.2, type-fest@^1.1.3:
+type-fest@^1.0.1, type-fest@^1.0.2:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-1.2.0.tgz#4cdf38ef9b047922c26038080cb269752ae359a2"
   integrity sha512-++0N6KyAj0t2webXst0PE0xuXb4Dv3z1Z+4SGzK+j/epeWBZCfkQbkW/ezscZwpinmBQ5wu/l4TqagKSVcAGCA==
@@ -9060,9 +9065,9 @@ uuid@^8.0.0, uuid@^8.3.0, uuid@^8.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
-"v-connection@git+https://github.com/olzzon/v-connection#v20210604_1":
+"v-connection@git+https://github.com/olzzon/v-connection#vtest20210617_1":
   version "0.0.1"
-  resolved "git+https://github.com/olzzon/v-connection#fce072ef2e8df663cea64eefa85c3d4c5e27c329"
+  resolved "git+https://github.com/olzzon/v-connection#ea36b8323afb97a5f6a3321092b18608a5d07a77"
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
@@ -9361,7 +9366,7 @@ write-pkg@^4.0.0:
     type-fest "^0.4.1"
     write-json-file "^3.2.0"
 
-ws@7.2.1, ws@^7.4.5, ws@^7.4.6:
+ws@7.2.1, ws@^7.1.1, ws@^7.4.5, ws@^7.4.6:
   version "7.4.6"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
   integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
