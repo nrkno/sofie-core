@@ -19,7 +19,6 @@ const tmpRules = {
 	'@typescript-eslint/ban-ts-comment': 'off',
 	'no-useless-escape': 'off',
 	'@typescript-eslint/no-non-null-assertion': 'off',
-	'jest/no-jasmine-globals': 'off', // we have been using `fail('...')` instead of expect(() => something()).toThrowError('[404] Nothing')
 }
 
 const tsBase = {

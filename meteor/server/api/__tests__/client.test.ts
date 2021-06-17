@@ -3,7 +3,7 @@ import { MeteorMock } from '../../../__mocks__/meteor'
 import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
 import { ClientAPIMethods } from '../../../lib/api/client'
 import { protectString, makePromise } from '../../../lib/lib'
-import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDeviceCommand, PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { setLoggerLevel } from '../logger'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
@@ -68,11 +68,8 @@ describe('ClientAPI', () => {
 			testInFiber('Logs the call in UserActionsLog', async () => {
 				const log = UserActionsLog.findOne({
 					method: logMethodName,
-				})
-				if (!log) {
-					fail('Log entry not found')
-					return
-				}
+				}) as UserActionsLogItem
+				expect(log).toBeTruthy()
 
 				expect(log.method).toBe(logMethodName)
 				expect(log.userId).toBeDefined()
@@ -82,11 +79,8 @@ describe('ClientAPI', () => {
 				const pdc = PeripheralDeviceCommands.findOne({
 					deviceId: mockDeviceId,
 					functionName: mockFunctionName,
-				})
-				if (!pdc) {
-					fail('Peripheral device command request not found')
-					return
-				}
+				}) as PeripheralDeviceCommand
+				expect(pdc).toBeTruthy()
 
 				expect(pdc.deviceId).toBe(mockDeviceId)
 				expect(pdc.functionName).toBe(mockFunctionName)
@@ -108,11 +102,8 @@ describe('ClientAPI', () => {
 				return promise.then((value) => {
 					const log = UserActionsLog.findOne({
 						method: logMethodName,
-					})
-					if (!log) {
-						fail('Log entry not found')
-						return
-					}
+					}) as UserActionsLogItem
+					expect(log).toBeTruthy()
 
 					expect(log.success).toBe(true)
 					expect(log.doneTime).toBeDefined()
@@ -138,11 +129,8 @@ describe('ClientAPI', () => {
 			testInFiber('Logs the call in UserActionsLog', () => {
 				const log = UserActionsLog.findOne({
 					method: logMethodName,
-				})
-				if (!log) {
-					fail('Log entry not found')
-					return
-				}
+				}) as UserActionsLogItem
+				expect(log).toBeTruthy()
 
 				expect(log.method).toBe(logMethodName)
 				expect(log.userId).toBeDefined()
@@ -151,11 +139,8 @@ describe('ClientAPI', () => {
 				const pdc = PeripheralDeviceCommands.findOne({
 					deviceId: mockDeviceId,
 					functionName: mockFailingFunctionName,
-				})
-				if (!pdc) {
-					fail('Peripheral device command request not found')
-					return
-				}
+				}) as PeripheralDeviceCommand
+				expect(pdc).toBeTruthy()
 
 				expect(pdc.deviceId).toBe(mockDeviceId)
 				expect(pdc.functionName).toBe(mockFailingFunctionName)
