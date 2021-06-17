@@ -72,6 +72,7 @@ export class CoreHandler {
 	private _studioId: string | undefined
 	private _timelineSubscription: string | null = null
 	private _expectedItemsSubscription: string | null = null
+	private _rundownPlaylistsSubscription: string | null = null
 	private _rundownsSubscription: string | null = null
 
 	private _statusInitialized = false
@@ -256,6 +257,22 @@ export class CoreHandler {
 					})
 					.then((subscriptionId) => {
 						this._timelineSubscription = subscriptionId
+					})
+					.catch((err) => {
+						this.logger.error(err)
+					})
+
+				// Set up rundownPlaylists data subscription:
+				if (this._rundownPlaylistsSubscription) {
+					this.core.unsubscribe(this._rundownPlaylistsSubscription)
+					this._rundownPlaylistsSubscription = null
+				}
+				this.core
+					.autoSubscribe('rundownPlaylists', {
+						studioId: studioId,
+					})
+					.then((subscriptionId) => {
+						this._rundownPlaylistsSubscription = subscriptionId
 					})
 					.catch((err) => {
 						this.logger.error(err)
