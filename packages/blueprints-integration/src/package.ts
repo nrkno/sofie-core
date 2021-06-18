@@ -53,7 +53,7 @@ export namespace ExpectedPackage {
 			/** Reference to a PackageContainer */
 			containerId: string
 			/** Locally defined Accessors, these are combined (deep extended) with the PackageContainer (if it is found) Accessors */
-			accessors?: { [accessorId: string]: AccessorOnPackage.Any }
+			accessors: { [accessorId: string]: AccessorOnPackage.Any }
 		}[]
 
 		/** The sideEffect is used by the Package Manager to generate extra artifacts, such as thumbnails & previews */
@@ -92,7 +92,7 @@ export namespace ExpectedPackage {
 		}
 		sources: {
 			containerId: string
-			accessors?: {
+			accessors: {
 				[accessorId: string]:
 					| AccessorOnPackage.LocalFolder
 					| AccessorOnPackage.FileShare
@@ -120,7 +120,7 @@ export namespace ExpectedPackage {
 		}
 		sources: {
 			containerId: string
-			accessors?: { [accessorId: string]: AccessorOnPackage.Quantel }
+			accessors: { [accessorId: string]: AccessorOnPackage.Quantel }
 		}[]
 	}
 
