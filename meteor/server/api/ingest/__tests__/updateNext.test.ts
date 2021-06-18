@@ -325,7 +325,7 @@ describe('ensureNextPartIsValid', () => {
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => ensureNextPartIsValidRaw(cache)
+			async (cache) => ensureNextPartIsValidRaw(cache)
 		)
 	}
 

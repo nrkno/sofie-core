@@ -12,6 +12,7 @@ import {
 	unpartialString,
 	protectStringArray,
 	unDeepString,
+	waitForPromise,
 } from '../../../../lib/lib'
 import { PartId } from '../../../../lib/collections/Parts'
 import { check } from '../../../../lib/check'
@@ -138,10 +139,10 @@ export class StudioContext extends CommonContext implements IStudioContext {
 	}
 
 	getStudioConfig(): unknown {
-		return getStudioBlueprintConfig(this.studio)
+		return waitForPromise(getStudioBlueprintConfig(this.studio))
 	}
-	protected wipeCache() {
-		resetStudioBlueprintConfig(this.studio)
+	protected async wipeCache(): Promise<void> {
+		await resetStudioBlueprintConfig(this.studio)
 	}
 	getStudioConfigRef(configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
@@ -201,11 +202,11 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	}
 
 	getShowStyleConfig(): unknown {
-		return getShowStyleBlueprintConfig(this.showStyleCompound)
+		return waitForPromise(getShowStyleBlueprintConfig(this.showStyleCompound))
 	}
-	wipeCache() {
-		super.wipeCache()
-		resetShowStyleBlueprintConfig(this.showStyleCompound)
+	async wipeCache(): Promise<void> {
+		await super.wipeCache()
+		await resetShowStyleBlueprintConfig(this.showStyleCompound)
 	}
 	getShowStyleConfigRef(configKey: string): string {
 		return ConfigRef.getShowStyleConfigRef(this.showStyleCompound.showStyleVariantId, configKey)

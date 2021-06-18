@@ -10,6 +10,7 @@ import {
 	protectStringArray,
 	waitForPromise,
 	UnprotectedStringProperties,
+	clone,
 } from '../../../../lib/lib'
 import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
@@ -35,7 +36,6 @@ import { ShowStyleUserContext, UserContextInfo } from './context'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
-import { clone } from '../../../../lib/lib'
 import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'
 import { Meteor } from 'meteor/meteor'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
@@ -404,7 +404,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		return clone(unprotectObject(newPartInstance))
 	}
 	moveNextPart(partDelta: number, segmentDelta: number): void {
-		ServerPlayoutAPI.moveNextPartInner(this._cache, partDelta, segmentDelta)
+		waitForPromise(ServerPlayoutAPI.moveNextPartInner(this._cache, partDelta, segmentDelta))
 	}
 	updatePartInstance(part: 'current' | 'next', props: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		// filter the submission to the allowed ones

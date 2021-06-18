@@ -288,7 +288,7 @@ export async function sendRabbitMQMessage(msg0: ExternalMessageQueueObjRabbitMQ 
 	if (!routingKey) throw new Meteor.Error(400, `RabbitMQ: Message routing key not set`)
 	if (!message) throw new Meteor.Error(400, `RabbitMQ: Message message not set`)
 
-	hostURL = ConfigRef.retrieveRefs(
+	hostURL = await ConfigRef.retrieveRefs(
 		hostURL,
 		(str) => {
 			return encodeURIComponent(str)

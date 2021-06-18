@@ -278,7 +278,7 @@ export async function CommitIngestOperation(
 						await pSaveIngest
 
 						// do some final playout checks, which may load back some Parts data
-						ensureNextPartIsValid(playoutCache)
+						await ensureNextPartIsValid(playoutCache)
 
 						// save the final playout changes
 						await playoutCache.saveAllToDatabase()
@@ -521,7 +521,7 @@ export function updatePlayoutAfterChangingRundownInPlaylist(
 				updatePartInstancesBasicProperties(playoutCache, insertedRundown._id, new Map())
 			}
 
-			ensureNextPartIsValid(playoutCache)
+			await ensureNextPartIsValid(playoutCache)
 
 			if (playoutCache.Playlist.doc.activationId) {
 				triggerUpdateTimelineAfterIngestData(playoutCache.PlaylistId)
