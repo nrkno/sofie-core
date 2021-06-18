@@ -90,7 +90,13 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 			// RUNDOWN_BASELINE_OBJECTS follow their own flow
 			fromPieceType: { $ne: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS },
 		},
-		expectedPackages
+		expectedPackages,
+		{
+			beforeUpdate: (expPackage: ExpectedPackageDB, pre?: ExpectedPackageDB) => {
+				if (pre) expPackage.created = pre.created // Retain the created property
+				return expPackage
+			},
+		}
 	)
 }
 export function generateExpectedPackagesForPartInstance(
@@ -271,6 +277,7 @@ function generateExpectedPackageBases(
 			blueprintPackageId: id,
 			contentVersionHash: getContentVersionHash(expectedPackage),
 			studioId: studio._id,
+			created: Date.now(),
 		})
 	}
 	return bases
@@ -338,14 +345,22 @@ export function updateBaselineExpectedPackagesOnRundown(
 		{
 			fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
 		},
-		bases.map((item): ExpectedPackageDBFromRundownBaselineObjects => {
-			return {
-				...item,
-				fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
-				rundownId: cache.RundownId,
-				pieceId: null,
+		bases.map(
+			(item): ExpectedPackageDBFromRundownBaselineObjects => {
+				return {
+					...item,
+					fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
+					rundownId: cache.RundownId,
+					pieceId: null,
+				}
 			}
-		})
+		),
+		{
+			beforeUpdate: (expPackage: ExpectedPackageDB, pre?: ExpectedPackageDB) => {
+				if (pre) expPackage.created = pre.created // Retain the created property
+				return expPackage
+			},
+		}
 	)
 }
 
@@ -364,13 +379,15 @@ export function updateBaselineExpectedPackagesOnStudio(
 				studioId: cache.Studio.doc._id,
 				fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
 			},
-			bases.map((item): ExpectedPackageDBFromStudioBaselineObjects => {
-				return {
-					...item,
-					fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
-					pieceId: null,
+			bases.map(
+				(item): ExpectedPackageDBFromStudioBaselineObjects => {
+					return {
+						...item,
+						fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
+						pieceId: null,
+					}
 				}
-			})
+			)
 		)
 	})
 }
