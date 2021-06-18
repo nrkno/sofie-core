@@ -35,7 +35,7 @@ export class DbCacheReadObject<
 		private readonly _optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class>
 	) {
-		this._document = clone(doc as any)
+		this._document = (doc ? this._transform(clone(doc as any)) : doc) as any
 		this._rawDocument = clone(doc as any)
 	}
 	get name(): string | null {
@@ -76,6 +76,14 @@ export class DbCacheReadObject<
 
 	get doc(): DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class> {
 		return this._document as any
+	}
+
+	protected _transform(doc: DBInterface): Class {
+		// @ts-ignore hack: using internal function in collection
+		const transform = this._collection._transform
+		if (transform) {
+			return transform(doc)
+		} else return doc as Class
 	}
 
 	/** Called by the Cache when the Cache is marked as to be removed. The collection is emptied and marked to reject any further updates */
@@ -204,17 +212,10 @@ export class DbCacheWriteObject<
 	discardChanges() {
 		if (this.isModified()) {
 			this._updated = false
-			this._document = clone(this._rawDocument)
+			this._document = this._rawDocument ? this._transform(clone(this._rawDocument)) : this._rawDocument
 		}
 	}
 
-	protected _transform(doc: DBInterface): Class {
-		// @ts-ignore hack: using internal function in collection
-		const transform = this._collection._transform
-		if (transform) {
-			return transform(doc)
-		} else return doc as Class
-	}
 	isModified(): boolean {
 		return this._updated
 	}
