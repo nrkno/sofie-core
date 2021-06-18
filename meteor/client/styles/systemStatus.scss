@@ -554,6 +554,10 @@
 				vertical-align: middle;
 
 				border-bottom: 1px solid #bbbbbb;
+
+				&:first-child {
+					width: 7em;
+				}
 			}
 			.package-progress {
 				display: inline-block;
@@ -595,12 +599,45 @@
 					padding-left: 2em;
 				}
 
+				.package-job__required {
+					display: inline-block;
+
+					width: 1em;
+				}
 				.package-job__status {
 					display: inline-block;
 					margin-right: 0.5em;
 				}
 				.package-job__description {
 					display: inline-block;
+				}
+			}
+		}
+		.package-job-details {
+			> td {
+				padding: 0.5em 0.5em 0.5em 0em;
+				background-color: #dfdfdf;
+				border-bottom: 1px solid #919191;
+				font-size: 90%;
+
+				&:first-child {
+					padding-left: 2em;
+				}
+			}
+			table {
+				tbody {
+					> tr {
+						> td {
+							// border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+							padding-bottom: 0.25em;
+
+							&:first-child {
+								text-align: right;
+								padding-right: 1em;
+								white-space: nowrap;
+							}
+						}
+					}
 				}
 			}
 		}

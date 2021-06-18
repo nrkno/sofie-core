@@ -5,12 +5,20 @@ import { PubSub } from '../../../lib/api/pubsub'
 import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
+	ExpectedPackageWorkStatusId,
 } from '../../../lib/collections/ExpectedPackageWorkStatuses'
 import { assertNever, unprotectString } from '../../../lib/lib'
 import { ExpectedPackageDB, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import Tooltip from 'rc-tooltip'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faRedo, faStopCircle, faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons'
+import {
+	faRedo,
+	faStopCircle,
+	faChevronDown,
+	faChevronRight,
+	faExclamation,
+	faQuestion,
+} from '@fortawesome/free-solid-svg-icons'
 import { MeteorCall } from '../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { Studios } from '../../../lib/collections/Studios'
@@ -18,6 +26,7 @@ import { Meteor } from 'meteor/meteor'
 import ClassNames from 'classnames'
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { withTranslation } from 'react-i18next'
+import { DisplayFormattedTime } from '../RundownList/DisplayFormattedTime'
 
 interface IExpectedPackagesStatusProps {}
 
@@ -31,6 +40,7 @@ interface IPackageManagerStatusState {
 		[expectedPackaStatuseId: string]: boolean
 	}
 	openPackages: { [packageId: string]: true }
+	openStatuses: { [statusId: string]: true }
 }
 
 export const ExpectedPackagesStatus = translateWithTracker<
@@ -53,6 +63,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 			this.state = {
 				expanded: {},
 				openPackages: {},
+				openStatuses: {},
 			}
 		}
 
@@ -100,11 +111,12 @@ export const ExpectedPackagesStatus = translateWithTracker<
 
 			return Object.keys(packagesWithWorkStatuses).map((packageId) => {
 				const p = packagesWithWorkStatuses[packageId]
+
 				const viewed = this.isPackageViewed(packageId)
 				return (
 					<React.Fragment key={packageId}>
 						{p.package ? (
-							<>
+							<React.Fragment key={packageId}>
 								<tr className={ClassNames('package')}>
 									<td>{this.getPackageStatus(p)}</td>
 									<td>{this.getPackageName(p.package)}</td>
@@ -124,41 +136,101 @@ export const ExpectedPackagesStatus = translateWithTracker<
 								</tr>
 								{viewed
 									? p.statuses.map((status) => {
+											const statusViewed = this.isStatusViewed(status._id)
 											return (
-												<tr key={unprotectString(status._id)} className="package-job">
-													<td colSpan={2}>
-														<span className="package-job__status">
-															<Tooltip overlay={status.statusReason} placement="top">
+												<React.Fragment key={unprotectString(status._id)}>
+													<tr key={unprotectString(status._id)} className="package-job">
+														<td colSpan={2}>
+															<span className="package-job__required">
+																{status.requiredForPlayout ? (
+																	<Tooltip overlay={t('This step is required for playout')} placement="top">
+																		<span>
+																			<FontAwesomeIcon icon={faExclamation} />
+																		</span>
+																	</Tooltip>
+																) : null}
+															</span>
+															<span className="package-job__status">
 																<JobStatus status={status} />
+															</span>
+															<span className="package-job__description">
+																<a
+																	href="#"
+																	onClick={(e) => {
+																		e.preventDefault()
+																		this.toggleViewStatus(status._id)
+																	}}
+																>
+																	<span>{status.label}</span>
+																	&nbsp;
+																	{statusViewed ? (
+																		<FontAwesomeIcon icon={faChevronDown} />
+																	) : (
+																		<FontAwesomeIcon icon={faChevronRight} />
+																	)}
+																</a>
+															</span>
+														</td>
+														<td>
+															<Tooltip overlay={t('Restart')} placement="top">
+																<button className="action-btn" onClick={(e) => this.restartExpectation(e, status)}>
+																	<FontAwesomeIcon icon={faRedo} />
+																</button>
 															</Tooltip>
-														</span>
-														<span className="package-job__description">
-															<Tooltip overlay={status.description} placement="top">
-																<span>{status.label}</span>
+															<Tooltip overlay={t('Abort')} placement="top">
+																<button
+																	className="action-btn"
+																	// disabled={status.status !== 'fullfilled'}
+																	onClick={(e) => this.abortExpectation(e, status)}
+																>
+																	<FontAwesomeIcon icon={faStopCircle} />
+																</button>
 															</Tooltip>
-														</span>
-													</td>
-													<td>
-														<Tooltip overlay={t('Restart')} placement="top">
-															<button className="action-btn" onClick={(e) => this.restartExpectation(e, status)}>
-																<FontAwesomeIcon icon={faRedo} />
-															</button>
-														</Tooltip>
-														<Tooltip overlay={t('Abort')} placement="top">
-															<button
-																className="action-btn"
-																// disabled={status.status !== 'fullfilled'}
-																onClick={(e) => this.abortExpectation(e, status)}
-															>
-																<FontAwesomeIcon icon={faStopCircle} />
-															</button>
-														</Tooltip>
-													</td>
-												</tr>
+														</td>
+													</tr>
+													{statusViewed ? (
+														<tr key={`${status._id}_view`} className="package-job-details">
+															<td colSpan={2}>
+																<table>
+																	<tbody>
+																		<tr>
+																			<td>{t('Work description')}</td>
+																			<td>{status.description}</td>
+																		</tr>
+																		<tr>
+																			<td>{t('Work status')}</td>
+																			<td>{status.status}</td>
+																		</tr>
+																		<tr>
+																			<td>{t('Status status reason')}</td>
+																			<td>
+																				<Tooltip
+																					overlay={t('Technical reason: {{reason}}', {
+																						reason: status.statusReason.tech,
+																					})}
+																					placement="bottom"
+																				>
+																					<span>{status.statusReason.user || status.statusReason?.toString()}</span>
+																				</Tooltip>
+																			</td>
+																		</tr>
+																		<tr>
+																			<td>{t('Last updated')}</td>
+																			<td>
+																				<DisplayFormattedTime displayTimestamp={status.modified} t={t} />
+																			</td>
+																		</tr>
+																	</tbody>
+																</table>
+															</td>
+															<td></td>
+														</tr>
+													) : null}
+												</React.Fragment>
 											)
 									  })
 									: null}
-							</>
+							</React.Fragment>
 						) : (
 							<tr className="package">
 								<td colSpan={99}>{t('Unknown Package "{{packageId}}"', { packageId })}</td>
@@ -169,6 +241,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 			})
 		}
 		getPackageStatus(p: { package: ExpectedPackageDB | undefined; statuses: ExpectedPackageWorkStatus[] }) {
+			const { t } = this.props
 			const getProgress = (onlyRequired: boolean) => {
 				let count = 0
 				let progress = 0
@@ -197,8 +270,12 @@ export const ExpectedPackagesStatus = translateWithTracker<
 
 			return (
 				<>
-					{this.getPackageStatusIcon(requiredProgress)}
-					{this.getPackageStatusIcon(allProgress)}
+					<Tooltip overlay={t('The progress of steps required for playout')} placement="top">
+						{this.getPackageStatusIcon(requiredProgress)}
+					</Tooltip>
+					<Tooltip overlay={t('The progress of all steps')} placement="top">
+						{this.getPackageStatusIcon(allProgress)}
+					</Tooltip>
 				</>
 			)
 		}
@@ -259,7 +336,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 				return unprotectString(p._id)
 			}
 		}
-		toggleViewPackage(packageId: string) {
+		toggleViewPackage(packageId: string): void {
 			if (!this.state.openPackages[packageId]) {
 				this.state.openPackages[packageId] = true
 			} else {
@@ -269,8 +346,22 @@ export const ExpectedPackagesStatus = translateWithTracker<
 				openPackages: this.state.openPackages,
 			})
 		}
-		isPackageViewed(packageId: string) {
+		isPackageViewed(packageId: string): boolean {
 			return this.state.openPackages[packageId] || false
+		}
+		toggleViewStatus(statusId: ExpectedPackageWorkStatusId): void {
+			const key = unprotectString(statusId)
+			if (!this.state.openStatuses[key]) {
+				this.state.openStatuses[key] = true
+			} else {
+				delete this.state.openStatuses[key]
+			}
+			this.setState({
+				openStatuses: this.state.openStatuses,
+			})
+		}
+		isStatusViewed(statusId: ExpectedPackageWorkStatusId): boolean {
+			return this.state.openStatuses[unprotectString(statusId)] || false
 		}
 		renderExpectedPackageStatusesSummary() {
 			const packageRef: { [packageId: string]: ExpectedPackageDB } = {}
