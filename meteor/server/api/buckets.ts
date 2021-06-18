@@ -13,7 +13,7 @@ import { OrganizationContentWriteAccess } from '../security/organization'
 import { AdLibActionId, AdLibAction, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibActions, BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { syncFunction } from '../codeControl'
+import { pushWorkToQueue } from '../codeControl'
 import {
 	cleanUpExpectedMediaItemForBucketAdLibActions,
 	cleanUpExpectedMediaItemForBucketAdLibPiece,
@@ -38,7 +38,7 @@ function isBucketAdLibAction(action: AdLibActionCommon | BucketAdLibAction): act
 }
 
 export function bucketSyncFunction<T>(bucketId: BucketId, context: string, fcn: () => T): Awaited<T> {
-	return syncFunction(() => waitForPromise(fcn()), context, `bucket_${bucketId}`)()
+	return waitForPromise(pushWorkToQueue(`bucket_${bucketId}`, context, async () => fcn()))
 }
 
 export namespace BucketsAPI {

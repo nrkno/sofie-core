@@ -3,7 +3,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { assertNever, Awaited, waitForPromise } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
-import { syncFunction } from '../../codeControl'
+import { pushWorkToQueue } from '../../codeControl'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { profiler } from '../profiler'
 import { CacheForStudio } from '../studio/cache'
@@ -195,18 +195,19 @@ export function runPlayoutOperationWithLockFromStudioOperation<T>(
 			`Tried to lock Playlist "${tmpPlaylist._id}" for Studio "${lockStudioId}" but it belongs to "${tmpPlaylist.studioId}"`
 		)
 
-	return syncFunction(
-		() => {
-			const span = profiler.startSpan(`playoutLockFunction.${context}`)
-			const res = waitForPromise(fcn({ _studioId: lockStudioId, _playlistId: tmpPlaylist._id }))
-			span?.end()
-			return res
-		},
-		context,
-		`rundown_playlist_${tmpPlaylist._id}`,
-		undefined,
-		priority
-	)()
+	return waitForPromise(
+		pushWorkToQueue(
+			`rundown_playlist_${tmpPlaylist._id}`,
+			context,
+			async () => {
+				const span = profiler.startSpan(`playoutLockFunction.${context}`)
+				const res = await fcn({ _studioId: lockStudioId, _playlistId: tmpPlaylist._id })
+				span?.end()
+				return res
+			},
+			priority
+		)
+	)
 }
 
 interface PlayoutLockOptions {

@@ -7,7 +7,7 @@ import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { StudioId } from '../../../lib/collections/Studios'
 import { waitForPromise, clone, protectString } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
-import { syncFunction } from '../../codeControl'
+import { pushWorkToQueue } from '../../codeControl'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { getRundownsSegmentsAndPartsFromCache } from '../playout/lib'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithLock } from '../playout/lockFunction'
@@ -172,13 +172,14 @@ export function runIngestOperationFromRundown(
 }
 
 function ingestLockFunctionInner(context: string, rundownExternalId: string, fcn: () => Promise<void>): void {
-	return syncFunction(
-		() => {
-			waitForPromise(fcn())
-		},
-		context,
-		`rundown_ingest_${rundownExternalId}`
-	)()
+	return waitForPromise(pushWorkToQueue(`rundown_ingest_${rundownExternalId}`, context, fcn))
+	// return syncFunction(
+	// 	() => {
+	// 		waitForPromise(fcn())
+	// 	},
+	// 	context,
+	// 	`rundown_ingest_${rundownExternalId}`
+	// )()
 }
 
 function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {

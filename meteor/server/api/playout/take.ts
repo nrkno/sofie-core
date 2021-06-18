@@ -26,7 +26,7 @@ import { reportPartInstanceHasStarted } from '../blueprints/events'
 import { profiler } from '../profiler'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { isAnySyncFunctionsRunning } from '../../codeControl'
+import { isAnyQueuedWorkRunning } from '../../codeControl'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 
@@ -459,7 +459,7 @@ export function triggerGarbageCollection() {
 			// This can be done in prod by: node --expose_gc main.js
 			// or when running Meteor in development, set set SERVER_NODE_OPTIONS=--expose_gc
 
-			if (!isAnySyncFunctionsRunning()) {
+			if (!isAnyQueuedWorkRunning()) {
 				// by passing true, we're triggering the "full" collection
 				// @ts-ignore (typings not avaiable)
 				global.gc(true)

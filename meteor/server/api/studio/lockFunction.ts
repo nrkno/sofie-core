@@ -1,7 +1,7 @@
 import { StudioId } from '../../../lib/collections/Studios'
 import { Awaited, waitForPromise } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
-import { syncFunction } from '../../codeControl'
+import { pushWorkToQueue } from '../../codeControl'
 import { profiler } from '../profiler'
 import { CacheForStudio } from './cache'
 
@@ -68,16 +68,17 @@ export function runStudioOperationWithLock<T>(
 	priority: StudioLockFunctionPriority,
 	fcn: (lock: StudioLock) => Promise<T> | T
 ): Awaited<T> {
-	return syncFunction(
-		() => {
-			const span = profiler.startSpan(`studioLockFunction.${context}`)
-			const res = waitForPromise(fcn({ _studioId: studioId }))
-			span?.end()
-			return res
-		},
-		context,
-		`studio_${studioId}`,
-		undefined,
-		priority
-	)()
+	return waitForPromise(
+		pushWorkToQueue(
+			`studio_${studioId}`,
+			context,
+			async () => {
+				const span = profiler.startSpan(`studioLockFunction.${context}`)
+				const res = await fcn({ _studioId: studioId })
+				span?.end()
+				return res
+			},
+			priority
+		)
+	)
 }
