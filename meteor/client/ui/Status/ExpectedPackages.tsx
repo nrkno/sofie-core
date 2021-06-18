@@ -109,37 +109,85 @@ export const ExpectedPackagesStatus = translateWithTracker<
 				packagesWithWorkStatuses[id].statuses.sort(compareWorkStatus)
 			}
 
-			return Object.keys(packagesWithWorkStatuses).map((packageId) => {
+			// sort:
+			const keys: { packageId: string; order: number; created: number }[] = []
+			Object.keys(packagesWithWorkStatuses).map((packageId) => {
 				const p = packagesWithWorkStatuses[packageId]
 
+				let order = 0
+				for (const status of p.statuses) {
+					if (status.status !== 'fulfilled') {
+						order = 1
+					}
+				}
+				keys.push({
+					packageId,
+					created: p.package?.created ?? 0,
+					order,
+				})
+			})
+			keys.sort((a, b) => {
+				// Incomplete first:
+				if (a.order < b.order) return 1
+				if (a.order > b.order) return -1
+
+				if (a.created < b.created) return 1
+				if (a.created > b.created) return -1
+
+				if (a.packageId < b.packageId) return 1
+				if (a.packageId > b.packageId) return -1
+
+				return 0
+			})
+
+			return keys.map(({ packageId }) => {
+				const p = packagesWithWorkStatuses[packageId]
+				console.log(p)
 				const viewed = this.isPackageViewed(packageId)
+
+				const statuses = p.statuses.sort((a, b) => {
+					if ((a.displayRank ?? 999) > (b.displayRank ?? 999)) return 1
+					if ((a.displayRank ?? 999) < (b.displayRank ?? 999)) return -1
+
+					return 0
+				})
 				return (
 					<React.Fragment key={packageId}>
 						{p.package ? (
 							<React.Fragment key={packageId}>
-								<tr className={ClassNames('package')}>
+								<tr
+									className={ClassNames('package')}
+									onClick={(e) => {
+										e.preventDefault()
+										this.toggleViewPackage(packageId)
+									}}
+								>
+									<td></td>
 									<td>{this.getPackageStatus(p)}</td>
-									<td>{this.getPackageName(p.package)}</td>
 									<td>
-										<a
-											href="#"
-											onClick={(e) => {
-												e.preventDefault()
-												this.toggleViewPackage(packageId)
-											}}
-										>
-											{t('{{jobCount}} jobs', { jobCount: p.statuses.length })}
-											&nbsp;
-											{viewed ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
-										</a>
+										{viewed ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
+										&nbsp;
+										{this.getPackageName(p.package)}
 									</td>
+									<td>
+										<DisplayFormattedTime displayTimestamp={p.package.created} t={t} />
+									</td>
+									<td></td>
 								</tr>
 								{viewed
-									? p.statuses.map((status) => {
+									? statuses.map((status) => {
 											const statusViewed = this.isStatusViewed(status._id)
 											return (
 												<React.Fragment key={unprotectString(status._id)}>
-													<tr key={unprotectString(status._id)} className="package-job">
+													<tr
+														key={unprotectString(status._id)}
+														className="package-job"
+														onClick={(e) => {
+															e.preventDefault()
+															this.toggleViewStatus(status._id)
+														}}
+													>
+														<td></td>
 														<td colSpan={2}>
 															<span className="package-job__required">
 																{status.requiredForPlayout ? (
@@ -154,21 +202,13 @@ export const ExpectedPackagesStatus = translateWithTracker<
 																<JobStatus status={status} />
 															</span>
 															<span className="package-job__description">
-																<a
-																	href="#"
-																	onClick={(e) => {
-																		e.preventDefault()
-																		this.toggleViewStatus(status._id)
-																	}}
-																>
-																	<span>{status.label}</span>
-																	&nbsp;
-																	{statusViewed ? (
-																		<FontAwesomeIcon icon={faChevronDown} />
-																	) : (
-																		<FontAwesomeIcon icon={faChevronRight} />
-																	)}
-																</a>
+																{statusViewed ? (
+																	<FontAwesomeIcon icon={faChevronDown} />
+																) : (
+																	<FontAwesomeIcon icon={faChevronRight} />
+																)}
+																&nbsp;
+																<span>{status.label}</span>
 															</span>
 														</td>
 														<td>
@@ -177,6 +217,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 																	<FontAwesomeIcon icon={faRedo} />
 																</button>
 															</Tooltip>
+															&nbsp;&nbsp;
 															<Tooltip overlay={t('Abort')} placement="top">
 																<button
 																	className="action-btn"
@@ -187,10 +228,12 @@ export const ExpectedPackagesStatus = translateWithTracker<
 																</button>
 															</Tooltip>
 														</td>
+														<td></td>
 													</tr>
 													{statusViewed ? (
 														<tr key={`${status._id}_view`} className="package-job-details">
-															<td colSpan={2}>
+															<td></td>
+															<td colSpan={4}>
 																<table>
 																	<tbody>
 																		<tr>
@@ -202,7 +245,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 																			<td>{status.status}</td>
 																		</tr>
 																		<tr>
-																			<td>{t('Status status reason')}</td>
+																			<td>{t('Work status reason')}</td>
 																			<td>
 																				<Tooltip
 																					overlay={t('Technical reason: {{reason}}', {
@@ -210,7 +253,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 																					})}
 																					placement="bottom"
 																				>
-																					<span>{status.statusReason.user || status.statusReason?.toString()}</span>
+																					<span>{status.statusReason.user ?? status.statusReason?.toString()}</span>
 																				</Tooltip>
 																			</td>
 																		</tr>
@@ -223,7 +266,6 @@ export const ExpectedPackagesStatus = translateWithTracker<
 																	</tbody>
 																</table>
 															</td>
-															<td></td>
 														</tr>
 													) : null}
 												</React.Fragment>
@@ -268,20 +310,21 @@ export const ExpectedPackagesStatus = translateWithTracker<
 			const requiredProgress = getProgress(true)
 			const allProgress = getProgress(false)
 
+			const labelRequiredProgress = requiredProgress < 1 ? `${Math.floor(requiredProgress * 100)}%` : t('Ready')
+			const labelAllProgress = allProgress < 1 ? `${Math.floor(allProgress * 100)}%` : t('Done')
+
 			return (
 				<>
 					<Tooltip overlay={t('The progress of steps required for playout')} placement="top">
-						{this.getPackageStatusIcon(requiredProgress)}
+						{this.getPackageStatusIcon(requiredProgress, labelRequiredProgress)}
 					</Tooltip>
 					<Tooltip overlay={t('The progress of all steps')} placement="top">
-						{this.getPackageStatusIcon(allProgress)}
+						{this.getPackageStatusIcon(allProgress, labelAllProgress)}
 					</Tooltip>
 				</>
 			)
 		}
-		getPackageStatusIcon(progress: number) {
-			const { t } = this.props
-
+		getPackageStatusIcon(progress: number, label: string) {
 			const svgCircleSector = (x: number, y: number, radius: number, v: number, color: string) => {
 				if (v >= 1) {
 					return <circle cx={x} cy={y} r={radius} fill={color}></circle>
@@ -311,7 +354,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 							{svgCircleSector(0, 0, 50, progress, '#00BA1E')}
 							<circle cx="0" cy="0" r="35" fill="#fff"></circle>
 						</svg>
-						<div className="label">{Math.floor(progress * 100)}%</div>
+						<div className="label">{label}</div>
 					</div>
 				)
 			} else {
@@ -320,7 +363,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 						<svg width="100%" viewBox="-50 -50 100 100">
 							<circle cx="0" cy="0" r="50" fill="#00BA1E"></circle>
 						</svg>
-						<div className="label label-done">{t('Done')}</div>
+						<div className="label label-done">{label}</div>
 					</div>
 				)
 			}
@@ -473,11 +516,11 @@ export const ExpectedPackagesStatus = translateWithTracker<
 					<table className="mod mvl package-statuses-list">
 						<tbody>
 							<tr className="package-statuses__header">
-								<th>{t('Status')}</th>
+								<th colSpan={2}>{t('Status')}</th>
 								<th>{t('Name')}</th>
+								<th>{t('Created')}</th>
 								<th></th>
 								{/* <th>{t('Info')}</th> */}
-								{/* <th>{t('Created')}</th> */}
 							</tr>
 							{this.renderExpectedPackageStatuses()}
 						</tbody>
