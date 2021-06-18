@@ -57,16 +57,21 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 			},
 		}
 	)
-	cache.PieceInstances.update(
-		{
-			rundownId: rundown._id,
-		},
-		{
-			$set: {
-				reset: true,
+	cache.deferAfterSave(() => {
+		PieceInstances.update(
+			{
+				rundownId: rundown._id,
 			},
-		}
-	)
+			{
+				$set: {
+					reset: true,
+				},
+			},
+			{
+				multi: true,
+			}
+		)
+	})
 }
 
 /**
@@ -103,18 +108,23 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 			},
 		}
 	)
-	cache.PieceInstances.update(
-		{
-			rundownId: {
-				$in: rundownIDs,
+	cache.deferAfterSave(() => {
+		PieceInstances.update(
+			{
+				rundownId: {
+					$in: rundownIDs,
+				},
 			},
-		},
-		{
-			$set: {
-				reset: true,
+			{
+				$set: {
+					reset: true,
+				},
 			},
-		}
-	)
+			{
+				multi: true,
+			}
+		)
+	})
 
 	cache.Parts.remove({
 		rundownId: {
