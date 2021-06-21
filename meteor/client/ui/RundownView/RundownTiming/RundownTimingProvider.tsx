@@ -10,6 +10,7 @@ import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
 import { RundownTimingCalculator, RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
+import { Rundown } from '../../../../lib/collections/Rundowns'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every
@@ -35,6 +36,8 @@ interface IRundownTimingProviderChildContext {
 }
 interface IRundownTimingProviderState {}
 interface IRundownTimingProviderTrackedProps {
+	rundowns: Array<Rundown>
+	currentRundown: Rundown | undefined
 	parts: Array<Part>
 	partInstancesMap: Map<PartId, PartInstance>
 }
@@ -50,12 +53,18 @@ export const RundownTimingProvider = withTracker<
 	IRundownTimingProviderState,
 	IRundownTimingProviderTrackedProps
 >((props) => {
+	let rundowns: Array<Rundown> = []
 	let parts: Array<Part> = []
 	const partInstancesMap = new Map<PartId, PartInstance>()
+	let currentRundown: Rundown | undefined
 	if (props.playlist) {
+		rundowns = props.playlist.getRundowns()
 		const { parts: incomingParts } = props.playlist.getSegmentsAndPartsSync()
 		parts = incomingParts
 		const partInstances = props.playlist.getActivePartInstances()
+
+		const currentPartInstance = partInstances.find((p) => p._id === props.playlist!.currentPartInstanceId)
+		currentRundown = currentPartInstance ? rundowns.find((r) => r._id === currentPartInstance.rundownId) : rundowns[0]
 
 		partInstances.forEach((partInstance) => {
 			partInstancesMap.set(partInstance.part._id, partInstance)
@@ -96,6 +105,8 @@ export const RundownTimingProvider = withTracker<
 		})
 	}
 	return {
+		rundowns,
+		currentRundown,
 		parts,
 		partInstancesMap,
 	}
@@ -194,13 +205,15 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		updateDurations(now: number, isLowResolution: boolean) {
-			const { playlist, parts, partInstancesMap } = this.props
+			const { playlist, rundowns, currentRundown, parts, partInstancesMap } = this.props
 			this.durations = Object.assign(
 				this.durations,
 				this.timingCalculator.updateDurations(
 					now,
 					isLowResolution,
 					playlist,
+					rundowns,
+					currentRundown,
 					parts,
 					partInstancesMap,
 					this.props.defaultDuration
