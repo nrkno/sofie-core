@@ -1,6 +1,7 @@
 import * as _ from 'underscore'
 import {
 	VTContent,
+	GraphicsContent,
 	SourceLayerType,
 	ISourceLayer,
 	IBlueprintPieceGeneric,
@@ -145,7 +146,10 @@ export function getMediaObjectMediaId(piece: Pick<IBlueprintPieceGeneric, 'conte
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
-			return (piece.content as VTContent | undefined)?.fileName?.toUpperCase()
+		case SourceLayerType.TRANSITION:
+			return (piece.content as VTContent)?.fileName?.toUpperCase()
+		case SourceLayerType.GRAPHICS:
+			return (piece.content as GraphicsContent)?.fileName?.toUpperCase()
 	}
 	return undefined
 }
@@ -422,12 +426,12 @@ export function checkPieceContentStatus(
 			}
 		} else {
 			// Fallback to MediaObject statuses:
+			const messages: Array<string> = []
+			const fileName = getMediaObjectMediaId(piece, sourceLayer)
+			const displayName = piece.name
 			switch (sourceLayer.type) {
 				case SourceLayerType.VT:
-				case SourceLayerType.LIVE_SPEAK: {
-					const fileName = getMediaObjectMediaId(piece, sourceLayer)
-					const displayName = piece.name
-					const messages: Array<string> = []
+				case SourceLayerType.LIVE_SPEAK:
 					// If the fileName is not set...
 					if (!fileName) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
@@ -590,7 +594,20 @@ export function checkPieceContentStatus(
 						message = messages.join('; ') + '.'
 					}
 					break
-				}
+				case SourceLayerType.GRAPHICS:
+					if (fileName) {
+						const mediaObject = MediaObjects.findOne({
+							mediaId: fileName,
+						})
+						if (!mediaObject) {
+							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+							messages.push(t('Source is missing', { fileName: displayName }))
+						} else {
+							newStatus = RundownAPI.PieceStatusCode.OK
+							metadata = mediaObject
+						}
+					}
+					break	
 			}
 		}
 	}
