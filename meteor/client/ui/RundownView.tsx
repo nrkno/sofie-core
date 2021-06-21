@@ -102,6 +102,9 @@ import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownVie
 import { LoopingIcon } from '../lib/ui/icons/looping'
 import StudioPackageContainersContext from './RundownView/StudioPackageContainersContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
+import { ShelfDashboardLayout } from './Shelf/ShelfDashboardLayout'
+import { IAdLibListItem } from './Shelf/AdLibListItem'
+import { BucketAdLibItem } from './Shelf/RundownViewBuckets'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -574,6 +577,7 @@ interface HotkeyDefinition {
 
 interface IRundownHeaderProps {
 	playlist: RundownPlaylist
+	showStyleBase: ShowStyleBase
 	currentRundown: Rundown | undefined
 	studio: Studio
 	rundownIds: RundownId[]
@@ -592,6 +596,8 @@ interface IRundownHeaderProps {
 interface IRundownHeaderState {
 	isError: boolean
 	errorMessage?: string
+	shouldQueue: boolean
+	selectedPiece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
 }
 
 const RundownHeader = withTranslation()(
@@ -720,6 +726,8 @@ const RundownHeader = withTranslation()(
 			}
 			this.state = {
 				isError: false,
+				shouldQueue: false,
+				selectedPiece: undefined,
 			}
 		}
 		componentDidMount() {
@@ -1376,6 +1384,18 @@ const RundownHeader = withTranslation()(
 			})
 		}
 
+		changeQueueAdLib = (shouldQueue: boolean) => {
+			this.setState({
+				shouldQueue,
+			})
+		}
+
+		selectPiece = (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => {
+			this.setState({
+				selectedPiece: piece,
+			})
+		}
+
 		render() {
 			const { t } = this.props
 			return (
@@ -1471,23 +1491,40 @@ const RundownHeader = withTranslation()(
 										</NavLink>
 									</div>
 								</div>
-								<TimingDisplay
-									rundownPlaylist={this.props.playlist}
-									currentRundown={this.props.currentRundown}
-									rundownsBeforeNextBreak={this.props.rundownsBeforeNextBreak}
-									rundownCount={this.props.rundownIds.length}
-									lastBreak={
-										!!this.props.currentRundown?._id &&
-										this.props.rundownIds.indexOf(this.props.currentRundown._id) === this.props.rundownIds.length - 1
-									}
-									layout={this.props.layout}
-								/>
-								<RundownSystemStatus
-									studio={this.props.studio}
-									playlist={this.props.playlist}
-									rundownIds={this.props.rundownIds}
-									firstRundown={this.props.firstRundown}
-								/>
+								{this.props.layout && RundownLayoutsAPI.isDashboardLayout(this.props.layout) ? (
+									<ShelfDashboardLayout
+										rundownLayout={this.props.layout}
+										playlist={this.props.playlist}
+										showStyleBase={this.props.showStyleBase}
+										studio={this.props.studio}
+										studioMode={this.props.studioMode}
+										shouldQueue={this.state.shouldQueue}
+										onChangeQueueAdLib={this.changeQueueAdLib}
+										selectedPiece={this.state.selectedPiece}
+										onSelectPiece={this.selectPiece}
+									/>
+								) : (
+									<React.Fragment>
+										<TimingDisplay
+											rundownPlaylist={this.props.playlist}
+											currentRundown={this.props.currentRundown}
+											rundownsBeforeNextBreak={this.props.rundownsBeforeNextBreak}
+											rundownCount={this.props.rundownIds.length}
+											lastBreak={
+												!!this.props.currentRundown?._id &&
+												this.props.rundownIds.indexOf(this.props.currentRundown._id) ===
+													this.props.rundownIds.length - 1
+											}
+											layout={this.props.layout}
+										/>
+										<RundownSystemStatus
+											studio={this.props.studio}
+											playlist={this.props.playlist}
+											rundownIds={this.props.rundownIds}
+											firstRundown={this.props.firstRundown}
+										/>
+									</React.Fragment>
+								)}
 							</div>
 						</ContextMenuTrigger>
 					</div>

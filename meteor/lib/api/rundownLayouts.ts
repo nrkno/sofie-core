@@ -102,8 +102,7 @@ class RundownLayoutsRegistry {
 					return literal<CustomizableRegionLayout>({
 						_id: layoutType,
 						type: layoutType,
-						filtersTitle: descriptor.filtersTitle,
-						supportedElements: descriptor.supportedElements,
+						...descriptor,
 					})
 				}),
 			},
@@ -114,8 +113,7 @@ class RundownLayoutsRegistry {
 					return literal<CustomizableRegionLayout>({
 						_id: layoutType,
 						type: layoutType,
-						filtersTitle: descriptor.filtersTitle,
-						supportedElements: descriptor.supportedElements,
+						...descriptor,
 					})
 				}),
 			},
@@ -126,8 +124,7 @@ class RundownLayoutsRegistry {
 					return literal<CustomizableRegionLayout>({
 						_id: layoutType,
 						type: layoutType,
-						filtersTitle: descriptor.filtersTitle,
-						supportedElements: descriptor.supportedElements,
+						...descriptor,
 					})
 				}),
 			},
@@ -138,8 +135,7 @@ class RundownLayoutsRegistry {
 					return literal<CustomizableRegionLayout>({
 						_id: layoutType,
 						type: layoutType,
-						filtersTitle: descriptor.filtersTitle,
-						supportedElements: descriptor.supportedElements,
+						...descriptor,
 					})
 				}),
 			},
@@ -180,6 +176,11 @@ export namespace RundownLayoutsAPI {
 	})
 	registry.RegisterRundownHeaderLayouts(RundownLayoutType.RUNDOWN_HEADER_LAYOUT, {
 		supportedElements: [],
+	})
+	registry.RegisterRundownHeaderLayouts(RundownLayoutType.DASHBOARD_LAYOUT, {
+		filtersTitle: 'Layout Elements',
+		supportsFilters: true,
+		supportedElements: [RundownLayoutElementType.PIECE_COUNTDOWN],
 	})
 
 	export function GetSettingsManifest(): CustomizableRegionSettingsManifest[] {

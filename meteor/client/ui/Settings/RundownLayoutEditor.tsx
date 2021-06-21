@@ -352,6 +352,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							filter={tab}
 							index={index}
 							showStyleBase={this.props.showStyleBase}
+							supportedElements={layout?.supportedElements ?? []}
 						/>
 					))}
 				</React.Fragment>
