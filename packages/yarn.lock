@@ -8557,9 +8557,9 @@ timeline-state-resolver-types@6.0.0-nightly-release35-20210608-165921-e8c0d0dbb.
   dependencies:
     tslib "^2.1.0"
 
-"timeline-state-resolver@git+https://github.com/olzzon/tv-automation-state-timeline-resolver#dist-test/vizFixes20210617_1":
+"timeline-state-resolver@git+https://github.com/olzzon/tv-automation-state-timeline-resolver#dist-test/vizFixes20210621_1":
   version "5.7.0-release32"
-  resolved "git+https://github.com/olzzon/tv-automation-state-timeline-resolver#936b7ab0459c786f26ee362351c44baf1dc78a93"
+  resolved "git+https://github.com/olzzon/tv-automation-state-timeline-resolver#db72c6e09aec1a721945c88004fdb6b0041c9945"
   dependencies:
     atem-state "^0.10.1"
     bufferutil "^4.0.1"
@@ -8582,7 +8582,7 @@ timeline-state-resolver-types@6.0.0-nightly-release35-20210608-165921-e8c0d0dbb.
     underscore "^1.12.0"
     underscore-deep-extend "^1.1.5"
     utf-8-validate "^5.0.2"
-    v-connection "git+https://github.com/olzzon/v-connection#vtest20210617_1"
+    v-connection "git+https://github.com/olzzon/v-connection#vtest20210621_1"
     ws "^7.1.1"
     xml-js "^1.6.11"
 
@@ -9065,9 +9065,9 @@ uuid@^8.0.0, uuid@^8.3.0, uuid@^8.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
-"v-connection@git+https://github.com/olzzon/v-connection#vtest20210617_1":
+"v-connection@git+https://github.com/olzzon/v-connection#vtest20210621_1":
   version "0.0.1"
-  resolved "git+https://github.com/olzzon/v-connection#ea36b8323afb97a5f6a3321092b18608a5d07a77"
+  resolved "git+https://github.com/olzzon/v-connection#80d12fecdf3703c38400981f1cd68e9630decef1"
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
