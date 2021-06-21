@@ -254,9 +254,9 @@ export namespace MeteorMock {
 		return (...args: any[]) => {
 			const fiber = Fiber.current
 			if (fiber) {
-				fcn(...args)
+				return fcn(...args)
 			} else {
-				runInFiber(() => fcn(...args)).catch(console.error)
+				return runInFiber(() => fcn(...args)).catch(console.error)
 			}
 		}
 	}

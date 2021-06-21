@@ -24,7 +24,7 @@ export function isAnyQueuedWorkRunning(): boolean {
  * Push a unit of work onto a queue.
  * Allows only one item of work from each queue to be executing at a time (unless something times out)
  */
-export async function pushWorkToQueue<T>(
+export function pushWorkToQueue<T>(
 	queueName: string,
 	jobContext: string,
 	fcn: () => Promise<T>,
@@ -49,66 +49,84 @@ export async function pushWorkToQueue<T>(
 	}
 
 	const jobId = getRandomId()
-	try {
-		const queueTime = getCurrentTime()
+	const queueTime = getCurrentTime()
 
-		// Wrap the execution with a bindEnvironment, to make Meteor happy
-		const wrappedFcn = Meteor.bindEnvironment(async () => {
-			// Remove self from pending list
-			queueInfo?.pendingJobNames?.shift()
+	// Wrap the execution with a bindEnvironment, to make Meteor happy
+	const wrappedFcn = async () => {
+		// Remove self from pending list
+		queueInfo?.pendingJobNames?.shift()
 
-			logger.debug(`syncFunction "${jobContext}"("${queueName}") begun execution - ${jobId}`)
+		logger.debug(`syncFunction "${jobContext}"("${queueName}") begun execution - ${jobId}`)
 
-			// Check if we have been waiting a long time
-			const waitTime = getCurrentTime() - queueTime
-			if (waitTime > ACCEPTABLE_WAIT_TIME) {
-				logger.warn(
-					`syncFunction "${jobContext}"("${queueName}") waited ${waitTime} ms for other functions to complete before starting: [${waitingOnFunctionsStr}] - ${jobId}`
-				)
-			}
+		// Check if we have been waiting a long time
+		const waitTime = getCurrentTime() - queueTime
+		if (waitTime > ACCEPTABLE_WAIT_TIME) {
+			logger.warn(
+				`syncFunction "${jobContext}"("${queueName}") waited ${waitTime} ms for other functions to complete before starting: [${waitingOnFunctionsStr}] - ${jobId}`
+			)
+		}
 
-			try {
-				// wait for completion
-				const res = await fcn()
+		try {
+			// wait for completion
+			const res = await fcn()
 
-				// defer resolve, to release queue lock
-				Meteor.defer(() => resolve(res))
-			} catch (e) {
-				// defer reject, to release queue lock
-				Meteor.defer(() => reject(e))
-			}
+			// defer resolve, to release queue lock
+			Meteor.defer(() => resolve(res))
+		} catch (e) {
+			// defer reject, to release queue lock
+			Meteor.defer(() => reject(e))
+		}
 
-			logger.debug(`syncFunction "${jobContext}"("${queueName}") done - ${jobId}`)
-			if (timedOut) {
-				const endTime = getCurrentTime()
-				logger.error(
-					`syncFunction "${jobContext}"("${queueName}") completed after timeout. took ${
-						endTime - queueTime
-					}ms`
-				)
-			}
-		})
-
-		const waitingOnFunctionsStr = queueInfo.pendingJobNames.join(', ')
-		queueInfo.pendingJobNames.push(jobContext)
-
-		logger.debug(`syncFunction "${jobContext}"("${queueName}") queued - ${jobId}`)
-		await queueInfo.queue.add(() => wrappedFcn(), {
-			timeout,
-			priority,
-		})
-	} catch (e) {
-		// Ignore the timeout, we simply want to log it and let it finish
-		if (e.toString().indexOf('TimeoutError: Promise timed') !== -1) {
-			timedOut = true
-			logger.error(`syncFunction "${jobContext}"("${queueName}") took too long to evaluate. Unblocking the queue`)
-		} else {
-			// forward error, as this was not expected
-			throw e
+		logger.debug(`syncFunction "${jobContext}"("${queueName}") done - ${jobId}`)
+		if (timedOut) {
+			const endTime = getCurrentTime()
+			logger.error(
+				`syncFunction "${jobContext}"("${queueName}") completed after timeout. took ${endTime - queueTime}ms`
+			)
 		}
 	}
 
-	return promise
+	const waitingOnFunctionsStr = queueInfo.pendingJobNames.join(', ')
+	queueInfo.pendingJobNames.push(jobContext)
+
+	logger.debug(`syncFunction "${jobContext}"("${queueName}") queued - ${jobId}`)
+
+	return (
+		queueInfo.queue
+			.add(
+				Meteor.bindEnvironment(() => wrappedFcn()),
+				{
+					timeout,
+					priority,
+				}
+			)
+			.catch((e) => {
+				// Ignore the timeout, we simply want to log it and let it finish
+				if (e.toString().indexOf('TimeoutError') !== -1) {
+					timedOut = true
+					logger.error(
+						`syncFunction "${jobContext}"("${queueName}") took too long to evaluate. Unblocking the queue`
+					)
+					return null
+				} else {
+					// forward error, as this was not expected
+					return Promise.reject(e)
+				}
+			})
+			// Finally, return the result we manually tracked
+			.then(() => promise)
+	)
+}
+
+export async function purgeWorkQueues(): Promise<void> {
+	const running: Array<Promise<void>> = []
+	for (const queue of workQueues.values()) {
+		queue.queue.clear()
+		if (queue.queue.pending) {
+			running.push(queue.queue.onEmpty())
+		}
+	}
+	await Promise.all(running)
 }
 
 function createManualPromise<T>() {
