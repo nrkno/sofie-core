@@ -549,8 +549,13 @@ export function activateHold(
 export function userSaveEvaluation(context: MethodContext, evaluation: EvaluationBase): ClientAPI.ClientResponse<void> {
 	return ClientAPI.responseSuccess(saveEvaluation(context, evaluation))
 }
-export function userStoreRundownSnapshot(context: MethodContext, playlistId: RundownPlaylistId, reason: string) {
-	return ClientAPI.responseSuccess(storeRundownPlaylistSnapshot(context, playlistId, reason))
+export function userStoreRundownSnapshot(
+	context: MethodContext,
+	playlistId: RundownPlaylistId,
+	reason: string,
+	full?: boolean
+) {
+	return ClientAPI.responseSuccess(storeRundownPlaylistSnapshot(context, playlistId, reason, full))
 }
 export function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
 	let playlist = checkAccessAndGetPlaylist(context, playlistId)
@@ -1007,7 +1012,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	saveEvaluation(_userEvent: string, evaluation: EvaluationBase) {
 		return makePromise(() => userSaveEvaluation(this, evaluation))
 	}
-	storeRundownSnapshot(_userEvent: string, playlistId: RundownPlaylistId, reason: string) {
+	storeRundownSnapshot(_userEvent: string, playlistId: RundownPlaylistId, reason: string, full?: boolean) {
 		return traceAction(
 			UserActionAPIMethods.storeRundownSnapshot,
 			userStoreRundownSnapshot,
