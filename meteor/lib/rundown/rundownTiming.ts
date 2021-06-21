@@ -6,6 +6,7 @@ import {
 } from '../collections/PartInstances'
 import { Part, PartId } from '../collections/Parts'
 import { RundownPlaylist } from '../collections/RundownPlaylists'
+import { Rundown } from '../collections/Rundowns'
 import { unprotectString, literal, protectString } from '../lib'
 import { Settings } from '../Settings'
 
@@ -30,6 +31,8 @@ export class RundownTimingCalculator {
 		now: number,
 		isLowResolution: boolean,
 		playlist: RundownPlaylist | undefined,
+		rundowns: Rundown[],
+		currentRundown: Rundown | undefined,
 		parts: Part[],
 		partInstancesMap: Map<PartId, PartInstance>,
 		/** Fallback duration for Parts that have no as-played duration of their own. */
@@ -47,13 +50,29 @@ export class RundownTimingCalculator {
 		let rundownExpectedDurations: Record<string, number> = {}
 		let rundownAsPlayedDurations: Record<string, number> = {}
 
+		let rundownsBeforeNextBreak: Rundown[] | undefined
+		let breakIsLastRundown: boolean | undefined
+
 		Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
 		this.linearParts.length = 0
 
 		let nextAIndex = -1
 		let currentAIndex = -1
 
-		if (playlist && parts) {
+		if (playlist) {
+			const breakProps = currentRundown
+				? this.getRundownsBeforeNextBreak(
+						rundowns,
+						currentRundown,
+						rundowns.filter((r) => r.endIsBreak)
+				  )
+				: undefined
+
+			if (breakProps) {
+				rundownsBeforeNextBreak = breakProps.rundownsBeforeNextBreak
+				breakIsLastRundown = breakProps.breakIsLastRundown
+			}
+
 			parts.forEach((origPart, itIndex) => {
 				const partInstance = this.getPartInstanceOrGetCachedTemp(partInstancesMap, origPart)
 
@@ -357,6 +376,8 @@ export class RundownTimingCalculator {
 			currentTime: now,
 			remainingTimeOnCurrentPart,
 			currentPartWillAutoNext,
+			rundownsBeforeNextBreak,
+			breakIsLastRundown,
 			isLowResolution,
 		})
 	}
@@ -379,6 +400,35 @@ export class RundownTimingCalculator {
 				this.temporaryPartInstances.set(origPartId, tempPartInstance)
 				return tempPartInstance
 			}
+		}
+	}
+
+	private getRundownsBeforeNextBreak(
+		orderedRundowns: Rundown[],
+		currentRundown: Rundown | undefined,
+		breakRundowns: Rundown[]
+	): { rundownsBeforeNextBreak: Rundown[]; breakIsLastRundown } | undefined {
+		if (!currentRundown) {
+			return undefined
+		}
+
+		let currentRundownIndex = orderedRundowns.findIndex((r) => r._id === currentRundown._id)
+
+		if (currentRundownIndex === -1) {
+			return undefined
+		}
+
+		let nextBreakIndex = orderedRundowns.findIndex((rundown, index) => {
+			if (index < currentRundownIndex) {
+				return false
+			}
+
+			return breakRundowns.some((r) => r._id == rundown._id)
+		})
+
+		return {
+			rundownsBeforeNextBreak: orderedRundowns.slice(currentRundownIndex, nextBreakIndex + 1),
+			breakIsLastRundown: nextBreakIndex === orderedRundowns.length,
 		}
 	}
 }
@@ -424,6 +474,10 @@ export interface RundownTimingContext {
 	currentPartWillAutoNext?: boolean
 	/** Current time of this calculation */
 	currentTime?: number
+	/** Rundowns between current rundown and rundown with next break (inclusive of both). Undefined if there's no break in the future. */
+	rundownsBeforeNextBreak?: Rundown[]
+	/** Whether the next break is also the last */
+	breakIsLastRundown?: boolean
 	/** Was this time context calculated during a high-resolution tick */
 	isLowResolution: boolean
 }

@@ -93,51 +93,39 @@ class RundownLayoutsRegistry {
 		return regionId === CustomizableRegions.RundownHeader
 	}
 
+	private wrapToCustomizableRegionLayout(
+		layouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutBase>>
+	): CustomizableRegionLayout[] {
+		return Array.from(layouts.entries()).map(([layoutType, descriptor]) => {
+			return literal<CustomizableRegionLayout>({
+				_id: layoutType,
+				type: layoutType,
+				...descriptor,
+			})
+		})
+	}
+
 	public GetSettingsManifest(): CustomizableRegionSettingsManifest[] {
 		return [
 			{
 				_id: CustomizableRegions.RundownView,
 				title: 'Rundown View Layouts',
-				layouts: Array.from(this.rundownViewLayouts.entries()).map(([layoutType, descriptor]) => {
-					return literal<CustomizableRegionLayout>({
-						_id: layoutType,
-						type: layoutType,
-						...descriptor,
-					})
-				}),
+				layouts: this.wrapToCustomizableRegionLayout(this.rundownViewLayouts),
 			},
 			{
 				_id: CustomizableRegions.Shelf,
 				title: 'Shelf Layouts',
-				layouts: Array.from(this.shelfLayouts.entries()).map(([layoutType, descriptor]) => {
-					return literal<CustomizableRegionLayout>({
-						_id: layoutType,
-						type: layoutType,
-						...descriptor,
-					})
-				}),
+				layouts: this.wrapToCustomizableRegionLayout(this.shelfLayouts),
 			},
 			{
 				_id: CustomizableRegions.MiniShelf,
 				title: 'Mini Shelf Layouts',
-				layouts: Array.from(this.miniShelfLayouts.entries()).map(([layoutType, descriptor]) => {
-					return literal<CustomizableRegionLayout>({
-						_id: layoutType,
-						type: layoutType,
-						...descriptor,
-					})
-				}),
+				layouts: this.wrapToCustomizableRegionLayout(this.miniShelfLayouts),
 			},
 			{
 				_id: CustomizableRegions.RundownHeader,
 				title: 'Rundown Header Layouts',
-				layouts: Array.from(this.rundownHeaderLayouts.entries()).map(([layoutType, descriptor]) => {
-					return literal<CustomizableRegionLayout>({
-						_id: layoutType,
-						type: layoutType,
-						...descriptor,
-					})
-				}),
+				layouts: this.wrapToCustomizableRegionLayout(this.rundownHeaderLayouts),
 			},
 		]
 	}
