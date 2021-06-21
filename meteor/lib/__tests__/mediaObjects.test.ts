@@ -1,6 +1,3 @@
-import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
-import { Mongo } from 'meteor/mongo'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import {
 	buildFormatString,
@@ -15,7 +12,6 @@ import {
 	MediaObject,
 	FieldOrder,
 	MediaStream,
-	Anomaly,
 	MediaStreamType,
 } from './../collections/MediaObjects'
 import { literal, protectString } from '../lib'

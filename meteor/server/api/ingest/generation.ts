@@ -80,9 +80,9 @@ export async function calculateSegmentsFromIngestData(
 
 	if (ingestSegments.length > 0) {
 		const showStyle = await getShowStyleCompoundForRundown(rundown)
-		const blueprint = loadShowStyleBlueprint(showStyle)
+		const blueprint = await loadShowStyleBlueprint(showStyle)
 
-		for (let ingestSegment of ingestSegments) {
+		for (const ingestSegment of ingestSegments) {
 			const segmentId = getSegmentId(cache.RundownId, ingestSegment.externalId)
 
 			// Ensure the parts are sorted by rank
@@ -345,13 +345,13 @@ export async function updateRundownFromIngestData(
 		cache.Studio.doc
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
-	const showStyle = selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
+	const showStyle = await selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
 	}
 
-	const showStyleBlueprint = loadShowStyleBlueprint(showStyle.base)
+	const showStyleBlueprint = await loadShowStyleBlueprint(showStyle.base)
 	const blueprintContext = new ShowStyleUserContext(
 		{
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,
@@ -432,8 +432,9 @@ export async function updateRundownFromIngestData(
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
 	logger.info(`... got ${(rundownRes.globalActions || []).length} adLib actions from baseline.`)
 
+	const { baselineObjects, baselineAdlibPieces, baselineAdlibActions } = await cache.loadBaselineCollections()
 	const rundownBaselineChanges = sumChanges(
-		saveIntoCache<RundownBaselineObj, RundownBaselineObj>(cache.RundownBaselineObjs, {}, [
+		saveIntoCache<RundownBaselineObj, RundownBaselineObj>(baselineObjects, {}, [
 			{
 				_id: protectString<RundownBaselineObjId>(Random.id(7)),
 				rundownId: dbRundown._id,
@@ -446,7 +447,7 @@ export async function updateRundownFromIngestData(
 		]),
 		// Save the global adlibs
 		saveIntoCache<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
-			cache.RundownBaselineAdLibPieces,
+			baselineAdlibPieces,
 			{},
 			postProcessAdLibPieces(
 				blueprintRundownContext,
@@ -457,7 +458,7 @@ export async function updateRundownFromIngestData(
 			)
 		),
 		saveIntoCache<RundownBaselineAdLibAction, RundownBaselineAdLibAction>(
-			cache.RundownBaselineAdLibActions,
+			baselineAdlibActions,
 			{},
 			postProcessGlobalAdLibActions(
 				blueprintRundownContext,

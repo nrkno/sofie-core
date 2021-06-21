@@ -32,7 +32,7 @@ interface IAdLibRegionPanelProps {
 	adlibRank?: number
 }
 
-interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {}
+type IAdLibRegionPanelTrackedProps = IDashboardPanelTrackedProps
 
 export class AdLibRegionPanelInner extends MeteorReactComponent<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,

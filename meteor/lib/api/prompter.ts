@@ -1,14 +1,12 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import { check } from '../../lib/check'
 import * as _ from 'underscore'
-import { Rundowns } from '../collections/Rundowns'
-import { Part, PartId } from '../collections/Parts'
+import { PartId } from '../collections/Parts'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
-import { normalizeArray, protectString, unprotectString, getRandomId } from '../lib'
+import { RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
+import { normalizeArray, protectString, getRandomId } from '../lib'
 import { SegmentId } from '../collections/Segments'
-import { PieceId } from '../collections/Pieces'
+import { PieceId, Pieces } from '../collections/Pieces'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>
@@ -53,7 +51,7 @@ export namespace PrompterAPI {
 		const segmentsMap = normalizeArray(segments, '_id')
 		const groupedParts = _.groupBy(parts, (p) => p.segmentId)
 
-		let data: PrompterData = {
+		const data: PrompterData = {
 			title: playlist.name,
 			currentPartId: currentPartInstance ? currentPartInstance.part._id : null,
 			nextPartId: nextPartInstance ? nextPartInstance.part._id : null,
@@ -82,7 +80,10 @@ export namespace PrompterAPI {
 					pieces: [],
 				}
 
-				const allPieces = part.getAllPieces()
+				const allPieces = Pieces.find({
+					startRundownId: part.rundownId,
+					startPartId: part._id,
+				}).fetch()
 
 				for (const piece of allPieces) {
 					if (piece.content) {

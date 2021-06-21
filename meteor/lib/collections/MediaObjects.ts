@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
@@ -135,9 +134,7 @@ export interface MediaStreamCodec {
 	is_avc?: string
 }
 
-export const MediaObjects: TransformedCollection<MediaObject, MediaObject> = createMongoCollection<MediaObject>(
-	'mediaObjects'
-)
+export const MediaObjects = createMongoCollection<MediaObject, MediaObject>('mediaObjects')
 registerCollection('MediaObjects', MediaObjects)
 registerIndex(MediaObjects, {
 	studioId: 1,

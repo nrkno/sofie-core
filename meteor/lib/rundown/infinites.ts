@@ -18,10 +18,9 @@ import {
 import { Mongo } from 'meteor/mongo'
 import { ShowStyleBase, ShowStyleBaseId } from '../collections/ShowStyleBases'
 import { getPieceGroupId } from './timeline'
-import { RundownPlaylist, RundownPlaylistActivationId } from '../collections/RundownPlaylists'
+import { RundownPlaylistActivationId } from '../collections/RundownPlaylists'
 import { ReadonlyDeep } from 'type-fest'
-import { Rundown, RundownId, Rundowns } from '../collections/Rundowns'
-import { Meteor } from 'meteor/meteor'
+import { Rundown, RundownId } from '../collections/Rundowns'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
 	return { startPartId: part._id }
@@ -98,7 +97,7 @@ export function getPlayheadTrackingInfinitesForPart(
 	}
 	const piecesOnSourceLayers = new Map<string, InfinitePieceSet>()
 
-	let canContinueShowStyleEndInfinites = continueShowStyleEndInfinites(
+	const canContinueShowStyleEndInfinites = continueShowStyleEndInfinites(
 		rundownsBeforeThisInPlaylist,
 		rundownsToShowstyles,
 		currentPartInstance.rundownId,

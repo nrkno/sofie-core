@@ -84,7 +84,7 @@ interface ISourceLayerProps extends ISourceLayerPropsBase {
 class SourceLayerBase<T extends ISourceLayerPropsBase> extends React.PureComponent<T> {
 	private mousePosition: OffsetPosition = { left: 0, top: 0 }
 
-	getPartContext = (props) => {
+	getPartContext = (_props) => {
 		const partElement = document.querySelector('#' + SegmentTimelinePartElementId + this.props.part.instance._id)
 		const partDocumentOffset = getElementDocumentOffset(partElement)
 
@@ -492,7 +492,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 	static getDerivedStateFromProps(
 		nextProps: Readonly<IProps & RundownTiming.InjectedROTimingProps>,
-		nextState: Readonly<IState>
+		_prevState: Readonly<IState>
 	): Partial<IState> {
 		const isPrevious = nextProps.playlist.previousPartInstanceId === nextProps.part.instance._id
 		const isLive = nextProps.playlist.currentPartInstanceId === nextProps.part.instance._id

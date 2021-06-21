@@ -1,5 +1,4 @@
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString, hashObj, assertNever } from '../lib'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
@@ -95,10 +94,7 @@ export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageD
 	/** The Bucket adlib-action this package belongs to */
 	pieceId: BucketAdLibActionId
 }
-export const ExpectedPackages: TransformedCollection<
-	ExpectedPackageDB,
-	ExpectedPackageDB
-> = createMongoCollection<ExpectedPackageDB>('expectedPackages')
+export const ExpectedPackages = createMongoCollection<ExpectedPackageDB, ExpectedPackageDB>('expectedPackages')
 registerCollection('ExpectedPackages', ExpectedPackages)
 
 registerIndex(ExpectedPackages, {

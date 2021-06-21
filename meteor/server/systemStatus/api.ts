@@ -12,20 +12,20 @@ if (!Settings.enableUserAccounts) {
 	// For backwards compatibility:
 
 	PickerGET.route('/health', (params, req: IncomingMessage, res: ServerResponse) => {
-		let status = getSystemStatus({ userId: null })
+		const status = getSystemStatus({ userId: null })
 		health(status, res)
 	})
 	PickerGET.route('/health/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
-		let status = getSystemStatus({ userId: null }, protectString(params.studioId))
+		const status = getSystemStatus({ userId: null }, protectString(params.studioId))
 		health(status, res)
 	})
 }
 PickerGET.route('/health/:token', (params, req: IncomingMessage, res: ServerResponse) => {
-	let status = getSystemStatus({ userId: null, token: params.token })
+	const status = getSystemStatus({ userId: null, token: params.token })
 	health(status, res)
 })
 PickerGET.route('/health/:token/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
-	let status = getSystemStatus({ userId: null, token: params.token }, protectString(params.studioId))
+	const status = getSystemStatus({ userId: null, token: params.token }, protectString(params.studioId))
 	health(status, res)
 })
 function health(status: StatusResponse, res: ServerResponse) {
