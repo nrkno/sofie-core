@@ -1,5 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
+import { ensureCollectionProperty } from './lib'
 import { removeCollectionProperty } from './lib'
 
 /*
@@ -29,4 +30,5 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	//
 
 	removeCollectionProperty('PeripheralDevices', {}, 'expectedVersion'),
+	ensureCollectionProperty('RundownLayouts', { regionId: { $exists: false } }, 'regionId', 'shelf_layouts'),
 ])

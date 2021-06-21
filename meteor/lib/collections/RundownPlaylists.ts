@@ -65,6 +65,8 @@ export interface DBRundownPlaylist {
 	expectedStart?: Time
 	/** How long the playlist is expected to take ON AIR */
 	expectedDuration?: number
+	/** When the playlist is expected to end */
+	expectedEnd?: Time
 	/** Is the playlist in rehearsal mode (can be used, when active: true) */
 	rehearsal?: boolean
 	/** Playout hold state */
@@ -120,6 +122,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public rundownsStartedPlayback?: Record<string, Time>
 	public expectedStart?: Time
 	public expectedDuration?: number
+	public expectedEnd?: Time
 	public rehearsal?: boolean
 	public holdState?: RundownHoldState
 	public activationId?: RundownPlaylistActivationId
@@ -210,6 +213,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				playlistId: 1,
 				expectedStart: 1,
 				expectedDuration: 1,
+				expectedEnd: 1,
 				showStyleBaseId: 1,
 			},
 		})

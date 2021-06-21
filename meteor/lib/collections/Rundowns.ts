@@ -67,6 +67,8 @@ export interface DBRundown
 
 	/** External id of the Rundown Playlist to put this rundown in */
 	playlistExternalId?: string
+	/** Whether the end of the rundown marks a commercial break */
+	endIsBreak?: boolean
 	/** Name (user-facing) of the external NCS this rundown came from */
 	externalNRCSName: string
 	/** The id of the Rundown Playlist this rundown is in */
@@ -86,6 +88,7 @@ export class Rundown implements DBRundown {
 	public description?: string
 	public expectedStart?: Time
 	public expectedDuration?: number
+	public expectedEnd?: Time
 	public metaData?: unknown
 	// From IBlueprintRundownDB:
 	public _id: RundownId
@@ -104,6 +107,7 @@ export class Rundown implements DBRundown {
 	public notifiedCurrentPlayingPartExternalId?: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
+	public endIsBreak?: boolean
 	public externalNRCSName: string
 	public playlistId: RundownPlaylistId
 	public playlistIdIsSetInSofie?: boolean
