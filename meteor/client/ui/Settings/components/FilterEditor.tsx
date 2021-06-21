@@ -28,6 +28,7 @@ interface IProps {
 	filter: RundownLayoutElementBase
 	index: number
 	showStyleBase: ShowStyleBase
+	supportedElements: RundownLayoutElementType[]
 }
 
 interface ITrackedProps {}
@@ -1029,9 +1030,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									modifiedClassName="bghl"
 									attribute={`filters.${this.props.index}.type`}
 									obj={this.props.item}
-									options={RundownLayoutElementType}
+									options={this.props.supportedElements}
 									type="dropdown"
-									mutateDisplayValue={(v) => (v === undefined ? RundownLayoutElementType.FILTER : v)}
+									mutateDisplayValue={(v) => (v === undefined ? this.props.supportedElements[0] : v)}
 									collection={RundownLayouts}
 									className="input text-input input-l"
 								></EditAttribute>
