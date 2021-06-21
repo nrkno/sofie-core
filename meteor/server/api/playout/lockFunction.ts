@@ -87,8 +87,10 @@ export function runPlayoutOperationWithCache<T>(
 		tmpPlaylist = pl
 	}
 
-	return runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, playoutToStudioLockPriority(priority), (lock) =>
-		playoutLockFunctionInner(contextStr, lock, tmpPlaylist, priority, preInitFcn, fcn)
+	return waitForPromise(
+		runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, playoutToStudioLockPriority(priority), (lock) =>
+			playoutLockFunctionInner(contextStr, lock, tmpPlaylist, priority, preInitFcn, fcn)
+		)
 	) as Awaited<T>
 }
 
@@ -118,19 +120,21 @@ export function runPlayoutOperationWithLock<T>(
 		tmpPlaylist = pl
 	}
 
-	return runStudioOperationWithLock(
-		contextStr,
-		tmpPlaylist.studioId,
-		playoutToStudioLockPriority(priority),
-		(studioLock) =>
-			runPlayoutOperationWithLockFromStudioOperation(
-				contextStr,
-				studioLock,
-				tmpPlaylist,
-				priority,
-				(playoutLock) => fcn(playoutLock, tmpPlaylist)
-			)
-	)
+	return waitForPromise(
+		runStudioOperationWithLock(
+			contextStr,
+			tmpPlaylist.studioId,
+			playoutToStudioLockPriority(priority),
+			(studioLock) =>
+				runPlayoutOperationWithLockFromStudioOperation(
+					contextStr,
+					studioLock,
+					tmpPlaylist,
+					priority,
+					(playoutLock) => fcn(playoutLock, tmpPlaylist)
+				)
+		)
+	) 
 }
 
 /**

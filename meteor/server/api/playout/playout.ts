@@ -1262,7 +1262,7 @@ export namespace ServerPlayoutAPI {
 		)
 	}
 
-	export function updateStudioBaseline(context: MethodContext, studioId: StudioId) {
+	export function updateStudioBaseline(context: MethodContext, studioId: StudioId): Promise<string | false> {
 		StudioContentWriteAccess.baseline(context, studioId)
 
 		check(studioId, String)
@@ -1284,7 +1284,7 @@ export namespace ServerPlayoutAPI {
 		)
 	}
 
-	export function shouldUpdateStudioBaseline(context: MethodContext, studioId: StudioId) {
+	export function shouldUpdateStudioBaseline(context: MethodContext, studioId: StudioId): Promise<string | false> {
 		StudioContentWriteAccess.baseline(context, studioId)
 
 		check(studioId, String)
@@ -1298,7 +1298,7 @@ export namespace ServerPlayoutAPI {
 			}
 		)
 	}
-	function shouldUpdateStudioBaselineInner(cache: CacheForStudio): string | false {
+	async function shouldUpdateStudioBaselineInner(cache: CacheForStudio): Promise<string | false> {
 		const studio = cache.Studio.doc
 
 		const activePlaylists = cache.getActiveRundownPlaylists()
@@ -1323,7 +1323,7 @@ export namespace ServerPlayoutAPI {
 
 			if (versionsContent?.blueprintId !== unprotectString(studio.blueprintId)) return 'blueprintId'
 			if (studio.blueprintId) {
-				const blueprint = Blueprints.findOne(studio.blueprintId)
+				const blueprint = await Blueprints.findOneAsync(studio.blueprintId)
 				if (!blueprint) return 'blueprintUnknown'
 				if (versionsContent.blueprintVersion !== (blueprint.blueprintVersion || 0)) return 'blueprintVersion'
 			}

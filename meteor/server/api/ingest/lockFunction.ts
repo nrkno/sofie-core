@@ -5,7 +5,7 @@ import { DBRundown } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { StudioId } from '../../../lib/collections/Studios'
-import { waitForPromise, clone, protectString } from '../../../lib/lib'
+import { clone, protectString } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { pushWorkToQueue } from '../../codeControl'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
@@ -64,7 +64,7 @@ export function runIngestOperationWithCache(
 		newIngestRundown: LocalIngestRundown | undefined,
 		oldIngestRundown: LocalIngestRundown | undefined
 	) => Promise<CommitIngestData | null>
-): void {
+): Promise<void> {
 	return ingestLockFunctionInner(context, rundownExternalId, async () => {
 		const span = profiler.startSpan(`ingestLockFunction.${context}`)
 
@@ -130,7 +130,7 @@ export function runIngestOperationFromRundown(
 	context: string,
 	refRundown: DBRundown,
 	fcn: (ingestCache: CacheForIngest) => Promise<void>
-): void {
+): Promise<void> {
 	const refRundownId = refRundown._id
 	const studioId = refRundown.studioId
 	const rundownExternalId = refRundown.externalId
@@ -171,15 +171,8 @@ export function runIngestOperationFromRundown(
 	})
 }
 
-function ingestLockFunctionInner(context: string, rundownExternalId: string, fcn: () => Promise<void>): void {
-	return waitForPromise(pushWorkToQueue(`rundown_ingest_${rundownExternalId}`, context, fcn))
-	// return syncFunction(
-	// 	() => {
-	// 		waitForPromise(fcn())
-	// 	},
-	// 	context,
-	// 	`rundown_ingest_${rundownExternalId}`
-	// )()
+function ingestLockFunctionInner(context: string, rundownExternalId: string, fcn: () => Promise<void>): Promise<void> {
+	return pushWorkToQueue(`rundown_ingest_${rundownExternalId}`, context, fcn)
 }
 
 function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {

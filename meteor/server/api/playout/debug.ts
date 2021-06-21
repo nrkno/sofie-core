@@ -46,13 +46,15 @@ if (!Settings.enableUserAccounts) {
 				check(studioId, String)
 				logger.info(`debug_updateTimeline: "${studioId}"`)
 
-				runStudioOperationWithCache(
-					'debug_updateTimeline',
-					studioId,
-					StudioLockFunctionPriority.USER_PLAYOUT,
-					async (cache) => {
-						await updateStudioOrPlaylistTimeline(cache)
-					}
+				waitForPromise(
+					runStudioOperationWithCache(
+						'debug_updateTimeline',
+						studioId,
+						StudioLockFunctionPriority.USER_PLAYOUT,
+						async (cache) => {
+							await updateStudioOrPlaylistTimeline(cache)
+						}
+					)
 				)
 			} catch (e) {
 				logger.error(e)
@@ -64,27 +66,29 @@ if (!Settings.enableUserAccounts) {
 				check(studioId, String)
 				logger.info(`debug_updateNext: "${studioId}"`)
 
-				runStudioOperationWithCache(
-					'debug_updateNext',
-					studioId,
-					StudioLockFunctionPriority.USER_PLAYOUT,
-					(cache) => {
-						const playlists = cache.getActiveRundownPlaylists()
-						if (playlists.length === 1) {
-							return runPlayoutOperationWithCacheFromStudioOperation(
-								'updateStudioOrPlaylistTimeline',
-								cache,
-								playlists[0],
-								PlayoutLockFunctionPriority.USER_PLAYOUT,
-								null,
-								async (playlistCache) => {
-									await ensureNextPartIsValid(playlistCache)
-								}
-							)
-						} else {
-							throw new Error('No playlist active')
+				waitForPromise(
+					runStudioOperationWithCache(
+						'debug_updateNext',
+						studioId,
+						StudioLockFunctionPriority.USER_PLAYOUT,
+						(cache) => {
+							const playlists = cache.getActiveRundownPlaylists()
+							if (playlists.length === 1) {
+								return runPlayoutOperationWithCacheFromStudioOperation(
+									'updateStudioOrPlaylistTimeline',
+									cache,
+									playlists[0],
+									PlayoutLockFunctionPriority.USER_PLAYOUT,
+									null,
+									async (playlistCache) => {
+										await ensureNextPartIsValid(playlistCache)
+									}
+								)
+							} else {
+								throw new Error('No playlist active')
+							}
 						}
-					}
+					)
 				)
 			} catch (e) {
 				logger.error(e)

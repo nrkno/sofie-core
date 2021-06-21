@@ -486,31 +486,35 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 			// This is not valid as the rundownId won't match the externalId, so ingest will fail
 			// For now do nothing
 		} else if (rundown) {
-			Meteor.defer(() => {
-				runIngestOperationWithCache(
-					'cleanupOrphanedItems:defer',
-					rundown.studioId,
-					rundown.externalId,
-					(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
-					async (ingestCache) => {
-						// Find the segments that are still orphaned (in case they have resynced before this executes)
-						// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
-						const stillOrphanedSegments = ingestCache.Segments.findFetch(
-							(s) => s.orphaned === 'deleted' && candidateSegmentIds.includes(s._id)
-						)
+			Meteor.defer(async () => {
+				try {
+					await runIngestOperationWithCache(
+						'cleanupOrphanedItems:defer',
+						rundown.studioId,
+						rundown.externalId,
+						(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
+						async (ingestCache) => {
+							// Find the segments that are still orphaned (in case they have resynced before this executes)
+							// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
+							const stillOrphanedSegments = ingestCache.Segments.findFetch(
+								(s) => s.orphaned === 'deleted' && candidateSegmentIds.includes(s._id)
+							)
 
-						return {
-							changedSegmentIds: [],
-							removedSegmentIds: stillOrphanedSegments.map((s) => s._id),
-							renamedSegments: new Map(),
+							return {
+								changedSegmentIds: [],
+								removedSegmentIds: stillOrphanedSegments.map((s) => s._id),
+								renamedSegments: new Map(),
 
-							removeRundown: false,
+								removeRundown: false,
 
-							showStyle: undefined,
-							blueprint: undefined,
+								showStyle: undefined,
+								blueprint: undefined,
+							}
 						}
-					}
-				)
+					)
+				} catch (e) {
+					logger.error('cleanupOrphanedItems:defer error', e)
+				}
 			})
 		}
 	}

@@ -838,17 +838,17 @@ export function switchRouteSet(
 	return ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
 }
 
-export function moveRundown(
+export async function moveRundown(
 	context: MethodContext,
 	rundownId: RundownId,
 	intoPlaylistId: RundownPlaylistId | null,
 	rundownsIdsInPlaylistInOrder: RundownId[]
-): ClientAPI.ClientResponse<void> {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownId, String)
 	if (intoPlaylistId) check(intoPlaylistId, String)
 
 	return ClientAPI.responseSuccess(
-		moveRundownIntoPlaylist(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
+		await moveRundownIntoPlaylist(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 	)
 }
 export function restoreRundownOrder(
@@ -1207,7 +1207,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		intoPlaylistId: RundownPlaylistId | null,
 		rundownsIdsInPlaylistInOrder: RundownId[]
 	): Promise<ClientAPI.ClientResponse<void>> {
-		return makePromise(() => moveRundown(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder))
+		return moveRundown(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 	}
 	restoreRundownOrder(_userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>> {
 		return makePromise(() => restoreRundownOrder(this, playlistId))

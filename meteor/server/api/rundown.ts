@@ -13,6 +13,7 @@ import {
 	normalizeArray,
 	normalizeArrayToMap,
 	clone,
+	waitForPromise,
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
@@ -323,25 +324,27 @@ export namespace ServerRundownAPI {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 
-		handleRemovedRundownByRundown(access.rundown, true)
+		waitForPromise(handleRemovedRundownByRundown(access.rundown, true))
 	}
 
 	export function unsyncRundown(context: MethodContext, rundownId: RundownId): void {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 
-		runIngestOperationFromRundown('unsyncRundown', access.rundown, async (cache) => {
-			const rundown = getRundown(cache)
-			if (!rundown.orphaned) {
-				cache.Rundown.update({
-					$set: {
-						orphaned: 'deleted',
-					},
-				})
-			} else {
-				logger.info(`Rundown "${rundownId}" was already unsynced`)
-			}
-		})
+		waitForPromise(
+			runIngestOperationFromRundown('unsyncRundown', access.rundown, async (cache) => {
+				const rundown = getRundown(cache)
+				if (!rundown.orphaned) {
+					cache.Rundown.update({
+						$set: {
+							orphaned: 'deleted',
+						},
+					})
+				} else {
+					logger.info(`Rundown "${rundownId}" was already unsynced`)
+				}
+			})
+		)
 	}
 	/** Resync all rundowns in a rundownPlaylist */
 	export function resyncRundownPlaylist(
@@ -552,7 +555,7 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 		intoPlaylistId: RundownPlaylistId | null,
 		rundownsIdsInPlaylistInOrder: RundownId[]
 	) {
-		return makePromise(() => moveRundownIntoPlaylist(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder))
+		return moveRundownIntoPlaylist(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 	}
 	restoreRundownsInPlaylistToDefaultOrder(playlistId: RundownPlaylistId) {
 		return makePromise(() => restoreRundownsInPlaylistToDefaultOrder(this, playlistId))

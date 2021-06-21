@@ -222,12 +222,12 @@ export namespace ServerPeripheralDeviceAPI {
 	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
 	 * ( typically when using the "now"-feature )
 	 */
-	export function timelineTriggerTime(
+	export async function timelineTriggerTime(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		results: PeripheralDeviceAPI.TimelineTriggerTimeResult
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('timelineTriggerTime', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
@@ -245,7 +245,7 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 
 		if (results.length > 0) {
-			runStudioOperationWithCache(
+			await runStudioOperationWithCache(
 				'timelineTriggerTime',
 				studioId,
 				StudioLockFunctionPriority.CALLBACK_PLAYOUT,
@@ -814,7 +814,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		deviceToken: string,
 		r: PeripheralDeviceAPI.TimelineTriggerTimeResult
 	) {
-		return makePromise(() => ServerPeripheralDeviceAPI.timelineTriggerTime(this, deviceId, deviceToken, r))
+		return ServerPeripheralDeviceAPI.timelineTriggerTime(this, deviceId, deviceToken, r)
 	}
 	partPlaybackStarted(
 		deviceId: PeripheralDeviceId,
@@ -865,22 +865,22 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 
 	// ------ Ingest methods: ------------
 	dataPlaylistGet(deviceId: PeripheralDeviceId, deviceToken: string, playlistExternalId: string) {
-		return makePromise(() => RundownInput.dataPlaylistGet(this, deviceId, deviceToken, playlistExternalId))
+		return RundownInput.dataPlaylistGet(this, deviceId, deviceToken, playlistExternalId)
 	}
 	dataRundownList(deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() => RundownInput.dataRundownList(this, deviceId, deviceToken))
+		return RundownInput.dataRundownList(this, deviceId, deviceToken)
 	}
 	dataRundownGet(deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string) {
-		return makePromise(() => RundownInput.dataRundownGet(this, deviceId, deviceToken, rundownExternalId))
+		return RundownInput.dataRundownGet(this, deviceId, deviceToken, rundownExternalId)
 	}
 	dataRundownDelete(deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string) {
-		return makePromise(() => RundownInput.dataRundownDelete(this, deviceId, deviceToken, rundownExternalId))
+		return RundownInput.dataRundownDelete(this, deviceId, deviceToken, rundownExternalId)
 	}
 	dataRundownCreate(deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
-		return makePromise(() => RundownInput.dataRundownCreate(this, deviceId, deviceToken, ingestRundown))
+		return RundownInput.dataRundownCreate(this, deviceId, deviceToken, ingestRundown)
 	}
 	dataRundownUpdate(deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
-		return makePromise(() => RundownInput.dataRundownUpdate(this, deviceId, deviceToken, ingestRundown))
+		return RundownInput.dataRundownUpdate(this, deviceId, deviceToken, ingestRundown)
 	}
 	dataSegmentGet(
 		deviceId: PeripheralDeviceId,
@@ -888,9 +888,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		rundownExternalId: string,
 		segmentExternalId: string
 	) {
-		return makePromise(() =>
-			RundownInput.dataSegmentGet(this, deviceId, deviceToken, rundownExternalId, segmentExternalId)
-		)
+		return RundownInput.dataSegmentGet(this, deviceId, deviceToken, rundownExternalId, segmentExternalId)
 	}
 	dataSegmentDelete(
 		deviceId: PeripheralDeviceId,
@@ -898,9 +896,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		rundownExternalId: string,
 		segmentExternalId: string
 	) {
-		return makePromise(() =>
-			RundownInput.dataSegmentDelete(this, deviceId, deviceToken, rundownExternalId, segmentExternalId)
-		)
+		return RundownInput.dataSegmentDelete(this, deviceId, deviceToken, rundownExternalId, segmentExternalId)
 	}
 	dataSegmentCreate(
 		deviceId: PeripheralDeviceId,
@@ -908,9 +904,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		rundownExternalId: string,
 		ingestSegment: IngestSegment
 	) {
-		return makePromise(() =>
-			RundownInput.dataSegmentCreate(this, deviceId, deviceToken, rundownExternalId, ingestSegment)
-		)
+		return RundownInput.dataSegmentCreate(this, deviceId, deviceToken, rundownExternalId, ingestSegment)
 	}
 	dataSegmentUpdate(
 		deviceId: PeripheralDeviceId,
@@ -918,9 +912,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		rundownExternalId: string,
 		ingestSegment: IngestSegment
 	) {
-		return makePromise(() =>
-			RundownInput.dataSegmentUpdate(this, deviceId, deviceToken, rundownExternalId, ingestSegment)
-		)
+		return RundownInput.dataSegmentUpdate(this, deviceId, deviceToken, rundownExternalId, ingestSegment)
 	}
 	dataSegmentRanksUpdate(
 		deviceId: PeripheralDeviceId,
@@ -928,9 +920,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		rundownExternalId: string,
 		newRanks: { [segmentExternalId: string]: number }
 	) {
-		return makePromise(() => {
-			RundownInput.dataSegmentRanksUpdate(this, deviceId, deviceToken, rundownExternalId, newRanks)
-		})
+		return RundownInput.dataSegmentRanksUpdate(this, deviceId, deviceToken, rundownExternalId, newRanks)
 	}
 	dataPartDelete(
 		deviceId: PeripheralDeviceId,
@@ -939,15 +929,13 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		segmentExternalId: string,
 		partExternalId: string
 	) {
-		return makePromise(() =>
-			RundownInput.dataPartDelete(
-				this,
-				deviceId,
-				deviceToken,
-				rundownExternalId,
-				segmentExternalId,
-				partExternalId
-			)
+		return RundownInput.dataPartDelete(
+			this,
+			deviceId,
+			deviceToken,
+			rundownExternalId,
+			segmentExternalId,
+			partExternalId
 		)
 	}
 	dataPartCreate(
@@ -957,8 +945,13 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		segmentExternalId: string,
 		ingestPart: IngestPart
 	) {
-		return makePromise(() =>
-			RundownInput.dataPartCreate(this, deviceId, deviceToken, rundownExternalId, segmentExternalId, ingestPart)
+		return RundownInput.dataPartCreate(
+			this,
+			deviceId,
+			deviceToken,
+			rundownExternalId,
+			segmentExternalId,
+			ingestPart
 		)
 	}
 	dataPartUpdate(
@@ -968,32 +961,37 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		segmentExternalId: string,
 		ingestPart: IngestPart
 	) {
-		return makePromise(() =>
-			RundownInput.dataPartUpdate(this, deviceId, deviceToken, rundownExternalId, segmentExternalId, ingestPart)
+		return RundownInput.dataPartUpdate(
+			this,
+			deviceId,
+			deviceToken,
+			rundownExternalId,
+			segmentExternalId,
+			ingestPart
 		)
 	}
 
 	// ------ MOS methods: --------
 	mosRoCreate(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrder: MOS.IMOSRunningOrder) {
-		return makePromise(() => MosIntegration.mosRoCreate(this, deviceId, deviceToken, mosRunningOrder))
+		return MosIntegration.mosRoCreate(this, deviceId, deviceToken, mosRunningOrder)
 	}
 	mosRoReplace(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrder: MOS.IMOSRunningOrder) {
-		return makePromise(() => MosIntegration.mosRoReplace(this, deviceId, deviceToken, mosRunningOrder))
+		return MosIntegration.mosRoReplace(this, deviceId, deviceToken, mosRunningOrder)
 	}
 	mosRoDelete(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrderId: MOS.MosString128) {
-		return makePromise(() => MosIntegration.mosRoDelete(this, deviceId, deviceToken, mosRunningOrderId))
+		return MosIntegration.mosRoDelete(this, deviceId, deviceToken, mosRunningOrderId)
 	}
 	mosRoMetadata(deviceId: PeripheralDeviceId, deviceToken: string, metadata: MOS.IMOSRunningOrderBase) {
-		return makePromise(() => MosIntegration.mosRoMetadata(this, deviceId, deviceToken, metadata))
+		return MosIntegration.mosRoMetadata(this, deviceId, deviceToken, metadata)
 	}
 	mosRoStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: MOS.IMOSRunningOrderStatus) {
-		return makePromise(() => MosIntegration.mosRoStatus(this, deviceId, deviceToken, status))
+		return MosIntegration.mosRoStatus(this, deviceId, deviceToken, status)
 	}
 	mosRoStoryStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: MOS.IMOSStoryStatus) {
-		return makePromise(() => MosIntegration.mosRoStoryStatus(this, deviceId, deviceToken, status))
+		return MosIntegration.mosRoStoryStatus(this, deviceId, deviceToken, status)
 	}
 	mosRoItemStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: MOS.IMOSItemStatus) {
-		return makePromise(() => MosIntegration.mosRoItemStatus(this, deviceId, deviceToken, status))
+		return MosIntegration.mosRoItemStatus(this, deviceId, deviceToken, status)
 	}
 	mosRoStoryInsert(
 		deviceId: PeripheralDeviceId,
@@ -1001,7 +999,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		Action: MOS.IMOSStoryAction,
 		Stories: Array<MOS.IMOSROStory>
 	) {
-		return makePromise(() => MosIntegration.mosRoStoryInsert(this, deviceId, deviceToken, Action, Stories))
+		return MosIntegration.mosRoStoryInsert(this, deviceId, deviceToken, Action, Stories)
 	}
 	mosRoItemInsert(
 		deviceId: PeripheralDeviceId,
@@ -1009,7 +1007,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		Action: MOS.IMOSItemAction,
 		Items: Array<MOS.IMOSItem>
 	) {
-		return makePromise(() => MosIntegration.mosRoItemInsert(this, deviceId, deviceToken, Action, Items))
+		return MosIntegration.mosRoItemInsert(this, deviceId, deviceToken, Action, Items)
 	}
 	mosRoStoryReplace(
 		deviceId: PeripheralDeviceId,
@@ -1017,7 +1015,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		Action: MOS.IMOSStoryAction,
 		Stories: Array<MOS.IMOSROStory>
 	) {
-		return makePromise(() => MosIntegration.mosRoStoryReplace(this, deviceId, deviceToken, Action, Stories))
+		return MosIntegration.mosRoStoryReplace(this, deviceId, deviceToken, Action, Stories)
 	}
 	mosRoItemReplace(
 		deviceId: PeripheralDeviceId,
@@ -1025,7 +1023,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		Action: MOS.IMOSItemAction,
 		Items: Array<MOS.IMOSItem>
 	) {
-		return makePromise(() => MosIntegration.mosRoItemReplace(this, deviceId, deviceToken, Action, Items))
+		return MosIntegration.mosRoItemReplace(this, deviceId, deviceToken, Action, Items)
 	}
 	mosRoStoryMove(
 		deviceId: PeripheralDeviceId,
@@ -1033,7 +1031,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		Action: MOS.IMOSStoryAction,
 		Stories: Array<MOS.MosString128>
 	) {
-		return makePromise(() => MosIntegration.mosRoStoryMove(this, deviceId, deviceToken, Action, Stories))
+		return MosIntegration.mosRoStoryMove(this, deviceId, deviceToken, Action, Stories)
 	}
 	mosRoItemMove(
 		deviceId: PeripheralDeviceId,
@@ -1041,7 +1039,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		Action: MOS.IMOSItemAction,
 		Items: Array<MOS.MosString128>
 	) {
-		return makePromise(() => MosIntegration.mosRoItemMove(this, deviceId, deviceToken, Action, Items))
+		return MosIntegration.mosRoItemMove(this, deviceId, deviceToken, Action, Items)
 	}
 	mosRoStoryDelete(
 		deviceId: PeripheralDeviceId,
@@ -1049,7 +1047,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		Action: MOS.IMOSROAction,
 		Stories: Array<MOS.MosString128>
 	) {
-		return makePromise(() => MosIntegration.mosRoStoryDelete(this, deviceId, deviceToken, Action, Stories))
+		return MosIntegration.mosRoStoryDelete(this, deviceId, deviceToken, Action, Stories)
 	}
 	mosRoItemDelete(
 		deviceId: PeripheralDeviceId,
@@ -1057,7 +1055,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		Action: MOS.IMOSStoryAction,
 		Items: Array<MOS.MosString128>
 	) {
-		return makePromise(() => MosIntegration.mosRoItemDelete(this, deviceId, deviceToken, Action, Items))
+		return MosIntegration.mosRoItemDelete(this, deviceId, deviceToken, Action, Items)
 	}
 	mosRoStorySwap(
 		deviceId: PeripheralDeviceId,
@@ -1066,7 +1064,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		StoryID0: MOS.MosString128,
 		StoryID1: MOS.MosString128
 	) {
-		return makePromise(() => MosIntegration.mosRoStorySwap(this, deviceId, deviceToken, Action, StoryID0, StoryID1))
+		return MosIntegration.mosRoStorySwap(this, deviceId, deviceToken, Action, StoryID0, StoryID1)
 	}
 	mosRoItemSwap(
 		deviceId: PeripheralDeviceId,
@@ -1075,13 +1073,13 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		ItemID0: MOS.MosString128,
 		ItemID1: MOS.MosString128
 	) {
-		return makePromise(() => MosIntegration.mosRoItemSwap(this, deviceId, deviceToken, Action, ItemID0, ItemID1))
+		return MosIntegration.mosRoItemSwap(this, deviceId, deviceToken, Action, ItemID0, ItemID1)
 	}
 	mosRoReadyToAir(deviceId: PeripheralDeviceId, deviceToken: string, Action: MOS.IMOSROReadyToAir) {
-		return makePromise(() => MosIntegration.mosRoReadyToAir(this, deviceId, deviceToken, Action))
+		return MosIntegration.mosRoReadyToAir(this, deviceId, deviceToken, Action)
 	}
 	mosRoFullStory(deviceId: PeripheralDeviceId, deviceToken: string, story: MOS.IMOSROFullStory) {
-		return makePromise(() => MosIntegration.mosRoFullStory(this, deviceId, deviceToken, story))
+		return MosIntegration.mosRoFullStory(this, deviceId, deviceToken, story)
 	}
 	// ------- Media Manager (Media Scanner)
 	getMediaObjectRevisions(deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string) {

@@ -102,7 +102,7 @@ export function handleMosRundownData(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrder: MOS.IMOSRunningOrder,
 	isCreateAction: boolean
-) {
+): Promise<void> {
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, mosRunningOrder.ID)
 	const rundownExternalId = parseMosString(mosRunningOrder.ID)
@@ -171,7 +171,7 @@ export function handleMosRundownData(
 export function handleMosRundownMetadata(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
-) {
+): Promise<void> {
 	const studio = getStudioFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(mosRunningOrderBase.ID)
@@ -199,7 +199,7 @@ export function handleMosRundownMetadata(
 	)
 }
 
-export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MOS.IMOSROFullStory) {
+export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MOS.IMOSROFullStory): Promise<void> {
 	fixIllegalObject(story)
 	// @ts-ignore
 	// logger.debug(story)
@@ -245,11 +245,11 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 		}
 	)
 }
-export function handleMosDeleteStory(
+export async function handleMosDeleteStory(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	stories: Array<MOS.MosString128>
-) {
+): Promise<void> {
 	if (stories.length === 0) return
 
 	const studio = getStudioFromDevice(peripheralDevice)
@@ -321,7 +321,7 @@ export function handleMosInsertParts(
 	insertBeforeStoryId: MOS.MosString128 | null,
 	removePrevious: boolean,
 	newStories: MOS.IMOSROStory[]
-) {
+): Promise<void> {
 	// inserts stories and all of their defined items before the referenced story in a Running Order
 	// ...and roStoryReplace message replaces the referenced story with another story or stories
 
@@ -392,7 +392,7 @@ export function handleMosSwapStories(
 	runningOrderMosId: MOS.MosString128,
 	story0: MOS.MosString128,
 	story1: MOS.MosString128
-) {
+): Promise<void> {
 	const studio = getStudioFromDevice(peripheralDevice)
 
 	const story0Str = parseMosString(story0)
@@ -450,7 +450,7 @@ export function handleMosMoveStories(
 	runningOrderMosId: MOS.MosString128,
 	insertBeforeStoryId: MOS.MosString128 | null,
 	stories: MOS.MosString128[]
-) {
+): Promise<void> {
 	const studio = getStudioFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(runningOrderMosId)

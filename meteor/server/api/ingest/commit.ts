@@ -171,7 +171,7 @@ export async function CommitIngestOperation(
 		if (tmpNewPlaylist.studioId !== ingestCache.Studio.doc._id)
 			throw new Meteor.Error(404, `Rundown Playlist "${newPlaylistId[0]}" exists but belongs to another studio!`)
 	}
-	runStudioOperationWithLock(
+	await runStudioOperationWithLock(
 		'ingest.commit.saveRundownToPlaylist',
 		ingestCache.Studio.doc._id,
 		StudioLockFunctionPriority.MISC,

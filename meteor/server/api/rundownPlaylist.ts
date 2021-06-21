@@ -55,32 +55,37 @@ import { Random } from 'meteor/random'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { checkAccessToPlaylist } from './lib'
 
-export function removeEmptyPlaylists(studioId: StudioId) {
-	runStudioOperationWithCache('removeEmptyPlaylists', studioId, StudioLockFunctionPriority.MISC, async (cache) => {
-		// Skip any playlists which are active
-		const playlists = cache.RundownPlaylists.findFetch({ activationId: { $exists: false } })
+export function removeEmptyPlaylists(studioId: StudioId): Promise<void> {
+	return runStudioOperationWithCache(
+		'removeEmptyPlaylists',
+		studioId,
+		StudioLockFunctionPriority.MISC,
+		async (cache) => {
+			// Skip any playlists which are active
+			const playlists = cache.RundownPlaylists.findFetch({ activationId: { $exists: false } })
 
-		// We want to run them all in parallel fibers
-		await Promise.allSettled(
-			playlists.map(async (playlist) =>
-				makePromise(() => {
-					// Take the playlist lock, to ensure we don't fight something else
-					runPlayoutOperationWithLockFromStudioOperation(
-						'removeEmptyPlaylists',
-						cache,
-						playlist,
-						PlayoutLockFunctionPriority.MISC,
-						async () => {
-							const rundowns = Rundowns.find({ playlistId: playlist._id }).count()
-							if (rundowns === 0) {
-								await removeRundownPlaylistFromDb(playlist)
+			// We want to run them all in parallel fibers
+			await Promise.allSettled(
+				playlists.map(async (playlist) =>
+					makePromise(() => {
+						// Take the playlist lock, to ensure we don't fight something else
+						runPlayoutOperationWithLockFromStudioOperation(
+							'removeEmptyPlaylists',
+							cache,
+							playlist,
+							PlayoutLockFunctionPriority.MISC,
+							async () => {
+								const rundowns = Rundowns.find({ playlistId: playlist._id }).count()
+								if (rundowns === 0) {
+									await removeRundownPlaylistFromDb(playlist)
+								}
 							}
-						}
-					)
-				})
+						)
+					})
+				)
 			)
-		)
-	})
+		}
+	)
 }
 
 /**
@@ -259,7 +264,7 @@ export function moveRundownIntoPlaylist(
 	intoPlaylistId: RundownPlaylistId | null,
 	/** The new rundowns in the new playlist */
 	rundownsIdsInPlaylistInOrder: RundownId[]
-): void {
+): Promise<void> {
 	const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 
 	const rundown: Rundown = access.rundown
@@ -272,7 +277,7 @@ export function moveRundownIntoPlaylist(
 			`moveRundown: rundown.playlistId "${rundown.playlistId}" is not equal to oldPlaylist._id "${oldPlaylist._id}"`
 		)
 
-	runStudioOperationWithLock('moveRundown', rundown.studioId, StudioLockFunctionPriority.MISC, (lock) => {
+	return runStudioOperationWithLock('moveRundown', rundown.studioId, StudioLockFunctionPriority.MISC, (lock) => {
 		let intoPlaylist: RundownPlaylist | null = null
 		if (intoPlaylistId) {
 			const access2 = RundownPlaylistContentWriteAccess.anyContent(context, intoPlaylistId)

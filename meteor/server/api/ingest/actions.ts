@@ -10,7 +10,7 @@ import { regenerateRundown } from './rundownInput'
 import { logger } from '../../logging'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
-import { makePromise, waitForPromiseAll } from '../../../lib/lib'
+import { waitForPromiseAll } from '../../../lib/lib'
 import { Segment } from '../../../lib/collections/Segments'
 import { GenericDeviceActions } from './genericDevice/actions'
 import {
@@ -157,11 +157,7 @@ export namespace IngestActions {
 
 		// Fire off all the updates in parallel, in their own low-priority tasks
 		waitForPromiseAll(
-			ingestData.map(({ rundownExternalId, studio }) =>
-				makePromise(() => {
-					regenerateRundown(studio, rundownExternalId, undefined)
-				})
-			)
+			ingestData.map(({ rundownExternalId, studio }) => regenerateRundown(studio, rundownExternalId, undefined))
 		)
 	}
 }
