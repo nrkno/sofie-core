@@ -751,23 +751,26 @@ export namespace ServerPlayoutAPI {
 					_id: pieceInstanceId,
 					rundownId: { $in: rundowns.map((r) => r._id) },
 				})
-				if (dynamicallyInserted && !pieceInstance) return // if it was dynamically inserted, it's okay if we can't find it
-				if (!pieceInstance)
+
+				if (pieceInstance) {
+					const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
+					if (!isPlaying) {
+						logger.info(
+							`onPiecePlaybackStarted: Playout reports pieceInstance "${pieceInstanceId}" has started playback on timestamp ${new Date(
+								startedPlayback
+							).toISOString()}`
+						)
+						await reportPieceHasStarted(playlist, pieceInstance, startedPlayback)
+
+						// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
+					}
+				} else if (!playlist.activationId) {
+					logger.warn(`onPiecePlaybackStarted: Received for inactive RundownPlaylist "${playlist._id}"`)
+				} else {
 					throw new Meteor.Error(
 						404,
 						`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
 					)
-
-				const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
-				if (!isPlaying) {
-					logger.info(
-						`Playout reports pieceInstance "${pieceInstanceId}" has started playback on timestamp ${new Date(
-							startedPlayback
-						).toISOString()}`
-					)
-					await reportPieceHasStarted(playlist, pieceInstance, startedPlayback)
-
-					// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
 				}
 			}
 		)
@@ -801,22 +804,25 @@ export namespace ServerPlayoutAPI {
 					_id: pieceInstanceId,
 					rundownId: { $in: rundowns.map((r) => r._id) },
 				})
-				if (dynamicallyInserted && !pieceInstance) return // if it was dynamically inserted, it's okay if we can't find it
-				if (!pieceInstance)
+
+				if (pieceInstance) {
+					const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
+					if (isPlaying) {
+						logger.info(
+							`onPiecePlaybackStopped: Playout reports pieceInstance "${pieceInstanceId}" has stopped playback on timestamp ${new Date(
+								stoppedPlayback
+							).toISOString()}`
+						)
+
+						await reportPieceHasStopped(playlist, pieceInstance, stoppedPlayback)
+					}
+				} else if (!playlist.activationId) {
+					logger.warn(`onPiecePlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
+				} else {
 					throw new Meteor.Error(
 						404,
 						`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
 					)
-
-				const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
-				if (isPlaying) {
-					logger.info(
-						`Playout reports pieceInstance "${pieceInstanceId}" has stopped playback on timestamp ${new Date(
-							stoppedPlayback
-						).toISOString()}`
-					)
-
-					await reportPieceHasStopped(playlist, pieceInstance, stoppedPlayback)
 				}
 			}
 		)
@@ -998,9 +1004,9 @@ export namespace ServerPlayoutAPI {
 			'onPartPlaybackStopped',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-			async () => {
+			async (_lock, playlist) => {
 				// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
-				const rundowns = await Rundowns.findFetchAsync({ playlistId: rundownPlaylistId })
+				const rundowns = await Rundowns.findFetchAsync({ playlistId: playlist._id })
 
 				const partInstance = await PartInstances.findOneAsync({
 					_id: partInstanceId,
@@ -1013,17 +1019,19 @@ export namespace ServerPlayoutAPI {
 					const isPlaying = partInstance.timings?.startedPlayback && !partInstance.timings?.stoppedPlayback
 					if (isPlaying) {
 						logger.info(
-							`Playout reports PartInstance "${partInstanceId}" has stopped playback on timestamp ${new Date(
+							`onPartPlaybackStopped: Playout reports PartInstance "${partInstanceId}" has stopped playback on timestamp ${new Date(
 								stoppedPlayback
 							).toISOString()}`
 						)
 
-						await reportPartInstanceHasStopped(rundownPlaylistId, partInstance, stoppedPlayback)
+						await reportPartInstanceHasStopped(playlist._id, partInstance, stoppedPlayback)
 					}
+				} else if (!playlist.activationId) {
+					logger.warn(`onPartPlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
 				} else {
 					throw new Meteor.Error(
 						404,
-						`PartInstance "${partInstanceId}" in RundownPlayst "${rundownPlaylistId}" not found!`
+						`PartInstance "${partInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
 					)
 				}
 			}
