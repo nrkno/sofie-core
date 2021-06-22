@@ -20,7 +20,6 @@
 	},
 	"contributors": [],
 	"scripts": {
-		"info": "npm-scripts-info",
 		"build": "rimraf dist && yarn build:main",
 		"buildstart": "yarn build && yarn start",
 		"buildinspect": "yarn build && yarn inspect",
@@ -39,15 +38,6 @@
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
 		"license-validate": "yarn sofie-licensecheck --allowPackages cycle@1.0.3",
 		"precommit": "lint-staged"
-	},
-	"scripts-info": {
-		"info": "Display information about the scripts",
-		"build": "(Trash and re)build the library",
-		"lint": "Lint all typescript source files",
-		"unit": "Build the library and run unit tests",
-		"test": "Lint, build, and test the library",
-		"watch": "Watch source files, rebuild library on changes, rerun relevant tests",
-		"cov": "Run tests, generate the HTML coverage report, and open it in a browser"
 	},
 	"engines": {
 		"node": ">=12.20"
