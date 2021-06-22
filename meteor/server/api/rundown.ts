@@ -75,6 +75,7 @@ import { updateRundownsInPlaylist } from './ingest/rundownInput'
 import { Mongo } from 'meteor/mongo'
 import { getPlaylistIdFromExternalId, removeEmptyPlaylists } from './rundownPlaylist'
 import { IngestDataCache } from '../../lib/collections/IngestDataCache'
+import { PieceInstances } from '../../lib/collections/PieceInstances'
 
 export function selectShowStyleVariant(
 	studio: Studio,
@@ -474,8 +475,19 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 			},
 		}
 	)
-
-	cache.PartInstances.update({ 'part._id': { $in: _.map(removedParts, (p) => p._id) } }, { $set: { reset: true } })
+	const removedPartIds = _.map(removedParts, (p) => p._id)
+	const partInstanceIds = cache.PartInstances.findFetch({ 'part._id': { $in: removedPartIds } }).map((p) => p._id)
+	cache.PartInstances.update({ _id: { $in: partInstanceIds } }, { $set: { reset: true } })
+	// this may need to change after "PartInstances without Parts" (release30)
+	cache.deferAfterSave(() => {
+		PieceInstances.update(
+			{
+				partInstanceId: { $in: partInstanceIds },
+			},
+			{ $set: { reset: true } },
+			{ multi: true }
+		)
+	})
 
 	afterRemovePartsAuxiliary(cache, rundownId, removedParts)
 

@@ -22,6 +22,7 @@ Array [
       "startSegmentId": "randomId9002_segment0",
       "status": 0,
     },
+    "reset": true,
     "rundownId": "randomId9002",
   },
   Object {
@@ -44,6 +45,7 @@ Array [
       "startSegmentId": "randomId9002_segment0",
       "status": 0,
     },
+    "reset": true,
     "rundownId": "randomId9002",
   },
   Object {
@@ -96,6 +98,7 @@ Array [
       "startSegmentId": "randomId9002_segment0",
       "status": 0,
     },
+    "reset": true,
     "rundownId": "randomId9002",
   },
   Object {
@@ -118,6 +121,7 @@ Array [
       "startSegmentId": "randomId9002_segment0",
       "status": 0,
     },
+    "reset": true,
     "rundownId": "randomId9002",
   },
   Object {

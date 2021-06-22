@@ -161,10 +161,13 @@ type AnySnapshot = RundownPlaylistSnapshot | SystemSnapshot | DebugSnapshot | De
  */
 function createRundownPlaylistSnapshot(
 	playlistId: RundownPlaylistId,
-	organizationId: OrganizationId | null
+	organizationId: OrganizationId | null,
+	full: boolean = false
 ): RundownPlaylistSnapshot {
 	let snapshotId: SnapshotId = getRandomId()
-	logger.info(`Generating RundownPlaylist snapshot "${snapshotId}" for RundownPlaylist "${playlistId}"`)
+	logger.info(
+		`Generating ${full ? 'full ' : ''}RundownPlaylist snapshot "${snapshotId}" for RundownPlaylist "${playlistId}"`
+	)
 
 	const playlist = RundownPlaylists.findOne(playlistId)
 	if (!playlist) throw new Meteor.Error(404, `Playlist "${playlistId}" not found`)
@@ -185,9 +188,24 @@ function createRundownPlaylistSnapshot(
 
 	const segments = playlist.getSegments()
 	const parts = playlist.getAllOrderedParts()
-	const partInstances = playlist.getAllPartInstances()
+	const validTime = getCurrentTime() - 1000 * 3600 * 24 // 24 hours ago
+	const partInstances = playlist.getAllPartInstances(
+		full
+			? {}
+			: {
+					$or: [{ 'timings.takeOut': { $gte: validTime }, reset: true }, { reset: { $ne: true } }],
+			  }
+	)
+	const partInstanceIds = partInstances.map((p) => p._id)
 	const pieces = Pieces.find({ startRundownId: { $in: rundownIds } }).fetch()
-	const pieceInstances = PieceInstances.find({ rundownId: { $in: rundownIds } }).fetch()
+	const pieceInstances = PieceInstances.find(
+		full
+			? { rundownId: { $in: rundownIds } }
+			: {
+					rundownId: { $in: rundownIds },
+					$or: [{ partInstanceId: { $in: partInstanceIds } }, { reset: { $ne: true } }],
+			  }
+	).fetch()
 	const adLibPieces = AdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
 	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
 	const adLibActions = AdLibActions.find({ rundownId: { $in: rundownIds } }).fetch()
@@ -356,7 +374,7 @@ function createDebugSnapshot(studioId: StudioId, organizationId: OrganizationId 
 	}).fetch()
 
 	let activePlaylistSnapshots = _.map(activePlaylists, (playlist) => {
-		return createRundownPlaylistSnapshot(playlist._id, organizationId)
+		return createRundownPlaylistSnapshot(playlist._id, organizationId, true)
 	})
 
 	let timeline = Timeline.find().fetch()
@@ -841,20 +859,27 @@ export function internalStoreSystemSnapshot(
 	let s = createSystemSnapshot(studioId, organizationId)
 	return storeSnaphot(s, organizationId, reason)
 }
-export function storeRundownPlaylistSnapshot(context: MethodContext, playlistId: RundownPlaylistId, reason: string) {
+export function storeRundownPlaylistSnapshot(
+	context: MethodContext,
+	playlistId: RundownPlaylistId,
+	reason: string,
+	full?: boolean
+) {
 	check(playlistId, String)
 	const { organizationId } = OrganizationContentWriteAccess.snapshot(context)
-	return internalStoreRundownPlaylistSnapshot(organizationId, playlistId, reason)
+	return internalStoreRundownPlaylistSnapshot(organizationId, playlistId, reason, full)
 }
 /** Take and store a rundwon playlist snapshot. For internal use only, performs no access control. */
 export function internalStoreRundownPlaylistSnapshot(
 	organizationId: OrganizationId | null,
 	playlistId: RundownPlaylistId,
-	reason: string
+	reason: string,
+	full?: boolean
 ) {
 	check(playlistId, String)
+	check(full, Match.Maybe(Boolean))
 
-	let s = createRundownPlaylistSnapshot(playlistId, organizationId)
+	let s = createRundownPlaylistSnapshot(playlistId, organizationId, full)
 	return storeSnaphot(s, organizationId, reason)
 }
 export function storeDebugSnapshot(context: MethodContext, studioId: StudioId, reason: string) {
@@ -918,9 +943,10 @@ if (!Settings.enableUserAccounts) {
 			return createSystemSnapshot(protectString(params.studioId), organizationId)
 		})
 	})
-	PickerGET.route('/snapshot/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse) => {
-		return handleResponse(response, () => {
+	function createRundownSnapshot(response: ServerResponse, params) {
+		handleResponse(response, () => {
 			check(params.playlistId, String)
+			check(params.full, Match.Optional(String))
 
 			const cred0: Credentials = { userId: null, token: params.token }
 			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
@@ -928,9 +954,15 @@ if (!Settings.enableUserAccounts) {
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${params.playlistId}" not found`)
 			StudioReadAccess.studioContent({ studioId: playlist.studioId }, cred)
 
-			return createRundownPlaylistSnapshot(playlist._id, organizationId)
+			return createRundownPlaylistSnapshot(playlist._id, organizationId, params.full === 'true')
 		})
-	})
+	}
+	PickerGET.route('/snapshot/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse) =>
+		createRundownSnapshot(response, params)
+	)
+	PickerGET.route('/snapshot/rundown/:playlistId/:full', (params, req: IncomingMessage, response: ServerResponse) =>
+		createRundownSnapshot(response, params)
+	)
 	PickerGET.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
 		return handleResponse(response, () => {
 			check(params.studioId, String)
@@ -992,8 +1024,8 @@ class ServerSnapshotAPI extends MethodContextAPI implements NewSnapshotAPI {
 	storeSystemSnapshot(studioId: StudioId | null, reason: string) {
 		return makePromise(() => storeSystemSnapshot(this, studioId, reason))
 	}
-	storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
-		return makePromise(() => storeRundownPlaylistSnapshot(this, playlistId, reason))
+	storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string, full?: boolean) {
+		return makePromise(() => storeRundownPlaylistSnapshot(this, playlistId, reason, full))
 	}
 	storeDebugSnapshot(studioId: StudioId, reason: string) {
 		return makePromise(() => storeDebugSnapshot(this, studioId, reason))
