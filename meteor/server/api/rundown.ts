@@ -307,16 +307,18 @@ export namespace ServerRundownAPI {
 
 		const access = checkAccessToPlaylist(context, playlistId)
 
-		runPlayoutOperationWithLock(
-			access,
-			'removeRundownPlaylist',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			async (_lock, tmpPlaylist) => {
-				logger.info('removeRundownPlaylist ' + playlistId)
+		waitForPromise(
+			runPlayoutOperationWithLock(
+				access,
+				'removeRundownPlaylist',
+				playlistId,
+				PlayoutLockFunctionPriority.USER_PLAYOUT,
+				async (_lock, tmpPlaylist) => {
+					logger.info('removeRundownPlaylist ' + playlistId)
 
-				await removeRundownPlaylistFromDb(tmpPlaylist)
-			}
+					await removeRundownPlaylistFromDb(tmpPlaylist)
+				}
+			)
 		)
 	}
 	/** Remove an individual rundown */
@@ -558,7 +560,7 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 		return moveRundownIntoPlaylist(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 	}
 	restoreRundownsInPlaylistToDefaultOrder(playlistId: RundownPlaylistId) {
-		return makePromise(() => restoreRundownsInPlaylistToDefaultOrder(this, playlistId))
+		return restoreRundownsInPlaylistToDefaultOrder(this, playlistId)
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)

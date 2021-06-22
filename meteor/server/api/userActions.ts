@@ -71,61 +71,58 @@ export function setMinimumTakeSpan(span: number) {
 */
 
 // TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
-export function take(context: MethodContext, rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientResponse<void> {
+export function take(
+	context: MethodContext,
+	rundownPlaylistId: RundownPlaylistId
+): Promise<ClientAPI.ClientResponse<void>> {
 	// Called by the user. Wont throw as nasty errors
 	const now = getCurrentTime()
 
-	return waitForPromise(
-		pushWorkToQueue(`userActionsTake_${rundownPlaylistId}`, 'take', async () => {
-			const access = checkAccessToPlaylist(context, rundownPlaylistId)
-			const playlist = access.playlist
+	return pushWorkToQueue(`userActionsTake_${rundownPlaylistId}`, 'take', async () => {
+		const access = checkAccessToPlaylist(context, rundownPlaylistId)
+		const playlist = access.playlist
 
-			if (!playlist.activationId) {
-				return ClientAPI.responseError(
-					`Rundown is not active, please activate the rundown before doing a TAKE.`
-				)
-			}
-			if (!playlist.nextPartInstanceId) {
-				return ClientAPI.responseError('No Next point found, please set a part as Next before doing a TAKE.')
-			}
-			if (playlist.currentPartInstanceId) {
-				const currentPartInstance = PartInstances.findOne(playlist.currentPartInstanceId)
-				if (currentPartInstance && currentPartInstance.timings) {
-					const lastStartedPlayback = currentPartInstance.timings.startedPlayback || 0
-					const lastTake = currentPartInstance.timings.take || 0
-					const lastChange = Math.max(lastTake, lastStartedPlayback)
-					if (now - lastChange < MINIMUM_TAKE_SPAN) {
-						logger.debug(
-							`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${
-								currentPartInstance._id
-							}: ${getCurrentTime() - lastStartedPlayback}`
-						)
-						logger.debug(
-							`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`
-						)
-						return ClientAPI.responseError(
-							`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`
-						)
-					}
-				} else {
-					// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
-					logger.error(
-						`PartInstance "${playlist.currentPartInstanceId}", set as currentPart in "${rundownPlaylistId}", not found!`
+		if (!playlist.activationId) {
+			return ClientAPI.responseError(`Rundown is not active, please activate the rundown before doing a TAKE.`)
+		}
+		if (!playlist.nextPartInstanceId) {
+			return ClientAPI.responseError('No Next point found, please set a part as Next before doing a TAKE.')
+		}
+		if (playlist.currentPartInstanceId) {
+			const currentPartInstance = await PartInstances.findOneAsync(playlist.currentPartInstanceId)
+			if (currentPartInstance && currentPartInstance.timings) {
+				const lastStartedPlayback = currentPartInstance.timings.startedPlayback || 0
+				const lastTake = currentPartInstance.timings.take || 0
+				const lastChange = Math.max(lastTake, lastStartedPlayback)
+				if (now - lastChange < MINIMUM_TAKE_SPAN) {
+					logger.debug(
+						`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentPartInstance._id}: ${
+							getCurrentTime() - lastStartedPlayback
+						}`
+					)
+					logger.debug(`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`)
+					return ClientAPI.responseError(
+						`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`
 					)
 				}
+			} else {
+				// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
+				logger.error(
+					`PartInstance "${playlist.currentPartInstanceId}", set as currentPart in "${rundownPlaylistId}", not found!`
+				)
 			}
-			return ServerPlayoutAPI.takeNextPart(access, playlist._id)
-		})
-	)
+		}
+		return ServerPlayoutAPI.takeNextPart(access, playlist._id)
+	})
 }
 
-export function setNext(
+export async function setNext(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	nextPartId: PartId | null,
 	setManually?: boolean,
 	timeOffset?: number | undefined
-): ClientAPI.ClientResponse<void> {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	if (nextPartId) check(nextPartId, String)
 
@@ -138,7 +135,7 @@ export function setNext(
 
 	let nextPart: Part | undefined
 	if (nextPartId) {
-		nextPart = Parts.findOne(nextPartId)
+		nextPart = await Parts.findOneAsync(nextPartId)
 		if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 
 		if (!nextPart.isPlayable()) return ClientAPI.responseError('Part is unplayable, cannot set as next.')
@@ -149,11 +146,11 @@ export function setNext(
 	}
 	return ServerPlayoutAPI.setNextPart(access, rundownPlaylistId, nextPartId, setManually, timeOffset)
 }
-export function setNextSegment(
+export async function setNextSegment(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	nextSegmentId: SegmentId | null
-): ClientAPI.ClientResponse<void> {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	if (nextSegmentId) check(nextSegmentId, String)
 	else check(nextSegmentId, null)
@@ -166,7 +163,7 @@ export function setNextSegment(
 	let nextSegment: Segment | null = null
 
 	if (nextSegmentId) {
-		nextSegment = Segments.findOne(nextSegmentId) || null
+		nextSegment = (await Segments.findOneAsync(nextSegmentId)) || null
 		if (!nextSegment) throw new Meteor.Error(404, `Segment "${nextSegmentId}" not found!`)
 
 		const rundownIds = playlist.getRundownIDs()
@@ -177,11 +174,11 @@ export function setNextSegment(
 			)
 		}
 
-		const partsInSegment = Parts.find({
+		const partsInSegment = await Parts.findFetchAsync({
 			rundownId: nextSegment.rundownId,
 			segmentId: nextSegment._id,
-		}).fetch()
-		const firstValidPartInSegment = _.find(partsInSegment, (p) => p.isPlayable())
+		})
+		const firstValidPartInSegment = partsInSegment.find((p) => p.isPlayable())
 
 		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')
 
@@ -194,12 +191,12 @@ export function setNextSegment(
 
 	return ServerPlayoutAPI.setNextSegment(access, rundownPlaylistId, nextSegmentId)
 }
-export function moveNext(
+export async function moveNext(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	horisontalDelta: number,
 	verticalDelta: number
-): ClientAPI.ClientResponse<PartId | null> {
+): Promise<ClientAPI.ClientResponse<PartId | null>> {
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 	if (!playlist.activationId)
@@ -216,10 +213,10 @@ export function moveNext(
 		ServerPlayoutAPI.moveNextPart(access, rundownPlaylistId, horisontalDelta, verticalDelta)
 	)
 }
-export function prepareForBroadcast(
+export async function prepareForBroadcast(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId
-): ClientAPI.ClientResponse<void> {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
@@ -229,9 +226,7 @@ export function prepareForBroadcast(
 		return ClientAPI.responseError(
 			'Rundown Playlist is active, please deactivate before preparing it for broadcast'
 		)
-	const anyOtherActiveRundowns = waitForPromise(
-		getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
-	)
+	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(
 			409,
@@ -242,10 +237,10 @@ export function prepareForBroadcast(
 	}
 	return ClientAPI.responseSuccess(ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(access, rundownPlaylistId))
 }
-export function resetRundownPlaylist(
+export async function resetRundownPlaylist(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId
-): ClientAPI.ClientResponse<void> {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
@@ -259,11 +254,11 @@ export function resetRundownPlaylist(
 
 	return ClientAPI.responseSuccess(ServerPlayoutAPI.resetRundownPlaylist(access, rundownPlaylistId))
 }
-export function resetAndActivate(
+export async function resetAndActivate(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	rehearsal?: boolean
-): ClientAPI.ClientResponse<void> {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
@@ -274,8 +269,9 @@ export function resetAndActivate(
 			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
 		)
 	}
-	const anyOtherActiveRundownPlaylists = waitForPromise(
-		getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
+	const anyOtherActiveRundownPlaylists = await getActiveRundownPlaylistsInStudioFromDb(
+		playlist.studioId,
+		playlist._id
 	)
 	if (anyOtherActiveRundownPlaylists.length) {
 		return ClientAPI.responseError(
@@ -290,11 +286,11 @@ export function resetAndActivate(
 		ServerPlayoutAPI.resetAndActivateRundownPlaylist(access, rundownPlaylistId, rehearsal)
 	)
 }
-export function forceResetAndActivate(
+export async function forceResetAndActivate(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	rehearsal: boolean
-): ClientAPI.ClientResponse<void> {
+): Promise<ClientAPI.ClientResponse<void>> {
 	// Reset and activates a rundown, automatically deactivates any other running rundowns
 
 	check(rehearsal, Boolean)
@@ -304,20 +300,18 @@ export function forceResetAndActivate(
 		ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(access, rundownPlaylistId, rehearsal)
 	)
 }
-export function activate(
+export async function activate(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	rehearsal: boolean
-): ClientAPI.ClientResponse<void> {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(rehearsal, Boolean)
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	const anyOtherActiveRundowns = waitForPromise(
-		getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
-	)
+	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
 
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(
@@ -329,28 +323,35 @@ export function activate(
 	}
 	return ClientAPI.responseSuccess(ServerPlayoutAPI.activateRundownPlaylist(access, playlist._id, rehearsal))
 }
-export function deactivate(
+export async function deactivate(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId
-): ClientAPI.ClientResponse<void> {
+): Promise<ClientAPI.ClientResponse<void>> {
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 
 	return ClientAPI.responseSuccess(ServerPlayoutAPI.deactivateRundownPlaylist(access, rundownPlaylistId))
 }
-export function unsyncRundown(context: MethodContext, rundownId: RundownId) {
+export async function unsyncRundown(
+	context: MethodContext,
+	rundownId: RundownId
+): Promise<ClientAPI.ClientResponse<void>> {
 	return ClientAPI.responseSuccess(ServerRundownAPI.unsyncRundown(context, rundownId))
 }
-export function disableNextPiece(context: MethodContext, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+export async function disableNextPiece(
+	context: MethodContext,
+	rundownPlaylistId: RundownPlaylistId,
+	undo?: boolean
+): Promise<ClientAPI.ClientResponse<void>> {
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 
 	return ServerPlayoutAPI.disableNextPiece(access, rundownPlaylistId, undo)
 }
-export function pieceTakeNow(
+export async function pieceTakeNow(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	partInstanceId: PartInstanceId,
 	pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
-) {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
 	check(pieceInstanceIdOrPieceIdToCopy, String)
@@ -365,12 +366,12 @@ export function pieceTakeNow(
 
 	let pieceToCopy: PieceInstancePiece | undefined
 	let rundownId: RundownId | undefined
-	const pieceInstanceToCopy = PieceInstances.findOne(pieceInstanceIdOrPieceIdToCopy)
+	const pieceInstanceToCopy = await PieceInstances.findOneAsync(pieceInstanceIdOrPieceIdToCopy)
 	if (pieceInstanceToCopy) {
 		pieceToCopy = pieceInstanceToCopy.piece
 		rundownId = pieceInstanceToCopy.rundownId
 	} else {
-		const piece = Pieces.findOne(pieceInstanceIdOrPieceIdToCopy)
+		const piece = await Pieces.findOneAsync(pieceInstanceIdOrPieceIdToCopy)
 		if (piece) {
 			pieceToCopy = omitPiecePropertiesForInstance(piece)
 			rundownId = piece.startRundownId
@@ -380,10 +381,10 @@ export function pieceTakeNow(
 		throw new Meteor.Error(404, `PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" not found!`)
 	}
 
-	const rundown = Rundowns.findOne(rundownId)
+	const rundown = await Rundowns.findOneAsync(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
-	const partInstance = PartInstances.findOne({
+	const partInstance = await PartInstances.findOneAsync({
 		_id: partInstanceId,
 		rundownId: rundown._id,
 	})
@@ -401,14 +402,14 @@ export function pieceTakeNow(
 		ServerPlayoutAPI.pieceTakeNow(access, rundownPlaylistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
 	)
 }
-export function pieceSetInOutPoints(
+export async function pieceSetInOutPoints(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	partId: PartId,
 	pieceId: PieceId,
 	inPoint: number,
 	duration: number
-) {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(partId, String)
 	check(pieceId, String)
@@ -418,41 +419,44 @@ export function pieceSetInOutPoints(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	const part = Parts.findOne(partId)
+	const part = await Parts.findOneAsync(partId)
 	if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
 	if (playlist.activationId && part.status === 'PLAY') {
 		throw new Meteor.Error(`Part cannot be active while setting in/out!`) // @todo: un-hardcode
 	}
-	const rundown = Rundowns.findOne(part.rundownId)
+	const rundown = await Rundowns.findOneAsync(part.rundownId)
 	if (!rundown) throw new Meteor.Error(501, `Rundown "${part.rundownId}" not found!`)
 
-	const partCache = IngestDataCache.findOne({
+	const partCache = await IngestDataCache.findOneAsync({
 		rundownId: rundown._id,
 		partId: part._id,
 		type: IngestCacheType.PART,
 	})
 	if (!partCache) throw new Meteor.Error(404, `Part Cache for "${partId}" not found!`)
-	const piece = Pieces.findOne(pieceId)
+	const piece = await Pieces.findOneAsync(pieceId)
 	if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
 
 	// TODO: replace this with a general, non-MOS specific method
-	return MOSDeviceActions.setPieceInOutPoint(
-		rundown,
-		piece,
-		partCache.data as IngestPart,
-		inPoint / 1000,
-		duration / 1000
-	) // MOS data is in seconds
-		.then(() => ClientAPI.responseSuccess(undefined))
-		.catch((error) => ClientAPI.responseError(error))
+	try {
+		await MOSDeviceActions.setPieceInOutPoint(
+			rundown,
+			piece,
+			partCache.data as IngestPart,
+			inPoint / 1000,
+			duration / 1000
+		) // MOS data is in seconds
+		return ClientAPI.responseSuccess(undefined)
+	} catch (error) {
+		return ClientAPI.responseError(error)
+	}
 }
-export function executeAction(
+export async function executeAction(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	actionId: string,
 	userData: any,
 	triggerMode?: string
-) {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(actionId, String)
 	check(userData, Match.Any)
@@ -470,13 +474,13 @@ export function executeAction(
 		ServerPlayoutAPI.executeAction(access, rundownPlaylistId, actionId, userData, triggerMode)
 	)
 }
-export function segmentAdLibPieceStart(
+export async function segmentAdLibPieceStart(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	partInstanceId: PartInstanceId,
 	adlibPieceId: PieceId,
 	queue: boolean
-) {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
 	check(adlibPieceId, String)
@@ -494,12 +498,12 @@ export function segmentAdLibPieceStart(
 		ServerPlayoutAPI.segmentAdLibPieceStart(access, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
 	)
 }
-export function sourceLayerOnPartStop(
+export async function sourceLayerOnPartStop(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	partInstanceId: PartInstanceId,
 	sourceLayerIds: string[]
-) {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
 	check(sourceLayerIds, Match.OneOf(String, Array))
@@ -514,13 +518,13 @@ export function sourceLayerOnPartStop(
 		ServerPlayoutAPI.sourceLayerOnPartStop(access, rundownPlaylistId, partInstanceId, sourceLayerIds)
 	)
 }
-export function rundownBaselineAdLibPieceStart(
+export async function rundownBaselineAdLibPieceStart(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	partInstanceId: PartInstanceId,
 	adlibPieceId: PieceId,
 	queue: boolean
-) {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
 	check(adlibPieceId, String)
@@ -537,11 +541,11 @@ export function rundownBaselineAdLibPieceStart(
 		ServerPlayoutAPI.rundownBaselineAdLibPieceStart(access, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
 	)
 }
-export function sourceLayerStickyPieceStart(
+export async function sourceLayerStickyPieceStart(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	sourceLayerId: string
-) {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(sourceLayerId, String)
 
@@ -557,11 +561,11 @@ export function sourceLayerStickyPieceStart(
 		ServerPlayoutAPI.sourceLayerStickyPieceStart(access, rundownPlaylistId, sourceLayerId)
 	)
 }
-export function activateHold(
+export async function activateHold(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	undo?: boolean
-): ClientAPI.ClientResponse<void> {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
@@ -591,12 +595,12 @@ export function activateHold(
 export function userSaveEvaluation(context: MethodContext, evaluation: EvaluationBase): ClientAPI.ClientResponse<void> {
 	return ClientAPI.responseSuccess(saveEvaluation(context, evaluation))
 }
-export function userStoreRundownSnapshot(
+export async function userStoreRundownSnapshot(
 	context: MethodContext,
 	playlistId: RundownPlaylistId,
 	reason: string
-): ClientAPI.ClientResponse<SnapshotId> {
-	return ClientAPI.responseSuccess(waitForPromise(storeRundownPlaylistSnapshot(context, playlistId, reason)))
+): Promise<ClientAPI.ClientResponse<SnapshotId>> {
+	return ClientAPI.responseSuccess(await storeRundownPlaylistSnapshot(context, playlistId, reason))
 }
 export function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
 	const playlist = checkAccessAndGetPlaylist(context, playlistId)
@@ -868,13 +872,13 @@ export async function moveRundown(
 		await moveRundownIntoPlaylist(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 	)
 }
-export function restoreRundownOrder(
+export async function restoreRundownOrder(
 	context: MethodContext,
 	playlistId: RundownPlaylistId
-): ClientAPI.ClientResponse<void> {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(playlistId, String)
 
-	return ClientAPI.responseSuccess(restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
+	return ClientAPI.responseSuccess(await restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
 }
 
 export function traceAction<T extends (...args: any[]) => any>(
@@ -1227,7 +1231,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		return moveRundown(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 	}
 	restoreRundownOrder(_userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>> {
-		return makePromise(() => restoreRundownOrder(this, playlistId))
+		return restoreRundownOrder(this, playlistId)
 	}
 }
 registerClassToMeteorMethods(

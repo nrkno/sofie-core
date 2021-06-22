@@ -532,7 +532,7 @@ describe('Playout API', () => {
 					nextPartInstanceBeforeTakeId!,
 					now
 				)
-				ServerPlayoutAPI.onPartPlaybackStopped(
+				await ServerPlayoutAPI.onPartPlaybackStopped(
 					DEFAULT_CONTEXT,
 					playlistId0,
 					currentPartInstanceBeforeTakeId!,

@@ -18,7 +18,7 @@ import {
 	produceRundownPlaylistInfoFromRundown,
 	removeRundownsFromDb,
 } from '../rundownPlaylist'
-import { clone, max, protectString, unprotectString } from '../../../lib/lib'
+import { clone, max, protectString, unprotectString, waitForPromise } from '../../../lib/lib'
 import { reportRundownDataHasChanged } from '../blueprints/events'
 import { removeSegmentContents } from './cleanup'
 import { Settings } from '../../../lib/Settings'
@@ -81,7 +81,7 @@ export async function CommitIngestOperation(
 	let trappedInPlaylistId: [RundownPlaylistId, string] | undefined
 	if (beforeRundown?.playlistId && (beforeRundown.playlistId !== targetPlaylistId[0] || data.removeRundown)) {
 		const beforePlaylistId = beforeRundown.playlistId
-		runPlayoutOperationWithLock(
+		await runPlayoutOperationWithLock(
 			null,
 			'ingest.commit.removeRundownFromOldPlaylist',
 			beforePlaylistId,
@@ -495,37 +495,39 @@ export function updatePlayoutAfterChangingRundownInPlaylist(
 	insertedRundown: ReadonlyDeep<Rundown> | null
 ) {
 	// ensure the 'old' playout is updated to remove any references to the rundown
-	runPlayoutOperationWithCacheFromStudioOperation(
-		'updatePlayoutAfterChangingRundownInPlaylist',
-		playlistLock,
-		playlist,
-		PlayoutLockFunctionPriority.USER_PLAYOUT,
-		null,
-		async (playoutCache) => {
-			if (playoutCache.Rundowns.documents.size === 0) {
-				if (playoutCache.Playlist.doc.activationId)
-					throw new Meteor.Error(
-						500,
-						`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`
-					)
-				// Remove an empty playlist
-				await RundownPlaylists.removeAsync({ _id: playoutCache.PlaylistId })
-				playoutCache.assertNoChanges()
-				return
+	waitForPromise(
+		runPlayoutOperationWithCacheFromStudioOperation(
+			'updatePlayoutAfterChangingRundownInPlaylist',
+			playlistLock,
+			playlist,
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			async (playoutCache) => {
+				if (playoutCache.Rundowns.documents.size === 0) {
+					if (playoutCache.Playlist.doc.activationId)
+						throw new Meteor.Error(
+							500,
+							`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`
+						)
+					// Remove an empty playlist
+					await RundownPlaylists.removeAsync({ _id: playoutCache.PlaylistId })
+					playoutCache.assertNoChanges()
+					return
+				}
+
+				// Ensure playout is in sync
+
+				if (insertedRundown) {
+					// If a rundown has changes, ensure instances are updated
+					updatePartInstancesBasicProperties(playoutCache, insertedRundown._id, new Map())
+				}
+
+				await ensureNextPartIsValid(playoutCache)
+
+				if (playoutCache.Playlist.doc.activationId) {
+					triggerUpdateTimelineAfterIngestData(playoutCache.PlaylistId)
+				}
 			}
-
-			// Ensure playout is in sync
-
-			if (insertedRundown) {
-				// If a rundown has changes, ensure instances are updated
-				updatePartInstancesBasicProperties(playoutCache, insertedRundown._id, new Map())
-			}
-
-			await ensureNextPartIsValid(playoutCache)
-
-			if (playoutCache.Playlist.doc.activationId) {
-				triggerUpdateTimelineAfterIngestData(playoutCache.PlaylistId)
-			}
-		}
+		)
 	)
 }

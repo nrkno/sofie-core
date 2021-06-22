@@ -158,7 +158,7 @@ export function runIngestOperationFromRundown(
 				`RundownPlaylist id for Rundown "${ingestCache.RundownId}" cannot be changed during a ingestRundownOnlyLockFunction`
 			)
 
-		runPlayoutOperationWithLock(
+		await runPlayoutOperationWithLock(
 			null,
 			context,
 			beforeRundown.playlistId,

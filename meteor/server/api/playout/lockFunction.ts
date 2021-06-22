@@ -91,7 +91,7 @@ export function runPlayoutOperationWithCache<T>(
 		runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, playoutToStudioLockPriority(priority), (lock) =>
 			playoutLockFunctionInner(contextStr, lock, tmpPlaylist, priority, preInitFcn, fcn)
 		)
-	) as Awaited<T>
+	)
 }
 
 /**
@@ -103,38 +103,36 @@ export function runPlayoutOperationWithCache<T>(
  * @param priority Priority of function execution
  * @param fcn Function to run while holding the lock
  */
-export function runPlayoutOperationWithLock<T>(
+export async function runPlayoutOperationWithLock<T>(
 	access: VerifiedRundownPlaylistContentAccess | null,
 	contextStr: string,
 	rundownPlaylistId: RundownPlaylistId,
 	priority: PlayoutLockFunctionPriority,
 	fcn: (lock: PlaylistLock, tmpPlaylist: ReadonlyDeep<RundownPlaylist>) => Promise<T> | T
-): Awaited<Awaited<T>> {
+): Promise<T> {
 	let tmpPlaylist: RundownPlaylist
 	if (access) {
 		tmpPlaylist = access.playlist
 		if (!tmpPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	} else {
-		const pl = RundownPlaylists.findOne(rundownPlaylistId)
+		const pl = await RundownPlaylists.findOneAsync(rundownPlaylistId)
 		if (!pl) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 		tmpPlaylist = pl
 	}
 
-	return waitForPromise(
-		runStudioOperationWithLock(
-			contextStr,
-			tmpPlaylist.studioId,
-			playoutToStudioLockPriority(priority),
-			(studioLock) =>
-				runPlayoutOperationWithLockFromStudioOperation(
-					contextStr,
-					studioLock,
-					tmpPlaylist,
-					priority,
-					(playoutLock) => fcn(playoutLock, tmpPlaylist)
-				)
-		)
-	) 
+	return runStudioOperationWithLock(
+		contextStr,
+		tmpPlaylist.studioId,
+		playoutToStudioLockPriority(priority),
+		async (studioLock) =>
+			runPlayoutOperationWithLockFromStudioOperation(
+				contextStr,
+				studioLock,
+				tmpPlaylist,
+				priority,
+				(playoutLock) => fcn(playoutLock, tmpPlaylist)
+			)
+	)
 }
 
 /**
@@ -152,7 +150,7 @@ export function runPlayoutOperationWithCacheFromStudioOperation<T>(
 	priority: PlayoutLockFunctionPriority,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
 	fcn: (cache: CacheForPlayout) => Promise<T> | T
-): Awaited<T> {
+): Promise<T> {
 	// Validate the lock is correct
 	const options: PlayoutLockOptions = {}
 	const lockStudioId = getStudioIdFromCacheOrLock(cacheOrLock)
@@ -191,7 +189,7 @@ export function runPlayoutOperationWithLockFromStudioOperation<T>(
 	tmpPlaylist: Pick<ReadonlyDeep<RundownPlaylist>, '_id' | 'studioId'>,
 	priority: PlayoutLockFunctionPriority,
 	fcn: (lock: PlaylistLock) => Promise<T> | T
-): Awaited<T> {
+): Promise<T> {
 	const lockStudioId = getStudioIdFromCacheOrLock(studioCacheOrLock)
 	if (lockStudioId != tmpPlaylist.studioId)
 		throw new Meteor.Error(
@@ -199,18 +197,16 @@ export function runPlayoutOperationWithLockFromStudioOperation<T>(
 			`Tried to lock Playlist "${tmpPlaylist._id}" for Studio "${lockStudioId}" but it belongs to "${tmpPlaylist.studioId}"`
 		)
 
-	return waitForPromise(
-		pushWorkToQueue(
-			`rundown_playlist_${tmpPlaylist._id}`,
-			context,
-			async () => {
-				const span = profiler.startSpan(`playoutLockFunction.${context}`)
-				const res = await fcn({ _studioId: lockStudioId, _playlistId: tmpPlaylist._id })
-				span?.end()
-				return res
-			},
-			priority
-		)
+	return pushWorkToQueue(
+		`rundown_playlist_${tmpPlaylist._id}`,
+		context,
+		async () => {
+			const span = profiler.startSpan(`playoutLockFunction.${context}`)
+			const res = await fcn({ _studioId: lockStudioId, _playlistId: tmpPlaylist._id })
+			span?.end()
+			return res
+		},
+		priority
 	)
 }
 
@@ -227,7 +223,7 @@ interface PlayoutLockOptions {
  * @param priority Priority of function execution
  * @param fcn Function to run while holding the lock
  */
-function playoutLockFunctionInner<T>(
+async function playoutLockFunctionInner<T>(
 	context: string,
 	lock: StudioLock,
 	tmpPlaylist: ReadonlyDeep<RundownPlaylist>,
@@ -235,7 +231,7 @@ function playoutLockFunctionInner<T>(
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
 	fcn: (cache: CacheForPlayout) => Promise<T> | T,
 	options?: PlayoutLockOptions
-): Awaited<T> {
+): Promise<T> {
 	async function doPlaylistInner() {
 		const initCache = await CacheForPlayout.createPreInit(tmpPlaylist)
 
@@ -254,7 +250,7 @@ function playoutLockFunctionInner<T>(
 
 	if (options?.skipPlaylistLock) {
 		const span = profiler.startSpan(`playoutLockFunction.skipped.${context}`)
-		const res = waitForPromise(doPlaylistInner())
+		const res = await doPlaylistInner()
 		span?.end()
 		return res
 	} else {

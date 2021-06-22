@@ -132,8 +132,13 @@ describe('Security', () => {
 		Users.insert({ ...getUser(idSuperAdminInOtherOrg, org2._id), superAdmin: true })
 	})
 
-	testInFiber('Buckets', () => {
-		const bucket = BucketsAPI.createNewBucket(creator, 'myBucket', env.studio._id, unprotectString(creator.userId))
+	testInFiber('Buckets', async () => {
+		const bucket = await BucketsAPI.createNewBucket(
+			creator,
+			'myBucket',
+			env.studio._id,
+			unprotectString(creator.userId)
+		)
 
 		changeEnableUserAccounts(() => {
 			expectReadAllowed(() => BucketSecurity.allowReadAccess({ _id: bucket._id }, '', creator))

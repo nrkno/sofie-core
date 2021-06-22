@@ -49,12 +49,14 @@ describe('codeControl rundown', () => {
 		expect(playlist).toBeTruthy()
 
 		const sync1 = (name: string, priority: PlayoutLockFunctionPriority) => {
-			return runPlayoutOperationWithLockFromStudioOperation(
-				'testRundownSyncFn',
-				{ _studioId: playlist.studioId },
-				playlist,
-				priority,
-				async () => takesALongTimeInner(name)
+			return waitForPromise(
+				runPlayoutOperationWithLockFromStudioOperation(
+					'testRundownSyncFn',
+					{ _studioId: playlist.studioId },
+					playlist,
+					priority,
+					async () => takesALongTimeInner(name)
+				)
 			)
 		}
 

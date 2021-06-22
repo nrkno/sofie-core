@@ -249,13 +249,13 @@ export namespace ServerPeripheralDeviceAPI {
 				'timelineTriggerTime',
 				studioId,
 				StudioLockFunctionPriority.CALLBACK_PLAYOUT,
-				(studioCache) => {
+				async (studioCache) => {
 					const activePlaylists = studioCache.getActiveRundownPlaylists()
 
 					if (activePlaylists.length === 1) {
 						const activePlaylist = activePlaylists[0]
 						const playlistId = activePlaylist._id
-						runPlayoutOperationWithLockFromStudioOperation(
+						await runPlayoutOperationWithLockFromStudioOperation(
 							'timelineTriggerTime',
 							studioCache,
 							activePlaylist,
@@ -396,12 +396,12 @@ export namespace ServerPeripheralDeviceAPI {
 
 		transaction?.end()
 	}
-	export function partPlaybackStopped(
+	export async function partPlaybackStopped(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		r: PeripheralDeviceAPI.PartPlaybackStoppedResult
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('partPlaybackStopped', apmNamespace)
 
 		// This is called from the playout-gateway when an
@@ -411,16 +411,16 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		ServerPlayoutAPI.onPartPlaybackStopped(context, r.rundownPlaylistId, r.partInstanceId, r.time)
+		await ServerPlayoutAPI.onPartPlaybackStopped(context, r.rundownPlaylistId, r.partInstanceId, r.time)
 
 		transaction?.end()
 	}
-	export function piecePlaybackStarted(
+	export async function piecePlaybackStarted(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('piecePlaybackStarted', apmNamespace)
 
 		// This is called from the playout-gateway when an auto-next event occurs
@@ -431,7 +431,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.pieceInstanceId, String)
 		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
-		ServerPlayoutAPI.onPiecePlaybackStarted(
+		await ServerPlayoutAPI.onPiecePlaybackStarted(
 			context,
 			r.rundownPlaylistId,
 			r.pieceInstanceId,
@@ -441,12 +441,12 @@ export namespace ServerPeripheralDeviceAPI {
 
 		transaction?.end()
 	}
-	export function piecePlaybackStopped(
+	export async function piecePlaybackStopped(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('piecePlaybackStopped', apmNamespace)
 
 		// This is called from the playout-gateway when an auto-next event occurs
@@ -457,7 +457,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.pieceInstanceId, String)
 		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
-		ServerPlayoutAPI.onPiecePlaybackStopped(
+		await ServerPlayoutAPI.onPiecePlaybackStopped(
 			context,
 			r.rundownPlaylistId,
 			r.pieceInstanceId,
@@ -828,21 +828,21 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		deviceToken: string,
 		r: PeripheralDeviceAPI.PartPlaybackStartedResult
 	) {
-		return makePromise(() => ServerPeripheralDeviceAPI.partPlaybackStopped(this, deviceId, deviceToken, r))
+		return ServerPeripheralDeviceAPI.partPlaybackStopped(this, deviceId, deviceToken, r)
 	}
 	piecePlaybackStopped(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
 	) {
-		return makePromise(() => ServerPeripheralDeviceAPI.piecePlaybackStopped(this, deviceId, deviceToken, r))
+		return ServerPeripheralDeviceAPI.piecePlaybackStopped(this, deviceId, deviceToken, r)
 	}
 	piecePlaybackStarted(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
 	) {
-		return makePromise(() => ServerPeripheralDeviceAPI.piecePlaybackStarted(this, deviceId, deviceToken, r))
+		return ServerPeripheralDeviceAPI.piecePlaybackStarted(this, deviceId, deviceToken, r)
 	}
 	reportResolveDone(
 		deviceId: PeripheralDeviceId,

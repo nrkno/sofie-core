@@ -71,10 +71,10 @@ if (!Settings.enableUserAccounts) {
 						'debug_updateNext',
 						studioId,
 						StudioLockFunctionPriority.USER_PLAYOUT,
-						(cache) => {
+						async (cache) => {
 							const playlists = cache.getActiveRundownPlaylists()
 							if (playlists.length === 1) {
-								return runPlayoutOperationWithCacheFromStudioOperation(
+								await runPlayoutOperationWithCacheFromStudioOperation(
 									'updateStudioOrPlaylistTimeline',
 									cache,
 									playlists[0],

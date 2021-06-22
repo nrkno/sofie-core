@@ -10,7 +10,6 @@ import {
 	unprotectString,
 	isStringOrProtectedString,
 	getRandomId,
-	makePromise,
 	waitForPromise,
 } from '../../../lib/lib'
 import { StatObjectMetadata } from '../../../lib/collections/Timeline'
@@ -204,22 +203,16 @@ export namespace ServerPlayoutAPI {
 					// Try deactivating everything in parallel, although there should only ever be one active
 					await Promise.allSettled(
 						anyOtherActivePlaylists.map((otherRundownPlaylist) =>
-							makePromise(() => {
-								try {
-									runPlayoutOperationWithCacheFromStudioOperation(
-										'forceResetAndActivateRundownPlaylist',
-										cache,
-										otherRundownPlaylist,
-										PlayoutLockFunctionPriority.USER_PLAYOUT,
-										null,
-										(otherCache) => {
-											deactivateRundownPlaylistInner(otherCache)
-										}
-									)
-								} catch (e) {
-									errors.push(e)
+							runPlayoutOperationWithCacheFromStudioOperation(
+								'forceResetAndActivateRundownPlaylist',
+								cache,
+								otherRundownPlaylist,
+								PlayoutLockFunctionPriority.USER_PLAYOUT,
+								null,
+								(otherCache) => {
+									deactivateRundownPlaylistInner(otherCache)
 								}
-							})
+							).catch((e) => errors.push(e))
 						)
 					)
 					if (errors.length > 0) {
@@ -731,7 +724,7 @@ export namespace ServerPlayoutAPI {
 		pieceInstanceId: PieceInstanceId,
 		dynamicallyInserted: boolean,
 		startedPlayback: Time
-	) {
+	): Promise<void> {
 		check(rundownPlaylistId, String)
 		check(pieceInstanceId, String)
 		check(startedPlayback, Number)
@@ -781,7 +774,7 @@ export namespace ServerPlayoutAPI {
 		pieceInstanceId: PieceInstanceId,
 		dynamicallyInserted: boolean,
 		stoppedPlayback: Time
-	) {
+	): Promise<void> {
 		check(rundownPlaylistId, String)
 		check(pieceInstanceId, String)
 		check(stoppedPlayback, Number)
@@ -986,7 +979,7 @@ export namespace ServerPlayoutAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		stoppedPlayback: Time
-	) {
+	): Promise<void> {
 		check(rundownPlaylistId, String)
 		check(partInstanceId, String)
 		check(stoppedPlayback, Number)
