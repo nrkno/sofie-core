@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
-import { getCurrentTime, getHash, makePromise, waitForPromise } from '../../lib/lib'
+import { Awaited, getCurrentTime, getHash, makePromise, waitForPromise } from '../../lib/lib'
 import { Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { Parts, Part, PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
@@ -651,23 +651,29 @@ export function packageManagerRestartAllExpectations(context: MethodContext, stu
 export function packageManagerAbortExpectation(context: MethodContext, deviceId: PeripheralDeviceId, workId: string) {
 	return ClientAPI.responseSuccess(PackageManagerAPI.abortExpectation(context, deviceId, workId))
 }
-export function bucketsRemoveBucket(context: MethodContext, id: BucketId) {
+export async function bucketsRemoveBucket(context: MethodContext, id: BucketId) {
 	check(id, String)
 
-	return ClientAPI.responseSuccess(BucketsAPI.removeBucket(context, id))
+	await BucketsAPI.removeBucket(context, id)
+
+	return ClientAPI.responseSuccess(undefined)
 }
-export function bucketsModifyBucket(context: MethodContext, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
+export async function bucketsModifyBucket(context: MethodContext, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
 	check(id, String)
 	check(bucket, Object)
 
-	return ClientAPI.responseSuccess(BucketsAPI.modifyBucket(context, id, bucket))
+	await BucketsAPI.modifyBucket(context, id, bucket)
+
+	return ClientAPI.responseSuccess(undefined)
 }
-export function bucketsEmptyBucket(context: MethodContext, id: BucketId) {
+export async function bucketsEmptyBucket(context: MethodContext, id: BucketId) {
 	check(id, String)
 
-	return ClientAPI.responseSuccess(BucketsAPI.emptyBucket(context, id))
+	await BucketsAPI.emptyBucket(context, id)
+
+	return ClientAPI.responseSuccess(undefined)
 }
-export function bucketsCreateNewBucket(
+export async function bucketsCreateNewBucket(
 	context: MethodContext,
 	name: string,
 	studioId: StudioId,
@@ -676,19 +682,25 @@ export function bucketsCreateNewBucket(
 	check(name, String)
 	check(studioId, String)
 
-	return ClientAPI.responseSuccess(BucketsAPI.createNewBucket(context, name, studioId, userId))
+	const bucket = await BucketsAPI.createNewBucket(context, name, studioId, userId)
+
+	return ClientAPI.responseSuccess(bucket)
 }
-export function bucketsRemoveBucketAdLib(context: MethodContext, id: PieceId) {
+export async function bucketsRemoveBucketAdLib(context: MethodContext, id: PieceId) {
 	check(id, String)
 
-	return ClientAPI.responseSuccess(BucketsAPI.removeBucketAdLib(context, id))
+	await BucketsAPI.removeBucketAdLib(context, id)
+
+	return ClientAPI.responseSuccess(undefined)
 }
-export function bucketsRemoveBucketAdLibAction(context: MethodContext, id: AdLibActionId) {
+export async function bucketsRemoveBucketAdLibAction(context: MethodContext, id: AdLibActionId) {
 	check(id, String)
 
-	return ClientAPI.responseSuccess(BucketsAPI.removeBucketAdLibAction(context, id))
+	await BucketsAPI.removeBucketAdLibAction(context, id)
+
+	return ClientAPI.responseSuccess(undefined)
 }
-export function bucketsModifyBucketAdLib(
+export async function bucketsModifyBucketAdLib(
 	context: MethodContext,
 	id: PieceId,
 	adlib: Partial<Omit<BucketAdLib, '_id'>>
@@ -696,9 +708,11 @@ export function bucketsModifyBucketAdLib(
 	check(id, String)
 	check(adlib, Object)
 
-	return ClientAPI.responseSuccess(BucketsAPI.modifyBucketAdLib(context, id, adlib))
+	await BucketsAPI.modifyBucketAdLib(context, id, adlib)
+
+	return ClientAPI.responseSuccess(undefined)
 }
-export function bucketsModifyBucketAdLibAction(
+export async function bucketsModifyBucketAdLibAction(
 	context: MethodContext,
 	id: AdLibActionId,
 	action: Partial<Omit<BucketAdLibAction, '_id'>>
@@ -706,7 +720,9 @@ export function bucketsModifyBucketAdLibAction(
 	check(id, String)
 	check(action, Object)
 
-	return ClientAPI.responseSuccess(BucketsAPI.modifyBucketAdLibAction(context, id, action))
+	await BucketsAPI.modifyBucketAdLibAction(context, id, action)
+
+	return ClientAPI.responseSuccess(undefined)
 }
 export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
 	check(rundownPlaylistId, String)
@@ -721,13 +737,13 @@ export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylis
 	return ClientAPI.responseSuccess(IngestActions.regenerateRundownPlaylist(access, rundownPlaylistId))
 }
 
-export function bucketAdlibImport(
+export async function bucketAdlibImport(
 	context: MethodContext,
 	studioId: StudioId,
 	showStyleVariantId: ShowStyleVariantId,
 	bucketId: BucketId,
 	ingestItem: IngestAdlib
-) {
+): Promise<ClientAPI.ClientResponse<undefined>> {
 	const { studio } = OrganizationContentWriteAccess.studio(context, studioId)
 
 	check(studioId, String)
@@ -736,22 +752,22 @@ export function bucketAdlibImport(
 	// TODO - validate IngestAdlib
 
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
-	const showStyleCompound = waitForPromise(getShowStyleCompound(showStyleVariantId))
+	const showStyleCompound = await getShowStyleCompound(showStyleVariantId)
 	if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
 
 	if (studio.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
 		throw new Meteor.Error(500, `ShowStyle Variant "${showStyleVariantId}" not supported by studio "${studioId}"`)
 	}
 
-	const bucket = Buckets.findOne(bucketId)
+	const bucket = await Buckets.findOneAsync(bucketId)
 	if (!bucket) throw new Meteor.Error(404, `Bucket "${bucketId}" not found`)
 
-	updateBucketAdlibFromIngestData(showStyleCompound, studio, bucketId, ingestItem)
+	await updateBucketAdlibFromIngestData(showStyleCompound, studio, bucketId, ingestItem)
 
 	return ClientAPI.responseSuccess(undefined)
 }
 
-export function bucketsSaveActionIntoBucket(
+export async function bucketsSaveActionIntoBucket(
 	context: MethodContext,
 	studioId: StudioId,
 	action: AdLibActionCommon | BucketAdLibAction,
@@ -765,7 +781,8 @@ export function bucketsSaveActionIntoBucket(
 
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
 
-	return ClientAPI.responseSuccess(BucketsAPI.saveAdLibActionIntoBucket(context, studioId, action, bucketId))
+	const result = await BucketsAPI.saveAdLibActionIntoBucket(context, studioId, action, bucketId)
+	return ClientAPI.responseSuccess(result)
 }
 
 export function bucketAdlibStart(
@@ -864,10 +881,10 @@ export function traceAction<T extends (...args: any[]) => any>(
 	description: string,
 	fn: T,
 	...args: Parameters<T>
-): Promise<ReturnType<T>> {
+): Promise<Awaited<ReturnType<T>>> {
 	const transaction = profiler.startTransaction(description, 'userAction')
 	return makePromise(() => {
-		const res = fn(...args)
+		const res = waitForPromise(fn(...args))
 		if (transaction) transaction.end()
 		return res
 	})
