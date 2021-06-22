@@ -99,15 +99,17 @@ if (!Settings.enableUserAccounts) {
 		debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
 			logger.info(`syncPlayheadInfinitesForNextPartInstance ${id}`)
 
-			runPlayoutOperationWithCache(
-				null,
-				'debug_syncPlayheadInfinitesForNextPartInstance',
-				id,
-				PlayoutLockFunctionPriority.MISC,
-				null,
-				async (cache) => {
-					await syncPlayheadInfinitesForNextPartInstance(cache)
-				}
+			waitForPromise(
+				runPlayoutOperationWithCache(
+					null,
+					'debug_syncPlayheadInfinitesForNextPartInstance',
+					id,
+					PlayoutLockFunctionPriority.MISC,
+					null,
+					async (cache) => {
+						await syncPlayheadInfinitesForNextPartInstance(cache)
+					}
+				)
 			)
 		},
 
@@ -128,25 +130,27 @@ if (!Settings.enableUserAccounts) {
 		debug_regenerateNextPartInstance(id: RundownPlaylistId) {
 			logger.info('regenerateNextPartInstance')
 
-			runPlayoutOperationWithCache(
-				null,
-				'debug_regenerateNextPartInstance',
-				id,
-				PlayoutLockFunctionPriority.MISC,
-				null,
-				async (cache) => {
-					const playlist = cache.Playlist.doc
-					if (playlist.nextPartInstanceId && playlist.activationId) {
-						const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-						const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
-						if (part) {
-							setNextPart(cache, null)
-							setNextPart(cache, { part: part })
+			waitForPromise(
+				runPlayoutOperationWithCache(
+					null,
+					'debug_regenerateNextPartInstance',
+					id,
+					PlayoutLockFunctionPriority.MISC,
+					null,
+					async (cache) => {
+						const playlist = cache.Playlist.doc
+						if (playlist.nextPartInstanceId && playlist.activationId) {
+							const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+							const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
+							if (part) {
+								setNextPart(cache, null)
+								setNextPart(cache, { part: part })
 
-							await updateTimeline(cache)
+								await updateTimeline(cache)
+							}
 						}
 					}
-				}
+				)
 			)
 		},
 	})

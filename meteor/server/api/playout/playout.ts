@@ -89,7 +89,7 @@ export namespace ServerPlayoutAPI {
 	export function prepareRundownPlaylistForBroadcast(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId
-	) {
+	): Promise<void> {
 		return runPlayoutOperationWithCache(
 			access,
 			'prepareRundownPlaylistForBroadcast',
@@ -128,7 +128,7 @@ export namespace ServerPlayoutAPI {
 	export function resetRundownPlaylist(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId
-	): void {
+	): Promise<void> {
 		return runPlayoutOperationWithCache(
 			access,
 			'resetRundownPlaylist',
@@ -157,7 +157,7 @@ export namespace ServerPlayoutAPI {
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal?: boolean
-	) {
+	): Promise<void> {
 		return runPlayoutOperationWithCache(
 			access,
 			'resetAndActivateRundownPlaylist',
@@ -184,7 +184,7 @@ export namespace ServerPlayoutAPI {
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal: boolean
-	) {
+	): Promise<void> {
 		check(rehearsal, Boolean)
 		return runPlayoutOperationWithCache(
 			access,
@@ -247,7 +247,7 @@ export namespace ServerPlayoutAPI {
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal: boolean
-	) {
+	): Promise<void> {
 		check(rehearsal, Boolean)
 		return runPlayoutOperationWithCache(
 			access,
@@ -268,7 +268,7 @@ export namespace ServerPlayoutAPI {
 	export function deactivateRundownPlaylist(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId
-	) {
+	): Promise<void> {
 		return runPlayoutOperationWithCache(
 			access,
 			'deactivateRundownPlaylist',
@@ -288,7 +288,7 @@ export namespace ServerPlayoutAPI {
 	export function takeNextPart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId
-	): ClientAPI.ClientResponse<void> {
+	): Promise<ClientAPI.ClientResponse<void>> {
 		check(rundownPlaylistId, String)
 
 		const now = getCurrentTime()
@@ -311,7 +311,7 @@ export namespace ServerPlayoutAPI {
 		nextPartId: PartId | null,
 		setManually?: boolean,
 		nextTimeOffset?: number | undefined
-	): ClientAPI.ClientResponse<void> {
+	): Promise<ClientAPI.ClientResponse<void>> {
 		check(rundownPlaylistId, String)
 		if (nextPartId) check(nextPartId, String)
 
@@ -367,7 +367,7 @@ export namespace ServerPlayoutAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		partDelta: number,
 		segmentDelta: number
-	): PartId | null {
+	): Promise<PartId | null> {
 		check(rundownPlaylistId, String)
 		check(partDelta, Number)
 		check(segmentDelta, Number)
@@ -493,7 +493,7 @@ export namespace ServerPlayoutAPI {
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		nextSegmentId: SegmentId | null
-	): ClientAPI.ClientResponse<void> {
+	): Promise<ClientAPI.ClientResponse<void>> {
 		check(rundownPlaylistId, String)
 		if (nextSegmentId) check(nextSegmentId, String)
 
@@ -523,7 +523,10 @@ export namespace ServerPlayoutAPI {
 			}
 		)
 	}
-	export function activateHold(access: VerifiedRundownPlaylistContentAccess, rundownPlaylistId: RundownPlaylistId) {
+	export function activateHold(
+		access: VerifiedRundownPlaylistContentAccess,
+		rundownPlaylistId: RundownPlaylistId
+	): Promise<void> {
 		check(rundownPlaylistId, String)
 		logger.debug('rundownActivateHold')
 
@@ -576,7 +579,10 @@ export namespace ServerPlayoutAPI {
 			}
 		)
 	}
-	export function deactivateHold(access: VerifiedRundownPlaylistContentAccess, rundownPlaylistId: RundownPlaylistId) {
+	export function deactivateHold(
+		access: VerifiedRundownPlaylistContentAccess,
+		rundownPlaylistId: RundownPlaylistId
+	): Promise<void> {
 		check(rundownPlaylistId, String)
 		logger.debug('deactivateHold')
 
@@ -602,7 +608,7 @@ export namespace ServerPlayoutAPI {
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		undo?: boolean
-	): ClientAPI.ClientResponse<void> {
+	): Promise<ClientAPI.ClientResponse<void>> {
 		check(rundownPlaylistId, String)
 
 		return runPlayoutOperationWithCache(
@@ -824,7 +830,7 @@ export namespace ServerPlayoutAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		startedPlayback: Time
-	) {
+	): Promise<void> {
 		check(rundownPlaylistId, String)
 		check(partInstanceId, String)
 		check(startedPlayback, Number)
@@ -1126,10 +1132,10 @@ export namespace ServerPlayoutAPI {
 			rundown: Rundown,
 			currentPartInstance: PartInstance
 		) => Promise<void>
-	) {
+	): Promise<void> {
 		const now = getCurrentTime()
 
-		runPlayoutOperationWithCache(
+		return runPlayoutOperationWithCache(
 			access,
 			'executeActionInner',
 			rundownPlaylistId,
@@ -1183,7 +1189,7 @@ export namespace ServerPlayoutAPI {
 				}
 
 				if (actionContext.takeAfterExecute) {
-					return await ServerPlayoutAPI.callTakeWithCache(cache, now)
+					await ServerPlayoutAPI.callTakeWithCache(cache, now)
 				} else {
 					if (
 						actionContext.currentPartState !== ActionPartChange.NONE ||
@@ -1206,7 +1212,7 @@ export namespace ServerPlayoutAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		sourceLayerIds: string[]
-	) {
+	): Promise<void> {
 		check(rundownPlaylistId, String)
 		check(partInstanceId, String)
 		check(sourceLayerIds, Match.OneOf(String, Array))
@@ -1402,7 +1408,9 @@ export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylist
 						}
 					}
 				}
-			)
+			).catch((e) => {
+				logger.error(`triggerUpdateTimelineAfterIngestData: Execution failed: ${e}`)
+			})
 			transaction?.end()
 		}
 	}, 1000)

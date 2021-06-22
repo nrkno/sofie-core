@@ -1363,7 +1363,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(parts).toHaveLength(3)
 
 			// Activate the rundown, make data updates and verify that it gets unsynced properly
-			ServerPlayoutAPI.activateRundownPlaylist(PLAYLIST_ACCESS(playlist._id), playlist._id, true)
+			await ServerPlayoutAPI.activateRundownPlaylist(PLAYLIST_ACCESS(playlist._id), playlist._id, true)
 			expect(getRundown().orphaned).toBeUndefined()
 
 			await RundownInput.dataRundownDelete(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId)
@@ -1372,7 +1372,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			resyncRundown()
 			expect(getRundown().orphaned).toBeUndefined()
 
-			ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
+			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
 			const partInstance = PartInstances.find({ 'part._id': parts[0]._id }).fetch()
 			expect(partInstance).toHaveLength(1)
 			expect(getPlaylist().currentPartInstanceId).toEqual(partInstance[0]._id)
@@ -1505,11 +1505,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(Pieces.find({ startRundownId: rundown._id }).fetch()).toHaveLength(2)
 
 			// Activate the rundown, make data updates and verify that it gets unsynced properly
-			ServerPlayoutAPI.activateRundownPlaylist(PLAYLIST_ACCESS(playlist._id), playlist._id, true)
+			await ServerPlayoutAPI.activateRundownPlaylist(PLAYLIST_ACCESS(playlist._id), playlist._id, true)
 			expect(getPlaylist().currentPartInstanceId).toBeNull()
 
 			// Take the first part
-			ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
+			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
 			expect(getPlaylist().currentPartInstanceId).not.toBeNull()
 
 			{

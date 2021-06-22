@@ -210,7 +210,7 @@ export async function moveNext(
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.moveNextPart(access, rundownPlaylistId, horisontalDelta, verticalDelta)
+		await ServerPlayoutAPI.moveNextPart(access, rundownPlaylistId, horisontalDelta, verticalDelta)
 	)
 }
 export async function prepareForBroadcast(
@@ -235,7 +235,9 @@ export async function prepareForBroadcast(
 			anyOtherActiveRundowns
 		)
 	}
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(access, rundownPlaylistId))
+	return ClientAPI.responseSuccess(
+		await ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(access, rundownPlaylistId)
+	)
 }
 export async function resetRundownPlaylist(
 	context: MethodContext,
@@ -252,7 +254,7 @@ export async function resetRundownPlaylist(
 		)
 	}
 
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.resetRundownPlaylist(access, rundownPlaylistId))
+	return ClientAPI.responseSuccess(await ServerPlayoutAPI.resetRundownPlaylist(access, rundownPlaylistId))
 }
 export async function resetAndActivate(
 	context: MethodContext,
@@ -283,7 +285,7 @@ export async function resetAndActivate(
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.resetAndActivateRundownPlaylist(access, rundownPlaylistId, rehearsal)
+		await ServerPlayoutAPI.resetAndActivateRundownPlaylist(access, rundownPlaylistId, rehearsal)
 	)
 }
 export async function forceResetAndActivate(
@@ -297,7 +299,7 @@ export async function forceResetAndActivate(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(access, rundownPlaylistId, rehearsal)
+		await ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(access, rundownPlaylistId, rehearsal)
 	)
 }
 export async function activate(
@@ -321,7 +323,7 @@ export async function activate(
 			anyOtherActiveRundowns
 		)
 	}
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.activateRundownPlaylist(access, playlist._id, rehearsal))
+	return ClientAPI.responseSuccess(await ServerPlayoutAPI.activateRundownPlaylist(access, playlist._id, rehearsal))
 }
 export async function deactivate(
 	context: MethodContext,
@@ -329,7 +331,7 @@ export async function deactivate(
 ): Promise<ClientAPI.ClientResponse<void>> {
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.deactivateRundownPlaylist(access, rundownPlaylistId))
+	return ClientAPI.responseSuccess(await ServerPlayoutAPI.deactivateRundownPlaylist(access, rundownPlaylistId))
 }
 export async function unsyncRundown(
 	context: MethodContext,
@@ -399,7 +401,7 @@ export async function pieceTakeNow(
 		)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.pieceTakeNow(access, rundownPlaylistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
+		await ServerPlayoutAPI.pieceTakeNow(access, rundownPlaylistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
 	)
 }
 export async function pieceSetInOutPoints(
@@ -471,7 +473,7 @@ export async function executeAction(
 		return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.executeAction(access, rundownPlaylistId, actionId, userData, triggerMode)
+		await ServerPlayoutAPI.executeAction(access, rundownPlaylistId, actionId, userData, triggerMode)
 	)
 }
 export async function segmentAdLibPieceStart(
@@ -495,7 +497,7 @@ export async function segmentAdLibPieceStart(
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.segmentAdLibPieceStart(access, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
+		await ServerPlayoutAPI.segmentAdLibPieceStart(access, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
 	)
 }
 export async function sourceLayerOnPartStop(
@@ -515,7 +517,7 @@ export async function sourceLayerOnPartStop(
 		return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib on a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.sourceLayerOnPartStop(access, rundownPlaylistId, partInstanceId, sourceLayerIds)
+		await ServerPlayoutAPI.sourceLayerOnPartStop(access, rundownPlaylistId, partInstanceId, sourceLayerIds)
 	)
 }
 export async function rundownBaselineAdLibPieceStart(
@@ -538,7 +540,13 @@ export async function rundownBaselineAdLibPieceStart(
 		return ClientAPI.responseError(`Can't start AdLib piece when the Rundown is in Hold mode!`)
 	}
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownBaselineAdLibPieceStart(access, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
+		await ServerPlayoutAPI.rundownBaselineAdLibPieceStart(
+			access,
+			rundownPlaylistId,
+			partInstanceId,
+			adlibPieceId,
+			queue
+		)
 	)
 }
 export async function sourceLayerStickyPieceStart(
@@ -558,7 +566,7 @@ export async function sourceLayerStickyPieceStart(
 		return ClientAPI.responseError(`No part is playing, please Take a part before starting a sticky-item.`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.sourceLayerStickyPieceStart(access, rundownPlaylistId, sourceLayerId)
+		await ServerPlayoutAPI.sourceLayerStickyPieceStart(access, rundownPlaylistId, sourceLayerId)
 	)
 }
 export async function activateHold(
@@ -587,9 +595,9 @@ export async function activateHold(
 	}
 
 	if (undo) {
-		return ClientAPI.responseSuccess(ServerPlayoutAPI.deactivateHold(access, rundownPlaylistId))
+		return ClientAPI.responseSuccess(await ServerPlayoutAPI.deactivateHold(access, rundownPlaylistId))
 	} else {
-		return ClientAPI.responseSuccess(ServerPlayoutAPI.activateHold(access, rundownPlaylistId))
+		return ClientAPI.responseSuccess(await ServerPlayoutAPI.activateHold(access, rundownPlaylistId))
 	}
 }
 export function userSaveEvaluation(context: MethodContext, evaluation: EvaluationBase): ClientAPI.ClientResponse<void> {

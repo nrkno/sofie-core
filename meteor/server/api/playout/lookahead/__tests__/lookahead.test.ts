@@ -152,7 +152,7 @@ describe('Lookahead', () => {
 		findLookaheadForLayerMock.mockClear()
 	}
 
-	testInFiber('No pieces', () => {
+	testInFiber('No pieces', async () => {
 		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
 		expect(playlist).toBeTruthy()
 
@@ -161,7 +161,7 @@ describe('Lookahead', () => {
 		const fakeParts = partIds.map((p) => ({ part: new Part({ _id: p } as any), pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValueOnce(fakeParts.map((p) => p.part))
 
-		const res = runPlayoutOperationWithCache(
+		const res = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -224,13 +224,13 @@ describe('Lookahead', () => {
 		expectLookaheadForLayerMock(playlistId, [], undefined, fakeParts)
 	})
 
-	testInFiber('Different max distances', () => {
+	testInFiber('Different max distances', async () => {
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {}
 
 		// Set really low
 		env.studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = 0
 		env.studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 0
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -245,7 +245,7 @@ describe('Lookahead', () => {
 		getOrderedPartsAfterPlayheadMock.mockClear()
 		env.studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = -1
 		env.studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 2000
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -260,7 +260,7 @@ describe('Lookahead', () => {
 		getOrderedPartsAfterPlayheadMock.mockClear()
 		env.studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = undefined
 		env.studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = -1
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -272,7 +272,7 @@ describe('Lookahead', () => {
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(expect.anything(), 10)
 	})
 
-	testInFiber('PartInstances translation', () => {
+	testInFiber('PartInstances translation', async () => {
 		const fakeParts = partIds.map((p) => ({ part: new Part({ _id: p } as any), pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValue(fakeParts.map((p) => p.part))
 
@@ -291,7 +291,7 @@ describe('Lookahead', () => {
 		}
 
 		// With a previous
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -313,7 +313,7 @@ describe('Lookahead', () => {
 			nowInPart: partInstancesInfo.current!.nowInPart,
 			allPieces: partInstancesInfo.current!.pieceInstances,
 		}
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -335,7 +335,7 @@ describe('Lookahead', () => {
 			nowInPart: partInstancesInfo.next!.nowInPart,
 			allPieces: partInstancesInfo.next!.pieceInstances,
 		}
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -348,7 +348,7 @@ describe('Lookahead', () => {
 		// current has autonext
 		partInstancesInfo.current.partInstance.part.autoNext = true
 		expectedNext.onTimeline = true
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,

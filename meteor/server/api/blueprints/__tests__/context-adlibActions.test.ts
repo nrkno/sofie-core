@@ -4,7 +4,7 @@ import {
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 } from '../../../../__mocks__/helpers/database'
-import { protectString, unprotectString, getRandomId, getCurrentTime, Awaited, clone } from '../../../../lib/lib'
+import { protectString, unprotectString, getRandomId, getCurrentTime, clone } from '../../../../lib/lib'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { ActionExecutionContext, ActionPartChange } from '../context'
@@ -154,20 +154,20 @@ describe('Test blueprint api context', () => {
 		}
 	}
 
-	async function wrapWithCache<T>(fcn: (cache: CacheForPlayout) => Promise<T>): Promise<Awaited<T>> {
+	async function wrapWithCache<T>(fcn: (cache: CacheForPlayout) => Promise<T>): Promise<T> {
 		const defaultSetup = setupDefaultRundownPlaylist(env)
 
 		// Mark playlist as active
-		RundownPlaylists.update(defaultSetup.playlistId, {
+		await RundownPlaylists.updateAsync(defaultSetup.playlistId, {
 			$set: {
 				activationId: getRandomId(),
 			},
 		})
 
-		const tmpPlaylist = RundownPlaylists.findOne(defaultSetup.playlistId) as RundownPlaylist
+		const tmpPlaylist = (await RundownPlaylists.findOneAsync(defaultSetup.playlistId)) as RundownPlaylist
 		expect(tmpPlaylist).toBeTruthy()
 
-		const rundown = Rundowns.findOne(defaultSetup.rundownId) as Rundown
+		const rundown = (await Rundowns.findOneAsync(defaultSetup.rundownId)) as Rundown
 		expect(rundown).toBeTruthy()
 
 		generateSparsePieceInstances(tmpPlaylist, rundown)

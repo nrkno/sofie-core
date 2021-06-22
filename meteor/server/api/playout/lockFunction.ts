@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { assertNever, Awaited, waitForPromise } from '../../../lib/lib'
+import { assertNever } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { pushWorkToQueue } from '../../codeControl'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
@@ -64,14 +64,14 @@ export function getPlaylistIdFromCacheOrLock(cacheOrLock: any): RundownPlaylistI
  * @param rundownPlaylistId Id of the playlist to lock
  * @param fcn Function to run while holding the lock
  */
-export function runPlayoutOperationWithCache<T>(
+export async function runPlayoutOperationWithCache<T>(
 	access: VerifiedRundownPlaylistContentAccess | null,
 	contextStr: string,
 	rundownPlaylistId: RundownPlaylistId,
 	priority: PlayoutLockFunctionPriority,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
 	fcn: (cache: CacheForPlayout) => Promise<T> | T
-): Awaited<T> {
+): Promise<T> {
 	let tmpPlaylist: RundownPlaylist
 	if (access) {
 		tmpPlaylist = access.playlist
@@ -82,15 +82,13 @@ export function runPlayoutOperationWithCache<T>(
 				`VerifiedAccess is for wrong Rundown Playlist "${rundownPlaylistId}" vs ${tmpPlaylist._id}!`
 			)
 	} else {
-		const pl = RundownPlaylists.findOne(rundownPlaylistId)
+		const pl = await RundownPlaylists.findOneAsync(rundownPlaylistId)
 		if (!pl) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 		tmpPlaylist = pl
 	}
 
-	return waitForPromise(
-		runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, playoutToStudioLockPriority(priority), (lock) =>
-			playoutLockFunctionInner(contextStr, lock, tmpPlaylist, priority, preInitFcn, fcn)
-		)
+	return runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, playoutToStudioLockPriority(priority), (lock) =>
+		playoutLockFunctionInner(contextStr, lock, tmpPlaylist, priority, preInitFcn, fcn)
 	)
 }
 

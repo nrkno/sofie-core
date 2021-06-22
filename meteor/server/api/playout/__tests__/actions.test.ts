@@ -41,7 +41,7 @@ describe('Playout Actions', () => {
 				.map((r) => r._id)
 		)
 	})
-	testInFiber('activateRundown', () => {
+	testInFiber('activateRundown', async () => {
 		const { playlistId: playlistId0 } = setupDefaultRundownPlaylist(env, protectString('ro0'))
 		expect(playlistId0).toBeTruthy()
 
@@ -57,7 +57,7 @@ describe('Playout Actions', () => {
 
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 		// Activating a rundown, to rehearsal
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'activateRundownPlaylist',
 			playlistId0,
@@ -68,7 +68,7 @@ describe('Playout Actions', () => {
 		expect(getPlaylist0()).toMatchObject({ activationId: expect.stringMatching(/^randomId/), rehearsal: true })
 
 		// Activating a rundown
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'activateRundownPlaylist',
 			playlistId0,
@@ -79,7 +79,7 @@ describe('Playout Actions', () => {
 		expect(getPlaylist0()).toMatchObject({ activationId: expect.stringMatching(/^randomId/), rehearsal: false })
 
 		// Activating a rundown, back to rehearsal
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'activateRundownPlaylist',
 			playlistId0,
@@ -90,7 +90,7 @@ describe('Playout Actions', () => {
 		expect(getPlaylist0()).toMatchObject({ activationId: expect.stringMatching(/^randomId/), rehearsal: true })
 
 		// Activating another rundown
-		expect(() => {
+		await expect(() =>
 			runPlayoutOperationWithCache(
 				null,
 				'activateRundownPlaylist',
@@ -99,9 +99,9 @@ describe('Playout Actions', () => {
 				null,
 				async (cache) => activateRundownPlaylist(cache, false)
 			)
-		}).toThrowError(/only one rundown can be active/i)
+		).rejects.toThrowError(/only one rundown can be active/i)
 	})
-	testInFiber('prepareStudioForBroadcast', () => {
+	testInFiber('prepareStudioForBroadcast', async () => {
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
 		const { playlistId } = setupDefaultRundownPlaylist(env, protectString('ro0'))
@@ -112,7 +112,7 @@ describe('Playout Actions', () => {
 
 		// prepareStudioForBroadcast
 		const okToDestroyStuff = true
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'activateRundownPlaylist',
 			playlist._id,

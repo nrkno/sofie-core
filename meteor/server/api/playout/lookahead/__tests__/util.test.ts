@@ -129,11 +129,11 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			}
 		))
 	})
-	testInFiber('all parts come back', () => {
+	testInFiber('all parts come back', async () => {
 		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
 		expect(playlist).toBeTruthy()
 
-		const parts = runPlayoutOperationWithCache(
+		const parts = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -144,7 +144,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(parts.map((p) => p._id)).toEqual(partIds)
 	})
 
-	testInFiber('first part is next', () => {
+	testInFiber('first part is next', async () => {
 		const firstPart = Parts.findOne(partIds[0]) as Part
 		expect(firstPart).toBeTruthy()
 
@@ -152,7 +152,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		const firstInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), firstPart))
 		RundownPlaylists.update(playlistId, { $set: { nextPartInstanceId: firstInstanceId } })
 
-		const parts = runPlayoutOperationWithCache(
+		const parts = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -164,7 +164,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(parts.map((p) => p._id)).toEqual(partIds.slice(1))
 
 		// Try with a limit
-		const parts2 = runPlayoutOperationWithCache(
+		const parts2 = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -176,7 +176,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(1, 6))
 	})
 
-	testInFiber('first part is current', () => {
+	testInFiber('first part is current', async () => {
 		const firstPart = Parts.findOne(partIds[0]) as Part
 		expect(firstPart).toBeTruthy()
 
@@ -184,7 +184,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		const firstInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), firstPart))
 		RundownPlaylists.update(playlistId, { $set: { nextPartInstanceId: firstInstanceId } })
 
-		const parts = runPlayoutOperationWithCache(
+		const parts = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -196,7 +196,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(parts.map((p) => p._id)).toEqual(partIds.slice(1))
 
 		// Try with a limit
-		const parts2 = runPlayoutOperationWithCache(
+		const parts2 = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -208,7 +208,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(1, 6))
 	})
 
-	testInFiber('last part is next', () => {
+	testInFiber('last part is next', async () => {
 		const lastPart = Parts.findOne(_.last(partIds)) as Part
 		expect(lastPart).toBeTruthy()
 
@@ -216,7 +216,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		const lastInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), lastPart))
 		RundownPlaylists.update(playlistId, { $set: { nextPartInstanceId: lastInstanceId } })
 
-		const parts = runPlayoutOperationWithCache(
+		const parts = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -229,7 +229,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 
 		// Playlist could loop
 		RundownPlaylists.update(playlistId, { $set: { loop: true } })
-		const parts2 = runPlayoutOperationWithCache(
+		const parts2 = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -249,7 +249,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				$set: { invalid: true },
 			}
 		)
-		const parts3 = runPlayoutOperationWithCache(
+		const parts3 = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -261,7 +261,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(parts3.map((p) => p._id)).toEqual([partIds[0], ...partIds.slice(2, 4), ...partIds.slice(5, 7)])
 	})
 
-	testInFiber('filter unplayable part is current', () => {
+	testInFiber('filter unplayable part is current', async () => {
 		const nextPart = Parts.findOne(partIds[3]) as Part
 		expect(nextPart).toBeTruthy()
 
@@ -278,7 +278,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		const nextInstanceId = PartInstances.insert(wrapPartToTemporaryInstance(protectString('active'), nextPart))
 		RundownPlaylists.update(playlistId, { $set: { nextPartInstanceId: nextInstanceId } })
 
-		const parts = runPlayoutOperationWithCache(
+		const parts = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -290,7 +290,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(parts.map((p) => p._id)).toEqual([partIds[5], partIds[6], partIds[8], partIds[9], partIds[10]])
 	})
 
-	testInFiber('filter unplayable part is current', () => {
+	testInFiber('filter unplayable part is current', async () => {
 		const firstPart = Parts.findOne(partIds[0]) as Part
 		expect(firstPart).toBeTruthy()
 
@@ -300,7 +300,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 
 		// Change next segment
 		RundownPlaylists.update(playlistId, { $set: { nextSegmentId: segmentId2 } })
-		const parts = runPlayoutOperationWithCache(
+		const parts = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -319,7 +319,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				$set: { invalid: true },
 			}
 		)
-		const parts2 = runPlayoutOperationWithCache(
+		const parts2 = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
@@ -338,7 +338,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				$set: { invalid: true },
 			}
 		)
-		const parts3 = runPlayoutOperationWithCache(
+		const parts3 = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,

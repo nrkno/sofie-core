@@ -4,15 +4,7 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import {
-	getCurrentTime,
-	protectString,
-	makePromise,
-	waitForPromise,
-	getRandomId,
-	applyToArray,
-	stringifyObjects,
-} from '../../lib/lib'
+import { getCurrentTime, protectString, makePromise, getRandomId, applyToArray, stringifyObjects } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete, TimelineHash } from '../../lib/collections/Timeline'
@@ -376,12 +368,12 @@ export namespace ServerPeripheralDeviceAPI {
 			)
 		}
 	}
-	export function partPlaybackStarted(
+	export async function partPlaybackStarted(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		r: PeripheralDeviceAPI.PartPlaybackStartedResult
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('partPlaybackStarted', apmNamespace)
 
 		// This is called from the playout-gateway when a part starts playing.
@@ -392,7 +384,13 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		ServerPlayoutAPI.onPartPlaybackStarted(context, peripheralDevice, r.rundownPlaylistId, r.partInstanceId, r.time)
+		await ServerPlayoutAPI.onPartPlaybackStarted(
+			context,
+			peripheralDevice,
+			r.rundownPlaylistId,
+			r.partInstanceId,
+			r.time
+		)
 
 		transaction?.end()
 	}
@@ -588,14 +586,14 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 		// TODO: add others here (MediaWorkflows, etc?)
 	}
-	export function reportResolveDone(
+	export async function reportResolveDone(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		timelineHash: TimelineHash,
 		/** Resolve duration, as reported by playout-gateway/TSR */
 		resolveDuration: number
-	) {
+	): Promise<void> {
 		// Device (playout gateway) reports that it has finished resolving a timeline
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
@@ -603,7 +601,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(resolveDuration, Number)
 
 		if (peripheralDevice.studioId) {
-			const timeline = Timeline.findOne(
+			const timeline = (await Timeline.findOneAsync(
 				{
 					_id: peripheralDevice.studioId,
 				},
@@ -613,7 +611,7 @@ export namespace ServerPeripheralDeviceAPI {
 						generated: 1,
 					},
 				}
-			) as Pick<TimelineComplete, 'timelineHash' | 'generated'>
+			)) as Pick<TimelineComplete, 'timelineHash' | 'generated'>
 
 			// Compare the timelineHash with the one we have in the timeline.
 			// We're using that to determine when the timeline was generated (in Core)
@@ -640,7 +638,7 @@ export namespace ServerPeripheralDeviceAPI {
 							// Trim anything after LATENCIES_MAX_LENGTH
 							peripheralDevice.latencies.splice(LATENCIES_MAX_LENGTH, 999)
 						}
-						PeripheralDevices.update(peripheralDevice._id, {
+						await PeripheralDevices.updateAsync(peripheralDevice._id, {
 							$set: {
 								latencies: peripheralDevice.latencies,
 							},
@@ -648,7 +646,7 @@ export namespace ServerPeripheralDeviceAPI {
 						// Because the ActivationCache is used during playout, we need to update that as well:
 						const activationCache = getValidActivationCache(peripheralDevice.studioId)
 						if (activationCache) {
-							const device = waitForPromise(activationCache.getPeripheralDevices()).find(
+							const device = (await activationCache.getPeripheralDevices()).find(
 								(device) => device._id === peripheralDevice._id
 							)
 							if (device) {
@@ -657,7 +655,7 @@ export namespace ServerPeripheralDeviceAPI {
 						}
 
 						// Also store the result to userActions, if possible.
-						UserActionsLog.update(
+						await UserActionsLog.updateAsync(
 							{
 								success: true,
 								doneTime: { $gt: startTime },
@@ -821,7 +819,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		deviceToken: string,
 		r: PeripheralDeviceAPI.PartPlaybackStartedResult
 	) {
-		return makePromise(() => ServerPeripheralDeviceAPI.partPlaybackStarted(this, deviceId, deviceToken, r))
+		return ServerPeripheralDeviceAPI.partPlaybackStarted(this, deviceId, deviceToken, r)
 	}
 	partPlaybackStopped(
 		deviceId: PeripheralDeviceId,
@@ -850,9 +848,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		timelineHash: TimelineHash,
 		resolveDuration: number
 	) {
-		return makePromise(() =>
-			ServerPeripheralDeviceAPI.reportResolveDone(this, deviceId, deviceToken, timelineHash, resolveDuration)
-		)
+		return ServerPeripheralDeviceAPI.reportResolveDone(this, deviceId, deviceToken, timelineHash, resolveDuration)
 	}
 
 	// ------ Spreadsheet Gateway --------

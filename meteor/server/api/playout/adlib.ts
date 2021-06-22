@@ -58,7 +58,7 @@ export namespace ServerPlayoutAdLibAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
-	) {
+	): Promise<void> {
 		return runPlayoutOperationWithCache(
 			access,
 			'pieceTakeNow',
@@ -174,7 +174,7 @@ export namespace ServerPlayoutAdLibAPI {
 		partInstanceId: PartInstanceId,
 		adLibPieceId: PieceId,
 		queue: boolean
-	) {
+	): Promise<void> {
 		return runPlayoutOperationWithCache(
 			access,
 			'segmentAdLibPieceStart',
@@ -217,7 +217,7 @@ export namespace ServerPlayoutAdLibAPI {
 		partInstanceId: PartInstanceId,
 		baselineAdLibPieceId: PieceId,
 		queue: boolean
-	) {
+	): Promise<void> {
 		return runPlayoutOperationWithCache(
 			access,
 			'rundownBaselineAdLibPieceStart',
@@ -321,7 +321,7 @@ export namespace ServerPlayoutAdLibAPI {
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		sourceLayerId: string
-	) {
+	): Promise<void> {
 		return runPlayoutOperationWithCache(
 			access,
 			'sourceLayerStickyPieceStart',
@@ -657,7 +657,7 @@ export namespace ServerPlayoutAdLibAPI {
 		partInstanceId: PartInstanceId,
 		bucketAdlibId: PieceId,
 		queue: boolean
-	) {
+	): Promise<void> {
 		const bucketAdlib = BucketAdLibs.findOne(bucketAdlibId)
 		if (!bucketAdlib) throw new Meteor.Error(404, `Bucket Adlib "${bucketAdlibId}" not found!`)
 

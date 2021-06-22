@@ -63,8 +63,8 @@ describe('Playout API', () => {
 			playlistId = playlistId0
 			rundownId = rundownId0
 
-			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId), playlistId, true)
-			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId), playlistId)
+			await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId), playlistId, true)
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId), playlistId)
 
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -129,7 +129,7 @@ describe('Playout API', () => {
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)
 		})
 
-		testInFiber('no changes', () => {
+		testInFiber('no changes', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const STATE_NONE = ActionPartChange.NONE
 			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
@@ -161,13 +161,13 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			await ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)
 		})
 
-		testInFiber('safe next part', () => {
+		testInFiber('safe next part', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const STATE_NONE = ActionPartChange.NONE
 			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
@@ -201,13 +201,13 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			await ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
 		})
 
-		testInFiber('safe current part', () => {
+		testInFiber('safe current part', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const STATE_NONE = ActionPartChange.NONE
 			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
@@ -241,13 +241,13 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			await ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
 		})
 
-		testInFiber('take after execute (true)', () => {
+		testInFiber('take after execute (true)', async () => {
 			const api = ServerPlayoutAPI
 			const mockTake = jest.fn().mockReturnThis()
 			api.callTakeWithCache = mockTake
@@ -280,14 +280,14 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			await api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
 
 			const timesTakeCalled = mockTake.mock.calls.length
 			mockTake.mockRestore()
 			expect(timesTakeCalled).toBe(1)
 		})
 
-		testInFiber('take after execute (false)', () => {
+		testInFiber('take after execute (false)', async () => {
 			const api = ServerPlayoutAPI
 			const mockTake = jest.fn().mockReturnThis()
 			api.callTakeWithCache = mockTake
@@ -320,7 +320,7 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			await api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
 
 			const timesTakeCalled = mockTake.mock.calls.length
 			mockTake.mockRestore()
