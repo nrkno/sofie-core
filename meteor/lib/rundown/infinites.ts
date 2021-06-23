@@ -32,46 +32,64 @@ export function buildPastInfinitePiecesForThisPartQuery(
 	partsIdsBeforeThisInSegment: PartId[],
 	segmentsIdsBeforeThisInRundown: SegmentId[],
 	rundownIdsBeforeThisInPlaylist: RundownId[]
-): Mongo.Query<Piece> {
-	return {
-		invalid: { $ne: true },
-		startPartId: { $ne: part._id },
-		$or: [
-			{
-				// same segment, and previous part
-				lifespan: {
-					$in: [
-						PieceLifespan.OutOnSegmentEnd,
-						PieceLifespan.OutOnSegmentChange,
-						PieceLifespan.OutOnRundownEnd,
-						PieceLifespan.OutOnRundownChange,
-						PieceLifespan.OutOnShowStyleEnd,
-					],
-				},
-				startRundownId: part.rundownId,
-				startSegmentId: part.segmentId,
-				startPartId: { $in: partsIdsBeforeThisInSegment },
-			},
-			{
-				// same rundown, and previous segment
-				lifespan: {
-					$in: [
-						PieceLifespan.OutOnRundownEnd,
-						PieceLifespan.OutOnRundownChange,
-						PieceLifespan.OutOnShowStyleEnd,
-					],
-				},
-				startRundownId: part.rundownId,
-				startSegmentId: { $in: segmentsIdsBeforeThisInRundown },
-			},
-			{
-				// previous rundown
-				lifespan: {
-					$in: [PieceLifespan.OutOnShowStyleEnd],
-				},
-				startRundownId: { $in: rundownIdsBeforeThisInPlaylist },
-			},
-		],
+): Mongo.Query<Piece> | null {
+	const fragments = _.compact([
+		partsIdsBeforeThisInSegment.length > 0
+			? {
+					// same segment, and previous part
+					lifespan: {
+						$in: [
+							PieceLifespan.OutOnSegmentEnd,
+							PieceLifespan.OutOnSegmentChange,
+							PieceLifespan.OutOnRundownEnd,
+							PieceLifespan.OutOnRundownChange,
+							PieceLifespan.OutOnShowStyleEnd,
+						],
+					},
+					startRundownId: part.rundownId,
+					startSegmentId: part.segmentId,
+					startPartId: { $in: partsIdsBeforeThisInSegment },
+			  }
+			: undefined,
+		segmentsIdsBeforeThisInRundown.length > 0
+			? {
+					// same rundown, and previous segment
+					lifespan: {
+						$in: [
+							PieceLifespan.OutOnRundownEnd,
+							PieceLifespan.OutOnRundownChange,
+							PieceLifespan.OutOnShowStyleEnd,
+						],
+					},
+					startRundownId: part.rundownId,
+					startSegmentId: { $in: segmentsIdsBeforeThisInRundown },
+			  }
+			: undefined,
+		rundownIdsBeforeThisInPlaylist.length > 0
+			? {
+					// previous rundown
+					lifespan: {
+						$in: [PieceLifespan.OutOnShowStyleEnd],
+					},
+					startRundownId: { $in: rundownIdsBeforeThisInPlaylist },
+			  }
+			: undefined,
+	])
+
+	if (fragments.length === 0) {
+		return null
+	} else if (fragments.length === 1) {
+		return {
+			invalid: { $ne: true },
+			startPartId: { $ne: part._id },
+			...fragments[0],
+		}
+	} else {
+		return {
+			invalid: { $ne: true },
+			startPartId: { $ne: part._id },
+			$or: fragments,
+		}
 	}
 }
 
