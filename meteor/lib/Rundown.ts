@@ -83,14 +83,13 @@ export function fetchPiecesThatMayBeActiveForPart(
 	const partsBeforeThisInSegment = Array.from(partsBeforeThisInSegmentSet.values())
 	const segmentsBeforeThisInRundown = Array.from(segmentsBeforeThisInRundownSet.values())
 
-	const infinitePieces = Pieces.find(
-		buildPastInfinitePiecesForThisPartQuery(
-			part,
-			partsBeforeThisInSegment,
-			segmentsBeforeThisInRundown,
-			rundownsBeforeThisInPlaylist
-		)
-	).fetch()
+	const infinitePieceQuery = buildPastInfinitePiecesForThisPartQuery(
+		part,
+		partsBeforeThisInSegment,
+		segmentsBeforeThisInRundown,
+		rundownsBeforeThisInPlaylist
+	)
+	const infinitePieces = infinitePieceQuery ? Pieces.find(infinitePieceQuery).fetch() : []
 
 	return [...piecesStartingInPart, ...infinitePieces]
 }
