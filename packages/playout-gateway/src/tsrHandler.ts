@@ -848,7 +848,7 @@ export class TSRHandler {
 			'_id'
 		)
 
-		this.logger.debug(`VIZDEBUG: Items after filter ${JSON.stringify(expectedItems)}`)
+		this.logger.debug(`VIZDEBUG: Items after studio-filter ${JSON.stringify(expectedItems)}`)
 
 		await Promise.all(
 			_.map(this.tsr.getDevices(), async (container) => {
