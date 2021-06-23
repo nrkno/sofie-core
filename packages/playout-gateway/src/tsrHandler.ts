@@ -496,6 +496,7 @@ export class TSRHandler {
 				active: true,
 			})
 			const activeRundownPlaylistId = activeRundownPlaylist?._id
+			this.logger.info(`Got active rundownPlaylist ${activeRundownPlaylistId}`)
 
 			const settings: TSRSettings = peripheralDevice.settings || {}
 
