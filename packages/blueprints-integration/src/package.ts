@@ -326,7 +326,7 @@ export namespace ExpectedPackageStatusAPI {
 	/** The stat */
 	export interface WorkStatusInfo {
 		/** Short description on what the current status is. Example "working", "fulfilled" */
-		status: 'new' | 'waiting' | 'ready' | 'working' | 'fulfilled' | 'removed'
+		status: WorkStatusState
 		/** The reason as to why the status is what it is */
 		statusReason: Reason
 
@@ -334,6 +334,19 @@ export namespace ExpectedPackageStatusAPI {
 		progress?: number
 		/** Calculated time left of this step */
 		expectedLeft?: number
+	}
+	/** The various states a Work can be in. See documentation in Package Manager. */
+	export enum WorkStatusState {
+		NEW = 'new',
+		WAITING = 'waiting',
+		READY = 'ready',
+		WORKING = 'working',
+		FULFILLED = 'fulfilled',
+		REMOVED = 'removed',
+
+		// Triggered from Core:
+		RESTARTED = 'restarted',
+		ABORTED = 'aborted',
 	}
 
 	/** Describes the status of a Package in a PackageContainer */
