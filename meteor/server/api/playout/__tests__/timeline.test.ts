@@ -58,7 +58,7 @@ describe('Timeline', () => {
 		})
 
 		{
-			// Prepare and activate in rehersal:
+			// Prepare and activate in rehearsal:
 			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0, false)
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeFalsy()

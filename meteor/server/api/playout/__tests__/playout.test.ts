@@ -222,7 +222,7 @@ describe('Playout API', () => {
 
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
-		// Prepare and activate in rehersal:
+		// Prepare and activate in rehearsal:
 		ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
 		expect(getPlaylist0()).toMatchObject({
@@ -282,7 +282,7 @@ describe('Playout API', () => {
 
 			expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
-			// Prepare and activate in rehersal:
+			// Prepare and activate in rehearsal:
 			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, true)
 
 			expect(getPlaylist0()).toMatchObject({
@@ -428,7 +428,7 @@ describe('Playout API', () => {
 				return RundownPlaylists.findOne(playlistId0) as RundownPlaylist
 			}
 
-			// Prepare and activate in rehersal:
+			// Prepare and activate in rehearsal:
 			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, true)
 
 			expect(getPlaylist0()).toMatchObject({
@@ -588,7 +588,7 @@ describe('Playout API', () => {
 		}
 		const parts = getPlaylist0().getAllOrderedParts()
 
-		// Prepare and activate in rehersal:
+		// Prepare and activate in rehearsal:
 		ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, true)
 
 		{

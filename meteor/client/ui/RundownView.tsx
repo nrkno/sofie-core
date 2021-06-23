@@ -867,7 +867,7 @@ const RundownHeader = withTranslation()(
 
 		handleAnotherPlaylistActive = (
 			playlistId: RundownPlaylistId,
-			rehersal: boolean,
+			rehearsal: boolean,
 			err: ClientAPI.ClientResponseError,
 			clb?: Function
 		) => {
@@ -923,7 +923,7 @@ const RundownHeader = withTranslation()(
 						t,
 						e,
 						UserAction.DEACTIVATE_OTHER_RUNDOWN_PLAYLIST,
-						(e) => MeteorCall.userAction.forceResetAndActivate(e, playlistId, rehersal),
+						(e) => MeteorCall.userAction.forceResetAndActivate(e, playlistId, rehearsal),
 						handleResult
 					)
 				},
@@ -1064,7 +1064,7 @@ const RundownHeader = withTranslation()(
 							},
 						})
 					} else {
-						// Already in rehersal, do nothing
+						// Already in rehaersal, do nothing
 					}
 				} else {
 					// The broadcast has started
@@ -1134,7 +1134,7 @@ const RundownHeader = withTranslation()(
 				)
 			}
 			if (this.props.playlist.activationId && !this.props.playlist.rehearsal && !Settings.allowRundownResetOnAir) {
-				// The rundown is active and not in rehersal
+				// The rundown is active and not in rehaersal
 				doModalDialog({
 					title: this.props.playlist.name,
 					message: t('The rundown can not be reset while it is active'),

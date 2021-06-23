@@ -17,7 +17,7 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 	logger.info('Activating rundown ' + cache.Playlist.doc._id + (rehearsal ? ' (Rehearsal)' : ''))
 
 	rehearsal = !!rehearsal
-	// if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(403, `Rundown "${rundown._id}" is active and not in rehersal, cannot reactivate!`)
+	// if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(403, `Rundown "${rundown._id}" is active and not in rehearsal, cannot reactivate!`)
 
 	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
 		cache.Studio.doc._id,

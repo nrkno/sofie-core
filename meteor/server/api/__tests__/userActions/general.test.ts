@@ -122,7 +122,7 @@ describe('User Actions - General', () => {
 		})
 
 		{
-			// Prepare and activate in rehersal:
+			// Prepare and activate in rehearsal:
 			expect(Meteor.call(UserActionAPI.methods.prepareForBroadcast, 'e', playlistId0)).toMatchObject({
 				success: 200,
 			})
