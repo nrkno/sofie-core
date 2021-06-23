@@ -97,7 +97,7 @@ export namespace ExpectedPackage {
 					| AccessorOnPackage.LocalFolder
 					| AccessorOnPackage.FileShare
 					| AccessorOnPackage.HTTP
-					| AccessorOnPackage.FTP
+					| AccessorOnPackage.HTTPProxy
 			}
 		}[]
 	}
@@ -136,9 +136,9 @@ export namespace ExpectedPackage {
 			accessors: {
 				[accessorId: string]:
 					| AccessorOnPackage.HTTP
+					| AccessorOnPackage.HTTPProxy
 					| AccessorOnPackage.LocalFolder
 					| AccessorOnPackage.FileShare
-				// | AccessorOnPackage.FTP
 			}
 		}[]
 	}
@@ -163,7 +163,7 @@ export interface PackageContainer {
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Accessor {
-	export type Any = LocalFolder | FileShare | HTTP | HTTPProxy | Quantel | CorePackageCollection | FTP
+	export type Any = LocalFolder | FileShare | HTTP | HTTPProxy | Quantel | CorePackageCollection
 
 	export enum AccessType {
 		LOCAL_FOLDER = 'local_folder',
@@ -172,7 +172,6 @@ export namespace Accessor {
 		HTTP_PROXY = 'http_proxy',
 		QUANTEL = 'quantel',
 		CORE_PACKAGE_INFO = 'core_package_info',
-		FTP = 'ftp',
 	}
 
 	/** Generic (used in extends) */
@@ -253,22 +252,6 @@ export namespace Accessor {
 		type: Accessor.AccessType.CORE_PACKAGE_INFO
 		// empty
 	}
-
-	export interface FTP extends Base {
-		type: AccessType.FTP
-
-		/** Base url (url to the host), for example ftp://myhost.com/fileShare/ */
-		baseUrl: string
-
-		/** Optional username, if not provided a regular anonymous login will be used */
-		userName?: string
-
-		/** Optional password to use for login */
-		password?: string
-
-		/** Force encrypted connection attempt. Will fail instead of fall back to unencrypted if unsupported by server */
-		requireTLS?: boolean
-	}
 }
 /**
  * AccessorOnPackage contains interfaces for Accessor definitions that are put ON the Package.
@@ -276,7 +259,7 @@ export namespace Accessor {
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AccessorOnPackage {
-	export type Any = LocalFolder | FileShare | HTTP | HTTPProxy | Quantel | CorePackageCollection | FTP
+	export type Any = LocalFolder | FileShare | HTTP | HTTPProxy | Quantel | CorePackageCollection
 
 	export interface LocalFolder extends Partial<Accessor.LocalFolder> {
 		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
@@ -301,11 +284,6 @@ export namespace AccessorOnPackage {
 	// eslint-disable-next-line @typescript-eslint/no-empty-interface
 	export interface CorePackageCollection extends Partial<Accessor.CorePackageCollection> {
 		// empty
-	}
-
-	export interface FTP extends Partial<Accessor.FTP> {
-		/** Path to resource (combined with .baseUrl gives the full URL), for example: folder/myFile */
-		path: string
 	}
 }
 
@@ -348,7 +326,7 @@ export namespace ExpectedPackageStatusAPI {
 	/** The stat */
 	export interface WorkStatusInfo {
 		/** Short description on what the current status is. Example "working", "fulfilled" */
-		status: string
+		status: 'new' | 'waiting' | 'ready' | 'working' | 'fulfilled' | 'removed'
 		/** The reason as to why the status is what it is */
 		statusReason: Reason
 
