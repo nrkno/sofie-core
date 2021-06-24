@@ -574,6 +574,10 @@ export function activateHold(
 		return ClientAPI.responseError(`Can't undo hold from state: ${RundownHoldState[playlist.holdState || 0]}`)
 	}
 
+	if (!undo && currentPartInstance.part.segmentId !== nextPartInstance.part.segmentId) {
+		return ClientAPI.responseError(400, `Can't do hold between segments!`)
+	}
+
 	if (undo) {
 		return ClientAPI.responseSuccess(ServerPlayoutAPI.deactivateHold(access, rundownPlaylistId))
 	} else {
