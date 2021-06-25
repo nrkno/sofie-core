@@ -538,7 +538,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimeUntilClick = (e: React.MouseEvent<HTMLDivElement>) => {
+	onTimeUntilClick = (_e: React.MouseEvent<HTMLDivElement>) => {
 		this.setState(
 			(state) => ({
 				useTimeOfDayCountdowns: !state.useTimeOfDayCountdowns,

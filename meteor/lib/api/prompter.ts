@@ -4,8 +4,8 @@ import * as _ from 'underscore'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
 import { getRandomId, normalizeArrayToMap } from '../lib'
-import { SegmentId, Segments } from '../collections/Segments'
-import { PieceId, Pieces } from '../collections/Pieces'
+import { SegmentId } from '../collections/Segments'
+import { PieceId } from '../collections/Pieces'
 import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../Rundown'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PartId } from '../collections/Parts'
@@ -51,7 +51,7 @@ export namespace PrompterAPI {
 		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 		const rundowns = playlist.getRundowns()
 		const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
-		for (let rundown of rundowns) {
+		for (const rundown of rundowns) {
 			rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
 		}
 		const rundownMap = normalizeArrayToMap(rundowns, '_id')
