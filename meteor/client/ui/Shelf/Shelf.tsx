@@ -35,6 +35,7 @@ import ShelfContextMenu from './ShelfContextMenu'
 import { isModalShowing } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -173,7 +174,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			e.preventDefault()
 		}
 		this.bindKeys.forEach((k) => {
-			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
+			const method = k.global ? mousetrapHelper.bindGlobal : mousetrapHelper.bind
 			if (k.up) {
 				method(
 					k.key,
@@ -181,14 +182,16 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 						preventDefault(e)
 						if (k.up) k.up(e)
 					},
-					'keyup'
+					'keyup',
+					'Shelf'
 				)
 				method(
 					k.key,
 					(e: KeyboardEvent) => {
 						preventDefault(e)
 					},
-					'keydown'
+					'keydown',
+					'Shelf'
 				)
 			}
 			if (k.down) {
@@ -198,7 +201,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 						preventDefault(e)
 						if (k.down) k.down(e)
 					},
-					'keydown'
+					'keydown',
+					'Shelf'
 				)
 			}
 		})
@@ -213,11 +217,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	componentWillUnmount() {
 		this.bindKeys.forEach((k) => {
 			if (k.up) {
-				mousetrap.unbind(k.key, 'keyup')
-				mousetrap.unbind(k.key, 'keydown')
+				mousetrapHelper.unbind(k.key, 'Shelf', 'keyup')
+				mousetrapHelper.unbind(k.key, 'Shelf', 'keydown')
 			}
 			if (k.down) {
-				mousetrap.unbind(k.key, 'keydown')
+				mousetrapHelper.unbind(k.key, 'Shelf', 'keydown')
 			}
 		})
 
