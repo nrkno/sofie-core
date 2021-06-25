@@ -337,7 +337,7 @@ export async function unsyncRundown(
 	context: MethodContext,
 	rundownId: RundownId
 ): Promise<ClientAPI.ClientResponse<void>> {
-	return ClientAPI.responseSuccess(ServerRundownAPI.unsyncRundown(context, rundownId))
+	return ClientAPI.responseSuccess(await ServerRundownAPI.unsyncRundown(context, rundownId))
 }
 export async function disableNextPiece(
 	context: MethodContext,
@@ -614,20 +614,20 @@ export async function userStoreRundownSnapshot(
 ): Promise<ClientAPI.ClientResponse<SnapshotId>> {
 	return ClientAPI.responseSuccess(await storeRundownPlaylistSnapshot(context, playlistId, reason))
 }
-export function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
+export async function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
 	const playlist = checkAccessAndGetPlaylist(context, playlistId)
 
-	return ClientAPI.responseSuccess(ServerRundownAPI.removeRundownPlaylist(context, playlist._id))
+	return ClientAPI.responseSuccess(await ServerRundownAPI.removeRundownPlaylist(context, playlist._id))
 }
 export function resyncRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
 	const playlist = checkAccessAndGetPlaylist(context, playlistId)
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncRundownPlaylist(context, playlist._id))
 }
-export function removeRundown(context: MethodContext, rundownId: RundownId) {
+export async function removeRundown(context: MethodContext, rundownId: RundownId) {
 	const rundown = checkAccessAndGetRundown(context, rundownId)
 
-	return ClientAPI.responseSuccess(ServerRundownAPI.removeRundown(context, rundown._id))
+	return ClientAPI.responseSuccess(await ServerRundownAPI.removeRundown(context, rundown._id))
 }
 export function resyncRundown(context: MethodContext, rundownId: RundownId) {
 	const rundown = checkAccessAndGetRundown(context, rundownId)

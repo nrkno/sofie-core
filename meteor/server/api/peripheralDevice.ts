@@ -1146,14 +1146,10 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 			  }
 		)[]
 	): Promise<void> {
-		return makePromise(() =>
-			PackageManagerIntegration.updateExpectedPackageWorkStatuses(this, deviceId, deviceToken, changes)
-		)
+		await PackageManagerIntegration.updateExpectedPackageWorkStatuses(this, deviceId, deviceToken, changes)
 	}
 	async removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() =>
-			PackageManagerIntegration.removeAllExpectedPackageWorkStatusOfDevice(this, deviceId, deviceToken)
-		)
+		await PackageManagerIntegration.removeAllExpectedPackageWorkStatusOfDevice(this, deviceId, deviceToken)
 	}
 	async updatePackageContainerPackageStatuses(
 		deviceId: PeripheralDeviceId,
@@ -1172,9 +1168,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 			  }
 		)[]
 	): Promise<void> {
-		return makePromise(() =>
-			PackageManagerIntegration.updatePackageContainerPackageStatuses(this, deviceId, deviceToken, changes)
-		)
+		await PackageManagerIntegration.updatePackageContainerPackageStatuses(this, deviceId, deviceToken, changes)
 	}
 	async fetchPackageInfoMetadata(
 		deviceId: PeripheralDeviceId,
@@ -1182,9 +1176,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		type: string,
 		packageIds: ExpectedPackageId[]
 	) {
-		return makePromise(() =>
-			PackageManagerIntegration.fetchPackageInfoMetadata(this, deviceId, deviceToken, type, packageIds)
-		)
+		return PackageManagerIntegration.fetchPackageInfoMetadata(this, deviceId, deviceToken, type, packageIds)
 	}
 	async updatePackageInfo(
 		deviceId: PeripheralDeviceId,
@@ -1195,17 +1187,15 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		actualContentVersionHash: string,
 		payload: any
 	) {
-		return makePromise(() =>
-			PackageManagerIntegration.updatePackageInfo(
-				this,
-				deviceId,
-				deviceToken,
-				type,
-				packageId,
-				expectedContentVersionHash,
-				actualContentVersionHash,
-				payload
-			)
+		await PackageManagerIntegration.updatePackageInfo(
+			this,
+			deviceId,
+			deviceToken,
+			type,
+			packageId,
+			expectedContentVersionHash,
+			actualContentVersionHash,
+			payload
 		)
 	}
 	async removePackageInfo(
@@ -1214,9 +1204,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		type: string,
 		packageId: ExpectedPackageId
 	) {
-		return makePromise(() =>
-			PackageManagerIntegration.removePackageInfo(this, deviceId, deviceToken, type, packageId)
-		)
+		await PackageManagerIntegration.removePackageInfo(this, deviceId, deviceToken, type, packageId)
 	}
 }
 registerClassToMeteorMethods(PeripheralDeviceAPIMethods, ServerPeripheralDeviceAPIClass, false)
