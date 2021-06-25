@@ -36,6 +36,7 @@ import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../Rundo
 
 import * as VelocityReact from 'velocity-react'
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
+import { UIStateStorage } from '../../lib/UIStateStorage'
 
 interface IProps {
 	id: string
@@ -81,6 +82,7 @@ interface IStateHeader {
 	timelineWidth: number
 	mouseGrabbed: boolean
 	highlight: boolean
+	useTimeOfDayCountdowns: boolean
 }
 
 interface IZoomPropsHeader {
@@ -311,6 +313,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			timelineWidth: 1,
 			mouseGrabbed: false,
 			highlight: false,
+			useTimeOfDayCountdowns: UIStateStorage.getItemBoolean(
+				`rundownView.${props.playlist._id}`,
+				`segment.${props.segment._id}.useTimeOfDayCountdowns`,
+				!!props.playlist.timeOfDayCountdowns
+			),
 		}
 	}
 
@@ -536,6 +543,21 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		} else {
 			this.onTimelineZoomOff()
 		}
+	}
+
+	onTimeUntilClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.setState(
+			(state) => ({
+				useTimeOfDayCountdowns: !state.useTimeOfDayCountdowns,
+			}),
+			() => {
+				UIStateStorage.setItem(
+					`rundownView.${this.props.playlist._id}`,
+					`segment.${this.props.segment._id}.useTimeOfDayCountdowns`,
+					!!this.state.useTimeOfDayCountdowns
+				)
+			}
+		)
 	}
 
 	onTimelineWheel = (e: WheelEvent) => {
@@ -801,6 +823,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			}
 		}
 
+		const useTimeOfDayCountdowns = this.state.useTimeOfDayCountdowns
+
 		return (
 			<div
 				id={this.props.id}
@@ -820,6 +844,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					'has-remote-items': this.props.hasRemoteItems,
 					'has-identifiers': identifiers.length > 0,
 					'invert-flash': this.state.highlight,
+
+					'time-of-day-countdowns': this.state.useTimeOfDayCountdowns,
 				})}
 				data-obj-id={this.props.segment._id}
 				ref={this.setSegmentRef}
@@ -891,12 +917,19 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							/>
 						)}
 				</div>
-				<div className="segment-timeline__timeUntil">
+				<div className="segment-timeline__timeUntil" onClick={this.onTimeUntilClick}>
 					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (
 						<PartCountdown
 							partId={countdownToPartId}
-							hideOnZero={true}
-							label={<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>}
+							hideOnZero={!useTimeOfDayCountdowns}
+							useWallClock={useTimeOfDayCountdowns}
+							label={
+								useTimeOfDayCountdowns ? (
+									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
+								) : (
+									<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
+								)
+							}
 						/>
 					)}
 					{Settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (

@@ -720,7 +720,11 @@ svg.icon {
 		letter-spacing: 0;
 		font-weight: 400;
 
+		cursor: pointer;
+		transition: 0.3s color;
+
 		> span.negative {
+			transition: none;
 			color: $general-late-color;
 			font-weight: 500;
 		}
@@ -751,6 +755,17 @@ svg.icon {
 	.segment-timeline__timeUntil {
 		color: #888;
 	}
+
+	&.time-of-day-countdowns {
+		.segment-timeline__duration {
+			color: #888;
+		}
+		.segment-timeline__timeUntil {
+			color: #fff;
+			font-weight: 500;
+		}
+	}
+
 	.segment-timeline__unsynced {
 		text-transform: uppercase;
 	}
@@ -2241,6 +2256,24 @@ svg.icon {
 
 		> svg.icon {
 			width: 1.4em;
+		}
+	}
+
+	> .playlist-looping-header__countdown {
+		font-size: 1.05em;
+		margin-right: 1em;
+		line-height: 1.4em;
+
+		&:first-of-type {
+			margin-left: 3em;
+		}
+
+		&.playlist-looping-header__countdown--time-of-day {
+			font-weight: 600;
+		}
+
+		&.playlist-looping-header__countdown--countdown {
+			font-weight: 300;
 		}
 	}
 }
