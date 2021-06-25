@@ -6,7 +6,6 @@ import { protectString } from '../../../lib/lib'
 import { MediaObjectRevision } from '../../../lib/api/peripheralDevice'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { MethodContext } from '../../../lib/api/methods'
-import { onUpdatedMediaObject } from '../ingest/packageInfo'
 
 export namespace MediaScannerIntegration {
 	export function getMediaObjectRevisions(
@@ -51,7 +50,6 @@ export namespace MediaScannerIntegration {
 		let _id: MediaObjId = protectString(collectionId + '_' + objId)
 		if (_.isNull(doc)) {
 			MediaObjects.remove(_id)
-			onUpdatedMediaObject(_id, null)
 		} else if (doc) {
 			if (doc.mediaId !== doc.mediaId.toUpperCase())
 				throw new Meteor.Error(400, 'mediaId must only use uppercase characters')
@@ -63,7 +61,6 @@ export namespace MediaScannerIntegration {
 			})
 			// logger.debug(doc2)
 			MediaObjects.upsert(_id, { $set: doc2 })
-			onUpdatedMediaObject(_id, doc2)
 		} else {
 			throw new Meteor.Error(400, 'missing doc argument')
 		}

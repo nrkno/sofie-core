@@ -86,7 +86,6 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-<<<<<<< HEAD
 * Failing tests ([a786d24](https://github.com/nrkno/tv-automation-server-core/commit/a786d242b87ca2b3bafa64761691ed07e44d0d8b))
 * **TimelineGrid:** timeline labels are non-monotonous under some conditions ([e1381de](https://github.com/nrkno/tv-automation-server-core/commit/e1381defa8162069e5c2efcb492b6eb873f306d5))
 * [object Object] in UI ([5d5c097](https://github.com/nrkno/tv-automation-server-core/commit/5d5c09770c67d1704e4a960a0703871afc0c72e7))
@@ -115,9 +114,6 @@ All notable changes to this project will be documented in this file. See [standa
 * PM: fix quantel types and add GUI settings ([9c4bb37](https://github.com/nrkno/tv-automation-server-core/commit/9c4bb37be6f27beaff9f9db387f357fc5148f509))
 * Register shortcuts according to rank in adlib panels ([982cbd2](https://github.com/nrkno/tv-automation-server-core/commit/982cbd2e1a93e7d0f085ef3ab5a20625171f4cb9))
 * Tests for findLastScriptedPieceOnLayer ([903a2cb](https://github.com/nrkno/tv-automation-server-core/commit/903a2cbae8c698b69352e0b94b497f7d89168455))
-=======
-* orphaned parts cause the Segment Timeline component to scroll beyond the timeline ([7935815](https://github.com/nrkno/tv-automation-server-core/commit/7935815d14ce40c0702cb61ec2288b636fafbf78))
->>>>>>> fb87bfe131a2749ae624a9eafa450ed28e6019a4
 
 ### [1.32.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.1...v1.32.2) (2021-06-02)
 

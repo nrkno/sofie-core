@@ -1,6 +1,5 @@
 import * as _ from 'underscore'
 import { ExpectedPackageDBType, ExpectedPackageId, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
-import { MediaObject, MediaObjId } from '../../../lib/collections/MediaObjects'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
@@ -9,35 +8,6 @@ import { logger } from '../../logging'
 import { runIngestOperationWithCache } from './lockFunction'
 import { Meteor } from 'meteor/meteor'
 import { regenerateSegmentsFromIngestData } from './generation'
-
-/** to-be @deprecated hack for backwards-compatibility*/
-export function onUpdatedMediaObject(_id: MediaObjId, _newDocument: MediaObject | null) {
-	// TODO: Implement, for backwards-compatibility
-	// oldDocument?: MediaObject
-	// if (
-	// 	!oldDocument ||
-	// 	(newDocument.mediainfo?.format?.duration &&
-	// 		oldDocument.mediainfo?.format?.duration !== newDocument.mediainfo?.format?.duration)
-	// ) {
-	// 	const segmentsToUpdate = new Map<SegmentId, RundownId>()
-	// 	const rundownIdsInStudio = Rundowns.find({ studioId: newDocument.studioId }, { fields: { _id: 1 } })
-	// 		.fetch()
-	// 		.map((rundown) => rundown._id)
-	// 	Parts.find({
-	// 		rundownId: { $in: rundownIdsInStudio },
-	// 		'hackListenToMediaObjectUpdates.mediaId': newDocument.mediaId,
-	// 	}).forEach((part) => {
-	// 		segmentsToUpdate.set(part.segmentId, part.rundownId)
-	// 	})
-	// 	segmentsToUpdate.forEach((rundownId, segmentId) => {
-	// 		lazyIgnore(
-	// 			`updateSegmentFromMediaObject_${segmentId}`,
-	// 			() => updateSegmentFromCache(rundownId, segmentId),
-	// 			200
-	// 		)
-	// 	})
-	// }
-}
 
 export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageInfoDB | null) {
 	logger.info(`PackageInfo updated "${packageId}"`)

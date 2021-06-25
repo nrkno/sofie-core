@@ -6025,7 +6025,7 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-marked@^2.0.0, marked@^2.0.3:
+marked@^2.0.3:
   version "2.0.7"
   resolved "https://registry.yarnpkg.com/marked/-/marked-2.0.7.tgz#bc5b857a09071b48ce82a1f7304913a993d4b7d1"
   integrity sha512-BJXxkuIfJchcXOJWTT2DOL+yFWifFv2yGYOUzvXg8Qz610QKw+sHCvTMYwA+qWGhlA2uivBezChZ/pBy1tWdkQ==
@@ -8766,17 +8766,17 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6, through@^2.3.8:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
-timeline-state-resolver-types@5.8.0:
-  version "5.8.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-5.8.0.tgz#80993bf140aa3127ad29faf2a1e3ca26994eee7a"
-  integrity sha512-8i8VpPS/f9ZjUBBep6ieph8/vRE+18j3Ou8azejQ7vm5BXJ0JCei4oEKFtbuCbmAmZM+oc1Vv82i/n8Jtn9cUQ==
+timeline-state-resolver-types@5.9.0-nightly-release34-20210511-085833-30ad952a1.0:
+  version "5.9.0-nightly-release34-20210511-085833-30ad952a1.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-5.9.0-nightly-release34-20210511-085833-30ad952a1.0.tgz#6edada5ea4199b290645c9ced2a4051ed68985ea"
+  integrity sha512-3M9CptINGuerTEJGriuez4PqFqyD3Cf2ZZ9lI0cv4mnXOTLt3kwbp4a0uc2HWLBgzPsYPM9JEz2Y20XFSJC4TQ==
   dependencies:
     tslib "^1.13.0"
 
-timeline-state-resolver@5.8.0:
-  version "5.8.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-5.8.0.tgz#8c0926e553c4f2c71acf6b14f894ac9883d04e77"
-  integrity sha512-iT3UWs0kPIUMwzLNomvD2dSF2hNMdV7TNwsezZh7XecXBAHraXO3LgtV0wFPZGqCaMpdn64aKgvBRwfmN7Oqiw==
+timeline-state-resolver@5.9.0-nightly-release34-20210511-085833-30ad952a1.0:
+  version "5.9.0-nightly-release34-20210511-085833-30ad952a1.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-5.9.0-nightly-release34-20210511-085833-30ad952a1.0.tgz#647fdb39a7f9ea3e0078f898559422535f7148f5"
+  integrity sha512-q8fk4n2tqKgfFvcZWLjAfkD607FgDNvANwJh0p8PsiDEomG+DlX9963WPOCvQZZ8VPhlK499nGIYt4KNwu8juQ==
   dependencies:
     atem-state "^0.10.1"
     bufferutil "^4.0.1"
@@ -8786,7 +8786,6 @@ timeline-state-resolver@5.8.0:
     deepmerge "^4.2.2"
     emberplus-connection "^0.0.3"
     hyperdeck-connection "^0.4.3"
-    marked "^2.0.0"
     osc "^2.4.0"
     p-all "^3.0.0"
     p-queue "^6.4.0"
@@ -9608,12 +9607,7 @@ write-pkg@^4.0.0:
     type-fest "^0.4.1"
     write-json-file "^3.2.0"
 
-ws@7.2.1:
-  version "7.2.1"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-7.2.1.tgz#03ed52423cd744084b2cf42ed197c8b65a936b8e"
-  integrity sha512-sucePNSafamSKoOqoNfBd8V0StlkzJKL2ZAhGQinCfNQ+oacw+Pk7lcdAElecBF2VkLNZRiIb5Oi1Q5lVUVt2A==
-
-ws@^7.1.1, ws@^7.1.2, ws@^7.4.5, ws@^7.4.6:
+ws@7.2.1, ws@^7.1.1, ws@^7.1.2, ws@^7.4.5, ws@^7.4.6:
   version "7.4.6"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
   integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
