@@ -410,21 +410,7 @@ export const SourceLayerItem = withTranslation()(
 		private onResize = (entries: ResizeObserverEntry[]) => {
 			const firstEntry = entries && entries[0]
 
-			if (firstEntry && firstEntry.contentBoxSize && firstEntry.contentBoxSize.width) {
-				const width = firstEntry.contentBoxSize!.width
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
-			} else if (firstEntry && firstEntry.borderBoxSize && firstEntry.borderBoxSize.width) {
-				const width = firstEntry.borderBoxSize!.width
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
-			} else if (firstEntry && firstEntry.contentRect && firstEntry.contentRect.width) {
+			if (firstEntry && firstEntry.contentRect && firstEntry.contentRect.width) {
 				const width = firstEntry.contentRect!.width
 				if (this.state.elementWidth !== width) {
 					this.setState({
