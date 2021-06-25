@@ -676,7 +676,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 }
 
-export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartInstanceId | null) {
+export function getUnfinishedPieceInstancesReactive(
+	currentPartInstanceId: PartInstanceId | null,
+	includeNonAdLibPieces?: boolean
+) {
 	let prospectivePieces: PieceInstance[] = []
 	const now = getCurrentTime()
 	if (currentPartInstanceId) {
@@ -699,20 +702,22 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 						},
 					],
 				},
-				{
-					$or: [
-						{
-							adLibSourceId: {
-								$exists: true,
-							},
-						},
-						{
-							'piece.tags': {
-								$exists: true,
-							},
-						},
-					],
-				},
+				!includeNonAdLibPieces
+					? {
+							$or: [
+								{
+									adLibSourceId: {
+										$exists: true,
+									},
+								},
+								{
+									'piece.tags': {
+										$exists: true,
+									},
+								},
+							],
+					  }
+					: {},
 				{
 					$or: [
 						{

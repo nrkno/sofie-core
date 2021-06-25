@@ -14,6 +14,9 @@ import { BucketAdLibItem } from './RundownViewBuckets'
 import { IAdLibListItem } from './AdLibListItem'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from './AdLibPanel'
+import { PlaylistStartTimerPanel } from './PlaylistStartTimerPanel'
+import { EndWordsPanel } from './EndWordsPanel'
+import { PlaylistEndTimerPanel } from './PlaylistEndTimerPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -103,6 +106,12 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							playlist={props.playlist}
 							visible={true}
 						/>
+					) : RundownLayoutsAPI.isPlaylistStartTimer(panel) ? (
+						<PlaylistStartTimerPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+					) : RundownLayoutsAPI.isPlaylistEndTimer(panel) ? (
+						<PlaylistEndTimerPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+					) : RundownLayoutsAPI.isEndWords(panel) ? (
+						<EndWordsPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 					) : undefined
 				)}
 			{rundownLayout.actionButtons && (

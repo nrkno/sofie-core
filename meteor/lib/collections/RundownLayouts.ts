@@ -45,6 +45,9 @@ export enum RundownLayoutElementType {
 	EXTERNAL_FRAME = 'external_frame',
 	ADLIB_REGION = 'adlib_region',
 	PIECE_COUNTDOWN = 'piece_countdown',
+	PLAYLIST_START_TIMER = 'playlist_start_timer',
+	PLAYLIST_END_TIMER = 'playlist_end_timer',
+	END_WORDS = 'end_words',
 }
 
 export interface RundownLayoutElementBase {
@@ -77,6 +80,30 @@ export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
 export interface RundownLayoutPieceCountdown extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.PIECE_COUNTDOWN
 	sourceLayerIds: string[] | undefined
+}
+
+export interface RundownLayoutPlaylistStartTimer extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PLAYLIST_START_TIMER
+	hideDiff: boolean
+}
+
+export interface RundownLayoutPlaylistEndTimer extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PLAYLIST_END_TIMER
+	expectedEndText: string
+	hideCountdown: boolean
+	hideDiff: boolean
+	hidePlannedEnd: boolean
+}
+
+export interface RundownLayoutEndWords extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PLAYLIST_END_TIMER
+	scriptSourceLayerIds?: string[]
+	requiredLayers?: string[]
+	/**
+	 * Require that all required sourcelayers be active in order to show end words.
+	 * This allows end words to be tied to a combination of e.g. script + VT.
+	 */
+	requireAllSourcelayers: boolean
 }
 
 /**
@@ -126,6 +153,27 @@ export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
 }
 
 export interface DashboardLayoutPieceCountdown extends RundownLayoutPieceCountdown {
+	x: number
+	y: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutPlaylistStartTimer extends RundownLayoutPlaylistStartTimer {
+	x: number
+	y: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutPlaylistEndTimer extends RundownLayoutPlaylistEndTimer {
+	x: number
+	y: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutEndsWords extends RundownLayoutEndWords {
 	x: number
 	y: number
 	width: number

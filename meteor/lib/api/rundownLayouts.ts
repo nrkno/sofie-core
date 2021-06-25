@@ -15,6 +15,9 @@ import {
 	RundownLayoutRundownHeader,
 	RundownLayoutShelfBase,
 	CustomizableRegions,
+	RundownLayoutPlaylistStartTimer,
+	RundownLayoutPlaylistEndTimer,
+	RundownLayoutEndWords,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -168,7 +171,12 @@ export namespace RundownLayoutsAPI {
 	registry.RegisterRundownHeaderLayouts(RundownLayoutType.DASHBOARD_LAYOUT, {
 		filtersTitle: 'Layout Elements',
 		supportsFilters: true,
-		supportedElements: [RundownLayoutElementType.PIECE_COUNTDOWN],
+		supportedElements: [
+			RundownLayoutElementType.PIECE_COUNTDOWN,
+			RundownLayoutElementType.PLAYLIST_START_TIMER,
+			RundownLayoutElementType.PLAYLIST_END_TIMER,
+			RundownLayoutElementType.END_WORDS,
+		],
 	})
 
 	export function GetSettingsManifest(): CustomizableRegionSettingsManifest[] {
@@ -221,6 +229,20 @@ export namespace RundownLayoutsAPI {
 
 	export function isPieceCountdown(element: RundownLayoutElementBase): element is RundownLayoutPieceCountdown {
 		return element.type === RundownLayoutElementType.PIECE_COUNTDOWN
+	}
+
+	export function isPlaylistStartTimer(
+		element: RundownLayoutElementBase
+	): element is RundownLayoutPlaylistStartTimer {
+		return element.type === RundownLayoutElementType.PLAYLIST_START_TIMER
+	}
+
+	export function isPlaylistEndTimer(element: RundownLayoutElementBase): element is RundownLayoutPlaylistEndTimer {
+		return element.type === RundownLayoutElementType.PLAYLIST_END_TIMER
+	}
+
+	export function isEndWords(element: RundownLayoutElementBase): element is RundownLayoutEndWords {
+		return element.type === RundownLayoutElementType.END_WORDS
 	}
 
 	export function adLibRegionToFilter(element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {
