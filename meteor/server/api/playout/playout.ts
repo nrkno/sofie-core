@@ -567,6 +567,9 @@ export namespace ServerPlayoutAPI {
 				) {
 					throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" incompatible pair of HoldMode!`)
 				}
+				if (currentPartInstance.part.segmentId !== nextPartInstance.part.segmentId) {
+					throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" cannot hold between segments!`)
+				}
 
 				const hasDynamicallyInserted = cache.PieceInstances.findOne(
 					(p) => p.partInstanceId === currentPartInstance._id && p.dynamicallyInserted
