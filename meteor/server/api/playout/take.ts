@@ -81,7 +81,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 		})
 		// If hold is active, then this take is to clear it
 	} else if (cache.Playlist.doc.holdState === RundownHoldState.ACTIVE) {
-		completeHold(cache, await pShowStyle, currentPartInstance)
+		await completeHold(cache, await pShowStyle, currentPartInstance)
 
 		return ClientAPI.responseSuccess(undefined)
 	}
@@ -147,7 +147,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	resetPreviousSegmentAndClearNextSegmentId(cache)
 
 	// Once everything is synced, we can choose the next part
-	libsetNextPart(cache, nextPart)
+	await libsetNextPart(cache, nextPart)
 
 	// Setup the parts for the HOLD we are starting
 	if (
@@ -156,7 +156,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	) {
 		startHold(cache, playlistActivationId, currentPartInstance, nextPartInstance)
 	}
-	afterTake(cache, takePartInstance, timeOffset)
+	await afterTake(cache, takePartInstance, timeOffset)
 
 	// Last:
 	const takeDoneTime = getCurrentTime()
@@ -326,7 +326,11 @@ export function updatePartInstanceOnTake(
 	cache.PartInstances.update(takePartInstance._id, partInstanceM)
 }
 
-export function afterTake(cache: CacheForPlayout, takePartInstance: PartInstance, timeOffset: number | null = null) {
+export async function afterTake(
+	cache: CacheForPlayout,
+	takePartInstance: PartInstance,
+	timeOffset: number | null = null
+): Promise<void> {
 	const span = profiler.startSpan('afterTake')
 	// This function should be called at the end of a "take" event (when the Parts have been updated)
 
@@ -335,7 +339,7 @@ export function afterTake(cache: CacheForPlayout, takePartInstance: PartInstance
 		forceNowTime = getCurrentTime() - timeOffset
 	}
 	// or after a new part has started playing
-	waitForPromise(updateTimeline(cache, forceNowTime))
+	await updateTimeline(cache, forceNowTime)
 
 	cache.deferAfterSave(() => {
 		Meteor.setTimeout(() => {
@@ -424,11 +428,11 @@ function startHold(
 	if (span) span.end()
 }
 
-function completeHold(
+async function completeHold(
 	cache: CacheForPlayout,
 	showStyleBase: ShowStyleBase,
 	currentPartInstance: PartInstance | undefined
-) {
+): Promise<void> {
 	cache.Playlist.update({
 		$set: {
 			holdState: RundownHoldState.COMPLETE,
@@ -448,7 +452,7 @@ function completeHold(
 		)
 	}
 
-	waitForPromise(updateTimeline(cache))
+	await updateTimeline(cache)
 }
 
 export function triggerGarbageCollection() {

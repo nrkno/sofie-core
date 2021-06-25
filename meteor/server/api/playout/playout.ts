@@ -10,7 +10,6 @@ import {
 	unprotectString,
 	isStringOrProtectedString,
 	getRandomId,
-	waitForPromise,
 } from '../../../lib/lib'
 import { StatObjectMetadata } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
@@ -114,7 +113,7 @@ export namespace ServerPlayoutAPI {
 				}
 			},
 			async (cache) => {
-				libResetRundownPlaylist(cache)
+				await libResetRundownPlaylist(cache)
 				await prepareStudioForBroadcast(cache, true)
 
 				await libActivateRundownPlaylist(cache, true) // Activate rundownPlaylist (rehearsal)
@@ -140,7 +139,7 @@ export namespace ServerPlayoutAPI {
 					throw new Meteor.Error(401, `resetRundownPlaylist can only be run in rehearsal!`)
 			},
 			async (cache) => {
-				libResetRundownPlaylist(cache)
+				await libResetRundownPlaylist(cache)
 
 				if (cache.Playlist.doc.activationId) {
 					// Only update the timeline if this is the active playlist
@@ -169,7 +168,7 @@ export namespace ServerPlayoutAPI {
 					throw new Meteor.Error(402, `resetAndActivateRundownPlaylist cannot be run when active!`)
 			},
 			async (cache) => {
-				libResetRundownPlaylist(cache)
+				await libResetRundownPlaylist(cache)
 
 				await prepareStudioForBroadcast(cache, true)
 
@@ -210,7 +209,7 @@ export namespace ServerPlayoutAPI {
 								PlayoutLockFunctionPriority.USER_PLAYOUT,
 								null,
 								async (otherCache) => {
-									deactivateRundownPlaylistInner(otherCache)
+									await deactivateRundownPlaylistInner(otherCache)
 								}
 							).catch((e) => errors.push(e))
 						)
@@ -232,7 +231,7 @@ export namespace ServerPlayoutAPI {
 				}
 			},
 			async (cache) => {
-				libResetRundownPlaylist(cache)
+				await libResetRundownPlaylist(cache)
 
 				await prepareStudioForBroadcast(cache, true)
 
@@ -357,10 +356,10 @@ export namespace ServerPlayoutAPI {
 			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 		}
 
-		libsetNextPart(cache, nextPart ? { part: nextPart } : null, setManually, nextTimeOffset)
+		await libsetNextPart(cache, nextPart ? { part: nextPart } : null, setManually, nextTimeOffset)
 
 		// update lookahead and the next part when we have an auto-next
-		waitForPromise(updateTimeline(cache))
+		await updateTimeline(cache)
 	}
 	export async function moveNextPart(
 		access: VerifiedRundownPlaylistContentAccess,
@@ -947,7 +946,7 @@ export namespace ServerPlayoutAPI {
 							playingPartInstance,
 							getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 						)
-						libsetNextPart(cache, nextPart)
+						await libsetNextPart(cache, nextPart)
 					} else {
 						// a part is being played that has not been selected for playback by Core
 						// show must go on, so find next part and update the Rundown, but log an error
@@ -971,7 +970,7 @@ export namespace ServerPlayoutAPI {
 								playingPartInstance,
 								getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 							)
-							libsetNextPart(cache, nextPart)
+							await libsetNextPart(cache, nextPart)
 						}
 
 						// TODO - should this even change the next?
@@ -981,7 +980,7 @@ export namespace ServerPlayoutAPI {
 					}
 
 					// complete the take
-					afterTake(cache, playingPartInstance)
+					await afterTake(cache, playingPartInstance)
 				}
 			}
 		)

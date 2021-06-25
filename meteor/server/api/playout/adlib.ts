@@ -520,7 +520,7 @@ export namespace ServerPlayoutAdLibAPI {
 			cache.PieceInstances.insert(pieceInstance)
 		}
 
-		setNextPart(cache, newPartInstance)
+		await setNextPart(cache, newPartInstance)
 
 		if (span) span.end()
 	}

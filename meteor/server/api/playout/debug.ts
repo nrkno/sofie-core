@@ -176,8 +176,8 @@ if (!Settings.enableUserAccounts) {
 							const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 							const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
 							if (part) {
-								setNextPart(cache, null)
-								setNextPart(cache, { part: part })
+								await setNextPart(cache, null)
+								await setNextPart(cache, { part: part })
 
 								await updateTimeline(cache)
 							}

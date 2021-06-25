@@ -35,7 +35,7 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 
 	if (!cache.Playlist.doc.activationId) {
 		// Reset the playlist if it wasnt already active
-		resetRundownPlaylist(cache)
+		await resetRundownPlaylist(cache)
 	}
 
 	cache.Playlist.update({
@@ -63,7 +63,7 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 
 		// If we are not playing anything, then regenerate the next part
 		const firstPart = selectNextPart(cache.Playlist.doc, null, getOrderedSegmentsAndPartsFromPlayoutCache(cache))
-		setNextPart(cache, firstPart)
+		await setNextPart(cache, firstPart)
 	} else {
 		// Otherwise preserve the active partInstances
 		const partInstancesToPreserve = new Set(
@@ -106,7 +106,7 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 	})
 }
 export async function deactivateRundownPlaylist(cache: CacheForPlayout): Promise<void> {
-	const rundown = deactivateRundownPlaylistInner(cache)
+	const rundown = await deactivateRundownPlaylistInner(cache)
 
 	await updateStudioTimeline(cache)
 
@@ -122,7 +122,7 @@ export async function deactivateRundownPlaylist(cache: CacheForPlayout): Promise
 		}
 	})
 }
-export function deactivateRundownPlaylistInner(cache: CacheForPlayout): Rundown | undefined {
+export async function deactivateRundownPlaylistInner(cache: CacheForPlayout): Promise<Rundown | undefined> {
 	const span = profiler.startSpan('deactivateRundownPlaylistInner')
 	logger.info(`Deactivating rundown playlist "${cache.Playlist.doc._id}"`)
 
@@ -163,7 +163,7 @@ export function deactivateRundownPlaylistInner(cache: CacheForPlayout): Rundown 
 			activationId: 1,
 		},
 	})
-	setNextPart(cache, null)
+	await setNextPart(cache, null)
 
 	if (currentPartInstance) {
 		cache.PartInstances.update(currentPartInstance._id, {
