@@ -22,6 +22,8 @@ import {
 } from '../../../lib/collections/PeripheralDeviceSettings/ingestDevice'
 
 jest.mock('../playout/playout.ts')
+jest.mock('ntp-client')
+
 const { ServerPlayoutAPI: _ActualServerPlayoutAPI } = jest.requireActual('../playout/playout.ts')
 
 import { ServerPlayoutAPI } from '../playout/playout'
@@ -206,14 +208,13 @@ describe('test peripheralDevice general API methods', () => {
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
 	})
 
-	// TODO HACK - Temporarily disabled due to being flaky. I attempted to increase the test duration timeout, but it failed with 'Too few NTP-responses' instead.
-	// I suspect we are being rate limited for ntp updates, as determineDiffTime appears to be being called for most tests! (we are being a very bad ntp user)
-	// testInFiber('determineDiffTime', () => {
-	// 	const response = Meteor.call(PeripheralDeviceAPIMethods.determineDiffTime)
-	// 	expect(response).toBeTruthy()
-	// 	expect(response.mean).toBeTruthy()
-	// 	expect(response.stdDev).toBeDefined()
-	// })
+	testInFiber('determineDiffTime', () => {
+		const response = Meteor.call(PeripheralDeviceAPIMethods.determineDiffTime)
+		expect(response).toBeTruthy()
+		expect(Math.abs(response.mean - 400)).toBeLessThan(10) // be about 400
+		expect(response.stdDev).toBeLessThan(10)
+		expect(response.stdDev).toBeGreaterThan(0.1)
+	})
 
 	testInFiber('getTimeDiff', () => {
 		const now = getCurrentTime()

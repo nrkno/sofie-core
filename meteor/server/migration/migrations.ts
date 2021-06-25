@@ -96,6 +96,9 @@ addSteps1_32_0()
 import { addSteps as addSteps1_33_0 } from './1_33_0'
 addSteps1_33_0()
 
+import { addSteps as addSteps1_34_0 } from './1_34_0'
+addSteps1_34_0()
+
 // Migrations for the in-development release:
 import { addSteps as addStepsX_X_X } from './X_X_X'
 addStepsX_X_X()

@@ -3,19 +3,29 @@ import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../../lib
 import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
 import { Segment, SegmentId, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts } from '../../../../lib/collections/Parts'
-import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
+import {
+	IngestRundown,
+	IngestSegment,
+	IngestPart,
+	IBlueprintPiece,
+	PieceLifespan,
+} from '@sofie-automation/blueprints-integration'
 import { ServerRundownAPI } from '../../rundown'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownInput } from '../rundownInput'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstances } from '../../../../lib/collections/PartInstances'
+import { PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../../lib/api/methods'
 import { removeRundownPlaylistFromDb } from '../../rundownPlaylist'
 import { Random } from 'meteor/random'
 import { VerifiedRundownPlaylistContentAccess } from '../../lib'
+import { Pieces } from '../../../../lib/collections/Pieces'
+import { PieceInstances } from '../../../../lib/collections/PieceInstances'
+import { literal } from '../../../../lib/lib'
+import { TransformedCollection } from '../../../../lib/typings/meteor'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -1277,126 +1287,299 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Segments.findOne({ externalId: 'segment5' })?._rank).toBe(3)
 	})
 
-	testInFiber('unsyncing of rundown', () => {
-		// Cleanup any rundowns / playlists
+	testInFiber('unsyncing of rundown', async () => {
+		try {
+			// Cleanup any rundowns / playlists
 
-		RundownPlaylists.find()
-			.fetch()
-			.forEach((p) => removeRundownPlaylistFromDb(p))
+			await Promise.all(
+				RundownPlaylists.find()
+					.fetch()
+					.map((p) => removeRundownPlaylistFromDb(p))
+			)
 
-		const rundownData: IngestRundown = {
-			externalId: externalId,
-			name: 'MyMockRundown',
-			type: 'mock',
-			segments: [
-				{
-					externalId: 'segment0',
-					name: 'Segment 0',
-					rank: 0,
-					parts: [
-						{
-							externalId: 'part0',
-							name: 'Part 0',
-							rank: 0,
-						},
-						{
-							externalId: 'part1',
-							name: 'Part 1',
-							rank: 0,
-						},
-					],
-				},
-				{
-					externalId: 'segment1',
-					name: 'Segment 1',
-					rank: 0,
-					parts: [
-						{
-							externalId: 'part2',
-							name: 'Part 2',
-							rank: 0,
-						},
-					],
-				},
-			],
-		}
-
-		// Preparation: set up rundown
-		expect(Rundowns.findOne()).toBeFalsy()
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device2._id, device2.token, rundownData)
-		const rundown = Rundowns.findOne() as Rundown
-		expect(rundown).toMatchObject({
-			externalId: rundownData.externalId,
-		})
-		const playlist = rundown.getRundownPlaylist()
-		expect(playlist).toBeTruthy()
-
-		const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
-		const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
-		const getSegment = (id: SegmentId) => Segments.findOne(id) as Segment
-		const resyncRundown = () => {
-			try {
-				ServerRundownAPI.resyncRundown(DEFAULT_CONTEXT, rundown._id)
-			} catch (e) {
-				if (e.toString().match(/does not support the method "reloadRundown"/)) {
-					// This is expected
-
-					Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device2._id, device2.token, rundownData)
-					return
-				}
-				throw e
+			const rundownData: IngestRundown = {
+				externalId: externalId,
+				name: 'MyMockRundown',
+				type: 'mock',
+				segments: [
+					{
+						externalId: 'segment0',
+						name: 'Segment 0',
+						rank: 0,
+						parts: [
+							{
+								externalId: 'part0',
+								name: 'Part 0',
+								rank: 0,
+							},
+							{
+								externalId: 'part1',
+								name: 'Part 1',
+								rank: 0,
+							},
+						],
+					},
+					{
+						externalId: 'segment1',
+						name: 'Segment 1',
+						rank: 0,
+						parts: [
+							{
+								externalId: 'part2',
+								name: 'Part 2',
+								rank: 0,
+							},
+						],
+					},
+				],
 			}
+
+			// Preparation: set up rundown
+			expect(Rundowns.findOne()).toBeFalsy()
+			Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device2._id, device2.token, rundownData)
+			const rundown = Rundowns.findOne() as Rundown
+			expect(rundown).toMatchObject({
+				externalId: rundownData.externalId,
+			})
+			const playlist = rundown.getRundownPlaylist()
+			expect(playlist).toBeTruthy()
+
+			const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
+			const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
+			const getSegment = (id: SegmentId) => Segments.findOne(id) as Segment
+			const resyncRundown = () => {
+				try {
+					ServerRundownAPI.resyncRundown(DEFAULT_CONTEXT, rundown._id)
+				} catch (e) {
+					if (e.toString().match(/does not support the method "reloadRundown"/)) {
+						// This is expected
+
+						Meteor.call(
+							PeripheralDeviceAPIMethods.dataRundownCreate,
+							device2._id,
+							device2.token,
+							rundownData
+						)
+						return
+					}
+					throw e
+				}
+			}
+
+			const segments = getRundown().getSegments()
+			const parts = getRundown().getParts()
+
+			expect(segments).toHaveLength(2)
+			expect(parts).toHaveLength(3)
+
+			// Activate the rundown, make data updates and verify that it gets unsynced properly
+			ServerPlayoutAPI.activateRundownPlaylist(PLAYLIST_ACCESS(playlist._id), playlist._id, true)
+			expect(getRundown().orphaned).toBeUndefined()
+
+			RundownInput.dataRundownDelete(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId)
+			expect(getRundown().orphaned).toEqual('deleted')
+
+			resyncRundown()
+			expect(getRundown().orphaned).toBeUndefined()
+
+			ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
+			const partInstance = PartInstances.find({ 'part._id': parts[0]._id }).fetch()
+			expect(partInstance).toHaveLength(1)
+			expect(getPlaylist().currentPartInstanceId).toEqual(partInstance[0]._id)
+			expect(partInstance[0].segmentId).toEqual(segments[0]._id)
+
+			RundownInput.dataSegmentDelete(
+				DEFAULT_CONTEXT,
+				device2._id,
+				device2.token,
+				rundownData.externalId,
+				segments[0].externalId
+			)
+			expect(getRundown().orphaned).toBeUndefined()
+			expect(getSegment(segments[0]._id).orphaned).toEqual('deleted')
+
+			resyncRundown()
+			expect(getRundown().orphaned).toBeUndefined()
+			expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
+
+			RundownInput.dataPartDelete(
+				DEFAULT_CONTEXT,
+				device2._id,
+				device2.token,
+				rundownData.externalId,
+				segments[0].externalId,
+				parts[0].externalId
+			)
+			expect(getRundown().orphaned).toBeUndefined()
+			expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
+
+			resyncRundown()
+			expect(getRundown().orphaned).toBeUndefined()
+			expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
+		} finally {
+			// forcefully 'deactivate' the playlist to allow for cleanup to happen
+			RundownPlaylists.update({}, { $unset: { activationId: 1 } }, { multi: true })
 		}
+	})
 
-		const segments = getRundown().getSegments()
-		const parts = getRundown().getParts()
+	testInFiber('replace the nexted part', async () => {
+		try {
+			// Cleanup any rundowns / playlists
+			await Promise.all(
+				RundownPlaylists.find()
+					.fetch()
+					.map((p) => removeRundownPlaylistFromDb(p))
+			)
 
-		expect(segments).toHaveLength(2)
-		expect(parts).toHaveLength(3)
+			const rundownData: IngestRundown = {
+				externalId: externalId,
+				name: 'MyMockRundown',
+				type: 'mock',
+				segments: [
+					{
+						externalId: 'segment0',
+						name: 'Segment 0',
+						rank: 0,
+						parts: [
+							{
+								externalId: 'part0',
+								name: 'Part 0',
+								rank: 0,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece0',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+							{
+								externalId: 'part1',
+								name: 'Part 1',
+								rank: 1,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece1',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+						],
+					},
+					{
+						externalId: 'segment1',
+						name: 'Segment 1',
+						rank: 1,
+						parts: [
+							{
+								externalId: 'part2',
+								name: 'Part 2',
+								rank: 0,
+							},
+						],
+					},
+				],
+			}
 
-		// Activate the rundown, make data updates and verify that it gets unsynced properly
-		ServerPlayoutAPI.activateRundownPlaylist(PLAYLIST_ACCESS(playlist._id), playlist._id, true)
-		expect(getRundown().orphaned).toBeUndefined()
+			// Preparation: set up rundown
+			expect(Rundowns.findOne()).toBeFalsy()
+			Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device2._id, device2.token, rundownData)
+			const rundown = Rundowns.findOne() as Rundown
+			expect(rundown).toMatchObject({
+				externalId: rundownData.externalId,
+			})
+			const playlist = rundown.getRundownPlaylist()
+			expect(playlist).toBeTruthy()
 
-		RundownInput.dataRundownDelete(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId)
-		expect(getRundown().orphaned).toEqual('deleted')
+			const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
+			const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
 
-		resyncRundown()
-		expect(getRundown().orphaned).toBeUndefined()
+			const segments = getRundown().getSegments()
+			const parts = getRundown().getParts()
 
-		ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
-		const partInstance = PartInstances.find({ 'part._id': parts[0]._id }).fetch()
-		expect(partInstance).toHaveLength(1)
-		expect(getPlaylist().currentPartInstanceId).toEqual(partInstance[0]._id)
-		expect(partInstance[0].segmentId).toEqual(segments[0]._id)
+			expect(segments).toHaveLength(2)
+			expect(parts).toHaveLength(3)
+			expect(Pieces.find({ startRundownId: rundown._id }).fetch()).toHaveLength(2)
 
-		RundownInput.dataSegmentDelete(
-			DEFAULT_CONTEXT,
-			device2._id,
-			device2.token,
-			rundownData.externalId,
-			segments[0].externalId
-		)
-		expect(getRundown().orphaned).toBeUndefined()
-		expect(getSegment(segments[0]._id).orphaned).toEqual('deleted')
+			// Activate the rundown, make data updates and verify that it gets unsynced properly
+			ServerPlayoutAPI.activateRundownPlaylist(PLAYLIST_ACCESS(playlist._id), playlist._id, true)
+			expect(getPlaylist().currentPartInstanceId).toBeNull()
 
-		resyncRundown()
-		expect(getRundown().orphaned).toBeUndefined()
-		expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
+			// Take the first part
+			ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
+			expect(getPlaylist().currentPartInstanceId).not.toBeNull()
 
-		RundownInput.dataPartDelete(
-			DEFAULT_CONTEXT,
-			device2._id,
-			device2.token,
-			rundownData.externalId,
-			segments[0].externalId,
-			parts[0].externalId
-		)
-		expect(getRundown().orphaned).toBeUndefined()
-		expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
+			{
+				// Check which parts are current and next
+				const selectedInstances = getPlaylist().getSelectedPartInstances()
+				const currentPartInstance = selectedInstances.currentPartInstance as PartInstance
+				const nextPartInstance = selectedInstances.nextPartInstance as PartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.part.externalId).toBe('part0')
+				expect(nextPartInstance).toBeTruthy()
+				expect(nextPartInstance.part.externalId).toBe('part1')
 
-		resyncRundown()
-		expect(getRundown().orphaned).toBeUndefined()
-		expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
+				// we should have some pieces
+				expect(PieceInstances.find({ partInstanceId: nextPartInstance._id }).fetch()).not.toHaveLength(0)
+			}
+
+			// Replace part1 with a new part
+			const updatedSegmentData: IngestSegment = rundownData.segments[0]
+			updatedSegmentData.parts[1].externalId = 'new-part'
+
+			Meteor.call(
+				PeripheralDeviceAPIMethods.dataSegmentUpdate,
+				device2._id,
+				device2.token,
+				rundownData.externalId,
+				updatedSegmentData
+			)
+			{
+				const segments2 = getRundown().getSegments()
+				const parts2 = getRundown().getParts()
+
+				expect(segments2).toHaveLength(2)
+				expect(parts2).toHaveLength(3)
+
+				expect(parts2.find((p) => p.externalId === 'part1')).toBeFalsy()
+				const newPart = parts2.find((p) => p.externalId === 'new-part') as Part
+				expect(newPart).toBeTruthy()
+
+				expect(Pieces.find({ startRundownId: rundown._id }).fetch()).toHaveLength(2)
+
+				// we need some pieces for the test to work
+				expect(Pieces.find({ startPartId: newPart._id }).fetch()).not.toHaveLength(0)
+			}
+
+			{
+				// Check if the partInstance was updated
+				const selectedInstances = getPlaylist().getSelectedPartInstances()
+				const currentPartInstance = selectedInstances.currentPartInstance as PartInstance
+				const nextPartInstance = selectedInstances.nextPartInstance as PartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.part.externalId).toBe('part0')
+				expect(nextPartInstance).toBeTruthy()
+				expect(nextPartInstance.part.externalId).toBe('new-part')
+
+				// the pieces should have been copied
+				expect(PieceInstances.find({ partInstanceId: nextPartInstance._id }).fetch()).not.toHaveLength(0)
+			}
+		} finally {
+			// forcefully 'deactivate' the playlist to allow for cleanup to happen
+			RundownPlaylists.update({}, { $unset: { activationId: 1 } }, { multi: true })
+		}
 	})
 })

@@ -24,8 +24,8 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 		let budget = 0
 		let playedOut = 0
 		props.parts.forEach((part) => {
-			budget += part.instance.orphaned ? 0 : part.instance.part.expectedDuration || 0
-			playedOut += partPlayed[unprotectString(part.instance.part._id)] || 0
+			budget += part.instance.orphaned || part.instance.part.untimed ? 0 : part.instance.part.expectedDuration || 0
+			playedOut += (!part.instance.part.untimed ? partPlayed[unprotectString(part.instance.part._id)] : 0) || 0
 		})
 
 		const duration = budget - playedOut

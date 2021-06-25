@@ -101,9 +101,10 @@ export async function fetchPiecesThatMayBeActiveForPart(
 	const span = profiler.startSpan('fetchPiecesThatMayBeActiveForPart')
 
 	const thisPiecesQuery = buildPiecesStartingInThisPartQuery(part)
-	const pPiecesStartingInPart = unsavedIngestCache
-		? Promise.resolve(unsavedIngestCache.Pieces.findFetch(thisPiecesQuery))
-		: asyncCollectionFindFetch(Pieces, thisPiecesQuery)
+	const pPiecesStartingInPart =
+		unsavedIngestCache?.RundownId === part.rundownId
+			? Promise.resolve(unsavedIngestCache.Pieces.findFetch(thisPiecesQuery))
+			: asyncCollectionFindFetch(Pieces, thisPiecesQuery)
 
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
@@ -113,9 +114,10 @@ export async function fetchPiecesThatMayBeActiveForPart(
 		segmentsBeforeThisInRundown
 	)
 	// Future scope: Once there is a longer than Rundown infinite mode, this will need to split the query to search everywhere
-	const pInfinitePieces = unsavedIngestCache
-		? Promise.resolve(unsavedIngestCache.Pieces.findFetch(infinitePiecesQuery))
-		: asyncCollectionFindFetch(Pieces, infinitePiecesQuery)
+	const pInfinitePieces =
+		unsavedIngestCache?.RundownId === part.rundownId
+			? Promise.resolve(unsavedIngestCache.Pieces.findFetch(infinitePiecesQuery))
+			: asyncCollectionFindFetch(Pieces, infinitePiecesQuery)
 
 	const [piecesStartingInPart, infinitePieces] = await Promise.all([pPiecesStartingInPart, pInfinitePieces])
 	if (span) span.end()

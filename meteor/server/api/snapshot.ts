@@ -434,7 +434,10 @@ function storeSnaphot(
 
 	// Store to the persistant file storage
 	logger.info(`Save snapshot file ${filePath}`)
-	fsWriteFile(filePath, str)
+	if (!Meteor.isTest) {
+		// If we're running in a unit-test, don't write to disk
+		fsWriteFile(filePath, str)
+	}
 
 	let id = Snapshots.insert({
 		_id: protectString(fileName),
@@ -478,7 +481,9 @@ function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): AnySnapsh
 
 	let filePath = Path.join(system.storePath, snapshot.fileName)
 
-	let dataStr = fsReadFile(filePath).toString()
+	let dataStr = !Meteor.isTest // If we're running in a unit-test, don't access files
+		? fsReadFile(filePath).toString()
+		: ''
 
 	let readSnapshot = JSON.parse(dataStr)
 
@@ -695,6 +700,7 @@ export function restoreFromRundownPlaylistSnapshot(
 		T extends {
 			_id: ProtectedString<any>
 			rundownId?: RundownId
+			partInstanceId?: PartInstanceId
 			partId?: PartId
 			segmentId?: SegmentId
 			part?: unknown
@@ -711,6 +717,9 @@ export function restoreFromRundownPlaylistSnapshot(
 			}
 			if (obj.segmentId) {
 				obj.segmentId = segmentIdMap[unprotectString(obj.segmentId)]
+			}
+			if (obj.partInstanceId) {
+				obj.partInstanceId = partInstanceIdMap[unprotectString(obj.partInstanceId)]
 			}
 
 			if (updateId) {
@@ -873,7 +882,10 @@ export function removeSnapshot(context: MethodContext, snapshotId: SnapshotId) {
 		try {
 			logger.info(`Removing snapshot file ${filePath}`)
 
-			fsUnlinkFile(filePath)
+			if (!Meteor.isTest) {
+				// If we're running in a unit-test, don't access files
+				fsUnlinkFile(filePath)
+			}
 		} catch (e) {
 			// Log the error, but continue
 			logger.error('Error in removeSnapshot')

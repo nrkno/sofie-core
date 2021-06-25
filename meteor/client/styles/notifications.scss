@@ -311,7 +311,7 @@
 	right: 0;
 	bottom: 0;
 	width: calc(#{$notification-center-width} + 4.6875rem);
-	z-index: 290;
+	z-index: 292;
 
 	&::before {
 		content: ' ';

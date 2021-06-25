@@ -254,10 +254,27 @@ export function saveSegmentChangesToCache(
 	const newPartIds = data.parts.map((p) => p._id)
 	const newSegmentIds = data.segments.map((p) => p._id)
 
-	// Note: These are done in this order to ensure that the afterRemoveAll don't delete anything that was simply moved
+	const partChanges = saveIntoCache<Part, DBPart>(
+		cache.Parts,
+		isWholeRundownUpdate ? {} : { $or: [{ segmentId: { $in: newSegmentIds } }, { _id: { $in: newPartIds } }] },
+		data.parts,
+		{
+			afterInsert(part) {
+				logger.debug('inserted part ' + part._id)
+			},
+			afterUpdate(part) {
+				logger.debug('updated part ' + part._id)
+			},
+			afterRemove(part) {
+				logger.debug('deleted part ' + part._id)
+			},
+		}
+	)
+	const affectedPartIds = [...partChanges.removed, ...newPartIds]
+
 	saveIntoCache<Piece, Piece>(
 		cache.Pieces,
-		isWholeRundownUpdate ? {} : { startPartId: { $in: newPartIds } },
+		isWholeRundownUpdate ? {} : { startPartId: { $in: affectedPartIds } },
 		data.pieces,
 		{
 			afterInsert(piece) {
@@ -274,7 +291,7 @@ export function saveSegmentChangesToCache(
 	)
 	saveIntoCache<AdLibAction, AdLibAction>(
 		cache.AdLibActions,
-		isWholeRundownUpdate ? {} : { partId: { $in: newPartIds } },
+		isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
 		data.adlibActions,
 		{
 			afterInsert(adlibAction) {
@@ -291,7 +308,7 @@ export function saveSegmentChangesToCache(
 	)
 	saveIntoCache<AdLibPiece, AdLibPiece>(
 		cache.AdLibPieces,
-		isWholeRundownUpdate ? {} : { partId: { $in: newPartIds } },
+		isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
 		data.adlibPieces,
 		{
 			afterInsert(adLibPiece) {
@@ -303,22 +320,6 @@ export function saveSegmentChangesToCache(
 			},
 			afterRemove(adLibPiece) {
 				logger.debug('deleted adLibPiece ' + adLibPiece._id)
-			},
-		}
-	)
-	saveIntoCache<Part, DBPart>(
-		cache.Parts,
-		isWholeRundownUpdate ? {} : { $or: [{ segmentId: { $in: newSegmentIds } }, { _id: { $in: newPartIds } }] },
-		data.parts,
-		{
-			afterInsert(part) {
-				logger.debug('inserted part ' + part._id)
-			},
-			afterUpdate(part) {
-				logger.debug('updated part ' + part._id)
-			},
-			afterRemove(part) {
-				logger.debug('deleted part ' + part._id)
 			},
 		}
 	)

@@ -140,6 +140,7 @@ export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatable
 	 * * Infinites still works as normal
 	 */
 	invalid?: boolean
+
 	/**
 	 * Provide additional information about the reason a part is invalid. The `key` is the string key from blueprints
 	 * translations. Args will be used to replace placeholders within the translated file. If `key` is not found in the
@@ -157,6 +158,17 @@ export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatable
 		message: ITranslatableMessage
 		color?: string
 	}
+
+	/**
+	 * Take a part out of timing considerations for a Rundown & Rundown Playlist. This part can be TAKEN but will not
+	 * update playlist's startedPlayback and will not count time in the GUI.
+	 *
+	 * Some parts shouldn't count towards the various timing information in Sofie. Specifically, it may be useful to
+	 * have some Parts execute Timelines outside of the regular flow of time, such as when doing an ad break or
+	 * performing some additional actions before a show actually begins (such as when there's a bit of a buffer before
+	 * the On Air time of a Show and when the MCR cuts to the PGM, because the previous show ended quicker).
+	 */
+	untimed?: boolean
 
 	/** When the NRCS informs us that the producer marked the part as floated, we can prevent the user from TAKE'ing and NEXT'ing it, but still have it visible and allow manipulation */
 	floated?: boolean

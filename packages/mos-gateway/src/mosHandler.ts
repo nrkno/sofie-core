@@ -250,7 +250,7 @@ export class MosHandler {
 					coreMosHandler.onMosConnectionChanged(connectionStatus)
 				})
 				coreMosHandler.onMosConnectionChanged(mosDevice.getConnectionStatus())
-				mosDevice.onGetMachineInfo(() => { // MOSDevice >>>> Core
+				mosDevice.onRequestMachineInfo(() => { // MOSDevice >>>> Core
 					return coreMosHandler.getMachineInfo()
 				})
 
@@ -330,7 +330,7 @@ export class MosHandler {
 				// Profile 3: -------------------------------------------------
 				// Profile 4: -------------------------------------------------
 				// onStory: (cb: (story: IMOSROFullStory) => Promise<any>) => void
-				mosDevice.onROStory((story: IMOSROFullStory) => { // MOSDevice >>>> Core
+				mosDevice.onRunningOrderStory((story: IMOSROFullStory) => { // MOSDevice >>>> Core
 					return this._getROAck(story.RunningOrderId, coreMosHandler.mosRoFullStory(story))
 				})
 			})
@@ -378,6 +378,15 @@ export class MosHandler {
 
 				_.each(devices, (device, deviceId: string) => {
 					if (device) {
+
+						if (device.secondary) {
+							// If the host isn't set, don't use secondary:
+							if (
+								!device.secondary.host ||
+								!device.secondary.id
+							) delete device.secondary
+						}
+
 						let oldDevice: MosDevice | null = this._getDevice(deviceId)
 
 						if (!oldDevice) {
@@ -435,8 +444,11 @@ export class MosHandler {
 
 			this._ownMosDevices[deviceId] = mosDevice
 
-			const getMachineInfoUntilConnected = () => mosDevice.getMachineInfo().catch((e: any) => {
-				if (e && (e + '').match(/no connection available for failover/i)) {
+			const getMachineInfoUntilConnected = () => mosDevice.requestMachineInfo().catch((e: any) => {
+				if (e && (
+					(e + '').match(/no connection available for failover/i) ||
+					(e + '').match(/failover connection/i)
+				)) {
 					// TODO: workaround (mos.connect resolves too soon, before the connection is actually initialted)
 					return new Promise((resolve) => {
 						setTimeout(() => {

@@ -326,13 +326,7 @@ export function moveRundownIntoPlaylist(
 
 					if (newPlaylist) {
 						// ensure the 'old' playout is updated to remove any references to the rundown
-						updatePlayoutAfterChangingRundownInPlaylist(
-							newPlaylist,
-							oldPlaylistLock,
-							null,
-							undefined,
-							undefined
-						)
+						updatePlayoutAfterChangingRundownInPlaylist(newPlaylist, oldPlaylistLock, null)
 					}
 				}
 			)
@@ -428,13 +422,7 @@ export function moveRundownIntoPlaylist(
 					await rundownsCollection.updateDatabaseWithData()
 
 					// If the playlist is active this could have changed lookahead
-					updatePlayoutAfterChangingRundownInPlaylist(
-						newPlaylist,
-						intoPlaylistLock,
-						rundown,
-						undefined,
-						undefined
-					)
+					updatePlayoutAfterChangingRundownInPlaylist(newPlaylist, intoPlaylistLock, rundown)
 				}
 			)
 		} else {
@@ -492,7 +480,7 @@ export function restoreRundownsInPlaylistToDefaultOrder(context: MethodContext, 
 
 			if (updatedPlaylist) {
 				// If the playlist is active this could have changed lookahead
-				updatePlayoutAfterChangingRundownInPlaylist(updatedPlaylist, playlistLock, null, undefined, undefined)
+				updatePlayoutAfterChangingRundownInPlaylist(updatedPlaylist, playlistLock, null)
 			}
 		}
 	)

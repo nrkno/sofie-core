@@ -47,8 +47,9 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { TransformedCollection } from '../../../lib/typings/meteor'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
-import { MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
+import { ConfigManifestEntryType, MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
 import { renderEditAttribute } from './components/ConfigManifestEntryComponent'
+import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '../../../lib/constants'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -357,14 +358,20 @@ const StudioMappings = withTranslation()(
 					<span>
 						{m
 							.filter((entry) => entry.includeInSummary)
-							.map(
-								(entry) =>
-									entry.name +
-									': ' +
-									(entry.values && entry.values[mapping[entry.id]]
-										? entry.values[mapping[entry.id]]
-										: mapping[entry.id])
-							)
+							.map((entry) => {
+								let summary = entry.name + ': '
+
+								let mappingValue = entry.values && entry.values[mapping[entry.id]]
+								if (!mappingValue) {
+									mappingValue = mapping[entry.id]
+								}
+
+								if (entry.type === ConfigManifestEntryType.INT && entry.zeroBased && _.isNumber(mappingValue)) {
+									mappingValue += 1
+								}
+
+								return summary + mappingValue
+							})
 							.join(' - ')}
 					</span>
 				)
@@ -509,7 +516,9 @@ const StudioMappings = withTranslation()(
 										</div>
 										<div className="mod mvs mhs">
 											<label className="field">
-												{t('Lookahead Maximum Search Distance (Default = unlimited/-1)')}
+												{t('Lookahead Maximum Search Distance (Default = {{limit}})', {
+													limit: LOOKAHEAD_DEFAULT_SEARCH_DISTANCE,
+												})}
 												<EditAttribute
 													modifiedClassName="bghl"
 													attribute={'mappings.' + layerId + '.lookaheadMaxSearchDistance'}
