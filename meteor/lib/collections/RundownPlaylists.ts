@@ -73,6 +73,10 @@ export interface DBRundownPlaylist {
 	activationId?: RundownPlaylistActivationId
 	/** Should the playlist loop at the end */
 	loop?: boolean
+	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */
+	outOfOrderTiming?: boolean
+	/** Should time-of-day clocks be used instead of countdowns by default */
+	timeOfDayCountdowns?: boolean
 
 	/** the id of the Live Part - if empty, no part in this rundown is live */
 	currentPartInstanceId: PartInstanceId | null
@@ -85,8 +89,6 @@ export interface DBRundownPlaylist {
 	/** the id of the Previous Part */
 	previousPartInstanceId: PartInstanceId | null
 
-	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */
-	outOfOrderTiming?: boolean
 	/** The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment. */
 	nextSegmentId?: SegmentId
 
@@ -131,6 +133,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public previousPartInstanceId: PartInstanceId | null
 	public loop?: boolean
 	public outOfOrderTiming?: boolean
+	public timeOfDayCountdowns?: boolean
 	public rundownRanksAreSetInSofie?: boolean
 
 	public previousPersistentState?: TimelinePersistentState

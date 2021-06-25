@@ -387,15 +387,35 @@ const TimingDisplay = withTranslation()(
 							</React.Fragment>
 						) : (
 							<React.Fragment>
-								{!rundownPlaylist.loop && this.props.timingDurations ? (
-									<span className="timing-clock plan-end right visual-last-child">
-										<span className="timing-clock-label right">{t('Expected End')}</span>
-										<Moment
-											interval={0}
-											format="HH:mm:ss"
-											date={getCurrentTime() + (this.props.timingDurations.remainingRundownDuration || 0)}
-										/>
-									</span>
+								{this.props.timingDurations ? (
+									rundownPlaylist.loop ? (
+										this.props.timingDurations.partCountdown &&
+										rundownPlaylist.activationId &&
+										rundownPlaylist.currentPartInstanceId ? (
+											<span className="timing-clock plan-end right visual-last-child">
+												<span className="timing-clock-label right">{t('Next Loop at')}</span>
+												<Moment
+													interval={0}
+													format="HH:mm:ss"
+													date={
+														getCurrentTime() +
+														(this.props.timingDurations.partCountdown[
+															Object.keys(this.props.timingDurations.partCountdown)[0]
+														] || 0)
+													}
+												/>
+											</span>
+										) : null
+									) : (
+										<span className="timing-clock plan-end right visual-last-child">
+											<span className="timing-clock-label right">{t('Expected End')}</span>
+											<Moment
+												interval={0}
+												format="HH:mm:ss"
+												date={getCurrentTime() + (this.props.timingDurations.remainingRundownDuration || 0)}
+											/>
+										</span>
+									)
 								) : null}
 								{this.props.timingDurations && this.props.rundownCount < 2 ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 									<span
@@ -2324,7 +2344,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						)}
 						<div className="segment-timeline-container">{this.renderSegments()}</div>
 						{this.props.playlist?.loop && (
-							<PlaylistLoopingHeader position="end" multiRundown={this.props.matchedSegments.length > 1} />
+							<PlaylistLoopingHeader
+								position="end"
+								multiRundown={this.props.matchedSegments.length > 1}
+								showCountdowns={!!(this.props.playlist.activationId && this.props.playlist.currentPartInstanceId)}
+							/>
 						)}
 					</React.Fragment>
 				)
