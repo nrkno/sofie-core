@@ -11,7 +11,7 @@ import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBase
 import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
 import { DBRundown } from '../../../lib/collections/Rundowns'
-import { DBSegment } from '../../../lib/collections/Segments'
+import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { getCurrentTime, literal, protectString, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
@@ -358,6 +358,59 @@ export async function updateSegmentFromIngestData(
 
 		showStyle: segmentChanges.showStyle,
 		blueprint: segmentChanges.blueprint,
+	}
+}
+
+export async function regenerateSegmentsFromIngestData(
+	cache: CacheForIngest,
+	ingestRundown: LocalIngestRundown,
+	segmentIds: SegmentId[]
+): Promise<{ result: CommitIngestData | null; skippedSegments: SegmentId[] }> {
+	const span = profiler.startSpan('ingest.rundownInput.handleUpdatedPartInner')
+
+	if (segmentIds.length === 0) {
+		return { result: null, skippedSegments: [] }
+	}
+
+	const rundown = getRundown(cache)
+
+	const skippedSegments: SegmentId[] = []
+	const ingestSegments: LocalIngestSegment[] = []
+
+	for (const segmentId of segmentIds) {
+		const segment = cache.Segments.findOne(segmentId)
+		if (!segment) {
+			skippedSegments.push(segmentId)
+		} else if (!canSegmentBeUpdated(rundown, segment, false)) {
+			skippedSegments.push(segmentId)
+		} else {
+			const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segment.externalId)
+			if (!ingestSegment) {
+				skippedSegments.push(segmentId)
+			} else {
+				ingestSegments.push(ingestSegment)
+			}
+		}
+	}
+
+	const segmentChanges = await calculateSegmentsFromIngestData(cache, ingestSegments)
+	saveSegmentChangesToCache(cache, segmentChanges, false)
+
+	const result: CommitIngestData = {
+		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
+		removedSegmentIds: [],
+		renamedSegments: new Map(),
+
+		removeRundown: false,
+
+		showStyle: segmentChanges.showStyle,
+		blueprint: segmentChanges.blueprint,
+	}
+
+	span?.end()
+	return {
+		result,
+		skippedSegments,
 	}
 }
 

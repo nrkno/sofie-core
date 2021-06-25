@@ -1,12 +1,12 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { PeripheralDevice, PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { DBRundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { getCurrentTime, unprotectString, waitForPromise } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
-import { SegmentId, Segments } from '../../../lib/collections/Segments'
+import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import {
 	RundownIngestDataCache,
 	LocalIngestRundown,
@@ -435,6 +435,7 @@ export function handleRemovedSegment(
 		}
 	)
 }
+
 export function handleUpdatedSegment(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
