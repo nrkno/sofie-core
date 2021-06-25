@@ -8,7 +8,7 @@ enum LocalStorageProperty {
 	TESTING = 'testingMode',
 	SPEAKING = 'speakingMode',
 	SERVICE = 'serviceMode',
-	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers'
+	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers',
 }
 
 export function setAllowStudio(studioMode: boolean) {
