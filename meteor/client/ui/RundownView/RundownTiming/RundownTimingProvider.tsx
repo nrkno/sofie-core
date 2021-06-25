@@ -267,6 +267,8 @@ export const RundownTimingProvider = withTracker<
 						(itIndex >= currentAIndex && currentAIndex >= 0) ||
 						(itIndex >= nextAIndex && nextAIndex >= 0 && currentAIndex === -1)
 
+					const partIsUntimed = partInstance.part.untimed || false
+
 					// expected is just a sum of expectedDurations
 					totalRundownDuration += partInstance.part.expectedDuration || 0
 
@@ -296,7 +298,8 @@ export const RundownTimingProvider = withTracker<
 							// or there is a following member of this displayDurationGroup
 							(parts[itIndex + 1] &&
 								parts[itIndex + 1].displayDurationGroup === partInstance.part.displayDurationGroup)) &&
-						!partInstance.part.floated
+						!partInstance.part.floated &&
+						!partIsUntimed
 					) {
 						this.displayDurationGroups[partInstance.part.displayDurationGroup] =
 							(this.displayDurationGroups[partInstance.part.displayDurationGroup] || 0) +
@@ -358,13 +361,16 @@ export const RundownTimingProvider = withTracker<
 					// asPlayed is the actual duration so far and expected durations in unplayed lines.
 					// If item is onAir right now, it's duration is counted as expected duration or current
 					// playback duration whichever is larger.
-					// Parts that don't count are ignored.
-					if (lastStartedPlayback && !partInstance.timings?.duration) {
-						asPlayedRundownDuration += Math.max(partExpectedDuration, now - lastStartedPlayback)
-					} else if (partInstance.timings?.duration) {
-						asPlayedRundownDuration += partInstance.timings.duration
-					} else if (partCounts) {
-						asPlayedRundownDuration += partInstance.part.expectedDuration || 0
+					// Parts that are Untimed are ignored always.
+					// Parts that don't count are ignored, unless they are being played or have been played.
+					if (!partIsUntimed) {
+						if (lastStartedPlayback && !partInstance.timings?.duration) {
+							asPlayedRundownDuration += Math.max(partExpectedDuration, now - lastStartedPlayback)
+						} else if (partInstance.timings?.duration) {
+							asPlayedRundownDuration += partInstance.timings.duration
+						} else if (partCounts) {
+							asPlayedRundownDuration += partInstance.part.expectedDuration || 0
+						}
 					}
 
 					// asDisplayed is the actual duration so far and expected durations in unplayed lines
@@ -398,6 +404,7 @@ export const RundownTimingProvider = withTracker<
 						partInstance.part.displayDurationGroup &&
 						!partInstance.part.floated &&
 						!partInstance.part.invalid &&
+						!partIsUntimed &&
 						(partInstance.timings?.duration || partInstance.timings?.takeOut || partCounts)
 					) {
 						this.displayDurationGroups[partInstance.part.displayDurationGroup] =
@@ -424,14 +431,15 @@ export const RundownTimingProvider = withTracker<
 					// remaining is the sum of unplayed lines + whatever is left of the current segment
 					// if outOfOrderTiming is true, count parts before current part towards remaining rundown duration
 					// if false (default), past unplayed parts will not count towards remaining time
-					if (!lastStartedPlayback && !partInstance.part.floated && partCounts) {
+					if (!lastStartedPlayback && !partInstance.part.floated && partCounts && !partIsUntimed) {
 						remainingRundownDuration += partExpectedDuration || 0
 						// item is onAir right now, and it's is currently shorter than expectedDuration
 					} else if (
 						lastStartedPlayback &&
 						!partInstance.timings?.duration &&
 						playlist.currentPartInstanceId === partInstance._id &&
-						lastStartedPlayback + partExpectedDuration > now
+						lastStartedPlayback + partExpectedDuration > now &&
+						!partIsUntimed
 					) {
 						remainingRundownDuration += partExpectedDuration - (now - lastStartedPlayback)
 					}

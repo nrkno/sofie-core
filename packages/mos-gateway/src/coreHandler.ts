@@ -153,7 +153,7 @@ export class CoreMosDeviceHandler {
 		let messages: Array<string> = []
 
 		if (connectionStatus.PrimaryConnected) {
-			if (connectionStatus.SecondaryConnected) {
+			if (connectionStatus.SecondaryConnected || !this._mosDevice.idSecondary) {
 				statusCode = P.StatusCode.GOOD
 			} else {
 				statusCode = P.StatusCode.WARNING_MINOR
@@ -169,7 +169,7 @@ export class CoreMosDeviceHandler {
 		if (!connectionStatus.PrimaryConnected) {
 			messages.push(connectionStatus.PrimaryStatus || 'Primary not connected')
 		}
-		if (!connectionStatus.SecondaryConnected) {
+		if (this._mosDevice.idSecondary && !connectionStatus.SecondaryConnected) {
 			messages.push(connectionStatus.SecondaryStatus || 'Fallback not connected')
 		}
 
@@ -303,7 +303,7 @@ export class CoreMosDeviceHandler {
 
 	triggerGetAllRunningOrders (): Promise<any> {
 		// console.log('triggerGetAllRunningOrders')
-		return this._mosDevice.getAllRunningOrders()
+		return this._mosDevice.sendRequestAllRunningOrders()
 		.then((results) => {
 			// console.log('GOT REPLY', results)
 			return this.fixMosData(results)
@@ -315,7 +315,7 @@ export class CoreMosDeviceHandler {
 	}
 	triggerGetRunningOrder (roId: string): Promise<any> {
 		// console.log('triggerGetRunningOrder ' + roId)
-		return this._mosDevice.getRunningOrder(new MosString128(roId))
+		return this._mosDevice.sendRequestRunningOrder(new MosString128(roId))
 		.then((ro) => {
 			// console.log('GOT REPLY', results)
 			return this.fixMosData(ro)
@@ -327,7 +327,7 @@ export class CoreMosDeviceHandler {
 	}
 	setROStatus (roId: string, status: IMOSObjectStatus): Promise<any> {
 		// console.log('setStoryStatus')
-		return this._mosDevice.setRunningOrderStatus({
+		return this._mosDevice.sendRunningOrderStatus({
 			ID: new MosString128(roId),
 			Status: status,
 			Time: new MosTime()
@@ -339,7 +339,7 @@ export class CoreMosDeviceHandler {
 	}
 	setStoryStatus (roId: string, storyId: string, status: IMOSObjectStatus): Promise<any> {
 		// console.log('setStoryStatus')
-		return this._mosDevice.setStoryStatus({
+		return this._mosDevice.sendStoryStatus({
 			RunningOrderId: new MosString128(roId),
 			ID: new MosString128(storyId),
 			Status: status,
@@ -352,7 +352,7 @@ export class CoreMosDeviceHandler {
 	}
 	setItemStatus (roId: string, storyId: string, itemId: string, status: IMOSObjectStatus): Promise<any> {
 		// console.log('setStoryStatus')
-		return this._mosDevice.setItemStatus({
+		return this._mosDevice.sendItemStatus({
 			RunningOrderId: new MosString128(roId),
 			StoryId: new MosString128(storyId),
 			ID: new MosString128(itemId),
@@ -366,7 +366,7 @@ export class CoreMosDeviceHandler {
 	}
 	replaceStoryItem (roID: string, storyID: string, item: IMOSItem, itemDiff?: DeepPartial<IMOSItem>): Promise<any> {
 		// console.log(roID, storyID, item)
-		return this._mosDevice.mosItemReplace({
+		return this._mosDevice.sendItemReplace({
 			roID: new MosString128(roID),
 			storyID: new MosString128(storyID),
 			item

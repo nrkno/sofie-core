@@ -74,6 +74,7 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { CacheForStudio } from '../studio/cache'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
+import { profiler } from '../profiler'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -560,6 +561,9 @@ export namespace ServerPlayoutAPI {
 					nextPartInstance.part.holdMode !== PartHoldMode.TO
 				) {
 					throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" incompatible pair of HoldMode!`)
+				}
+				if (currentPartInstance.part.segmentId !== nextPartInstance.part.segmentId) {
+					throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" cannot hold between segments!`)
 				}
 
 				const hasDynamicallyInserted = cache.PieceInstances.findOne(
@@ -1376,7 +1380,8 @@ export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylist
 
 	data.timeout = Meteor.setTimeout(() => {
 		if (updateTimelineFromIngestDataTimeouts.delete(playlistId)) {
-			return runPlayoutOperationWithCache(
+			const transaction = profiler.startTransaction('triggerUpdateTimelineAfterIngestData', 'playout')
+			runPlayoutOperationWithCache(
 				null,
 				'triggerUpdateTimelineAfterIngestData',
 				playlistId,
@@ -1398,6 +1403,7 @@ export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylist
 					}
 				}
 			)
+			transaction?.end()
 		}
 	}, 1000)
 

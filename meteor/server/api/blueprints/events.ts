@@ -16,6 +16,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { asyncCollectionFindOne, asyncCollectionUpdate } from '../../lib/database'
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import debounceFn, { DebouncedFunction } from 'debounce-fn'
+import { LOW_PRIO_DEFER_TIME } from '../playout/lib'
 
 const EVENT_WAIT_TIME = 500
 
@@ -183,13 +184,17 @@ export function reportPartInstanceHasStarted(cache: CacheForPlayout, partInstanc
 		cache.Playlist.update((pl) => {
 			if (!pl.rundownsStartedPlayback) pl.rundownsStartedPlayback = {}
 			const rundownId = unprotectString(partInstance.rundownId)
-			if (!pl.rundownsStartedPlayback[rundownId]) pl.rundownsStartedPlayback[rundownId] = timestamp
-			if (!pl.startedPlayback) pl.startedPlayback = timestamp
+			if (!pl.rundownsStartedPlayback[rundownId] && !partInstance.part.untimed)
+				pl.rundownsStartedPlayback[rundownId] = timestamp
+			if (!pl.startedPlayback && !partInstance.part.untimed) pl.startedPlayback = timestamp
 			return pl
 		})
 
 		cache.deferAfterSave(() => {
-			handlePartInstanceTimingEvent(cache.PlaylistId, partInstance._id)
+			// Run in the background, we don't want to hold onto the lock to do this
+			Meteor.setTimeout(() => {
+				handlePartInstanceTimingEvent(cache.PlaylistId, partInstance._id)
+			}, LOW_PRIO_DEFER_TIME)
 		})
 	}
 }

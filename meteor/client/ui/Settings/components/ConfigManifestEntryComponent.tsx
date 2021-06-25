@@ -23,8 +23,18 @@ export const renderEditAttribute = (
 		label: (configField as ConfigManifestEntry).placeholder || '',
 	}
 
-	if (configField.type === ConfigManifestEntryType.FLOAT || configField.type === ConfigManifestEntryType.INT) {
-		return <EditAttribute {...opts} type={configField.type} className="input text-input input-l"></EditAttribute>
+	if (configField.type === ConfigManifestEntryType.FLOAT) {
+		return <EditAttribute {...opts} type="float" className="input text-input input-l"></EditAttribute>
+	} else if (configField.type === ConfigManifestEntryType.INT) {
+		return (
+			<EditAttribute
+				{...opts}
+				type={'int'}
+				className="input text-input input-l"
+				mutateDisplayValue={(v) => (configField.zeroBased ? v + 1 : v)}
+				mutateUpdateValue={(v) => (configField.zeroBased ? v - 1 : v)}
+			></EditAttribute>
+		)
 	} else if (configField.type === ConfigManifestEntryType.STRING) {
 		return <EditAttribute {...opts} type="text" className="input text-input input-l"></EditAttribute>
 	} else if (configField.type === ConfigManifestEntryType.BOOLEAN) {

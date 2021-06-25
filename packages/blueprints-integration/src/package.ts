@@ -212,6 +212,9 @@ export namespace Accessor {
 
 		/** Name/Id of the network the share exists on. Used to differ between different networks. Leave empty if globally accessible. */
 		networkId?: string
+
+		/** URL to a HTTP-transformer. Used for thumbnails, previews etc.. (http://hostname:port) */
+		transformerURL?: string
 	}
 	/** Virtual PackageContainer used for piping data into core */
 	export interface CorePackageCollection extends Base {

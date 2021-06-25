@@ -123,9 +123,10 @@ export function internalUploadBlueprint(
 	blueprintId: BlueprintId,
 	body: string,
 	blueprintName?: string,
-	ignoreIdChange?: boolean
+	ignoreIdChange?: boolean,
+	organizationId?: OrganizationId | null
 ): Blueprint {
-	const organizationId = null
+	organizationId = organizationId || null
 	const blueprint = Blueprints.findOne(blueprintId)
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
