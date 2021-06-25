@@ -139,7 +139,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getOrderedPartsAfterPlayhead(cache, 100)
+			async (cache) => getOrderedPartsAfterPlayhead(cache, 100)
 		)
 		expect(parts.map((p) => p._id)).toEqual(partIds)
 	})
@@ -158,7 +158,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getOrderedPartsAfterPlayhead(cache, 100)
+			async (cache) => getOrderedPartsAfterPlayhead(cache, 100)
 		)
 		// Should not have the first
 		expect(parts.map((p) => p._id)).toEqual(partIds.slice(1))
@@ -170,7 +170,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getOrderedPartsAfterPlayhead(cache, 5)
+			async (cache) => getOrderedPartsAfterPlayhead(cache, 5)
 		)
 		// Should not have the first
 		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(1, 6))
@@ -190,7 +190,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getOrderedPartsAfterPlayhead(cache, 100)
+			async (cache) => getOrderedPartsAfterPlayhead(cache, 100)
 		)
 		// Should not have the first
 		expect(parts.map((p) => p._id)).toEqual(partIds.slice(1))
@@ -202,7 +202,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getOrderedPartsAfterPlayhead(cache, 5)
+			async (cache) => getOrderedPartsAfterPlayhead(cache, 5)
 		)
 		// Should not have the first
 		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(1, 6))
@@ -222,7 +222,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getOrderedPartsAfterPlayhead(cache, 100)
+			async (cache) => getOrderedPartsAfterPlayhead(cache, 100)
 		)
 		// Should be empty
 		expect(parts.map((p) => p._id)).toEqual([])
@@ -235,7 +235,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getOrderedPartsAfterPlayhead(cache, 5)
+			async (cache) => getOrderedPartsAfterPlayhead(cache, 5)
 		)
 		// Should be empty
 		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(0, 5))
@@ -255,7 +255,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getOrderedPartsAfterPlayhead(cache, 5)
+			async (cache) => getOrderedPartsAfterPlayhead(cache, 5)
 		)
 		// Should be empty
 		expect(parts3.map((p) => p._id)).toEqual([partIds[0], ...partIds.slice(2, 4), ...partIds.slice(5, 7)])
@@ -284,7 +284,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getOrderedPartsAfterPlayhead(cache, 5)
+			async (cache) => getOrderedPartsAfterPlayhead(cache, 5)
 		)
 		// Should not have the first
 		expect(parts.map((p) => p._id)).toEqual([partIds[5], partIds[6], partIds[8], partIds[9], partIds[10]])
@@ -306,7 +306,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getOrderedPartsAfterPlayhead(cache, 10)
+			async (cache) => getOrderedPartsAfterPlayhead(cache, 10)
 		)
 		expect(parts.map((p) => p._id)).toEqual([...partIds.slice(1, 5), ...partIds.slice(8)])
 
@@ -325,7 +325,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getOrderedPartsAfterPlayhead(cache, 10)
+			async (cache) => getOrderedPartsAfterPlayhead(cache, 10)
 		)
 		expect(parts2.map((p) => p._id)).toEqual([...partIds.slice(1, 5), ...partIds.slice(9)])
 
@@ -344,7 +344,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getOrderedPartsAfterPlayhead(cache, 10)
+			async (cache) => getOrderedPartsAfterPlayhead(cache, 10)
 		)
 		expect(parts3.map((p) => p._id)).toEqual(partIds.slice(1, 8))
 	})

@@ -64,7 +64,7 @@ export namespace ServerPlayoutAdLibAPI {
 			'pieceTakeNow',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
@@ -180,7 +180,7 @@ export namespace ServerPlayoutAdLibAPI {
 			'segmentAdLibPieceStart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
@@ -223,7 +223,7 @@ export namespace ServerPlayoutAdLibAPI {
 			'rundownBaselineAdLibPieceStart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				logger.debug('rundownBaselineAdLibPieceStart')
 
 				const playlist = cache.Playlist.doc
@@ -327,7 +327,7 @@ export namespace ServerPlayoutAdLibAPI {
 			'sourceLayerStickyPieceStart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 				if (!playlist.activationId)
@@ -666,7 +666,7 @@ export namespace ServerPlayoutAdLibAPI {
 			'startBucketAdlibPiece',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 				if (!playlist.activationId)

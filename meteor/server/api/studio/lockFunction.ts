@@ -42,7 +42,7 @@ export async function runStudioOperationWithCache<T>(
 	context: string,
 	studioId: StudioId,
 	priority: StudioLockFunctionPriority,
-	fcn: (cache: CacheForStudio) => Promise<T> | T
+	fcn: (cache: CacheForStudio) => Promise<T>
 ): Promise<T> {
 	return runStudioOperationWithLock(context, studioId, priority, async () => {
 		const cache = await CacheForStudio.create(studioId)
@@ -65,7 +65,7 @@ export async function runStudioOperationWithLock<T>(
 	context: string,
 	studioId: StudioId,
 	priority: StudioLockFunctionPriority,
-	fcn: (lock: StudioLock) => Promise<T> | T
+	fcn: (lock: StudioLock) => Promise<T>
 ): Promise<T> {
 	return pushWorkToQueue(
 		`studio_${studioId}`,

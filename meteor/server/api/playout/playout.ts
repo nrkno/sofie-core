@@ -134,7 +134,7 @@ export namespace ServerPlayoutAPI {
 			'resetRundownPlaylist',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir)
 					throw new Meteor.Error(401, `resetRundownPlaylist can only be run in rehearsal!`)
@@ -163,7 +163,7 @@ export namespace ServerPlayoutAPI {
 			'resetAndActivateRundownPlaylist',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir)
 					throw new Meteor.Error(402, `resetAndActivateRundownPlaylist cannot be run when active!`)
@@ -209,7 +209,7 @@ export namespace ServerPlayoutAPI {
 								otherRundownPlaylist,
 								PlayoutLockFunctionPriority.USER_PLAYOUT,
 								null,
-								(otherCache) => {
+								async (otherCache) => {
 									deactivateRundownPlaylistInner(otherCache)
 								}
 							).catch((e) => errors.push(e))
@@ -320,7 +320,7 @@ export namespace ServerPlayoutAPI {
 			'setNextPart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" is not active!`)
@@ -377,7 +377,7 @@ export namespace ServerPlayoutAPI {
 			'moveNextPart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				if (!partDelta && !segmentDelta)
 					throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${partDelta}, ${segmentDelta})`)
 
@@ -502,7 +502,7 @@ export namespace ServerPlayoutAPI {
 			'setNextSegment',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(501, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
@@ -535,7 +535,7 @@ export namespace ServerPlayoutAPI {
 			'activateHold',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(501, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
@@ -594,7 +594,7 @@ export namespace ServerPlayoutAPI {
 			'deactivateHold',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 
 				if (playlist.holdState !== RundownHoldState.PENDING)
@@ -619,7 +619,7 @@ export namespace ServerPlayoutAPI {
 			'disableNextPiece',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.currentPartInstanceId) throw new Meteor.Error(401, `No current part!`)
 			},
@@ -851,7 +851,7 @@ export namespace ServerPlayoutAPI {
 			'onPartPlaybackStarted',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (playlist.studioId !== peripheralDevice.studioId)
 					throw new Meteor.Error(
@@ -1151,7 +1151,7 @@ export namespace ServerPlayoutAPI {
 			'executeActionInner',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 
 				if (!playlist.activationId)
@@ -1233,7 +1233,7 @@ export namespace ServerPlayoutAPI {
 			'sourceLayerOnPartStop',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				if (_.isString(sourceLayerIds)) sourceLayerIds = [sourceLayerIds]
 
 				if (sourceLayerIds.length === 0) return

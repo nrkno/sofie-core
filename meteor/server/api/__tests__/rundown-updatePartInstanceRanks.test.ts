@@ -119,7 +119,7 @@ describe('updatePartInstanceRanks', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -171,7 +171,7 @@ describe('updatePartInstanceRanks', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -188,7 +188,7 @@ describe('updatePartInstanceRanks', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks2 = getPartInstanceRanks()
@@ -216,7 +216,7 @@ describe('updatePartInstanceRanks', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -246,7 +246,7 @@ describe('updatePartInstanceRanks', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -294,7 +294,7 @@ describe('updatePartInstanceRanks', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -323,7 +323,7 @@ describe('updatePartInstanceRanks', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()
@@ -348,7 +348,7 @@ describe('updatePartInstanceRanks', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks2 }])
+			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks2 }])
 		)
 
 		const newInstanceRanks2 = getPartInstanceRanks()
@@ -385,7 +385,7 @@ describe('updatePartInstanceRanks', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
+			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
 		)
 
 		const newInstanceRanks = getPartInstanceRanks()

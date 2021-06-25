@@ -69,8 +69,8 @@ export async function runPlayoutOperationWithCache<T>(
 	contextStr: string,
 	rundownPlaylistId: RundownPlaylistId,
 	priority: PlayoutLockFunctionPriority,
-	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
-	fcn: (cache: CacheForPlayout) => Promise<T> | T
+	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void>),
+	fcn: (cache: CacheForPlayout) => Promise<T>
 ): Promise<T> {
 	let tmpPlaylist: RundownPlaylist
 	if (access) {
@@ -109,7 +109,7 @@ export async function runPlayoutOperationWithLock<T>(
 	contextStr: string,
 	rundownPlaylistId: RundownPlaylistId,
 	priority: PlayoutLockFunctionPriority,
-	fcn: (lock: PlaylistLock, tmpPlaylist: ReadonlyDeep<RundownPlaylist>) => Promise<T> | T
+	fcn: (lock: PlaylistLock, tmpPlaylist: ReadonlyDeep<RundownPlaylist>) => Promise<T>
 ): Promise<T> {
 	let tmpPlaylist: RundownPlaylist
 	if (access) {
@@ -131,7 +131,7 @@ export async function runPlayoutOperationWithLock<T>(
 				studioLock,
 				tmpPlaylist,
 				priority,
-				(playoutLock) => fcn(playoutLock, tmpPlaylist)
+				async (playoutLock) => fcn(playoutLock, tmpPlaylist)
 			)
 	)
 }
@@ -149,8 +149,8 @@ export async function runPlayoutOperationWithCacheFromStudioOperation<T>(
 	cacheOrLock: ReadOnlyCache<CacheForStudio> | ReadOnlyCache<CacheForPlayoutPreInit> | StudioLock | PlaylistLock, // Important to verify correct lock is held
 	tmpPlaylist: ReadonlyDeep<RundownPlaylist>,
 	priority: PlayoutLockFunctionPriority,
-	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
-	fcn: (cache: CacheForPlayout) => Promise<T> | T
+	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void>),
+	fcn: (cache: CacheForPlayout) => Promise<T>
 ): Promise<T> {
 	// Validate the lock is correct
 	const options: PlayoutLockOptions = {}
@@ -189,7 +189,7 @@ export async function runPlayoutOperationWithLockFromStudioOperation<T>(
 	studioCacheOrLock: StudioLock | ReadOnlyCache<CacheForStudio>,
 	tmpPlaylist: Pick<ReadonlyDeep<RundownPlaylist>, '_id' | 'studioId'>,
 	priority: PlayoutLockFunctionPriority,
-	fcn: (lock: PlaylistLock) => Promise<T> | T
+	fcn: (lock: PlaylistLock) => Promise<T>
 ): Promise<T> {
 	const lockStudioId = getStudioIdFromCacheOrLock(studioCacheOrLock)
 	if (lockStudioId != tmpPlaylist.studioId)
@@ -229,8 +229,8 @@ async function playoutLockFunctionInner<T>(
 	lock: StudioLock,
 	tmpPlaylist: ReadonlyDeep<RundownPlaylist>,
 	priority: PlayoutLockFunctionPriority,
-	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
-	fcn: (cache: CacheForPlayout) => Promise<T> | T,
+	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void>),
+	fcn: (cache: CacheForPlayout) => Promise<T>,
 	options?: PlayoutLockOptions
 ): Promise<T> {
 	async function doPlaylistInner() {

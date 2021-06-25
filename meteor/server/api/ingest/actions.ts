@@ -145,7 +145,7 @@ export namespace IngestActions {
 							rundownPlaylist,
 							PlayoutLockFunctionPriority.MISC,
 							null,
-							(cache) => resetRundownPlaylist(cache)
+							async (cache) => resetRundownPlaylist(cache)
 						)
 					}
 
