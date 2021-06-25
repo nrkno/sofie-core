@@ -394,7 +394,7 @@ export async function regenerateSegmentsFromIngestData(
 	}
 
 	const segmentChanges = await calculateSegmentsFromIngestData(cache, ingestSegments)
-	await saveSegmentChangesToCache(cache, segmentChanges, false)
+	saveSegmentChangesToCache(cache, segmentChanges, false)
 
 	const result: CommitIngestData = {
 		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
