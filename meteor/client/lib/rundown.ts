@@ -18,21 +18,21 @@ import {
 	IOutputLayerExtended,
 	ISourceLayerExtended,
 	PartInstanceLimited,
+	getSegmentsWithPartInstances,
 } from '../../lib/Rundown'
+import { PartInstance } from '../../lib/collections/PartInstances'
 import { DBSegment, Segment, SegmentId, Segments } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { literal, normalizeArray, getCurrentTime, applyToArray, unprotectString, protectString } from '../../lib/lib'
-import { PartInstance, wrapPartToTemporaryInstance } from '../../lib/collections/PartInstances'
+import { literal, normalizeArray, getCurrentTime, applyToArray } from '../../lib/lib'
 import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
-import { DBPart, PartId } from '../../lib/collections/Parts'
+import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { createPieceGroupAndCap, PieceGroupMetadata } from '../../lib/rundown/pieces'
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
-import { Mongo } from 'meteor/mongo'
 import { FindOptions } from '../../lib/typings/meteor'
 import { getShowHiddenSourceLayers } from './localStorage'
 
@@ -219,63 +219,6 @@ export namespace RundownUtils {
 		return ((SourceLayerType[sourceLayerType] || 'unknown-sourceLayer-' + sourceLayerType) + '')
 			.toLowerCase()
 			.replace(/_/g, '-')
-	}
-
-	export function getSegmentsWithPartInstances(
-		playlist: RundownPlaylist,
-		segmentsQuery?: Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>,
-		partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>,
-		partInstancesQuery?: Mongo.Query<PartInstance>,
-		segmentsOptions?: FindOptions<DBSegment>,
-		partsOptions?: FindOptions<DBPart>,
-		partInstancesOptions?: FindOptions<PartInstance>
-	): Array<{ segment: Segment; partInstances: PartInstance[] }> {
-		const { segments, parts: rawParts } = playlist.getSegmentsAndPartsSync(
-			segmentsQuery,
-			partsQuery,
-			segmentsOptions,
-			partsOptions
-		)
-		const rawPartInstances = playlist.getActivePartInstances(partInstancesQuery, partInstancesOptions)
-		const playlistActivationId = playlist.activationId ?? protectString('')
-
-		const partsBySegment = _.groupBy(rawParts, (p) => p.segmentId)
-		const partInstancesBySegment = _.groupBy(rawPartInstances, (p) => p.segmentId)
-
-		return segments.map((segment) => {
-			const segmentParts = partsBySegment[unprotectString(segment._id)] || []
-			const segmentPartInstances = partInstancesBySegment[unprotectString(segment._id)] || []
-
-			if (segmentPartInstances.length === 0) {
-				return {
-					segment,
-					partInstances: segmentParts.map((p) => wrapPartToTemporaryInstance(playlistActivationId, p)),
-				}
-			} else if (segmentParts.length === 0) {
-				return {
-					segment,
-					partInstances: _.sortBy(segmentPartInstances, (p) => p.part._rank),
-				}
-			} else {
-				const partInstanceMap = new Map<PartId, PartInstance>()
-				for (const part of segmentParts)
-					partInstanceMap.set(part._id, wrapPartToTemporaryInstance(playlistActivationId, part))
-				for (const partInstance of segmentPartInstances) {
-					// Check what we already have in the map for this PartId. If the map returns the currentPartInstance then we keep that, otherwise replace with this partInstance
-					const currentValue = partInstanceMap.get(partInstance.part._id)
-					if (!currentValue || currentValue._id !== playlist.currentPartInstanceId) {
-						partInstanceMap.set(partInstance.part._id, partInstance)
-					}
-				}
-
-				const allPartInstances = _.sortBy(Array.from(partInstanceMap.values()), (p) => p.part._rank)
-
-				return {
-					segment,
-					partInstances: allPartInstances,
-				}
-			}
-		})
 	}
 
 	/**
