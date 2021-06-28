@@ -1366,7 +1366,8 @@ svg.icon {
 					left: 2px;
 					text-transform: uppercase;
 					font-weight: bold;
-					line-height: 1em;
+					line-height: 0.9em;
+					background: $segment-background-color;
 					white-space: nowrap;
 					word-wrap: none;
 					color: $part-start-color;
@@ -2008,6 +2009,7 @@ svg.icon {
 					max-width: calc(100% - 10px);
 					overflow: hidden;
 					text-overflow: clip;
+					background: inherit;
 
 					> * {
 						position: relative;

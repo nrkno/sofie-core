@@ -145,7 +145,6 @@ export const SourceLayerItem = withTranslation()(
 								(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration) *
 								this.props.timeScale
 
-							// || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0)
 							const styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
