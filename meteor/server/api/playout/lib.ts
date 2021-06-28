@@ -57,10 +57,12 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 			},
 		}
 	)
+	const partInstanceIds = cache.PartInstances.findFetch({ rundownId: rundown._id }).map((r) => r._id)
 	cache.deferAfterSave(() => {
 		PieceInstances.update(
 			{
 				rundownId: rundown._id,
+				partInstanceId: { $in: partInstanceIds },
 			},
 			{
 				$set: {
@@ -108,11 +110,15 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 			},
 		}
 	)
+	const partInstanceIds = cache.PartInstances.findFetch({ rundownId: { $in: rundownIDs } }).map((r) => r._id)
 	cache.deferAfterSave(() => {
 		PieceInstances.update(
 			{
 				rundownId: {
 					$in: rundownIDs,
+				},
+				partInstanceId: {
+					$in: partInstanceIds,
 				},
 			},
 			{
