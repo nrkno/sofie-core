@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.34.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0...v1.34.0) (2021-06-28)
+
+
+
+# [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
+
+
+### Bug Fixes
+
+* better handling of debug messages ([d18982c](https://github.com/nrkno/tv-automation-server-core/commit/d18982ca46d5f1fceacb4f07da2957cd67acfd44))
+* bugs when parsing xml data ([f2cb27b](https://github.com/nrkno/tv-automation-server-core/commit/f2cb27bb1f416a35e15319e174291df0665225ea))
+* Don't report a minor-warning if fallback mos-connection is not active when it is not defined ([6646ad2](https://github.com/nrkno/tv-automation-server-core/commit/6646ad29c11b832d575e1423a532df22fbe6a7af))
+* Don't report a minor-warning if fallback mos-connection is not active when it is not defined ([d254a44](https://github.com/nrkno/tv-automation-server-core/commit/d254a446a5e08cc28333eb11ee654c180103baa1))
+* handle error ([ff7c616](https://github.com/nrkno/tv-automation-server-core/commit/ff7c616b1c1ac5ba91bbc2042177755856f8cbe8))
+* resend device statuses to core, on core reconnect ([466e995](https://github.com/nrkno/tv-automation-server-core/commit/466e995283e2956cff87d65f708c0c4a5c6a90aa))
+* use new version of mos-connection (wip) ([8f1379e](https://github.com/nrkno/tv-automation-server-core/commit/8f1379ef6fc723fdc00f85af82f6e901566986ee))
+
+
+
+
+
 # [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
 # [1.33.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.2...v1.33.0) (2021-06-15)
 

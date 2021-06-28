@@ -2,6 +2,93 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.34.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0...v1.34.0) (2021-06-28)
+
+
+### Features
+
+* **Rundown View:** time of day countdowns & end of loop timer ([#535](https://github.com/nrkno/tv-automation-server-core/issues/535)) ([0430960](https://github.com/nrkno/tv-automation-server-core/commit/0430960f79d7a287eebe2e81ea9a7e9534880b4b))
+* implement getPackageInfo ([7ce0a4f](https://github.com/nrkno/tv-automation-server-core/commit/7ce0a4fcd7075b1c7168dd8d2f0034aa2cd2f478))
+* implement listenToPackageInfo from blueprints ([e1c1cca](https://github.com/nrkno/tv-automation-server-core/commit/e1c1ccae6e71fc0ef0d02ea54c772b67284eec02))
+* initial writing ([d457d8a](https://github.com/nrkno/tv-automation-server-core/commit/d457d8af03197008d3baa92d571aa84ae042d92c))
+
+
+### Bug Fixes
+
+* add index to ExpectedPackages, to ensure that the query in CacheForIngest hits an index. ([c0c78af](https://github.com/nrkno/tv-automation-server-core/commit/c0c78af19516ec3b02cf76944bcec6b798b0b2c8))
+* add property for fileName into FFProbeInfo ([b2bfeac](https://github.com/nrkno/tv-automation-server-core/commit/b2bfeac4f0097afa3522cd4854839a9efd6e45f9))
+* batch calls to the blueprints ([f45adb5](https://github.com/nrkno/tv-automation-server-core/commit/f45adb5bcd251e68e0fdf5f996cc976e2809d299))
+* better batching of updates ([3c547d4](https://github.com/nrkno/tv-automation-server-core/commit/3c547d4727267bc42a6c0ad5aa0e6aa1dc3dcd31))
+* block hold from being used across segments ([1d6dfae](https://github.com/nrkno/tv-automation-server-core/commit/1d6dfae545b243a7629615da07c10b5f9aa29666))
+* logging ([f9aafc6](https://github.com/nrkno/tv-automation-server-core/commit/f9aafc66858ea39dc49f0b06732e790e545cd567))
+* move PackageInfo interfaces into blueprints-integration ([2730e06](https://github.com/nrkno/tv-automation-server-core/commit/2730e0675a3b696530aad5b854115475dd383736))
+* pieces listening to package matching ([2c51a6d](https://github.com/nrkno/tv-automation-server-core/commit/2c51a6d82bae0ca60d17859d85c3919142dab44e))
+* playout-gateway atem media uploading ([6159ab3](https://github.com/nrkno/tv-automation-server-core/commit/6159ab3485d7d0f2679cc3b754efcceae471565c))
+* prompter doesn't use changes from part/piece instances ([#533](https://github.com/nrkno/tv-automation-server-core/issues/533)) ([e3bd920](https://github.com/nrkno/tv-automation-server-core/commit/e3bd9200f4d784b65015fa8a8cbc2efc23f1b4ad))
+* replace id hack with a 'blueprintPackageId' property ([5e2b08e](https://github.com/nrkno/tv-automation-server-core/commit/5e2b08ebe4edb6fce13945dbdb8887432ec69608))
+* small performance tweaks ([#534](https://github.com/nrkno/tv-automation-server-core/issues/534)) ([61d0888](https://github.com/nrkno/tv-automation-server-core/commit/61d08884583d11dcb6f6ab135f564d8343003ce4))
+* syncChangesToPartInstances attempting to find pieces for a different rundown in the unsaved ingestCache ([c1eb341](https://github.com/nrkno/tv-automation-server-core/commit/c1eb341727248d68cdb95ef6af73d6b010f38aaf))
+
+### [1.32.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.3-0...v1.32.3) (2021-06-10)
+
+### [1.32.3-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.2...v1.32.3-0) (2021-06-09)
+
+
+### Features
+
+* implement getPackageInfo ([45f8086](https://github.com/nrkno/tv-automation-server-core/commit/45f8086b8390ea5419452e1241086aff4429fa26))
+* implement listenToPackageInfo from blueprints ([252afb8](https://github.com/nrkno/tv-automation-server-core/commit/252afb873f01adebed828b6a2b2fbd1d973a6256))
+* initial writing ([b2b4e6f](https://github.com/nrkno/tv-automation-server-core/commit/b2b4e6f4b701e6629a3be12df3940e8e9aa23e61))
+
+
+### Bug Fixes
+
+* add index to ExpectedPackages, to ensure that the query in CacheForIngest hits an index. ([c36fc71](https://github.com/nrkno/tv-automation-server-core/commit/c36fc7129e606c34ac7c980e63c1ce9f7af35a32))
+* add property for fileName into FFProbeInfo ([11bac92](https://github.com/nrkno/tv-automation-server-core/commit/11bac9273d4e1a4270274c22995f72b903f15b2a))
+* batch calls to the blueprints ([a55193b](https://github.com/nrkno/tv-automation-server-core/commit/a55193b4e465e150cc817e57bde6231e577aa969))
+* better batching of updates ([9131627](https://github.com/nrkno/tv-automation-server-core/commit/9131627d528310b15568dddf53f02492197e3a5c))
+* clarify default lookahead search distance ([9614388](https://github.com/nrkno/tv-automation-server-core/commit/9614388d4e900f9400090f3d768f3cc7acbcb027))
+* ensure ingest data is written to mongo before calling ensureNextPartIsValid ([2bf6b8a](https://github.com/nrkno/tv-automation-server-core/commit/2bf6b8a1f41512bf6c4f18266384f4a56ce2f665))
+* logging ([95403ff](https://github.com/nrkno/tv-automation-server-core/commit/95403ffb8d5e96e286cfe43ebb33bfd380f1793d))
+* move PackageInfo interfaces into blueprints-integration ([d32810f](https://github.com/nrkno/tv-automation-server-core/commit/d32810f5b4560197b66cd44736d1128ecdb9e6c3))
+* orphaned parts cause the Segment Timeline component to scroll beyond the timeline ([7935815](https://github.com/nrkno/tv-automation-server-core/commit/7935815d14ce40c0702cb61ec2288b636fafbf78))
+* orphaned parts cause the Segment Timeline component to scroll beyond the timeline ([4b2fdab](https://github.com/nrkno/tv-automation-server-core/commit/4b2fdab4f4aef9904700ca99b6c8c96dff413438))
+* pieces for parts were sometimes left behind when a part was removed ([abdfca6](https://github.com/nrkno/tv-automation-server-core/commit/abdfca6ae27b264d3b0a1a30c3a90b0e9d326c6b))
+* pieces listening to package matching ([bb75cd8](https://github.com/nrkno/tv-automation-server-core/commit/bb75cd83dbd63ef045179b3da6e1c83e5c813efd))
+* remove callbacks from meteor mongo api ([79dd2e9](https://github.com/nrkno/tv-automation-server-core/commit/79dd2e91967d471eb109e49b9fb573999e8cbd95))
+* replace id hack with a 'blueprintPackageId' property ([f6a681a](https://github.com/nrkno/tv-automation-server-core/commit/f6a681a4f419a73771cf92816ad3a5a3eec92f65))
+
+## [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
+
+
+### Features
+
+* add debug printout of step payload values to nora inspector in shelf ([02d0789](https://github.com/nrkno/tv-automation-server-core/commit/02d078952748b511cf5d27db6590a2441b1fd3b3))
+* add step property to nora payload typings ([819d339](https://github.com/nrkno/tv-automation-server-core/commit/819d3395905f9b4b36d7ea4d397c4183eef69f8f))
+* prevent scroll bubbling ([#506](https://github.com/nrkno/tv-automation-server-core/issues/506)) ([afc8245](https://github.com/nrkno/tv-automation-server-core/commit/afc82455cf9072fff3407a688a44e34380345c2d))
+* untimed Parts ([#512](https://github.com/nrkno/tv-automation-server-core/issues/512)) ([bd7d336](https://github.com/nrkno/tv-automation-server-core/commit/bd7d336d45bca1c92c45e2b2797722db956be1fb))
+* zero-based config settings ([31bb2c3](https://github.com/nrkno/tv-automation-server-core/commit/31bb2c30b5790770d3ad630afb75ac0d57b9d306))
+* zero-based configs for ATEM and Sisyfos devices ([5d0b79a](https://github.com/nrkno/tv-automation-server-core/commit/5d0b79a735f3778293a18e0901147b63c5399010))
+
+
+### Bug Fixes
+
+* add argument for adding blueprints into an organizationId ([afd8eea](https://github.com/nrkno/tv-automation-server-core/commit/afd8eeab27ca20440906d6a8b6f7dbb645557b00))
+* Add vMix Config Manifest ([ccfb466](https://github.com/nrkno/tv-automation-server-core/commit/ccfb46661c9f7950ca79b8652afc90d0b09502c7))
+* allow string arrays for TranslatableMessage args ([9b606cf](https://github.com/nrkno/tv-automation-server-core/commit/9b606cf002a2426a203390e3979b783f7d40c561))
+* better handling of debug messages ([d18982c](https://github.com/nrkno/tv-automation-server-core/commit/d18982ca46d5f1fceacb4f07da2957cd67acfd44))
+* bugs when parsing xml data ([f2cb27b](https://github.com/nrkno/tv-automation-server-core/commit/f2cb27bb1f416a35e15319e174291df0665225ea))
+* content ended, scene change and freezes overlays are rendered on Pieces in invalid Parts ([80dd1eb](https://github.com/nrkno/tv-automation-server-core/commit/80dd1ebe1cd7a484c91d8e349215b86bd7c13e45))
+* Don't report a minor-warning if fallback mos-connection is not active when it is not defined ([6646ad2](https://github.com/nrkno/tv-automation-server-core/commit/6646ad29c11b832d575e1423a532df22fbe6a7af))
+* Don't report a minor-warning if fallback mos-connection is not active when it is not defined ([d254a44](https://github.com/nrkno/tv-automation-server-core/commit/d254a446a5e08cc28333eb11ee654c180103baa1))
+* handle error ([ff7c616](https://github.com/nrkno/tv-automation-server-core/commit/ff7c616b1c1ac5ba91bbc2042177755856f8cbe8))
+* handle show style variant ids in migrations better ([97bdfbf](https://github.com/nrkno/tv-automation-server-core/commit/97bdfbff8883f01cfef9fda2262df8cd86de1046))
+* hoverscrub doesn't always work on selected items in Shelf ([9ce59ba](https://github.com/nrkno/tv-automation-server-core/commit/9ce59ba8271bce0b58294661726ee53490dbfb53))
+* move notification center on top of the shelf ([158aef9](https://github.com/nrkno/tv-automation-server-core/commit/158aef9fc0cdae847995cb887c1fb61fcc533be3))
+* resend device statuses to core, on core reconnect ([466e995](https://github.com/nrkno/tv-automation-server-core/commit/466e995283e2956cff87d65f708c0c4a5c6a90aa))
+* snapshots: don't access file system when in unit tests ([517a488](https://github.com/nrkno/tv-automation-server-core/commit/517a4887f1e86fe3c51e22a470d660401e7420ef))
+* use new version of mos-connection (wip) ([8f1379e](https://github.com/nrkno/tv-automation-server-core/commit/8f1379ef6fc723fdc00f85af82f6e901566986ee))
+
 ## [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
 
 ### Features

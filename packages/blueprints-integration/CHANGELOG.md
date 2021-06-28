@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.34.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0...v1.34.0) (2021-06-28)
+
+
+### Bug Fixes
+
+* add property for fileName into FFProbeInfo ([b2bfeac](https://github.com/nrkno/tv-automation-server-core/commit/b2bfeac4f0097afa3522cd4854839a9efd6e45f9))
+* logging ([f9aafc6](https://github.com/nrkno/tv-automation-server-core/commit/f9aafc66858ea39dc49f0b06732e790e545cd567))
+* move PackageInfo interfaces into blueprints-integration ([2730e06](https://github.com/nrkno/tv-automation-server-core/commit/2730e0675a3b696530aad5b854115475dd383736))
+* prompter doesn't use changes from part/piece instances ([#533](https://github.com/nrkno/tv-automation-server-core/issues/533)) ([e3bd920](https://github.com/nrkno/tv-automation-server-core/commit/e3bd9200f4d784b65015fa8a8cbc2efc23f1b4ad))
+
+
+### Features
+
+* **Rundown View:** time of day countdowns & end of loop timer ([#535](https://github.com/nrkno/tv-automation-server-core/issues/535)) ([0430960](https://github.com/nrkno/tv-automation-server-core/commit/0430960f79d7a287eebe2e81ea9a7e9534880b4b))
+* implement listenToPackageInfo from blueprints ([e1c1cca](https://github.com/nrkno/tv-automation-server-core/commit/e1c1ccae6e71fc0ef0d02ea54c772b67284eec02))
+
+
+
+# [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
+
+
+### Features
+
+* add step property to nora payload typings ([819d339](https://github.com/nrkno/tv-automation-server-core/commit/819d3395905f9b4b36d7ea4d397c4183eef69f8f))
+* untimed Parts ([#512](https://github.com/nrkno/tv-automation-server-core/issues/512)) ([bd7d336](https://github.com/nrkno/tv-automation-server-core/commit/bd7d336d45bca1c92c45e2b2797722db956be1fb))
+* zero-based config settings ([31bb2c3](https://github.com/nrkno/tv-automation-server-core/commit/31bb2c30b5790770d3ad630afb75ac0d57b9d306))
+
+
+
+
+
 # [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
 # [1.33.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.2...v1.33.0) (2021-06-15)
 

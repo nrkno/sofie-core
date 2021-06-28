@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.34.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0...v1.34.0) (2021-06-28)
+
+
+### Bug Fixes
+
+* playout-gateway atem media uploading ([6159ab3](https://github.com/nrkno/tv-automation-server-core/commit/6159ab3485d7d0f2679cc3b754efcceae471565c))
+
+
+
+# [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
+
+
+### Bug Fixes
+
+* Add vMix Config Manifest ([ccfb466](https://github.com/nrkno/tv-automation-server-core/commit/ccfb46661c9f7950ca79b8652afc90d0b09502c7))
+
+
+### Features
+
+* zero-based configs for ATEM and Sisyfos devices ([5d0b79a](https://github.com/nrkno/tv-automation-server-core/commit/5d0b79a735f3778293a18e0901147b63c5399010))
+
+
+
+
+
 # [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
 # [1.33.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.2...v1.33.0) (2021-06-15)
 

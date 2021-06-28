@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.34.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0...v1.34.0) (2021-06-28)
+
+
+### Bug Fixes
+
+* prompter doesn't use changes from part/piece instances ([#533](https://github.com/nrkno/tv-automation-server-core/issues/533)) ([e3bd920](https://github.com/nrkno/tv-automation-server-core/commit/e3bd9200f4d784b65015fa8a8cbc2efc23f1b4ad))
+
+
+
+# [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
+
+
+### Features
+
+* zero-based config settings ([31bb2c3](https://github.com/nrkno/tv-automation-server-core/commit/31bb2c30b5790770d3ad630afb75ac0d57b9d306))
+
+
+
+
+
 # [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
 
 
