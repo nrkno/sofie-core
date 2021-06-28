@@ -51,7 +51,7 @@ import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 import { SegmentTimelinePartClass } from './SegmentTimelinePart'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
-export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
+export const SIMULATED_PLAYBACK_HARD_MARGIN = 3500
 const SIMULATED_PLAYBACK_CROSSFADE_STEP = 0.02
 
 export const LIVE_LINE_TIME_PADDING = 150
@@ -777,6 +777,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					this.context.durations?.partDisplayStartsAt?.[unprotectString(currentLivePart._id)] -
 						this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] || 0
 
+				let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
 				const lastTake = currentLivePartInstance.timings?.take
 				const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
 				const lastTakeOffset = currentLivePartInstance.timings?.playOffset || 0
@@ -787,8 +788,12 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						? lastStartedPlayback - lastTakeOffset
 						: undefined
 
-				let newLivePosition = 
-					virtualStartedPlayback
+				if (lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
+					isExpectedToPlay = true
+				}
+
+				let newLivePosition =
+					isExpectedToPlay && virtualStartedPlayback
 						? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
 						: partOffset + lastTakeOffset
 
