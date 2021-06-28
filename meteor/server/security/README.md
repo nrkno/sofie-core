@@ -43,7 +43,6 @@
 - AdLibPieces
 - RundownBaselineAdLibPieces
 - IngestDataCache
-- AsRunLog
 - ExpectedMediaItems
 - ExpectedPlayoutItems
 

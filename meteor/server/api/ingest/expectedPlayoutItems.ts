@@ -1,146 +1,119 @@
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { check } from '../../../lib/check'
-import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
-import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integration'
+import { Piece } from '../../../lib/collections/Pieces'
+import {
+	ExpectedPlayoutItem,
+	ExpectedPlayoutItemRundown,
+	ExpectedPlayoutItems,
+	ExpectedPlayoutItemStudio,
+} from '../../../lib/collections/ExpectedPlayoutItems'
 import * as _ from 'underscore'
-import { DBRundown, RundownId } from '../../../lib/collections/Rundowns'
+import { RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { logger } from '../../logging'
-import { PartId, DBPart } from '../../../lib/collections/Parts'
-import { saveIntoDb, protectString, unprotectString } from '../../../lib/lib'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { getAllPiecesFromCache, getAllAdLibPiecesFromCache } from '../playout/lib'
+import { PartId } from '../../../lib/collections/Parts'
+import { getRandomId, protectString, waitForPromiseAll } from '../../../lib/lib'
+import { CacheForIngest } from './cache'
+import { saveIntoCache } from '../../cache/lib'
+import { StudioId } from '../../../lib/collections/Studios'
+import { AdLibAction } from '../../../lib/collections/AdLibActions'
+import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
+import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integration'
+import { CacheForPlayout } from '../playout/cache'
+import { CacheForStudio } from '../studio/cache'
+import { saveIntoDb } from '../../lib/database'
 
-interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
-	partId?: PartId
-	pieceId: PieceId
-}
 function extractExpectedPlayoutItems(
-	part: DBPart,
-	pieces: Array<Piece | AdLibPiece>
-): ExpectedPlayoutItemGenericWithPiece[] {
-	let expectedPlayoutItemsGeneric: ExpectedPlayoutItemGenericWithPiece[] = []
+	studioId: StudioId,
+	rundownId: RundownId,
+	partId: PartId | undefined,
+	piece: Piece | AdLibPiece | AdLibAction | RundownBaselineAdLibAction
+): ExpectedPlayoutItem[] {
+	const expectedPlayoutItemsGeneric: ExpectedPlayoutItem[] = []
 
-	_.each(pieces, (piece) => {
-		if (piece.expectedPlayoutItems) {
-			_.each(piece.expectedPlayoutItems, (pieceItem) => {
-				expectedPlayoutItemsGeneric.push({
-					pieceId: piece._id,
-					partId: part._id,
-					...pieceItem,
-				})
+	if (piece.expectedPlayoutItems) {
+		_.each(piece.expectedPlayoutItems, (pieceItem, i) => {
+			expectedPlayoutItemsGeneric.push({
+				...pieceItem,
+				_id: protectString(piece._id + '_' + i),
+				studioId: studioId,
+				rundownId: rundownId,
+				// pieceId: piece._id,
+				partId: partId,
 			})
-		}
-	})
+		})
+	}
 
 	return expectedPlayoutItemsGeneric
 }
 
-function wrapExpectedPlayoutItems(
-	rundown: DBRundown,
-	items: ExpectedPlayoutItemGenericWithPiece[]
-): ExpectedPlayoutItem[] {
-	return items.map((item, i) => {
-		return {
-			_id: protectString(item.pieceId + '_' + i),
-			studioId: rundown.studioId,
-			rundownId: rundown._id,
-			...item,
-		}
-	})
+/** @deprecated */
+export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest): void {
+	const expectedPlayoutItems: ExpectedPlayoutItem[] = []
+
+	const studioId = cache.Studio.doc._id
+	const rundownId = cache.RundownId
+
+	// It isn't great to have to load these unnecessarily, but expectedPackages will resolve this
+	const [baselineAdlibPieces, baselineAdlibActions] = waitForPromiseAll([
+		cache.RundownBaselineAdLibPieces.get(),
+		cache.RundownBaselineAdLibActions.get(),
+	])
+
+	for (const piece of cache.Pieces.findFetch({})) {
+		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, piece.startPartId, piece))
+	}
+	for (const piece of cache.AdLibPieces.findFetch({})) {
+		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, piece.partId, piece))
+	}
+	for (const piece of baselineAdlibPieces.findFetch({})) {
+		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, piece))
+	}
+	for (const action of cache.AdLibActions.findFetch({})) {
+		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, action.partId, action))
+	}
+	for (const action of baselineAdlibActions.findFetch({})) {
+		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, action))
+	}
+
+	saveIntoCache<ExpectedPlayoutItem, ExpectedPlayoutItem>(
+		cache.ExpectedPlayoutItems,
+		{ baseline: { $exists: false } },
+		expectedPlayoutItems
+	)
 }
 
-export function updateExpectedPlayoutItemsOnRundown(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
-	check(rundownId, String)
-
-	const rundown = cache.Rundowns.findOne(rundownId)
-	if (!rundown) {
-		cache.deferAfterSave(() => {
-			const removedItems = ExpectedPlayoutItems.remove({
-				rundownId: rundownId,
-			})
-			logger.info(`Removed ${removedItems} expected playout items for deleted rundown "${rundownId}"`)
+export function updateBaselineExpectedPlayoutItemsOnRundown(
+	cache: CacheForIngest,
+	items?: ExpectedPlayoutItemGeneric[]
+) {
+	saveIntoCache<ExpectedPlayoutItem, ExpectedPlayoutItem>(
+		cache.ExpectedPlayoutItems,
+		{ baseline: 'rundown' },
+		(items || []).map((item): ExpectedPlayoutItemRundown => {
+			return {
+				...item,
+				_id: getRandomId(),
+				studioId: cache.Studio.doc._id,
+				rundownId: cache.RundownId,
+				baseline: 'rundown',
+			}
 		})
-		return
-	}
-
-	const intermediaryItems: ExpectedPlayoutItemGenericWithPiece[] = []
-
-	const piecesStartingInThisRundown = cache.Pieces.findFetch({
-		startRundownId: rundown._id,
-	})
-	const piecesGrouped = _.groupBy(piecesStartingInThisRundown, 'startPartId')
-
-	const adlibPiecesInThisRundown = cache.AdLibPieces.findFetch({
-		rundownId: rundown._id,
-	})
-	const adlibPiecesGrouped = _.groupBy(adlibPiecesInThisRundown, 'partId')
-
-	for (const part of cache.Parts.findFetch({ rundownId: rundown._id })) {
-		intermediaryItems.push(...extractExpectedPlayoutItems(part, piecesGrouped[unprotectString(part._id)] || []))
-		intermediaryItems.push(
-			...extractExpectedPlayoutItems(part, adlibPiecesGrouped[unprotectString(part._id)] || [])
-		)
-	}
-
-	cache.deferAfterSave(() => {
-		const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)
-
-		saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(
-			ExpectedPlayoutItems,
-			{
-				rundownId: rundownId,
-			},
-			expectedPlayoutItems
-		)
-	})
+	)
 }
-
-export function updateExpectedPlayoutItemsOnPart(
-	cache: CacheForRundownPlaylist,
-	rundownId: RundownId,
-	partId: PartId
-): void {
-	check(rundownId, String)
-	check(partId, String)
-
-	const rundown = cache.Rundowns.findOne(rundownId)
-	if (!rundown) {
-		cache.deferAfterSave(() => {
-			const removedItems = ExpectedPlayoutItems.remove({
-				rundownId: rundownId,
-			})
-			logger.info(`Removed ${removedItems} expected playout items for deleted rundown "${rundownId}"`)
-		})
-		return
-	}
-
-	const part = cache.Parts.findOne(partId)
-	if (!part) {
-		cache.deferAfterSave(() => {
-			const removedItems = ExpectedPlayoutItems.remove({
-				rundownId: rundownId,
-				partId: partId,
-			})
-			logger.info(`Removed ${removedItems} expected playout items for deleted part "${partId}"`)
-		})
-		return
-	}
-
-	cache.deferAfterSave(() => {
-		const intermediaryItems = extractExpectedPlayoutItems(part, [
-			...getAllPiecesFromCache(cache, part),
-			...getAllAdLibPiecesFromCache(cache, part),
-		])
-		const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)
-
-		saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(
+export function updateBaselineExpectedPlayoutItemsOnStudio(
+	cache: CacheForStudio | CacheForPlayout,
+	items?: ExpectedPlayoutItemGeneric[]
+) {
+	cache.deferAfterSave(async () => {
+		await saveIntoDb(
 			ExpectedPlayoutItems,
-			{
-				rundownId: rundownId,
-				partId: part._id,
-			},
-			expectedPlayoutItems
+			{ studioId: cache.Studio.doc._id, baseline: 'studio' },
+			(items || []).map((item): ExpectedPlayoutItemStudio => {
+				return {
+					...item,
+					_id: getRandomId(),
+					studioId: cache.Studio.doc._id,
+					baseline: 'studio',
+				}
+			})
 		)
 	})
 }

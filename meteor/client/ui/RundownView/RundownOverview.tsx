@@ -11,7 +11,7 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
+import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -79,7 +79,7 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 						},
 					}
 				)
-				.map((part) => {
+				.forEach((part) => {
 					const instance = findPartInstanceOrWrapToTemporary(partInstancesMap, part)
 					const partUi = literal<PartUi>({
 						partId: part._id,
@@ -138,7 +138,8 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 									(segmentDuration || 0)) *
 									100 +
 								'%',
-						}}>
+						}}
+					>
 						{isNext && <div className="rundown__overview__segment__part__next-line"></div>}
 						{isLive && (
 							<div
@@ -152,7 +153,8 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 											)) *
 											100 +
 										'%',
-								}}></div>
+								}}
+							></div>
 						)}
 					</div>
 				)
@@ -175,7 +177,8 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 							})}
 							style={{
 								width: ((segmentDuration || 0) / totalDuration) * 100 + '%',
-							}}>
+							}}
+						>
 							{segment.items.map((item) => {
 								return this.renderPart(
 									item,
@@ -191,7 +194,8 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 									className="rundown__overview__segment__part__label"
 									style={{
 										maxWidth: '100%',
-									}}>
+									}}
+								>
 									{segment.name}
 									{segmentDuration && _.isNumber(segmentDuration) && (
 										<span className="rundown__overview__segment__part__label__duration">
@@ -208,7 +212,6 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 
 			render() {
 				if (this.props.playlist && this.props.rundownPlaylistId && this.props.segments) {
-					const playlist = this.props.playlist
 					return (
 						<ErrorBoundary>
 							<div className="rundown__overview">

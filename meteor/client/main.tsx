@@ -5,12 +5,12 @@ import { render } from 'react-dom'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 
+// Import some browser polyfills to handle rare features
+import './lib/polyfill/polyfills'
+
 import './ui/i18n'
 
 import '../lib/main'
-
-// Import some browser polyfills to handle rare features
-import './lib/polyfill/polyfills'
 
 // Import files that call Meteor.startup:
 import './lib/currentTimeReactive'

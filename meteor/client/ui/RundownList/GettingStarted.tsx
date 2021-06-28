@@ -33,7 +33,8 @@ export const GettingStarted = withTranslation()(
 								<Tooltip
 									overlay={t('Run Migrations to get set up')}
 									visible={step === ToolTipStep.TOOLTIP_RUN_MIGRATIONS}
-									placement="bottom">
+									placement="bottom"
+								>
 									<a href="/settings/tools/migration">{t('Migrations')}</a>
 								</Tooltip>
 							</li>

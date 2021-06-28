@@ -3,7 +3,7 @@ import { getCurrentTime, getRandomId } from '../lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 import { DeviceConfigManifest } from './deviceConfig'
-import { TSR } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackageStatusAPI, IngestPlaylist, TSR } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PeripheralDeviceId, PeripheralDevice } from '../collections/PeripheralDevices'
 import { PieceInstanceId } from '../collections/PieceInstances'
@@ -12,6 +12,8 @@ import { MediaObject } from '../collections/MediaObjects'
 import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../collections/MediaWorkFlowSteps'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { TimelineHash } from '../collections/Timeline'
+import { ExpectedPackageId } from '../collections/ExpectedPackages'
+import { ExpectedPackageWorkStatusId } from '../collections/ExpectedPackageWorkStatuses'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
 
@@ -93,6 +95,11 @@ export interface NewPeripheralDeviceAPI {
 		resolveDuration: number
 	)
 
+	dataPlaylistGet(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		playlistExternalId: string
+	): Promise<IngestPlaylist>
 	dataRundownList(deviceId: PeripheralDeviceId, deviceToken: string): Promise<string[]>
 	dataRundownGet(deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string): Promise<IngestRundown>
 	dataRundownDelete(deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string): Promise<void>
@@ -121,6 +128,12 @@ export interface NewPeripheralDeviceAPI {
 		deviceToken: string,
 		rundownExternalId: string,
 		ingestSegment: IngestSegment
+	): Promise<void>
+	dataSegmentRanksUpdate(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		rundownExternalId: string,
+		newRanks: { [segmentExternalId: string]: number }
 	): Promise<void>
 	dataPartDelete(
 		deviceId: PeripheralDeviceId,
@@ -157,8 +170,7 @@ export interface NewPeripheralDeviceAPI {
 	mosRoDelete(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		mosRunningOrderId: FakeMOS.MosString128,
-		force?: boolean
+		mosRunningOrderId: FakeMOS.MosString128
 	): Promise<void>
 	mosRoMetadata(
 		deviceId: PeripheralDeviceId,
@@ -269,6 +281,68 @@ export interface NewPeripheralDeviceAPI {
 		obj: MediaWorkFlowStep | null
 	): Promise<void>
 
+	updateExpectedPackageWorkStatuses(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		changes: (
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'delete'
+			  }
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'insert'
+					status: ExpectedPackageStatusAPI.WorkStatus
+			  }
+			| {
+					id: ExpectedPackageWorkStatusId
+					type: 'update'
+					status: Partial<ExpectedPackageStatusAPI.WorkStatus>
+			  }
+		)[]
+	): Promise<void>
+	removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
+
+	updatePackageContainerPackageStatuses(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		changes: (
+			| {
+					containerId: string
+					packageId: string
+					type: 'delete'
+			  }
+			| {
+					containerId: string
+					packageId: string
+					type: 'update'
+					status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
+			  }
+		)[]
+	): Promise<void>
+
+	fetchPackageInfoMetadata(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		type: string,
+		packageIds: ExpectedPackageId[]
+	): Promise<{ packageId: ExpectedPackageId; expectedContentVersionHash: string; actualContentVersionHash: string }[]>
+	updatePackageInfo(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		type: string,
+		packageId: ExpectedPackageId,
+		expectedContentVersionHash: string,
+		actualContentVersionHash: string,
+		payload: any
+	): Promise<void>
+	removePackageInfo(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		type: string,
+		packageId: ExpectedPackageId
+	): Promise<void>
+
 	determineDiffTime(): Promise<DiffTimeResult>
 	getTimeDiff(): Promise<TimeDiff>
 	getTime(): Promise<number>
@@ -319,6 +393,7 @@ export enum PeripheralDeviceAPIMethods {
 	'mosRoReadyToAir' = 'peripheralDevice.mos.roReadyToAir',
 	'mosRoFullStory' = 'peripheralDevice.mos.roFullStory',
 
+	'dataPlaylistGet' = 'peripheralDevice.playlist.playlistGet',
 	'dataRundownList' = 'peripheralDevice.rundown.rundownList',
 	'dataRundownGet' = 'peripheralDevice.rundown.rundownGet',
 	'dataRundownDelete' = 'peripheralDevice.rundown.rundownDelete',
@@ -328,6 +403,7 @@ export enum PeripheralDeviceAPIMethods {
 	'dataSegmentDelete' = 'peripheralDevice.rundown.segmentDelete',
 	'dataSegmentCreate' = 'peripheralDevice.rundown.segmentCreate',
 	'dataSegmentUpdate' = 'peripheralDevice.rundown.segmentUpdate',
+	'dataSegmentRanksUpdate' = 'peripheralDevice.rundown.segmentRanksUpdate',
 	'dataPartDelete' = 'peripheralDevice.rundown.partDelete',
 	'dataPartCreate' = 'peripheralDevice.rundown.partCreate',
 	'dataPartUpdate' = 'peripheralDevice.rundown.partUpdate',
@@ -343,6 +419,14 @@ export enum PeripheralDeviceAPIMethods {
 	'updateMediaWorkFlow' = 'peripheralDevice.mediaManager.updateMediaWorkFlow',
 	'getMediaWorkFlowStepRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowStepRevisions',
 	'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep',
+
+	'updateExpectedPackageWorkStatuses' = 'peripheralDevice.packageManager.updateExpectedPackageWorkStatuses',
+	'removeAllExpectedPackageWorkStatusOfDevice' = 'peripheralDevice.packageManager.removeAllExpectedPackageWorkStatusOfDevice',
+
+	'updatePackageContainerPackageStatuses' = 'peripheralDevice.packageManager.updatePackageContainerPackageStatuses',
+	'fetchPackageInfoMetadata' = 'peripheralDevice.packageManager.fetchPackageInfoMetadata',
+	'updatePackageInfo' = 'peripheralDevice.packageManager.updatePackageInfo',
+	'removePackageInfo' = 'peripheralDevice.packageManager.removePackageInfo',
 
 	'requestUserAuthToken' = 'peripheralDevice.spreadsheet.requestUserAuthToken',
 	'storeAccessToken' = 'peripheralDevice.spreadsheet.storeAccessToken',
@@ -391,6 +475,7 @@ export namespace PeripheralDeviceAPI {
 		INGEST = 'ingest',
 		PLAYOUT = 'playout',
 		MEDIA_MANAGER = 'media_manager',
+		PACKAGE_MANAGER = 'package_manager',
 	}
 	export enum DeviceType {
 		// Ingest devices:
@@ -401,6 +486,8 @@ export namespace PeripheralDeviceAPI {
 		PLAYOUT = 'playout',
 		// Media-manager devices:
 		MEDIA_MANAGER = 'media_manager',
+		// Package_manager devices:
+		PACKAGE_MANAGER = 'package_manager',
 	}
 	export type DeviceSubType = SUBTYPE_PROCESS | TSR.DeviceType | MOS_DeviceType | Spreadsheet_DeviceType
 
@@ -448,7 +535,7 @@ export namespace PeripheralDeviceAPI {
 	) {
 		const timeoutTime: number = timeoutTime0 || 3000 // also handles null
 
-		let commandId: PeripheralDeviceCommandId = getRandomId()
+		const commandId: PeripheralDeviceCommandId = getRandomId()
 
 		let subscription: Meteor.SubscriptionHandle | null = null
 		if (Meteor.isClient) {
@@ -460,7 +547,7 @@ export namespace PeripheralDeviceAPI {
 		let timeoutCheck: number = 0
 		// we've sent the command, let's just wait for the reply
 		const checkReply = () => {
-			let cmd = PeripheralDeviceCommands.findOne(commandId)
+			const cmd = PeripheralDeviceCommands.findOne(commandId)
 			// if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
 			// logger.debug('checkReply')
 
@@ -530,5 +617,23 @@ export namespace PeripheralDeviceAPI {
 		...args: any[]
 	) {
 		return executeFunctionWithCustomTimeout(deviceId, cb, undefined, functionName, ...args)
+	}
+	/** Same as executeFunction, but returns a promise instead */
+	export function executeFunctionAsync(
+		deviceId: PeripheralDeviceId,
+		functionName: string,
+		...args: any[]
+	): Promise<any> {
+		return new Promise<any>((resolve, reject) => {
+			executeFunction(
+				deviceId,
+				(err, result) => {
+					if (err) reject(err)
+					else resolve(result)
+				},
+				functionName,
+				...args
+			)
+		})
 	}
 }

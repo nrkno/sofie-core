@@ -3,16 +3,13 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import { ClipTrimPanel } from './ClipTrimPanel'
 import { VTContent, VTEditableParameters } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
-import { Piece } from '../../../lib/collections/Pieces'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { AdLibPieceUi } from '../Shelf/AdLibPanel'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { protectString } from '../../../lib/lib'
 import { ClientAPI } from '../../../lib/api/client'
-import { Settings } from '../../../lib/Settings'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 
@@ -50,7 +47,6 @@ export const ClipTrimDialog = withTranslation()(
 			const { t, selectedPiece } = this.props
 
 			this.props.onClose && this.props.onClose()
-			let pendingInOutPoints: NodeJS.Timer
 			doUserAction(
 				this.props.t,
 				e,
@@ -64,7 +60,7 @@ export const ClipTrimDialog = withTranslation()(
 						this.state.inPoint,
 						this.state.duration
 					),
-				(err, res) => {
+				(err) => {
 					clearTimeout(pendingInOutPoints)
 
 					if (ClientAPI.isClientResponseError(err) && err.message && err.message.match(/timed out/)) {
@@ -119,7 +115,7 @@ export const ClipTrimDialog = withTranslation()(
 					return false // do not use default doUserAction failure handler
 				}
 			)
-			pendingInOutPoints = setTimeout(() => {
+			const pendingInOutPoints = setTimeout(() => {
 				NotificationCenter.push(
 					new Notification(
 						undefined,
@@ -147,9 +143,10 @@ export const ClipTrimDialog = withTranslation()(
 					acceptText={t('OK')}
 					secondaryText={t('Cancel')}
 					onAccept={this.handleAccept}
-					onDiscard={(e) => this.props.onClose && this.props.onClose()}
-					onSecondary={(e) => this.props.onClose && this.props.onClose()}
-					className="big">
+					onDiscard={() => this.props.onClose && this.props.onClose()}
+					onSecondary={() => this.props.onClose && this.props.onClose()}
+					className="big"
+				>
 					<ClipTrimPanel
 						studioId={this.props.studio._id}
 						playlistId={this.props.playlistId}

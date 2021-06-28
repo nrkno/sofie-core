@@ -1,155 +1,25 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { saveIntoDb, getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
+import { getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import {
-	IngestDataCacheObj,
 	IngestDataCache,
 	IngestCacheType,
+	IngestDataCacheObj,
+	IngestDataCacheObjId,
 	IngestDataCacheObjPart,
 	IngestDataCacheObjRundown,
 	IngestDataCacheObjSegment,
-	IngestDataCacheObjId,
 } from '../../../lib/collections/IngestDataCache'
-import { getSegmentId, getPartId } from './lib'
 import { logger } from '../../../lib/logging'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { PartId } from '../../../lib/collections/Parts'
+import { DbCacheWriteCollection } from '../../cache/CacheCollection'
+import { saveIntoCache } from '../../cache/lib'
 import { profiler } from '../profiler'
+import { getSegmentId, getPartId } from './lib'
+import { Changes } from '../../lib/database'
 
-export function loadCachedRundownData(rundownId: RundownId, rundownExternalId: string): LocalIngestRundown {
-	const span = profiler.startSpan('ingest.ingestCache.loadCachedRundownData')
-
-	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
-
-	const cachedRundown = cacheEntries.find((e) => e.type === IngestCacheType.RUNDOWN)
-	if (!cachedRundown)
-		throw new Meteor.Error(404, `Rundown "${rundownId}", (${rundownExternalId}) has no cached ingest data`)
-
-	const ingestRundown = cachedRundown.data as LocalIngestRundown
-	ingestRundown.modified = cachedRundown.modified
-
-	const segmentMap = _.groupBy(cacheEntries, (e) => e.segmentId)
-	_.each(segmentMap, (objs) => {
-		const segmentEntry = objs.find((e) => e.type === IngestCacheType.SEGMENT)
-		if (segmentEntry) {
-			const ingestSegment = segmentEntry.data as LocalIngestSegment
-			ingestSegment.modified = segmentEntry.modified
-
-			_.each(objs, (entry) => {
-				if (entry.type === IngestCacheType.PART) {
-					const ingestPart = entry.data as LocalIngestPart
-					ingestPart.modified = entry.modified
-
-					ingestSegment.parts.push(ingestPart)
-				}
-			})
-
-			ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
-			ingestRundown.segments.push(ingestSegment)
-		}
-	})
-
-	ingestRundown.segments = _.sortBy(ingestRundown.segments, (s) => s.rank)
-
-	span?.end()
-	return ingestRundown
-}
-export function loadCachedIngestSegment(
-	rundownId: RundownId,
-	rundownExternalId: string,
-	segmentId: SegmentId,
-	segmentExternalId: string
-): LocalIngestSegment {
-	const cacheEntries = IngestDataCache.find({
-		rundownId: rundownId,
-		segmentId: segmentId,
-	}).fetch()
-
-	const segmentEntries = cacheEntries.filter((e) => e.type === IngestCacheType.SEGMENT)
-	if (segmentEntries.length > 1)
-		logger.warn(
-			`There are multiple segments (${cacheEntries.length}) in IngestDataCache for rundownId: "${rundownExternalId}", segmentId: "${segmentExternalId}"`
-		)
-
-	const segmentEntry = segmentEntries[0]
-	if (!segmentEntry)
-		throw new Meteor.Error(
-			404,
-			`Segment "${segmentExternalId}" in rundown "${rundownExternalId}" is missing cached ingest data`
-		)
-	if (segmentEntry.type !== IngestCacheType.SEGMENT) throw new Meteor.Error(500, 'Wrong type on cached segment')
-
-	const ingestSegment = segmentEntry.data as LocalIngestSegment
-	ingestSegment.modified = segmentEntry.modified
-
-	_.each(cacheEntries, (entry) => {
-		if (entry.type === IngestCacheType.PART) {
-			const ingestPart = entry.data as LocalIngestPart
-			ingestPart.modified = entry.modified
-
-			ingestSegment.parts.push(ingestPart)
-		}
-	})
-
-	ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
-
-	return ingestSegment
-}
-export function loadIngestDataCachePart(
-	rundownId: RundownId,
-	rundownExternalId: string,
-	partId: PartId,
-	partExternalId: string
-): IngestDataCacheObjPart {
-	const cacheEntries = IngestDataCache.find({
-		rundownId: rundownId,
-		partId: partId,
-		type: IngestCacheType.PART,
-	}).fetch()
-	if (cacheEntries.length > 1)
-		logger.warn(
-			`There are multiple parts (${cacheEntries.length}) in IngestDataCache for rundownId: "${rundownExternalId}", partId: "${partExternalId}"`
-		)
-
-	const partEntry = cacheEntries[0]
-	if (!partEntry)
-		throw new Meteor.Error(
-			404,
-			`Part "${partExternalId}" in rundown "${rundownExternalId}" is missing cached ingest data`
-		)
-	if (partEntry.type !== IngestCacheType.PART) throw new Meteor.Error(500, 'Wrong type on cached part')
-	return partEntry
-}
-
-export function saveRundownCache(rundownId: RundownId, ingestRundown: LocalIngestRundown) {
-	// cache the Data:
-	const cacheEntries: IngestDataCacheObj[] = generateCacheForRundown(rundownId, ingestRundown)
-	saveIntoDb<IngestDataCacheObj, IngestDataCacheObj>(
-		IngestDataCache,
-		{
-			rundownId: rundownId,
-		},
-		cacheEntries
-	)
-}
-export function saveSegmentCache(rundownId: RundownId, segmentId: SegmentId, ingestSegment: LocalIngestSegment) {
-	const span = profiler.startSpan('ingest.ingestCache.saveSegmentCache')
-
-	// cache the Data:
-	const cacheEntries: IngestDataCacheObj[] = generateCacheForSegment(rundownId, ingestSegment)
-	saveIntoDb<IngestDataCacheObj, IngestDataCacheObj>(
-		IngestDataCache,
-		{
-			rundownId: rundownId,
-			segmentId: segmentId,
-		},
-		cacheEntries
-	)
-
-	span?.end()
-}
 interface LocalIngestBase {
 	modified: number
 }
@@ -181,21 +51,104 @@ export function makeNewIngestPart(ingestPart: IngestPart): LocalIngestPart {
 	return { ...ingestPart, modified: getCurrentTime() }
 }
 
-export function updateIngestRundownWithData(
-	oldIngestRundown: LocalIngestRundown,
-	newIngestSegments: LocalIngestSegment[]
-): LocalIngestRundown {
-	const newIngestRundown = _.clone(oldIngestRundown) as LocalIngestRundown
-	newIngestRundown.segments = newIngestSegments as LocalIngestSegment[]
-	_.each(newIngestRundown.segments, (newIngestSegment) => {
-		const oldIngestSegment = oldIngestRundown.segments.find((s) => s.externalId === newIngestSegment.externalId)
-		if (oldIngestSegment) {
-			newIngestSegment.modified = Math.max(newIngestSegment.modified, oldIngestSegment.modified)
-		} else {
-			newIngestSegment.modified = getCurrentTime()
+export class RundownIngestDataCache {
+	private constructor(
+		private readonly rundownId: RundownId,
+		private readonly collection: DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>
+	) {}
+
+	static async create(rundownId: RundownId): Promise<RundownIngestDataCache> {
+		const col = await DbCacheWriteCollection.createFromDatabase(IngestDataCache, { rundownId })
+
+		const ingestObjCache = new RundownIngestDataCache(rundownId, col)
+
+		return ingestObjCache
+	}
+
+	fetchRundown(): LocalIngestRundown | undefined {
+		const span = profiler.startSpan('ingest.ingestCache.loadCachedRundownData')
+
+		const cacheEntries = this.collection.findFetch({})
+
+		const cachedRundown = cacheEntries.find((e) => e.type === IngestCacheType.RUNDOWN)
+		if (!cachedRundown) {
+			span?.end()
+			return undefined
 		}
-	})
-	return newIngestRundown
+
+		const ingestRundown = cachedRundown.data as LocalIngestRundown
+		ingestRundown.modified = cachedRundown.modified
+
+		const segmentMap = _.groupBy(cacheEntries, (e) => e.segmentId)
+		_.each(segmentMap, (objs) => {
+			const segmentEntry = objs.find((e) => e.type === IngestCacheType.SEGMENT)
+			if (segmentEntry) {
+				const ingestSegment = segmentEntry.data as LocalIngestSegment
+				ingestSegment.modified = segmentEntry.modified
+
+				_.each(objs, (entry) => {
+					if (entry.type === IngestCacheType.PART) {
+						const ingestPart = entry.data as LocalIngestPart
+						ingestPart.modified = entry.modified
+
+						ingestSegment.parts.push(ingestPart)
+					}
+				})
+
+				ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
+				ingestRundown.segments.push(ingestSegment)
+			}
+		})
+
+		ingestRundown.segments = _.sortBy(ingestRundown.segments, (s) => s.rank)
+
+		span?.end()
+		return ingestRundown
+	}
+
+	fetchSegment(segmentId: SegmentId): LocalIngestSegment | undefined {
+		const cacheEntries = this.collection.findFetch({ segmentId: segmentId })
+
+		const segmentEntries = cacheEntries.filter((e) => e.type === IngestCacheType.SEGMENT)
+		if (segmentEntries.length > 1)
+			logger.warn(
+				`There are multiple segments (${cacheEntries.length}) in IngestDataCache for rundownId: "${this.rundownId}", segmentId: "${segmentId}"`
+			)
+
+		const segmentEntry = segmentEntries[0]
+		if (!segmentEntry) return undefined
+		if (segmentEntry.type !== IngestCacheType.SEGMENT) throw new Meteor.Error(500, 'Wrong type on cached segment')
+
+		const ingestSegment = segmentEntry.data as LocalIngestSegment
+		ingestSegment.modified = segmentEntry.modified
+
+		_.each(cacheEntries, (entry) => {
+			if (entry.type === IngestCacheType.PART) {
+				const ingestPart = entry.data as LocalIngestPart
+				ingestPart.modified = entry.modified
+
+				ingestSegment.parts.push(ingestPart)
+			}
+		})
+
+		ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
+
+		return ingestSegment
+	}
+
+	update(ingestRundown: LocalIngestRundown): void {
+		// cache the Data:
+		const cacheEntries: IngestDataCacheObj[] = generateCacheForRundown(this.rundownId, ingestRundown)
+		saveIntoCache<IngestDataCacheObj, IngestDataCacheObj>(this.collection, {}, cacheEntries)
+	}
+
+	delete(): void {
+		this.collection.remove({})
+	}
+
+	saveToDatabase(): Promise<Changes> {
+		return this.collection.updateDatabaseWithData()
+	}
 }
 
 function generateCacheForRundown(rundownId: RundownId, ingestRundown: LocalIngestRundown): IngestDataCacheObj[] {

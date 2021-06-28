@@ -28,7 +28,7 @@ export interface SplitSubItem {
 	content?: SplitsContentBoxProperties['geometry']
 }
 
-interface IProps extends ICustomLayerItemProps {}
+type IProps = ICustomLayerItemProps
 
 interface IState {
 	subItems: Array<SplitSubItem>
@@ -48,8 +48,8 @@ const DEFAULT_POSITIONS = [
 ]
 
 export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
-	leftLabel: HTMLSpanElement
-	rightLabel: HTMLSpanElement
+	leftLabel: HTMLSpanElement | null
+	rightLabel: HTMLSpanElement | null
 
 	constructor(props) {
 		super(props)
@@ -74,7 +74,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 
 	static getDerivedStateFromProps(props: IProps): IState {
 		let subItems: Array<SplitSubItem> = []
-		const splitContent = props.piece.instance.piece.content as SplitsContent | undefined
+		const splitContent = props.piece.instance.piece.content as Partial<SplitsContent> | undefined
 		if (splitContent && splitContent.boxSourceConfiguration) {
 			subItems = SplitsSourceRenderer.generateSplitSubItems(splitContent.boxSourceConfiguration)
 		}
@@ -97,8 +97,8 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	}
 
 	updateAnchoredElsWidths = () => {
-		const leftLabelWidth = getElementWidth(this.leftLabel)
-		const rightLabelWidth = getElementWidth(this.rightLabel)
+		const leftLabelWidth = this.leftLabel ? Math.max(0, getElementWidth(this.leftLabel) - 2) : 0
+		const rightLabelWidth = this.rightLabel ? Math.max(0, getElementWidth(this.rightLabel) - 2) : 0
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
@@ -127,37 +127,44 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 							{
 								second: array.length > 1 && index > 0 && item.type === array[index - 1].type,
 							}
-						)}></div>
+						)}
+					></div>
 				)
 			})
 	}
 
 	render() {
-		let labelItems = this.props.piece.instance.piece.name.split('||')
-		let begin = labelItems[0] || ''
-		let end = labelItems[1] || ''
+		const labelItems = this.props.piece.instance.piece.name.split('||')
+		const begin = labelItems[0] || ''
+		const end = labelItems[1] || ''
 
 		return (
 			<React.Fragment>
 				<div className="segment-timeline__piece__preview">{this.renderSubItems()}</div>
-				<span
-					className="segment-timeline__piece__label first-words overflow-label"
-					ref={this.setLeftLabelRef}
-					style={this.getItemLabelOffsetLeft()}>
-					{begin}
-				</span>
-				<span
-					className="segment-timeline__piece__label right-side"
-					ref={this.setRightLabelRef}
-					style={this.getItemLabelOffsetRight()}>
-					<span className="segment-timeline__piece__label last-words">{end}</span>
-					{this.renderInfiniteIcon()}
-					{this.renderOverflowTimeLabel()}
-				</span>
+				{!this.props.isTooSmallForText && (
+					<>
+						<span
+							className="segment-timeline__piece__label first-words overflow-label"
+							ref={this.setLeftLabelRef}
+							style={this.getItemLabelOffsetLeft()}
+						>
+							{begin}
+						</span>
+						<span
+							className="segment-timeline__piece__label right-side"
+							ref={this.setRightLabelRef}
+							style={this.getItemLabelOffsetRight()}
+						>
+							{end && <span className="segment-timeline__piece__label last-words">{end}</span>}
+							{this.renderInfiniteIcon()}
+							{this.renderOverflowTimeLabel()}
+						</span>
+					</>
+				)}
 				{this.props.piece.instance.piece.content ? (
 					<SplitsFloatingInspector
 						floatingInspectorStyle={this.getFloatingInspectorStyle()}
-						content={this.props.piece.instance.piece.content as SplitsContent}
+						content={this.props.piece.instance.piece.content as Partial<SplitsContent>}
 						itemElement={this.props.itemElement}
 						showMiniInspector={this.props.showMiniInspector}
 						typeClass={this.props.typeClass}

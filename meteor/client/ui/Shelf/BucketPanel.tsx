@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Rundowns, Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import {
@@ -21,16 +21,20 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import {
 	IOutputLayer,
 	ISourceLayer,
-	SomeContent,
-	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
+	SomeTimelineContent,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
-import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
+import {
+	ensureHasTrailingSlash,
+	contextMenuHoldToDisplayTime,
+	UserAgentPointer,
+	USER_AGENT_POINTER_PROPERTY,
+} from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import {
 	IDashboardPanelTrackedProps,
@@ -49,7 +53,7 @@ import { BucketPieceButton } from './BucketPieceButton'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstances, PartInstance, DBPartInstance } from '../../../lib/collections/PartInstances'
 import { AdLibPieceUi } from './AdLibPanel'
 import { BucketAdLibActions, BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
@@ -60,10 +64,13 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
+import { MongoFieldSpecifierOnes } from '../../../lib/typings/meteor'
+import { translateMessage } from '../../../lib/api/TranslatableMessage'
+import { i18nTranslator } from '../i18n'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
-		let size = {
+		const size = {
 			width: 0,
 			height: 0,
 		}
@@ -95,7 +102,7 @@ const bucketSource = {
 }
 
 const bucketTarget = {
-	canDrop(props: IBucketPanelProps, monitor: DropTargetMonitor) {
+	canDrop(_props: IBucketPanelProps, _monitor: DropTargetMonitor) {
 		return true
 	},
 
@@ -155,6 +162,7 @@ interface IState {
 	dropActive: boolean
 	bucketName: string
 	adLibPieces: BucketAdLibItem[]
+	singleClickMode: boolean
 }
 
 export function actionToAdLibPieceUi(
@@ -164,17 +172,19 @@ export function actionToAdLibPieceUi(
 ): BucketAdLibActionUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
-	let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
-	const isContent = RundownUtils.isAdlibActionContent(action.display)
-	if (isContent) {
-		sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
-		outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-		content = (action.display as IBlueprintActionManifestDisplayContent).content
+	let content: SomeTimelineContent = { timelineObjects: [] }
+	if (RundownUtils.isAdlibActionContent(action.display)) {
+		sourceLayerId = action.display.sourceLayerId
+		outputLayerId = action.display.outputLayerId
+		content = {
+			timelineObjects: [],
+			...action.display.content,
+		}
 	}
 
 	return literal<BucketAdLibActionUi>({
 		_id: protectString(`function_${action._id}`),
-		name: action.display.label,
+		name: translateMessage(action.display.label, i18nTranslator),
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
@@ -210,6 +220,7 @@ export interface IBucketPanelProps {
 	moveBucket: (id: BucketId, atIndex: number) => void
 	findBucket: (id: BucketId) => { bucket: Bucket | undefined; index: number }
 	onBucketReorder: (draggedId: BucketId, newIndex: number, oldIndex: number) => void
+	onSelectAdlib
 	onAdLibContext: (args: { contextBucket: Bucket; contextBucketAdLib: BucketAdLibItem }, callback: () => void) => void
 	onPieceNameRename: () => void
 }
@@ -238,11 +249,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		const selectedPart = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
 		if (selectedPart) {
 			const part = PartInstances.findOne(selectedPart, {
-				//@ts-ignore
-				fields: {
+				fields: literal<MongoFieldSpecifierOnes<DBPartInstance>>({
 					rundownId: 1,
+					//@ts-ignore
 					'part._id': 1,
-				},
+				}),
 			}) as Pick<PartInstance, 'rundownId'> | undefined
 			if (part) {
 				const rundown = Rundowns.findOne(part.rundownId, {
@@ -268,10 +279,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				showStyleVariantId = rundown.showStyleVariantId
 			}
 		}
-		let tOLayers: {
+		const tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
-		let tSLayers: {
+		const tSLayers: {
 			[key: string]: ISourceLayer
 		} = {}
 
@@ -339,6 +350,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						dropActive: false,
 						bucketName: props.bucket.name,
 						adLibPieces: props.adLibPieces.slice(),
+						singleClickMode: false,
 					}
 				}
 
@@ -449,6 +461,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					}
 				}
 
+				onSelectAdLib = (_piece: BucketAdLibItem, _e: any) => {}
+
 				onToggleAdLib = (piece: BucketAdLibItem, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 					const { t } = this.props
 
@@ -477,7 +491,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						return
 					}
 
-					let sourceLayer = this.props.sourceLayers && this.props.sourceLayers[piece.sourceLayerId]
+					const sourceLayer = this.props.sourceLayers && this.props.sourceLayers[piece.sourceLayerId]
 
 					if (queue && sourceLayer && !sourceLayer.isQueueable) {
 						console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
@@ -497,7 +511,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							)
 						} else {
 							if (
-								!this.isAdLibOnAir((piece as any) as AdLibPieceUi) ||
+								!this.isAdLibOnAir(piece as any as AdLibPieceUi) ||
 								!(sourceLayer && sourceLayer.clearKeyboardHotkey)
 							) {
 								const currentPartInstanceId = this.props.playlist.currentPartInstanceId
@@ -635,7 +649,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						const draggedB = this.props.adLibPieces.find((b) => b._id === draggedId)
 
 						if (draggedOver && draggedB) {
-							var newRank = draggedOver._rank
+							let newRank = draggedOver._rank
 
 							// Dragged over into first place
 							if (newIndex === 0) {
@@ -709,9 +723,23 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					}
 				}
 
+				private setRef = (ref: HTMLDivElement) => {
+					this._panel = ref
+					if (this._panel) {
+						const style = window.getComputedStyle(this._panel)
+						// check if a special variable is set through CSS to indicate that we shouldn't expect
+						// double clicks to trigger AdLibs
+						const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
+						if (this.state.singleClickMode !== (value === UserAgentPointer.NO_POINTER)) {
+							this.setState({
+								singleClickMode: value === UserAgentPointer.NO_POINTER,
+							})
+						}
+					}
+				}
+
 				render() {
-					const { isDragging, connectDragSource, connectDragPreview, connectDropTarget } = this.props
-					const opacity = isDragging ? 0 : 1
+					const { connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
 					if (this.props.showStyleBase) {
 						return connectDragPreview(
@@ -722,7 +750,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 										'dashboard-panel__panel--sort-dragging': this.props.isDragging,
 									})}
 									data-bucket-id={this.props.bucket._id}
-									ref={(el) => (this._panel = el)}>
+									ref={this.setRef}
+								>
 									{this.props.editableName ? (
 										<input
 											className="h4 dashboard-panel__header"
@@ -765,16 +794,18 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 												}
 												renderTag="span"
 												key={unprotectString(adlib._id)}
-												holdToDisplay={contextMenuHoldToDisplayTime()}>
+												holdToDisplay={contextMenuHoldToDisplayTime()}
+											>
 												<BucketPieceButton
-													piece={(adlib as any) as IAdLibListItem}
+													piece={adlib as any as IAdLibListItem}
 													studio={this.props.studio}
 													bucketId={adlib.bucketId}
 													layer={this.props.sourceLayers[adlib.sourceLayerId]}
 													outputLayer={this.props.outputLayers[adlib.outputLayerId]}
 													onToggleAdLib={this.onToggleAdLib as any}
+													onSelectAdLib={this.onSelectAdLib as any}
 													playlist={this.props.playlist}
-													isOnAir={this.isAdLibOnAir((adlib as any) as AdLibPieceUi)}
+													isOnAir={this.isAdLibOnAir(adlib as any as AdLibPieceUi)}
 													mediaPreviewUrl={
 														this.props.studio
 															? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
@@ -792,7 +823,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 														RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
 														adlib._id === this.props.selectedPiece._id
 													}
-													displayStyle={PieceDisplayStyle.BUTTONS}>
+													toggleOnSingleClick={this.state.singleClickMode}
+													displayStyle={PieceDisplayStyle.BUTTONS}
+												>
 													{adlib.name}
 												</BucketPieceButton>
 											</ContextMenuTrigger>

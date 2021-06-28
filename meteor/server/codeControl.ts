@@ -5,6 +5,8 @@ import { Meteor } from 'meteor/meteor'
 import { getHash } from '../lib/lib'
 // import * as callerModule from 'caller-module'
 
+const ACCEPTABLE_WAIT_TIME = 200 // ms
+
 enum syncFunctionFcnStatus {
 	WAITING = 0,
 	RUNNING = 1,
@@ -23,6 +25,8 @@ interface SyncFunctionFcn {
 	status: syncFunctionFcnStatus
 	priority: number
 	started?: number
+	queueTime: number
+	waitingOnFunctions: string[]
 }
 /** Queue of syncFunctions */
 const syncFunctionFcns: Array<SyncFunctionFcn> = []
@@ -77,7 +81,7 @@ export function syncFunction<T extends Function>(
 	timeout: number = 10000,
 	priority: number = 1
 ): T {
-	let id1 = Random.id()
+	const id1 = Random.id()
 	return syncFunctionInner(id1, fcn, context, id0, timeout, priority)
 }
 function syncFunctionInner<T extends Function>(
@@ -89,9 +93,10 @@ function syncFunctionInner<T extends Function>(
 	priority: number = 1
 ): T {
 	return MeteorWrapAsync((...args0: any[]) => {
-		let args = args0.slice(0, -1)
+		const queueTime = Date.now()
+		const args = args0.slice(0, -1)
 		// @ts-ignore
-		let cb: Callback = _.last(args0) // the callback is the last argument
+		const cb: Callback = _.last(args0) // the callback is the last argument
 
 		if (!cb) throw new Meteor.Error(500, 'Callback is not defined')
 		if (!_.isFunction(cb)) {
@@ -99,15 +104,18 @@ function syncFunctionInner<T extends Function>(
 			throw new Meteor.Error(500, 'Callback is not a function, it is a ' + typeof cb)
 		}
 
-		let id = id0 ? getId(id0, args) : getHash(id1 + JSON.stringify(args.join()))
+		const id = id0 ? getId(id0, args) : getHash(id1 + JSON.stringify(args.join()))
 		const name = getFunctionName(context, fcn)
 		logger.debug(`syncFunction: ${id} (${name})`)
+		const waitingOnFunctions = getSyncFunctionsRunningOrWaiting(id)
 		syncFunctionFcns.push({
 			id: id,
 			fcn: fcn,
 			name: name,
 			args: args,
 			cb: cb,
+			queueTime: queueTime,
+			waitingOnFunctions: waitingOnFunctions,
 			timeout: timeout,
 			status: syncFunctionFcnStatus.WAITING,
 			priority: priority,
@@ -117,7 +125,7 @@ function syncFunctionInner<T extends Function>(
 }
 function evaluateFunctions() {
 	const groups = _.groupBy(syncFunctionFcns, (fcn) => fcn.id)
-	_.each(groups, (group, id) => {
+	_.each(groups, (group) => {
 		const runningFcn = _.find(group, (fcn) => fcn.status === syncFunctionFcnStatus.RUNNING)
 		let startNext = false
 		if (runningFcn) {
@@ -145,9 +153,19 @@ function evaluateFunctions() {
 			if (_.isObject(nextFcn)) {
 				nextFcn.status = syncFunctionFcnStatus.RUNNING
 				nextFcn.started = Date.now()
+				const waitTime = nextFcn.started - nextFcn.queueTime
+				if (waitTime > ACCEPTABLE_WAIT_TIME) {
+					logger.warn(
+						`syncFunction ${nextFcn.id} "${
+							nextFcn.name
+						}" waited ${waitTime} ms for other functions to complete before starting: [${nextFcn.waitingOnFunctions.join(
+							', '
+						)}]`
+					)
+				}
 				Meteor.setTimeout(() => {
 					try {
-						let result = nextFcn.fcn(...nextFcn.args)
+						const result = nextFcn.fcn(...nextFcn.args)
 						nextFcn.cb(null, result)
 					} catch (e) {
 						nextFcn.cb(e)
@@ -177,12 +195,12 @@ function evaluateFunctions() {
 		}
 	}
 }
-function isFunctionQueued(id: string): boolean {
-	let queued = _.find(syncFunctionFcns, (fcn) => {
-		return fcn.id === id && fcn.status === syncFunctionFcnStatus.WAITING
-	})
-	return !!queued
-}
+// function isFunctionQueued(id: string): boolean {
+// 	let queued = _.find(syncFunctionFcns, (fcn) => {
+// 		return fcn.id === id && fcn.status === syncFunctionFcnStatus.WAITING
+// 	})
+// 	return !!queued
+// }
 export function isAnySyncFunctionsRunning(): boolean {
 	let found = false
 	for (const fcn of syncFunctionFcns) {
@@ -193,57 +211,19 @@ export function isAnySyncFunctionsRunning(): boolean {
 	}
 	return found
 }
-/**
- * like syncFunction, but ignores subsequent calls, if there is a function queued to be executed already
- * @param fcn
- * @param timeout
- */
-export function syncFunctionIgnore<A>(
-	fcn: (a: A) => any,
-	context: string,
-	id0?: string,
-	timeout?: number
-): (a: A) => void
-export function syncFunctionIgnore<A, B>(
-	fcn: (a: A, b: B) => any,
-	context: string,
-	id0?: string,
-	timeout?: number
-): (a: A, b: B) => void
-export function syncFunctionIgnore<A, B, C>(
-	fcn: (a: A, b: B, c: C) => any,
-	context: string,
-	id0?: string,
-	timeout?: number
-): (a: A, b: B, c: C) => void
-export function syncFunctionIgnore<A, B, C, D>(
-	fcn: (a: A, b: B, c: C, d: D) => any,
-	context: string,
-	id0?: string,
-	timeout?: number
-): (a: A, b: B, c: C, d: D) => void
-export function syncFunctionIgnore<T extends Function>(
-	fcn: T,
-	context: string,
-	id0?: string,
-	timeout: number = 10000
-): () => void {
-	let id1 = Random.id()
-
-	let syncFcn = syncFunctionInner(id1, fcn, context, id0, timeout)
-
-	return (...args) => {
-		let id = id0 ? getId(id0, args) : getHash(id1 + JSON.stringify(args.join()))
-		if (isFunctionQueued(id)) {
-			// If it's queued, its going to be run some time in the future
-			// Do nothing then...
-			const name = getFunctionName(context, fcn)
-			logger.debug('Function ' + (name || 'Anonymous') + ' is already queued to execute, ignoring call.')
-		} else {
-			syncFcn(...args)
+export function getSyncFunctionsRunningOrWaiting(id: string): string[] {
+	const names: string[] = []
+	for (const fcn of syncFunctionFcns) {
+		if (
+			fcn.id == id &&
+			(fcn.status === syncFunctionFcnStatus.RUNNING || fcn.status === syncFunctionFcnStatus.WAITING)
+		) {
+			names.push(fcn.name)
 		}
 	}
+	return names
 }
+
 function getId(id: string, args: Array<any>): string {
 	let str: string = id
 

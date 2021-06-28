@@ -5,7 +5,7 @@ import { RundownUtils } from '../../lib/rundown'
 
 import { Settings } from '../../../lib/Settings'
 import { getElementWidth, getElementHeight } from '../../utils/dimensions'
-import { onElementResize, offElementResize } from '../../lib/resizeObserver'
+import { onElementResize } from '../../lib/resizeObserver'
 
 // We're cheating a little: Fontface
 declare class FontFace {
@@ -61,9 +61,9 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 	contextResize = _.throttle((parentElementWidth: number, parentElementHeight: number) => {
 		if (this.ctx && this.canvasElement) {
-			let devicePixelRatio = window.devicePixelRatio || 1
+			const devicePixelRatio = window.devicePixelRatio || 1
 
-			let backingStoreRatio =
+			const backingStoreRatio =
 				(this.ctx as any).webkitBackingStorePixelRatio ||
 				(this.ctx as any).mozBackingStorePixelRatio ||
 				(this.ctx as any).msBackingStorePixelRatio ||
@@ -175,7 +175,16 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			let secondsStep = 5 * 60
 			// interStep - draw X lines between every big line
 			let interStep = 5
-			if (secondTimeScale > 0 && secondTimeScale < 1) {
+			if (secondTimeScale > 0 && secondTimeScale < 0.04) {
+				secondsStep = 4 * 3600
+				interStep = 10
+			} else if (secondTimeScale > 0.04 && secondTimeScale < 0.1) {
+				secondsStep = 3600
+				interStep = 10
+			} else if (secondTimeScale >= 0.1 && secondTimeScale < 0.5) {
+				secondsStep = 600
+				interStep = 10
+			} else if (secondTimeScale >= 0.5 && secondTimeScale < 1) {
 				secondsStep = 600
 				interStep = 60
 			} else if (secondTimeScale >= 1 && secondTimeScale < 3) {
@@ -204,8 +213,8 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				interStep = fps || 25
 			}
 
-			let step = (secondsStep * secondTimeScale * this.pixelRatio) / interStep
-			let pixelOffset = this.props.scrollLeft * this.props.timeScale * this.pixelRatio
+			const step = (secondsStep * secondTimeScale * this.pixelRatio) / interStep
+			const pixelOffset = this.props.scrollLeft * this.props.timeScale * this.pixelRatio
 
 			this.ctx.clearRect(0, 0, this.width, this.height)
 
@@ -213,14 +222,11 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// "large" ticks (one's with label), so we divide the display width by the amount of large steps (step / interStep)
 			// and then after getting the ceil of the value, multiply it back for all the inter-steps,
 			// beacuse we do the paint iteration for every line
-			let maxTicks = Math.ceil(this.width / (step * interStep)) * interStep + interStep
-			const scrollLeftSec = this.props.scrollLeft / 1000
-			let base = Math.floor(scrollLeftSec / maxTicks) * maxTicks
-			const baseN = (Math.floor(scrollLeftSec / maxTicks) + 1) * maxTicks
+			const maxTicks = Math.ceil(this.width / (step * interStep)) * interStep + interStep
 
 			// We store the x-position of the 0-th line to know if a particular section is N or N+1
 			// and switch between base and baseN
-			let breakX = 0
+			// let breakX = 0
 
 			// Go up to (width / step) + 1, to allow for the grid line + text, dissapearing on the left
 			// in effect, we are rendering +1 grid lines than there should fit inside the area
@@ -228,18 +234,16 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			for (i = 0; i < maxTicks; i++) {
 				// we should offset the first step -1, as this is the one that will be dissaperaing as the
 				// timeline is moving
-				let xPosition = this.ring(i * step - pixelOffset, maxTicks * step) - step * interStep
-				if (i === 0) breakX = xPosition
+				const xPosition = this.ring(i * step - pixelOffset, maxTicks * step) - step * interStep
+				// if (i === 0) breakX = xPosition
 
-				let isLabel = i % interStep === 0
+				const isLabel = i % interStep === 0
 
 				if (isLabel === true) {
-					let t =
-						(xPosition > breakX && this.props.scrollLeft > 0 ? baseN : base) +
-						this.ring(i - interStep, maxTicks) * (secondsStep / interStep)
+					const t = Math.round(xPosition / this.pixelRatio / this.props.timeScale + this.props.scrollLeft)
 
 					this.ctx.fillText(
-						RundownUtils.formatDiffToTimecode(t * 1000, false, false, true, false, true),
+						RundownUtils.formatDiffToTimecode(t, false, false, true, false, true),
 						xPosition,
 						this.labelTop * this.pixelRatio
 					)
@@ -294,7 +298,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 					})
 					gridFont.load()
 					gridFont.loaded
-						.then((fontFace) => {
+						.then(() => {
 							gridFontAvailable = true
 							window.requestAnimationFrame(() => {
 								this.repaint()
@@ -303,7 +307,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 						.catch((err) => console.log(err))
 					document['fonts'].add(gridFont)
 				} else if (gridFont && !gridFontAvailable) {
-					gridFont.loaded.then((fontFace) => {
+					gridFont.loaded.then(() => {
 						window.requestAnimationFrame(() => {
 							this.repaint()
 						})
@@ -323,7 +327,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		}
 	}
 
-	shouldComponentUpdate(nextProps, nextState) {
+	shouldComponentUpdate(nextProps, _nextState) {
 		if (nextProps.timeScale !== this.props.timeScale || nextProps.scrollLeft !== this.props.scrollLeft) {
 			return true
 		}

@@ -1,7 +1,7 @@
 import { ControllerAbstract } from './lib'
 import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 
-const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
+// const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
 
 /**
  * This class handles control of the prompter using Keyboard keys sent from an xkeys
@@ -25,7 +25,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		super(view)
 
 		this.prompterView = view
-		this.speedMap = view.configOptions.speedMap || this.speedMap
+		this.speedMap = view.configOptions.shuttle_speedMap || this.speedMap
 		this.speedStepMap = ShuttleKeyboardController.makeSpeedStepMap(this.speedMap)
 	}
 	private static makeSpeedStepMap(speedMap): number[] {
@@ -158,16 +158,16 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 			lastEvent: 'keyup: ' + e.code,
 		})
 	}
-	public onKeyUp(e: KeyboardEvent) {
+	public onKeyUp(_e: KeyboardEvent) {
 		// Nothing
 	}
-	public onMouseKeyDown(e: MouseEvent) {
+	public onMouseKeyDown(_e: MouseEvent) {
 		// Nothing
 	}
-	public onMouseKeyUp(e: MouseEvent) {
+	public onMouseKeyUp(_e: MouseEvent) {
 		// Nothing
 	}
-	public onWheel(e: WheelEvent) {
+	public onWheel(_e: WheelEvent) {
 		// Nothing
 	}
 
@@ -177,7 +177,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		// update scroll position
 		window.scrollBy(0, this.lastSpeed)
 
-		let scrollPosition = window.scrollY
+		const scrollPosition = window.scrollY
 		// check for reached end-of-scroll:
 		if (this.currentPosition !== undefined && scrollPosition !== undefined) {
 			if (this.currentPosition === scrollPosition) {

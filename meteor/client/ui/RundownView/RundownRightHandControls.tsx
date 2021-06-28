@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import * as React from 'react'
 import * as VelocityReact from 'velocity-react'
 
@@ -109,7 +108,7 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 		}
 	}
 
-	componentDidUpdate(prevProps: IProps, prevState: IState) {
+	componentDidUpdate(_prevProps: IProps, _prevState: IState) {
 		if (this.props.isFollowingOnAir && this.state.onAirHover) {
 			this.setState({
 				onAirHover: false,
@@ -117,37 +116,37 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 		}
 	}
 
-	onOnAirClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+	onOnAirClick = (_e: React.MouseEvent<HTMLButtonElement>) => {
 		if (typeof this.props.onFollowOnAir === 'function') {
 			this.props.onFollowOnAir()
 		}
 	}
 
-	onOnAirMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+	onOnAirMouseEnter = (_e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			onAirHover: true,
 		})
 	}
 
-	onOnAirMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+	onOnAirMouseLeave = (_e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			onAirHover: false,
 		})
 	}
 
-	onRewindEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+	onRewindEnter = (_e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			rewindHover: true,
 		})
 	}
 
-	onRewindLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+	onRewindLeave = (_e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			rewindHover: false,
 		})
 	}
 
-	onRewindClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+	onRewindClick = (_e: React.MouseEvent<HTMLButtonElement>) => {
 		if (typeof this.props.onRewindSegments === 'function') {
 			this.props.onRewindSegments()
 		}
@@ -159,7 +158,7 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 		}
 	}
 
-	onRouteSetsToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+	onRouteSetsToggle = (_e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
 			isSwitchboardOpen: !this.state.isSwitchboardOpen,
 		})
@@ -170,12 +169,12 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 			([_id, routeSet]) => routeSet.behavior !== StudioRouteBehavior.HIDDEN
 		)
 		const nonDefaultRoutes = availableRouteSets.filter(
-			([id, routeSet]) => routeSet.defaultActive !== undefined && routeSet.active !== routeSet.defaultActive
+			([_id, routeSet]) => routeSet.defaultActive !== undefined && routeSet.active !== routeSet.defaultActive
 		).length
 		const exclusivityGroups: {
 			[id: string]: Array<[string, StudioRouteSet]>
 		} = {}
-		for (let [id, routeSet] of availableRouteSets) {
+		for (const [id, routeSet] of availableRouteSets) {
 			const group = routeSet.exclusivityGroup || '__noGroup'
 			if (exclusivityGroups[group] === undefined) exclusivityGroups[group] = []
 			exclusivityGroups[group].push([id, routeSet])
@@ -184,7 +183,8 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 			<div className="status-bar">
 				<VelocityReact.VelocityTransitionGroup
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
-					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}>
+					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}
+				>
 					<NotificationCenterPanelToggle
 						onClick={(e) =>
 							this.props.onToggleNotifications && this.props.onToggleNotifications(e, NoticeLevel.CRITICAL)
@@ -216,7 +216,8 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 						onMouseEnter={this.onRewindEnter}
 						onMouseLeave={this.onRewindLeave}
 						onClick={this.onRewindClick}
-						tabIndex={0}>
+						tabIndex={0}
+					>
 						<FontAwesomeIcon icon={faFastBackward} />
 					</button>
 					{!this.props.isFollowingOnAir && (
@@ -226,7 +227,8 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 							onMouseEnter={this.onOnAirMouseEnter}
 							onMouseLeave={this.onOnAirMouseLeave}
 							onClick={this.onOnAirClick}
-							tabIndex={0}>
+							tabIndex={0}
+						>
 							{this.state.onAirHover ? <Lottie config={this.onAirOver} /> : <Lottie config={this.onAirOut} />}
 						</button>
 					)}
@@ -238,13 +240,15 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 				</div>
 				<VelocityReact.VelocityTransitionGroup
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
-					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}>
+					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}
+				>
 					{this.props.isStudioMode && (
 						<button
 							className="status-bar__controls__button status-bar__controls__button--take"
 							role="button"
 							onClick={this.onTakeClick}
-							tabIndex={0}>
+							tabIndex={0}
+						>
 							Take
 						</button>
 					)}
@@ -264,7 +268,8 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 									)}
 									role="button"
 									onClick={this.onRouteSetsToggle}
-									tabIndex={0}>
+									tabIndex={0}
+								>
 									<SwitchboardIcon />
 									{nonDefaultRoutes > 0 && (
 										<RouteSetOverrideIcon className="status-bar__controls__button--switchboard-panel__notification" />
@@ -284,7 +289,8 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 										},
 										easing: 'ease-in',
 										duration: 500,
-									}}>
+									}}
+								>
 									{this.state.isSwitchboardOpen && (
 										<SwitchboardPopUp
 											availableRouteSets={availableRouteSets}

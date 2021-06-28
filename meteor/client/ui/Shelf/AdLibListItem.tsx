@@ -1,27 +1,15 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import ClassNames from 'classnames'
-import { Meteor } from 'meteor/meteor'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
 
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import {
-	ISourceLayer,
-	IOutputLayer,
-	SourceLayerType,
-	VTContent,
-	LiveSpeakContent,
-	IBlueprintActionTriggerMode,
-} from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, IOutputLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
-import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PubSub } from '../../../lib/api/pubsub'
-import { PieceGeneric } from '../../../lib/collections/Pieces'
 import { unprotectString } from '../../../lib/lib'
 import renderItem from './Renderers/ItemRendererFactory'
-import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { Studio } from '../../../lib/collections/Studios'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
@@ -31,6 +19,7 @@ import { setShelfContextMenuContext, ContextType as MenuContextType } from './Sh
 export interface IAdLibListItem extends AdLibPieceUi {
 	status: RundownAPI.PieceStatusCode
 	contentMetaData?: any
+	contentPackageInfos?: ScanInfoForPackages
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	hotkey?: string
@@ -44,7 +33,7 @@ interface IListViewItemProps {
 	studio: Studio
 	layer: ISourceLayer | undefined
 	selected: boolean
-	onSelectAdLib: (aSLine: PieceGeneric) => void
+	onSelectAdLib: (aSLine: IAdLibListItem) => void
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
 	playlist: RundownPlaylist
 }
@@ -69,8 +58,8 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						}),
 						//@ts-ignore React.HTMLAttributes does not list data attributes, but that's fine
 						'data-obj-id': this.props.piece._id,
-						onClick: (e) => this.props.onSelectAdLib(this.props.piece),
-						onContextMenu: (e) => this.props.onSelectAdLib(this.props.piece),
+						onClick: () => this.props.onSelectAdLib(this.props.piece),
+						onContextMenu: () => this.props.onSelectAdLib(this.props.piece),
 						onDoubleClick: (e) => this.props.onToggleAdLib(this.props.piece, e.shiftKey, e),
 					}}
 					collect={() =>
@@ -84,7 +73,8 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 					}
 					holdToDisplay={contextMenuHoldToDisplayTime()}
 					renderTag="tr"
-					key={unprotectString(this.props.piece._id)}>
+					key={unprotectString(this.props.piece._id)}
+				>
 					{renderItem({
 						adLibListItem: this.props.piece,
 						layer: this.props.layer,
@@ -94,6 +84,8 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						message: this.props.piece.message,
 						metadata: this.props.piece.contentMetaData,
 						mediaPreviewUrl: this.props.studio.settings.mediaPreviewsUrl,
+						packageInfos: this.props.piece.contentPackageInfos,
+						studioPackageContainers: this.props.studio.packageContainers,
 					})}
 				</ContextMenuTrigger>
 			)

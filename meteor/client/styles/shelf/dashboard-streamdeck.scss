@@ -5,6 +5,13 @@
 	button size 96px */ screen and (width: 768px) and (height: 384px),
 	/** Stream Deck Mini,
 	button size 80px */ screen and (width: 240px) and (height: 160px) {
+	:root {
+		// by setting the --pointer CSS variable, we indicate to the UI that it's being run on a Stream Deck and
+		// that it should run in a single-click-to-activate mode (like a touchscreen) even though the events emitted
+		// are mouse clicks
+		--pointer: 'no-pointer';
+	}
+
 	#render-target > .container-fluid > .rundown-view {
 		background: #000;
 
@@ -111,6 +118,9 @@
 						> .dashboard-panel__panel__button__label {
 							top: 4px;
 						}
+						&.selected {
+							box-shadow: none !important;
+						}
 					}
 				}
 			}
@@ -123,6 +133,10 @@
 	}
 
 	#render-target .container-fluid .notification-pop-ups {
+		display: none;
+	}
+
+	body > div > div[to='viewport'] {
 		display: none;
 	}
 }

@@ -3,7 +3,7 @@ import * as MOS from 'mos-connection'
 import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../../lib/collections/Rundowns'
-import { testInFiber, testInFiberOnly } from '../../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { Parts } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
 import { MOSDeviceActions } from '../actions'
@@ -16,18 +16,15 @@ import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections
 
 import { mockRO } from './mock-mos-data'
 import { MeteorCall } from '../../../../../lib/api/methods'
-import { waitForPromise } from '../../../../../lib/lib'
 import { TriggerReloadDataResponse } from '../../../../../lib/api/userActions'
 
 require('../../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
 describe('Test sending mos actions', () => {
-	// TODO - these tests are strangely slow
-
 	let device: PeripheralDevice
 	let observer: Meteor.LiveQueryHandle | null = null
-	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().ingestDevice
+	beforeAll(async () => {
+		device = (await setupDefaultStudioEnvironment()).ingestDevice
 	})
 	afterEach(() => {
 		if (observer != null) {
@@ -36,10 +33,10 @@ describe('Test sending mos actions', () => {
 		}
 	})
 
-	testInFiber('reloadRundown: expect error', () => {
+	testInFiber('reloadRundown: expect error', async () => {
 		// setLoggerLevel('debug')
 		// Ensure there is a rundown to start with
-		waitForPromise(MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate()))
+		await MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate())
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
@@ -61,18 +58,13 @@ describe('Test sending mos actions', () => {
 			},
 		})
 
-		try {
-			MOSDeviceActions.reloadRundown(device, rundown)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e).toBe(`unknown annoying error`)
-		}
+		expect(() => MOSDeviceActions.reloadRundown(device, rundown)).toThrow(`unknown annoying error`)
 	})
 
-	testInFiber('reloadRundown: valid payload', () => {
+	testInFiber('reloadRundown: valid payload', async () => {
 		// setLoggerLevel('debug')
 		// Ensure there is a rundown to start with
-		waitForPromise(MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate()))
+		await MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate())
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
@@ -123,10 +115,10 @@ describe('Test sending mos actions', () => {
 		})
 	})
 
-	testInFiber('reloadRundown: receive incorrect response rundown id', () => {
+	testInFiber('reloadRundown: receive incorrect response rundown id', async () => {
 		// setLoggerLevel('debug')
 		// Ensure there is a rundown to start with
-		waitForPromise(MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate()))
+		await MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate())
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
@@ -151,13 +143,8 @@ describe('Test sending mos actions', () => {
 			},
 		})
 
-		try {
-			MOSDeviceActions.reloadRundown(device, rundown)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(
-				`[401] Expected triggerGetRunningOrder reply for SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa but got newId`
-			)
-		}
+		expect(() => MOSDeviceActions.reloadRundown(device, rundown)).toThrow(
+			`[401] Expected triggerGetRunningOrder reply for SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa but got newId`
+		)
 	})
 })

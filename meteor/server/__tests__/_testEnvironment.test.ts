@@ -4,10 +4,9 @@ import { RandomMock } from '../../__mocks__/random'
 import { MongoMock } from '../../__mocks__/mongo'
 
 import { waitForPromise, protectString, waitTime } from '../../lib/lib'
-import { testInFiber, testInFiberOnly } from '../../__mocks__/helpers/jest'
+import { testInFiber } from '../../__mocks__/helpers/jest'
 
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { AsRunLog } from '../../lib/collections/AsRunLog'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { Evaluations } from '../../lib/collections/Evaluations'
@@ -33,6 +32,7 @@ import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { isInFiber } from '../../__mocks__/Fibers'
 import { Mongo } from 'meteor/mongo'
+import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
 
 describe('Basic test of test environment', () => {
 	testInFiber('Check that tests will run in fibers correctly', () => {
@@ -42,7 +42,7 @@ describe('Basic test of test environment', () => {
 		const val = asynchronousFibersFunction(1, 2, 3)
 		expect(val).toEqual(1 + 2 + 3)
 
-		let p = Promise.resolve()
+		const p = Promise.resolve()
 			.then(() => {
 				expect(isInFiber()).toBeTruthy()
 				return 'a'
@@ -55,15 +55,13 @@ describe('Basic test of test environment', () => {
 			})
 		expect(waitForPromise(p)).toEqual('a')
 	})
-	test('Test Meteor Random mock', () => {
+	test('Meteor Random mock', () => {
 		RandomMock.mockIds = ['superRandom']
 		expect(tempTestRandom()).toEqual('superRandom')
 	})
 	test('Verify Mock collections', () => {
 		// @ts-ignore
 		expect(AdLibPieces._isMock).toBeTruthy()
-		// @ts-ignore
-		expect(AsRunLog._isMock).toBeTruthy()
 		// @ts-ignore
 		expect(Blueprints._isMock).toBeTruthy()
 		// @ts-ignore
@@ -111,33 +109,19 @@ describe('Basic test of test environment', () => {
 		// @ts-ignore
 		expect(UserActionsLog._isMock).toBeTruthy()
 	})
-	test('Test Mock collection data', () => {
+	test('Mock collection data', () => {
 		expect(Studios.find().fetch()).toHaveLength(0)
 
 		MongoMock.mockSetData<DBStudio>(Studios, [
 			{
-				_id: protectString('abc'),
+				...defaultStudio(protectString('abc')),
 				name: 'abc',
-				organizationId: null,
-				mappings: {},
-				supportedShowStyleBase: [],
-				blueprintConfig: {},
-				settings: { mediaPreviewsUrl: '', sofieUrl: '' },
 				_rundownVersionHash: 'abc',
-				routeSets: {},
-				routeSetExclusivityGroups: {},
 			},
 			{
-				_id: protectString('def'),
+				...defaultStudio(protectString('def')),
 				name: 'def',
-				organizationId: null,
-				mappings: {},
-				supportedShowStyleBase: [],
-				blueprintConfig: {},
-				settings: { mediaPreviewsUrl: '', sofieUrl: '' },
 				_rundownVersionHash: 'def',
-				routeSets: {},
-				routeSetExclusivityGroups: {},
 			},
 		])
 
@@ -172,16 +156,9 @@ describe('Basic test of test environment', () => {
 		expect(observer).toBeTruthy()
 
 		Studios.insert({
-			_id: protectString('xyz'),
+			...defaultStudio(protectString('xyz')),
 			name: 'xyz',
-			organizationId: null,
-			mappings: {},
-			supportedShowStyleBase: [],
-			blueprintConfig: {},
-			settings: { mediaPreviewsUrl: '', sofieUrl: '' },
 			_rundownVersionHash: 'xyz',
-			routeSets: {},
-			routeSetExclusivityGroups: {},
 		})
 		expect(Studios.find().fetch()).toHaveLength(2)
 
@@ -191,7 +168,7 @@ describe('Basic test of test environment', () => {
 		expect(Studios.find().fetch()).toHaveLength(0)
 	})
 	testInFiber('Promises in fibers', () => {
-		let p = new Promise((resolve) => {
+		const p = new Promise((resolve) => {
 			setTimeout(() => {
 				resolve('yup')
 			}, 10)
@@ -266,6 +243,6 @@ const innerAsynchronousFiberFunction = Meteor.wrapAsync((val0, val1, cb) => {
 	}, 10)
 })
 
-export function tempTestRandom() {
+function tempTestRandom() {
 	return Random.id()
 }

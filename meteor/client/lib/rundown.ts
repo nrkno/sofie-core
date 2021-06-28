@@ -19,20 +19,23 @@ import {
 	ISourceLayerExtended,
 	PartInstanceLimited,
 } from '../../lib/Rundown'
-import { DBSegment, SegmentId } from '../../lib/collections/Segments'
+import { DBSegment, Segment, SegmentId, Segments } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { literal, normalizeArray, getCurrentTime, applyToArray } from '../../lib/lib'
-import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../lib/collections/PartInstances'
+import { ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { literal, normalizeArray, getCurrentTime, applyToArray, unprotectString, protectString } from '../../lib/lib'
+import { PartInstance, wrapPartToTemporaryInstance } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
-import { PartId } from '../../lib/collections/Parts'
+import { DBPart, PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { createPieceGroupAndCap, PieceGroupMetadata } from '../../lib/rundown/pieces'
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
+import { Mongo } from 'meteor/mongo'
 import { FindOptions } from '../../lib/typings/meteor'
+import { getShowHiddenSourceLayers } from './localStorage'
+import { Rundown, RundownId } from '../../lib/collections/Rundowns'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
@@ -74,7 +77,7 @@ export namespace RundownUtils {
 			timecode: (milliseconds * Settings.frameRate) / 1000,
 			drop_frame: !Number.isInteger(Settings.frameRate),
 		})
-		const timeCodeString: String = tc.toString()
+		const timeCodeString: string = tc.toString()
 		return sign + (hideFrames ? timeCodeString.substr(0, timeCodeString.length - 3) : timeCodeString)
 	}
 
@@ -219,6 +222,63 @@ export namespace RundownUtils {
 			.replace(/_/g, '-')
 	}
 
+	export function getSegmentsWithPartInstances(
+		playlist: RundownPlaylist,
+		segmentsQuery?: Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>,
+		partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>,
+		partInstancesQuery?: Mongo.Query<PartInstance>,
+		segmentsOptions?: FindOptions<DBSegment>,
+		partsOptions?: FindOptions<DBPart>,
+		partInstancesOptions?: FindOptions<PartInstance>
+	): Array<{ segment: Segment; partInstances: PartInstance[] }> {
+		const { segments, parts: rawParts } = playlist.getSegmentsAndPartsSync(
+			segmentsQuery,
+			partsQuery,
+			segmentsOptions,
+			partsOptions
+		)
+		const rawPartInstances = playlist.getActivePartInstances(partInstancesQuery, partInstancesOptions)
+		const playlistActivationId = playlist.activationId ?? protectString('')
+
+		const partsBySegment = _.groupBy(rawParts, (p) => p.segmentId)
+		const partInstancesBySegment = _.groupBy(rawPartInstances, (p) => p.segmentId)
+
+		return segments.map((segment) => {
+			const segmentParts = partsBySegment[unprotectString(segment._id)] || []
+			const segmentPartInstances = partInstancesBySegment[unprotectString(segment._id)] || []
+
+			if (segmentPartInstances.length === 0) {
+				return {
+					segment,
+					partInstances: segmentParts.map((p) => wrapPartToTemporaryInstance(playlistActivationId, p)),
+				}
+			} else if (segmentParts.length === 0) {
+				return {
+					segment,
+					partInstances: _.sortBy(segmentPartInstances, (p) => p.part._rank),
+				}
+			} else {
+				const partInstanceMap = new Map<PartId, PartInstance>()
+				for (const part of segmentParts)
+					partInstanceMap.set(part._id, wrapPartToTemporaryInstance(playlistActivationId, part))
+				for (const partInstance of segmentPartInstances) {
+					// Check what we already have in the map for this PartId. If the map returns the currentPartInstance then we keep that, otherwise replace with this partInstance
+					const currentValue = partInstanceMap.get(partInstance.part._id)
+					if (!currentValue || currentValue._id !== playlist.currentPartInstanceId) {
+						partInstanceMap.set(partInstance.part._id, partInstance)
+					}
+				}
+
+				const allPartInstances = _.sortBy(Array.from(partInstanceMap.values()), (p) => p.part._rank)
+
+				return {
+					segment,
+					partInstances: allPartInstances,
+				}
+			}
+		})
+	}
+
 	/**
 	 * This function allows to see what the output of the playback will look like.
 	 * It simulates the operations done by the playout operations in core and playout-gateway
@@ -233,6 +293,8 @@ export namespace RundownUtils {
 	 * @param {DBSegment} segment
 	 * @param {Set<SegmentId>} segmentsBeforeThisInRundownSet
 	 * @param {PartId[]} orderedAllPartIds
+	 * @param {PartInstance | undefined } currentPartInstance
+	 * @param {PartInstance | undefined } nextPartInstance
 	 * @param {boolean} [pieceInstanceSimulation=false] Can be used client-side to simulate the contents of a
 	 * 		PartInstance, whose contents are being streamed in. When ran in a reactive context, the computation will
 	 * 		be eventually invalidated so that the actual data can be streamed in (to show that the part is actually empty)
@@ -244,9 +306,14 @@ export namespace RundownUtils {
 	export function getResolvedSegment(
 		showStyleBase: ShowStyleBase,
 		playlist: RundownPlaylist,
+		rundown: Rundown,
 		segment: DBSegment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
+		rundownsBeforeThisInPlaylist: RundownId[],
+		rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 		orderedAllPartIds: PartId[],
+		currentPartInstance: PartInstance | undefined,
+		nextPartInstance: PartInstance | undefined,
 		pieceInstanceSimulation: boolean = false,
 		includeDisabledPieces: boolean = false
 	): {
@@ -281,7 +348,7 @@ export namespace RundownUtils {
 
 		let autoNextPart = false
 
-		let segmentExtended = literal<SegmentExtended>({
+		const segmentExtended = literal<SegmentExtended>({
 			...segment,
 			/** Create maps for outputLayers and sourceLayers */
 			outputLayers: {},
@@ -291,19 +358,19 @@ export namespace RundownUtils {
 		// fetch all the parts for the segment
 		let partsE: Array<PartExtended> = []
 
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-		const segmentsAndParts = playlist.getSegmentsAndPartsSync(
+		const segmentInfo = getSegmentsWithPartInstances(
+			playlist,
 			{
 				_id: segment._id,
 			},
 			{
 				segmentId: segment._id,
-			}
-		)
-		const activePartInstancesMap = playlist.getActivePartInstancesMap(
+			},
 			{
 				segmentId: segment._id,
 			},
+			undefined,
+			undefined,
 			{
 				fields: {
 					isTaken: 0,
@@ -311,11 +378,9 @@ export namespace RundownUtils {
 					takeCount: 0,
 				},
 			}
-		) as { [indexKey: string]: PartInstanceLimited }
+		)[0] as { segment: Segment; partInstances: PartInstanceLimited[] } | undefined
 
-		const partsInSegment = segmentsAndParts.parts
-
-		if (partsInSegment.length > 0) {
+		if (segmentInfo && segmentInfo.partInstances.length > 0) {
 			// create local deep copies of the studio outputLayers and sourceLayers so that we can store
 			// pieces present on those layers inside and also figure out which layers are used when inside the rundown
 			const outputLayers = normalizeArray<IOutputLayerExtended>(
@@ -340,31 +405,45 @@ export namespace RundownUtils {
 			)
 
 			// create a lookup map to match original pieces to their resolved counterparts
-			let piecesLookup = new Map<PieceId, PieceExtended>()
+			const piecesLookup = new Map<PieceId, PieceExtended>()
 			// a buffer to store durations for the displayDuration groups
 			const displayDurationGroups = new Map<string, number>()
 
 			let startsAt = 0
 			let previousPart: PartExtended | undefined
 			// fetch all the pieces for the parts
-			const partIds = partsInSegment.map((part) => part._id)
+			const partIds = segmentInfo.partInstances.map((part) => part.part._id)
 
-			const currentPartIndex = currentPartInstance
-				? orderedAllPartIds.indexOf(currentPartInstance.part._id)
-				: null
+			let nextPartIsAfterCurrentPart = false
+			if (nextPartInstance && currentPartInstance) {
+				if (nextPartInstance.segmentId === currentPartInstance.segmentId) {
+					nextPartIsAfterCurrentPart = currentPartInstance.part._rank < nextPartInstance.part._rank
+				} else {
+					const nextPartSegment = Segments.findOne(
+						{ _id: nextPartInstance.segmentId },
+						{ fields: { _rank: 1 } }
+					)
+					const currentPartSegment = Segments.findOne(
+						{ _id: currentPartInstance.segmentId },
+						{ fields: { _rank: 1 } }
+					)
+					if (nextPartSegment && currentPartSegment) {
+						nextPartIsAfterCurrentPart = currentPartSegment._rank < nextPartSegment._rank
+					}
+				}
+			}
 
-			const nextPartIndex = nextPartInstance ? orderedAllPartIds.indexOf(nextPartInstance.part._id) : null
+			const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
-			partsE = partsInSegment.map((part, itIndex) => {
-				const partInstance = findPartInstanceOrWrapToTemporary(activePartInstancesMap, part)
-				let partTimeline: SuperTimeline.TimelineObject[] = []
+			partsE = segmentInfo.partInstances.map((partInstance, itIndex) => {
+				const partTimeline: SuperTimeline.TimelineObject[] = []
 
 				// extend objects to match the Extended interface
-				let partE = literal<PartExtended>({
-					partId: part._id,
+				const partE = literal<PartExtended>({
+					partId: partInstance.part._id,
 					instance: partInstance,
 					pieces: [],
-					renderedDuration: 0,
+					renderedDuration: partInstance.part.expectedDuration ?? 0,
 					startsAt: 0,
 					willProbablyAutoNext: !!(
 						previousPart &&
@@ -399,11 +478,15 @@ export namespace RundownUtils {
 				}
 
 				const rawPieceInstances = getPieceInstancesForPartInstance(
+					playlist.activationId,
+					rundown,
 					partInstance,
 					new Set(partIds.slice(0, itIndex)),
 					segmentsBeforeThisInRundownSet,
+					rundownsBeforeThisInPlaylist,
+					rundownsToShowstyles,
 					orderedAllPartIds,
-					currentPartIndex !== null && nextPartIndex !== null ? currentPartIndex < nextPartIndex : false,
+					nextPartIsAfterCurrentPart,
 					currentPartInstance,
 					currentPartInstance
 						? PieceInstances.find(
@@ -439,6 +522,7 @@ export namespace RundownUtils {
 					pieceGroup.metaData = literal<PieceGroupMetadataExt>({
 						id: piece.piece._id,
 						pieceId: piece._id,
+						isPieceTimeline: true,
 					})
 					partTimeline.push(pieceGroup)
 					partTimeline.push(...capObjs)
@@ -450,14 +534,14 @@ export namespace RundownUtils {
 					}
 
 					// find the target output layer
-					let outputLayer = outputLayers[piece.piece.outputLayerId] as IOutputLayerExtended | undefined
+					const outputLayer = outputLayers[piece.piece.outputLayerId] as IOutputLayerExtended | undefined
 					resPiece.outputLayer = outputLayer
 
 					if (!piece.piece.virtual && outputLayer) {
 						// mark the output layer as used within this segment
 						if (
 							sourceLayers[piece.piece.sourceLayerId] &&
-							!sourceLayers[piece.piece.sourceLayerId].isHidden
+							(showHiddenSourceLayers || !sourceLayers[piece.piece.sourceLayerId].isHidden)
 						) {
 							outputLayer.used = true
 						}
@@ -471,7 +555,7 @@ export namespace RundownUtils {
 							sourceLayer = sourceLayers[piece.piece.sourceLayerId]
 							if (sourceLayer) {
 								sourceLayer = { ...sourceLayer }
-								let partSourceLayer = sourceLayer
+								const partSourceLayer = sourceLayer
 								partSourceLayer.pieces = []
 								outputLayer.sourceLayers.push(partSourceLayer)
 							}
@@ -512,13 +596,13 @@ export namespace RundownUtils {
 						}
 					})
 				})
-				let tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, { time: 0 })
+				const tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, { time: 0 })
 				// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
 				let furthestDuration = 0
 				const objs = Object.values(tlResolved.objects)
 				for (let i = 0; i < objs.length; i++) {
 					const obj = objs[i]
-					const obj0 = (obj as unknown) as TimelineObjectCoreExt<PieceGroupMetadataExt>
+					const obj0 = obj as unknown as TimelineObjectCoreExt<PieceGroupMetadataExt>
 					if (obj.resolved.resolved && obj0.metaData) {
 						// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
 						const piece = piecesLookup.get(obj0.metaData.id)
@@ -542,9 +626,6 @@ export namespace RundownUtils {
 					}
 				}
 
-				// use the expectedDuration and fallback to the default display duration for the part
-				partE.renderedDuration = partE.instance.part.expectedDuration || Settings.defaultDisplayDuration // furthestDuration
-
 				// displayDuration groups are sets of Parts that share their expectedDurations.
 				// If a member of the group has a displayDuration > 0, this displayDuration is used as the renderedDuration of a part.
 				// This value is then deducted from the expectedDuration and the result leftover duration is added to the group pool.
@@ -556,8 +637,8 @@ export namespace RundownUtils {
 					// either this is not the first element of the displayDurationGroup
 					(displayDurationGroups.get(partE.instance.part.displayDurationGroup) !== undefined ||
 						// or there is a following member of this displayDurationGroup
-						(partsInSegment[itIndex + 1] &&
-							partsInSegment[itIndex + 1].displayDurationGroup ===
+						(segmentInfo.partInstances[itIndex + 1] &&
+							segmentInfo.partInstances[itIndex + 1].part.displayDurationGroup ===
 								partE.instance.part.displayDurationGroup))
 				) {
 					displayDurationGroups.set(
@@ -579,6 +660,9 @@ export namespace RundownUtils {
 						)
 					)
 				}
+
+				// use the expectedDuration and fallback to the default display duration for the part
+				partE.renderedDuration = partE.renderedDuration || Settings.defaultDisplayDuration // furthestDuration
 
 				// push the startsAt value, to figure out when each of the parts starts, relative to the beginning of the segment
 				partE.startsAt = startsAt
@@ -619,8 +703,13 @@ export namespace RundownUtils {
 					})
 					// check if the Pieces should be cropped (as should be the case if an item on a layer is placed after
 					// an infinite Piece) and limit the width of the labels so that they dont go under or over the next Piece.
-					for (let [outputSourceCombination, layerItems] of Object.entries(itemsByLayer)) {
-						const sortedItems = _.sortBy(layerItems, 'renderedInPoint')
+					for (const layerItems of Object.values(itemsByLayer)) {
+						// sort on rendered in-point and then on priority
+						const sortedItems = layerItems.sort(
+							(a, b) =>
+								(a.renderedInPoint || 0) - (b.renderedInPoint || 0) ||
+								a.instance.priority - b.instance.priority
+						)
 						for (let i = 1; i < sortedItems.length; i++) {
 							const currentItem = sortedItems[i]
 							const previousItem = sortedItems[i - 1]
@@ -658,11 +747,7 @@ export namespace RundownUtils {
 			segmentExtended.sourceLayers = sourceLayers
 
 			if (isNextSegment && !isLiveSegment && !autoNextPart && currentPartInstance) {
-				if (
-					currentPartInstance &&
-					currentPartInstance.part.expectedDuration &&
-					currentPartInstance.part.autoNext
-				) {
+				if (currentPartInstance.part.expectedDuration && currentPartInstance.part.autoNext) {
 					autoNextPart = true
 				}
 			}

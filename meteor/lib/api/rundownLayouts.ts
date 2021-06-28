@@ -10,6 +10,7 @@ import {
 	RundownLayoutExternalFrame,
 	RundownLayoutAdLibRegion,
 	PieceDisplayStyle,
+	RundownLayoutPieceCountdown,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -49,6 +50,10 @@ export namespace RundownLayoutsAPI {
 		return element.type === RundownLayoutElementType.ADLIB_REGION
 	}
 
+	export function isPieceCountdown(element: RundownLayoutElementBase): element is RundownLayoutPieceCountdown {
+		return element.type === RundownLayoutElementType.PIECE_COUNTDOWN
+	}
+
 	export function adLibRegionToFilter(element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {
 		return {
 			..._.pick(element, '_id', 'name', 'rank', 'tags'),
@@ -61,6 +66,9 @@ export namespace RundownLayoutsAPI {
 			displayStyle: PieceDisplayStyle.BUTTONS,
 			currentSegment: false,
 			showThumbnailsInList: false,
+			nextInCurrentPart: false,
+			oneNextPerSourceLayer: false,
+			hideDuplicates: false,
 		}
 	}
 }

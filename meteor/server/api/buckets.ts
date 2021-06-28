@@ -1,14 +1,13 @@
 import * as _ from 'underscore'
-import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import { Buckets, Bucket, BucketId } from '../../lib/collections/Buckets'
-import { asyncCollectionRemove, literal, Omit, protectString, waitForPromise, waitForPromiseAll } from '../../lib/lib'
+import { Awaited, getRandomId, literal, waitForPromise } from '../../lib/lib'
 import { BucketSecurity } from '../security/buckets'
 import { BucketAdLibs, BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { PieceId } from '../../lib/collections/Pieces'
 import { StudioId, Studios } from '../../lib/collections/Studios'
-import { ShowStyleVariants, getShowStyleCompound } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { AdLibActionId, AdLibAction, AdLibActionCommon } from '../../lib/collections/AdLibActions'
@@ -20,7 +19,14 @@ import {
 	cleanUpExpectedMediaItemForBucketAdLibPiece,
 	updateExpectedMediaItemForBucketAdLibAction,
 	updateExpectedMediaItemForBucketAdLibPiece,
-} from './expectedMediaItems'
+} from './ingest/expectedMediaItems'
+import { getShowStyleCompoundForRundown } from './showStyles'
+import {
+	cleanUpExpectedPackagesForBucketAdLibs,
+	cleanUpExpectedPackagesForBucketAdLibsActions,
+	updateExpectedPackagesForBucketAdLib,
+	updateExpectedPackagesForBucketAdLibAction,
+} from './ingest/expectedPackages'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 
@@ -31,8 +37,8 @@ function isBucketAdLibAction(action: AdLibActionCommon | BucketAdLibAction): act
 	return false
 }
 
-export function bucketSyncFunction<T extends () => any>(bucketId: BucketId, context: string, fcn: T): ReturnType<T> {
-	return syncFunction(fcn, context, `bucket_${bucketId}`)()
+export function bucketSyncFunction<T>(bucketId: BucketId, context: string, fcn: () => T): Awaited<T> {
+	return syncFunction(() => waitForPromise(fcn()), context, `bucket_${bucketId}`)()
 }
 
 export namespace BucketsAPI {
@@ -45,10 +51,11 @@ export namespace BucketsAPI {
 		if (!BucketSecurity.allowWriteAccess({ _id: adlib.bucketId }, context))
 			throw new Meteor.Error(403, `Not allowed to edit bucket: ${adlib.bucketId}`)
 
-		bucketSyncFunction(adlib.bucketId, 'removeBucketAdLib', () => {
-			waitForPromiseAll([
-				asyncCollectionRemove(BucketAdLibs, { _id: id }),
+		bucketSyncFunction(adlib.bucketId, 'removeBucketAdLib', async () => {
+			await Promise.all([
+				BucketAdLibs.removeAsync({ _id: id }),
 				cleanUpExpectedMediaItemForBucketAdLibPiece([id]),
+				cleanUpExpectedPackagesForBucketAdLibs([id]),
 			])
 		})
 	}
@@ -62,10 +69,11 @@ export namespace BucketsAPI {
 		if (!BucketSecurity.allowWriteAccess({ _id: adlib.bucketId }, context))
 			throw new Meteor.Error(403, `Not allowed to edit bucket: ${adlib.bucketId}`)
 
-		bucketSyncFunction(adlib.bucketId, 'removeBucketAdLibAction', () => {
-			waitForPromiseAll([
-				asyncCollectionRemove(BucketAdLibActions, { _id: id }),
+		bucketSyncFunction(adlib.bucketId, 'removeBucketAdLibAction', async () => {
+			await Promise.all([
+				BucketAdLibActions.removeAsync({ _id: id }),
 				cleanUpExpectedMediaItemForBucketAdLibActions([id]),
+				cleanUpExpectedPackagesForBucketAdLibsActions([id]),
 			])
 		})
 	}
@@ -77,8 +85,8 @@ export namespace BucketsAPI {
 		const oldBucket = Buckets.findOne(id)
 		if (!oldBucket) throw new Meteor.Error(404, `Bucket not found: ${id}`)
 
-		bucketSyncFunction(id, 'modifyBucket', () => {
-			Buckets.update(id, {
+		bucketSyncFunction(id, 'modifyBucket', async () => {
+			await Buckets.updateAsync(id, {
 				$set: _.omit(bucket, ['_id']),
 			})
 		})
@@ -91,16 +99,17 @@ export namespace BucketsAPI {
 		const bucket = Buckets.findOne(id)
 		if (!bucket) throw new Meteor.Error(404, `Bucket not found: ${id}`)
 
-		bucketSyncFunction(id, 'emptyBucket', () => {
-			emptyBucketInner(id)
+		bucketSyncFunction(id, 'emptyBucket', async () => {
+			await emptyBucketInner(id)
 		})
 	}
 
-	function emptyBucketInner(id: BucketId) {
-		waitForPromiseAll([
-			asyncCollectionRemove(BucketAdLibs, { bucketId: id }),
-			asyncCollectionRemove(BucketAdLibActions, { bucketId: id }),
-			asyncCollectionRemove(ExpectedMediaItems, { bucketId: id }),
+	async function emptyBucketInner(id: BucketId): Promise<void> {
+		await Promise.all([
+			BucketAdLibs.removeAsync({ bucketId: id }),
+			BucketAdLibActions.removeAsync({ bucketId: id }),
+			ExpectedMediaItems.removeAsync({ bucketId: id }),
+			// TODO - remove packages?
 		])
 	}
 
@@ -130,7 +139,7 @@ export namespace BucketsAPI {
 		}
 
 		const newBucket = literal<Bucket>({
-			_id: protectString(Random.id()),
+			_id: getRandomId(),
 			_rank: rank,
 			name: name,
 			studioId,
@@ -165,7 +174,7 @@ export namespace BucketsAPI {
 			throw new Meteor.Error(403, 'Access denied')
 		}
 
-		bucketSyncFunction(action.bucketId ?? oldAdLib.bucketId, 'modifyBucketAdLib', () => {
+		bucketSyncFunction(action.bucketId ?? oldAdLib.bucketId, 'modifyBucketAdLib', async () => {
 			if (action.bucketId && !Buckets.findOne(action.bucketId)) {
 				throw new Meteor.Error(`Could not find bucket: "${action.bucketId}"`)
 			}
@@ -178,10 +187,13 @@ export namespace BucketsAPI {
 				throw new Meteor.Error(`Could not find studio: "${action.studioId}"`)
 			}
 
-			BucketAdLibActions.update(id, {
+			await BucketAdLibActions.updateAsync(id, {
 				$set: _.omit(action, ['_id']),
 			})
-			updateExpectedMediaItemForBucketAdLibAction(id)
+			await Promise.all([
+				updateExpectedMediaItemForBucketAdLibAction(id),
+				updateExpectedPackagesForBucketAdLibAction(id),
+			])
 		})
 	}
 
@@ -214,7 +226,7 @@ export namespace BucketsAPI {
 
 			adLibAction = {
 				...action,
-				_id: protectString(Random.id()),
+				_id: getRandomId(),
 				bucketId: bucketId,
 			}
 		} else {
@@ -238,7 +250,7 @@ export namespace BucketsAPI {
 				)
 			}
 
-			const showStyleCompound = getShowStyleCompound(rundown.showStyleVariantId)
+			const showStyleCompound = waitForPromise(getShowStyleCompoundForRundown(rundown))
 			if (!showStyleCompound)
 				throw new Meteor.Error(404, `ShowStyle Variant "${rundown.showStyleVariantId}" not found`)
 
@@ -251,7 +263,7 @@ export namespace BucketsAPI {
 
 			adLibAction = {
 				...(_.omit(action, ['partId', 'rundownId']) as Omit<AdLibAction, 'partId' | 'rundownId'>),
-				_id: protectString(Random.id()),
+				_id: getRandomId(),
 				externalId: '', // TODO - is this ok?
 				bucketId: bucketId,
 				studioId: studioId,
@@ -260,9 +272,12 @@ export namespace BucketsAPI {
 			}
 		}
 
-		bucketSyncFunction(adLibAction.bucketId, 'saveAdLibActionIntoBucket', () => {
-			BucketAdLibActions.insert(adLibAction)
-			updateExpectedMediaItemForBucketAdLibAction(adLibAction._id)
+		bucketSyncFunction(adLibAction.bucketId, 'saveAdLibActionIntoBucket', async () => {
+			await BucketAdLibActions.insertAsync(adLibAction)
+			await Promise.all([
+				updateExpectedMediaItemForBucketAdLibAction(adLibAction._id),
+				updateExpectedPackagesForBucketAdLibAction(adLibAction._id),
+			])
 		})
 
 		return adLibAction
@@ -284,7 +299,7 @@ export namespace BucketsAPI {
 			throw new Meteor.Error(403, 'Access denied')
 		}
 
-		bucketSyncFunction(adlib.bucketId ?? oldAdLib.bucketId, 'modifyBucketAdLib', () => {
+		bucketSyncFunction(adlib.bucketId ?? oldAdLib.bucketId, 'modifyBucketAdLib', async () => {
 			if (adlib.bucketId && !Buckets.findOne(adlib.bucketId)) {
 				throw new Meteor.Error(`Could not find bucket: "${adlib.bucketId}"`)
 			}
@@ -297,10 +312,13 @@ export namespace BucketsAPI {
 				throw new Meteor.Error(`Could not find studio: "${adlib.studioId}"`)
 			}
 
-			BucketAdLibs.update(id, {
+			await BucketAdLibs.updateAsync(id, {
 				$set: _.omit(adlib, ['_id']),
 			})
-			updateExpectedMediaItemForBucketAdLibPiece(id)
+			await Promise.all([
+				updateExpectedMediaItemForBucketAdLibPiece(id),
+				updateExpectedPackagesForBucketAdLib(id),
+			])
 		})
 	}
 
@@ -311,9 +329,8 @@ export namespace BucketsAPI {
 		const bucket = Buckets.findOne(id)
 		if (!bucket) throw new Meteor.Error(404, `Bucket not found: ${id}`)
 
-		bucketSyncFunction(id, 'removeBucket', () => {
-			Buckets.remove(id)
-			emptyBucketInner(id)
+		bucketSyncFunction(id, 'removeBucket', async () => {
+			await Promise.all([Buckets.removeAsync(id), emptyBucketInner(id)])
 		})
 	}
 }

@@ -2,15 +2,22 @@ import * as _ from 'underscore'
 import {
 	mongoWhere,
 	literal,
-	Omit,
 	ProtectedString,
 	unprotectString,
 	protectString,
 	mongoModify,
 	mongoFindOptions,
+	sleep,
 } from '../lib/lib'
 import { RandomMock } from './random'
-import { UpsertOptions, UpdateOptions, FindOptions, ObserveChangesCallbacks } from '../lib/typings/meteor'
+import {
+	UpsertOptions,
+	UpdateOptions,
+	FindOptions,
+	ObserveChangesCallbacks,
+	ObserveCallbacks,
+	FindOneOptions,
+} from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
@@ -23,13 +30,15 @@ import {
 	BulkWriteDeleteOneOperation,
 	BulkWriteDeleteManyOperation,
 } from 'mongodb'
+import { AsyncTransformedCollection } from '../lib/collections/lib'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
 	interface ObserverEntry<T extends CollectionObject> {
 		id: string
 		query: any
-		callbacks: ObserveChangesCallbacks<T>
+		callbacksChanges?: ObserveChangesCallbacks<T>
+		callbacksObserve?: ObserveCallbacks<T>
 	}
 
 	export interface MockCollections<T extends CollectionObject> {
@@ -43,12 +52,14 @@ export namespace MongoMock {
 	}
 
 	const mockCollections: MockCollections<any> = {}
-	export interface MongoCollection<T extends CollectionObject> {}
-	export class Collection<T extends CollectionObject> implements MongoCollection<T> {
+	export type MongoCollection = {}
+	export class Collection<T extends CollectionObject> implements MongoCollection {
 		public _name: string
 		private _options: any = {}
 		private _isMock: true = true // used in test to check that it's a mock
 		private observers: ObserverEntry<T>[] = []
+
+		public asyncBulkWriteDelay = 100
 
 		private _transform?: (o: T) => T
 
@@ -57,6 +68,7 @@ export namespace MongoMock {
 			this._name = name
 			this._transform = this._options.transform
 		}
+
 		find(query: any, options?: FindOptions<T>) {
 			if (_.isString(query)) query = { _id: query }
 			query = query || {}
@@ -77,6 +89,12 @@ export namespace MongoMock {
 
 			const observers = this.observers
 
+			const removeObserver = (id: string): void => {
+				const index = observers.findIndex((o) => o.id === id)
+				if (index === -1) throw new Meteor.Error(500, 'Cannot stop observer that is not registered')
+				observers.splice(index, 1)
+			}
+
 			return {
 				_fetchRaw: () => {
 					return docs
@@ -90,10 +108,18 @@ export namespace MongoMock {
 				count: () => {
 					return docs.length
 				},
-				observe(clbs) {
+				observe(clbs: ObserveCallbacks<T>) {
+					const id = Random.id(5)
+					observers.push(
+						literal<ObserverEntry<T>>({
+							id: id,
+							callbacksObserve: clbs,
+							query: query,
+						})
+					)
 					return {
 						stop() {
-							// stub
+							removeObserver(id)
 						},
 					}
 				},
@@ -103,15 +129,13 @@ export namespace MongoMock {
 					observers.push(
 						literal<ObserverEntry<T>>({
 							id: id,
-							callbacks: clbs,
+							callbacksChanges: clbs,
 							query: query,
 						})
 					)
 					return {
 						stop() {
-							const index = observers.findIndex((o) => o.id === id)
-							if (index === -1) throw new Meteor.Error(500, 'Cannot stop observer that is not registered')
-							observers.splice(index, 1)
+							removeObserver(id)
 						},
 					}
 				},
@@ -123,116 +147,113 @@ export namespace MongoMock {
 				},
 			}
 		}
-		findOne(query, options?: Omit<FindOptions<T>, 'limit'>) {
+		findOne(query, options?: FindOneOptions<T>) {
 			return this.find(query, options).fetch()[0]
 		}
-		update(query: any, modifier, options?: UpdateOptions, cb?: Function) {
-			try {
-				const unimplementedUsedOptions = _.without(_.keys(options), 'multi')
-				if (unimplementedUsedOptions.length > 0) {
-					throw new Error(`update being performed using unimplemented options: ${unimplementedUsedOptions}`)
-				}
-
-				// todo
-				let docs = this.find(query)._fetchRaw()
-
-				// By default mongo only updates one doc, unless told multi
-				if (this.documents.length && !options?.multi) {
-					docs = [docs[0]]
-				}
-
-				_.each(docs, (doc) => {
-					const modifiedDoc = mongoModify(query, doc, modifier)
-					this.documents[unprotectString(doc._id)] = modifiedDoc
-
-					Meteor.defer(() => {
-						_.each(_.clone(this.observers), (obs) => {
-							if (mongoWhere(doc, obs.query)) {
-								if (obs.callbacks.changed) {
-									obs.callbacks.changed(doc._id, {}) // TODO - figure out what changed
-								}
-							}
-						})
-					})
-				})
-
-				if (cb) cb(undefined, docs.length)
-				else return docs.length
-			} catch (error) {
-				if (cb) cb(error, undefined)
-				else throw error
+		update(query: any, modifier, options?: UpdateOptions): number {
+			const unimplementedUsedOptions = _.without(_.keys(options), 'multi')
+			if (unimplementedUsedOptions.length > 0) {
+				throw new Error(`update being performed using unimplemented options: ${unimplementedUsedOptions}`)
 			}
-		}
-		insert(doc: T, cb?: Function) {
-			try {
-				const d = _.clone(doc)
-				if (!d._id) d._id = protectString(RandomMock.id())
 
-				if (this.documents[unprotectString(d._id)]) {
-					throw new MeteorMock.Error(500, `Duplicate key '${d._id}'`)
-				}
+			// todo
+			let docs = this.find(query)._fetchRaw()
 
-				this.documents[unprotectString(d._id)] = d
+			// By default mongo only updates one doc, unless told multi
+			if (this.documents.length && !options?.multi) {
+				docs = [docs[0]]
+			}
+
+			_.each(docs, (doc) => {
+				const modifiedDoc = mongoModify(query, doc, modifier)
+				this.documents[unprotectString(doc._id)] = modifiedDoc
 
 				Meteor.defer(() => {
 					_.each(_.clone(this.observers), (obs) => {
-						if (mongoWhere(d, obs.query)) {
-							const fields = _.keys(_.omit(d, '_id'))
-							if (obs.callbacks.addedBefore) {
-								obs.callbacks.addedBefore(d._id, fields, null as any)
+						if (mongoWhere(doc, obs.query)) {
+							if (obs.callbacksChanges?.changed) {
+								obs.callbacksChanges.changed(doc._id, {}) // TODO - figure out what changed
 							}
-							if (obs.callbacks.added) {
-								obs.callbacks.added(d._id, fields)
+							if (obs.callbacksObserve?.changed) {
+								obs.callbacksObserve.changed(modifiedDoc, doc)
 							}
 						}
 					})
 				})
+			})
 
-				if (cb) cb(undefined, d._id)
-				else return d._id
-			} catch (error) {
-				if (cb) cb(error, undefined)
-				else throw error
-			}
+			return docs.length
 		}
-		upsert(query: any, modifier, options?: UpsertOptions, cb?: Function) {
-			let id = _.isString(query) ? query : query._id
+		insert(doc: T): T['_id'] {
+			const d = _.clone(doc)
+			if (!d._id) d._id = protectString(RandomMock.id())
+
+			if (this.documents[unprotectString(d._id)]) {
+				throw new MeteorMock.Error(500, `Duplicate key '${d._id}'`)
+			}
+
+			this.documents[unprotectString(d._id)] = d
+
+			Meteor.defer(() => {
+				_.each(_.clone(this.observers), (obs) => {
+					if (mongoWhere(d, obs.query)) {
+						const fields = _.keys(_.omit(d, '_id'))
+						if (obs.callbacksChanges?.addedBefore) {
+							obs.callbacksChanges.addedBefore(d._id, fields, null as any)
+						}
+						if (obs.callbacksChanges?.added) {
+							obs.callbacksChanges.added(d._id, fields)
+						}
+						if (obs.callbacksObserve?.added) {
+							obs.callbacksObserve.added(d)
+						}
+					}
+				})
+			})
+
+			return d._id
+		}
+		upsert(
+			query: any,
+			modifier,
+			options?: UpsertOptions
+		): { numberAffected: number | undefined; insertedId: T['_id'] | undefined } {
+			const id = _.isString(query) ? query : query._id
 
 			const docs = this.find(id)._fetchRaw()
 
 			if (docs.length) {
-				this.update(docs[0]._id, modifier, options, cb)
+				const count = this.update(docs[0]._id, modifier, options)
+				return { insertedId: undefined, numberAffected: count }
 			} else {
 				const doc = mongoModify(query, { _id: id }, modifier)
-				this.insert(doc, cb)
+				const insertedId = this.insert(doc)
+				return { insertedId: insertedId, numberAffected: undefined }
 			}
 		}
-		remove(query: any, cb?: Function) {
-			try {
-				const docs = this.find(query)._fetchRaw()
+		remove(query: any): number {
+			const docs = this.find(query)._fetchRaw()
 
-				_.each(docs, (doc) => {
-					delete this.documents[unprotectString(doc._id)]
+			_.each(docs, (doc) => {
+				delete this.documents[unprotectString(doc._id)]
 
-					Meteor.defer(() => {
-						_.each(_.clone(this.observers), (obs) => {
-							if (mongoWhere(doc, obs.query)) {
-								if (obs.callbacks.removed) {
-									obs.callbacks.removed(doc._id)
-								}
+				Meteor.defer(() => {
+					_.each(_.clone(this.observers), (obs) => {
+						if (mongoWhere(doc, obs.query)) {
+							if (obs.callbacksChanges?.removed) {
+								obs.callbacksChanges.removed(doc._id)
 							}
-						})
+							if (obs.callbacksObserve?.removed) {
+								obs.callbacksObserve.removed(doc)
+							}
+						}
 					})
 				})
-				if (cb) cb(undefined, docs.length)
-				else return docs.length
-			} catch (error) {
-				if (cb) cb(error, undefined)
-				else throw error
-			}
+			})
+			return docs.length
 		}
 
-		_ensureIndex(obj: any) {
+		_ensureIndex(_obj: any) {
 			// todo
 		}
 		allow() {
@@ -243,7 +264,9 @@ export namespace MongoMock {
 				// indexes: () => {}
 				// stats: () => {}
 				// drop: () => {}
-				bulkWrite: (updates: BulkWriteOperation<any>[], _options) => {
+				bulkWrite: async (updates: BulkWriteOperation<any>[], _options) => {
+					await sleep(this.asyncBulkWriteDelay)
+
 					for (let update of updates) {
 						if (update['insertOne']) {
 							update = update as BulkWriteInsertOneOperation<any>
@@ -290,12 +313,14 @@ export namespace MongoMock {
 	}
 	// Mock functions:
 	export function mockSetData<T extends CollectionObject>(
-		collection: string | MongoCollection<T>,
+		collection: AsyncTransformedCollection<T, T>,
 		data: MockCollection<T> | Array<T> | null
 	) {
-		const collectionName: string = _.isString(collection)
-			? collection
-			: (collection as MongoMock.Collection<any>)._name
+		const collectionName = collection.name
+		if (collectionName === null) {
+			throw new Meteor.Error(500, 'mockSetData can only be done for named collections')
+		}
+
 		data = data || {}
 		if (_.isArray(data)) {
 			const collectionData = {}
@@ -313,6 +338,26 @@ export namespace MongoMock {
 		Object.keys(mockCollections).forEach((id) => {
 			mockCollections[id] = {}
 		})
+	}
+
+	/**
+	 * The Mock Collection type does a sleep before starting on executing the bulkWrite.
+	 * This simulates the async nature of writes to mongo, and aims to detect race conditions in our code.
+	 * This method will change the duration of the sleep, and returns the old delay value
+	 */
+	export function setCollectionAsyncBulkWriteDelay(
+		collection: AsyncTransformedCollection<any, any>,
+		delay: number
+	): number {
+		const collection2 = collection as any
+		if (typeof collection2.asyncWriteDelay !== 'number') {
+			throw new Error(
+				"asyncWriteDelay must be defined already, or this won't do anything. Perhaps some refactoring?"
+			)
+		}
+		const oldDelay = collection2.asyncWriteDelay
+		collection2.asyncWriteDelay = delay
+		return oldDelay
 	}
 }
 export function setup() {

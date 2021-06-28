@@ -9,12 +9,12 @@ import {
 import { ServerPlayoutAPI } from '../playout'
 import { ActionExecutionContext, ActionPartChange } from '../../blueprints/context'
 import { Rundown, Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
-import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstances } from '../../../../lib/collections/PartInstances'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Blueprints, BlueprintId } from '../../../../lib/collections/Blueprints'
 import { BLUEPRINT_CACHE_CONTROL } from '../../blueprints/cache'
 import { ShowStyleBlueprintManifest, BlueprintManifestType } from '@sofie-automation/blueprints-integration'
+import { VerifiedRundownPlaylistContentAccess } from '../../lib'
 
 jest.mock('../../playout/infinites')
 import {
@@ -23,7 +23,8 @@ import {
 	fetchPiecesThatMayBeActiveForPart,
 } from '../../playout/infinites'
 type TsyncPlayheadInfinitesForNextPartInstance = jest.MockedFunction<typeof syncPlayheadInfinitesForNextPartInstance>
-const syncPlayheadInfinitesForNextPartInstanceMock = syncPlayheadInfinitesForNextPartInstance as TsyncPlayheadInfinitesForNextPartInstance
+const syncPlayheadInfinitesForNextPartInstanceMock =
+	syncPlayheadInfinitesForNextPartInstance as TsyncPlayheadInfinitesForNextPartInstance
 type TgetPieceInstancesForPart = jest.MockedFunction<typeof getPieceInstancesForPart>
 type TfetchPiecesThatMayBeActiveForPart = jest.MockedFunction<typeof fetchPiecesThatMayBeActiveForPart>
 const {
@@ -37,22 +38,13 @@ const {
 
 jest.mock('../../playout/timeline')
 import { updateTimeline } from '../../playout/timeline'
-import { MethodContext } from '../../../../lib/api/methods'
 type TupdateTimeline = jest.MockedFunction<typeof updateTimeline>
 const updateTimelineMock = updateTimeline as TupdateTimeline
 
-const DEFAULT_CONTEXT: MethodContext = {
-	userId: null,
-	isSimulation: false,
-	connection: {
-		id: 'mockConnectionId',
-		close: () => {},
-		onClose: () => {},
-		clientAddress: '127.0.0.1',
-		httpHeaders: {},
-	},
-	setUserId: () => {},
-	unblock: () => {},
+function DEFAULT_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPlaylistContentAccess {
+	const playlist = RundownPlaylists.findOne(rundownPlaylistID) as RundownPlaylist
+	expect(playlist).toBeTruthy()
+	return { userId: null, organizationId: null, studioId: null, playlist: playlist, cred: {} }
 }
 
 describe('Playout API', () => {
@@ -62,17 +54,17 @@ describe('Playout API', () => {
 		let rundownId: RundownId
 		let blueprintId: BlueprintId
 
-		beforeEachInFiber(() => {
+		beforeEachInFiber(async () => {
 			BLUEPRINT_CACHE_CONTROL.disable = true
 
-			env = setupDefaultStudioEnvironment()
+			env = await setupDefaultStudioEnvironment()
 
 			const { playlistId: playlistId0, rundownId: rundownId0 } = setupDefaultRundownPlaylist(env)
 			playlistId = playlistId0
 			rundownId = rundownId0
 
-			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, playlistId, true)
-			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId)
+			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId), playlistId, true)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId), playlistId)
 
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -91,11 +83,11 @@ describe('Playout API', () => {
 
 		testInFiber('invalid parameters', () => {
 			// @ts-ignore
-			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, 9, '', '')).toThrowError(
+			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), 9, '', '')).toThrowError(
 				'Match error: Expected string'
 			)
 			// @ts-ignore
-			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, '', 9, '')).toThrowError(
+			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), '', 9, '')).toThrowError(
 				'Match error: Expected string'
 			)
 		})
@@ -104,9 +96,9 @@ describe('Playout API', () => {
 			const actionId = 'some-action'
 			const userData = { blobby: true }
 
-			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)).toThrowError(
-				/ShowStyle blueprint .* does not support executing actions/
-			)
+			expect(() =>
+				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			).toThrowError(/ShowStyle blueprint .* does not support executing actions/)
 
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 
@@ -118,7 +110,7 @@ describe('Playout API', () => {
 							// Constants to into code:
 							BLUEPRINT_TYPE,
 						},
-						function(): any {
+						function (): any {
 							return {
 								blueprintType: BLUEPRINT_TYPE,
 								executeAction: () => {
@@ -129,9 +121,9 @@ describe('Playout API', () => {
 					),
 				},
 			})
-			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)).toThrowError(
-				'action execution threw'
-			)
+			expect(() =>
+				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			).toThrowError('action execution threw')
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)
@@ -151,7 +143,7 @@ describe('Playout API', () => {
 							STATE_NONE,
 							STATE_SAFE,
 						},
-						function(): any {
+						function (): any {
 							return {
 								blueprintType: BLUEPRINT_TYPE,
 								executeAction: (context0) => {
@@ -169,7 +161,7 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
+			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)
@@ -189,7 +181,7 @@ describe('Playout API', () => {
 							STATE_NONE,
 							STATE_SAFE,
 						},
-						function(): any {
+						function (): any {
 							return {
 								blueprintType: BLUEPRINT_TYPE,
 								executeAction: (context0) => {
@@ -209,7 +201,7 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
+			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
@@ -229,7 +221,7 @@ describe('Playout API', () => {
 							STATE_NONE,
 							STATE_SAFE,
 						},
-						function(): any {
+						function (): any {
 							return {
 								blueprintType: BLUEPRINT_TYPE,
 								executeAction: (context0) => {
@@ -249,7 +241,7 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
+			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
@@ -273,7 +265,7 @@ describe('Playout API', () => {
 							STATE_NONE,
 							STATE_SAFE,
 						},
-						function(): any {
+						function (): any {
 							return {
 								blueprintType: BLUEPRINT_TYPE,
 								executeAction: (context0) => {
@@ -288,7 +280,7 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			api.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
+			api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
 
 			const timesTakeCalled = mockTake.mock.calls.length
 			mockTake.mockRestore()
@@ -313,7 +305,7 @@ describe('Playout API', () => {
 							STATE_NONE,
 							STATE_SAFE,
 						},
-						function(): any {
+						function (): any {
 							return {
 								blueprintType: BLUEPRINT_TYPE,
 								executeAction: (context0) => {
@@ -328,7 +320,7 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			api.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
+			api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
 
 			const timesTakeCalled = mockTake.mock.calls.length
 			mockTake.mockRestore()

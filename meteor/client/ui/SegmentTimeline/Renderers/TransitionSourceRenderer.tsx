@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { getElementWidth } from '../../../utils/dimensions'
 
 import { TransitionContent } from '@sofie-automation/blueprints-integration'
@@ -9,7 +8,7 @@ import { FloatingInspector } from '../../FloatingInspector'
 
 // type KeyValue = { key: string, value: string }
 
-interface IProps extends ICustomLayerItemProps {}
+type IProps = ICustomLayerItemProps
 interface IState {
 	iconFailed: boolean
 }
@@ -64,23 +63,26 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 				<span
 					className="segment-timeline__piece__label with-overflow"
 					ref={this.setLeftLabelRef}
-					style={this.getItemLabelOffsetLeft()}>
+					style={this.getItemLabelOffsetLeft()}
+				>
 					{this.props.piece.instance.piece.name}
 					{content && content.icon && !this.state.iconFailed && (
 						<img
-							src={'/transition-icons/' + content.icon + '.svg'}
+							src={'/blueprints/assets/' + content.icon}
 							className="segment-timeline__piece__label__transition-icon"
 							onError={this.iconFailed}
 						/>
 					)}
 				</span>
 				<FloatingInspector
-					shown={this.props.showMiniInspector && !this.state.iconFailed && this.props.itemElement !== null}>
-					{content && content.icon && (
+					shown={this.props.showMiniInspector && !this.state.iconFailed && this.props.itemElement !== null}
+				>
+					{content && content.preview && (
 						<div
 							className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
-							style={this.getFloatingInspectorStyle()}>
-							<img src={'/transition-icons/preview/' + content.icon + '.png'} className="thumbnail" />
+							style={this.getFloatingInspectorStyle()}
+						>
+							<img src={'/blueprints/assets/' + content.preview} className="thumbnail" />
 						</div>
 					)}
 				</FloatingInspector>

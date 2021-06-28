@@ -52,7 +52,7 @@ export function registerClassToMeteorMethods(
 			)
 		if (wrapper) {
 			methods[enumValue] = {
-				wrapped: function(...args: any[]) {
+				wrapped: function (...args: any[]) {
 					return wrapper(this, enumValue, args, orgClass.prototype[classMethodName])
 				},
 				original: orgClass.prototype[classMethodName],
@@ -73,11 +73,11 @@ export function registerClassToMeteorMethods(
  */
 function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 	// Wrap methods
-	let methods: Methods = {}
+	const methods: Methods = {}
 	_.each(orgMethods, (m, methodName: string) => {
-		let method = m.wrapped
+		const method = m.wrapped
 		if (method) {
-			methods[methodName] = function(...args: any[]) {
+			methods[methodName] = function (...args: any[]) {
 				const i = runningMethodsId++
 				const methodId = 'm' + i
 

@@ -23,7 +23,12 @@ import {
 	AdLibPanelToolbar,
 } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
-import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
+import {
+	ensureHasTrailingSlash,
+	contextMenuHoldToDisplayTime,
+	UserAgentPointer,
+	USER_AGENT_POINTER_PROPERTY,
+} from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { invalidateAt } from '../../lib/invalidatingTime'
@@ -32,6 +37,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
+import { RundownUtils } from '../../lib/rundown'
 
 interface IState {
 	outputLayers: {
@@ -42,10 +48,8 @@ interface IState {
 	}
 	searchFilter: string | undefined
 	selectedAdLib?: AdLibPieceUi
+	singleClickMode: boolean
 }
-
-const BUTTON_GRID_WIDTH = 1
-const BUTTON_GRID_HEIGHT = 0.61803
 
 export interface IDashboardPanelProps {
 	shouldQueue: boolean
@@ -66,6 +70,8 @@ interface DashboardPositionableElement {
 	width: number
 	height: number
 }
+
+type AdLibPieceUiWithNext = AdLibPieceUi & { isNext: boolean }
 
 export function dashboardElementPosition(el: DashboardPositionableElement): React.CSSProperties {
 	return {
@@ -117,14 +123,17 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			outputLayers: {},
 			sourceLayers: {},
 			searchFilter: undefined,
+			singleClickMode: false,
 		}
 	}
 
-	static getDerivedStateFromProps(props: IAdLibPanelProps, state) {
-		let tOLayers: {
+	static getDerivedStateFromProps(
+		props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>
+	): Partial<IState> | null {
+		const tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
-		let tSLayers: {
+		const tSLayers: {
 			[key: string]: ISourceLayer
 		} = {}
 
@@ -192,11 +201,47 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentDidUpdate(prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps) {
+	componentDidUpdate(prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps, prevState: IState) {
+		const { selectedAdLib } = this.state
+		const { selectedPiece } = this.props
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 		this.usedHotkeys.length = 0
 
+		const newState: Partial<IState> = {}
+
 		this.refreshKeyboardHotkeys()
+		// Synchronize the internal selectedAdlib state with the outer selectedPiece
+		if (
+			selectedAdLib &&
+			selectedAdLib !== prevState.selectedAdLib &&
+			!(
+				selectedPiece &&
+				RundownUtils.isAdLibPieceOrAdLibListItem(selectedPiece) &&
+				selectedPiece?._id === selectedAdLib._id
+			)
+		) {
+			// If the local selectedAdLib is changing, inform the application that the selection has changed
+			// (this will change the inspected AdLib in the inspector)
+			this.props.onSelectPiece && this.props.onSelectPiece(selectedAdLib)
+		} else if (
+			selectedPiece &&
+			selectedPiece !== prevProps.selectedPiece &&
+			RundownUtils.isAdLibPieceOrAdLibListItem(selectedPiece)
+		) {
+			// If the outer selectedPiece is changing, we should check if it's present in this Panel. If it is
+			// we should change our inner selectedAdLib state. If it isn't, we should leave it be, so that it
+			// doesn't affect any selections the user may have made when using "displayTakeButtons".
+			const memberAdLib = DashboardPanelInner.filterOutAdLibs(this.props, this.state).find(
+				(adLib) => adLib._id === selectedPiece._id
+			)
+			if (memberAdLib) {
+				newState.selectedAdLib = memberAdLib
+			}
+		}
+
+		if (Object.keys(newState).length > 0) {
+			this.setState(newState as IState)
+		}
 	}
 
 	componentWillUnmount() {
@@ -207,19 +252,38 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		this.usedHotkeys.length = 0
 	}
 
-	isAdLibOnAir(adLib: AdLibPieceUi) {
+	protected static filterOutAdLibs(
+		props: IAdLibPanelProps & AdLibFetchAndFilterProps,
+		state: IState,
+		uniquenessIds?: Set<string>
+	): AdLibPieceUi[] {
+		return props.rundownBaselineAdLibs
+			.concat(props.uiSegments.map((seg) => seg.pieces).flat())
+			.filter((item) =>
+				matchFilter(item, props.showStyleBase, props.uiSegments, props.filter, state.searchFilter, uniquenessIds)
+			)
+	}
+
+	protected isAdLibOnAir(adLib: AdLibPieceUi) {
 		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
-	isAdLibNext(adLib: AdLibPieceUi) {
-		return isAdLibNext(this.props.nextAdLibIds, this.props.unfinishedTags, this.props.nextTags, adLib)
+	protected findNext(adLibs: AdLibPieceUi[]): AdLibPieceUiWithNext[] {
+		return findNext(
+			this.props.nextAdLibIds,
+			this.props.unfinishedTags,
+			this.props.nextTags,
+			adLibs,
+			!!this.props.filter?.nextInCurrentPart,
+			!!this.props.filter?.oneNextPerSourceLayer
+		)
 	}
 
-	refreshKeyboardHotkeys() {
+	protected refreshKeyboardHotkeys() {
 		if (!this.props.studioMode) return
 		if (!this.props.registerHotkeys) return
 
-		let preventDefault = (e) => {
+		const preventDefault = (e) => {
 			e.preventDefault()
 		}
 
@@ -319,7 +383,21 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
+	protected onToggleOrSelectAdLib = (
+		adlibPiece: AdLibPieceUi,
+		queue: boolean,
+		e: any,
+		mode?: IBlueprintActionTriggerMode
+	) => {
+		const filter = this.props.filter as DashboardLayoutFilter | undefined
+		if (filter?.displayTakeButtons) {
+			this.onSelectAdLib(adlibPiece, e)
+		} else {
+			this.onToggleAdLib(adlibPiece, queue, e, mode)
+		}
+	}
+
+	protected onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 		const { t } = this.props
 
 		queue = queue || this.props.shouldQueue
@@ -347,7 +425,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			return
 		}
 
-		let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
+		const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
 
 		if (queue && sourceLayer && !sourceLayer.isQueueable) {
 			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
@@ -398,8 +476,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
+	protected onToggleSticky = (sourceLayerId: string, e: any) => {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
 				MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId)
@@ -407,7 +485,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
+	protected onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
 		const { t } = this.props
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const playlistId = this.props.playlist._id
@@ -423,17 +501,17 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	onFilterChange = (filter: string) => {
+	protected onFilterChange = (filter: string | undefined) => {
 		this.setState({
 			searchFilter: filter,
 		})
 	}
 
-	onIn = (e: any) => {
+	protected onIn = (e: any) => {
 		const { t } = this.props
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
-			let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
+			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
 					if (piece.isAction && piece.adlibAction) {
@@ -469,25 +547,42 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	onOut = (e: any, outButton?: boolean) => {
-		const { t } = this.props
+	protected onOut = (e: any, outButton?: boolean) => {
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
-			let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
+			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
 			if (sourceLayer && (sourceLayer.clearKeyboardHotkey || outButton)) {
 				this.onClearAllSourceLayers([sourceLayer], e)
 			}
 		}
 	}
 
-	onSelectAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
+	protected onSelectAdLib = (piece: AdLibPieceUi, _e: any) => {
 		this.setState({
 			selectedAdLib: piece,
 		})
 	}
 
+	protected setRef = (ref: HTMLDivElement) => {
+		const _panel = ref
+		if (_panel) {
+			const style = window.getComputedStyle(_panel)
+			// check if a special variable is set through CSS to indicate that we shouldn't expect
+			// double clicks to trigger AdLibs
+			const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
+			const shouldBeSingleClick = !!value.match(UserAgentPointer.NO_POINTER)
+			if (this.state.singleClickMode !== shouldBeSingleClick) {
+				this.setState({
+					singleClickMode: shouldBeSingleClick,
+				})
+			}
+		}
+	}
+
 	render() {
 		const { t } = this.props
+		const uniquenessIds = new Set<string>()
+		const filteredAdLibs = this.findNext(DashboardPanelInner.filterOutAdLibs(this.props, this.state, uniquenessIds))
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
 			if (!this.props.uiSegments || !this.props.playlist) {
@@ -498,64 +593,60 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						className={ClassNames('dashboard-panel', {
 							'dashboard-panel--take': filter.displayTakeButtons,
 						})}
-						style={dashboardElementPosition(filter)}>
+						ref={this.setRef}
+						style={dashboardElementPosition(filter)}
+					>
 						<h4 className="dashboard-panel__header">{this.props.filter.name}</h4>
 						{filter.enableSearch && <AdLibPanelToolbar onFilterChange={this.onFilterChange} />}
 						<div
 							className={ClassNames('dashboard-panel__panel', {
 								'dashboard-panel__panel--horizontal': filter.overflowHorizontally,
-							})}>
-							{this.props.rundownBaselineAdLibs
-								.concat(_.flatten(this.props.uiSegments.map((seg) => seg.pieces)))
-								.filter((item) =>
-									matchFilter(
-										item,
-										this.props.showStyleBase,
-										this.props.uiSegments,
-										this.props.filter,
-										this.state.searchFilter
-									)
-								)
-								.map((adLibPiece: AdLibPieceUi) => {
-									return (
-										<ContextMenuTrigger
-											id="shelf-context-menu"
-											collect={() =>
-												setShelfContextMenuContext({
-													type: ContextType.ADLIB,
-													details: {
-														adLib: adLibPiece,
-														onToggle: this.onToggleAdLib,
-													},
-												})
+							})}
+						>
+							{filteredAdLibs.map((adLibPiece: AdLibPieceUiWithNext) => {
+								return (
+									<ContextMenuTrigger
+										id="shelf-context-menu"
+										collect={() =>
+											setShelfContextMenuContext({
+												type: ContextType.ADLIB,
+												details: {
+													adLib: adLibPiece,
+													onToggle: this.onToggleAdLib,
+												},
+											})
+										}
+										renderTag="span"
+										key={unprotectString(adLibPiece._id)}
+										holdToDisplay={contextMenuHoldToDisplayTime()}
+									>
+										<DashboardPieceButton
+											piece={adLibPiece}
+											studio={this.props.studio}
+											layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
+											outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
+											onToggleAdLib={this.onToggleOrSelectAdLib}
+											onSelectAdLib={this.onSelectAdLib}
+											playlist={this.props.playlist}
+											isOnAir={this.isAdLibOnAir(adLibPiece)}
+											isNext={adLibPiece.isNext}
+											mediaPreviewUrl={
+												this.props.studio
+													? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
+													: ''
 											}
-											renderTag="span"
-											key={unprotectString(adLibPiece._id)}
-											holdToDisplay={contextMenuHoldToDisplayTime()}>
-											<DashboardPieceButton
-												piece={adLibPiece}
-												studio={this.props.studio}
-												layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
-												outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
-												onToggleAdLib={filter.displayTakeButtons ? this.onSelectAdLib : this.onToggleAdLib}
-												playlist={this.props.playlist}
-												isOnAir={this.isAdLibOnAir(adLibPiece)}
-												isNext={this.isAdLibNext(adLibPiece)}
-												mediaPreviewUrl={
-													this.props.studio
-														? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
-														: ''
-												}
-												widthScale={filter.buttonWidthScale}
-												heightScale={filter.buttonHeightScale}
-												displayStyle={filter.displayStyle}
-												showThumbnailsInList={filter.showThumbnailsInList}
-												isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}>
-												{adLibPiece.name}
-											</DashboardPieceButton>
-										</ContextMenuTrigger>
-									)
-								})}
+											widthScale={filter.buttonWidthScale}
+											heightScale={filter.buttonHeightScale}
+											displayStyle={filter.displayStyle}
+											showThumbnailsInList={filter.showThumbnailsInList}
+											toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
+											isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}
+										>
+											{adLibPiece.name}
+										</DashboardPieceButton>
+									</ContextMenuTrigger>
+								)
+							})}
 						</div>
 						{filter.displayTakeButtons && (
 							<div className="dashboard-panel__buttons">
@@ -563,14 +654,16 @@ export class DashboardPanelInner extends MeteorReactComponent<
 									className={ClassNames('dashboard-panel__panel__button')}
 									onClick={(e) => {
 										this.onIn(e)
-									}}>
+									}}
+								>
 									<span className="dashboard-panel__panel__button__label">{t('In')}</span>
 								</div>
 								<div
 									className={ClassNames('dashboard-panel__panel__button')}
 									onClick={(e) => {
 										this.onOut(e, true)
-									}}>
+									}}
+								>
 									<span className="dashboard-panel__panel__button__label">{t('Out')}</span>
 								</div>
 							</div>
@@ -640,7 +733,7 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
 			const piece = pieceInstance.piece
-			let end: number | undefined =
+			const end: number | undefined =
 				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
 					? pieceInstance.userDuration.end
 					: typeof piece.enable.duration === 'number'
@@ -747,18 +840,56 @@ export function isAdLibOnAir(
 
 export function isAdLibNext(
 	nextAdLibIds: IDashboardPanelTrackedProps['nextAdLibIds'],
-	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
 	nextTags: IDashboardPanelTrackedProps['nextTags'],
 	adLib: AdLibPieceUi
 ) {
 	if (
 		nextAdLibIds.includes(adLib._id) ||
-		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => unfinishedTags.includes(tag))) ||
 		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
 	) {
 		return true
 	}
 	return false
+}
+
+export function findNext(
+	nextAdLibIds: IDashboardPanelTrackedProps['nextAdLibIds'],
+	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
+	nextTags: IDashboardPanelTrackedProps['nextTags'],
+	adLibs: AdLibPieceUi[],
+	nextInCurrentPart: boolean,
+	oneNextPerSourceLayer: boolean
+): Array<AdLibPieceUi & { isNext: boolean }> {
+	const nextAdlibs: Set<PieceId> = new Set()
+	const nextAdlibsPerLayer: Map<string, PieceId> = new Map()
+	const checkAndSet = (adLib: AdLibPieceUi) => {
+		if (oneNextPerSourceLayer) {
+			if (nextAdlibsPerLayer.has(adLib.sourceLayerId)) {
+				return
+			} else {
+				nextAdlibsPerLayer.set(adLib.sourceLayerId, adLib._id)
+			}
+		}
+		nextAdlibs.add(adLib._id)
+	}
+	adLibs.forEach((adLib) => {
+		if (isAdLibNext(nextAdLibIds, nextTags, adLib)) {
+			checkAndSet(adLib)
+		}
+	})
+	if (nextInCurrentPart) {
+		adLibs.forEach((adLib) => {
+			if (adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => unfinishedTags.includes(tag))) {
+				checkAndSet(adLib)
+			}
+		})
+	}
+	return adLibs.map((adLib) => {
+		return {
+			...adLib,
+			isNext: nextAdlibs.has(adLib._id),
+		}
+	})
 }
 
 export const DashboardPanel = translateWithTracker<

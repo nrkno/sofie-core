@@ -4,16 +4,16 @@ import * as MOS from 'mos-connection'
 import { Rundowns } from '../../../../lib/collections/Rundowns'
 import { Parts } from '../../../../lib/collections/Parts'
 import { logger } from '../../../logging'
-import { getStudioFromDevice, canBeUpdated, checkAccessAndGetPeripheralDevice } from '../lib'
+import { getStudioFromDevice, canRundownBeUpdated, checkAccessAndGetPeripheralDevice } from '../lib'
 import { handleRemovedRundown, regenerateRundown } from '../rundownInput'
 import { getPartIdFromMosStory, getRundownFromMosRO, parseMosString } from './lib'
 import {
 	handleMosRundownData,
 	handleMosFullStory,
 	handleMosDeleteStory,
-	handleInsertParts,
-	handleSwapStories,
-	handleMoveStories,
+	handleMosInsertParts,
+	handleMosSwapStories,
+	handleMosMoveStories,
 	handleMosRundownMetadata,
 } from './ingest'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
@@ -64,8 +64,7 @@ export namespace MosIntegration {
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
-		rundownId: MOS.MosString128,
-		force?: boolean
+		rundownId: MOS.MosString128
 	) {
 		const transaction = profiler.startTransaction('mosRoDelete', apmNamespace)
 
@@ -110,7 +109,7 @@ export namespace MosIntegration {
 
 		const studio = getStudioFromDevice(peripheralDevice)
 		const rundown = getRundownFromMosRO(studio, status.ID)
-		if (!canBeUpdated(rundown)) return
+		if (!canRundownBeUpdated(rundown, false)) return
 
 		Rundowns.update(rundown._id, {
 			$set: {
@@ -136,7 +135,8 @@ export namespace MosIntegration {
 
 		const studio = getStudioFromDevice(peripheralDevice)
 		const rundown = getRundownFromMosRO(studio, status.RunningOrderId)
-		if (!canBeUpdated(rundown)) return
+		if (!canRundownBeUpdated(rundown, false)) return
+		// TODO ORPHAN include segment in check
 
 		// Save Stories (aka Part ) status into database:
 		const part = Parts.findOne({
@@ -180,11 +180,11 @@ export namespace MosIntegration {
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
-		logger.info(`mosRoStoryInsert after "${Action.StoryID}" Stories: ${Stories}`)
+		logger.info(`mosRoStoryInsert after "${Action.StoryID}" Stories: ${Stories.map((s) => s.ID)}`)
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
-		handleInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, false, Stories)
+		handleMosInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, false, Stories)
 
 		transaction?.end()
 	}
@@ -199,11 +199,11 @@ export namespace MosIntegration {
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
-		logger.info(`mosRoStoryReplace "${Action.StoryID}" Stories: ${Stories}`)
+		logger.info(`mosRoStoryReplace "${Action.StoryID}" Stories: ${Stories.map((s) => s.ID)}`)
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
-		handleInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, true, Stories)
+		handleMosInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, true, Stories)
 
 		transaction?.end()
 	}
@@ -220,7 +220,7 @@ export namespace MosIntegration {
 
 		logger.info(`mosRoStoryMove "${Action.StoryID}" Stories: ${Stories}`)
 
-		handleMoveStories(peripheralDevice, Action.RunningOrderID, Action.StoryID, Stories)
+		handleMosMoveStories(peripheralDevice, Action.RunningOrderID, Action.StoryID, Stories)
 
 		transaction?.end()
 	}
@@ -257,7 +257,7 @@ export namespace MosIntegration {
 
 		logger.info(`mosRoStorySwap "${StoryID0}", "${StoryID1}"`)
 
-		handleSwapStories(peripheralDevice, Action.RunningOrderID, StoryID0, StoryID1)
+		handleMosSwapStories(peripheralDevice, Action.RunningOrderID, StoryID0, StoryID1)
 
 		transaction?.end()
 	}
@@ -277,7 +277,7 @@ export namespace MosIntegration {
 
 		const studio = getStudioFromDevice(peripheralDevice)
 		const rundown = getRundownFromMosRO(studio, Action.ID)
-		if (!canBeUpdated(rundown)) return
+		if (!canRundownBeUpdated(rundown, false)) return
 
 		// Set the ready to air status of a Rundown
 		if (rundown.airStatus !== Action.Status) {
@@ -286,7 +286,7 @@ export namespace MosIntegration {
 					airStatus: Action.Status,
 				},
 			})
-			regenerateRundown(rundown._id)
+			regenerateRundown(studio, rundown.externalId, peripheralDevice)
 		}
 
 		transaction?.end()

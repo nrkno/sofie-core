@@ -19,6 +19,7 @@ import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import { Studio } from '../../../lib/collections/Studios'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -30,10 +31,13 @@ export interface ISourceLayerItemProps {
 	part: PartUi
 	partStartsAt: number
 	partDuration: number
+	partExpectedDuration: number
 	piece: PieceUi
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
+	isPreview: boolean
+	isTooSmallForText: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -46,8 +50,8 @@ export interface ISourceLayerItemProps {
 	scrollLeft: number
 	scrollWidth: number
 	liveLinePadding: number
-	renderToTimeline: (render: JSX.Element | null) => void
 	layerIndex: number
+	studio: Studio | undefined
 }
 interface ISourceLayerItemState {
 	showMiniInspector: boolean
@@ -106,11 +110,11 @@ export const SourceLayerItem = withTranslation()(
 					const piece = this.props.piece
 					const innerPiece = piece.instance.piece
 
-					let inTransitionDuration =
+					const inTransitionDuration =
 						innerPiece.transitions && innerPiece.transitions.inTransition
 							? innerPiece.transitions.inTransition.duration || 0
 							: 0
-					let outTransitionDuration =
+					const outTransitionDuration =
 						innerPiece.transitions && innerPiece.transitions.outTransition
 							? innerPiece.transitions.outTransition.duration || 0
 							: 0
@@ -121,9 +125,10 @@ export const SourceLayerItem = withTranslation()(
 						: this.props.partDuration || this.props.part.renderedDuration || 0
 
 					const widthConstrictedMode =
-						this.state.leftAnchoredWidth > 0 &&
-						this.state.rightAnchoredWidth > 0 &&
-						this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth
+						this.props.isTooSmallForText ||
+						(this.state.leftAnchoredWidth > 0 &&
+							this.state.rightAnchoredWidth > 0 &&
+							this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth)
 
 					const nextIsTouching = !!piece.cropped
 
@@ -143,7 +148,7 @@ export const SourceLayerItem = withTranslation()(
 								this.props.timeScale
 
 							// || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0)
-							let styleObj = {
+							const styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
@@ -181,7 +186,7 @@ export const SourceLayerItem = withTranslation()(
 								(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration) *
 								this.props.timeScale
 
-							let styleObj = {
+							const styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
@@ -217,7 +222,7 @@ export const SourceLayerItem = withTranslation()(
 								(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration) *
 								this.props.timeScale
 
-							let styleObj = {
+							const styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
@@ -242,7 +247,7 @@ export const SourceLayerItem = withTranslation()(
 
 							return styleObj
 						} else {
-							let styleObj = {
+							const styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
@@ -271,7 +276,7 @@ export const SourceLayerItem = withTranslation()(
 					const innerPiece = piece.instance.piece
 
 					// let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
-					let outTransitionDuration =
+					const outTransitionDuration =
 						innerPiece.transitions && innerPiece.transitions.outTransition
 							? innerPiece.transitions.outTransition.duration || 0
 							: 0
@@ -356,11 +361,11 @@ export const SourceLayerItem = withTranslation()(
 			const piece = this.props.piece
 			const innerPiece = piece.instance.piece
 
-			let inTransitionDuration =
+			const inTransitionDuration =
 				innerPiece.transitions && innerPiece.transitions.inTransition
 					? innerPiece.transitions.inTransition.duration || 0
 					: 0
-			let outTransitionDuration =
+			const outTransitionDuration =
 				innerPiece.transitions && innerPiece.transitions.outTransition
 					? innerPiece.transitions.outTransition.duration || 0
 					: 0
@@ -490,7 +495,7 @@ export const SourceLayerItem = withTranslation()(
 			clearTimeout(this.highlightTimeout)
 		}
 
-		componentDidUpdate(prevProps: ISourceLayerItemProps, prevState: ISourceLayerItemState) {
+		componentDidUpdate(prevProps: ISourceLayerItemProps, _prevState: ISourceLayerItemState) {
 			if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
 				const scrollLeftOffset = this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft)
 				const cursorTimePosition = this.state.cursorTimePosition + (this.props.scrollLeft - prevProps.scrollLeft)
@@ -526,7 +531,7 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		itemMouseUp = (e: any) => {
-			let eM = e as MouseEvent
+			const eM = e as MouseEvent
 			if (eM.ctrlKey === true) {
 				eM.preventDefault()
 				eM.stopPropagation()
@@ -650,6 +655,7 @@ export const SourceLayerItem = withTranslation()(
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
 							{...this.props}
 							{...this.state}
+							studioPackageContainers={this.props.studio?.packageContainers}
 						/>
 					)
 
@@ -743,7 +749,8 @@ export const SourceLayerItem = withTranslation()(
 						onMouseMove={this.moveMiniInspector}
 						onMouseEnter={this.toggleMiniInspectorOn}
 						onMouseLeave={this.toggleMiniInspectorOff}
-						style={this.getItemStyle()}>
+						style={this.getItemStyle()}
+					>
 						{this.renderInsideItem(typeClass)}
 						{DEBUG_MODE && (
 							<div className="segment-timeline__debug-info">
@@ -790,7 +797,8 @@ export const SourceLayerItem = withTranslation()(
 						className="segment-timeline__piece"
 						data-obj-id={this.props.piece.instance._id}
 						ref={this.setRef}
-						style={this.getItemStyle()}></div>
+						style={this.getItemStyle()}
+					></div>
 				)
 			}
 		}

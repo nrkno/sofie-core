@@ -1,7 +1,6 @@
 import _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
-import { testInFiber, testInFiberOnly, runAllTimers } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { fixSnapshot } from '../../../../__mocks__/helpers/snapshot'
 import { mockupCollection, resetMockupCollection } from '../../../../__mocks__/helpers/lib'
 import {
@@ -15,25 +14,22 @@ import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import '../api'
 import { Timeline as OrgTimeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
-import { deactivate } from '../../userActions'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { AdLibPieces } from '../../../../lib/collections/AdLibPieces'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import { MethodContext } from '../../../../lib/api/methods'
-import { PartInstances, PartInstanceId } from '../../../../lib/collections/PartInstances'
+import { PartInstances, PartInstanceId, PartInstance } from '../../../../lib/collections/PartInstances'
 import { IngestActions } from '../../ingest/actions'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { protectString } from '../../../../lib/lib'
-import { AsRunLog } from '../../../../lib/collections/AsRunLog'
-import { IBlueprintAsRunLogEventContent } from '@sofie-automation/blueprints-integration'
-import { Random } from 'meteor/random'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import * as lib from '../../../../lib/lib'
 import { ClientAPI } from '../../../../lib/api/client'
 import { ServerRundownAPI } from '../../rundown'
+import { MethodContext } from '../../../../lib/api/methods'
+import { VerifiedRundownPlaylistContentAccess } from '../../lib'
 
 const DEFAULT_CONTEXT: MethodContext = {
 	userId: null,
@@ -49,16 +45,17 @@ const DEFAULT_CONTEXT: MethodContext = {
 	unblock: () => {},
 }
 
+function DEFAULT_ACCESS(playlist: RundownPlaylist): VerifiedRundownPlaylistContentAccess {
+	return { userId: null, organizationId: null, studioId: null, playlist: playlist, cred: {} }
+}
+
 describe('Playout API', () => {
 	let env: DefaultEnvironment
 	let playoutDevice: PeripheralDevice
 	const origGetCurrentTime = lib.getCurrentTime
 
-	function getPeripheralDeviceCommands(playoutDevice: PeripheralDevice) {
-		return PeripheralDeviceCommands.find({ deviceId: playoutDevice._id }, { sort: { time: 1 } }).fetch()
-	}
-	function clearPeripheralDeviceCommands(playoutDevice: PeripheralDevice) {
-		return PeripheralDeviceCommands.remove({ deviceId: playoutDevice._id })
+	function getPeripheralDeviceCommands(device: PeripheralDevice) {
+		return PeripheralDeviceCommands.find({ deviceId: device._id }, { sort: { time: 1 } }).fetch()
 	}
 	function getAllRundownData(rundown: Rundown) {
 		return {
@@ -81,8 +78,8 @@ describe('Playout API', () => {
 	beforeAll(() => {
 		Timeline = mockupCollection(OrgTimeline)
 	})
-	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 		playoutDevice = setupMockPeripheralDevice(
 			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 			PeripheralDeviceAPI.DeviceType.PLAYOUT,
@@ -115,31 +112,28 @@ describe('Playout API', () => {
 			return Rundowns.findOne(rundownId0) as Rundown
 		}
 		const getPlaylist0 = () => {
-			return RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+			const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+			playlist.activationId = playlist.activationId ?? undefined
+			return playlist
 		}
 		const parts = getRundown0().getParts()
 
 		expect(getPlaylist0()).toMatchObject({
-			active: false,
+			activationId: undefined,
 			rehearsal: false,
 		})
 
-		expect(Timeline.insert).not.toHaveBeenCalled()
-		expect(Timeline.upsert).not.toHaveBeenCalled()
-		expect(Timeline.update).not.toHaveBeenCalled()
+		expect(Timeline.bulkWriteAsync).not.toHaveBeenCalled()
 
-		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
+		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
+
+		expect(Timeline.bulkWriteAsync).not.toHaveBeenCalled()
+
 		const orgRundownData = getAllRundownData(getRundown0())
 
 		{
-			expect(() => {
-				ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'), true)
-			}).toThrowError(/not found/gi)
-		}
-
-		{
 			// Prepare and activate:
-			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, playlistId0, false)
+			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, false)
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeFalsy()
@@ -147,27 +141,20 @@ describe('Playout API', () => {
 			expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
 
 			expect(getPlaylist0()).toMatchObject({
-				active: true,
+				activationId: expect.stringMatching(/^randomId/),
 				rehearsal: false,
 				currentPartInstanceId: null,
 				// nextPartInstanceId: parts[0]._id,
 			})
 		}
 
-		expect(Timeline.insert).toHaveBeenCalled()
-		expect(Timeline.upsert).toHaveBeenCalled()
-		expect(Timeline.update).toHaveBeenCalled()
+		expect(Timeline.bulkWriteAsync).toHaveBeenCalled()
+		// expect(Timeline.update).toHaveBeenCalled() - complete replacement of timeline with single object
 		Timeline.mockClear()
 
 		{
-			expect(() => {
-				ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, protectString('fake_id'))
-			}).toThrowError(/not found/gi)
-		}
-
-		{
 			// Take the first Part:
-			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
@@ -177,21 +164,20 @@ describe('Playout API', () => {
 		}
 
 		// expect(Timeline.insert).toHaveBeenCalled() - complete replacement of timeline with single object
-		expect(Timeline.upsert).toHaveBeenCalled()
-		expect(Timeline.update).toHaveBeenCalled()
+		expect(Timeline.bulkWriteAsync).toHaveBeenCalled()
 		Timeline.mockClear()
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 		expect(fixSnapshot(getRundown0())).toMatchSnapshot()
 
 		expect(() => {
-			ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
-		}).toThrowError(/resetRundown can only be run in rehearsal/gi)
+			ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
+		}).toThrowError(/resetRundownPlaylist can only be run in rehearsal!/gi)
 
 		// Deactivate rundown:
-		ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
+		ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 		expect(getPlaylist0()).toMatchObject({
-			active: false,
+			activationId: undefined,
 			currentPartInstanceId: null,
 			nextPartInstanceId: null,
 		})
@@ -201,15 +187,10 @@ describe('Playout API', () => {
 		expect(fixSnapshot(getRundown0())).toMatchSnapshot()
 
 		// expect(Timeline.insert).toHaveBeenCalled() - complete replacement of timeline with single object
-		expect(Timeline.upsert).toHaveBeenCalled()
-		expect(Timeline.update).toHaveBeenCalled()
+		expect(Timeline.bulkWriteAsync).toHaveBeenCalled()
 
 		// lastly: reset rundown
-		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
-
-		expect(() => {
-			ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'))
-		}).toThrowError(/not found/gi)
+		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
 		// Verify that the data is back to as it was before any of the operations:
 		const rundownData = getAllRundownData(getRundown0())
@@ -220,29 +201,32 @@ describe('Playout API', () => {
 		expect(rundownId0).toBeTruthy()
 		expect(playlistId0).toBeTruthy()
 
-		const getRundown0 = () => {
-			return Rundowns.findOne(rundownId0) as Rundown
-		}
+		// const getRundown0 = () => {
+		// 	return Rundowns.findOne(rundownId0) as Rundown
+		// }
 		const getPlaylist0 = () => {
-			return RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+			const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+			playlist.activationId = playlist.activationId ?? undefined
+			return playlist
+		}
+		const getPlaylist1 = () => {
+			const playlist = RundownPlaylists.findOne(playlistId1) as RundownPlaylist
+			playlist.activationId = playlist.activationId ?? undefined
+			return playlist
 		}
 
 		expect(getPlaylist0()).toMatchObject({
-			active: false,
+			activationId: undefined,
 			rehearsal: false,
 		})
 
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
-		expect(() => {
-			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_CONTEXT, protectString('fake_id'))
-		}).toThrowError(/not found/gi)
-
 		// Prepare and activate in rehersal:
-		ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_CONTEXT, playlistId0)
+		ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
 		expect(getPlaylist0()).toMatchObject({
-			active: true,
+			activationId: expect.stringMatching(/^randomId/),
 			rehearsal: true,
 		})
 
@@ -252,12 +236,12 @@ describe('Playout API', () => {
 		})
 
 		expect(() => {
-			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_CONTEXT, playlistId0)
+			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 		}).toThrowError(/cannot be run on an active/i)
 
 		const { playlistId: playlistId1 } = setupDefaultRundownPlaylist(env)
 		expect(() => {
-			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_CONTEXT, playlistId1)
+			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 		}).toThrowError(/only one [\w\s]+ can be active at the same time/i)
 	})
 	testInFiber(
@@ -270,43 +254,43 @@ describe('Playout API', () => {
 			expect(rundownId1).toBeTruthy()
 			expect(playlistId1).toBeTruthy()
 
-			const getRundown0 = () => {
-				return Rundowns.findOne(rundownId0) as Rundown
-			}
+			// const getRundown0 = () => {
+			// 	return Rundowns.findOne(rundownId0) as Rundown
+			// }
 			const getPlaylist0 = () => {
-				return RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+				const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+				playlist.activationId = playlist.activationId ?? undefined
+				return playlist
 			}
-			const getRundown1 = () => {
-				return Rundowns.findOne(rundownId1) as Rundown
-			}
+			// const getRundown1 = () => {
+			// 	return Rundowns.findOne(rundownId1) as Rundown
+			// }
 			const getPlaylist1 = () => {
-				return RundownPlaylists.findOne(playlistId1) as RundownPlaylist
+				const playlist = RundownPlaylists.findOne(playlistId1) as RundownPlaylist
+				playlist.activationId = playlist.activationId ?? undefined
+				return playlist
 			}
 
 			expect(getPlaylist0()).toMatchObject({
-				active: false,
+				activationId: undefined,
 				rehearsal: false,
 			})
 			expect(getPlaylist1()).toMatchObject({
-				active: false,
+				activationId: undefined,
 				rehearsal: false,
 			})
 
 			expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
-			expect(() => {
-				ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'), true)
-			}).toThrowError(/not found/gi)
-
 			// Prepare and activate in rehersal:
-			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0, true)
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, true)
 
 			expect(getPlaylist0()).toMatchObject({
-				active: true,
+				activationId: expect.stringMatching(/^randomId/),
 				rehearsal: true,
 			})
 			expect(getPlaylist1()).toMatchObject({
-				active: false,
+				activationId: undefined,
 			})
 
 			expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(1)
@@ -316,23 +300,19 @@ describe('Playout API', () => {
 
 			{
 				// Take the first Part:
-				ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
+				ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
 				const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 				expect(currentPartInstance).toBeTruthy()
 				expect(nextPartInstance).toBeTruthy()
 			}
 
-			expect(() => {
-				ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'), true)
-			}).toThrowError(/not found/gi)
-
-			ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId1, true)
+			ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1, true)
 			expect(getPlaylist0()).toMatchObject({
-				active: false,
+				activationId: undefined,
 			})
 			expect(getPlaylist1()).toMatchObject({
-				active: true,
+				activationId: expect.stringMatching(/^randomId/),
 				rehearsal: true,
 			})
 
@@ -343,11 +323,11 @@ describe('Playout API', () => {
 
 			// Attempt to take the first Part of inactive playlist0, should throw
 			expect(() => {
-				ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
+				ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 			}).toThrowError(/is not active/gi)
 
 			// Take the first Part of active playlist1:
-			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId1)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
 			expect(
 				getAllPartInstances().filter(
@@ -362,10 +342,10 @@ describe('Playout API', () => {
 				)
 			).toHaveLength(1)
 
-			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId1, true)
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1, true)
 
 			// Take the first Part of active playlist1 again:
-			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId1)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
 			// still should only contain a single taken instance, as rehearsal partInstances should be removed
 			expect(
@@ -381,31 +361,31 @@ describe('Playout API', () => {
 				)
 			).toHaveLength(1)
 
-			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId1, false)
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1, false)
 
 			// Take the first Part of active playlist1 once more:
-			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId1)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
 			// should throw with 402 code, as resetting the rundown when active is forbidden, with default configuration
 			expect(() => {
-				ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId1, false)
+				ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1, false)
 			}).toThrowError(/cannot be run when active/gi)
 
-			ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, playlistId1)
+			ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
-			expect(() => {
-				ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'))
-			}).toThrowError(/not found/gi)
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1, false)
 
-			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId1, false)
-
-			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId1)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
 			// should contain one not-reset taken instance
+			const playlist1 = getPlaylist1()
 			expect(
 				getAllPartInstances().filter(
 					(partInstance) =>
-						partInstance.rundownId === rundownId1 && !partInstance.reset && partInstance.isTaken
+						partInstance.rundownId === rundownId1 &&
+						!partInstance.reset &&
+						partInstance.isTaken &&
+						partInstance.playlistActivationId === playlist1.activationId
 				)
 			).toHaveLength(1)
 		}
@@ -441,18 +421,18 @@ describe('Playout API', () => {
 			expect(rundownId0).toBeTruthy()
 			expect(playlistId0).toBeTruthy()
 
-			const getRundown0 = () => {
-				return Rundowns.findOne(rundownId0) as Rundown
-			}
+			// const getRundown0 = () => {
+			// 	return Rundowns.findOne(rundownId0) as Rundown
+			// }
 			const getPlaylist0 = () => {
 				return RundownPlaylists.findOne(playlistId0) as RundownPlaylist
 			}
 
 			// Prepare and activate in rehersal:
-			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0, true)
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, true)
 
 			expect(getPlaylist0()).toMatchObject({
-				active: true,
+				activationId: expect.stringMatching(/^randomId/),
 				rehearsal: true,
 			})
 
@@ -468,7 +448,7 @@ describe('Playout API', () => {
 
 			{
 				// Take the first Part:
-				ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
+				ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
 				const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 				expect(currentPartInstance).toBeTruthy()
@@ -480,7 +460,13 @@ describe('Playout API', () => {
 
 				// simulate TSR starting part playback
 				const currentPartInstanceId = currentPartInstance?._id || protectString('')
-				ServerPlayoutAPI.onPartPlaybackStarted(DEFAULT_CONTEXT, playlistId0, currentPartInstanceId, now)
+				ServerPlayoutAPI.onPartPlaybackStarted(
+					DEFAULT_CONTEXT,
+					playoutDevice,
+					playlistId0,
+					currentPartInstanceId,
+					now
+				)
 
 				// simulate TSR starting each piece
 				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstanceId)
@@ -503,54 +489,12 @@ describe('Playout API', () => {
 				expect(playlist.startedPlayback).toBe(now)
 
 				// the currentPartInstance timings are set
-				const { currentPartInstance } = playlist.getSelectedPartInstances()
-				expect(currentPartInstance?.timings?.startedPlayback).toBe(now)
+				const currentPartInstance = playlist.getSelectedPartInstances().currentPartInstance as PartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.timings?.startedPlayback).toBe(now)
 
-				// AsRunLog is updated
-				const entry0 = AsRunLog.find({
-					studioId: env.studio._id,
-					rundownId: rundownId0,
-					segmentId: currentPartInstance?.part.segmentId,
-					partInstanceId: currentPartInstance?._id,
-					content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-					content2: 'part',
-				}).fetch()
-				expect(entry0[0]).toMatchObject({
-					timestamp: now,
-				})
-
-				const entry1 = AsRunLog.find({
-					studioId: env.studio._id,
-					rundownId: rundownId0,
-					content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-					content2: 'rundown',
-				}).fetch()
-				expect(entry1[0]).toMatchObject({
-					timestamp: now,
-				})
-
-				// Check that AsRunLog contains piece started playback entries
-				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstance!._id)
-				expect(pieceInstances).toHaveLength(2)
-				pieceInstances.forEach((pieceInstance) => {
-					const entry = AsRunLog.find({
-						studioId: env.studio._id,
-						rundownId: rundownId0,
-						segmentId: currentPartInstance?.part.segmentId,
-						partInstanceId: currentPartInstance?._id,
-						pieceInstanceId: pieceInstance._id,
-						content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-						content2: 'piece',
-					}).fetch()
-					expect(entry).toHaveLength(1)
-					expect(entry[0].timestamp).toBeWithinRange(now, now + TIME_RANDOM)
-				})
-			}
-
-			{
 				// the piece instances timings are set
-				const { currentPartInstance } = getPlaylist0().getSelectedPartInstances()
-				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstance?._id!)
+				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstance._id)
 				expect(pieceInstances).toHaveLength(2)
 				pieceInstances.forEach((pieceInstance) => {
 					expect(pieceInstance.startedPlayback).toBeTruthy()
@@ -561,9 +505,10 @@ describe('Playout API', () => {
 			{
 				const nowBuf = now
 				const { currentPartInstance } = getPlaylist0().getSelectedPartInstances()
-				now += currentPartInstance?.part.expectedDuration! - 500
+				expect(currentPartInstance?.part.expectedDuration).toBeTruthy()
+				now += (currentPartInstance?.part.expectedDuration ?? 0) - 500
 				// try to take just before an autonext
-				const response = ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
+				const response = ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 				expect(response).toBeTruthy()
 				expect((response as ClientAPI.ClientResponseError).message).toMatch(/cannot take shortly before/gi)
 				now = nowBuf
@@ -578,8 +523,15 @@ describe('Playout API', () => {
 				const currentPartInstanceBeforeTakeId = currentPartInstanceBeforeTake?._id
 				const nextPartInstanceBeforeTakeId = nextPartInstanceBeforeTake?._id
 
-				now += currentPartInstanceBeforeTake?.part.expectedDuration!
-				ServerPlayoutAPI.onPartPlaybackStarted(DEFAULT_CONTEXT, playlistId0, nextPartInstanceBeforeTakeId!, now)
+				expect(currentPartInstanceBeforeTake?.part.expectedDuration).toBeTruthy()
+				now += currentPartInstanceBeforeTake?.part.expectedDuration ?? 0
+				ServerPlayoutAPI.onPartPlaybackStarted(
+					DEFAULT_CONTEXT,
+					playoutDevice,
+					playlistId0,
+					nextPartInstanceBeforeTakeId!,
+					now
+				)
 				ServerPlayoutAPI.onPartPlaybackStopped(
 					DEFAULT_CONTEXT,
 					playlistId0,
@@ -612,32 +564,9 @@ describe('Playout API', () => {
 				expect(previousPartInstanceAfterTake).toBeTruthy()
 				expect(previousPartInstanceAfterTake?.timings?.stoppedPlayback).toBe(now)
 
-				// verify AsRunLog is updated
-				const entry = AsRunLog.find({
-					studioId: env.studio._id,
-					rundownId: rundownId0,
-					segmentId: previousPartInstanceAfterTake?.part.segmentId,
-					partInstanceId: previousPartInstanceAfterTake?._id,
-					content: IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
-					content2: 'part',
-				}).fetch()
-				expect(entry[0]).toMatchObject({
-					timestamp: now,
-				})
-
-				// Check that AsRunLog contains piece started playback entries
-				pieceInstances.forEach((pieceInstance) => {
-					const entry = AsRunLog.find({
-						studioId: env.studio._id,
-						rundownId: rundownId0,
-						segmentId: previousPartInstanceAfterTake?.part.segmentId,
-						partInstanceId: previousPartInstanceAfterTake?._id,
-						pieceInstanceId: pieceInstance._id,
-						content: IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
-						content2: 'piece',
-					}).fetch()
-					expect(entry).toHaveLength(1)
-					expect(entry[0].timestamp).toBeWithinRange(now, now + TIME_RANDOM)
+				const pieceInstances2 = getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId!)
+				pieceInstances2.forEach((pieceInstance) => {
+					expect(pieceInstance.stoppedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
 				})
 			}
 		}
@@ -651,23 +580,23 @@ describe('Playout API', () => {
 		expect(rundownId0).toBeTruthy()
 		expect(playlistId0).toBeTruthy()
 
-		const getRundown0 = () => {
-			return Rundowns.findOne(rundownId0) as Rundown
-		}
+		// const getRundown0 = () => {
+		// 	return Rundowns.findOne(rundownId0) as Rundown
+		// }
 		const getPlaylist0 = () => {
 			return RundownPlaylists.findOne(playlistId0) as RundownPlaylist
 		}
 		const parts = getPlaylist0().getAllOrderedParts()
 
 		// Prepare and activate in rehersal:
-		ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0, true)
+		ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, true)
 
 		{
 			// expect first part to be selected as next
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeFalsy()
 			expect(getPlaylist0()).toMatchObject({
-				active: true,
+				activationId: expect.stringMatching(/^randomId/),
 				rehearsal: true,
 			})
 			expect(nextPartInstance?.part._id).toBe(parts[0]._id)
@@ -675,7 +604,7 @@ describe('Playout API', () => {
 
 		{
 			// move horizontally +1
-			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, 1, 0, true)
+			ServerPlayoutAPI.moveNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0, 1, 0)
 			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			// expect second part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[1]._id)
@@ -683,7 +612,7 @@ describe('Playout API', () => {
 
 		{
 			// move horizontally -1
-			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, -1, 0, true)
+			ServerPlayoutAPI.moveNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0, -1, 0)
 			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			// expect first part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[0]._id)
@@ -691,7 +620,7 @@ describe('Playout API', () => {
 
 		{
 			// move vertically +1
-			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, 0, 1, true)
+			ServerPlayoutAPI.moveNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0, 0, 1)
 			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			// expect 3rd part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[2]._id)
@@ -699,7 +628,7 @@ describe('Playout API', () => {
 
 		{
 			// move vertically -1
-			ServerPlayoutAPI.moveNextPart(DEFAULT_CONTEXT, playlistId0, 0, -1, true)
+			ServerPlayoutAPI.moveNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0, 0, -1)
 			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			// expect 1st part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[0]._id)

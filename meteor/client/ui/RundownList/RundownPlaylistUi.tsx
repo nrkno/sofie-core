@@ -1,4 +1,5 @@
-import React, { ReactElement } from 'react'
+import React from 'react'
+import Tooltip from 'rc-tooltip'
 import ClassNames from 'classnames'
 import { withTranslation } from 'react-i18next'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
@@ -14,6 +15,7 @@ import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconName } from '@fortawesome/fontawesome-svg-core'
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons'
+import { LoopingIcon } from '../../lib/ui/icons/looping'
 import { getRundownPlaylistLink } from './util'
 import {
 	DragElementWrapper,
@@ -33,8 +35,10 @@ import {
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownUtils } from '../../lib/rundown'
 import PlaylistRankMethodToggle from './PlaylistRankMethodToggle'
-import JonasFormattedTime from './JonasFormattedTime'
-import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
+import { DisplayFormattedTime } from './DisplayFormattedTime'
+import { getAllowStudio } from '../../lib/localStorage'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
@@ -43,7 +47,6 @@ export interface RundownPlaylistUi extends RundownPlaylist {
 	unsyncedRundowns: Rundown[]
 	studioName: string
 	showStyles: Array<{ id: ShowStyleBaseId; baseName?: string; variantName?: string }>
-	handleRundownDrop: (id: string) => void
 }
 
 export interface IRundownPlaylistUiProps {
@@ -68,7 +71,7 @@ const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
 	drop: (
 		props: IRundownPlaylistUiProps,
 		monitor: DropTargetMonitor,
-		component: any
+		_component: any
 	): IRundownPlaylistUiAction | undefined => {
 		if (monitor.didDrop()) {
 			return
@@ -86,7 +89,7 @@ const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
 	},
 }
 
-const collect: DropTargetCollector<IRundownPlaylistDropTargetProps, IRundownPlaylistUiProps> = function(
+const collect: DropTargetCollector<IRundownPlaylistDropTargetProps, IRundownPlaylistUiProps> = function (
 	connect: DropTargetConnector,
 	monitor: DropTargetMonitor,
 	props: IRundownPlaylistUiProps
@@ -136,39 +139,32 @@ export const RundownPlaylistUi = DropTarget(
 			}
 
 			private handleRundownDrop(rundownId: RundownId): void {
-				const { playlist } = this.props
+				const { playlist, t } = this.props
 				const playlistId = this.props.playlist._id
 				const rundownOrder = this.state.rundownOrder.slice()
 
-				if (
-					playlist.rundowns.findIndex((rundown) => {
-						rundownId === rundown._id
-					}) > -1
-				) {
+				if (playlist.rundowns.findIndex((rundown) => rundownId === rundown._id) > -1) {
 					// finalize order from component state
-					MeteorCall.userAction.moveRundown(
-						'Drag and drop rundown playlist reorder',
-						rundownId,
-						playlistId,
-						rundownOrder
+					doUserAction(t, 'Drag and drop rundown playlist reorder', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
+						MeteorCall.userAction.moveRundown(e, rundownId, playlistId, rundownOrder)
 					)
 				} else {
 					// add rundown to playlist
 					rundownOrder.push(rundownId)
 
-					MeteorCall.userAction.moveRundown(
-						'Drag and drop add rundown to playlist',
-						rundownId,
-						playlistId,
-						rundownOrder
+					doUserAction(t, 'Drag and drop add rundown to playlist', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
+						MeteorCall.userAction.moveRundown(e, rundownId, playlistId, rundownOrder)
 					)
 				}
 			}
 
 			private handleResetRundownOrderClick() {
-				MeteorCall.userAction.restoreRundownOrder(
+				const { t } = this.props
+				doUserAction(
+					t,
 					'User clicked the playlist rundown order toggle to reset',
-					this.props.playlist._id
+					UserAction.RUNDOWN_ORDER_RESET,
+					(e) => MeteorCall.userAction.restoreRundownOrder(e, this.props.playlist._id)
 				)
 			}
 
@@ -220,7 +216,8 @@ export const RundownPlaylistUi = DropTarget(
 						<div className="action-btn expco-item">
 							<div
 								className={ClassNames('action-btn layout-icon', { small: !layout.icon })}
-								style={{ color: layout.iconColor || 'transparent' }}>
+								style={{ color: layout.iconColor || 'transparent' }}
+							>
 								<FontAwesomeIcon icon={(layout.icon as IconName) || 'circle'} />
 							</div>
 							<span className="expco-text">{layout.name}</span>
@@ -242,7 +239,7 @@ export const RundownPlaylistUi = DropTarget(
 			}
 
 			render() {
-				const { playlist, connectDropTarget, t, isActiveDropZone } = this.props
+				const { playlist, connectDropTarget, t, isActiveDropZone, rundownLayouts } = this.props
 
 				if (playlist.rundowns.length === 0) {
 					console.debug(`Playlist ${playlist._id} has no rundowns, aborting render`)
@@ -265,12 +262,14 @@ export const RundownPlaylistUi = DropTarget(
 					return (
 						<>
 							<RundownListItem
-								isActive={playlist.active === true}
+								isActive={!!playlist.activationId}
 								key={unprotectString(playlist.rundowns[0]._id)}
 								rundown={playlist.rundowns[0]}
 								rundownViewUrl={playlistViewURL}
+								rundownLayouts={rundownLayouts}
 								swapRundownOrder={handleRundownSwap}
 								playlistId={playlist._id}
+								isOnlyRundownInPlaylist={true}
 							/>
 							{playbackProgressBar}
 						</>
@@ -282,9 +281,10 @@ export const RundownPlaylistUi = DropTarget(
 
 					return rundown ? (
 						<RundownListItem
-							isActive={playlist.active === true}
+							isActive={!!playlist.activationId}
 							key={unprotectString(rundown._id)}
 							rundown={rundown}
+							rundownLayouts={rundownLayouts}
 							swapRundownOrder={handleRundownSwap}
 							playlistId={playlist._id}
 						/>
@@ -292,8 +292,27 @@ export const RundownPlaylistUi = DropTarget(
 				})
 
 				const expectedDuration =
-					playlist.expectedDuration &&
-					RundownUtils.formatDiffToTimecode(playlist.expectedDuration, false, true, true, false, true)
+					playlist.expectedDuration !== undefined &&
+					(playlist.loop ? (
+						<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+							<span>
+								{t('({{timecode}})', {
+									timecode: RundownUtils.formatDiffToTimecode(
+										playlist.expectedDuration,
+										false,
+										true,
+										true,
+										false,
+										true
+									),
+								})}
+								&nbsp;
+								<LoopingIcon />
+							</span>
+						</Tooltip>
+					) : (
+						RundownUtils.formatDiffToTimecode(playlist.expectedDuration, false, true, true, false, true)
+					))
 
 				const classNames = ClassNames(['rundown-playlist', { droptarget: isActiveDropZone }])
 
@@ -304,7 +323,10 @@ export const RundownPlaylistUi = DropTarget(
 								<h2 className="rundown-playlist__heading">
 									<FontAwesomeIcon icon={faFolderOpen} />
 									<span className="rundown-playlist__heading-text">
-										<Link to={playlistViewURL}>{playlist.name}</Link>
+										<Link to={playlistViewURL}>
+											{playlist.loop && <LoopingIcon />}
+											{playlist.name}
+										</Link>
 									</span>
 								</h2>
 								{getAllowStudio() ? (
@@ -318,17 +340,34 @@ export const RundownPlaylistUi = DropTarget(
 							</span>
 							<span className="rundown-list-item__text">
 								{playlist.expectedStart ? (
-									<JonasFormattedTime timestamp={playlist.expectedStart} t={t} />
+									<DisplayFormattedTime displayTimestamp={playlist.expectedStart} t={t} />
 								) : (
 									<span className="dimmed">{t('Not set')}</span>
 								)}
 							</span>
 							<span className="rundown-list-item__text">
-								{expectedDuration ? expectedDuration : <span className="dimmed">{t('Not set')}</span>}
+								{expectedDuration ? (
+									expectedDuration
+								) : playlist.loop ? (
+									<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+										<LoopingIcon />
+									</Tooltip>
+								) : (
+									<span className="dimmed">{t('Not set')}</span>
+								)}
 							</span>
 							<span className="rundown-list-item__text">
-								<JonasFormattedTime timestamp={playlist.modified} t={t} />
+								<DisplayFormattedTime displayTimestamp={playlist.modified} t={t} />
 							</span>
+							{rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
+								<span className="rundown-list-item__text">
+									<RundownShelfLayoutSelection
+										rundowns={playlist.rundowns}
+										rundownLayouts={rundownLayouts}
+										playlistId={playlist._id}
+									/>
+								</span>
+							)}
 							<span className="rundown-list-item__actions"></span>
 						</header>
 						<ol className="rundown-playlist__rundowns">{rundownComponents}</ol>
@@ -341,7 +380,7 @@ export const RundownPlaylistUi = DropTarget(
 )
 
 function createProgressBarRow(playlist: RundownPlaylistUi): React.ReactElement | null {
-	if (playlist.active && playlist.expectedDuration !== undefined && playlist.startedPlayback) {
+	if (playlist.activationId && playlist.expectedDuration !== undefined && playlist.startedPlayback) {
 		return <ActiveProgressBar rundownPlaylist={playlist} />
 	}
 

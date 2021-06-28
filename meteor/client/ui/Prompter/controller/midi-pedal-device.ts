@@ -2,16 +2,17 @@ import { ControllerAbstract } from './lib'
 import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 import Spline from 'cubic-spline'
 
-import webmidi, { Input, InputEventControlchange, WebMidi } from 'webmidi'
+import webmidi, { Input, InputEventControlchange } from 'webmidi'
 
-const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
+// const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
 
 /**
  * This class handles control of the prompter using
  */
 export class MidiPedalController extends ControllerAbstract {
 	private prompterView: PrompterViewInner
-	private midiInput: Input | undefined
+	private midiInputs: Input[] = []
+	private idleMidiInputs: { [midiId: string]: boolean } = {}
 
 	private rangeRevMin = 0 // pedal "all back" position, the max-reverse-position
 	private rangeNeutralMin = 35 // pedal "back" position where reverse-range transistions to the neutral range
@@ -31,12 +32,12 @@ export class MidiPedalController extends ControllerAbstract {
 		this.prompterView = view
 
 		// assigns params from URL or falls back to the default
-		this.speedMap = view.configOptions.speedMap || this.speedMap
-		this.reverseSpeedMap = view.configOptions.reverseSpeedMap || this.reverseSpeedMap
-		this.rangeRevMin = view.configOptions.rangeRevMin || this.rangeRevMin
-		this.rangeNeutralMin = view.configOptions.rangeNeutralMin || this.rangeNeutralMin
-		this.rangeNeutralMax = view.configOptions.rangeNeutralMax || this.rangeNeutralMax
-		this.rangeFwdMax = view.configOptions.rangeFwdMax || this.rangeFwdMax
+		this.speedMap = view.configOptions.pedal_speedMap || this.speedMap
+		this.reverseSpeedMap = view.configOptions.pedal_reverseSpeedMap || this.reverseSpeedMap
+		this.rangeRevMin = view.configOptions.pedal_rangeRevMin || this.rangeRevMin
+		this.rangeNeutralMin = view.configOptions.pedal_rangeNeutralMin || this.rangeNeutralMin
+		this.rangeNeutralMax = view.configOptions.pedal_rangeNeutralMax || this.rangeNeutralMax
+		this.rangeFwdMax = view.configOptions.pedal_rangeFwdMax || this.rangeFwdMax
 
 		// validate range settings, they need to be in sequence, or the logic will break
 		if (this.rangeNeutralMin <= this.rangeRevMin) {
@@ -76,50 +77,52 @@ export class MidiPedalController extends ControllerAbstract {
 	public destroy() {
 		webmidi.disable()
 	}
-	public onKeyDown(e: KeyboardEvent) {
+	public onKeyDown(_e: KeyboardEvent) {
 		// Nothing
 	}
-	public onKeyUp(e: KeyboardEvent) {
+	public onKeyUp(_e: KeyboardEvent) {
 		// Nothing
 	}
-	public onMouseKeyDown(e: MouseEvent) {
+	public onMouseKeyDown(_e: MouseEvent) {
 		// Nothing
 	}
-	public onMouseKeyUp(e: MouseEvent) {
+	public onMouseKeyUp(_e: MouseEvent) {
 		// Nothing
 	}
-	public onWheel(e: WheelEvent) {
+	public onWheel(_e: WheelEvent) {
 		// Nothing
 	}
 
-	private setupMidiListeners(err: Error) {
+	private setupMidiListeners(err: Error | undefined) {
 		if (err) {
 			console.error('Error enabling WebMIDI', err)
 			return
 		}
 
 		console.log('WebMIDI enabled')
-		webmidi.addListener('connected', (e) => {
-			if (e?.port?.type === 'input') {
-				this.removeMidiInput()
-				this.midiInput = webmidi.inputs[0]
-				this.midiInput.addListener('controlchange', 8, this.onMidiInputCC.bind(this))
-			}
+		webmidi.addListener('connected', () => {
+			this.updateMidiInputs()
 		})
 		webmidi.addListener('disconnected', () => {
-			this.removeMidiInput()
+			this.updateMidiInputs()
 		})
 	}
 
-	private removeMidiInput() {
+	private updateMidiInputs() {
+		// reset all inputs
+		this.midiInputs.forEach((i) => i.removeListener('controlchange', 8, this.onMidiInputCC))
+		this.midiInputs = []
 		this.lastSpeed = 0
-		if (this.midiInput) {
-			this.midiInput.removeListener('controlchange', 8, this.onMidiInputCC)
-			this.midiInput = undefined
-		}
+
+		// re-adds all active inputs and sets up listeners
+		this.midiInputs = webmidi.inputs.filter((i) => {
+			return i.type === 'input' && i.connection === 'open' && i.state === 'connected'
+		})
+
+		this.midiInputs.forEach((i) => i.addListener('controlchange', 8, this.onMidiInputCC))
 	}
 
-	private onMidiInputCC(e: InputEventControlchange) {
+	private onMidiInputCC = (e: InputEventControlchange) => {
 		const { rangeRevMin, rangeNeutralMin, rangeNeutralMax, rangeFwdMax } = this
 		let inputValue = e.value || 0
 
@@ -132,6 +135,12 @@ export class MidiPedalController extends ControllerAbstract {
 			this.lastSpeed = Math.round(this.reverseSpeedSpline.at(inputValue)) * -1
 		} else if (inputValue >= rangeNeutralMin && inputValue <= rangeNeutralMax) {
 			// 2) we're in the neutral zone
+
+			// check if the input is already idle, ignore successive idle commands
+			if (this.idleMidiInputs[e?.target?.id] === true) {
+				return
+			}
+
 			this.lastSpeed = 0
 		} else if (inputValue >= rangeNeutralMax && inputValue <= rangeFwdMax) {
 			// 3) Use the speed spline to find the expected speed at this point
@@ -140,6 +149,18 @@ export class MidiPedalController extends ControllerAbstract {
 			// 4) we should never be able to hit this due to validation above
 			console.error(`Illegal input value ${inputValue}`)
 			return
+		}
+
+		// update idle status for this input
+		if (this.lastSpeed === 0) {
+			// add input as idle
+			this.idleMidiInputs[e?.target?.id] = true
+		} else if (this.idleMidiInputs[e?.target?.id]) {
+			// reset the idle state
+
+			// the logic fails if you have two non-idle inputs at the same time
+			// we assume that only one pedal i sending non-idle data at the time
+			delete this.idleMidiInputs[e?.target?.id]
 		}
 
 		this.updateScrollPosition()

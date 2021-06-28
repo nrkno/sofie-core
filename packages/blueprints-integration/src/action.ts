@@ -1,5 +1,8 @@
+import { ExpectedPackage, ListenToPackageUpdate } from './package'
 import { ConfigManifestEntry } from './config'
 import { SomeContent } from './content'
+import { ITranslatableMessage } from './translations'
+import { ExpectedPlayoutItemGeneric } from './rundown'
 
 export interface ActionUserData {
 	[key: string]: any
@@ -16,19 +19,21 @@ export enum ActionExecuteAfterChanged {
 
 export interface IBlueprintActionManifestDisplay {
 	/** A label to be displayed to the user */
-	label: string
+	label: ITranslatableMessage
 	/** An optional, longer description that will not be immediately visible to the user */
-	description?: string
+	description?: ITranslatableMessage
 	_rank?: number
 
 	/** This is the label to be shown in the inspector for "Execute Action" */
-	triggerLabel?: string
+	triggerLabel?: ITranslatableMessage
 
 	tags?: string[]
 	/** Piece tags to use to determine if action is currently active */
 	currentPieceTags?: string[]
 	/** Piece tags to use to determine if action is set as next */
 	nextPieceTags?: string[]
+	/** String that can be used to identify adlibs that are equivalent to each other */
+	uniquenessId?: string
 }
 
 export interface IBlueprintActionManifestDisplayContent extends IBlueprintActionManifestDisplay {
@@ -37,7 +42,7 @@ export interface IBlueprintActionManifestDisplayContent extends IBlueprintAction
 	/** Layer output this piece belongs to */
 	outputLayerId: string
 	/** Description used to produce the thumbnail, sourceDuration, etc. information for the adlib */
-	content?: Omit<SomeContent, 'timelineObjects'>
+	content: SomeContent
 }
 
 export interface IBlueprintActionTriggerMode {
@@ -47,9 +52,9 @@ export interface IBlueprintActionTriggerMode {
 	display: {
 		_rank: number
 		/** A label to be displayed to the user */
-		label: string
+		label: ITranslatableMessage
 		/** An optional, longer description that will not be immediately visible to the user */
-		description?: string
+		description?: ITranslatableMessage
 	}
 }
 
@@ -75,4 +80,14 @@ export interface IBlueprintActionManifest {
 
 	/** Optional ways of executing this action. The default option is computed from the display properties */
 	triggerModes?: IBlueprintActionTriggerMode[]
+
+	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
+	 * @deprecated replaced by .expectedPackages
+	 */
+	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
+	/**
+	 * An array of which Packages this Action uses. This is used by a Package Manager to ensure that the Package is in place for playout.
+	 */
+	expectedPackages?: ExpectedPackage.Any[]
+	listenToPackageInfoUpdates?: ListenToPackageUpdate[]
 }

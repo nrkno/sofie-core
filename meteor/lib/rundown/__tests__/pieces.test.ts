@@ -42,13 +42,14 @@ describe('Pieces', () => {
 			layer: 'some-layer',
 			metaData: {
 				pieceId: 'randomId9000',
+				isPieceTimeline: true,
 			},
 			objectType: 'rundown',
 			pieceInstanceId: 'randomId9000',
 			partInstanceId: 'randomId9002',
 			priority: 123,
 		}
-		const partGroup = ({ id: getRandomId() } as any) as TimelineObjRundown
+		const partGroup = { id: getRandomId() } as any as TimelineObjRundown
 
 		test('Basic piece', () => {
 			const res = createPieceGroupAndCap(simplePieceInstance)
@@ -155,6 +156,9 @@ describe('Pieces', () => {
 						layer: '',
 						objectType: 'rundown',
 						partInstanceId: 'randomId9002',
+						metaData: {
+							isPieceTimeline: true,
+						},
 					},
 				])
 				expect(res.pieceGroup).toStrictEqual({
@@ -201,6 +205,9 @@ describe('Pieces', () => {
 					layer: '',
 					objectType: 'rundown',
 					partInstanceId: 'randomId9002',
+					metaData: {
+						isPieceTimeline: true,
+					},
 				},
 				{
 					children: [],
@@ -212,6 +219,9 @@ describe('Pieces', () => {
 					layer: '',
 					objectType: 'rundown',
 					partInstanceId: 'randomId9002',
+					metaData: {
+						isPieceTimeline: true,
+					},
 				},
 			])
 			expect(res.pieceGroup).toStrictEqual({
@@ -238,6 +248,9 @@ describe('Pieces', () => {
 					layer: '',
 					objectType: 'rundown',
 					partInstanceId: 'randomId9002',
+					metaData: {
+						isPieceTimeline: true,
+					},
 				},
 			])
 			expect(res.pieceGroup).toStrictEqual({
@@ -267,6 +280,9 @@ describe('Pieces', () => {
 					layer: '',
 					objectType: 'rundown',
 					partInstanceId: 'randomId9002',
+					metaData: {
+						isPieceTimeline: true,
+					},
 				},
 				{
 					children: [],
@@ -278,6 +294,9 @@ describe('Pieces', () => {
 					layer: '',
 					objectType: 'rundown',
 					partInstanceId: 'randomId9002',
+					metaData: {
+						isPieceTimeline: true,
+					},
 				},
 			])
 			expect(res.pieceGroup).toStrictEqual({
@@ -307,6 +326,9 @@ describe('Pieces', () => {
 					layer: '',
 					objectType: 'rundown',
 					partInstanceId: 'randomId9002',
+					metaData: {
+						isPieceTimeline: true,
+					},
 				},
 			])
 			expect(res.pieceGroup).toStrictEqual({

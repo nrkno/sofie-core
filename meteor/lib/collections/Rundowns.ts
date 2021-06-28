@@ -1,38 +1,19 @@
 import * as _ from 'underscore'
-import {
-	Time,
-	applyClassToDocument,
-	getCurrentTime,
-	registerCollection,
-	asyncCollectionFindFetch,
-	ProtectedString,
-	ProtectId,
-	ProtectedStringProperties,
-} from '../lib'
+import { Time, applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
-import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
-import { Studios, Studio, StudioId } from './Studios'
-import { Pieces } from './Pieces'
+import { FindOptions, MongoQuery } from '../typings/meteor'
+import { StudioId } from './Studios'
 import { Meteor } from 'meteor/meteor'
-import { AdLibPieces, AdLibPiece } from './AdLibPieces'
-import { RundownBaselineObjs } from './RundownBaselineObjs'
-import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from './RundownBaselineAdLibPieces'
 import { IBlueprintRundownDB } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariantId, ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
-import { IngestDataCache } from './IngestDataCache'
-import { ExpectedMediaItems } from './ExpectedMediaItems'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownPlaylists'
 import { createMongoCollection } from './lib'
-import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
 import { PartInstances, PartInstance, DBPartInstance } from './PartInstances'
-import { PieceInstances } from './PieceInstances'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { OrganizationId } from './Organization'
-import { AdLibActions } from './AdLibActions'
-import { RundownBaselineAdLibActions } from './RundownBaselineAdLibActions'
 import { registerIndex } from '../database'
 
 export enum RundownHoldState {
@@ -64,7 +45,7 @@ export interface DBRundown
 	/** The ShowStyleBase this Rundown uses (its the parent of the showStyleVariant) */
 	showStyleBaseId: ShowStyleBaseId
 	/** The peripheral device the rundown originates from */
-	peripheralDeviceId: PeripheralDeviceId
+	peripheralDeviceId?: PeripheralDeviceId
 	restoredFromSnapshotId?: RundownId
 	created: Time
 	modified: Time
@@ -75,19 +56,11 @@ export interface DBRundown
 	status?: string
 	// There should be something like a Owner user here somewhere?
 
-	/** Actual time of playback starting */
-	startedPlayback?: Time
-
 	/** Is the rundown in an unsynced (has been unpublished from ENPS) state? */
-	unsynced?: boolean
-	/** Timestamp of when rundown was unsynced */
-	unsyncedTime?: Time
+	orphaned?: 'deleted' | 'from-snapshot'
 
 	/** Last sent storyStatus to ingestDevice (MOS) */
 	notifiedCurrentPlayingPartExternalId?: string
-
-	/** What the source of the data was */
-	dataSource: string
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
 	notes?: Array<RundownNote>
@@ -113,27 +86,22 @@ export class Rundown implements DBRundown {
 	public description?: string
 	public expectedStart?: Time
 	public expectedDuration?: number
-	public metaData?: {
-		[key: string]: any
-	}
+	public metaData?: unknown
 	// From IBlueprintRundownDB:
 	public _id: RundownId
 	public showStyleVariantId: ShowStyleVariantId
 	// From DBRundown:
 	public studioId: StudioId
 	public showStyleBaseId: ShowStyleBaseId
-	public peripheralDeviceId: PeripheralDeviceId
+	public peripheralDeviceId?: PeripheralDeviceId
 	public restoredFromSnapshotId?: RundownId
 	public created: Time
 	public modified: Time
 	public importVersions: RundownImportVersions
 	public status?: string
 	public airStatus?: string
-	public unsynced?: boolean
-	public unsyncedTime?: Time
-	public startedPlayback?: Time
+	public orphaned?: 'deleted'
 	public notifiedCurrentPlayingPartExternalId?: string
-	public dataSource: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
 	public externalNRCSName: string
@@ -141,43 +109,28 @@ export class Rundown implements DBRundown {
 	public playlistIdIsSetInSofie?: boolean
 	public _rank: number
 	public baselineModifyHash?: string
-	_: any
 
 	constructor(document: DBRundown) {
-		for (let [key, value] of Object.entries(document)) {
+		for (const [key, value] of Object.entries(document)) {
 			this[key] = value
 		}
 	}
 	getRundownPlaylist(): RundownPlaylist {
 		if (!this.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
-		let pls = RundownPlaylists.findOne(this.playlistId)
+		const pls = RundownPlaylists.findOne(this.playlistId)
 		if (pls) {
 			return pls
 		} else throw new Meteor.Error(404, `Rundown Playlist "${this.playlistId}" not found!`)
 	}
-	// getShowStyleCompound(): ShowStyleCompound {
-	// 	if (!this.showStyleVariantId) throw new Meteor.Error(500, 'Rundown has no show style attached!')
-	// 	let ss = getShowStyleCompound(this.showStyleVariantId)
-	// 	if (ss) {
-	// 		return ss
-	// 	} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
-	// }
 	getShowStyleVariant(): ShowStyleVariant {
-		let showStyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
+		const showStyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
 		if (!showStyleVariant) throw new Meteor.Error(404, `ShowStyleVariant "${this.showStyleVariantId}" not found!`)
 		return showStyleVariant
 	}
 	getShowStyleBase(): ShowStyleBase {
-		let showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
+		const showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
 		return showStyleBase
-	}
-	getStudio(): Studio {
-		if (!this.studioId) throw new Meteor.Error(500, 'Rundown is not in a studio!')
-		let studio = Studios.findOne(this.studioId)
-		if (studio) {
-			return studio
-		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
 	getSegments(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBSegment>): Segment[] {
 		selector = selector || {}
@@ -220,49 +173,26 @@ export class Rundown implements DBRundown {
 		}
 		return parts
 	}
-	/**
-	 * Return ordered lists of all Segments and Parts in the rundown
-	 */
-	async getSegmentsAndParts(): Promise<{ segments: Segment[]; parts: Part[] }> {
-		const pSegments = asyncCollectionFindFetch(
-			Segments,
+	/** Synchronous version of getSegmentsAndParts, to be used client-side */
+	getSegmentsAndPartsSync(): { segments: Segment[]; parts: Part[] } {
+		const segments = Segments.find(
 			{
 				rundownId: this._id,
 			},
 			{ sort: { _rank: 1 } }
-		)
+		).fetch()
 
-		const pParts = asyncCollectionFindFetch(
-			Parts,
+		const parts = Parts.find(
 			{
 				rundownId: this._id,
 			},
 			{ sort: { _rank: 1 } }
-		)
+		).fetch()
 
-		const segments = await pSegments
 		return {
 			segments: segments,
-			parts: RundownPlaylist._sortPartsInner(await pParts, segments),
+			parts: RundownPlaylist._sortPartsInner(parts, segments),
 		}
-	}
-	getGlobalAdLibPieces(selector?: MongoQuery<AdLibPiece>, options?: FindOptions<RundownBaselineAdLibItem>) {
-		selector = selector || {}
-		options = options || {}
-		return RundownBaselineAdLibPieces.find(
-			_.extend(
-				{
-					rundownId: this._id,
-				},
-				selector
-			),
-			_.extend(
-				{
-					sort: { _rank: 1 },
-				},
-				options
-			)
-		).fetch()
 	}
 	getAllPartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<DBPartInstance>) {
 		selector = selector || {}
@@ -282,58 +212,10 @@ export class Rundown implements DBRundown {
 			)
 		).fetch()
 	}
-	getActivePartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<DBPartInstance>) {
-		const newSelector = {
-			...selector,
-			reset: { $ne: true },
-		}
-		return this.getAllPartInstances(newSelector, options)
-	}
-	removeTOBEREMOVED() {
-		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
-		Rundowns.remove(this._id)
-		if (this.playlistId) {
-			// Check if any other members of the playlist are left
-			if (
-				Rundowns.find({
-					playlistId: this.playlistId,
-				}).count() === 0
-			) {
-				RundownPlaylists.remove(this.playlistId)
-			}
-		}
-		Segments.remove({ rundownId: this._id })
-		Parts.remove({ rundownId: this._id })
-		PartInstances.remove({ rundownId: this._id })
-		Pieces.remove({ rundownId: this._id })
-		PieceInstances.remove({ rundownId: this._id })
-		AdLibPieces.remove({ rundownId: this._id })
-		AdLibActions.remove({ rundownId: this._id })
-		RundownBaselineObjs.remove({ rundownId: this._id })
-		RundownBaselineAdLibPieces.remove({ rundownId: this._id })
-		RundownBaselineAdLibActions.remove({ rundownId: this._id })
-		IngestDataCache.remove({ rundownId: this._id })
-		ExpectedMediaItems.remove({ rundownId: this._id })
-		ExpectedPlayoutItems.remove({ rundownId: this._id })
-	}
-	touch() {
-		if (getCurrentTime() - this.modified > 3600 * 1000) {
-			const m = getCurrentTime()
-			this.modified = m
-			Rundowns.update(this._id, { $set: { modified: m } })
-		}
-	}
-	appendNote(note: RundownNote): void {
-		Rundowns.update(this._id, {
-			$push: {
-				notes: note,
-			},
-		})
-	}
 }
 
 // export const Rundowns = createMongoCollection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
-export const Rundowns: TransformedCollection<Rundown, DBRundown> = createMongoCollection<Rundown>('rundowns', {
+export const Rundowns = createMongoCollection<Rundown, DBRundown>('rundowns', {
 	transform: (doc) => applyClassToDocument(Rundown, doc),
 })
 registerCollection('Rundowns', Rundowns)

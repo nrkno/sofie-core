@@ -2,8 +2,6 @@ import * as React from 'react'
 import { PieceGeneric } from '../../../../lib/collections/Pieces'
 import { SplitsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 
-// @todo: use colours from the scss
-// @todo: split can use any source (rather than cam + live)
 export default class SplitInputIcon extends React.Component<{
 	abbreviation?: string
 	piece?: PieceGeneric
@@ -11,7 +9,7 @@ export default class SplitInputIcon extends React.Component<{
 }> {
 	getCameraLabel(piece: PieceGeneric | undefined) {
 		if (piece && piece.content) {
-			let c = piece.content as SplitsContent
+			const c = piece.content as SplitsContent
 			const camera = c.boxSourceConfiguration.find((i) => i.type === SourceLayerType.CAMERA)
 			if (camera && camera.studioLabel) {
 				const label = camera.studioLabel.match(/([a-zA-Z]+)?(\d+)/)
@@ -45,8 +43,8 @@ export default class SplitInputIcon extends React.Component<{
 
 	getLeftSourceType(piece: PieceGeneric | undefined): string {
 		if (piece && piece.content) {
-			let c = piece.content as SplitsContent
-			const left = (c.boxSourceConfiguration[0] || {}).type || SourceLayerType.CAMERA
+			const c = piece.content as SplitsContent
+			const left = (c.boxSourceConfiguration && c.boxSourceConfiguration[0])?.type || SourceLayerType.CAMERA
 			return this.getSourceType(left)
 		}
 		return 'camera'
@@ -54,8 +52,8 @@ export default class SplitInputIcon extends React.Component<{
 
 	getRightSourceType(piece: PieceGeneric | undefined): string {
 		if (piece && piece.content) {
-			let c = piece.content as SplitsContent
-			const right = (c.boxSourceConfiguration[1] || {}).type || SourceLayerType.REMOTE
+			const c = piece.content as SplitsContent
+			const right = (c.boxSourceConfiguration && c.boxSourceConfiguration[1])?.type || SourceLayerType.REMOTE
 			const sourceType = this.getSourceType(right)
 			return sourceType + (this.getLeftSourceType(piece) === sourceType ? ' second' : '')
 		}
@@ -69,7 +67,8 @@ export default class SplitInputIcon extends React.Component<{
 				version="1.1"
 				viewBox="0 0 126.5 89"
 				xmlns="http://www.w3.org/2000/svg"
-				preserveAspectRatio="none">
+				preserveAspectRatio="none"
+			>
 				<rect width="126.5" height="44.5" className={this.getLeftSourceType(this.props.piece)} />
 				<rect width="126.5" height="44.5" y="44.5" className={this.getRightSourceType(this.props.piece)} />
 				{!this.props.hideLabel && (
@@ -87,13 +86,16 @@ export default class SplitInputIcon extends React.Component<{
 							wordSpacing: '0px',
 							textShadow: '0 2px 9px rgba(0, 0, 0, 0.5)',
 						}}
-						xmlSpace="preserve">
+						xmlSpace="preserve"
+						className="label"
+					>
 						<tspan
 							x="63.25"
 							y="71.513954"
 							textLength="106.5"
 							lengthAdjust="spacingAndGlyphs"
-							style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 100 }}>
+							style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 100 }}
+						>
 							{this.getCameraLabel(this.props.piece)}
 						</tspan>
 					</text>

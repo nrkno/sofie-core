@@ -124,7 +124,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 			reader.readAsText(file)
 		}
 		restoreStoredSnapshot = (snapshotId) => {
-			let snapshot = Snapshots.findOne(snapshotId)
+			const snapshot = Snapshots.findOne(snapshotId)
 			if (snapshot) {
 				doModalDialog({
 					title: 'Restore Snapshot',
@@ -201,7 +201,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 			})
 		}
 		removeStoredSnapshot = (snapshotId: SnapshotId) => {
-			let snapshot = Snapshots.findOne(snapshotId)
+			const snapshot = Snapshots.findOne(snapshotId)
 			if (snapshot) {
 				doModalDialog({
 					title: 'Remove Snapshot',
@@ -244,7 +244,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 										className="btn btn-primary"
 										onClick={() => {
 											this.takeSystemSnapshot(null)
-										}}>
+										}}
+									>
 										{t('Take a Full System Snapshot')}
 									</button>
 								</div>
@@ -261,7 +262,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 														className="btn btn-primary"
 														onClick={() => {
 															this.takeSystemSnapshot(studio._id)
-														}}>
+														}}
+													>
 														{t('Take a Snapshot for studio "{{studioName}}" only', { studioName: studio.name })}
 													</button>
 												</div>
@@ -277,7 +279,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 								accept="application/json,.json"
 								className="btn btn-secondary"
 								onChange={(e) => this.onUploadFile(e)}
-								key={this.state.uploadFileKey}>
+								key={this.state.uploadFileKey}
+							>
 								<FontAwesomeIcon icon={faUpload} />
 								<span>{t('Upload Snapshot')}</span>
 							</UploadButton>
@@ -301,13 +304,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 														className="btn mod mhm"
 														onClick={() => {
 															this.restoreStoredSnapshot(snapshot._id)
-														}}>
+														}}
+													>
 														{t('Restore')}
 													</button>
 												</td>
 												<td>{snapshot.type}</td>
 												<td>
-													<a href={`/snapshot/retrieve/${snapshot._id}`} target="_blank">
+													<a href={`/snapshot/retrieve/${snapshot._id}`} target="_blank" rel="noreferrer">
 														{snapshot.name}
 													</a>
 												</td>
@@ -315,12 +319,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 													{this.state.editSnapshotId === snapshot._id ? (
 														[
 															<EditAttribute
+																key={0}
 																collection={Snapshots}
 																obj={snapshot}
 																attribute="comment"
 																type="multiline"
 															/>,
-															<button className="action-btn" onClick={() => this.editSnapshot(snapshot._id)}>
+															<button key={1} className="action-btn" onClick={() => this.editSnapshot(snapshot._id)}>
 																<FontAwesomeIcon icon={faWindowClose} />
 															</button>,
 														]
@@ -330,7 +335,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 															onClick={(e) => {
 																e.preventDefault()
 																this.editSnapshot(snapshot._id)
-															}}>
+															}}
+														>
 															<span className="text-s vsubtle">{multilineText(snapshot.comment)}</span>
 														</a>
 													)}
@@ -341,7 +347,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 															className="btn mod mhm btn-secondary"
 															onClick={() => {
 																this.removeStoredSnapshot(snapshot._id)
-															}}>
+															}}
+														>
 															{t('Remove')}
 														</button>
 													</td>
@@ -357,7 +364,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 									onClick={(e) => {
 										e.preventDefault()
 										this.toggleRemoveView()
-									}}>
+									}}
+								>
 									{t('Show "Remove snapshots"-buttons')}
 								</a>
 							</div>

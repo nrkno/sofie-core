@@ -9,6 +9,10 @@
  * options. A table type is rendered as an actual table in core, where the rows
  * are instances of a certain type or are all the same. Manifests entries can
  * describe some properties to be rendered inside this table
+ *
+ * IMPORTANT - any updates done to this file should also be changed in
+ * @tv-automation/server-core-integration, such that the gateways can actually
+ * implement it in the manifests.
  */
 
 export interface DeviceConfigManifest {
@@ -21,6 +25,10 @@ export interface DeviceConfigManifest {
 	 * getting an authentication token go in here
 	 */
 	deviceOAuthFlow?: DeviceOAuthFlow
+	/**
+	 * A description of the layer mapping config fields
+	 */
+	layerMappings?: MappingsManifest
 }
 
 export interface DeviceOAuthFlow {
@@ -34,6 +42,7 @@ export enum ConfigManifestEntryType {
 	STRING = 'string',
 	MULTILINE_STRING = 'multiline_string',
 	BOOLEAN = 'boolean',
+	/** @deprecated use INT/FLOAT instead */
 	NUMBER = 'float',
 	FLOAT = 'float',
 	INT = 'int',
@@ -42,20 +51,39 @@ export enum ConfigManifestEntryType {
 	ENUM = 'enum',
 }
 
-export type ConfigManifestEntry = ConfigManifestEntryDefault | TableConfigManifestEntry | ConfigManifestEnumEntry
+export type ConfigManifestEntry =
+	| ConfigManifestEntryDefault
+	| TableConfigManifestEntry
+	| ConfigManifestEnumEntry
+	| ConfigManifestIntEntry
+	| ConfigManifestFloatEntry
 export interface ConfigManifestEntryBase {
 	id: string
 	name: string
 	type: ConfigManifestEntryType
 	values?: any // for enum
 	placeholder?: string
+	hint?: string
 }
 export interface ConfigManifestEnumEntry extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.ENUM
 	values: any // for enum
 }
 export interface ConfigManifestEntryDefault extends ConfigManifestEntryBase {
-	type: Exclude<ConfigManifestEntryType, ConfigManifestEntryType.ENUM>
+	type: Exclude<
+		ConfigManifestEntryType,
+		ConfigManifestEntryType.ENUM | ConfigManifestEntryType.INT | ConfigManifestEntryType.FLOAT
+	>
+}
+export interface ConfigManifestIntEntry extends ConfigManifestEntryBase {
+	type: ConfigManifestEntryType.INT
+	/** Zero-based values will be stored in the database (and reported to blueprints) as values starting from 0, however,
+	 * 	when rendered in settings pages they will appear as value + 1
+	 */
+	zeroBased?: boolean
+}
+export interface ConfigManifestFloatEntry extends ConfigManifestEntryBase {
+	type: ConfigManifestEntryType.FLOAT
 }
 export interface ConfigManifestEnumEntry extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.ENUM
@@ -83,3 +111,13 @@ export interface TableConfigManifestEntry extends ConfigManifestEntryBase {
 	/** Only one type means that the type option will not be present */
 	config: { [type: string]: TableEntryConfigManifestEntry[] }
 }
+
+export type MappingsManifest = Record<string, MappingManifestEntry[]>
+
+export interface MappingManifestEntryProps {
+	optional?: boolean
+	includeInSummary?: boolean
+}
+
+export type MappingManifestEntry = MappingManifestEntryProps &
+	(ConfigManifestEntryDefault | ConfigManifestEnumEntry | ConfigManifestIntEntry | ConfigManifestFloatEntry)

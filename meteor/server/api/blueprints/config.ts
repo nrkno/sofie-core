@@ -11,18 +11,19 @@ import {
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
-	getShowStyleCompound,
 	ShowStyleVariantId,
 	ShowStyleCompound,
 	ShowStyleVariant,
-	createShowStyleCompound,
 	ShowStyleVariants,
 } from '../../../lib/collections/ShowStyleVariants'
 import { protectString, objectPathGet, objectPathSet } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './cache'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { BlueprintId, Blueprints } from '../../../lib/collections/Blueprints'
+import { CommonContext } from './context'
+import { ReadonlyDeep } from 'type-fest'
+import { getShowStyleCompound } from '../showStyles'
 
 /**
  * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.
@@ -35,33 +36,36 @@ export namespace ConfigRef {
 	export function getShowStyleConfigRef(showStyleVariantId: ShowStyleVariantId, configKey: string): string {
 		return '${showStyle.' + showStyleVariantId + '.' + configKey + '}'
 	}
-	export function retrieveRefs(
+	export async function retrieveRefs(
 		stringWithReferences: string,
 		modifier?: (str: string) => string,
 		bailOnError?: boolean
-	): string {
+	): Promise<string> {
 		if (!stringWithReferences) return stringWithReferences
 
 		const refs = stringWithReferences.match(/\$\{[^}]+\}/g) || []
-		_.each(refs, (ref) => {
+		for (const ref of refs) {
 			if (ref) {
-				let value = retrieveRef(ref, bailOnError) + ''
+				let value = (await retrieveRef(ref, bailOnError)) + ''
 				if (value) {
 					if (modifier) value = modifier(value)
 					stringWithReferences = stringWithReferences.replace(ref, value)
 				}
 			}
-		})
+		}
 		return stringWithReferences
 	}
-	function retrieveRef(reference: string, bailOnError?: boolean): ConfigItemValue | string | undefined {
+	async function retrieveRef(
+		reference: string,
+		bailOnError?: boolean
+	): Promise<ConfigItemValue | string | undefined> {
 		if (!reference) return undefined
-		let m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
+		const m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
 		if (m) {
 			if (m[1] === 'studio' && _.isString(m[2]) && _.isString(m[3])) {
 				const studioId: StudioId = protectString(m[2])
 				const configId = m[3]
-				const studio = Studios.findOne(studioId)
+				const studio = await Studios.findOneAsync(studioId)
 				if (studio) {
 					return objectPathGet(studio.blueprintConfig, configId)
 				} else if (bailOnError)
@@ -69,7 +73,7 @@ export namespace ConfigRef {
 			} else if (m[1] === 'showStyle' && _.isString(m[2]) && _.isString(m[3])) {
 				const showStyleVariantId = protectString<ShowStyleVariantId>(m[2])
 				const configId = m[3]
-				const showStyleCompound = getShowStyleCompound(showStyleVariantId)
+				const showStyleCompound = await getShowStyleCompound(showStyleVariantId)
 				if (showStyleCompound) {
 					return objectPathGet(showStyleCompound.blueprintConfig, configId)
 				} else if (bailOnError)
@@ -83,7 +87,7 @@ export namespace ConfigRef {
 	}
 }
 
-export function preprocessStudioConfig(studio: Studio, blueprint?: StudioBlueprintManifest) {
+export function preprocessStudioConfig(studio: ReadonlyDeep<Studio>, blueprint?: StudioBlueprintManifest) {
 	let res: any = {}
 	if (blueprint && blueprint.studioConfigManifest !== undefined) {
 		applyToConfig(res, blueprint.studioConfigManifest, studio.blueprintConfig, `Studio ${studio._id}`)
@@ -95,12 +99,19 @@ export function preprocessStudioConfig(studio: Studio, blueprint?: StudioBluepri
 	res['SofieHostURL'] = studio.settings.sofieUrl
 
 	if (blueprint && blueprint.preprocessConfig) {
-		res = blueprint.preprocessConfig(res)
+		const context = new CommonContext({
+			name: `preprocessStudioConfig`,
+			identifier: `studioId=${studio._id}`,
+		})
+		res = blueprint.preprocessConfig(context, res)
 	}
 	return res
 }
 
-export function preprocessShowStyleConfig(showStyle: ShowStyleCompound, blueprint?: ShowStyleBlueprintManifest) {
+export function preprocessShowStyleConfig(
+	showStyle: ReadonlyDeep<ShowStyleCompound>,
+	blueprint?: ShowStyleBlueprintManifest
+) {
 	let res: any = {}
 	if (blueprint && blueprint.showStyleConfigManifest !== undefined) {
 		applyToConfig(res, blueprint.showStyleConfigManifest, showStyle.blueprintConfig, `ShowStyle ${showStyle._id}`)
@@ -108,12 +119,19 @@ export function preprocessShowStyleConfig(showStyle: ShowStyleCompound, blueprin
 		res = showStyle.blueprintConfig
 	}
 	if (blueprint && blueprint.preprocessConfig) {
-		res = blueprint.preprocessConfig(res)
+		const context = new CommonContext({
+			name: `preprocessShowStyleConfig`,
+			identifier: `showStyleBaseId=${showStyle._id},showStyleVariantId=${showStyle.showStyleVariantId}`,
+		})
+		res = blueprint.preprocessConfig(context, res)
 	}
 	return res
 }
 
-export function findMissingConfigs(manifest: ConfigManifestEntry[] | undefined, config: IBlueprintConfig) {
+export function findMissingConfigs(
+	manifest: ConfigManifestEntry[] | undefined,
+	config: ReadonlyDeep<IBlueprintConfig>
+) {
 	const missingKeys: string[] = []
 	if (manifest === undefined) {
 		return missingKeys
@@ -130,7 +148,7 @@ export function findMissingConfigs(manifest: ConfigManifestEntry[] | undefined, 
 export function applyToConfig(
 	res: any,
 	configManifest: ConfigManifestEntry[],
-	blueprintConfig: IBlueprintConfig,
+	blueprintConfig: ReadonlyDeep<IBlueprintConfig>,
 	source: string
 ) {
 	for (const val of configManifest) {
@@ -161,14 +179,14 @@ export function forceClearAllBlueprintConfigCaches() {
 	showStyleBlueprintConfigCache.clear()
 }
 
-export function resetStudioBlueprintConfig(studio: Studio): void {
+export async function resetStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): Promise<void> {
 	for (const map of studioBlueprintConfigCache.values()) {
 		map.delete(studio._id)
 	}
-	getStudioBlueprintConfig(studio)
+	await getStudioBlueprintConfig(studio)
 }
 
-export function getStudioBlueprintConfig(studio: Studio): unknown {
+export async function getStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): Promise<unknown> {
 	let blueprintConfigMap = studio.blueprintId ? studioBlueprintConfigCache.get(studio.blueprintId) : undefined
 	if (!blueprintConfigMap && studio.blueprintId) {
 		blueprintConfigMap = new Map()
@@ -181,7 +199,7 @@ export function getStudioBlueprintConfig(studio: Studio): unknown {
 	}
 
 	logger.debug('Building Studio config')
-	const studioBlueprint = loadStudioBlueprint(studio)
+	const studioBlueprint = await loadStudioBlueprint(studio)
 	if (studioBlueprint) {
 		const diffs = findMissingConfigs(studioBlueprint.blueprint.studioConfigManifest, studio.blueprintConfig)
 		if (diffs && diffs.length) {
@@ -197,38 +215,34 @@ export function getStudioBlueprintConfig(studio: Studio): unknown {
 	return compiledConfig
 }
 
-export function resetShowStyleBlueprintConfig(showStyleBase: ShowStyleBase, showStyleVariant: ShowStyleVariant): void {
+export async function resetShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<ShowStyleCompound>): Promise<void> {
 	for (const map of showStyleBlueprintConfigCache.values()) {
-		map.get(showStyleBase._id)?.delete(showStyleVariant._id)
+		map.get(showStyleCompound._id)?.delete(showStyleCompound.showStyleVariantId)
 	}
-	getShowStyleBlueprintConfig(showStyleBase, showStyleVariant)
+	await getShowStyleBlueprintConfig(showStyleCompound)
 }
-export function getShowStyleBlueprintConfig(showStyleBase: ShowStyleBase, showStyleVariant: ShowStyleVariant): unknown {
-	let blueprintConfigMap = showStyleBase.blueprintId
-		? showStyleBlueprintConfigCache.get(showStyleBase.blueprintId)
-		: new Map()
+export async function getShowStyleBlueprintConfig(
+	showStyleCompound: ReadonlyDeep<ShowStyleCompound>
+): Promise<unknown> {
+	let blueprintConfigMap: Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>> | undefined =
+		showStyleCompound.blueprintId ? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId) : new Map()
 	if (!blueprintConfigMap) {
 		blueprintConfigMap = new Map()
-		showStyleBlueprintConfigCache.set(showStyleBase.blueprintId, blueprintConfigMap)
+		showStyleBlueprintConfigCache.set(showStyleCompound.blueprintId, blueprintConfigMap)
 	}
 
-	let showStyleBaseMap = blueprintConfigMap.get(showStyleBase._id)
+	let showStyleBaseMap = blueprintConfigMap.get(showStyleCompound._id)
 	if (!showStyleBaseMap) {
 		showStyleBaseMap = new Map()
-		blueprintConfigMap.set(showStyleBase._id, showStyleBaseMap)
+		blueprintConfigMap.set(showStyleCompound._id, showStyleBaseMap)
 	}
 
-	const cachedConfig = showStyleBaseMap.get(showStyleVariant._id)
+	const cachedConfig = showStyleBaseMap.get(showStyleCompound.showStyleVariantId)
 	if (cachedConfig) {
 		return cachedConfig.config
 	}
 
-	logger.debug('Building ShowStyle config')
-
-	const showStyleCompound = createShowStyleCompound(showStyleBase, showStyleVariant)
-	if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${showStyleVariant._id}"`)
-
-	const showStyleBlueprint = loadShowStyleBlueprint(showStyleCompound)
+	const showStyleBlueprint = await loadShowStyleBlueprint(showStyleCompound)
 	if (showStyleBlueprint) {
 		const diffs = findMissingConfigs(
 			showStyleBlueprint.blueprint.showStyleConfigManifest,
@@ -246,7 +260,7 @@ export function getShowStyleBlueprintConfig(showStyleBase: ShowStyleBase, showSt
 	}
 
 	const compiledConfig = preprocessShowStyleConfig(showStyleCompound, showStyleBlueprint?.blueprint)
-	showStyleBaseMap.set(showStyleVariant._id, { config: compiledConfig })
+	showStyleBaseMap.set(showStyleCompound.showStyleVariantId, { config: compiledConfig })
 	return compiledConfig
 }
 

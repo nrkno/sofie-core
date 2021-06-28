@@ -1,21 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
-import { setMinimumTakeSpan } from '../../userActions'
-import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { RESTART_SALT } from '../../../../lib/api/userActions'
-import { getHash, waitForPromise, protectString } from '../../../../lib/lib'
-import { UserActionsLog } from '../../../../lib/collections/UserActionsLog'
-import { MeteorCall } from '../../../../lib/api/methods'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
+import { getRandomId } from '../../../../lib/lib'
 import { ClientAPI } from '../../../../lib/api/client'
-import { Bucket, Buckets } from '../../../../lib/collections/Buckets'
-import { Random } from 'meteor/random'
+import { Bucket, BucketId, Buckets } from '../../../../lib/collections/Buckets'
 import { BucketAdLibs } from '../../../../lib/collections/BucketAdlibs'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 
@@ -40,7 +29,7 @@ namespace UserActionAPI {
 describe('User Actions - Buckets', () => {
 	let env: DefaultEnvironment
 	function setUpMockBucket() {
-		const bucketId = protectString(Random.id())
+		const bucketId: BucketId = getRandomId()
 		const bucket: Bucket = {
 			_id: bucketId,
 			_rank: 0,
@@ -55,7 +44,7 @@ describe('User Actions - Buckets', () => {
 
 		for (let i = 0; i < 3; i++) {
 			BucketAdLibs.insert({
-				_id: protectString(Random.id()),
+				_id: getRandomId(),
 				_rank: 0,
 				bucketId: bucketId,
 				externalId: `FAKE_EXTERNAL_ID_${i}`,
@@ -72,6 +61,9 @@ describe('User Actions - Buckets', () => {
 				sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 				studioId: env.studio._id,
 				lifespan: PieceLifespan.WithinPart,
+				content: {
+					timelineObjects: [],
+				},
 			})
 		}
 
@@ -83,8 +75,8 @@ describe('User Actions - Buckets', () => {
 			}).fetch(),
 		}
 	}
-	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 		jest.resetAllMocks()
 	})
 	testInFiber('createBucket', () => {

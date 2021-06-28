@@ -31,12 +31,11 @@ export const RegisterHelp = withTranslation()(
 									},
 									type: 'button',
 								}),
-							]}>
+							]}
+						>
 							{t('Enable configuration mode by adding ?configure=1 to the address bar.')}
 						</ReactNotification>
-					) : (
-						undefined
-					)}
+					) : undefined}
 					{step === ToolTipStep.TOOLTIP_START_HERE || step === ToolTipStep.TOOLTIP_RUN_MIGRATIONS ? (
 						<ReactNotification
 							actions={[
@@ -47,12 +46,11 @@ export const RegisterHelp = withTranslation()(
 									},
 									type: 'button',
 								}),
-							]}>
+							]}
+						>
 							{t('You need to run migrations to set the system up for operation.')}
 						</ReactNotification>
-					) : (
-						undefined
-					)}
+					) : undefined}
 				</React.Fragment>
 			)
 		}

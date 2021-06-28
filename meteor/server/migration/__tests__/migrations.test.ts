@@ -1,11 +1,11 @@
 import * as _ from 'underscore'
 import { setupEmptyEnvironment, setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
-import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
 import { clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../currentSystemVersion'
 import { RunMigrationResult, GetMigrationStatusResult } from '../../../lib/api/migration'
-import { literal, protectString, waitForPromise } from '../../../lib/lib'
+import { literal, protectString } from '../../../lib/lib'
 import {
 	MigrationStepInputResult,
 	BlueprintManifestType,
@@ -61,10 +61,10 @@ describe('Migrations', () => {
 			})
 		)
 	}
-	testInFiber('System migrations, initial setup', () => {
+	testInFiber('System migrations, initial setup', async () => {
 		expect(getSystem().version).toEqual(GENESIS_SYSTEM_VERSION)
 
-		const migrationStatus0: GetMigrationStatusResult = waitForPromise(MeteorCall.migration.getMigrationStatus())
+		const migrationStatus0: GetMigrationStatusResult = await MeteorCall.migration.getMigrationStatus()
 
 		expect(migrationStatus0.migration.automaticStepCount).toBeGreaterThanOrEqual(1)
 
@@ -83,12 +83,10 @@ describe('Migrations', () => {
 			},
 		})
 
-		const migrationResult0: RunMigrationResult = waitForPromise(
-			MeteorCall.migration.runMigration(
-				migrationStatus0.migration.chunks,
-				migrationStatus0.migration.hash,
-				userInput(migrationStatus0)
-			)
+		const migrationResult0: RunMigrationResult = await MeteorCall.migration.runMigration(
+			migrationStatus0.migration.chunks,
+			migrationStatus0.migration.hash,
+			userInput(migrationStatus0)
 		)
 
 		expect(migrationResult0).toMatchObject({
@@ -106,22 +104,20 @@ describe('Migrations', () => {
 		)
 
 		// Continue with migration:
-		const migrationStatus1: GetMigrationStatusResult = waitForPromise(MeteorCall.migration.getMigrationStatus())
+		const migrationStatus1: GetMigrationStatusResult = await MeteorCall.migration.getMigrationStatus()
 		expect(migrationStatus1.migrationNeeded).toEqual(true)
 		expect(migrationStatus1.migration.automaticStepCount).toBeGreaterThanOrEqual(1)
 
-		const migrationResult1: RunMigrationResult = waitForPromise(
-			MeteorCall.migration.runMigration(
-				migrationStatus1.migration.chunks,
-				migrationStatus1.migration.hash,
-				userInput(migrationStatus1, {
-					'CoreSystem.storePath': 'mock',
-					'Studios.settings.mediaPreviewsUrl': 'mock',
-					'Studios.settings.sofieUrl': 'http://localhost',
-					'Studios.settings.slackEvaluationUrls': 'mock',
-					'Studios.settings.supportedMediaFormats': '1920x1080i5000, 1280x720, i5000, i5000tff',
-				})
-			)
+		const migrationResult1: RunMigrationResult = await MeteorCall.migration.runMigration(
+			migrationStatus1.migration.chunks,
+			migrationStatus1.migration.hash,
+			userInput(migrationStatus1, {
+				'CoreSystem.storePath': 'mock',
+				'Studios.settings.mediaPreviewsUrl': 'mock',
+				'Studios.settings.sofieUrl': 'http://localhost',
+				'Studios.settings.slackEvaluationUrls': 'mock',
+				'Studios.settings.supportedMediaFormats': '1920x1080i5000, 1280x720, i5000, i5000tff',
+			})
 		)
 		expect(migrationResult1).toMatchObject({
 			migrationCompleted: true,
@@ -133,8 +129,8 @@ describe('Migrations', () => {
 		expect(getSystem().version).toEqual(CURRENT_SYSTEM_VERSION)
 	})
 
-	testInFiber('Ensure migrations run in correct order', () => {
-		waitForPromise(MeteorCall.migration.resetDatabaseVersions())
+	testInFiber('Ensure migrations run in correct order', async () => {
+		await MeteorCall.migration.resetDatabaseVersions()
 
 		expect(getSystem().version).toEqual(GENESIS_SYSTEM_VERSION)
 
@@ -289,7 +285,11 @@ describe('Migrations', () => {
 					},
 				},
 			],
-			getBaseline: () => [],
+			getBaseline: () => {
+				return {
+					timelineObjects: [],
+				}
+			},
 			getShowStyleId: () => null,
 		})
 
@@ -344,7 +344,11 @@ describe('Migrations', () => {
 					},
 				},
 			],
-			getBaseline: () => [],
+			getBaseline: () => {
+				return {
+					timelineObjects: [],
+				}
+			},
 			getShowStyleId: () => null,
 			getShowStyleVariantId: () => null,
 			getRundown: () => ({
@@ -353,7 +357,7 @@ describe('Migrations', () => {
 					name: '',
 				},
 				globalAdLibPieces: [],
-				baseline: [],
+				baseline: { timelineObjects: [] },
 			}),
 			getSegment: () => ({
 				segment: { name: '' },
@@ -397,7 +401,7 @@ describe('Migrations', () => {
 
 		expect(migration.migrationNeeded).toEqual(true)
 
-		const steps = migration.steps as MigrationStep[]
+		const _steps = migration.steps as MigrationStep[]
 
 		// Note: This test is temporarily disabled, pending discussion regarding migrations
 		// /@nytamin 2020-08-27

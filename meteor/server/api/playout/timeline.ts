@@ -4,8 +4,11 @@ import {
 	TimelineObjHoldMode,
 	TSR,
 	PieceLifespan,
+	BlueprintResultBaseline,
+	OnGenerateTimelineObj,
+	TimelineObjClassesCore,
 } from '@sofie-automation/blueprints-integration'
-import { DeepReadonly } from 'utility-types'
+import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../../../lib/logging'
 import {
 	TimelineObjGeneric,
@@ -17,10 +20,9 @@ import {
 	StatObjectMetadata,
 	OnGenerateTimelineObjExt,
 } from '../../../lib/collections/Timeline'
-import { Studio, StudioId } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
-	waitForPromise,
 	getCurrentTime,
 	literal,
 	omit,
@@ -33,7 +35,7 @@ import {
 	applyToArray,
 	protectString,
 } from '../../../lib/lib'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs'
 import * as _ from 'underscore'
@@ -42,42 +44,132 @@ import { loadStudioBlueprint, loadShowStyleBlueprint } from '../blueprints/cache
 import { StudioContext, TimelineEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { Part, PartId } from '../../../lib/collections/Parts'
-import { prefixAllObjectIds, getSelectedPartInstancesFromCache } from './lib'
+import { prefixAllObjectIds } from './lib'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, CacheForStudioBase } from '../../DatabaseCaches'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getExpectedLatency } from '../../../lib/collections/PeripheralDevices'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
-import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
+import { createPieceGroupAndCap, PieceTimelineMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
 import { getPartFirstObjectId, getPartGroupId, getPieceGroupId } from '../../../lib/rundown/timeline'
+import { CacheForStudio, CacheForStudioBase } from '../studio/cache'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithCacheFromStudioOperation } from './lockFunction'
+import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
+import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackages'
+
+export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
+	const playlists = cache.getActiveRundownPlaylists()
+	if (playlists.length === 1) {
+		return runPlayoutOperationWithCacheFromStudioOperation(
+			'updateStudioOrPlaylistTimeline',
+			cache,
+			playlists[0],
+			PlayoutLockFunctionPriority.USER_PLAYOUT,
+			null,
+			async (playlistCache) => {
+				await updateTimeline(playlistCache)
+			}
+		)
+	} else {
+		return updateStudioTimeline(cache)
+	}
+}
+
+function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
+	const cache2 = cache as CacheForStudio
+	return !!cache2.isStudio
+}
+
+export async function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout): Promise<void> {
+	const span = profiler.startSpan('updateStudioTimeline')
+	logger.debug('updateStudioTimeline running...')
+	const studio = cache.Studio.doc
+
+	// Ensure there isn't a playlist active, as that should be using a different function call
+	if (isCacheForStudio(cache)) {
+		const activePlaylists = cache.getActiveRundownPlaylists()
+		if (activePlaylists.length > 0) {
+			throw new Meteor.Error(500, `Studio has an active playlist`)
+		}
+	} else {
+		if (cache.Playlist.doc.activationId) {
+			throw new Meteor.Error(500, `Studio has an active playlist`)
+		}
+	}
+
+	let baselineObjects: TimelineObjRundown[] = []
+	let studioBaseline: BlueprintResultBaseline | undefined
+
+	const studioBlueprint = await loadStudioBlueprint(studio)
+	if (studioBlueprint) {
+		const blueprint = studioBlueprint.blueprint
+		studioBaseline = blueprint.getBaseline(
+			new StudioContext({ name: 'studioBaseline', identifier: `studioId=${studio._id}` }, studio)
+		)
+		baselineObjects = postProcessStudioBaselineObjects(studio, studioBaseline.timelineObjects)
+
+		const id = `baseline_version`
+		baselineObjects.push(
+			literal<TimelineObjRundown>({
+				id: id,
+				objectType: TimelineObjType.RUNDOWN,
+				enable: { start: 0 },
+				layer: id,
+				metaData: literal<StatObjectMetadata>({
+					versions: {
+						core: PackageInfo.versionExtended || PackageInfo.version,
+						blueprintId: studio.blueprintId,
+						blueprintVersion: blueprint.blueprintVersion,
+						studio: studio._rundownVersionHash,
+					},
+				}),
+				content: {
+					deviceType: TSR.DeviceType.ABSTRACT,
+				},
+			})
+		)
+	}
+
+	processAndSaveTimelineObjects(cache, baselineObjects, undefined)
+	if (studioBaseline) {
+		updateBaselineExpectedPackagesOnStudio(cache, studioBaseline)
+	}
+
+	logger.debug('updateStudioTimeline done!')
+	if (span) span.end()
+}
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
  * @param studioId id of the studio to update
  * @param forceNowToTime if set, instantly forces all "now"-objects to that time (used in autoNext)
  */
-// export const updateTimeline: (cache: CacheForRundownPlaylist, studioId: StudioId, forceNowToTime?: Time) => void
-// = syncFunctionIgnore(function updateTimeline (cache: CacheForRundownPlaylist, studioId: StudioId, forceNowToTime?: Time) {
-export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioId, forceNowToTime?: Time) {
+export async function updateTimeline(cache: CacheForPlayout, forceNowToTime?: Time): Promise<void> {
 	const span = profiler.startSpan('updateTimeline')
 	logger.debug('updateTimeline running...')
-	const studio = cache.activationCache.getStudio()
-	const activePlaylist = getActiveRundownPlaylist(cache, studioId)
 
-	if (activePlaylist && cache.containsDataFromPlaylist !== activePlaylist._id) {
-		throw new Meteor.Error(500, `Active rundownPlaylist is not in cache`)
+	if (!cache.Playlist.doc.activationId) {
+		throw new Meteor.Error(500, `RundownPlaylist ("${cache.Playlist.doc._id}") is not active")`)
 	}
 
-	if (!studio) throw new Meteor.Error(404, 'studio "' + studioId + '" not found!')
+	const timelineObjs: Array<TimelineObjGeneric> = [...(await getTimelineRundown(cache))]
 
-	const timelineObjs: Array<TimelineObjGeneric> = [...getTimelineRundown(cache, studio)]
+	processAndSaveTimelineObjects(cache, timelineObjs, forceNowToTime)
 
+	if (span) span.end()
+}
+
+function processAndSaveTimelineObjects(
+	cache: CacheForStudioBase,
+	timelineObjs: Array<TimelineObjGeneric>,
+	forceNowToTime: Time | undefined
+): void {
+	const studio = cache.Studio.doc
 	processTimelineObjects(studio, timelineObjs)
 
 	/** The timestamp that "now" was set to */
@@ -87,14 +179,14 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 		// used when autoNexting
 		theNowTime = forceNowToTime
 	} else {
-		const playoutDevices = waitForPromise(cache.activationCache.getPeripheralDevices()).filter(
-			(device) => device.studioId === studioId && device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
+		const playoutDevices = cache.PeripheralDevices.findFetch(
+			(device) => device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
 		)
 		if (
 			playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
 			studio.settings.forceSettingNowTime
 		) {
-			let worstLatency = Math.max(...playoutDevices.map((device) => getExpectedLatency(device).safe))
+			const worstLatency = Math.max(0, ...playoutDevices.map((device) => getExpectedLatency(device).safe))
 
 			/** Add a little more latency, to account for network latency variability */
 			const ADD_SAFE_LATENCY = studio.settings.nowSafeLatency || 30
@@ -115,7 +207,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 	timelineObjs.forEach((tlo: TimelineObjGeneric) => {
 		// A timeline object is updated if found in both collections
 
-		let tloldo: TimelineObjGeneric | undefined = oldTimelineObjsMap[tlo.id]
+		const tloldo: TimelineObjGeneric | undefined = oldTimelineObjsMap[tlo.id]
 
 		let oldNow: TSR.Timeline.TimelineEnable['start'] | undefined
 		if (tloldo && tloldo.enable) {
@@ -134,29 +226,14 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 		}
 	})
 
-	cache.Timeline.upsert(
-		{
-			_id: studio._id,
-		},
-		{
-			_id: studio._id,
-			timelineHash: getRandomId(), // randomized on every timeline change
-			generated: getCurrentTime(),
-			timeline: timelineObjs,
-		},
-		true
-	)
+	cache.Timeline.replace({
+		_id: studio._id,
+		timelineHash: getRandomId(), // randomized on every timeline change
+		generated: getCurrentTime(),
+		timeline: timelineObjs,
+	})
 
 	logger.debug('updateTimeline done!')
-	if (span) span.end()
-}
-// '$1') // This causes syncFunctionIgnore to only use the second argument (studioId) when ignoring
-
-export function getActiveRundownPlaylist(cache: CacheForStudioBase, studioId: StudioId): RundownPlaylist | undefined {
-	return cache.RundownPlaylists.findOne({
-		studioId: studioId,
-		active: true,
-	})
 }
 
 export interface SelectedPartInstancesTimelineInfo {
@@ -171,7 +248,7 @@ export interface SelectedPartInstanceTimelineInfo {
 }
 
 export function getPartInstanceTimelineInfo(
-	cache: CacheForRundownPlaylist,
+	cache: CacheForPlayout,
 	currentTime: Time,
 	showStyle: ShowStyleBase,
 	partInstance: PartInstance | undefined
@@ -195,40 +272,22 @@ export function getPartInstanceTimelineInfo(
 /**
  * Returns timeline objects related to rundowns in a studio
  */
-function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): TimelineObjRundown[] {
+async function getTimelineRundown(cache: CacheForPlayout): Promise<Array<TimelineObjRundown>> {
 	const span = profiler.startSpan('getTimelineRundown')
 	try {
 		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObjExt> = []
 
-		const playlist = getActiveRundownPlaylist(cache, studio._id) // todo: is this correct?
-		let activeRundown: Rundown | undefined
+		const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
 
-		let currentPartInstance: PartInstance | undefined
-		let nextPartInstance: PartInstance | undefined
-		let previousPartInstance: PartInstance | undefined
+		const partForRundown = currentPartInstance || nextPartInstance
+		const activeRundown = partForRundown && cache.Rundowns.findOne(partForRundown.rundownId)
 
-		if (playlist) {
-			;({ currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
-				cache,
-				playlist
-			))
-
-			const partForRundown = currentPartInstance || nextPartInstance
-
-			activeRundown = partForRundown && cache.Rundowns.findOne(partForRundown.rundownId)
-		}
-
-		if (playlist && activeRundown) {
+		if (activeRundown) {
 			// Fetch showstyle blueprint:
-			const pShowStyle = cache.activationCache.getShowStyleBase(activeRundown)
+			const pShowStyle = cache.activationCache.getShowStyleCompound(activeRundown)
 			const pshowStyleBlueprint = pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
 
-			// Fetch baseline
-			const baselineItems = cache.RundownBaselineObjs.findFetch({
-				rundownId: activeRundown._id,
-			})
-
-			const showStyle = waitForPromise(pShowStyle)
+			const showStyle = await pShowStyle
 			if (!showStyle) {
 				throw new Meteor.Error(
 					404,
@@ -244,43 +303,45 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 			}
 
 			// next (on pvw (or on pgm if first))
-			const pLookaheadObjs = getLookeaheadObjects(cache, studio, playlist, partInstancesInfo)
+			const pLookaheadObjs = getLookeaheadObjects(cache, partInstancesInfo)
+			const pBaselineItems = cache.activationCache
+				.getRundownBaselineObjs(activeRundown)
+				.then((objs) => transformBaselineItemsIntoTimeline(objs))
 
-			timelineObjs = timelineObjs.concat(
-				buildTimelineObjsForRundown(cache, baselineItems, playlist, partInstancesInfo)
-			)
+			timelineObjs = timelineObjs.concat(buildTimelineObjsForRundown(cache, activeRundown, partInstancesInfo))
 
-			timelineObjs = timelineObjs.concat(waitForPromise(pLookaheadObjs))
+			timelineObjs = timelineObjs.concat(await pLookaheadObjs)
+			timelineObjs = timelineObjs.concat(await pBaselineItems)
 
-			const showStyleBlueprint0 = waitForPromise(pshowStyleBlueprint)
+			const showStyleBlueprint0 = await pshowStyleBlueprint
 			const showStyleBlueprintManifest = showStyleBlueprint0.blueprint
 
 			if (showStyleBlueprintManifest.onTimelineGenerate) {
 				const context = new TimelineEventContext(
+					cache.Studio.doc,
+					showStyle,
+					cache.Playlist.doc,
 					activeRundown,
-					cache,
 					previousPartInstance,
 					currentPartInstance,
 					nextPartInstance
 				)
-				const resolvedPieces = getResolvedPiecesFromFullTimeline(cache, playlist, timelineObjs)
+				const resolvedPieces = getResolvedPiecesFromFullTimeline(cache, timelineObjs)
 				try {
-					const tlGenRes = waitForPromise(
-						showStyleBlueprintManifest.onTimelineGenerate(
-							context,
-							timelineObjs,
-							playlist.previousPersistentState,
-							currentPartInstance?.previousPartEndState,
-							unprotectObjectArray(resolvedPieces.pieces)
-						)
+					const tlGenRes = await showStyleBlueprintManifest.onTimelineGenerate(
+						context,
+						timelineObjs,
+						cache.Playlist.doc.previousPersistentState,
+						currentPartInstance?.previousPartEndState,
+						unprotectObjectArray(resolvedPieces.pieces)
 					)
-					timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObjExt) => {
+					timelineObjs = tlGenRes.timeline.map((object: OnGenerateTimelineObj) => {
 						return literal<TimelineObjGeneric & OnGenerateTimelineObjExt>({
-							...object,
+							...(object as OnGenerateTimelineObjExt),
 							objectType: TimelineObjType.RUNDOWN,
 						})
 					})
-					cache.RundownPlaylists.update(playlist._id, {
+					cache.Playlist.update({
 						$set: {
 							previousPersistentState: tlGenRes.persistentState,
 							trackedAbSessions: context.knownSessions,
@@ -299,38 +360,9 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 				}
 			})
 		} else {
-			let studioBaseline: TimelineObjRundown[] = []
-
-			const studioBlueprint = loadStudioBlueprint(studio)
-			if (studioBlueprint) {
-				const blueprint = studioBlueprint.blueprint
-				const baselineObjs = blueprint.getBaseline(new StudioContext(studio))
-				studioBaseline = postProcessStudioBaselineObjects(studio, baselineObjs)
-
-				const id = `baseline_version`
-				studioBaseline.push(
-					literal<TimelineObjRundown>({
-						id: id,
-						objectType: TimelineObjType.RUNDOWN,
-						enable: { start: 0 },
-						layer: id,
-						metaData: literal<StatObjectMetadata>({
-							versions: {
-								core: PackageInfo.versionExtended || PackageInfo.version,
-								blueprintId: studio.blueprintId,
-								blueprintVersion: blueprint.blueprintVersion,
-								studio: studio._rundownVersionHash,
-							},
-						}),
-						content: {
-							deviceType: TSR.DeviceType.ABSTRACT,
-						},
-					})
-				)
-			}
-
 			if (span) span.end()
-			return studioBaseline
+			logger.error('No active rundown during updateTimeline')
+			return []
 		}
 	} catch (e) {
 		if (span) span.end()
@@ -343,14 +375,15 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
  * @param studio
  * @param timelineObjs Array of timeline objects
  */
-function processTimelineObjects(studio: Studio, timelineObjs: Array<TimelineObjGeneric>): void {
+function processTimelineObjects(studio: ReadonlyDeep<Studio>, timelineObjs: Array<TimelineObjGeneric>): void {
 	const span = profiler.startSpan('processTimelineObjects')
 	// first, split out any grouped objects, to make the timeline shallow:
-	let fixObjectChildren = (o: TimelineObjGeneric): void => {
+	const fixObjectChildren = (o: TimelineObjGeneric): void => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
 		if (o.isGroup && o.children && o.children.length) {
-			_.each(o.children, (child: TSR.TSRTimelineObjBase) => {
-				let childFixed: TimelineObjGeneric = {
+			const children = o.children as TSR.TSRTimelineObjBase[]
+			_.each(children, (child: TSR.TSRTimelineObjBase) => {
+				const childFixed: TimelineObjGeneric = {
 					...child,
 					objectType: o.objectType,
 					inGroup: o.id,
@@ -391,9 +424,8 @@ function setNowToTimeInObjects(timelineObjs: Array<TimelineObjGeneric>, now: Tim
 }
 
 function buildTimelineObjsForRundown(
-	cache: CacheForRundownPlaylist,
-	baselineItems: RundownBaselineObj[],
-	activePlaylist: RundownPlaylist,
+	cache: CacheForPlayout,
+	activeRundown: Rundown,
 	partInstancesInfo: SelectedPartInstancesTimelineInfo
 ): (TimelineObjRundown & OnGenerateTimelineObjExt)[] {
 	const span = profiler.startSpan('buildTimelineObjsForRundown')
@@ -401,11 +433,7 @@ function buildTimelineObjsForRundown(
 	let currentPartGroup: (TimelineObjGroupPart & OnGenerateTimelineObjExt) | undefined
 	let previousPartGroup: (TimelineObjGroupPart & OnGenerateTimelineObjExt) | undefined
 
-	// const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
-	// 	cache,
-	// 	activePlaylist
-	// )
-
+	const activePlaylist = cache.Playlist.doc
 	const currentTime = getCurrentTime()
 
 	// let currentPieces: Array<Piece> = []
@@ -419,7 +447,13 @@ function buildTimelineObjsForRundown(
 			content: {
 				deviceType: TSR.DeviceType.ABSTRACT,
 			},
-			classes: [activePlaylist.rehearsal ? 'rundown_rehersal' : 'rundown_active'],
+			classes: [
+				activePlaylist.rehearsal
+					? TimelineObjClassesCore.RundownRehearsal
+					: TimelineObjClassesCore.RundownActive,
+				!activePlaylist.currentPartInstanceId ? TimelineObjClassesCore.BeforeFirstPart : undefined,
+				!activePlaylist.nextPartInstanceId ? TimelineObjClassesCore.NoNextPart : undefined,
+			].filter((v): v is TimelineObjClassesCore => v !== undefined),
 			partInstanceId: null,
 		})
 	)
@@ -439,10 +473,6 @@ function buildTimelineObjsForRundown(
 		// We may be at the beginning of a show, where there is no previous part
 		if (!partInstancesInfo.previous)
 			logger.warning(`Previous PartInstance "${activePlaylist.previousPartInstanceId}" not found!`)
-	}
-
-	if (baselineItems) {
-		timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(baselineItems))
 	}
 
 	// Currently playing:
@@ -473,8 +503,9 @@ function buildTimelineObjsForRundown(
 					partInstancesInfo.previous.partInstance.part.autoNext &&
 					partInstancesInfo.previous.partInstance.part.autoNextOverlap
 				) {
-					previousPartGroupEnable.end = `#${currentPartGroupId}.start + ${partInstancesInfo.previous
-						.partInstance.part.autoNextOverlap || 0}`
+					previousPartGroupEnable.end = `#${currentPartGroupId}.start + ${
+						partInstancesInfo.previous.partInstance.part.autoNextOverlap || 0
+					}`
 				}
 				previousPartGroup = createPartGroup(partInstancesInfo.previous.partInstance, previousPartGroupEnable)
 				previousPartGroup.priority = -1
@@ -644,7 +675,7 @@ function buildTimelineObjsForRundown(
 
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (partInstancesInfo.next && partInstancesInfo.current.partInstance.part.autoNext) {
-			let nextPartGroup = createPartGroup(partInstancesInfo.next.partInstance, {})
+			const nextPartGroup = createPartGroup(partInstancesInfo.next.partInstance, {})
 			if (currentPartGroup) {
 				const overlapDuration = calcPartOverlapDuration(
 					partInstancesInfo.current.partInstance.part,
@@ -704,7 +735,7 @@ function createPartGroup(
 		// TODO - is this loose enough?
 		enable.start = 'now'
 	}
-	let partGrp = literal<TimelineObjGroupPart & OnGenerateTimelineObjExt>({
+	const partGrp = literal<TimelineObjGroupPart & OnGenerateTimelineObjExt>({
 		id: getPartGroupId(partInstance),
 		objectType: TimelineObjType.RUNDOWN,
 		enable: enable,
@@ -718,6 +749,9 @@ function createPartGroup(
 		isGroup: true,
 		isPartGroup: true,
 		partInstanceId: partInstance._id,
+		metaData: literal<PieceTimelineMetadata>({
+			isPieceTimeline: true,
+		}),
 	})
 
 	return partGrp
@@ -753,7 +787,7 @@ function createPartGroupFirstObject(
 function transformBaselineItemsIntoTimeline(
 	objs: RundownBaselineObj[]
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
-	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
+	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 	_.each(objs, (obj: RundownBaselineObj) => {
 		// the baseline objects are layed out without any grouping
 		_.each(obj.objects, (o: TimelineObjGeneric) => {
@@ -775,10 +809,11 @@ interface TransformTransitionProps {
 }
 
 export function hasPieceInstanceDefinitelyEnded(
-	pieceInstance: DeepReadonly<PieceInstanceWithTimings>,
+	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
 	nowInPart: number
 ): boolean {
 	if (nowInPart <= 0) return false
+	if (pieceInstance.piece.hasSideEffects) return false
 
 	let relativeEnd: number | undefined
 	if (typeof pieceInstance.resolvedEndCap === 'number') {
@@ -810,7 +845,7 @@ function getTransformTransitionProps(partInstance: PartInstance, allowTransition
 function transformPartIntoTimeline(
 	playlistId: RundownPlaylistId,
 	partId: PartId,
-	pieceInstances: DeepReadonly<PieceInstanceWithTimings>[],
+	pieceInstances: ReadonlyDeep<Array<PieceInstanceWithTimings>>,
 	firstObjClasses: string[],
 	partGroup: TimelineObjGroupPart & OnGenerateTimelineObjExt,
 	nowInPart: number,
@@ -820,12 +855,12 @@ function transformPartIntoTimeline(
 	showHoldExcept?: boolean
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const span = profiler.startSpan('transformPartIntoTimeline')
-	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
+	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
 	const isHold = holdState === RundownHoldState.ACTIVE
 	const allowTransition =
 		transitionProps && transitionProps.allowed && !isHold && holdState !== RundownHoldState.COMPLETE
-	const transition: DeepReadonly<PieceInstanceWithTimings> | undefined = allowTransition
+	const transition: ReadonlyDeep<PieceInstanceWithTimings> | undefined = allowTransition
 		? pieceInstances.find((i) => !!i.piece.isTransition)
 		: undefined
 	const transitionPieceDelay = transitionProps
@@ -970,7 +1005,7 @@ function calcPartTargetDuration(prevPart: Part | undefined, currentPart: Part): 
 		return rawExpectedDuration + (currentPart.prerollDuration || 0)
 	}
 
-	let prerollDuration = currentPart.transitionPrerollDuration || currentPart.prerollDuration || 0
+	const prerollDuration = currentPart.transitionPrerollDuration || currentPart.prerollDuration || 0
 	return rawExpectedDuration + prerollDuration
 }
 function calcPartOverlapDuration(fromPart: Part, toPart: Part): number {

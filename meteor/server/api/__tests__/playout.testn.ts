@@ -1,10 +1,11 @@
+/* eslint-disable jest/no-commented-out-tests */
 // import * as chai from 'chai'
-import * as _ from 'underscore'
+// import * as _ from 'underscore'
 // import {} from 'mocha'
 
-import { Rundown, DBRundown } from '../../../lib/collections/Rundowns'
-import { Part, DBPart } from '../../../lib/collections/Parts'
-import { Piece } from '../../../lib/collections/Pieces'
+// import { Rundown, DBRundown } from '../../../lib/collections/Rundowns'
+// import { Part, DBPart } from '../../../lib/collections/Parts'
+// import { Piece } from '../../../lib/collections/Pieces'
 
 // import { buildTimelineObjsForRundown } from '../playout'
 // import { getPartGroupId, getPartFirstObjectId, getPieceGroupId, getPieceFirstObjectId } from '@sofie-automation/blueprints-integration/dist/timeline'
@@ -14,7 +15,7 @@ import { Piece } from '../../../lib/collections/Pieces'
 // const expect = chai.expect
 // const assert = chai.assert
 
-describe('playout: buildTimelineObjsForRundown', function() {
+describe('playout: buildTimelineObjsForRundown', function () {
 	test('mockTest', () => {
 		expect(1).toEqual(1)
 	})
@@ -628,7 +629,6 @@ function createEmptyRundownData () {
 		previousPartId: null,
 		currentPartId: null,
 		nextPartId: null,
-		dataSource: '',
 		importVersions: {
 			studio: '',
 			showStyleBase: '',

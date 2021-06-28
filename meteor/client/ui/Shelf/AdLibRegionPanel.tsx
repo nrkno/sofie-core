@@ -32,7 +32,7 @@ interface IAdLibRegionPanelProps {
 	adlibRank?: number
 }
 
-interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {}
+type IAdLibRegionPanelTrackedProps = IDashboardPanelTrackedProps
 
 export class AdLibRegionPanelInner extends MeteorReactComponent<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
@@ -47,11 +47,11 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 	}
 
 	isAdLibNext(adLib: AdLibPieceUi) {
-		return isAdLibNext(this.props.nextAdLibIds, this.props.unfinishedTags, this.props.nextTags, adLib)
+		return isAdLibNext(this.props.nextAdLibIds, this.props.nextTags, adLib)
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
 				MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId)
@@ -150,18 +150,21 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 					{
 						visibility: this.props.visible ? 'visible' : 'hidden',
 					}
-				)}>
+				)}
+			>
 				<div
 					className={ClassNames('adlib-region-panel__image-container', {
 						next: piece && this.isAdLibNext(piece),
 						'on-air': piece && this.isAdLibOnAir(piece),
-					})}>
+					})}
+				>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>
 						{
 							<span
 								className={ClassNames('adlib-region-panel__label', {
 									'adlib-region-panel__label--large': this.props.panel.labelBelowPanel,
-								})}>
+								})}
+							>
 								{this.props.panel.name}
 							</span>
 						}

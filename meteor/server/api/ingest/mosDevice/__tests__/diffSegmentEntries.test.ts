@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 
-import { diffSegmentEntries, compileSegmentEntries } from '../ingest'
+import { diffSegmentEntries, compileSegmentEntries } from '../diff'
 import { IngestSegment } from '@sofie-automation/blueprints-integration'
 import { LocalIngestSegment } from '../../ingestCache'
 
@@ -265,7 +265,7 @@ describe('Ingest: MOS', () => {
 		test('Remove whole segment', async () => {
 			const segmentEntries = compileSegmentEntries(ingestSegments)
 			// First segment
-			let ingestSegments2 = clone(ingestSegments)
+			const ingestSegments2 = clone(ingestSegments)
 			ingestSegments2.splice(0, 1)
 			recalculateRank(ingestSegments2)
 			const segmentEntries2 = compileSegmentEntries(ingestSegments2)
@@ -281,7 +281,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff.unchanged)).toHaveLength(0)
 
 			// Middle segment
-			let ingestSegments3 = clone(ingestSegments)
+			const ingestSegments3 = clone(ingestSegments)
 			ingestSegments3.splice(1, 1)
 			recalculateRank(ingestSegments3)
 			const segmentEntries3 = compileSegmentEntries(ingestSegments3)
@@ -298,7 +298,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff2.unchanged)).toEqual(['first'])
 
 			// Last segment
-			let ingestSegments4 = clone(ingestSegments)
+			const ingestSegments4 = clone(ingestSegments)
 			ingestSegments4.splice(3, 1)
 			recalculateRank(ingestSegments4)
 			const segmentEntries4 = compileSegmentEntries(ingestSegments4)
@@ -312,7 +312,7 @@ describe('Ingest: MOS', () => {
 		test('Remove to combine segments', async () => {
 			const segmentEntries = compileSegmentEntries(ingestSegments)
 
-			let ingestSegments2 = clone(ingestSegments)
+			const ingestSegments2 = clone(ingestSegments)
 			ingestSegments2[1].parts = ingestSegments2[1].parts.concat(ingestSegments2[3].parts)
 
 			ingestSegments2.splice(2, 2)
@@ -340,7 +340,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff.removed)).toEqual(['first'])
 			expect(_.keys(diff.unchanged)).toEqual(['second', 'third', 'fourth'])
 			expect(_.keys(diff.onlyRankChanged)).toHaveLength(0)
-			expect(diff.onlyExternalIdChanged).toEqual({
+			expect(diff.externalIdChanged).toEqual({
 				first: 'NEW',
 			})
 
@@ -355,7 +355,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff2.removed)).toEqual(['second'])
 			expect(_.keys(diff2.unchanged)).toEqual(['first', 'third', 'fourth'])
 			expect(_.keys(diff2.onlyRankChanged)).toHaveLength(0)
-			expect(diff2.onlyExternalIdChanged).toEqual({
+			expect(diff2.externalIdChanged).toEqual({
 				second: 'NEW',
 			})
 
@@ -370,7 +370,7 @@ describe('Ingest: MOS', () => {
 			expect(_.keys(diff3.removed)).toEqual(['fourth'])
 			expect(_.keys(diff3.unchanged)).toEqual(['first', 'second', 'third'])
 			expect(_.keys(diff3.onlyRankChanged)).toHaveLength(0)
-			expect(diff3.onlyExternalIdChanged).toEqual({
+			expect(diff3.externalIdChanged).toEqual({
 				fourth: 'NEW',
 			})
 		})

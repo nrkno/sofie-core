@@ -24,6 +24,7 @@ import {
 	RundownLayoutAdLibRegion,
 	RundownLayoutAdLibRegionRole,
 	RundownLayoutId,
+	RundownLayoutPieceCountdown,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -79,7 +80,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			this.subscribe(PubSub.rundownLayouts, {})
 		}
 
-		onAddLayout = (e: any) => {
+		onAddLayout = () => {
 			const { t, showStyleBase } = this.props
 			MeteorCall.rundownLayout
 				.createRundownLayout(t('New Layout'), RundownLayoutType.RUNDOWN_LAYOUT, showStyleBase._id)
@@ -126,7 +127,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						rank: 0,
 						rundownBaseline: false,
 						showThumbnailsInList: false,
+						hideDuplicates: false,
 						default: false,
+						nextInCurrentPart: false,
+						oneNextPerSourceLayer: false,
 					}),
 				},
 			})
@@ -213,7 +217,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					{item.actionButtons &&
 						item.actionButtons.map((button, index) => (
 							<div className="rundown-layout-editor-filter mod pan mas" key={button._id}>
-								<button className="action-btn right mod man pas" onClick={(e) => this.onRemoveButton(item, button)}>
+								<button className="action-btn right mod man pas" onClick={() => this.onRemoveButton(item, button)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 								<div className="mod mvs mhs">
@@ -521,7 +525,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							collection={RundownLayouts}
 							className="mod mas"
 							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={(v) => undefined}
+							mutateUpdateValue={() => undefined}
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
@@ -547,7 +551,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							collection={RundownLayouts}
 							className="mod mas"
 							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={(v) => undefined}
+							mutateUpdateValue={() => undefined}
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
@@ -574,7 +578,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							collection={RundownLayouts}
 							className="mod mas"
 							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={(v) => undefined}
+							mutateUpdateValue={() => undefined}
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
@@ -601,7 +605,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								collection={RundownLayouts}
 								className="mod mas"
 								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-								mutateUpdateValue={(v) => undefined}
+								mutateUpdateValue={() => undefined}
 							/>
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -629,7 +633,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								collection={RundownLayouts}
 								className="mod mas"
 								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-								mutateUpdateValue={(v) => undefined}
+								mutateUpdateValue={() => undefined}
 							/>
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -655,9 +659,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName="bghl"
 										attribute={`filters.${index}.assignHotKeys`}
 										obj={item}
-										type="int"
+										type="checkbox"
 										collection={RundownLayouts}
-										className="input text-input input-l"
+										className="mod mas"
 									/>
 								</label>
 							</div>
@@ -668,9 +672,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										modifiedClassName="bghl"
 										attribute={`filters.${index}.hide`}
 										obj={item}
-										type="float"
+										type="checkbox"
 										collection={RundownLayouts}
-										className="input text-input input-l"
+										className="mod mas"
 									/>
 								</label>
 							</div>
@@ -762,6 +766,61 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										collection={RundownLayouts}
 										className="mod mas"
 									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Toggle AdLibs on single mouse click')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.toggleOnSingleClick`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field" title="eg. when pieces in current part serve as data stores for adlibing">
+									{t('Current part can contain next pieces')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.nextInCurrentPart`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Indicate only one next piece per source layer')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.oneNextPerSourceLayer`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Hide duplicated AdLibs')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.hideDuplicates`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+									<span className="text-s dimmed">
+										{t('Picks the first instance of an adLib per rundown, identified by uniqueness Id')}
+									</span>
 								</label>
 							</div>
 						</React.Fragment>
@@ -966,7 +1025,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								collection={RundownLayouts}
 								className="mod mas"
 								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-								mutateUpdateValue={(v) => undefined}
+								mutateUpdateValue={() => undefined}
 							/>
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -1073,6 +1132,115 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			)
 		}
 
+		renderPieceCountdown(
+			item: RundownLayoutBase,
+			tab: RundownLayoutPieceCountdown,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">{t('Source Layers')}</label>
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={`filters.${index}.sourceLayerIds`}
+							obj={item}
+							type="checkbox"
+							collection={RundownLayouts}
+							className="mod mas"
+							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+							mutateUpdateValue={() => undefined}
+						/>
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={`filters.${index}.sourceLayerIds`}
+							obj={item}
+							options={this.props.showStyleBase.sourceLayers.map((l) => {
+								return { name: l.name, value: l._id }
+							})}
+							type="multiselect"
+							label={t('Disabled')}
+							collection={RundownLayouts}
+							className="input text-input input-l dropdown"
+							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+						/>
+					</div>
+					{isDashboardLayout && (
+						<React.Fragment>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('X')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.x`}
+										obj={item}
+										type="int"
+										collection={RundownLayouts}
+										className="input text-input input-l"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Y')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.y`}
+										obj={item}
+										type="int"
+										collection={RundownLayouts}
+										className="input text-input input-l"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Width')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.width`}
+										obj={item}
+										type="int"
+										collection={RundownLayouts}
+										className="input text-input input-l"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Scale')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.scale`}
+										obj={item}
+										type="float"
+										collection={RundownLayouts}
+										className="input text-input input-l"
+									/>
+								</label>
+							</div>
+						</React.Fragment>
+					)}
+				</React.Fragment>
+			)
+		}
+
 		renderElements(item: RundownLayoutBase) {
 			const { t } = this.props
 
@@ -1091,7 +1259,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								options={RundownLayoutType}
 								type="checkbox"
 								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
+								className="mod mas"
+							></EditAttribute>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -1104,7 +1273,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								options={RundownLayoutType}
 								type="checkbox"
 								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
+								className="mod mas"
+							></EditAttribute>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -1116,7 +1286,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								obj={item}
 								type="iconpicker"
 								collection={RundownLayouts}
-								className="input text-input input-s"></EditAttribute>
+								className="input text-input input-s"
+							></EditAttribute>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -1129,7 +1300,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								options={defaultColorPickerPalette}
 								type="colorpicker"
 								collection={RundownLayouts}
-								className="input text-input input-s"></EditAttribute>
+								className="input text-input input-s"
+							></EditAttribute>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -1142,7 +1314,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								options={RundownLayoutType}
 								type="checkbox"
 								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
+								className="mod mas"
+							></EditAttribute>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -1164,7 +1337,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					) : null}
 					{item.filters.map((tab, index) => (
 						<div className="rundown-layout-editor-filter mod pan mas" key={tab._id}>
-							<button className="action-btn right mod man pas" onClick={(e) => this.onRemoveElement(item, tab)}>
+							<button className="action-btn right mod man pas" onClick={() => this.onRemoveElement(item, tab)}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 							{isRundownLayout && (
@@ -1172,7 +1345,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									className={ClassNames('action-btn right mod man pas', {
 										star: (tab as any).default,
 									})}
-									onClick={(e) => this.onToggleDefault(item as RundownLayout, index, !(tab as any).default)}>
+									onClick={() => this.onToggleDefault(item as RundownLayout, index, !(tab as any).default)}
+								>
 									<FontAwesomeIcon icon={faStar} />
 								</button>
 							)}
@@ -1188,7 +1362,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											type="dropdown"
 											mutateDisplayValue={(v) => (v === undefined ? RundownLayoutElementType.FILTER : v)}
 											collection={RundownLayouts}
-											className="input text-input input-l"></EditAttribute>
+											className="input text-input input-l"
+										></EditAttribute>
 									</label>
 								</div>
 							</div>
@@ -1198,6 +1373,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								? this.renderFrame(item, tab, index, isRundownLayout, isDashboardLayout)
 								: RundownLayoutsAPI.isAdLibRegion(tab)
 								? this.renderAdLibRegion(item, tab, index, isRundownLayout, isDashboardLayout)
+								: RundownLayoutsAPI.isPieceCountdown(tab)
+								? this.renderPieceCountdown(item, tab, index, isRundownLayout, isDashboardLayout)
 								: undefined}
 						</div>
 					))}
@@ -1207,12 +1384,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 		renderItems() {
 			const { t } = this.props
-			return (this.props.rundownLayouts || []).map((item, index) => (
+			return (this.props.rundownLayouts || []).map((item) => (
 				<React.Fragment key={unprotectString(item._id)}>
 					<tr
 						className={ClassNames({
 							hl: this.isItemEdited(item),
-						})}>
+						})}
+					>
 						<th className="settings-studio-rundown-layouts-table__name c3">{item.name || t('Default Layout')}</th>
 						<td className="settings-studio-rundown-layouts-table__value c2">{item.type}</td>
 						<td className="settings-studio-rundown-layouts-table__value c1">
@@ -1221,17 +1399,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									<Link
 										target="_blank"
 										className="pill-link"
-										to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`}>
+										to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`}
+									>
 										{studio.name}
 									</Link>
 								</span>
 							))}
 						</td>
 						<td className="settings-studio-rundown-layouts-table__actions table-item-actions c3">
-							<button className="action-btn" onClick={(e) => this.downloadItem(item)}>
+							<button className="action-btn" onClick={() => this.downloadItem(item)}>
 								<FontAwesomeIcon icon={faDownload} />
 							</button>
-							<button className="action-btn" onClick={(e) => this.editItem(item)}>
+							<button className="action-btn" onClick={() => this.editItem(item)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
 							<button className="action-btn" onClick={(e) => this.onDeleteLayout(e, item)}>
@@ -1252,7 +1431,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 												obj={item}
 												type="text"
 												collection={RundownLayouts}
-												className="input text-input input-l"></EditAttribute>
+												className="input text-input input-l"
+											></EditAttribute>
 										</label>
 									</div>
 									<div className="mod mvs mhs">
@@ -1265,7 +1445,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 												options={RundownLayoutType}
 												type="dropdown"
 												collection={RundownLayouts}
-												className="input text-input input-l"></EditAttribute>
+												className="input text-input input-l"
+											></EditAttribute>
 										</label>
 									</div>
 								</div>
@@ -1277,7 +1458,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										: null}
 								</div>
 								<div className="mod mls">
-									<button className="btn btn-secondary" onClick={(e) => this.onAddElement(item)}>
+									<button className="btn btn-secondary" onClick={() => this.onAddElement(item)}>
 										<FontAwesomeIcon icon={faPlus} />
 										&nbsp;
 										{item.type === RundownLayoutType.RUNDOWN_LAYOUT
@@ -1291,10 +1472,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									<>
 										<div>{RundownLayoutsAPI.isDashboardLayout(item) ? this.renderActionButtons(item) : null}</div>
 										<div className="mod mls">
-											<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
+											<button className="btn btn-primary right" onClick={() => this.finishEditItem(item)}>
 												<FontAwesomeIcon icon={faCheck} />
 											</button>
-											<button className="btn btn-secondary" onClick={(e) => this.onAddButton(item)}>
+											<button className="btn btn-secondary" onClick={() => this.onAddButton(item)}>
 												<FontAwesomeIcon icon={faPlus} />
 												&nbsp;
 												{t('Add button')}
@@ -1304,7 +1485,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								) : (
 									<>
 										<div className="mod mls">
-											<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
+											<button className="btn btn-primary right" onClick={() => this.finishEditItem(item)}>
 												<FontAwesomeIcon icon={faCheck} />
 											</button>
 										</div>
@@ -1333,7 +1514,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					uploadFileKey: Date.now(),
 				})
 
-				let uploadFileContents = (e2.target as any).result
+				const uploadFileContents = (e2.target as any).result
 
 				doModalDialog({
 					title: t('Upload Layout?'),
@@ -1358,7 +1539,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									'content-type': 'text/javascript',
 								},
 							})
-								.then((res) => {
+								.then(() => {
 									NotificationCenter.push(
 										new Notification(
 											undefined,
@@ -1406,7 +1587,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<UploadButton
 							className="btn btn-secondary mls"
 							onChange={(e) => this.onUploadFile(e)}
-							accept="application/json,.json">
+							accept="application/json,.json"
+						>
 							<FontAwesomeIcon icon={faUpload} />
 						</UploadButton>
 					</div>

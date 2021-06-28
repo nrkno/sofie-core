@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import * as _ from 'underscore'
 import { WithTranslation, withTranslation } from 'react-i18next'
 import { unprotectString } from '../../lib/lib'
 import { doModalDialog } from '../lib/ModalDialog'
@@ -49,7 +48,7 @@ interface ISettingsMenuTrackedProps {
 	peripheralDevices: Array<PeripheralDevice>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps>(
-	(props: ISettingsMenuProps) => {
+	(_props: ISettingsMenuProps) => {
 		// TODO: add organizationId:
 
 		meteorSubscribe(PubSub.studios, {})
@@ -83,7 +82,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 
 		statusCodeString(statusCode: PeripheralDeviceAPI.StatusCode) {
-			let t = this.props.t
+			const t = this.props.t
 
 			switch (statusCode) {
 				case PeripheralDeviceAPI.StatusCode.UNKNOWN:
@@ -132,7 +131,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 
 		connectedString(connected: boolean) {
-			let t = this.props.t
+			const t = this.props.t
 
 			if (connected) {
 				return t('Connected')
@@ -142,7 +141,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 
 		deviceTypeString(type: PeripheralDeviceAPI.DeviceType) {
-			let t = this.props.t
+			const t = this.props.t
 
 			switch (type) {
 				case PeripheralDeviceAPI.DeviceType.MOS:
@@ -182,7 +181,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					</React.Fragment>
 				),
 				onAccept: () => {
-					MeteorCall.studio.removeStudio(studio._id)
+					MeteorCall.studio.removeStudio(studio._id).catch(console.error)
 				},
 			})
 		}
@@ -203,7 +202,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					</React.Fragment>
 				),
 				onAccept: () => {
-					MeteorCall.showstyles.removeShowStyleBase(item._id)
+					MeteorCall.showstyles.removeShowStyleBase(item._id).catch(console.error)
 				},
 			})
 		}
@@ -224,7 +223,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					</React.Fragment>
 				),
 				onAccept: () => {
-					MeteorCall.blueprint.removeBlueprint(blueprint._id)
+					MeteorCall.blueprint.removeBlueprint(blueprint._id).catch(console.error)
 				},
 			})
 		}
@@ -266,14 +265,16 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 								activeClassName="selectable-selected"
 								className="settings-menu__settings-menu-item selectable clickable"
 								key={unprotectString(studio._id)}
-								to={'/settings/studio/' + studio._id}>
+								to={'/settings/studio/' + studio._id}
+							>
 								<button
 									className="action-btn right"
 									onClick={(e) => {
 										e.preventDefault()
 										e.stopPropagation()
 										this.onDeleteStudio(studio)
-									}}>
+									}}
+								>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 								{this.studioHasError(studio) ? (
@@ -301,7 +302,8 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 								activeClassName="selectable-selected"
 								className="settings-menu__settings-menu-item selectable clickable"
 								key={unprotectString(showStyleBase._id)}
-								to={'/settings/showStyleBase/' + showStyleBase._id}>
+								to={'/settings/showStyleBase/' + showStyleBase._id}
+							>
 								<div className="selectable clickable">
 									<button
 										className="action-btn right"
@@ -309,7 +311,8 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 											e.preventDefault()
 											e.stopPropagation()
 											this.onDeleteShowStyleBase(showStyleBase)
-										}}>
+										}}
+									>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 									{this.showStyleHasError(showStyleBase) ? (
@@ -344,7 +347,8 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 										activeClassName="selectable-selected"
 										className="settings-menu__settings-menu-item selectable clickable"
 										key={unprotectString(blueprint._id)}
-										to={'/settings/blueprint/' + blueprint._id}>
+										to={'/settings/blueprint/' + blueprint._id}
+									>
 										<div className="selectable clickable">
 											<button
 												className="action-btn right"
@@ -352,7 +356,8 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 													e.preventDefault()
 													e.stopPropagation()
 													this.onDeleteBlueprint(blueprint)
-												}}>
+												}}
+											>
 												<FontAwesomeIcon icon={faTrash} />
 											</button>
 											{this.blueprintHasError(blueprint) ? (
@@ -386,14 +391,16 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 									activeClassName="selectable-selected"
 									className="settings-menu__settings-menu-item selectable clickable"
 									key={unprotectString(device._id)}
-									to={'/settings/peripheralDevice/' + device._id}>
+									to={'/settings/peripheralDevice/' + device._id}
+								>
 									<button
 										className="action-btn right"
 										onClick={(e) => {
 											e.preventDefault()
 											e.stopPropagation()
 											this.onDeleteDevice(device)
-										}}>
+										}}
+									>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 									{this.peripheralDeviceHasError(device) ? (
@@ -417,19 +424,22 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 							<NavLink
 								activeClassName="selectable-selected"
 								className="settings-menu__settings-menu-item selectable clickable"
-								to="/settings/tools/system">
+								to="/settings/tools/system"
+							>
 								<h3>{t('Core System settings')}</h3>
 							</NavLink>
 							<NavLink
 								activeClassName="selectable-selected"
 								className="settings-menu__settings-menu-item selectable clickable"
-								to="/settings/tools/migration">
+								to="/settings/tools/migration"
+							>
 								<h3>{t('Upgrade Database')}</h3>
 							</NavLink>
 							<NavLink
 								activeClassName="selectable-selected"
 								className="settings-menu__settings-menu-item selectable clickable"
-								to="/settings/tools/snapshots">
+								to="/settings/tools/snapshots"
+							>
 								<h3>{t('Manage Snapshots')}</h3>
 							</NavLink>
 						</React.Fragment>

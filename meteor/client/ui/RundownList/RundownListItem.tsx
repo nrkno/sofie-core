@@ -1,8 +1,7 @@
 import React from 'react'
-import { withTranslation } from 'react-i18next'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Studio } from '../../../lib/collections/Studios'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
@@ -11,7 +10,6 @@ import {
 	ConnectDragSource,
 	ConnectDropTarget,
 	DragElementWrapper,
-	DragLayerCollector,
 	DragPreviewOptions,
 	DragSource,
 	DragSourceCollector,
@@ -23,7 +21,6 @@ import {
 	DropTargetConnector,
 	DropTargetMonitor,
 	DropTargetSpec,
-	XYCoord,
 } from 'react-dnd'
 import {
 	IRundownDragObject,
@@ -38,7 +35,9 @@ import RundownListItemView from './RundownListItemView'
 import { Settings } from '../../../lib/Settings'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { ShowStyleCompound, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 
 export const HTML_ID_PREFIX = 'rundown-'
 
@@ -46,6 +45,7 @@ export interface IRundownListItemProps {
 	isActive: boolean
 	rundown: Rundown
 	rundownViewUrl?: string
+	rundownLayouts: Array<RundownLayoutBase>
 	swapRundownOrder: (a: RundownId, b: RundownId) => void
 	playlistId: RundownPlaylistId
 	isOnlyRundownInPlaylist?: boolean
@@ -65,19 +65,19 @@ interface IRundownDragSourceProps {
 }
 
 const dragSpec: DragSourceSpec<IRundownListItemProps, IRundownDragObject> = {
-	beginDrag: (props: IRundownListItemProps, monitor, component: React.Component) => {
+	beginDrag: (props: IRundownListItemProps, _monitor, _component: React.Component) => {
 		const id = props.rundown._id
-		return { id }
+		return { id, rundownLayouts: props.rundownLayouts }
 	},
 	isDragging: (props, monitor) => {
 		return props.rundown._id === monitor.getItem().id
 	},
 }
 
-const dragCollector: DragSourceCollector<IRundownDragSourceProps, IRundownListItemProps> = function(
+const dragCollector: DragSourceCollector<IRundownDragSourceProps, IRundownListItemProps> = function (
 	connect: DragSourceConnector,
 	monitor: DragSourceMonitor,
-	props: IRundownListItemProps
+	_props: IRundownListItemProps
 ): IRundownDragSourceProps {
 	return {
 		connectDragSource: connect.dragSource(),
@@ -139,36 +139,34 @@ const dropSpec: DropTargetSpec<IRundownListItemProps> = {
 
 const dropCollect: DropTargetCollector<IRundownDropTargetProps, IRundownListItemProps> = (
 	connect: DropTargetConnector,
-	monitor: DropTargetMonitor,
-	props: IRundownListItemProps
+	_monitor: DropTargetMonitor,
+	_props: IRundownListItemProps
 ) => {
 	return {
 		connectDropTarget: connect.dropTarget(),
 	}
 }
 
-interface IRundownDragLayerProps {
-	currentOffset: XYCoord | null
-	clientOffset: XYCoord | null
-}
+// interface IRundownDragLayerProps {
+// 	currentOffset: XYCoord | null
+// 	clientOffset: XYCoord | null
+// }
 
-const dragLayerCollect: DragLayerCollector<
-	IRundownDragSourceProps & IRundownListItemProps,
-	IRundownDragLayerProps
-> = function(monitor, props) {
-	let currentOffset: XYCoord | null = null
-	let clientOffset: XYCoord | null = null
+// const dragLayerCollect: DragLayerCollector<IRundownDragSourceProps & IRundownListItemProps, IRundownDragLayerProps> =
+// 	function (monitor, props) {
+// 		let currentOffset: XYCoord | null = null
+// 		let clientOffset: XYCoord | null = null
 
-	if (monitor.getItem()?.id === props.rundown._id) {
-		currentOffset = monitor.getDifferenceFromInitialOffset()
-		clientOffset = monitor.getClientOffset()
-	}
+// 		if (monitor.getItem()?.id === props.rundown._id) {
+// 			currentOffset = monitor.getDifferenceFromInitialOffset()
+// 			clientOffset = monitor.getClientOffset()
+// 		}
 
-	return {
-		currentOffset,
-		clientOffset,
-	}
-}
+// 		return {
+// 			currentOffset,
+// 			clientOffset,
+// 		}
+// 	}
 
 export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, IRundownListItemTrackedProps>(
 	(props: Translated<IRundownListItemProps>) => {
@@ -177,7 +175,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 		let showStyleVariant: ShowStyleVariant | undefined = undefined
 
 		try {
-			studio = props.rundown.getStudio()
+			studio = Studios.findOne(props.rundown.studioId)
 		} catch (e) {
 			// this is fine, we'll probably have it eventually and the component can render without it
 		}
@@ -231,11 +229,10 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 				}
 
 				handleRundownDrop(rundownId: RundownId) {
-					const { rundown, playlistId } = this.props
-					MeteorCall.userAction.moveRundown('Drag and drop add rundown to playlist', rundownId, playlistId, [
-						rundown._id,
-						rundownId,
-					])
+					const { rundown, playlistId, t } = this.props
+					doUserAction(t, 'Drag and drop add rundown to playlist', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
+						MeteorCall.userAction.moveRundown(e, rundownId, playlistId, [rundown._id, rundownId])
+					)
 				}
 
 				componentDidUpdate(prevProps) {
@@ -263,12 +260,22 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 				}
 
 				render() {
-					const { isActive, t, rundown, connectDragSource, connectDropTarget, isDragging, rundownViewUrl } = this.props
+					const {
+						isActive,
+						t,
+						rundown,
+						connectDragSource,
+						connectDropTarget,
+						isDragging,
+						rundownViewUrl,
+						rundownLayouts,
+						isOnlyRundownInPlaylist,
+					} = this.props
 					const userCanConfigure = getAllowConfigure()
 
 					const classNames: string[] = []
 					if (isDragging) classNames.push('dragging')
-					if (rundown.unsynced) classNames.push('unsynced')
+					if (rundown.orphaned) classNames.push('unsynced')
 
 					// rundown ids can start with digits, which is illegal for HTML id attributes
 					const htmlElementId = `${HTML_ID_PREFIX}${unprotectString(rundown._id)}`
@@ -294,15 +301,17 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 							renderTooltips={isDragging !== true}
 							rundownViewUrl={rundownViewUrl}
 							rundown={rundown}
+							isOnlyRundownInPlaylist={isOnlyRundownInPlaylist}
+							rundownLayouts={rundownLayouts}
 							showStyleName={showStyleLabel}
 							showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
 							confirmDeleteRundownHandler={
-								(rundown.unsynced && getAllowStudio()) || userCanConfigure || getAllowService()
+								(rundown.orphaned && getAllowStudio()) || userCanConfigure || getAllowService()
 									? () => confirmDeleteRundown(rundown, t)
 									: undefined
 							}
 							confirmReSyncRundownHandler={
-								rundown.unsynced && getAllowStudio() ? () => confirmReSyncRundown(rundown, t) : undefined
+								rundown.orphaned && getAllowStudio() ? () => confirmReSyncRundown(rundown, t) : undefined
 							}
 						/>
 					)

@@ -1,19 +1,12 @@
-import { IMOSObject, IMOSItem, MosString128, IMOSScope, MosTime, MosDuration } from 'mos-connection'
-import { Parser as MosParser } from 'mos-connection/dist/mosModel/Parser'
-import * as MosUtils from 'mos-connection/dist/utils/Utils'
+import { IMOSItem, MosString128, MosTime, MosDuration, MosModel, Utils as MosUtils } from 'mos-connection'
+import * as XMLBuilder from 'xmlbuilder'
 import * as _ from 'underscore'
 
 /**
  * Client side MOS XML to JavaScript object conversion. Not exhaustive, might cut
  * corners to fit specific use cases.
  * Originally developed for use by the Nora editor in the shelf inspector.
- *
- * Note that this module relies on a globally available DOMParser, which
- * typically is a browser thing. For server side usage, xml2json is probably
- * what you want :)
  */
-
-const domparser = new DOMParser()
 
 /** Copied from mos-gateway */
 export function fixMosData(o: any): any {
@@ -25,7 +18,7 @@ export function fixMosData(o: any): any {
 			return fixMosData(val)
 		})
 	} else if (_.isObject(o)) {
-		let o2: any = {}
+		const o2: any = {}
 		_.each(o, (val, key) => {
 			o2[key] = fixMosData(val)
 		})
@@ -50,7 +43,7 @@ export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | 
 		}
 
 		if (doc.mos.ncsItem && doc.mos.ncsItem.item) {
-			res.item = MosParser.xml2Item(doc.mos.ncsItem.item)
+			res.item = MosModel.XMLMosItem.fromXML(doc.mos.ncsItem.item)
 		}
 
 		return res
@@ -60,19 +53,7 @@ export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | 
 }
 
 export function generateMosPluginItemXml(item: IMOSItem): string {
-	const tmpItem = {
-		...item,
-	}
-	if (item.MosExternalMetaData) {
-		tmpItem.MosExternalMetaData = item.MosExternalMetaData.map((md) => {
-			return {
-				mosScope: md.MosScope,
-				mosSchema: md.MosSchema,
-				mosPayload: md.MosPayload,
-			}
-		}) as any
-	}
-
-	const builder = MosParser.item2xml(tmpItem)
-	return `<mos><ncsItem>${builder.toString()}</ncsItem></mos>`
+	const builder = XMLBuilder.create('ncsItem')
+	MosModel.XMLMosItem.toXML(builder, item)
+	return `<mos>${builder.toString()}</mos>`
 }

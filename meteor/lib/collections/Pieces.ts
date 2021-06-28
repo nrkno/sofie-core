@@ -1,8 +1,7 @@
 import { RundownAPI } from '../api/rundown'
-import { TransformedCollection } from '../typings/meteor'
 import { PartId } from './Parts'
-import { registerCollection, ProtectedString, Omit } from '../lib'
-import { IBlueprintPieceGeneric, IBlueprintPieceDB, BaseContent } from '@sofie-automation/blueprints-integration'
+import { registerCollection, ProtectedString } from '../lib'
+import { IBlueprintPieceGeneric, IBlueprintPieceDB } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
@@ -42,12 +41,9 @@ export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'co
 
 	/** This is set when the part is invalid and these pieces should be ignored */
 	invalid: boolean
-
-	/** The object describing the piece in detail */
-	content?: BaseContent // TODO: Temporary, should be put into IBlueprintPiece
 }
 
-export const Pieces: TransformedCollection<Piece, Piece> = createMongoCollection<Piece>('pieces')
+export const Pieces = createMongoCollection<Piece, Piece>('pieces')
 registerCollection('Pieces', Pieces)
 
 registerIndex(Pieces, {

@@ -9,8 +9,10 @@ import { ContextMenuTrigger, ContextMenu, MenuItem } from '@jstarpl/react-contex
 import * as _ from 'underscore'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
+import { translateMessage, isTranslatableMessage } from '../../../lib/api/TranslatableMessage'
 import { CriticalIcon, WarningIcon, CollapseChevrons, InformationIcon } from '../ui/icons/notifications'
 import update from 'immutability-helper'
+import { i18nTranslator } from '../../ui/i18n'
 
 interface IPopUpProps {
 	id?: string
@@ -41,11 +43,13 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 	render() {
 		const { item } = this.props
 
-		const defaultActions: NotificationAction[] = _.filter(item.actions || [], (i) => i.type === 'default')
 		const allActions: NotificationAction[] = item.actions || []
+		const defaultActions: NotificationAction[] = allActions.filter((action) => action.type === 'default')
 
 		const defaultAction: NotificationAction | undefined =
 			defaultActions.length === 1 && allActions.length === 1 ? defaultActions[0] : undefined
+
+		const message = isTranslatableMessage(item.message) ? translateMessage(item.message, i18nTranslator) : item.message
 
 		return (
 			<div
@@ -63,7 +67,8 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 					},
 					this.props.className
 				)}
-				style={this.props.style}>
+				style={this.props.style}
+			>
 				<div className="notification-pop-up__header">
 					{item.status === NoticeLevel.CRITICAL ? (
 						<CriticalIcon />
@@ -74,7 +79,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 					)}
 				</div>
 				<div className="notification-pop-up__contents">
-					{item.message}
+					{message}
 					{defaultAction || allActions.length ? (
 						<div className="notification-pop-up__actions">
 							{defaultAction ? (
@@ -82,7 +87,8 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 									<button
 										disabled={defaultAction.disabled}
 										className="btn btn-default notification-pop-up__actions--button"
-										onClick={(e) => this.triggerEvent(defaultAction, e)}>
+										onClick={(e) => this.triggerEvent(defaultAction, e)}
+									>
 										<CoreIcon.NrkArrowLeft
 											className="icon"
 											width="1em"
@@ -103,7 +109,8 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 													'btn',
 													['default', 'primary'].indexOf(action.type) ? 'btn-primary' : 'btn-default'
 												)}
-												onClick={(e) => this.triggerEvent(action, e)}>
+												onClick={(e) => this.triggerEvent(action, e)}
+											>
 												{action.label}
 											</button>
 										)
@@ -123,7 +130,8 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 							onClick={(e) => {
 								e.stopPropagation()
 								if (typeof this.props.onDismiss === 'function') this.props.onDismiss(e)
-							}}>
+							}}
+						>
 							{this.props.item.persistent ? <CollapseChevrons /> : <CoreIcon.NrkClose id="nrk-close" />}
 						</button>
 					</ContextMenuTrigger>
@@ -225,8 +233,6 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		}
 
 		dismissAll() {
-			const displayNotifications = this.getNotificationsToDisplay()
-
 			const notificationsToDismiss: string[] = []
 
 			for (const notification of this.props.notifications) {
@@ -270,8 +276,11 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		}
 
 		UNSAFE_componentWillUpdate() {
-			Array.from(document.querySelectorAll('.notification-pop-up.is-highlighted')).forEach((element: HTMLElement) => {
-				element.style.animationName = ''
+			Array.from(document.querySelectorAll('.notification-pop-up.is-highlighted')).forEach((element0: Element) => {
+				const element = element0 as HTMLElement
+				if ('style' in element) {
+					element.style.animationName = ''
+				}
 			})
 		}
 
@@ -305,7 +314,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 					})
 
 					if (currentAnimationName !== 'none') {
-						window.requestAnimationFrame(function() {
+						window.requestAnimationFrame(function () {
 							Array.from(items).forEach((item) => {
 								item.style.animationName = currentAnimationName
 							})
@@ -335,8 +344,9 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 					? toggleButtonEl.getClientRects()[0]
 					: null
 				if (toggleButtonPosition) {
-					const style = `translate3d(${toggleButtonPosition.left -
-						notificationPosition.left}px, ${toggleButtonPosition.top - notificationPosition.top}px, 0) scale(0)`
+					const style = `translate3d(${toggleButtonPosition.left - notificationPosition.left}px, ${
+						toggleButtonPosition.top - notificationPosition.top
+					}px, 0) scale(0)`
 					return style
 				}
 			}
@@ -349,10 +359,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 				(this.props.filter === undefined || (i.status & this.props.filter) !== 0)
 			const sort = (a: Notification, b: Notification) => Notification.compare(a, b)
 			if (this.props.limitCount !== undefined) {
-				return this.props.notifications
-					.filter(filter)
-					.sort(sort)
-					.slice(0, this.props.limitCount)
+				return this.props.notifications.filter(filter).sort(sort).slice(0, this.props.limitCount)
 			} else {
 				return this.props.notifications.filter(filter).sort(sort)
 			}
@@ -368,15 +375,23 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		}
 
 		private notificationKey = (item: Notification) => {
-			return item.id
-				? item.id
-				: item.created +
-						(typeof item.message === 'string'
-							? item.message
-							: item.message === null
-							? 'null'
-							: `jsx_${btoa(JSON.stringify(item.message))}`
-						).toString()
+			if (item.id) {
+				return item.id
+			}
+
+			if (item.message === null) {
+				return `${item.created}null`
+			}
+
+			if (typeof item.message === 'string') {
+				return `${item.created}${item.message}`
+			}
+
+			if (isTranslatableMessage(item.message)) {
+				return `${item.created}${translateMessage(item.message, this.props.t)}`
+			}
+
+			return `${item.created}$jsx_${btoa(JSON.stringify(item.message))}`
 		}
 
 		render() {
@@ -419,8 +434,9 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 							easing: 'ease-in',
 							duration: this.LEAVE_ANIMATION_DURATION,
 							display: 'flex',
-							complete: (elements) => this.checkKeepDisplaying(),
-						}}>
+							complete: () => this.checkKeepDisplaying(),
+						}}
+					>
 						{displayList}
 						{this.props.showEmptyListLabel && displayList.length === 0 && (
 							<div className="notification-pop-ups__empty-list">{t('No notifications')}</div>
@@ -499,7 +515,8 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 					)}
 					role="button"
 					onClick={this.props.onClick}
-					tabIndex={0}>
+					tabIndex={0}
+				>
 					<VelocityReact.VelocityTransitionGroup
 						enter={{
 							animation: {
@@ -514,7 +531,8 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 								opacity: [0, 1],
 							},
 							duration: 500,
-						}}>
+						}}
+					>
 						{!this.props.isOpen ? (
 							<div className="notifications__toggle-button__icon notifications__toggle-button__icon--default">
 								{((this.props.filter || 0) & NoticeLevel.CRITICAL) !== 0 ? (
@@ -532,16 +550,12 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 									</span>
 								)}
 							</div>
-						) : (
-							undefined
-						)}
+						) : undefined}
 						{this.props.isOpen ? (
 							<div className="notifications__toggle-button__icon notifications__toggle-button__icon--collapse">
 								<CollapseChevrons />
 							</div>
-						) : (
-							undefined
-						)}
+						) : undefined}
 					</VelocityReact.VelocityTransitionGroup>
 				</button>
 			)

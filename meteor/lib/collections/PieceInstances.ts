@@ -1,24 +1,12 @@
-import { TransformedCollection } from '../typings/meteor'
-import {
-	registerCollection,
-	literal,
-	ProtectedString,
-	ProtectedStringProperties,
-	protectString,
-	Omit,
-	omit,
-} from '../lib'
-import {
-	IBlueprintPieceInstance,
-	Time,
-	IBlueprintResolvedPieceInstance,
-} from '@sofie-automation/blueprints-integration'
+import { registerCollection, ProtectedString, ProtectedStringProperties, protectString, omit } from '../lib'
+import { IBlueprintPieceInstance, IBlueprintResolvedPieceInstance } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { Piece, PieceId } from './Pieces'
 import { PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
 import { registerIndex } from '../database'
-import { DeepPartial } from 'utility-types'
+import { PartialDeep } from 'type-fest'
+import { RundownPlaylistActivationId } from './RundownPlaylists'
 
 /** A string, identifying a PieceInstance */
 export type PieceInstanceId = ProtectedString<'PieceInstanceId'>
@@ -29,7 +17,10 @@ export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined)
 export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined): IBlueprintPieceInstance | undefined {
 	return pieceInstance as any
 }
-export function protectPieceInstance(pieceInstance: IBlueprintPieceInstance): DeepPartial<PieceInstance> {
+export function unprotectPieceInstanceArray(pieceInstances: PieceInstance[]): IBlueprintPieceInstance[] {
+	return pieceInstances as any
+}
+export function protectPieceInstance(pieceInstance: IBlueprintPieceInstance): PartialDeep<PieceInstance> {
 	return pieceInstance as any
 }
 
@@ -42,9 +33,15 @@ export interface PieceInstanceInfinite
 }
 
 export interface PieceInstance
-	extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece' | 'infinite'>, '_id' | 'adLibSourceId'> {
+	extends ProtectedStringProperties<
+		Omit<IBlueprintPieceInstance, 'piece' | 'infinite'>,
+		'_id' | 'adLibSourceId' | 'partInstanceId'
+	> {
 	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
 	readonly isTemporary?: boolean
+
+	/** The id of the playlist activation session */
+	playlistActivationId: RundownPlaylistActivationId
 
 	/** Whether this instance has been finished with and reset (to restore the original piece as the primary version) */
 	reset?: boolean
@@ -64,18 +61,9 @@ export interface PieceInstance
 
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
 	adLibSourceId?: PieceId
-	/** If this piece has been insterted during run of rundown (such as adLibs), then this is set to the timestamp it was inserted */
-	dynamicallyInserted?: Time
 
 	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
 	infinite?: PieceInstanceInfinite
-
-	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
-	startedPlayback?: Time
-	/** Whether the piece has stopped playback (the most recent time it was played).
-	 * This is set from a callback from the playout gateway (milliseconds since epoch)
-	 */
-	stoppedPlayback?: Time
 
 	/** This is set when the duration needs to be overriden from some user action (milliseconds since start of part) */
 	userDuration?: {
@@ -85,7 +73,7 @@ export interface PieceInstance
 
 export interface ResolvedPieceInstance
 	extends PieceInstance,
-		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'piece' | 'infinite'> {
+		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'partInstanceId' | 'piece' | 'infinite'> {
 	piece: PieceInstancePiece
 }
 
@@ -95,6 +83,7 @@ export function omitPiecePropertiesForInstance(piece: Piece): PieceInstancePiece
 
 export function rewrapPieceToInstance(
 	piece: PieceInstancePiece,
+	playlistActivationId: RundownPlaylistActivationId,
 	rundownId: RundownId,
 	partInstanceId: PartInstanceId,
 	isTemporary?: boolean
@@ -103,6 +92,7 @@ export function rewrapPieceToInstance(
 		isTemporary,
 		_id: protectString(`${partInstanceId}_${piece._id}`),
 		rundownId: rundownId,
+		playlistActivationId: playlistActivationId,
 		partInstanceId: partInstanceId,
 		piece: piece,
 	}
@@ -110,20 +100,20 @@ export function rewrapPieceToInstance(
 
 export function wrapPieceToInstance(
 	piece: Piece,
+	playlistActivationId: RundownPlaylistActivationId,
 	partInstanceId: PartInstanceId,
 	isTemporary?: boolean
 ): PieceInstance {
 	return rewrapPieceToInstance(
 		omitPiecePropertiesForInstance(piece),
+		playlistActivationId,
 		piece.startRundownId,
 		partInstanceId,
 		partInstanceId === protectString('') || isTemporary
 	)
 }
 
-export const PieceInstances: TransformedCollection<PieceInstance, PieceInstance> = createMongoCollection<PieceInstance>(
-	'pieceInstances'
-)
+export const PieceInstances = createMongoCollection<PieceInstance, PieceInstance>('pieceInstances')
 registerCollection('PieceInstances', PieceInstances)
 
 registerIndex(PieceInstances, {
