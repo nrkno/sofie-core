@@ -24,7 +24,7 @@
 		"cov": "meteor npm run unitcov && meteor npm run cov-open",
 		"send-coverage": "codecov -p ..",
 		"test-i": "npm run integration-test",
-		"license-validate": "node ../scripts/checkLicenses.js --allowed=\"MIT,BSD,ISC,Apache,Unlicense,CC0,LGPL,CC BY 3.0,CC BY 4.0,MPL 2.0\" --excludePackages=timecode,rxjs/ajax,rxjs/fetch,rxjs/internal-compatibility,nw-pre-gyp-module-test,rxjs/operators,rxjs/testing,rxjs/webSocket,undefined,i18next-conv,@fortawesome/fontawesome-common-types,argv,indexof",
+		"license-validate": "node ../scripts/checkLicenses.js --allowed=\"MIT,BSD,ISC,Apache,Unlicense,CC0,LGPL,CC BY 3.0,CC BY 4.0,MPL 2.0\" --excludePackages=timecode,rxjs/ajax,rxjs/fetch,rxjs/internal-compatibility,nw-pre-gyp-module-test,rxjs/operators,rxjs/testing,rxjs/webSocket,undefined,i18next-conv,@fortawesome/fontawesome-common-types,argv,indexof,custom-license,private,public-domain-module",
 		"lint": "eslint . --ext .ts --ext .js --ext .tsx --ext .jsx",
 		"lintfix": "npm run lint -- --fix",
 		"quickformat": "prettier \"__mocks__/**\" --write ; prettier \"lib/**\" --write ; prettier \"server/**\" --write ; prettier \"client/**\" --write ; prettier \"*.json\" --write ; prettier \"*.js\" --write ; prettier \"*.md\" --write",
