@@ -67,7 +67,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 
 		_.map(_.keys(this), (key) => {
 			let db = this[key]
-			if (typeof db === 'object' && 'getIfLoaded' in db) {
+			if (db && typeof db === 'object' && 'getIfLoaded' in db) {
 				// If wrapped in a lazy
 				db = db.getIfLoaded()
 			}
