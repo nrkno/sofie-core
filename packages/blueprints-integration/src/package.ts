@@ -331,4 +331,7 @@ export namespace ExpectedPackageStatusAPI {
 	}
 }
 
-export type ListenToPackageUpdate = any // tmp, to be implemented
+export interface ListenToPackageUpdate {
+	/** Same type of _id as in expectedPackages */
+	packageId: string
+}
