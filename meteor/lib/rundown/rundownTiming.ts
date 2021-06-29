@@ -47,8 +47,8 @@ export class RundownTimingCalculator {
 		let startsAtAccumulator = 0
 		let displayStartsAtAccumulator = 0
 
-		let rundownExpectedDurations: Record<string, number> = {}
-		let rundownAsPlayedDurations: Record<string, number> = {}
+		const rundownExpectedDurations: Record<string, number> = {}
+		const rundownAsPlayedDurations: Record<string, number> = {}
 
 		let rundownsBeforeNextBreak: Rundown[] | undefined
 		let breakIsLastRundown: boolean | undefined
@@ -412,13 +412,13 @@ export class RundownTimingCalculator {
 			return undefined
 		}
 
-		let currentRundownIndex = orderedRundowns.findIndex((r) => r._id === currentRundown._id)
+		const currentRundownIndex = orderedRundowns.findIndex((r) => r._id === currentRundown._id)
 
 		if (currentRundownIndex === -1) {
 			return undefined
 		}
 
-		let nextBreakIndex = orderedRundowns.findIndex((rundown, index) => {
+		const nextBreakIndex = orderedRundowns.findIndex((rundown, index) => {
 			if (index < currentRundownIndex) {
 				return false
 			}
@@ -494,7 +494,7 @@ export function computeSegmentDuration(
 	partIds: PartId[],
 	display?: boolean
 ): number {
-	let partDurations = timingDurations.partDurations
+	const partDurations = timingDurations.partDurations
 
 	if (partDurations === undefined) return 0
 

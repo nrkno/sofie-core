@@ -35,7 +35,7 @@ interface ITrackedProps {}
 
 interface IState {}
 
-export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
+export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IProps) => {
 	return {}
 })(
 	class FilterEditor extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {

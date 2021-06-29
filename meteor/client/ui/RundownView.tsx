@@ -400,14 +400,17 @@ const TimingDisplay = withTranslation()(
 											</span>
 										) : null
 									) : (
-									    <span className="timing-clock plan-end right visual-last-child">
-										    <span className="timing-clock-label right">{this.props.layout?.expectedEndText ?? t('Expected End')}</span>
-										    <Moment
-											    interval={0}
-											    format="HH:mm:ss"
-											    date={getCurrentTime() + (this.props.timingDurations.remainingPlaylistDuration || 0)}
-										    />
-									    </span>
+										<span className="timing-clock plan-end right visual-last-child">
+											<span className="timing-clock-label right">
+												{this.props.layout?.expectedEndText ?? t('Expected End')}
+											</span>
+											<Moment
+												interval={0}
+												format="HH:mm:ss"
+												date={getCurrentTime() + (this.props.timingDurations.remainingPlaylistDuration || 0)}
+											/>
+										</span>
+									)
 								) : null}
 								{this.props.timingDurations && this.props.rundownCount < 2 ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 									<span
