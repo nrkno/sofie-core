@@ -550,7 +550,12 @@ export class CoreTSRDeviceHandler {
 		messages: ['Starting up...'],
 	}
 
-	constructor(parent: CoreHandler, device: Promise<DeviceContainer<DeviceOptionsAny>>, deviceId: string, tsrHandler: TSRHandler) {
+	constructor(
+		parent: CoreHandler,
+		device: Promise<DeviceContainer<DeviceOptionsAny>>,
+		deviceId: string,
+		tsrHandler: TSRHandler
+	) {
 		this._coreParentHandler = parent
 		this._devicePr = device
 		this._deviceId = deviceId
@@ -576,9 +581,7 @@ export class CoreTSRDeviceHandler {
 			)
 		)
 		this.core.onError((err) => {
-			this._coreParentHandler.logger.error(
-				'Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err)
-			)
+			this._coreParentHandler.logger.error('Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err))
 		})
 		this.core.onInfo((message) => {
 			this._coreParentHandler.logger.info(
@@ -663,9 +666,7 @@ export class CoreTSRDeviceHandler {
 	onClearMediaObjectCollection(collectionId: string): void {
 		this.core
 			.callMethodLowPrio(PeripheralDeviceAPI.methods.clearMediaObjectCollection, [collectionId])
-			.catch((e) =>
-				this._coreParentHandler.logger.error('Error when clearing Media Objects collection: ' + e, e.stack)
-			)
+			.catch((e) => this._coreParentHandler.logger.error('Error when clearing Media Objects collection: ' + e, e.stack))
 	}
 
 	async dispose(): Promise<void> {
