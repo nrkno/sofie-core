@@ -1,4 +1,6 @@
+import { Tracker } from 'meteor/tracker'
 import _ from 'underscore'
+import { memoizedIsolatedAutorun } from '../../client/lib/reactiveData/reactiveDataHelper'
 import {
 	findPartInstanceInMapOrWrapToTemporary,
 	PartInstance,
@@ -13,6 +15,11 @@ import { Settings } from '../Settings'
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
 const MINIMAL_NONZERO_DURATION = 1
 
+interface BreakProps {
+	rundownsBeforeNextBreak: Rundown[]
+	breakIsLastRundown
+}
+
 export class RundownTimingCalculator {
 	private temporaryPartInstances: Map<PartId, PartInstance> = new Map<PartId, PartInstance>()
 
@@ -26,6 +33,11 @@ export class RundownTimingCalculator {
 	private partDisplayDurations: Record<string, number> = {}
 	private partDisplayDurationsNoPlayback: Record<string, number> = {}
 	private displayDurationGroups: Record<string, number> = {}
+	private breakProps: {
+		comp: Tracker.Computation | undefined
+		props: BreakProps | undefined
+		state: string | undefined
+	} = { comp: undefined, props: undefined, state: undefined }
 
 	updateDurations(
 		now: number,
@@ -400,29 +412,48 @@ export class RundownTimingCalculator {
 	private getRundownsBeforeNextBreak(
 		orderedRundowns: Rundown[],
 		currentRundown: Rundown | undefined
-	): { rundownsBeforeNextBreak: Rundown[]; breakIsLastRundown } | undefined {
-		if (!currentRundown) {
-			return undefined
+	): BreakProps | undefined {
+		let currentState = orderedRundowns.map((r) => r.endOfRundownIsShowBreak ?? '_').join('')
+		if (this.breakProps.comp && this.breakProps.state !== currentState) {
+			this.breakProps.comp.invalidate()
 		}
 
-		const currentRundownIndex = orderedRundowns.findIndex((r) => r._id === currentRundown._id)
+		if (!this.breakProps.comp) {
+			this.breakProps.comp = Tracker.autorun(() => {
+				memoizedIsolatedAutorun(
+					(orderedRundowns, currentRundown) => {
+						if (!currentRundown) {
+							this.breakProps.props = undefined
+						}
 
-		if (currentRundownIndex === -1) {
-			return undefined
+						const currentRundownIndex = orderedRundowns.findIndex((r) => r._id === currentRundown._id)
+
+						if (currentRundownIndex === -1) {
+							this.breakProps.props = undefined
+						}
+
+						const nextBreakIndex = orderedRundowns.findIndex((rundown, index) => {
+							if (index < currentRundownIndex) {
+								return false
+							}
+
+							return rundown.endOfRundownIsShowBreak === true
+						})
+
+						this.breakProps.props = {
+							rundownsBeforeNextBreak: orderedRundowns.slice(currentRundownIndex, nextBreakIndex + 1),
+							breakIsLastRundown: nextBreakIndex === orderedRundowns.length,
+						}
+					},
+					'getRundownsBeforeNextBreak',
+					orderedRundowns,
+					currentRundown
+				)
+			})
 		}
 
-		const nextBreakIndex = orderedRundowns.findIndex((rundown, index) => {
-			if (index < currentRundownIndex) {
-				return false
-			}
-
-			return rundown.endOfRundownIsShowBreak === true
-		})
-
-		return {
-			rundownsBeforeNextBreak: orderedRundowns.slice(currentRundownIndex, nextBreakIndex + 1),
-			breakIsLastRundown: nextBreakIndex === orderedRundowns.length,
-		}
+		this.breakProps.state = currentState
+		return this.breakProps.props
 	}
 }
 
