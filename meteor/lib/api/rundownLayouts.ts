@@ -19,6 +19,7 @@ import {
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
 import { literal } from '../lib'
+import { TFunction } from 'i18next'
 
 export interface NewRundownLayoutsAPI {
 	createRundownLayout(
@@ -105,26 +106,26 @@ class RundownLayoutsRegistry {
 		})
 	}
 
-	public getSettingsManifest(): CustomizableRegionSettingsManifest[] {
+	public getSettingsManifest(t: TFunction): CustomizableRegionSettingsManifest[] {
 		return [
 			{
 				_id: CustomizableRegions.RundownView,
-				title: 'Rundown View Layouts',
+				title: t('Rundown View Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.rundownViewLayouts),
 			},
 			{
 				_id: CustomizableRegions.Shelf,
-				title: 'Shelf Layouts',
+				title: t('Shelf Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.shelfLayouts),
 			},
 			{
 				_id: CustomizableRegions.MiniShelf,
-				title: 'Mini Shelf Layouts',
+				title: t('Mini Shelf Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.miniShelfLayouts),
 			},
 			{
 				_id: CustomizableRegions.RundownHeader,
-				title: 'Rundown Header Layouts',
+				title: t('Rundown Header Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.rundownHeaderLayouts),
 			},
 		]
@@ -166,8 +167,8 @@ export namespace RundownLayoutsAPI {
 		supportedElements: [],
 	})
 
-	export function getSettingsManifest(): CustomizableRegionSettingsManifest[] {
-		return registry.getSettingsManifest()
+	export function getSettingsManifest(t: TFunction): CustomizableRegionSettingsManifest[] {
+		return registry.getSettingsManifest(t)
 	}
 
 	export function isLayoutForShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
