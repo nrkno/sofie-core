@@ -64,6 +64,7 @@ import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../R
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { translateMessage } from '../../../lib/api/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
+import { getShowHiddenSourceLayers } from '../../lib/localStorage'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -825,6 +826,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 						currentRundownId
 					)
 
+					const showHiddenSourceLayers = getShowHiddenSourceLayers()
+
 					rundownBaselineAdLibs = rundownBaselineAdLibs
 						.concat(globalAdLibActions)
 						.sort((a, b) => a._rank - b._rank)
@@ -847,7 +850,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 								}
 							}
 
-							if (sourceLayer && sourceLayer.isHidden) {
+							if (sourceLayer && sourceLayer.isHidden && !showHiddenSourceLayers) {
 								uiAdLib.isHidden = true
 							}
 
