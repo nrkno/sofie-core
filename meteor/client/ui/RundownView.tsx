@@ -547,7 +547,7 @@ const NextBreakTiming = withTranslation()(
 				return (
 					<React.Fragment>
 						<span className="timing-clock plan-end right">
-							<span className="timing-clock-label right">{t(this.props.breakText || 'Next Break')}</span>
+							<span className="timing-clock-label right">{this.props.breakText ?? t('Next Break')}</span>
 							<Moment interval={0} format="HH:mm:ss" date={breakRundown.expectedEnd} />
 						</span>
 						{!this.props.loop && breakRundown.expectedEnd ? (

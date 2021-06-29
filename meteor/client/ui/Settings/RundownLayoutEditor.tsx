@@ -437,7 +437,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 												<button className="btn btn-secondary" onClick={(e) => this.onAddElement(item)}>
 													<FontAwesomeIcon icon={faPlus} />
 													&nbsp;
-													{t(`Add ${layout?.filtersTitle?.toLowerCase() ?? 'filter'}`)}
+													{layout?.filtersTitle ?? t(`Add filter`)}
 												</button>
 											</div>
 										) : null}
