@@ -373,8 +373,8 @@ export const RundownPlaylistUi = DropTarget(
 							</span>
 							{rundownLayouts.some(
 								(l) =>
-									(RundownLayoutsAPI.IsLayoutForShelf(l) && l.exposeAsStandalone) ||
-									(RundownLayoutsAPI.IsLayoutForRundownView(l) && l.exposeAsSelectableLayout)
+									(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
+									(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
 							) && (
 								<span className="rundown-list-item__text">
 									<RundownViewLayoutSelection

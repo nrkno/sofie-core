@@ -61,35 +61,35 @@ class RundownLayoutsRegistry {
 	private miniShelfLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutShelfBase>> = new Map()
 	private rundownHeaderLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutRundownHeader>> = new Map()
 
-	public RegisterShelfLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutShelfBase>) {
+	public registerShelfLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutShelfBase>) {
 		this.shelfLayouts.set(id, description)
 	}
 
-	public RegisterRundownViewLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
+	public registerRundownViewLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
 		this.rundownViewLayouts.set(id, description)
 	}
 
-	public RegisterMiniShelfLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
+	public registerMiniShelfLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
 		this.miniShelfLayouts.set(id, description)
 	}
 
-	public RegisterRundownHeaderLayouts(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
+	public registerRundownHeaderLayouts(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
 		this.rundownHeaderLayouts.set(id, description)
 	}
 
-	public IsShelfLayout(regionId: string) {
+	public isShelfLayout(regionId: string) {
 		return regionId === CustomizableRegions.Shelf
 	}
 
-	public IsRudownViewLayout(regionId: string) {
+	public isRudownViewLayout(regionId: string) {
 		return regionId === CustomizableRegions.RundownView
 	}
 
-	public IsMiniShelfLayout(regionId: string) {
+	public isMiniShelfLayout(regionId: string) {
 		return regionId === CustomizableRegions.MiniShelf
 	}
 
-	public IsRundownHeaderLayout(regionId: string) {
+	public isRundownHeaderLayout(regionId: string) {
 		return regionId === CustomizableRegions.RundownHeader
 	}
 
@@ -105,7 +105,7 @@ class RundownLayoutsRegistry {
 		})
 	}
 
-	public GetSettingsManifest(): CustomizableRegionSettingsManifest[] {
+	public getSettingsManifest(): CustomizableRegionSettingsManifest[] {
 		return [
 			{
 				_id: CustomizableRegions.RundownView,
@@ -133,7 +133,7 @@ class RundownLayoutsRegistry {
 
 export namespace RundownLayoutsAPI {
 	const registry = new RundownLayoutsRegistry()
-	registry.RegisterShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
+	registry.registerShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
 		filtersTitle: 'Panels',
 		supportsFilters: true,
 		supportedElements: [
@@ -143,7 +143,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.PIECE_COUNTDOWN,
 		],
 	})
-	registry.RegisterShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
+	registry.registerShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
 		filtersTitle: 'Tabs',
 		supportsFilters: true,
 		supportedElements: [
@@ -153,37 +153,37 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.PIECE_COUNTDOWN,
 		],
 	})
-	registry.RegisterMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
+	registry.registerMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
 		supportedElements: [],
 	})
-	registry.RegisterMiniShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
+	registry.registerMiniShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
 		supportedElements: [],
 	})
-	registry.RegisterRundownViewLayout(RundownLayoutType.RUNDOWN_VIEW_LAYOUT, {
+	registry.registerRundownViewLayout(RundownLayoutType.RUNDOWN_VIEW_LAYOUT, {
 		supportedElements: [],
 	})
-	registry.RegisterRundownHeaderLayouts(RundownLayoutType.RUNDOWN_HEADER_LAYOUT, {
+	registry.registerRundownHeaderLayouts(RundownLayoutType.RUNDOWN_HEADER_LAYOUT, {
 		supportedElements: [],
 	})
 
-	export function GetSettingsManifest(): CustomizableRegionSettingsManifest[] {
-		return registry.GetSettingsManifest()
+	export function getSettingsManifest(): CustomizableRegionSettingsManifest[] {
+		return registry.getSettingsManifest()
 	}
 
-	export function IsLayoutForShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
-		return registry.IsShelfLayout(layout.regionId)
+	export function isLayoutForShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
+		return registry.isShelfLayout(layout.regionId)
 	}
 
-	export function IsLayoutForRundownView(layout: RundownLayoutBase): layout is RundownViewLayout {
-		return registry.IsRudownViewLayout(layout.regionId)
+	export function isLayoutForRundownView(layout: RundownLayoutBase): layout is RundownViewLayout {
+		return registry.isRudownViewLayout(layout.regionId)
 	}
 
-	export function IsLayoutForMiniShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
-		return registry.IsMiniShelfLayout(layout.regionId)
+	export function isLayoutForMiniShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
+		return registry.isMiniShelfLayout(layout.regionId)
 	}
 
-	export function IsLayoutForRundownHeader(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {
-		return registry.IsRundownHeaderLayout(layout.regionId)
+	export function isLayoutForRundownHeader(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {
+		return registry.isRundownHeaderLayout(layout.regionId)
 	}
 
 	export function isRundownViewLayout(layout: RundownLayoutBase): layout is RundownViewLayout {

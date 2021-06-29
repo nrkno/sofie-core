@@ -1733,7 +1733,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const shelfLayout = this.props.rundownLayouts?.find((layout) => layout._id === this.props.shelfLayoutId)
 			let isInspectorShelfExpanded = false
 
-			if (shelfLayout && RundownLayoutsAPI.IsLayoutForShelf(shelfLayout)) {
+			if (shelfLayout && RundownLayoutsAPI.isLayoutForShelf(shelfLayout)) {
 				isInspectorShelfExpanded = shelfLayout.openByDefault
 			}
 
@@ -1820,7 +1820,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 
 				// Try to load defaults from rundown view layouts
-				if (selectedViewLayout && RundownLayoutsAPI.IsLayoutForRundownView(selectedViewLayout)) {
+				if (selectedViewLayout && RundownLayoutsAPI.isLayoutForRundownView(selectedViewLayout)) {
 					const rundownLayout = selectedViewLayout as RundownViewLayout
 					if (!selectedShelfLayout && rundownLayout.shelfLayout) {
 						selectedShelfLayout = props.rundownLayouts.find((i) => i._id === rundownLayout.shelfLayout)
@@ -1842,19 +1842,19 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				// if still not found, use the first one
 				if (!selectedShelfLayout) {
-					selectedShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.IsLayoutForShelf(i))
+					selectedShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForShelf(i))
 				}
 
 				if (!selectedViewLayout) {
-					selectedViewLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.IsLayoutForRundownView(i))
+					selectedViewLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownView(i))
 				}
 
 				if (!selectedHeaderLayout) {
-					selectedHeaderLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.IsLayoutForRundownHeader(i))
+					selectedHeaderLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownHeader(i))
 				}
 
 				if (!selectedMiniShelfLayout) {
-					selectedMiniShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.IsLayoutForMiniShelf(i))
+					selectedMiniShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForMiniShelf(i))
 				}
 			}
 
@@ -1868,16 +1868,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			return {
 				shelfLayout:
-					selectedShelfLayout && RundownLayoutsAPI.IsLayoutForShelf(selectedShelfLayout)
+					selectedShelfLayout && RundownLayoutsAPI.isLayoutForShelf(selectedShelfLayout)
 						? selectedShelfLayout
 						: undefined,
 				rundownViewLayout: selectedViewLayout,
 				rundownHeaderLayout:
-					selectedHeaderLayout && RundownLayoutsAPI.IsLayoutForRundownHeader(selectedHeaderLayout)
+					selectedHeaderLayout && RundownLayoutsAPI.isLayoutForRundownHeader(selectedHeaderLayout)
 						? selectedHeaderLayout
 						: undefined,
 				miniShelfLayout:
-					selectedMiniShelfLayout && RundownLayoutsAPI.IsLayoutForMiniShelf(selectedMiniShelfLayout)
+					selectedMiniShelfLayout && RundownLayoutsAPI.isLayoutForMiniShelf(selectedMiniShelfLayout)
 						? selectedMiniShelfLayout
 						: undefined,
 				currentRundown,

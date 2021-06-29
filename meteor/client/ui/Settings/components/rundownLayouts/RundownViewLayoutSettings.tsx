@@ -48,7 +48,7 @@ export default withTranslation()(
 								modifiedClassName="bghl"
 								attribute={'shelfLayout'}
 								obj={this.props.item}
-								options={filterLayouts(this.props.layouts, RundownLayoutsAPI.IsLayoutForShelf)}
+								options={filterLayouts(this.props.layouts, RundownLayoutsAPI.isLayoutForShelf)}
 								type="dropdown"
 								collection={RundownLayouts}
 								className="input text-input input-l dropdown"
@@ -62,7 +62,7 @@ export default withTranslation()(
 								modifiedClassName="bghl"
 								attribute={'miniShelfLayout'}
 								obj={this.props.item}
-								options={filterLayouts(this.props.layouts, RundownLayoutsAPI.IsLayoutForMiniShelf)}
+								options={filterLayouts(this.props.layouts, RundownLayoutsAPI.isLayoutForMiniShelf)}
 								type="dropdown"
 								collection={RundownLayouts}
 								className="input text-input input-l dropdown"
@@ -76,7 +76,7 @@ export default withTranslation()(
 								modifiedClassName="bghl"
 								attribute={'rundownHeaderLayout'}
 								obj={this.props.item}
-								options={filterLayouts(this.props.layouts, RundownLayoutsAPI.IsLayoutForRundownHeader)}
+								options={filterLayouts(this.props.layouts, RundownLayoutsAPI.isLayoutForRundownHeader)}
 								type="dropdown"
 								collection={RundownLayouts}
 								className="input text-input input-l dropdown"

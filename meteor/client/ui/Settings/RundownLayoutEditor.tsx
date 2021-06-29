@@ -300,10 +300,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		renderElements(item: RundownLayoutBase, layout: CustomizableRegionLayout | undefined) {
 			const { t } = this.props
 
-			const isShelfLayout = RundownLayoutsAPI.IsLayoutForShelf(item)
-			const isRundownViewLayout = RundownLayoutsAPI.IsLayoutForRundownView(item)
-			const isRundownHeaderLayout = RundownLayoutsAPI.IsLayoutForRundownHeader(item)
-			const isMiniShelfLayout = RundownLayoutsAPI.IsLayoutForMiniShelf(item)
+			const isShelfLayout = RundownLayoutsAPI.isLayoutForShelf(item)
+			const isRundownViewLayout = RundownLayoutsAPI.isLayoutForRundownView(item)
+			const isRundownHeaderLayout = RundownLayoutsAPI.isLayoutForRundownHeader(item)
+			const isMiniShelfLayout = RundownLayoutsAPI.isLayoutForMiniShelf(item)
 
 			return (
 				<React.Fragment>

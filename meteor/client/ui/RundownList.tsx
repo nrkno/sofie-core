@@ -310,8 +310,8 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 											<span>{t('Last updated')}</span>
 											{this.props.rundownLayouts.some(
 												(l) =>
-													(RundownLayoutsAPI.IsLayoutForShelf(l) && l.exposeAsStandalone) ||
-													(RundownLayoutsAPI.IsLayoutForRundownView(l) && l.exposeAsSelectableLayout)
+													(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
+													(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
 											) && <span>{t('View Layout')}</span>}
 											<span>&nbsp;</span>
 										</header>
