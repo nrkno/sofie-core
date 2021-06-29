@@ -73,10 +73,6 @@ export function AfterBroadcastForm(props: IProps) {
 				...obj,
 				[attr]: newValue,
 			})
-			console.log('Set object', obj, {
-				...obj,
-				[attr]: newValue,
-			})
 		}
 	}
 
