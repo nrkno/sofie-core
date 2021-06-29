@@ -303,7 +303,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			const isShelfLayout = RundownLayoutsAPI.isLayoutForShelf(item)
 			const isRundownViewLayout = RundownLayoutsAPI.isLayoutForRundownView(item)
 			const isRundownHeaderLayout = RundownLayoutsAPI.isLayoutForRundownHeader(item)
-			const isMiniShelfLayout = RundownLayoutsAPI.isLayoutForMiniShelf(item)
 
 			return (
 				<React.Fragment>

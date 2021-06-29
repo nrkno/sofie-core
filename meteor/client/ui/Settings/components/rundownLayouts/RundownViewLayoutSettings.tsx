@@ -57,20 +57,6 @@ export default withTranslation()(
 					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
-							{t('Mini Shelf Layout')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'miniShelfLayout'}
-								obj={this.props.item}
-								options={filterLayouts(this.props.layouts, RundownLayoutsAPI.isLayoutForMiniShelf)}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input input-l dropdown"
-							></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
 							{t('Rundown Header Layout')}
 							<EditAttribute
 								modifiedClassName="bghl"
