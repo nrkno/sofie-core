@@ -60,13 +60,7 @@ export class RundownTimingCalculator {
 		let currentAIndex = -1
 
 		if (playlist) {
-			const breakProps = currentRundown
-				? this.getRundownsBeforeNextBreak(
-						rundowns,
-						currentRundown,
-						rundowns.filter((r) => r.endOfRundownIsShowBreak)
-				  )
-				: undefined
+			const breakProps = currentRundown ? this.getRundownsBeforeNextBreak(rundowns, currentRundown) : undefined
 
 			if (breakProps) {
 				rundownsBeforeNextBreak = breakProps.rundownsBeforeNextBreak
@@ -405,8 +399,7 @@ export class RundownTimingCalculator {
 
 	private getRundownsBeforeNextBreak(
 		orderedRundowns: Rundown[],
-		currentRundown: Rundown | undefined,
-		breakRundowns: Rundown[]
+		currentRundown: Rundown | undefined
 	): { rundownsBeforeNextBreak: Rundown[]; breakIsLastRundown } | undefined {
 		if (!currentRundown) {
 			return undefined
@@ -423,7 +416,7 @@ export class RundownTimingCalculator {
 				return false
 			}
 
-			return breakRundowns.some((r) => r._id == rundown._id)
+			return rundown.endOfRundownIsShowBreak === true
 		})
 
 		return {
