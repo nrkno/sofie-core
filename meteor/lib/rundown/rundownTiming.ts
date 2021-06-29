@@ -64,7 +64,7 @@ export class RundownTimingCalculator {
 				? this.getRundownsBeforeNextBreak(
 						rundowns,
 						currentRundown,
-						rundowns.filter((r) => r.endIsBreak)
+						rundowns.filter((r) => r.endOfRundownIsShowBreak)
 				  )
 				: undefined
 

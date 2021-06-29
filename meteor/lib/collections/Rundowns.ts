@@ -105,7 +105,7 @@ export class Rundown implements DBRundown {
 	public notifiedCurrentPlayingPartExternalId?: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
-	public endIsBreak?: boolean
+	public endOfRundownIsShowBreak?: boolean
 	public externalNRCSName: string
 	public playlistId: RundownPlaylistId
 	public playlistIdIsSetInSofie?: boolean
