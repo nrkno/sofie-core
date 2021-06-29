@@ -18,27 +18,27 @@ const QUATER_DAY = 6 * 60 * 60 * 1000
  * This is a countdown to the rundown's Expected Start or Expected End time. It shows nothing if the expectedStart is undefined
  * or the time to Expected Start/End from now is larger than 6 hours.
  */
-const RundownCountdown = withTranslation()(
+const MarkerCountdownText = withTranslation()(
 	withTiming<
 		Translated<{
-			expectedStartOrEnd: number | undefined
+			markerTimestamp: number | undefined
 			className?: string | undefined
 		}>,
 		{}
 	>({
 		filter: 'currentTime',
-	})(function RundownCountdown(
+	})(function MarkerCountdown(
 		props: Translated<
 			WithTiming<{
-				expectedStartOrEnd: number | undefined
+				markerTimestamp: number | undefined
 				className?: string | undefined
 			}>
 		>
 	) {
 		const { t } = props
-		if (props.expectedStartOrEnd === undefined) return null
+		if (props.markerTimestamp === undefined) return null
 
-		const time = props.expectedStartOrEnd - (props.timingDurations.currentTime || 0)
+		const time = props.markerTimestamp - (props.timingDurations.currentTime || 0)
 
 		if (time < QUATER_DAY) {
 			return (
@@ -83,9 +83,9 @@ export const RundownDividerHeader = withTranslation()(function RundownDividerHea
 						{rundown.expectedStart}
 					</Moment>
 					&nbsp;
-					<RundownCountdown
+					<MarkerCountdownText
 						className="rundown-divider-timeline__expected-start__countdown"
-						expectedStartOrEnd={rundown.expectedStart}
+						markerTimestamp={rundown.expectedStart}
 					/>
 				</div>
 			) : null}
@@ -107,9 +107,9 @@ export const RundownDividerHeader = withTranslation()(function RundownDividerHea
 						{rundown.expectedEnd}
 					</Moment>
 					&nbsp;
-					<RundownCountdown
+					<MarkerCountdownText
 						className="rundown-divider-timeline__expected-end__countdown"
-						expectedStartOrEnd={rundown.expectedEnd}
+						markerTimestamp={rundown.expectedEnd}
 					/>
 				</div>
 			) : null}
