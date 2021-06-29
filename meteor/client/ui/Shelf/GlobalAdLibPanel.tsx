@@ -659,7 +659,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		renderListView() {
 			return (
 				<React.Fragment>
-					<AdLibPanelToolbar onFilterChange={this.onFilterChange} noSegments={true} />
+					<AdLibPanelToolbar onFilterChange={this.onFilterChange} noSegments={true} searchFilter={this.state.filter} />
 					<AdLibListView
 						onSelectAdLib={this.onSelectAdLib}
 						onToggleAdLib={this.onToggleAdLib}
