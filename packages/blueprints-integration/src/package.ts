@@ -330,6 +330,9 @@ export namespace ExpectedPackageStatusAPI {
 		/** The reason as to why the status is what it is */
 		statusReason: Reason
 
+		/** Timestamp when the status was (actually) last changed. Just minor changes in the statusReason doesn't count. */
+		statusChanged: number
+
 		/** Progress, 0-1 */
 		progress?: number
 		/** Calculated time left of this step */
