@@ -88,6 +88,7 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 
 			/** All segments that need updating */
 			const segmentsToUpdate = new Set<SegmentId>()
+			let regenerateRundownBaseline = false
 
 			for (const packageId of packageIds) {
 				const pkg = cache.ExpectedPackages.findOne(packageId)
@@ -97,8 +98,13 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 						pkg.fromPieceType === ExpectedPackageDBType.ADLIB_PIECE
 					) {
 						segmentsToUpdate.add(pkg.segmentId)
+					} else if (
+						pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_ACTION ||
+						pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_PIECE ||
+						pkg.fromPieceType === ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
+					) {
+						regenerateRundownBaseline = true
 					}
-					// TODO - trigger baseline regenerateion
 				} else {
 					logger.warn(`onUpdatedPackageInfoForRundown: Missing package: "${packageId}"`)
 				}
@@ -109,6 +115,11 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 					', '
 				)}" will trigger update of segments: ${Array.from(segmentsToUpdate).join(', ')}`
 			)
+
+			if (regenerateRundownBaseline) {
+				// trigger a re-generation of the rundown baseline
+				// TODO - to be implemented.
+			}
 
 			const { result, skippedSegments } = await regenerateSegmentsFromIngestData(
 				cache,
