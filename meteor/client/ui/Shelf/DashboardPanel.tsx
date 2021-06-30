@@ -440,6 +440,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						MeteorCall.userAction.executeAction(
 							e,
 							this.props.playlist._id,
+							action._id,
 							action.actionId,
 							action.userData,
 							mode?.data
@@ -517,7 +518,13 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					if (piece.isAction && piece.adlibAction) {
 						const action = piece.adlibAction
 						doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-							MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
+							MeteorCall.userAction.executeAction(
+								e,
+								this.props.playlist._id,
+								action._id,
+								action.actionId,
+								action.userData
+							)
 						)
 					} else if (!piece.isGlobal) {
 						doUserAction(t, e, UserAction.START_ADLIB, (e) =>

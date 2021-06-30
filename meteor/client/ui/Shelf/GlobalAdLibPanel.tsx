@@ -599,6 +599,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 						MeteorCall.userAction.executeAction(
 							e,
 							this.props.playlist._id,
+							action._id,
 							action.actionId,
 							action.userData,
 							mode?.data

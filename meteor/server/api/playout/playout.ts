@@ -75,6 +75,10 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { CacheForStudio } from '../studio/cache'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
+import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
+import { AdLibActionId } from '../../../lib/collections/AdLibActions'
+import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { profiler } from '../profiler'
 
 /**
@@ -1111,16 +1115,18 @@ export namespace ServerPlayoutAPI {
 	export function executeAction(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
+		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: any,
 		triggerMode?: string
 	) {
 		check(rundownPlaylistId, String)
+		check(actionDocId, String)
 		check(actionId, String)
 		check(userData, Match.Any)
 		check(triggerMode, Match.Maybe(String))
 
-		return executeActionInner(access, rundownPlaylistId, async (actionContext, _cache, _rundown) => {
+		return executeActionInner(access, rundownPlaylistId, actionDocId, async (actionContext, _cache, _rundown) => {
 			const blueprint = await loadShowStyleBlueprint(actionContext.showStyleCompound)
 			if (!blueprint.blueprint.executeAction) {
 				throw new Meteor.Error(
@@ -1138,6 +1144,7 @@ export namespace ServerPlayoutAPI {
 	export function executeActionInner(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
+		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		func: (
 			context: ActionExecutionContext,
 			cache: CacheForPlayout,
@@ -1176,7 +1183,15 @@ export namespace ServerPlayoutAPI {
 				if (!rundown)
 					throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
 
-				const showStyle = await cache.activationCache.getShowStyleCompound(rundown)
+				const [showStyle, watchedPackages] = await Promise.all([
+					cache.activationCache.getShowStyleCompound(rundown),
+					WatchedPackagesHelper.create(cache.Studio.doc._id, {
+						pieceId: actionDocId,
+						fromPieceType: {
+							$in: [ExpectedPackageDBType.ADLIB_ACTION, ExpectedPackageDBType.BASELINE_ADLIB_ACTION],
+						},
+					}),
+				])
 				const actionContext = new ActionExecutionContext(
 					{
 						name: `${rundown.name}(${playlist.name})`,
@@ -1187,7 +1202,8 @@ export namespace ServerPlayoutAPI {
 					},
 					cache,
 					showStyle,
-					rundown
+					rundown,
+					watchedPackages
 				)
 
 				// If any action cannot be done due to timings, that needs to be rejected by the context

@@ -17,8 +17,8 @@ import {
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageId,
 } from '../../../lib/collections/PackageContainerPackageStatus'
-import { BulkWriteOperation } from 'mongodb'
 import { getPackageInfoId, PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
+import { BulkWriteOperation } from 'mongodb'
 import { onUpdatedPackageInfo } from '../ingest/packageInfo'
 
 export namespace PackageManagerIntegration {

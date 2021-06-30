@@ -26,6 +26,7 @@ import { isTooCloseToAutonext } from '../../playout/lib'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../../playout/lockFunction'
+import { WatchedPackagesHelper } from '../context/watchedPackages'
 
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 ServerPlayoutAdLibAPI.innerStopPieces = jest.fn()
@@ -135,6 +136,8 @@ describe('Test blueprint api context', () => {
 
 		const showStyle = await cache.activationCache.getShowStyleCompound(rundown)
 
+		const watchedPackages = WatchedPackagesHelper.empty() // Not needed by the tests for now
+
 		const context = new ActionExecutionContext(
 			{
 				name: 'fakeContext',
@@ -142,7 +145,8 @@ describe('Test blueprint api context', () => {
 			},
 			cache,
 			showStyle,
-			rundown
+			rundown,
+			watchedPackages
 		)
 		expect(context.studio).toBeTruthy()
 
