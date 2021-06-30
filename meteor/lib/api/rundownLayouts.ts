@@ -19,6 +19,7 @@ import {
 	RundownLayoutPlaylistEndTimer,
 	RundownLayoutEndWords,
 	RundownLayoutSegmentTiming,
+	RundownLayoutPartTiming,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -178,6 +179,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.PLAYLIST_END_TIMER,
 			RundownLayoutElementType.END_WORDS,
 			RundownLayoutElementType.SEGMENT_TIMING,
+			RundownLayoutElementType.PART_TIMING,
 		],
 	})
 
@@ -249,6 +251,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isSegmentTiming(element: RundownLayoutElementBase): element is RundownLayoutSegmentTiming {
 		return element.type === RundownLayoutElementType.SEGMENT_TIMING
+	}
+
+	export function isPartTiming(element: RundownLayoutElementBase): element is RundownLayoutPartTiming {
+		return element.type === RundownLayoutElementType.PART_TIMING
 	}
 
 	export function adLibRegionToFilter(element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {

@@ -10,7 +10,6 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Segment } from '../../../lib/collections/Segments'
-import { WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartExtended } from '../../../lib/Rundown'
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
@@ -36,7 +35,7 @@ interface ISegmentTimingPanelTrackedProps {
 interface IState {}
 
 class SegmentTimingPanelInner extends MeteorReactComponent<
-	WithTiming<Translated<ISegmentTimingPanelProps & ISegmentTimingPanelTrackedProps>>,
+	Translated<ISegmentTimingPanelProps & ISegmentTimingPanelTrackedProps>,
 	IState
 > {
 	constructor(props) {

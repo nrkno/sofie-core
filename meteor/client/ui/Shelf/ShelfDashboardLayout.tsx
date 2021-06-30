@@ -18,6 +18,7 @@ import { PlaylistStartTimerPanel } from './PlaylistStartTimerPanel'
 import { EndWordsPanel } from './EndWordsPanel'
 import { PlaylistEndTimerPanel } from './PlaylistEndTimerPanel'
 import { SegmentTimingPanel } from './SegmentTimingPanel'
+import { PartTimingPanel } from './PartTimingPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -121,6 +122,8 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							panel={panel}
 							showStyleBase={props.showStyleBase}
 						/>
+					) : RundownLayoutsAPI.isPartTiming(panel) ? (
+						<PartTimingPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 					) : null
 				)}
 			{rundownLayout.actionButtons && (

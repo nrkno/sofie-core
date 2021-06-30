@@ -15,6 +15,7 @@ import {
 	RundownLayoutEndWords,
 	RundownLayoutExternalFrame,
 	RundownLayoutFilterBase,
+	RundownLayoutPartTiming,
 	RundownLayoutPieceCountdown,
 	RundownLayoutPlaylistEndTimer,
 	RundownLayoutPlaylistStartTimer,
@@ -1135,6 +1136,36 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			)
 		}
 
+		renderPartCountDown(
+			item: RundownLayoutBase,
+			tab: RundownLayoutPartTiming,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			let { t } = this.props
+
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Type')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${this.props.index}.timingType`}
+								obj={this.props.item}
+								options={['count_down', 'count_up']}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
 		render() {
 			const { t } = this.props
 
@@ -1234,6 +1265,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						  )
 						: RundownLayoutsAPI.isSegmentTiming(this.props.filter)
 						? this.renderSegmentCountDown(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isPartTiming(this.props.filter)
+						? this.renderPartCountDown(
 								this.props.item,
 								this.props.filter,
 								this.props.index,
