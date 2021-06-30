@@ -27,9 +27,14 @@ import { logger } from '../../logging'
 import { PartEndState, ShowStyleBlueprintManifest, VTContent } from '@sofie-automation/blueprints-integration'
 import { getResolvedPieces } from './pieces'
 import * as _ from 'underscore'
-import { PieceInstance, PieceInstanceId, PieceInstanceInfiniteId } from '../../../lib/collections/PieceInstances'
+import {
+	PieceInstance,
+	PieceInstanceId,
+	PieceInstanceInfiniteId,
+	PieceInstances,
+} from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
-import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
 import { StudioId } from '../../../lib/collections/Studios'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -192,6 +197,37 @@ export function takeNextPartInnerSync(
 		})
 	}
 	playlist = _.extend(playlist, m) as RundownPlaylist
+
+	const resetPartInstanceWithPieceInstances = (cache: CacheForRundownPlaylist, partInstanceId: PartInstanceId) => {
+		cache.PartInstances.update(partInstanceId, {
+			$set: {
+				reset: true,
+			},
+		})
+		cache.deferAfterSave(() => {
+			PieceInstances.update(
+				{
+					partInstanceId: partInstanceId,
+				},
+				{
+					$set: {
+						reset: true,
+					},
+				},
+				{
+					multi: true,
+				}
+			)
+		})
+	}
+
+	// Reset old PartInstances and PieceInstances of the taken Part, that were excluded from resetting in setNextPart:
+	if (currentPartInstance?.part._id === takePartInstance.part._id) {
+		resetPartInstanceWithPieceInstances(cache, currentPartInstance._id)
+	}
+	if (previousPartInstance?.part._id === takePartInstance.part._id) {
+		resetPartInstanceWithPieceInstances(cache, previousPartInstance._id)
+	}
 
 	// Once everything is synced, we can choose the next part
 	libsetNextPart(cache, playlist, nextPart ? nextPart.part : null)
