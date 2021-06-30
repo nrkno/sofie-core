@@ -143,7 +143,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 				return p.package ? (
 					<PackageStatus key={packageId} package={p.package} statuses={p.statuses} />
 				) : (
-					<tr className="package">
+					<tr className="package" key={packageId}>
 						<td colSpan={99}>{t('Unknown Package "{{packageId}}"', { packageId })}</td>
 					</tr>
 				)
@@ -201,65 +201,140 @@ interface IPackageStatusProps {
 }
 interface PackageStatusState {
 	isOpen: boolean
+	requiredWorking: boolean
+	allWorking: boolean
 }
 
 const PackageStatus = withTranslation()(
 	class PackageStatus extends React.Component<Translated<IPackageStatusProps>, PackageStatusState> {
+		private requiredProgress: number
+		private allProgress: number
+		private requiredProgressLastChanged: number
+		private allProgressLastChanged: number
+		private requiredModifiedHash: number
+		private allModifiedHash: number
+
+		/** How long to wait before considering an unchanged package to not be "working" annymore */
+		private WORKING_TIMEOUT = 2000
+
+		private updateWorkingStateTimeout: NodeJS.Timeout | null = null
+
 		constructor(props) {
 			super(props)
 
 			this.state = {
 				isOpen: false,
+				// requiredProgress: this.getProgress(true),
+				// allProgress: this.getProgress(false),
+				requiredWorking: false,
+				allWorking: false,
 			}
+
+			this.requiredProgress = this.getProgress(true)
+			this.allProgress = this.getProgress(false)
+			this.requiredModifiedHash = this.getModifiedHash(true)
+			this.allModifiedHash = this.getModifiedHash(false)
+			this.requiredProgressLastChanged = 0
+			this.allProgressLastChanged = 0
 		}
 		toggleOpen(): void {
 			this.setState({
 				isOpen: !this.state.isOpen,
 			})
 		}
-		getPackageStatus() {
-			const { t } = this.props
-			const getProgress = (onlyRequired: boolean) => {
-				let count = 0
-				let progress = 0
-				for (const status of this.props.statuses) {
-					if (onlyRequired && !status.requiredForPlayout) {
-						continue
-					}
-					count++
-					if (status.status === 'fulfilled') {
-						progress += 1
-					} else if (status.status === 'working') {
-						progress += status.progress || 0.1
-					} else {
-						progress += 0
-					}
-				}
-				if (count) {
-					return progress / count
-				} else {
-					return 1
-				}
+		componentDidUpdate(): void {
+			this.updateWorkingState()
+		}
+		updateWorkingState(): void {
+			const requiredProgress = this.getProgress(true)
+			const allProgress = this.getProgress(false)
+
+			const requiredModifiedHash = this.getModifiedHash(true)
+			const allModifiedHash = this.getModifiedHash(false)
+
+			if (requiredProgress !== this.requiredProgress || requiredModifiedHash !== this.requiredModifiedHash) {
+				this.requiredProgress = requiredProgress
+				this.requiredModifiedHash = requiredModifiedHash
+				this.requiredProgressLastChanged = Date.now()
+			}
+			if (allProgress !== this.allProgress || allModifiedHash !== this.allModifiedHash) {
+				this.allProgress = allProgress
+				this.allModifiedHash = allModifiedHash
+				this.allProgressLastChanged = Date.now()
 			}
 
-			const requiredProgress = getProgress(true)
-			const allProgress = getProgress(false)
+			const requiredWorking = Date.now() - this.requiredProgressLastChanged < this.WORKING_TIMEOUT // 1 second
+			const allWorking = Date.now() - this.allProgressLastChanged < this.WORKING_TIMEOUT // 1 second
 
-			const labelRequiredProgress = requiredProgress < 1 ? `${Math.floor(requiredProgress * 100)}%` : t('Ready')
-			const labelAllProgress = allProgress < 1 ? `${Math.floor(allProgress * 100)}%` : t('Done')
+			if (requiredWorking !== this.state.requiredWorking || allWorking !== this.state.allWorking) {
+				this.setState({
+					requiredWorking,
+					allWorking,
+				})
+			}
+			if (requiredWorking || allWorking) {
+				// If we're working, make a chack again later to see if it has stopped:
+				if (this.updateWorkingStateTimeout) {
+					clearTimeout(this.updateWorkingStateTimeout)
+					this.updateWorkingStateTimeout = null
+				}
+				this.updateWorkingStateTimeout = setTimeout(() => {
+					this.updateWorkingStateTimeout = null
+					this.updateWorkingState()
+				}, this.WORKING_TIMEOUT)
+			}
+		}
+		getProgress(onlyRequired: boolean): number {
+			let count = 0
+			let progress = 0
+			for (const status of this.props.statuses) {
+				if (onlyRequired && !status.requiredForPlayout) {
+					continue
+				}
+				count++
+				if (status.status === 'fulfilled') {
+					progress += 1
+				} else if (status.status === 'working') {
+					progress += status.progress || 0.1
+				} else {
+					progress += 0
+				}
+			}
+			if (count) {
+				return progress / count
+			} else {
+				return 1
+			}
+		}
+		getModifiedHash(onlyRequired: boolean): number {
+			let modifiedHash = 0
+			for (const status of this.props.statuses) {
+				if (onlyRequired && !status.requiredForPlayout) {
+					continue
+				}
+				modifiedHash += status.statusChanged // it's dirty, but it's quick and it works well enough
+			}
+			return modifiedHash
+		}
+		getPackageStatus() {
+			const { t } = this.props
+
+			const labelRequiredProgress =
+				this.requiredProgress < 1 ? `${Math.floor(this.requiredProgress * 100)}%` : t('Ready')
+			const labelAllProgress = this.allProgress < 1 ? `${Math.floor(this.allProgress * 100)}%` : t('Done')
 
 			return (
 				<>
 					<Tooltip overlay={t('The progress of steps required for playout')} placement="top">
-						{this.getPackageStatusIcon(requiredProgress, labelRequiredProgress)}
+						{this.getPackageStatusIcon(this.requiredProgress, labelRequiredProgress, this.state.requiredWorking)}
 					</Tooltip>
 					<Tooltip overlay={t('The progress of all steps')} placement="top">
-						{this.getPackageStatusIcon(allProgress, labelAllProgress)}
+						{this.getPackageStatusIcon(this.allProgress, labelAllProgress, this.state.allWorking)}
 					</Tooltip>
 				</>
 			)
 		}
-		getPackageStatusIcon(progress: number, label: string) {
+		getPackageStatusIcon(progress: number, label: string, isWorking: boolean) {
 			const svgCircleSector = (x: number, y: number, radius: number, v: number, color: string) => {
 				if (v >= 1) {
 					return <circle cx={x} cy={y} r={radius} fill={color}></circle>
@@ -281,29 +356,79 @@ const PackageStatus = withTranslation()(
 				)
 			}
 
-			if (progress < 1) {
-				return (
-					<div className="package-progress">
-						<svg width="100%" viewBox="-50 -50 100 100">
-							<circle cx="0" cy="0" r="50" fill="#0000ff"></circle>
-							<circle cx="0" cy="0" r="45" fill="#A2F8B0"></circle>
-							{svgCircleSector(0, 0, 45, progress, '#00BA1E')}
-							<circle cx="0" cy="0" r="30" fill="#fff"></circle>
-						</svg>
-						<div className="label">{label}</div>
-					</div>
-				)
-			} else {
-				return (
-					<div className="package-progress">
-						<svg width="100%" viewBox="-50 -50 100 100">
-							<circle cx="0" cy="0" r="50" fill="#0000ff"></circle>
-							<circle cx="0" cy="0" r="45" fill="#00BA1E"></circle>
-						</svg>
-						<div className="label label-done">{label}</div>
-					</div>
-				)
+			const svgCircleSegments = (
+				cx: number,
+				cy: number,
+				radius0: number,
+				radius1: number,
+				segmentCount: number,
+				color: string
+			) => {
+				const segmentAngle = 1 / segmentCount
+
+				const segment = (key: string, v0: number, v1: number) => {
+					const point0 = [cx + radius0 * Math.sin(v0 * Math.PI * 2), cy - radius0 * Math.cos(v0 * Math.PI * 2)]
+					const point1 = [cx + radius0 * Math.sin(v1 * Math.PI * 2), cy - radius0 * Math.cos(v1 * Math.PI * 2)]
+					const point2 = [cx + radius1 * Math.sin(v1 * Math.PI * 2), cy - radius1 * Math.cos(v1 * Math.PI * 2)]
+					const point3 = [cx + radius1 * Math.sin(v0 * Math.PI * 2), cy - radius1 * Math.cos(v0 * Math.PI * 2)]
+
+					const flags = '0,1'
+					return (
+						<path
+							key={key}
+							d={`M${point0[0]},${point0[1]}
+							A${radius0},${radius0} 0 0,1 ${point1[0]},${point1[1]}
+							L${point2[0]},${point2[1]}
+							A${radius1},${radius1} 0 0,1 ${point3[0]},${point3[1]}
+							z`}
+							fill={color}
+						></path>
+					)
+				}
+				const elements: JSX.Element[] = []
+
+				for (let i = 0; i < segmentCount; i++) {
+					elements.push(segment('k' + i, segmentAngle * i, segmentAngle * (i + 0.5)))
+				}
+
+				// return <div className="package-progress__segments">{elements}</div>
+				return elements
 			}
+
+			return (
+				<div className="package-progress">
+					<svg width="100%" viewBox="-50 -50 100 100">
+						{progress < 1 ? (
+							<>
+								{/* <circle cx="0" cy="0" r="50" fill="#0000ff"></circle> */}
+								<circle cx="0" cy="0" r="45" fill="#A2F8B0"></circle>
+								{svgCircleSector(0, 0, 45, progress, '#00BA1E')}
+								<circle cx="0" cy="0" r="30" fill="#fff"></circle>
+							</>
+						) : (
+							<>
+								<circle cx="0" cy="0" r="50" fill="#A2F8B0"></circle>
+								<circle cx="0" cy="0" r="45" fill="#00BA1E"></circle>
+							</>
+						)}
+
+						{isWorking ? (
+							<g>
+								{svgCircleSegments(0, 0, 50, 47, 10, '#00BA1E')}
+								<animateTransform
+									attributeName="transform"
+									type="rotate"
+									from="0 0 0"
+									to="360 0 0"
+									dur="6s"
+									repeatCount="indefinite"
+								/>
+							</g>
+						) : null}
+					</svg>
+					<div className={ClassNames('label', progress >= 1 ? 'label-done' : null)}>{label}</div>
+				</div>
+			)
 		}
 		getPackageName(): string {
 			const p2: ExpectedPackage.Any = this.props.package as any
