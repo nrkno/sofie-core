@@ -33,6 +33,7 @@ import RundownViewEventBus, {
 } from '../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
 import ShelfContextMenu from './ShelfContextMenu'
+import { Rundown } from '../../../lib/collections/Rundowns'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -44,6 +45,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	isExpanded: boolean
 	buckets: Array<Bucket>
 	playlist: RundownPlaylist
+	currentRundown: Rundown
 	studio: Studio
 	showStyleBase: ShowStyleBase
 	studioMode: boolean

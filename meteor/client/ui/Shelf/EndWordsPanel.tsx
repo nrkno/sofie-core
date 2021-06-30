@@ -45,7 +45,7 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 
 		return (
 			<div
-				className="end-words-panel"
+				className="end-words-panel timing"
 				style={_.extend(
 					isDashboardLayout
 						? {
@@ -55,8 +55,10 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 						: {}
 				)}
 			>
-				<span className="row title">{t('End Words')}</span>
-				<span className="row text">&lrm;{endOfScript}&lrm;</span>
+				<div className="timing-clock left">
+					<span className="timing-clock-label">{t('End Words')}</span>
+					<span className="text">&lrm;{endOfScript}&lrm;</span>
+				</div>
 			</div>
 		)
 	}

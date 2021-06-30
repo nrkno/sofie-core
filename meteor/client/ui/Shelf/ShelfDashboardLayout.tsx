@@ -17,6 +17,7 @@ import { AdLibPieceUi } from './AdLibPanel'
 import { PlaylistStartTimerPanel } from './PlaylistStartTimerPanel'
 import { EndWordsPanel } from './EndWordsPanel'
 import { PlaylistEndTimerPanel } from './PlaylistEndTimerPanel'
+import { SegmentTimingPanel } from './SegmentTimingPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -112,7 +113,15 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 						<PlaylistEndTimerPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 					) : RundownLayoutsAPI.isEndWords(panel) ? (
 						<EndWordsPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
-					) : undefined
+					) : RundownLayoutsAPI.isSegmentTiming(panel) ? (
+						<SegmentTimingPanel
+							key={panel._id}
+							playlist={props.playlist}
+							layout={rundownLayout}
+							panel={panel}
+							showStyleBase={props.showStyleBase}
+						/>
+					) : null
 				)}
 			{rundownLayout.actionButtons && (
 				<DashboardActionButtonGroup

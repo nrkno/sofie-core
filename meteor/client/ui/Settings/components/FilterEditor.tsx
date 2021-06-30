@@ -19,6 +19,7 @@ import {
 	RundownLayoutPlaylistEndTimer,
 	RundownLayoutPlaylistStartTimer,
 	RundownLayouts,
+	RundownLayoutSegmentTiming,
 } from '../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
@@ -619,7 +620,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 					{isDashboardLayout && (
 						<React.Fragment>
 							<div className="mod mvs mhs">
@@ -637,19 +638,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							</div>
 						</React.Fragment>
 					)}
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Scale')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.scale`}
-								obj={item}
-								type="float"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-						</label>
-					</div>
 				</React.Fragment>
 			)
 		}
@@ -803,22 +791,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
 						/>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
-					{isDashboardLayout && (
-						<div className="mod mvs mhs">
-							<label className="field">
-								{t('Scale')}
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute={`filters.${index}.scale`}
-									obj={item}
-									type="float"
-									collection={RundownLayouts}
-									className="input text-input input-l"
-								/>
-							</label>
-						</div>
-					)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -859,22 +832,20 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
-					{isDashboardLayout && (
-						<div className="mod mvs mhs">
-							<label className="field">
-								{t('Scale')}
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute={`filters.${index}.scale`}
-									obj={item}
-									type="float"
-									collection={RundownLayouts}
-									className="input text-input input-l"
-								/>
-							</label>
-						</div>
-					)}
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Expected Start')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideExpectedStart`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -953,22 +924,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
-					{isDashboardLayout && (
-						<div className="mod mvs mhs">
-							<label className="field">
-								{t('Scale')}
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute={`filters.${index}.scale`}
-									obj={item}
-									type="float"
-									collection={RundownLayouts}
-									className="input text-input input-l"
-								/>
-							</label>
-						</div>
-					)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1068,27 +1024,12 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							</span>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
-					{isDashboardLayout && (
-						<div className="mod mvs mhs">
-							<label className="field">
-								{t('Scale')}
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute={`filters.${index}.scale`}
-									obj={item}
-									type="float"
-									collection={RundownLayouts}
-									className="input text-input input-l"
-								/>
-							</label>
-						</div>
-					)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
 
-		renderDashboardLayoutSettings(item: RundownLayoutBase, index: number) {
+		renderDashboardLayoutSettings(item: RundownLayoutBase, index: number, scalable?: boolean) {
 			let { t } = this.props
 
 			return (
@@ -1145,6 +1086,51 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							/>
 						</label>
 					</div>
+					{scalable && (
+						<div className="mod mvs mhs">
+							<label className="field">
+								{t('Scale')}
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.scale`}
+									obj={item}
+									type="float"
+									collection={RundownLayouts}
+									className="input text-input input-l"
+								/>
+							</label>
+						</div>
+					)}
+				</React.Fragment>
+			)
+		}
+
+		renderSegmentCountDown(
+			item: RundownLayoutBase,
+			tab: RundownLayoutSegmentTiming,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			let { t } = this.props
+
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Type')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${this.props.index}.timingType`}
+								obj={this.props.item}
+								options={['count_down', 'count_up']}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1240,6 +1226,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						  )
 						: RundownLayoutsAPI.isEndWords(this.props.filter)
 						? this.renderEndWords(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isSegmentTiming(this.props.filter)
+						? this.renderSegmentCountDown(
 								this.props.item,
 								this.props.filter,
 								this.props.index,

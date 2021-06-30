@@ -1,22 +1,18 @@
 .end-words-panel {
-    padding: 1vw 1vh;
     overflow: hidden;
     position: absolute;
 
-    .row {
-        display: inline-block;
+    .timing-clock {
         width: 100%;
-        overflow: hidden;
-        white-space: nowrap;
-    }
-
-    .title {
-        font-weight: bold;
     }
 
     .text {
         text-overflow: ellipsis;
         text-align: left;
         direction: rtl;
+        overflow: hidden;
+        white-space: nowrap;
+        display: inline-block;
+        width: 100%;
     }
 }

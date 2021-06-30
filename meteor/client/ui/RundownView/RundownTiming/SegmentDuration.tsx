@@ -7,6 +7,8 @@ import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 interface ISegmentDurationProps {
 	parts: PartUi[]
 	label?: ReactNode
+	/** If set, the timer will display just the played out duration */
+	countUp?: boolean
 }
 
 /**
@@ -30,7 +32,12 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 
 		const duration = budget - playedOut
 
-		return (
+		return props.countUp ? (
+			<>
+				{props.label}
+				<span>{RundownUtils.formatDiffToTimecode(playedOut, false, false, true, false, true, '+')}</span>
+			</>
+		) : (
 			<>
 				{props.label}
 				<span className={duration < 0 ? 'negative' : undefined}>

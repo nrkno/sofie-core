@@ -14,7 +14,6 @@ import { withTranslation } from 'react-i18next'
 import { PlaylistStartTiming } from '../RundownView/RundownTiming/PlaylistStartTiming'
 
 interface IPlaylistStartTimerPanelProps {
-	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPlaylistStartTimer
 	playlist: RundownPlaylist
@@ -51,7 +50,11 @@ export class PlaylistStartTimerPanelInner extends MeteorReactComponent<
 						: {}
 				)}
 			>
-				<PlaylistStartTiming rundownPlaylist={this.props.playlist} hideDiff={this.props.panel.hideDiff} />
+				<PlaylistStartTiming
+					rundownPlaylist={this.props.playlist}
+					hideDiff={this.props.panel.hideDiff}
+					hideExpectedStart={this.props.panel.hideExpectedStart}
+				/>
 			</div>
 		)
 	}

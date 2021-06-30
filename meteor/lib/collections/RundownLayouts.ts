@@ -48,6 +48,7 @@ export enum RundownLayoutElementType {
 	PLAYLIST_START_TIMER = 'playlist_start_timer',
 	PLAYLIST_END_TIMER = 'playlist_end_timer',
 	END_WORDS = 'end_words',
+	SEGMENT_TIMING = 'segment_timing',
 }
 
 export interface RundownLayoutElementBase {
@@ -85,6 +86,7 @@ export interface RundownLayoutPieceCountdown extends RundownLayoutElementBase {
 export interface RundownLayoutPlaylistStartTimer extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.PLAYLIST_START_TIMER
 	hideDiff: boolean
+	hideExpectedStart: boolean
 }
 
 export interface RundownLayoutPlaylistEndTimer extends RundownLayoutElementBase {
@@ -104,6 +106,11 @@ export interface RundownLayoutEndWords extends RundownLayoutElementBase {
 	 * This allows end words to be tied to a combination of e.g. script + VT.
 	 */
 	requireAllSourcelayers: boolean
+}
+
+export interface RundownLayoutSegmentTiming extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.SEGMENT_TIMING
+	timingType: 'count_down' | 'count_up'
 }
 
 /**
@@ -174,6 +181,13 @@ export interface DashboardLayoutPlaylistEndTimer extends RundownLayoutPlaylistEn
 }
 
 export interface DashboardLayoutEndsWords extends RundownLayoutEndWords {
+	x: number
+	y: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutSegmentCountDown extends RundownLayoutSegmentTiming {
 	x: number
 	y: number
 	width: number

@@ -50,6 +50,9 @@ export class RundownTimingCalculator {
 		let rundownExpectedDurations: Record<string, number> = {}
 		let rundownAsPlayedDurations: Record<string, number> = {}
 
+		let segmentExpectedDurations: Record<string, number> = {}
+		let segmentAsPlayedDurations: Record<string, number> = {}
+
 		let rundownsBeforeNextBreak: Rundown[] | undefined
 		let breakIsLastRundown: boolean | undefined
 
@@ -216,6 +219,11 @@ export class RundownTimingCalculator {
 						rundownAsPlayedDurations[unprotectString(partInstance.part.rundownId)] +=
 							valToAddToAsPlayedDuration
 					}
+					if (!segmentAsPlayedDurations[unprotectString(partInstance.segmentId)]) {
+						segmentAsPlayedDurations[unprotectString(partInstance.segmentId)] = valToAddToAsPlayedDuration
+					} else {
+						segmentAsPlayedDurations[unprotectString(partInstance.segmentId)] += valToAddToAsPlayedDuration
+					}
 				}
 
 				// asDisplayed is the actual duration so far and expected durations in unplayed lines
@@ -295,6 +303,11 @@ export class RundownTimingCalculator {
 				} else {
 					rundownExpectedDurations[unprotectString(partInstance.part.rundownId)] += partExpectedDuration
 				}
+				if (!segmentExpectedDurations[unprotectString(partInstance.segmentId)]) {
+					segmentExpectedDurations[unprotectString(partInstance.segmentId)] = partExpectedDuration
+				} else {
+					segmentExpectedDurations[unprotectString(partInstance.segmentId)] += partExpectedDuration
+				}
 			})
 
 			// This is where the waitAccumulator-generated data in the linearSegLines is used to calculate the countdowns.
@@ -366,6 +379,8 @@ export class RundownTimingCalculator {
 			asPlayedPlaylistDuration: asPlayedRundownDuration,
 			rundownExpectedDurations,
 			rundownAsPlayedDurations,
+			segmentExpectedDurations,
+			segmentAsPlayedDurations,
 			partCountdown: _.object(this.linearParts),
 			partDurations: this.partDurations,
 			partPlayed: this.partPlayed,
@@ -446,6 +461,10 @@ export interface RundownTimingContext {
 	rundownExpectedDurations?: Record<string, number>
 	/** This is the complete duration of each rundown: as planned for the unplayed content, and as-run for the played-out, but ignoring unplayed/unplayable parts in order */
 	rundownAsPlayedDurations?: Record<string, number>
+	/** Expected duration of each segment in playlist (based on part expected durations) */
+	segmentExpectedDurations?: Record<string, number>
+	/** Complete duration of each segment; as planned for unplayed content, and as-run for the played-out, but ignoring unplayed/unplayable parts in order */
+	segmentAsPlayedDurations?: Record<string, number>
 	/** this is the countdown to each of the parts relative to the current on air part. */
 	partCountdown?: Record<string, number>
 	/** The calculated durations of each of the Parts: as-planned/as-run depending on state. */
