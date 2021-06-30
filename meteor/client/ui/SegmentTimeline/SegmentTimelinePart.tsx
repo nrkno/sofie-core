@@ -919,9 +919,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 									(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext,
 							})}
 						>
-							{innerPart.invalid && !innerPart.gap ? (
-								<span>{t('Invalid')}</span>
-							) : (
+							{innerPart.invalid && !innerPart.gap ? null : (
 								<React.Fragment>
 									{((this.state.isNext && this.props.autoNextPart) ||
 										(!this.state.isNext && this.props.part.willProbablyAutoNext)) &&
@@ -940,7 +938,12 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						this.state.isNext && ( // This is the off-set line
 							<div
 								className={ClassNames('segment-timeline__part__nextline', {
-									'auto-next': this.props.part.willProbablyAutoNext,
+									// This is the base, basic line
+									'auto-next':
+										!innerPart.invalid &&
+										!innerPart.gap &&
+										((this.state.isNext && this.props.autoNextPart) ||
+											(!this.state.isNext && this.props.part.willProbablyAutoNext)),
 									invalid: innerPart.invalid && !innerPart.gap,
 									floated: innerPart.floated,
 								})}
@@ -959,9 +962,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 											(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext,
 									})}
 								>
-									{innerPart.invalid ? (
-										!innerPart.gap && <span>{t('Invalid')}</span>
-									) : (
+									{innerPart.invalid && !innerPart.gap ? null : (
 										<React.Fragment>
 											{(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && t('Auto') + ' '}
 											{this.state.isNext && t('Next')}
