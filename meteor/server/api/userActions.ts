@@ -54,6 +54,7 @@ import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from './rundownPlaylist'
 import { getShowStyleCompound } from './showStyles'
 import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
+import { SnapshotId } from '../../lib/collections/Snapshots'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -580,6 +581,10 @@ export function activateHold(
 		return ClientAPI.responseError(`Can't undo hold from state: ${RundownHoldState[playlist.holdState || 0]}`)
 	}
 
+	if (!undo && currentPartInstance.part.segmentId !== nextPartInstance.part.segmentId) {
+		return ClientAPI.responseError(400, `Can't do hold between segments!`)
+	}
+
 	if (undo) {
 		return ClientAPI.responseSuccess(ServerPlayoutAPI.deactivateHold(access, rundownPlaylistId))
 	} else {
@@ -589,8 +594,12 @@ export function activateHold(
 export function userSaveEvaluation(context: MethodContext, evaluation: EvaluationBase): ClientAPI.ClientResponse<void> {
 	return ClientAPI.responseSuccess(saveEvaluation(context, evaluation))
 }
-export function userStoreRundownSnapshot(context: MethodContext, playlistId: RundownPlaylistId, reason: string) {
-	return ClientAPI.responseSuccess(storeRundownPlaylistSnapshot(context, playlistId, reason))
+export function userStoreRundownSnapshot(
+	context: MethodContext,
+	playlistId: RundownPlaylistId,
+	reason: string
+): ClientAPI.ClientResponse<SnapshotId> {
+	return ClientAPI.responseSuccess(waitForPromise(storeRundownPlaylistSnapshot(context, playlistId, reason)))
 }
 export function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
 	const playlist = checkAccessAndGetPlaylist(context, playlistId)
@@ -730,7 +739,7 @@ export function bucketAdlibImport(
 	// TODO - validate IngestAdlib
 
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
-	const showStyleCompound = getShowStyleCompound(showStyleVariantId)
+	const showStyleCompound = waitForPromise(getShowStyleCompound(showStyleVariantId))
 	if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
 
 	if (studio.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {

@@ -14,6 +14,7 @@ import { Studios } from '../../../lib/collections/Studios'
 import { ReadonlyDeep } from 'type-fest'
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import debounceFn, { DebouncedFunction } from 'debounce-fn'
+import { LOW_PRIO_DEFER_TIME } from '../playout/lib'
 
 const EVENT_WAIT_TIME = 500
 
@@ -151,35 +152,39 @@ export function reportRundownDataHasChanged(
 	rundown: ReadonlyDeep<Rundown>
 ): void {
 	Meteor.defer(async () => {
-		// Called when the data in rundown is changed
+		try {
+			// Called when the data in rundown is changed
 
-		if (!rundown) {
-			logger.error(`rundown argument missing in reportRundownDataHasChanged`)
-		} else if (!playlist) {
-			logger.error(`playlist argument missing in reportRundownDataHasChanged`)
-		} else {
-			const timestamp = getCurrentTime()
+			if (!rundown) {
+				logger.error(`rundown argument missing in reportRundownDataHasChanged`)
+			} else if (!playlist) {
+				logger.error(`playlist argument missing in reportRundownDataHasChanged`)
+			} else {
+				const timestamp = getCurrentTime()
 
-			const { studio, showStyle, blueprint } = await getBlueprintAndDependencies(rundown)
+				const { studio, showStyle, blueprint } = await getBlueprintAndDependencies(rundown)
 
-			if (blueprint.onRundownDataChangedEvent) {
-				const context = new RundownDataChangedEventContext(
-					{
-						name: rundown.name,
-						identifier: `rundownId=${rundown._id},timestamp=${timestamp}`,
-					},
-					studio,
-					showStyle,
-					rundown
-				)
+				if (blueprint.onRundownDataChangedEvent) {
+					const context = new RundownDataChangedEventContext(
+						{
+							name: rundown.name,
+							identifier: `rundownId=${rundown._id},timestamp=${timestamp}`,
+						},
+						studio,
+						showStyle,
+						rundown
+					)
 
-				try {
-					const messages = await blueprint.onRundownDataChangedEvent(context)
-					queueExternalMessages(rundown, messages)
-				} catch (error) {
-					logger.error(error)
+					try {
+						const messages = await blueprint.onRundownDataChangedEvent(context)
+						queueExternalMessages(rundown, messages)
+					} catch (error) {
+						logger.error(error)
+					}
 				}
 			}
+		} catch (e) {
+			logger.error(`reportRundownDataHasChanged: ${e}`)
 		}
 	})
 }
@@ -208,7 +213,10 @@ export function reportPartInstanceHasStarted(
 		})
 
 		cache.deferAfterSave(() => {
-			handlePartInstanceTimingEvent(cache.PlaylistId, partInstance._id)
+			// Run in the background, we don't want to hold onto the lock to do this
+			Meteor.setTimeout(() => {
+				handlePartInstanceTimingEvent(cache.PlaylistId, partInstance._id)
+			}, LOW_PRIO_DEFER_TIME)
 		})
 	}
 }

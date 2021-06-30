@@ -26,16 +26,22 @@ expect.extend({
 			pass: pass,
 		}
 	},
+	toMatchToString(received, regexp) {
+		const pass = !!received.toString().match(regexp)
+		return {
+			message: () => `expected ${received} to match ${regexp}`,
+			pass: pass,
+		}
+	},
 })
 declare global {
 	namespace jest {
 		interface Matchers<R> {
-			toMatchObject<E extends {}[]>(expected: Partial<R>): R
-
 			toBeWithinRange(floor: number, ceiling: number): R
 			toBeFuzzy(target: number, fuzzyness: number): R
 
 			toThrowMeteor(...args: ConstructorParameters<typeof Meteor.Error>): R
+			toMatchToString(reg: RegExp): R
 		}
 	}
 }

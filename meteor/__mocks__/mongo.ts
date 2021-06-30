@@ -31,7 +31,6 @@ import {
 	BulkWriteDeleteManyOperation,
 } from 'mongodb'
 import { AsyncTransformedCollection } from '../lib/collections/lib'
-import { MeteorMethodSignatures } from '../server/methods'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
@@ -53,8 +52,8 @@ export namespace MongoMock {
 	}
 
 	const mockCollections: MockCollections<any> = {}
-	export type MongoCollection<T extends CollectionObject> = {}
-	export class Collection<T extends CollectionObject> implements MongoCollection<T> {
+	export type MongoCollection = {}
+	export class Collection<T extends CollectionObject> implements MongoCollection {
 		public _name: string
 		private _options: any = {}
 		private _isMock: true = true // used in test to check that it's a mock
@@ -254,7 +253,7 @@ export namespace MongoMock {
 			return docs.length
 		}
 
-		_ensureIndex(obj: any) {
+		_ensureIndex(_obj: any) {
 			// todo
 		}
 		allow() {

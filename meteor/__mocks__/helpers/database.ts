@@ -1,7 +1,6 @@
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { StatusCode } from '../../server/systemStatus/systemStatus'
 import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
 import {
 	PieceLifespan,
@@ -32,7 +31,7 @@ import {
 	ShowStyleVariantId,
 } from '../../lib/collections/ShowStyleVariants'
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
@@ -55,6 +54,8 @@ import {
 	defaultStudio,
 } from '../defaultCollectionObjects'
 import { OrganizationId } from '../../lib/collections/Organization'
+import { StatusCode } from '../../lib/api/systemStatus'
+import { PackageInfo } from '../../server/coreSystem'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -112,6 +113,9 @@ export function setupMockPeripheralDevice(
 		token: 'mockToken',
 		configManifest: {
 			deviceConfig: [],
+		},
+		versions: {
+			'@sofie-automation/server-core-integration': stripVersion(PackageInfo.version),
 		},
 	}
 	const device = _.extend(defaultDevice, doc) as PeripheralDevice
@@ -437,11 +441,7 @@ export function setupDefaultRundownPlaylist(
 ): { rundownId: RundownId; playlistId: RundownPlaylistId } {
 	const rundownId: RundownId = rundownId0 || getRandomId()
 
-	const playlist: DBRundownPlaylist = defaultRundownPlaylist(
-		protectString('playlist_' + rundownId),
-		env.studio._id,
-		env.ingestDevice._id
-	)
+	const playlist: DBRundownPlaylist = defaultRundownPlaylist(protectString('playlist_' + rundownId), env.studio._id)
 
 	const playlistId = RundownPlaylists.insert(playlist)
 

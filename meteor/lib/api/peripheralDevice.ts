@@ -170,8 +170,7 @@ export interface NewPeripheralDeviceAPI {
 	mosRoDelete(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		mosRunningOrderId: FakeMOS.MosString128,
-		force?: boolean
+		mosRunningOrderId: FakeMOS.MosString128
 	): Promise<void>
 	mosRoMetadata(
 		deviceId: PeripheralDeviceId,

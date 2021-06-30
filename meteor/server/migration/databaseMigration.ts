@@ -41,7 +41,7 @@ import {
 } from '../../lib/collections/CoreSystem'
 import { SnapshotId } from '../../lib/collections/Snapshots'
 import { Studios } from '../../lib/collections/Studios'
-import { getHash, protectString, unprotectString } from '../../lib/lib'
+import { getHash, protectString, unprotectString, waitForPromise } from '../../lib/lib'
 import { evalBlueprint } from '../api/blueprints/cache'
 import { MigrationContextShowStyle, MigrationContextStudio } from '../api/blueprints/migrationContext'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
@@ -518,7 +518,9 @@ export function runMigration(
 		const system = getCoreSystem()
 		if (system && system.storePath) {
 			try {
-				snapshotId = internalStoreSystemSnapshot(null, null, `Automatic, taken before migration`)
+				snapshotId = waitForPromise(
+					internalStoreSystemSnapshot(null, null, `Automatic, taken before migration`)
+				)
 			} catch (e) {
 				warningMessages.push(`Error when taking snapshot:${e.toString()}`)
 				logger.error(e)

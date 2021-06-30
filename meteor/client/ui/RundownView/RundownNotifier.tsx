@@ -450,7 +450,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					],
 					rank * 1000
 				)
-				newNotification.on('action', (notification, type, e) => {
+				newNotification.on('action', (notification, type) => {
 					if (type === 'default') {
 						const handler = onRONotificationClick.get()
 						if (handler && typeof handler === 'function') {
@@ -517,10 +517,10 @@ class RundownViewNotifier extends WithManagedTracker {
 						fullMediaStatus.set(result)
 						mediaObjectsPollLock = false
 					})
-					.catch((e) => console.error)
+					.catch((e) => console.error(e))
 			}, MEDIAOBJECTS_POLL_INTERVAL)
 		})
-		this.autorun((comp: Tracker.Computation) => {
+		this.autorun(() => {
 			const localStatus: IMediaObjectIssue[] = []
 			const pieces = rPieces.get()
 			pieces.forEach((piece) => {
@@ -598,7 +598,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						],
 						issue.segmentRank * 1000 + issue.partRank
 					)
-					newNotification.on('action', (notification, type, e) => {
+					newNotification.on('action', (notification, type) => {
 						if (type === 'default') {
 							const handler = onRONotificationClick.get()
 							if (handler && typeof handler === 'function') {
@@ -648,7 +648,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			? Meteor.setInterval(() => this.updateVersionAndConfigStatus(playlistId), updatePeriod)
 			: undefined
 
-		this.autorun((comp: Tracker.Computation) => {
+		this.autorun(() => {
 			// Track the rundown as a dependency of this autorun
 			this.updateVersionAndConfigStatus(playlistId)
 		})
@@ -830,7 +830,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					this._rundownImportVersionStatusDep.changed()
 				}
 			})
-			.catch((err) => {
+			.catch(() => {
 				const newNotification = new Notification(
 					'rundown_validateStudioConfig',
 					NoticeLevel.WARNING,

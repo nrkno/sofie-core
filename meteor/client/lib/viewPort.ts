@@ -1,5 +1,3 @@
-import * as _ from 'underscore'
-
 import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
 import { Parts, PartId } from '../../lib/collections/Parts'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
@@ -238,13 +236,11 @@ let scrollToPositionRequestReject: ((reason?: any) => void) | undefined
 
 export function scrollToPosition(scrollPosition: number, noAnimation?: boolean): Promise<void> {
 	if (noAnimation) {
-		return new Promise((resolve, reject) => {
-			window.scroll({
-				top: Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN),
-				left: 0,
-			})
-			resolve()
+		window.scroll({
+			top: Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN),
+			left: 0,
 		})
+		return Promise.resolve()
 	} else {
 		return new Promise((resolve, reject) => {
 			if (scrollToPositionRequest !== undefined) window.cancelIdleCallback(scrollToPositionRequest)
@@ -276,7 +272,7 @@ export function scrollToPosition(scrollPosition: number, noAnimation?: boolean):
 let pointerLockTurnstile = 0
 let pointerHandlerAttached = false
 
-function pointerLockChange(e: Event): void {
+function pointerLockChange(_e: Event): void {
 	if (!document.pointerLockElement) {
 		// noOp, if the pointer is unlocked, good. That's a safe position
 	} else {

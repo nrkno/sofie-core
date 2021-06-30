@@ -412,7 +412,7 @@ const EditAttributeCheckbox = wrapEditAttribute(
 		isChecked() {
 			return !!this.getEditAttribute()
 		}
-		handleChange(event) {
+		handleChange() {
 			this.handleUpdate(!this.state.value)
 		}
 		render() {
@@ -455,11 +455,11 @@ const EditAttributeSwitch = wrapEditAttribute(
 		isChecked() {
 			return !!this.getEditAttribute()
 		}
-		handleChange = (event) => {
+		handleChange = () => {
 			this.handleUpdate(!this.state.value)
 		}
-		handleClick = (event) => {
-			this.handleChange(event)
+		handleClick = () => {
+			this.handleChange()
 		}
 		render() {
 			return (

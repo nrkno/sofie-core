@@ -37,8 +37,9 @@ export interface ExpectedPlayoutItemStudio extends ExpectedPlayoutItemBase {
 export type ExpectedPlayoutItem = ExpectedPlayoutItemStudio | ExpectedPlayoutItemRundown
 
 /** @deprecated */
-export const ExpectedPlayoutItems =
-	createMongoCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>('expectedPlayoutItems')
+export const ExpectedPlayoutItems = createMongoCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>(
+	'expectedPlayoutItems'
+)
 registerCollection('ExpectedPlayoutItems', ExpectedPlayoutItems)
 
 registerIndex(ExpectedPlayoutItems, {

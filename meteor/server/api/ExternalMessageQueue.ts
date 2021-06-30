@@ -20,12 +20,13 @@ import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../.
 import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
-import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus/systemStatus'
+import { StatusObject, setSystemStatus } from '../systemStatus/systemStatus'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { MongoModifier } from '../../lib/typings/meteor'
 import { ReadonlyDeep } from 'type-fest'
+import { StatusCode } from '../../lib/api/systemStatus'
 
 export function queueExternalMessages(
 	rundown: ReadonlyDeep<Rundown>,

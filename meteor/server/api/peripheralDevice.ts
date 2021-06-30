@@ -4,7 +4,15 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, waitForPromise, getRandomId, applyToArray } from '../../lib/lib'
+import {
+	getCurrentTime,
+	protectString,
+	makePromise,
+	waitForPromise,
+	getRandomId,
+	applyToArray,
+	stringifyObjects,
+} from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete, TimelineHash } from '../../lib/collections/Timeline'
@@ -45,8 +53,11 @@ import { PlayoutLockFunctionPriority, runPlayoutOperationWithLockFromStudioOpera
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { CacheForStudio } from './studio/cache'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { profiler } from './profiler'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
+
+const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
 	export function initialize(
 		context: MethodContext,
@@ -74,6 +85,9 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug('Initialize device ' + deviceId, _.omit(options, 'versions', 'configManifest'))
 
 		if (existingDevice) {
+			const newVersionsStr = stringifyObjects(options.versions)
+			const oldVersionsStr = stringifyObjects(existingDevice.versions)
+
 			PeripheralDevices.update(deviceId, {
 				$set: {
 					lastSeen: getCurrentTime(),
@@ -96,6 +110,12 @@ export namespace ServerPeripheralDeviceAPI {
 
 					configManifest: options.configManifest,
 				},
+				$unset:
+					newVersionsStr !== oldVersionsStr
+						? {
+								disableVersionChecks: 1,
+						  }
+						: undefined,
 			})
 		} else {
 			PeripheralDevices.insert({
@@ -208,6 +228,8 @@ export namespace ServerPeripheralDeviceAPI {
 		token: string,
 		results: PeripheralDeviceAPI.TimelineTriggerTimeResult
 	) {
+		const transaction = profiler.startTransaction('timelineTriggerTime', apmNamespace)
+
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		if (!peripheralDevice.studioId)
@@ -242,11 +264,12 @@ export namespace ServerPeripheralDeviceAPI {
 								const rundownIDs = Rundowns.find({ playlistId }).map((r) => r._id)
 
 								// We only need the PieceInstances, so load just them
-								const pieceInstanceCache = new DbCacheWriteCollection<PieceInstance, PieceInstance>(
-									PieceInstances
+								const pieceInstanceCache = await DbCacheWriteCollection.createFromDatabase(
+									PieceInstances,
+									{
+										rundownId: { $in: rundownIDs },
+									}
 								)
-
-								await pieceInstanceCache.prepareInit({ rundownId: { $in: rundownIDs } }, true)
 
 								// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
 								timelineTriggerTimeInner(studioCache, results, pieceInstanceCache, activePlaylist)
@@ -260,6 +283,8 @@ export namespace ServerPeripheralDeviceAPI {
 				}
 			)
 		}
+
+		transaction?.end()
 	}
 
 	function timelineTriggerTimeInner(
@@ -357,6 +382,8 @@ export namespace ServerPeripheralDeviceAPI {
 		token: string,
 		r: PeripheralDeviceAPI.PartPlaybackStartedResult
 	) {
+		const transaction = profiler.startTransaction('partPlaybackStarted', apmNamespace)
+
 		// This is called from the playout-gateway when a part starts playing.
 		// Note that this function can / might be called several times from playout-gateway for the same part
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
@@ -366,6 +393,8 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.partInstanceId, String)
 
 		ServerPlayoutAPI.onPartPlaybackStarted(context, peripheralDevice, r.rundownPlaylistId, r.partInstanceId, r.time)
+
+		transaction?.end()
 	}
 	export function partPlaybackStopped(
 		context: MethodContext,
@@ -373,6 +402,8 @@ export namespace ServerPeripheralDeviceAPI {
 		token: string,
 		r: PeripheralDeviceAPI.PartPlaybackStoppedResult
 	) {
+		const transaction = profiler.startTransaction('partPlaybackStopped', apmNamespace)
+
 		// This is called from the playout-gateway when an
 		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
@@ -381,6 +412,8 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.partInstanceId, String)
 
 		ServerPlayoutAPI.onPartPlaybackStopped(context, r.rundownPlaylistId, r.partInstanceId, r.time)
+
+		transaction?.end()
 	}
 	export function piecePlaybackStarted(
 		context: MethodContext,
@@ -388,6 +421,8 @@ export namespace ServerPeripheralDeviceAPI {
 		token: string,
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
 	) {
+		const transaction = profiler.startTransaction('piecePlaybackStarted', apmNamespace)
+
 		// This is called from the playout-gateway when an auto-next event occurs
 		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
@@ -403,6 +438,8 @@ export namespace ServerPeripheralDeviceAPI {
 			!!r.dynamicallyInserted,
 			r.time
 		)
+
+		transaction?.end()
 	}
 	export function piecePlaybackStopped(
 		context: MethodContext,
@@ -410,6 +447,8 @@ export namespace ServerPeripheralDeviceAPI {
 		token: string,
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
 	) {
+		const transaction = profiler.startTransaction('piecePlaybackStopped', apmNamespace)
+
 		// This is called from the playout-gateway when an auto-next event occurs
 		checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
@@ -425,6 +464,8 @@ export namespace ServerPeripheralDeviceAPI {
 			!!r.dynamicallyInserted,
 			r.time
 		)
+
+		transaction?.end()
 	}
 	export function pingWithCommand(
 		context: MethodContext,
@@ -939,13 +980,8 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	mosRoReplace(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrder: MOS.IMOSRunningOrder) {
 		return makePromise(() => MosIntegration.mosRoReplace(this, deviceId, deviceToken, mosRunningOrder))
 	}
-	mosRoDelete(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		mosRunningOrderId: MOS.MosString128,
-		force?: boolean
-	) {
-		return makePromise(() => MosIntegration.mosRoDelete(this, deviceId, deviceToken, mosRunningOrderId, force))
+	mosRoDelete(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrderId: MOS.MosString128) {
+		return makePromise(() => MosIntegration.mosRoDelete(this, deviceId, deviceToken, mosRunningOrderId))
 	}
 	mosRoMetadata(deviceId: PeripheralDeviceId, deviceToken: string, metadata: MOS.IMOSRunningOrderBase) {
 		return makePromise(() => MosIntegration.mosRoMetadata(this, deviceId, deviceToken, metadata))

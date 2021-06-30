@@ -6,6 +6,7 @@ import {
 	PieceLifespan,
 	BlueprintResultBaseline,
 	OnGenerateTimelineObj,
+	TimelineObjClassesCore,
 } from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../../../lib/logging'
@@ -22,7 +23,6 @@ import {
 import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
-	waitForPromise,
 	getCurrentTime,
 	literal,
 	omit,
@@ -34,6 +34,7 @@ import {
 	getRandomId,
 	applyToArray,
 	protectString,
+	waitForPromise,
 } from '../../../lib/lib'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -57,17 +58,14 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
 import { getPartFirstObjectId, getPartGroupId, getPieceGroupId } from '../../../lib/rundown/timeline'
-import { TimelineObjClassesCore } from '@sofie-automation/blueprints-integration'
 import { CacheForStudio, CacheForStudioBase } from '../studio/cache'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCacheFromStudioOperation } from './lockFunction'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackages'
-import { DbCacheReadCollection } from '../../cache/CacheCollection'
-import { ExpectedPackageDB, ExpectedPackageDBType, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
-import { PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
+import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 
-export function updateStudioOrPlaylistTimeline(cache: CacheForStudio) {
+export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
 	const playlists = cache.getActiveRundownPlaylists()
 	if (playlists.length === 1) {
 		return runPlayoutOperationWithCacheFromStudioOperation(
@@ -76,8 +74,8 @@ export function updateStudioOrPlaylistTimeline(cache: CacheForStudio) {
 			playlists[0],
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(playlistCache) => {
-				updateTimeline(playlistCache)
+			async (playlistCache) => {
+				await updateTimeline(playlistCache)
 			}
 		)
 	} else {
@@ -90,7 +88,7 @@ function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	return !!cache2.isStudio
 }
 
-export function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout): void {
+export async function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout): Promise<void> {
 	const span = profiler.startSpan('updateStudioTimeline')
 	logger.debug('updateStudioTimeline running...')
 	const studio = cache.Studio.doc
@@ -110,7 +108,7 @@ export function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout): v
 	let baselineObjects: TimelineObjRundown[] = []
 	let studioBaseline: BlueprintResultBaseline | undefined
 
-	const studioBlueprint = waitForPromise(loadStudioBlueprint(studio))
+	const studioBlueprint = await loadStudioBlueprint(studio)
 	if (studioBlueprint) {
 		const watchedPackages = waitForPromise(
 			WatchedPackagesHelper.create(studio._id, {
@@ -164,7 +162,7 @@ export function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout): v
  * @param studioId id of the studio to update
  * @param forceNowToTime if set, instantly forces all "now"-objects to that time (used in autoNext)
  */
-export function updateTimeline(cache: CacheForPlayout, forceNowToTime?: Time): void {
+export async function updateTimeline(cache: CacheForPlayout, forceNowToTime?: Time): Promise<void> {
 	const span = profiler.startSpan('updateTimeline')
 	logger.debug('updateTimeline running...')
 
@@ -172,7 +170,7 @@ export function updateTimeline(cache: CacheForPlayout, forceNowToTime?: Time): v
 		throw new Meteor.Error(500, `RundownPlaylist ("${cache.Playlist.doc._id}") is not active")`)
 	}
 
-	const timelineObjs: Array<TimelineObjGeneric> = [...waitForPromise(getTimelineRundown(cache))]
+	const timelineObjs: Array<TimelineObjGeneric> = [...(await getTimelineRundown(cache))]
 
 	processAndSaveTimelineObjects(cache, timelineObjs, forceNowToTime)
 

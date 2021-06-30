@@ -1028,7 +1028,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id, externalId: segExternalId }).count()).toBe(0)
 
-		try {
+		expect(() =>
 			Meteor.call(
 				PeripheralDeviceAPIMethods.dataSegmentDelete,
 				device._id,
@@ -1036,10 +1036,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				externalId,
 				segExternalId
 			)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(`[404] Rundown "${externalId}" does not have a Segment "${segExternalId}" to remove`)
-		}
+		).toThrow(`[404] Rundown "${externalId}" does not have a Segment "${segExternalId}" to remove`)
 
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
 	})
@@ -1048,12 +1045,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
 
-		try {
+		expect(() =>
 			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentDelete, device._id, device.token, 'wibble', segExternalId)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toMatch(/Rundown.*not found/i)
-		}
+		).toThrow(/Rundown.*not found/i)
 	})
 
 	testInFiber('dataSegmentCreate non-existant rundown', () => {
@@ -1066,12 +1060,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rank: 0,
 			parts: [],
 		}
-		try {
+		expect(() =>
 			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token, 'wibble', ingestSegment)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toMatch(/not found/)
-		}
+		).toThrow(/not found/)
 	})
 
 	testInFiber('dataRundownCreate with not enough arguments', () => {

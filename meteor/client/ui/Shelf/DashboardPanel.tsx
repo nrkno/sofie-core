@@ -604,7 +604,9 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						style={dashboardElementPosition(filter)}
 					>
 						<h4 className="dashboard-panel__header">{this.props.filter.name}</h4>
-						{filter.enableSearch && <AdLibPanelToolbar onFilterChange={this.onFilterChange} />}
+						{filter.enableSearch && (
+							<AdLibPanelToolbar onFilterChange={this.onFilterChange} searchFilter={this.state.searchFilter} />
+						)}
 						<div
 							className={ClassNames('dashboard-panel__panel', {
 								'dashboard-panel__panel--horizontal': filter.overflowHorizontally,

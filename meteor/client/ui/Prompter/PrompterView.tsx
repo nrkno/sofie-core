@@ -342,7 +342,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	scrollToPrevious() {
 		const scrollMargin = this.calculateScrollPosition()
-		const screenMargin = this.calculateMarginPosition()
 		const anchors = this.listAnchorPositions(-1, 10 + scrollMargin)
 
 		const target = anchors[anchors.length - 2] || anchors[0]
@@ -357,7 +356,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	scrollToFollowing() {
 		const scrollMargin = this.calculateScrollPosition()
-		const screenMargin = this.calculateMarginPosition()
 		const anchors = this.listAnchorPositions(40 + scrollMargin, -1)
 
 		const target = anchors[0]
@@ -594,7 +592,6 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		componentDidMount() {
 			this.subscribe(PubSub.rundowns, { playlistId: this.props.rundownPlaylistId })
 
-			// TODO-PartInstance the prompter should probably consider instances
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId)
 				if (playlist) {
@@ -611,6 +608,10 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					})
 					this.subscribe(PubSub.pieces, {
 						startRundownId: { $in: rundownIDs },
+					})
+					this.subscribe(PubSub.pieceInstancesSimple, {
+						rundownId: { $in: rundownIDs },
+						reset: { $ne: true },
 					})
 				}
 			})
@@ -660,7 +661,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			}
 		}
 
-		shouldComponentUpdate(nextProps, nextState): boolean {
+		shouldComponentUpdate(_nextProps, _nextState): boolean {
 			clearTimeout(this._debounceUpdate)
 			this._debounceUpdate = setTimeout(() => this.forceUpdate(), 250)
 			return false
@@ -676,9 +677,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 		renderPrompterData(prompterData: PrompterData) {
 			const getPartStatus = (part: PrompterDataPart) => {
-				if (prompterData.currentPartId === part.id) {
+				if (prompterData.currentPartInstanceId === part.id) {
 					return 'live'
-				} else if (prompterData.nextPartId === part.id) {
+				} else if (prompterData.nextPartInstanceId === part.id) {
 					return 'next'
 				} else {
 					return null

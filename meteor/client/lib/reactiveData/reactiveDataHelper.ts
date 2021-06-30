@@ -65,7 +65,7 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 
 	let result: ReturnType<T>
 	const fId = hashFncAndParams(functionName, params)
-	const parentComputation = Tracker.currentComputation
+	const _parentComputation = Tracker.currentComputation
 	if (isolatedAutorunsMem[fId] === undefined) {
 		const dep = new Tracker.Dependency()
 		dep.depend()

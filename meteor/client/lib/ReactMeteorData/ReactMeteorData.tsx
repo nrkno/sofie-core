@@ -1,4 +1,3 @@
-/* global Package */
 /* eslint-disable react/prefer-stateless-function */
 
 import React, { useState, useEffect } from 'react'

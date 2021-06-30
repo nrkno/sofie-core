@@ -21,8 +21,9 @@ export interface PeripheralDeviceCommand {
 
 	time: Time // time
 }
-export const PeripheralDeviceCommands =
-	createMongoCollection<PeripheralDeviceCommand, PeripheralDeviceCommand>('peripheralDeviceCommands')
+export const PeripheralDeviceCommands = createMongoCollection<PeripheralDeviceCommand, PeripheralDeviceCommand>(
+	'peripheralDeviceCommands'
+)
 registerCollection('PeripheralDeviceCommands', PeripheralDeviceCommands)
 
 // Monitor and remove old, lingering commands:

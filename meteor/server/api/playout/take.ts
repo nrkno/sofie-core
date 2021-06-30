@@ -335,7 +335,7 @@ export function afterTake(cache: CacheForPlayout, takePartInstance: PartInstance
 		forceNowTime = getCurrentTime() - timeOffset
 	}
 	// or after a new part has started playing
-	updateTimeline(cache, forceNowTime)
+	waitForPromise(updateTimeline(cache, forceNowTime))
 
 	cache.deferAfterSave(() => {
 		Meteor.setTimeout(() => {
@@ -448,7 +448,7 @@ function completeHold(
 		)
 	}
 
-	updateTimeline(cache)
+	waitForPromise(updateTimeline(cache))
 }
 
 export function triggerGarbageCollection() {

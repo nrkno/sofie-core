@@ -42,6 +42,7 @@ import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { translateMessage } from '../../../lib/api/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
+import { getShowHiddenSourceLayers } from '../../lib/localStorage'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -364,6 +365,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 		rundownAdLibs = rundownAdLibs.concat(globalAdLibActions).sort((a, b) => a._rank - b._rank)
 
+		const showHiddenSourceLayers = getShowHiddenSourceLayers()
+
 		rundownAdLibs.forEach((uiAdLib) => {
 			// automatically assign hotkeys based on adLibItem index
 			const sourceLayer = uiAdLib.sourceLayerId && sourceLayerLookup[uiAdLib.sourceLayerId]
@@ -378,7 +381,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				}
 			}
 
-			if (sourceLayer && sourceLayer.isHidden) {
+			if (sourceLayer && sourceLayer.isHidden && !showHiddenSourceLayers) {
 				uiAdLib.isHidden = true
 			}
 			return uiAdLib
@@ -660,7 +663,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		renderListView() {
 			return (
 				<React.Fragment>
-					<AdLibPanelToolbar onFilterChange={this.onFilterChange} noSegments={true} />
+					<AdLibPanelToolbar onFilterChange={this.onFilterChange} noSegments={true} searchFilter={this.state.filter} />
 					<AdLibListView
 						onSelectAdLib={this.onSelectAdLib}
 						onToggleAdLib={this.onToggleAdLib}

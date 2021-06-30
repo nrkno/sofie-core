@@ -172,9 +172,9 @@ describe('Security', () => {
 			expectAllowed(() => NoSecurityReadAccess.any())
 		})
 	})
-	testInFiber('Organization', () => {
+	testInFiber('Organization', async () => {
 		setCoreSystemStorePath('/non-existent-path/')
-		const snapshotId = storeSystemSnapshot(superAdmin, env.studio._id, 'for test')
+		const snapshotId = await storeSystemSnapshot(superAdmin, env.studio._id, 'for test')
 
 		changeEnableUserAccounts(() => {
 			const selectorId = { _id: org0._id }

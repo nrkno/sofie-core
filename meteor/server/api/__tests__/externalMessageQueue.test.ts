@@ -102,12 +102,9 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('toggleHold unknown id', () => {
-		try {
-			Meteor.call(ExternalMessageQueueAPIMethods.toggleHold, 'cake')
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe('[404] ExternalMessage "cake" not found!')
-		}
+		expect(() => Meteor.call(ExternalMessageQueueAPIMethods.toggleHold, 'cake')).toThrow(
+			'[404] ExternalMessage "cake" not found'
+		)
 	})
 
 	testInFiber('retry', () => {
@@ -126,12 +123,9 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('retry unknown id', () => {
-		try {
-			Meteor.call(ExternalMessageQueueAPIMethods.retry, 'is_a_lie')
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe('[404] ExternalMessage "is_a_lie" not found!')
-		}
+		expect(() => Meteor.call(ExternalMessageQueueAPIMethods.retry, 'is_a_lie')).toThrow(
+			'[404] ExternalMessage "is_a_lie" not found'
+		)
 	})
 
 	testInFiber('setRunMessageQueue', () => {

@@ -20,7 +20,7 @@ import { NotificationCenter, Notification, NoticeLevel } from '../lib/notificati
 import { Studios } from '../../lib/collections/Studios'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { extendMandadory, literal, unprotectString } from '../../lib/lib'
+import { extendMandadory, unprotectString } from '../../lib/lib'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../lib/Spinner'
@@ -81,7 +81,7 @@ const dropTargetSpec: DropTargetSpec<IRundownsListProps> = {
 const dropTargetCollector: DropTargetCollector<IRundownsListDropTargetProps, IRundownsListProps> = function (
 	connect: DropTargetConnector,
 	monitor: DropTargetMonitor,
-	props: IRundownsListProps
+	_props: IRundownsListProps
 ): IRundownsListDropTargetProps {
 	const activateDropZone = monitor.canDrop() && monitor.isOver()
 

@@ -11,8 +11,8 @@ export function DisplayFormattedTimeInner(
 	/* If set, uses the time zone (in minutes) */
 	timeZone?: number
 ) {
-	let now = moment(nowTimestamp ?? getCurrentTime()) // use synced time instead of client time
-	let timeToFormat = moment(displayTimestamp)
+	const now = moment(nowTimestamp ?? getCurrentTime()) // use synced time instead of client time
+	const timeToFormat = moment(displayTimestamp)
 
 	if (timeZone !== undefined) {
 		now.utcOffset(timeZone)

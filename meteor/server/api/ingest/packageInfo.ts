@@ -1,5 +1,4 @@
 import { ExpectedPackageDBType, ExpectedPackageId, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
-import { MediaObject, MediaObjId } from '../../../lib/collections/MediaObjects'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
@@ -9,36 +8,7 @@ import { runIngestOperationWithCache } from './lockFunction'
 import { Meteor } from 'meteor/meteor'
 import { regenerateSegmentsFromIngestData } from './generation'
 
-/** to-be @deprecated hack for backwards-compatibility*/
-export function onUpdatedMediaObject(_id: MediaObjId, _newDocument: MediaObject | null) {
-	// TODO: Implement, for backwards-compatibility
-	// oldDocument?: MediaObject
-	// if (
-	// 	!oldDocument ||
-	// 	(newDocument.mediainfo?.format?.duration &&
-	// 		oldDocument.mediainfo?.format?.duration !== newDocument.mediainfo?.format?.duration)
-	// ) {
-	// 	const segmentsToUpdate = new Map<SegmentId, RundownId>()
-	// 	const rundownIdsInStudio = Rundowns.find({ studioId: newDocument.studioId }, { fields: { _id: 1 } })
-	// 		.fetch()
-	// 		.map((rundown) => rundown._id)
-	// 	Parts.find({
-	// 		rundownId: { $in: rundownIdsInStudio },
-	// 		'hackListenToMediaObjectUpdates.mediaId': newDocument.mediaId,
-	// 	}).forEach((part) => {
-	// 		segmentsToUpdate.set(part.segmentId, part.rundownId)
-	// 	})
-	// 	segmentsToUpdate.forEach((rundownId, segmentId) => {
-	// 		lazyIgnore(
-	// 			`updateSegmentFromMediaObject_${segmentId}`,
-	// 			() => updateSegmentFromCache(rundownId, segmentId),
-	// 			200
-	// 		)
-	// 	})
-	// }
-}
-
-export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageInfoDB | null) {
+export function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: PackageInfoDB | null) {
 	logger.info(`PackageInfo updated "${packageId}"`)
 
 	const pkg = ExpectedPackages.findOne(packageId)
@@ -118,6 +88,7 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 
 			/** All segments that need updating */
 			const segmentsToUpdate = new Set<SegmentId>()
+			let regenerateRundownBaseline = false
 
 			for (const packageId of packageIds) {
 				const pkg = cache.ExpectedPackages.findOne(packageId)
@@ -127,8 +98,13 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 						pkg.fromPieceType === ExpectedPackageDBType.ADLIB_PIECE
 					) {
 						segmentsToUpdate.add(pkg.segmentId)
+					} else if (
+						pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_ACTION ||
+						pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_PIECE ||
+						pkg.fromPieceType === ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
+					) {
+						regenerateRundownBaseline = true
 					}
-					// TODO - trigger baseline regenerateion
 				} else {
 					logger.warn(`onUpdatedPackageInfoForRundown: Missing package: "${packageId}"`)
 				}
@@ -139,6 +115,11 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 					', '
 				)}" will trigger update of segments: ${Array.from(segmentsToUpdate).join(', ')}`
 			)
+
+			if (regenerateRundownBaseline) {
+				// trigger a re-generation of the rundown baseline
+				// TODO - to be implemented.
+			}
 
 			const { result, skippedSegments } = await regenerateSegmentsFromIngestData(
 				cache,
