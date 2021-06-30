@@ -164,7 +164,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 				await syncPlayheadInfinitesForNextPartInstance(cache)
 
-				updateTimeline(cache)
+				await updateTimeline(cache)
 			}
 		)
 	}
@@ -312,7 +312,7 @@ export namespace ServerPlayoutAdLibAPI {
 			await syncPlayheadInfinitesForNextPartInstance(cache)
 		}
 
-		updateTimeline(cache)
+		await updateTimeline(cache)
 
 		if (span) span.end()
 	}

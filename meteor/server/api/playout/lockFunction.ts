@@ -5,6 +5,7 @@ import { assertNever, Awaited, waitForPromise } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { syncFunction } from '../../codeControl'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
+import { profiler } from '../profiler'
 import { CacheForStudio } from '../studio/cache'
 import {
 	getStudioIdFromCacheOrLock,
@@ -195,7 +196,12 @@ export function runPlayoutOperationWithLockFromStudioOperation<T>(
 		)
 
 	return syncFunction(
-		() => waitForPromise(fcn({ _studioId: lockStudioId, _playlistId: tmpPlaylist._id })),
+		() => {
+			const span = profiler.startSpan(`playoutLockFunction.${context}`)
+			const res = waitForPromise(fcn({ _studioId: lockStudioId, _playlistId: tmpPlaylist._id }))
+			span?.end()
+			return res
+		},
 		context,
 		`rundown_playlist_${tmpPlaylist._id}`,
 		undefined,
@@ -226,23 +232,26 @@ function playoutLockFunctionInner<T>(
 	options?: PlayoutLockOptions
 ): Awaited<T> {
 	async function doPlaylistInner() {
-		const cache = await CacheForPlayout.create(tmpPlaylist)
+		const initCache = await CacheForPlayout.createPreInit(tmpPlaylist)
 
 		if (preInitFcn) {
-			await preInitFcn(cache)
+			await preInitFcn(initCache)
 		}
 
-		await cache.initContent(null)
+		const fullCache = await CacheForPlayout.fromInit(initCache)
 
-		const res = await fcn(cache)
+		const res = await fcn(fullCache)
 
-		await cache.saveAllToDatabase()
+		await fullCache.saveAllToDatabase()
 
 		return res
 	}
 
 	if (options?.skipPlaylistLock) {
-		return waitForPromise(doPlaylistInner())
+		const span = profiler.startSpan(`playoutLockFunction.skipped.${context}`)
+		const res = waitForPromise(doPlaylistInner())
+		span?.end()
+		return res
 	} else {
 		return runPlayoutOperationWithLockFromStudioOperation(context, lock, tmpPlaylist, priority, doPlaylistInner)
 	}

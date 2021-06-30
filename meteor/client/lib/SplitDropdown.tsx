@@ -1,4 +1,4 @@
-import React, { useState, ReactNode } from 'react'
+import React, { useState, ReactNode, useCallback } from 'react'
 import ClassNames from 'classnames'
 
 import { faChevronUp } from '@fortawesome/free-solid-svg-icons'
@@ -8,10 +8,6 @@ interface IProps {
 	selectedKey: string
 	className?: string
 	options?: SplitDropdownItemObj[]
-}
-
-interface IState {
-	expanded: boolean
 }
 
 interface SplitDropdownItemObj {
@@ -28,6 +24,7 @@ export function SplitDropdownItem(props: SplitDropdownItemObj): SplitDropdownIte
 
 export function SplitDropdown(props: IProps) {
 	const [expanded, setExpanded] = useState(false)
+	const toggleExpco = useCallback(() => setExpanded((oldVal) => !oldVal), [])
 
 	function getSelected() {
 		const selectedChild =
@@ -35,10 +32,6 @@ export function SplitDropdown(props: IProps) {
 			Array.isArray(props.options) &&
 			props.options.find((element) => element.key === props.selectedKey)?.node
 		return selectedChild ? <>{selectedChild}</> : <div className="expco-item"></div>
-	}
-
-	function toggleExpco() {
-		setExpanded(!expanded)
 	}
 
 	return (

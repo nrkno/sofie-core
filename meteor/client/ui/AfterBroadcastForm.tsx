@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
-import * as _ from 'underscore'
-import { Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { useTranslation, withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { EditAttribute } from '../lib/EditAttribute'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { doUserAction, UserAction } from '../lib/userAction'
@@ -29,8 +27,8 @@ export function AfterBroadcastForm(props: IProps) {
 
 		const saveEvaluation = (snapshotId?: SnapshotId) => {
 			const evaluation: EvaluationBase = {
-				studioId: this.props.playlist.studioId,
-				playlistId: this.props.playlist._id,
+				studioId: props.playlist.studioId,
+				playlistId: props.playlist._id,
 				answers: answers,
 			}
 			if (snapshotId && evaluation.snapshots) evaluation.snapshots.push(snapshotId)
@@ -39,7 +37,7 @@ export function AfterBroadcastForm(props: IProps) {
 
 			if (shouldDeactivateRundown) {
 				doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-					MeteorCall.userAction.deactivate(e, this.props.playlist._id)
+					MeteorCall.userAction.deactivate(e, props.playlist._id)
 				)
 			}
 
@@ -53,7 +51,7 @@ export function AfterBroadcastForm(props: IProps) {
 				t,
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-				(e) => MeteorCall.userAction.storeRundownSnapshot(e, this.props.playlist._id, 'Evaluation form'),
+				(e) => MeteorCall.userAction.storeRundownSnapshot(e, props.playlist._id, 'Evaluation form'),
 				(err, snapshotId) => {
 					if (!err && snapshotId) {
 						saveEvaluation(snapshotId)
@@ -72,10 +70,6 @@ export function AfterBroadcastForm(props: IProps) {
 
 		if (attr) {
 			setObj({
-				...obj,
-				[attr]: newValue,
-			})
-			console.log('Set object', obj, {
 				...obj,
 				[attr]: newValue,
 			})

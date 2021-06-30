@@ -28,8 +28,9 @@ export interface ExpectedPackageWorkStatusFromPackage
 	id: ExpectedPackageDBBase['_id']
 }
 
-export const ExpectedPackageWorkStatuses =
-	createMongoCollection<ExpectedPackageWorkStatus, ExpectedPackageWorkStatus>('expectedPackageWorkStatuses')
+export const ExpectedPackageWorkStatuses = createMongoCollection<ExpectedPackageWorkStatus, ExpectedPackageWorkStatus>(
+	'expectedPackageWorkStatuses'
+)
 registerCollection('ExpectedPackageStatuses', ExpectedPackageWorkStatuses)
 
 registerIndex(ExpectedPackageWorkStatuses, {

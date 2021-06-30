@@ -244,8 +244,8 @@ class NotificationCenter0 {
 
 		return _.flatten(
 			Object.values(notifiers)
-				.map((item, key) => {
-					item.result.forEach((i, itemKey) => {
+				.map((item) => {
+					item.result.forEach((i) => {
 						if (this._isOpen && !i.snoozed) i.snooze()
 						if (
 							this._isConcentrationMode &&

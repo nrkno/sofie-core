@@ -9,7 +9,7 @@ import { CommitIngestData } from './lockFunction'
 import { ensureNextPartIsValid } from './updateNext'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { logger } from '../../logging'
-import { isTooCloseToAutonext } from '../playout/lib'
+import { isTooCloseToAutonext, LOW_PRIO_DEFER_TIME } from '../playout/lib'
 import { DBRundown, Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { ReadonlyDeep } from 'type-fest'
 import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
@@ -232,7 +232,7 @@ export async function CommitIngestOperation(
 					])
 
 					// Create the full playout cache, now we have the rundowns and playlist updated
-					const playoutCache = await CacheForPlayout.from(
+					const playoutCache = await CacheForPlayout.fromIngest(
 						newPlaylist,
 						rundownsCollection.findFetch({}),
 						ingestCache
@@ -266,7 +266,10 @@ export async function CommitIngestOperation(
 						)
 
 						playoutCache.deferAfterSave(() => {
-							reportRundownDataHasChanged(playoutCache.Playlist.doc, newRundown)
+							// Run in the background, we don't want to hold onto the lock to do this
+							Meteor.setTimeout(() => {
+								reportRundownDataHasChanged(playoutCache.Playlist.doc, newRundown)
+							}, LOW_PRIO_DEFER_TIME)
 
 							triggerUpdateTimelineAfterIngestData(playoutCache.PlaylistId)
 						})
@@ -275,7 +278,7 @@ export async function CommitIngestOperation(
 						await pSaveIngest
 
 						// do some final playout checks, which may load back some Parts data
-						ensureNextPartIsValid(playoutCache)
+						await ensureNextPartIsValid(playoutCache)
 
 						// save the final playout changes
 						await playoutCache.saveAllToDatabase()
@@ -345,13 +348,13 @@ async function generatePlaylistAndRundownsCollectionInner(
 	}
 
 	// Load existing playout data
-	const rundownsCollection = existingRundownsCollection ?? new DbCacheWriteCollection(Rundowns)
-	const [existingPlaylist, studioBlueprint] = await Promise.all([
+	const [existingPlaylist, studioBlueprint, rundownsCollection] = await Promise.all([
 		existingPlaylist0
 			? existingPlaylist0
 			: (RundownPlaylists.findOneAsync(newPlaylistId) as Promise<ReadonlyDeep<RundownPlaylist>>),
 		loadStudioBlueprint(studio),
-		existingRundownsCollection ? null : rundownsCollection.prepareInit({ playlistId: newPlaylistId }, true),
+		existingRundownsCollection ??
+			DbCacheWriteCollection.createFromDatabase(Rundowns, { playlistId: newPlaylistId }),
 	])
 	if (changedRundown) {
 		rundownsCollection.replace(changedRundown)
@@ -518,7 +521,7 @@ export function updatePlayoutAfterChangingRundownInPlaylist(
 				updatePartInstancesBasicProperties(playoutCache, insertedRundown._id, new Map())
 			}
 
-			ensureNextPartIsValid(playoutCache)
+			await ensureNextPartIsValid(playoutCache)
 
 			if (playoutCache.Playlist.doc.activationId) {
 				triggerUpdateTimelineAfterIngestData(playoutCache.PlaylistId)

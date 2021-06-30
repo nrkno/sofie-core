@@ -142,7 +142,7 @@ export namespace mousetrapHelper {
 			.replace(/(\w)\w*/gi, (substring: string) => {
 				return substring.substr(0, 1).toUpperCase() + substring.substr(1).toLowerCase()
 			})
-			.replace(/(\s*,\s*)/g, (separator: string) => {
+			.replace(/(\s*,\s*)/g, () => {
 				return ', '
 			})
 

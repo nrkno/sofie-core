@@ -157,6 +157,7 @@ export async function innerUploadBlueprint(
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
+		disableVersionChecks: false,
 		blueprintType: undefined,
 	}
 

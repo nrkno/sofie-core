@@ -35,10 +35,8 @@ export interface PeripheralDevice {
 	versions?: {
 		[libraryName: string]: string
 	}
-	/** Expected versions (at least this) */
-	expectedVersions?: {
-		[libraryName: string]: string
-	}
+	/** Whether version checks should be disabled for this version */
+	disableVersionChecks?: boolean
 
 	created: Time
 	status: PeripheralDeviceAPI.StatusObject

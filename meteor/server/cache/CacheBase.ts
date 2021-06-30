@@ -66,8 +66,12 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		const lowPrioDBs: DbCacheWritable<any, any>[] = []
 
 		_.map(_.keys(this), (key) => {
-			const db = this[key]
-			if (isDbCacheWritable(db)) {
+			let db = this[key]
+			if (db && typeof db === 'object' && 'getIfLoaded' in db) {
+				// If wrapped in a lazy
+				db = db.getIfLoaded()
+			}
+			if (db && isDbCacheWritable(db)) {
 				if (key.match(/timeline/i)) {
 					highPrioDBs.push(db)
 				} else {

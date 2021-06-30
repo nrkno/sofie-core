@@ -122,13 +122,13 @@ export class KeyboardController extends ControllerAbstract {
 			lastEvent: 'keyUp: ' + e.code,
 		})
 	}
-	public onMouseKeyDown(e: MouseEvent) {
+	public onMouseKeyDown(_e: MouseEvent) {
 		// Nothing
 	}
-	public onMouseKeyUp(e: MouseEvent) {
+	public onMouseKeyUp(_e: MouseEvent) {
 		// Nothing
 	}
-	public onWheel(e: WheelEvent) {
+	public onWheel(_e: WheelEvent) {
 		// Nothing
 	}
 

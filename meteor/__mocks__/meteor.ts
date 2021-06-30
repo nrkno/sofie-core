@@ -185,13 +185,13 @@ export namespace MeteorMock {
 	export function apply(
 		methodName: string,
 		args: any[],
-		options?: {
+		_options?: {
 			wait?: boolean
 			onResultReceived?: Function
 			returnStubValue?: boolean
 			throwStubExceptions?: boolean
 		},
-		asyncCallback?: Function
+		_asyncCallback?: Function
 	): any {
 		// ?
 		mockMethods[methodName].call(getMethodContext(), ...args)

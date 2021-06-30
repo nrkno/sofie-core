@@ -72,7 +72,7 @@ describe('Expected Media Items', () => {
 
 	function setupRundown(rdId: string, rplId: RundownPlaylistId) {
 		RundownPlaylists.insert({
-			...defaultRundownPlaylist(rplId, env.studio._id, protectString('')),
+			...defaultRundownPlaylist(rplId, env.studio._id),
 			externalId: 'mock_rpl',
 			name: 'Mock Playlist',
 

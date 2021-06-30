@@ -92,8 +92,8 @@ describe('Timeline', () => {
 			getRundown0().playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => {
-				updateTimeline(cache)
+			async (cache) => {
+				await updateTimeline(cache)
 			}
 		)
 
@@ -105,9 +105,9 @@ describe('Timeline', () => {
 			getRundown0().playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => {
+			async (cache) => {
 				const currentTime = 100 * 1000
-				updateTimeline(cache, currentTime)
+				await updateTimeline(cache, currentTime)
 			}
 		)
 

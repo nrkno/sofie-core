@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
-import { renamePropertiesInCollection, setExpectedVersion } from './lib'
+import { renamePropertiesInCollection } from './lib'
 import * as semver from 'semver'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/0_25_0'
@@ -381,12 +381,4 @@ export const addSteps = addMigrationSteps('0.25.0', [
 			})
 		},
 	},
-	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^0.20.0'),
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^0.8.0'),
-	setExpectedVersion(
-		'expectedVersion.mediaManager',
-		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
-		'_process',
-		'^0.2.0'
-	),
 ])

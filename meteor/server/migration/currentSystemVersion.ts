@@ -32,7 +32,7 @@
  * 1.19.0: Release 31  (2021-05-05)
  // Note: The minor version makes a jump here. 32 now refers to "Release 32".
  * 1.32.0: Release 32  (2021-05-04)
- * 1.33.0: Release 33  (2021-05)
+ * 1.33.0: Release 33  (2021-06-15)
  * 1.34.0: Release 34 (2021-05)
  * 1.35.0: Release 35 (2021-06)
  */

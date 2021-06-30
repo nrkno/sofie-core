@@ -20,10 +20,12 @@ import deepmerge from 'deepmerge'
 import { ReadonlyDeep } from 'type-fest'
 import { DBRundown } from '../../lib/collections/Rundowns'
 
-export function getShowStyleCompound(showStyleVariantId: ShowStyleVariantId): ShowStyleCompound | undefined {
-	const showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
+export async function getShowStyleCompound(
+	showStyleVariantId: ShowStyleVariantId
+): Promise<ShowStyleCompound | undefined> {
+	const showStyleVariant = await ShowStyleVariants.findOneAsync(showStyleVariantId)
 	if (!showStyleVariant) return undefined
-	const showStyleBase = ShowStyleBases.findOne(showStyleVariant.showStyleBaseId)
+	const showStyleBase = await ShowStyleBases.findOneAsync(showStyleVariant.showStyleBaseId)
 	if (!showStyleBase) return undefined
 
 	return createShowStyleCompound(showStyleBase, showStyleVariant)

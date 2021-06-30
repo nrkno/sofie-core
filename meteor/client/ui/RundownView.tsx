@@ -17,9 +17,9 @@ import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
-import { Segment, SegmentId, Segments } from '../../lib/collections/Segments'
+import { Segment, SegmentId } from '../../lib/collections/Segments'
 import { Studio, Studios, StudioRouteSet } from '../../lib/collections/Studios'
-import { Part, Parts, PartId } from '../../lib/collections/Parts'
+import { Part, Parts } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
@@ -29,8 +29,7 @@ import { CurrentPartRemaining } from './RundownView/RundownTiming/CurrentPartRem
 import { AutoNextStatus } from './RundownView/RundownTiming/AutoNextStatus'
 import { SegmentTimelineContainer, PieceUi, PartUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
-import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
-import { RundownOverview } from './RundownView/RundownOverview'
+import { Shelf, ShelfTabs } from './Shelf/Shelf'
 import { RundownSystemStatus } from './RundownView/RundownSystemStatus'
 
 import { getCurrentTime, unprotectString, protectString } from '../../lib/lib'
@@ -41,7 +40,7 @@ import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { getAllowStudio, getAllowDeveloper, getHelpMode, getAllowConfigure, getAllowService } from '../lib/localStorage'
+import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
 import {
 	scrollToPart,
@@ -74,7 +73,6 @@ import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
 import {
-	RundownLayout,
 	RundownLayouts,
 	RundownLayoutType,
 	RundownLayoutBase,
@@ -105,7 +103,7 @@ export const MAGIC_TIME_SCALE_FACTOR = 0.03
 const REHEARSAL_MARGIN = 1 * 60 * 1000
 const HIDE_NOTIFICATIONS_AFTER_MOUNT: number | undefined = 5000
 
-type WrappedShelf = ShelfBase & { getWrappedInstance(): ShelfBase }
+// type WrappedShelf = ShelfBase & { getWrappedInstance(): ShelfBase }
 
 interface ITimingWarningProps {
 	playlist: RundownPlaylist
@@ -389,15 +387,35 @@ const TimingDisplay = withTranslation()(
 							</React.Fragment>
 						) : (
 							<React.Fragment>
-								{!rundownPlaylist.loop && this.props.timingDurations ? (
-									<span className="timing-clock plan-end right visual-last-child">
-										<span className="timing-clock-label right">{t('Expected End')}</span>
-										<Moment
-											interval={0}
-											format="HH:mm:ss"
-											date={getCurrentTime() + (this.props.timingDurations.remainingRundownDuration || 0)}
-										/>
-									</span>
+								{this.props.timingDurations ? (
+									rundownPlaylist.loop ? (
+										this.props.timingDurations.partCountdown &&
+										rundownPlaylist.activationId &&
+										rundownPlaylist.currentPartInstanceId ? (
+											<span className="timing-clock plan-end right visual-last-child">
+												<span className="timing-clock-label right">{t('Next Loop at')}</span>
+												<Moment
+													interval={0}
+													format="HH:mm:ss"
+													date={
+														getCurrentTime() +
+														(this.props.timingDurations.partCountdown[
+															Object.keys(this.props.timingDurations.partCountdown)[0]
+														] || 0)
+													}
+												/>
+											</span>
+										) : null
+									) : (
+										<span className="timing-clock plan-end right visual-last-child">
+											<span className="timing-clock-label right">{t('Expected End')}</span>
+											<Moment
+												interval={0}
+												format="HH:mm:ss"
+												date={getCurrentTime() + (this.props.timingDurations.remainingRundownDuration || 0)}
+											/>
+										</span>
+									)
 								) : null}
 								{this.props.timingDurations && this.props.rundownCount < 2 ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 									<span
@@ -1059,7 +1077,7 @@ const RundownHeader = withTranslation()(
 							title: this.props.playlist.name,
 							message: t('Are you sure you want to activate Rehearsal Mode?'),
 							yes: 'Activate (Rehearsal)',
-							onAccept: (e) => {
+							onAccept: () => {
 								doActivateRehersal()
 							},
 						})
@@ -1074,7 +1092,7 @@ const RundownHeader = withTranslation()(
 							title: this.props.playlist.name,
 							message: t('Are you sure you want to activate Rehearsal Mode?'),
 							yes: 'Activate (Rehearsal)',
-							onAccept: (e) => {
+							onAccept: () => {
 								doActivateRehersal()
 							},
 						})
@@ -2140,7 +2158,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					e,
 					UserAction.SET_NEXT,
 					(e) => MeteorCall.userAction.setNextSegment(e, playlistId, segmentId),
-					(err, res) => {
+					(err) => {
 						if (err) console.error(err)
 						this.setState({
 							manualSetAsNext: true,
@@ -2326,7 +2344,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						)}
 						<div className="segment-timeline-container">{this.renderSegments()}</div>
 						{this.props.playlist?.loop && (
-							<PlaylistLoopingHeader position="end" multiRundown={this.props.matchedSegments.length > 1} />
+							<PlaylistLoopingHeader
+								position="end"
+								multiRundown={this.props.matchedSegments.length > 1}
+								showCountdowns={!!(this.props.playlist.activationId && this.props.playlist.currentPartInstanceId)}
+							/>
 						)}
 					</React.Fragment>
 				)

@@ -143,9 +143,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			!outputLayer.collapsed &&
 			itemElement
 		) {
-			const liveLine = itemElement.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.querySelector(
-				'.segment-timeline__liveline'
-			)
+			const liveLine =
+				itemElement.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.querySelector(
+					'.segment-timeline__liveline'
+				)
 			if (liveLine) {
 				liveLine.appendChild(this.countdownContainer)
 				newState.sourceEndCountdownAppendage = true
@@ -325,11 +326,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				if (piece.contentPackageInfos[0]?.deepScan?.freezes) {
 					items = piece.contentPackageInfos[0].deepScan.freezes
 						.filter((i) => i.start < itemDuration)
-						.map(
-							(i): PackageInfo.Anomaly => {
-								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-							}
-						)
+						.map((i): PackageInfo.Anomaly => {
+							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+						})
 				}
 				return items
 			} else {
@@ -340,11 +339,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				if (metadata && metadata.mediainfo && metadata.mediainfo.freezes) {
 					items = metadata.mediainfo.freezes
 						.filter((i) => i.start < itemDuration)
-						.map(
-							(i): PackageInfo.Anomaly => {
-								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-							}
-						)
+						.map((i): PackageInfo.Anomaly => {
+							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+						})
 				}
 				return items
 			}
@@ -364,11 +361,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 						...items,
 						...piece.contentPackageInfos[0].deepScan.blacks
 							.filter((i) => i.start < itemDuration)
-							.map(
-								(i): PackageInfo.Anomaly => {
-									return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-								}
-							),
+							.map((i): PackageInfo.Anomaly => {
+								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+							}),
 					]
 				}
 				return items
@@ -382,11 +377,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 						...items,
 						...metadata.mediainfo.blacks
 							.filter((i) => i.start < itemDuration)
-							.map(
-								(i): PackageInfo.Anomaly => {
-									return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-								}
-							),
+							.map((i): PackageInfo.Anomaly => {
+								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+							}),
 					]
 				}
 				return items

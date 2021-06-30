@@ -14,7 +14,7 @@ import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collectio
 import { DBRundown } from '../../../lib/collections/Rundowns'
 import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import { getCurrentTime, literal, protectString, unprotectString, waitForPromise } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { logChanges, saveIntoCache } from '../../cache/lib'
 import { PackageInfo } from '../../coreSystem'
@@ -387,6 +387,7 @@ export async function regenerateSegmentsFromIngestData(
 	}
 
 	const segmentChanges = await calculateSegmentsFromIngestData(cache, ingestSegments, null)
+
 	saveSegmentChangesToCache(cache, segmentChanges, false)
 
 	const result: CommitIngestData = {
@@ -525,8 +526,9 @@ export async function updateRundownFromIngestData(
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
 	logger.info(`... got ${(rundownRes.globalActions || []).length} adLib actions from baseline.`)
 
+	const { baselineObjects, baselineAdlibPieces, baselineAdlibActions } = await cache.loadBaselineCollections()
 	const rundownBaselineChanges = sumChanges(
-		saveIntoCache<RundownBaselineObj, RundownBaselineObj>(cache.RundownBaselineObjs, {}, [
+		saveIntoCache<RundownBaselineObj, RundownBaselineObj>(baselineObjects, {}, [
 			{
 				_id: protectString<RundownBaselineObjId>(Random.id(7)),
 				rundownId: dbRundown._id,
@@ -539,7 +541,7 @@ export async function updateRundownFromIngestData(
 		]),
 		// Save the global adlibs
 		saveIntoCache<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
-			cache.RundownBaselineAdLibPieces,
+			baselineAdlibPieces,
 			{},
 			postProcessAdLibPieces(
 				blueprintRundownContext,
@@ -550,7 +552,7 @@ export async function updateRundownFromIngestData(
 			)
 		),
 		saveIntoCache<RundownBaselineAdLibAction, RundownBaselineAdLibAction>(
-			cache.RundownBaselineAdLibActions,
+			baselineAdlibActions,
 			{},
 			postProcessGlobalAdLibActions(
 				blueprintRundownContext,

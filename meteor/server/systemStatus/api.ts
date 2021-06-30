@@ -7,17 +7,24 @@ import { protectString, makePromise } from '../../lib/lib'
 
 import { Settings } from '../../lib/Settings'
 import { MethodContextAPI } from '../../lib/api/methods'
+import { profiler } from '../api/profiler'
+
+const apmNamespace = 'http'
 
 if (!Settings.enableUserAccounts) {
 	// For backwards compatibility:
 
 	PickerGET.route('/health', (params, req: IncomingMessage, res: ServerResponse) => {
+		const transaction = profiler.startTransaction('health', apmNamespace)
 		const status = getSystemStatus({ userId: null })
 		health(status, res)
+		transaction?.end()
 	})
 	PickerGET.route('/health/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
+		const transaction = profiler.startTransaction(`health/${params.studioId}`, apmNamespace)
 		const status = getSystemStatus({ userId: null }, protectString(params.studioId))
 		health(status, res)
+		transaction?.end()
 	})
 }
 PickerGET.route('/health/:token', (params, req: IncomingMessage, res: ServerResponse) => {

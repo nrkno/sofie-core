@@ -6,13 +6,7 @@ import * as _ from 'underscore'
  * Client side MOS XML to JavaScript object conversion. Not exhaustive, might cut
  * corners to fit specific use cases.
  * Originally developed for use by the Nora editor in the shelf inspector.
- *
- * Note that this module relies on a globally available DOMParser, which
- * typically is a browser thing. For server side usage, xml2json is probably
- * what you want :)
  */
-
-const domparser = new DOMParser()
 
 /** Copied from mos-gateway */
 export function fixMosData(o: any): any {

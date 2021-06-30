@@ -430,30 +430,18 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('killProcess with a rundown present', () => {
 		// test this does not shutdown because Rundown stored
 		if (DEBUG) setLoggerLevel('debug')
-		try {
-			Meteor.call(PeripheralDeviceAPIMethods.killProcess, device._id, device.token, true)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(`[400] Unable to run killProcess: Rundowns not empty!`)
-		}
+		expect(() => Meteor.call(PeripheralDeviceAPIMethods.killProcess, device._id, device.token, true)).toThrow(
+			`[400] Unable to run killProcess: Rundowns not empty!`
+		)
 	})
 
 	testInFiber('testMethod', () => {
 		if (DEBUG) setLoggerLevel('debug')
-		let throwPlease = false
-		try {
-			const result = Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european')
-			expect(result).toBe('european')
-			throwPlease = true
-			Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european', throwPlease)
-			fail('expected to throw')
-		} catch (e) {
-			if (throwPlease) {
-				expect(e.message).toBe('[418] Error thrown, as requested')
-			} else {
-				expect(false).toBe(true)
-			}
-		}
+		const result = Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european')
+		expect(result).toBe('european')
+		expect(() =>
+			Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european', true)
+		).toThrow(`[418] Error thrown, as requested`)
 	})
 
 	/*
@@ -468,12 +456,9 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('requestUserAuthToken', () => {
 		if (DEBUG) setLoggerLevel('debug')
 
-		try {
+		expect(() =>
 			Meteor.call(PeripheralDeviceAPIMethods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe('[400] can only request user auth token for peripheral device of spreadsheet type')
-		}
+		).toThrow('[400] can only request user auth token for peripheral device of spreadsheet type')
 
 		PeripheralDevices.update(device._id, {
 			$set: {
@@ -495,12 +480,9 @@ describe('test peripheralDevice general API methods', () => {
 	// Should only really work for SpreadsheetDevice
 	testInFiber('storeAccessToken', () => {
 		if (DEBUG) setLoggerLevel('debug')
-		try {
+		expect(() =>
 			Meteor.call(PeripheralDeviceAPIMethods.storeAccessToken, device._id, device.token, 'http://auth.url/')
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe('[400] can only store access token for peripheral device of spreadsheet type')
-		}
+		).toThrow('[400] can only store access token for peripheral device of spreadsheet type')
 
 		PeripheralDevices.update(device._id, {
 			$set: {

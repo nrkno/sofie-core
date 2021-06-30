@@ -24,8 +24,8 @@ export class WatchedPackagesHelper {
 	 * Create a helper with no packages. This should be used where the api is in place, but the update flow hasnt been implemented yet so we don't want to expose any data
 	 */
 	static empty(): WatchedPackagesHelper {
-		const watchedPackages = new DbCacheReadCollection<ExpectedPackageDB, ExpectedPackageDB>(ExpectedPackages)
-		const watchedPackageInfos = new DbCacheReadCollection<PackageInfoDB, PackageInfoDB>(PackageInfos)
+		const watchedPackages = DbCacheReadCollection.createFromArray(ExpectedPackages, [])
+		const watchedPackageInfos = DbCacheReadCollection.createFromArray(PackageInfos, [])
 
 		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
 	}
@@ -39,15 +39,15 @@ export class WatchedPackagesHelper {
 		studioId: StudioId,
 		filter: MongoQuery<Omit<T, 'studioId'>>
 	): Promise<WatchedPackagesHelper> {
-		const watchedPackages = new DbCacheReadCollection<ExpectedPackageDB, ExpectedPackageDB>(ExpectedPackages)
-		const watchedPackageInfos = new DbCacheReadCollection<PackageInfoDB, PackageInfoDB>(PackageInfos)
-
 		// Load all the packages and the infos that are watched
-		await watchedPackages.prepareInit({ ...filter, studioId: studioId } as any, true)
-		await watchedPackageInfos.prepareInit(
-			{ studioId: studioId, packageId: { $in: watchedPackages.findFetch().map((p) => p._id) } },
-			true
-		)
+		const watchedPackages = await DbCacheReadCollection.createFromDatabase(ExpectedPackages, {
+			...filter,
+			studioId: studioId,
+		} as any) // TODO: don't use any here
+		const watchedPackageInfos = await DbCacheReadCollection.createFromDatabase(PackageInfos, {
+			studioId: studioId,
+			packageId: { $in: watchedPackages.findFetch().map((p) => p._id) },
+		})
 
 		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
 	}
@@ -61,17 +61,14 @@ export class WatchedPackagesHelper {
 		cache: CacheForIngest,
 		func: ((pkg: ExpectedPackageDB) => boolean) | undefined
 	): Promise<WatchedPackagesHelper> {
-		const watchedPackages = new DbCacheReadCollection<ExpectedPackageDB, ExpectedPackageDB>(ExpectedPackages)
-		const watchedPackageInfos = new DbCacheReadCollection<PackageInfoDB, PackageInfoDB>(PackageInfos)
-
 		const packages = cache.ExpectedPackages.findFetch(func)
 
 		// Load all the packages and the infos that are watched
-		watchedPackages.fillWithDataFromArray(packages)
-		await watchedPackageInfos.prepareInit(
-			{ studioId: cache.Studio.doc._id, packageId: { $in: packages.map((p) => p._id) } },
-			true
-		)
+		const watchedPackages = DbCacheReadCollection.createFromArray(ExpectedPackages, packages)
+		const watchedPackageInfos = await DbCacheReadCollection.createFromDatabase(PackageInfos, {
+			studioId: cache.Studio.doc._id,
+			packageId: { $in: packages.map((p) => p._id) },
+		})
 
 		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
 	}
@@ -82,12 +79,11 @@ export class WatchedPackagesHelper {
 	 * @param func A filter to check if each package should be included
 	 */
 	filter(func: (pkg: ExpectedPackageDB) => boolean): WatchedPackagesHelper {
-		const watchedPackages = new DbCacheReadCollection<ExpectedPackageDB, ExpectedPackageDB>(ExpectedPackages)
-		const watchedPackageInfos = new DbCacheReadCollection<PackageInfoDB, PackageInfoDB>(PackageInfos)
+		const watchedPackages = DbCacheReadCollection.createFromArray(ExpectedPackages, this.packages.findFetch(func))
 
-		watchedPackages.fillWithDataFromArray(this.packages.findFetch(func))
 		const newPackageIds = new Set(watchedPackages.findFetch().map((p) => p._id))
-		watchedPackageInfos.fillWithDataFromArray(
+		const watchedPackageInfos = DbCacheReadCollection.createFromArray(
+			PackageInfos,
 			this.packageInfos.findFetch((info) => newPackageIds.has(info.packageId))
 		)
 

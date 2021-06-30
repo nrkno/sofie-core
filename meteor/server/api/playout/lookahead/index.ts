@@ -66,7 +66,16 @@ export async function getLookeaheadObjects(
 		startRundownId: { $in: getRundownIDsFromCache(cache) },
 		invalid: { $ne: true },
 	}
-	const pPiecesToSearch = Pieces.findFetchAsync(piecesToSearchQuery)
+	const pPiecesToSearch = Pieces.findFetchAsync(piecesToSearchQuery, {
+		fields: {
+			metaData: 0,
+
+			// these are known to be chunky when they exist
+			// @ts-expect-error
+			'content.externalPayload': 0,
+			'content.payload': 0,
+		},
+	})
 
 	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
 		if (!info.partInstance.timings?.startedPlayback) {
@@ -124,6 +133,7 @@ export async function getLookeaheadObjects(
 		pieces: sortPieceInstancesByStart(piecesByPart.get(part._id) || [], 0),
 	}))
 
+	const span2 = profiler.startSpan('getLookeaheadObjects.iterate')
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 	const futurePartCount = orderedPartInfos.length + (partInstancesInfo0.next ? 1 : 0)
 	for (const [layerId, mapping] of mappingsToConsider) {
@@ -147,7 +157,9 @@ export async function getLookeaheadObjects(
 			timelineObjs.push(...processResult(lookaheadObjs, mapping.lookahead))
 		}
 	}
-	if (span) span.end()
+	span2?.end()
+
+	span?.end()
 	return timelineObjs
 }
 

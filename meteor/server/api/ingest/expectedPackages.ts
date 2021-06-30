@@ -53,8 +53,6 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	const pieces = cache.Pieces.findFetch({})
 	const adlibs = cache.AdLibPieces.findFetch({})
 	const actions = cache.AdLibActions.findFetch({})
-	const baselineAdlibs = cache.RundownBaselineAdLibPieces.findFetch({})
-	const baselineActions = cache.RundownBaselineAdLibActions.findFetch({})
 
 	const partToSegmentIdMap = new Map<PartId, SegmentId>()
 	for (const part of cache.Parts.findFetch({})) {
@@ -79,16 +77,45 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 			ExpectedPackageDBType.ADLIB_PIECE
 		),
 		...generateExpectedPackagesForAdlibAction(studio, cache.RundownId, partToSegmentIdMap, actions),
-
-		...generateExpectedPackagesForBaselineAdlibPiece(studio, cache.RundownId, baselineAdlibs),
-		...generateExpectedPackagesForBaselineAdlibAction(studio, cache.RundownId, baselineActions),
 	]
+
+	// RUNDOWN_BASELINE_OBJECTS follow their own flow
+	const preserveTypesDuringSave = [ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS]
+
+	// Only regenerate the baseline types if they are already loaded into memory
+	// If the cache isn't already loaded, then we haven't made any changes to the baseline adlibs
+	// This means we can skip regenerating them as it is guaranteed there will be no changes
+	const baselineAdlibPieceCache = cache.RundownBaselineAdLibPieces.getIfLoaded()
+	if (baselineAdlibPieceCache) {
+		expectedPackages.push(
+			...generateExpectedPackagesForBaselineAdlibPiece(
+				studio,
+				cache.RundownId,
+				baselineAdlibPieceCache.findFetch()
+			)
+		)
+	} else {
+		// We haven't regenerated anything, so preserve the values in the save
+		preserveTypesDuringSave.push(ExpectedPackageDBType.BASELINE_ADLIB_PIECE)
+	}
+	const baselineAdlibActionCache = cache.RundownBaselineAdLibActions.getIfLoaded()
+	if (baselineAdlibActionCache) {
+		expectedPackages.push(
+			...generateExpectedPackagesForBaselineAdlibAction(
+				studio,
+				cache.RundownId,
+				baselineAdlibActionCache.findFetch()
+			)
+		)
+	} else {
+		// We haven't regenerated anything, so preserve the values in the save
+		preserveTypesDuringSave.push(ExpectedPackageDBType.BASELINE_ADLIB_ACTION)
+	}
 
 	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(
 		cache.ExpectedPackages,
 		{
-			// RUNDOWN_BASELINE_OBJECTS follow their own flow
-			fromPieceType: { $ne: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS },
+			fromPieceType: { $nin: preserveTypesDuringSave as any },
 		},
 		expectedPackages
 	)
