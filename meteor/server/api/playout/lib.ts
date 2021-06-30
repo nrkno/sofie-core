@@ -87,15 +87,18 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 	const rundownIDs = rundowns.map((i) => i._id)
 	// const rundownLookup = _.object(rundowns.map(i => [ i._id, i ])) as { [key: string]: Rundown }
 
-	const partInstancesToRemove = cache.PartInstances.findFetch({
+	const partInstanceIdsToRemove = cache.PartInstances.findFetch({
 		rundownId: { $in: rundownIDs },
 		rehearsal: true,
-	})
+	}).map((pi) => pi._id)
+
 	cache.PartInstances.remove({
-		_id: { $in: partInstancesToRemove.map((pi) => pi._id) },
+		_id: { $in: partInstanceIdsToRemove },
 	})
-	cache.PieceInstances.remove({
-		partInstanceId: { $in: partInstancesToRemove.map((pi) => pi._id) },
+	cache.deferAfterSave(() => {
+		PieceInstances.remove({
+			partInstanceId: { $in: partInstanceIdsToRemove },
+		})
 	})
 
 	cache.PartInstances.update(
@@ -339,12 +342,15 @@ export function setNextPart(
 			rundownPlaylist.previousPartInstanceId,
 		])
 		// reset any previous instances of this part
+		const partInstanceIdsToReset = cache.PartInstances.findFetch({
+			_id: { $nin: selectedPartInstanceIds },
+			rundownId: nextPart.rundownId,
+			'part._id': nextPart._id,
+			reset: { $ne: true },
+		}).map((pi) => pi._id)
 		cache.PartInstances.update(
 			{
-				_id: { $nin: selectedPartInstanceIds },
-				rundownId: nextPart.rundownId,
-				'part._id': nextPart._id,
-				reset: { $ne: true },
+				_id: { $in: partInstanceIdsToReset },
 			},
 			{
 				$set: {
@@ -352,19 +358,21 @@ export function setNextPart(
 				},
 			}
 		)
-		cache.PieceInstances.update(
-			{
-				partInstanceId: { $nin: selectedPartInstanceIds },
-				rundownId: nextPart.rundownId,
-				'piece.partId': nextPart._id,
-				reset: { $ne: true },
-			},
-			{
-				$set: {
-					reset: true,
+		cache.deferAfterSave(() => {
+			PieceInstances.update(
+				{
+					partInstanceId: { $in: partInstanceIdsToReset },
 				},
-			}
-		)
+				{
+					$set: {
+						reset: true,
+					},
+				},
+				{
+					multi: true,
+				}
+			)
+		})
 
 		cache.RundownPlaylists.update(rundownPlaylist._id, {
 			$set: literal<Partial<RundownPlaylist>>({
