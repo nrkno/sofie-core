@@ -919,9 +919,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 									(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext,
 							})}
 						>
-							{innerPart.invalid && !innerPart.gap ? (
-								<span>{t('Invalid')}</span>
-							) : (
+							{innerPart.invalid && !innerPart.gap ? null : (
 								<React.Fragment>
 									{((this.state.isNext && this.props.autoNextPart) ||
 										(!this.state.isNext && this.props.part.willProbablyAutoNext)) &&
