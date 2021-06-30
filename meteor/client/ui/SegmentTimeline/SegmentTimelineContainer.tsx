@@ -305,7 +305,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 							i.instance._id === nextProps.playlist.nextPartInstanceId
 					))) ||
 			props.playlist.holdState !== nextProps.playlist.holdState ||
-			props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset
+			props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
+			props.playlist.activationId !== nextProps.playlist.activationId ||
+			props.playlist.expectedStart !== nextProps.playlist.expectedStart
 		) {
 			return true
 		}
