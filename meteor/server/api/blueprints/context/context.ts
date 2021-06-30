@@ -36,6 +36,7 @@ import {
 	ITimelineEventContext,
 	IRundownDataChangedEventContext,
 	IRundownTimingEventContext,
+	PackageInfo,
 } from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
@@ -68,6 +69,7 @@ import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
 import _ from 'underscore'
 import { Segments } from '../../../../lib/collections/Segments'
 import { Meteor } from 'meteor/meteor'
+import { PackageInfos } from '../../../../lib/collections/PackageInfos'
 
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
@@ -147,10 +149,15 @@ export class StudioContext extends CommonContext implements IStudioContext {
 	getStudioConfigRef(configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
 	}
-
 	getStudioMappings(): Readonly<BlueprintMappings> {
 		// @ts-ignore ProtectedString deviceId not compatible with string
 		return this.studio.mappings
+	}
+	getPackageInfo(packageId: string): readonly PackageInfo.Any[] {
+		return PackageInfos.find({
+			packageId: new RegExp(`${packageId}$`), // TODO: A temporary hack -- Jan Starzak, 2021-05-26
+			studioId: this.studio._id,
+		}).fetch()
 	}
 }
 

@@ -7,96 +7,82 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
-
-
-
-
 # [1.35.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.2...v1.35.0-in-testing.0) (2021-06-09)
 
-
 ### Features
 
-* add baseline expectedPlayoutItems support ([#520](https://github.com/nrkno/tv-automation-server-core/issues/520)) [publish] ([6865b7e](https://github.com/nrkno/tv-automation-server-core/commit/6865b7ec2be8ca57b70d25ac6db41669fc686c97))
-* dataPlaylistGet ([7cbdfb4](https://github.com/nrkno/tv-automation-server-core/commit/7cbdfb4dc5ff8a693cfd49825d03777f31416dce))
-* expose PartEndState to the adlib actions ([#518](https://github.com/nrkno/tv-automation-server-core/issues/518)) [publish] ([813cb03](https://github.com/nrkno/tv-automation-server-core/commit/813cb03369792fa095cbeca8a9ce4f1835fce376))
-* expose studioId to blueprints on IStudioContext [publish] ([0f30520](https://github.com/nrkno/tv-automation-server-core/commit/0f305207c41e618411161db2fc105936b699534f))
-* OnShowStyleEnd infinites ([d22c592](https://github.com/nrkno/tv-automation-server-core/commit/d22c5922c752e75495ada1127b515d9fb1c4fad4))
-* require node 12.20 for all packages ([776e0d5](https://github.com/nrkno/tv-automation-server-core/commit/776e0d5c3e402b394990aafea8e7be4f44f8753f))
+- add baseline expectedPlayoutItems support ([#520](https://github.com/nrkno/tv-automation-server-core/issues/520)) [publish] ([6865b7e](https://github.com/nrkno/tv-automation-server-core/commit/6865b7ec2be8ca57b70d25ac6db41669fc686c97))
+- dataPlaylistGet ([7cbdfb4](https://github.com/nrkno/tv-automation-server-core/commit/7cbdfb4dc5ff8a693cfd49825d03777f31416dce))
+- expose PartEndState to the adlib actions ([#518](https://github.com/nrkno/tv-automation-server-core/issues/518)) [publish] ([813cb03](https://github.com/nrkno/tv-automation-server-core/commit/813cb03369792fa095cbeca8a9ce4f1835fce376))
+- expose studioId to blueprints on IStudioContext [publish] ([0f30520](https://github.com/nrkno/tv-automation-server-core/commit/0f305207c41e618411161db2fc105936b699534f))
+- OnShowStyleEnd infinites ([d22c592](https://github.com/nrkno/tv-automation-server-core/commit/d22c5922c752e75495ada1127b515d9fb1c4fad4))
+- require node 12.20 for all packages ([776e0d5](https://github.com/nrkno/tv-automation-server-core/commit/776e0d5c3e402b394990aafea8e7be4f44f8753f))
 
-
-
-# [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
-
+# [1.34.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0...v1.34.0) (2021-06-28)
 
 ### Bug Fixes
 
-* upd package-manager publication ([82d6587](https://github.com/nrkno/tv-automation-server-core/commit/82d6587ee3da6a6556b81455aaf2025107bf4a62))
-
+- add property for fileName into FFProbeInfo ([b2bfeac](https://github.com/nrkno/tv-automation-server-core/commit/b2bfeac4f0097afa3522cd4854839a9efd6e45f9))
+- logging ([f9aafc6](https://github.com/nrkno/tv-automation-server-core/commit/f9aafc66858ea39dc49f0b06732e790e545cd567))
+- move PackageInfo interfaces into blueprints-integration ([2730e06](https://github.com/nrkno/tv-automation-server-core/commit/2730e0675a3b696530aad5b854115475dd383736))
+- prompter doesn't use changes from part/piece instances ([#533](https://github.com/nrkno/tv-automation-server-core/issues/533)) ([e3bd920](https://github.com/nrkno/tv-automation-server-core/commit/e3bd9200f4d784b65015fa8a8cbc2efc23f1b4ad))
 
 ### Features
 
-* untimed Parts ([#512](https://github.com/nrkno/tv-automation-server-core/issues/512)) ([bd7d336](https://github.com/nrkno/tv-automation-server-core/commit/bd7d336d45bca1c92c45e2b2797722db956be1fb))
+- **Rundown View:** time of day countdowns & end of loop timer ([#535](https://github.com/nrkno/tv-automation-server-core/issues/535)) ([0430960](https://github.com/nrkno/tv-automation-server-core/commit/0430960f79d7a287eebe2e81ea9a7e9534880b4b))
+- implement listenToPackageInfo from blueprints ([e1c1cca](https://github.com/nrkno/tv-automation-server-core/commit/e1c1ccae6e71fc0ef0d02ea54c772b67284eec02))
 
+# [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
 
+### Bug Fixes
+
+- upd package-manager publication ([82d6587](https://github.com/nrkno/tv-automation-server-core/commit/82d6587ee3da6a6556b81455aaf2025107bf4a62))
+
+### Features
+
+- untimed Parts ([#512](https://github.com/nrkno/tv-automation-server-core/issues/512)) ([bd7d336](https://github.com/nrkno/tv-automation-server-core/commit/bd7d336d45bca1c92c45e2b2797722db956be1fb))
 
 # [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
 
-
-
 # [1.33.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.33.0-in-development.0) (2021-04-22)
-
 
 ### Bug Fixes
 
-* Issues from review ([018a50b](https://github.com/nrkno/tv-automation-server-core/commit/018a50b6c3a5ec04518c41ec2151afbca634fb29))
-* PM: fix quantel types and add GUI settings ([9c4bb37](https://github.com/nrkno/tv-automation-server-core/commit/9c4bb37be6f27beaff9f9db387f357fc5148f509))
-
+- Issues from review ([018a50b](https://github.com/nrkno/tv-automation-server-core/commit/018a50b6c3a5ec04518c41ec2151afbca634fb29))
+- PM: fix quantel types and add GUI settings ([9c4bb37](https://github.com/nrkno/tv-automation-server-core/commit/9c4bb37be6f27beaff9f9db387f357fc5148f509))
 
 ### Features
 
-* Add duplicate AdLibs filtering ([5ecdaa8](https://github.com/nrkno/tv-automation-server-core/commit/5ecdaa823fef5a19ec264eedf234106914e16853))
-* add step property to nora payload typings ([819d339](https://github.com/nrkno/tv-automation-server-core/commit/819d3395905f9b4b36d7ea4d397c4183eef69f8f))
-* blueprint static assets upload ([9033b7d](https://github.com/nrkno/tv-automation-server-core/commit/9033b7dba1f24edf03d027b8f4ed1a4e6d65d86e))
-* findLastScriptedPieceOnLayer ([897ddb9](https://github.com/nrkno/tv-automation-server-core/commit/897ddb9ccd856987041debe63d1d9868b0922bf2))
-* import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
-* support expectedPlayoutItems for adlib actions ([b0b866a](https://github.com/nrkno/tv-automation-server-core/commit/b0b866a4ff10de5301bfd94f1cc9f3a6d4844911))
-* translatable AdLib Actions ([#494](https://github.com/nrkno/tv-automation-server-core/issues/494)) [publish] ([4ca0904](https://github.com/nrkno/tv-automation-server-core/commit/4ca090406ae5604e32b84394dd57692e1bced9ba))
-* zero-based config settings ([31bb2c3](https://github.com/nrkno/tv-automation-server-core/commit/31bb2c30b5790770d3ad630afb75ac0d57b9d306))
-
-
-
-
+- Add duplicate AdLibs filtering ([5ecdaa8](https://github.com/nrkno/tv-automation-server-core/commit/5ecdaa823fef5a19ec264eedf234106914e16853))
+- add step property to nora payload typings ([819d339](https://github.com/nrkno/tv-automation-server-core/commit/819d3395905f9b4b36d7ea4d397c4183eef69f8f))
+- blueprint static assets upload ([9033b7d](https://github.com/nrkno/tv-automation-server-core/commit/9033b7dba1f24edf03d027b8f4ed1a4e6d65d86e))
+- findLastScriptedPieceOnLayer ([897ddb9](https://github.com/nrkno/tv-automation-server-core/commit/897ddb9ccd856987041debe63d1d9868b0922bf2))
+- import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
+- support expectedPlayoutItems for adlib actions ([b0b866a](https://github.com/nrkno/tv-automation-server-core/commit/b0b866a4ff10de5301bfd94f1cc9f3a6d4844911))
+- translatable AdLib Actions ([#494](https://github.com/nrkno/tv-automation-server-core/issues/494)) [publish] ([4ca0904](https://github.com/nrkno/tv-automation-server-core/commit/4ca090406ae5604e32b84394dd57692e1bced9ba))
+- zero-based config settings ([31bb2c3](https://github.com/nrkno/tv-automation-server-core/commit/31bb2c30b5790770d3ad630afb75ac0d57b9d306))
 
 # [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
+
 # [1.33.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.2...v1.33.0) (2021-06-15)
 
-
-
 # [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
-
-
 
 # [1.33.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.33.0-in-development.0) (2021-04-22)
 
-
 ### Bug Fixes
 
-* Issues from review ([018a50b](https://github.com/nrkno/tv-automation-server-core/commit/018a50b6c3a5ec04518c41ec2151afbca634fb29))
-* PM: fix quantel types and add GUI settings ([9c4bb37](https://github.com/nrkno/tv-automation-server-core/commit/9c4bb37be6f27beaff9f9db387f357fc5148f509))
-
+- Issues from review ([018a50b](https://github.com/nrkno/tv-automation-server-core/commit/018a50b6c3a5ec04518c41ec2151afbca634fb29))
+- PM: fix quantel types and add GUI settings ([9c4bb37](https://github.com/nrkno/tv-automation-server-core/commit/9c4bb37be6f27beaff9f9db387f357fc5148f509))
 
 ### Features
 
-* Add duplicate AdLibs filtering ([5ecdaa8](https://github.com/nrkno/tv-automation-server-core/commit/5ecdaa823fef5a19ec264eedf234106914e16853))
-* blueprint static assets upload ([9033b7d](https://github.com/nrkno/tv-automation-server-core/commit/9033b7dba1f24edf03d027b8f4ed1a4e6d65d86e))
-* findLastScriptedPieceOnLayer ([897ddb9](https://github.com/nrkno/tv-automation-server-core/commit/897ddb9ccd856987041debe63d1d9868b0922bf2))
-* import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
-* support expectedPlayoutItems for adlib actions ([b0b866a](https://github.com/nrkno/tv-automation-server-core/commit/b0b866a4ff10de5301bfd94f1cc9f3a6d4844911))
-* translatable AdLib Actions ([#494](https://github.com/nrkno/tv-automation-server-core/issues/494)) [publish] ([4ca0904](https://github.com/nrkno/tv-automation-server-core/commit/4ca090406ae5604e32b84394dd57692e1bced9ba))
-
-
-
-
+- Add duplicate AdLibs filtering ([5ecdaa8](https://github.com/nrkno/tv-automation-server-core/commit/5ecdaa823fef5a19ec264eedf234106914e16853))
+- blueprint static assets upload ([9033b7d](https://github.com/nrkno/tv-automation-server-core/commit/9033b7dba1f24edf03d027b8f4ed1a4e6d65d86e))
+- findLastScriptedPieceOnLayer ([897ddb9](https://github.com/nrkno/tv-automation-server-core/commit/897ddb9ccd856987041debe63d1d9868b0922bf2))
+- import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
+- support expectedPlayoutItems for adlib actions ([b0b866a](https://github.com/nrkno/tv-automation-server-core/commit/b0b866a4ff10de5301bfd94f1cc9f3a6d4844911))
+- translatable AdLib Actions ([#494](https://github.com/nrkno/tv-automation-server-core/issues/494)) [publish] ([4ca0904](https://github.com/nrkno/tv-automation-server-core/commit/4ca090406ae5604e32b84394dd57692e1bced9ba))
 
 # [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
 
@@ -104,37 +90,27 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Features
 
-* untimed Parts ([#512](https://github.com/nrkno/tv-automation-server-core/issues/512)) ([bd7d336](https://github.com/nrkno/tv-automation-server-core/commit/bd7d336d45bca1c92c45e2b2797722db956be1fb))
-
-
+- untimed Parts ([#512](https://github.com/nrkno/tv-automation-server-core/issues/512)) ([bd7d336](https://github.com/nrkno/tv-automation-server-core/commit/bd7d336d45bca1c92c45e2b2797722db956be1fb))
 
 # [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
 
-
-
 # [1.33.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.33.0-in-development.0) (2021-04-22)
-
 
 ### Bug Fixes
 
-* Issues from review ([018a50b](https://github.com/nrkno/tv-automation-server-core/commit/018a50b6c3a5ec04518c41ec2151afbca634fb29))
-* PM: fix quantel types and add GUI settings ([9c4bb37](https://github.com/nrkno/tv-automation-server-core/commit/9c4bb37be6f27beaff9f9db387f357fc5148f509))
-
+- Issues from review ([018a50b](https://github.com/nrkno/tv-automation-server-core/commit/018a50b6c3a5ec04518c41ec2151afbca634fb29))
+- PM: fix quantel types and add GUI settings ([9c4bb37](https://github.com/nrkno/tv-automation-server-core/commit/9c4bb37be6f27beaff9f9db387f357fc5148f509))
 
 ### Features
 
-* Add duplicate AdLibs filtering ([5ecdaa8](https://github.com/nrkno/tv-automation-server-core/commit/5ecdaa823fef5a19ec264eedf234106914e16853))
-* add step property to nora payload typings ([819d339](https://github.com/nrkno/tv-automation-server-core/commit/819d3395905f9b4b36d7ea4d397c4183eef69f8f))
-* blueprint static assets upload ([9033b7d](https://github.com/nrkno/tv-automation-server-core/commit/9033b7dba1f24edf03d027b8f4ed1a4e6d65d86e))
-* findLastScriptedPieceOnLayer ([897ddb9](https://github.com/nrkno/tv-automation-server-core/commit/897ddb9ccd856987041debe63d1d9868b0922bf2))
-* import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
-* support expectedPlayoutItems for adlib actions ([b0b866a](https://github.com/nrkno/tv-automation-server-core/commit/b0b866a4ff10de5301bfd94f1cc9f3a6d4844911))
-* translatable AdLib Actions ([#494](https://github.com/nrkno/tv-automation-server-core/issues/494)) [publish] ([4ca0904](https://github.com/nrkno/tv-automation-server-core/commit/4ca090406ae5604e32b84394dd57692e1bced9ba))
-* zero-based config settings ([31bb2c3](https://github.com/nrkno/tv-automation-server-core/commit/31bb2c30b5790770d3ad630afb75ac0d57b9d306))
-
-
-
-
+- Add duplicate AdLibs filtering ([5ecdaa8](https://github.com/nrkno/tv-automation-server-core/commit/5ecdaa823fef5a19ec264eedf234106914e16853))
+- add step property to nora payload typings ([819d339](https://github.com/nrkno/tv-automation-server-core/commit/819d3395905f9b4b36d7ea4d397c4183eef69f8f))
+- blueprint static assets upload ([9033b7d](https://github.com/nrkno/tv-automation-server-core/commit/9033b7dba1f24edf03d027b8f4ed1a4e6d65d86e))
+- findLastScriptedPieceOnLayer ([897ddb9](https://github.com/nrkno/tv-automation-server-core/commit/897ddb9ccd856987041debe63d1d9868b0922bf2))
+- import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
+- support expectedPlayoutItems for adlib actions ([b0b866a](https://github.com/nrkno/tv-automation-server-core/commit/b0b866a4ff10de5301bfd94f1cc9f3a6d4844911))
+- translatable AdLib Actions ([#494](https://github.com/nrkno/tv-automation-server-core/issues/494)) [publish] ([4ca0904](https://github.com/nrkno/tv-automation-server-core/commit/4ca090406ae5604e32b84394dd57692e1bced9ba))
+- zero-based config settings ([31bb2c3](https://github.com/nrkno/tv-automation-server-core/commit/31bb2c30b5790770d3ad630afb75ac0d57b9d306))
 
 # [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
 
@@ -205,34 +181,32 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.32.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0...v1.32.0-in-testing.0) (2021-03-22)
 
-
 ### Features
 
-* add expectedPackages (wip) ([19e34d5](https://github.com/nrkno/tv-automation-server-core/commit/19e34d52785daac50e31a39f61720996d5f8f227))
-* allow adlib actions to move the next part by either a part or segment delta ([3a56c5c](https://github.com/nrkno/tv-automation-server-core/commit/3a56c5c426f2f3e7ce928813da1a2c6f394df3df))
-* allow an expectedPackage to have multiple layers [publish] ([60b8d7c](https://github.com/nrkno/tv-automation-server-core/commit/60b8d7c297485173c475e93f89c403878c23a598))
-* expectedPackages contiued implementation. ([5a4dd80](https://github.com/nrkno/tv-automation-server-core/commit/5a4dd802b4360b93e80b9dd4c3eeefa96dded547))
-* expectedPackages: let core set the path (& other settings in the future) for the thumbnail and preview [publish] ([cb3a600](https://github.com/nrkno/tv-automation-server-core/commit/cb3a600fdd0ab9f728c5bd6c1640f8bd3002b0ac))
-* implement ExpectedPackageWorkStatuses, for piping info about work being performed on expectedPackages ([273c7f4](https://github.com/nrkno/tv-automation-server-core/commit/273c7f448af592fa136ca516c9efd5fd473af3fa))
-* package management: continued implementation.. PackageContainers PackageContainerStatuses, PackageInfos etc,,, (wip) ([c5c2bce](https://github.com/nrkno/tv-automation-server-core/commit/c5c2bce6e567581ffc98c4dd543183ad5aa9174a))
-* package-management: data piping for packageInfos, move device-container coupling to Studio, add Studio.previewContainerIds & Studio.thumbnailContainerIds etc. Add ExpectedPackage.sideEffect. etc... ([3fec5e9](https://github.com/nrkno/tv-automation-server-core/commit/3fec5e9bc53b287b4bb731d631e7b3494b88b141))
-* remove AsRunLog collection ([#477](https://github.com/nrkno/tv-automation-server-core/issues/477)) ([1826f79](https://github.com/nrkno/tv-automation-server-core/commit/1826f79bb12732006cb174f8a7e915560b755a31))
-
+- add expectedPackages (wip) ([19e34d5](https://github.com/nrkno/tv-automation-server-core/commit/19e34d52785daac50e31a39f61720996d5f8f227))
+- allow adlib actions to move the next part by either a part or segment delta ([3a56c5c](https://github.com/nrkno/tv-automation-server-core/commit/3a56c5c426f2f3e7ce928813da1a2c6f394df3df))
+- allow an expectedPackage to have multiple layers [publish] ([60b8d7c](https://github.com/nrkno/tv-automation-server-core/commit/60b8d7c297485173c475e93f89c403878c23a598))
+- expectedPackages contiued implementation. ([5a4dd80](https://github.com/nrkno/tv-automation-server-core/commit/5a4dd802b4360b93e80b9dd4c3eeefa96dded547))
+- expectedPackages: let core set the path (& other settings in the future) for the thumbnail and preview [publish] ([cb3a600](https://github.com/nrkno/tv-automation-server-core/commit/cb3a600fdd0ab9f728c5bd6c1640f8bd3002b0ac))
+- implement ExpectedPackageWorkStatuses, for piping info about work being performed on expectedPackages ([273c7f4](https://github.com/nrkno/tv-automation-server-core/commit/273c7f448af592fa136ca516c9efd5fd473af3fa))
+- package management: continued implementation.. PackageContainers PackageContainerStatuses, PackageInfos etc,,, (wip) ([c5c2bce](https://github.com/nrkno/tv-automation-server-core/commit/c5c2bce6e567581ffc98c4dd543183ad5aa9174a))
+- package-management: data piping for packageInfos, move device-container coupling to Studio, add Studio.previewContainerIds & Studio.thumbnailContainerIds etc. Add ExpectedPackage.sideEffect. etc... ([3fec5e9](https://github.com/nrkno/tv-automation-server-core/commit/3fec5e9bc53b287b4bb731d631e7b3494b88b141))
+- remove AsRunLog collection ([#477](https://github.com/nrkno/tv-automation-server-core/issues/477)) ([1826f79](https://github.com/nrkno/tv-automation-server-core/commit/1826f79bb12732006cb174f8a7e915560b755a31))
 
 ### Bug Fixes
 
-* blueprint-integration: add expectedPackages properties to Adlib actions ([b45df41](https://github.com/nrkno/tv-automation-server-core/commit/b45df419140aa3c4280cc8832368b69ea2790085))
-* clarify typings of ExpectedPackageWorkStatus.fromPackages property ([ec7c26d](https://github.com/nrkno/tv-automation-server-core/commit/ec7c26d072375bd185d513e9612aabf8d49ed2ac))
-* expectedPackages: add seekTime property for thumbnail generation ([baa551d](https://github.com/nrkno/tv-automation-server-core/commit/baa551d8334746138bbc667ae5e385d4ca7bd96f))
-* merge MappedDrive into FileShare, they will configured as the same thing ([852c5ea](https://github.com/nrkno/tv-automation-server-core/commit/852c5ea4544e3a06f0c8b3bcbd3646c8df5d85fd))
-* minor fixes ([2f66298](https://github.com/nrkno/tv-automation-server-core/commit/2f66298b021f4366e1f1c796bbb53127484db035))
-* move PackageContainerPackageStatus to blueprint-integration ([ebe3b3f](https://github.com/nrkno/tv-automation-server-core/commit/ebe3b3fe373791d302d51d1a13a5d597f8324e5a))
-* package management: continued implementations ([9a23581](https://github.com/nrkno/tv-automation-server-core/commit/9a23581c2335df6587dd95d9e9f16afd2b3b45e5))
-* package: type updates, add locations ([e393b22](https://github.com/nrkno/tv-automation-server-core/commit/e393b221affc8b6994c5dceaee88ec5456147afb))
-* packages: types for quantel ([fccf190](https://github.com/nrkno/tv-automation-server-core/commit/fccf190c966835ebde21a5b5a35f21f22a55bbfd))
-* remove unused properties [publish] ([115ede6](https://github.com/nrkno/tv-automation-server-core/commit/115ede6d3e9a947eea788c7290b5757b9cb38e26))
-* types: package origins: add HTTP interface ([3bb36fa](https://github.com/nrkno/tv-automation-server-core/commit/3bb36fa8d4ea7dbcb73014ad9ded596e9de19cff))
-* typings fixes ([0721e16](https://github.com/nrkno/tv-automation-server-core/commit/0721e16b58ef0c032bc0d5bce7b6c563c133f550))
+- blueprint-integration: add expectedPackages properties to Adlib actions ([b45df41](https://github.com/nrkno/tv-automation-server-core/commit/b45df419140aa3c4280cc8832368b69ea2790085))
+- clarify typings of ExpectedPackageWorkStatus.fromPackages property ([ec7c26d](https://github.com/nrkno/tv-automation-server-core/commit/ec7c26d072375bd185d513e9612aabf8d49ed2ac))
+- expectedPackages: add seekTime property for thumbnail generation ([baa551d](https://github.com/nrkno/tv-automation-server-core/commit/baa551d8334746138bbc667ae5e385d4ca7bd96f))
+- merge MappedDrive into FileShare, they will configured as the same thing ([852c5ea](https://github.com/nrkno/tv-automation-server-core/commit/852c5ea4544e3a06f0c8b3bcbd3646c8df5d85fd))
+- minor fixes ([2f66298](https://github.com/nrkno/tv-automation-server-core/commit/2f66298b021f4366e1f1c796bbb53127484db035))
+- move PackageContainerPackageStatus to blueprint-integration ([ebe3b3f](https://github.com/nrkno/tv-automation-server-core/commit/ebe3b3fe373791d302d51d1a13a5d597f8324e5a))
+- package management: continued implementations ([9a23581](https://github.com/nrkno/tv-automation-server-core/commit/9a23581c2335df6587dd95d9e9f16afd2b3b45e5))
+- package: type updates, add locations ([e393b22](https://github.com/nrkno/tv-automation-server-core/commit/e393b221affc8b6994c5dceaee88ec5456147afb))
+- packages: types for quantel ([fccf190](https://github.com/nrkno/tv-automation-server-core/commit/fccf190c966835ebde21a5b5a35f21f22a55bbfd))
+- remove unused properties [publish] ([115ede6](https://github.com/nrkno/tv-automation-server-core/commit/115ede6d3e9a947eea788c7290b5757b9cb38e26))
+- types: package origins: add HTTP interface ([3bb36fa](https://github.com/nrkno/tv-automation-server-core/commit/3bb36fa8d4ea7dbcb73014ad9ded596e9de19cff))
+- typings fixes ([0721e16](https://github.com/nrkno/tv-automation-server-core/commit/0721e16b58ef0c032bc0d5bce7b6c563c133f550))
 
 ## [1.19.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.18.0...v1.19.0-in-testing.2) (2021-04-12)
 

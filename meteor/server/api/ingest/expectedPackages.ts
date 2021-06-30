@@ -232,6 +232,7 @@ function generateExpectedPackageBases(
 		bases.push({
 			...expectedPackage,
 			_id: protectString(`${ownerId}_${id}`),
+			blueprintPackageId: id,
 			contentVersionHash: getContentVersionHash(expectedPackage),
 			studioId: studio._id,
 		})
