@@ -7,7 +7,7 @@ import * as _ from 'underscore'
 
 import { getElementWidth } from '../../../utils/dimensions'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
-interface IProps extends ICustomLayerItemProps {}
+type IProps = ICustomLayerItemProps
 interface IState {}
 
 export const MicSourceRenderer = withTranslation()(
@@ -168,10 +168,9 @@ export const MicSourceRenderer = withTranslation()(
 		}
 
 		render() {
-			const { t } = this.props
-			let labelItems = (this.props.piece.instance.piece.name || '').split('||')
-			let begin = labelItems[0] || ''
-			let end = labelItems[1] || ''
+			const labelItems = (this.props.piece.instance.piece.name || '').split('||')
+			const begin = labelItems[0] || ''
+			const end = labelItems[1] || ''
 
 			// function shorten (str: string, maxLen: number, separator: string = ' ') {
 			// 	if (str.length <= maxLen) return str
@@ -198,7 +197,7 @@ export const MicSourceRenderer = withTranslation()(
 							>
 								<span className="segment-timeline__piece__label last-words">{end}</span>
 								{this.renderInfiniteIcon()}
-								{this.renderOverflowTimeLabel()}
+								{/* this.renderOverflowTimeLabel() */}
 							</span>
 						</>
 					)}

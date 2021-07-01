@@ -1,10 +1,8 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
-import * as _ from 'underscore'
 import { withTranslation } from 'react-i18next'
 
-import { Route, Switch, Redirect, Link, NavLink } from 'react-router-dom'
+import { Route, Switch, Redirect, NavLink } from 'react-router-dom'
 import SystemStatus from './Status/SystemStatus'
 import { MediaManagerStatus } from './Status/MediaManager'
 import { ExternalMessages } from './Status/ExternalMessages'
@@ -14,11 +12,6 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { PubSub } from '../../lib/api/pubsub'
 import { ExpectedPackagesStatus } from './Status/ExpectedPackages'
 
-class WelcomeToStatus extends React.Component {
-	render() {
-		return <div></div>
-	}
-}
 interface IStatusMenuProps {
 	match?: any
 }

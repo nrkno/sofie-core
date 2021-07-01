@@ -6,7 +6,8 @@ import { getElementWidth } from '../../../utils/dimensions'
 
 import ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
-import { MediaObject, Anomaly } from '../../../../lib/collections/MediaObjects'
+import { MediaObject } from '../../../../lib/collections/MediaObjects'
+import { PackageInfo } from '@sofie-automation/blueprints-integration'
 
 import { Lottie } from '@crello/react-lottie'
 // @ts-ignore Not recognized by Typescript
@@ -28,8 +29,8 @@ interface IProps extends ICustomLayerItemProps {
 }
 interface IState {
 	scenes?: Array<number>
-	blacks?: Array<Anomaly>
-	freezes?: Array<Anomaly>
+	blacks?: Array<PackageInfo.Anomaly>
+	freezes?: Array<PackageInfo.Anomaly>
 
 	rightLabelIsAppendage?: boolean
 	noticeLevel: NoticeLevel | null
@@ -65,7 +66,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 		const innerPiece = props.piece.instance.piece
 
-		let labelItems = innerPiece.name.split('||')
+		const labelItems = innerPiece.name.split('||')
 
 		this.state = {
 			noticeLevel: getNoticeLevelForPieceStatus(innerPiece.status),
@@ -142,9 +143,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			!outputLayer.collapsed &&
 			itemElement
 		) {
-			const liveLine = itemElement.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.querySelector(
-				'.segment-timeline__liveline'
-			)
+			const liveLine =
+				itemElement.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.querySelector(
+					'.segment-timeline__liveline'
+				)
 			if (liveLine) {
 				liveLine.appendChild(this.countdownContainer)
 				newState.sourceEndCountdownAppendage = true
@@ -223,7 +225,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			innerPiece.name !== prevProps.piece.instance.piece.name ||
 			innerPiece.status !== prevProps.piece.instance.piece.status
 		) {
-			let labelItems = innerPiece.name.split('||')
+			const labelItems = innerPiece.name.split('||')
 			newState.noticeLevel = getNoticeLevelForPieceStatus(innerPiece.status)
 			newState.begin = labelItems[0] || ''
 			newState.end = labelItems[1] || ''
@@ -313,49 +315,45 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
-	getFreezes = (): Array<Anomaly> | undefined => {
+	getFreezes = (): Array<PackageInfo.Anomaly> | undefined => {
 		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
 			const piece = this.props.piece
 			if (piece.contentPackageInfos) {
-				let items: Array<Anomaly> = []
+				let items: Array<PackageInfo.Anomaly> = []
 				// add freezes
 				// TODO: support multiple packages:
 				if (piece.contentPackageInfos[0]?.deepScan?.freezes) {
 					items = piece.contentPackageInfos[0].deepScan.freezes
 						.filter((i) => i.start < itemDuration)
-						.map(
-							(i): Anomaly => {
-								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-							}
-						)
+						.map((i): PackageInfo.Anomaly => {
+							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+						})
 				}
 				return items
 			} else {
 				// Fallback to media objects:
 				const metadata = piece.contentMetaData as MediaObject
-				let items: Array<Anomaly> = []
+				let items: Array<PackageInfo.Anomaly> = []
 				// add freezes
 				if (metadata && metadata.mediainfo && metadata.mediainfo.freezes) {
 					items = metadata.mediainfo.freezes
 						.filter((i) => i.start < itemDuration)
-						.map(
-							(i): Anomaly => {
-								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-							}
-						)
+						.map((i): PackageInfo.Anomaly => {
+							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+						})
 				}
 				return items
 			}
 		}
 	}
 
-	getBlacks = (): Array<Anomaly> | undefined => {
+	getBlacks = (): Array<PackageInfo.Anomaly> | undefined => {
 		if (this.props.piece) {
 			const itemDuration = this.getItemDuration()
 			const piece = this.props.piece
 			if (piece.contentPackageInfos) {
-				let items: Array<Anomaly> = []
+				let items: Array<PackageInfo.Anomaly> = []
 				// add blacks
 				// TODO: support multiple packages:
 				if (piece.contentPackageInfos[0]?.deepScan?.blacks) {
@@ -363,29 +361,25 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 						...items,
 						...piece.contentPackageInfos[0].deepScan.blacks
 							.filter((i) => i.start < itemDuration)
-							.map(
-								(i): Anomaly => {
-									return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-								}
-							),
+							.map((i): PackageInfo.Anomaly => {
+								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+							}),
 					]
 				}
 				return items
 			} else {
 				// Fallback to media objects:
 				const metadata = piece.contentMetaData as MediaObject
-				let items: Array<Anomaly> = []
+				let items: Array<PackageInfo.Anomaly> = []
 				// add blacks
 				if (metadata && metadata.mediainfo && metadata.mediainfo.blacks) {
 					items = [
 						...items,
 						...metadata.mediainfo.blacks
 							.filter((i) => i.start < itemDuration)
-							.map(
-								(i): Anomaly => {
-									return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-								}
-							),
+							.map((i): PackageInfo.Anomaly => {
+								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+							}),
 					]
 				}
 				return items
@@ -486,7 +480,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	}
 
 	renderRightLabel() {
-		const { begin, end } = this.state
+		const { end } = this.state
 		const { isLiveLine, part } = this.props
 
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined

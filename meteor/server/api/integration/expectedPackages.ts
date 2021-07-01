@@ -4,7 +4,7 @@ import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { ExpectedPackageId, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
-import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackageStatusAPI, PackageInfo } from '@sofie-automation/blueprints-integration'
 import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
@@ -17,15 +17,9 @@ import {
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageId,
 } from '../../../lib/collections/PackageContainerPackageStatus'
-import {
-	getPackageInfoId,
-	PackageInfoBase,
-	PackageInfoDB,
-	PackageInfoDBType,
-	PackageInfos,
-} from '../../../lib/collections/PackageInfos'
+import { getPackageInfoId, PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
 import { BulkWriteOperation } from 'mongodb'
-import { asyncCollectionBulkWrite, asyncCollectionFindOne, asyncCollectionRemove } from '../../lib/database'
+import { onUpdatedPackageInfo } from '../ingest/packageInfo'
 
 export namespace PackageManagerIntegration {
 	export function updateExpectedPackageWorkStatuses(
@@ -66,10 +60,7 @@ export namespace PackageManagerIntegration {
 			if (change.type === 'delete') {
 				removedIds.push(change.id)
 			} else {
-				const workStatus = (change.status as any) as Omit<
-					ExpectedPackageStatusAPI.WorkStatus,
-					'fromPackages'
-				> & {
+				const workStatus = change.status as any as Omit<ExpectedPackageStatusAPI.WorkStatus, 'fromPackages'> & {
 					fromPackages: FromPackage[]
 				}
 
@@ -94,31 +85,31 @@ export namespace PackageManagerIntegration {
 					const fromPackageIds = workStatus.fromPackages.map((p) => p.id)
 					if (fromPackageIds.length) {
 						ps.push(
-							asyncCollectionFindOne(ExpectedPackages, { _id: { $in: fromPackageIds } }).then(
-								(expPackage) => {
-									if (!expPackage)
-										throw new Meteor.Error(404, `ExpectedPackages "${fromPackageIds}" not found`)
+							ExpectedPackages.findOneAsync({
+								_id: { $in: fromPackageIds },
+							}).then((expPackage) => {
+								if (!expPackage)
+									throw new Meteor.Error(404, `ExpectedPackages "${fromPackageIds}" not found`)
 
-									const doc: ExpectedPackageWorkStatus = {
-										...workStatus,
+								const doc: ExpectedPackageWorkStatus = {
+									...workStatus,
 
-										_id: change.id,
-										studioId: expPackage.studioId,
-										deviceId: peripheralDevice._id,
+									_id: change.id,
+									studioId: expPackage.studioId,
+									deviceId: peripheralDevice._id,
 
-										modified: getCurrentTime(),
-									}
-									bulkChanges.push({
-										replaceOne: {
-											filter: {
-												_id: change.id,
-											},
-											replacement: doc,
-											upsert: true,
-										},
-									})
+									modified: getCurrentTime(),
 								}
-							)
+								bulkChanges.push({
+									replaceOne: {
+										filter: {
+											_id: change.id,
+										},
+										replacement: doc,
+										upsert: true,
+									},
+								})
+							})
 						)
 					}
 				} else {
@@ -130,13 +121,13 @@ export namespace PackageManagerIntegration {
 			bulkChanges.push({
 				deleteMany: {
 					filter: {
-						_id: { $in: removedIds as any },
+						_id: { $in: removedIds },
 					},
 				},
 			})
 		}
 		waitForPromiseAll(ps)
-		waitForPromise(asyncCollectionBulkWrite(ExpectedPackageWorkStatuses, bulkChanges))
+		waitForPromise(ExpectedPackageWorkStatuses.bulkWriteAsync(bulkChanges))
 	}
 
 	export function removeAllExpectedPackageWorkStatusOfDevice(
@@ -176,7 +167,7 @@ export namespace PackageManagerIntegration {
 		const studioId = peripheralDevice.studioId
 
 		const removedIds: PackageContainerPackageId[] = []
-		const ps: Promise<any>[] = []
+		const ps: Promise<unknown>[] = []
 		for (const change of changes) {
 			check(change.containerId, String)
 			check(change.packageId, String)
@@ -216,7 +207,7 @@ export namespace PackageManagerIntegration {
 			}
 		}
 		if (removedIds.length) {
-			ps.push(asyncCollectionRemove(PackageContainerPackageStatuses, { _id: { $in: removedIds } }))
+			ps.push(PackageContainerPackageStatuses.removeAsync({ _id: { $in: removedIds } }))
 		}
 		waitForPromiseAll(ps)
 	}
@@ -252,7 +243,7 @@ export namespace PackageManagerIntegration {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		type: PackageInfoDBType, // string
+		type: PackageInfo.Type, // string
 		packageId: ExpectedPackageId,
 		expectedContentVersionHash: string,
 		actualContentVersionHash: string,
@@ -266,22 +257,25 @@ export namespace PackageManagerIntegration {
 
 		const id = getPackageInfoId(packageId, type)
 
+		const doc: PackageInfoDB = {
+			_id: id,
+
+			packageId: packageId,
+			expectedContentVersionHash: expectedContentVersionHash,
+			actualContentVersionHash: actualContentVersionHash,
+
+			studioId: peripheralDevice.studioId,
+
+			deviceId: peripheralDevice._id,
+
+			type: type,
+			payload: payload,
+		}
 		PackageInfos.upsert(id, {
-			$set: literal<PackageInfoBase>({
-				_id: id,
-
-				packageId: packageId,
-				expectedContentVersionHash: expectedContentVersionHash,
-				actualContentVersionHash: actualContentVersionHash,
-
-				studioId: peripheralDevice.studioId,
-
-				deviceId: peripheralDevice._id,
-
-				type: type,
-				payload: payload,
-			}) as PackageInfoDB,
+			$set: doc,
 		})
+
+		onUpdatedPackageInfo(packageId, doc)
 	}
 	export function removePackageInfo(
 		context: MethodContext,
@@ -299,5 +293,7 @@ export namespace PackageManagerIntegration {
 		const id = getPackageInfoId(packageId, type)
 
 		PackageInfos.remove(id)
+
+		onUpdatedPackageInfo(packageId, null) // ?
 	}
 }

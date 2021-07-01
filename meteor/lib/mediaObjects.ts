@@ -1,24 +1,19 @@
 import * as _ from 'underscore'
 import {
 	VTContent,
+	GraphicsContent,
 	SourceLayerType,
 	ISourceLayer,
 	IBlueprintPieceGeneric,
 	ExpectedPackageStatusAPI,
+	PackageInfo,
 } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from './api/rundown'
-import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
+import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
 import * as i18next from 'i18next'
 import { IStudioSettings, routeExpectedPackages, Studio } from './collections/Studios'
 import { NoteType } from './api/notes'
-import {
-	FFProbeDeepScan,
-	FFProbeScanStream,
-	PackageInfoDBType,
-	PackageInfoFFProbeDeepScan,
-	PackageInfoFFProbeScan,
-	PackageInfos,
-} from './collections/PackageInfos'
+import { PackageInfos } from './collections/PackageInfos'
 import { protectString, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
 
@@ -29,10 +24,10 @@ import { getPackageContainerPackageStatus } from './globalStores'
 export function buildFormatString(mediainfo: MediaInfo, stream: MediaStream): string {
 	let format = `${stream.width || 0}x${stream.height || 0}`
 	switch (mediainfo.field_order) {
-		case FieldOrder.Progressive:
+		case PackageInfo.FieldOrder.Progressive:
 			format += 'p'
 			break
-		case FieldOrder.Unknown:
+		case PackageInfo.FieldOrder.Unknown:
 			format += '?'
 			break
 		default:
@@ -46,10 +41,10 @@ export function buildFormatString(mediainfo: MediaInfo, stream: MediaStream): st
 		format += fps
 	}
 	switch (mediainfo.field_order) {
-		case FieldOrder.BFF:
+		case PackageInfo.FieldOrder.BFF:
 			format += 'bff'
 			break
-		case FieldOrder.TFF:
+		case PackageInfo.FieldOrder.TFF:
 			format += 'tff'
 			break
 		default:
@@ -58,13 +53,16 @@ export function buildFormatString(mediainfo: MediaInfo, stream: MediaStream): st
 
 	return format
 }
-export function buildPackageFormatString(deepScan: FFProbeDeepScan, stream: FFProbeScanStream): string {
+export function buildPackageFormatString(
+	deepScan: PackageInfo.FFProbeDeepScan,
+	stream: PackageInfo.FFProbeScanStream
+): string {
 	let format = `${stream.width || 0}x${stream.height || 0}`
 	switch (deepScan.field_order) {
-		case FieldOrder.Progressive:
+		case PackageInfo.FieldOrder.Progressive:
 			format += 'p'
 			break
-		case FieldOrder.Unknown:
+		case PackageInfo.FieldOrder.Unknown:
 			format += '?'
 			break
 		default:
@@ -78,10 +76,10 @@ export function buildPackageFormatString(deepScan: FFProbeDeepScan, stream: FFPr
 		format += fps
 	}
 	switch (deepScan.field_order) {
-		case FieldOrder.BFF:
+		case PackageInfo.FieldOrder.BFF:
 			format += 'bff'
 			break
-		case FieldOrder.TFF:
+		case PackageInfo.FieldOrder.TFF:
 			format += 'tff'
 			break
 		default:
@@ -145,7 +143,10 @@ export function getMediaObjectMediaId(piece: Pick<IBlueprintPieceGeneric, 'conte
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
-			return (piece.content as VTContent | undefined)?.fileName?.toUpperCase()
+		case SourceLayerType.TRANSITION:
+			return (piece.content as VTContent)?.fileName?.toUpperCase()
+		case SourceLayerType.GRAPHICS:
+			return (piece.content as GraphicsContent)?.fileName?.toUpperCase()
 	}
 	return undefined
 }
@@ -156,8 +157,8 @@ export interface ScanInfoForPackages {
 export interface ScanInfoForPackage {
 	/** Display name of the package  */
 	packageName: string
-	scan?: PackageInfoFFProbeScan['payload']
-	deepScan?: PackageInfoFFProbeDeepScan['payload']
+	scan?: PackageInfo.FFProbeScan['payload']
+	deepScan?: PackageInfo.FFProbeDeepScan['payload']
 	timebase?: number // derived from scan
 }
 
@@ -174,7 +175,7 @@ export function checkPieceContentStatus(
 	let metadata: MediaObject | null = null
 	let packageInfoToForward: ScanInfoForPackages | undefined = undefined
 	let message: string | null = null
-	let contentDuration: number | undefined = undefined
+	const contentDuration: number | undefined = undefined
 	const settings: IStudioSettings | undefined = studio?.settings
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
@@ -277,12 +278,12 @@ export function checkPieceContentStatus(
 								studio: studio._id,
 								packageId: protectString(expectedPackage._id),
 								type: {
-									$in: [PackageInfoDBType.SCAN, PackageInfoDBType.DEEPSCAN] as any,
+									$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN] as any,
 								},
 							}).forEach((packageInfo) => {
-								if (packageInfo.type === PackageInfoDBType.SCAN) {
+								if (packageInfo.type === PackageInfo.Type.SCAN) {
 									packageInfos[expectedPackage._id].scan = packageInfo.payload
-								} else if (packageInfo.type === PackageInfoDBType.DEEPSCAN) {
+								} else if (packageInfo.type === PackageInfo.Type.DEEPSCAN) {
 									packageInfos[expectedPackage._id].deepScan = packageInfo.payload
 								}
 							})
@@ -360,7 +361,11 @@ export function checkPieceContentStatus(
 						}
 						if (timebase) {
 							// check for black/freeze frames
-							const addFrameWarning = (anomalies: Array<Anomaly>, type: string, t: i18next.TFunction) => {
+							const addFrameWarning = (
+								anomalies: Array<PackageInfo.Anomaly>,
+								type: string,
+								t: i18next.TFunction
+							) => {
 								if (anomalies.length === 1) {
 									const frames = Math.round((anomalies[0].duration * 1000) / timebase)
 									if (anomalies[0].start === 0) {
@@ -422,12 +427,12 @@ export function checkPieceContentStatus(
 			}
 		} else {
 			// Fallback to MediaObject statuses:
+			const messages: Array<string> = []
+			const fileName = getMediaObjectMediaId(piece, sourceLayer)
+			const displayName = piece.name
 			switch (sourceLayer.type) {
 				case SourceLayerType.VT:
 				case SourceLayerType.LIVE_SPEAK:
-					const fileName = getMediaObjectMediaId(piece, sourceLayer)
-					const displayName = piece.name
-					const messages: Array<string> = []
 					// If the fileName is not set...
 					if (!fileName) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
@@ -511,7 +516,7 @@ export function checkPieceContentStatus(
 									if (timebase) {
 										// check for black/freeze frames
 										const addFrameWarning = (
-											arr: Array<Anomaly>,
+											arr: Array<PackageInfo.Anomaly>,
 											type: string,
 											t: i18next.TFunction
 										) => {
@@ -588,6 +593,20 @@ export function checkPieceContentStatus(
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
 						}
 						message = messages.join('; ') + '.'
+					}
+					break
+				case SourceLayerType.GRAPHICS:
+					if (fileName) {
+						const mediaObject = MediaObjects.findOne({
+							mediaId: fileName,
+						})
+						if (!mediaObject) {
+							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+							messages.push(t('Source is missing', { fileName: displayName }))
+						} else {
+							newStatus = RundownAPI.PieceStatusCode.OK
+							metadata = mediaObject
+						}
 					}
 					break
 			}

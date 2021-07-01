@@ -1,7 +1,5 @@
-import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
-import { Mongo } from 'meteor/mongo'
 import { testInFiber } from '../../__mocks__/helpers/jest'
+import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import {
 	buildFormatString,
 	acceptFormat,
@@ -9,15 +7,7 @@ import {
 	getMediaObjectMediaId,
 	checkPieceContentStatus,
 } from '../mediaObjects'
-import {
-	MediaObjects,
-	MediaInfo,
-	MediaObject,
-	FieldOrder,
-	MediaStream,
-	Anomaly,
-	MediaStreamType,
-} from './../collections/MediaObjects'
+import { MediaObjects, MediaInfo, MediaObject, MediaStream, MediaStreamType } from './../collections/MediaObjects'
 import { literal, protectString } from '../lib'
 import {
 	ISourceLayer,
@@ -36,7 +26,7 @@ describe('lib/mediaObjects', () => {
 		const format1 = buildFormatString(
 			literal<MediaInfo>({
 				name: '',
-				field_order: FieldOrder.TFF,
+				field_order: PackageInfo.FieldOrder.TFF,
 			}),
 			literal<MediaStream>({
 				width: 1920,
@@ -51,7 +41,7 @@ describe('lib/mediaObjects', () => {
 		const format2 = buildFormatString(
 			literal<MediaInfo>({
 				name: '',
-				field_order: FieldOrder.Progressive,
+				field_order: PackageInfo.FieldOrder.Progressive,
 			}),
 			literal<MediaStream>({
 				width: 1280,
@@ -66,7 +56,7 @@ describe('lib/mediaObjects', () => {
 		const format3 = buildFormatString(
 			literal<MediaInfo>({
 				name: '',
-				field_order: FieldOrder.BFF,
+				field_order: PackageInfo.FieldOrder.BFF,
 			}),
 			literal<MediaStream>({
 				width: 720,
@@ -192,7 +182,7 @@ describe('lib/mediaObjects', () => {
 				mediaTime: 0,
 				mediainfo: literal<MediaInfo>({
 					name: 'test_file',
-					field_order: FieldOrder.TFF,
+					field_order: PackageInfo.FieldOrder.TFF,
 					streams: [
 						literal<MediaStream>({
 							width: 1920,
@@ -278,7 +268,7 @@ describe('lib/mediaObjects', () => {
 				mediaTime: 0,
 				mediainfo: literal<MediaInfo>({
 					name: 'test_file_2',
-					field_order: FieldOrder.Progressive,
+					field_order: PackageInfo.FieldOrder.Progressive,
 					streams: [
 						literal<MediaStream>({
 							width: 1920,

@@ -10,7 +10,7 @@ import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
-import { PartInstance, PartInstances, DBPartInstance } from '../../lib/collections/PartInstances'
+import { PartInstances, DBPartInstance } from '../../lib/collections/PartInstances'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { IngestDataCache, IngestDataCacheObj } from '../../lib/collections/IngestDataCache'
@@ -164,6 +164,10 @@ meteorPublish(PubSub.pieceInstancesSimple, function (selector: MongoQuery<PieceI
 			'piece.metaData': 0,
 			// @ts-ignore
 			'piece.content.timelineObjects': 0,
+			// @ts-ignore
+			startedPlayback: 0,
+			// @ts-ignore
+			stoppedPlayback: 0,
 		},
 	}
 

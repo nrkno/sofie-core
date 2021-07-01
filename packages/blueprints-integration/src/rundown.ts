@@ -1,6 +1,6 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContent } from 'timeline-state-resolver-types'
 import { Time } from './common'
-import { ExpectedPackage, ListenToPackageUpdate } from './package'
+import { ExpectedPackage } from './package'
 import { SomeTimelineContent } from './content'
 import { ITranslatableMessage } from './translations'
 import { PartEndState } from './api'
@@ -17,6 +17,8 @@ export interface IBlueprintRundownPlaylistInfo {
 	outOfOrderTiming?: boolean
 	/** Should the rundown playlist loop at the end */
 	loop?: boolean
+	/** Should time-of-day clocks be used instead of countdowns by default */
+	timeOfDayCountdowns?: boolean
 }
 
 /** The Rundown generated from Blueprint */
@@ -279,9 +281,6 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	 * @todo
 	 */
 	expectedPackages?: ExpectedPackage.Any[]
-
-	/** @todo: to be defined */
-	listenToPackageInfoUpdates?: ListenToPackageUpdate[]
 
 	/** HACK: Some pieces have side effects on other pieces, and pruning them when they have finished playback will cause playout glitches. This will tell core to not always preserve it */
 	hasSideEffects?: boolean

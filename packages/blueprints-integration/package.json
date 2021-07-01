@@ -39,10 +39,8 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"moment": "2.29.1",
-		"timeline-state-resolver-types": "6.0.0-nightly-release35-20210608-165921-e8c0d0dbb.0",
-		"tslib": "^2.1.0",
-		"underscore": "1.13.1"
+		"timeline-state-resolver-types": "6.1.0-nightly-release36-20210629-102259-87b8c9e2a.0",
+		"tslib": "^2.1.0"
 	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [

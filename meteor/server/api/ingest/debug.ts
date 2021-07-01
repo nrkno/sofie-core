@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { check } from '../../../lib/check'
 import { IngestActions } from './actions'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
@@ -17,6 +16,9 @@ import { updateExpectedPackagesOnRundown } from './expectedPackages'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
+		/**
+		 * Simulate a 'Reload from NRCS' for the specified playlist
+		 */
 		debug_playlistRunBlueprints: (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) => {
 			try {
 				check(rundownPlaylistId, String)
@@ -26,6 +28,10 @@ if (!Settings.enableUserAccounts) {
 				throw e
 			}
 		},
+		/**
+		 * Simulate a 'Reload from NRCS' for a particular segment in a rundown
+		 * Getting the segmentId is tricky, but can be done by either inspecting the DOM, or the mongo database
+		 */
 		debug_segmentRunBlueprints: (segmentId: SegmentId) => {
 			check(segmentId, String)
 
@@ -45,6 +51,10 @@ if (!Settings.enableUserAccounts) {
 				true
 			)
 		},
+		/**
+		 * Regenerate all the expected media items for all rundowns in the system
+		 * This shouldn't be necessary as ingest will do this for each rundown as part of its workflow
+		 */
 		debug_recreateExpectedMediaItems() {
 			const rundowns = Rundowns.find().fetch()
 
@@ -52,6 +62,10 @@ if (!Settings.enableUserAccounts) {
 				runIngestOperationFromRundown('', rundown, async (cache) => updateExpectedMediaItemsOnRundown(cache))
 			})
 		},
+		/**
+		 * Regenerate all the expected packages for all rundowns in the system
+		 * This shouldn't be necessary as ingest will do this for each rundown as part of its workflow
+		 */
 		debug_recreateExpectedPackages() {
 			const rundowns = Rundowns.find().fetch()
 

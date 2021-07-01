@@ -84,7 +84,7 @@ interface ISourceLayerProps extends ISourceLayerPropsBase {
 class SourceLayerBase<T extends ISourceLayerPropsBase> extends React.PureComponent<T> {
 	private mousePosition: OffsetPosition = { left: 0, top: 0 }
 
-	getPartContext = (props) => {
+	getPartContext = (_props) => {
 		const partElement = document.querySelector('#' + SegmentTimelinePartElementId + this.props.part.instance._id)
 		const partDocumentOffset = getElementDocumentOffset(partElement)
 
@@ -494,7 +494,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 	static getDerivedStateFromProps(
 		nextProps: Readonly<IProps & RundownTiming.InjectedROTimingProps>,
-		nextState: Readonly<IState>
+		state: Readonly<IState>
 	): Partial<IState> {
 		const isPrevious = nextProps.playlist.previousPartInstanceId === nextProps.part.instance._id
 		const isLive = nextProps.playlist.currentPartInstanceId === nextProps.part.instance._id
@@ -511,8 +511,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			!!startedPlayback &&
 			!nextProps.part.instance.timings?.duration
 
-		let durationSettlingStartsAt = nextState.durationSettlingStartsAt
-		if (!nextState.isDurationSettling && isDurationSettling) {
+		let durationSettlingStartsAt = state.durationSettlingStartsAt
+		if (!state.isDurationSettling && isDurationSettling) {
 			durationSettlingStartsAt = SegmentTimelinePartClass.getCurrentLiveLinePosition(
 				nextProps.part,
 				nextProps.timingDurations.currentTime || getCurrentTime()
@@ -546,7 +546,12 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			durationSettlingStartsAt = 0
 		}
 
-		const partDisplayDuration = SegmentTimelinePartClass.getPartDuration(nextProps, liveDuration, isDurationSettling, durationSettlingStartsAt)
+		const partDisplayDuration = SegmentTimelinePartClass.getPartDuration(
+			nextProps,
+			liveDuration,
+			isDurationSettling,
+			durationSettlingStartsAt
+		)
 
 		const isInsideViewport =
 			nextProps.relative ||
@@ -617,7 +622,12 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			this.props.onPartTooSmallChanged &&
 				this.props.onPartTooSmallChanged(
 					this.props.part,
-					SegmentTimelinePartClass.getPartDuration(this.props, this.state.liveDuration, this.state.isDurationSettling, this.state.durationSettlingStartsAt)
+					SegmentTimelinePartClass.getPartDuration(
+						this.props,
+						this.state.liveDuration,
+						this.state.isDurationSettling,
+						this.state.durationSettlingStartsAt
+					)
 				)
 		}
 	}
@@ -644,13 +654,25 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			this.props.onPartTooSmallChanged &&
 				this.props.onPartTooSmallChanged(
 					this.props.part,
-					tooSmallState ? SegmentTimelinePartClass.getPartDuration(this.props, this.state.liveDuration, this.state.isDurationSettling, this.state.durationSettlingStartsAt) : false
+					tooSmallState
+						? SegmentTimelinePartClass.getPartDuration(
+								this.props,
+								this.state.liveDuration,
+								this.state.isDurationSettling,
+								this.state.durationSettlingStartsAt
+						  )
+						: false
 				)
 		}
 	}
 
 	getLayerStyle() {
-		const actualPartDuration = SegmentTimelinePartClass.getPartDuration(this.props, this.state.liveDuration, this.state.isDurationSettling, this.state.durationSettlingStartsAt)
+		const actualPartDuration = SegmentTimelinePartClass.getPartDuration(
+			this.props,
+			this.state.liveDuration,
+			this.state.isDurationSettling,
+			this.state.durationSettlingStartsAt
+		)
 		const partDuration = this.props.cropDuration
 			? Math.min(this.props.cropDuration, actualPartDuration)
 			: actualPartDuration
@@ -760,9 +782,19 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 									this.props.cropDuration
 										? Math.min(
 												this.props.cropDuration,
-												SegmentTimelinePartClass.getPartDuration(this.props, this.state.liveDuration, this.state.isDurationSettling, this.state.durationSettlingStartsAt)
+												SegmentTimelinePartClass.getPartDuration(
+													this.props,
+													this.state.liveDuration,
+													this.state.isDurationSettling,
+													this.state.durationSettlingStartsAt
+												)
 										  )
-										: SegmentTimelinePartClass.getPartDuration(this.props, this.state.liveDuration, this.state.isDurationSettling, this.state.durationSettlingStartsAt)
+										: SegmentTimelinePartClass.getPartDuration(
+												this.props,
+												this.state.liveDuration,
+												this.state.isDurationSettling,
+												this.state.durationSettlingStartsAt
+										  )
 								}
 								expectedDuration={SegmentTimelinePartClass.getPartExpectedDuration(this.props)}
 								isLiveLine={this.props.playlist.currentPartInstanceId === part.instance._id}
@@ -923,9 +955,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 									(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext,
 							})}
 						>
-							{innerPart.invalid && !innerPart.gap ? (
-								<span>{t('Invalid')}</span>
-							) : (
+							{innerPart.invalid && !innerPart.gap ? null : (
 								<React.Fragment>
 									{((this.state.isNext && this.props.autoNextPart) ||
 										(!this.state.isNext && this.props.part.willProbablyAutoNext)) &&
@@ -944,14 +974,24 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						this.state.isNext && ( // This is the off-set line
 							<div
 								className={ClassNames('segment-timeline__part__nextline', {
-									'auto-next': this.props.part.willProbablyAutoNext,
+									// This is the base, basic line
+									'auto-next':
+										!innerPart.invalid &&
+										!innerPart.gap &&
+										((this.state.isNext && this.props.autoNextPart) ||
+											(!this.state.isNext && this.props.part.willProbablyAutoNext)),
 									invalid: innerPart.invalid && !innerPart.gap,
 									floated: innerPart.floated,
 								})}
 								style={{
 									left: this.props.relative
 										? (this.props.playlist.nextTimeOffset /
-												(SegmentTimelinePartClass.getPartDuration(this.props, this.state.liveDuration, this.state.isDurationSettling, this.state.durationSettlingStartsAt) || 1)) *
+												(SegmentTimelinePartClass.getPartDuration(
+													this.props,
+													this.state.liveDuration,
+													this.state.isDurationSettling,
+													this.state.durationSettlingStartsAt
+												) || 1)) *
 												100 +
 										  '%'
 										: Math.round(this.props.playlist.nextTimeOffset * this.props.timeScale) + 'px',
@@ -963,9 +1003,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 											(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext,
 									})}
 								>
-									{innerPart.invalid ? (
-										!innerPart.gap && <span>{t('Invalid')}</span>
-									) : (
+									{innerPart.invalid && !innerPart.gap ? null : (
 										<React.Fragment>
 											{(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && t('Auto') + ' '}
 											{this.state.isNext && t('Next')}

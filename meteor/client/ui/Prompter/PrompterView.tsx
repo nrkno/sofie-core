@@ -84,6 +84,16 @@ interface IState {
 	subsReady: boolean
 }
 
+function asArray<T>(value: T | T[] | null): T[] {
+	if (Array.isArray(value)) {
+		return value
+	} else if (value) {
+		return [value]
+	} else {
+		return []
+	}
+}
+
 export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
@@ -112,7 +122,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.configOptions = {
 			mirror: firstIfArray(queryParams['mirror']) === '1',
 			mirrorv: firstIfArray(queryParams['mirrorv']) === '1',
-			mode: new Array().concat(queryParams['mode']),
+			mode: asArray(queryParams['mode']),
 			controlMode: firstIfArray(queryParams['controlmode']) || undefined,
 			followTake: queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1',
 			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
@@ -122,11 +132,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			joycon_speedMap:
 				queryParams['joycon_speedMap'] === undefined
 					? undefined
-					: new Array().concat(queryParams['joycon_speedMap']).map((value) => parseInt(value, 10)),
+					: asArray(queryParams['joycon_speedMap']).map((value) => parseInt(value, 10)),
 			joycon_reverseSpeedMap:
 				queryParams['joycon_reverseSpeedMap'] === undefined
 					? undefined
-					: new Array().concat(queryParams['joycon_reverseSpeedMap']).map((value) => parseInt(value, 10)),
+					: asArray(queryParams['joycon_reverseSpeedMap']).map((value) => parseInt(value, 10)),
 			joycon_rangeRevMin: parseInt(firstIfArray(queryParams['joycon_rangeRevMin']) as string, 10) || undefined,
 			joycon_rangeNeutralMin: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMin']) as string, 10) || undefined,
 			joycon_rangeNeutralMax: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMax']) as string, 10) || undefined,
@@ -134,11 +144,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			pedal_speedMap:
 				queryParams['pedal_speedMap'] === undefined
 					? undefined
-					: new Array().concat(queryParams['pedal_speedMap']).map((value) => parseInt(value, 10)),
+					: asArray(queryParams['pedal_speedMap']).map((value) => parseInt(value, 10)),
 			pedal_reverseSpeedMap:
 				queryParams['pedal_reverseSpeedMap'] === undefined
 					? undefined
-					: new Array().concat(queryParams['pedal_reverseSpeedMap']).map((value) => parseInt(value, 10)),
+					: asArray(queryParams['pedal_reverseSpeedMap']).map((value) => parseInt(value, 10)),
 			pedal_rangeRevMin: parseInt(firstIfArray(queryParams['pedal_rangeRevMin']) as string, 10) || undefined,
 			pedal_rangeNeutralMin: parseInt(firstIfArray(queryParams['pedal_rangeNeutralMin']) as string, 10) || undefined,
 			pedal_rangeNeutralMax: parseInt(firstIfArray(queryParams['pedal_rangeNeutralMax']) as string, 10) || undefined,
@@ -200,7 +210,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 
 		this.autorun(() => {
-			let playlist = RundownPlaylists.findOne(
+			const playlist = RundownPlaylists.findOne(
 				{
 					studioId: this.props.studioId,
 					activationId: { $exists: true },
@@ -219,7 +229,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		})
 
 		this.autorun(() => {
-			let subsReady = this.subscriptionsReady()
+			const subsReady = this.subscriptionsReady()
 			if (subsReady !== this.state.subsReady) {
 				this.setState({
 					subsReady: subsReady,
@@ -278,9 +288,9 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 
 	checkScrollToCurrent() {
-		let playlistId: RundownPlaylistId =
+		const playlistId: RundownPlaylistId =
 			(this.props.rundownPlaylist && this.props.rundownPlaylist._id) || protectString('')
-		let playlist = RundownPlaylists.findOne(playlistId)
+		const playlist = RundownPlaylists.findOne(playlistId)
 
 		if (this.configOptions.followTake) {
 			if (playlist) {
@@ -309,7 +319,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		return pixelMargin
 	}
 	calculateMarginPosition() {
-		let pixelMargin = ((this.configOptions.margin || 0) * window.innerHeight) / 100
+		const pixelMargin = ((this.configOptions.margin || 0) * window.innerHeight) / 100
 		return pixelMargin
 	}
 	scrollToLive() {
@@ -332,7 +342,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	scrollToPrevious() {
 		const scrollMargin = this.calculateScrollPosition()
-		const screenMargin = this.calculateMarginPosition()
 		const anchors = this.listAnchorPositions(-1, 10 + scrollMargin)
 
 		const target = anchors[anchors.length - 2] || anchors[0]
@@ -347,7 +356,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	scrollToFollowing() {
 		const scrollMargin = this.calculateScrollPosition()
-		const screenMargin = this.calculateMarginPosition()
 		const anchors = this.listAnchorPositions(40 + scrollMargin, -1)
 
 		const target = anchors[0]
@@ -584,7 +592,6 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		componentDidMount() {
 			this.subscribe(PubSub.rundowns, { playlistId: this.props.rundownPlaylistId })
 
-			// TODO-PartInstance the prompter should probably consider instances
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId)
 				if (playlist) {
@@ -601,6 +608,10 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					})
 					this.subscribe(PubSub.pieces, {
 						startRundownId: { $in: rundownIDs },
+					})
+					this.subscribe(PubSub.pieceInstancesSimple, {
+						rundownId: { $in: rundownIDs },
+						reset: { $ne: true },
 					})
 				}
 			})
@@ -650,7 +661,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			}
 		}
 
-		shouldComponentUpdate(nextProps, nextState): boolean {
+		shouldComponentUpdate(_nextProps, _nextState): boolean {
 			clearTimeout(this._debounceUpdate)
 			this._debounceUpdate = setTimeout(() => this.forceUpdate(), 250)
 			return false
@@ -666,16 +677,16 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 		renderPrompterData(prompterData: PrompterData) {
 			const getPartStatus = (part: PrompterDataPart) => {
-				if (prompterData.currentPartId === part.id) {
+				if (prompterData.currentPartInstanceId === part.id) {
 					return 'live'
-				} else if (prompterData.nextPartId === part.id) {
+				} else if (prompterData.nextPartInstanceId === part.id) {
 					return 'next'
 				} else {
 					return null
 				}
 			}
 
-			let lines: React.ReactNode[] = []
+			const lines: React.ReactNode[] = []
 
 			prompterData.segments.forEach((segment) => {
 				if (segment.parts.length === 0) {
