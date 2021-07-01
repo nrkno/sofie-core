@@ -656,8 +656,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	timelineStyle() {
 		return {
-			transform:
-				'translate3d(-' + this.convertTimeToPixels(this.props.scrollLeft).toString() + 'px, 0, 0.1px)',
+			transform: 'translate3d(-' + this.convertTimeToPixels(this.props.scrollLeft).toString() + 'px, 0, 0.1px)',
 			willChange: 'transform',
 		}
 	}
@@ -667,7 +666,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 		if (this.props.isLiveSegment) {
 			const historyTimeDuration = this.props.liveLineHistorySize / this.props.timeScale
-
 
 			const pixelPostion = Math.floor(
 				this.convertTimeToPixels(this.props.livePosition) -

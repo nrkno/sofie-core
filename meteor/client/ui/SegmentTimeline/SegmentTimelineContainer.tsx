@@ -501,13 +501,13 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 			// segment is becoming live
 			if (this.state.isLiveSegment === false && isLiveSegment === true) {
-				this.setState({isLiveSegment: true})
+				this.setState({ isLiveSegment: true })
 				this.onFollowLiveLine(true)
 				this.startLive()
 			}
 			// segment is stopping from being live
 			if (this.state.isLiveSegment === true && isLiveSegment === false) {
-				this.setState({isLiveSegment: false})
+				this.setState({ isLiveSegment: false })
 				this.stopLive()
 				if (Settings.autoRewindLeavingSegment) {
 					this.onRewindSegment()
@@ -781,7 +781,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				const lastTake = currentLivePartInstance.timings?.take
 				const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
 				const lastTakeOffset = currentLivePartInstance.timings?.playOffset || 0
-				let virtualStartedPlayback =
+				const virtualStartedPlayback =
 					(lastTake || 0) > (lastStartedPlayback || -1)
 						? lastTake
 						: lastStartedPlayback
