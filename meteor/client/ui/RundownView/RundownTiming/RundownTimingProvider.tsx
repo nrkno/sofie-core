@@ -437,7 +437,7 @@ export const RundownTimingProvider = withTracker<
 							this.lastTakeAt = now
 							this.previousPartInstanceId = playlist.previousPartInstanceId || ''
 						}
-						let durationToTake =
+						const durationToTake =
 							this.lastTakeAt && lastStartedPlayback
 								? this.lastTakeAt - lastStartedPlayback
 								: this.partDisplayDurations[partInstancePartId]
