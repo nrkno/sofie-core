@@ -20,6 +20,11 @@ import {
 	RundownLayoutEndWords,
 	RundownLayoutSegmentTiming,
 	RundownLayoutPartTiming,
+	RundownLayoutTextLabel,
+	RundownLayoutPlaylistName,
+	RundownLayoutTimeOfDay,
+	RundownLayoutSytemStatus,
+	RundownLayoutShowStyleDisplay,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -180,6 +185,9 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.END_WORDS,
 			RundownLayoutElementType.SEGMENT_TIMING,
 			RundownLayoutElementType.PART_TIMING,
+			RundownLayoutElementType.TEXT_LABEL,
+			RundownLayoutElementType.PLAYLIST_NAME,
+			RundownLayoutElementType.TIME_OF_DAY,
 		],
 	})
 
@@ -255,6 +263,26 @@ export namespace RundownLayoutsAPI {
 
 	export function isPartTiming(element: RundownLayoutElementBase): element is RundownLayoutPartTiming {
 		return element.type === RundownLayoutElementType.PART_TIMING
+	}
+
+	export function isTextLabel(element: RundownLayoutElementBase): element is RundownLayoutTextLabel {
+		return element.type === RundownLayoutElementType.TEXT_LABEL
+	}
+
+	export function isPlaylistName(element: RundownLayoutElementBase): element is RundownLayoutPlaylistName {
+		return element.type === RundownLayoutElementType.PLAYLIST_NAME
+	}
+
+	export function isTimeOfDay(element: RundownLayoutElementBase): element is RundownLayoutTimeOfDay {
+		return element.type === RundownLayoutElementType.TIME_OF_DAY
+	}
+
+	export function isSystemStatus(element: RundownLayoutElementBase): element is RundownLayoutSytemStatus {
+		return element.type === RundownLayoutElementType.SYSTEM_STATUS
+	}
+
+	export function isShowStyleDisplay(element: RundownLayoutElementBase): element is RundownLayoutShowStyleDisplay {
+		return element.type === RundownLayoutElementType.SHOWSTYLE_DISPLAY
 	}
 
 	export function adLibRegionToFilter(element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {

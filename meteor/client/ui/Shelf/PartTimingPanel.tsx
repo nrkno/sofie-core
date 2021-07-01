@@ -20,7 +20,7 @@ import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveD
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementPosition, getIsFilterActive } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { getAllowSpeaking } from '../../lib/localStorage'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
@@ -35,6 +35,7 @@ interface IPartTimingPanelProps {
 
 interface IPartTimingPanelTrackedProps {
 	livePart?: PartInstance
+	active: boolean
 }
 
 interface IState {}
@@ -67,15 +68,16 @@ class PartTimingPanelInner extends MeteorReactComponent<
 					<span className="timing-clock-label">
 						{panel.timingType === 'count_down' ? t('Part Count Down') : t('Part Count Up')}
 					</span>
-					{panel.timingType === 'count_down' ? (
-						<CurrentPartRemaining
-							currentPartInstanceId={this.props.playlist.currentPartInstanceId}
-							speaking={getAllowSpeaking() && panel.speakCountDown}
-							heavyClassName="overtime"
-						/>
-					) : (
-						<CurrentPartElapsed currentPartId={this.props.livePart?.part._id} />
-					)}
+					{this.props.active &&
+						(panel.timingType === 'count_down' ? (
+							<CurrentPartRemaining
+								currentPartInstanceId={this.props.playlist.currentPartInstanceId}
+								speaking={getAllowSpeaking() && panel.speakCountDown}
+								heavyClassName="overtime"
+							/>
+						) : (
+							<CurrentPartElapsed currentPartId={this.props.livePart?.part._id} />
+						))}
 				</span>
 			</div>
 		)
@@ -83,13 +85,14 @@ class PartTimingPanelInner extends MeteorReactComponent<
 }
 
 export const PartTimingPanel = translateWithTracker<IPartTimingPanelProps, IState, IPartTimingPanelTrackedProps>(
-	(props: IPartTimingPanelProps & IPartTimingPanelTrackedProps) => {
+	(props: IPartTimingPanelProps) => {
 		if (props.playlist.currentPartInstanceId) {
 			let livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
+			let { active } = getIsFilterActive(props.playlist, props.panel)
 
-			return { livePart }
+			return { active, livePart }
 		}
-		return {}
+		return { active: false }
 	},
 	(_data, props: IPartTimingPanelProps, nextProps: IPartTimingPanelProps) => {
 		return !_.isEqual(props, nextProps)

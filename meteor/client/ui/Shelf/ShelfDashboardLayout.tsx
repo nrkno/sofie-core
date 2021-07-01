@@ -19,12 +19,19 @@ import { EndWordsPanel } from './EndWordsPanel'
 import { PlaylistEndTimerPanel } from './PlaylistEndTimerPanel'
 import { SegmentTimingPanel } from './SegmentTimingPanel'
 import { PartTimingPanel } from './PartTimingPanel'
+import { TextLabelPanel } from './TextLabelPanel'
+import { PlaylistNamePanel } from './PlaylistNamePanel'
+import { TimeOfDayPanel } from './TimeOfDayPanel'
+import { SystemStatusPanel } from './SystemStatusPanel'
+import { ShowStylePanel } from './ShowStylePanel'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
 	playlist: RundownPlaylist
 	// buckets: Bucket[] | undefined
 	showStyleBase: ShowStyleBase
+	showStyleVariant: ShowStyleVariant
 	studioMode: boolean
 	shouldQueue: boolean
 	studio: Studio
@@ -124,6 +131,29 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 						/>
 					) : RundownLayoutsAPI.isPartTiming(panel) ? (
 						<PartTimingPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+					) : RundownLayoutsAPI.isTextLabel(panel) ? (
+						<TextLabelPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+					) : RundownLayoutsAPI.isPlaylistName(panel) ? (
+						<PlaylistNamePanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+					) : RundownLayoutsAPI.isTimeOfDay(panel) ? (
+						<TimeOfDayPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+					) : RundownLayoutsAPI.isSystemStatus(panel) ? (
+						<SystemStatusPanel
+							key={panel._id}
+							playlist={props.playlist}
+							layout={rundownLayout}
+							panel={panel}
+							studio={props.studio}
+						/>
+					) : RundownLayoutsAPI.isShowStyleDisplay(panel) ? (
+						<ShowStylePanel
+							key={panel._id}
+							playlist={props.playlist}
+							layout={rundownLayout}
+							panel={panel}
+							showStyleBase={props.showStyleBase}
+							showStyleVariant={props.showStyleVariant}
+						/>
 					) : null
 				)}
 			{rundownLayout.actionButtons && (

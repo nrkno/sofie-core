@@ -110,6 +110,7 @@ import { NextBreakTiming } from './RundownView/RundownTiming/NextBreakTiming'
 import { RundownName } from './RundownView/RundownTiming/RundownName'
 import { TimeOfDay } from './RundownView/RundownTiming/TimeOfDay'
 import { PlaylistStartTiming } from './RundownView/RundownTiming/PlaylistStartTiming'
+import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -310,6 +311,7 @@ interface HotkeyDefinition {
 interface IRundownHeaderProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
+	showStyleVariant: ShowStyleVariant
 	currentRundown: Rundown | undefined
 	studio: Studio
 	rundownIds: RundownId[]
@@ -1217,6 +1219,7 @@ const RundownHeader = withTranslation()(
 										rundownLayout={this.props.layout}
 										playlist={this.props.playlist}
 										showStyleBase={this.props.showStyleBase}
+										showStyleVariant={this.props.showStyleVariant}
 										studio={this.props.studio}
 										studioMode={this.props.studioMode}
 										shouldQueue={this.state.shouldQueue}
@@ -1323,6 +1326,7 @@ interface ITrackedProps {
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
+	showStyleVariant?: ShowStyleVariant
 	rundownLayouts?: Array<RundownLayoutBase>
 	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
@@ -1399,6 +1403,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		playlist,
 		studio: studio,
 		showStyleBase: rundowns.length > 0 ? ShowStyleBases.findOne(rundowns[0].showStyleBaseId) : undefined,
+		showStyleVariant: rundowns.length > 0 ? ShowStyleVariants.findOne(rundowns[0].showStyleVariantId) : undefined,
 		rundownLayouts:
 			rundowns.length > 0 ? RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() : undefined,
 		buckets:
@@ -1676,11 +1681,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						fields: {
 							_id: 1,
 							showStyleBaseId: 1,
+							showStyleVariantId: 1,
 						},
-					}) as Pick<Rundown, '_id' | 'showStyleBaseId'>[]
+					}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>[]
 					this.subscribe(PubSub.showStyleBases, {
 						_id: {
 							$in: rundowns.map((i) => i.showStyleBaseId),
+						},
+					})
+					this.subscribe(PubSub.showStyleVariants, {
+						_id: {
+							$in: rundowns.map((i) => i.showStyleVariantId),
 						},
 					})
 					this.subscribe(PubSub.rundownLayouts, {
@@ -2525,7 +2536,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const { t } = this.props
 
 			if (this.state.subsReady) {
-				if (this.props.playlist && this.props.studio && this.props.showStyleBase && !this.props.onlyShelf) {
+				if (
+					this.props.playlist &&
+					this.props.studio &&
+					this.props.showStyleBase &&
+					this.props.showStyleVariant &&
+					!this.props.onlyShelf
+				) {
 					const selectedPiece = this.state.selectedPiece
 					const selectedPieceRundown: Rundown | undefined =
 						(selectedPiece &&
@@ -2659,6 +2676,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											currentRundown={this.state.currentRundown || this.props.rundowns[0]}
 											layout={this.state.rundownHeaderLayout}
 											showStyleBase={this.props.showStyleBase}
+											showStyleVariant={this.props.showStyleVariant}
 										/>
 									</ErrorBoundary>
 									<ErrorBoundary>
@@ -2721,6 +2739,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											hotkeys={this.state.usedHotkeys}
 											playlist={this.props.playlist}
 											showStyleBase={this.props.showStyleBase}
+											showStyleVariant={this.props.showStyleVariant}
 											studioMode={this.state.studioMode}
 											onChangeBottomMargin={this.onChangeBottomMargin}
 											onRegisterHotkeys={this.onRegisterHotkeys}
@@ -2756,7 +2775,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							</StudioPackageContainersContext.Provider>
 						</RundownTimingProvider>
 					)
-				} else if (this.props.playlist && this.props.studio && this.props.showStyleBase && this.props.onlyShelf) {
+				} else if (
+					this.props.playlist &&
+					this.props.studio &&
+					this.props.showStyleBase &&
+					this.props.showStyleVariant &&
+					this.props.onlyShelf
+				) {
 					return (
 						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
 							<ErrorBoundary>
@@ -2770,6 +2795,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									hotkeys={this.state.usedHotkeys}
 									playlist={this.props.playlist}
 									showStyleBase={this.props.showStyleBase}
+									showStyleVariant={this.props.showStyleVariant}
 									studioMode={this.state.studioMode}
 									onChangeBottomMargin={this.onChangeBottomMargin}
 									onRegisterHotkeys={this.onRegisterHotkeys}
@@ -2793,7 +2819,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										? t('Error: The studio of this Rundown was not found.')
 										: !this.props.rundowns.length
 										? t('This playlist is empty')
-										: !this.props.showStyleBase
+										: !this.props.showStyleBase || !this.props.showStyleVariant
 										? t('Error: The ShowStyle of this Rundown was not found.')
 										: t('Unknown error')}
 								</p>

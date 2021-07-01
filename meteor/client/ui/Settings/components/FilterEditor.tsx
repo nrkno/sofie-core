@@ -18,9 +18,12 @@ import {
 	RundownLayoutPartTiming,
 	RundownLayoutPieceCountdown,
 	RundownLayoutPlaylistEndTimer,
+	RundownLayoutPlaylistName,
 	RundownLayoutPlaylistStartTimer,
 	RundownLayouts,
 	RundownLayoutSegmentTiming,
+	RundownLayoutTextLabel,
+	RundownLayoutTimeOfDay,
 } from '../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
@@ -953,11 +956,203 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							/>
 						</label>
 					</div>
+					{this.renderRequiresActiveLayerSettings(
+						item,
+						index,
+						t('Script Source Layers'),
+						t('Source layers containing script')
+					)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderSegmentCountDown(
+			item: RundownLayoutBase,
+			tab: RundownLayoutSegmentTiming,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			let { t } = this.props
+
+			return (
+				<React.Fragment>
 					<div className="mod mvs mhs">
-						<label className="field">{t('Script Source Layers')}</label>
+						<label className="field">
+							{t('Type')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${this.props.index}.timingType`}
+								obj={this.props.item}
+								options={['count_down', 'count_up']}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+						</label>
+					</div>
+					{this.renderRequiresActiveLayerSettings(item, index, t('Require Piece on Source Layer'), '')}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderPartCountDown(
+			item: RundownLayoutBase,
+			tab: RundownLayoutPartTiming,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			let { t } = this.props
+
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Type')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${this.props.index}.timingType`}
+								obj={this.props.item}
+								options={['count_down', 'count_up']}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+						</label>
+					</div>
+					{this.renderRequiresActiveLayerSettings(item, index, t('Require Piece on Source Layer'), '')}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderTextLabel(
+			item: RundownLayoutBase,
+			tab: RundownLayoutTextLabel,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Text')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.text`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderPlaylistName(
+			item: RundownLayoutBase,
+			tab: RundownLayoutPlaylistName,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Show Rundown Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.showCurrentRundownName`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderTimeOfDay(
+			item: RundownLayoutBase,
+			tab: RundownLayoutTimeOfDay,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderRequiresActiveLayerSettings(
+			item: RundownLayoutBase,
+			index: number,
+			activeLayerTitle: string,
+			activeLayersLabel
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">{activeLayerTitle}</label>
 						<EditAttribute
 							modifiedClassName="bghl"
-							attribute={`filters.${index}.scriptSourceLayerIds`}
+							attribute={`filters.${index}.activeLayerIds`}
 							obj={item}
 							type="checkbox"
 							collection={RundownLayouts}
@@ -967,7 +1162,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
-							attribute={`filters.${index}.scriptSourceLayerIds`}
+							attribute={`filters.${index}.activeLayerIds`}
 							obj={item}
 							options={this.props.showStyleBase.sourceLayers.map((l) => {
 								return { name: l.name, value: l._id }
@@ -978,10 +1173,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							className="input text-input input-l dropdown"
 							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
 						/>
-						<span className="text-s dimmed">{t('Source layers containing script')}</span>
+						<span className="text-s dimmed">{activeLayersLabel}</span>
 					</div>
 					<div className="mod mvs mhs">
-						<label className="field">{t('Required Source Layers')}</label>
+						<label className="field">{t('Also Require Source Layers')}</label>
 						<EditAttribute
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.requiredLayers`}
@@ -1006,7 +1201,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
 						/>
 						<span className="text-s dimmed">
-							{t('Specify layers where at least one layer must have an active piece for end words to be shown')}
+							{t('Specify additional layers where at least one layer must have an active piece')}
 						</span>
 					</div>
 					<div className="mod mvs mhs">
@@ -1020,12 +1215,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								collection={RundownLayouts}
 								className="mod mas"
 							/>
-							<span className="text-s dimmed">
-								{t('All required source layers must have active pieces to show end words')}
-							</span>
+							<span className="text-s dimmed">{t('All required source layers must have active pieces')}</span>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1102,66 +1294,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							</label>
 						</div>
 					)}
-				</React.Fragment>
-			)
-		}
-
-		renderSegmentCountDown(
-			item: RundownLayoutBase,
-			tab: RundownLayoutSegmentTiming,
-			index: number,
-			isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
-			let { t } = this.props
-
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Type')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${this.props.index}.timingType`}
-								obj={this.props.item}
-								options={['count_down', 'count_up']}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							></EditAttribute>
-						</label>
-					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
-				</React.Fragment>
-			)
-		}
-
-		renderPartCountDown(
-			item: RundownLayoutBase,
-			tab: RundownLayoutPartTiming,
-			index: number,
-			isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
-			let { t } = this.props
-
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Type')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${this.props.index}.timingType`}
-								obj={this.props.item}
-								options={['count_down', 'count_up']}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							></EditAttribute>
-						</label>
-					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1273,6 +1405,30 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						  )
 						: RundownLayoutsAPI.isPartTiming(this.props.filter)
 						? this.renderPartCountDown(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isTextLabel(this.props.filter)
+						? this.renderTextLabel(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isPlaylistName(this.props.filter)
+						? this.renderPlaylistName(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isTimeOfDay(this.props.filter)
+						? this.renderTimeOfDay(
 								this.props.item,
 								this.props.filter,
 								this.props.index,

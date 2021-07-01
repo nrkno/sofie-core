@@ -50,6 +50,11 @@ export enum RundownLayoutElementType {
 	END_WORDS = 'end_words',
 	SEGMENT_TIMING = 'segment_timing',
 	PART_TIMING = 'part_timing',
+	TEXT_LABEL = 'text_label',
+	PLAYLIST_NAME = 'playlist_name',
+	TIME_OF_DAY = 'time_of_day',
+	SYSTEM_STATUS = 'system_status',
+	SHOWSTYLE_DISPLAY = 'showstyle_display',
 }
 
 export interface RundownLayoutElementBase {
@@ -57,6 +62,23 @@ export interface RundownLayoutElementBase {
 	name: string
 	rank: number
 	type?: RundownLayoutElementType // if not set, the value is RundownLayoutElementType.FILTER
+}
+
+/**
+ * An interface for filters that check for a piece to be present on a source layer to change their behaviour (or in order to perform any action at all).
+ * If `activeLayerIds` is empty / undefined, the filter should be treated as "always active".
+ * @param activeLayerIds Layers that the filter will check for some active ('live') piece. (Match any layer in array).
+ * @param requiredLayers Layers that must be active in addition to the active layers, i.e. "any of `activeLayerIds`, with at least one of `requiredLayers`".
+ * @param requireAllSourcelayers Require all layers in `requiredLayers` to contain an active piece.
+ */
+export interface FilterRequiresActiveLayers {
+	activeLayerIds?: string[]
+	requiredLayers?: string[]
+	/**
+	 * Require that all required sourcelayers be active.
+	 * This allows behaviour to be tied to a combination of e.g. script + VT.
+	 */
+	requireAllSourcelayers: boolean
 }
 
 export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
@@ -98,26 +120,41 @@ export interface RundownLayoutPlaylistEndTimer extends RundownLayoutElementBase 
 	hidePlannedEnd: boolean
 }
 
-export interface RundownLayoutEndWords extends RundownLayoutElementBase {
+export interface RundownLayoutEndWords extends RundownLayoutElementBase, FilterRequiresActiveLayers {
 	type: RundownLayoutElementType.PLAYLIST_END_TIMER
-	scriptSourceLayerIds?: string[]
-	requiredLayers?: string[]
-	/**
-	 * Require that all required sourcelayers be active in order to show end words.
-	 * This allows end words to be tied to a combination of e.g. script + VT.
-	 */
-	requireAllSourcelayers: boolean
 }
 
-export interface RundownLayoutSegmentTiming extends RundownLayoutElementBase {
+export interface RundownLayoutSegmentTiming extends RundownLayoutElementBase, FilterRequiresActiveLayers {
 	type: RundownLayoutElementType.SEGMENT_TIMING
 	timingType: 'count_down' | 'count_up'
 }
 
-export interface RundownLayoutPartTiming extends RundownLayoutElementBase {
+export interface RundownLayoutPartTiming extends RundownLayoutElementBase, FilterRequiresActiveLayers {
 	type: RundownLayoutElementType.PART_TIMING
 	timingType: 'count_down' | 'count_up'
 	speakCountDown: boolean
+}
+
+export interface RundownLayoutTextLabel extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.TEXT_LABEL
+	text: string
+}
+
+export interface RundownLayoutPlaylistName extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PLAYLIST_NAME
+	showCurrentRundownName: boolean
+}
+
+export interface RundownLayoutTimeOfDay extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.TIME_OF_DAY
+}
+
+export interface RundownLayoutSytemStatus extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.SYSTEM_STATUS
+}
+
+export interface RundownLayoutShowStyleDisplay extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.SHOWSTYLE_DISPLAY
 }
 
 /**
@@ -202,6 +239,41 @@ export interface DashboardLayoutSegmentCountDown extends RundownLayoutSegmentTim
 }
 
 export interface DashboardLayoutPartCountDown extends RundownLayoutPartTiming {
+	x: number
+	y: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutTextLabel extends RundownLayoutTextLabel {
+	x: number
+	y: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutPlaylistName extends RundownLayoutPlaylistName {
+	x: number
+	y: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutTimeOfDay extends RundownLayoutTimeOfDay {
+	x: number
+	y: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutSystemStatus extends RundownLayoutSytemStatus {
+	x: number
+	y: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutShowStyleDisplay extends RundownLayoutShowStyleDisplay {
 	x: number
 	y: number
 	width: number

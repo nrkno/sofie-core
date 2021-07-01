@@ -12,7 +12,7 @@ import { IOutputLayer, ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { DashboardLayoutFilter, FilterRequiresActiveLayers } from '../../../lib/collections/RundownLayouts'
 import { unprotectString, getCurrentTime } from '../../../lib/lib'
 import {
 	IAdLibPanelProps,
@@ -38,6 +38,7 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 
 interface IState {
 	outputLayers: {
@@ -920,3 +921,39 @@ export const DashboardPanel = translateWithTracker<
 		return !_.isEqual(props, nextProps)
 	}
 )(DashboardPanelInner)
+
+/**
+ * If the conditions of the filter are met, activePieceInstance will include the first piece instance found that matches the filter, otherwise it will be undefined.
+ */
+export function getIsFilterActive(
+	playlist: RundownPlaylist,
+	panel: FilterRequiresActiveLayers
+): { active: boolean; activePieceInstance: PieceInstance | undefined } {
+	const unfinishedPieces = getUnfinishedPieceInstancesReactive(playlist.currentPartInstanceId, true)
+	let activePieceInstance: PieceInstance | undefined
+	let activeLayers = unfinishedPieces.map((p) => p.piece.sourceLayerId)
+	let containsEveryRequiredLayer = panel.requireAllSourcelayers
+		? panel.requiredLayers?.length && panel.requiredLayers.every((s) => activeLayers.includes(s))
+		: false
+	let containsRequiredLayer = containsEveryRequiredLayer
+		? true
+		: panel.requiredLayers && panel.requiredLayers.length
+		? panel.requiredLayers.some((s) => activeLayers.includes(s))
+		: false
+
+	if (
+		(!panel.requireAllSourcelayers || containsEveryRequiredLayer) &&
+		(!panel.requiredLayers?.length || containsRequiredLayer)
+	) {
+		activePieceInstance =
+			panel.activeLayerIds && panel.activeLayerIds.length
+				? _.flatten(Object.values(unfinishedPieces)).find((piece: PieceInstance) => {
+						return (
+							(panel.activeLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
+							piece.partInstanceId === playlist.currentPartInstanceId
+						)
+				  })
+				: undefined
+	}
+	return { active: activePieceInstance !== undefined || !panel.requiredLayers?.length, activePieceInstance }
+}

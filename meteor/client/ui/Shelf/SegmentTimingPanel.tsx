@@ -16,7 +16,7 @@ import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveD
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementPosition, getIsFilterActive } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 interface ISegmentTimingPanelProps {
@@ -30,6 +30,7 @@ interface ISegmentTimingPanelProps {
 interface ISegmentTimingPanelTrackedProps {
 	liveSegment?: Segment
 	parts?: PartExtended[]
+	active: boolean
 }
 
 interface IState {}
@@ -62,7 +63,9 @@ class SegmentTimingPanelInner extends MeteorReactComponent<
 					<span className="timing-clock-label">
 						{panel.timingType === 'count_down' ? t('Segment Count Down') : t('Segment Count Up')}
 					</span>
-					{this.props.parts && <SegmentDuration parts={this.props.parts} countUp={panel.timingType === 'count_up'} />}
+					{this.props.active && this.props.parts && (
+						<SegmentDuration parts={this.props.parts} countUp={panel.timingType === 'count_up'} />
+					)}
 				</span>
 			</div>
 		)
@@ -74,12 +77,14 @@ export const SegmentTimingPanel = translateWithTracker<
 	IState,
 	ISegmentTimingPanelTrackedProps
 >(
-	(props: ISegmentTimingPanelProps & ISegmentTimingPanelTrackedProps) => {
+	(props: ISegmentTimingPanelProps) => {
 		if (props.playlist.currentPartInstanceId) {
 			let livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
 			let liveSegment = livePart ? props.playlist.getSegments({ _id: livePart.segmentId })[0] : undefined
 
-			if (!liveSegment) return {}
+			const { active } = getIsFilterActive(props.playlist, props.panel)
+
+			if (!liveSegment) return { active }
 
 			const [orderedAllPartIds, { currentPartInstance, nextPartInstance }] = slowDownReactivity(
 				() =>
@@ -122,7 +127,7 @@ export const SegmentTimingPanel = translateWithTracker<
 			const rundown = rundowns.find((r) => r._id === liveSegment!.rundownId)
 			const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === liveSegment!._id)
 
-			if (!rundown) return {}
+			if (!rundown) return { active }
 
 			const rundownsToShowstyles = new Map()
 			for (const rundown of rundowns) {
@@ -144,9 +149,9 @@ export const SegmentTimingPanel = translateWithTracker<
 				true
 			)
 
-			return { liveSegment, parts: o.parts }
+			return { active, liveSegment, parts: o.parts }
 		}
-		return {}
+		return { active: false }
 	},
 	(_data, props: ISegmentTimingPanelProps, nextProps: ISegmentTimingPanelProps) => {
 		return !_.isEqual(props, nextProps)

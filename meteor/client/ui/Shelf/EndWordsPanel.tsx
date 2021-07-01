@@ -6,7 +6,7 @@ import {
 	RundownLayoutEndWords,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition, getUnfinishedPieceInstancesReactive } from './DashboardPanel'
+import { dashboardElementPosition, getIsFilterActive, getUnfinishedPieceInstancesReactive } from './DashboardPanel'
 import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -65,34 +65,9 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 }
 
 export const EndWordsPanel = translateWithTracker<IEndsWordsPanelProps, IState, IEndsWordsPanelTrackedProps>(
-	(props: IEndsWordsPanelProps & IEndsWordsPanelTrackedProps) => {
-		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId, true)
-		let livePieceInstance: PieceInstance | undefined
-		let activeLayers = unfinishedPieces.map((p) => p.piece.sourceLayerId)
-		let containsEveryRequiredLayer = props.panel.requireAllSourcelayers
-			? props.panel.requiredLayers?.every((s) => activeLayers.includes(s))
-			: false
-		let containsRequiredLayer = containsEveryRequiredLayer
-			? true
-			: props.panel.requiredLayers && props.panel.requiredLayers.length
-			? props.panel.requiredLayers.some((s) => activeLayers.includes(s))
-			: false
-
-		if (
-			(!props.panel.requireAllSourcelayers || containsEveryRequiredLayer) &&
-			(!props.panel.requiredLayers?.length || containsRequiredLayer)
-		) {
-			livePieceInstance =
-				props.panel.scriptSourceLayerIds && props.panel.scriptSourceLayerIds.length
-					? _.flatten(Object.values(unfinishedPieces)).find((piece: PieceInstance) => {
-							return (
-								(props.panel.scriptSourceLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
-								piece.partInstanceId === props.playlist.currentPartInstanceId
-							)
-					  })
-					: undefined
-		}
-		return { livePieceInstance }
+	(props: IEndsWordsPanelProps) => {
+		let { activePieceInstance } = getIsFilterActive(props.playlist, props.panel)
+		return { livePieceInstance: activePieceInstance }
 	},
 	(_data, props: IEndsWordsPanelProps, nextProps: IEndsWordsPanelProps) => {
 		return !_.isEqual(props, nextProps)
