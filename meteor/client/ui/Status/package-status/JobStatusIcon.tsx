@@ -31,18 +31,18 @@ export const JobStatusIcon = withTranslation()(
 
 			return (
 				<div
-					className="job-status"
+					className="job-status-icon"
 					style={{
 						width: '10em',
 					}}
 				>
 					<div
-						className="job-status__progress"
+						className="job-status-icon__progress"
 						style={{
 							width: progress * 100 + '%',
 						}}
 					></div>
-					<div className="job-status__label">{label}</div>
+					<div className="job-status-icon__label">{label}</div>
 				</div>
 			)
 		}

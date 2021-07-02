@@ -137,3 +137,38 @@
 		}
 	}
 }
+.job-status-icon {
+	display: inline-block;
+	min-width: 5em;
+	height: 1.3em;
+	margin-bottom: -3px;
+	margin-top: -3px;
+
+	border-radius: 2em;
+	overflow: hidden;
+
+	position: relative;
+
+	background: #f7f7f7;
+	box-shadow: inset 2px 0px 3px rgba(0, 0, 0, 0.15);
+
+	.job-status-icon__progress {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		border-radius: 2em;
+		background: #00ba1e;
+
+		transition: width 0.5s;
+	}
+	.job-status-icon__label {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		text-align: center;
+		vertical-align: middle;
+	}
+}
