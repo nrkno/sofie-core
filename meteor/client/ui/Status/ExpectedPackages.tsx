@@ -5,20 +5,12 @@ import { PubSub } from '../../../lib/api/pubsub'
 import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
-	ExpectedPackageWorkStatusId,
 } from '../../../lib/collections/ExpectedPackageWorkStatuses'
 import { assertNever, unprotectString } from '../../../lib/lib'
 import { ExpectedPackageDB, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import Tooltip from 'rc-tooltip'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-	faRedo,
-	faStopCircle,
-	faChevronDown,
-	faChevronRight,
-	faExclamation,
-	faQuestion,
-} from '@fortawesome/free-solid-svg-icons'
+import { faRedo, faStopCircle, faChevronDown, faChevronRight, faExclamation } from '@fortawesome/free-solid-svg-icons'
 import { MeteorCall } from '../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { Studios } from '../../../lib/collections/Studios'
@@ -372,7 +364,6 @@ const PackageStatus = withTranslation()(
 					const point2 = [cx + radius1 * Math.sin(v1 * Math.PI * 2), cy - radius1 * Math.cos(v1 * Math.PI * 2)]
 					const point3 = [cx + radius1 * Math.sin(v0 * Math.PI * 2), cy - radius1 * Math.cos(v0 * Math.PI * 2)]
 
-					const flags = '0,1'
 					return (
 						<path
 							key={key}
