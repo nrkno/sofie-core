@@ -181,7 +181,7 @@ export namespace Accessor {
 		allowRead: boolean
 		allowWrite: boolean
 	}
-	/** Defines access to a local folder */
+	/** Definition of access to a local folder. */
 	export interface LocalFolder extends Base {
 		type: AccessType.LOCAL_FOLDER
 
@@ -193,6 +193,7 @@ export namespace Accessor {
 		 */
 		folderPath: string
 	}
+	/** Definition of a file share over a network. */
 	export interface FileShare extends Base {
 		type: AccessType.FILE_SHARE
 
@@ -207,9 +208,10 @@ export namespace Accessor {
 		userName?: string
 		password?: string
 	}
-	/** Definition of an Accessor to a generix HTTP enpoint*/
+	/** Definition of access to a generic HTTP endpoint. (Read-access only) */
 	export interface HTTP extends Base {
 		type: AccessType.HTTP
+		allowWrite: false
 
 		/** Base url (url to the host), for example http://myhost.com/fileShare/ */
 		baseUrl: string
@@ -217,7 +219,7 @@ export namespace Accessor {
 		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible. */
 		networkId?: string
 	}
-	/** Definition of an Accessor to the Package Manager HTTP proxy */
+	/** Definition of access to the HTTP-proxy server that comes with Package Manager. */
 	export interface HTTPProxy extends Base {
 		type: AccessType.HTTP_PROXY
 
