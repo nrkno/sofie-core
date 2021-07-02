@@ -117,7 +117,13 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 		{
 			fromPieceType: { $nin: preserveTypesDuringSave as any },
 		},
-		expectedPackages
+		expectedPackages,
+		{
+			beforeUpdate: (expPackage: ExpectedPackageDB, pre?: ExpectedPackageDB) => {
+				if (pre) expPackage.created = pre.created // Retain the created property
+				return expPackage
+			},
+		}
 	)
 }
 export function generateExpectedPackagesForPartInstance(
@@ -298,6 +304,7 @@ function generateExpectedPackageBases(
 			blueprintPackageId: id,
 			contentVersionHash: getContentVersionHash(expectedPackage),
 			studioId: studio._id,
+			created: Date.now(),
 		})
 	}
 	return bases
@@ -372,7 +379,13 @@ export function updateBaselineExpectedPackagesOnRundown(
 				rundownId: cache.RundownId,
 				pieceId: null,
 			}
-		})
+		}),
+		{
+			beforeUpdate: (expPackage: ExpectedPackageDB, pre?: ExpectedPackageDB) => {
+				if (pre) expPackage.created = pre.created // Retain the created property
+				return expPackage
+			},
+		}
 	)
 }
 

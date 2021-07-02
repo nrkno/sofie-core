@@ -1,5 +1,5 @@
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
-import { registerCollection, ProtectedString, hashObj, assertNever } from '../lib'
+import { registerCollection, ProtectedString, hashObj, assertNever, Time } from '../lib'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { StudioId } from './Studios'
@@ -58,6 +58,8 @@ export interface ExpectedPackageDBBase extends Omit<ExpectedPackage.Base, '_id'>
 
 	// pieceId: ProtectedString<any> | null
 	fromPieceType: ExpectedPackageDBType
+
+	created: Time
 }
 export interface ExpectedPackageDBFromPiece extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
