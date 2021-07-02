@@ -130,7 +130,7 @@ export namespace ExpectedPackage {
 			/** Local path on the package container */
 			path: string
 		}
-		version: {}
+		version: any // {}
 		sources: {
 			containerId: string
 			accessors: {
