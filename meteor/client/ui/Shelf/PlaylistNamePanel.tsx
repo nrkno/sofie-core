@@ -51,10 +51,12 @@ class PlaylistNamePanelInner extends MeteorReactComponent<
 						: {}
 				)}
 			>
-				<span className="playlist-name">{this.props.playlist.name}</span>
-				{this.props.panel.showCurrentRundownName && this.props.currentRundown && (
-					<span className="rundown-name">{this.props.currentRundown.name}</span>
-				)}
+				<div className="wrapper">
+					<span className="playlist-name">{this.props.playlist.name}</span>
+					{this.props.panel.showCurrentRundownName && this.props.currentRundown && (
+						<span className="rundown-name">{this.props.currentRundown.name}</span>
+					)}
+				</div>
 			</div>
 		)
 	}

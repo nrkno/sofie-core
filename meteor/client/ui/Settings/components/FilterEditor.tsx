@@ -22,6 +22,8 @@ import {
 	RundownLayoutPlaylistStartTimer,
 	RundownLayouts,
 	RundownLayoutSegmentTiming,
+	RundownLayoutShowStyleDisplay,
+	RundownLayoutSytemStatus,
 	RundownLayoutTextLabel,
 	RundownLayoutTimeOfDay,
 } from '../../../../lib/collections/RundownLayouts'
@@ -1111,6 +1113,62 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			)
 		}
 
+		renderShowStyleDisplay(
+			item: RundownLayoutBase,
+			tab: RundownLayoutShowStyleDisplay,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderSystemStatus(
+			item: RundownLayoutBase,
+			tab: RundownLayoutSytemStatus,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
 		renderTimeOfDay(
 			item: RundownLayoutBase,
 			tab: RundownLayoutTimeOfDay,
@@ -1429,6 +1487,22 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						  )
 						: RundownLayoutsAPI.isTimeOfDay(this.props.filter)
 						? this.renderTimeOfDay(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isShowStyleDisplay(this.props.filter)
+						? this.renderShowStyleDisplay(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isSystemStatus(this.props.filter)
+						? this.renderSystemStatus(
 								this.props.item,
 								this.props.filter,
 								this.props.index,

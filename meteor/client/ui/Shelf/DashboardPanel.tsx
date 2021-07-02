@@ -955,5 +955,8 @@ export function getIsFilterActive(
 				  })
 				: undefined
 	}
-	return { active: activePieceInstance !== undefined || !panel.requiredLayers?.length, activePieceInstance }
+	return {
+		active: activePieceInstance !== undefined || (!panel.activeLayerIds?.length && !panel.requiredLayers?.length),
+		activePieceInstance,
+	}
 }

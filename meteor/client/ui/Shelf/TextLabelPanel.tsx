@@ -40,7 +40,9 @@ export class TextLabelPanel extends MeteorReactComponent<ITextLabelPanelProps, I
 						: {}
 				)}
 			>
-				<span className="text">{this.props.panel.text}</span>
+				<div className="wrapper">
+					<span className="text">{this.props.panel.text}</span>
+				</div>
 			</div>
 		)
 	}

@@ -188,6 +188,8 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.TEXT_LABEL,
 			RundownLayoutElementType.PLAYLIST_NAME,
 			RundownLayoutElementType.TIME_OF_DAY,
+			RundownLayoutElementType.SHOWSTYLE_DISPLAY,
+			RundownLayoutElementType.SYSTEM_STATUS,
 		],
 	})
 

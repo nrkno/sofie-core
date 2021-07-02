@@ -1,20 +1,15 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import {
-	DashboardLayoutPartCountDown,
 	DashboardLayoutShowStyleDisplay,
 	RundownLayoutBase,
 	RundownLayoutShowStyleDisplay,
 } from '../../../lib/collections/RundownLayouts'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance } from '../../../lib/collections/PartInstances'
-import { dashboardElementPosition, getIsFilterActive } from './DashboardPanel'
+import { dashboardElementPosition } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { getAllowSpeaking } from '../../lib/localStorage'
-import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
-import { CurrentPartElapsed } from '../RundownView/RundownTiming/CurrentPartElapsed'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { withTranslation } from 'react-i18next'
@@ -41,7 +36,7 @@ class ShowStylePanelInner extends MeteorReactComponent<Translated<IShowStylePane
 
 		return (
 			<div
-				className="part-timing-panel timing"
+				className="show-style-panel timing"
 				style={_.extend(
 					isDashboardLayout
 						? {
@@ -53,11 +48,11 @@ class ShowStylePanelInner extends MeteorReactComponent<Translated<IShowStylePane
 			>
 				<span className="timing-clock left">
 					<span className="timing-clock-label">{t('Show Style')}</span>
-					<span>{this.props.showStyleBase.name}</span>
+					<span className="name">{this.props.showStyleBase.name}</span>
 				</span>
 				<span className="timing-clock left">
 					<span className="timing-clock-label">{t('Show Style Variant')}</span>
-					<span>{this.props.showStyleVariant.name}</span>
+					<span className="name">{this.props.showStyleVariant.name}</span>
 				</span>
 			</div>
 		)

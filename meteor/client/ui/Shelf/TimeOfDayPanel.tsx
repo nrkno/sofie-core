@@ -33,7 +33,7 @@ class TimeOfDayPanelInner extends MeteorReactComponent<Translated<ITimeOfDayPane
 
 		return (
 			<div
-				className="part-timing-panel timing"
+				className="time-of-day-panel timing"
 				style={_.extend(
 					isDashboardLayout
 						? {

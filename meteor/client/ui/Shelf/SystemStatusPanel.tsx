@@ -43,7 +43,7 @@ class SystemStatusPanelInner extends MeteorReactComponent<
 
 		return (
 			<div
-				className="part-timing-panel timing"
+				className="system-status-panel timing"
 				style={_.extend(
 					isDashboardLayout
 						? {
