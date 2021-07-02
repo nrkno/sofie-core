@@ -595,9 +595,11 @@
 					}
 				}
 				.package-progress__segments {
-					
 				}
 			}
+		}
+		.package__chevron {
+			padding-right: 0.33em;
 		}
 		.package-job {
 			> td {
@@ -630,6 +632,11 @@
 				}
 				.package-job__description {
 					display: inline-block;
+				}
+				&.package-job__buttons {
+					button {
+						margin: 0 0.25em 0 0.25em;
+					}
 				}
 			}
 		}

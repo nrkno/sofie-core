@@ -453,8 +453,13 @@ const PackageStatus = withTranslation()(
 						<td></td>
 						<td>{this.getPackageStatus()}</td>
 						<td>
-							{this.state.isOpen ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
-							&nbsp;
+							<span className="package__chevron">
+								{this.state.isOpen ? (
+									<FontAwesomeIcon icon={faChevronDown} />
+								) : (
+									<FontAwesomeIcon icon={faChevronRight} />
+								)}
+							</span>
 							{this.getPackageName()}
 						</td>
 						<td>
@@ -533,22 +538,22 @@ const PackageWorkStatus = withTranslation()(
 								<JobStatusIcon status={status} />
 							</span>
 							<span className="package-job__description">
-								{this.state.isOpen ? (
-									<FontAwesomeIcon icon={faChevronDown} />
-								) : (
-									<FontAwesomeIcon icon={faChevronRight} />
-								)}
-								&nbsp;
+								<span className="package__chevron">
+									{this.state.isOpen ? (
+										<FontAwesomeIcon icon={faChevronDown} />
+									) : (
+										<FontAwesomeIcon icon={faChevronRight} />
+									)}
+								</span>
 								<span>{status.label}</span>
 							</span>
 						</td>
-						<td>
+						<td className="package-job__buttons">
 							<Tooltip overlay={t('Restart')} placement="top">
 								<button className="action-btn" onClick={(e) => this.restartExpectation(e, status)}>
 									<FontAwesomeIcon icon={faRedo} />
 								</button>
 							</Tooltip>
-							&nbsp;&nbsp;
 							<Tooltip overlay={t('Abort')} placement="top">
 								<button
 									className="action-btn"
@@ -608,18 +613,12 @@ const PackageWorkStatus = withTranslation()(
 interface IJobStatusIconProps {
 	status: ExpectedPackageWorkStatus
 }
-interface JobStatusIconState {
-	open: boolean
-}
+interface JobStatusIconState {}
 
 const JobStatusIcon = withTranslation()(
 	class JobStatusIcon extends React.Component<Translated<IJobStatusIconProps>, JobStatusIconState> {
 		constructor(props) {
 			super(props)
-
-			this.state = {
-				open: false,
-			}
 		}
 		getProgressbar() {
 			const { t } = this.props
