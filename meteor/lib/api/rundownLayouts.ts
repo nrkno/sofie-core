@@ -15,6 +15,7 @@ import {
 	RundownLayoutRundownHeader,
 	RundownLayoutShelfBase,
 	CustomizableRegions,
+	RundownLayoutWithFilters,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -37,9 +38,8 @@ export enum RundownLayoutsAPIMethods {
 }
 
 export interface LayoutDescriptor<T extends RundownLayoutBase> {
-	supportedElements: RundownLayoutElementType[]
+	supportedFilters?: RundownLayoutElementType[]
 	filtersTitle?: string // e.g. tabs/panels
-	supportsFilters?: boolean
 }
 
 export interface CustomizableRegionSettingsManifest {
@@ -52,8 +52,7 @@ export interface CustomizableRegionLayout {
 	_id: string
 	type: RundownLayoutType
 	filtersTitle?: string
-	supportsFilters?: boolean
-	supportedElements: RundownLayoutElementType[]
+	supportedFilters?: RundownLayoutElementType[]
 }
 
 class RundownLayoutsRegistry {
@@ -122,8 +121,7 @@ export namespace RundownLayoutsAPI {
 	const registry = new RundownLayoutsRegistry()
 	registry.registerShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
 		filtersTitle: 'Panels',
-		supportsFilters: true,
-		supportedElements: [
+		supportedFilters: [
 			RundownLayoutElementType.ADLIB_REGION,
 			RundownLayoutElementType.EXTERNAL_FRAME,
 			RundownLayoutElementType.FILTER,
@@ -132,8 +130,7 @@ export namespace RundownLayoutsAPI {
 	})
 	registry.registerShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
 		filtersTitle: 'Tabs',
-		supportsFilters: true,
-		supportedElements: [
+		supportedFilters: [
 			RundownLayoutElementType.ADLIB_REGION,
 			RundownLayoutElementType.EXTERNAL_FRAME,
 			RundownLayoutElementType.FILTER,
@@ -141,14 +138,18 @@ export namespace RundownLayoutsAPI {
 		],
 	})
 	registry.registerRundownViewLayout(RundownLayoutType.RUNDOWN_VIEW_LAYOUT, {
-		supportedElements: [],
+		supportedFilters: [],
 	})
 	registry.registerRundownHeaderLayouts(RundownLayoutType.RUNDOWN_HEADER_LAYOUT, {
-		supportedElements: [],
+		supportedFilters: [],
 	})
 
 	export function getSettingsManifest(t: TFunction): CustomizableRegionSettingsManifest[] {
 		return registry.getSettingsManifest(t)
+	}
+
+	export function isLayoutWithFilters(layout: RundownLayoutBase): layout is RundownLayoutWithFilters {
+		return Object.keys(layout).includes('filters')
 	}
 
 	export function isLayoutForShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
