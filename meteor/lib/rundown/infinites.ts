@@ -227,6 +227,7 @@ export function getPlayheadTrackingInfinitesForPart(
 			instance._id = protectString(`${instance._id}_continue`)
 			instance.dynamicallyInserted = p.dynamicallyInserted
 			instance.adLibSourceId = p.adLibSourceId
+			instance.startedPlayback = p.startedPlayback
 
 			if (p.infinite) {
 				// This was copied from before, so we know we can force the time to 0
@@ -474,7 +475,7 @@ export function getPieceInstancesForPart(
 export interface PieceInstanceWithTimings extends PieceInstance {
 	/**
 	 * This is a maximum end point of the pieceInstance.
-	 * If the pieceInstance also has a enable.duration of userDuration set then the shortest one will need to be used
+	 * If the pieceInstance also has a enable.duration or userDuration set then the shortest one will need to be used
 	 * This can be:
 	 *  - 'now', if it was stopped by something that does not need a preroll (or is virtual)
 	 *  - '#something.start + 100', if it was stopped by something that needs a preroll
