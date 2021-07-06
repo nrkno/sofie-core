@@ -3,6 +3,7 @@ import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { RundownUtils } from '../../lib/rundown'
 import ClassNames from 'classnames'
+import { getCurrentTime } from '../../../lib/lib'
 
 interface IProps {
 	rundownPlaylist: RundownPlaylist
@@ -16,7 +17,10 @@ export const OverUnderTimer = withTiming<IProps, {}>()(
 	class OverUnderTimer extends React.Component<WithTiming<IProps>> {
 		render() {
 			const target =
-				this.props.rundownPlaylist.expectedDuration || this.props.timingDurations.totalPlaylistDuration || 0
+				this.props.rundownPlaylist.expectedDuration ||
+				(this.props.rundownPlaylist.expectedEnd ? this.props.rundownPlaylist.expectedEnd - getCurrentTime() : null) ||
+				this.props.timingDurations.totalPlaylistDuration ||
+				0
 			return target ? (
 				<span
 					style={this.props.style}
