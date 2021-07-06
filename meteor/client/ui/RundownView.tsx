@@ -407,7 +407,10 @@ const TimingDisplay = withTranslation()(
 											<Moment
 												interval={0}
 												format="HH:mm:ss"
-												date={getCurrentTime() + (this.props.timingDurations.remainingPlaylistDuration || 0)}
+												date={
+													(rundownPlaylist.expectedStart || getCurrentTime()) +
+													(this.props.timingDurations.remainingPlaylistDuration || 0)
+												}
 											/>
 										</span>
 									)
