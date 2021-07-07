@@ -24,6 +24,7 @@ import {
 import * as Winston from 'winston'
 import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
 import { CollectionObj } from '@sofie-automation/server-core-integration'
+import { literal } from './lib'
 
 // export interface MosOptions {
 // 	mosID: string,
@@ -78,63 +79,30 @@ export class MosHandler {
 	constructor(logger: Winston.LoggerInstance) {
 		this._logger = logger
 	}
-	init(config: MosConfig, coreHandler: CoreHandler): Promise<void> {
+	async init(config: MosConfig, coreHandler: CoreHandler): Promise<void> {
 		this.mosOptions = config
 		this._coreHandler = coreHandler
-		/*{
-			mosID: 'seff-tv-automation',
-			acceptsConnections: true, // default:true
-			// accepsConnectionsFrom: ['127.0.0.1'],
-			profiles: {
-				'0': true,
-				'1': true,
-				'2': true,
-				'3': false,
-				'4': false,
-				'5': false,
-				'6': false,
-				'7': false
-			}
-		}
-		*/
 
-		return (
-			coreHandler.core
-				.getPeripheralDevice()
-				.then((peripheralDevice: any) => {
-					this._settings = peripheralDevice.settings || {}
+		const peripheralDevice = await coreHandler.core.getPeripheralDevice()
 
-					return this._initMosConnection()
-				})
-				.then(() => {
-					this._coreHandler.onConnected(() => {
-						// This is called whenever a connection to Core has been (re-)established
-						this.setupObservers()
-						this.sendStatusOfAllMosDevices()
-					})
-					this.setupObservers()
+		this._settings = peripheralDevice.settings || {}
 
-					return this._updateDevices()
-				})
-				// .then(() => {
-				// Connect to ENPS:
-				// return Promise.all(
-				// _.map((this._settings || {devices: {}}).devices, (device, deviceId: string) => {
-				// })
-				// )
-				// })
-				.then(() => {
-					// All connections have been made at this point
-				})
-		)
+		await this._initMosConnection()
+
+		this._coreHandler.onConnected(() => {
+			// This is called whenever a connection to Core has been (re-)established
+			this.setupObservers()
+			this.sendStatusOfAllMosDevices()
+		})
+		this.setupObservers()
+
+		await this._updateDevices()
+
+		// All connections have been made at this point
 	}
-	dispose(): Promise<void> {
+	async dispose(): Promise<void> {
 		this._disposed = true
-		if (this.mos) {
-			return this.mos.dispose()
-		} else {
-			return Promise.resolve()
-		}
+		await this.mos?.dispose()
 	}
 	setupObservers(): void {
 		if (this._observers.length) {
@@ -144,18 +112,6 @@ export class MosHandler {
 			this._observers = []
 		}
 		this._logger.info('Renewing observers')
-
-		// let timelineObserver = this._coreHandler.core.observe('timeline')
-		// timelineObserver.added = () => { this._triggerupdateTimeline() }
-		// timelineObserver.changed = () => { this._triggerupdateTimeline() }
-		// timelineObserver.removed = () => { this._triggerupdateTimeline() }
-		// this._observers.push(timelineObserver)
-
-		// let mappingsObserver = this._coreHandler.core.observe('studioInstallation')
-		// mappingsObserver.added = () => { this._triggerupdateMapping() }
-		// mappingsObserver.changed = () => { this._triggerupdateMapping() }
-		// mappingsObserver.removed = () => { this._triggerupdateMapping() }
-		// this._observers.push(mappingsObserver)
 
 		const deviceObserver = this._coreHandler.core.observe('peripheralDevices')
 		deviceObserver.added = () => {
@@ -208,7 +164,7 @@ export class MosHandler {
 			})
 		}, 20)
 	}
-	private _initMosConnection(): Promise<void> {
+	private async _initMosConnection(): Promise<void> {
 		if (this._disposed) return Promise.resolve()
 		if (!this._settings) throw Error('Mos-Settings are not set')
 
@@ -375,9 +331,7 @@ export class MosHandler {
 		})
 
 		// Open mos-server for connections:
-		return this.mos.init().then(() => {
-			return
-		})
+		await this.mos.init()
 	}
 	private sendStatusOfAllMosDevices() {
 		// Send an update to Core of the status of all mos devices
@@ -391,136 +345,98 @@ export class MosHandler {
 		const peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
 		return peripheralDevices.findOne(this._coreHandler.core.deviceId)
 	}
-	private _updateDevices(): Promise<void> {
+	private async _updateDevices(): Promise<void> {
 		if (this._disposed) return Promise.resolve()
-		return (!this.mos ? this._initMosConnection() : Promise.resolve())
-			.then(() => {
-				const peripheralDevice = this.getThisPeripheralDevice()
 
-				if (peripheralDevice) {
-					const settings: MosDeviceSettings = peripheralDevice.settings || {}
+		if (!this.mos) this._initMosConnection()
 
-					const devices = settings.devices
+		const peripheralDevice = this.getThisPeripheralDevice()
 
-					const devicesToAdd: { [id: string]: MosDeviceSettingsDevice } = {}
-					const devicesToRemove: { [id: string]: true } = {}
+		if (peripheralDevice) {
+			const settings: MosDeviceSettings = peripheralDevice.settings || {}
 
-					for (const [deviceId, device] of Object.entries(devices)) {
-						if (device) {
-							if (device.secondary) {
-								// If the host isn't set, don't use secondary:
-								if (!device.secondary.host || !device.secondary.id) delete device.secondary
-							}
+			const devices = settings.devices
 
-							const oldDevice: MosDevice | null = this._getDevice(deviceId)
+			const devicesToAdd: { [id: string]: MosDeviceSettingsDevice } = {}
+			const devicesToRemove: { [id: string]: true } = {}
 
-							if (!oldDevice) {
-								this._logger.info('Initializing new device: ' + deviceId)
-								devicesToAdd[deviceId] = device
-							} else {
-								if (
-									(oldDevice.primaryId || '') !== device.primary.id ||
-									(oldDevice.primaryHost || '') !== device.primary.host ||
-									(oldDevice.secondaryId || '') !== ((device.secondary || { id: '' }).id || '') ||
-									(oldDevice.secondaryHost || '') !== ((device.secondary || { host: '' }).host || '')
-								) {
-									this._logger.info('Re-initializing device: ' + deviceId)
-									devicesToRemove[deviceId] = true
-									devicesToAdd[deviceId] = device
-								}
-							}
-						}
+			for (const [deviceId, device] of Object.entries(devices)) {
+				if (device) {
+					if (device.secondary) {
+						// If the host isn't set, don't use secondary:
+						if (!device.secondary.host || !device.secondary.id) delete device.secondary
 					}
 
-					for (const deviceId of Object.keys(this._ownMosDevices)) {
-						if (!devices[deviceId]) {
-							this._logger.info('Un-initializing device: ' + deviceId)
+					const oldDevice: MosDevice | null = this._getDevice(deviceId)
+
+					if (!oldDevice) {
+						this._logger.info('Initializing new device: ' + deviceId)
+						devicesToAdd[deviceId] = device
+					} else {
+						if (
+							(oldDevice.primaryId || '') !== device.primary.id ||
+							(oldDevice.primaryHost || '') !== device.primary.host ||
+							(oldDevice.secondaryId || '') !== ((device.secondary || { id: '' }).id || '') ||
+							(oldDevice.secondaryHost || '') !== ((device.secondary || { host: '' }).host || '')
+						) {
+							this._logger.info('Re-initializing device: ' + deviceId)
 							devicesToRemove[deviceId] = true
+							devicesToAdd[deviceId] = device
 						}
 					}
-
-					return Promise.all(
-						Object.keys(devicesToRemove).map((deviceId) => {
-							return this._removeDevice(deviceId)
-						})
-					)
-						.then(() => {
-							return Promise.all(
-								Object.entries(devicesToAdd).map((o) => {
-									const [deviceId, device] = o
-									return this._addDevice(deviceId, device)
-								})
-							)
-						})
-						.then(() => {
-							return
-						})
 				}
-				return Promise.resolve()
-			})
-			.then(() => {
-				return
-			})
+			}
+			for (const deviceId of Object.keys(this._ownMosDevices)) {
+				if (!devices[deviceId]) {
+					this._logger.info('Un-initializing device: ' + deviceId)
+					devicesToRemove[deviceId] = true
+				}
+			}
+
+			for (const deviceId of Object.keys(devicesToRemove)) {
+				await this._removeDevice(deviceId)
+			}
+			for (const [deviceId, device] of Object.entries(devicesToAdd)) {
+				await this._addDevice(deviceId, device)
+			}
+		}
 	}
-	private _addDevice(deviceId: string, deviceOptions: IMOSDeviceConnectionOptions): Promise<MosDevice> {
+	private async _addDevice(deviceId: string, deviceOptions: IMOSDeviceConnectionOptions): Promise<void> {
 		if (this._getDevice(deviceId)) {
 			// the device is already there
 			throw new Error('Unable to add device "' + deviceId + '", because it already exists!')
 		}
 
-		return this.mos.connect(deviceOptions).then((mosDevice: MosDevice) => {
-			// called when a connection has been made
+		const mosDevice: MosDevice = await this.mos.connect(deviceOptions)
+		this._ownMosDevices[deviceId] = mosDevice
 
-			this._ownMosDevices[deviceId] = mosDevice
-
-			const getMachineInfoUntilConnected = () =>
-				mosDevice.requestMachineInfo().catch((e: any) => {
-					if (
-						e &&
-						((e + '').match(/no connection available for failover/i) ||
-							(e + '').match(/failover connection/i))
-					) {
-						// TODO: workaround (mos.connect resolves too soon, before the connection is actually initialted)
-						return new Promise((resolve) => {
-							setTimeout(() => {
-								resolve(getMachineInfoUntilConnected())
-							}, 2000)
-						})
-					} else {
-						throw e
-					}
-				})
-
-			return getMachineInfoUntilConnected()
-				.then((machInfo: IMOSListMachInfo) => {
-					this._logger.info('Connected to Mos-device', machInfo)
-					const machineId: string | undefined = machInfo.ID && machInfo.ID.toString()
-					if (
-						!(
-							machineId === deviceOptions.primary.id ||
-							(deviceOptions.secondary && machineId === deviceOptions.secondary.id)
-						)
-					) {
-						throw new Error(
-							'Mos-device has ID "' +
-								machineId +
-								'" but specified ncs-id is "' +
-								(deviceOptions.primary.id || (deviceOptions.secondary || { id: '' }).id) +
-								'"'
-						)
-					}
-					return mosDevice
-				})
-				.catch((e) => {
-					// something went wrong during init:
-					this.mos.disposeMosDevice(mosDevice).catch(() => {
-						this._logger.error(e)
-					})
-					throw e
-				})
-		})
+		try {
+			const machInfo = await this._getMachineInfoUntilConnected(mosDevice)
+			this._logger.info('Connected to Mos-device', machInfo)
+			const machineId: string | undefined = machInfo.ID && machInfo.ID.toString()
+			if (
+				!(
+					machineId === deviceOptions.primary.id ||
+					(deviceOptions.secondary && machineId === deviceOptions.secondary.id)
+				)
+			) {
+				throw new Error(
+					'Mos-device has ID "' +
+						machineId +
+						'" but specified ncs-id is "' +
+						(deviceOptions.primary.id || (deviceOptions.secondary || { id: '' }).id) +
+						'"'
+				)
+			}
+		} catch (e) {
+			// something went wrong during init:
+			this.mos.disposeMosDevice(mosDevice).catch(() => {
+				this._logger.error(e)
+			})
+			throw e
+		}
 	}
-	private _removeDevice(deviceId: string): Promise<void> {
+	private async _removeDevice(deviceId: string): Promise<void> {
 		const mosDevice = this._getDevice(deviceId) as MosDevice
 
 		delete this._ownMosDevices[deviceId]
@@ -530,18 +446,12 @@ export class MosHandler {
 				(mosDevice.idSecondary && this.mos.getDevice(mosDevice.idSecondary))
 
 			if (mosDevice0) {
-				return this.mos
-					.disposeMosDevice(mosDevice)
-					.then(() => {
-						return this._coreHandler.unRegisterMosDevice(mosDevice)
-					})
-					.then(() => {
-						delete this._ownMosDevices[mosDevice.idPrimary]
-						if (mosDevice.idSecondary) delete this._ownMosDevices[mosDevice.idSecondary]
-					})
-					.catch((e) => {
-						throw new Error(e)
-					})
+				await this.mos.disposeMosDevice(mosDevice)
+
+				await this._coreHandler.unRegisterMosDevice(mosDevice)
+
+				delete this._ownMosDevices[mosDevice.idPrimary]
+				if (mosDevice.idSecondary) delete this._ownMosDevices[mosDevice.idSecondary]
 			} else {
 				// device not found in mosConnection
 			}
@@ -553,24 +463,43 @@ export class MosHandler {
 	private _getDevice(deviceId: string): MosDevice | null {
 		return this._ownMosDevices[deviceId] || null
 	}
-	private _getROAck(roId: MosString128, p: Promise<IMOSROAck>) {
-		return p
-			.then(() => {
-				const roAck: IMOSROAck = {
-					ID: roId,
-					Status: new MosString128('OK'),
-					Stories: [], // Array<IMOSROAckStory> // todo: implement this later (?) (unknown if we really need to)
-				}
-				return roAck
+	private async _getROAck(roId: MosString128, p: Promise<IMOSROAck>) {
+		try {
+			await p
+
+			return literal<IMOSROAck>({
+				ID: roId,
+				Status: new MosString128('OK'),
+				Stories: [], // Array<IMOSROAckStory> // todo: implement this later (?) (unknown if we really need to)
 			})
-			.catch((err) => {
-				this._logger.error('ROAck error:', err)
-				const roAck: IMOSROAck = {
-					ID: roId,
-					Status: new MosString128('Error: ' + err.toString()),
-					Stories: [], // Array<IMOSROAckStory> // todo: implement this later (?) (unknown if we really need to)
-				}
-				return roAck
+		} catch (err) {
+			this._logger.error('ROAck error:', err)
+			return literal<IMOSROAck>({
+				ID: roId,
+				Status: new MosString128('Error: ' + err.toString()),
+				Stories: [], // Array<IMOSROAckStory> // todo: implement this later (?) (unknown if we really need to)
 			})
+		}
+	}
+	private _getMachineInfoUntilConnected = async (mosDevice: MosDevice, triesLeft = 10) => {
+		if (triesLeft <= 0) throw new Error('Unable to get MachineInfo')
+
+		return new Promise<IMOSListMachInfo>((resolve, reject) => {
+			mosDevice
+				.requestMachineInfo()
+				.then(resolve)
+				.catch((e: any) => {
+					if (e && (e + '').match(/no connection available for failover/i)) {
+						// TODO: workaround (mos.connect resolves too soon, before the connection is actually initialted)
+						setTimeout(() => {
+							this._getMachineInfoUntilConnected(mosDevice, triesLeft - 1)
+								.then(resolve)
+								.catch(reject)
+						}, 2000)
+					} else {
+						reject(e)
+					}
+				})
+		})
 	}
 }

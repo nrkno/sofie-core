@@ -30,43 +30,34 @@ export class Connector {
 		this._logger = logger
 	}
 
-	init(config: Config): Promise<void> {
+	async init(config: Config): Promise<void> {
 		this._config = config
 
-		return Promise.resolve()
-			.then(() => {
-				this._logger.info('Initializing Process...')
-				return this.initProcess()
-			})
-			.then(() => {
-				this._logger.info('Process initialized')
-				this._logger.info('Initializing Core...')
-				return this.initCore()
-			})
-			.then(() => {
-				this._logger.info('Initializing Mos...')
-				return this.initMos()
-			})
-			.then(() => {
-				this._logger.info('Initialization done')
-				return
-			})
-			.catch((e) => {
-				this._logger.error('Error during initialization:', e, e.stack)
-				// this._logger.error(e)
-				// this._logger.error(e.stack)
+		try {
+			this._logger.info('Initializing Process...')
+			await this.initProcess()
 
-				this._logger.info('Shutting down in 10 seconds!')
+			this._logger.info('Process initialized')
+			this._logger.info('Initializing Core...')
+			await this.initCore()
 
-				this.dispose().catch((e) => this._logger.error(e))
+			this._logger.info('Initializing Mos...')
+			await this.initMos()
 
-				setTimeout(() => {
-					// eslint-disable-next-line no-process-exit
-					process.exit(0)
-				}, 10 * 1000)
+			this._logger.info('Initialization done')
+		} catch (e) {
+			this._logger.error('Error during initialization:', e, e.stack)
+			// this._logger.error(e)
+			// this._logger.error(e.stack)
 
-				return
-			})
+			this._logger.info('Shutting down in 10 seconds!')
+			setTimeout(() => {
+				// eslint-disable-next-line no-process-exit
+				process.exit(0)
+			}, 10 * 1000)
+
+			this.dispose()
+		}
 	}
 	initProcess(): void {
 		this._process = new Process(this._logger)
@@ -80,13 +71,8 @@ export class Connector {
 		this.mosHandler = new MosHandler(this._logger)
 		return this.mosHandler.init(this._config.mos, this.coreHandler)
 	}
-	dispose(): Promise<void> {
-		return (this.mosHandler ? this.mosHandler.dispose() : Promise.resolve())
-			.then(() => {
-				return this.coreHandler ? this.coreHandler.dispose() : Promise.resolve()
-			})
-			.then(() => {
-				return
-			})
+	async dispose(): Promise<void> {
+		await this.mosHandler?.dispose()
+		await this.coreHandler?.dispose()
 	}
 }
