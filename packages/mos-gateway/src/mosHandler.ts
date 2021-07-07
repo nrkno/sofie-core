@@ -347,15 +347,14 @@ export class MosHandler {
 	}
 	private async _updateDevices(): Promise<void> {
 		if (this._disposed) return Promise.resolve()
-
-		if (!this.mos) this._initMosConnection()
+		if (!this.mos) await this._initMosConnection()
 
 		const peripheralDevice = this.getThisPeripheralDevice()
 
 		if (peripheralDevice) {
 			const settings: MosDeviceSettings = peripheralDevice.settings || {}
 
-			const devices = settings.devices
+			const devices = settings.devices || {}
 
 			const devicesToAdd: { [id: string]: MosDeviceSettingsDevice } = {}
 			const devicesToRemove: { [id: string]: true } = {}
@@ -367,7 +366,7 @@ export class MosHandler {
 						if (!device.secondary.host || !device.secondary.id) delete device.secondary
 					}
 
-					const oldDevice: MosDevice | null = this._getDevice(deviceId)
+					const oldDevice: MosDevice | undefined = this._getDevice(deviceId)
 
 					if (!oldDevice) {
 						this._logger.info('Initializing new device: ' + deviceId)
@@ -404,9 +403,10 @@ export class MosHandler {
 	private async _addDevice(deviceId: string, deviceOptions: IMOSDeviceConnectionOptions): Promise<void> {
 		if (this._getDevice(deviceId)) {
 			// the device is already there
-			throw new Error('Unable to add device "' + deviceId + '", because it already exists!')
+			throw new Error(`Unable to add device "${deviceId}", because it already exists!`)
 		}
 
+		if (!deviceOptions.primary) throw new Error(`Options property "primary" not set`)
 		const mosDevice: MosDevice = await this.mos.connect(deviceOptions)
 		this._ownMosDevices[deviceId] = mosDevice
 
@@ -421,23 +421,19 @@ export class MosHandler {
 				)
 			) {
 				throw new Error(
-					'Mos-device has ID "' +
-						machineId +
-						'" but specified ncs-id is "' +
-						(deviceOptions.primary.id || (deviceOptions.secondary || { id: '' }).id) +
-						'"'
+					`Mos-device has ID "${machineId}" but specified ncs-id is "${
+						deviceOptions.primary.id || (deviceOptions.secondary || { id: '' }).id
+					}"`
 				)
 			}
 		} catch (e) {
 			// something went wrong during init:
-			this.mos.disposeMosDevice(mosDevice).catch(() => {
-				this._logger.error(e)
-			})
+			await this.mos.disposeMosDevice(mosDevice)
 			throw e
 		}
 	}
 	private async _removeDevice(deviceId: string): Promise<void> {
-		const mosDevice = this._getDevice(deviceId) as MosDevice
+		const mosDevice = this._getDevice(deviceId)
 
 		delete this._ownMosDevices[deviceId]
 		if (mosDevice) {
@@ -458,10 +454,9 @@ export class MosHandler {
 		} else {
 			// no device found
 		}
-		return Promise.resolve()
 	}
-	private _getDevice(deviceId: string): MosDevice | null {
-		return this._ownMosDevices[deviceId] || null
+	private _getDevice(deviceId: string): MosDevice | undefined {
+		return this._ownMosDevices[deviceId]
 	}
 	private async _getROAck(roId: MosString128, p: Promise<IMOSROAck>) {
 		try {
@@ -489,7 +484,7 @@ export class MosHandler {
 				.requestMachineInfo()
 				.then(resolve)
 				.catch((e: any) => {
-					if (e && (e + '').match(/no connection available for failover/i)) {
+					if (e && (e + '').match(/failover/i)) {
 						// TODO: workaround (mos.connect resolves too soon, before the connection is actually initialted)
 						setTimeout(() => {
 							this._getMachineInfoUntilConnected(mosDevice, triesLeft - 1)

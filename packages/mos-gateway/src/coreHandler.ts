@@ -55,7 +55,6 @@ function deepMatch(object: any, attrs: any, deep: boolean): boolean {
 import { MosHandler } from './mosHandler'
 import { DeviceConfig } from './connector'
 import { MOS_DEVICE_CONFIG_MANIFEST } from './configManifest'
-// import { STATUS_CODES } from 'http'
 export interface PeripheralDeviceCommand {
 	_id: string
 
@@ -94,7 +93,7 @@ export class CoreMosDeviceHandler {
 	private _subscriptions: Array<any> = []
 
 	private _pendingStoryItemChanges: Array<IStoryItemChange> = []
-	private _pendingChangeTimeout: number = 60 * 1000
+	private readonly _pendingChangeTimeout: number = 60 * 1000
 
 	constructor(parent: CoreHandler, mosDevice: IMOSDevice, mosHandler: MosHandler) {
 		this._coreParentHandler = parent
@@ -451,14 +450,17 @@ export class CoreMosDeviceHandler {
 		return this.core.putOnQueue('mos', () => {
 			// Log info about the sent command:
 			let msg = 'Command: ' + method
-			if (attrs[0] && attrs[0].ID) msg = `${method}: ${attrs[0].ID}`
-			else if (attrs[0] && attrs[0] instanceof MosString128) msg = `${method}: ${attrs[0].toString()}`
-			else if (attrs[0] && attrs[0].ObjectId) msg = `${method}: ${attrs[0].ObjectId}`
-			else if (attrs[0] && attrs[0].StoryId) msg = `${method}: ${attrs[0].StoryId}`
-			else if (attrs[0] && attrs[0].StoryID) msg = `${method}: ${attrs[0].StoryID}`
-			else if (attrs[0] && attrs[0].ItemID) msg = `${method}: ${attrs[0].ItemID}`
-			else if (attrs[0] && attrs[0].RunningOrderID) msg = `${method}: ${attrs[0].RunningOrderID}`
-			else if (attrs[0] && attrs[0].toString) msg = `${method}: ${attrs[0].toString()}`
+			const attr0 = attrs[0]
+			if (attr0) {
+				if (attr0.ID) msg = `${method}: ${attr0.ID}`
+				else if (attr0 instanceof MosString128) msg = `${method}: ${attr0.toString()}`
+				else if (attr0.ObjectId) msg = `${method}: ${attr0.ObjectId}`
+				else if (attr0.StoryId) msg = `${method}: ${attr0.StoryId}`
+				else if (attr0.StoryID) msg = `${method}: ${attr0.StoryID}`
+				else if (attr0.ItemID) msg = `${method}: ${attr0.ItemID}`
+				else if (attr0.RunningOrderID) msg = `${method}: ${attr0.RunningOrderID}`
+				else if (attr0.toString) msg = `${method}: ${attr0.toString()}`
+			}
 
 			this._coreParentHandler.logger.info('Recieved MOS command: ' + msg)
 
@@ -599,29 +601,26 @@ export class CoreHandler {
 		return coreMos
 	}
 	async unRegisterMosDevice(mosDevice: IMOSDevice): Promise<void> {
-		let foundI = -1
-		for (let i = 0; i < this._coreMosHandlers.length; i++) {
-			const cmh = this._coreMosHandlers[i]
-			if (cmh._mosDevice.idPrimary === mosDevice.idSecondary) {
-				foundI = i
-				break
-			}
-		}
-		const coreMosHandler = this._coreMosHandlers[foundI]
+		const index = this._coreMosHandlers.findIndex((o) => o._mosDevice.idPrimary === mosDevice.idSecondary)
+
+		const coreMosHandler = this._coreMosHandlers[index]
 		if (coreMosHandler) {
 			await coreMosHandler.dispose()
-			this._coreMosHandlers.splice(foundI, 1)
+			this._coreMosHandlers.splice(index, 1)
 		}
-		return Promise.resolve()
 	}
 	onConnectionRestored(): void {
 		this.setupSubscriptionsAndObservers().catch((e) => {
 			this.logger.error(e)
 		})
 		if (this._onConnected) this._onConnected()
-		this._coreMosHandlers.forEach((cmh: CoreMosDeviceHandler) => {
-			cmh.setupSubscriptionsAndObservers()
-		})
+
+		for (const cmh of this._coreMosHandlers) {
+			cmh.setupSubscriptionsAndObservers().catch((e) => {
+				this.logger.error('Error in setupSubscriptionsAndObservers')
+				this.logger.error(e)
+			})
+		}
 	}
 	onConnected(fcn: () => any): void {
 		this._onConnected = fcn

@@ -35,7 +35,7 @@ export class Connector {
 
 		try {
 			this._logger.info('Initializing Process...')
-			await this.initProcess()
+			this.initProcess()
 
 			this._logger.info('Process initialized')
 			this._logger.info('Initializing Core...')
@@ -47,8 +47,6 @@ export class Connector {
 			this._logger.info('Initialization done')
 		} catch (e) {
 			this._logger.error('Error during initialization:', e, e.stack)
-			// this._logger.error(e)
-			// this._logger.error(e.stack)
 
 			this._logger.info('Shutting down in 10 seconds!')
 			setTimeout(() => {
@@ -56,7 +54,7 @@ export class Connector {
 				process.exit(0)
 			}, 10 * 1000)
 
-			this.dispose(`Error during startup: ${e}`)
+			await this.dispose(`Error during init: ${e}`)
 		}
 	}
 	initProcess(): void {
