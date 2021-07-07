@@ -65,7 +65,7 @@
 	],
 	"dependencies": {
 		"@sofie-automation/server-core-integration": "^1.36.0-in-development",
-		"mos-connection": "^1.0.2",
+		"mos-connection": "1.0.3-nightly-fix-mos-messages-in-chunks-1-x-20210707-105533-ba86948.0",
 		"tslib": "^2.1.0",
 		"winston": "^2.4.2"
 	},
