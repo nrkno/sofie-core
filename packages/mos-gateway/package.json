@@ -30,7 +30,7 @@
 		"buildstart": "yarn build && yarn start",
 		"buildinspect": "yarn build && yarn inspect",
 		"build:main": "tsc -p tsconfig.build.json",
-		"lint": "tslint --project tsconfig.json --config tslint.json",
+		"lint": "eslint . --ext .ts --ext .js --ignore-pattern dist",
 		"unit": "jest",
 		"test": "yarn lint && yarn unit",
 		"test:integration": "yarn lint && jest --config=jest-integration.config.js",
