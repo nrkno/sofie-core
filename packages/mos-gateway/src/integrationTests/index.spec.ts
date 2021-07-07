@@ -5,7 +5,7 @@ test('Simple test', async () => {
 	let c: Connector
 
 	let logger = new Winston.Logger({
-		transports: [new Winston.transports.Console()]
+		transports: [new Winston.transports.Console()],
 	})
 	// @ts-ignore
 	logger.info = console.log
@@ -22,15 +22,15 @@ test('Simple test', async () => {
 		core: {
 			host: '127.0.0.1',
 			port: 3000,
-			watchdog: false
+			watchdog: false,
 		},
 		device: {
 			deviceId: 'JestTest',
-			deviceToken: '1234'
+			deviceToken: '1234',
 		},
 		process: {
 			unsafeSSL: true,
-			certificates: []
+			certificates: [],
 		},
 		mos: {
 			self: {
@@ -45,11 +45,11 @@ test('Simple test', async () => {
 					'4': false,
 					'5': false,
 					'6': false,
-					'7': false
-				}
-			}
+					'7': false,
+				},
+			},
 			// devices: []
-		}
+		},
 	})
 
 	expect(c).toBeInstanceOf(Connector)

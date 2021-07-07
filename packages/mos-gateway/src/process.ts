@@ -7,11 +7,10 @@ export class Process {
 
 	public certificates: Buffer[] = []
 
-	constructor (logger: LoggerInstance) {
+	constructor(logger: LoggerInstance) {
 		this.logger = logger
 	}
-	init (processConfig: ProcessConfig) {
-
+	init(processConfig: ProcessConfig) {
 		if (processConfig.unsafeSSL) {
 			this.logger.info('Disabling NODE_TLS_REJECT_UNAUTHORIZED, be sure to ONLY DO THIS ON A LOCAL NETWORK!')
 			process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'
