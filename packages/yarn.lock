@@ -2052,10 +2052,10 @@ at-least-node@^1.0.0:
   resolved "https://registry.yarnpkg.com/at-least-node/-/at-least-node-1.0.0.tgz#602cd4b46e844ad4effc92a8011a3c46e0238dc2"
   integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
 
-atem-connection@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/atem-connection/-/atem-connection-2.3.0.tgz#388cdbfb2805bd9cd4317dfef22360d00a62d647"
-  integrity sha512-/3x+/yNyyR+IbFL6KraGTnkU/3qPs/KoyGZnvfEhvIKVYu3POHCXbIUyPvjUcs9ytalvHgcxLK5slM6sCoIgoA==
+atem-connection@2.3.0-nightly-v2-x-20210608-120229-97c45a9.0:
+  version "2.3.0-nightly-v2-x-20210608-120229-97c45a9.0"
+  resolved "https://registry.yarnpkg.com/atem-connection/-/atem-connection-2.3.0-nightly-v2-x-20210608-120229-97c45a9.0.tgz#4b73f121815f5cf42c942787a5d9fbc911d18f39"
+  integrity sha512-5CRVP71BLFTNLa1KGfMCa/GrogrVOYtvNFtIFPQCZJvOYz6N8c6QZvM7olwcCj3iJSu31JGR1GxiVXdkXeVV4w==
   dependencies:
     big-integer "^1.6.48"
     eventemitter3 "^4.0.4"
@@ -2065,10 +2065,10 @@ atem-connection@^2.3.0:
     tslib "^1.13.0"
     wavefile "^8.4.4"
 
-atem-state@^0.12.1:
-  version "0.12.1"
-  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.12.1.tgz#b8db152ef3e775826e0bb66952366720a68b779e"
-  integrity sha512-MSOUfjK9Qnph8MSO1qpwC3xcn/t/hVeK31fAN/SsErqqvxBeaEXGSKg47QOx5rwVx9kP2zOGk3IeHtkdQw79SQ==
+atem-state@0.12.0-nightly-latest-20210608-103549-6217657.0:
+  version "0.12.0-nightly-latest-20210608-103549-6217657.0"
+  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.12.0-nightly-latest-20210608-103549-6217657.0.tgz#63fc0b6455792fff961fdc2ade29240d93320c33"
+  integrity sha512-TtSOyhhphB5yEUdRmQOY6ZXGlMv/YebktmHRDmfHzlxyaoVGYrbjFTdr2+JTS88bBRCPaj7H91AkdKz9Ov9iSQ==
   dependencies:
     deepmerge "^4.2.2"
     tslib "^2.2.0"
@@ -6098,7 +6098,7 @@ modify-values@^1.0.0:
   resolved "https://registry.yarnpkg.com/modify-values/-/modify-values-1.0.1.tgz#b3939fa605546474e3e3e3c63d64bd43b4ee6022"
   integrity sha512-xV2bxeN6F7oYjZWTe/YPAy6MN2M+sL4u/Rlm2AHCIVGfo2p1yGmBHQ6vHehl4bRTZBdHu3TSkWdYgkwpYzAGSw==
 
-moment@^2.29.1:
+moment@2.29.1, moment@^2.29.1:
   version "2.29.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
   integrity sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==
@@ -8486,7 +8486,6 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6, through@^2.3.8:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
-<<<<<<< HEAD
 timeline-state-resolver-types@6.1.0-nightly-release36-20210629-102259-87b8c9e2a.0:
   version "6.1.0-nightly-release36-20210629-102259-87b8c9e2a.0"
   resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.1.0-nightly-release36-20210629-102259-87b8c9e2a.0.tgz#be3155497eb82692801dff1c863fda71d2c6e9b6"
@@ -8494,26 +8493,20 @@ timeline-state-resolver-types@6.1.0-nightly-release36-20210629-102259-87b8c9e2a.
   dependencies:
     tslib "^2.1.0"
 
-timeline-state-resolver@6.1.0-nightly-release36-20210629-102259-87b8c9e2a.0:
-  version "6.1.0-nightly-release36-20210629-102259-87b8c9e2a.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.1.0-nightly-release36-20210629-102259-87b8c9e2a.0.tgz#8c7be129417f23f292345d209e00da93fa84c605"
-  integrity sha512-MmaqBZrbv6l2aJwwGCWJ0PmitvIlzKtr2foctEvw5OQ77PvX8RgZB4X94F357gtzgLczToyD9YxOa5UOUjHJfw==
-=======
-timeline-state-resolver-types@6.0.3, timeline-state-resolver-types@^6.0.3:
+timeline-state-resolver-types@^6.0.3:
   version "6.0.3"
   resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.0.3.tgz#c153adb4344431d87d1ca301b9b5974c0d2a13d2"
   integrity sha512-zzR9AFD3ftg3bGhmlag/JCuIubA0S5e6VbMRpXTjcMsmFYs5A/W2qVilperd6pQDhkuXqrLpXEnPW0Ctsmj/xw==
   dependencies:
     tslib "^2.1.0"
 
-timeline-state-resolver@^6.0.3:
-  version "6.0.3"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.0.3.tgz#e4ea7b1890b652e1b50c91064e94a599f163246f"
-  integrity sha512-gM0Egt54OMw6f/N6KLLJb7qPbU0ZjYVF4RPJw0+CCUoBg985fGAnWyHd74FHLQWH2KaKdu0Zdapx6SGCo3WYLQ==
->>>>>>> master
+timeline-state-resolver@6.1.0-nightly-release36-20210629-102259-87b8c9e2a.0:
+  version "6.1.0-nightly-release36-20210629-102259-87b8c9e2a.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.1.0-nightly-release36-20210629-102259-87b8c9e2a.0.tgz#8c7be129417f23f292345d209e00da93fa84c605"
+  integrity sha512-MmaqBZrbv6l2aJwwGCWJ0PmitvIlzKtr2foctEvw5OQ77PvX8RgZB4X94F357gtzgLczToyD9YxOa5UOUjHJfw==
   dependencies:
-    atem-connection "^2.3.0"
-    atem-state "^0.12.1"
+    atem-connection "2.3.0-nightly-v2-x-20210608-120229-97c45a9.0"
+    atem-state "0.12.0-nightly-latest-20210608-103549-6217657.0"
     casparcg-connection "^5.1.0"
     casparcg-state "^2.1.0"
     debug "^4.3.1"
@@ -8530,11 +8523,7 @@ timeline-state-resolver@^6.0.3:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.1"
     threadedclass "0.8.3"
-<<<<<<< HEAD
     timeline-state-resolver-types "6.1.0-nightly-release36-20210629-102259-87b8c9e2a.0"
-=======
-    timeline-state-resolver-types "6.0.3"
->>>>>>> master
     tslib "^2.1.0"
     tv-automation-quantel-gateway-client "^1.0.12"
     underscore "^1.12.0"
@@ -8885,7 +8874,7 @@ underscore-deep-extend@^1.1.5:
   resolved "https://registry.yarnpkg.com/underscore-deep-extend/-/underscore-deep-extend-1.1.5.tgz#962ba1f8b3bb2e2afd182ed86f2e5275543c52bd"
   integrity sha1-liuh+LO7Lir9GC7Yby5SdVQ8Ur0=
 
-underscore@^1.12.0, underscore@^1.12.1, underscore@^1.13.1, underscore@^1.9.1:
+underscore@1.13.1, underscore@^1.12.0, underscore@^1.12.1, underscore@^1.13.1, underscore@^1.9.1:
   version "1.13.1"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.13.1.tgz#0c1c6bd2df54b6b69f2314066d65b6cde6fcf9d1"
   integrity sha512-hzSoAVtJF+3ZtiFX0VgfFPHEDRm7Y/QPjGyNo4TVdnDTdft3tr8hEkD25a1jC+TjTuE7tkHGKkhwCgs9dgBB2g==
@@ -9008,9 +8997,9 @@ uuid@^8.0.0, uuid@^8.3.0, uuid@^8.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
-"v-connection@git+https://github.com/olzzon/v-connection.git#v20210604_1":
+"v-connection@git+https://github.com/olzzon/v-connection#v20210604_1":
   version "0.0.1"
-  resolved "git+https://github.com/olzzon/v-connection.git#fce072ef2e8df663cea64eefa85c3d4c5e27c329"
+  resolved "git+https://github.com/olzzon/v-connection#fce072ef2e8df663cea64eefa85c3d4c5e27c329"
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
