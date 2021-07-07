@@ -11,9 +11,9 @@ let deviceId: string = process.env.DEVICE_ID || ''
 let deviceToken: string = process.env.DEVICE_TOKEN || ''
 let disableWatchdog: boolean = process.env.DISABLE_WATCHDOG === '1' || false
 let unsafeSSL: boolean = process.env.UNSAFE_SSL === '1' || false
-let certs: string[] = (process.env.CERTIFICATES || '').split(';') || []
-let debug: boolean = false
-let printHelp: boolean = false
+const certs: string[] = (process.env.CERTIFICATES || '').split(';') || []
+let debug = false
+let printHelp = false
 
 let prevProcessArg = ''
 process.argv.forEach((val) => {
@@ -64,6 +64,7 @@ CLI                ENV
 -debug                               Debug mode
 -h, -help                            Displays this help message
 `)
+	// eslint-disable-next-line no-process-exit
 	process.exit(0)
 }
 
@@ -71,12 +72,12 @@ CLI                ENV
  * Used when JSON.stringifying values that might be circular
  * Usage: JSON.stringify(value, JSONStringifyCircular()))
  */
-let JSONStringifyCircular = () => {
-	let cacheValues: any[] = []
-	let cacheKeys: any[] = []
-	let stringifyFixer = (key: string, value: any) => {
+const JSONStringifyCircular = () => {
+	const cacheValues: any[] = []
+	const cacheKeys: any[] = []
+	const stringifyFixer = (key: string, value: any) => {
 		if (typeof value === 'object' && value !== null) {
-			let i = cacheValues.indexOf(value)
+			const i = cacheValues.indexOf(value)
 			if (i !== -1) {
 				// Duplicate reference found
 				try {
@@ -96,7 +97,7 @@ let JSONStringifyCircular = () => {
 	return stringifyFixer
 }
 // Setup logging --------------------------------------
-let logger = new Winston.Logger({})
+const logger = new Winston.Logger({})
 
 if (logPath) {
 	// Log json to file, human-readable to console
@@ -116,15 +117,12 @@ if (logPath) {
 		filename: logPath,
 	})
 	// Hijack console.log:
-	// @ts-ignore
-	let orgConsoleLog = console.log
+	const orgConsoleLog = console.log
 	console.log = function (...args: any[]) {
-		// orgConsoleLog('a')
 		if (args.length >= 1) {
 			try {
-				// @ts-ignore one or more arguments
+				// @ts-expect-error one or more arguments
 				logger.debug(...args)
-				// logger.debug(...args.map(JSONStringifyCircular()))
 			} catch (e) {
 				orgConsoleLog('CATCH')
 				orgConsoleLog(...args)
@@ -145,12 +143,9 @@ if (logPath) {
 		},
 	})
 	// Hijack console.log:
-	// @ts-ignore
-	let orgConsoleLog = console.log
 	console.log = function (...args: any[]) {
-		// orgConsoleLog('a')
 		if (args.length >= 1) {
-			// @ts-ignore one or more arguments
+			// @ts-expect-error one or more arguments
 			logger.debug(...args)
 		}
 	}
@@ -183,7 +178,7 @@ logger.warn(`Test warn logging`)
 logger.debug(`Test debug logging`)
 
 // App config -----------------------------------------
-let config: Config = {
+const config: Config = {
 	process: {
 		unsafeSSL: unsafeSSL,
 		certificates: certs.filter((cert) => cert), // remove all falsy values
@@ -229,7 +224,7 @@ let config: Config = {
 	},
 }
 
-let c = new Connector(logger)
+const c = new Connector(logger)
 
 logger.info('Core:          ' + config.core.host + ':' + config.core.port)
 // logger.info('My Mos id:     ' + config.mos.self.mosID)

@@ -61,17 +61,18 @@ export class Connector {
 				this.dispose().catch((e) => this._logger.error(e))
 
 				setTimeout(() => {
+					// eslint-disable-next-line no-process-exit
 					process.exit(0)
 				}, 10 * 1000)
 
 				return
 			})
 	}
-	initProcess() {
+	initProcess(): void {
 		this._process = new Process(this._logger)
 		this._process.init(this._config.process)
 	}
-	initCore() {
+	initCore(): Promise<void> {
 		this.coreHandler = new CoreHandler(this._logger, this._config.device)
 		return this.coreHandler.init(this._config.core, this._process)
 	}

@@ -64,12 +64,12 @@ export class MosHandler {
 	public mos: MosConnection
 
 	public mosOptions: MosConfig
-	public debugLogging: boolean = false
+	public debugLogging = false
 
 	private allMosDevices: { [id: string]: { mosDevice: IMOSDevice; coreMosHandler?: CoreMosDeviceHandler } } = {}
 	private _ownMosDevices: { [deviceId: string]: MosDevice } = {}
 	private _logger: Winston.LoggerInstance
-	private _disposed: boolean = false
+	private _disposed = false
 	private _settings?: MosDeviceSettings
 	private _coreHandler: CoreHandler
 	private _observers: Array<any> = []
@@ -136,7 +136,7 @@ export class MosHandler {
 			return Promise.resolve()
 		}
 	}
-	setupObservers() {
+	setupObservers(): void {
 		if (this._observers.length) {
 			this._observers.forEach((obs) => {
 				obs.stop()
@@ -157,7 +157,7 @@ export class MosHandler {
 		// mappingsObserver.removed = () => { this._triggerupdateMapping() }
 		// this._observers.push(mappingsObserver)
 
-		let deviceObserver = this._coreHandler.core.observe('peripheralDevices')
+		const deviceObserver = this._coreHandler.core.observe('peripheralDevices')
 		deviceObserver.added = () => {
 			this._deviceOptionsChanged()
 		}
@@ -171,15 +171,16 @@ export class MosHandler {
 
 		this._deviceOptionsChanged()
 	}
-	debugLog(msg: any, ...args: any[]) {
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	debugLog(msg: any, ...args: any[]): void {
 		if (this.debugLogging) {
 			this._logger.debug(msg, ...args)
 		}
 	}
 	private _deviceOptionsChanged() {
-		let peripheralDevice = this.getThisPeripheralDevice()
+		const peripheralDevice = this.getThisPeripheralDevice()
 		if (peripheralDevice) {
-			let settings: MosDeviceSettings = peripheralDevice.settings || {}
+			const settings: MosDeviceSettings = peripheralDevice.settings || {}
 			if (this.debugLogging !== settings.debugLogging) {
 				this._logger.info('Changing debugLogging to ' + settings.debugLogging)
 
@@ -213,7 +214,7 @@ export class MosHandler {
 
 		this._logger.info('Initializing MosConnection...')
 
-		let connectionConfig: IConnectionConfig = this.mosOptions.self
+		const connectionConfig: IConnectionConfig = this.mosOptions.self
 
 		if (!this._settings.mosId) throw Error('mosId missing in settings!')
 		connectionConfig.mosID = this._settings.mosId
@@ -248,7 +249,7 @@ export class MosHandler {
 					this.allMosDevices[mosDevice.idPrimary].coreMosHandler = coreMosHandler
 
 					// Initial Status check:
-					let connectionStatus = mosDevice.getConnectionStatus()
+					const connectionStatus = mosDevice.getConnectionStatus()
 					coreMosHandler.onMosConnectionChanged(connectionStatus) // initial check
 					// Profile 0: -------------------------------------------------
 					mosDevice.onConnectionChange((connectionStatus: IMOSConnectionStatus) => {
@@ -387,22 +388,22 @@ export class MosHandler {
 		}
 	}
 	private getThisPeripheralDevice(): CollectionObj | undefined {
-		let peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
+		const peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
 		return peripheralDevices.findOne(this._coreHandler.core.deviceId)
 	}
 	private _updateDevices(): Promise<void> {
 		if (this._disposed) return Promise.resolve()
 		return (!this.mos ? this._initMosConnection() : Promise.resolve())
 			.then(() => {
-				let peripheralDevice = this.getThisPeripheralDevice()
+				const peripheralDevice = this.getThisPeripheralDevice()
 
 				if (peripheralDevice) {
-					let settings: MosDeviceSettings = peripheralDevice.settings || {}
+					const settings: MosDeviceSettings = peripheralDevice.settings || {}
 
-					let devices = settings.devices
+					const devices = settings.devices
 
-					let devicesToAdd: { [id: string]: MosDeviceSettingsDevice } = {}
-					let devicesToRemove: { [id: string]: true } = {}
+					const devicesToAdd: { [id: string]: MosDeviceSettingsDevice } = {}
+					const devicesToRemove: { [id: string]: true } = {}
 
 					for (const [deviceId, device] of Object.entries(devices)) {
 						if (device) {
@@ -411,7 +412,7 @@ export class MosHandler {
 								if (!device.secondary.host || !device.secondary.id) delete device.secondary
 							}
 
-							let oldDevice: MosDevice | null = this._getDevice(deviceId)
+							const oldDevice: MosDevice | null = this._getDevice(deviceId)
 
 							if (!oldDevice) {
 								this._logger.info('Initializing new device: ' + deviceId)
@@ -493,7 +494,7 @@ export class MosHandler {
 			return getMachineInfoUntilConnected()
 				.then((machInfo: IMOSListMachInfo) => {
 					this._logger.info('Connected to Mos-device', machInfo)
-					let machineId: string | undefined = machInfo.ID && machInfo.ID.toString()
+					const machineId: string | undefined = machInfo.ID && machInfo.ID.toString()
 					if (
 						!(
 							machineId === deviceOptions.primary.id ||
@@ -520,12 +521,11 @@ export class MosHandler {
 		})
 	}
 	private _removeDevice(deviceId: string): Promise<void> {
-		// let mosDevice = this.mos.getDevice(deviceId)
-		let mosDevice = this._getDevice(deviceId) as MosDevice
+		const mosDevice = this._getDevice(deviceId) as MosDevice
 
 		delete this._ownMosDevices[deviceId]
 		if (mosDevice) {
-			let mosDevice0 =
+			const mosDevice0 =
 				this.mos.getDevice(mosDevice.idPrimary) ||
 				(mosDevice.idSecondary && this.mos.getDevice(mosDevice.idSecondary))
 
@@ -556,7 +556,7 @@ export class MosHandler {
 	private _getROAck(roId: MosString128, p: Promise<IMOSROAck>) {
 		return p
 			.then(() => {
-				let roAck: IMOSROAck = {
+				const roAck: IMOSROAck = {
 					ID: roId,
 					Status: new MosString128('OK'),
 					Stories: [], // Array<IMOSROAckStory> // todo: implement this later (?) (unknown if we really need to)
@@ -565,7 +565,7 @@ export class MosHandler {
 			})
 			.catch((err) => {
 				this._logger.error('ROAck error:', err)
-				let roAck: IMOSROAck = {
+				const roAck: IMOSROAck = {
 					ID: roId,
 					Status: new MosString128('Error: ' + err.toString()),
 					Stories: [], // Array<IMOSROAckStory> // todo: implement this later (?) (unknown if we really need to)

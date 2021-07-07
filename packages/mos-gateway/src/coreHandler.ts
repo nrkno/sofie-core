@@ -150,9 +150,9 @@ export class CoreMosDeviceHandler {
 		// setup observers
 		this._coreParentHandler.setupObserverForPeripheralDeviceCommands(this)
 	}
-	onMosConnectionChanged(connectionStatus: IMOSConnectionStatus) {
+	onMosConnectionChanged(connectionStatus: IMOSConnectionStatus): void {
 		let statusCode: P.StatusCode
-		let messages: Array<string> = []
+		const messages: Array<string> = []
 
 		if (connectionStatus.PrimaryConnected) {
 			if (connectionStatus.SecondaryConnected || !this._mosDevice.idSecondary) {
@@ -183,7 +183,7 @@ export class CoreMosDeviceHandler {
 			.catch((e) => this._coreParentHandler.logger.warn('Error when setting status:' + e))
 	}
 	getMachineInfo(): Promise<IMOSListMachInfo> {
-		let info: IMOSListMachInfo = {
+		const info: IMOSListMachInfo = {
 			manufacturer: new MosString128('SuperFly.tv'),
 			model: new MosString128('Core'),
 			hwRev: new MosString128('0'),
@@ -445,7 +445,7 @@ export class CoreMosDeviceHandler {
 				}
 			})
 	}
-	test(a: string) {
+	test(a: string): Promise<string> {
 		return new Promise((resolve) => {
 			setTimeout(() => {
 				resolve('test' + a)
@@ -466,7 +466,7 @@ export class CoreMosDeviceHandler {
 				return
 			})
 	}
-	killProcess(actually: number) {
+	killProcess(actually: number): boolean {
 		return this._coreParentHandler.killProcess(actually)
 	}
 	/**
@@ -482,7 +482,7 @@ export class CoreMosDeviceHandler {
 				return this.fixMosData(val)
 			})
 		} else if (typeof o === 'object') {
-			let o2: any = {}
+			const o2: any = {}
 			for (const [key, val] of Object.entries(o)) {
 				o2[key] = this.fixMosData(val)
 			}
@@ -542,7 +542,7 @@ export class CoreHandler {
 	private _coreMosHandlers: Array<CoreMosDeviceHandler> = []
 	private _onConnected?: () => any
 	private _subscriptions: Array<any> = []
-	private _isInitialized: boolean = false
+	private _isInitialized = false
 	private _executedFunctions: { [id: string]: boolean } = {}
 	private _coreConfig?: CoreConfig
 	private _process?: Process
@@ -569,7 +569,7 @@ export class CoreHandler {
 			this.logger.error('Core Error: ' + (err.message || err.toString() || err))
 		})
 
-		let ddpConfig: DDPConnectorOptions = {
+		const ddpConfig: DDPConnectorOptions = {
 			host: config.host,
 			port: config.port,
 		}
@@ -636,7 +636,7 @@ export class CoreHandler {
 		} else {
 			credentials = CoreConnection.getCredentials(subDeviceId)
 		}
-		let options: CoreOptions = {
+		const options: CoreOptions = {
 			...credentials,
 
 			deviceCategory: P.DeviceCategory.INGEST,
@@ -653,7 +653,7 @@ export class CoreHandler {
 	}
 	registerMosDevice(mosDevice: IMOSDevice, mosHandler: MosHandler): Promise<CoreMosDeviceHandler> {
 		this.logger.info('registerMosDevice -------------')
-		let coreMos = new CoreMosDeviceHandler(this, mosDevice, mosHandler)
+		const coreMos = new CoreMosDeviceHandler(this, mosDevice, mosHandler)
 
 		this._coreMosHandlers.push(coreMos)
 		return coreMos.init().then(() => {
@@ -664,13 +664,13 @@ export class CoreHandler {
 	unRegisterMosDevice(mosDevice: IMOSDevice): Promise<void> {
 		let foundI = -1
 		for (let i = 0; i < this._coreMosHandlers.length; i++) {
-			let cmh = this._coreMosHandlers[i]
+			const cmh = this._coreMosHandlers[i]
 			if (cmh._mosDevice.idPrimary === mosDevice.idSecondary) {
 				foundI = i
 				break
 			}
 		}
-		let coreMosHandler = this._coreMosHandlers[foundI]
+		const coreMosHandler = this._coreMosHandlers[foundI]
 		if (coreMosHandler) {
 			return coreMosHandler.dispose().then(() => {
 				this._coreMosHandlers.splice(foundI, 1)
@@ -679,7 +679,7 @@ export class CoreHandler {
 		}
 		return Promise.resolve()
 	}
-	onConnectionRestored() {
+	onConnectionRestored(): void {
 		this.setupSubscriptionsAndObservers().catch((e) => {
 			this.logger.error(e)
 		})
@@ -688,7 +688,7 @@ export class CoreHandler {
 			cmh.setupSubscriptionsAndObservers()
 		})
 	}
-	onConnected(fcn: () => any) {
+	onConnected(fcn: () => any): void {
 		this._onConnected = fcn
 	}
 	setupSubscriptionsAndObservers(): Promise<void> {
@@ -718,13 +718,13 @@ export class CoreHandler {
 				return
 			})
 	}
-	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreMosDeviceHandler) {
+	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreMosDeviceHandler): void {
 		if (cmd) {
 			if (this._executedFunctions[cmd._id]) return // prevent it from running multiple times
 			this.logger.debug(cmd.functionName, cmd.args)
 			this._executedFunctions[cmd._id] = true
 			// console.log('executeFunction', cmd)
-			let cb = (err: any, res?: any) => {
+			const cb = (err: any, res?: any) => {
 				// console.log('cb', err, res)
 				if (err) {
 					this.logger.error('executeFunction error', err, err.stack)
@@ -738,8 +738,8 @@ export class CoreHandler {
 						this.logger.error(e)
 					})
 			}
-			// @ts-ignore
-			let fcn: Function = fcnObject[cmd.functionName]
+			// @ts-expect-error index missing
+			const fcn: (...args: any[]) => any | undefined = fcnObject[cmd.functionName]
 			try {
 				if (!fcn) throw Error('Function "' + cmd.functionName + '" not found!')
 
@@ -755,17 +755,17 @@ export class CoreHandler {
 			}
 		}
 	}
-	retireExecuteFunction(cmdId: string) {
+	retireExecuteFunction(cmdId: string): void {
 		delete this._executedFunctions[cmdId]
 	}
-	setupObserverForPeripheralDeviceCommands(functionObject: CoreMosDeviceHandler | CoreHandler) {
-		let observer = functionObject.core.observe('peripheralDeviceCommands')
+	setupObserverForPeripheralDeviceCommands(functionObject: CoreMosDeviceHandler | CoreHandler): void {
+		const observer = functionObject.core.observe('peripheralDeviceCommands')
 		functionObject.killProcess(0) // just make sure it exists
 		functionObject._observers.push(observer)
-		let addedChangedCommand = (id: string) => {
-			let cmds = functionObject.core.getCollection('peripheralDeviceCommands')
+		const addedChangedCommand = (id: string) => {
+			const cmds = functionObject.core.getCollection('peripheralDeviceCommands')
 			if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
-			let cmd = cmds.findOne(id) as PeripheralDeviceCommand
+			const cmd = cmds.findOne(id) as PeripheralDeviceCommand
 			if (!cmd) throw Error('PeripheralCommand "' + id + '" not found!')
 			// console.log('addedChangedCommand', id)
 			if (cmd.deviceId === functionObject.core.deviceId) {
@@ -783,7 +783,7 @@ export class CoreHandler {
 		observer.removed = (id: string) => {
 			this.retireExecuteFunction(id)
 		}
-		let cmds = functionObject.core.getCollection('peripheralDeviceCommands')
+		const cmds = functionObject.core.getCollection('peripheralDeviceCommands')
 		if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
 		cmds.find({}).forEach((cmd: PeripheralDeviceCommand) => {
 			if (cmd.deviceId === functionObject.core.deviceId) {
@@ -791,17 +791,18 @@ export class CoreHandler {
 			}
 		})
 	}
-	killProcess(actually: number) {
+	killProcess(actually: number): boolean {
 		if (actually === 1) {
 			this.logger.info('KillProcess command received, shutting down in 1000ms!')
 			setTimeout(() => {
+				// eslint-disable-next-line no-process-exit
 				process.exit(0)
 			}, 1000)
 			return true
 		}
-		return 0
+		return false
 	}
-	pingResponse(message: string) {
+	pingResponse(message: string): boolean {
 		this.core.setPingResponse(message)
 		return true
 	}
@@ -809,8 +810,8 @@ export class CoreHandler {
 		this.logger.info('getSnapshot')
 		return {} // TODO: send some snapshot data?
 	}
-	private _getVersions() {
-		let versions: { [packageName: string]: string } = {}
+	private _getVersions(): { [packageName: string]: string } {
+		const versions: { [packageName: string]: string } = {}
 
 		if (process.env.npm_package_version) {
 			versions['_process'] = process.env.npm_package_version
