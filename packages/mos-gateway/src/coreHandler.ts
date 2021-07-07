@@ -541,10 +541,10 @@ export class CoreHandler {
 
 		this._isInitialized = true
 	}
-	async dispose(): Promise<void> {
+	async dispose(reason?: string): Promise<void> {
 		await this.core.setStatus({
 			statusCode: P.StatusCode.FATAL,
-			messages: ['Shutting down'],
+			messages: [reason || 'Shutting down'],
 		})
 		await Promise.all(
 			this._coreMosHandlers.map((cmh: CoreMosDeviceHandler) => {

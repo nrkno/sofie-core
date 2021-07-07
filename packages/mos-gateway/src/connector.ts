@@ -56,7 +56,7 @@ export class Connector {
 				process.exit(0)
 			}, 10 * 1000)
 
-			this.dispose()
+			this.dispose(`Error during startup: ${e}`)
 		}
 	}
 	initProcess(): void {
@@ -71,8 +71,8 @@ export class Connector {
 		this.mosHandler = new MosHandler(this._logger)
 		return this.mosHandler.init(this._config.mos, this.coreHandler)
 	}
-	async dispose(): Promise<void> {
+	async dispose(reason?: string): Promise<void> {
 		await this.mosHandler?.dispose()
-		await this.coreHandler?.dispose()
+		await this.coreHandler?.dispose(reason)
 	}
 }
