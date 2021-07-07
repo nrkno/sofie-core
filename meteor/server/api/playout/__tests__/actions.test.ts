@@ -90,7 +90,7 @@ describe('Playout Actions', () => {
 		expect(getPlaylist0()).toMatchObject({ activationId: expect.stringMatching(/^randomId/), rehearsal: true })
 
 		// Activating another rundown
-		await expect(() =>
+		await expect(
 			runPlayoutOperationWithCache(
 				null,
 				'activateRundownPlaylist',
@@ -99,7 +99,7 @@ describe('Playout Actions', () => {
 				null,
 				async (cache) => activateRundownPlaylist(cache, false)
 			)
-		).rejects.toThrowError(/only one rundown can be active/i)
+		).rejects.toMatchToString(/only one rundown can be active/i)
 	})
 	testInFiber('prepareStudioForBroadcast', async () => {
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
@@ -118,7 +118,7 @@ describe('Playout Actions', () => {
 			playlist._id,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => prepareStudioForBroadcast(cache, okToDestroyStuff)
+			async (cache) => prepareStudioForBroadcast(cache, okToDestroyStuff)
 		)
 
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(1)

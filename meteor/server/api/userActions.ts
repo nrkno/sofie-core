@@ -71,7 +71,7 @@ export function setMinimumTakeSpan(span: number) {
 */
 
 // TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
-export function take(
+export async function take(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId
 ): Promise<ClientAPI.ClientResponse<void>> {
@@ -893,7 +893,7 @@ export async function restoreRundownOrder(
 	return ClientAPI.responseSuccess(await restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
 }
 
-export function traceAction<T extends (...args: any[]) => any>(
+export async function traceAction<T extends (...args: any[]) => any>(
 	description: string,
 	fn: T,
 	...args: Parameters<T>
@@ -907,16 +907,21 @@ export function traceAction<T extends (...args: any[]) => any>(
 }
 
 class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
-	take(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+	async take(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
 		return traceAction(UserActionAPIMethods.take, take, this, rundownPlaylistId)
 	}
-	setNext(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number) {
+	async setNext(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number) {
 		return traceAction(UserActionAPIMethods.setNext, setNext, this, rundownPlaylistId, partId, true, timeOffset)
 	}
-	setNextSegment(_userEvent: string, rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId) {
+	async setNextSegment(_userEvent: string, rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId) {
 		return traceAction(UserActionAPIMethods.setNextSegment, setNextSegment, this, rundownPlaylistId, segmentId)
 	}
-	moveNext(_userEvent: string, rundownPlaylistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number) {
+	async moveNext(
+		_userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		horisontalDelta: number,
+		verticalDelta: number
+	) {
 		return traceAction(
 			UserActionAPIMethods.moveNext,
 			moveNext,
@@ -926,22 +931,22 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			verticalDelta
 		)
 	}
-	prepareForBroadcast(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+	async prepareForBroadcast(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
 		return traceAction(UserActionAPIMethods.prepareForBroadcast, prepareForBroadcast, this, rundownPlaylistId)
 	}
-	resetRundownPlaylist(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+	async resetRundownPlaylist(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
 		return traceAction(UserActionAPIMethods.resetRundownPlaylist, resetRundownPlaylist, this, rundownPlaylistId)
 	}
-	resetAndActivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean) {
+	async resetAndActivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean) {
 		return traceAction(UserActionAPIMethods.resetAndActivate, resetAndActivate, this, rundownPlaylistId, rehearsal)
 	}
-	activate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
+	async activate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
 		return traceAction(UserActionAPIMethods.activate, activate, this, rundownPlaylistId, rehearsal)
 	}
-	deactivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+	async deactivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
 		return traceAction(UserActionAPIMethods.deactivate, deactivate, this, rundownPlaylistId)
 	}
-	forceResetAndActivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
+	async forceResetAndActivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
 		return traceAction(
 			UserActionAPIMethods.forceResetAndActivate,
 			forceResetAndActivate,
@@ -950,13 +955,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			rehearsal
 		)
 	}
-	unsyncRundown(_userEvent: string, rundownId: RundownId) {
+	async unsyncRundown(_userEvent: string, rundownId: RundownId) {
 		return traceAction(UserActionAPIMethods.unsyncRundown, unsyncRundown, this, rundownId)
 	}
-	disableNextPiece(_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+	async disableNextPiece(_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
 		return traceAction(UserActionAPIMethods.disableNextPiece, disableNextPiece, this, rundownPlaylistId, undo)
 	}
-	pieceTakeNow(
+	async pieceTakeNow(
 		_userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -971,7 +976,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			pieceInstanceIdOrPieceIdToCopy
 		)
 	}
-	setInOutPoints(
+	async setInOutPoints(
 		_userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partId: PartId,
@@ -981,7 +986,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	) {
 		return pieceSetInOutPoints(this, rundownPlaylistId, partId, pieceId, inPoint, duration)
 	}
-	executeAction(
+	async executeAction(
 		_userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
@@ -998,7 +1003,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			triggerMode
 		)
 	}
-	segmentAdLibPieceStart(
+	async segmentAdLibPieceStart(
 		_userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -1015,7 +1020,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			queue
 		)
 	}
-	sourceLayerOnPartStop(
+	async sourceLayerOnPartStop(
 		_userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -1030,7 +1035,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			sourceLayerIds
 		)
 	}
-	baselineAdLibPieceStart(
+	async baselineAdLibPieceStart(
 		_userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -1047,7 +1052,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			queue
 		)
 	}
-	sourceLayerStickyPieceStart(_userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
+	async sourceLayerStickyPieceStart(_userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
 		return traceAction(
 			UserActionAPIMethods.sourceLayerStickyPieceStart,
 			sourceLayerStickyPieceStart,
@@ -1056,7 +1061,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			sourceLayerId
 		)
 	}
-	bucketAdlibImport(
+	async bucketAdlibImport(
 		_userEvent: string,
 		studioId: StudioId,
 		showStyleVariantId: ShowStyleVariantId,
@@ -1073,7 +1078,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			ingestItem
 		)
 	}
-	bucketAdlibStart(
+	async bucketAdlibStart(
 		_userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -1090,13 +1095,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			queue
 		)
 	}
-	activateHold(_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+	async activateHold(_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
 		return traceAction(UserActionAPIMethods.activateHold, activateHold, this, rundownPlaylistId, undo)
 	}
-	saveEvaluation(_userEvent: string, evaluation: EvaluationBase) {
+	async saveEvaluation(_userEvent: string, evaluation: EvaluationBase) {
 		return makePromise(() => userSaveEvaluation(this, evaluation))
 	}
-	storeRundownSnapshot(_userEvent: string, playlistId: RundownPlaylistId, reason: string) {
+	async storeRundownSnapshot(_userEvent: string, playlistId: RundownPlaylistId, reason: string) {
 		return traceAction(
 			UserActionAPIMethods.storeRundownSnapshot,
 			userStoreRundownSnapshot,
@@ -1105,70 +1110,70 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			reason
 		)
 	}
-	removeRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
+	async removeRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
 		return traceAction(UserActionAPIMethods.removeRundownPlaylist, removeRundownPlaylist, this, playlistId)
 	}
-	resyncRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
+	async resyncRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
 		return traceAction(UserActionAPIMethods.resyncRundownPlaylist, resyncRundownPlaylist, this, playlistId)
 	}
-	removeRundown(_userEvent: string, rundownId: RundownId) {
+	async removeRundown(_userEvent: string, rundownId: RundownId) {
 		return traceAction(UserActionAPIMethods.removeRundown, removeRundown, this, rundownId)
 	}
-	resyncRundown(_userEvent: string, rundownId: RundownId) {
+	async resyncRundown(_userEvent: string, rundownId: RundownId) {
 		return traceAction(UserActionAPIMethods.resyncRundown, resyncRundown, this, rundownId)
 	}
-	resyncSegment(_userEvent: string, rundownId: RundownId, segmentId: SegmentId) {
+	async resyncSegment(_userEvent: string, rundownId: RundownId, segmentId: SegmentId) {
 		return traceAction(UserActionAPIMethods.resyncSegment, resyncSegment, this, rundownId, segmentId)
 	}
-	mediaRestartWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
+	async mediaRestartWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
 		return makePromise(() => mediaRestartWorkflow(this, workflowId))
 	}
-	mediaAbortWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
+	async mediaAbortWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
 		return makePromise(() => mediaAbortWorkflow(this, workflowId))
 	}
-	mediaPrioritizeWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
+	async mediaPrioritizeWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
 		return makePromise(() => mediaPrioritizeWorkflow(this, workflowId))
 	}
-	mediaRestartAllWorkflows(_userEvent: string) {
+	async mediaRestartAllWorkflows(_userEvent: string) {
 		return makePromise(() => mediaRestartAllWorkflows(this))
 	}
-	mediaAbortAllWorkflows(_userEvent: string) {
+	async mediaAbortAllWorkflows(_userEvent: string) {
 		return makePromise(() => mediaAbortAllWorkflows(this))
 	}
-	packageManagerRestartExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
+	async packageManagerRestartExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
 		return makePromise(() => packageManagerRestartExpectation(this, deviceId, workId))
 	}
-	packageManagerRestartAllExpectations(_userEvent: string, studioId: StudioId) {
+	async packageManagerRestartAllExpectations(_userEvent: string, studioId: StudioId) {
 		return makePromise(() => packageManagerRestartAllExpectations(this, studioId))
 	}
-	packageManagerAbortExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
+	async packageManagerAbortExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
 		return makePromise(() => packageManagerAbortExpectation(this, deviceId, workId))
 	}
-	regenerateRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
+	async regenerateRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
 		return traceAction(UserActionAPIMethods.regenerateRundownPlaylist, regenerateRundownPlaylist, this, playlistId)
 	}
-	generateRestartToken(_userEvent: string) {
+	async generateRestartToken(_userEvent: string) {
 		return makePromise(() => generateRestartToken(this))
 	}
-	restartCore(_userEvent: string, token: string) {
+	async restartCore(_userEvent: string, token: string) {
 		return makePromise(() => restartCore(this, token))
 	}
-	guiFocused(_userEvent: string, _viewInfo: any[]) {
+	async guiFocused(_userEvent: string, _viewInfo: any[]) {
 		return traceAction('userAction.noop', noop, this)
 	}
-	guiBlurred(_userEvent: string, _viewInfo: any[]) {
+	async guiBlurred(_userEvent: string, _viewInfo: any[]) {
 		return traceAction('userAction.noop', noop, this)
 	}
-	bucketsRemoveBucket(_userEvent: string, id: BucketId) {
+	async bucketsRemoveBucket(_userEvent: string, id: BucketId) {
 		return traceAction(UserActionAPIMethods.bucketsRemoveBucket, bucketsRemoveBucket, this, id)
 	}
-	bucketsModifyBucket(_userEvent: string, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
+	async bucketsModifyBucket(_userEvent: string, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
 		return traceAction(UserActionAPIMethods.bucketsModifyBucket, bucketsModifyBucket, this, id, bucket)
 	}
-	bucketsEmptyBucket(_userEvent: string, id: BucketId) {
+	async bucketsEmptyBucket(_userEvent: string, id: BucketId) {
 		return traceAction(UserActionAPIMethods.bucketsEmptyBucket, bucketsEmptyBucket, this, id)
 	}
-	bucketsCreateNewBucket(_userEvent: string, name: string, studioId: StudioId, userId: string | null) {
+	async bucketsCreateNewBucket(_userEvent: string, name: string, studioId: StudioId, userId: string | null) {
 		return traceAction(
 			UserActionAPIMethods.bucketsCreateNewBucket,
 			bucketsCreateNewBucket,
@@ -1178,10 +1183,10 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			userId
 		)
 	}
-	bucketsRemoveBucketAdLib(_userEvent: string, id: PieceId) {
+	async bucketsRemoveBucketAdLib(_userEvent: string, id: PieceId) {
 		return traceAction(UserActionAPIMethods.bucketsRemoveBucketAdLib, bucketsRemoveBucketAdLib, this, id)
 	}
-	bucketsRemoveBucketAdLibAction(_userEvent: string, id: AdLibActionId) {
+	async bucketsRemoveBucketAdLibAction(_userEvent: string, id: AdLibActionId) {
 		return traceAction(
 			UserActionAPIMethods.bucketsRemoveBucketAdLibAction,
 			bucketsRemoveBucketAdLibAction,
@@ -1189,7 +1194,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			id
 		)
 	}
-	bucketsModifyBucketAdLib(_userEvent: string, id: PieceId, bucketAdlib: Partial<Omit<BucketAdLib, '_id'>>) {
+	async bucketsModifyBucketAdLib(_userEvent: string, id: PieceId, bucketAdlib: Partial<Omit<BucketAdLib, '_id'>>) {
 		return traceAction(
 			UserActionAPIMethods.bucketsModifyBucketAdLib,
 			bucketsModifyBucketAdLib,
@@ -1198,7 +1203,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			bucketAdlib
 		)
 	}
-	bucketsModifyBucketAdLibAction(
+	async bucketsModifyBucketAdLibAction(
 		_userEvent: string,
 		id: AdLibActionId,
 		bucketAdlibAction: Partial<Omit<BucketAdLibAction, '_id'>>
@@ -1211,7 +1216,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			bucketAdlibAction
 		)
 	}
-	bucketsSaveActionIntoBucket(
+	async bucketsSaveActionIntoBucket(
 		_userEvent: string,
 		studioId: StudioId,
 		action: AdLibActionCommon | BucketAdLibAction,
@@ -1226,7 +1231,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			bucketId
 		)
 	}
-	switchRouteSet(
+	async switchRouteSet(
 		_userEvent: string,
 		studioId: StudioId,
 		routeSetId: string,
@@ -1234,7 +1239,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return traceAction(UserActionAPIMethods.switchRouteSet, switchRouteSet, this, studioId, routeSetId, state)
 	}
-	moveRundown(
+	async moveRundown(
 		_userEvent: string,
 		rundownId: RundownId,
 		intoPlaylistId: RundownPlaylistId | null,
@@ -1242,7 +1247,10 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return moveRundown(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 	}
-	restoreRundownOrder(_userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>> {
+	async restoreRundownOrder(
+		_userEvent: string,
+		playlistId: RundownPlaylistId
+	): Promise<ClientAPI.ClientResponse<void>> {
 		return restoreRundownOrder(this, playlistId)
 	}
 }

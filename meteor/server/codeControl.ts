@@ -24,7 +24,7 @@ export function isAnyQueuedWorkRunning(): boolean {
  * Push a unit of work onto a queue.
  * Allows only one item of work from each queue to be executing at a time (unless something times out)
  */
-export function pushWorkToQueue<T>(
+export async function pushWorkToQueue<T>(
 	queueName: string,
 	jobContext: string,
 	fcn: () => Promise<T>,
@@ -94,7 +94,7 @@ export function pushWorkToQueue<T>(
 	return (
 		queueInfo.queue
 			.add(
-				Meteor.bindEnvironment(() => wrappedFcn()),
+				Meteor.bindEnvironment(async () => wrappedFcn()),
 				{
 					timeout,
 					priority,
@@ -114,7 +114,7 @@ export function pushWorkToQueue<T>(
 				}
 			})
 			// Finally, return the result we manually tracked
-			.then(() => promise)
+			.then(async () => promise)
 	)
 }
 

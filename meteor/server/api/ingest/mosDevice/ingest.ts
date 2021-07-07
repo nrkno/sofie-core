@@ -98,7 +98,7 @@ function groupedPartsToSegments(
 	})
 }
 
-export function handleMosRundownData(
+export async function handleMosRundownData(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrder: MOS.IMOSRunningOrder,
 	isCreateAction: boolean
@@ -168,7 +168,7 @@ export function handleMosRundownData(
 		}
 	)
 }
-export function handleMosRundownMetadata(
+export async function handleMosRundownMetadata(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
 ): Promise<void> {
@@ -199,7 +199,10 @@ export function handleMosRundownMetadata(
 	)
 }
 
-export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MOS.IMOSROFullStory): Promise<void> {
+export async function handleMosFullStory(
+	peripheralDevice: PeripheralDevice,
+	story: MOS.IMOSROFullStory
+): Promise<void> {
 	fixIllegalObject(story)
 	// @ts-ignore
 	// logger.debug(story)
@@ -315,7 +318,7 @@ function getAnnotatedIngestParts(ingestRundown: LocalIngestRundown): AnnotatedIn
 	span?.end()
 	return ingestParts
 }
-export function handleMosInsertParts(
+export async function handleMosInsertParts(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	insertBeforeStoryId: MOS.MosString128 | null,
@@ -387,7 +390,7 @@ export function handleMosInsertParts(
 	)
 }
 
-export function handleMosSwapStories(
+export async function handleMosSwapStories(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	story0: MOS.MosString128,
@@ -445,7 +448,7 @@ export function handleMosSwapStories(
 		diffAndApplyChanges
 	)
 }
-export function handleMosMoveStories(
+export async function handleMosMoveStories(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	insertBeforeStoryId: MOS.MosString128 | null,

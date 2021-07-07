@@ -356,7 +356,7 @@ async function createDebugSnapshot(studioId: StudioId, organizationId: Organizat
 	})
 
 	const activePlaylistSnapshots = await Promise.all(
-		activePlaylists.map((playlist) => {
+		activePlaylists.map(async (playlist) => {
 			return createRundownPlaylistSnapshot(playlist._id, organizationId)
 		})
 	)
@@ -546,7 +546,7 @@ function restoreFromSnapshot(snapshot: AnySnapshot) {
 	}
 }
 
-function restoreFromDeprecatedRundownSnapshot(snapshot0: DeprecatedRundownSnapshot) {
+async function restoreFromDeprecatedRundownSnapshot(snapshot0: DeprecatedRundownSnapshot) {
 	// Convert the Rundown snaphost into a rundown playlist
 	// This is somewhat of a hack, it's just to be able to import older snapshots into the system
 
@@ -931,8 +931,8 @@ export async function removeSnapshot(context: MethodContext, snapshotId: Snapsho
 if (!Settings.enableUserAccounts) {
 	// For backwards compatibility:
 
-	PickerGET.route('/snapshot/system/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
-		return handleResponse(response, () => {
+	PickerGET.route('/snapshot/system/:studioId', async (params, req: IncomingMessage, response: ServerResponse) => {
+		return handleResponse(response, async () => {
 			check(params.studioId, Match.Optional(String))
 
 			const cred0: Credentials = { userId: null, token: params.token }
@@ -942,8 +942,8 @@ if (!Settings.enableUserAccounts) {
 			return createSystemSnapshot(protectString(params.studioId), organizationId)
 		})
 	})
-	PickerGET.route('/snapshot/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse) => {
-		return handleResponse(response, () => {
+	PickerGET.route('/snapshot/rundown/:playlistId', async (params, req: IncomingMessage, response: ServerResponse) => {
+		return handleResponse(response, async () => {
 			check(params.playlistId, String)
 
 			const cred0: Credentials = { userId: null, token: params.token }
@@ -955,8 +955,8 @@ if (!Settings.enableUserAccounts) {
 			return createRundownPlaylistSnapshot(playlist._id, organizationId)
 		})
 	})
-	PickerGET.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
-		return handleResponse(response, () => {
+	PickerGET.route('/snapshot/debug/:studioId', async (params, req: IncomingMessage, response: ServerResponse) => {
+		return handleResponse(response, async () => {
 			check(params.studioId, String)
 
 			const cred0: Credentials = { userId: null, token: params.token }
@@ -997,35 +997,41 @@ if (!Settings.enableUserAccounts) {
 	// For backwards compatibility:
 
 	// Retrieve snapshot:
-	PickerGET.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
-		return handleResponse(response, async () => {
-			check(params.snapshotId, String)
-			return retreiveSnapshot(protectString(params.snapshotId), { userId: null })
-		})
-	})
+	PickerGET.route(
+		'/snapshot/retrieve/:snapshotId',
+		async (params, req: IncomingMessage, response: ServerResponse) => {
+			return handleResponse(response, async () => {
+				check(params.snapshotId, String)
+				return retreiveSnapshot(protectString(params.snapshotId), { userId: null })
+			})
+		}
+	)
 }
 // Retrieve snapshot:
-PickerGET.route('/snapshot/:token/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
-	return handleResponse(response, async () => {
-		check(params.snapshotId, String)
-		return retreiveSnapshot(protectString(params.snapshotId), { userId: null, token: params.token })
-	})
-})
+PickerGET.route(
+	'/snapshot/:token/retrieve/:snapshotId',
+	async (params, req: IncomingMessage, response: ServerResponse) => {
+		return handleResponse(response, async () => {
+			check(params.snapshotId, String)
+			return retreiveSnapshot(protectString(params.snapshotId), { userId: null, token: params.token })
+		})
+	}
+)
 
 class ServerSnapshotAPI extends MethodContextAPI implements NewSnapshotAPI {
-	storeSystemSnapshot(studioId: StudioId | null, reason: string) {
+	async storeSystemSnapshot(studioId: StudioId | null, reason: string) {
 		return storeSystemSnapshot(this, studioId, reason)
 	}
-	storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
+	async storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
 		return storeRundownPlaylistSnapshot(this, playlistId, reason)
 	}
-	storeDebugSnapshot(studioId: StudioId, reason: string) {
+	async storeDebugSnapshot(studioId: StudioId, reason: string) {
 		return storeDebugSnapshot(this, studioId, reason)
 	}
-	restoreSnapshot(snapshotId: SnapshotId) {
+	async restoreSnapshot(snapshotId: SnapshotId) {
 		return restoreSnapshot(this, snapshotId)
 	}
-	removeSnapshot(snapshotId: SnapshotId) {
+	async removeSnapshot(snapshotId: SnapshotId) {
 		return removeSnapshot(this, snapshotId)
 	}
 }

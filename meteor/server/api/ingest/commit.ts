@@ -175,7 +175,7 @@ export async function CommitIngestOperation(
 		'ingest.commit.saveRundownToPlaylist',
 		ingestCache.Studio.doc._id,
 		StudioLockFunctionPriority.MISC,
-		(studioLock) =>
+		async (studioLock) =>
 			runPlayoutOperationWithLockFromStudioOperation(
 				'ingest.commit.saveRundownToPlaylist',
 				studioLock,
@@ -489,7 +489,7 @@ export async function regeneratePlaylistAndRundownOrder(
 /**
  * Ensure that the playlist triggers a playout update if it is active
  */
-export function updatePlayoutAfterChangingRundownInPlaylist(
+export async function updatePlayoutAfterChangingRundownInPlaylist(
 	playlist: RundownPlaylist,
 	playlistLock: PlaylistLock,
 	insertedRundown: ReadonlyDeep<Rundown> | null

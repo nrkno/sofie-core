@@ -9,10 +9,10 @@ import { MethodContextAPI } from '../../../lib/api/methods'
 import { Settings } from '../../../lib/Settings'
 
 class ServerPlayoutAPIClass extends MethodContextAPI implements NewPlayoutAPI {
-	updateStudioBaseline(studioId: StudioId) {
+	async updateStudioBaseline(studioId: StudioId) {
 		return ServerPlayoutAPI.updateStudioBaseline(this, studioId)
 	}
-	shouldUpdateStudioBaseline(studioId: StudioId) {
+	async shouldUpdateStudioBaseline(studioId: StudioId) {
 		return ServerPlayoutAPI.shouldUpdateStudioBaseline(this, studioId)
 	}
 }

@@ -761,16 +761,16 @@ function getTranslationBundle(context: MethodContext, bundleId: TranslationsBund
 }
 
 class SystemAPIClass extends MethodContextAPI implements SystemAPI {
-	cleanupIndexes(actuallyRemoveOldIndexes: boolean) {
+	async cleanupIndexes(actuallyRemoveOldIndexes: boolean) {
 		return makePromise(() => cleanupIndexes(this, actuallyRemoveOldIndexes))
 	}
-	cleanupOldData(actuallyRemoveOldData: boolean) {
+	async cleanupOldData(actuallyRemoveOldData: boolean) {
 		return makePromise(() => cleanupOldData(this, actuallyRemoveOldData))
 	}
 	async doSystemBenchmark(runCount: number = 1) {
 		return doSystemBenchmark(this, runCount)
 	}
-	getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>> {
+	async getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>> {
 		return makePromise(() => getTranslationBundle(this, bundleId))
 	}
 }

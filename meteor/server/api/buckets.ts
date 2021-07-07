@@ -37,7 +37,7 @@ function isBucketAdLibAction(action: AdLibActionCommon | BucketAdLibAction): act
 	return false
 }
 
-export function bucketSyncFunction<T>(bucketId: BucketId, context: string, fcn: () => Promise<T>): Promise<T> {
+export async function bucketSyncFunction<T>(bucketId: BucketId, context: string, fcn: () => Promise<T>): Promise<T> {
 	return pushWorkToQueue(`bucket_${bucketId}`, context, async () => fcn())
 }
 

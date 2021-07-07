@@ -160,7 +160,9 @@ export namespace IngestActions {
 
 		// Fire off all the updates in parallel, in their own low-priority tasks
 		waitForPromiseAll(
-			ingestData.map(({ rundownExternalId, studio }) => regenerateRundown(studio, rundownExternalId, undefined))
+			ingestData.map(async ({ rundownExternalId, studio }) =>
+				regenerateRundown(studio, rundownExternalId, undefined)
+			)
 		)
 	}
 }

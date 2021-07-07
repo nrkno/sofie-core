@@ -44,7 +44,7 @@ export function anythingChanged(changes: Changes): boolean {
  * @param filter The filter defining the data subset to be affected in db
  * @param newData The new data
  */
-export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj>(
+export async function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj>(
 	collection: AsyncTransformedCollection<DocClass, DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,

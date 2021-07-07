@@ -101,7 +101,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 
 		if (highPrioDBs.length) {
 			const anyThingChanged = anythingChanged(
-				sumChanges(...(await Promise.all(highPrioDBs.map((db) => db.updateDatabaseWithData()))))
+				sumChanges(...(await Promise.all(highPrioDBs.map(async (db) => db.updateDatabaseWithData()))))
 			)
 			if (anyThingChanged) {
 				// Wait a little bit before saving the rest.
@@ -112,7 +112,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		}
 
 		if (lowPrioDBs.length) {
-			await Promise.all(lowPrioDBs.map((db) => db.updateDatabaseWithData()))
+			await Promise.all(lowPrioDBs.map(async (db) => db.updateDatabaseWithData()))
 		}
 
 		// Execute cache.deferAfterSave()'s

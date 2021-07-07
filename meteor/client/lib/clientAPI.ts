@@ -4,7 +4,7 @@ import { logger } from '../../lib/logging'
 import { PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MeteorCall } from '../../lib/api/methods'
 
-export function callPeripheralDeviceFunction(
+export async function callPeripheralDeviceFunction(
 	e: any,
 	deviceId: PeripheralDeviceId,
 	timeoutTime: number | undefined,
@@ -21,7 +21,7 @@ export function callPeripheralDeviceFunction(
 }
 
 export namespace PeripheralDevicesAPI {
-	export function restartDevice(
+	export async function restartDevice(
 		dev: Pick<PeripheralDevice, '_id'>,
 		e: Event | React.SyntheticEvent<object>
 	): Promise<any> {

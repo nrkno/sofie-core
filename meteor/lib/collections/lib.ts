@@ -231,7 +231,7 @@ class WrappedAsyncTransformedCollection<Class extends DBInterface, DBInterface e
 		return p
 	}
 
-	insertManyAsync(docs: DBInterface[]): Promise<Array<DBInterface['_id']>> {
+	async insertManyAsync(docs: DBInterface[]): Promise<Array<DBInterface['_id']>> {
 		return Promise.all(docs.map((doc) => this.insert(doc)))
 	}
 

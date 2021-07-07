@@ -81,24 +81,24 @@ describe('Playout API', () => {
 			BLUEPRINT_CACHE_CONTROL.disable = false
 		})
 
-		testInFiber('invalid parameters', () => {
-			// @ts-ignore
-			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), 9, '', '')).toThrowError(
-				'Match error: Expected string'
-			)
-			// @ts-ignore
-			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), '', 9, '')).toThrowError(
-				'Match error: Expected string'
-			)
+		testInFiber('invalid parameters', async () => {
+			await expect(
+				// @ts-ignore
+				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), 9, '', '')
+			).rejects.toThrowError('Match error: Expected string')
+			await expect(
+				// @ts-ignore
+				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), '', 9, '')
+			).rejects.toThrowError('Match error: Expected string')
 		})
 
-		testInFiber('throws errors', () => {
+		testInFiber('throws errors', async () => {
 			const actionId = 'some-action'
 			const userData = { blobby: true }
 
-			expect(() =>
+			await expect(
 				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
-			).toThrowError(/ShowStyle blueprint .* does not support executing actions/)
+			).rejects.toMatchToString(/ShowStyle blueprint .* does not support executing actions/)
 
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 
@@ -121,9 +121,9 @@ describe('Playout API', () => {
 					),
 				},
 			})
-			expect(() =>
+			await expect(
 				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
-			).toThrowError('action execution threw')
+			).rejects.toThrowError('action execution threw')
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)

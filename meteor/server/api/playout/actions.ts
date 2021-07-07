@@ -187,7 +187,7 @@ export async function prepareStudioForBroadcast(cache: CacheForPlayout, okToDest
 	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
 
 	await Promise.allSettled(
-		playoutDevices.map((device) =>
+		playoutDevices.map(async (device) =>
 			makePromise(() => {
 				PeripheralDeviceAPI.executeFunction(
 					device._id,
@@ -217,7 +217,7 @@ export async function standDownStudio(cache: CacheForPlayout, okToDestoryStuff: 
 	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
 
 	await Promise.allSettled(
-		playoutDevices.map((device) =>
+		playoutDevices.map(async (device) =>
 			makePromise(() => {
 				PeripheralDeviceAPI.executeFunction(
 					device._id,

@@ -97,12 +97,14 @@ describe('codeControl rundown', () => {
 		expect(playlist).toBeTruthy()
 
 		const sync1 = (name: string, priority: PlayoutLockFunctionPriority) => {
-			return runPlayoutOperationWithLockFromStudioOperation(
-				'testRundownSyncFn',
-				{ _studioId: playlist.studioId },
-				playlist,
-				priority,
-				async () => takesALongTimeInnerAsync(name)
+			return waitForPromise(
+				runPlayoutOperationWithLockFromStudioOperation(
+					'testRundownSyncFn',
+					{ _studioId: playlist.studioId },
+					playlist,
+					priority,
+					async () => takesALongTimeInnerAsync(name)
+				)
 			)
 		}
 
@@ -282,7 +284,7 @@ describe('codeControl', () => {
 		// Running in two parallel queues, run0 and run1:
 
 		const res: any[] = []
-		function doIt(name: string): Promise<void> {
+		async function doIt(name: string): Promise<void> {
 			return pushWorkToQueue(name, '1', async () => takesALongTimeInnerAsync(name)).then((v) => {
 				res.push(v)
 			})

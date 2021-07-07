@@ -528,38 +528,38 @@ export namespace ClientRundownAPI {
 }
 
 class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
-	removeRundownPlaylist(playlistId: RundownPlaylistId) {
+	async removeRundownPlaylist(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerRundownAPI.removeRundownPlaylist(this, playlistId))
 	}
-	resyncRundownPlaylist(playlistId: RundownPlaylistId) {
+	async resyncRundownPlaylist(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerRundownAPI.resyncRundownPlaylist(this, playlistId))
 	}
-	rundownPlaylistNeedsResync(playlistId: RundownPlaylistId) {
+	async rundownPlaylistNeedsResync(playlistId: RundownPlaylistId) {
 		return makePromise(() => ClientRundownAPI.rundownPlaylistNeedsResync(this, playlistId))
 	}
-	rundownPlaylistValidateBlueprintConfig(playlistId: RundownPlaylistId) {
+	async rundownPlaylistValidateBlueprintConfig(playlistId: RundownPlaylistId) {
 		return makePromise(() => ClientRundownAPI.rundownPlaylistValidateBlueprintConfig(this, playlistId))
 	}
-	removeRundown(rundownId: RundownId) {
+	async removeRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.removeRundown(this, rundownId))
 	}
-	resyncRundown(rundownId: RundownId) {
+	async resyncRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.resyncRundown(this, rundownId))
 	}
-	resyncSegment(rundownId: RundownId, segmentId: SegmentId) {
+	async resyncSegment(rundownId: RundownId, segmentId: SegmentId) {
 		return makePromise(() => ServerRundownAPI.resyncSegment(this, rundownId, segmentId))
 	}
-	unsyncRundown(rundownId: RundownId) {
+	async unsyncRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.unsyncRundown(this, rundownId))
 	}
-	moveRundown(
+	async moveRundown(
 		rundownId: RundownId,
 		intoPlaylistId: RundownPlaylistId | null,
 		rundownsIdsInPlaylistInOrder: RundownId[]
 	) {
 		return moveRundownIntoPlaylist(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 	}
-	restoreRundownsInPlaylistToDefaultOrder(playlistId: RundownPlaylistId) {
+	async restoreRundownsInPlaylistToDefaultOrder(playlistId: RundownPlaylistId) {
 		return restoreRundownsInPlaylistToDefaultOrder(this, playlistId)
 	}
 }

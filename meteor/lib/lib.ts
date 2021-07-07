@@ -101,7 +101,7 @@ export function applyToArray<T>(arr: T | T[], func: (val: T) => void) {
  * @param  {string} Method name
  * @return {Promise<any>}
  */
-export function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any> {
+export async function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any> {
 	return new Promise((resolve, reject) => {
 		Meteor.call(callName, ...args, (err, res) => {
 			if (err) reject(err)
@@ -549,7 +549,7 @@ export const waitForPromise: <T>(p: Promise<T> | T) => Awaited<T> = Meteor.wrapA
  * Convert a Fiber function into a promise
  * Makes the Fiber function to run in its own fiber and return a promise
  */
-export function makePromise<T>(fcn: () => T): Promise<T> {
+export async function makePromise<T>(fcn: () => T): Promise<T> {
 	return new Promise((resolve, reject) => {
 		Meteor.defer(() => {
 			try {
@@ -990,7 +990,7 @@ export type WrapAsyncCallback<T> = ((error: Error) => void) & ((error: null, res
 export function waitTime(time: number) {
 	waitForPromise(sleep(time))
 }
-export function sleep(ms: number): Promise<void> {
+export async function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => Meteor.setTimeout(resolve, ms))
 }
 

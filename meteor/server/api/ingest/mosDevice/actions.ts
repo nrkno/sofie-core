@@ -77,7 +77,7 @@ export namespace MOSDeviceActions {
 			)
 		}
 	}
-	function setStoryStatus(
+	async function setStoryStatus(
 		deviceId: PeripheralDeviceId,
 		rundown: Rundown,
 		storyId: string,
@@ -103,7 +103,7 @@ export namespace MOSDeviceActions {
 		})
 	}
 
-	export function setPieceInOutPoint(
+	export async function setPieceInOutPoint(
 		rundown: Rundown,
 		piece: Piece,
 		partCache: IngestPart,

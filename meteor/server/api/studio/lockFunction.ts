@@ -38,7 +38,7 @@ export function getStudioIdFromCacheOrLock(
  * @param studioId Id of the studio to lock
  * @param fcn Function to run while holding the lock
  */
-export function runStudioOperationWithCache<T>(
+export async function runStudioOperationWithCache<T>(
 	context: string,
 	studioId: StudioId,
 	priority: StudioLockFunctionPriority,
@@ -61,7 +61,7 @@ export function runStudioOperationWithCache<T>(
  * @param studioId Id of the studio to lock
  * @param fcn Function to run while holding the lock
  */
-export function runStudioOperationWithLock<T>(
+export async function runStudioOperationWithLock<T>(
 	context: string,
 	studioId: StudioId,
 	priority: StudioLockFunctionPriority,

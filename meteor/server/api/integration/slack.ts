@@ -8,7 +8,7 @@ const webHookCache: { [webhookURL: string]: IncomingWebhook } = {}
  * @param message
  * @param webhookURL
  */
-export function sendSlackMessageToWebhook(message: string, webhookURL: string): Promise<IncomingWebhookResult> {
+export async function sendSlackMessageToWebhook(message: string, webhookURL: string): Promise<IncomingWebhookResult> {
 	let webhook: IncomingWebhook = webHookCache[webhookURL]
 	if (!webhook) {
 		webhook = new IncomingWebhook(webhookURL)

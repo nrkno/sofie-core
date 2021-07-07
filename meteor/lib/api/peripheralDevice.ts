@@ -619,7 +619,7 @@ export namespace PeripheralDeviceAPI {
 		return executeFunctionWithCustomTimeout(deviceId, cb, undefined, functionName, ...args)
 	}
 	/** Same as executeFunction, but returns a promise instead */
-	export function executeFunctionAsync(
+	export async function executeFunctionAsync(
 		deviceId: PeripheralDeviceId,
 		functionName: string,
 		...args: any[]

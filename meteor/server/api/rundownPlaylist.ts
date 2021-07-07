@@ -54,7 +54,7 @@ import { Random } from 'meteor/random'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { checkAccessToPlaylist } from './lib'
 
-export function removeEmptyPlaylists(studioId: StudioId): Promise<void> {
+export async function removeEmptyPlaylists(studioId: StudioId): Promise<void> {
 	return runStudioOperationWithCache(
 		'removeEmptyPlaylists',
 		studioId,
@@ -254,7 +254,7 @@ export function updateRundownsInPlaylist(
 	})
 }
 /** Move a rundown manually (by a user in Sofie)  */
-export function moveRundownIntoPlaylist(
+export async function moveRundownIntoPlaylist(
 	context: MethodContext,
 	/** The rundown to be moved */
 	rundownId: RundownId,
@@ -458,7 +458,7 @@ export function moveRundownIntoPlaylist(
 	)
 }
 /** Restore the order of rundowns in a playlist, giving control over the ordering back to the NRCS */
-export function restoreRundownsInPlaylistToDefaultOrder(
+export async function restoreRundownsInPlaylistToDefaultOrder(
 	context: MethodContext,
 	playlistId: RundownPlaylistId
 ): Promise<void> {

@@ -61,7 +61,7 @@ if (!Settings.enableUserAccounts) {
 			const rundowns = Rundowns.find().fetch()
 
 			waitForPromiseAll(
-				rundowns.map((rundown) =>
+				rundowns.map(async (rundown) =>
 					runIngestOperationFromRundown('', rundown, async (cache) =>
 						updateExpectedMediaItemsOnRundown(cache)
 					)
@@ -76,7 +76,7 @@ if (!Settings.enableUserAccounts) {
 			const rundowns = Rundowns.find().fetch()
 
 			waitForPromiseAll(
-				rundowns.map((rundown) =>
+				rundowns.map(async (rundown) =>
 					runIngestOperationFromRundown('', rundown, async (cache) => updateExpectedPackagesOnRundown(cache))
 				)
 			)

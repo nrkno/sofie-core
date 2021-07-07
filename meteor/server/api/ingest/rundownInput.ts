@@ -42,7 +42,7 @@ export namespace RundownInput {
 		return getIngestPlaylist(peripheralDevice, playlistExternalId)
 	}
 	// Get info on the current rundowns from this device:
-	export function dataRundownList(
+	export async function dataRundownList(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string
@@ -298,7 +298,7 @@ export async function handleRemovedRundown(
 
 	return handleRemovedRundownFromStudio(studio._id, rundownExternalId)
 }
-function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: string, forceDelete?: boolean) {
+async function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: string, forceDelete?: boolean) {
 	return runIngestOperationWithCache(
 		'handleRemovedRundown',
 		studioId,
@@ -340,7 +340,7 @@ export async function handleRemovedRundownByRundown(rundown: DBRundown, forceDel
 }
 
 /** Handle an updated (or inserted) Rundown */
-export function handleUpdatedRundown(
+export async function handleUpdatedRundown(
 	studio0: Studio | undefined,
 	peripheralDevice: PeripheralDevice | undefined,
 	newIngestRundown: IngestRundown,
@@ -390,7 +390,7 @@ export async function handleUpdatedRundownInner(
 
 	return updateRundownFromIngestData(cache, ingestRundown, peripheralDevice)
 }
-export function regenerateRundown(
+export async function regenerateRundown(
 	studio: Studio,
 	rundownExternalId: string,
 	peripheralDevice0: PeripheralDevice | undefined
@@ -426,7 +426,7 @@ export function regenerateRundown(
 	)
 }
 
-export function handleRemovedSegment(
+export async function handleRemovedSegment(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
 	segmentExternalId: string
@@ -479,7 +479,7 @@ export function handleRemovedSegment(
 		}
 	)
 }
-export function handleUpdatedSegment(
+export async function handleUpdatedSegment(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
 	newIngestSegment: IngestSegment,
@@ -513,7 +513,7 @@ export function handleUpdatedSegment(
 	)
 }
 
-export function handleUpdatedSegmentRanks(
+export async function handleUpdatedSegmentRanks(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
 	newRanks: { [segmentExternalId: string]: number }
@@ -566,7 +566,7 @@ export function handleUpdatedSegmentRanks(
 	)
 }
 
-export function handleRemovedPart(
+export async function handleRemovedPart(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
 	segmentExternalId: string,
@@ -603,7 +603,7 @@ export function handleRemovedPart(
 		}
 	)
 }
-export function handleUpdatedPart(
+export async function handleUpdatedPart(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
 	segmentExternalId: string,

@@ -46,7 +46,7 @@ if (!Settings.enableUserAccounts) {
 		debug_removeAllPlaylists() {
 			logger.debug('Remove all rundowns')
 
-			waitForPromiseAll(RundownPlaylists.find({}).map((playlist) => removeRundownPlaylistFromDb(playlist)))
+			waitForPromiseAll(RundownPlaylists.find({}).map(async (playlist) => removeRundownPlaylistFromDb(playlist)))
 		},
 
 		/**

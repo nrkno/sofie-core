@@ -167,7 +167,7 @@ describe('Lookahead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expect(res).toHaveLength(0)
 
@@ -185,7 +185,7 @@ describe('Lookahead', () => {
 		} as any
 	}
 
-	testInFiber('got some objects', () => {
+	testInFiber('got some objects', async () => {
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {}
 
 		const fakeParts = partIds.map((p) => ({ part: new Part({ _id: p } as any), pieces: [] }))
@@ -209,13 +209,13 @@ describe('Lookahead', () => {
 				],
 			}))
 
-		const res = runPlayoutOperationWithCache(
+		const res = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expect(res).toMatchSnapshot()
 
@@ -236,7 +236,7 @@ describe('Lookahead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(expect.anything(), 0)
@@ -251,7 +251,7 @@ describe('Lookahead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(expect.anything(), 2000)
@@ -266,7 +266,7 @@ describe('Lookahead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(expect.anything(), 10)
@@ -297,7 +297,7 @@ describe('Lookahead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expectLookaheadForLayerMock(playlistId, [], expectedPrevious, fakeParts)
 
@@ -319,7 +319,7 @@ describe('Lookahead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expectLookaheadForLayerMock(playlistId, [expectedCurrent], expectedPrevious, fakeParts)
 
@@ -341,7 +341,7 @@ describe('Lookahead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expectLookaheadForLayerMock(playlistId, [expectedCurrent, expectedNext], expectedPrevious, fakeParts)
 
@@ -354,7 +354,7 @@ describe('Lookahead', () => {
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expectLookaheadForLayerMock(playlistId, [expectedCurrent, expectedNext], expectedPrevious, fakeParts)
 	})

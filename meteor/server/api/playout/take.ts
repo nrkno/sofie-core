@@ -52,7 +52,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	const isFirstTake = !cache.Playlist.doc.startedPlayback && !partInstance.part.untimed
 
 	const pShowStyle = cache.activationCache.getShowStyleCompound(currentRundown)
-	const pBlueprint = pShowStyle.then((s) => loadShowStyleBlueprint(s))
+	const pBlueprint = pShowStyle.then(async (s) => loadShowStyleBlueprint(s))
 
 	if (currentPartInstance) {
 		const allowTransition = previousPartInstance && !previousPartInstance.part.disableOutTransition

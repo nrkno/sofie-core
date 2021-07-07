@@ -307,7 +307,7 @@ export namespace MeteorMock {
 	})
 
 	/** Wait for time to pass ( unaffected by jest.useFakeTimers() ) */
-	export function sleepNoFakeTimers(time: number): Promise<void> {
+	export async function sleepNoFakeTimers(time: number): Promise<void> {
 		return new Promise<void>((resolve) => $.orgSetTimeout(resolve, time))
 	}
 }

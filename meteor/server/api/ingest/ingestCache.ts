@@ -146,7 +146,7 @@ export class RundownIngestDataCache {
 		this.collection.remove({})
 	}
 
-	saveToDatabase(): Promise<Changes> {
+	async saveToDatabase(): Promise<Changes> {
 		return this.collection.updateDatabaseWithData()
 	}
 }

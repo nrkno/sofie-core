@@ -53,7 +53,7 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 
 export namespace ServerPlayoutAdLibAPI {
-	export function pieceTakeNow(
+	export async function pieceTakeNow(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -168,7 +168,7 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 		)
 	}
-	export function segmentAdLibPieceStart(
+	export async function segmentAdLibPieceStart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -211,7 +211,7 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 		)
 	}
-	export function rundownBaselineAdLibPieceStart(
+	export async function rundownBaselineAdLibPieceStart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -317,7 +317,7 @@ export namespace ServerPlayoutAdLibAPI {
 		if (span) span.end()
 	}
 
-	export function sourceLayerStickyPieceStart(
+	export async function sourceLayerStickyPieceStart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		sourceLayerId: string
@@ -651,7 +651,7 @@ export namespace ServerPlayoutAdLibAPI {
 		if (span) span.end()
 		return stoppedInstances
 	}
-	export function startBucketAdlibPiece(
+	export async function startBucketAdlibPiece(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,

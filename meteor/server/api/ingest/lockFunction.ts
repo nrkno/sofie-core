@@ -52,7 +52,7 @@ export enum UpdateIngestRundownAction {
  * @param calcFcn Function to run to update the Rundown. Return the blob of data about the change to help the post-update perform its duties. Return null to indicate that nothing changed
  */
 // runPlayoutOperationWithCacheFromStudioOperation
-export function runIngestOperationWithCache(
+export async function runIngestOperationWithCache(
 	context: string,
 	studioId: StudioId,
 	rundownExternalId: string,
@@ -126,7 +126,7 @@ export function runIngestOperationWithCache(
  * @param fcn Function to run while holding the lock
  * @param playlistLock If the playlist lock is already held, supply it here to avoid trying to reaquire the lock
  */
-export function runIngestOperationFromRundown(
+export async function runIngestOperationFromRundown(
 	context: string,
 	refRundown: DBRundown,
 	fcn: (ingestCache: CacheForIngest) => Promise<void>
@@ -171,7 +171,11 @@ export function runIngestOperationFromRundown(
 	})
 }
 
-function ingestLockFunctionInner(context: string, rundownExternalId: string, fcn: () => Promise<void>): Promise<void> {
+async function ingestLockFunctionInner(
+	context: string,
+	rundownExternalId: string,
+	fcn: () => Promise<void>
+): Promise<void> {
 	return pushWorkToQueue(`rundown_ingest_${rundownExternalId}`, context, fcn)
 }
 

@@ -87,8 +87,11 @@ export async function runPlayoutOperationWithCache<T>(
 		tmpPlaylist = pl
 	}
 
-	return runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, playoutToStudioLockPriority(priority), (lock) =>
-		playoutLockFunctionInner(contextStr, lock, tmpPlaylist, priority, preInitFcn, fcn)
+	return runStudioOperationWithLock(
+		contextStr,
+		tmpPlaylist.studioId,
+		playoutToStudioLockPriority(priority),
+		async (lock) => playoutLockFunctionInner(contextStr, lock, tmpPlaylist, priority, preInitFcn, fcn)
 	)
 }
 
@@ -141,7 +144,7 @@ export async function runPlayoutOperationWithLock<T>(
  * @param rundownPlaylistId Id of the playlist to lock
  * @param fcn Function to run while holding the lock
  */
-export function runPlayoutOperationWithCacheFromStudioOperation<T>(
+export async function runPlayoutOperationWithCacheFromStudioOperation<T>(
 	context: string,
 	cacheOrLock: ReadOnlyCache<CacheForStudio> | ReadOnlyCache<CacheForPlayoutPreInit> | StudioLock | PlaylistLock, // Important to verify correct lock is held
 	tmpPlaylist: ReadonlyDeep<RundownPlaylist>,
@@ -181,7 +184,7 @@ export function runPlayoutOperationWithCacheFromStudioOperation<T>(
  * @param priority Priority of function execution
  * @param fcn Function to run while holding the lock
  */
-export function runPlayoutOperationWithLockFromStudioOperation<T>(
+export async function runPlayoutOperationWithLockFromStudioOperation<T>(
 	context: string,
 	studioCacheOrLock: StudioLock | ReadOnlyCache<CacheForStudio>,
 	tmpPlaylist: Pick<ReadonlyDeep<RundownPlaylist>, '_id' | 'studioId'>,

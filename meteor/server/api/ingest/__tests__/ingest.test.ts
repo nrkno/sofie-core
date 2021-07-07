@@ -1284,7 +1284,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			await Promise.all(
 				RundownPlaylists.find()
 					.fetch()
-					.map((p) => removeRundownPlaylistFromDb(p))
+					.map(async (p) => removeRundownPlaylistFromDb(p))
 			)
 
 			const rundownData: IngestRundown = {
@@ -1418,7 +1418,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			await Promise.all(
 				RundownPlaylists.find()
 					.fetch()
-					.map((p) => removeRundownPlaylistFromDb(p))
+					.map(async (p) => removeRundownPlaylistFromDb(p))
 			)
 
 			const rundownData: IngestRundown = {

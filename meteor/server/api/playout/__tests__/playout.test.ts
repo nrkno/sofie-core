@@ -170,9 +170,9 @@ describe('Playout API', () => {
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 		expect(fixSnapshot(getRundown0())).toMatchSnapshot()
 
-		await expect(() =>
+		await expect(
 			ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
-		).rejects.toThrowError(/resetRundownPlaylist can only be run in rehearsal!/gi)
+		).rejects.toMatchToString(/resetRundownPlaylist can only be run in rehearsal!/gi)
 
 		// Deactivate rundown:
 		await ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
@@ -235,14 +235,14 @@ describe('Playout API', () => {
 			functionName: 'devicesMakeReady',
 		})
 
-		await expect(() =>
+		await expect(
 			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
-		).rejects.toThrowError(/cannot be run on an active/i)
+		).rejects.toMatchToString(/cannot be run on an active/i)
 
 		const { playlistId: playlistId1 } = setupDefaultRundownPlaylist(env)
-		await expect(() =>
+		await expect(
 			ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
-		).rejects.toThrowError(/only one [\w\s]+ can be active at the same time/i)
+		).rejects.toMatchToString(/only one [\w\s]+ can be active at the same time/i)
 	})
 	testInFiber(
 		'resetAndActivateRundownPlaylist, forceResetAndActivateRundownPlaylist & deactivateRundownPlaylist',
@@ -326,9 +326,9 @@ describe('Playout API', () => {
 			})
 
 			// Attempt to take the first Part of inactive playlist0, should throw
-			await expect(() =>
+			await expect(
 				ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
-			).rejects.toThrowError(/is not active/gi)
+			).rejects.toMatchToString(/is not active/gi)
 
 			// Take the first Part of active playlist1:
 			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
@@ -371,9 +371,9 @@ describe('Playout API', () => {
 			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
 			// should throw with 402 code, as resetting the rundown when active is forbidden, with default configuration
-			await expect(() =>
+			await expect(
 				ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1, false)
-			).rejects.toThrowError(/cannot be run when active/gi)
+			).rejects.toMatchToString(/cannot be run when active/gi)
 
 			await ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
@@ -475,14 +475,18 @@ describe('Playout API', () => {
 				// simulate TSR starting each piece
 				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstanceId)
 				expect(pieceInstances).toHaveLength(2)
-				pieceInstances.forEach((pieceInstance) =>
-					ServerPlayoutAPI.onPiecePlaybackStarted(
-						DEFAULT_CONTEXT,
-						playlistId0,
-						pieceInstance._id,
-						false,
-						(_.isNumber(pieceInstance.piece.enable.start) ? now + pieceInstance.piece.enable.start : now) +
-							Math.random() * TIME_RANDOM
+				await Promise.all(
+					pieceInstances.map(async (pieceInstance) =>
+						ServerPlayoutAPI.onPiecePlaybackStarted(
+							DEFAULT_CONTEXT,
+							playlistId0,
+							pieceInstance._id,
+							false,
+							(_.isNumber(pieceInstance.piece.enable.start)
+								? now + pieceInstance.piece.enable.start
+								: now) +
+								Math.random() * TIME_RANDOM
+						)
 					)
 				)
 			}
@@ -544,14 +548,18 @@ describe('Playout API', () => {
 				)
 				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId!)
 				expect(pieceInstances).toHaveLength(2)
-				pieceInstances.forEach((pieceInstance) =>
-					ServerPlayoutAPI.onPiecePlaybackStopped(
-						DEFAULT_CONTEXT,
-						playlistId0,
-						pieceInstance._id,
-						false,
-						(_.isNumber(pieceInstance.piece.enable.start) ? now + pieceInstance.piece.enable.start : now) +
-							Math.random() * TIME_RANDOM
+				await Promise.all(
+					pieceInstances.map(async (pieceInstance) =>
+						ServerPlayoutAPI.onPiecePlaybackStopped(
+							DEFAULT_CONTEXT,
+							playlistId0,
+							pieceInstance._id,
+							false,
+							(_.isNumber(pieceInstance.piece.enable.start)
+								? now + pieceInstance.piece.enable.start
+								: now) +
+								Math.random() * TIME_RANDOM
+						)
 					)
 				)
 

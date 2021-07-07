@@ -86,7 +86,7 @@ export namespace ServerPlayoutAPI {
 	 * Prepare the rundown for transmission
 	 * To be triggered well before the broadcast, since it may take time and cause outputs to flicker
 	 */
-	export function prepareRundownPlaylistForBroadcast(
+	export async function prepareRundownPlaylistForBroadcast(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId
 	): Promise<void> {
@@ -125,7 +125,7 @@ export namespace ServerPlayoutAPI {
 	 * Reset the broadcast, to be used during testing.
 	 * The User might have run through the rundown and wants to start over and try again
 	 */
-	export function resetRundownPlaylist(
+	export async function resetRundownPlaylist(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId
 	): Promise<void> {
@@ -153,7 +153,7 @@ export namespace ServerPlayoutAPI {
 	 * Activate the rundown, final preparations before going on air
 	 * To be triggered by the User a short while before going on air
 	 */
-	export function resetAndActivateRundownPlaylist(
+	export async function resetAndActivateRundownPlaylist(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal?: boolean
@@ -180,7 +180,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Activate the rundownPlaylist, decativate any other running rundowns
 	 */
-	export function forceResetAndActivateRundownPlaylist(
+	export async function forceResetAndActivateRundownPlaylist(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal: boolean
@@ -202,7 +202,7 @@ export namespace ServerPlayoutAPI {
 					const errors: any[] = []
 					// Try deactivating everything in parallel, although there should only ever be one active
 					await Promise.allSettled(
-						anyOtherActivePlaylists.map((otherRundownPlaylist) =>
+						anyOtherActivePlaylists.map(async (otherRundownPlaylist) =>
 							runPlayoutOperationWithCacheFromStudioOperation(
 								'forceResetAndActivateRundownPlaylist',
 								cache,
@@ -243,7 +243,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Only activate the rundown, don't reset anything
 	 */
-	export function activateRundownPlaylist(
+	export async function activateRundownPlaylist(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal: boolean
@@ -265,7 +265,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Deactivate the rundown
 	 */
-	export function deactivateRundownPlaylist(
+	export async function deactivateRundownPlaylist(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId
 	): Promise<void> {
@@ -285,7 +285,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Take the currently Next:ed Part (start playing it)
 	 */
-	export function takeNextPart(
+	export async function takeNextPart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>> {
@@ -305,7 +305,7 @@ export namespace ServerPlayoutAPI {
 		)
 	}
 
-	export function setNextPart(
+	export async function setNextPart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		nextPartId: PartId | null,
@@ -362,7 +362,7 @@ export namespace ServerPlayoutAPI {
 		// update lookahead and the next part when we have an auto-next
 		waitForPromise(updateTimeline(cache))
 	}
-	export function moveNextPart(
+	export async function moveNextPart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partDelta: number,
@@ -489,7 +489,7 @@ export namespace ServerPlayoutAPI {
 			throw new Meteor.Error(500, `Missing delta to move by!`)
 		}
 	}
-	export function setNextSegment(
+	export async function setNextSegment(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		nextSegmentId: SegmentId | null
@@ -523,7 +523,7 @@ export namespace ServerPlayoutAPI {
 			}
 		)
 	}
-	export function activateHold(
+	export async function activateHold(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId
 	): Promise<void> {
@@ -582,7 +582,7 @@ export namespace ServerPlayoutAPI {
 			}
 		)
 	}
-	export function deactivateHold(
+	export async function deactivateHold(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId
 	): Promise<void> {
@@ -607,7 +607,7 @@ export namespace ServerPlayoutAPI {
 			}
 		)
 	}
-	export function disableNextPiece(
+	export async function disableNextPiece(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		undo?: boolean
@@ -727,7 +727,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Triggered from Playout-gateway when a Piece has started playing
 	 */
-	export function onPiecePlaybackStarted(
+	export async function onPiecePlaybackStarted(
 		_context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
 		pieceInstanceId: PieceInstanceId,
@@ -780,7 +780,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Triggered from Playout-gateway when a Piece has stopped playing
 	 */
-	export function onPiecePlaybackStopped(
+	export async function onPiecePlaybackStopped(
 		_context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
 		pieceInstanceId: PieceInstanceId,
@@ -833,7 +833,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Triggered from Playout-gateway when a Part has started playing
 	 */
-	export function onPartPlaybackStarted(
+	export async function onPartPlaybackStarted(
 		_context: MethodContext,
 		peripheralDevice: PeripheralDevice,
 		rundownPlaylistId: RundownPlaylistId,
@@ -989,7 +989,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Triggered from Playout-gateway when a Part has stopped playing
 	 */
-	export function onPartPlaybackStopped(
+	export async function onPartPlaybackStopped(
 		_context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -1042,7 +1042,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Make a copy of a piece and start playing it now
 	 */
-	export function pieceTakeNow(
+	export async function pieceTakeNow(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -1059,7 +1059,7 @@ export namespace ServerPlayoutAPI {
 			pieceInstanceIdOrPieceIdToCopy
 		)
 	}
-	export function segmentAdLibPieceStart(
+	export async function segmentAdLibPieceStart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -1078,7 +1078,7 @@ export namespace ServerPlayoutAPI {
 			queue
 		)
 	}
-	export function rundownBaselineAdLibPieceStart(
+	export async function rundownBaselineAdLibPieceStart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -1097,7 +1097,7 @@ export namespace ServerPlayoutAPI {
 			queue
 		)
 	}
-	export function sourceLayerStickyPieceStart(
+	export async function sourceLayerStickyPieceStart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		sourceLayerId: string
@@ -1107,7 +1107,7 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.sourceLayerStickyPieceStart(access, rundownPlaylistId, sourceLayerId)
 	}
-	export function executeAction(
+	export async function executeAction(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
@@ -1134,7 +1134,7 @@ export namespace ServerPlayoutAPI {
 		})
 	}
 
-	export function executeActionInner(
+	export async function executeActionInner(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		func: (
@@ -1218,7 +1218,7 @@ export namespace ServerPlayoutAPI {
 	export async function callTakeWithCache(cache: CacheForPlayout, now: number) {
 		return takeNextPartInnerSync(cache, now)
 	}
-	export function sourceLayerOnPartStop(
+	export async function sourceLayerOnPartStop(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -1272,7 +1272,7 @@ export namespace ServerPlayoutAPI {
 		)
 	}
 
-	export function updateStudioBaseline(context: MethodContext, studioId: StudioId): Promise<string | false> {
+	export async function updateStudioBaseline(context: MethodContext, studioId: StudioId): Promise<string | false> {
 		StudioContentWriteAccess.baseline(context, studioId)
 
 		check(studioId, String)
@@ -1294,7 +1294,10 @@ export namespace ServerPlayoutAPI {
 		)
 	}
 
-	export function shouldUpdateStudioBaseline(context: MethodContext, studioId: StudioId): Promise<string | false> {
+	export async function shouldUpdateStudioBaseline(
+		context: MethodContext,
+		studioId: StudioId
+	): Promise<string | false> {
 		StudioContentWriteAccess.baseline(context, studioId)
 
 		check(studioId, String)

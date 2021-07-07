@@ -100,7 +100,7 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 }
 
 class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownNotificationsAPI {
-	getSegmentPartNotes(rundownIds: RundownId[]): Promise<(PartNote & { rank: number })[]> {
+	async getSegmentPartNotes(rundownIds: RundownId[]): Promise<(PartNote & { rank: number })[]> {
 		triggerWriteAccessBecauseNoCheckNecessary()
 		rundownIds.forEach((rundownId) => {
 			if (!RundownReadAccess.rundownContent({ rundownId }, this)) {
@@ -109,7 +109,7 @@ class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownN
 		})
 		return makePromise(() => getSegmentPartNotes.apply(this, [rundownIds]))
 	}
-	getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
+	async getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 		triggerWriteAccessBecauseNoCheckNecessary()
 		rundownIds.forEach((rundownId) => {
 			if (!RundownReadAccess.rundownContent({ rundownId }, this)) {
