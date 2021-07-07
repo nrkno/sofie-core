@@ -52,7 +52,6 @@ function deepMatch (object: any, attrs: any, deep: boolean): boolean {
 	return true
 }
 
-import * as _ from 'underscore'
 import { MosHandler } from './mosHandler'
 import { DeviceConfig } from './connector'
 import { MOS_DEVICE_CONFIG_MANIFEST } from './configManifest'
@@ -475,25 +474,25 @@ export class CoreMosDeviceHandler {
 	 * @param o the object to convert
 	 */
 	private fixMosData (o: any): any {
-		if (_.isObject(o) && (o instanceof MosTime || o instanceof MosDuration || o instanceof MosString128)) {
+		if (typeof o === 'object' && (o instanceof MosTime || o instanceof MosDuration || o instanceof MosString128)) {
 			return o.toString()
 		}
-		if (_.isArray(o)) {
-			return _.map(o, (val) => {
+		if (Array.isArray(o)) {
+			return o.map((val) => {
 				return this.fixMosData(val)
 			})
-		} else if (_.isObject(o)) {
+		} else if (typeof o === 'object') {
 			let o2: any = {}
-			_.each(o, (val, key) => {
+			for (const [key, val] of Object.entries(o)) {
 				o2[key] = this.fixMosData(val)
-			})
+			}
 			return o2
 		} else {
 			return o
 		}
 	}
 	private _coreMosManipulate (method: string, ...attrs: Array<any>): Promise<any> {
-		attrs = _.map(attrs, (attr) => {
+		attrs = attrs.map((attr) => {
 			return this.fixMosData(attr)
 		})
 		// Make the commands be sent sequantially:

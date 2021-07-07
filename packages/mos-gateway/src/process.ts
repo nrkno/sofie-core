@@ -1,5 +1,4 @@
 import { LoggerInstance } from 'winston'
-import _ = require('underscore')
 import * as fs from 'fs'
 import { ProcessConfig } from './connector'
 
@@ -21,14 +20,14 @@ export class Process {
 		}
 		if (processConfig.certificates.length) {
 			this.logger.info(`Loading certificates...`)
-			_.each(processConfig.certificates, (certificate) => {
+			for (const certificate of processConfig.certificates) {
 				try {
 					this.certificates.push(fs.readFileSync(certificate))
 					this.logger.info(`Using certificate "${certificate}"`)
 				} catch (error) {
 					this.logger.error(`Error loading certificate "${certificate}"`, error)
 				}
-			})
+			}
 		}
 	}
 }

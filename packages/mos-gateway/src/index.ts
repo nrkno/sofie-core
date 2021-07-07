@@ -1,7 +1,6 @@
 
 import { Connector, Config } from './connector'
 import * as Winston from 'winston'
-import _ = require('underscore')
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -190,7 +189,7 @@ logger.debug(`Test debug logging`)
 let config: Config = {
 	process: {
 		unsafeSSL: unsafeSSL,
-		certificates: _.compact(certs)
+		certificates: certs.filter(cert => cert) // remove all falsy values
 	},
 	device: {
 		deviceId: deviceId,

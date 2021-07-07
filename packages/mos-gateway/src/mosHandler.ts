@@ -21,7 +21,6 @@ import {
 	MosDevice,
 	IMOSListMachInfo
 } from 'mos-connection'
-import * as _ from 'underscore'
 import * as Winston from 'winston'
 import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
 import { CollectionObj } from '@sofie-automation/server-core-integration'
@@ -376,7 +375,7 @@ export class MosHandler {
 				let devicesToAdd: {[id: string]: MosDeviceSettingsDevice} = {}
 				let devicesToRemove: {[id: string]: true} = {}
 
-				_.each(devices, (device, deviceId: string) => {
+				for (const [deviceId, device] of Object.entries(devices)) {
 					if (device) {
 
 						if (device.secondary) {
@@ -405,20 +404,21 @@ export class MosHandler {
 							}
 						}
 					}
-				})
+				}
 
-				_.each(this._ownMosDevices, (oldDevice: MosDevice, deviceId: string) => {
-					if (oldDevice && !devices[deviceId]) {
+				for (const deviceId of Object.keys(this._ownMosDevices)) {
+					if (!devices[deviceId]) {
 						this._logger.info('Un-initializing device: ' + deviceId)
 						devicesToRemove[deviceId] = true
 					}
-				})
+				}
 
-				return Promise.all(_.map(devicesToRemove, (_val, deviceId) => {
+				return Promise.all(Object.keys(devicesToRemove).map((deviceId) => {
 					return this._removeDevice(deviceId)
 				}))
 				.then(() => {
-					return Promise.all(_.map(devicesToAdd, (device, deviceId) => {
+					return Promise.all(Object.entries(devicesToAdd).map((o) => {
+						const [deviceId, device] = o
 						return this._addDevice(deviceId, device)
 					}))
 				})
