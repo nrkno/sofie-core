@@ -9,12 +9,8 @@ export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
 	name: string
 
-	/** Expected start should be set to the expected time this rundown playlist should run on air */
-	expectedStart?: Time
-	/** Expected duration of the rundown playlist */
-	expectedDuration?: number
-	/** Expected end time of the rundown playlist */
-	expectedEnd?: Time
+	/** Playlist timing information */
+	timing: RundownPlaylistTiming
 	/** Should the rundown playlist use out-of-order timing mode (unplayed content will be played eventually) as opposed to normal timing mode (unplayed content behind the OnAir line has been skipped) */
 	outOfOrderTiming?: boolean
 	/** Should the rundown playlist loop at the end */
@@ -22,6 +18,53 @@ export interface IBlueprintRundownPlaylistInfo {
 	/** Should time-of-day clocks be used instead of countdowns by default */
 	timeOfDayCountdowns?: boolean
 }
+
+export enum PlaylistTimingType {
+	None = 'none',
+	ForwardTime = 'forward_time',
+	BackTime = 'back_time',
+}
+
+export interface PlaylistTimingBase {
+	type: PlaylistTimingType
+}
+
+export interface PlaylistTimingNone {
+	type: PlaylistTimingType.None
+}
+
+export interface PlaylistTimingForwardTime extends PlaylistTimingBase {
+	type: PlaylistTimingType.ForwardTime
+	/** Expected start should be set to the expected time this rundown playlist should run on air */
+	expectedStart: Time
+	/** Expected duration of the rundown playlist
+	 *  If set, the over/under diff will be calculated based on this value. Otherwise it will be planned content duration - played out duration.
+	 */
+	expectedDuration?: number
+	/** Expected end time of the rundown playlist
+	 *  In this timing mode this is only for display before the show starts as an "expected" end time,
+	 *  during the show this display value will be calculated from expected start + remaining playlist duration.
+	 *  If this is not set, `expectedDuration` will be used (if set) in addition to expectedStart.
+	 */
+	expectedEnd?: Time
+}
+
+export interface PlaylistTimingBackTime extends PlaylistTimingBase {
+	type: PlaylistTimingType.BackTime
+	/** Expected start should be set to the expected time this rundown playlist should run on air
+	 *  In this timing mode this is only for display before the show starts as an "expected" start time,
+	 *  during the show this display will be set to when the show actually started.
+	 */
+	expectedStart?: Time
+	/** Expected duration of the rundown playlist
+	 *  If set, the over/under diff will be calculated based on this value. Otherwise it will be planned content duration - played out duration.
+	 */
+	expectedDuration?: number
+	/** Expected end time of the rundown playlist */
+	expectedEnd: Time
+}
+
+export type RundownPlaylistTiming = PlaylistTimingNone | PlaylistTimingForwardTime | PlaylistTimingBackTime
 
 /** The Rundown generated from Blueprint */
 export interface IBlueprintRundown<TMetadata = unknown> {

@@ -1,3 +1,10 @@
+import {
+	PlaylistTimingBackTime,
+	PlaylistTimingForwardTime,
+	PlaylistTimingNone,
+	PlaylistTimingType,
+	RundownPlaylistTiming,
+} from '@sofie-automation/blueprints-integration'
 import { Tracker } from 'meteor/tracker'
 import _ from 'underscore'
 import { memoizedIsolatedAutorun } from '../../client/lib/reactiveData/reactiveDataHelper'
@@ -529,4 +536,45 @@ export function computeSegmentDuration(
 			(display ? Settings.defaultDisplayDuration : 0)
 		return memo + partDuration
 	}, 0)
+}
+
+export namespace PlaylistTiming {
+	export function isPlaylistTimingNone(timing: RundownPlaylistTiming): timing is PlaylistTimingNone {
+		return timing.type === PlaylistTimingType.None
+	}
+
+	export function isPlaylistTimingForwardTime(timing: RundownPlaylistTiming): timing is PlaylistTimingForwardTime {
+		return timing.type === PlaylistTimingType.ForwardTime
+	}
+
+	export function isPlaylistTimingBackTime(timing: RundownPlaylistTiming): timing is PlaylistTimingBackTime {
+		return timing.type === PlaylistTimingType.BackTime
+	}
+
+	export function getExpectedStart(timing: RundownPlaylistTiming): number | undefined {
+		return PlaylistTiming.isPlaylistTimingForwardTime(timing)
+			? timing.expectedStart
+			: PlaylistTiming.isPlaylistTimingBackTime(timing)
+			? // Use expectedStart if present, otherwise try to calculate from expectedEnd - expectedDuration
+			  timing.expectedStart ||
+			  (timing.expectedDuration ? timing.expectedEnd - timing.expectedDuration : undefined)
+			: undefined
+	}
+
+	export function getExpectedEnd(timing: RundownPlaylistTiming): number | undefined {
+		return PlaylistTiming.isPlaylistTimingBackTime(timing)
+			? timing.expectedEnd
+			: PlaylistTiming.isPlaylistTimingForwardTime(timing)
+			? timing.expectedEnd ||
+			  (timing.expectedDuration ? timing.expectedStart + timing.expectedDuration : undefined)
+			: undefined
+	}
+
+	export function getExpectedDuration(timing: RundownPlaylistTiming): number | undefined {
+		return PlaylistTiming.isPlaylistTimingForwardTime(timing)
+			? timing.expectedDuration
+			: PlaylistTiming.isPlaylistTimingBackTime(timing)
+			? timing.expectedDuration
+			: undefined
+	}
 }
