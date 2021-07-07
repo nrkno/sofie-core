@@ -4,7 +4,7 @@ import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { ExpectedPackageId, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
-import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackageStatusAPI, PackageInfo } from '@sofie-automation/blueprints-integration'
 import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
@@ -17,14 +17,9 @@ import {
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageId,
 } from '../../../lib/collections/PackageContainerPackageStatus'
-import {
-	getPackageInfoId,
-	PackageInfoBase,
-	PackageInfoDB,
-	PackageInfoDBType,
-	PackageInfos,
-} from '../../../lib/collections/PackageInfos'
+import { getPackageInfoId, PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
 import { BulkWriteOperation } from 'mongodb'
+import { onUpdatedPackageInfo } from '../ingest/packageInfo'
 
 export namespace PackageManagerIntegration {
 	export async function updateExpectedPackageWorkStatuses(
@@ -250,7 +245,7 @@ export namespace PackageManagerIntegration {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		type: PackageInfoDBType, // string
+		type: PackageInfo.Type, // string
 		packageId: ExpectedPackageId,
 		expectedContentVersionHash: string,
 		actualContentVersionHash: string,
@@ -264,22 +259,25 @@ export namespace PackageManagerIntegration {
 
 		const id = getPackageInfoId(packageId, type)
 
+		const doc: PackageInfoDB = {
+			_id: id,
+
+			packageId: packageId,
+			expectedContentVersionHash: expectedContentVersionHash,
+			actualContentVersionHash: actualContentVersionHash,
+
+			studioId: peripheralDevice.studioId,
+
+			deviceId: peripheralDevice._id,
+
+			type: type,
+			payload: payload,
+		}
 		await PackageInfos.upsertAsync(id, {
-			$set: literal<PackageInfoBase>({
-				_id: id,
-
-				packageId: packageId,
-				expectedContentVersionHash: expectedContentVersionHash,
-				actualContentVersionHash: actualContentVersionHash,
-
-				studioId: peripheralDevice.studioId,
-
-				deviceId: peripheralDevice._id,
-
-				type: type,
-				payload: payload,
-			}) as PackageInfoDB,
+			$set: doc,
 		})
+
+		onUpdatedPackageInfo(packageId, doc)
 	}
 	export async function removePackageInfo(
 		context: MethodContext,
@@ -297,5 +295,7 @@ export namespace PackageManagerIntegration {
 		const id = getPackageInfoId(packageId, type)
 
 		await PackageInfos.removeAsync(id)
+
+		onUpdatedPackageInfo(packageId, null) // ?
 	}
 }

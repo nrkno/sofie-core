@@ -2576,7 +2576,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									<ErrorBoundary>
 										{this.state.studioMode && !Settings.disableBlurBorder && (
 											<KeyboardFocusIndicator>
-												<div className="rundown-view__focus-lost-frame"></div>
+												<div
+													className={ClassNames('rundown-view__focus-lost-frame', {
+														'rundown-view__focus-lost-frame--reduce-animation': Meteor.isDevelopment,
+													})}
+												></div>
 											</KeyboardFocusIndicator>
 										)}
 									</ErrorBoundary>

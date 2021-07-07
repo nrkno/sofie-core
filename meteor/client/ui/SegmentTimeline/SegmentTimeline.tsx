@@ -1022,6 +1022,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							partId={countdownToPartId}
 							hideOnZero={!useTimeOfDayCountdowns}
 							useWallClock={useTimeOfDayCountdowns}
+							playlist={this.props.playlist}
 							label={
 								useTimeOfDayCountdowns ? (
 									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>

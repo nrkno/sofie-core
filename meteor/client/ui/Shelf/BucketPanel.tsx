@@ -504,6 +504,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								MeteorCall.userAction.executeAction(
 									e,
 									this.props.playlist._id,
+									bucketAction.adlibAction._id,
 									bucketAction.adlibAction.actionId,
 									bucketAction.adlibAction.userData,
 									mode?.data

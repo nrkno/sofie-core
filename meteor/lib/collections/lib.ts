@@ -120,7 +120,8 @@ class WrappedTransformedCollection<Class extends DBInterface, DBInterface extend
 	}
 
 	private wrapMongoError(e: any): never {
-		throw new Meteor.Error((e && e.error) || 500, (e && e.reason) || e.toString() || e || 'Unknown MongoDB Error')
+		const str = (e && e.reason) || e.toString() || e || 'Unknown MongoDB Error'
+		throw new Meteor.Error((e && e.error) || 500, `Collection "${this.name}": ${str}`)
 	}
 
 	allow(...args: Parameters<TransformedCollection<Class, DBInterface>['allow']>): boolean {

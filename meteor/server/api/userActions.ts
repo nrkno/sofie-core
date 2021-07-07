@@ -53,6 +53,7 @@ import { PackageManagerAPI } from './packageManager'
 import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from './rundownPlaylist'
 import { getShowStyleCompound } from './showStyles'
+import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
 import { SnapshotId } from '../../lib/collections/Snapshots'
 
 let MINIMUM_TAKE_SPAN = 1000
@@ -455,11 +456,13 @@ export async function pieceSetInOutPoints(
 export async function executeAction(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
+	actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 	actionId: string,
 	userData: any,
 	triggerMode?: string
 ): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
+	check(actionDocId, String)
 	check(actionId, String)
 	check(userData, Match.Any)
 	check(triggerMode, Match.Maybe(String))
@@ -473,7 +476,7 @@ export async function executeAction(
 		return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
 
 	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.executeAction(access, rundownPlaylistId, actionId, userData, triggerMode)
+		await ServerPlayoutAPI.executeAction(access, rundownPlaylistId, actionDocId, actionId, userData, triggerMode)
 	)
 }
 export async function segmentAdLibPieceStart(
@@ -989,6 +992,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	async executeAction(
 		_userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
+		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
@@ -998,6 +1002,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			executeAction,
 			this,
 			rundownPlaylistId,
+			actionDocId,
 			actionId,
 			userData,
 			triggerMode

@@ -145,7 +145,6 @@ export const SourceLayerItem = withTranslation()(
 								(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration) *
 								this.props.timeScale
 
-							// || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0)
 							const styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
@@ -410,21 +409,7 @@ export const SourceLayerItem = withTranslation()(
 		private onResize = (entries: ResizeObserverEntry[]) => {
 			const firstEntry = entries && entries[0]
 
-			if (firstEntry && firstEntry.contentBoxSize && firstEntry.contentBoxSize.width) {
-				const width = firstEntry.contentBoxSize!.width
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
-			} else if (firstEntry && firstEntry.borderBoxSize && firstEntry.borderBoxSize.width) {
-				const width = firstEntry.borderBoxSize!.width
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
-			} else if (firstEntry && firstEntry.contentRect && firstEntry.contentRect.width) {
+			if (firstEntry && firstEntry.contentRect && firstEntry.contentRect.width) {
 				const width = firstEntry.contentRect!.width
 				if (this.state.elementWidth !== width) {
 					this.setState({

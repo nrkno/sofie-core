@@ -197,7 +197,7 @@ export const MicSourceRenderer = withTranslation()(
 							>
 								<span className="segment-timeline__piece__label last-words">{end}</span>
 								{this.renderInfiniteIcon()}
-								{this.renderOverflowTimeLabel()}
+								{/* this.renderOverflowTimeLabel() */}
 							</span>
 						</>
 					)}

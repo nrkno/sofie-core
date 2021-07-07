@@ -440,6 +440,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						MeteorCall.userAction.executeAction(
 							e,
 							this.props.playlist._id,
+							action._id,
 							action.actionId,
 							action.userData,
 							mode?.data
@@ -517,7 +518,13 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					if (piece.isAction && piece.adlibAction) {
 						const action = piece.adlibAction
 						doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-							MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
+							MeteorCall.userAction.executeAction(
+								e,
+								this.props.playlist._id,
+								action._id,
+								action.actionId,
+								action.userData
+							)
 						)
 					} else if (!piece.isGlobal) {
 						doUserAction(t, e, UserAction.START_ADLIB, (e) =>
@@ -597,7 +604,9 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						style={dashboardElementPosition(filter)}
 					>
 						<h4 className="dashboard-panel__header">{this.props.filter.name}</h4>
-						{filter.enableSearch && <AdLibPanelToolbar onFilterChange={this.onFilterChange} />}
+						{filter.enableSearch && (
+							<AdLibPanelToolbar onFilterChange={this.onFilterChange} searchFilter={this.state.searchFilter} />
+						)}
 						<div
 							className={ClassNames('dashboard-panel__panel', {
 								'dashboard-panel__panel--horizontal': filter.overflowHorizontally,
