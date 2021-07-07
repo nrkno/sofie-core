@@ -536,15 +536,17 @@ const NextBreakTiming = withTranslation()(
 					return null
 				}
 
+				const expectedEnd = PlaylistTiming.getExpectedEnd(breakRundown.timing)
+
 				return (
 					<React.Fragment>
 						<span className="timing-clock plan-end right">
 							<span className="timing-clock-label right">{this.props.breakText ?? t('Next Break')}</span>
-							<Moment interval={0} format="HH:mm:ss" date={breakRundown.expectedEnd} />
+							<Moment interval={0} format="HH:mm:ss" date={expectedEnd} />
 						</span>
-						{!this.props.loop && breakRundown.expectedEnd ? (
+						{!this.props.loop && expectedEnd ? (
 							<span className="timing-clock countdown plan-end right">
-								{RundownUtils.formatDiffToTimecode(getCurrentTime() - breakRundown.expectedEnd, true, true, true)}
+								{RundownUtils.formatDiffToTimecode(getCurrentTime() - expectedEnd, true, true, true)}
 							</span>
 						) : null}
 						{accumulatedExpectedDurations ? (
