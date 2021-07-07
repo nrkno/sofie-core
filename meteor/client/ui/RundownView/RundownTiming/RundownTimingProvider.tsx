@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
-import * as _ from 'underscore'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Part, PartId } from '../../../../lib/collections/Parts'
 import { getCurrentTime } from '../../../../lib/lib'

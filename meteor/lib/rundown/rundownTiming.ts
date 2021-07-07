@@ -420,7 +420,7 @@ export class RundownTimingCalculator {
 		orderedRundowns: Rundown[],
 		currentRundown: Rundown | undefined
 	): BreakProps | undefined {
-		let currentState = orderedRundowns.map((r) => r.endOfRundownIsShowBreak ?? '_').join('')
+		const currentState = orderedRundowns.map((r) => r.endOfRundownIsShowBreak ?? '_').join('')
 		if (this.breakProps.comp && this.breakProps.state !== currentState) {
 			this.breakProps.comp.invalidate()
 		}

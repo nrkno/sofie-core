@@ -37,7 +37,7 @@ export enum RundownLayoutsAPIMethods {
 	'createRundownLayout' = 'rundownLayout.createRundownLayout',
 }
 
-export interface LayoutDescriptor<T extends RundownLayoutBase> {
+export interface LayoutDescriptor<_T extends RundownLayoutBase> {
 	supportedFilters?: RundownLayoutElementType[]
 	filtersTitle?: string // e.g. tabs/panels
 }
