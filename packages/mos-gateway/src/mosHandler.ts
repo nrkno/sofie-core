@@ -23,7 +23,7 @@ import {
 } from 'mos-connection'
 import * as Winston from 'winston'
 import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
-import { CollectionObj } from '@sofie-automation/server-core-integration'
+import { CollectionObj, PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { literal } from './lib'
 
 // export interface MosOptions {
@@ -159,9 +159,16 @@ export class MosHandler {
 			clearTimeout(this._triggerupdateDevicesTimeout)
 		}
 		this._triggerupdateDevicesTimeout = setTimeout(() => {
-			this._updateDevices().catch((e) => {
-				this._logger.error(e)
-			})
+			this._updateDevices()
+				.then(() => {
+					this._coreHandler.setStatus(PeripheralDeviceAPI.StatusCode.GOOD, [])
+				})
+				.catch((e) => {
+					this._coreHandler.setStatus(PeripheralDeviceAPI.StatusCode.BAD, [
+						`Error when initializing devices: ${e}`,
+					])
+					this._logger.error(e)
+				})
 		}, 20)
 	}
 	private async _initMosConnection(): Promise<void> {

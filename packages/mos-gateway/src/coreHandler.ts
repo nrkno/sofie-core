@@ -646,6 +646,14 @@ export class CoreHandler {
 
 		this.setupObserverForPeripheralDeviceCommands(this)
 	}
+	setStatus(statusCode: P.StatusCode, messages: Array<string> = []): void {
+		this.core
+			.setStatus({
+				statusCode: statusCode,
+				messages: messages,
+			})
+			.catch((e) => this.logger.warn('Error when setting status:' + e.toString()))
+	}
 	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreMosDeviceHandler): void {
 		if (cmd) {
 			if (this._executedFunctions[cmd._id]) return // prevent it from running multiple times
