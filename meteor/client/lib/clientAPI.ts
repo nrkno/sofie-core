@@ -27,7 +27,7 @@ export namespace PeripheralDevicesAPI {
 	): Promise<any> {
 		return callPeripheralDeviceFunction(e, dev._id, undefined, 'killProcess', 1)
 	}
-	export function troubleshootDevice(
+	export async function troubleshootDevice(
 		dev: Pick<PeripheralDevice, '_id'>,
 		e: Event | React.SyntheticEvent<object>
 	): Promise<any> {
