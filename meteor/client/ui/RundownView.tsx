@@ -1326,7 +1326,7 @@ interface IState {
 	isClipTrimmerOpen: boolean
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
 	shelfLayout: RundownLayoutShelfBase | undefined
-	rundownViewLayout: RundownLayoutBase | undefined
+	rundownViewLayout: RundownViewLayout | undefined
 	rundownHeaderLayout: RundownLayoutRundownHeader | undefined
 	miniShelfLayout: RundownLayoutShelfBase | undefined
 	currentRundown: Rundown | undefined
@@ -1552,7 +1552,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		static getDerivedStateFromProps(props: Translated<IProps & ITrackedProps>): Partial<IState> {
 			let selectedShelfLayout: RundownLayoutBase | undefined = undefined
-			let selectedViewLayout: RundownLayoutBase | undefined = undefined
+			let selectedViewLayout: RundownViewLayout | undefined = undefined
 			let selectedHeaderLayout: RundownLayoutBase | undefined = undefined
 			let selectedMiniShelfLayout: RundownLayoutBase | undefined = undefined
 
@@ -1563,7 +1563,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 
 				if (props.rundownViewLayoutId) {
-					selectedViewLayout = props.rundownLayouts.find((i) => i._id === props.rundownViewLayoutId)
+					selectedViewLayout = props.rundownLayouts.find(
+						(i) => i._id === props.rundownViewLayoutId && RundownLayoutsAPI.isRundownViewLayout(i)
+					) as RundownViewLayout
 				}
 
 				if (props.rundownHeaderLayoutId) {
@@ -1583,8 +1585,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				if (props.rundownViewLayoutId && !selectedViewLayout) {
 					selectedViewLayout = props.rundownLayouts.find(
-						(i) => i.name.indexOf(unprotectString(props.rundownViewLayoutId!)) >= 0
-					)
+						(i) =>
+							i.name.indexOf(unprotectString(props.rundownViewLayoutId!)) >= 0 &&
+							RundownLayoutsAPI.isRundownViewLayout(i)
+					) as RundownViewLayout
 				}
 
 				if (props.rundownHeaderLayoutId && !selectedHeaderLayout) {
@@ -1626,7 +1630,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 
 				if (!selectedViewLayout) {
-					selectedViewLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownView(i))
+					selectedViewLayout = props.rundownLayouts.find((i) =>
+						RundownLayoutsAPI.IsLayoutForRundownView(i)
+					) as RundownViewLayout
 				}
 
 				if (!selectedHeaderLayout) {
@@ -2296,6 +2302,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 													studio={this.props.studio}
 													showStyleBase={this.props.showStyleBase}
 													followLiveSegments={this.state.followLiveSegments}
+													rundownViewLayout={this.state.rundownViewLayout}
 													rundownId={rundownAndSegments.rundown._id}
 													segmentId={segment._id}
 													playlist={this.props.playlist}

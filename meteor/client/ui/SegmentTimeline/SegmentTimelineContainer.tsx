@@ -47,6 +47,8 @@ import { computeSegmentDuration, PlaylistTiming, RundownTimingContext } from '..
 import { SegmentTimelinePartClass } from './SegmentTimelinePart'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { RundownViewLayout } from '../../../lib/collections/RundownLayouts'
+import { getIsFilterActive } from '../../lib/rundownLayouts'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 3500
@@ -111,6 +113,7 @@ interface IProps {
 	isLastSegment: boolean
 	ownCurrentPartInstance: PartInstance | undefined
 	ownNextPartInstance: PartInstance | undefined
+	rundownViewLayout: RundownViewLayout | undefined
 }
 interface IState {
 	scrollLeft: number
@@ -137,6 +140,7 @@ interface ITrackedProps {
 	hasGuestItems: boolean
 	hasAlreadyPlayed: boolean
 	lastValidPartIndex: number | undefined
+	displayLiveLineCounter: boolean
 }
 export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITrackedProps>(
 	(props: IProps) => {
@@ -152,6 +156,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				hasGuestItems: false,
 				hasAlreadyPlayed: false,
 				lastValidPartIndex: undefined,
+				displayLiveLineCounter: true,
 			}
 		}
 
@@ -257,6 +262,12 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
+		let displayLiveLineCounter: boolean = true
+		if (props.rundownViewLayout && props.rundownViewLayout.liveLineProps?.activeLayerIds) {
+			let { active } = getIsFilterActive(props.playlist, props.rundownViewLayout.liveLineProps)
+			displayLiveLineCounter = active
+		}
+
 		return {
 			segmentui: o.segmentExtended,
 			parts: o.parts,
@@ -265,6 +276,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			hasRemoteItems: o.hasRemoteItems,
 			hasGuestItems: o.hasGuestItems,
 			lastValidPartIndex,
+			displayLiveLineCounter,
 		}
 	},
 	(data: ITrackedProps, props: IProps, nextProps: IProps): boolean => {
@@ -927,6 +939,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						followLiveLine={this.state.followLiveLine}
 						liveLineHistorySize={LIVELINE_HISTORY_SIZE}
 						livePosition={this.state.livePosition}
+						displayLiveLineCounter={this.props.displayLiveLineCounter}
 						onContextMenu={this.props.onContextMenu}
 						onFollowLiveLine={this.onFollowLiveLine}
 						onShowEntireSegment={this.onShowEntireSegment}
