@@ -33,7 +33,6 @@ export function createRundownLayout(
 			name,
 			showStyleBaseId,
 			blueprintId,
-			filters: [],
 			type,
 			userId,
 			icon: '',
@@ -70,7 +69,6 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 		const layout = JSON.parse(body) as RundownLayoutBase
 		check(layout._id, Match.Optional(String))
 		check(layout.name, String)
-		check(layout.filters, Array)
 		check(layout.type, String)
 
 		layout.showStyleBaseId = showStyleBase._id
