@@ -5,9 +5,7 @@ import {
 	PlaylistTimingType,
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
-import { Tracker } from 'meteor/tracker'
 import _ from 'underscore'
-import { memoizedIsolatedAutorun } from '../../client/lib/reactiveData/reactiveDataHelper'
 import {
 	findPartInstanceInMapOrWrapToTemporary,
 	PartInstance,
@@ -41,10 +39,9 @@ export class RundownTimingCalculator {
 	private partDisplayDurationsNoPlayback: Record<string, number> = {}
 	private displayDurationGroups: Record<string, number> = {}
 	private breakProps: {
-		comp: Tracker.Computation | undefined
 		props: BreakProps | undefined
 		state: string | undefined
-	} = { comp: undefined, props: undefined, state: undefined }
+	} = { props: undefined, state: undefined }
 
 	updateDurations(
 		now: number,
@@ -421,46 +418,39 @@ export class RundownTimingCalculator {
 		currentRundown: Rundown | undefined
 	): BreakProps | undefined {
 		const currentState = orderedRundowns.map((r) => r.endOfRundownIsShowBreak ?? '_').join('')
-		if (this.breakProps.comp && this.breakProps.state !== currentState) {
-			this.breakProps.comp.invalidate()
-		}
-
-		if (!this.breakProps.comp) {
-			this.breakProps.comp = Tracker.autorun(() => {
-				memoizedIsolatedAutorun(
-					(orderedRundowns, currentRundown) => {
-						if (!currentRundown) {
-							this.breakProps.props = undefined
-						}
-
-						const currentRundownIndex = orderedRundowns.findIndex((r) => r._id === currentRundown._id)
-
-						if (currentRundownIndex === -1) {
-							this.breakProps.props = undefined
-						}
-
-						const nextBreakIndex = orderedRundowns.findIndex((rundown, index) => {
-							if (index < currentRundownIndex) {
-								return false
-							}
-
-							return rundown.endOfRundownIsShowBreak === true
-						})
-
-						this.breakProps.props = {
-							rundownsBeforeNextBreak: orderedRundowns.slice(currentRundownIndex, nextBreakIndex + 1),
-							breakIsLastRundown: nextBreakIndex === orderedRundowns.length,
-						}
-					},
-					'getRundownsBeforeNextBreak',
-					orderedRundowns,
-					currentRundown
-				)
-			})
+		if (this.breakProps.state !== currentState) {
+			this.recalculateBreaks(orderedRundowns, currentRundown)
 		}
 
 		this.breakProps.state = currentState
 		return this.breakProps.props
+	}
+
+	private recalculateBreaks(orderedRundowns: Rundown[], currentRundown: Rundown | undefined) {
+		if (!currentRundown) {
+			this.breakProps.props = undefined
+			return
+		}
+
+		const currentRundownIndex = orderedRundowns.findIndex((r) => r._id === currentRundown._id)
+
+		if (currentRundownIndex === -1) {
+			this.breakProps.props = undefined
+			return
+		}
+
+		const nextBreakIndex = orderedRundowns.findIndex((rundown, index) => {
+			if (index < currentRundownIndex) {
+				return false
+			}
+
+			return rundown.endOfRundownIsShowBreak === true
+		})
+
+		this.breakProps.props = {
+			rundownsBeforeNextBreak: orderedRundowns.slice(currentRundownIndex, nextBreakIndex + 1),
+			breakIsLastRundown: nextBreakIndex === orderedRundowns.length,
+		}
 	}
 }
 
