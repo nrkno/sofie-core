@@ -60,7 +60,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IPro
 			item: RundownLayoutBase,
 			tab: RundownLayoutFilterBase,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -276,7 +276,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IPro
 							collection={RundownLayouts}
 							className="mod mas"
 							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={(v) => undefined}
+							mutateUpdateValue={(_v) => undefined}
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
@@ -302,7 +302,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IPro
 							collection={RundownLayouts}
 							className="mod mas"
 							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={(v) => undefined}
+							mutateUpdateValue={(_v) => undefined}
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
@@ -329,7 +329,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IPro
 							collection={RundownLayouts}
 							className="mod mas"
 							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={(v) => undefined}
+							mutateUpdateValue={(_v) => undefined}
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
@@ -356,7 +356,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IPro
 								collection={RundownLayouts}
 								className="mod mas"
 								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-								mutateUpdateValue={(v) => undefined}
+								mutateUpdateValue={(_v) => undefined}
 							/>
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -384,7 +384,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IPro
 								collection={RundownLayouts}
 								className="mod mas"
 								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-								mutateUpdateValue={(v) => undefined}
+								mutateUpdateValue={(_v) => undefined}
 							/>
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -582,9 +582,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IPro
 
 		renderFrame(
 			item: RundownLayoutBase,
-			tab: RundownLayoutExternalFrame,
+			_tab: RundownLayoutExternalFrame,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -717,9 +717,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IPro
 
 		renderAdLibRegion(
 			item: RundownLayoutBase,
-			tab: RundownLayoutAdLibRegion,
+			_tab: RundownLayoutAdLibRegion,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -776,7 +776,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IPro
 								collection={RundownLayouts}
 								className="mod mas"
 								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-								mutateUpdateValue={(v) => undefined}
+								mutateUpdateValue={(_v) => undefined}
 							/>
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -885,9 +885,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IPro
 
 		renderPieceCountdown(
 			item: RundownLayoutBase,
-			tab: RundownLayoutPieceCountdown,
+			_tab: RundownLayoutPieceCountdown,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -916,7 +916,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IPro
 							collection={RundownLayouts}
 							className="mod mas"
 							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={(v) => undefined}
+							mutateUpdateValue={(_v) => undefined}
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
@@ -1002,7 +1002,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IPro
 				<div className="rundown-layout-editor-filter mod pan mas" key={this.props.filter._id}>
 					<button
 						className="action-btn right mod man pas"
-						onClick={(e) => this.onRemoveElement(this.props.item, this.props.filter)}
+						onClick={(_e) => this.onRemoveElement(this.props.item, this.props.filter)}
 					>
 						<FontAwesomeIcon icon={faTrash} />
 					</button>
@@ -1011,7 +1011,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((_props: IPro
 							className={ClassNames('action-btn right mod man pas', {
 								star: (this.props.filter as any).default,
 							})}
-							onClick={(e) =>
+							onClick={(_e) =>
 								this.onToggleDefault(
 									this.props.item as RundownLayout,
 									this.props.index,
