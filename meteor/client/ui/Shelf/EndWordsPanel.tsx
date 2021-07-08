@@ -6,13 +6,14 @@ import {
 	RundownLayoutEndWords,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition, getIsFilterActive, getUnfinishedPieceInstancesReactive } from './DashboardPanel'
-import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { dashboardElementPosition } from './DashboardPanel'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { GetScriptPreview } from '../scriptPreview'
+import { getIsFilterActive } from '../../lib/rundownLayouts'
 
 interface IEndsWordsPanelProps {
 	visible?: boolean

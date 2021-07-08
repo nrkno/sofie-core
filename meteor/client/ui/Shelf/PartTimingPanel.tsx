@@ -1,30 +1,20 @@
 import * as React from 'react'
-import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import {
 	DashboardLayoutPartCountDown,
-	DashboardLayoutSegmentCountDown,
 	RundownLayoutBase,
 	RundownLayoutPartTiming,
-	RundownLayoutSegmentTiming,
 } from '../../../lib/collections/RundownLayouts'
-import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownUtils } from '../../lib/rundown'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { Segment } from '../../../lib/collections/Segments'
-import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
-import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
-import { PartExtended } from '../../../lib/Rundown'
-import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
-import { Part, PartId } from '../../../lib/collections/Parts'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { dashboardElementPosition, getIsFilterActive } from './DashboardPanel'
+import { dashboardElementPosition } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { getAllowSpeaking } from '../../lib/localStorage'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { CurrentPartElapsed } from '../RundownView/RundownTiming/CurrentPartElapsed'
+import { getIsFilterActive } from '../../lib/rundownLayouts'
 
 interface IPartTimingPanelProps {
 	visible?: boolean

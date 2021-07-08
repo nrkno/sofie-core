@@ -16,8 +16,9 @@ import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveD
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { dashboardElementPosition, getIsFilterActive } from './DashboardPanel'
+import { dashboardElementPosition } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { getIsFilterActive } from '../../lib/rundownLayouts'
 
 interface ISegmentTimingPanelProps {
 	visible?: boolean

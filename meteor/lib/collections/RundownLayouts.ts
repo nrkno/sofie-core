@@ -71,7 +71,7 @@ export interface RundownLayoutElementBase {
  * @param requiredLayers Layers that must be active in addition to the active layers, i.e. "any of `activeLayerIds`, with at least one of `requiredLayers`".
  * @param requireAllSourcelayers Require all layers in `requiredLayers` to contain an active piece.
  */
-export interface FilterRequiresActiveLayers {
+export interface RequiresActiveLayers {
 	activeLayerIds?: string[]
 	requiredLayers?: string[]
 	/**
@@ -120,16 +120,16 @@ export interface RundownLayoutPlaylistEndTimer extends RundownLayoutElementBase 
 	hidePlannedEnd: boolean
 }
 
-export interface RundownLayoutEndWords extends RundownLayoutElementBase, FilterRequiresActiveLayers {
+export interface RundownLayoutEndWords extends RundownLayoutElementBase, RequiresActiveLayers {
 	type: RundownLayoutElementType.PLAYLIST_END_TIMER
 }
 
-export interface RundownLayoutSegmentTiming extends RundownLayoutElementBase, FilterRequiresActiveLayers {
+export interface RundownLayoutSegmentTiming extends RundownLayoutElementBase, RequiresActiveLayers {
 	type: RundownLayoutElementType.SEGMENT_TIMING
 	timingType: 'count_down' | 'count_up'
 }
 
-export interface RundownLayoutPartTiming extends RundownLayoutElementBase, FilterRequiresActiveLayers {
+export interface RundownLayoutPartTiming extends RundownLayoutElementBase, RequiresActiveLayers {
 	type: RundownLayoutElementType.PART_TIMING
 	timingType: 'count_down' | 'count_up'
 	speakCountDown: boolean
