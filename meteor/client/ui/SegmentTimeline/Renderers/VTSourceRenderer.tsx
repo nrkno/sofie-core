@@ -587,7 +587,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 										<span
 											className="segment-timeline__piece__scene-marker"
 											key={i}
-											style={{ left: ((i - seek) * this.props.timeScale).toString() + 'px' }}
+											style={{ left: Math.round((i - seek) * this.props.timeScale).toString() + 'px' }}
 										></span>
 									)
 							)}
@@ -600,10 +600,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 											className="segment-timeline__piece__anomaly-marker"
 											key={i.start}
 											style={{
-												left: ((i.start - seek) * this.props.timeScale).toString() + 'px',
+												left: Math.round((i.start - seek) * this.props.timeScale).toString() + 'px',
 												width:
-													(Math.min(itemDuration - i.start + seek, i.duration) * this.props.timeScale).toString() +
-													'px',
+													Math.round(
+														Math.min(itemDuration - i.start + seek, i.duration) * this.props.timeScale
+													).toString() + 'px',
 											}}
 										></span>
 									)
