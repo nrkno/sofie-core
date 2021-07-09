@@ -1,24 +1,13 @@
-import { getCurrentTime, Time, registerCollection } from '../lib'
+import { getCurrentTime, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { PeripheralDeviceCommandId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDeviceCommandId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { PeripheralDeviceCommandId }
 
-export interface PeripheralDeviceCommand {
-	_id: PeripheralDeviceCommandId
+import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
+export * from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 
-	deviceId: PeripheralDeviceId
-	functionName: string
-	args: Array<any>
-
-	hasReply: boolean
-	reply?: any
-	replyError?: any
-	replyTime?: number
-
-	time: Time // time
-}
 export const PeripheralDeviceCommands = createMongoCollection<PeripheralDeviceCommand, PeripheralDeviceCommand>(
 	'peripheralDeviceCommands'
 )

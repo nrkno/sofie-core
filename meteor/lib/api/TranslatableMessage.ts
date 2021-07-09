@@ -1,19 +1,11 @@
 import { TFunction } from 'i18next'
-import {
-	IBlueprintActionManifest,
-	ITranslatableMessage as IBlueprintTranslatableMessage,
-} from '@sofie-automation/blueprints-integration'
+import { IBlueprintActionManifest } from '@sofie-automation/blueprints-integration'
 import { ArrayElement, unprotectString } from '../lib'
 import { BlueprintId } from '../collections/Blueprints'
 import { BucketAdLibAction } from '../collections/BucketAdlibActions'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/lib'
 
-/**
- * @enum - A translatable message (i18next)
- */
-export interface ITranslatableMessage extends IBlueprintTranslatableMessage {
-	/** namespace used */
-	namespaces?: Array<string>
-}
+export { ITranslatableMessage }
 
 /**
  * Convenience function to translate a message using a supplied translation function.

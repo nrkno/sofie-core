@@ -1,6 +1,6 @@
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { protectString, unprotectString, literal } from '../../../lib/lib'
+import { protectString, unprotectString, literal, omit } from '../../../lib/lib'
 import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
@@ -301,7 +301,7 @@ export function postProcessBucketAction(
 	importVersions: RundownImportVersions
 ): BucketAdLibAction {
 	const action: BucketAdLibAction = {
-		...itemOrig,
+		...omit(itemOrig, 'partId'),
 		_id: protectString(
 			innerContext.getHashId(
 				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`

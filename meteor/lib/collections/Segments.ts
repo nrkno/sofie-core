@@ -1,29 +1,12 @@
-import { registerCollection, ProtectedStringProperties } from '../lib'
-import { IBlueprintSegmentDB } from '@sofie-automation/blueprints-integration'
-import { SegmentNote } from '../api/notes'
+import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { SegmentId }
 
-/** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
-export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB, '_id'> {
-	_id: SegmentId
-	/** Position inside rundown */
-	_rank: number
-	/** ID of the source object in the gateway */
-	externalId: string
-	/** Timestamp when the externalData was last modified */
-	externalModified: number
-	/** The rundown this segment belongs to */
-	rundownId: RundownId
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+export * from '@sofie-automation/corelib/dist/dataModel/Segment'
 
-	/** Is the segment in an unsynced state? */
-	orphaned?: 'deleted'
-
-	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
-	notes?: Array<SegmentNote>
-}
 export type Segment = DBSegment
 
 export const Segments = createMongoCollection<Segment, DBSegment>('segments')

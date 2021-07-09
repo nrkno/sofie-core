@@ -15,6 +15,7 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 
 // Legacy compatability
 export * from '@sofie-automation/corelib/dist/protectedString'
+export * from '@sofie-automation/corelib/dist/lib'
 
 const cloneOrg = require('fast-clone')
 
@@ -144,7 +145,6 @@ export function literal<T>(o: T) {
 export type Partial<T> = {
 	[P in keyof T]?: T[P]
 }
-export type ArrayElement<A> = A extends readonly (infer T)[] ? T : never
 export function partial<T>(o: Partial<T>) {
 	return o
 }
@@ -156,10 +156,6 @@ export function partialExceptId<T>(o: Partial<T> & IDObj) {
 }
 export interface ObjId {
 	_id: ProtectedString<any>
-}
-
-export function omit<T, P extends keyof T>(obj: T, ...props: P[]): Omit<T, P> {
-	return _.omit(obj, ...(props as string[]))
 }
 
 export function applyClassToDocument(docClass, document) {

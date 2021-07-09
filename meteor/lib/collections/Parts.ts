@@ -1,5 +1,5 @@
-import { applyClassToDocument, registerCollection, ProtectedStringProperties } from '../lib'
-import { IBlueprintPartDB, PartHoldMode } from '@sofie-automation/blueprints-integration'
+import { applyClassToDocument, registerCollection } from '../lib'
+import { PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { PartNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
@@ -7,30 +7,8 @@ import { ITranslatableMessage } from '../api/TranslatableMessage'
 import { PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { PartId }
 
-/** A "Line" in NRK Lingo. */
-export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
-	_id: PartId
-	/** Position inside the segment */
-	_rank: number
-
-	/** The rundown this line belongs to */
-	rundownId: RundownId
-	segmentId: SegmentId
-
-	status?: string
-
-	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
-	notes?: Array<PartNote>
-
-	/** Holds the user-facing explanation for why the part is invalid */
-	invalidReason?: {
-		message: ITranslatableMessage
-		color?: string
-	}
-
-	/** Human readable unqiue identifier of the part */
-	identifier?: string
-}
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+export * from '@sofie-automation/corelib/dist/dataModel/Part'
 
 export class Part implements DBPart {
 	// From IBlueprintPart:

@@ -1,21 +1,9 @@
 import * as _ from 'underscore'
-import {
-	applyClassToDocument,
-	registerCollection,
-	ProtectedStringProperties,
-	protectString,
-	unprotectString,
-} from '../lib'
-import {
-	IBlueprintPartInstance,
-	PartEndState,
-	Time,
-	IBlueprintPartInstanceTimings,
-} from '@sofie-automation/blueprints-integration'
+import { applyClassToDocument, registerCollection, protectString, unprotectString } from '../lib'
+import { PartEndState } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { DBPart, Part } from './Parts'
 import { registerIndex } from '../database'
-import { PartialDeep } from 'type-fest'
 import {
 	PartInstanceId,
 	SegmentPlayoutId,
@@ -26,63 +14,8 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { PartInstanceId, SegmentPlayoutId }
 
-export interface InternalIBlueprintPartInstance
-	extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
-	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>
-}
-
-export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance
-export function unprotectPartInstance(partInstance: PartInstance | undefined): IBlueprintPartInstance | undefined
-export function unprotectPartInstance(partInstance: PartInstance | undefined): IBlueprintPartInstance | undefined {
-	return partInstance as any
-}
-export function unprotectPartInstanceArray(partInstances: PartInstance[]): IBlueprintPartInstance[] {
-	return partInstances as any
-}
-export function protectPartInstance(partInstance: IBlueprintPartInstance): PartialDeep<PartInstance> {
-	return partInstance as any
-}
-
-export interface DBPartInstance extends InternalIBlueprintPartInstance {
-	_id: PartInstanceId
-	rundownId: RundownId
-	segmentId: SegmentId
-
-	/** The id of the playlist activation session */
-	playlistActivationId: RundownPlaylistActivationId
-	/** The id of the segment playout. This is unique for each session, and each time the segment is entered  */
-	segmentPlayoutId: SegmentPlayoutId
-
-	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
-	reset?: boolean
-
-	/** Rank of the take that this PartInstance belongs to */
-	takeCount: number
-
-	/** Whether this instance was created because of RundownPlaylist.nextSegmentId. This will cause it to clear that property as part of the take operation */
-	consumesNextSegmentId?: boolean
-
-	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
-	isTaken?: boolean
-
-	/** Playout timings, in here we log times when playout happens */
-	timings?: PartInstanceTimings
-
-	part: DBPart
-
-	/** The transition props as used when entering this PartInstance */
-	allowedToUseTransition?: boolean
-}
-
-export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {
-	/** The playback offset that was set for the last take */
-	playOffset?: Time
-	/**
-	 * The duration this part was playing for.
-	 * This is set when the next part has started playback
-	 */
-	duration?: Time
-}
+import { DBPartInstance, PartInstanceTimings } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+export * from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 
 export class PartInstance implements DBPartInstance {
 	// Temporary properties (never stored in DB):

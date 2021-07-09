@@ -22,9 +22,9 @@ import {
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { BlueprintResultBaseline, ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { BucketAdLibAction, BucketAdLibActionId, BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
+import { BucketAdLibAction, BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { Meteor } from 'meteor/meteor'
-import { BucketAdLib, BucketAdLibId, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
+import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
 import {
 	updateBaselineExpectedPlayoutItemsOnRundown,
@@ -42,6 +42,7 @@ import { CacheForStudio } from '../studio/cache'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
+import { BucketAdLibActionId, BucketAdLibId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	// @todo: this call is for backwards compatibility and soon to be removed

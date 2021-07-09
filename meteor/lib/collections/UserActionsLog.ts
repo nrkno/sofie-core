@@ -3,6 +3,7 @@ import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { UserActionsLogItemId, OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { UserActionsLogItemId }
+
 export interface UserActionsLogItem {
 	_id: UserActionsLogItemId
 

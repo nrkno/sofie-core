@@ -37,6 +37,7 @@ import {
 	RundownHoldState,
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 export { DBRundownPlaylist, ABSessionInfo }
+
 export class RundownPlaylist implements DBRundownPlaylist {
 	public _id: RundownPlaylistId
 	public externalId: string

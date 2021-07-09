@@ -20,6 +20,8 @@ export type AsRunLogEventId = ProtectedString<'AsRunLogEventId'>
 export type BlueprintId = ProtectedString<'BlueprintId'>
 
 export type BucketId = ProtectedString<'BucketId'>
+export type BucketAdLibId = PieceId
+export type BucketAdLibActionId = AdLibActionId
 
 /** A string, identifying a CoreSystem */
 export type CoreSystemId = ProtectedString<'CoreSystemId'>
@@ -36,6 +38,8 @@ export type ExpectedMediaItemId = ProtectedString<'ExpectedMediaItemId'>
  * @deprecated
  */
 export type ExpectedPlayoutItemId = ProtectedString<'ExpectedPlayoutItemId'>
+
+export type ExpectedPackageId = ProtectedString<'ExpectedPackageId'>
 
 /** A string, identifying a ExternalMessageQueueObj */
 export type ExternalMessageQueueObjId = ProtectedString<'ExternalMessageQueueObjId'>

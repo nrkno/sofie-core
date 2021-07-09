@@ -1,15 +1,21 @@
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
-import { registerCollection, ProtectedString, hashObj, assertNever, Time } from '../lib'
+import { registerCollection, hashObj, assertNever, Time } from '../lib'
 import { createMongoCollection } from './lib'
-import { RundownId } from './Rundowns'
-import { StudioId } from './Studios'
-import { PieceId } from './Pieces'
 import { registerIndex } from '../database'
-import { AdLibActionId } from './AdLibActions'
-import { BucketAdLibId } from './BucketAdlibs'
-import { BucketAdLibActionId } from './BucketAdlibActions'
-import { RundownBaselineAdLibActionId } from './RundownBaselineAdLibActions'
-import { SegmentId } from './Segments'
+
+import {
+	ExpectedPackageId,
+	RundownId,
+	StudioId,
+	SegmentId,
+	PieceId,
+	AdLibActionId,
+	BucketAdLibId,
+	BucketAdLibActionId,
+	RundownBaselineAdLibActionId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { ExpectedPackageId }
+
 /*
  Expected Packages are created from Pieces in the rundown.
  A "Package" is a generic term for a "thing that can be played", such as media files, audio, graphics etc..
@@ -18,8 +24,6 @@ import { SegmentId } from './Segments'
  Example: An ExpectedPackage could be a "Media file to be present on the location used by a playout device".
    The Package Manager will then copy the file to the right place.
 */
-
-export type ExpectedPackageId = ProtectedString<'ExpectedPackageId'>
 
 export type ExpectedPackageFromRundown =
 	| ExpectedPackageDBFromPiece

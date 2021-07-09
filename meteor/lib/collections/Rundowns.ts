@@ -1,10 +1,9 @@
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, registerCollection, ProtectedStringProperties } from '../lib'
+import { Time, applyClassToDocument, registerCollection } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { FindOptions, MongoQuery } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintRundownDB } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariantId, ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
@@ -24,60 +23,9 @@ export { RundownId }
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 export { RundownHoldState }
 
-export interface RundownImportVersions {
-	studio: string
-	showStyleBase: string
-	showStyleVariant: string
-	blueprint: string
+import { DBRundown, RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+export * from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
-	core: string
-}
-
-/** This is a very uncomplete mock-up of the Rundown object */
-export interface DBRundown
-	extends ProtectedStringProperties<IBlueprintRundownDB, '_id' | 'playlistId' | 'showStyleVariantId'> {
-	_id: RundownId
-	/** ID of the organization that owns the rundown */
-	organizationId: OrganizationId | null
-	/** The id of the Studio this rundown is in */
-	studioId: StudioId
-
-	/** The ShowStyleBase this Rundown uses (its the parent of the showStyleVariant) */
-	showStyleBaseId: ShowStyleBaseId
-	/** The peripheral device the rundown originates from */
-	peripheralDeviceId?: PeripheralDeviceId
-	restoredFromSnapshotId?: RundownId
-	created: Time
-	modified: Time
-
-	/** Revisions/Versions of various docs that when changed require the user to reimport the rundown */
-	importVersions: RundownImportVersions
-
-	status?: string
-	// There should be something like a Owner user here somewhere?
-
-	/** Is the rundown in an unsynced (has been unpublished from ENPS) state? */
-	orphaned?: 'deleted' | 'from-snapshot'
-
-	/** Last sent storyStatus to ingestDevice (MOS) */
-	notifiedCurrentPlayingPartExternalId?: string
-
-	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
-	notes?: Array<RundownNote>
-
-	/** External id of the Rundown Playlist to put this rundown in */
-	playlistExternalId?: string
-	/** Name (user-facing) of the external NCS this rundown came from */
-	externalNRCSName: string
-	/** The id of the Rundown Playlist this rundown is in */
-	playlistId: RundownPlaylistId
-	/** If the playlistId has ben set manually by a user in Sofie */
-	playlistIdIsSetInSofie?: boolean
-	/** Rank of the Rundown inside of its Rundown Playlist */
-	_rank: number
-	/** Whenever the baseline (RundownBaselineObjs, RundownBaselineAdLibItems, RundownBaselineAdLibActions) changes, this is changed too */
-	baselineModifyHash?: string
-}
 export class Rundown implements DBRundown {
 	// From IBlueprintRundown:
 	public externalId: string

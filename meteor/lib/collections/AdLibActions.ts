@@ -1,37 +1,13 @@
-import { registerCollection, ProtectedStringProperties, ArrayElement } from '../lib'
-import { IBlueprintActionManifest } from '@sofie-automation/blueprints-integration'
+import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
-import { PartId } from './Parts'
-import { RundownId } from './Rundowns'
 import { registerIndex } from '../database'
-import { ITranslatableMessage } from '../api/TranslatableMessage'
 
 /** A string, identifying an AdLibActionId */
 import { AdLibActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { AdLibActionId }
 
-/** The following extended interface allows assigning namespace information to the actions as they are stored in the
- *  database after being emitted from the blueprints
- */
-export interface AdLibActionCommon extends ProtectedStringProperties<IBlueprintActionManifest, 'partId'> {
-	rundownId: RundownId
-	display: IBlueprintActionManifest['display'] & {
-		label: ITranslatableMessage
-		triggerLabel?: ITranslatableMessage
-		description?: ITranslatableMessage
-	}
-	triggerModes?: (ArrayElement<IBlueprintActionManifest['triggerModes']> & {
-		display: ArrayElement<IBlueprintActionManifest['triggerModes']>['display'] & {
-			label: ITranslatableMessage
-			description?: ITranslatableMessage
-		}
-	})[]
-}
-
-export interface AdLibAction extends AdLibActionCommon {
-	_id: AdLibActionId
-	partId: PartId
-}
+import { AdLibAction, AdLibActionCommon } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
+export { AdLibAction, AdLibActionCommon }
 
 export const AdLibActions = createMongoCollection<AdLibAction, AdLibAction>('adLibActions')
 registerCollection('AdLibActions', AdLibActions)

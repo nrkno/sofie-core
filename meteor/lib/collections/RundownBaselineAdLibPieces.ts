@@ -1,9 +1,9 @@
-import { AdLibPiece } from './AdLibPieces'
 import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 
-export type RundownBaselineAdLibItem = AdLibPiece
+import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
+export * from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 
 export const RundownBaselineAdLibPieces = createMongoCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
 	'rundownBaselineAdLibPieces'

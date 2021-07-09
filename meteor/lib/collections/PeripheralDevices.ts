@@ -1,68 +1,12 @@
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
-import { Time, registerCollection, assertNever } from '../lib'
-
-import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
-import { IngestDeviceSettings, IngestDeviceSecretSettings } from './PeripheralDeviceSettings/ingestDevice'
+import { registerCollection, assertNever } from '../lib'
 import { createMongoCollection } from './lib'
-import { DeviceConfigManifest } from '../api/deviceConfig'
-import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { PeripheralDeviceId }
-export interface PeripheralDevice {
-	_id: PeripheralDeviceId
 
-	/** If set, this device is owned by that organization */
-	organizationId: OrganizationId | null
-
-	/** Name of the device (set by the device, modifiable by user) */
-	name: string
-
-	/** Name of the device (set by the device) */
-	deviceName?: string
-
-	category: PeripheralDeviceAPI.DeviceCategory
-	type: PeripheralDeviceAPI.DeviceType
-	subType: PeripheralDeviceAPI.DeviceSubType
-
-	/** The studio this device is assigned to. Will be undefined for sub-devices */
-	studioId?: StudioId
-	parentDeviceId?: PeripheralDeviceId
-	/** Versions reported from the device */
-	versions?: {
-		[libraryName: string]: string
-	}
-	/** Whether version checks should be disabled for this version */
-	disableVersionChecks?: boolean
-
-	created: Time
-	status: PeripheralDeviceAPI.StatusObject
-	lastSeen: Time // Updated continously while connected
-	lastConnected: Time // Updated upon connection, not continously
-
-	/** A list of last reported latencies */
-	latencies?: number[]
-
-	connected: boolean
-	connectionId: string | null // Id of the current ddp-Connection
-
-	token: string
-
-	settings?: PlayoutDeviceSettings | IngestDeviceSettings | { [key: string]: any }
-
-	secretSettings?: IngestDeviceSecretSettings | { [key: string]: any }
-
-	/** Ignore this device when computing status in the GUI (other status reports are unaffected) */
-	ignore?: boolean
-
-	configManifest: DeviceConfigManifest
-
-	/** If this is an ingest gateway, the last tiem data was received */
-	lastDataReceived?: Time
-
-	/** If an ingest device performing an oauth flow */
-	accessTokenUrl?: string
-}
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+export * from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 export const PeripheralDevices = createMongoCollection<PeripheralDevice, PeripheralDevice>('peripheralDevices')
 registerCollection('PeripheralDevices', PeripheralDevices)

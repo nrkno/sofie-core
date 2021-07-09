@@ -1,6 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevices,
+	PeripheralDevice,
+	PeripheralDeviceStatusCode,
+} from '../../lib/collections/PeripheralDevices'
 import { getCurrentTime, Time, getRandomId, assertNever } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
@@ -16,7 +20,6 @@ import {
 	CheckError,
 	SystemInstanceId,
 	Component,
-	StatusCode,
 } from '../../lib/api/systemStatus'
 import { getRelevantSystemVersions } from '../coreSystem'
 import { StudioId } from '../../lib/collections/Studios'
@@ -39,6 +42,8 @@ const expectedLibraryVersions: { [libName: string]: string } = {
  * Handling of system statuses
  */
 
+/** Enum for the different status codes in the system  */
+export type StatusCode = PeripheralDeviceStatusCode
 export interface StatusObject {
 	studioId?: StudioId
 	statusCode: StatusCode
@@ -57,7 +62,7 @@ export interface StatusObjectInternal {
 }
 
 function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
-	const deviceStatus: StatusCode = device.status.statusCode
+	const deviceStatus: PeripheralDeviceStatusCode = device.status.statusCode
 	const deviceStatusMessages: Array<string> = device.status.messages || []
 
 	const checks: Array<CheckObj> = []
@@ -77,7 +82,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		})
 	}
 
-	if (deviceStatus === StatusCode.GOOD && !device.disableVersionChecks) {
+	if (deviceStatus === PeripheralDeviceStatusCode.GOOD && !device.disableVersionChecks) {
 		if (!device.versions) device.versions = {}
 		const deviceVersions = device.versions
 
@@ -139,7 +144,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		statusMessage: deviceStatusMessages.length ? deviceStatusMessages.join(', ') : undefined,
 		_internal: {
 			// statusCode: deviceStatus,
-			statusCodeString: StatusCode[deviceStatus],
+			statusCodeString: PeripheralDeviceStatusCode[deviceStatus],
 			messages: deviceStatusMessages,
 			versions: device.versions || {},
 		},
@@ -195,11 +200,11 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 		instanceId: instanceId,
 		updated: new Date(getCurrentTime()).toISOString(),
 		status: 'UNDEFINED',
-		_status: StatusCode.UNKNOWN,
+		_status: PeripheralDeviceStatusCode.UNKNOWN,
 		documentation: 'https://github.com/nrkno/tv-automation-server-core',
 		_internal: {
 			// this _internal is set later
-			statusCodeString: StatusCode[StatusCode.UNKNOWN],
+			statusCodeString: PeripheralDeviceStatusCode[PeripheralDeviceStatusCode.UNKNOWN],
 			messages: [],
 			versions: {},
 		},
@@ -234,7 +239,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 	const systemStatus: StatusCode = setStatus(statusObj)
 	statusObj._internal = {
 		// statusCode: systemStatus,
-		statusCodeString: StatusCode[systemStatus],
+		statusCodeString: PeripheralDeviceStatusCode[systemStatus],
 		messages: collectMesages(statusObj),
 		versions: getRelevantSystemVersions(),
 	}
@@ -246,7 +251,7 @@ export function setSystemStatus(type: string, status: StatusObject) {
 	let systemStatus: StatusObjectInternal = systemStatuses[type]
 	if (!systemStatus) {
 		systemStatus = {
-			statusCode: StatusCode.UNKNOWN,
+			statusCode: PeripheralDeviceStatusCode.UNKNOWN,
 			timestamp: 0,
 			messages: [],
 		}
@@ -312,7 +317,7 @@ function collectMesages(statusObj: StatusResponse | Component): Array<string> {
 	}
 	if (statusObj.checks) {
 		_.each(statusObj.checks, (check: CheckObj) => {
-			if (check._status !== StatusCode.GOOD && check.errors) {
+			if (check._status !== PeripheralDeviceStatusCode.GOOD && check.errors) {
 				_.each(check.errors, (errMsg) => {
 					allMessages.push(`check ${check.description}: ${errMsg.message}`)
 				})
@@ -330,12 +335,15 @@ function collectMesages(statusObj: StatusResponse | Component): Array<string> {
 	}
 	return allMessages
 }
-export function status2ExternalStatus(statusCode: StatusCode): ExternalStatus {
-	if (statusCode === StatusCode.GOOD) {
+export function status2ExternalStatus(statusCode: PeripheralDeviceStatusCode): ExternalStatus {
+	if (statusCode === PeripheralDeviceStatusCode.GOOD) {
 		return 'OK'
-	} else if (statusCode === StatusCode.WARNING_MINOR || statusCode === StatusCode.WARNING_MAJOR) {
+	} else if (
+		statusCode === PeripheralDeviceStatusCode.WARNING_MINOR ||
+		statusCode === PeripheralDeviceStatusCode.WARNING_MAJOR
+	) {
 		return 'WARNING'
-	} else if (statusCode === StatusCode.BAD || statusCode === StatusCode.FATAL) {
+	} else if (statusCode === PeripheralDeviceStatusCode.BAD || statusCode === PeripheralDeviceStatusCode.FATAL) {
 		return 'FAIL'
 	}
 	return 'UNDEFINED'

@@ -1,34 +1,11 @@
 import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
-import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integration'
 import { registerIndex } from '../database'
-import { ExpectedPlayoutItemId, StudioId, RundownId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPlayoutItemId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { ExpectedPlayoutItemId }
 
-export interface ExpectedPlayoutItemBase extends ExpectedPlayoutItemGeneric {
-	/** Globally unique id of the item */
-	_id: ExpectedPlayoutItemId
-
-	/** The studio installation this ExpectedPlayoutItem was generated in */
-	studioId: StudioId
-}
-/** @deprecated */
-export interface ExpectedPlayoutItemRundown extends ExpectedPlayoutItemBase {
-	/** The rundown id that is the source of this PlayoutItem */
-	rundownId: RundownId
-	/** The part id that is the source of this Playout Item */
-	partId?: PartId
-	// /** The piece id that is the source of this Playout Item */
-	// pieceId: PieceId
-	/** Is created for studio/rundown baseline */
-	baseline?: 'rundown'
-}
-/** @deprecated */
-export interface ExpectedPlayoutItemStudio extends ExpectedPlayoutItemBase {
-	baseline: 'studio'
-}
-/** @deprecated */
-export type ExpectedPlayoutItem = ExpectedPlayoutItemStudio | ExpectedPlayoutItemRundown
+import { ExpectedPlayoutItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
+export * from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 
 /** @deprecated */
 export const ExpectedPlayoutItems = createMongoCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>(

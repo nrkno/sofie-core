@@ -19,7 +19,7 @@ import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../../l
 import {
 	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
-} from '../../../lib/collections/PeripheralDeviceSettings/ingestDevice'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
 
 jest.mock('../playout/playout.ts')
 jest.mock('ntp-client')
