@@ -184,6 +184,35 @@ export default withTranslation()(
 							></EditAttribute>
 						</label>
 					</div>
+					<div className="mod mvs mhs">
+						<label className="field">{t('Segment countdown requires sourcelayer')}</label>
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={`countdownToSegmentRequireLayers`}
+							obj={this.props.item}
+							type="checkbox"
+							collection={RundownLayouts}
+							className="mod mas"
+							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+							mutateUpdateValue={(v) => undefined}
+						/>
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={`countdownToSegmentRequireLayers`}
+							obj={this.props.item}
+							options={this.props.showStyleBase.sourceLayers.map((l) => {
+								return { name: l.name, value: l._id }
+							})}
+							type="multiselect"
+							label={t('Disabled')}
+							collection={RundownLayouts}
+							className="input text-input input-l dropdown"
+							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+						/>
+						<span className="text-s dimmed">
+							{t('One of these sourcelayers must have a piece for the countdown to segment on-air to be show')}
+						</span>
+					</div>
 				</React.Fragment>
 			)
 		}

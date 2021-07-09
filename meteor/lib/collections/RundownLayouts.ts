@@ -322,15 +322,18 @@ export interface RundownLayoutWithFilters extends RundownLayoutBase {
 
 export interface RundownViewLayout extends RundownLayoutBase {
 	type: RundownLayoutType.RUNDOWN_VIEW_LAYOUT
-	expectedEndText: string
 	/** Expose as a layout that can be selected by the user in the lobby view */
 	exposeAsSelectableLayout: boolean
 	shelfLayout: RundownLayoutId
 	miniShelfLayout: RundownLayoutId
 	rundownHeaderLayout: RundownLayoutId
 	liveLineProps?: RequiresActiveLayers
+	/** Hide the rundown divider header in playlists */
 	hideRundownDivider: boolean
+	/** Show breaks in segment timeline list */
 	showBreaksAsSegments: boolean
+	/** Only count down to the segment if it contains pieces on these layers */
+	countdownToSegmentRequireLayers: string[]
 }
 
 export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {

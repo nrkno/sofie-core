@@ -81,6 +81,7 @@ interface IProps {
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
+	showCountdownToSegment: boolean
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -1029,7 +1030,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						)}
 				</div>
 				<div className="segment-timeline__timeUntil" onClick={this.onTimeUntilClick}>
-					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (
+					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && this.props.showCountdownToSegment && (
 						<PartCountdown
 							partId={countdownToPartId}
 							hideOnZero={!useTimeOfDayCountdowns}
