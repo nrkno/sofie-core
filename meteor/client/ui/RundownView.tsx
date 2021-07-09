@@ -110,6 +110,7 @@ import { TimeOfDay } from './RundownView/RundownTiming/TimeOfDay'
 import { PlaylistStartTiming } from './RundownView/RundownTiming/PlaylistStartTiming'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
+import { BreakSegment } from './SegmentTimeline/BreakSegment'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -2271,6 +2272,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		renderSegments() {
+			const { t } = this.props
+
 			if (this.props.matchedSegments) {
 				let globalIndex = 0
 				const rundowns = this.props.matchedSegments.map((m) => m.rundown._id)
@@ -2278,7 +2281,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					const rundownIdsBefore = rundowns.slice(0, rundownIndex)
 					return (
 						<React.Fragment key={unprotectString(rundownAndSegments.rundown._id)}>
-							{this.props.matchedSegments.length > 1 && (
+							{this.props.matchedSegments.length > 1 && !this.state.rundownViewLayout?.hideRundownDivider && (
 								<RundownDividerHeader
 									key={`rundown_${rundownAndSegments.rundown._id}`}
 									rundown={rundownAndSegments.rundown}
@@ -2343,6 +2346,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									)
 								}
 							})}
+							{this.state.rundownViewLayout?.showBreaksAsSegments && rundownAndSegments.rundown.endIsBreak && (
+								<BreakSegment breakTime={rundownAndSegments.rundown.expectedEnd} />
+							)}
 						</React.Fragment>
 					)
 				})

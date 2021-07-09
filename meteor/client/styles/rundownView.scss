@@ -668,6 +668,18 @@ svg.icon {
 		}
 	}
 
+	&.has-break {
+		width: 12.5rem;
+
+		.segment-timeline__title {
+			background: $rundown-divider-background-color;
+
+			h2 {
+				color: $rundown-divider-color;
+			}
+		}
+	}
+
 	&.live {
 		.segment-timeline__title {
 			color: $segment-title-text-color-live;

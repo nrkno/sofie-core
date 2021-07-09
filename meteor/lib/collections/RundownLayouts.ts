@@ -329,6 +329,8 @@ export interface RundownViewLayout extends RundownLayoutBase {
 	miniShelfLayout: RundownLayoutId
 	rundownHeaderLayout: RundownLayoutId
 	liveLineProps?: RequiresActiveLayers
+	hideRundownDivider: boolean
+	showBreaksAsSegments: boolean
 }
 
 export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {

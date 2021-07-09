@@ -157,6 +157,33 @@ export default withTranslation()(
 							<span className="text-s dimmed">{t('All required source layers must have active pieces')}</span>
 						</label>
 					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Rundown Divider')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'hideRundownDivider'}
+								obj={this.props.item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							></EditAttribute>
+							<span className="text-s dimmed">{t('Hide rundown divider between rundowns in a playlist')}</span>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Show Breaks as Segments')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'showBreaksAsSegments'}
+								obj={this.props.item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							></EditAttribute>
+						</label>
+					</div>
 				</React.Fragment>
 			)
 		}
