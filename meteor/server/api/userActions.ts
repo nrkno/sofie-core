@@ -389,9 +389,9 @@ export function pieceTakeNow(
 	const showStyleBase = rundown.getShowStyleBase()
 	const sourceLayerId = pieceToCopy.sourceLayerId
 	const sourceL = showStyleBase.sourceLayers.find((i) => i._id === sourceLayerId)
-	if (sourceL && (sourceL.type !== SourceLayerType.GRAPHICS || sourceL.exclusiveGroup))
+	if (sourceL && (sourceL.type !== SourceLayerType.LOWER_THIRD || sourceL.exclusiveGroup))
 		return ClientAPI.responseError(
-			`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS piece!`
+			`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a LOWER_THIRD piece!`
 		)
 
 	return ClientAPI.responseSuccess(
