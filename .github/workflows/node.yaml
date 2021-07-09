@@ -338,7 +338,7 @@ jobs:
           CI: true
 
   typedoc-libs:
-    name: Publish Libs Typedoc
+    name: Generate Libs Typedoc
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
