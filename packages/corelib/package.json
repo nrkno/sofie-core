@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/corelib",
-	"version": "1.19.0-in-development",
+	"version": "1.36.0-in-development",
 	"description": "Internal library for some types shared by core and workers",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -40,21 +40,8 @@
 		"/README.md",
 		"/LICENSE"
 	],
-	"devDependencies": {
-		"@sofie-automation/code-standard-preset": "^0.2.4",
-		"@types/jest": "^26.0.19",
-		"@types/node": "^12.19.4",
-		"@types/underscore": "^1.10.24",
-		"jest": "^26.6.3",
-		"jest-haste-map": "^26.6.2",
-		"jest-resolve": "^26.6.2",
-		"open-cli": "^6.0.1",
-		"rimraf": "^3.0.2",
-		"ts-jest": "^26.5.0",
-		"typescript": "~4.0"
-	},
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "file:../blueprints-integration",
+		"@sofie-automation/blueprints-integration": "^1.36.0-in-development",
 		"tslib": "^2.1.0",
 		"type-fest": "^1.2.2",
 		"underscore": "1.12.0"
