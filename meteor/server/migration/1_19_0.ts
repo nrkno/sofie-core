@@ -1,3 +1,4 @@
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { addMigrationSteps } from './databaseMigration'
 import { ensureCollectionProperty } from './lib'
 
@@ -10,5 +11,5 @@ import { ensureCollectionProperty } from './lib'
  */
 // Release 31
 export const addSteps = addMigrationSteps('1.19.0', [
-	ensureCollectionProperty('CoreSystem', {}, 'cron.casparCGRestart.enabled', true),
+	ensureCollectionProperty(CollectionName.CoreSystem, {}, 'cron.casparCGRestart.enabled', true),
 ])

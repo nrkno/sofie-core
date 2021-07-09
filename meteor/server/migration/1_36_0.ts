@@ -1,6 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { removeCollectionProperty } from './lib'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 /*
  * **************************************************************************************
@@ -28,5 +29,5 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	//
 	//
 
-	removeCollectionProperty('PeripheralDevices', {}, 'expectedVersion'),
+	removeCollectionProperty(CollectionName.PeripheralDevices, {}, 'expectedVersion'),
 ])

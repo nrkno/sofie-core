@@ -37,6 +37,7 @@ export type ExpectedMediaItemId = ProtectedString<'ExpectedMediaItemId'>
 export type ExpectedPlayoutItemId = ProtectedString<'ExpectedPlayoutItemId'>
 
 export type ExpectedPackageId = ProtectedString<'ExpectedPackageId'>
+export type ExpectedPackageWorkStatusId = ProtectedString<'ExpectedPackageStatusId'>
 
 /** A string, identifying a ExternalMessageQueueObj */
 export type ExternalMessageQueueObjId = ProtectedString<'ExternalMessageQueueObjId'>
@@ -55,6 +56,11 @@ export type MediaWorkFlowStepId = ProtectedString<'MediaWorkFlowStepId'>
 
 /** A string, identifying a Organization */
 export type OrganizationId = ProtectedString<'OrganizationId'>
+
+export type PackageInfoId = ProtectedString<'PackageInfoId'>
+
+/** Id of a package container */
+export type PackageContainerPackageId = ProtectedString<'PackageContainerPackageId'>
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
