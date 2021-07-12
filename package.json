@@ -7,7 +7,7 @@
 		"node": "^12.21.0 || 14"
 	},
 	"scripts": {
-		"postinstall": "yarn install:meteor && yarn install:packages",
+		"postinstall": "yarn install:packages && yarn install:meteor",
 		"install:meteor": "cd meteor && meteor --version && meteor npm install",
 		"install:packages": "cd packages && yarn install",
 		"start": "yarn install && yarn dev",
