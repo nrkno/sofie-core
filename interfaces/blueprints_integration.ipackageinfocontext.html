@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>VTEditableParameters | Sofie Integration Libraries</title>
+	<title>IPackageInfoContext | Sofie Integration Libraries</title>
 	<meta name="description" content="Documentation for Sofie Integration Libraries">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -58,10 +58,10 @@
 					<a href="../modules/blueprints_integration.html">blueprints-integration</a>
 				</li>
 				<li>
-					<a href="blueprints_integration.vteditableparameters.html">VTEditableParameters</a>
+					<a href="blueprints_integration.ipackageinfocontext.html">IPackageInfoContext</a>
 				</li>
 			</ul>
-			<h1>Interface VTEditableParameters</h1>
+			<h1>Interface IPackageInfoContext</h1>
 		</div>
 	</div>
 </header>
@@ -72,10 +72,16 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="blueprints_integration.baseeditableparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">BaseEditableParameters</a>
+						<span class="target">IPackageInfoContext</span>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target">VTEditableParameters</span>
+								<a href="blueprints_integration.istudiobaselinecontext.html" class="tsd-signature-type" data-tsd-kind="Interface">IStudioBaselineContext</a>
+							</li>
+							<li>
+								<a href="blueprints_integration.ishowstyleusercontext.html" class="tsd-signature-type" data-tsd-kind="Interface">IShowStyleUserContext</a>
+							</li>
+							<li>
+								<a href="blueprints_integration.isegmentusercontext.html" class="tsd-signature-type" data-tsd-kind="Interface">ISegmentUserContext</a>
 							</li>
 						</ul>
 					</li>
@@ -88,8 +94,7 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="blueprints_integration.vteditableparameters.html#editorialduration" class="tsd-kind-icon">editorial<wbr>Duration</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="blueprints_integration.vteditableparameters.html#editorialstart" class="tsd-kind-icon">editorial<wbr>Start</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="blueprints_integration.ipackageinfocontext.html#getpackageinfo" class="tsd-kind-icon">get<wbr>Package<wbr>Info</a></li>
 							</ul>
 						</section>
 					</div>
@@ -98,24 +103,43 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="editorialduration" class="tsd-anchor"></a>
-					<h3>editorial<wbr>Duration</h3>
-					<div class="tsd-signature tsd-kind-icon">editorial<wbr>Duration<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="getpackageinfo" class="tsd-anchor"></a>
+					<h3>get<wbr>Package<wbr>Info</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Package<wbr>Info<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>packageId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-symbol">readonly </span><a href="" class="tsd-signature-type" data-tsd-kind="Type alias">Any</a><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/6cd3d3b/packages/blueprints-integration/src/content.ts#L39">blueprints-integration/src/content.ts:39</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/6cd3d3b/packages/blueprints-integration/src/context.ts#L95">blueprints-integration/src/context.ts:95</a></li>
 						</ul>
 					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="editorialstart" class="tsd-anchor"></a>
-					<h3>editorial<wbr>Start</h3>
-					<div class="tsd-signature tsd-kind-icon">editorial<wbr>Start<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/6cd3d3b/packages/blueprints-integration/src/content.ts#L38">blueprints-integration/src/content.ts:38</a></li>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Get the PackageInfo items for an ExpectedPackage, if any have been reported by the package manager.
+								Only info for packages with the <code>listenToPackageInfoUpdates</code> property set to true can be returned.
+								The possible packageIds are scoped based on the ownership of the package.
+							eg, baseline packages can be accessed when generating the baseline objects, piece/adlib packages can be access when regenerating the segment they are from</p>
+						</div>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-signature">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-interface">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>packageId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">readonly </span><a href="" class="tsd-signature-type" data-tsd-kind="Type alias">Any</a><span class="tsd-signature-symbol">[]</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>packageId: <span class="tsd-signature-type">string</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">readonly </span><a href="" class="tsd-signature-type" data-tsd-kind="Type alias">Any</a><span class="tsd-signature-symbol">[]</span></h4>
+									</li>
+								</ul>
+							</li>
 						</ul>
-					</aside>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -141,13 +165,10 @@
 						<a href="../modules/blueprints_integration.html" class="tsd-kind-icon">blueprints-<wbr>integration</a>
 						<ul>
 							<li class="current tsd-kind-interface tsd-parent-kind-module">
-								<a href="blueprints_integration.vteditableparameters.html" class="tsd-kind-icon">VTEditable<wbr>Parameters</a>
+								<a href="blueprints_integration.ipackageinfocontext.html" class="tsd-kind-icon">IPackage<wbr>Info<wbr>Context</a>
 								<ul>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="blueprints_integration.vteditableparameters.html#editorialduration" class="tsd-kind-icon">editorial<wbr>Duration</a>
-									</li>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="blueprints_integration.vteditableparameters.html#editorialstart" class="tsd-kind-icon">editorial<wbr>Start</a>
+										<a href="blueprints_integration.ipackageinfocontext.html#getpackageinfo" class="tsd-kind-icon">get<wbr>Package<wbr>Info</a>
 									</li>
 								</ul>
 							</li>
